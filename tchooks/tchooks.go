@@ -50,7 +50,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // https://taskcluster-staging.net/references/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 29 Jan 2019 at 08:22:00 UTC. The code was generated
+// Mon, 25 Mar 2019 at 18:29:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tchooks
 
@@ -145,8 +145,12 @@ func (hooks *Hooks) Hook(hookGroupId, hookId string) (*HookDefinition, error) {
 	return responseObject.(*HookDefinition), err
 }
 
+// Stability: *** DEPRECATED ***
+//
 // This endpoint will return the current status of the hook.  This represents a
 // snapshot in time and may vary from one call to the next.
+//
+// This method is deprecated in favor of listLastFires.
 //
 // See #getHookStatus
 func (hooks *Hooks) GetHookStatus(hookGroupId, hookId string) (*HookStatusResponse, error) {
@@ -210,10 +214,10 @@ func (hooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
 //   hooks:trigger-hook:<hookGroupId>/<hookId>
 //
 // See #triggerHook
-func (hooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerHookRequest) (*TaskStatusStructure, error) {
+func (hooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerHookRequest) (*TriggerHookResponse, error) {
 	cd := tcclient.Client(*hooks)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger", new(TaskStatusStructure), nil)
-	return responseObject.(*TaskStatusStructure), err
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger", new(TriggerHookResponse), nil)
+	return responseObject.(*TriggerHookResponse), err
 }
 
 // Retrieve a unique secret token for triggering the specified hook. This
@@ -260,10 +264,10 @@ func (hooks *Hooks) ResetTriggerToken(hookGroupId, hookId string) (*TriggerToken
 // task template.
 //
 // See #triggerHookWithToken
-func (hooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payload *TriggerHookRequest) (*TaskStatusStructure, error) {
+func (hooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payload *TriggerHookRequest) (*TriggerHookResponse, error) {
 	cd := tcclient.Client(*hooks)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger/"+url.QueryEscape(token), new(TaskStatusStructure), nil)
-	return responseObject.(*TaskStatusStructure), err
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger/"+url.QueryEscape(token), new(TriggerHookResponse), nil)
+	return responseObject.(*TriggerHookResponse), err
 }
 
 // Stability: *** EXPERIMENTAL ***

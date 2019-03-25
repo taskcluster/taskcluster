@@ -70,7 +70,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // https://taskcluster-staging.net/references/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 29 Jan 2019 at 08:22:00 UTC. The code was generated
+// Mon, 25 Mar 2019 at 18:29:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcauth
 
@@ -357,7 +357,7 @@ func (auth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRol
 // Update an existing role.
 //
 // The caller's scopes must satisfy all of the new scopes being added, but
-// need not satisfy all of the client's existing scopes.
+// need not satisfy all of the role's existing scopes.
 //
 // An update of a role that will generate an infinite expansion will result
 // in an error response.
@@ -731,28 +731,36 @@ func (auth *Auth) StatsumToken_SignedURL(project string, duration time.Duration)
 	return (&cd).SignedURL("/statsum/"+url.QueryEscape(project)+"/token", nil, duration)
 }
 
-// Get temporary `token` and `id` for connecting to websocktunnel
-// The token is valid for 96 hours, clients should refresh after expiration.
+// Get a temporary token suitable for use connecting to a
+// [websocktunnel](https://github.com/taskcluster/websocktunnel) server.
+//
+// The resulting token will only be accepted by servers with a matching audience
+// value.  Reaching such a server is the callers responsibility.  In general,
+// a server URL or set of URLs should be provided to the caller as configuration
+// along with the audience value.
+//
+// The token is valid for a limited time (on the scale of hours). Callers should
+// refresh it before expiration.
 //
 // Required scopes:
-//   auth:websocktunnel
+//   auth:websocktunnel-token:<wstAudience>/<wstClient>
 //
 // See #websocktunnelToken
-func (auth *Auth) WebsocktunnelToken() (*WebsocktunnelTokenResponse, error) {
+func (auth *Auth) WebsocktunnelToken(wstAudience, wstClient string) (*WebsocktunnelTokenResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/websocktunnel", new(WebsocktunnelTokenResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/websocktunnel/"+url.QueryEscape(wstAudience)+"/"+url.QueryEscape(wstClient), new(WebsocktunnelTokenResponse), nil)
 	return responseObject.(*WebsocktunnelTokenResponse), err
 }
 
 // Returns a signed URL for WebsocktunnelToken, valid for the specified duration.
 //
 // Required scopes:
-//   auth:websocktunnel
+//   auth:websocktunnel-token:<wstAudience>/<wstClient>
 //
 // See WebsocktunnelToken for more details.
-func (auth *Auth) WebsocktunnelToken_SignedURL(duration time.Duration) (*url.URL, error) {
+func (auth *Auth) WebsocktunnelToken_SignedURL(wstAudience, wstClient string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/websocktunnel", nil, duration)
+	return (&cd).SignedURL("/websocktunnel/"+url.QueryEscape(wstAudience)+"/"+url.QueryEscape(wstClient), nil, duration)
 }
 
 // Validate the request signature given on input and return list of scopes

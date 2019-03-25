@@ -1,4 +1,4 @@
-Generated: 1548750156
+Generated: 1553538568
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -331,7 +331,7 @@ Entry 14    =
     Entry Description = 'Update an existing role.
 
 The caller's scopes must satisfy all of the new scopes being added, but
-need not satisfy all of the client's existing scopes.
+need not satisfy all of the role's existing scopes.
 
 An update of a role that will generate an infinite expansion will result
 in an error response.'
@@ -617,19 +617,27 @@ The token is valid for 24 hours, clients should refresh after expiration.'
 Entry 27    =
     Entry Type        = 'function'
     Entry Method      = 'get'
-    Entry Route       = '/websocktunnel'
-    Entry Args        = '[]'
+    Entry Route       = '/websocktunnel/<wstAudience>/<wstClient>'
+    Entry Args        = '[wstAudience wstClient]'
     Entry Query        = '[]'
     Entry Name        = 'websocktunnelToken'
     Entry Stability   = 'stable'
-    Entry Scopes      = 'auth:websocktunnel'
+    Entry Scopes      = 'auth:websocktunnel-token:<wstAudience>/<wstClient>'
     Entry Input       = ''
     Entry InputURL    = ''
     Entry Output      = 'v1/websocktunnel-token-response.json#'
     Entry OutputURL   = 'https://taskcluster-staging.net/schemas/auth/v1/websocktunnel-token-response.json#'
-    Entry Title       = 'Get Token for Websocktunnel Proxy'
-    Entry Description = 'Get temporary `token` and `id` for connecting to websocktunnel
-The token is valid for 96 hours, clients should refresh after expiration.'
+    Entry Title       = 'Get a client token for the Websocktunnel service'
+    Entry Description = 'Get a temporary token suitable for use connecting to a
+[websocktunnel](https://github.com/taskcluster/websocktunnel) server.
+
+The resulting token will only be accepted by servers with a matching audience
+value.  Reaching such a server is the callers responsibility.  In general,
+a server URL or set of URLs should be provided to the caller as configuration
+along with the audience value.
+
+The token is valid for a limited time (on the scale of hours). Callers should
+refresh it before expiration.'
 Entry 28    =
     Entry Type        = 'function'
     Entry Method      = 'post'
@@ -978,6 +986,7 @@ oneOf:
             pattern: ^[ -~]*$
             type: string
           type: array
+          uniqueItems: true
         status:
           IS_REQUIRED: true
           PROPERTY_NAME: status
@@ -1136,6 +1145,7 @@ properties:
         pattern: ^[ -~]*$
         type: string
       type: array
+      uniqueItems: true
     status:
       IS_REQUIRED: true
       PROPERTY_NAME: status
@@ -1397,6 +1407,7 @@ properties:
         type: string
       title: Azure Accounts
       type: array
+      uniqueItems: true
   SortedPropertyNames:
   - accounts
   SourceURL: https://taskcluster-staging.net/schemas/auth/v1/azure-account-list-response.json#/properties
@@ -1440,6 +1451,7 @@ properties:
         type: string
       title: Azure Containers
       type: array
+      uniqueItems: true
     continuationToken:
       IS_REQUIRED: false
       PROPERTY_NAME: continuationToken
@@ -1612,6 +1624,7 @@ properties:
         type: string
       title: Azure Tables
       type: array
+      uniqueItems: true
   SortedPropertyNames:
   - continuationToken
   - tables
@@ -1810,6 +1823,7 @@ properties:
         pattern: ^[ -~]*$
         type: string
       type: array
+      uniqueItems: true
     expires:
       IS_REQUIRED: true
       PROPERTY_NAME: expires
@@ -2052,6 +2066,7 @@ properties:
         pattern: ^[ -~]*$
         type: string
       type: array
+      uniqueItems: true
     expires:
       IS_REQUIRED: true
       PROPERTY_NAME: expires
@@ -2200,6 +2215,7 @@ properties:
         pattern: ^[ -~]*$
         type: string
       type: array
+      uniqueItems: true
     lastModified:
       IS_REQUIRED: true
       PROPERTY_NAME: lastModified
@@ -2238,6 +2254,7 @@ properties:
         pattern: ^[ -~]*$
         type: string
       type: array
+      uniqueItems: false
   SortedPropertyNames:
   - created
   - description
@@ -2376,6 +2393,7 @@ properties:
                   pattern: ^[ -~]*$
                   type: string
                 type: array
+                uniqueItems: true
               expires:
                 IS_REQUIRED: true
                 PROPERTY_NAME: expires
@@ -2463,6 +2481,7 @@ properties:
         SOURCE_URL: https://taskcluster-staging.net/schemas/auth/v1/list-clients-response.json#/properties/clients/items
         TYPE_NAME: ""
       type: array
+      uniqueItems: true
     continuationToken:
       IS_REQUIRED: false
       PROPERTY_NAME: continuationToken
@@ -2529,6 +2548,7 @@ properties:
         TYPE_NAME: ""
         type: string
       type: array
+      uniqueItems: true
   SortedPropertyNames:
   - continuationToken
   - roleIds
@@ -2615,6 +2635,7 @@ items:
             pattern: ^[ -~]*$
             type: string
           type: array
+          uniqueItems: true
         lastModified:
           IS_REQUIRED: true
           PROPERTY_NAME: lastModified
@@ -2653,6 +2674,7 @@ items:
             pattern: ^[ -~]*$
             type: string
           type: array
+          uniqueItems: false
       SortedPropertyNames:
       - created
       - description
@@ -2674,6 +2696,7 @@ items:
   TYPE_NAME: ""
 title: Get All Roles (no pagination)
 type: array
+uniqueItems: true
 
 
 https://taskcluster-staging.net/schemas/auth/v1/list-roles2-response.json#
@@ -2780,6 +2803,7 @@ properties:
                   pattern: ^[ -~]*$
                   type: string
                 type: array
+                uniqueItems: true
               lastModified:
                 IS_REQUIRED: true
                 PROPERTY_NAME: lastModified
@@ -2818,6 +2842,7 @@ properties:
                   pattern: ^[ -~]*$
                   type: string
                 type: array
+                uniqueItems: false
             SortedPropertyNames:
             - created
             - description
@@ -2838,6 +2863,7 @@ properties:
         SOURCE_URL: https://taskcluster-staging.net/schemas/auth/v1/list-roles2-response.json#/properties/roles/items
         TYPE_NAME: ""
       type: array
+      uniqueItems: true
   SortedPropertyNames:
   - continuationToken
   - roles
@@ -3251,46 +3277,62 @@ description: |
   Token for connecting a worker to websocktunnel proxy
 properties:
   MemberNames:
-    proxyUrl: ProxyURL
+    expires: Expires
     token: Token
-    tunnelId: TunnelID
+    wstAudience: WstAudience
+    wstClient: WstClient
   Properties:
-    proxyUrl:
+    expires:
       IS_REQUIRED: true
-      PROPERTY_NAME: proxyUrl
-      SOURCE_URL: https://taskcluster-staging.net/schemas/auth/v1/websocktunnel-token-response.json#/properties/proxyUrl
+      PROPERTY_NAME: expires
+      SOURCE_URL: https://taskcluster-staging.net/schemas/auth/v1/websocktunnel-token-response.json#/properties/expires
       TYPE_NAME: ""
       description: |
-        websocket url at which proxy is hosted
-      title: Proxy URL
+        The time at which the JWT will expire.
+      format: date-time
+      title: Expires
       type: string
     token:
       IS_REQUIRED: true
       PROPERTY_NAME: token
       SOURCE_URL: https://taskcluster-staging.net/schemas/auth/v1/websocktunnel-token-response.json#/properties/token
       TYPE_NAME: ""
-      description: "jwt token to be used as `Bearer <token>` when connecting to proxy.
-        \n"
-      title: Auth Token
+      description: |
+        The JWT to be used as `Bearer <token>` when connecting to the service.
+      title: Token
       type: string
-    tunnelId:
+    wstAudience:
       IS_REQUIRED: true
-      PROPERTY_NAME: tunnelId
-      SOURCE_URL: https://taskcluster-staging.net/schemas/auth/v1/websocktunnel-token-response.json#/properties/tunnelId
+      PROPERTY_NAME: wstAudience
+      SOURCE_URL: https://taskcluster-staging.net/schemas/auth/v1/websocktunnel-token-response.json#/properties/wstAudience
       TYPE_NAME: ""
       description: |
-        id for proxy connection
-      title: Proxy Connection ID
+        Audience identifying the websocktunnel servers that will honor this token; this will be the
+        same as the requested `wstAudience`.
+      pattern: ^[a-zA-Z0-9_-]{1,38}$
+      title: Websocktunnel Audience
+      type: string
+    wstClient:
+      IS_REQUIRED: true
+      PROPERTY_NAME: wstClient
+      SOURCE_URL: https://taskcluster-staging.net/schemas/auth/v1/websocktunnel-token-response.json#/properties/wstClient
+      TYPE_NAME: ""
+      description: |
+        Id for the websocktunnel client connection; this will be the same as the requested `wstClient`.
+      pattern: ^[A-Za-z0-9!@/:.+|_-]+$
+      title: Websocktunnel Client
       type: string
   SortedPropertyNames:
-  - proxyUrl
+  - expires
   - token
-  - tunnelId
+  - wstAudience
+  - wstClient
   SourceURL: https://taskcluster-staging.net/schemas/auth/v1/websocktunnel-token-response.json#/properties
 required:
+- wstClient
+- wstAudience
 - token
-- tunnelId
-- proxyUrl
+- expires
 title: Websocktunnel Token Response
 type: object
 
@@ -3487,84 +3529,6 @@ required:
 - roleId
 title: Role Message
 type: object
-
-
-https://taskcluster-staging.net/references/events/v1/api.json
-=============================================================
-Schema      = 'https://taskcluster-staging.net/schemas/common/api-reference-v0.json#'
-Title       = 'AMQP Messages API Documentation'
-Description = 'This service is responsible for making pulse messages accessible
-from browsers and cli. There are API endpoints to
-bind / unbind to an exchange and pause / resume listening from a queue'
-Entry 0     =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/ping'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'ping'
-    Entry Stability   = 'stable'
-    Entry Scopes      = ''
-    Entry Input       = ''
-    Entry InputURL    = ''
-    Entry Output      = ''
-    Entry OutputURL   = ''
-    Entry Title       = 'Ping Server'
-    Entry Description = 'Respond without doing anything.
-This endpoint is used to check that the service is up.'
-Entry 1     =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/connect/'
-    Entry Args        = '[]'
-    Entry Query        = '[bindings]'
-    Entry Name        = 'connect'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = ''
-    Entry Input       = ''
-    Entry InputURL    = ''
-    Entry Output      = ''
-    Entry OutputURL   = ''
-    Entry Title       = 'Events-Api'
-    Entry Description = 'Connect to receive messages'
-
-
-https://taskcluster-staging.net/references/gce-provider/v1/api.json
-===================================================================
-Schema      = 'https://taskcluster-staging.net/schemas/common/api-reference-v0.json#'
-Title       = 'GCE Provider Test'
-Description = 'TODO'
-Entry 0     =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/ping'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'ping'
-    Entry Stability   = 'stable'
-    Entry Scopes      = ''
-    Entry Input       = ''
-    Entry InputURL    = ''
-    Entry Output      = ''
-    Entry OutputURL   = ''
-    Entry Title       = 'Ping Server'
-    Entry Description = 'Respond without doing anything.
-This endpoint is used to check that the service is up.'
-Entry 1     =
-    Entry Type        = 'function'
-    Entry Method      = 'post'
-    Entry Route       = '/credentials'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'getCredentials'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = ''
-    Entry Input       = ''
-    Entry InputURL    = ''
-    Entry Output      = ''
-    Entry OutputURL   = ''
-    Entry Title       = 'Get Credentials from an Instance Identity Token'
-    Entry Description = 'TODO'
 
 
 https://taskcluster-staging.net/references/github/v1/api.json
@@ -3888,6 +3852,7 @@ properties:
         title: Build
         type: object
       type: array
+      uniqueItems: false
     continuationToken:
       IS_REQUIRED: false
       PROPERTY_NAME: continuationToken
@@ -4939,7 +4904,7 @@ Entry 4     =
     Entry Args        = '[hookGroupId hookId]'
     Entry Query        = '[]'
     Entry Name        = 'getHookStatus'
-    Entry Stability   = 'stable'
+    Entry Stability   = 'deprecated'
     Entry Scopes      = ''
     Entry Input       = ''
     Entry InputURL    = ''
@@ -4947,7 +4912,9 @@ Entry 4     =
     Entry OutputURL   = 'https://taskcluster-staging.net/schemas/hooks/v1/hook-status.json#'
     Entry Title       = 'Get hook status'
     Entry Description = 'This endpoint will return the current status of the hook.  This represents a
-snapshot in time and may vary from one call to the next.'
+snapshot in time and may vary from one call to the next.
+
+This method is deprecated in favor of listLastFires.'
 Entry 5     =
     Entry Type        = 'function'
     Entry Method      = 'put'
@@ -5013,8 +4980,8 @@ Entry 8     =
     Entry Scopes      = 'hooks:trigger-hook:<hookGroupId>/<hookId>'
     Entry Input       = 'v1/trigger-hook.json#'
     Entry InputURL    = 'https://taskcluster-staging.net/schemas/hooks/v1/trigger-hook.json#'
-    Entry Output      = 'v1/task-status.json#'
-    Entry OutputURL   = 'https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#'
+    Entry Output      = 'v1/trigger-hook-response.json#'
+    Entry OutputURL   = 'https://taskcluster-staging.net/schemas/hooks/v1/trigger-hook-response.json#'
     Entry Title       = 'Trigger a hook'
     Entry Description = 'This endpoint will trigger the creation of a task from a hook definition.
 
@@ -5064,8 +5031,8 @@ Entry 11    =
     Entry Scopes      = ''
     Entry Input       = 'v1/trigger-hook.json#'
     Entry InputURL    = 'https://taskcluster-staging.net/schemas/hooks/v1/trigger-hook.json#'
-    Entry Output      = 'v1/task-status.json#'
-    Entry OutputURL   = 'https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#'
+    Entry Output      = 'v1/trigger-hook-response.json#'
+    Entry OutputURL   = 'https://taskcluster-staging.net/schemas/hooks/v1/trigger-hook-response.json#'
     Entry Title       = 'Trigger a hook with a token'
     Entry Description = 'This endpoint triggers a defined hook with a valid token.
 
@@ -5090,71 +5057,11 @@ Entry 12    =
 fired, including whether the hook was fired successfully or not'
 
 
-https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#
-===============================================================
-$id: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#
-$schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
+https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items
+=====================================================================
 IS_REQUIRED: false
 PROPERTY_NAME: ""
-SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#
-TYPE_NAME: ListOfBindings
-additionalProperties:
-  Boolean: false
-  Properties: null
-properties:
-  MemberNames:
-    items: Items
-  Properties:
-    items:
-      IS_REQUIRED: true
-      PROPERTY_NAME: items
-      SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items
-      TYPE_NAME: Binding
-      additionalProperties:
-        Boolean: false
-        Properties: null
-      description: |
-        Exchange and RoutingKeyPattern for each binding
-      properties:
-        MemberNames:
-          exchange: Exchange
-          routingKeyPattern: RoutingKeyPattern
-        Properties:
-          exchange:
-            IS_REQUIRED: true
-            PROPERTY_NAME: exchange
-            SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items/properties/exchange
-            TYPE_NAME: ""
-            type: string
-          routingKeyPattern:
-            IS_REQUIRED: true
-            PROPERTY_NAME: routingKeyPattern
-            SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items/properties/routingKeyPattern
-            TYPE_NAME: ""
-            type: string
-        SortedPropertyNames:
-        - exchange
-        - routingKeyPattern
-        SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items/properties
-      required:
-      - exchange
-      - routingKeyPattern
-      title: Binding
-      type: object
-  SortedPropertyNames:
-  - items
-  SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties
-required:
-- items
-title: List of Bindings
-type: array
-
-
-https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items
-================================================================================
-IS_REQUIRED: true
-PROPERTY_NAME: items
-SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items
+SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items
 TYPE_NAME: Binding
 additionalProperties:
   Boolean: false
@@ -5169,19 +5076,21 @@ properties:
     exchange:
       IS_REQUIRED: true
       PROPERTY_NAME: exchange
-      SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items/properties/exchange
+      SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items/properties/exchange
       TYPE_NAME: ""
+      minLength: 1
       type: string
     routingKeyPattern:
       IS_REQUIRED: true
       PROPERTY_NAME: routingKeyPattern
-      SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items/properties/routingKeyPattern
+      SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items/properties/routingKeyPattern
       TYPE_NAME: ""
+      minLength: 1
       type: string
   SortedPropertyNames:
   - exchange
   - routingKeyPattern
-  SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items/properties
+  SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items/properties
 required:
 - exchange
 - routingKeyPattern
@@ -5223,57 +5132,48 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: ""
         SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#
-        TYPE_NAME: ListOfBindings
-        additionalProperties:
-          Boolean: false
-          Properties: null
-        properties:
-          MemberNames:
-            items: Items
-          Properties:
-            items:
-              IS_REQUIRED: true
-              PROPERTY_NAME: items
-              SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items
-              TYPE_NAME: Binding
-              additionalProperties:
-                Boolean: false
-                Properties: null
-              description: |
-                Exchange and RoutingKeyPattern for each binding
-              properties:
-                MemberNames:
-                  exchange: Exchange
-                  routingKeyPattern: RoutingKeyPattern
-                Properties:
-                  exchange:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: exchange
-                    SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items/properties/exchange
-                    TYPE_NAME: ""
-                    type: string
-                  routingKeyPattern:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: routingKeyPattern
-                    SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items/properties/routingKeyPattern
-                    TYPE_NAME: ""
-                    type: string
-                SortedPropertyNames:
-                - exchange
-                - routingKeyPattern
-                SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items/properties
-              required:
-              - exchange
-              - routingKeyPattern
-              title: Binding
-              type: object
-          SortedPropertyNames:
-          - items
-          SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties
-        required:
-        - items
+        TYPE_NAME: ""
+        items:
+          IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items
+          TYPE_NAME: Binding
+          additionalProperties:
+            Boolean: false
+            Properties: null
+          description: |
+            Exchange and RoutingKeyPattern for each binding
+          properties:
+            MemberNames:
+              exchange: Exchange
+              routingKeyPattern: RoutingKeyPattern
+            Properties:
+              exchange:
+                IS_REQUIRED: true
+                PROPERTY_NAME: exchange
+                SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items/properties/exchange
+                TYPE_NAME: ""
+                minLength: 1
+                type: string
+              routingKeyPattern:
+                IS_REQUIRED: true
+                PROPERTY_NAME: routingKeyPattern
+                SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items/properties/routingKeyPattern
+                TYPE_NAME: ""
+                minLength: 1
+                type: string
+            SortedPropertyNames:
+            - exchange
+            - routingKeyPattern
+            SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items/properties
+          required:
+          - exchange
+          - routingKeyPattern
+          title: Binding
+          type: object
         title: List of Bindings
         type: array
+        uniqueItems: true
       SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/create-hook-request.json#/properties/bindings
       TYPE_NAME: ""
     hookGroupId:
@@ -5349,6 +5249,7 @@ properties:
               SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/hook-metadata.json#/properties/owner
               TYPE_NAME: ""
               description: Email of the person or group responsible for this hook.
+              format: email
               maxLength: 255
               title: Owner
               type: string
@@ -5460,57 +5361,48 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: ""
         SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#
-        TYPE_NAME: ListOfBindings
-        additionalProperties:
-          Boolean: false
-          Properties: null
-        properties:
-          MemberNames:
-            items: Items
-          Properties:
-            items:
-              IS_REQUIRED: true
-              PROPERTY_NAME: items
-              SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items
-              TYPE_NAME: Binding
-              additionalProperties:
-                Boolean: false
-                Properties: null
-              description: |
-                Exchange and RoutingKeyPattern for each binding
-              properties:
-                MemberNames:
-                  exchange: Exchange
-                  routingKeyPattern: RoutingKeyPattern
-                Properties:
-                  exchange:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: exchange
-                    SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items/properties/exchange
-                    TYPE_NAME: ""
-                    type: string
-                  routingKeyPattern:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: routingKeyPattern
-                    SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items/properties/routingKeyPattern
-                    TYPE_NAME: ""
-                    type: string
-                SortedPropertyNames:
-                - exchange
-                - routingKeyPattern
-                SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items/properties
-              required:
-              - exchange
-              - routingKeyPattern
-              title: Binding
-              type: object
-          SortedPropertyNames:
-          - items
-          SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties
-        required:
-        - items
+        TYPE_NAME: ""
+        items:
+          IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items
+          TYPE_NAME: Binding
+          additionalProperties:
+            Boolean: false
+            Properties: null
+          description: |
+            Exchange and RoutingKeyPattern for each binding
+          properties:
+            MemberNames:
+              exchange: Exchange
+              routingKeyPattern: RoutingKeyPattern
+            Properties:
+              exchange:
+                IS_REQUIRED: true
+                PROPERTY_NAME: exchange
+                SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items/properties/exchange
+                TYPE_NAME: ""
+                minLength: 1
+                type: string
+              routingKeyPattern:
+                IS_REQUIRED: true
+                PROPERTY_NAME: routingKeyPattern
+                SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items/properties/routingKeyPattern
+                TYPE_NAME: ""
+                minLength: 1
+                type: string
+            SortedPropertyNames:
+            - exchange
+            - routingKeyPattern
+            SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items/properties
+          required:
+          - exchange
+          - routingKeyPattern
+          title: Binding
+          type: object
         title: List of Bindings
         type: array
+        uniqueItems: true
       SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/hook-definition.json#/properties/bindings
       TYPE_NAME: ""
     hookGroupId:
@@ -5586,6 +5478,7 @@ properties:
               SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/hook-metadata.json#/properties/owner
               TYPE_NAME: ""
               description: Email of the person or group responsible for this hook.
+              format: email
               maxLength: 255
               title: Owner
               type: string
@@ -5604,16 +5497,39 @@ properties:
       SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/hook-definition.json#/properties/metadata
       TYPE_NAME: ""
     schedule:
+      $ref: schedule.json#
       IS_REQUIRED: true
       PROPERTY_NAME: schedule
+      REF_SCHEMA_URL: https://taskcluster-staging.net/schemas/hooks/v1/schedule.json#
+      REF_SUBSCHEMA:
+        $id: https://taskcluster-staging.net/schemas/hooks/v1/schedule.json#
+        $schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/schedule.json#
+        TYPE_NAME: ""
+        default: []
+        description: |
+          A list of cron-style definitions to represent a set of moments in (UTC) time.
+          If several patterns are specified, a given moment in time represented by
+          more than one pattern is considered only to be counted once, in other words
+          it is allowed for the cron patterns to overlap; duplicates are redundant.
+        items:
+          IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/schedule.json#/items
+          TYPE_NAME: ""
+          description: |
+            Cron-like specification for when tasks should be created.  The pattern is
+            parsed in a UTC context.
+            See [cron-parser on npm](https://www.npmjs.com/package/cron-parser).
+          title: Cron Pattern
+          type: string
+        title: Schedule
+        type: array
+        uniqueItems: true
       SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/hook-definition.json#/properties/schedule
       TYPE_NAME: ""
-      description: |
-        Definition of the times at which a hook will result in creation of a task.
-        If several patterns are specified, tasks will be created at any time
-        specified by one or more patterns.  Note that tasks may not be created
-        at exactly the time specified.
-                            {$ref: "schedule.json#"}
     task:
       IS_REQUIRED: true
       PROPERTY_NAME: task
@@ -5702,6 +5618,7 @@ properties:
       SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/hook-metadata.json#/properties/owner
       TYPE_NAME: ""
       description: Email of the person or group responsible for this hook.
+      format: email
       maxLength: 255
       title: Owner
       type: string
@@ -6068,6 +5985,7 @@ properties:
         type: string
       title: Groups
       type: array
+      uniqueItems: true
   SortedPropertyNames:
   - groups
   SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/list-hook-groups-response.json#/properties
@@ -6137,57 +6055,48 @@ properties:
                   IS_REQUIRED: false
                   PROPERTY_NAME: ""
                   SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#
-                  TYPE_NAME: ListOfBindings
-                  additionalProperties:
-                    Boolean: false
-                    Properties: null
-                  properties:
-                    MemberNames:
-                      items: Items
-                    Properties:
-                      items:
-                        IS_REQUIRED: true
-                        PROPERTY_NAME: items
-                        SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items
-                        TYPE_NAME: Binding
-                        additionalProperties:
-                          Boolean: false
-                          Properties: null
-                        description: |
-                          Exchange and RoutingKeyPattern for each binding
-                        properties:
-                          MemberNames:
-                            exchange: Exchange
-                            routingKeyPattern: RoutingKeyPattern
-                          Properties:
-                            exchange:
-                              IS_REQUIRED: true
-                              PROPERTY_NAME: exchange
-                              SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items/properties/exchange
-                              TYPE_NAME: ""
-                              type: string
-                            routingKeyPattern:
-                              IS_REQUIRED: true
-                              PROPERTY_NAME: routingKeyPattern
-                              SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items/properties/routingKeyPattern
-                              TYPE_NAME: ""
-                              type: string
-                          SortedPropertyNames:
-                          - exchange
-                          - routingKeyPattern
-                          SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items/properties
-                        required:
-                        - exchange
-                        - routingKeyPattern
-                        title: Binding
-                        type: object
-                    SortedPropertyNames:
-                    - items
-                    SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties
-                  required:
-                  - items
+                  TYPE_NAME: ""
+                  items:
+                    IS_REQUIRED: false
+                    PROPERTY_NAME: ""
+                    SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items
+                    TYPE_NAME: Binding
+                    additionalProperties:
+                      Boolean: false
+                      Properties: null
+                    description: |
+                      Exchange and RoutingKeyPattern for each binding
+                    properties:
+                      MemberNames:
+                        exchange: Exchange
+                        routingKeyPattern: RoutingKeyPattern
+                      Properties:
+                        exchange:
+                          IS_REQUIRED: true
+                          PROPERTY_NAME: exchange
+                          SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items/properties/exchange
+                          TYPE_NAME: ""
+                          minLength: 1
+                          type: string
+                        routingKeyPattern:
+                          IS_REQUIRED: true
+                          PROPERTY_NAME: routingKeyPattern
+                          SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items/properties/routingKeyPattern
+                          TYPE_NAME: ""
+                          minLength: 1
+                          type: string
+                      SortedPropertyNames:
+                      - exchange
+                      - routingKeyPattern
+                      SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items/properties
+                    required:
+                    - exchange
+                    - routingKeyPattern
+                    title: Binding
+                    type: object
                   title: List of Bindings
                   type: array
+                  uniqueItems: true
                 SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/hook-definition.json#/properties/bindings
                 TYPE_NAME: ""
               hookGroupId:
@@ -6265,6 +6174,7 @@ properties:
                         TYPE_NAME: ""
                         description: Email of the person or group responsible for
                           this hook.
+                        format: email
                         maxLength: 255
                         title: Owner
                         type: string
@@ -6283,16 +6193,39 @@ properties:
                 SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/hook-definition.json#/properties/metadata
                 TYPE_NAME: ""
               schedule:
+                $ref: schedule.json#
                 IS_REQUIRED: true
                 PROPERTY_NAME: schedule
+                REF_SCHEMA_URL: https://taskcluster-staging.net/schemas/hooks/v1/schedule.json#
+                REF_SUBSCHEMA:
+                  $id: https://taskcluster-staging.net/schemas/hooks/v1/schedule.json#
+                  $schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
+                  IS_REQUIRED: false
+                  PROPERTY_NAME: ""
+                  SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/schedule.json#
+                  TYPE_NAME: ""
+                  default: []
+                  description: |
+                    A list of cron-style definitions to represent a set of moments in (UTC) time.
+                    If several patterns are specified, a given moment in time represented by
+                    more than one pattern is considered only to be counted once, in other words
+                    it is allowed for the cron patterns to overlap; duplicates are redundant.
+                  items:
+                    IS_REQUIRED: false
+                    PROPERTY_NAME: ""
+                    SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/schedule.json#/items
+                    TYPE_NAME: ""
+                    description: |
+                      Cron-like specification for when tasks should be created.  The pattern is
+                      parsed in a UTC context.
+                      See [cron-parser on npm](https://www.npmjs.com/package/cron-parser).
+                    title: Cron Pattern
+                    type: string
+                  title: Schedule
+                  type: array
+                  uniqueItems: true
                 SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/hook-definition.json#/properties/schedule
                 TYPE_NAME: ""
-                description: |
-                  Definition of the times at which a hook will result in creation of a task.
-                  If several patterns are specified, tasks will be created at any time
-                  specified by one or more patterns.  Note that tasks may not be created
-                  at exactly the time specified.
-                                      {$ref: "schedule.json#"}
               task:
                 IS_REQUIRED: true
                 PROPERTY_NAME: task
@@ -6332,6 +6265,7 @@ properties:
         TYPE_NAME: ""
       title: Hooks
       type: array
+      uniqueItems: true
   SortedPropertyNames:
   - hooks
   SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/list-hooks-response.json#/properties
@@ -6464,6 +6398,7 @@ properties:
         type: object
       title: LastFires
       type: array
+      uniqueItems: false
   SortedPropertyNames:
   - lastFires
   SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/list-lastFires-response.json#/properties
@@ -6645,7 +6580,7 @@ properties:
             TYPE_NAME: ""
             description: |
               Unique identifier for the provisioner that this task must be scheduled on
-            maxLength: 22
+            maxLength: 38
             minLength: 1
             pattern: ^([a-zA-Z0-9-_]*)$
             title: Provisioner Id
@@ -6813,7 +6748,7 @@ properties:
                       Identifier for group that worker who executes this run is a part of,
                       this identifier is mainly used for efficient routing.
                       Note, this property is only present after the run is claimed.
-                    maxLength: 22
+                    maxLength: 38
                     minLength: 1
                     pattern: ^([a-zA-Z0-9-_]*)$
                     title: Worker Group
@@ -6827,7 +6762,7 @@ properties:
                       Identifier for worker evaluating this run within given
                       `workerGroup`. Note, this property is only available after the run
                       has been claimed.
-                    maxLength: 22
+                    maxLength: 38
                     minLength: 1
                     pattern: ^([a-zA-Z0-9-_]*)$
                     title: Worker Identifier
@@ -6853,6 +6788,7 @@ properties:
               type: object
             title: List of Runs
             type: array
+            uniqueItems: false
           schedulerId:
             IS_REQUIRED: true
             PROPERTY_NAME: schedulerId
@@ -6860,7 +6796,7 @@ properties:
             TYPE_NAME: ""
             description: |
               Identifier for the scheduler that _defined_ this task.
-            maxLength: 22
+            maxLength: 38
             minLength: 1
             pattern: ^([a-zA-Z0-9-_]*)$
             title: Scheduler Identifier
@@ -6913,7 +6849,7 @@ properties:
             TYPE_NAME: ""
             description: |
               Identifier for worker type within the specified provisioner
-            maxLength: 22
+            maxLength: 38
             minLength: 1
             pattern: ^([a-zA-Z0-9-_]*)$
             title: Worker Type
@@ -7005,7 +6941,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Unique identifier for the provisioner that this task must be scheduled on
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Provisioner Id
@@ -7173,7 +7109,7 @@ properties:
                 Identifier for group that worker who executes this run is a part of,
                 this identifier is mainly used for efficient routing.
                 Note, this property is only present after the run is claimed.
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               title: Worker Group
@@ -7187,7 +7123,7 @@ properties:
                 Identifier for worker evaluating this run within given
                 `workerGroup`. Note, this property is only available after the run
                 has been claimed.
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               title: Worker Identifier
@@ -7213,6 +7149,7 @@ properties:
         type: object
       title: List of Runs
       type: array
+      uniqueItems: false
     schedulerId:
       IS_REQUIRED: true
       PROPERTY_NAME: schedulerId
@@ -7220,7 +7157,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for the scheduler that _defined_ this task.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Scheduler Identifier
@@ -7273,7 +7210,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for worker type within the specified provisioner
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Worker Type
@@ -7450,7 +7387,7 @@ properties:
         Identifier for group that worker who executes this run is a part of,
         this identifier is mainly used for efficient routing.
         Note, this property is only present after the run is claimed.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Worker Group
@@ -7464,7 +7401,7 @@ properties:
         Identifier for worker evaluating this run within given
         `workerGroup`. Note, this property is only available after the run
         has been claimed.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Worker Identifier
@@ -7487,6 +7424,448 @@ required:
 - reasonCreated
 - scheduled
 title: Run Information
+type: object
+
+
+https://taskcluster-staging.net/schemas/hooks/v1/trigger-hook-response.json#
+============================================================================
+$id: https://taskcluster-staging.net/schemas/hooks/v1/trigger-hook-response.json#
+$schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/trigger-hook-response.json#
+TYPE_NAME: TriggerHookResponse
+anyOf:
+  Items:
+  - $ref: task-status.json#
+    $schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
+    IS_REQUIRED: false
+    PROPERTY_NAME: ""
+    REF_SCHEMA_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#
+    REF_SUBSCHEMA:
+      $id: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#
+      $schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
+      IS_REQUIRED: false
+      PROPERTY_NAME: ""
+      SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#
+      TYPE_NAME: TaskStatusStructure
+      additionalProperties:
+        Boolean: false
+        Properties: null
+      description: |
+        A representation of **task status** as known by the queue
+      properties:
+        MemberNames:
+          status: Status
+        Properties:
+          status:
+            IS_REQUIRED: true
+            PROPERTY_NAME: status
+            SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status
+            TYPE_NAME: Status
+            additionalProperties:
+              Boolean: false
+              Properties: null
+            properties:
+              MemberNames:
+                deadline: Deadline
+                expires: Expires
+                provisionerId: ProvisionerID
+                retriesLeft: RetriesLeft
+                runs: Runs
+                schedulerId: SchedulerID
+                state: State
+                taskGroupId: TaskGroupID
+                taskId: TaskID
+                workerType: WorkerType
+              Properties:
+                deadline:
+                  IS_REQUIRED: true
+                  PROPERTY_NAME: deadline
+                  SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/deadline
+                  TYPE_NAME: ""
+                  description: |
+                    Deadline of the task, `pending` and `running` runs are
+                    resolved as **exception** if not resolved by other means
+                    before the deadline. Note, deadline cannot be more than
+                    5 days into the future
+                  format: date-time
+                  title: Deadline
+                  type: string
+                expires:
+                  IS_REQUIRED: true
+                  PROPERTY_NAME: expires
+                  SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/expires
+                  TYPE_NAME: ""
+                  description: |
+                    Task expiration, time at which task definition and
+                    status is deleted. Notice that all artifacts for the task
+                    must have an expiration that is no later than this.
+                  format: date-time
+                  title: Expiration
+                  type: string
+                provisionerId:
+                  IS_REQUIRED: true
+                  PROPERTY_NAME: provisionerId
+                  SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/provisionerId
+                  TYPE_NAME: ""
+                  description: |
+                    Unique identifier for the provisioner that this task must be scheduled on
+                  maxLength: 38
+                  minLength: 1
+                  pattern: ^([a-zA-Z0-9-_]*)$
+                  title: Provisioner Id
+                  type: string
+                retriesLeft:
+                  IS_REQUIRED: true
+                  PROPERTY_NAME: retriesLeft
+                  SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/retriesLeft
+                  TYPE_NAME: ""
+                  description: |
+                    Number of retries left for the task in case of infrastructure issues
+                  maximum: 999
+                  minimum: 0
+                  title: Retries Left
+                  type: integer
+                runs:
+                  IS_REQUIRED: true
+                  PROPERTY_NAME: runs
+                  SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/runs
+                  TYPE_NAME: ""
+                  description: |
+                    List of runs, ordered so that index `i` has `runId == i`
+                  items:
+                    IS_REQUIRED: false
+                    PROPERTY_NAME: ""
+                    SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/runs/items
+                    TYPE_NAME: RunInformation
+                    additionalProperties:
+                      Boolean: false
+                      Properties: null
+                    description: |
+                      JSON object with information about a run
+                    properties:
+                      MemberNames:
+                        reasonCreated: ReasonCreated
+                        reasonResolved: ReasonResolved
+                        resolved: Resolved
+                        runId: RunID
+                        scheduled: Scheduled
+                        started: Started
+                        state: State
+                        takenUntil: TakenUntil
+                        workerGroup: WorkerGroup
+                        workerId: WorkerID
+                      Properties:
+                        reasonCreated:
+                          IS_REQUIRED: true
+                          PROPERTY_NAME: reasonCreated
+                          SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/reasonCreated
+                          TYPE_NAME: ""
+                          description: |
+                            Reason for the creation of this run,
+                            **more reasons may be added in the future**.
+                          enum:
+                          - scheduled
+                          - retry
+                          - task-retry
+                          - rerun
+                          - exception
+                          title: Reason Created
+                          type: string
+                        reasonResolved:
+                          IS_REQUIRED: false
+                          PROPERTY_NAME: reasonResolved
+                          SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/reasonResolved
+                          TYPE_NAME: ""
+                          description: |
+                            Reason that run was resolved, this is mainly
+                            useful for runs resolved as `exception`.
+                            Note, **more reasons may be added in the future**, also this
+                            property is only available after the run is resolved.
+                          enum:
+                          - completed
+                          - failed
+                          - deadline-exceeded
+                          - canceled
+                          - superseded
+                          - claim-expired
+                          - worker-shutdown
+                          - malformed-payload
+                          - resource-unavailable
+                          - internal-error
+                          - intermittent-task
+                          title: Reason Resolved
+                          type: string
+                        resolved:
+                          IS_REQUIRED: false
+                          PROPERTY_NAME: resolved
+                          SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/resolved
+                          TYPE_NAME: ""
+                          description: |
+                            Date-time at which this run was resolved, ie. when the run changed
+                            state from `running` to either `completed`, `failed` or `exception`.
+                            This property is only present after the run as been resolved.
+                          format: date-time
+                          title: Resolved
+                          type: string
+                        runId:
+                          IS_REQUIRED: true
+                          PROPERTY_NAME: runId
+                          SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/runId
+                          TYPE_NAME: ""
+                          description: |
+                            Id of this task run, `run-id`s always starts from `0`
+                          maximum: 1000
+                          minimum: 0
+                          title: Run Identifier
+                          type: integer
+                        scheduled:
+                          IS_REQUIRED: true
+                          PROPERTY_NAME: scheduled
+                          SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/scheduled
+                          TYPE_NAME: ""
+                          description: |
+                            Date-time at which this run was scheduled, ie. when the run was
+                            created in state `pending`.
+                          format: date-time
+                          title: Scheduled
+                          type: string
+                        started:
+                          IS_REQUIRED: false
+                          PROPERTY_NAME: started
+                          SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/started
+                          TYPE_NAME: ""
+                          description: |
+                            Date-time at which this run was claimed, ie. when the run changed
+                            state from `pending` to `running`. This property is only present
+                            after the run has been claimed.
+                          format: date-time
+                          title: Started
+                          type: string
+                        state:
+                          IS_REQUIRED: true
+                          PROPERTY_NAME: state
+                          SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/state
+                          TYPE_NAME: ""
+                          description: |
+                            State of this run
+                          enum:
+                          - pending
+                          - running
+                          - completed
+                          - failed
+                          - exception
+                          title: Run State
+                          type: string
+                        takenUntil:
+                          IS_REQUIRED: false
+                          PROPERTY_NAME: takenUntil
+                          SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/takenUntil
+                          TYPE_NAME: ""
+                          description: |
+                            Time at which the run expires and is resolved as `failed`, if the
+                            run isn't reclaimed. Note, only present after the run has been
+                            claimed.
+                          format: date-time
+                          title: Taken Until
+                          type: string
+                        workerGroup:
+                          IS_REQUIRED: false
+                          PROPERTY_NAME: workerGroup
+                          SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/workerGroup
+                          TYPE_NAME: ""
+                          description: |
+                            Identifier for group that worker who executes this run is a part of,
+                            this identifier is mainly used for efficient routing.
+                            Note, this property is only present after the run is claimed.
+                          maxLength: 38
+                          minLength: 1
+                          pattern: ^([a-zA-Z0-9-_]*)$
+                          title: Worker Group
+                          type: string
+                        workerId:
+                          IS_REQUIRED: false
+                          PROPERTY_NAME: workerId
+                          SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/workerId
+                          TYPE_NAME: ""
+                          description: |
+                            Identifier for worker evaluating this run within given
+                            `workerGroup`. Note, this property is only available after the run
+                            has been claimed.
+                          maxLength: 38
+                          minLength: 1
+                          pattern: ^([a-zA-Z0-9-_]*)$
+                          title: Worker Identifier
+                          type: string
+                      SortedPropertyNames:
+                      - reasonCreated
+                      - reasonResolved
+                      - resolved
+                      - runId
+                      - scheduled
+                      - started
+                      - state
+                      - takenUntil
+                      - workerGroup
+                      - workerId
+                      SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties
+                    required:
+                    - runId
+                    - state
+                    - reasonCreated
+                    - scheduled
+                    title: Run Information
+                    type: object
+                  title: List of Runs
+                  type: array
+                  uniqueItems: false
+                schedulerId:
+                  IS_REQUIRED: true
+                  PROPERTY_NAME: schedulerId
+                  SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/schedulerId
+                  TYPE_NAME: ""
+                  description: |
+                    Identifier for the scheduler that _defined_ this task.
+                  maxLength: 38
+                  minLength: 1
+                  pattern: ^([a-zA-Z0-9-_]*)$
+                  title: Scheduler Identifier
+                  type: string
+                state:
+                  IS_REQUIRED: true
+                  PROPERTY_NAME: state
+                  SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/state
+                  TYPE_NAME: ""
+                  description: |
+                    State of this task. This is just an auxiliary property derived from state
+                    of latests run, or `unscheduled` if none.
+                  enum:
+                  - unscheduled
+                  - pending
+                  - running
+                  - completed
+                  - failed
+                  - exception
+                  title: State
+                  type: string
+                taskGroupId:
+                  IS_REQUIRED: true
+                  PROPERTY_NAME: taskGroupId
+                  SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/taskGroupId
+                  TYPE_NAME: ""
+                  description: |
+                    Identifier for a group of tasks scheduled together with this task, by
+                    scheduler identified by `schedulerId`. For tasks scheduled by the
+                    task-graph scheduler, this is the `taskGraphId`.
+                  pattern: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+                  title: Task-Group Identifier
+                  type: string
+                taskId:
+                  IS_REQUIRED: true
+                  PROPERTY_NAME: taskId
+                  SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/taskId
+                  TYPE_NAME: ""
+                  description: |
+                    Unique task identifier, this is UUID encoded as
+                    [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+                    stripped of `=` padding.
+                  pattern: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+                  title: Task Identifier
+                  type: string
+                workerType:
+                  IS_REQUIRED: true
+                  PROPERTY_NAME: workerType
+                  SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/workerType
+                  TYPE_NAME: ""
+                  description: |
+                    Identifier for worker type within the specified provisioner
+                  maxLength: 38
+                  minLength: 1
+                  pattern: ^([a-zA-Z0-9-_]*)$
+                  title: Worker Type
+                  type: string
+              SortedPropertyNames:
+              - deadline
+              - expires
+              - provisionerId
+              - retriesLeft
+              - runs
+              - schedulerId
+              - state
+              - taskGroupId
+              - taskId
+              - workerType
+              SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties
+            required:
+            - taskId
+            - provisionerId
+            - workerType
+            - schedulerId
+            - taskGroupId
+            - deadline
+            - expires
+            - retriesLeft
+            - state
+            - runs
+            type: object
+        SortedPropertyNames:
+        - status
+        SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties
+      required:
+      - status
+      title: Task Status Structure
+      type: object
+    SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/trigger-hook-response.json#/anyOf[0]
+    TYPE_NAME: ""
+    description: |
+      Response to a `triggerHook` or `triggerHookWithToken` call.
+
+      In most cases, this is a task status, but in cases where the hook template
+      does not generate a task, it is an empty object with no `status` property.
+    title: Trigger Hook Response
+  - $schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
+    IS_REQUIRED: false
+    PROPERTY_NAME: ""
+    SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/trigger-hook-response.json#/anyOf[1]
+    TYPE_NAME: TriggerHookResponse1
+    additionalProperties:
+      Boolean: false
+      Properties: null
+    description: Empty response indicating no task was created
+    properties:
+      MemberNames: {}
+      Properties: {}
+      SortedPropertyNames: []
+      SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/trigger-hook-response.json#/anyOf[1]/properties
+    title: Trigger Hook Response
+    type: object
+  SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/trigger-hook-response.json#/anyOf
+description: |
+  Response to a `triggerHook` or `triggerHookWithToken` call.
+
+  In most cases, this is a task status, but in cases where the hook template
+  does not generate a task, it is an empty object with no `status` property.
+title: Trigger Hook Response
+
+
+https://taskcluster-staging.net/schemas/hooks/v1/trigger-hook-response.json#/anyOf[1]
+=====================================================================================
+$schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/trigger-hook-response.json#/anyOf[1]
+TYPE_NAME: TriggerHookResponse1
+additionalProperties:
+  Boolean: false
+  Properties: null
+description: Empty response indicating no task was created
+properties:
+  MemberNames: {}
+  Properties: {}
+  SortedPropertyNames: []
+  SourceURL: https://taskcluster-staging.net/schemas/hooks/v1/trigger-hook-response.json#/anyOf[1]/properties
+title: Trigger Hook Response
 type: object
 
 
@@ -8122,6 +8501,7 @@ properties:
         type: object
       title: Namespaces
       type: array
+      uniqueItems: true
   SortedPropertyNames:
   - continuationToken
   - namespaces
@@ -8316,6 +8696,7 @@ properties:
         type: object
       title: Tasks
       type: array
+      uniqueItems: true
   SortedPropertyNames:
   - continuationToken
   - tasks
@@ -8688,6 +9069,64 @@ This allows us to re-send the message in face of connection issues.
 However, if the user isn't online the message will be dropped without
 error. We maybe improve this behavior in the future. For now just keep
 in mind that IRC is a best-effort service.'
+Entry 4     =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/denylist/add'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'addDenylistAddress'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = 'notify:manage-denylist:<notificationType>/<notificationAddress>'
+    Entry Input       = 'v1/notification-address.json#'
+    Entry InputURL    = 'https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#'
+    Entry Output      = ''
+    Entry OutputURL   = ''
+    Entry Title       = 'Denylist Given Address'
+    Entry Description = 'Add the given address to the notification denylist. The address
+can be of either of the three supported address type namely pulse, email
+or IRC(user or channel). Addresses in the denylist will be ignored
+by the notification service.'
+Entry 5     =
+    Entry Type        = 'function'
+    Entry Method      = 'delete'
+    Entry Route       = '/denylist/delete'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'deleteDenylistAddress'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = 'notify:manage-denylist:<notificationType>/<notificationAddress>'
+    Entry Input       = 'v1/notification-address.json#'
+    Entry InputURL    = 'https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#'
+    Entry Output      = ''
+    Entry OutputURL   = ''
+    Entry Title       = 'Delete Denylisted Address'
+    Entry Description = 'Delete the specified address from the notification denylist.'
+Entry 6     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/denylist/list'
+    Entry Args        = '[]'
+    Entry Query        = '[continuationToken limit]'
+    Entry Name        = 'list'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = ''
+    Entry Input       = ''
+    Entry InputURL    = ''
+    Entry Output      = 'v1/notification-address-list.json#'
+    Entry OutputURL   = 'https://taskcluster-staging.net/schemas/notify/v1/notification-address-list.json#'
+    Entry Title       = 'List Denylisted Notifications'
+    Entry Description = 'Lists all the denylisted addresses.
+
+By default this end-point will try to return up to 1000 addresses in one
+request. But it **may return less**, even if more tasks are available.
+It may also return a `continuationToken` even though there are no more
+results. However, you can only be sure to have seen all results if you
+keep calling `list` with the last `continuationToken` until you
+get a result without a `continuationToken`.
+
+If you are not interested in listing all the members at once, you may
+use the query-string option `limit` to return fewer.'
 
 
 https://taskcluster-staging.net/schemas/notify/v1/email-request.json#
@@ -9200,6 +9639,148 @@ title: Private Message
 type: object
 
 
+https://taskcluster-staging.net/schemas/notify/v1/notification-address-list.json#
+=================================================================================
+$id: https://taskcluster-staging.net/schemas/notify/v1/notification-address-list.json#
+$schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/notification-address-list.json#
+TYPE_NAME: ListOfNotificationAdresses
+additionalProperties:
+  Boolean: false
+  Properties: null
+description: |
+  List of notification addresses.
+properties:
+  MemberNames:
+    addresses: Addresses
+    continuationToken: ContinuationToken
+  Properties:
+    addresses:
+      IS_REQUIRED: true
+      PROPERTY_NAME: addresses
+      SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/notification-address-list.json#/properties/addresses
+      TYPE_NAME: ""
+      items:
+        $ref: notification-address.json#
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        REF_SCHEMA_URL: https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#
+        REF_SUBSCHEMA:
+          $id: https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#
+          $schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
+          IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#
+          TYPE_NAME: NotificaitonTypeAndAddress
+          additionalProperties:
+            Boolean: false
+            Properties: null
+          description: |
+            Type of notification and its corresponding address.
+          properties:
+            MemberNames:
+              notificationAddress: NotificationAddress
+              notificationType: NotificationType
+            Properties:
+              notificationAddress:
+                IS_REQUIRED: true
+                PROPERTY_NAME: notificationAddress
+                SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#/properties/notificationAddress
+                TYPE_NAME: ""
+                type: string
+              notificationType:
+                IS_REQUIRED: true
+                PROPERTY_NAME: notificationType
+                SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#/properties/notificationType
+                TYPE_NAME: ""
+                enum:
+                - email
+                - pulse
+                - irc-user
+                - irc-channel
+                type: string
+            SortedPropertyNames:
+            - notificationAddress
+            - notificationType
+            SourceURL: https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#/properties
+          required:
+          - notificationType
+          - notificationAddress
+          title: Notificaiton Type And Address
+          type: object
+        SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/notification-address-list.json#/properties/addresses/items
+        TYPE_NAME: ""
+      type: array
+      uniqueItems: true
+    continuationToken:
+      IS_REQUIRED: false
+      PROPERTY_NAME: continuationToken
+      SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/notification-address-list.json#/properties/continuationToken
+      TYPE_NAME: ""
+      description: |
+        A continuation token is returned if there are more results than listed
+        here. You can optionally provide the token in the request payload to
+        load the additional results.
+      title: Continuation Token
+      type: string
+  SortedPropertyNames:
+  - addresses
+  - continuationToken
+  SourceURL: https://taskcluster-staging.net/schemas/notify/v1/notification-address-list.json#/properties
+required:
+- addresses
+title: List of notification adresses
+type: object
+
+
+https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#
+============================================================================
+$id: https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#
+$schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#
+TYPE_NAME: NotificaitonTypeAndAddress
+additionalProperties:
+  Boolean: false
+  Properties: null
+description: |
+  Type of notification and its corresponding address.
+properties:
+  MemberNames:
+    notificationAddress: NotificationAddress
+    notificationType: NotificationType
+  Properties:
+    notificationAddress:
+      IS_REQUIRED: true
+      PROPERTY_NAME: notificationAddress
+      SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#/properties/notificationAddress
+      TYPE_NAME: ""
+      type: string
+    notificationType:
+      IS_REQUIRED: true
+      PROPERTY_NAME: notificationType
+      SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#/properties/notificationType
+      TYPE_NAME: ""
+      enum:
+      - email
+      - pulse
+      - irc-user
+      - irc-channel
+      type: string
+  SortedPropertyNames:
+  - notificationAddress
+  - notificationType
+  SourceURL: https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#/properties
+required:
+- notificationType
+- notificationAddress
+title: Notificaiton Type And Address
+type: object
+
+
 https://taskcluster-staging.net/schemas/notify/v1/pulse-request.json#
 =====================================================================
 $id: https://taskcluster-staging.net/schemas/notify/v1/pulse-request.json#
@@ -9488,6 +10069,9 @@ properties:
                 SOURCE_URL: https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-requests.json#/items/properties/provisionerId
                 TYPE_NAME: ""
                 description: ProvisionerId associated with the workerType.
+                maxLength: 38
+                minLength: 1
+                pattern: ^([a-zA-Z0-9-_]*)$
                 type: string
               workerType:
                 IS_REQUIRED: true
@@ -9495,6 +10079,9 @@ properties:
                 SOURCE_URL: https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-requests.json#/items/properties/workerType
                 TYPE_NAME: ""
                 description: Workertype cache exists on.
+                maxLength: 38
+                minLength: 1
+                pattern: ^([a-zA-Z0-9-_]*)$
                 type: string
             SortedPropertyNames:
             - before
@@ -9511,6 +10098,7 @@ properties:
           type: object
         title: Purge Cache Requests
         type: array
+        uniqueItems: false
       SOURCE_URL: https://taskcluster-staging.net/schemas/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests
       TYPE_NAME: ""
   SortedPropertyNames:
@@ -9593,6 +10181,9 @@ properties:
                 SOURCE_URL: https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-requests.json#/items/properties/provisionerId
                 TYPE_NAME: ""
                 description: ProvisionerId associated with the workerType.
+                maxLength: 38
+                minLength: 1
+                pattern: ^([a-zA-Z0-9-_]*)$
                 type: string
               workerType:
                 IS_REQUIRED: true
@@ -9600,6 +10191,9 @@ properties:
                 SOURCE_URL: https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-requests.json#/items/properties/workerType
                 TYPE_NAME: ""
                 description: Workertype cache exists on.
+                maxLength: 38
+                minLength: 1
+                pattern: ^([a-zA-Z0-9-_]*)$
                 type: string
             SortedPropertyNames:
             - before
@@ -9616,6 +10210,7 @@ properties:
           type: object
         title: Purge Cache Requests
         type: array
+        uniqueItems: false
       SOURCE_URL: https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-request-list.json#/properties/requests
       TYPE_NAME: ""
   SortedPropertyNames:
@@ -9703,6 +10298,9 @@ properties:
       SOURCE_URL: https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-requests.json#/items/properties/provisionerId
       TYPE_NAME: ""
       description: ProvisionerId associated with the workerType.
+      maxLength: 38
+      minLength: 1
+      pattern: ^([a-zA-Z0-9-_]*)$
       type: string
     workerType:
       IS_REQUIRED: true
@@ -9710,6 +10308,9 @@ properties:
       SOURCE_URL: https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-requests.json#/items/properties/workerType
       TYPE_NAME: ""
       description: Workertype cache exists on.
+      maxLength: 38
+      minLength: 1
+      pattern: ^([a-zA-Z0-9-_]*)$
       type: string
   SortedPropertyNames:
   - before
@@ -10871,7 +11472,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for group that worker claiming the task is a part of.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -10882,7 +11483,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for worker within the given workerGroup
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -11098,7 +11699,7 @@ properties:
                         description: |
                           Unique identifier for a provisioner, that can supply specified
                           `workerType`
-                        maxLength: 22
+                        maxLength: 38
                         minLength: 1
                         pattern: ^([a-zA-Z0-9-_]*)$
                         title: Provisioner Id
@@ -11270,7 +11871,7 @@ properties:
                                 Identifier for group that worker who executes this run is a part of,
                                 this identifier is mainly used for efficient routing.
                                 Note, this property is only present after the run is claimed.
-                              maxLength: 22
+                              maxLength: 38
                               minLength: 1
                               pattern: ^([a-zA-Z0-9-_]*)$
                               title: Worker Group
@@ -11284,7 +11885,7 @@ properties:
                                 Identifier for worker evaluating this run within given
                                 `workerGroup`. Note, this property is only available after the run
                                 has been claimed.
-                              maxLength: 22
+                              maxLength: 38
                               minLength: 1
                               pattern: ^([a-zA-Z0-9-_]*)$
                               title: Worker Identifier
@@ -11310,6 +11911,7 @@ properties:
                         type: object
                       title: List of Runs
                       type: array
+                      uniqueItems: true
                     schedulerId:
                       $ref: task.json#/properties/schedulerId
                       IS_REQUIRED: true
@@ -11331,7 +11933,7 @@ properties:
                           * it controls who can manipulate tasks, again by requiring
                               `schedulerId`-related scopes; and
                           * it appears in the routing key for Pulse messages about the task.
-                        maxLength: 22
+                        maxLength: 38
                         minLength: 1
                         pattern: ^([a-zA-Z0-9-_]*)$
                         title: Scheduler Identifier
@@ -11402,7 +12004,7 @@ properties:
                         TYPE_NAME: ""
                         description: |
                           Unique identifier for a worker-type within a specific provisioner
-                        maxLength: 22
+                        maxLength: 38
                         minLength: 1
                         pattern: ^([a-zA-Z0-9-_]*)$
                         title: Worker Type
@@ -11688,7 +12290,7 @@ properties:
                       description: |
                         Unique identifier for a provisioner, that can supply specified
                         `workerType`
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Provisioner Id
@@ -11765,7 +12367,7 @@ properties:
                         * it controls who can manipulate tasks, again by requiring
                             `schedulerId`-related scopes; and
                         * it appears in the routing key for Pulse messages about the task.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Scheduler Identifier
@@ -11790,6 +12392,7 @@ properties:
                         type: string
                       title: Scopes
                       type: array
+                      uniqueItems: false
                     tags:
                       IS_REQUIRED: true
                       PROPERTY_NAME: tags
@@ -11835,7 +12438,7 @@ properties:
                       TYPE_NAME: ""
                       description: |
                         Unique identifier for a worker-type within a specific provisioner
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Type
@@ -11887,7 +12490,7 @@ properties:
               TYPE_NAME: ""
               description: |
                 Identifier for the worker-group within which this run started.
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               type: string
@@ -11898,7 +12501,7 @@ properties:
               TYPE_NAME: ""
               description: |
                 Identifier for the worker executing this run.
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               type: string
@@ -11922,6 +12525,7 @@ properties:
         title: Task Claim
         type: object
       type: array
+      uniqueItems: true
   SortedPropertyNames:
   - tasks
   SourceURL: https://taskcluster-staging.net/schemas/queue/v1/claim-work-response.json#/properties
@@ -12106,7 +12710,7 @@ properties:
                 description: |
                   Unique identifier for a provisioner, that can supply specified
                   `workerType`
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Provisioner Id
@@ -12278,7 +12882,7 @@ properties:
                         Identifier for group that worker who executes this run is a part of,
                         this identifier is mainly used for efficient routing.
                         Note, this property is only present after the run is claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Group
@@ -12292,7 +12896,7 @@ properties:
                         Identifier for worker evaluating this run within given
                         `workerGroup`. Note, this property is only available after the run
                         has been claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Identifier
@@ -12318,6 +12922,7 @@ properties:
                 type: object
               title: List of Runs
               type: array
+              uniqueItems: true
             schedulerId:
               $ref: task.json#/properties/schedulerId
               IS_REQUIRED: true
@@ -12339,7 +12944,7 @@ properties:
                   * it controls who can manipulate tasks, again by requiring
                       `schedulerId`-related scopes; and
                   * it appears in the routing key for Pulse messages about the task.
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Scheduler Identifier
@@ -12410,7 +13015,7 @@ properties:
                 TYPE_NAME: ""
                 description: |
                   Unique identifier for a worker-type within a specific provisioner
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Worker Type
@@ -12696,7 +13301,7 @@ properties:
               description: |
                 Unique identifier for a provisioner, that can supply specified
                 `workerType`
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               title: Provisioner Id
@@ -12773,7 +13378,7 @@ properties:
                 * it controls who can manipulate tasks, again by requiring
                     `schedulerId`-related scopes; and
                 * it appears in the routing key for Pulse messages about the task.
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               title: Scheduler Identifier
@@ -12798,6 +13403,7 @@ properties:
                 type: string
               title: Scopes
               type: array
+              uniqueItems: false
             tags:
               IS_REQUIRED: true
               PROPERTY_NAME: tags
@@ -12843,7 +13449,7 @@ properties:
               TYPE_NAME: ""
               description: |
                 Unique identifier for a worker-type within a specific provisioner
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               title: Worker Type
@@ -12895,7 +13501,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for the worker-group within which this run started.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -12906,7 +13512,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for the worker executing this run.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -13213,7 +13819,7 @@ properties:
         description: |
           Unique identifier for a provisioner, that can supply specified
           `workerType`
-        maxLength: 22
+        maxLength: 38
         minLength: 1
         pattern: ^([a-zA-Z0-9-_]*)$
         title: Provisioner Id
@@ -13321,7 +13927,7 @@ properties:
           * it controls who can manipulate tasks, again by requiring
               `schedulerId`-related scopes; and
           * it appears in the routing key for Pulse messages about the task.
-        maxLength: 22
+        maxLength: 38
         minLength: 1
         pattern: ^([a-zA-Z0-9-_]*)$
         title: Scheduler Identifier
@@ -13354,6 +13960,7 @@ properties:
           type: string
         title: Scopes
         type: array
+        uniqueItems: false
       SOURCE_URL: https://taskcluster-staging.net/schemas/queue/v1/create-task-request.json#/properties/scopes
       TYPE_NAME: ""
       default: []
@@ -13422,7 +14029,7 @@ properties:
         TYPE_NAME: ""
         description: |
           Unique identifier for a worker-type within a specific provisioner
-        maxLength: 22
+        maxLength: 38
         minLength: 1
         pattern: ^([a-zA-Z0-9-_]*)$
         title: Worker Type
@@ -13564,6 +14171,7 @@ properties:
         type: object
       title: Artifact List
       type: array
+      uniqueItems: true
     continuationToken:
       IS_REQUIRED: false
       PROPERTY_NAME: continuationToken
@@ -13811,7 +14419,7 @@ properties:
                           description: |
                             Unique identifier for a provisioner, that can supply specified
                             `workerType`
-                          maxLength: 22
+                          maxLength: 38
                           minLength: 1
                           pattern: ^([a-zA-Z0-9-_]*)$
                           title: Provisioner Id
@@ -13983,7 +14591,7 @@ properties:
                                   Identifier for group that worker who executes this run is a part of,
                                   this identifier is mainly used for efficient routing.
                                   Note, this property is only present after the run is claimed.
-                                maxLength: 22
+                                maxLength: 38
                                 minLength: 1
                                 pattern: ^([a-zA-Z0-9-_]*)$
                                 title: Worker Group
@@ -13997,7 +14605,7 @@ properties:
                                   Identifier for worker evaluating this run within given
                                   `workerGroup`. Note, this property is only available after the run
                                   has been claimed.
-                                maxLength: 22
+                                maxLength: 38
                                 minLength: 1
                                 pattern: ^([a-zA-Z0-9-_]*)$
                                 title: Worker Identifier
@@ -14023,6 +14631,7 @@ properties:
                           type: object
                         title: List of Runs
                         type: array
+                        uniqueItems: true
                       schedulerId:
                         $ref: task.json#/properties/schedulerId
                         IS_REQUIRED: true
@@ -14044,7 +14653,7 @@ properties:
                             * it controls who can manipulate tasks, again by requiring
                                 `schedulerId`-related scopes; and
                             * it appears in the routing key for Pulse messages about the task.
-                          maxLength: 22
+                          maxLength: 38
                           minLength: 1
                           pattern: ^([a-zA-Z0-9-_]*)$
                           title: Scheduler Identifier
@@ -14115,7 +14724,7 @@ properties:
                           TYPE_NAME: ""
                           description: |
                             Unique identifier for a worker-type within a specific provisioner
-                          maxLength: 22
+                          maxLength: 38
                           minLength: 1
                           pattern: ^([a-zA-Z0-9-_]*)$
                           title: Worker Type
@@ -14391,7 +15000,7 @@ properties:
                         description: |
                           Unique identifier for a provisioner, that can supply specified
                           `workerType`
-                        maxLength: 22
+                        maxLength: 38
                         minLength: 1
                         pattern: ^([a-zA-Z0-9-_]*)$
                         title: Provisioner Id
@@ -14468,7 +15077,7 @@ properties:
                           * it controls who can manipulate tasks, again by requiring
                               `schedulerId`-related scopes; and
                           * it appears in the routing key for Pulse messages about the task.
-                        maxLength: 22
+                        maxLength: 38
                         minLength: 1
                         pattern: ^([a-zA-Z0-9-_]*)$
                         title: Scheduler Identifier
@@ -14493,6 +15102,7 @@ properties:
                           type: string
                         title: Scopes
                         type: array
+                        uniqueItems: false
                       tags:
                         IS_REQUIRED: true
                         PROPERTY_NAME: tags
@@ -14538,7 +15148,7 @@ properties:
                         TYPE_NAME: ""
                         description: |
                           Unique identifier for a worker-type within a specific provisioner
-                        maxLength: 22
+                        maxLength: 38
                         minLength: 1
                         pattern: ^([a-zA-Z0-9-_]*)$
                         title: Worker Type
@@ -14596,6 +15206,7 @@ properties:
         TYPE_NAME: ""
       title: Tasks that depend on `taskId`
       type: array
+      uniqueItems: true
   SortedPropertyNames:
   - continuationToken
   - taskId
@@ -14819,6 +15430,7 @@ properties:
                   type: object
                 title: Actions
                 type: array
+                uniqueItems: true
               SOURCE_URL: https://taskcluster-staging.net/schemas/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/actions
               TYPE_NAME: ""
             description:
@@ -14856,7 +15468,7 @@ properties:
               PROPERTY_NAME: provisionerId
               SOURCE_URL: https://taskcluster-staging.net/schemas/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/provisionerId
               TYPE_NAME: ""
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               title: Provisioner ID
@@ -14895,6 +15507,7 @@ properties:
         title: Provisioner Information
         type: object
       type: array
+      uniqueItems: true
   SortedPropertyNames:
   - continuationToken
   - provisioners
@@ -15081,6 +15694,7 @@ properties:
           type: object
         title: Actions
         type: array
+        uniqueItems: true
       SOURCE_URL: https://taskcluster-staging.net/schemas/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/actions
       TYPE_NAME: ""
     description:
@@ -15118,7 +15732,7 @@ properties:
       PROPERTY_NAME: provisionerId
       SOURCE_URL: https://taskcluster-staging.net/schemas/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/provisionerId
       TYPE_NAME: ""
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Provisioner ID
@@ -15299,7 +15913,7 @@ properties:
                           description: |
                             Unique identifier for a provisioner, that can supply specified
                             `workerType`
-                          maxLength: 22
+                          maxLength: 38
                           minLength: 1
                           pattern: ^([a-zA-Z0-9-_]*)$
                           title: Provisioner Id
@@ -15471,7 +16085,7 @@ properties:
                                   Identifier for group that worker who executes this run is a part of,
                                   this identifier is mainly used for efficient routing.
                                   Note, this property is only present after the run is claimed.
-                                maxLength: 22
+                                maxLength: 38
                                 minLength: 1
                                 pattern: ^([a-zA-Z0-9-_]*)$
                                 title: Worker Group
@@ -15485,7 +16099,7 @@ properties:
                                   Identifier for worker evaluating this run within given
                                   `workerGroup`. Note, this property is only available after the run
                                   has been claimed.
-                                maxLength: 22
+                                maxLength: 38
                                 minLength: 1
                                 pattern: ^([a-zA-Z0-9-_]*)$
                                 title: Worker Identifier
@@ -15511,6 +16125,7 @@ properties:
                           type: object
                         title: List of Runs
                         type: array
+                        uniqueItems: true
                       schedulerId:
                         $ref: task.json#/properties/schedulerId
                         IS_REQUIRED: true
@@ -15532,7 +16147,7 @@ properties:
                             * it controls who can manipulate tasks, again by requiring
                                 `schedulerId`-related scopes; and
                             * it appears in the routing key for Pulse messages about the task.
-                          maxLength: 22
+                          maxLength: 38
                           minLength: 1
                           pattern: ^([a-zA-Z0-9-_]*)$
                           title: Scheduler Identifier
@@ -15603,7 +16218,7 @@ properties:
                           TYPE_NAME: ""
                           description: |
                             Unique identifier for a worker-type within a specific provisioner
-                          maxLength: 22
+                          maxLength: 38
                           minLength: 1
                           pattern: ^([a-zA-Z0-9-_]*)$
                           title: Worker Type
@@ -15879,7 +16494,7 @@ properties:
                         description: |
                           Unique identifier for a provisioner, that can supply specified
                           `workerType`
-                        maxLength: 22
+                        maxLength: 38
                         minLength: 1
                         pattern: ^([a-zA-Z0-9-_]*)$
                         title: Provisioner Id
@@ -15956,7 +16571,7 @@ properties:
                           * it controls who can manipulate tasks, again by requiring
                               `schedulerId`-related scopes; and
                           * it appears in the routing key for Pulse messages about the task.
-                        maxLength: 22
+                        maxLength: 38
                         minLength: 1
                         pattern: ^([a-zA-Z0-9-_]*)$
                         title: Scheduler Identifier
@@ -15981,6 +16596,7 @@ properties:
                           type: string
                         title: Scopes
                         type: array
+                        uniqueItems: false
                       tags:
                         IS_REQUIRED: true
                         PROPERTY_NAME: tags
@@ -16026,7 +16642,7 @@ properties:
                         TYPE_NAME: ""
                         description: |
                           Unique identifier for a worker-type within a specific provisioner
-                        maxLength: 22
+                        maxLength: 38
                         minLength: 1
                         pattern: ^([a-zA-Z0-9-_]*)$
                         title: Worker Type
@@ -16084,6 +16700,7 @@ properties:
         TYPE_NAME: ""
       title: Tasks from the Task-Group
       type: array
+      uniqueItems: true
   SortedPropertyNames:
   - continuationToken
   - taskGroupId
@@ -16241,7 +16858,7 @@ properties:
               TYPE_NAME: ""
               description: |
                 Identifier for the worker group containing this worker.
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               type: string
@@ -16252,7 +16869,7 @@ properties:
               TYPE_NAME: ""
               description: |
                 Identifier for this worker (unique within this worker group).
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               type: string
@@ -16271,6 +16888,7 @@ properties:
         type: object
       title: Workers from a WorkerType
       type: array
+      uniqueItems: true
   SortedPropertyNames:
   - continuationToken
   - workers
@@ -16387,7 +17005,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for the worker group containing this worker.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -16398,7 +17016,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for this worker (unique within this worker group).
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -16509,7 +17127,7 @@ properties:
               PROPERTY_NAME: provisionerId
               SOURCE_URL: https://taskcluster-staging.net/schemas/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/provisionerId
               TYPE_NAME: ""
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               title: Provisioner ID
@@ -16537,7 +17155,7 @@ properties:
               TYPE_NAME: ""
               description: |
                 WorkerType name.
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               title: WorkerType name
@@ -16561,6 +17179,7 @@ properties:
         type: object
       title: WorkerTypes from the Provisioner
       type: array
+      uniqueItems: true
   SortedPropertyNames:
   - continuationToken
   - workerTypes
@@ -16624,7 +17243,7 @@ properties:
       PROPERTY_NAME: provisionerId
       SOURCE_URL: https://taskcluster-staging.net/schemas/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/provisionerId
       TYPE_NAME: ""
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Provisioner ID
@@ -16652,7 +17271,7 @@ properties:
       TYPE_NAME: ""
       description: |
         WorkerType name.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: WorkerType name
@@ -16717,7 +17336,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Unique identifier for the provisioner
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Provisioner Id
@@ -16729,7 +17348,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for worker type within the specified provisioner
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Worker Type
@@ -16909,6 +17528,7 @@ oneOf:
             type: object
           minItems: 1
           type: array
+          uniqueItems: true
         storageType:
           IS_REQUIRED: true
           PROPERTY_NAME: storageType
@@ -17394,6 +18014,7 @@ properties:
         type: object
       minItems: 1
       type: array
+      uniqueItems: true
     storageType:
       IS_REQUIRED: true
       PROPERTY_NAME: storageType
@@ -17896,6 +18517,7 @@ oneOf:
             title: HTTP Request
             type: object
           type: array
+          uniqueItems: true
         storageType:
           IS_REQUIRED: true
           PROPERTY_NAME: storageType
@@ -18229,6 +18851,7 @@ properties:
         title: HTTP Request
         type: object
       type: array
+      uniqueItems: true
     storageType:
       IS_REQUIRED: true
       PROPERTY_NAME: storageType
@@ -18722,6 +19345,7 @@ properties:
           type: object
         title: Actions
         type: array
+        uniqueItems: true
       SOURCE_URL: https://taskcluster-staging.net/schemas/queue/v1/provisioner-response.json#/properties/actions
       TYPE_NAME: ""
     description:
@@ -18761,7 +19385,7 @@ properties:
       PROPERTY_NAME: provisionerId
       SOURCE_URL: https://taskcluster-staging.net/schemas/queue/v1/provisioner-response.json#/properties/provisionerId
       TYPE_NAME: ""
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Provisioner ID
@@ -18832,6 +19456,7 @@ properties:
         TYPE_NAME: ""
         type: string
       type: array
+      uniqueItems: true
   SortedPropertyNames:
   - etags
   SourceURL: https://taskcluster-staging.net/schemas/queue/v1/put-artifact-request.json#/properties
@@ -18905,7 +19530,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for group that worker claiming the task is a part of.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -18916,7 +19541,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for worker within the given workerGroup
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -19110,7 +19735,7 @@ properties:
                 description: |
                   Unique identifier for a provisioner, that can supply specified
                   `workerType`
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Provisioner Id
@@ -19282,7 +19907,7 @@ properties:
                         Identifier for group that worker who executes this run is a part of,
                         this identifier is mainly used for efficient routing.
                         Note, this property is only present after the run is claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Group
@@ -19296,7 +19921,7 @@ properties:
                         Identifier for worker evaluating this run within given
                         `workerGroup`. Note, this property is only available after the run
                         has been claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Identifier
@@ -19322,6 +19947,7 @@ properties:
                 type: object
               title: List of Runs
               type: array
+              uniqueItems: true
             schedulerId:
               $ref: task.json#/properties/schedulerId
               IS_REQUIRED: true
@@ -19343,7 +19969,7 @@ properties:
                   * it controls who can manipulate tasks, again by requiring
                       `schedulerId`-related scopes; and
                   * it appears in the routing key for Pulse messages about the task.
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Scheduler Identifier
@@ -19414,7 +20040,7 @@ properties:
                 TYPE_NAME: ""
                 description: |
                   Unique identifier for a worker-type within a specific provisioner
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Worker Type
@@ -19700,7 +20326,7 @@ properties:
               description: |
                 Unique identifier for a provisioner, that can supply specified
                 `workerType`
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               title: Provisioner Id
@@ -19777,7 +20403,7 @@ properties:
                 * it controls who can manipulate tasks, again by requiring
                     `schedulerId`-related scopes; and
                 * it appears in the routing key for Pulse messages about the task.
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               title: Scheduler Identifier
@@ -19802,6 +20428,7 @@ properties:
                 type: string
               title: Scopes
               type: array
+              uniqueItems: false
             tags:
               IS_REQUIRED: true
               PROPERTY_NAME: tags
@@ -19847,7 +20474,7 @@ properties:
               TYPE_NAME: ""
               description: |
                 Unique identifier for a worker-type within a specific provisioner
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               title: Worker Type
@@ -19899,7 +20526,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for the worker-group within which this run started.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -19910,7 +20537,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for the worker executing this run.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -20095,7 +20722,7 @@ properties:
                 description: |
                   Unique identifier for a provisioner, that can supply specified
                   `workerType`
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Provisioner Id
@@ -20267,7 +20894,7 @@ properties:
                         Identifier for group that worker who executes this run is a part of,
                         this identifier is mainly used for efficient routing.
                         Note, this property is only present after the run is claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Group
@@ -20281,7 +20908,7 @@ properties:
                         Identifier for worker evaluating this run within given
                         `workerGroup`. Note, this property is only available after the run
                         has been claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Identifier
@@ -20307,6 +20934,7 @@ properties:
                 type: object
               title: List of Runs
               type: array
+              uniqueItems: true
             schedulerId:
               $ref: task.json#/properties/schedulerId
               IS_REQUIRED: true
@@ -20328,7 +20956,7 @@ properties:
                   * it controls who can manipulate tasks, again by requiring
                       `schedulerId`-related scopes; and
                   * it appears in the routing key for Pulse messages about the task.
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Scheduler Identifier
@@ -20399,7 +21027,7 @@ properties:
                 TYPE_NAME: ""
                 description: |
                   Unique identifier for a worker-type within a specific provisioner
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Worker Type
@@ -20675,7 +21303,7 @@ properties:
               description: |
                 Unique identifier for a provisioner, that can supply specified
                 `workerType`
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               title: Provisioner Id
@@ -20752,7 +21380,7 @@ properties:
                 * it controls who can manipulate tasks, again by requiring
                     `schedulerId`-related scopes; and
                 * it appears in the routing key for Pulse messages about the task.
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               title: Scheduler Identifier
@@ -20777,6 +21405,7 @@ properties:
                 type: string
               title: Scopes
               type: array
+              uniqueItems: false
             tags:
               IS_REQUIRED: true
               PROPERTY_NAME: tags
@@ -20822,7 +21451,7 @@ properties:
               TYPE_NAME: ""
               description: |
                 Unique identifier for a worker-type within a specific provisioner
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               title: Worker Type
@@ -21214,7 +21843,7 @@ properties:
                 description: |
                   Unique identifier for a provisioner, that can supply specified
                   `workerType`
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Provisioner Id
@@ -21386,7 +22015,7 @@ properties:
                         Identifier for group that worker who executes this run is a part of,
                         this identifier is mainly used for efficient routing.
                         Note, this property is only present after the run is claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Group
@@ -21400,7 +22029,7 @@ properties:
                         Identifier for worker evaluating this run within given
                         `workerGroup`. Note, this property is only available after the run
                         has been claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Identifier
@@ -21426,6 +22055,7 @@ properties:
                 type: object
               title: List of Runs
               type: array
+              uniqueItems: true
             schedulerId:
               $ref: task.json#/properties/schedulerId
               IS_REQUIRED: true
@@ -21447,7 +22077,7 @@ properties:
                   * it controls who can manipulate tasks, again by requiring
                       `schedulerId`-related scopes; and
                   * it appears in the routing key for Pulse messages about the task.
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Scheduler Identifier
@@ -21518,7 +22148,7 @@ properties:
                 TYPE_NAME: ""
                 description: |
                   Unique identifier for a worker-type within a specific provisioner
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Worker Type
@@ -21569,7 +22199,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for the worker-group within which this run started.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -21580,7 +22210,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for the worker executing this run.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -21740,7 +22370,7 @@ properties:
                 description: |
                   Unique identifier for a provisioner, that can supply specified
                   `workerType`
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Provisioner Id
@@ -21912,7 +22542,7 @@ properties:
                         Identifier for group that worker who executes this run is a part of,
                         this identifier is mainly used for efficient routing.
                         Note, this property is only present after the run is claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Group
@@ -21926,7 +22556,7 @@ properties:
                         Identifier for worker evaluating this run within given
                         `workerGroup`. Note, this property is only available after the run
                         has been claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Identifier
@@ -21952,6 +22582,7 @@ properties:
                 type: object
               title: List of Runs
               type: array
+              uniqueItems: true
             schedulerId:
               $ref: task.json#/properties/schedulerId
               IS_REQUIRED: true
@@ -21973,7 +22604,7 @@ properties:
                   * it controls who can manipulate tasks, again by requiring
                       `schedulerId`-related scopes; and
                   * it appears in the routing key for Pulse messages about the task.
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Scheduler Identifier
@@ -22044,7 +22675,7 @@ properties:
                 TYPE_NAME: ""
                 description: |
                   Unique identifier for a worker-type within a specific provisioner
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Worker Type
@@ -22151,7 +22782,7 @@ properties:
         description: |
           Unique identifier for a provisioner, that can supply specified
           `workerType`
-        maxLength: 22
+        maxLength: 38
         minLength: 1
         pattern: ^([a-zA-Z0-9-_]*)$
         title: Provisioner Id
@@ -22323,7 +22954,7 @@ properties:
                 Identifier for group that worker who executes this run is a part of,
                 this identifier is mainly used for efficient routing.
                 Note, this property is only present after the run is claimed.
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               title: Worker Group
@@ -22337,7 +22968,7 @@ properties:
                 Identifier for worker evaluating this run within given
                 `workerGroup`. Note, this property is only available after the run
                 has been claimed.
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               title: Worker Identifier
@@ -22363,6 +22994,7 @@ properties:
         type: object
       title: List of Runs
       type: array
+      uniqueItems: true
     schedulerId:
       $ref: task.json#/properties/schedulerId
       IS_REQUIRED: true
@@ -22384,7 +23016,7 @@ properties:
           * it controls who can manipulate tasks, again by requiring
               `schedulerId`-related scopes; and
           * it appears in the routing key for Pulse messages about the task.
-        maxLength: 22
+        maxLength: 38
         minLength: 1
         pattern: ^([a-zA-Z0-9-_]*)$
         title: Scheduler Identifier
@@ -22455,7 +23087,7 @@ properties:
         TYPE_NAME: ""
         description: |
           Unique identifier for a worker-type within a specific provisioner
-        maxLength: 22
+        maxLength: 38
         minLength: 1
         pattern: ^([a-zA-Z0-9-_]*)$
         title: Worker Type
@@ -22637,7 +23269,7 @@ properties:
         Identifier for group that worker who executes this run is a part of,
         this identifier is mainly used for efficient routing.
         Note, this property is only present after the run is claimed.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Worker Group
@@ -22651,7 +23283,7 @@ properties:
         Identifier for worker evaluating this run within given
         `workerGroup`. Note, this property is only available after the run
         has been claimed.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Worker Identifier
@@ -22915,7 +23547,7 @@ properties:
       description: |
         Unique identifier for a provisioner, that can supply specified
         `workerType`
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Provisioner Id
@@ -22992,7 +23624,7 @@ properties:
         * it controls who can manipulate tasks, again by requiring
             `schedulerId`-related scopes; and
         * it appears in the routing key for Pulse messages about the task.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Scheduler Identifier
@@ -23017,6 +23649,7 @@ properties:
         type: string
       title: Scopes
       type: array
+      uniqueItems: false
     tags:
       IS_REQUIRED: true
       PROPERTY_NAME: tags
@@ -23062,7 +23695,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Unique identifier for a worker-type within a specific provisioner
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Worker Type
@@ -23285,6 +23918,7 @@ properties:
           type: object
         title: Actions
         type: array
+        uniqueItems: true
       SOURCE_URL: https://taskcluster-staging.net/schemas/queue/v1/update-provisioner-request.json#/properties/actions
       TYPE_NAME: ""
     description:
@@ -23597,6 +24231,7 @@ properties:
         type: object
       title: Worker Actions
       type: array
+      uniqueItems: false
     expires:
       IS_REQUIRED: true
       PROPERTY_NAME: expires
@@ -23623,7 +24258,7 @@ properties:
       PROPERTY_NAME: provisionerId
       SOURCE_URL: https://taskcluster-staging.net/schemas/queue/v1/worker-response.json#/properties/provisionerId
       TYPE_NAME: ""
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Provisioner ID
@@ -23706,6 +24341,7 @@ properties:
         TYPE_NAME: ""
       title: Most Recent Tasks
       type: array
+      uniqueItems: false
     workerGroup:
       IS_REQUIRED: true
       PROPERTY_NAME: workerGroup
@@ -23714,7 +24350,7 @@ properties:
       description: |
         Identifier for group that worker who executes this run is a part of,
         this identifier is mainly used for efficient routing.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Worker Group
@@ -23727,7 +24363,7 @@ properties:
       description: |
         Identifier for worker evaluating this run within given
         `workerGroup`.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Worker Identifier
@@ -23739,7 +24375,7 @@ properties:
       TYPE_NAME: ""
       description: |
         WorkerType name.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: WorkerType name
@@ -24067,6 +24703,7 @@ properties:
         type: object
       title: Worker-type Actions
       type: array
+      uniqueItems: false
     description:
       IS_REQUIRED: true
       PROPERTY_NAME: description
@@ -24104,7 +24741,7 @@ properties:
       PROPERTY_NAME: provisionerId
       SOURCE_URL: https://taskcluster-staging.net/schemas/queue/v1/workertype-response.json#/properties/provisionerId
       TYPE_NAME: ""
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Provisioner ID
@@ -24132,7 +24769,7 @@ properties:
       TYPE_NAME: ""
       description: |
         WorkerType name.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Worker-type Name
@@ -25081,7 +25718,7 @@ properties:
                 description: |
                   Unique identifier for a provisioner, that can supply specified
                   `workerType`
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Provisioner Id
@@ -25253,7 +25890,7 @@ properties:
                         Identifier for group that worker who executes this run is a part of,
                         this identifier is mainly used for efficient routing.
                         Note, this property is only present after the run is claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Group
@@ -25267,7 +25904,7 @@ properties:
                         Identifier for worker evaluating this run within given
                         `workerGroup`. Note, this property is only available after the run
                         has been claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Identifier
@@ -25293,6 +25930,7 @@ properties:
                 type: object
               title: List of Runs
               type: array
+              uniqueItems: true
             schedulerId:
               $ref: task.json#/properties/schedulerId
               IS_REQUIRED: true
@@ -25314,7 +25952,7 @@ properties:
                   * it controls who can manipulate tasks, again by requiring
                       `schedulerId`-related scopes; and
                   * it appears in the routing key for Pulse messages about the task.
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Scheduler Identifier
@@ -25385,7 +26023,7 @@ properties:
                 TYPE_NAME: ""
                 description: |
                   Unique identifier for a worker-type within a specific provisioner
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Worker Type
@@ -25436,7 +26074,7 @@ properties:
       description: |
         Identifier for the worker-group within which the run with the created
         artifacted is running.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -25448,7 +26086,7 @@ properties:
       description: |
         Identifier for the worker within which the run with the created artifact
         is running.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -25650,7 +26288,7 @@ properties:
                 description: |
                   Unique identifier for a provisioner, that can supply specified
                   `workerType`
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Provisioner Id
@@ -25822,7 +26460,7 @@ properties:
                         Identifier for group that worker who executes this run is a part of,
                         this identifier is mainly used for efficient routing.
                         Note, this property is only present after the run is claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Group
@@ -25836,7 +26474,7 @@ properties:
                         Identifier for worker evaluating this run within given
                         `workerGroup`. Note, this property is only available after the run
                         has been claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Identifier
@@ -25862,6 +26500,7 @@ properties:
                 type: object
               title: List of Runs
               type: array
+              uniqueItems: true
             schedulerId:
               $ref: task.json#/properties/schedulerId
               IS_REQUIRED: true
@@ -25883,7 +26522,7 @@ properties:
                   * it controls who can manipulate tasks, again by requiring
                       `schedulerId`-related scopes; and
                   * it appears in the routing key for Pulse messages about the task.
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Scheduler Identifier
@@ -25954,7 +26593,7 @@ properties:
                 TYPE_NAME: ""
                 description: |
                   Unique identifier for a worker-type within a specific provisioner
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Worker Type
@@ -26004,7 +26643,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for the worker-group within which this run ran.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -26015,7 +26654,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for the worker that executed this run.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -26123,7 +26762,7 @@ properties:
                 description: |
                   Unique identifier for a provisioner, that can supply specified
                   `workerType`
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Provisioner Id
@@ -26295,7 +26934,7 @@ properties:
                         Identifier for group that worker who executes this run is a part of,
                         this identifier is mainly used for efficient routing.
                         Note, this property is only present after the run is claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Group
@@ -26309,7 +26948,7 @@ properties:
                         Identifier for worker evaluating this run within given
                         `workerGroup`. Note, this property is only available after the run
                         has been claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Identifier
@@ -26335,6 +26974,7 @@ properties:
                 type: object
               title: List of Runs
               type: array
+              uniqueItems: true
             schedulerId:
               $ref: task.json#/properties/schedulerId
               IS_REQUIRED: true
@@ -26356,7 +26996,7 @@ properties:
                   * it controls who can manipulate tasks, again by requiring
                       `schedulerId`-related scopes; and
                   * it appears in the routing key for Pulse messages about the task.
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Scheduler Identifier
@@ -26427,7 +27067,7 @@ properties:
                 TYPE_NAME: ""
                 description: |
                   Unique identifier for a worker-type within a specific provisioner
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Worker Type
@@ -26581,7 +27221,7 @@ properties:
                 description: |
                   Unique identifier for a provisioner, that can supply specified
                   `workerType`
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Provisioner Id
@@ -26753,7 +27393,7 @@ properties:
                         Identifier for group that worker who executes this run is a part of,
                         this identifier is mainly used for efficient routing.
                         Note, this property is only present after the run is claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Group
@@ -26767,7 +27407,7 @@ properties:
                         Identifier for worker evaluating this run within given
                         `workerGroup`. Note, this property is only available after the run
                         has been claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Identifier
@@ -26793,6 +27433,7 @@ properties:
                 type: object
               title: List of Runs
               type: array
+              uniqueItems: true
             schedulerId:
               $ref: task.json#/properties/schedulerId
               IS_REQUIRED: true
@@ -26814,7 +27455,7 @@ properties:
                   * it controls who can manipulate tasks, again by requiring
                       `schedulerId`-related scopes; and
                   * it appears in the routing key for Pulse messages about the task.
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Scheduler Identifier
@@ -26885,7 +27526,7 @@ properties:
                 TYPE_NAME: ""
                 description: |
                   Unique identifier for a worker-type within a specific provisioner
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Worker Type
@@ -26936,7 +27577,7 @@ properties:
       description: |
         Identifier for the worker-group within which the last attempt of the task
         ran. Not provided, if `deadline` was exceeded before a run was started.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -26949,7 +27590,7 @@ properties:
         Identifier for the last worker that failed to report, causing the task
         to fail. Not provided, if `deadline` was exceeded before a run
         was started.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -27066,7 +27707,7 @@ properties:
                 description: |
                   Unique identifier for a provisioner, that can supply specified
                   `workerType`
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Provisioner Id
@@ -27238,7 +27879,7 @@ properties:
                         Identifier for group that worker who executes this run is a part of,
                         this identifier is mainly used for efficient routing.
                         Note, this property is only present after the run is claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Group
@@ -27252,7 +27893,7 @@ properties:
                         Identifier for worker evaluating this run within given
                         `workerGroup`. Note, this property is only available after the run
                         has been claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Identifier
@@ -27278,6 +27919,7 @@ properties:
                 type: object
               title: List of Runs
               type: array
+              uniqueItems: true
             schedulerId:
               $ref: task.json#/properties/schedulerId
               IS_REQUIRED: true
@@ -27299,7 +27941,7 @@ properties:
                   * it controls who can manipulate tasks, again by requiring
                       `schedulerId`-related scopes; and
                   * it appears in the routing key for Pulse messages about the task.
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Scheduler Identifier
@@ -27370,7 +28012,7 @@ properties:
                 TYPE_NAME: ""
                 description: |
                   Unique identifier for a worker-type within a specific provisioner
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Worker Type
@@ -27420,7 +28062,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for the worker-group within which this run ran.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -27431,7 +28073,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for the worker that executed this run.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -27480,7 +28122,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for the scheduler that created this task-group.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Scheduler Identifier
@@ -27696,7 +28338,7 @@ properties:
                 description: |
                   Unique identifier for a provisioner, that can supply specified
                   `workerType`
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Provisioner Id
@@ -27868,7 +28510,7 @@ properties:
                         Identifier for group that worker who executes this run is a part of,
                         this identifier is mainly used for efficient routing.
                         Note, this property is only present after the run is claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Group
@@ -27882,7 +28524,7 @@ properties:
                         Identifier for worker evaluating this run within given
                         `workerGroup`. Note, this property is only available after the run
                         has been claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Identifier
@@ -27908,6 +28550,7 @@ properties:
                 type: object
               title: List of Runs
               type: array
+              uniqueItems: true
             schedulerId:
               $ref: task.json#/properties/schedulerId
               IS_REQUIRED: true
@@ -27929,7 +28572,7 @@ properties:
                   * it controls who can manipulate tasks, again by requiring
                       `schedulerId`-related scopes; and
                   * it appears in the routing key for Pulse messages about the task.
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Scheduler Identifier
@@ -28000,7 +28643,7 @@ properties:
                 TYPE_NAME: ""
                 description: |
                   Unique identifier for a worker-type within a specific provisioner
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Worker Type
@@ -28156,7 +28799,7 @@ properties:
                 description: |
                   Unique identifier for a provisioner, that can supply specified
                   `workerType`
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Provisioner Id
@@ -28328,7 +28971,7 @@ properties:
                         Identifier for group that worker who executes this run is a part of,
                         this identifier is mainly used for efficient routing.
                         Note, this property is only present after the run is claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Group
@@ -28342,7 +28985,7 @@ properties:
                         Identifier for worker evaluating this run within given
                         `workerGroup`. Note, this property is only available after the run
                         has been claimed.
-                      maxLength: 22
+                      maxLength: 38
                       minLength: 1
                       pattern: ^([a-zA-Z0-9-_]*)$
                       title: Worker Identifier
@@ -28368,6 +29011,7 @@ properties:
                 type: object
               title: List of Runs
               type: array
+              uniqueItems: true
             schedulerId:
               $ref: task.json#/properties/schedulerId
               IS_REQUIRED: true
@@ -28389,7 +29033,7 @@ properties:
                   * it controls who can manipulate tasks, again by requiring
                       `schedulerId`-related scopes; and
                   * it appears in the routing key for Pulse messages about the task.
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Scheduler Identifier
@@ -28460,7 +29104,7 @@ properties:
                 TYPE_NAME: ""
                 description: |
                   Unique identifier for a worker-type within a specific provisioner
-                maxLength: 22
+                maxLength: 38
                 minLength: 1
                 pattern: ^([a-zA-Z0-9-_]*)$
                 title: Worker Type
@@ -28520,7 +29164,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for the worker-group within which this run started.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -28531,7 +29175,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Identifier for the worker executing this run.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -28618,7 +29262,7 @@ properties:
         description: |
           Unique identifier for a provisioner, that can supply specified
           `workerType`
-        maxLength: 22
+        maxLength: 38
         minLength: 1
         pattern: ^([a-zA-Z0-9-_]*)$
         title: Provisioner Id
@@ -28790,7 +29434,7 @@ properties:
                 Identifier for group that worker who executes this run is a part of,
                 this identifier is mainly used for efficient routing.
                 Note, this property is only present after the run is claimed.
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               title: Worker Group
@@ -28804,7 +29448,7 @@ properties:
                 Identifier for worker evaluating this run within given
                 `workerGroup`. Note, this property is only available after the run
                 has been claimed.
-              maxLength: 22
+              maxLength: 38
               minLength: 1
               pattern: ^([a-zA-Z0-9-_]*)$
               title: Worker Identifier
@@ -28830,6 +29474,7 @@ properties:
         type: object
       title: List of Runs
       type: array
+      uniqueItems: true
     schedulerId:
       $ref: task.json#/properties/schedulerId
       IS_REQUIRED: true
@@ -28851,7 +29496,7 @@ properties:
           * it controls who can manipulate tasks, again by requiring
               `schedulerId`-related scopes; and
           * it appears in the routing key for Pulse messages about the task.
-        maxLength: 22
+        maxLength: 38
         minLength: 1
         pattern: ^([a-zA-Z0-9-_]*)$
         title: Scheduler Identifier
@@ -28922,7 +29567,7 @@ properties:
         TYPE_NAME: ""
         description: |
           Unique identifier for a worker-type within a specific provisioner
-        maxLength: 22
+        maxLength: 38
         minLength: 1
         pattern: ^([a-zA-Z0-9-_]*)$
         title: Worker Type
@@ -29104,7 +29749,7 @@ properties:
         Identifier for group that worker who executes this run is a part of,
         this identifier is mainly used for efficient routing.
         Note, this property is only present after the run is claimed.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Worker Group
@@ -29118,7 +29763,7 @@ properties:
         Identifier for worker evaluating this run within given
         `workerGroup`. Note, this property is only available after the run
         has been claimed.
-      maxLength: 22
+      maxLength: 38
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       title: Worker Identifier
@@ -29147,7 +29792,7 @@ type: object
 https://taskcluster-staging.net/references/secrets/v1/api.json
 ==============================================================
 Schema      = 'https://taskcluster-staging.net/schemas/common/api-reference-v0.json#'
-Title       = 'TaskCluster Secrets API Documentation'
+Title       = 'Taskcluster Secrets API Documentation'
 Description = 'The secrets service provides a simple key/value store for small bits of secret
 data.  Access is limited by scopes, so values can be considered secret from
 those who do not have the relevant scopes.
@@ -29295,6 +29940,7 @@ properties:
         title: Secret
         type: string
       type: array
+      uniqueItems: true
   SortedPropertyNames:
   - continuationToken
   - secrets
@@ -29317,7 +29963,7 @@ additionalProperties:
   Boolean: false
   Properties: null
 description: |
-  Message containing a TaskCluster Secret
+  Message containing a Taskcluster Secret
 properties:
   MemberNames:
     expires: Expires
@@ -29357,7 +30003,7 @@ Version         = 'v1'
 Schema          = 'https://taskcluster-staging.net/schemas/common/exchanges-reference-v0.json#'
 Title           = 'Taskcluster-treeherder Pulse Exchange'
 Description     = 'The taskcluster-treeherder service is responsible for processing
-task events published by TaskCluster Queue and producing job messages
+task events published by Taskcluster Queue and producing job messages
 that are consumable by Treeherder.
 
 This exchange provides that job messages to be consumed by any queue that
@@ -29604,6 +30250,7 @@ properties:
         type: string
       title: Coalesced job GUID
       type: array
+      uniqueItems: false
     display:
       IS_REQUIRED: true
       PROPERTY_NAME: display
@@ -29775,6 +30422,7 @@ properties:
               title: Link
               type: object
             type: array
+            uniqueItems: false
           summary:
             IS_REQUIRED: true
             PROPERTY_NAME: summary
@@ -29835,6 +30483,7 @@ properties:
         type: string
       title: Labels
       type: array
+      uniqueItems: false
     logs:
       IS_REQUIRED: false
       PROPERTY_NAME: logs
@@ -29944,6 +30593,7 @@ properties:
                         title: Error
                         type: object
                       type: array
+                      uniqueItems: false
                     lineFinished:
                       IS_REQUIRED: true
                       PROPERTY_NAME: lineFinished
@@ -30011,6 +30661,7 @@ properties:
                 title: Step
                 type: object
               type: array
+              uniqueItems: false
             url:
               IS_REQUIRED: true
               PROPERTY_NAME: url
@@ -30032,6 +30683,7 @@ properties:
         title: Log
         type: object
       type: array
+      uniqueItems: false
     origin:
       IS_REQUIRED: true
       PROPERTY_NAME: origin
@@ -30650,6 +31302,7 @@ properties:
         title: Link
         type: object
       type: array
+      uniqueItems: false
     summary:
       IS_REQUIRED: true
       PROPERTY_NAME: summary
@@ -30829,6 +31482,7 @@ properties:
                 title: Error
                 type: object
               type: array
+              uniqueItems: false
             lineFinished:
               IS_REQUIRED: true
               PROPERTY_NAME: lineFinished
@@ -30896,6 +31550,7 @@ properties:
         title: Step
         type: object
       type: array
+      uniqueItems: false
     url:
       IS_REQUIRED: true
       PROPERTY_NAME: url
@@ -30980,6 +31635,7 @@ properties:
         title: Error
         type: object
       type: array
+      uniqueItems: false
     lineFinished:
       IS_REQUIRED: true
       PROPERTY_NAME: lineFinished

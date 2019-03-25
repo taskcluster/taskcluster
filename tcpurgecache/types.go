@@ -64,10 +64,18 @@ type (
 
 		// ProvisionerId associated with the workerType.
 		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		//
 		// See https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-requests.json#/items/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
 
 		// Workertype cache exists on.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-requests.json#/items/properties/workerType
 		WorkerType string `json:"workerType"`

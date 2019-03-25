@@ -12,13 +12,17 @@ import (
 type (
 	// Exchange and RoutingKeyPattern for each binding
 	//
-	// See https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items
+	// See https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items
 	Binding struct {
 
-		// See https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items/properties/exchange
+		// Min length: 1
+		//
+		// See https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items/properties/exchange
 		Exchange string `json:"exchange"`
 
-		// See https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/properties/items/properties/routingKeyPattern
+		// Min length: 1
+		//
+		// See https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#/items/properties/routingKeyPattern
 		RoutingKeyPattern string `json:"routingKeyPattern"`
 	}
 
@@ -53,7 +57,7 @@ type (
 	HookCreationRequest struct {
 
 		// See https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#
-		Bindings []interface{} `json:"bindings,omitempty"`
+		Bindings []Binding `json:"bindings,omitempty"`
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
@@ -115,7 +119,7 @@ type (
 	HookDefinition struct {
 
 		// See https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#
-		Bindings []interface{} `json:"bindings,omitempty"`
+		Bindings []Binding `json:"bindings,omitempty"`
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
@@ -134,14 +138,22 @@ type (
 		// See https://taskcluster-staging.net/schemas/hooks/v1/hook-metadata.json#
 		Metadata HookMetadata `json:"metadata"`
 
-		// Definition of the times at which a hook will result in creation of a task.
-		// If several patterns are specified, tasks will be created at any time
-		// specified by one or more patterns.  Note that tasks may not be created
-		// at exactly the time specified.
-		//                     {$ref: "schedule.json#"}
+		// A list of cron-style definitions to represent a set of moments in (UTC) time.
+		// If several patterns are specified, a given moment in time represented by
+		// more than one pattern is considered only to be counted once, in other words
+		// it is allowed for the cron patterns to overlap; duplicates are redundant.
 		//
-		// See https://taskcluster-staging.net/schemas/hooks/v1/hook-definition.json#/properties/schedule
-		Schedule json.RawMessage `json:"schedule"`
+		// Default:    []
+		//
+		// Array items:
+		// Cron-like specification for when tasks should be created.  The pattern is
+		// parsed in a UTC context.
+		// See [cron-parser on npm](https://www.npmjs.com/package/cron-parser).
+		//
+		// See https://taskcluster-staging.net/schemas/hooks/v1/schedule.json#/items
+		//
+		// See https://taskcluster-staging.net/schemas/hooks/v1/schedule.json#
+		Schedule []string `json:"schedule"`
 
 		// Template for the task definition.  This is rendered using [JSON-e](https://taskcluster.github.io/json-e/)
 		// as described in [firing hooks](/docs/reference/core/taskcluster-hooks/docs/firing-hooks) to produce
@@ -243,9 +255,6 @@ type (
 		// See https://taskcluster-staging.net/schemas/hooks/v1/list-lastFires-response.json#/properties/lastFires
 		LastFires []Var `json:"lastFires"`
 	}
-
-	// See https://taskcluster-staging.net/schemas/hooks/v1/bindings.json#
-	ListOfBindings []interface{}
 
 	// Information about no firing of the hook (e.g., a new hook)
 	//
@@ -351,7 +360,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/workerGroup
 		WorkerGroup string `json:"workerGroup,omitempty"`
@@ -362,7 +371,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/workerId
 		WorkerID string `json:"workerId,omitempty"`
@@ -390,7 +399,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
@@ -412,7 +421,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/schedulerId
 		SchedulerID string `json:"schedulerId"`
@@ -453,7 +462,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/hooks/v1/task-status.json#/properties/status/properties/workerType
 		WorkerType string `json:"workerType"`
@@ -499,6 +508,24 @@ type (
 	//
 	// See https://taskcluster-staging.net/schemas/hooks/v1/trigger-hook.json#
 	TriggerHookRequest json.RawMessage
+
+	// Response to a `triggerHook` or `triggerHookWithToken` call.
+	//
+	// In most cases, this is a task status, but in cases where the hook template
+	// does not generate a task, it is an empty object with no `status` property.
+	//
+	// Any of:
+	//   * TaskStatusStructure
+	//   * TriggerHookResponse1
+	//
+	// See https://taskcluster-staging.net/schemas/hooks/v1/trigger-hook-response.json#
+	TriggerHookResponse json.RawMessage
+
+	// Empty response indicating no task was created
+	//
+	// See https://taskcluster-staging.net/schemas/hooks/v1/trigger-hook-response.json#/anyOf[1]
+	TriggerHookResponse1 struct {
+	}
 
 	// Secret token for a trigger
 	//
@@ -571,6 +598,22 @@ func (this *TriggerHookRequest) MarshalJSON() ([]byte, error) {
 func (this *TriggerHookRequest) UnmarshalJSON(data []byte) error {
 	if this == nil {
 		return errors.New("TriggerHookRequest: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// TriggerHookResponse is of type json.RawMessage...
+func (this *TriggerHookResponse) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *TriggerHookResponse) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("TriggerHookResponse: UnmarshalJSON on nil pointer")
 	}
 	*this = append((*this)[0:0], data...)
 	return nil

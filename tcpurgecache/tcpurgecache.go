@@ -36,7 +36,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // https://taskcluster-staging.net/references/purge-cache/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 29 Jan 2019 at 08:22:00 UTC. The code was generated
+// Mon, 25 Mar 2019 at 18:29:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcpurgecache
 

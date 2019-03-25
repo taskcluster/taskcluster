@@ -9,7 +9,7 @@
 // https://taskcluster-staging.net/references/treeherder/v1/exchanges.json
 
 // The taskcluster-treeherder service is responsible for processing
-// task events published by TaskCluster Queue and producing job messages
+// task events published by Taskcluster Queue and producing job messages
 // that are consumable by Treeherder.
 //
 // This exchange provides that job messages to be consumed by any queue that

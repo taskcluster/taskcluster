@@ -356,7 +356,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/claim-work-request.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
@@ -365,7 +365,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/claim-work-request.json#/properties/workerId
 		WorkerID string `json:"workerId"`
@@ -419,7 +419,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/pending-tasks-response.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
@@ -428,7 +428,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/pending-tasks-response.json#/properties/workerType
 		WorkerType string `json:"workerType"`
@@ -735,7 +735,7 @@ type (
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
@@ -819,7 +819,7 @@ type (
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/provisioner-response.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
@@ -1004,7 +1004,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/runs/items/properties/workerGroup
 		WorkerGroup string `json:"workerGroup,omitempty"`
@@ -1015,7 +1015,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/runs/items/properties/workerId
 		WorkerID string `json:"workerId,omitempty"`
@@ -1140,7 +1140,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/claim-work-response.json#/properties/tasks/items/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
@@ -1149,7 +1149,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/claim-work-response.json#/properties/tasks/items/properties/workerId
 		WorkerID string `json:"workerId"`
@@ -1164,7 +1164,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/task-claim-request.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
@@ -1173,7 +1173,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/task-claim-request.json#/properties/workerId
 		WorkerID string `json:"workerId"`
@@ -1231,7 +1231,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/task-claim-response.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
@@ -1240,7 +1240,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/task-claim-response.json#/properties/workerId
 		WorkerID string `json:"workerId"`
@@ -1402,7 +1402,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/task.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
@@ -1463,7 +1463,7 @@ type (
 		// Default:    "-"
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/task.json#/properties/schedulerId
 		SchedulerID string `json:"schedulerId,omitempty"`
@@ -1514,7 +1514,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/task.json#/properties/workerType
 		WorkerType string `json:"workerType"`
@@ -1618,7 +1618,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/task.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
@@ -1679,7 +1679,7 @@ type (
 		// Default:    "-"
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/task.json#/properties/schedulerId
 		SchedulerID string `json:"schedulerId"`
@@ -1730,7 +1730,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/task.json#/properties/workerType
 		WorkerType string `json:"workerType"`
@@ -1876,7 +1876,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/task-reclaim-response.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
@@ -1885,7 +1885,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/task-reclaim-response.json#/properties/workerId
 		WorkerID string `json:"workerId"`
@@ -1950,7 +1950,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/task.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
@@ -1981,7 +1981,7 @@ type (
 		// Default:    "-"
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/task.json#/properties/schedulerId
 		SchedulerID string `json:"schedulerId"`
@@ -2025,7 +2025,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/task.json#/properties/workerType
 		WorkerType string `json:"workerType"`
@@ -2056,7 +2056,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/list-workers-response.json#/properties/workers/items/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
@@ -2065,7 +2065,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/list-workers-response.json#/properties/workers/items/properties/workerId
 		WorkerID string `json:"workerId"`
@@ -2186,7 +2186,7 @@ type (
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/worker-response.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
@@ -2209,7 +2209,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/worker-response.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
@@ -2219,7 +2219,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/worker-response.json#/properties/workerId
 		WorkerID string `json:"workerId"`
@@ -2228,7 +2228,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/worker-response.json#/properties/workerType
 		WorkerType string `json:"workerType"`
@@ -2255,7 +2255,7 @@ type (
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
@@ -2277,7 +2277,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/workerType
 		WorkerType string `json:"workerType"`
@@ -2423,7 +2423,7 @@ type (
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/workertype-response.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
@@ -2445,7 +2445,7 @@ type (
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 22
+		// Max length: 38
 		//
 		// See https://taskcluster-staging.net/schemas/queue/v1/workertype-response.json#/properties/workerType
 		WorkerType string `json:"workerType"`

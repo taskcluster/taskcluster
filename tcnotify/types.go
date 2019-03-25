@@ -52,6 +52,40 @@ type (
 		Text string `json:"text"`
 	}
 
+	// List of notification addresses.
+	//
+	// See https://taskcluster-staging.net/schemas/notify/v1/notification-address-list.json#
+	ListOfNotificationAdresses struct {
+
+		// See https://taskcluster-staging.net/schemas/notify/v1/notification-address-list.json#/properties/addresses
+		Addresses []NotificaitonTypeAndAddress `json:"addresses"`
+
+		// A continuation token is returned if there are more results than listed
+		// here. You can optionally provide the token in the request payload to
+		// load the additional results.
+		//
+		// See https://taskcluster-staging.net/schemas/notify/v1/notification-address-list.json#/properties/continuationToken
+		ContinuationToken string `json:"continuationToken,omitempty"`
+	}
+
+	// Type of notification and its corresponding address.
+	//
+	// See https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#
+	NotificaitonTypeAndAddress struct {
+
+		// See https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#/properties/notificationAddress
+		NotificationAddress string `json:"notificationAddress"`
+
+		// Possible values:
+		//   * "email"
+		//   * "pulse"
+		//   * "irc-user"
+		//   * "irc-channel"
+		//
+		// See https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#/properties/notificationType
+		NotificationType string `json:"notificationType"`
+	}
+
 	// Request to post a message on IRC.
 	//
 	// One of:
