@@ -15,7 +15,9 @@ These folks are currently working on Taskcluster full-time.
 They are all happy to help answer questions and help you make your first contribution.
 
 <People filter={contrib => contrib.contributions.includes('staff')} />
+<br />
 
 ## Everyone
 
+<br />
 <People filter={contrib => !contrib.contributions.includes('staff')} />

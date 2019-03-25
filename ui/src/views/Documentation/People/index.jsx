@@ -1,68 +1,75 @@
 import React, { Component } from 'react';
+import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
-import { func } from 'prop-types';
+import { bool, func } from 'prop-types';
 import { withRouter } from 'react-router-dom';
-import { contributors } from '../../../../../.all-contributorsrc';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import Grid from '@material-ui/core/Grid';
+import CardActionArea from '@material-ui/core/CardActionArea';
+import Typography from '@material-ui/core/Typography';
+import Avatar from '@material-ui/core/Avatar';
+import Anchor from '../components/Anchor';
+import contributorsJson from '../../../../../.all-contributorsrc.json';
 
 @withRouter
-@withStyles(() => ({
-  peopleList: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-around',
-    alignItems: 'top',
-  },
-  anchor: {
-    textDecoration: 'none',
-  },
-  person: {
-    padding: '5px',
-    margin: '5px',
+@withStyles(theme => ({
+  cardActionArea: {
+    height: '100%',
     textAlign: 'center',
-    minWidth: '200px',
   },
-  photoFrame: {
-    width: '100px',
-    height: '100px',
-    margin: 'auto',
+  avatar: {
+    height: 80,
+    width: 80,
+    margin: `0 auto ${theme.spacing.unit}px auto`,
+    boxShadow: '0px 0px 4px rgba(2,2,2,0.2)',
   },
-  photoImage: {
-    borderRadius: '100%',
-    backgroundClip: 'padding-box',
-    border: '3px solid white',
-    boxShadow: '0px 0px 5px rgba(2,2,2,0.2)',
-    width: '100px',
-    height: '100px',
-    boxSizing: 'border-box',
+  gutterTop: {
+    marginTop: theme.spacing.unit,
+  },
+  gutterBottom: {
+    marginBottom: theme.spacing.unit,
   },
 }))
 export default class People extends Component {
   static propTypes = {
     filter: func,
+    gutterTop: bool,
+    gutterBottom: bool,
   };
 
   render() {
-    const { classes, filter } = this.props;
+    const { classes, filter, gutterTop, gutterBottom } = this.props;
+    const { contributors } = contributorsJson;
 
     return (
-      <div className={classes.peopleList}>
+      <Grid
+        container
+        spacing={8}
+        className={classNames({
+          [classes.gutterTop]: gutterTop,
+          [classes.gutterBottom]: gutterBottom,
+        })}>
         {contributors.filter(filter || (() => true)).map(contrib => (
-          <div key={contrib.login} className={classes.person}>
-            <div className={classes.photoFrame}>
-              <a className={classes.anchor} href={contrib.profile || '#'}>
-                <img
-                  alt="avatar"
-                  className={classes.photoImage}
-                  src={contrib.avatar_url}
-                />
-              </a>
-            </div>
-            <a className={classes.anchor} href={contrib.profile || '#'}>
-              {contrib.name || contrib.login}
-            </a>
-          </div>
+          <Grid key={contrib.login} item xs={4} sm={3}>
+            <Card>
+              <CardActionArea
+                className={classes.cardActionArea}
+                component={Anchor}
+                href={contrib.profile || '#'}>
+                <CardContent>
+                  <Avatar
+                    alt="avatar"
+                    src={contrib.avatar_url}
+                    className={classes.avatar}
+                  />
+                  <Typography>{contrib.name || contrib.login}</Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </Grid>
         ))}
-      </div>
+      </Grid>
     );
   }
 }
