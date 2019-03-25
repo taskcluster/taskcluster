@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { string, shape, func, arrayOf } from 'prop-types';
+import { titleCase, upperCase } from 'change-case';
 import classNames from 'classnames';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
@@ -32,6 +33,7 @@ const tableHeaders = ['Address', 'Type'];
   },
   listLinkCell: {
     ...theme.mixins.hover,
+    ...theme.mixins.listItemButton,
   },
 }))
 export default class DenylistTable extends Component {
@@ -108,14 +110,10 @@ export default class DenylistTable extends Component {
   };
 
   prettify = str =>
-    // remove underscores and capitalize first alphabet
-    str
-      .split('_')
+    titleCase(str)
+      .split(' ')
       .map(word => {
-        const pretty =
-          word !== 'IRC'
-            ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-            : word;
+        const pretty = word === 'Irc' ? upperCase(word) : word;
 
         return pretty;
       })

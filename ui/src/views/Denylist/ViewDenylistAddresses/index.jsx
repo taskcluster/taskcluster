@@ -23,7 +23,7 @@ export default class ViewDenylist extends PureComponent {
     this.setState({ searchTerm });
   };
 
-  handleCreate = () => {
+  handleAddressAdd = () => {
     this.props.history.push('/notify/denylist/add');
   };
 
@@ -45,7 +45,7 @@ export default class ViewDenylist extends PureComponent {
         <Button
           spanProps={{ className: classes.plusIconSpan }}
           tooltipProps={{ title: 'Add Address' }}
-          onClick={this.handleCreate}
+          onClick={this.handleAddressAdd}
           variant="round"
           color="secondary">
           <PlusIcon />

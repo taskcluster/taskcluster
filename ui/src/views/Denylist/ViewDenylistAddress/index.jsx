@@ -29,7 +29,7 @@ export default class ViewDenylistAddress extends Component {
     error: null,
   };
 
-  handleDeleteAddress = async (notificationType, notificationAddress) => {
+  handleAddressDelete = async (notificationType, notificationAddress) => {
     this.setState({ error: null, loading: true });
 
     try {
@@ -51,7 +51,7 @@ export default class ViewDenylistAddress extends Component {
     }
   };
 
-  handleAddAddress = async (notificationType, notificationAddress) => {
+  handleAddressAdd = async (notificationType, notificationAddress) => {
     this.setState({ error: null, loading: true });
 
     try {
@@ -87,7 +87,7 @@ export default class ViewDenylistAddress extends Component {
           <DenylistForm
             loading={loading}
             isNewAddress
-            onAddressAdd={this.handleAddAddress}
+            onAddressAdd={this.handleAddressAdd}
           />
         ) : (
           <Fragment>
@@ -97,8 +97,8 @@ export default class ViewDenylistAddress extends Component {
               <DenylistForm
                 loading={loading}
                 address={data.listDenylistAddresses.edges[0].node}
-                onAddressAdd={this.handleAddAddress}
-                onAddressDelete={this.handleDeleteAddress}
+                onAddressAdd={this.handleAddressAdd}
+                onAddressDelete={this.handleAddressDelete}
               />
             )}
           </Fragment>

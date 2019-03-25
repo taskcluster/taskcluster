@@ -1,5 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { bool, func } from 'prop-types';
+import { titleCase, upperCase } from 'change-case';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -44,7 +45,7 @@ export default class DenylistForm extends Component {
     /** Callback function fired when an address is created. */
     onAddressAdd: func.isRequired,
     /** Callback function fired when an address is deleted. */
-    onAddressDelete: func,
+    onAddressDelete: func.isRequired,
     /** If true, form actions will be disabled. */
     loading: bool,
   };
@@ -90,20 +91,20 @@ export default class DenylistForm extends Component {
     };
   }
 
-  handleDeleteAddress = () => {
+  handleAddressDelete = () => {
     const { notificationType, notificationAddress } = this.state;
 
     this.props.onAddressDelete(notificationType, notificationAddress);
   };
 
   handleInputChange = ({ target: { name, value } }) => {
-    this.setState({ [name]: value });
+    const state = { [name]: value };
 
     if (
       name === 'notificationType' &&
       value !== DENYLIST_NOTIFICATION_TYPES.EMAIL
     ) {
-      this.setState({
+      Object.assign(state, {
         validation: {
           address: {
             error: false,
@@ -112,21 +113,23 @@ export default class DenylistForm extends Component {
         },
       });
     }
+
+    this.setState(state);
   };
 
-  handleAddressChange = e => {
+  handleAddressChange = ({ currentTarget }) => {
     this.setState({
-      notificationAddress: e.currentTarget.value,
+      notificationAddress: currentTarget.value,
       validation: {
         address: {
-          error: !e.currentTarget.validity.valid,
-          message: e.currentTarget.validationMessage,
+          error: !currentTarget.validity.valid,
+          message: currentTarget.validationMessage,
         },
       },
     });
   };
 
-  handleAddAddress = () => {
+  handleAddressAdd = () => {
     const { notificationType, notificationAddress } = this.state;
 
     this.props.onAddressAdd(notificationType, notificationAddress);
@@ -141,14 +144,10 @@ export default class DenylistForm extends Component {
   };
 
   prettify = str =>
-    // remove underscores and capitalize first alphabet
-    str
-      .split('_')
+    titleCase(str)
+      .split(' ')
       .map(word => {
-        const pretty =
-          word !== 'IRC'
-            ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-            : word;
+        const pretty = word === 'Irc' ? upperCase(word) : word;
 
         return pretty;
       })
@@ -218,7 +217,7 @@ export default class DenylistForm extends Component {
             requiresAuth
             disabled={loading || !this.isFormValid()}
             variant="round"
-            onClick={this.handleAddAddress}
+            onClick={this.handleAddressAdd}
             classes={{ root: classes.saveIcon }}>
             <ContentSaveIcon />
           </Button>
@@ -229,7 +228,7 @@ export default class DenylistForm extends Component {
             requiresAuth
             disabled={loading}
             variant="round"
-            onClick={this.handleDeleteAddress}
+            onClick={this.handleAddressDelete}
             classes={{ root: classes.deleteIcon }}>
             <DeleteIcon />
           </Button>

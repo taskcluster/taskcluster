@@ -33,7 +33,7 @@
     "apollo-link-ws": "^1.0.11",
     "apollo-utilities": "^1.0.26",
     "catch-links": "^2.0.1",
-    "change-case": "^3.0.2",
+    "change-case": "^3.1.0",
     "classnames": "^2.2.6",
     "codemirror": "^5.39.0",
     "date-fns": "2.0.0-alpha.7",
