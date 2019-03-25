@@ -12,8 +12,6 @@ followup:
 
 # Welcome to Taskcluster!
 
----
-
 This tutorial is designed to help you learn what you need to know about
 Taskcluster to accomplish your goals. You can navigate it by answering the
 question at the bottom of each page, which will bring you to the most helpful
