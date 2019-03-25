@@ -915,7 +915,10 @@ func (job *Job) cacheJsonSchema(url string) (*JsonSubSchema, error) {
 	// Path to subschema from root of parent document (sanitized URL after '#' char)
 	subschemaPath := sanitizedURL[strings.Index(sanitizedURL, "#")+1:]
 
-	job.loadJsonSchema(rootSchemaURL)
+	_, err := job.loadJsonSchema(rootSchemaURL)
+	if err != nil {
+		return nil, err
+	}
 
 	// check that the required subschema is contained in the document we loaded
 	subschema, found := job.result.SchemaSet.all[sanitizedURL]
