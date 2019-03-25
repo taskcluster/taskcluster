@@ -28,6 +28,7 @@ import Link from '../../utils/Link';
 import Logo from '../../images/logo.png';
 import ErrorPanel from '../ErrorPanel';
 import DocsSidebarList from './DocsSidebarList';
+import SkipNavigation from '../SkipNavigation';
 
 @withRouter
 @withWidth()
@@ -261,6 +262,7 @@ export default class Dashboard extends Component {
             [classes.docsAppBar]: isDocs,
           })}>
           <Toolbar>
+            <SkipNavigation selector="main" />
             {(!isDocs || (isDocs && isMobileView)) && (
               <IconButton
                 color="inherit"
