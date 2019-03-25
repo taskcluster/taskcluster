@@ -93,7 +93,7 @@ let previousCursor;
 export default class TaskGroup extends Component {
   static getDerivedStateFromProps(props, state) {
     const { taskGroupId } = props.match.params;
-    const { taskActions, taskGroup } = props.data;
+    const { taskActions, taskGroup, subscribeToMore } = props.data;
     const groupActions = [];
     const actionInputs = state.actionInputs || {};
     const actionData = state.actionData || {};
@@ -104,6 +104,8 @@ export default class TaskGroup extends Component {
       taskGroup && taskGroup.edges[0]
         ? taskGroup.edges[0].node.taskGroupId === taskGroupId
         : true;
+
+    TaskGroup.subscribe({ taskGroupId, subscribeToMore });
 
     if (
       isFromSameTaskGroupId &&
@@ -164,9 +166,94 @@ export default class TaskGroup extends Component {
     searchTerm: null,
   };
 
+  static unsubscribe() {
+    if (!TaskGroup.listener) {
+      return;
+    }
+
+    TaskGroup.listener.unsubscribe();
+    TaskGroup.listener = null;
+  }
+
+  static subscribe({ taskGroupId, subscribeToMore }) {
+    if (TaskGroup.listener && TaskGroup.listener.taskGroupId === taskGroupId) {
+      return TaskGroup.listener;
+    }
+
+    if (TaskGroup.listener && TaskGroup.listener.taskGroupId !== taskGroupId) {
+      TaskGroup.unsubscribe();
+    }
+
+    const unsubscribe = subscribeToMore({
+      document: taskGroupSubscription,
+      variables: {
+        taskGroupId,
+        subscriptions: [
+          'tasksDefined',
+          'tasksPending',
+          'tasksRunning',
+          'tasksCompleted',
+          'tasksFailed',
+          'tasksException',
+        ],
+      },
+      updateQuery(previousResult, { subscriptionData }) {
+        const { tasksSubscriptions } = subscriptionData.data;
+        const newTask = tasksSubscriptions.status.task;
+        // Make sure data is not from another task group which
+        // can happen when a message is in flight and a user searches for
+        // a different task group.
+        const isFromSameTaskGroupId =
+          newTask.status.taskGroupId === taskGroupId;
+
+        if (
+          !previousResult ||
+          !previousResult.taskGroup ||
+          !isFromSameTaskGroupId
+        ) {
+          return previousResult;
+        }
+
+        let taskExists = false;
+        const edges = previousResult.taskGroup.edges.map(edge => {
+          if (newTask.status.taskId === edge.node.status.taskId) {
+            taskExists = true;
+
+            return dotProp.set(edge, 'node', node =>
+              dotProp.set(node, 'state', newTask.status.state)
+            );
+          }
+
+          return edge;
+        });
+
+        if (!taskExists) {
+          const task = {
+            // eslint-disable-next-line no-underscore-dangle
+            __typename: 'TasksEdge',
+            node: {
+              ...cloneDeep(newTask),
+            },
+          };
+
+          edges.push(task);
+        }
+
+        return dotProp.set(previousResult, 'taskGroup', taskGroup =>
+          dotProp.set(taskGroup, 'edges', edges)
+        );
+      },
+    });
+
+    TaskGroup.listener = {
+      taskGroupId,
+      unsubscribe,
+    };
+  }
+
   componentDidUpdate(prevProps) {
     const {
-      data: { taskGroup },
+      data: { taskGroup, subscribeToMore },
       match: {
         params: { taskGroupId },
       },
@@ -174,7 +261,7 @@ export default class TaskGroup extends Component {
 
     if (prevProps.match.params.taskGroupId !== taskGroupId) {
       updateTaskGroupIdHistory(taskGroupId);
-      this.subscribeToMore();
+      TaskGroup.subscribe({ taskGroupId, subscribeToMore });
     }
 
     if (
@@ -184,10 +271,6 @@ export default class TaskGroup extends Component {
     ) {
       this.fetchMoreTasks();
     }
-  }
-
-  componentDidMount() {
-    this.subscribeToMore();
   }
 
   handleActionClick = ({ currentTarget: { name } }) => {
@@ -257,71 +340,6 @@ export default class TaskGroup extends Component {
     }
 
     this.props.history.push(`/tasks/groups/${taskGroupId}`);
-  };
-
-  subscribeToMore = () => {
-    const { taskGroupId } = this.props.match.params;
-
-    this.props.data.subscribeToMore({
-      document: taskGroupSubscription,
-      variables: {
-        taskGroupId,
-        subscriptions: [
-          'tasksDefined',
-          'tasksPending',
-          'tasksRunning',
-          'tasksCompleted',
-          'tasksFailed',
-          'tasksException',
-        ],
-      },
-      updateQuery(previousResult, { subscriptionData }) {
-        const { tasksSubscriptions } = subscriptionData.data;
-        const newTask = tasksSubscriptions.status.task;
-        // Make sure data is not from another task group which
-        // can happen when a message is in flight and a user searches for
-        // a different task group.
-        const isFromSameTaskGroupId =
-          newTask.status.taskGroupId === taskGroupId;
-
-        if (
-          !previousResult ||
-          !previousResult.taskGroup ||
-          !isFromSameTaskGroupId
-        ) {
-          return previousResult;
-        }
-
-        let taskExists = false;
-        const edges = previousResult.taskGroup.edges.map(edge => {
-          if (newTask.status.taskId === edge.node.status.taskId) {
-            taskExists = true;
-
-            return dotProp.set(edge, 'node', node =>
-              dotProp.set(node, 'state', newTask.status.state)
-            );
-          }
-
-          return edge;
-        });
-
-        if (!taskExists) {
-          const task = {
-            // eslint-disable-next-line no-underscore-dangle
-            __typename: 'TasksEdge',
-            node: {
-              ...cloneDeep(newTask),
-            },
-          };
-
-          edges.push(task);
-        }
-
-        return dotProp.set(previousResult, 'taskGroup', taskGroup =>
-          dotProp.set(taskGroup, 'edges', edges)
-        );
-      },
-    });
   };
 
   fetchMoreTasks = () => {
