@@ -164,6 +164,7 @@ export default class ViewHook extends Component {
     } = this.state;
     const error = (data && data.error) || err;
     const hookLastFires =
+      data &&
       data.hookLastFires &&
       data.hookLastFires.sort(
         (a, b) => new Date(b.taskCreateTime) - new Date(a.taskCreateTime)

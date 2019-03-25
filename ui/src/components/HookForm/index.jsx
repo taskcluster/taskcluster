@@ -117,7 +117,7 @@ const initialHook = {
   errorPanel: {
     maxHeight: 300,
     maxWidth: '75ch',
-    overflowY: 'scroll',
+    overflow: 'auto',
   },
   headline: {
     paddingLeft: theme.spacing.triple,
@@ -554,35 +554,37 @@ export default class HookForm extends Component {
             </FormGroup>
           </ListItem>
           {!isNewHook && (
-            <ListItem>
-              <ListItemText
-                primary="Next Scheduled Fire"
-                secondary={
-                  hook.status.nextScheduledDate ? (
-                    <DateDistance from={hook.status.nextScheduledDate} />
-                  ) : (
-                    'n/a'
-                  )
-                }
-              />
-            </ListItem>
+            <Fragment>
+              <ListItem>
+                <ListItemText
+                  primary="Next Scheduled Fire"
+                  secondary={
+                    hook.status.nextScheduledDate ? (
+                      <DateDistance from={hook.status.nextScheduledDate} />
+                    ) : (
+                      'n/a'
+                    )
+                  }
+                />
+              </ListItem>
+              <ListSubheader className={classes.subheader}>
+                Last Fired Results
+              </ListSubheader>
+              <ListItem>
+                <ListItemText
+                  primary={
+                    hookLastFires && (
+                      <HookLastFiredTable
+                        items={hookLastFires}
+                        onErrorClick={this.handleDrawerOpen}
+                        paginate
+                      />
+                    )
+                  }
+                />
+              </ListItem>
+            </Fragment>
           )}
-          <ListSubheader className={classes.subheader}>
-            Last Fired Results
-          </ListSubheader>
-          <ListItem>
-            <ListItemText
-              primary={
-                hookLastFires && (
-                  <HookLastFiredTable
-                    items={hookLastFires}
-                    onErrorClick={this.handleDrawerOpen}
-                    paginate
-                  />
-                )
-              }
-            />
-          </ListItem>
           <List>
             <ListItem>
               <ListItemText
