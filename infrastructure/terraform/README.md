@@ -17,7 +17,7 @@ in the shell you are applying this from.
 ## Requirements not managed here
 
 - A kubernetes cluster
-- An (nginx ingress controller)[https://kubernetes.github.io/ingress-nginx/deploy/] in said cluster
+- An [nginx ingress controller](https://kubernetes.github.io/ingress-nginx/deploy/) in said cluster
 - A TLS secret for the rootUrl hostname in the same Kubernetes namespace as the controller
 - A rabbitmq cluster with the RabbitMQ management plugin enabled
 - An SES email address set up in AWS. This cannot be created automatically by Terraform.
