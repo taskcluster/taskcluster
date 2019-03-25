@@ -1,5 +1,5 @@
 $schema:  "/schemas/common/metaschema.json#"
-title:  "Notificaiton Type And Address"
+title:  "Notification Type And Address"
 description:  |
   Type of notification and its corresponding address.
 type: object

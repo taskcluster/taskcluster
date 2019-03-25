@@ -3671,7 +3671,7 @@
         "notificationType",
         "notificationAddress"
       ],
-      "title": "Notificaiton Type And Address",
+      "title": "Notification Type And Address",
       "type": "object"
     },
     "filename": "schemas/notify/v1/notification-address.json"
