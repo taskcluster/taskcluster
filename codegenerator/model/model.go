@@ -9,6 +9,7 @@ import (
 	"go/format"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -29,7 +30,7 @@ var (
 )
 
 // SortedAPIDefs is a sorted array of APIDefinitions
-type SortedAPIDefs []APIDefinition
+type SortedAPIDefs []*APIDefinition
 
 // needed so that SortedAPIDefs can implement sort.Interface
 func (a SortedAPIDefs) Len() int           { return len(a) }
@@ -74,7 +75,7 @@ func (apiDef *APIDefinition) generateAPICode() string {
 	return apiDef.Data.generateAPICode(apiDef.Data.Name())
 }
 
-func (apiDef *APIDefinition) loadJSON(reader io.Reader, rootURL string) {
+func (apiDef *APIDefinition) loadJSON(reader io.Reader, rootURL string) bool {
 	b := new(bytes.Buffer)
 	_, err := b.ReadFrom(reader)
 	exitOnFail(err)
@@ -91,13 +92,15 @@ func (apiDef *APIDefinition) loadJSON(reader io.Reader, rootURL string) {
 	case tcurls.ExchangesReferenceSchema(rootURL, "v0") + "#":
 		m = new(Exchange)
 	default:
-		panic(fmt.Errorf("Do not know how to handle API with schema %q", schema))
+		log.Printf("WARNING: Do not know how to handle API with schema %q", schema)
+		return false
 	}
 	err = json.Unmarshal(data, m)
 	exitOnFail(err)
 	m.setAPIDefinition(apiDef)
 	m.postPopulate(apiDef)
 	apiDef.Data = m
+	return true
 }
 
 // LoadAPIs takes care of reading all json files and performing elementary
@@ -122,17 +125,20 @@ func LoadAPIs(rootURL string) APIDefinitions {
 	apiMan := TaskclusterServiceManifest{}
 	err = apiManifestDecoder.Decode(&apiMan)
 	exitOnFail(err)
-	apiDefs := make([]APIDefinition, len(apiMan.References), len(apiMan.References))
+	apiDefs := []*APIDefinition{}
 	for i := range apiMan.References {
 		var resp *http.Response
 		resp, err = http.Get(apiMan.References[i])
 		exitOnFail(err)
 		defer resp.Body.Close()
-		apiDefs[i].URL = apiMan.References[i]
-		apiDefs[i].loadJSON(resp.Body, rootURL)
-
-		// check that the json schema is valid!
-		validateJSON(apiDefs[i].SchemaURL, apiDefs[i].URL)
+		apiDef := &APIDefinition{
+			URL: apiMan.References[i],
+		}
+		if apiDef.loadJSON(resp.Body, rootURL) {
+			apiDefs = append(apiDefs, apiDef)
+			// check that the json schema is valid!
+			validateJSON(apiDef.SchemaURL, apiDef.URL)
+		}
 	}
 	return APIDefinitions(apiDefs)
 }
@@ -175,7 +181,7 @@ func FormatSourceAndSave(sourceFile string, sourceCode []byte) {
 	exitOnFail(ioutil.WriteFile(sourceFile, formattedContent, 0644))
 }
 
-type APIDefinitions []APIDefinition
+type APIDefinitions []*APIDefinition
 
 // GenerateCode takes the objects loaded into memory in LoadAPIs
 // and writes them out as go code.
