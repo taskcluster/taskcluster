@@ -78,7 +78,7 @@
     "react-helmet": "^5.2.0",
     "react-hot-loader": "^4.3.11",
     "react-lazylog": "^3.2.0",
-    "react-router-dom": "^4.3.1",
+    "react-router-dom": "^5.0.0",
     "react-schema-viewer": "^3.2.0",
     "react-virtualized": "^9.21.0",
     "react-vnc-display": "^1.1.0",
