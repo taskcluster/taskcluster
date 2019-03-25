@@ -1,6 +1,6 @@
 ---
 noAnchors: true
 ---
-import GetStarted from '../../src/views/Documentation/views/GetStarted'
+import GetStarted from 'taskcluster-ui/views/Documentation/views/GetStarted'
 
 <GetStarted />
