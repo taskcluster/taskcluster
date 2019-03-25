@@ -1,28 +1,56 @@
 import React, { Component } from 'react';
-import { Typography, Button, withStyles } from '@material-ui/core';
+import classNames from 'classnames';
+import { string } from 'prop-types';
+import { withStyles } from '@material-ui/core';
+import Button from '../Button';
 
-@withStyles(theme => ({
+@withStyles({
   skipButton: {
     position: 'absolute',
-    left: '-2000px',
-    tabindex: '0',
-    height: theme.spacing.quad * 2,
+    left: '-999px',
     '&:focus': {
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      background: theme.palette.error.main,
-      'z-index': '100',
+      left: 'unset',
+      zIndex: 999,
     },
   },
-}))
+})
 export default class SkipNavigation extends Component {
+  static propTypes = {
+    /** A selector to jump to. */
+    selector: string,
+  };
+
+  static defaultProps = {
+    selector: null,
+  };
+
+  handleClick = e => {
+    const { selector, onClick } = this.props;
+
+    if (selector) {
+      const tag = document.querySelector(selector);
+
+      // make element focusable
+      tag.setAttribute('tabindex', '0');
+      tag.focus();
+      tag.removeAttribute('tabindex');
+    }
+
+    if (onClick) {
+      onClick(e);
+    }
+  };
+
   render() {
-    const { classes, text, onClick } = this.props;
+    const { classes, className, onClick: _, ...props } = this.props;
 
     return (
-      <Button className={classes.skipButton} onClick={onClick}>
-        <Typography>{text}</Typography>
+      <Button
+        variant="contained"
+        className={classNames(classes.skipButton, className)}
+        onClick={this.handleClick}
+        {...props}>
+        Skip to main content
       </Button>
     );
   }

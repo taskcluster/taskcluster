@@ -202,14 +202,6 @@ export default class Dashboard extends Component {
     this.setState({ showLogo: !this.state.showLogo });
   };
 
-  handleSkipButton = () => {
-    const mainTag = document.querySelector('main');
-
-    mainTag.setAttribute('tabindex', '-1');
-    mainTag.focus();
-    mainTag.removeAttribute('tabindex');
-  };
-
   render() {
     const {
       classes,
@@ -270,10 +262,7 @@ export default class Dashboard extends Component {
             [classes.docsAppBar]: isDocs,
           })}>
           <Toolbar>
-            <SkipNavigation
-              text="Skip to main content"
-              onClick={this.handleSkipButton}
-            />
+            <SkipNavigation selector="main" />
             {(!isDocs || (isDocs && isMobileView)) && (
               <IconButton
                 color="inherit"
@@ -362,7 +351,6 @@ export default class Dashboard extends Component {
           </Fragment>
         </Drawer>
         <main
-          // id="main-content"
           className={classNames(
             classes.content,
             {
