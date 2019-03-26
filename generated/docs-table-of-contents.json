@@ -1668,13 +1668,35 @@
                 },
                 "name": "roles",
                 "next": {
-                  "path": "reference/platform/queue/README",
-                  "title": "queue"
+                  "path": "reference/platform/auth/guarded-services",
+                  "title": "Guarded Services"
                 },
                 "path": "reference/platform/auth/roles",
                 "prev": {
                   "path": "reference/platform/auth/clients",
                   "title": "Clients"
+                },
+                "up": {
+                  "path": "reference/platform/auth/README",
+                  "title": "auth"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 50,
+                  "title": "Guarded Services"
+                },
+                "name": "guarded-services",
+                "next": {
+                  "path": "reference/platform/queue/README",
+                  "title": "queue"
+                },
+                "path": "reference/platform/auth/guarded-services",
+                "prev": {
+                  "path": "reference/platform/auth/roles",
+                  "title": "Roles and Role Expansion"
                 },
                 "up": {
                   "path": "reference/platform/auth/README",
@@ -1924,8 +1946,8 @@
             },
             "path": "reference/platform/queue/README",
             "prev": {
-              "path": "reference/platform/auth/roles",
-              "title": "Roles and Role Expansion"
+              "path": "reference/platform/auth/guarded-services",
+              "title": "Guarded Services"
             },
             "up": {
               "path": "reference/platform/README",

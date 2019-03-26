@@ -1,32 +1,11 @@
 # Secrets Service
 
-The secrets service allows task cluster clients with appropriate scopes to write secrets securely, and in such a way that each secret is tied to a scope. Further, scopes are used to limit the operations a particular client may perform on any secret they have been granted access to.
+The secrets service provides a simple key/value store for small bits of secret data.
+Access is limited by scopes, so values can be considered secret from those who do not have the relevant scopes.
 
-### Expire Secrets
+Secrets also have an expiration date, and once a secret has expired it can no longer be read.
+This is useful for short-term secrets such as a temporary service credential or a one-time signing key.
+Secrets that should never expire are simply given expiration dates in the distant future.
 
-The service expects the following to run periodically (daily?) to flush expired secrets:
-
-    NODE_ENV=production node lib/main.js expire
-
-# Running Tests
-
-From the project's base ``yarn install`` then ``yarn test``.
-No special configuration is required.
-Some of the tests will be skipped, but it is fine to make a pull request as long as no tests fail.
-
-To run *all* tests, you will need appropriate Taskcluster credentials.
-Using [taskcluster-cli](https://github.com/taskcluster/taskcluster-cli), run `eval $(taskcluster signin --scope assume:project:taskcluster:tests:taskcluster-secrets)`, then run `yarn test` again.
-
-# Deploying
-
-This service is deployed as a typical Heroku application.
-The scheduler add-on is used to run the expiration process (described above).
-
-# Post-Deployment Verification
-
-After deploying a new version of this service, open up the tools site and sign in.
-Using the "secrets" tool, make sure you can read some secret that you have access to (that is, one listed in the UI).
-
-# Service Owner
-
-Service Owner: dustin@mozilla.com
+Note that the *existence* of a secret is public information: no scopes are required to list secrets.
+Only the content of the secret is protected by scopes.

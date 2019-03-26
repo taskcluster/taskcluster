@@ -1,35 +1,13 @@
 # Auth Service
 
-The taskcluster authentication server manages permissions and credentials
-in the taskcluster eco-system. Identifiers, credentials and authorized
-scopes will be stored in azure table storage, and various components will
-be granted read-only access in-order to authorize requests.
+The auth service manages permissions and credentials in a Taskcluster deployment.
 
-On the client side, an authorized client must have a `CLIENT_ID` and an
-`ACCESS_TOKEN` to be used with hawk for making requests.
+## Development
 
-On the server side, `CLIENT_ID`s will resolve to `ACCESS_TOKEN` for HMAC
-validation and a set of scopes, which will be used to determine what resources
-the client is authorized to access.
+No special configuration is required for development.
 
-# Service Owner
-
-Service Owner: jonasfj@mozilla.com
-
-# Post-Deployment Verification
-
-If you deploy a copy of this application that fails to start, all of
-Taskcluster will come to a screeching halt immediately.  Don't do that.
-
-This app auto-deploys from Github to the staging environment, which uses a
-different Azure backend.
-
-# Development
-
-To hack on this service, you can begin by cloning the repository and running `yarn --frozen-lockfile` to install its dependencies.
-Then run `yarn test` to run the test suite.
-It should pass, although some tests will be skipped.
-If you are not modifing functionality tested by the skipped tests you're ready to get started: write some tests for the new functionality, then implement it!
+Run `yarn workspace taskcluster-hooks test` to run the tess.
+Some of the tests will be skipped without additional credentials, but it is fine to make a pull request as long as no tests fail.
 
 If you are modifying something requiring credentials, you may need to set up credentials.
 To do so, copy `user-config-example.yml` to `user-config.yml` and fill in the necessary credentials based on the comments in that file.

@@ -1,56 +1,14 @@
 # Index Service
 
-The task _index_ provides a service that indexes successfully completed tasks.
-To get a task indexed you must add routes on the form `index.<namespace>`, where
-`<namespace>` is a dot separated hierarchy **without any slashes**.
+The index service provides a service that indexes successfully completed tasks.
 
-**Example**, see the example below for how to specify routes and keys for
-indexing.
+Development
+-----------
 
-```js
-{
-  payload:  { /* ... */ },
-  routes: [
-    // index.<namespace> prefixed routes, tasks CC'ed such a route will be indexed
-    // under the given namespace (note, that the namespace may contain spaces)
-    "index.hg-mozilla-org.mozilla-central.nightly.linux64.debug-build",
-    "index.hg.<revision>.nightly.linux64.debug-build"
-  ],
-  extra: {
-    // Optional details for indexing service
-    index: {
-      // Ordering, this taskId will overwrite any thing that has
-      // rank <= 4000, if not provided zero will always assumed and
-      // paths will be overwritten with latest taskId and data if the were also
-      // set with rank zero.
-      rank:       4000,
+No special configuration is required for development.
 
-      // Specified when the entries expires. max 1 year, defaults to 1 year if not
-      // provided
-      expires:          new Date().toJSON(),
+Run `yarn workspace taskcluster-index test` to run the tess.
+Some of the tests will be skipped without additional credentials, but it is fine to make a pull request as long as no tests fail.
 
-      // A little informal data to store along with taskId
-      data: {
-        hgRevision: "...",
-        commitMessae: "...",
-        whatever...
-      }
-    },
-    // Extra properties for other services...
-  }
-  // Other task properties...
-}
-```
-
-When a task is indexed you can browse the namespaces, list tasks within a
-namespace. Or get the latest task from a fully qualified namespace.
-
-Deployment
-----------
-1) Supply configuration, see environment variables in `config.yml`
-2) Create a task with route `index.garbage.my-irc-nick.index-works` and see if it works.
-
-Service Owner
--------------
-
-Service Owner: jonasfj@mozilla.com
+To run *all* tests, you will need appropriate Taskcluster credentials.
+Using [taskcluster-cli](https://github.com/taskcluster/taskcluster-cli), run `eval $(taskcluster signin --scope assume:project:taskcluster:tests:taskcluster-index)`, then run the tests again.
