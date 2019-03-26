@@ -102,6 +102,56 @@ class InMemoryDatastore extends BaseDatastore {
   constructor({id}) {
     super({id});
     this.namespaces = new Map();
+
+    // owlish code begins //
+    const sample = {
+      id: 'banana',
+      workerTypes: ['build-opt', 'build-dbg'],
+      rules: [
+        {
+          id: "basic-options",
+          conditions: null,
+          values: {
+            scalingRatio: 1,
+            owner: "build-team@my-open-source-project.com",
+            description: "configuration for builds",
+          },
+          description: "Basic worker options",
+        },
+        {
+          id: "ec2-ami",
+          conditions: {
+            provider: "ec2",
+            region: "us-east-1",
+          },
+          values: {
+            ec2: {
+              ImageId: "ami-12345abcdef",
+            },
+          },
+          description: "Configure EC2 AMI images to be used",
+        },
+        {
+          id: "us-east-1a subnets",
+          conditions: {
+            provider: "ec2",
+            region: "us-east-1",
+            availabilityZone: "us-east-1a",
+          },
+          values: {
+            ec2: {
+              SubnetID: "sn-302433abcdef",
+            },
+          },
+          description: "us-east-1a needs own subnet for inter-vpc communication",
+        },
+      ],
+      biddingStrategyId: 'queue-pending-rootUrl',
+      providerIds: ['😳'],
+    };
+    const wc = new Map();
+    wc.set('banana', sample);
+    this.namespaces.set('worker-configurations', wc);
   }
 
   async connect() {

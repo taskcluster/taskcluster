@@ -81,8 +81,6 @@ class GCPProvider extends Provider {
     const expires = new Date();
     expires.setDate(expires.getDate() + 1);
 
-    const estimatedDelay = 5;
-
     // get list of available workers from gcp
 
     //
@@ -90,15 +88,15 @@ class GCPProvider extends Provider {
     return [
       new Bid({
         providerId: this.id,
-        workerType,
+        workerType: '',
         workerConfigurationId: workerConfiguration.id,
         expires,
-        price, // price for the whole bid - calculated? hardcoded?
-        capacity, // divisor for price
-        utilityFactor, // some multiplier, not sure where would come from
-        firm, // true if it's smth like EC2 Reserved Instance
-        reliability, // some number ???
-        estimatedDelay, // this can be some static value
+        price: 1, // for now hardcode
+        capacity: 2, // divisor for price
+        utilityFactor: 3, // some multiplier, not sure where would come from
+        firm: false, // true if it's smth like EC2 Reserved Instance
+        reliability: 1, // some number ???
+        estimatedDelay: 1, // this can be some static value
       }),
     ];
   }
