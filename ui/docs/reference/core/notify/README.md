@@ -15,4 +15,4 @@ Example routes:
 ]
 ```
 
-Further specification of this is contained in the [usage docs](usage). **Note: The channel should have the # preceeding it.**
+Further specification of this is contained in the [usage docs](/docs/reference/core/notify/usage). **Note: The channel should have the # preceeding it.**

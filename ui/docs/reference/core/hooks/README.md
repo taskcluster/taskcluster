@@ -37,7 +37,7 @@ The hooks service binds queues accordingly, and triggers a hook for each message
 ### JSON-e
 
 The task template at `hook.task` is treated as a JSON-e template, with a context depending on how it is fired.
-See [firing-hooks](firing-hooks) for more information.
+See [firing-hooks](/docs/reference/core/hooks/firing-hooks) for more information.
 
 ## Trigger Payloads and Privilege Escalation
 
