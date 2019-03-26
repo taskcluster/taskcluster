@@ -10,7 +10,7 @@ import CardActionArea from '@material-ui/core/CardActionArea';
 import Typography from '@material-ui/core/Typography';
 import Avatar from '@material-ui/core/Avatar';
 import Anchor from '../components/Anchor';
-import contributorsJson from '../../../../../.all-contributorsrc.json';
+import contributorsJson from '../../../../../.all-contributorsrc';
 
 @withRouter
 @withStyles(theme => ({
