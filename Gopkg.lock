@@ -293,7 +293,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f841fd980e0671311886ae677c9185db7f4196ce3083df6d7cc2801ba524a765"
+  digest = "1:66f5329cb2d9b7b9592062d17c94c4b7abff2412c04673ce4fa1ce96d48024ed"
   name = "github.com/taskcluster/taskcluster-client-go"
   packages = [
     ".",
@@ -305,7 +305,7 @@
     "tcsecrets",
   ]
   pruneopts = "UT"
-  revision = "a90df24e96eb57f4b55b7d3593639d2918605375"
+  revision = "8a9611ce9f2dcd711a40b1c84e6cc8da1caa81be"
 
 [[projects]]
   digest = "1:4b61128f4f0ec9673dedd5e4d276f4399ee7e4087ea26582711c4a17911c2156"
