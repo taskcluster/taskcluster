@@ -2,7 +2,58 @@ const path = require('path');
 const config = require('taskcluster-lib-config');
 const {REPO_ROOT, services, readYAML, writeJSON} = require('../util');
 
-const SERVICES = services();
+const SERVICES = services().filter(s => ![
+  'purge-cache',
+  'treeherder',
+  'login',
+].includes(s)); // TODO: some not yet configured
+
+/**
+ * Special cases and hacks abound!
+ */
+const genBuiltin = (service, variable) => {
+  if (variable.includes('AWS') && !['auth', 'queue', 'notify'].includes(service)) {
+    return '';
+  }
+  switch (variable) {
+  case 'AWS_ACCESS_KEY_ID': return `\${module.${service}_user.access_key_id}`;
+  case 'AWS_SECRET_ACCESS_KEY': return `\${module.${service}_user.secret_access_key}`;
+  case 'TASKCLUSTER_CLIENT_ID': return `static/taskcluster/${service}`;
+  case 'TASKCLUSTER_ACCESS_TOKEN': return `\${random_string.${service}_access_token.result}`;
+  case 'NODE_ENV': return 'production';
+  case 'MONITORING_ENABLE': return 'true';
+  case 'PUBLISH_METADATA': return 'false';
+
+  // These next two are identical
+  case 'AZURE_ACCOUNT': return `\${azurerm_storage_account.base.name}`;
+  case 'AZURE_ACCOUNT_NAME': return `\${azurerm_storage_account.base.name}`;
+
+  case 'PULSE_USERNAME': return `\${module.${service}_rabbitmq_user.username}`;
+  case 'PULSE_PASSWORD': return `\${module.${service}_rabbitmq_user.password}`;
+  case 'PULSE_HOSTNAME': return '${var.rabbitmq_hostname}';
+  case 'PULSE_VHOST': return '${var.rabbitmq_vhost}';
+  case 'FORCE_SSL': return 'false';
+  case 'TRUST_PROXY': return 'true';
+
+  // These 4 should be condensed into 2
+  case 'TABLE_SIGNING_KEY': return `\${base64encode(random_string.${service}_table_crypto_key.result)}`;
+  case 'TABLE_CRYPTO_KEY': return `\${random_string.${service}_table_signing_key.result}`;
+  case 'AZURE_SIGNING_KEY': return `\${base64encode(random_string.${service}_azure_crypto_key.result)}`;
+  case 'AZURE_CRYPTO_KEY': return `\${random_string.${service}_azure_signing_key.result}`;
+
+  default: return undefined;
+  }
+};
+
+/**
+ * Special cases and hacks abound!
+ */
+const genVar = (service, variable) => {
+  switch (variable) {
+  case 'LEVEL': return {type: 'string', default: 'notice'};
+  default: return {type: 'string', default: ''};
+  }
+};
 
 exports.tasks = [];
 
@@ -40,21 +91,40 @@ SERVICES.forEach(name => {
     ],
     provides: [`kube-tf-${name}`],
     run: async (requirements, utils) => {
-      const vars = requirements[`env-vars-${name}`];
+      const vars = requirements[`env-vars-${name}`].map(v => v.var);
       const procs = requirements[`procs-${name}`];
 
       const secretName = `taskcluster-${name}`;
 
-      const conf = {
-        module: {
-          [`${name}-secrets`]: {
-            source: 'modules/service-secrets',
-            project_name: secretName,
-            secrets: vars.reduce((w, v) => {
-              w[v.var] = 'TODO';
-              return w;
-            }, {}),
-          },
+      const conf = {variable: {}};
+
+      // All services need this even if they don't say so
+      if (!vars.includes('NODE_ENV')) {
+        vars.push('NODE_ENV');
+      }
+
+      // These are handled directly in tf
+      ['PORT', 'TASKCLUSTER_ROOT_URL'].forEach(r => {
+        if(vars.includes(r)) {
+          vars.splice(vars.indexOf(r), 1);
+        }
+      });
+
+      conf.module = {
+        [`${name}-secrets`]: {
+          source: 'modules/service-secrets',
+          project_name: secretName,
+          secrets: vars.reduce((w, v) => {
+            const builtin = genBuiltin(name, v);
+            if (builtin !== undefined) {
+              w[v] = builtin;
+            } else {
+              const varName = `gen_${name}_${v}`;
+              w[v] = `\${var.${varName}}`;
+              conf.variable[varName] = genVar(name, v);
+            }
+            return w;
+          }, {}),
         },
       };
 
@@ -116,8 +186,9 @@ exports.tasks.push({
 
     const result = Object.values(requirements).reduce((w, s) => {
       Object.assign(w['module'], s.module);
+      Object.assign(w['variable'], s.variable);
       return w;
-    }, {module: {}});
+    }, {module: {}, variable: {}});
 
     await writeJSON('infrastructure/terraform/services.tf.json', result);
     return {

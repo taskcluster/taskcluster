@@ -17,43 +17,41 @@
     "auth-secrets": {
       "project_name": "taskcluster-auth",
       "secrets": {
-        "AUDIT_LOG": "TODO",
-        "AWS_ACCESS_KEY_ID": "TODO",
-        "AWS_REGION": "TODO",
-        "AWS_SECRET_ACCESS_KEY": "TODO",
-        "AZURE_ACCOUNT": "TODO",
-        "AZURE_ACCOUNTS": "TODO",
-        "AZURE_ACCOUNT_KEY": "TODO",
-        "AZURE_CRYPTO_KEY": "TODO",
-        "AZURE_SIGNING_KEY": "TODO",
-        "CLIENT_TABLE_NAME": "TODO",
-        "DOCS_BUCKET": "TODO",
-        "FORCE_SSL": "TODO",
-        "LEVEL": "TODO",
-        "MONITORING_ENABLE": "TODO",
-        "NODE_ENV": "TODO",
-        "PORT": "TODO",
-        "PRETTY_LOGGING": "TODO",
-        "PUBLISH_METADATA": "TODO",
-        "PULSE_HOSTNAME": "TODO",
-        "PULSE_PASSWORD": "TODO",
-        "PULSE_USERNAME": "TODO",
-        "PULSE_VHOST": "TODO",
-        "REFS_BUCKET": "TODO",
-        "ROLES_CONTAINER_NAME": "TODO",
-        "SCHEMAS_BUCKET": "TODO",
-        "SENTRY_AUTH_TOKEN": "TODO",
-        "SENTRY_HOST": "TODO",
-        "SENTRY_KEY_PREFIX": "TODO",
-        "SENTRY_ORGANIZATION": "TODO",
-        "SENTRY_TEAM": "TODO",
-        "STATIC_CLIENTS": "TODO",
-        "STATSUM_API_SECRET": "TODO",
-        "STATSUM_BASE_URL": "TODO",
-        "TASKCLUSTER_ROOT_URL": "TODO",
-        "TEST_BUCKET": "TODO",
-        "TRUST_PROXY": "TODO",
-        "WEBSOCKTUNNEL_SECRET": "TODO"
+        "AUDIT_LOG": "${var.gen_auth_AUDIT_LOG}",
+        "AWS_ACCESS_KEY_ID": "${module.auth_user.access_key_id}",
+        "AWS_REGION": "${var.gen_auth_AWS_REGION}",
+        "AWS_SECRET_ACCESS_KEY": "${module.auth_user.secret_access_key}",
+        "AZURE_ACCOUNT": "${azurerm_storage_account.base.name}",
+        "AZURE_ACCOUNTS": "${var.gen_auth_AZURE_ACCOUNTS}",
+        "AZURE_ACCOUNT_KEY": "${var.gen_auth_AZURE_ACCOUNT_KEY}",
+        "AZURE_CRYPTO_KEY": "${random_string.auth_azure_signing_key.result}",
+        "AZURE_SIGNING_KEY": "${base64encode(random_string.auth_azure_crypto_key.result)}",
+        "CLIENT_TABLE_NAME": "${var.gen_auth_CLIENT_TABLE_NAME}",
+        "DOCS_BUCKET": "${var.gen_auth_DOCS_BUCKET}",
+        "FORCE_SSL": "false",
+        "LEVEL": "${var.gen_auth_LEVEL}",
+        "MONITORING_ENABLE": "true",
+        "NODE_ENV": "production",
+        "PRETTY_LOGGING": "${var.gen_auth_PRETTY_LOGGING}",
+        "PUBLISH_METADATA": "false",
+        "PULSE_HOSTNAME": "${var.rabbitmq_hostname}",
+        "PULSE_PASSWORD": "${module.auth_rabbitmq_user.password}",
+        "PULSE_USERNAME": "${module.auth_rabbitmq_user.username}",
+        "PULSE_VHOST": "${var.rabbitmq_vhost}",
+        "REFS_BUCKET": "${var.gen_auth_REFS_BUCKET}",
+        "ROLES_CONTAINER_NAME": "${var.gen_auth_ROLES_CONTAINER_NAME}",
+        "SCHEMAS_BUCKET": "${var.gen_auth_SCHEMAS_BUCKET}",
+        "SENTRY_AUTH_TOKEN": "${var.gen_auth_SENTRY_AUTH_TOKEN}",
+        "SENTRY_HOST": "${var.gen_auth_SENTRY_HOST}",
+        "SENTRY_KEY_PREFIX": "${var.gen_auth_SENTRY_KEY_PREFIX}",
+        "SENTRY_ORGANIZATION": "${var.gen_auth_SENTRY_ORGANIZATION}",
+        "SENTRY_TEAM": "${var.gen_auth_SENTRY_TEAM}",
+        "STATIC_CLIENTS": "${var.gen_auth_STATIC_CLIENTS}",
+        "STATSUM_API_SECRET": "${var.gen_auth_STATSUM_API_SECRET}",
+        "STATSUM_BASE_URL": "${var.gen_auth_STATSUM_BASE_URL}",
+        "TEST_BUCKET": "${var.gen_auth_TEST_BUCKET}",
+        "TRUST_PROXY": "true",
+        "WEBSOCKTUNNEL_SECRET": "${var.gen_auth_WEBSOCKTUNNEL_SECRET}"
       },
       "source": "modules/service-secrets"
     },
@@ -73,13 +71,13 @@
     "built-in-workers-secrets": {
       "project_name": "taskcluster-built-in-workers",
       "secrets": {
-        "LEVEL": "TODO",
-        "MONITORING_ENABLE": "TODO",
-        "PRETTY_LOGGING": "TODO",
-        "PUBLISH_METADATA": "TODO",
-        "TASKCLUSTER_ACCESS_TOKEN": "TODO",
-        "TASKCLUSTER_CLIENT_ID": "TODO",
-        "TASKCLUSTER_ROOT_URL": "TODO"
+        "LEVEL": "${var.gen_built-in-workers_LEVEL}",
+        "MONITORING_ENABLE": "true",
+        "NODE_ENV": "production",
+        "PRETTY_LOGGING": "${var.gen_built-in-workers_PRETTY_LOGGING}",
+        "PUBLISH_METADATA": "false",
+        "TASKCLUSTER_ACCESS_TOKEN": "${random_string.built-in-workers_access_token.result}",
+        "TASKCLUSTER_CLIENT_ID": "static/taskcluster/built-in-workers"
       },
       "source": "modules/service-secrets"
     },
@@ -99,30 +97,29 @@
     "github-secrets": {
       "project_name": "taskcluster-github",
       "secrets": {
-        "AWS_ACCESS_KEY": "TODO",
-        "AWS_SECRET_KEY": "TODO",
-        "AZURE_ACCOUNT_NAME": "TODO",
-        "BOT_USERNAME": "TODO",
-        "FORCE_SSL": "TODO",
-        "GITHUB_APP_ID": "TODO",
-        "GITHUB_PRIVATE_PEM": "TODO",
-        "LEVEL": "TODO",
-        "MONITORING_ENABLE": "TODO",
-        "PORT": "TODO",
-        "PRETTY_LOGGING": "TODO",
-        "PROVISIONER_ID": "TODO",
-        "PUBLISH_METADATA": "TODO",
-        "PULSE_HOSTNAME": "TODO",
-        "PULSE_NAMESPACE": "TODO",
-        "PULSE_PASSWORD": "TODO",
-        "PULSE_USERNAME": "TODO",
-        "PULSE_VHOST": "TODO",
-        "TASKCLUSTER_ACCESS_TOKEN": "TODO",
-        "TASKCLUSTER_CLIENT_ID": "TODO",
-        "TASKCLUSTER_ROOT_URL": "TODO",
-        "TRUST_PROXY": "TODO",
-        "WEBHOOK_SECRET": "TODO",
-        "WORKER_TYPE": "TODO"
+        "AWS_ACCESS_KEY": "",
+        "AWS_SECRET_KEY": "",
+        "AZURE_ACCOUNT_NAME": "${azurerm_storage_account.base.name}",
+        "BOT_USERNAME": "${var.gen_github_BOT_USERNAME}",
+        "FORCE_SSL": "false",
+        "GITHUB_APP_ID": "${var.gen_github_GITHUB_APP_ID}",
+        "GITHUB_PRIVATE_PEM": "${var.gen_github_GITHUB_PRIVATE_PEM}",
+        "LEVEL": "${var.gen_github_LEVEL}",
+        "MONITORING_ENABLE": "true",
+        "NODE_ENV": "production",
+        "PRETTY_LOGGING": "${var.gen_github_PRETTY_LOGGING}",
+        "PROVISIONER_ID": "${var.gen_github_PROVISIONER_ID}",
+        "PUBLISH_METADATA": "false",
+        "PULSE_HOSTNAME": "${var.rabbitmq_hostname}",
+        "PULSE_NAMESPACE": "${var.gen_github_PULSE_NAMESPACE}",
+        "PULSE_PASSWORD": "${module.github_rabbitmq_user.password}",
+        "PULSE_USERNAME": "${module.github_rabbitmq_user.username}",
+        "PULSE_VHOST": "${var.rabbitmq_vhost}",
+        "TASKCLUSTER_ACCESS_TOKEN": "${random_string.github_access_token.result}",
+        "TASKCLUSTER_CLIENT_ID": "static/taskcluster/github",
+        "TRUST_PROXY": "true",
+        "WEBHOOK_SECRET": "${var.gen_github_WEBHOOK_SECRET}",
+        "WORKER_TYPE": "${var.gen_github_WORKER_TYPE}"
       },
       "source": "modules/service-secrets"
     },
@@ -209,30 +206,28 @@
     "hooks-secrets": {
       "project_name": "taskcluster-hooks",
       "secrets": {
-        "AWS_ACCESS_KEY_ID": "TODO",
-        "AWS_SECRET_ACCESS_KEY": "TODO",
-        "AZURE_ACCOUNT": "TODO",
-        "FORCE_SSL": "TODO",
-        "HOOK_TABLE_NAME": "TODO",
-        "INFLUX_CONNECTION": "TODO",
-        "LASTFIRE_TABLE_NAME": "TODO",
-        "LEVEL": "TODO",
-        "MONITORING_ENABLE": "TODO",
-        "NODE_ENV": "TODO",
-        "PORT": "TODO",
-        "PRETTY_LOGGING": "TODO",
-        "PUBLISH_METADATA": "TODO",
-        "PULSE_HOSTNAME": "TODO",
-        "PULSE_PASSWORD": "TODO",
-        "PULSE_USERNAME": "TODO",
-        "PULSE_VHOST": "TODO",
-        "QUEUE_TABLE_NAME": "TODO",
-        "TABLE_CRYPTO_KEY": "TODO",
-        "TABLE_SIGNING_KEY": "TODO",
-        "TASKCLUSTER_ACCESS_TOKEN": "TODO",
-        "TASKCLUSTER_CLIENT_ID": "TODO",
-        "TASKCLUSTER_ROOT_URL": "TODO",
-        "TRUST_PROXY": "TODO"
+        "AWS_ACCESS_KEY_ID": "",
+        "AWS_SECRET_ACCESS_KEY": "",
+        "AZURE_ACCOUNT": "${azurerm_storage_account.base.name}",
+        "FORCE_SSL": "false",
+        "HOOK_TABLE_NAME": "${var.gen_hooks_HOOK_TABLE_NAME}",
+        "INFLUX_CONNECTION": "${var.gen_hooks_INFLUX_CONNECTION}",
+        "LASTFIRE_TABLE_NAME": "${var.gen_hooks_LASTFIRE_TABLE_NAME}",
+        "LEVEL": "${var.gen_hooks_LEVEL}",
+        "MONITORING_ENABLE": "true",
+        "NODE_ENV": "production",
+        "PRETTY_LOGGING": "${var.gen_hooks_PRETTY_LOGGING}",
+        "PUBLISH_METADATA": "false",
+        "PULSE_HOSTNAME": "${var.rabbitmq_hostname}",
+        "PULSE_PASSWORD": "${module.hooks_rabbitmq_user.password}",
+        "PULSE_USERNAME": "${module.hooks_rabbitmq_user.username}",
+        "PULSE_VHOST": "${var.rabbitmq_vhost}",
+        "QUEUE_TABLE_NAME": "${var.gen_hooks_QUEUE_TABLE_NAME}",
+        "TABLE_CRYPTO_KEY": "${random_string.hooks_table_signing_key.result}",
+        "TABLE_SIGNING_KEY": "${base64encode(random_string.hooks_table_crypto_key.result)}",
+        "TASKCLUSTER_ACCESS_TOKEN": "${random_string.hooks_access_token.result}",
+        "TASKCLUSTER_CLIENT_ID": "static/taskcluster/hooks",
+        "TRUST_PROXY": "true"
       },
       "source": "modules/service-secrets"
     },
@@ -279,24 +274,23 @@
     "index-secrets": {
       "project_name": "taskcluster-index",
       "secrets": {
-        "AWS_ACCESS_KEY_ID": "TODO",
-        "AWS_SECRET_ACCESS_KEY": "TODO",
-        "AZURE_ACCOUNT": "TODO",
-        "FORCE_SSL": "TODO",
-        "LEVEL": "TODO",
-        "MONITORING_ENABLE": "TODO",
-        "PORT": "TODO",
-        "PRETTY_LOGGING": "TODO",
-        "PUBLISH_METADATA": "TODO",
-        "PULSE_HOSTNAME": "TODO",
-        "PULSE_NAMESPACE": "TODO",
-        "PULSE_PASSWORD": "TODO",
-        "PULSE_USERNAME": "TODO",
-        "PULSE_VHOST": "TODO",
-        "TASKCLUSTER_ACCESS_TOKEN": "TODO",
-        "TASKCLUSTER_CLIENT_ID": "TODO",
-        "TASKCLUSTER_ROOT_URL": "TODO",
-        "TRUST_PROXY": "TODO"
+        "AWS_ACCESS_KEY_ID": "",
+        "AWS_SECRET_ACCESS_KEY": "",
+        "AZURE_ACCOUNT": "${azurerm_storage_account.base.name}",
+        "FORCE_SSL": "false",
+        "LEVEL": "${var.gen_index_LEVEL}",
+        "MONITORING_ENABLE": "true",
+        "NODE_ENV": "production",
+        "PRETTY_LOGGING": "${var.gen_index_PRETTY_LOGGING}",
+        "PUBLISH_METADATA": "false",
+        "PULSE_HOSTNAME": "${var.rabbitmq_hostname}",
+        "PULSE_NAMESPACE": "${var.gen_index_PULSE_NAMESPACE}",
+        "PULSE_PASSWORD": "${module.index_rabbitmq_user.password}",
+        "PULSE_USERNAME": "${module.index_rabbitmq_user.username}",
+        "PULSE_VHOST": "${var.rabbitmq_vhost}",
+        "TASKCLUSTER_ACCESS_TOKEN": "${random_string.index_access_token.result}",
+        "TASKCLUSTER_CLIENT_ID": "static/taskcluster/index",
+        "TRUST_PROXY": "true"
       },
       "source": "modules/service-secrets"
     },
@@ -312,29 +306,6 @@
       "secrets_hash": "${module.index-secrets.secrets_hash}",
       "service_name": "index",
       "source": "modules/deployment"
-    },
-    "login-secrets": {
-      "project_name": "taskcluster-login",
-      "secrets": {
-        "AUTH0_API_AUDIENCE": "TODO",
-        "AUTH0_CLIENT_ID": "TODO",
-        "AUTH0_CLIENT_SECRET": "TODO",
-        "AUTH0_DOMAIN": "TODO",
-        "AWS_ACCESS_KEY_ID": "TODO",
-        "AWS_SECRET_ACCESS_KEY": "TODO",
-        "FORCE_SSL": "TODO",
-        "LEVEL": "TODO",
-        "MONITORING_ENABLE": "TODO",
-        "NODE_ENV": "TODO",
-        "PORT": "TODO",
-        "PRETTY_LOGGING": "TODO",
-        "PUBLISH_METADATA": "TODO",
-        "TASKCLUSTER_ACCESS_TOKEN": "TODO",
-        "TASKCLUSTER_CLIENT_ID": "TODO",
-        "TASKCLUSTER_ROOT_URL": "TODO",
-        "TRUST_PROXY": "TODO"
-      },
-      "source": "modules/service-secrets"
     },
     "notify-handler": {
       "background_job": true,
@@ -365,37 +336,35 @@
     "notify-secrets": {
       "project_name": "taskcluster-notify",
       "secrets": {
-        "AWS_ACCESS_KEY_ID": "TODO",
-        "AWS_REGION": "TODO",
-        "AWS_SECRET_ACCESS_KEY": "TODO",
-        "AZURE_ACCOUNT": "TODO",
-        "DENYLISTED_NOTIFICATION_TABLE_NAME": "TODO",
-        "EMAIL_BLACKLIST": "TODO",
-        "EMAIL_SOURCE_ADDRESS": "TODO",
-        "FORCE_SSL": "TODO",
-        "IRC_DEBUG": "TODO",
-        "IRC_NICK": "TODO",
-        "IRC_PASSWORD": "TODO",
-        "IRC_PORT": "TODO",
-        "IRC_REAL_NAME": "TODO",
-        "IRC_SERVER": "TODO",
-        "IRC_USER_NAME": "TODO",
-        "LEVEL": "TODO",
-        "MONITORING_ENABLE": "TODO",
-        "NODE_ENV": "TODO",
-        "PORT": "TODO",
-        "PRETTY_LOGGING": "TODO",
-        "PUBLISH_METADATA": "TODO",
-        "PULSE_HOSTNAME": "TODO",
-        "PULSE_NAMESPACE": "TODO",
-        "PULSE_PASSWORD": "TODO",
-        "PULSE_USERNAME": "TODO",
-        "PULSE_VHOST": "TODO",
-        "SQS_QUEUE": "TODO",
-        "TASKCLUSTER_ACCESS_TOKEN": "TODO",
-        "TASKCLUSTER_CLIENT_ID": "TODO",
-        "TASKCLUSTER_ROOT_URL": "TODO",
-        "TRUST_PROXY": "TODO"
+        "AWS_ACCESS_KEY_ID": "${module.notify_user.access_key_id}",
+        "AWS_REGION": "${var.gen_notify_AWS_REGION}",
+        "AWS_SECRET_ACCESS_KEY": "${module.notify_user.secret_access_key}",
+        "AZURE_ACCOUNT": "${azurerm_storage_account.base.name}",
+        "DENYLISTED_NOTIFICATION_TABLE_NAME": "${var.gen_notify_DENYLISTED_NOTIFICATION_TABLE_NAME}",
+        "EMAIL_BLACKLIST": "${var.gen_notify_EMAIL_BLACKLIST}",
+        "EMAIL_SOURCE_ADDRESS": "${var.gen_notify_EMAIL_SOURCE_ADDRESS}",
+        "FORCE_SSL": "false",
+        "IRC_DEBUG": "${var.gen_notify_IRC_DEBUG}",
+        "IRC_NICK": "${var.gen_notify_IRC_NICK}",
+        "IRC_PASSWORD": "${var.gen_notify_IRC_PASSWORD}",
+        "IRC_PORT": "${var.gen_notify_IRC_PORT}",
+        "IRC_REAL_NAME": "${var.gen_notify_IRC_REAL_NAME}",
+        "IRC_SERVER": "${var.gen_notify_IRC_SERVER}",
+        "IRC_USER_NAME": "${var.gen_notify_IRC_USER_NAME}",
+        "LEVEL": "${var.gen_notify_LEVEL}",
+        "MONITORING_ENABLE": "true",
+        "NODE_ENV": "production",
+        "PRETTY_LOGGING": "${var.gen_notify_PRETTY_LOGGING}",
+        "PUBLISH_METADATA": "false",
+        "PULSE_HOSTNAME": "${var.rabbitmq_hostname}",
+        "PULSE_NAMESPACE": "${var.gen_notify_PULSE_NAMESPACE}",
+        "PULSE_PASSWORD": "${module.notify_rabbitmq_user.password}",
+        "PULSE_USERNAME": "${module.notify_rabbitmq_user.username}",
+        "PULSE_VHOST": "${var.rabbitmq_vhost}",
+        "SQS_QUEUE": "${var.gen_notify_SQS_QUEUE}",
+        "TASKCLUSTER_ACCESS_TOKEN": "${random_string.notify_access_token.result}",
+        "TASKCLUSTER_CLIENT_ID": "static/taskcluster/notify",
+        "TRUST_PROXY": "true"
       },
       "source": "modules/service-secrets"
     },
@@ -410,55 +379,6 @@
       "secret_name": "taskcluster-notify",
       "secrets_hash": "${module.notify-secrets.secrets_hash}",
       "service_name": "notify",
-      "source": "modules/deployment"
-    },
-    "purge-cache-expireCachePurges": {
-      "deadline_seconds": 86400,
-      "disabled_services": "${var.disabled_services}",
-      "docker_image": "${local.taskcluster_image_monoimage}",
-      "proc_name": "expireCachePurges",
-      "project_name": "taskcluster-purge-cache",
-      "root_url": "${var.root_url}",
-      "schedule": "0 0 * * *",
-      "secret_keys": "${module.purge-cache-secrets.env_var_keys}",
-      "secret_name": "taskcluster-purge-cache",
-      "secrets_hash": "${module.purge-cache-secrets.secrets_hash}",
-      "service_name": "purge-cache",
-      "source": "modules/scheduled-job"
-    },
-    "purge-cache-secrets": {
-      "project_name": "taskcluster-purge-cache",
-      "secrets": {
-        "AWS_ACCESS_KEY_ID": "TODO",
-        "AWS_SECRET_ACCESS_KEY": "TODO",
-        "AZURE_ACCOUNT": "TODO",
-        "FORCE_SSL": "TODO",
-        "LEVEL": "TODO",
-        "MONITORING_ENABLE": "TODO",
-        "PORT": "TODO",
-        "PRETTY_LOGGING": "TODO",
-        "PUBLISH_METADATA": "TODO",
-        "PULSE_CONTACT": "TODO",
-        "PULSE_EXPIRES_AFTER": "TODO",
-        "PULSE_NAMESPACE": "TODO",
-        "TASKCLUSTER_ACCESS_TOKEN": "TODO",
-        "TASKCLUSTER_CLIENT_ID": "TODO",
-        "TASKCLUSTER_ROOT_URL": "TODO",
-        "TRUST_PROXY": "TODO"
-      },
-      "source": "modules/service-secrets"
-    },
-    "purge-cache-web": {
-      "disabled_services": "${var.disabled_services}",
-      "docker_image": "${local.taskcluster_image_monoimage}",
-      "proc_name": "web",
-      "project_name": "taskcluster-purge-cache",
-      "readiness_path": "/api/purge-cache/v1/ping",
-      "root_url": "${var.root_url}",
-      "secret_keys": "${module.purge-cache-secrets.env_var_keys}",
-      "secret_name": "taskcluster-purge-cache",
-      "secrets_hash": "${module.purge-cache-secrets.secrets_hash}",
-      "service_name": "purge-cache",
       "source": "modules/deployment"
     },
     "queue-claimResolver": {
@@ -629,37 +549,35 @@
     "queue-secrets": {
       "project_name": "taskcluster-queue",
       "secrets": {
-        "ARTIFACT_REGION": "TODO",
-        "AWS_ACCESS_KEY_ID": "TODO",
-        "AWS_SECRET_ACCESS_KEY": "TODO",
-        "AZURE_ACCOUNT_ID": "TODO",
-        "AZURE_ACCOUNT_KEY": "TODO",
-        "AZURE_REPORT_CHANCE": "TODO",
-        "AZURE_REPORT_THRESHOLD": "TODO",
-        "AZURE_TABLE_ACCOUNT_NAME": "TODO",
-        "BLOB_ARTIFACT_REGION": "TODO",
-        "FORCE_SSL": "TODO",
-        "LEVEL": "TODO",
-        "MONITORING_ENABLE": "TODO",
-        "NODE_ENV": "TODO",
-        "PORT": "TODO",
-        "PRETTY_LOGGING": "TODO",
-        "PRIVATE_ARTIFACT_BUCKET": "TODO",
-        "PRIVATE_BLOB_ARTIFACT_BUCKET": "TODO",
-        "PUBLIC_ARTIFACT_BUCKET": "TODO",
-        "PUBLIC_ARTIFACT_BUCKET_CDN": "TODO",
-        "PUBLIC_ARTIFACT_EC2_PROXIES": "TODO",
-        "PUBLIC_BLOB_ARTIFACT_BUCKET": "TODO",
-        "PUBLISH_METADATA": "TODO",
-        "PULSE_HOSTNAME": "TODO",
-        "PULSE_NAMESPACE": "TODO",
-        "PULSE_PASSWORD": "TODO",
-        "PULSE_USERNAME": "TODO",
-        "PULSE_VHOST": "TODO",
-        "TASKCLUSTER_ACCESS_TOKEN": "TODO",
-        "TASKCLUSTER_CLIENT_ID": "TODO",
-        "TASKCLUSTER_ROOT_URL": "TODO",
-        "USE_CLOUD_MIRROR": "TODO"
+        "ARTIFACT_REGION": "${var.gen_queue_ARTIFACT_REGION}",
+        "AWS_ACCESS_KEY_ID": "${module.queue_user.access_key_id}",
+        "AWS_SECRET_ACCESS_KEY": "${module.queue_user.secret_access_key}",
+        "AZURE_ACCOUNT_ID": "${var.gen_queue_AZURE_ACCOUNT_ID}",
+        "AZURE_ACCOUNT_KEY": "${var.gen_queue_AZURE_ACCOUNT_KEY}",
+        "AZURE_REPORT_CHANCE": "${var.gen_queue_AZURE_REPORT_CHANCE}",
+        "AZURE_REPORT_THRESHOLD": "${var.gen_queue_AZURE_REPORT_THRESHOLD}",
+        "AZURE_TABLE_ACCOUNT_NAME": "${var.gen_queue_AZURE_TABLE_ACCOUNT_NAME}",
+        "BLOB_ARTIFACT_REGION": "${var.gen_queue_BLOB_ARTIFACT_REGION}",
+        "FORCE_SSL": "false",
+        "LEVEL": "${var.gen_queue_LEVEL}",
+        "MONITORING_ENABLE": "true",
+        "NODE_ENV": "production",
+        "PRETTY_LOGGING": "${var.gen_queue_PRETTY_LOGGING}",
+        "PRIVATE_ARTIFACT_BUCKET": "${var.gen_queue_PRIVATE_ARTIFACT_BUCKET}",
+        "PRIVATE_BLOB_ARTIFACT_BUCKET": "${var.gen_queue_PRIVATE_BLOB_ARTIFACT_BUCKET}",
+        "PUBLIC_ARTIFACT_BUCKET": "${var.gen_queue_PUBLIC_ARTIFACT_BUCKET}",
+        "PUBLIC_ARTIFACT_BUCKET_CDN": "${var.gen_queue_PUBLIC_ARTIFACT_BUCKET_CDN}",
+        "PUBLIC_ARTIFACT_EC2_PROXIES": "${var.gen_queue_PUBLIC_ARTIFACT_EC2_PROXIES}",
+        "PUBLIC_BLOB_ARTIFACT_BUCKET": "${var.gen_queue_PUBLIC_BLOB_ARTIFACT_BUCKET}",
+        "PUBLISH_METADATA": "false",
+        "PULSE_HOSTNAME": "${var.rabbitmq_hostname}",
+        "PULSE_NAMESPACE": "${var.gen_queue_PULSE_NAMESPACE}",
+        "PULSE_PASSWORD": "${module.queue_rabbitmq_user.password}",
+        "PULSE_USERNAME": "${module.queue_rabbitmq_user.username}",
+        "PULSE_VHOST": "${var.rabbitmq_vhost}",
+        "TASKCLUSTER_ACCESS_TOKEN": "${random_string.queue_access_token.result}",
+        "TASKCLUSTER_CLIENT_ID": "static/taskcluster/queue",
+        "USE_CLOUD_MIRROR": "${var.gen_queue_USE_CLOUD_MIRROR}"
       },
       "source": "modules/service-secrets"
     },
@@ -693,21 +611,20 @@
     "secrets-secrets": {
       "project_name": "taskcluster-secrets",
       "secrets": {
-        "AWS_ACCESS_KEY_ID": "TODO",
-        "AWS_SECRET_ACCESS_KEY": "TODO",
-        "AZURE_ACCOUNT": "TODO",
-        "AZURE_CRYPTO_KEY": "TODO",
-        "AZURE_SIGNING_KEY": "TODO",
-        "AZURE_TABLE_NAME": "TODO",
-        "FORCE_SSL": "TODO",
-        "LEVEL": "TODO",
-        "MONITORING_ENABLE": "TODO",
-        "PORT": "TODO",
-        "PRETTY_LOGGING": "TODO",
-        "PUBLISH_METADATA": "TODO",
-        "TASKCLUSTER_ACCESS_TOKEN": "TODO",
-        "TASKCLUSTER_CLIENT_ID": "TODO",
-        "TASKCLUSTER_ROOT_URL": "TODO"
+        "AWS_ACCESS_KEY_ID": "",
+        "AWS_SECRET_ACCESS_KEY": "",
+        "AZURE_ACCOUNT": "${azurerm_storage_account.base.name}",
+        "AZURE_CRYPTO_KEY": "${random_string.secrets_azure_signing_key.result}",
+        "AZURE_SIGNING_KEY": "${base64encode(random_string.secrets_azure_crypto_key.result)}",
+        "AZURE_TABLE_NAME": "${var.gen_secrets_AZURE_TABLE_NAME}",
+        "FORCE_SSL": "false",
+        "LEVEL": "${var.gen_secrets_LEVEL}",
+        "MONITORING_ENABLE": "true",
+        "NODE_ENV": "production",
+        "PRETTY_LOGGING": "${var.gen_secrets_PRETTY_LOGGING}",
+        "PUBLISH_METADATA": "false",
+        "TASKCLUSTER_ACCESS_TOKEN": "${random_string.secrets_access_token.result}",
+        "TASKCLUSTER_CLIENT_ID": "static/taskcluster/secrets"
       },
       "source": "modules/service-secrets"
     },
@@ -724,46 +641,24 @@
       "service_name": "secrets",
       "source": "modules/deployment"
     },
-    "treeherder-secrets": {
-      "project_name": "taskcluster-treeherder",
-      "secrets": {
-        "AWS_ACCESS_KEY_ID": "TODO",
-        "AWS_SECRET_ACCESS_KEY": "TODO",
-        "LEVEL": "TODO",
-        "MONITORING_ENABLE": "TODO",
-        "PRETTY_LOGGING": "TODO",
-        "PUBLISH_METADATA": "TODO",
-        "PULSE_HOSTNAME": "TODO",
-        "PULSE_NAMESPACE": "TODO",
-        "PULSE_PASSWORD": "TODO",
-        "PULSE_USERNAME": "TODO",
-        "PULSE_VHOST": "TODO",
-        "TASKCLUSTER_ACCESS_TOKEN": "TODO",
-        "TASKCLUSTER_CLIENT_ID": "TODO",
-        "TASKCLUSTER_ROOT_URL": "TODO",
-        "TREEHERDER_ROUTE_PREFIX": "TODO"
-      },
-      "source": "modules/service-secrets"
-    },
     "web-server-secrets": {
       "project_name": "taskcluster-web-server",
       "secrets": {
-        "GITHUB_CLIENT_ID": "TODO",
-        "GITHUB_CLIENT_SECRET": "TODO",
-        "LEVEL": "TODO",
-        "LOGIN_STRATEGIES": "TODO",
-        "MONITORING_ENABLE": "TODO",
-        "PORT": "TODO",
-        "PRETTY_LOGGING": "TODO",
-        "PUBLIC_URL": "TODO",
-        "PULSE_HOSTNAME": "TODO",
-        "PULSE_NAMESPACE": "TODO",
-        "PULSE_PASSWORD": "TODO",
-        "PULSE_USERNAME": "TODO",
-        "PULSE_VHOST": "TODO",
-        "TASKCLUSTER_ACCESS_TOKEN": "TODO",
-        "TASKCLUSTER_CLIENT_ID": "TODO",
-        "TASKCLUSTER_ROOT_URL": "TODO"
+        "GITHUB_CLIENT_ID": "${var.gen_web-server_GITHUB_CLIENT_ID}",
+        "GITHUB_CLIENT_SECRET": "${var.gen_web-server_GITHUB_CLIENT_SECRET}",
+        "LEVEL": "${var.gen_web-server_LEVEL}",
+        "LOGIN_STRATEGIES": "${var.gen_web-server_LOGIN_STRATEGIES}",
+        "MONITORING_ENABLE": "true",
+        "NODE_ENV": "production",
+        "PRETTY_LOGGING": "${var.gen_web-server_PRETTY_LOGGING}",
+        "PUBLIC_URL": "${var.gen_web-server_PUBLIC_URL}",
+        "PULSE_HOSTNAME": "${var.rabbitmq_hostname}",
+        "PULSE_NAMESPACE": "${var.gen_web-server_PULSE_NAMESPACE}",
+        "PULSE_PASSWORD": "${module.web-server_rabbitmq_user.password}",
+        "PULSE_USERNAME": "${module.web-server_rabbitmq_user.username}",
+        "PULSE_VHOST": "${var.rabbitmq_vhost}",
+        "TASKCLUSTER_ACCESS_TOKEN": "${random_string.web-server_access_token.result}",
+        "TASKCLUSTER_CLIENT_ID": "static/taskcluster/web-server"
       },
       "source": "modules/service-secrets"
     },
@@ -796,17 +691,17 @@
     "worker-manager-secrets": {
       "project_name": "taskcluster-worker-manager",
       "secrets": {
-        "AWS_ACCESS_KEY_ID": "TODO",
-        "AWS_SECRET_ACCESS_KEY": "TODO",
-        "LEVEL": "TODO",
-        "MONITORING_ENABLE": "TODO",
-        "PORT": "TODO",
-        "PRETTY_LOGGING": "TODO",
-        "PUBLISH_METADATA": "TODO",
-        "TASKCLUSTER_ACCESS_TOKEN": "TODO",
-        "TASKCLUSTER_CERTIFICATE": "TODO",
-        "TASKCLUSTER_CLIENT_ID": "TODO",
-        "TASKCLUSTER_ROOT_URL": "TODO"
+        "AWS_ACCESS_KEY_ID": "",
+        "AWS_SECRET_ACCESS_KEY": "",
+        "LEVEL": "${var.gen_worker-manager_LEVEL}",
+        "MONITORING_ENABLE": "true",
+        "NODE_ENV": "production",
+        "PRETTY_LOGGING": "${var.gen_worker-manager_PRETTY_LOGGING}",
+        "PUBLISH_METADATA": "false",
+        "TASKCLUSTER_ACCESS_TOKEN": "${random_string.worker-manager_access_token.result}",
+        "TASKCLUSTER_CERTIFICATE": "${var.gen_worker-manager_TASKCLUSTER_CERTIFICATE}",
+        "TASKCLUSTER_CLIENT_ID": "static/taskcluster/worker-manager",
+        "TASKCLUSTER_ROOT_URL": "${var.gen_worker-manager_TASKCLUSTER_ROOT_URL}"
       },
       "source": "modules/service-secrets"
     },
@@ -822,6 +717,356 @@
       "secrets_hash": "${module.worker-manager-secrets.secrets_hash}",
       "service_name": "worker-manager",
       "source": "modules/deployment"
+    }
+  },
+  "variable": {
+    "gen_auth_AUDIT_LOG": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_AWS_REGION": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_AZURE_ACCOUNTS": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_AZURE_ACCOUNT_KEY": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_CLIENT_TABLE_NAME": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_DOCS_BUCKET": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_LEVEL": {
+      "default": "notice",
+      "type": "string"
+    },
+    "gen_auth_PRETTY_LOGGING": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_REFS_BUCKET": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_ROLES_CONTAINER_NAME": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_SCHEMAS_BUCKET": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_SENTRY_AUTH_TOKEN": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_SENTRY_HOST": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_SENTRY_KEY_PREFIX": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_SENTRY_ORGANIZATION": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_SENTRY_TEAM": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_STATIC_CLIENTS": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_STATSUM_API_SECRET": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_STATSUM_BASE_URL": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_TEST_BUCKET": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_auth_WEBSOCKTUNNEL_SECRET": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_built-in-workers_LEVEL": {
+      "default": "notice",
+      "type": "string"
+    },
+    "gen_built-in-workers_PRETTY_LOGGING": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_github_BOT_USERNAME": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_github_GITHUB_APP_ID": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_github_GITHUB_PRIVATE_PEM": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_github_LEVEL": {
+      "default": "notice",
+      "type": "string"
+    },
+    "gen_github_PRETTY_LOGGING": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_github_PROVISIONER_ID": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_github_PULSE_NAMESPACE": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_github_WEBHOOK_SECRET": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_github_WORKER_TYPE": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_hooks_HOOK_TABLE_NAME": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_hooks_INFLUX_CONNECTION": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_hooks_LASTFIRE_TABLE_NAME": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_hooks_LEVEL": {
+      "default": "notice",
+      "type": "string"
+    },
+    "gen_hooks_PRETTY_LOGGING": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_hooks_QUEUE_TABLE_NAME": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_index_LEVEL": {
+      "default": "notice",
+      "type": "string"
+    },
+    "gen_index_PRETTY_LOGGING": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_index_PULSE_NAMESPACE": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_notify_AWS_REGION": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_notify_DENYLISTED_NOTIFICATION_TABLE_NAME": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_notify_EMAIL_BLACKLIST": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_notify_EMAIL_SOURCE_ADDRESS": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_notify_IRC_DEBUG": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_notify_IRC_NICK": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_notify_IRC_PASSWORD": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_notify_IRC_PORT": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_notify_IRC_REAL_NAME": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_notify_IRC_SERVER": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_notify_IRC_USER_NAME": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_notify_LEVEL": {
+      "default": "notice",
+      "type": "string"
+    },
+    "gen_notify_PRETTY_LOGGING": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_notify_PULSE_NAMESPACE": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_notify_SQS_QUEUE": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_queue_ARTIFACT_REGION": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_queue_AZURE_ACCOUNT_ID": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_queue_AZURE_ACCOUNT_KEY": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_queue_AZURE_REPORT_CHANCE": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_queue_AZURE_REPORT_THRESHOLD": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_queue_AZURE_TABLE_ACCOUNT_NAME": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_queue_BLOB_ARTIFACT_REGION": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_queue_LEVEL": {
+      "default": "notice",
+      "type": "string"
+    },
+    "gen_queue_PRETTY_LOGGING": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_queue_PRIVATE_ARTIFACT_BUCKET": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_queue_PRIVATE_BLOB_ARTIFACT_BUCKET": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_queue_PUBLIC_ARTIFACT_BUCKET": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_queue_PUBLIC_ARTIFACT_BUCKET_CDN": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_queue_PUBLIC_ARTIFACT_EC2_PROXIES": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_queue_PUBLIC_BLOB_ARTIFACT_BUCKET": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_queue_PULSE_NAMESPACE": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_queue_USE_CLOUD_MIRROR": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_secrets_AZURE_TABLE_NAME": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_secrets_LEVEL": {
+      "default": "notice",
+      "type": "string"
+    },
+    "gen_secrets_PRETTY_LOGGING": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_web-server_GITHUB_CLIENT_ID": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_web-server_GITHUB_CLIENT_SECRET": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_web-server_LEVEL": {
+      "default": "notice",
+      "type": "string"
+    },
+    "gen_web-server_LOGIN_STRATEGIES": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_web-server_PRETTY_LOGGING": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_web-server_PUBLIC_URL": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_web-server_PULSE_NAMESPACE": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_worker-manager_LEVEL": {
+      "default": "notice",
+      "type": "string"
+    },
+    "gen_worker-manager_PRETTY_LOGGING": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_worker-manager_TASKCLUSTER_CERTIFICATE": {
+      "default": "",
+      "type": "string"
+    },
+    "gen_worker-manager_TASKCLUSTER_ROOT_URL": {
+      "default": "",
+      "type": "string"
     }
   }
 }

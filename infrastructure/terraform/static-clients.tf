@@ -1,59 +1,53 @@
-module "auth_user" {
-  source = "modules/taskcluster-service-iam-user"
-  name   = "taskcluster-auth"
-  prefix = "${var.prefix}"
-
-  policy = <<EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": "sts:GetFederationToken",
-            "Resource": "arn:aws:sts::${data.aws_caller_identity.current.account_id}:federated-user/TemporaryS3ReadWriteCredentials"
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "s3:DeleteObject",
-                "s3:GetObject",
-                "s3:PutObject",
-                "s3:PutObjectAcl",
-                "s3:ListBucket",
-                "s3:GetBucketLocation"
-            ],
-            "Resource": [
-              "${aws_s3_bucket.backups.arn}",
-              "${aws_s3_bucket.backups.arn}/*"
-            ]
-        }
-    ]
-}
-EOF
-}
-
-resource "random_string" "auth_table_signing_key" {
-  length = 40
-}
-
-resource "random_string" "auth_table_crypto_key" {
-  length = 32
-}
+# TODO The accessTokens in here should come from sops
 
 resource "random_string" "auth_root_access_token" {
   length           = 65
   override_special = "_-"
 }
 
-resource "random_string" "auth_websocktunnel_secret" {
-  length = 66
+resource "random_string" "built-in-workers_access_token" {
+  length           = 65
+  override_special = "_-"
 }
 
-module "auth_rabbitmq_user" {
-  source         = "modules/rabbitmq-user"
-  prefix         = "${var.prefix}"
-  project_name   = "taskcluster-auth"
-  rabbitmq_vhost = "${var.rabbitmq_vhost}"
+resource "random_string" "github_access_token" {
+  length           = 65
+  override_special = "_-"
+}
+
+resource "random_string" "hooks_access_token" {
+  length           = 65
+  override_special = "_-"
+}
+
+resource "random_string" "notify_access_token" {
+  length           = 65
+  override_special = "_-"
+}
+
+resource "random_string" "index_access_token" {
+  length           = 65
+  override_special = "_-"
+}
+
+resource "random_string" "queue_access_token" {
+  length           = 65
+  override_special = "_-"
+}
+
+resource "random_string" "secrets_access_token" {
+  length           = 65
+  override_special = "_-"
+}
+
+resource "random_string" "web-server_access_token" {
+  length           = 65
+  override_special = "_-"
+}
+
+resource "random_string" "worker-manager_access_token" {
+  length           = 65
+  override_special = "_-"
 }
 
 locals {
@@ -83,7 +77,7 @@ locals {
     },
     {
       clientId    = "static/taskcluster/worker-manager"
-      accessToken = "${random_string.worker_manager_access_token.result}"
+      accessToken = "${random_string.worker-manager_access_token.result}"
       description = "..."
 
       scopes = []
@@ -129,7 +123,7 @@ locals {
     },
     {
       clientId    = "static/taskcluster/built-in-workers"
-      accessToken = "${random_string.built_in_workers_access_token.result}"
+      accessToken = "${random_string.built-in-workers_access_token.result}"
       description = "..."
 
       scopes = [
