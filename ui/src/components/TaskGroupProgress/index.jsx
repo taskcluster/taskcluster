@@ -112,9 +112,6 @@ const getStatusCount = memoize(
   statusButtonTypography: {
     color: THEME.PRIMARY_TEXT_DARK,
   },
-  statusButtonTypographyDisabled: {
-    color: 'currentColor',
-  },
   statusTitle: {
     textAlign: 'right',
   },
