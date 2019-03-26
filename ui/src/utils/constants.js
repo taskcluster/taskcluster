@@ -15,6 +15,7 @@ import FileVideoIcon from 'mdi-react/FileVideoIcon';
 import FileImageIcon from 'mdi-react/FileImageIcon';
 import FileMusicIcon from 'mdi-react/FileMusicIcon';
 import FileIcon from 'mdi-react/FileIcon';
+import AccountHeartOutlineIcon from 'mdi-react/AccountHeartOutlineIcon';
 import { join } from 'path';
 
 // eslint-disable-next-line import/prefer-default-export
@@ -193,6 +194,12 @@ export const DOCS_MENU_ITEMS = [
     path: join(DOCS_PATH_PREFIX, 'reference'),
     hasChildren: true,
     icon: BookOpenOutlineIcon,
+  },
+  {
+    label: 'People',
+    path: join(DOCS_PATH_PREFIX, 'people'),
+    hasChildren: false,
+    icon: AccountHeartOutlineIcon,
   },
   {
     label: 'Resources',

@@ -17,6 +17,9 @@ Once you've found an issue to work on and written a patch, submit a pull request
 
 Welcome to the team!
 
+Note that we use [all-contributors][all-contributors] to make sure everyone gets credit for their work on Taskcluster.
+You can add new people to the list using the [@all-contributors bot][all-contributors-bot]
+
 [participation]: https://www.mozilla.org/en-US/about/governance/policies/participation/
 [issues]: ../../issues
 [bugsahoy]: https://www.joshmatthews.net/bugsahoy/?taskcluster=1
@@ -25,4 +28,5 @@ Welcome to the team!
 [bestpractices]: https://docs.taskcluster.net/docs/manual/design/devel/best-practices
 [testing]: https://docs.taskcluster.net/docs/manual/design/devel/best-practices/testing
 [commit]: https://docs.taskcluster.net/docs/manual/design/devel/best-practices/commits
-
+[all-contributors]: https://allcontributors.org/
+[all-contributors-bot]: https://allcontributors.org/docs/en/bot/usage
