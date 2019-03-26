@@ -1,5 +1,5 @@
 # websocktunnel
-[![Task Status](https://github.taskcluster.net/v1/repository/taskcluster/websocktunnel/master/badge.svg)](https://github.taskcluster.net/v1/repository/taskcluster/webhooktunnel/master/latest)
+[![Task Status](https://github.taskcluster.net/v1/repository/taskcluster/websocktunnel/master/badge.svg)](https://github.taskcluster.net/v1/repository/taskcluster/websocktunnel/master/latest)
 
 Websocketunnel is a service that allows its clients to publicly expose specific HTTP services without publicly exposing the entire host.
 "Clients" connect to the websocktunnel service with a specific ID, authenticating with a signed JWT, and upgrade the connection to a websocket.
