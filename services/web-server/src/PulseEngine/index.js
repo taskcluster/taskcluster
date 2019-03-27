@@ -7,9 +7,10 @@ import EventIterator from './EventIterator';
 const debug = Debug('PulseEngine');
 
 class Subscription {
-  constructor({ subscriptionId, onMessage, subscriptions }) {
+  constructor({ subscriptionId, onMessage, onError, subscriptions }) {
     this.subscriptionId = subscriptionId;
     this.onMessage = onMessage;
+    this.onError = onError;
     this.subscriptions = subscriptions;
 
     // state tracking for reconciliation
@@ -137,7 +138,7 @@ export default class PulseEngine {
     this.reconcileSubscriptions();
   }
 
-  subscribe(subscriptions, onMessage) {
+  subscribe(subscriptions, onMessage, onError) {
     const subscriptionId = slugid();
 
     this.subscriptions.set(
@@ -145,6 +146,7 @@ export default class PulseEngine {
       new Subscription({
         subscriptionId,
         onMessage,
+        onError,
         subscriptions,
       })
     );

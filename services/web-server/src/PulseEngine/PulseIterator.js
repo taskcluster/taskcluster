@@ -14,12 +14,16 @@ export default class PulseIterator {
     this.listening = true;
     this.subscriptionId = this.pulseEngine.subscribe(
       subscriptions,
-      this.pushValue.bind(this)
+      this.pushValue.bind(this),
+      this.setError.bind(this),
     );
   }
 
   next() {
-    return this.listening ? this.pullValue() : this.return();
+    if (!this.listening) {
+      return this.error ? Promise.reject(this.error) : Promise.resolve({done: true});
+    }
+    return this.pullValue();
   }
 
   return() {
@@ -38,9 +42,19 @@ export default class PulseIterator {
     return this;
   }
 
+  // cause this to throw the given error for all pending and subsequent next() calls
+  setError(error) {
+    this.error = error;
+    this.emptyQueue();
+  }
+
   pushValue(value) {
+    if (this.error) {
+      return;
+    }
+
     if (this.pullQueue.size !== 0) {
-      this.pullQueue.first()({ value, done: false });
+      this.pullQueue.first()[0]({ value, done: false });
       this.pullQueue = this.pullQueue.shift();
     } else {
       this.pushQueue = this.pushQueue.push(value);
@@ -48,12 +62,12 @@ export default class PulseIterator {
   }
 
   pullValue() {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       if (this.pushQueue.size !== 0) {
         resolve({ value: this.pushQueue.first(), done: false });
         this.pushQueue = this.pushQueue.shift();
       } else {
-        this.pullQueue = this.pullQueue.push(resolve);
+        this.pullQueue = this.pullQueue.push([resolve, reject]);
       }
     });
   }
@@ -65,12 +79,11 @@ export default class PulseIterator {
 
     this.listening = false;
     this.pulseEngine.unsubscribe(this.subscriptionId);
-    this.pullQueue.forEach(resolve =>
-      resolve({
-        value: undefined,
-        done: true,
-      })
-    );
+    if (this.error) {
+      this.pullQueue.forEach(([resolve, reject]) => reject(this.error));
+    } else {
+      this.pullQueue.forEach(([resolve]) => resolve({done: true}));
+    }
     this.pullQueue = this.pullQueue.clear();
     this.pushQueue = this.pushQueue.clear();
   }
