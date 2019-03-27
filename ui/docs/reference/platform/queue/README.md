@@ -2,90 +2,20 @@
 
 This is the central queue coordinating execution of tasks in the Taskcluster setup.
 
-Project Structure
------------------
-_The following itemization of folders outlines how this project is structured._
+## Usage
 
- * `src/`, contains queue application logic.
- * `config.yml`, contains configuration for tests / production.
- * `schemas/`, JSON Schemas against which all input and output, i.e. messages,
-    S3 files, requests and responses should be validated against.
- * `test/`, automated tests using `mocha`, launched with `yarn test`.
+See the manual chapter, and the other documents in this section, for more information on interacting with the queue.
 
-Development
------------
+## Deployment
 
-To run tests you'll need a configuration file with access credentials for S3
-and Azure Blob and Table Storage, as well as pulse credentials.
-To do this, create a local configuration file
-`user-config.yml` in the root directory of the taskcluster-queue
-project. For safety reasons, this file is added to the `.gitignore` file. There
-is an example `user-config-example.yml` to use for initial setup.
+### AWS Access Policies Required
 
-For S3 we have a dummy bucket called `test-bucket-for-any-garbage` which stores
-objects for 24 hours. Mozilla developers can get access from a taskcluster
-developer, or you can setup a custom a bucket and overwrite the bucket name as
-well as the credentials.
-
-Same thing applies for azure, though it's not as nicely scoped, and doesn't
-clean up on its own.
-
-Deployment
-----------
-Code is deployed from master to heroku whenever code hits master (and it passes
-travis ci)
-
-The following processes are designed to run constantly:
-
- * `yarn run start`
- * `yarn run claim-resolver`
- * `yarn run deadline-resolver`
-
-With the following processes running as cron jobs on daily basis:
-
- * `yarn run expire-artifacts`
- * `yarn run retire-tasks`
-
-On heroku these are configured using the scheduler.
-
-Monitoring
-----------
-Taskcluster-queue writes to both Sentry and Statsum via the
-`taskcluster-lib-monitor` library. Errors will be automatically reported
-and alerted upon.
-
-In addition, this server will print log messages it is recommend run with `DEBUG` as
-`"* -superagent -babel -mocha:* -express:*"`.
-
-AWS Access Policies Required
-----------------------------
-The taskcluster queue uses an S3 bucket for storing artifacts, in addition API
-and exchange meta-data is published buckets `schemas.taskcluster.net` and
-`references.taskcluster.net` as these are configured as defaults in
-`taskcluster-base`.
+The taskcluster queue uses an S3 bucket for storing artifacts.
 In order to operate on these resources the following access policy is needed:
 
 ```js
 {
   "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:PutObject"
-      ],
-      "Resource": [
-        "arn:aws:s3:::schemas.taskcluster.net/queue/*"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:PutObject"
-      ],
-      "Resource": [
-        "arn:aws:s3:::references.taskcluster.net/queue/*"
-      ]
-    },
     {
       "Effect": "Allow",
       "Action": [
@@ -114,7 +44,7 @@ In order to operate on these resources the following access policy is needed:
 }
 ```
 
-Furthermore, you'll need to set the following _bucket policy_ on you public
+Furthermore, you'll need to set the following _bucket policy_ on your public
 artifact bucket:
 ```js
 {
@@ -131,13 +61,3 @@ artifact bucket:
   ]
 }
 ```
-
-Service Owner
--------------
-
-Service Owner: jhford@mozilla.com
-
-Deployment Testing
-------------------
-To test a deployment create a simple task with the [task-creator](https://tools.taskcluster.net/task-creator/).
-Monitoring logs and sentry is also a good idea.

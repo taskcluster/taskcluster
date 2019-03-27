@@ -1,17 +1,11 @@
 # Purge-Cache Service
 
-Many taskcluster workers implements some generic form cache folders.
-These cache often have a `name` that identifies them, for example a task
-that builds code may have a cache folder called `master-object-directory` which
-stores object directory for the master branch. Note, your organization maybe
-have different naming scheme.
+## Development
 
-This service provides a broker for requests to purge these caches across all
-workers of a specific `provisionerId`/`workerType`.  It provides a method to
-add a new request, and a method for workers to poll for relevant purge requests
-since the last time they checked.
+No special configuration is required for development.
 
-Service Owner
--------------
+Run `yarn workspace taskcluster-purge-cache test` to run the tess.
+Some of the tests will be skipped without additional credentials, but it is fine to make a pull request as long as no tests fail.
 
-Service Owner: dustin@mozilla.com
+To run *all* tests, you will need appropriate Taskcluster credentials.
+Using [taskcluster-cli](https://github.com/taskcluster/taskcluster-cli), run `eval $(taskcluster signin --scope assume:project:taskcluster:tests:taskcluster-purge-cache)`, then run the tests again.

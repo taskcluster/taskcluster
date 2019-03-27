@@ -1,30 +1,52 @@
 # Hooks Service
 
-A hooks service for triggering tasks from events.
+This service creates tasks in response to events.
+This includes:
 
-Hooks supports automatically creating tasks:
+ * Creating tasks at specific times (like "cron")
+ * Creating tasks in response to API calls
+ * Creating tasks in response to webhooks, supporting integration with external systems
+ * Creating tasks in response to Pulse messages
 
- * At specific times
- * In respose to API calls
- * In response to webhooks
+## Hooks
 
-Development
------------
+Hooks are identified with a `hookGroupId` and a `hookId`.
 
-From the project's base ``yarn install`` then ``yarn test``.
-No special configuration is required.
-Some of the tests will be skipped, but it is fine to make a pull request as long as no tests fail.
+When an event occurs, the resulting task is automatically created.
+The task is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`, which must have scopes to make the `queue.createTask` call, including satisfying all scopes in `task.scopes`.
+By default, the new task has a `taskGroupId` equal to its `taskId`, as is the convention for decision tasks.
 
-To run *all* tests, you will need appropriate Taskcluster credentials.
-Using [taskcluster-cli](https://github.com/taskcluster/taskcluster-cli), run `eval $(taskcluster signin --scope assume:project:taskcluster:tests:taskcluster-hooks)`, then run `yarn test` again.
+### Trigger Schema
 
-Service Owner
--------------
+When a hook is triggered by an API call or a webhook, the user-provided payload is validated against the hook's `triggerSchema`, and the call rejected if validation fails.
+This provides a reliable way of limiting allowed inputs and ensuring that incorrect inputs do not cause unexpected behavior.
 
-Service Owner: dustin@mozilla.com
+### Schedule
 
-Post-Deploy Verification
-------------------------
-This service will auto-deploy upon merging to master. Once it is deployed, you
-can verify that it is functioning as expected by going to the [tools site](https://tools.taskcluster.net/hooks/)
-and creating a new 'garbage' hook.
+Hooks can have a "schedule" indicating specific times that new tasks should be created.
+Each schedule is in a simple cron format, per https://www.npmjs.com/package/cron-parser.
+For example:
+ * `['0 0 1 * * *']` -- daily at 1:00 UTC
+ * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
+
+### Pulse Bindings
+
+Hooks have a `bindings` property that gives a list of exchanges and routing-key patterns.
+The hooks service binds queues accordingly, and triggers a hook for each message received, with the message body as its payload.
+
+### JSON-e
+
+The task template at `hook.task` is treated as a JSON-e template, with a context depending on how it is fired.
+See [firing-hooks](/docs/reference/core/hooks/firing-hooks) for more information.
+
+## Trigger Payloads and Privilege Escalation
+
+Several of the event types support a trigger payload, which is validated against a schema and combined with the task template.
+This allows controlled parameterization of the resulting tasks.
+
+Hooks run with scopes defined by a role, and those scopes can exceed those available to the caller of an API method, for example.
+
+Taken together, these properties allow design of controlled privilege-escalation mechanisms (similar to `sudo`).
+For example, a hook named `release/ship-release` could create a task to ship a release to users, given a version number.
+The permissions to push to the repository hosting the release binary are available to the hook, but need not be available to the developer calling `triggerHook`, who can only specify a version.
+Similarly, access to that `triggerHook` call is controlled by scopes and can be limited to only authorized developers.

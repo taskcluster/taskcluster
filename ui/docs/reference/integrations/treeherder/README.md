@@ -1,8 +1,6 @@
 # Treeherder Service
 
-taskcluster-treeherder is a service that will respond to Taskcluster task events
-(e.g. task completed, task failed, etc) and compose a Treeherder job pulse message
-to report task status to Treeherder.
+This service will respond to Taskcluster task events (e.g. task completed, task failed, etc) and compose a Treeherder job pulse message to report task status to Treeherder.
 
 # Task Configuration
 
@@ -89,15 +87,3 @@ on the pulse exchange.
 
 In the future, these errors might be reported to Treeherder for end users to get
 clearer feedback.
-
-# Post-deployment Verification
-
-Upon deploying a new version of this service, investigate heroku and/or papertrail
-logs for any errors.  Also, the [pulse inspector](https://tools.taskcluster.net/pulse-inspector)
-can be used to subsribe to the exchange and inspect the pulse messages that are being
-produced.
-
-
-# Service Owner
-
-Service Owner: bstack@mozilla.com
