@@ -24,7 +24,7 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import { docs } from 'taskcluster-lib-urls';
 import Button from '../Button';
-import Preview from '../Preview';
+import MarkdownTextArea from '../MarkdownTextArea';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
 import DialogAction from '../DialogAction';
@@ -486,10 +486,11 @@ export default class HookForm extends Component {
             />
           </ListItem>
           <ListItem>
-            <Preview
-              onValueChange={this.handleDescriptionChange}
+            <MarkdownTextArea
+              onChange={this.handleDescriptionChange}
               value={hook.metadata.description}
               placeholder="Hook description (markdown)"
+              defaultTabIndex={1}
             />
           </ListItem>
           <ListItem>
