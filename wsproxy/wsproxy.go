@@ -11,7 +11,7 @@ import (
 	"github.com/taskcluster/websocktunnel/wsmux"
 )
 
-func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *wsmux.Session, tunnelID string) error {
+func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *wsmux.Session, tunnelID string, path string) error {
 	// at this point, we are sure that r is a http websocket upgrade request
 	// connClosure returns the wsmux stream to Dial
 	p.logf(tunnelID, r.RemoteAddr, "creating WS bridge: path=%s", r.URL.RequestURI())
@@ -46,7 +46,7 @@ func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *
 		reqHeader[k] = v
 	}
 
-	uri := "ws://" + r.Host + r.URL.RequestURI()
+	uri := "ws://" + r.Host + path
 	p.logf(tunnelID, r.RemoteAddr, "dialing ws on stream, url: %s", uri)
 	tunnelConn, _, err := dialer.Dial(uri, reqHeader)
 	if err != nil {
