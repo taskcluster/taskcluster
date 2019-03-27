@@ -61,10 +61,10 @@ Its `tid` claim must match the client ID exactly.
 ### Multiplexed Websockets
 
 The protocol used within the websocket connection between a client and the websocktunnel service is beyond the scope of this document.
-It is implemented by the `github.com/taskcluster/websocktunnel/wsmux` package.
-The `github.com/taskcluster/websocktunnel/client` package uses this to implement the client side of the connection.
+It is implemented by the [`github.com/taskcluster/websocktunnel/wsmux`](https://godoc.org/github.com/taskcluster/websocktunnel/wsmux) package.
+The [`github.com/taskcluster/websocktunnel/client`](https://godoc.org/github.com/taskcluster/websocktunnel/client) package uses this to implement the client side of the connection.
 
-The latter package exposes a `Client` struct which implements `net.Listener`.
+The latter package exposes a [`Client`](https://godoc.org/github.com/taskcluster/websocktunnel/client#Client) struct which implements `net.Listener`.
 The expectation is that client processes will build a `http.Server` (or equivalent) on top of this `net.Listener`.
 All connections to the server with a URL identifying the client will appear as new connections on this listener (that is, by returning a `net.Conn` from `Accept`.
 The resulting HTTP request will omit the `/<clientId>` portion of the request path.
@@ -82,6 +82,10 @@ All HTTP requests are supported: normal HTTP transactions, streaming HTTP reques
 
 Note that viewer connections do not require any kind of authentication.
 That is entirely up to the client.
+
+# API Documentation
+
+See Documentation at [godoc.org](https://godoc.org/github.com/taskcluster/websocktunnel).
 
 # CLI
 
