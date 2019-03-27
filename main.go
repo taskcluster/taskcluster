@@ -636,7 +636,14 @@ func loadConfig(filename string, queryAWSUserData bool, queryGCPMetaData bool) (
 var exposer expose.Exposer
 
 func setupExposer() (err error) {
-	if config.LiveLogSecret != "" {
+	if config.WstAudience != "" && config.WstServerURL != "" {
+		exposer, err = expose.NewWST(
+			config.WstServerURL,
+			config.WstAudience,
+			config.WorkerGroup,
+			config.WorkerID,
+			config.Auth())
+	} else if config.LiveLogSecret != "" {
 		exposer, err = expose.NewStatelessDNS(
 			config.PublicIP,
 			config.Subdomain,
