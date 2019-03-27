@@ -64,14 +64,21 @@ The protocol used within the websocket connection between a client and the webso
 It is implemented by the `github.com/taskcluster/websocktunnel/wsmux` package.
 The `github.com/taskcluster/websocktunnel/client` package uses this to implement the client side of the connection.
 
+The latter package exposes a `Client` struct which implements `net.Listener`.
+The expectation is that client processes will build a `http.Server` (or equivalent) on top of this `net.Listener`.
+All connections to the server with a URL identifying the client will appear as new connections on this listener (that is, by returning a `net.Conn` from `Accept`.
+The resulting HTTP request will omit the `/<clientId>` portion of the request path.
+
+Note that this does *not* proxy raw TCP connections: the protocol used between the viewer and server must be HTTP.
+
 ## Viewer Connections
 
 Viewers are given a client URL based on that provided to the cient as described above.
-All access to such URLs will be tunneled to the client as described above.
+All access to such URLs will be tunneled to the client.
 If the client is not available, the viewer will get a 404 error response.
 
 No special considerations are required to access viewer URLs: the intent is that any HTTP client can do so.
-Both "normal" HTTP requests and websocket connections are supported.
+All HTTP requests are supported: normal HTTP transactions, streaming HTTP requests and responses such as for long polling, and websocket upgrades.
 
 Note that viewer connections do not require any kind of authentication.
 That is entirely up to the client.
