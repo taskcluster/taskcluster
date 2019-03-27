@@ -23,6 +23,8 @@ class Subscription {
    */
   reset() {
     this.listening = false;
+    this.connection = null;
+    this.channel = null;
   }
 
   /**
@@ -36,53 +38,116 @@ class Subscription {
   /**
    * Reconcile the AMQP state with this subscription's state.
    */
-  async reconcile(client, connection, channel) {
+  async reconcile(client, connection) {
     const { subscriptionId, listening, unsubscribed } = this;
     const queueName = client.fullObjectName('queue', subscriptionId);
 
-    if (listening && unsubscribed) {
-      debug(`Unbinding subscription ${subscriptionId}`);
-      await channel.cancel(this.consumerTag);
-      await channel.deleteQueue(queueName);
-      this.listening = false;
-    } else if (!listening && !unsubscribed) {
-      debug(`Binding subscription ${subscriptionId}`);
-      const { onMessage, subscriptions } = this;
+    if (!this.channel || connection !== this.connection) {
+      this.connection = connection;
+      this.channel = await connection.amqp.createChannel();
+      // intercept 'error' events so they don't kill the connection (they are
+      // also raised as exceptions and handled that way)
+      this.channel.on('error', () => {});
+    }
 
-      await channel.assertQueue(queueName, {
-        exclusive: false,
-        durable: true,
-        autoDelete: true,
-      });
+    const { channel } = this;
 
-      await Promise.all(
-        subscriptions.map(({ pattern, exchange }) =>
-          channel.bindQueue(queueName, exchange, pattern)
-        )
-      );
+    // all errors from here on are handled by calling the subscription's `onError`
+    // method and considering the subscription reconciled.  So errors are not bubbled
+    // up to the caller and will not interfere with other subscriptions.
+    try {
+      if (listening && unsubscribed) {
+        debug(`Unbinding subscription ${subscriptionId}`);
+        await channel.cancel(this.consumerTag);
+        await channel.deleteQueue(queueName);
+        await channel.close();
+        this.listening = false;
+      } else if (!listening && !unsubscribed) {
+        debug(`Binding subscription ${subscriptionId}`);
+        const { onMessage, subscriptions } = this;
 
-      const { consumerTag } = await channel.consume(queueName, amqpMsg => {
-        const message = {
-          payload: JSON.parse(amqpMsg.content.toString('utf8')),
-          exchange: amqpMsg.fields.exchange,
-          routingKey: amqpMsg.fields.routingKey,
-          redelivered: amqpMsg.fields.redelivered,
-          cc: [],
-        };
+        await channel.assertQueue(queueName, {
+          exclusive: false,
+          durable: true,
+          autoDelete: true,
+        });
 
-        if (
-          amqpMsg.properties &&
-          amqpMsg.properties.headers &&
-          Array.isArray(amqpMsg.properties.headers.cc)
-        ) {
-          message.cc = amqpMsg.properties.headers.cc;
+        // perform the queue binding in a new channel, so that the existing channel
+        // persists if something egregious -- like an exchange that doesn't exist --
+        // occurs.
+        const bindChannel = await connection.amqp.createChannel();
+        // intercept 'error' events so they don't kill the connection (they are
+        // also raised as exceptions and handled that way)
+        bindChannel.on('error', () => {});
+        try {
+          for (let {pattern, exchange} of subscriptions) {
+            await bindChannel.bindQueue(queueName, exchange, pattern);
+          }
+        } catch (err) {
+          // drop the queue since it's partially bound..
+          await channel.deleteQueue(queueName);
+          // report the error..
+          debug(`Binding to ${queueName} failed: ${err}`);
+          // (converting to a string for transfer to the client)
+          this.onError(new Error(`Error binding queue: ${err}`));
+          // and consider this reconciliation complete..
+          return;
         }
+        await bindChannel.close();
 
-        onMessage(message);
-      });
+        const { consumerTag } = await channel.consume(queueName, (amqpMsg, err) => {
+          // "If the consumer is cancelled by RabbitMQ, the message callback will be invoked with null."
+          // This is most likely due to the queue being deleted, so we just report it to the user.
+          if (!amqpMsg) {
+            this.onError(`Consumer cancelled by RabbitMQ`);
+            return;
+          }
+          const message = {
+            payload: JSON.parse(amqpMsg.content.toString('utf8')),
+            exchange: amqpMsg.fields.exchange,
+            routingKey: amqpMsg.fields.routingKey,
+            redelivered: amqpMsg.fields.redelivered,
+            cc: [],
+          };
 
-      this.consumerTag = consumerTag;
-      this.listening = true;
+          if (
+            amqpMsg.properties &&
+            amqpMsg.properties.headers &&
+            Array.isArray(amqpMsg.properties.headers.cc)
+          ) {
+            message.cc = amqpMsg.properties.headers.cc;
+          }
+
+          onMessage(message);
+        });
+
+        this.consumerTag = consumerTag;
+        this.listening = true;
+      }
+    } catch (err) {
+      debug(`Reconciling subscription ${subscriptionId}: ${err}`);
+      this.onError(new Error(`Error reconciling subscription: ${err}`));
+
+      // try to delete the queue, just to be safe, but if it doesn't work, oh well..
+      try {
+        await this.channel.deleteQueue(queueName);
+      } catch (err) {
+        // ignored
+      }
+
+      // and similarly try to close the channel (which will close any consumer if it
+      // exists), but if it doesn't work, oh well..
+      try {
+        await this.channel.close();
+      } catch (err) {
+        // ignored
+      }
+
+      // mark this subscription as unsubscribed so we don't try again
+      this.channel = null;
+      this.consumerTag = null;
+      this.unsubscribed = true;
+      this.listening = false;
     }
   }
 
@@ -125,7 +190,6 @@ export default class PulseEngine {
 
   reset() {
     this.connection = null;
-    this.channel = null;
   }
 
   connected(connection) {
@@ -200,15 +264,9 @@ export default class PulseEngine {
         return;
       }
 
-      if (!this.channel) {
-        this.channel = await connection.amqp.createChannel();
-      }
-
-      const { channel } = this;
-
       await Promise.all(
         Array.from(this.subscriptions.values()).map(sub =>
-          sub.reconcile(client, connection, channel)
+          sub.reconcile(client, connection)
         )
       );
 
