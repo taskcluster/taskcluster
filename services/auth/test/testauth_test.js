@@ -4,11 +4,13 @@ const helper = require('./helper');
 const credentials = {
   clientId: 'tester',
   accessToken: 'no-secret',
+  queryString: ''
 };
 
 const badcreds = {
   clientId: 'tester',
   accessToken: 'wrong',
+  queryString: ''
 };
 
 helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], function(mock, skipping) {
@@ -133,5 +135,14 @@ helper.secrets.mockSuite(`${helper.suiteName(__filename)} | get`, ['app', 'azure
       authorizedScopes: ['test:scopes-abc'],
     },
     errorCode: 'InsufficientScopes',
+  });
+
+  test('check for queryString in response', async()=>{
+    let auth = new helper.AuthClient({rootUrl: helper.rootUrl, credentials});
+    await auth.testAuthenticateGet().then((res) => {
+      assert(typeof(res.queryString) !== Object, 'queryString not present in the response');
+    }, err => {
+      assert(err, 'Request failed!');
+    });
   });
 });

@@ -1031,7 +1031,9 @@ builder.declare({
     'The request is validated, with any certificate, authorizedScopes, etc.',
     'applied, and the resulting scopes are checked against `requiredScopes`',
     'from the request body. On success, the response contains the clientId',
-    'and scopes as seen by the API method.',
+    'scopes and queryString as seen by the API method.',
+    'For testing the endpoints queryString will be sent in response, will',
+    'contain clientId and scopes for testing',
   ].join('\n'),
 }, async function(req, res) {
   await new Promise(next => APIBuilder.middleware.remoteAuthentication({
@@ -1060,10 +1062,9 @@ builder.declare({
     req.clientId(),
     req.scopes(),
   ]);
-  //setting headers as purposed by bug 161375
-  req.params.test_auth = {clientId, scopes};
-  res.setHeader('X-test_auth', {clientId, scopes});
-  res.reply({clientId, scopes});
+  
+  const queryString = {clientId, scopes};
+  res.reply({clientId, scopes, queryString});
 });
 
 builder.declare({
@@ -1120,24 +1121,3 @@ builder.declare({
   res.reply({clientId, scopes});
 });
 
-/** Query string to authenticate **/
-builder.declare({
-  method: 'get',
-  route: '/test-authenticate?q={auth}',
-  query: {
-    prefix: /^[A-Za-z0-9!@/:.+|_-]+$/, // should match clientId above
-    continuationToken: /./,
-    limit: /^[0-9]+$/,
-  },
-  name: 'queryString',
-  output: 'test-authenticate-response.yml',
-  stability: 'stable',
-  title: 'Query String',
-  description: [
-    'Get the query string passed in the url for authentication',
-    'A object will be query String present else null String would be received',
-  ].join('\n'),
-}, async function(req, res) {
-  let response = req.params.test_auth || '';
-  res.reply(response);
-});

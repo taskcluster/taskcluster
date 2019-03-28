@@ -22,7 +22,7 @@ properties:
     uniqueItems:            true
   queryString:
     description: |
-      Query string for the testAuthenticate
-    type:                       string
-    additionalProperties:       false
-required: [clientId, scopes]
+      Query string for the testAuthenticate. Will be sent by test-authenticate route for testing endpoint.
+    type:                       object
+    default:                    {}
+required: [clientId, scopes, queryString]
