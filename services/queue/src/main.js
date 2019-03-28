@@ -387,9 +387,12 @@ let load = loader({
   dependencyTracker: {
     requires: [
       'Task', 'publisher', 'queueService', 'TaskDependency',
-      'TaskRequirement', 'TaskGroupActiveSet',
+      'TaskRequirement', 'TaskGroupActiveSet', 'monitor',
     ],
-    setup: (ctx) => new DependencyTracker(ctx),
+    setup: ({monitor, ...ctx}) => new DependencyTracker({
+      monitor: monitor.monitor('dependency-tracker'),
+      ...ctx}
+    ),
   },
 
   // Create EC2RegionResolver for regions we have artifact proxies in

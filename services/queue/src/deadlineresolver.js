@@ -209,10 +209,12 @@ class DeadlineResolver {
       await this.dependencyTracker.resolveTask(taskId, task.taskGroupId, task.schedulerId, 'exception');
 
       // Publish messages about the last run
+      const runId = task.runs.length - 1;
       await this.publisher.taskException({
         status: task.status(),
-        runId: task.runs.length - 1,
+        runId,
       }, task.routes);
+      this.monitor.taskException({taskId, runId});
     }
 
     return remove();

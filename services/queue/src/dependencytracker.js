@@ -26,6 +26,7 @@ class DependencyTracker {
     assert(options.TaskDependency, 'Expected options.TaskDependency');
     assert(options.TaskRequirement, 'Expected options.TaskRequirement');
     assert(options.TaskGroupActiveSet, 'Expected options.TaskGroupActiveSet');
+    assert(options.monitor, 'Expected options.monitor');
 
     // Store options on this object
     this.Task = options.Task;
@@ -34,6 +35,7 @@ class DependencyTracker {
     this.TaskDependency = options.TaskDependency;
     this.TaskRequirement = options.TaskRequirement;
     this.TaskGroupActiveSet = options.TaskGroupActiveSet;
+    this.monitor = options.monitor;
   }
 
   /**
@@ -363,6 +365,7 @@ class DependencyTracker {
           runId: 0,
         }, task.routes),
       ]);
+      this.monitor.log.taskPending({taskId: task.taskId, runId: 0});
     }
 
     return status;
