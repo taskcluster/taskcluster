@@ -1359,13 +1359,15 @@ builder.declare({
     this.workerInfo.seen(provisionerId, workerType, workerGroup, workerId),
   ]);
 
-  this.monitor.log.workClaimed({
-    provisionerId,
-    workerType,
-    workerGroup,
-    workerId,
-    requested: count,
-    tasks: result.map(({status}) => status.taskId),
+  result.forEach(({runId, status: {taskId}}) => {
+    this.monitor.log.taskClaimed({
+      provisionerId,
+      workerType,
+      workerGroup,
+      workerId,
+      taskId,
+      runId,
+    });
   });
 
   await this.workerInfo.taskSeen(provisionerId, workerType, workerGroup, workerId, result);
@@ -1624,6 +1626,13 @@ builder.declare({
     task.scopes,
     this.credentials,
   );
+
+  this.monitor.log.taskReclaimed({
+    taskId,
+    runId,
+    workerId: run.workerId,
+    workerGroup: run.workerGroup,
+  });
 
   // Reply to caller
   return res.reply({

@@ -8230,16 +8230,80 @@
           "version": 1
         },
         {
-          "description": "Results of a claimWork from a worker.",
+          "description": "A task has been created (via defineTask or createTask).  This is logged when the task-defined\npulse message is sent.",
+          "fields": {
+            "taskId": "The task's taskId."
+          },
+          "type": "task-defined",
+          "version": 1
+        },
+        {
+          "description": "A task is now pending and ready to be executed.  This is logged when the task-pending pulse\nmessage is sent.",
+          "fields": {
+            "runId": "The runId that is now pending.",
+            "taskId": "The task's taskId."
+          },
+          "type": "task-pending",
+          "version": 1
+        },
+        {
+          "description": "A task is now being executed.  This is logged when the task-running pulse message is sent.",
+          "fields": {
+            "runId": "The runId that is now running.",
+            "taskId": "The task's taskId."
+          },
+          "type": "task-running",
+          "version": 1
+        },
+        {
+          "description": "A task run has been resolved as completed.  This is logged when the task-completed pulse\nmessage is sent.",
+          "fields": {
+            "runId": "The runId that was resolved.",
+            "taskId": "The task's taskId."
+          },
+          "type": "task-completed",
+          "version": 1
+        },
+        {
+          "description": "A task run has been resolved as failed.  This is logged when the task-failed pulse\nmessage is sent.",
+          "fields": {
+            "runId": "The runId that was resolved.",
+            "taskId": "The task's taskId."
+          },
+          "type": "task-failed",
+          "version": 1
+        },
+        {
+          "description": "A task run has been resolved as an exception.  This is logged when the task-exception pulse\nmessage is sent.",
+          "fields": {
+            "runId": "The runId that was resolved.",
+            "taskId": "The task's taskId."
+          },
+          "type": "task-exception",
+          "version": 1
+        },
+        {
+          "description": "A worker has claimed a task.  In cases where multple tasks were claimed,\none log message will be produced for each task.",
           "fields": {
             "provisionerId": "Provisioner that provisioned the worker claiming work.",
-            "requested": "The number of tasks the worker requested.",
-            "tasks": "An array of taskId that were given to the worker.",
+            "runId": "The run of this task assigned to the worker.",
+            "taskId": "The task given to the worker.",
             "workerGroup": "Group of worker claiming work.",
             "workerId": "The id of the claiming worker.",
             "workerType": "Type of worker claiming work."
           },
-          "type": "work-claimed",
+          "type": "task-claimed",
+          "version": 1
+        },
+        {
+          "description": "A worker has reclaimed a task it had previously claimed, extending its takenUntil\ntimestamp.",
+          "fields": {
+            "runId": "The run of this task being reclaimed.",
+            "taskId": "The task being reclaimed.",
+            "workerGroup": "Group of the reclaiming worker.",
+            "workerId": "Id of the reclaiming worker."
+          },
+          "type": "task-reclaimed",
           "version": 1
         },
         {

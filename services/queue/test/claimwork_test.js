@@ -110,6 +110,21 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     // time before the request was made
     assume(takenUntil.getTime()).is.greaterThan(before.getTime() - 1);
 
+    // check that the task was logged
+    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-claimed'), {
+      Type: 'task-claimed',
+      Logger: 'taskcluster.queue.root.api',
+      Fields: {
+        provisionerId: "no-provisioner-extended-extended",
+        v: 1,
+        workerGroup: "my-worker-group-extended-extended",
+        workerId: "my-worker-extended-extended",
+        workerType,
+        taskId,
+        runId: 0,
+      },
+    });
+
     // Check that task definition is included..
     assume(r1.tasks[0].task).deep.equals(await helper.queue.task(taskId));
 
@@ -173,6 +188,19 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     let r3 = await queue.reclaimTask(taskId, 0);
     let takenUntil2 = new Date(r3.takenUntil);
     assume(takenUntil2.getTime()).is.greaterThan(takenUntil.getTime() - 1);
+
+    // check that the task was logged
+    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-reclaimed'), {
+      Type: 'task-reclaimed',
+      Logger: 'taskcluster.queue.root.api',
+      Fields: {
+        workerGroup: 'my-worker-group-extended-extended',
+        workerId: 'my-worker-extended-extended',
+        taskId,
+        runId: 0,
+        v: 1,
+      },
+    });
 
     debug('### reportCompleted');
     // Report completed with temp creds from reclaimTask
