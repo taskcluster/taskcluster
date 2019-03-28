@@ -41,6 +41,7 @@ export default class MarkdownTextArea extends Component {
     value: undefined,
     placeholder: null,
     defaultTabIndex: 0,
+    rows: 5,
   };
 
   static propTypes = {
@@ -62,6 +63,10 @@ export default class MarkdownTextArea extends Component {
      * An index number used to control which tab is selected as default.
      */
     defaultTabIndex: number,
+    /**
+     * A number used to control the amount of rows displayed for the input area.
+     */
+    rows: number,
   };
 
   constructor(props) {
@@ -91,7 +96,7 @@ export default class MarkdownTextArea extends Component {
   };
 
   render() {
-    const { placeholder, classes, onChange, ...props } = this.props;
+    const { placeholder, classes, onChange, rows, ...props } = this.props;
     const { tabIndex, value } = this.state;
 
     return (
@@ -111,7 +116,7 @@ export default class MarkdownTextArea extends Component {
               onChange={this.handleValueChange}
               fullWidth
               multiline
-              rows={5}
+              rows={rows}
               value={props.value || value}
             />
           )}
