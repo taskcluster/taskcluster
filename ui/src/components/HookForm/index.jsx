@@ -491,7 +491,6 @@ export default class HookForm extends Component {
               value={hook.metadata.description}
               placeholder="Hook description (markdown)"
               defaultTabIndex={1}
-              rows={5}
             />
           </ListItem>
           <ListItem>
