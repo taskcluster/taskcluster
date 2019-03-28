@@ -37,6 +37,7 @@ export const HOOKS_LAST_FIRE_TYPE = {
 
 export const THEME = {
   WHITE: '#fff',
+  BLACK: '#000',
   TEN_PERCENT_WHITE: fade('#fff', 0.1),
   TEN_PERCENT_BLACK: fade('#000', 0.1),
   DARK_THEME_BACKGROUND: '#12202c',
