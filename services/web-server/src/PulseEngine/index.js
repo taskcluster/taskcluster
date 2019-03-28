@@ -12,10 +12,8 @@ export default class PulseEngine {
    *
    * Each subscription gets one queue (named after the subscriptionId), with a
    * binding for each item in `subscriptions`. We then consume from that queue.
-   * All queues are ephemeral, meaning they will go away when this service
-   * restarts or the connection recycles. We automatically re-bind on
-   * connection recycles, and rely on the caller to re-subscribe on service
-   * restart. */
+   * We automatically re-bind on connection recycles, and rely on the caller to
+   * re-subscribe on service restart. */
 
   constructor({ monitor, pulseClient }) {
     this.monitor = monitor;

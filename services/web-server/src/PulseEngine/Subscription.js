@@ -62,10 +62,14 @@ export default class Subscription {
         debug(`Binding subscription ${subscriptionId}`);
         const { onError, onMessage, subscriptions } = this;
 
+        // declare the queue, with autoDelete and exclusive both set to false so that
+        // the queue will stick around if we need to reconnect, but with a short TTL
+        // so that if we "forget" about the queue, it will be deleted quickly.
         await channel.assertQueue(queueName, {
           exclusive: false,
           durable: true,
-          autoDelete: true,
+          autoDelete: false,
+          expires: 30000, // 30 seconds, long enough for a reconnect
         });
 
         // perform the queue binding in a new channel, so that the existing channel
