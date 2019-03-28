@@ -15,25 +15,24 @@ export default class PulseIterator {
     this.subscriptionId = this.pulseEngine.subscribe(
       subscriptions,
       this.pushValue.bind(this),
-      this.setError.bind(this),
+      this.pushError.bind(this),
     );
+    this.pullId = 0;
   }
 
   next() {
-    if (!this.listening) {
-      return this.error ? Promise.reject(this.error) : Promise.resolve({done: true});
-    }
     return this.pullValue();
   }
 
   return() {
-    this.emptyQueue();
+    this.stop({done: true});
 
-    return Promise.resolve({ value: undefined, done: true });
+    // return should always succeed, even if an error was introduced
+    return Promise.resolve({done: true});
   }
 
   throw(error) {
-    this.emptyQueue();
+    this.pushError(error);
 
     return Promise.reject(error);
   }
@@ -43,48 +42,64 @@ export default class PulseIterator {
   }
 
   // cause this to throw the given error for all pending and subsequent next() calls
-  setError(error) {
-    this.error = error;
-    this.emptyQueue();
+  pushError(error) {
+    this.stop({error, done: true});
   }
 
+  // insert a value into the queue; the resulting promise resolves when the value
+  // is consumed, and rejects if the iterator finishes without consuming the value
   pushValue(value) {
-    if (this.error) {
-      return;
+    if (!this.listening) {
+      return Promise.reject(new Error('iterator cancelled'));
     }
-
-    if (this.pullQueue.size !== 0) {
-      this.pullQueue.first()[0]({ value, done: false });
-      this.pullQueue = this.pullQueue.shift();
-    } else {
-      this.pushQueue = this.pushQueue.push(value);
-    }
-  }
-
-  pullValue() {
     return new Promise((resolve, reject) => {
-      if (this.pushQueue.size !== 0) {
-        resolve({ value: this.pushQueue.first(), done: false });
-        this.pushQueue = this.pushQueue.shift();
-      } else {
-        this.pullQueue = this.pullQueue.push([resolve, reject]);
-      }
+      this.pushQueue = this.pushQueue.push({resolve, reject, value, done: false});
+      this.match();
     });
   }
 
-  emptyQueue() {
-    if (!this.listening) {
-      return;
-    }
+  // pull a value from the iterator; the resulting promise resolves when a value
+  // is available or the iterator is finished, and rejects if the iterator encounters
+  // an error
+  pullValue() {
+    return new Promise((resolve, reject) => {
+      this.pullQueue = this.pullQueue.push({resolve, reject, id: this.pullId++});
+      this.match();
+    });
+  }
 
-    this.listening = false;
-    this.pulseEngine.unsubscribe(this.subscriptionId);
-    if (this.error) {
-      this.pullQueue.forEach(([resolve, reject]) => reject(this.error));
-    } else {
-      this.pullQueue.forEach(([resolve]) => resolve({done: true}));
+  stop(push) {
+    if (this.listening) {
+      this.listening = false;
+      this.pulseEngine.unsubscribe(this.subscriptionId);
+
+      // reject any pending pushes and then replace with a single, persistent push
+      const err = new Error('iterator cancelled');
+      this.pushQueue.forEach(({reject}) => reject(err));
+      this.pushQueue = this.pushQueue.clear().push(push);
     }
-    this.pullQueue = this.pullQueue.clear();
-    this.pushQueue = this.pushQueue.clear();
+    this.match();
+  }
+
+  match() {
+    while (this.pushQueue.size !== 0 && this.pullQueue.size !== 0) {
+      const push = this.pushQueue.first();
+      const pull = this.pullQueue.first();
+
+      this.pullQueue = this.pullQueue.shift();
+      if (!push.done) {
+        this.pushQueue = this.pushQueue.shift();
+      }
+
+      if (push.error) {
+        pull.reject(push.error);
+      } else {
+        pull.resolve({value: push.value, done: push.done});
+      }
+
+      if (push.resolve) {
+        push.resolve();
+      }
+    }
   }
 }
