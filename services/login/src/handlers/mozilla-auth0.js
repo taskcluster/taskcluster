@@ -156,12 +156,12 @@ class Handler {
     // to add the username after a `|` character, to disambiguate the
     // otherwise-numeric usernames
     if (user_id.startsWith('github|')) {
-      for (let {provider, connection, profileData} of profile.identities) {
+      for (let {provider, connection, user_id: github_user_id} of profile.identities) {
         if (provider === 'github' && connection === 'github') {
           // we expect the auth0 user_id to be `github|<githubUserId>`
-          assert(user_id.endsWith(profileData.user_id.toString()),
-            `Auth0 user_id ${user_id} not formatted as expected`);
-          identity += `|${profileData.nickname}`;
+          assert(user_id.endsWith(github_user_id.toString()),
+            `Auth0 user_id ${user_id} not formatted as expected (expected |${github_user_id})`);
+          identity += `|${profile.nickname}`;
           break;
         }
       }

@@ -20,8 +20,7 @@ suite('handlers/mozilla-auth0', function() {
     // simulate linked identities by including all of them here
     const identities = [
       {provider: 'ad', connection: 'Mozilla-LDAP'},
-      {provider: 'github', connection: 'github',
-        profileData: {user_id: 1234, nickname: 'helfi92'}},
+      {provider: 'github', connection: 'github', user_id: 1234},
       {provider: 'oauth2', connection: 'firefoxaccounts',
         profileData: {fxa_sub: 'abcdef', email: 'rockets@ksc'}},
       {provider: 'email', connection: 'email', user_id: 'slashy/slashy'},
@@ -37,6 +36,7 @@ suite('handlers/mozilla-auth0', function() {
         case 'github|1234':
           return {
             user_id: 'github|1234',
+            nickname: 'helfi92',
             identities,
           };
         case 'oauth2|firefoxaccounts|abcdef':
