@@ -1,0 +1,4 @@
+# GENERATED FILE from `yarn generate`! To update, change procs.yml and regenerate.
+
+web: cd services/web-server && yarn build && node build/index.js devServer
+write-docs: cd services/web-server && yarn build && node build/index.js writeDocs

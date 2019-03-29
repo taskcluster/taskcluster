@@ -1,23 +1,19 @@
 const util = require('util');
 const path = require('path');
-const glob = require('glob');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const References = require('taskcluster-lib-references');
 const exec = util.promisify(require('child_process').execFile);
-const {REPO_ROOT, writeJSON} = require('../util');
+const {REPO_ROOT, writeJSON, services} = require('../util');
 
 /**
  * This file defines a few tasks that call writeDocs for all services, then
  * combine the result into references.json.  This could definitely be more
  * efficient, and will be made so in later commits.
  */
-const SERVICES = glob.sync(
-  'services/*/package.json',
-  {cwd: REPO_ROOT})
-  .map(filename => filename.split('/')[1])
-  // this can't run writeDocs without 'yarn build', so ignore it for now.
-  .filter(service => service !== 'web-server');
+
+// this can't run writeDocs without 'yarn build', so ignore it for now.
+const SERVICES = services().filter(service => service !== 'web-server');
 
 const tempDir = path.join(REPO_ROOT, 'temp');
 const genDir = path.join(tempDir, 'generated');

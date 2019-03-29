@@ -1,6 +1,8 @@
 const {promisify} = require('util');
 const path = require('path');
 const fs = require('fs');
+const glob = require('glob');
+const yaml = require('js-yaml');
 const stringify = require('json-stable-stringify');
 const exec = promisify(require('child_process').execFile);
 
@@ -9,6 +11,14 @@ const writeFile = promisify(fs.writeFile);
 
 const REPO_ROOT = path.join(__dirname, '../../../../');
 exports.REPO_ROOT = REPO_ROOT;
+
+/**
+ * List all taskcluster services
+ */
+exports.services = () => glob.sync(
+  'services/*/package.json',
+  {cwd: REPO_ROOT})
+  .map(filename => filename.split('/')[1]);
 
 /**
  * Asynchronously read a file (relative to REPO_ROOT) and return its contents as a utf8 string
@@ -74,4 +84,11 @@ exports.gitLsFiles = async () => {
   const files = (await exec('git', ['ls-files', '-z'], opts))
     .stdout.split(/\0/);
   return files;
+};
+
+/**
+ * Asynchronously read a yaml file
+ */
+exports.readYAML = async filename => {
+  return yaml.safeLoad(await exports.readFile(filename));
 };
