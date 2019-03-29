@@ -48,15 +48,15 @@ export default class PulseEngine {
     this.reconcileSubscriptions();
   }
 
-  subscribe(subscriptions, onMessage, onError) {
+  subscribe(subscriptions, handleMessage, handleError) {
     const subscriptionId = slugid();
 
     this.subscriptions.set(
       subscriptionId,
       new Subscription({
         subscriptionId,
-        onMessage,
-        onError,
+        handleMessage,
+        handleError,
         subscriptions,
       })
     );

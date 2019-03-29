@@ -3,10 +3,10 @@ import Debug from 'debug';
 const debug = Debug('Subscription');
 
 export default class Subscription {
-  constructor({ subscriptionId, onMessage, onError, subscriptions }) {
+  constructor({ subscriptionId, handleMessage, handleError, subscriptions }) {
     this.subscriptionId = subscriptionId;
-    this.onMessage = onMessage;
-    this.onError = onError;
+    this.handleMessage = handleMessage;
+    this.handleError = handleError;
     this.subscriptions = subscriptions;
 
     // state tracking for reconciliation
@@ -48,7 +48,7 @@ export default class Subscription {
 
     const { channel } = this;
 
-    // all errors from here on are handled by calling the subscription's `onError`
+    // all errors from here on are handled by calling the subscription's `handleError`
     // method and considering the subscription reconciled.  So errors are not bubbled
     // up to the caller and will not interfere with other subscriptions.
     try {
@@ -60,7 +60,7 @@ export default class Subscription {
         this.listening = false;
       } else if (!listening && !unsubscribed) {
         debug(`Binding subscription ${subscriptionId}`);
-        const { onError, onMessage, subscriptions } = this;
+        const { handleError, handleMessage, subscriptions } = this;
 
         // declare the queue, with autoDelete and exclusive both set to false so that
         // the queue will stick around if we need to reconnect, but with a short TTL
@@ -89,7 +89,7 @@ export default class Subscription {
           // report the error..
           debug(`Binding to ${queueName} failed: ${err}`);
           // (converting to a string for transfer to the client)
-          onError(new Error(`Error binding queue: ${err}`));
+          handleError(new Error(`Error binding queue: ${err}`));
           // and consider this reconciliation complete..
           return;
         }
@@ -99,7 +99,7 @@ export default class Subscription {
           // "If the consumer is cancelled by RabbitMQ, the message callback will be invoked with null."
           // This is most likely due to the queue being deleted, so we just report it to the user.
           if (!amqpMsg) {
-            onError(`Consumer cancelled by RabbitMQ`);
+            handleError(`Consumer cancelled by RabbitMQ`);
             return;
           }
           const message = {
@@ -118,7 +118,7 @@ export default class Subscription {
             message.cc = amqpMsg.properties.headers.cc;
           }
 
-          onMessage(message).then(
+          handleMessage(message).then(
             () => channel.ack(amqpMsg),
             () => channel.nack(amqpMsg));
         });
@@ -128,7 +128,7 @@ export default class Subscription {
       }
     } catch (err) {
       debug(`Reconciling subscription ${subscriptionId}: ${err}`);
-      this.onError(new Error(`Error reconciling subscription: ${err}`));
+      this.handleError(new Error(`Error reconciling subscription: ${err}`));
 
       // try to delete the queue, just to be safe, but if it doesn't work, oh well..
       try {

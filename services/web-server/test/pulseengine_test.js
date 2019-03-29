@@ -5,9 +5,9 @@ import PulseEngine from '../src/PulseEngine';
 import PulseIterator from '../src/PulseEngine/PulseIterator';
 
 class FakePulseEngine {
-  subscribe(subscriptions, onMessage, onError) {
-    this.onMessage = onMessage;
-    this.onError = onError;
+  subscribe(subscriptions, handleMessage, handleError) {
+    this.handleMessage = handleMessage;
+    this.handleError = handleError;
     this.subscribed = true;
 
     return 'subid';
@@ -47,7 +47,7 @@ describe('PulseEngine', function() {
       // first push a bunch of messages..
       const sent = [];
       ['M1', 'M2', 'M3'].forEach((msg) => {
-        engine.onMessage(msg).then(() => sent.push(msg), err => sent.push(err));
+        engine.handleMessage(msg).then(() => sent.push(msg), err => sent.push(err));
       });
 
       // messages aren't sent yet..
@@ -86,15 +86,15 @@ describe('PulseEngine', function() {
       await beat();
       assert.deepEqual(result, []);
 
-      await engine.onMessage('M1');
+      await engine.handleMessage('M1');
       await beat();
       assert.deepEqual(result, ['M1']);
 
-      await engine.onMessage('M2');
+      await engine.handleMessage('M2');
       await beat();
       assert.deepEqual(result, ['M1', 'M2']);
 
-      await engine.onMessage('M3');
+      await engine.handleMessage('M3');
       await beat();
       assert.deepEqual(result, ['M1', 'M2', 'M3']);
 
@@ -108,18 +108,18 @@ describe('PulseEngine', function() {
       const pi = new PulseIterator(engine, []);
 
       const sent = [];
-      engine.onMessage('M1').then(() => sent.push('M1'));
+      engine.handleMessage('M1').then(() => sent.push('M1'));
       assert.deepEqual(sent, []);
       assert.deepEqual(await pi.next(), {value: 'M1', done: false});
       assert.deepEqual(sent, ['M1']);
 
-      // an unsent M2 will error out after onError is called
-      engine.onMessage('M2')
+      // an unsent M2 will error out after handleError is called
+      engine.handleMessage('M2')
         .then(() => { throw new Error('unexpected success'); })
         .catch(err => sent.push(err.toString()));
       assert.deepEqual(sent, ['M1']);
 
-      engine.onError(new Error('uhoh'));
+      engine.handleError(new Error('uhoh'));
 
       await beat();
       assert.deepEqual(sent, ['M1', 'Error: iterator cancelled']);
@@ -141,7 +141,7 @@ describe('PulseEngine', function() {
 
       // sending further messages fails
       try {
-        await engine.onMessage('M3');
+        await engine.handleMessage('M3');
         assert(false, "should have failed");
       } catch (err) {
         if (!err.toString().match(/iterator cancelled/)) {
