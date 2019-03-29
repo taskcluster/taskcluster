@@ -6,6 +6,10 @@ export default class PulseIterator {
    * Construct an AsyncIterator for the given subscriptions, of the form
    * [{exchange, pattern}].  The resulting values are of the form {payload,
    * exchange, routingKey, redelivered, CC}.
+   *
+   * Because messages come from Pulse in a "push" fashion, but are consumed by
+   * a "pull" operation (the `next` method), this class buffers outstanding
+   * push and pull operations and then matches them up in its `match()` method.
    */
   constructor(pulseEngine, subscriptions) {
     this.pulseEngine = pulseEngine;
