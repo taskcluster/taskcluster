@@ -21,7 +21,6 @@ export default class PulseIterator {
       this.pushValue.bind(this),
       this.pushError.bind(this),
     );
-    this.pullId = 0;
   }
 
   next() {
@@ -67,7 +66,7 @@ export default class PulseIterator {
   // an error
   pullValue() {
     return new Promise((resolve, reject) => {
-      this.pullQueue = this.pullQueue.push({resolve, reject, id: this.pullId++});
+      this.pullQueue = this.pullQueue.push({resolve, reject});
       this.match();
     });
   }
