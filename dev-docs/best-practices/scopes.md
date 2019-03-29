@@ -1,10 +1,4 @@
----
-filename: design/devel/best-practices/scopes.md
-title: Scopes and Roles
-order: 10
----
-
-# Scopes and Roles
+# Using Scopes and Roles
 
 ## When To Require A Role
 

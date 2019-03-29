@@ -1,9 +1,3 @@
----
-filename: design/devel/best-practices/commits.md
-title: Creating Good Commit Messages
-order: 50
----
-
 # Creating Good Commit Messages
 
 Having a well-crafted commit message will save you from using many tools to inspect changes

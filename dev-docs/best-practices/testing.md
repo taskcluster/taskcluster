@@ -1,8 +1,3 @@
----
-title: Testing
-order: 45
----
-
 # Testing
 
 The Taskcluster project aims for high-quality, reliable software that welcomes new contributors.
@@ -172,25 +167,3 @@ In cases where tests require credentials, but they are sufficiently harmless tha
 For example, pulse credentials are trivial for anyone to acquire and easily revoked, so exposing a set of testing pulse credentials does no harm.
 
 Where necessary, provide the appropriate `secrets:get:` scope in the `repo:github.com/taskcluster/taskcluster-lib-foo:branch:master` and (if harmless) `repo:github.com/taskcluster/taskcluster-lib-foo:pull-request` roles.
-
-# ESLint
-
-Use [eslint-config-taskcluster](https://github.com/taskcluster/eslint-config-taskcluster) to check for lint.
-
-To do so, install `eslint-config-taskcluster` as a dev dependency and make a scripts section of the package.json that is similar to
-
-```json
-"scripts": {
-  "lint": "eslint src/*.js test/*.js",
-  "pretest": "yarn lint"
-},
-```
-(again, add more patterns if necessary, especially if `src` or `test` contain subdirectories)
-
-Create `.eslintrc` in the root of the repository with
-```js
-{
-  "extends": "eslint-config-taskcluster"
-}
-```
-
