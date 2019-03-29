@@ -17,7 +17,7 @@ Where this seems like a good idea, prefer to create a new [library](libraries) i
 
 ## Package Mechanics
 
-A service has a `serviceName` and a `projectName`, the latter often having a `taskclsuter-` prefix.
+A service has a `serviceName` and a `projectName`, the latter often having a `taskcluster-` prefix.
 For example, `auth` and `taskcluster-auth`, respectively.
 
 A service is implemented in `services/<serviceName>`.
