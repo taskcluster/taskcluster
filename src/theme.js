@@ -16,6 +16,8 @@ const theme = createMuiTheme({
       ...red,
       ...error,
     },
+    black: '#000',
+    white: '#fff',
   },
   typography: {
     useNextVariants: true,
