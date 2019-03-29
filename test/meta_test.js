@@ -42,8 +42,14 @@ suite('Repo Meta Tests', function() {
     assert.equal(taskclusterYml.tasks.$let.node, uiPackageJson.engines.node);
   });
 
-  test('proper capitalization of Taskcluster', async function() {
-    const Taskcluster = ["Task[C]luster", "Task [c]luster", "Task [C]luster"];
+  test('proper spelling and capitalization of Taskcluster', async function() {
+    const Taskcluster = [
+      "Task[C]luster",
+      "Task [c]luster",
+      "Task [C]luster",
+      "[tT]skclsuter",
+      "[tT]askclsuter",
+    ];
     for (let pattern of Taskcluster) {
       try {
         const res = await exec(`git grep '${pattern}'`);
@@ -52,7 +58,7 @@ suite('Repo Meta Tests', function() {
       } catch (err) {
         if (err.code === 1) {
           // git grep found nothing
-          return;
+          continue;
         }
         throw err;
       }

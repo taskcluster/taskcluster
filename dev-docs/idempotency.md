@@ -1,8 +1,4 @@
----
-filename: design/devel/idempotency.md
-title: Idempotency
-order: 30
----
+# Idempotency
 
 All Taskcluster API operations should be idempotent. This means that repeating
 a request has no effect, as long as it occurs within a reasonable time.

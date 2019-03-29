@@ -1,9 +1,3 @@
----
-filename: design/devel/principles.md
-title: Guiding Design Principles for Taskcluster
-order: 10
----
-
 # Guiding Design Principles for Taskcluster
 
 At the [2016 tc-worker workweek](http://www.chesnok.com/daily/2016/03/11/workweek-tc-worker-workweek-recap/) the Taskcluster Platform team laid out our _core design principles_. The four key principles are:
@@ -50,5 +44,3 @@ These are all under an umbrella we call Getting Things Built&#8482;. None of our
   - Granular Security
 - Public by Default
 - Self-Service
-
-<img src="/docs/assets/principles.svg" alt="Taskcluster Principles Diagram" width="100%" />
