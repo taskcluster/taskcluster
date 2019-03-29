@@ -11,8 +11,8 @@ import Markdown from '../Markdown';
 @withStyles(theme => {
   const borderColor =
     theme.palette.type === 'light'
-      ? fade(theme.palette.black, 0.23)
-      : fade(theme.palette.white, 0.23);
+      ? fade(theme.palette.common.black, 0.23)
+      : fade(theme.palette.common.white, 0.23);
 
   return {
     tab: {
