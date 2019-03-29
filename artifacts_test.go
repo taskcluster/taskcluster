@@ -472,8 +472,8 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 		t.Fatalf("Error listing artifacts: %v", err)
 	}
 
-	if l := len(artifacts.Artifacts); l != 8 {
-		t.Fatalf("Was expecting 8 artifacts, but got %v", l)
+	if l := len(artifacts.Artifacts); l != 7 {
+		t.Fatalf("Was expecting 7 artifacts, but got %v", l)
 	}
 
 	// use the artifact names as keys in a map, so we can look up that each key exists
