@@ -1,0 +1,60 @@
+web:
+  type: web
+  command: node src/main server
+write-docs:
+  type: build
+  command: node src/main writeDocs
+claimResolver:
+  type: background
+  command: node src/main claim-resolver
+deadlineResolver:
+  type: background
+  command: node src/main deadline-resolver
+dependencyResolver:
+  type: background
+  command: node src/main dependency-resolver
+expireArtifacts:
+  type: cron
+  schedule: '0 0 * * *'
+  deadline: 86400
+  command: node src/main expire-artifacts
+expireTask:
+  type: cron
+  schedule: '0 0 * * *'
+  deadline: 86400
+  command: node src/main expire-tasks
+expireTaskGroups:
+  type: cron
+  schedule: '0 0 * * *'
+  deadline: 86400
+  command: node src/main expire-task-groups
+expireTaskGroupMembers:
+  type: cron
+  schedule: '0 0 * * *'
+  deadline: 86400
+  command: node src/main expire-task-group-members
+expireTaskGroupSizes:
+  type: cron
+  schedule: '0 0 * * *'
+  deadline: 86400
+  command: node src/main expire-task-group-sizes
+expireTaskDependency:
+  type: cron
+  schedule: '0 0 * * *'
+  deadline: 86400
+  command: node src/main expire-task-dependency
+expireTaskRequirement:
+  type: cron
+  schedule: '0 0 * * *'
+  deadline: 86400
+  command: node src/main expire-task-requirement
+expireQueues:
+  type: cron
+  schedule: '0 0 * * *'
+  deadline: 86400
+  command: node src/main expire-queues
+expireWorkerInfo:
+  type: cron
+  schedule: '0 0 * * *'
+  deadline: 86400
+  command: node src/main expire-worker-info
