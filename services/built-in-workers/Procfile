@@ -1,2 +1,0 @@
-server: cd services/built-in-workers && node src/main.js server
-write-docs: cd services/built-in-workers && node src/main.js writeDocs

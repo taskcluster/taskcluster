@@ -1,3 +1,0 @@
-web: cd services/worker-manager && node src/main.js server
-provisioner: cd services/worker-manager && node src/main.js provisionerservice
-write-docs: cd services/worker-manager && node src/main.js writeDocs

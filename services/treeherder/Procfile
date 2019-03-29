@@ -1,2 +1,0 @@
-handlers: cd services/treeherder && node src/main.js server
-write-docs: cd services/treeherder && node src/main writeDocs
