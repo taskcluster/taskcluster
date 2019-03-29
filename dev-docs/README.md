@@ -12,6 +12,14 @@ These provide an open, transparent decision-making process and a way to track id
 
 Taskcluster's RFCs are in the [taskcluster-rfcs repository](https://github.com/taskcluster/taskcluster-rfcs).
 
+## Retrospectives
+
+Taskcluster is used at Mozilla to support the core business of building, testing, and releasing Firefox and other products.
+As such, we take failures very seriously and work to prevent them and learn from them.
+
+In the interests of open development, we publish our retrospectives at [taskcluster/taskcluster-retrospectives](https://github.com/taskcluster/taskcluster-retrospectives).
+Developers should be familiar with the incidents that have occurred in the past as a guide to designing new functionality in a way that will minimize likelihood of recurrence.
+
 # Further Reading
 
 * [Design Principles](principles)
