@@ -145,13 +145,13 @@ class MonitorManager {
       this.destination = new stream.Writable({
         write: (chunk, encoding, next) => {
           try {
-            chunk = JSON.parse(chunk);
+            const {Type, Fields, Logger} = JSON.parse(chunk);
+            this.messages.push({Type, Fields, Logger});
           } catch (err) {
             if (err.name !== 'SyntaxError') {
               throw err;
             }
           }
-          this.messages.push(chunk);
           next();
         },
       });
@@ -236,7 +236,10 @@ class MonitorManager {
    * For use in testing only. Clears the events so this can be used again.
    */
   reset() {
-    this.messages = [];
+    if (!this.mock) {
+      throw new Error('monitor.reset is only valid on mock monitors');
+    }
+    this.messages.splice(0);
   }
 
   /*

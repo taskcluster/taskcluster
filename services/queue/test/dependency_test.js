@@ -48,10 +48,28 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     let r1 = await helper.queue.createTask(taskIdA, taskA);
     helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdA));
     helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdA));
+    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-defined'), {
+      Logger: 'taskcluster.queue.root.api',
+      Type: 'task-defined',
+      Fields: {taskId: taskIdA, v: 1},
+    });
+    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-pending'), {
+      Logger: 'taskcluster.queue.root.api',
+      Type: 'task-pending',
+      Fields: {taskId: taskIdA, runId: 0, v: 1},
+    });
+    helper.monitor.reset();
+
     let r2 = await helper.queue.createTask(taskIdB, taskB);
     helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdB));
     assume(r1.status.state).equals('pending');
     assume(r2.status.state).equals('unscheduled');
+    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-defined'), {
+      Logger: 'taskcluster.queue.root.api',
+      Type: 'task-defined',
+      Fields: {taskId: taskIdB, v: 1},
+    });
+    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-pending'), undefined);
 
     debug('### listTaskDependents');
     {
@@ -69,13 +87,32 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
+
     helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
+    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-running'), {
+      Logger: 'taskcluster.queue.root.work-claimer',
+      Type: 'task-running',
+      Fields: {taskId: taskIdA, runId: 0, v: 1},
+    });
+
     await helper.queue.reportCompleted(taskIdA, 0);
     helper.checkNextMessage('task-completed', m => assert.equal(m.payload.status.taskId, taskIdA));
+    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-completed'), {
+      Logger: 'taskcluster.queue.root.api',
+      Type: 'task-completed',
+      Fields: {taskId: taskIdA, runId: 0, v: 1},
+    });
 
     // task B should become pending on next poll
     await testing.poll(
-      async () => helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdB)),
+      async () => {
+        helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdB));
+        assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-pending'), {
+          Logger: 'taskcluster.queue.root.dependency-tracker',
+          Type: 'task-pending',
+          Fields: {taskId: taskIdB, runId: 0, v: 1},
+        });
+      },
       Infinity);
 
     debug('### Claim and resolve taskB');

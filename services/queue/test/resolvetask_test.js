@@ -60,6 +60,12 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     helper.checkNextMessage('task-completed', m =>
       assume(m.payload.status.runs[0].state).equals('completed'));
 
+    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-completed'), {
+      Logger: 'taskcluster.queue.root.api',
+      Type: 'task-completed',
+      Fields: {taskId, runId: 0, v: 1},
+    });
+
     debug('### Reporting task completed (again)');
     await helper.queue.reportCompleted(taskId, 0);
     // idempotent, but sends the message again..
@@ -95,6 +101,12 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     await helper.queue.reportFailed(taskId, 0);
     helper.checkNextMessage('task-failed', m =>
       assume(m.payload.status.runs[0].state).equals('failed'));
+
+    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-failed'), {
+      Logger: 'taskcluster.queue.root.api',
+      Type: 'task-failed',
+      Fields: {taskId, runId: 0, v: 1},
+    });
 
     debug('### Reporting task failed (again)');
     await helper.queue.reportFailed(taskId, 0);
@@ -132,6 +144,12 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     helper.checkNextMessage('task-exception', m => {
       assume(m.payload.status.runs[0].state).equals('exception');
       assume(m.payload.status.runs[0].reasonResolved).equals('malformed-payload');
+    });
+
+    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-exception'), {
+      Logger: 'taskcluster.queue.root.api',
+      Type: 'task-exception',
+      Fields: {taskId, runId: 0, v: 1},
     });
 
     debug('### Reporting task exception (again)');

@@ -735,6 +735,7 @@ builder.declare({
   // Publish task-defined message, we want this arriving before the
   // task-pending message, so we have to await publication here
   await this.publisher.taskDefined({status}, task.routes);
+  this.monitor.log.taskDefined({taskId});
 
   // If first run is pending we publish messages about this
   if (runZeroState === 'pending') {
@@ -745,6 +746,7 @@ builder.declare({
       // Put message in appropriate azure queue, and publish message to pulse
       this.publisher.taskPending({status, runId: 0}, task.routes),
     ]);
+    this.monitor.log.taskPending({taskId, runId: 0});
   }
 
   // Reply
@@ -911,6 +913,7 @@ builder.declare({
 
   // Publish task-defined message
   await this.publisher.taskDefined({status}, task.routes);
+  this.monitor.log.taskDefined({taskId});
 
   // Reply
   return res.reply({status});
@@ -1107,6 +1110,7 @@ builder.declare({
         runId: runId,
       }, task.routes),
     ]);
+    this.monitor.log.taskPending({taskId, runId});
   }
 
   return res.reply({status});
@@ -1228,10 +1232,12 @@ builder.declare({
     );
 
     // Publish message about the exception
+    const runId = task.runs.length - 1;
     await this.publisher.taskException(_.defaults({
       status,
-      runId: task.runs.length - 1,
+      runId,
     }, _.pick(run, 'workerGroup', 'workerId')), task.routes);
+    this.monitor.log.taskException({taskId, runId});
   }
 
   return res.reply({status});
@@ -1359,13 +1365,15 @@ builder.declare({
     this.workerInfo.seen(provisionerId, workerType, workerGroup, workerId),
   ]);
 
-  this.monitor.log.workClaimed({
-    provisionerId,
-    workerType,
-    workerGroup,
-    workerId,
-    requested: count,
-    tasks: result.map(({status}) => status.taskId),
+  result.forEach(({runId, status: {taskId}}) => {
+    this.monitor.log.taskClaimed({
+      provisionerId,
+      workerType,
+      workerGroup,
+      workerId,
+      taskId,
+      runId,
+    });
   });
 
   await this.workerInfo.taskSeen(provisionerId, workerType, workerGroup, workerId, result);
@@ -1625,6 +1633,13 @@ builder.declare({
     this.credentials,
   );
 
+  this.monitor.log.taskReclaimed({
+    taskId,
+    runId,
+    workerId: run.workerId,
+    workerGroup: run.workerGroup,
+  });
+
   // Reply to caller
   return res.reply({
     status: task.status(),
@@ -1744,6 +1759,7 @@ let resolveTask = async function(req, res, taskId, runId, target) {
       workerGroup: run.workerGroup,
       workerId: run.workerId,
     }, task.routes);
+    this.monitor.log.taskCompleted({taskId, runId});
   } else {
     await this.publisher.taskFailed({
       status,
@@ -1751,6 +1767,7 @@ let resolveTask = async function(req, res, taskId, runId, target) {
       workerGroup: run.workerGroup,
       workerId: run.workerId,
     }, task.routes);
+    this.monitor.log.taskFailed({taskId, runId});
   }
 
   return res.reply({status});
@@ -1955,6 +1972,7 @@ builder.declare({
         runId: runId + 1,
       }, task.routes),
     ]);
+    this.monitor.log.taskPending({taskId, runId: runId + 1});
   } else {
     // Update dependency tracker, as the task is resolved (no new run)
     await this.queueService.putResolvedMessage(
@@ -1971,6 +1989,7 @@ builder.declare({
       workerGroup: run.workerGroup,
       workerId: run.workerId,
     }, task.routes);
+    this.monitor.log.taskException({taskId, runId});
   }
 
   // Reply to caller

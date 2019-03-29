@@ -280,6 +280,7 @@ class WorkClaimer extends events.EventEmitter {
       workerId: workerId,
       takenUntil: run.takenUntil,
     }, task.routes);
+    this._monitor.log.taskRunning({taskId, runId});
 
     let credentials = taskCreds(
       taskId,

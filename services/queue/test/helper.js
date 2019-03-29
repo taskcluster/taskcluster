@@ -59,6 +59,12 @@ exports.secrets = new Secrets({
 
 helper.rootUrl = 'http://localhost:60401';
 
+// flush the mock log messages for each test case
+setup(async function() {
+  helper.monitor = await helper.load('monitor');
+  helper.monitor.reset();
+});
+
 /**
  * helper.runWithFakeTime(<fn>, <time>), will run async function <fn> for <time>
  * fake milliseconds.  It is intended to wrap the function argument to Mocha's `test`.

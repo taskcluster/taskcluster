@@ -2,18 +2,36 @@ const path = require('path');
 const {fork} = require('child_process');
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
+const stream = require('stream');
 const MonitorManager = require('../src');
 
 suite('BaseMonitor', function() {
-  let manager, monitor;
+  let manager, monitor, messages;
 
   setup(function() {
     manager = new MonitorManager({
       serviceName: 'testing-service',
     });
+
+    // similar to the mock destination, but capturing all fields
+    const destination = new stream.Writable({
+      write: (chunk, encoding, next) => {
+        try {
+          messages.push(JSON.parse(chunk));
+        } catch (err) {
+          if (err.name !== 'SyntaxError') {
+            throw err;
+          }
+        }
+        next();
+      },
+    });
+    messages = [];
+
     manager.setup({
       level: 'debug',
       verify: true,
+      destination,
       mock: {
         allowExit: true,
       },
@@ -31,8 +49,8 @@ suite('BaseMonitor', function() {
       // check this after a short delay, as otherwise the Promise.resolve
       // can measure something after timer returns..
       return new Promise(resolve => setTimeout(resolve, 10)).then(() => {
-        assert.equal(manager.messages.length, len);
-        manager.messages.forEach(m => {
+        assert.equal(messages.length, len);
+        messages.forEach(m => {
           assert.equal(m.Logger, 'taskcluster.testing-service.root');
           assert.equal(m.Type, 'monitor.timer');
           assert.equal(m.Fields.key, 'pfx');
@@ -55,7 +73,7 @@ suite('BaseMonitor', function() {
     test('of an async function', async function() {
       assert.equal(await monitor.timer('pfx', takes100ms), 13);
       await checkMonitor(1);
-      assert(manager.messages[0].Fields.duration >= 90);
+      assert(messages[0].Fields.duration >= 90);
     });
 
     test('of an async function that fails', async function() {
@@ -72,7 +90,7 @@ suite('BaseMonitor', function() {
     test('of a promise', async function() {
       assert.equal(await monitor.timer('pfx', takes100ms()), 13);
       await checkMonitor(1);
-      assert(manager.messages[0].Fields.duration >= 90);
+      assert(messages[0].Fields.duration >= 90);
     });
 
     test('of a failed promise', async function() {
@@ -106,26 +124,26 @@ suite('BaseMonitor', function() {
     test('successful async function', async function() {
       await monitor.oneShot('expire', async () => {});
       assert.equal(exitStatus, 0);
-      assert.equal(manager.messages.length, 1);
-      assert.equal(manager.messages[0].Logger, 'taskcluster.testing-service.root');
-      assert(manager.messages[0].Fields.key);
-      assert(manager.messages[0].Fields.duration);
+      assert.equal(messages.length, 1);
+      assert.equal(messages[0].Logger, 'taskcluster.testing-service.root');
+      assert(messages[0].Fields.key);
+      assert(messages[0].Fields.duration);
     });
 
     test('unsuccessful async function', async function() {
       await monitor.oneShot('expire', async () => { throw new Error('uhoh'); });
       assert.equal(exitStatus, 1);
-      assert.equal(manager.messages.length, 2);
-      assert(manager.messages[0].Fields.key);
-      assert(manager.messages[0].Fields.duration);
-      assert.equal(manager.messages[1].Fields.name, 'Error');
-      assert.equal(manager.messages[1].Fields.message, 'uhoh');
+      assert.equal(messages.length, 2);
+      assert(messages[0].Fields.key);
+      assert(messages[0].Fields.duration);
+      assert.equal(messages[1].Fields.name, 'Error');
+      assert.equal(messages[1].Fields.message, 'uhoh');
     });
 
     test('missing name', async function() {
       await monitor.oneShot(async () => { throw new Error('uhoh'); });
       assert.equal(exitStatus, 1);
-      assert(manager.messages[0].Fields.name.startsWith('AssertionError'));
+      assert(messages[0].Fields.name.startsWith('AssertionError'));
     });
   });
 
@@ -136,11 +154,11 @@ suite('BaseMonitor', function() {
       monitor.count('foobar', 5);
       child.count('foobar', 6);
 
-      assert.equal(manager.messages.length, 2);
-      assert.equal(manager.messages[0].Logger, 'taskcluster.testing-service.root');
-      assert.equal(manager.messages[1].Logger, 'taskcluster.testing-service.root.api');
-      assert.equal(manager.messages[0].Fields.val, 5);
-      assert.equal(manager.messages[1].Fields.val, 6);
+      assert.equal(messages.length, 2);
+      assert.equal(messages[0].Logger, 'taskcluster.testing-service.root');
+      assert.equal(messages[1].Logger, 'taskcluster.testing-service.root.api');
+      assert.equal(messages[0].Fields.val, 5);
+      assert.equal(messages[1].Fields.val, 6);
     });
 
     test('can double prefix', function() {
@@ -150,13 +168,13 @@ suite('BaseMonitor', function() {
       child.count('foobar', 6);
       grandchild.count('foobar', 7);
 
-      assert.equal(manager.messages.length, 3);
-      assert.equal(manager.messages[0].Logger, 'taskcluster.testing-service.root');
-      assert.equal(manager.messages[1].Logger, 'taskcluster.testing-service.root.api');
-      assert.equal(manager.messages[2].Logger, 'taskcluster.testing-service.root.api.something');
-      assert.equal(manager.messages[0].Fields.val, 5);
-      assert.equal(manager.messages[1].Fields.val, 6);
-      assert.equal(manager.messages[2].Fields.val, 7);
+      assert.equal(messages.length, 3);
+      assert.equal(messages[0].Logger, 'taskcluster.testing-service.root');
+      assert.equal(messages[1].Logger, 'taskcluster.testing-service.root.api');
+      assert.equal(messages[2].Logger, 'taskcluster.testing-service.root.api.something');
+      assert.equal(messages[0].Fields.val, 5);
+      assert.equal(messages[1].Fields.val, 6);
+      assert.equal(messages[2].Fields.val, 7);
     });
 
     test('metadata is merged', function() {
@@ -164,11 +182,11 @@ suite('BaseMonitor', function() {
       monitor.measure('bazbing', 5);
       child.measure('bazbing', 6);
 
-      assert.equal(manager.messages.length, 2);
-      assert.equal(manager.messages[0].Logger, 'taskcluster.testing-service.root');
-      assert.equal(manager.messages[1].Logger, 'taskcluster.testing-service.root.api');
-      assert.equal(manager.messages[0].Fields.meta, undefined);
-      assert.equal(manager.messages[1].Fields.meta.addition, 1000);
+      assert.equal(messages.length, 2);
+      assert.equal(messages[0].Logger, 'taskcluster.testing-service.root');
+      assert.equal(messages[1].Logger, 'taskcluster.testing-service.root.api');
+      assert.equal(messages[0].Fields.meta, undefined);
+      assert.equal(messages[1].Fields.meta.addition, 1000);
     });
 
     test('can configure child loggers with specific levels and default to root', function() {
@@ -294,87 +312,87 @@ suite('BaseMonitor', function() {
   suite('other basics', function() {
     test('should record errors', function() {
       monitor.reportError(new Error('oh no'));
-      assert.equal(manager.messages.length, 1);
-      assert.equal(manager.messages[0].Severity, 3);
-      assert.equal(manager.messages[0].severity, 'ERROR');
-      assert.equal(manager.messages[0].Fields.name, 'Error');
-      assert.equal(manager.messages[0].Fields.message, 'oh no');
-      assert(manager.messages[0].Fields.stack);
+      assert.equal(messages.length, 1);
+      assert.equal(messages[0].Severity, 3);
+      assert.equal(messages[0].severity, 'ERROR');
+      assert.equal(messages[0].Fields.name, 'Error');
+      assert.equal(messages[0].Fields.message, 'oh no');
+      assert(messages[0].Fields.stack);
     });
 
     test('should record errors with extra', function() {
       monitor.reportError(new Error('oh no'), {foo: 5});
-      assert.equal(manager.messages.length, 1);
-      assert.equal(manager.messages[0].Severity, 3);
-      assert.equal(manager.messages[0].severity, 'ERROR');
-      assert.equal(manager.messages[0].Fields.name, 'Error');
-      assert.equal(manager.messages[0].Fields.message, 'oh no');
-      assert.equal(manager.messages[0].Fields.foo, 5);
-      assert(manager.messages[0].Fields.stack);
+      assert.equal(messages.length, 1);
+      assert.equal(messages[0].Severity, 3);
+      assert.equal(messages[0].severity, 'ERROR');
+      assert.equal(messages[0].Fields.name, 'Error');
+      assert.equal(messages[0].Fields.message, 'oh no');
+      assert.equal(messages[0].Fields.foo, 5);
+      assert(messages[0].Fields.stack);
     });
 
     test('should record errors with extra and level', function() {
       monitor.reportError(new Error('oh no'), 'warning', {foo: 5});
-      assert.equal(manager.messages.length, 1);
-      assert.equal(manager.messages[0].Severity, 4);
-      assert.equal(manager.messages[0].severity, 'WARNING');
-      assert.equal(manager.messages[0].Fields.name, 'Error');
-      assert.equal(manager.messages[0].Fields.message, 'oh no');
-      assert.equal(manager.messages[0].Fields.foo, 5);
-      assert(manager.messages[0].Fields.stack);
+      assert.equal(messages.length, 1);
+      assert.equal(messages[0].Severity, 4);
+      assert.equal(messages[0].severity, 'WARNING');
+      assert.equal(messages[0].Fields.name, 'Error');
+      assert.equal(messages[0].Fields.message, 'oh no');
+      assert.equal(messages[0].Fields.foo, 5);
+      assert(messages[0].Fields.stack);
     });
 
     test('should record errors that are strings', function() {
       monitor.reportError('oh no');
-      assert.equal(manager.messages.length, 1);
-      assert.equal(manager.messages[0].Fields.name, 'Error');
-      assert.equal(manager.messages[0].Fields.message, 'oh no');
-      assert(manager.messages[0].Fields.stack);
+      assert.equal(messages.length, 1);
+      assert.equal(messages[0].Fields.name, 'Error');
+      assert.equal(messages[0].Fields.message, 'oh no');
+      assert(messages[0].Fields.stack);
     });
 
     test('should count', function() {
       monitor.count('something', 5);
-      assert.equal(manager.messages.length, 1);
-      assert.equal(manager.messages[0].Fields.key, 'something');
-      assert.equal(manager.messages[0].Fields.val, 5);
-      assert.equal(manager.messages[0].Severity, 6);
+      assert.equal(messages.length, 1);
+      assert.equal(messages[0].Fields.key, 'something');
+      assert.equal(messages[0].Fields.val, 5);
+      assert.equal(messages[0].Severity, 6);
     });
 
     test('should count with default', function() {
       monitor.count('something');
-      assert.equal(manager.messages.length, 1);
-      assert.equal(manager.messages[0].Fields.key, 'something');
-      assert.equal(manager.messages[0].Fields.val, 1);
-      assert.equal(manager.messages[0].Severity, 6);
+      assert.equal(messages.length, 1);
+      assert.equal(messages[0].Fields.key, 'something');
+      assert.equal(messages[0].Fields.val, 1);
+      assert.equal(messages[0].Severity, 6);
     });
 
     test('should measure', function() {
       monitor.measure('whatever', 50);
-      assert.equal(manager.messages.length, 1);
-      assert.equal(manager.messages[0].Fields.key, 'whatever');
-      assert.equal(manager.messages[0].Fields.val, 50);
-      assert.equal(manager.messages[0].Severity, 6);
+      assert.equal(messages.length, 1);
+      assert.equal(messages[0].Fields.key, 'whatever');
+      assert.equal(messages[0].Fields.val, 50);
+      assert.equal(messages[0].Severity, 6);
     });
 
     test('should reject malformed counts', function() {
       monitor.count('something', 'foo');
-      assert.equal(manager.messages.length, 1);
-      assert.equal(manager.messages[0].Severity, 3);
-      assert.equal(manager.messages[0].Fields.name, 'AssertionError [ERR_ASSERTION]');
+      assert.equal(messages.length, 1);
+      assert.equal(messages[0].Severity, 3);
+      assert.equal(messages[0].Fields.name, 'AssertionError [ERR_ASSERTION]');
     });
 
     test('should reject malformed measures', function() {
       monitor.measure('something', 'bar');
-      assert.equal(manager.messages.length, 1);
-      assert.equal(manager.messages[0].Severity, 3);
-      assert.equal(manager.messages[0].Fields.name, 'AssertionError [ERR_ASSERTION]');
+      assert.equal(messages.length, 1);
+      assert.equal(messages[0].Severity, 3);
+      assert.equal(messages[0].Fields.name, 'AssertionError [ERR_ASSERTION]');
     });
 
     test('should monitor resource usage', async function() {
       const stopMonitor = monitor.resources('testing', 1/500);
       return testing.poll(async () => {
-        assert(manager.messages.length > 200);
-        assert(manager.messages[0].Fields.lastCpuUsage !== undefined);
+        assert(messages.length > 200);
+        assert(messages[0].Fields.lastCpuUsage !== undefined);
         stopMonitor();
       });
     });
@@ -382,17 +400,17 @@ suite('BaseMonitor', function() {
     test('monitor.timeKeeper', async () => {
       const doodad = monitor.timeKeeper('doodadgood');
       doodad.measure();
-      assert.equal(manager.messages.length, 1);
-      assert.equal(manager.messages[0].Fields.key, 'doodadgood');
+      assert.equal(messages.length, 1);
+      assert.equal(messages[0].Fields.key, 'doodadgood');
     });
 
     test('monitor.timeKeeper forced double submit', async () => {
       const doodad = monitor.timeKeeper('doodadgood');
       doodad.measure();
       doodad.measure(true);
-      assert.equal(manager.messages.length, 2);
-      assert.equal(manager.messages[0].Fields.key, 'doodadgood');
-      assert.equal(manager.messages[1].Fields.key, 'doodadgood');
+      assert.equal(messages.length, 2);
+      assert.equal(messages[0].Fields.key, 'doodadgood');
+      assert.equal(messages[1].Fields.key, 'doodadgood');
     });
 
     test('monitor.timeKeeper unforced double submit throws', async () => {
@@ -411,12 +429,12 @@ suite('BaseMonitor', function() {
       await ec2.describeAvailabilityZones().promise().catch(err => {
         // Ignored ec2 error, we measure duration, not success
       });
-      assert.equal(manager.messages.length, 1);
-      assert.equal(manager.messages[0].Logger, 'taskcluster.testing-service.root');
-      assert.equal(manager.messages[0].Fields.operation, 'describeAvailabilityZones');
-      assert.equal(manager.messages[0].Fields.service, 'ec2');
-      assert.equal(manager.messages[0].Fields.region, 'us-west-2');
-      assert(manager.messages[0].Fields.duration > 0);
+      assert.equal(messages.length, 1);
+      assert.equal(messages[0].Logger, 'taskcluster.testing-service.root');
+      assert.equal(messages[0].Fields.operation, 'describeAvailabilityZones');
+      assert.equal(messages[0].Fields.service, 'ec2');
+      assert.equal(messages[0].Fields.region, 'us-west-2');
+      assert(messages[0].Fields.duration > 0);
     });
   });
 });
