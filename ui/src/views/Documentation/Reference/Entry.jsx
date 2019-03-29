@@ -177,9 +177,14 @@ export default class Entry extends Component {
             <Typography component="h3">v{entry.version}</Typography>
           </div>
         </Grid>
-        <Grid item xs={8}>
+        <Grid item xs={7}>
           <div>
-            <Typography>{entry.description}</Typography>
+            <Typography>{entry.title}</Typography>
+          </div>
+        </Grid>
+        <Grid item xs={1}>
+          <div>
+            <StatusLabel state={upperCase(entry.level)} />
           </div>
         </Grid>
       </Grid>
@@ -454,6 +459,13 @@ export default class Entry extends Component {
     return (
       expanded && (
         <List className={classes.list}>
+          <ListItem>
+            <ListItemText
+              primaryTypographyProps={primaryTypographyProps}
+              primary="Description"
+              secondary={<Markdown>{entry.description}</Markdown>}
+            />
+          </ListItem>
           <ListItem>
             <ListItemText
               primaryTypographyProps={primaryTypographyProps}

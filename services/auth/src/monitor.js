@@ -6,6 +6,7 @@ const manager = new MonitorManager({
 
 manager.register({
   name: 'signatureValidation',
+  title: 'Signature Validation',
   type: 'signature-validation',
   version: 1,
   level: 'notice',
