@@ -63,11 +63,13 @@ class MonitorManager {
   register({
     name,
     type,
+    title,
     level,
     version,
     description,
     fields = {}, // TODO: Consider making these defined with json-schema and validate only in dev or something
   }) {
+    assert(title, `Must provide a human readable title for this log type ${name}`);
     assert(/^[a-z][a-zA-Z0-9]*$/.test(name), `Invalid name type ${name}`);
     assert(/^[a-z][a-zA-Z0-9.\-_]*$/.test(type), `Invalid event type ${type}`);
     assert(!this.types[name], `Cannot register event ${name} twice`);
@@ -81,6 +83,7 @@ class MonitorManager {
     });
     this.types[name] = {
       type,
+      title,
       level,
       version,
       description: this.cleanupDescription(description),
@@ -276,13 +279,10 @@ class MonitorManager {
     return {
       serviceName: this.serviceName,
       $schema: '/schemas/common/logs-reference-v0.json#',
-      types: Object.values(this.types).map(type => {
+      types: Object.entries(this.types).map(([name, type]) => {
         return {
-          name: type.name,
-          type: type.type,
-          version: type.version,
-          description: type.description,
-          fields: type.fields,
+          name,
+          ...type,
         };
       }),
     };

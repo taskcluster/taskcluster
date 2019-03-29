@@ -12,6 +12,7 @@ const manager = new MonitorManager({
 
 manager.register({
   name: 'azureQueuePoll',
+  title: 'Azure Queue Poll',
   type: 'azure-queue-poll',
   version: 1,
   level: 'info',
@@ -25,6 +26,7 @@ manager.register({
 
 manager.register({
   name: 'taskDefined',
+  title: 'Task Defined',
   type: 'task-defined',
   version: 1,
   level: 'notice',
@@ -38,6 +40,7 @@ manager.register({
 
 manager.register({
   name: 'taskPending',
+  title: 'Task Pending',
   type: 'task-pending',
   version: 1,
   level: 'notice',
@@ -52,6 +55,7 @@ manager.register({
 
 manager.register({
   name: 'taskRunning',
+  title: 'Task Running',
   type: 'task-running',
   version: 1,
   level: 'notice',
@@ -65,6 +69,7 @@ manager.register({
 
 manager.register({
   name: 'taskCompleted',
+  title: 'Task Completed',
   type: 'task-completed',
   version: 1,
   level: 'notice',
@@ -79,6 +84,7 @@ manager.register({
 
 manager.register({
   name: 'taskFailed',
+  title: 'Task Failed',
   type: 'task-failed',
   version: 1,
   level: 'notice',
@@ -93,6 +99,7 @@ manager.register({
 
 manager.register({
   name: 'taskException',
+  title: 'Task Exception',
   type: 'task-exception',
   version: 1,
   level: 'notice',
@@ -107,6 +114,7 @@ manager.register({
 
 manager.register({
   name: 'taskClaimed',
+  title: 'Task Claimed',
   type: 'task-claimed',
   version: 1,
   level: 'notice',
@@ -125,6 +133,7 @@ manager.register({
 
 manager.register({
   name: 'taskReclaimed',
+  title: 'Task Reclaimed',
   type: 'task-reclaimed',
   version: 1,
   level: 'notice',
@@ -141,6 +150,7 @@ manager.register({
 
 manager.register({
   name: 'hintPoller',
+  title: 'Hint Poller Report',
   type: 'hint-poller',
   version: 1,
   level: 'info',

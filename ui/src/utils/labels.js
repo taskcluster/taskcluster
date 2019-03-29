@@ -33,4 +33,13 @@ export default {
   MULTI_KEY: 'error',
   AND: 'info',
   OR: 'info',
+  EMERG: 'error',
+  ALERT: 'error',
+  CRIT: 'error',
+  ERR: 'error',
+  WARNING: 'warning',
+  NOTICE: 'success',
+  INFO: 'info',
+  DEBUG: 'info',
+  ANY: 'default',
 };

@@ -122,6 +122,7 @@ const manager = new MonitorManager({
 
 manager.register({
   name: 'email',
+  title: 'Email Request',
   type: 'email',
   version: 1,
   level: 'info',
@@ -133,6 +134,7 @@ manager.register({
 
 manager.register({
   name: 'errorReport',
+  title: 'Error Report',
   type: 'error-report',
   version: 1,
   level: 'any', // Notice that this is `any`

@@ -6,6 +6,7 @@ const manager = new MonitorManager({
 
 manager.register({
   name: 'email',
+  title: 'Email Request',
   type: 'email',
   version: 1,
   level: 'info',
@@ -17,6 +18,7 @@ manager.register({
 
 manager.register({
   name: 'pulse',
+  title: 'Pulse Request',
   type: 'pulse',
   version: 1,
   level: 'info',
@@ -28,6 +30,7 @@ manager.register({
 
 manager.register({
   name: 'irc',
+  title: 'IRC Message Request',
   type: 'irc',
   version: 1,
   level: 'info',

@@ -9,6 +9,7 @@ suite('Registry', function() {
     });
     manager.register({
       name: 'auditLog',
+      title: 'whatever',
       type: 'audit',
       level: 'info',
       version: 1,
@@ -33,6 +34,7 @@ suite('Registry', function() {
     });
     manager.register({
       name: 'auditLog',
+      title: 'whatever',
       type: 'audit',
       level: 'info',
       version: 1,
@@ -59,6 +61,7 @@ suite('Registry', function() {
     manager.register({
       name: 'auditLog',
       type: 'audit',
+      title: 'whatever',
       level: 'info',
       version: 1,
       description: 'An example of a custom message type',
@@ -69,6 +72,9 @@ suite('Registry', function() {
     });
     assert.equal(manager.reference().serviceName, 'taskcluster-testing-service');
     assert.deepEqual(manager.reference().types[0].type, 'monitor.timer');
+    assert.deepEqual(manager.reference().types[0].name, 'basicTimer');
+    assert.deepEqual(manager.reference().types[0].title, 'Basic Timer');
+    assert.deepEqual(manager.reference().types[0].level, 'info');
     assert.deepEqual(manager.reference().types[0].version, 1);
     assert.deepEqual(manager.reference().types[manager.reference().types.length-1].type, 'audit');
   });

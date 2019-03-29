@@ -5787,9 +5787,27 @@
                 "description": "The set of fields that will be in every instance of this message type. Mapping field name to description.",
                 "type": "object"
               },
+              "level": {
+                "description": "Either \"any\" or the syslog level that this log will write at.",
+                "enum": [
+                  "emerg",
+                  "alert",
+                  "crit",
+                  "err",
+                  "warning",
+                  "notice",
+                  "info",
+                  "debug",
+                  "any"
+                ]
+              },
               "name": {
                 "description": "The service-specific name of this message type.",
                 "pattern": "^[a-z][a-zA-Z0-9_]*",
+                "type": "string"
+              },
+              "title": {
+                "description": "A human-readable name for the message type.",
                 "type": "string"
               },
               "type": {
@@ -5805,6 +5823,9 @@
             },
             "required": [
               "type",
+              "title",
+              "name",
+              "level",
               "version",
               "description",
               "fields"
@@ -7519,6 +7540,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "basicTimer",
+          "title": "Basic Timer",
           "type": "monitor.timer",
           "version": 1
         },
@@ -7529,6 +7553,9 @@
             "name": "The name of the handler.",
             "status": "Whether or not the handler resolved succesfully."
           },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
           "type": "monitor.timedHandler",
           "version": 1
         },
@@ -7544,6 +7571,9 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 1
         },
@@ -7555,6 +7585,9 @@
             "region": "The AWS region this service is in.",
             "service": "The name of the aws service being accessed."
           },
+          "level": "info",
+          "name": "awsTimer",
+          "title": "AWS Request Report",
           "type": "monitor.aws",
           "version": 1
         },
@@ -7564,6 +7597,9 @@
             "lastCpuUsage": "The output of node's process.cpuUsage",
             "lastMemoryUsage": "The output of node's process.memoryUsage"
           },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
           "type": "monitor.resources",
           "version": 1
         },
@@ -7573,6 +7609,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be calculated over in a time span."
           },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
           "type": "monitor.measure",
           "version": 1
         },
@@ -7582,6 +7621,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be summed over a time span."
           },
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
           "type": "monitor.count",
           "version": 1
         },
@@ -7592,6 +7634,9 @@
             "name": "The name of the error.",
             "stack": "A nodejs stack trace."
           },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
           "type": "monitor.error",
           "version": 1
         },
@@ -7601,6 +7646,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
           "type": "monitor.timekeeper",
           "version": 1
         },
@@ -7608,6 +7656,9 @@
           "description": "An internal type for logging simple messages. No required fields.",
           "fields": {
           },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
           "type": "monitor.generic",
           "version": 1
         },
@@ -7615,6 +7666,9 @@
           "description": "An internal type for reporting malformed logging calls.",
           "fields": {
           },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
           "type": "monitor.loggingError",
           "version": 1
         }
@@ -7763,6 +7817,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "basicTimer",
+          "title": "Basic Timer",
           "type": "monitor.timer",
           "version": 1
         },
@@ -7773,6 +7830,9 @@
             "name": "The name of the handler.",
             "status": "Whether or not the handler resolved succesfully."
           },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
           "type": "monitor.timedHandler",
           "version": 1
         },
@@ -7788,6 +7848,9 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 1
         },
@@ -7799,6 +7862,9 @@
             "region": "The AWS region this service is in.",
             "service": "The name of the aws service being accessed."
           },
+          "level": "info",
+          "name": "awsTimer",
+          "title": "AWS Request Report",
           "type": "monitor.aws",
           "version": 1
         },
@@ -7808,6 +7874,9 @@
             "lastCpuUsage": "The output of node's process.cpuUsage",
             "lastMemoryUsage": "The output of node's process.memoryUsage"
           },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
           "type": "monitor.resources",
           "version": 1
         },
@@ -7817,6 +7886,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be calculated over in a time span."
           },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
           "type": "monitor.measure",
           "version": 1
         },
@@ -7826,6 +7898,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be summed over a time span."
           },
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
           "type": "monitor.count",
           "version": 1
         },
@@ -7836,6 +7911,9 @@
             "name": "The name of the error.",
             "stack": "A nodejs stack trace."
           },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
           "type": "monitor.error",
           "version": 1
         },
@@ -7845,6 +7923,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
           "type": "monitor.timekeeper",
           "version": 1
         },
@@ -7852,6 +7933,9 @@
           "description": "An internal type for logging simple messages. No required fields.",
           "fields": {
           },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
           "type": "monitor.generic",
           "version": 1
         },
@@ -7859,6 +7943,9 @@
           "description": "An internal type for reporting malformed logging calls.",
           "fields": {
           },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
           "type": "monitor.loggingError",
           "version": 1
         }
@@ -7918,6 +8005,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "basicTimer",
+          "title": "Basic Timer",
           "type": "monitor.timer",
           "version": 1
         },
@@ -7928,6 +8018,9 @@
             "name": "The name of the handler.",
             "status": "Whether or not the handler resolved succesfully."
           },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
           "type": "monitor.timedHandler",
           "version": 1
         },
@@ -7943,6 +8036,9 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 1
         },
@@ -7954,6 +8050,9 @@
             "region": "The AWS region this service is in.",
             "service": "The name of the aws service being accessed."
           },
+          "level": "info",
+          "name": "awsTimer",
+          "title": "AWS Request Report",
           "type": "monitor.aws",
           "version": 1
         },
@@ -7963,6 +8062,9 @@
             "lastCpuUsage": "The output of node's process.cpuUsage",
             "lastMemoryUsage": "The output of node's process.memoryUsage"
           },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
           "type": "monitor.resources",
           "version": 1
         },
@@ -7972,6 +8074,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be calculated over in a time span."
           },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
           "type": "monitor.measure",
           "version": 1
         },
@@ -7981,6 +8086,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be summed over a time span."
           },
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
           "type": "monitor.count",
           "version": 1
         },
@@ -7991,6 +8099,9 @@
             "name": "The name of the error.",
             "stack": "A nodejs stack trace."
           },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
           "type": "monitor.error",
           "version": 1
         },
@@ -8000,6 +8111,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
           "type": "monitor.timekeeper",
           "version": 1
         },
@@ -8007,6 +8121,9 @@
           "description": "An internal type for logging simple messages. No required fields.",
           "fields": {
           },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
           "type": "monitor.generic",
           "version": 1
         },
@@ -8014,6 +8131,9 @@
           "description": "An internal type for reporting malformed logging calls.",
           "fields": {
           },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
           "type": "monitor.loggingError",
           "version": 1
         }
@@ -8120,6 +8240,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "basicTimer",
+          "title": "Basic Timer",
           "type": "monitor.timer",
           "version": 1
         },
@@ -8130,6 +8253,9 @@
             "name": "The name of the handler.",
             "status": "Whether or not the handler resolved succesfully."
           },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
           "type": "monitor.timedHandler",
           "version": 1
         },
@@ -8145,6 +8271,9 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 1
         },
@@ -8156,6 +8285,9 @@
             "region": "The AWS region this service is in.",
             "service": "The name of the aws service being accessed."
           },
+          "level": "info",
+          "name": "awsTimer",
+          "title": "AWS Request Report",
           "type": "monitor.aws",
           "version": 1
         },
@@ -8165,6 +8297,9 @@
             "lastCpuUsage": "The output of node's process.cpuUsage",
             "lastMemoryUsage": "The output of node's process.memoryUsage"
           },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
           "type": "monitor.resources",
           "version": 1
         },
@@ -8174,6 +8309,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be calculated over in a time span."
           },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
           "type": "monitor.measure",
           "version": 1
         },
@@ -8183,6 +8321,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be summed over a time span."
           },
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
           "type": "monitor.count",
           "version": 1
         },
@@ -8193,6 +8334,9 @@
             "name": "The name of the error.",
             "stack": "A nodejs stack trace."
           },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
           "type": "monitor.error",
           "version": 1
         },
@@ -8202,6 +8346,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
           "type": "monitor.timekeeper",
           "version": 1
         },
@@ -8209,6 +8356,9 @@
           "description": "An internal type for logging simple messages. No required fields.",
           "fields": {
           },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
           "type": "monitor.generic",
           "version": 1
         },
@@ -8216,6 +8366,9 @@
           "description": "An internal type for reporting malformed logging calls.",
           "fields": {
           },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
           "type": "monitor.loggingError",
           "version": 1
         },
@@ -8226,6 +8379,9 @@
             "messages": "Number of messages fetched.",
             "resolver": "The name of the queue being polled."
           },
+          "level": "info",
+          "name": "azureQueuePoll",
+          "title": "Azure Queue Poll",
           "type": "azure-queue-poll",
           "version": 1
         },
@@ -8234,6 +8390,9 @@
           "fields": {
             "taskId": "The task's taskId."
           },
+          "level": "notice",
+          "name": "taskDefined",
+          "title": "Task Defined",
           "type": "task-defined",
           "version": 1
         },
@@ -8243,6 +8402,9 @@
             "runId": "The runId that is now pending.",
             "taskId": "The task's taskId."
           },
+          "level": "notice",
+          "name": "taskPending",
+          "title": "Task Pending",
           "type": "task-pending",
           "version": 1
         },
@@ -8252,6 +8414,9 @@
             "runId": "The runId that is now running.",
             "taskId": "The task's taskId."
           },
+          "level": "notice",
+          "name": "taskRunning",
+          "title": "Task Running",
           "type": "task-running",
           "version": 1
         },
@@ -8261,6 +8426,9 @@
             "runId": "The runId that was resolved.",
             "taskId": "The task's taskId."
           },
+          "level": "notice",
+          "name": "taskCompleted",
+          "title": "Task Completed",
           "type": "task-completed",
           "version": 1
         },
@@ -8270,6 +8438,9 @@
             "runId": "The runId that was resolved.",
             "taskId": "The task's taskId."
           },
+          "level": "notice",
+          "name": "taskFailed",
+          "title": "Task Failed",
           "type": "task-failed",
           "version": 1
         },
@@ -8279,6 +8450,9 @@
             "runId": "The runId that was resolved.",
             "taskId": "The task's taskId."
           },
+          "level": "notice",
+          "name": "taskException",
+          "title": "Task Exception",
           "type": "task-exception",
           "version": 1
         },
@@ -8292,6 +8466,9 @@
             "workerId": "The id of the claiming worker.",
             "workerType": "Type of worker claiming work."
           },
+          "level": "notice",
+          "name": "taskClaimed",
+          "title": "Task Claimed",
           "type": "task-claimed",
           "version": 1
         },
@@ -8303,6 +8480,9 @@
             "workerGroup": "Group of the reclaiming worker.",
             "workerId": "Id of the reclaiming worker."
           },
+          "level": "notice",
+          "name": "taskReclaimed",
+          "title": "Task Reclaimed",
           "type": "task-reclaimed",
           "version": 1
         },
@@ -8313,6 +8493,9 @@
             "released": "Number of hints released on an iteration. Should usually be 0.",
             "slept": "If true, there were no hints to claim and the poller slept before claiming again."
           },
+          "level": "info",
+          "name": "hintPoller",
+          "title": "Hint Poller Report",
           "type": "hint-poller",
           "version": 1
         }
@@ -9694,6 +9877,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "basicTimer",
+          "title": "Basic Timer",
           "type": "monitor.timer",
           "version": 1
         },
@@ -9704,6 +9890,9 @@
             "name": "The name of the handler.",
             "status": "Whether or not the handler resolved succesfully."
           },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
           "type": "monitor.timedHandler",
           "version": 1
         },
@@ -9719,6 +9908,9 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 1
         },
@@ -9730,6 +9922,9 @@
             "region": "The AWS region this service is in.",
             "service": "The name of the aws service being accessed."
           },
+          "level": "info",
+          "name": "awsTimer",
+          "title": "AWS Request Report",
           "type": "monitor.aws",
           "version": 1
         },
@@ -9739,6 +9934,9 @@
             "lastCpuUsage": "The output of node's process.cpuUsage",
             "lastMemoryUsage": "The output of node's process.memoryUsage"
           },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
           "type": "monitor.resources",
           "version": 1
         },
@@ -9748,6 +9946,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be calculated over in a time span."
           },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
           "type": "monitor.measure",
           "version": 1
         },
@@ -9757,6 +9958,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be summed over a time span."
           },
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
           "type": "monitor.count",
           "version": 1
         },
@@ -9767,6 +9971,9 @@
             "name": "The name of the error.",
             "stack": "A nodejs stack trace."
           },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
           "type": "monitor.error",
           "version": 1
         },
@@ -9776,6 +9983,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
           "type": "monitor.timekeeper",
           "version": 1
         },
@@ -9783,6 +9993,9 @@
           "description": "An internal type for logging simple messages. No required fields.",
           "fields": {
           },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
           "type": "monitor.generic",
           "version": 1
         },
@@ -9790,6 +10003,9 @@
           "description": "An internal type for reporting malformed logging calls.",
           "fields": {
           },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
           "type": "monitor.loggingError",
           "version": 1
         }
@@ -9883,6 +10099,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "basicTimer",
+          "title": "Basic Timer",
           "type": "monitor.timer",
           "version": 1
         },
@@ -9893,6 +10112,9 @@
             "name": "The name of the handler.",
             "status": "Whether or not the handler resolved succesfully."
           },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
           "type": "monitor.timedHandler",
           "version": 1
         },
@@ -9908,6 +10130,9 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 1
         },
@@ -9919,6 +10144,9 @@
             "region": "The AWS region this service is in.",
             "service": "The name of the aws service being accessed."
           },
+          "level": "info",
+          "name": "awsTimer",
+          "title": "AWS Request Report",
           "type": "monitor.aws",
           "version": 1
         },
@@ -9928,6 +10156,9 @@
             "lastCpuUsage": "The output of node's process.cpuUsage",
             "lastMemoryUsage": "The output of node's process.memoryUsage"
           },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
           "type": "monitor.resources",
           "version": 1
         },
@@ -9937,6 +10168,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be calculated over in a time span."
           },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
           "type": "monitor.measure",
           "version": 1
         },
@@ -9946,6 +10180,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be summed over a time span."
           },
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
           "type": "monitor.count",
           "version": 1
         },
@@ -9956,6 +10193,9 @@
             "name": "The name of the error.",
             "stack": "A nodejs stack trace."
           },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
           "type": "monitor.error",
           "version": 1
         },
@@ -9965,6 +10205,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
           "type": "monitor.timekeeper",
           "version": 1
         },
@@ -9972,6 +10215,9 @@
           "description": "An internal type for logging simple messages. No required fields.",
           "fields": {
           },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
           "type": "monitor.generic",
           "version": 1
         },
@@ -9979,6 +10225,9 @@
           "description": "An internal type for reporting malformed logging calls.",
           "fields": {
           },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
           "type": "monitor.loggingError",
           "version": 1
         },
@@ -9987,6 +10236,9 @@
           "fields": {
             "address": "The requested recepient of the email."
           },
+          "level": "info",
+          "name": "email",
+          "title": "Email Request",
           "type": "email",
           "version": 1
         },
@@ -9995,6 +10247,9 @@
           "fields": {
             "routingKey": "The requested routingKey of the message."
           },
+          "level": "info",
+          "name": "pulse",
+          "title": "Pulse Request",
           "type": "pulse",
           "version": 1
         },
@@ -10003,6 +10258,9 @@
           "fields": {
             "dest": "A user or channel. Will begin with \"#\" if a channel."
           },
+          "level": "info",
+          "name": "irc",
+          "title": "IRC Message Request",
           "type": "irc",
           "version": 1
         }
@@ -10213,6 +10471,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "basicTimer",
+          "title": "Basic Timer",
           "type": "monitor.timer",
           "version": 1
         },
@@ -10223,6 +10484,9 @@
             "name": "The name of the handler.",
             "status": "Whether or not the handler resolved succesfully."
           },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
           "type": "monitor.timedHandler",
           "version": 1
         },
@@ -10238,6 +10502,9 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 1
         },
@@ -10249,6 +10516,9 @@
             "region": "The AWS region this service is in.",
             "service": "The name of the aws service being accessed."
           },
+          "level": "info",
+          "name": "awsTimer",
+          "title": "AWS Request Report",
           "type": "monitor.aws",
           "version": 1
         },
@@ -10258,6 +10528,9 @@
             "lastCpuUsage": "The output of node's process.cpuUsage",
             "lastMemoryUsage": "The output of node's process.memoryUsage"
           },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
           "type": "monitor.resources",
           "version": 1
         },
@@ -10267,6 +10540,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be calculated over in a time span."
           },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
           "type": "monitor.measure",
           "version": 1
         },
@@ -10276,6 +10552,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be summed over a time span."
           },
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
           "type": "monitor.count",
           "version": 1
         },
@@ -10286,6 +10565,9 @@
             "name": "The name of the error.",
             "stack": "A nodejs stack trace."
           },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
           "type": "monitor.error",
           "version": 1
         },
@@ -10295,6 +10577,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
           "type": "monitor.timekeeper",
           "version": 1
         },
@@ -10302,6 +10587,9 @@
           "description": "An internal type for logging simple messages. No required fields.",
           "fields": {
           },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
           "type": "monitor.generic",
           "version": 1
         },
@@ -10309,6 +10597,9 @@
           "description": "An internal type for reporting malformed logging calls.",
           "fields": {
           },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
           "type": "monitor.loggingError",
           "version": 1
         }
@@ -10367,6 +10658,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "basicTimer",
+          "title": "Basic Timer",
           "type": "monitor.timer",
           "version": 1
         },
@@ -10377,6 +10671,9 @@
             "name": "The name of the handler.",
             "status": "Whether or not the handler resolved succesfully."
           },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
           "type": "monitor.timedHandler",
           "version": 1
         },
@@ -10392,6 +10689,9 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 1
         },
@@ -10403,6 +10703,9 @@
             "region": "The AWS region this service is in.",
             "service": "The name of the aws service being accessed."
           },
+          "level": "info",
+          "name": "awsTimer",
+          "title": "AWS Request Report",
           "type": "monitor.aws",
           "version": 1
         },
@@ -10412,6 +10715,9 @@
             "lastCpuUsage": "The output of node's process.cpuUsage",
             "lastMemoryUsage": "The output of node's process.memoryUsage"
           },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
           "type": "monitor.resources",
           "version": 1
         },
@@ -10421,6 +10727,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be calculated over in a time span."
           },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
           "type": "monitor.measure",
           "version": 1
         },
@@ -10430,6 +10739,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be summed over a time span."
           },
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
           "type": "monitor.count",
           "version": 1
         },
@@ -10440,6 +10752,9 @@
             "name": "The name of the error.",
             "stack": "A nodejs stack trace."
           },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
           "type": "monitor.error",
           "version": 1
         },
@@ -10449,6 +10764,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
           "type": "monitor.timekeeper",
           "version": 1
         },
@@ -10456,6 +10774,9 @@
           "description": "An internal type for logging simple messages. No required fields.",
           "fields": {
           },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
           "type": "monitor.generic",
           "version": 1
         },
@@ -10463,6 +10784,9 @@
           "description": "An internal type for reporting malformed logging calls.",
           "fields": {
           },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
           "type": "monitor.loggingError",
           "version": 1
         }
@@ -10591,6 +10915,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "basicTimer",
+          "title": "Basic Timer",
           "type": "monitor.timer",
           "version": 1
         },
@@ -10601,6 +10928,9 @@
             "name": "The name of the handler.",
             "status": "Whether or not the handler resolved succesfully."
           },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
           "type": "monitor.timedHandler",
           "version": 1
         },
@@ -10616,6 +10946,9 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 1
         },
@@ -10627,6 +10960,9 @@
             "region": "The AWS region this service is in.",
             "service": "The name of the aws service being accessed."
           },
+          "level": "info",
+          "name": "awsTimer",
+          "title": "AWS Request Report",
           "type": "monitor.aws",
           "version": 1
         },
@@ -10636,6 +10972,9 @@
             "lastCpuUsage": "The output of node's process.cpuUsage",
             "lastMemoryUsage": "The output of node's process.memoryUsage"
           },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
           "type": "monitor.resources",
           "version": 1
         },
@@ -10645,6 +10984,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be calculated over in a time span."
           },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
           "type": "monitor.measure",
           "version": 1
         },
@@ -10654,6 +10996,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be summed over a time span."
           },
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
           "type": "monitor.count",
           "version": 1
         },
@@ -10664,6 +11009,9 @@
             "name": "The name of the error.",
             "stack": "A nodejs stack trace."
           },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
           "type": "monitor.error",
           "version": 1
         },
@@ -10673,6 +11021,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
           "type": "monitor.timekeeper",
           "version": 1
         },
@@ -10680,6 +11031,9 @@
           "description": "An internal type for logging simple messages. No required fields.",
           "fields": {
           },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
           "type": "monitor.generic",
           "version": 1
         },
@@ -10687,6 +11041,9 @@
           "description": "An internal type for reporting malformed logging calls.",
           "fields": {
           },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
           "type": "monitor.loggingError",
           "version": 1
         }
@@ -11000,6 +11357,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "basicTimer",
+          "title": "Basic Timer",
           "type": "monitor.timer",
           "version": 1
         },
@@ -11010,6 +11370,9 @@
             "name": "The name of the handler.",
             "status": "Whether or not the handler resolved succesfully."
           },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
           "type": "monitor.timedHandler",
           "version": 1
         },
@@ -11025,6 +11388,9 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 1
         },
@@ -11036,6 +11402,9 @@
             "region": "The AWS region this service is in.",
             "service": "The name of the aws service being accessed."
           },
+          "level": "info",
+          "name": "awsTimer",
+          "title": "AWS Request Report",
           "type": "monitor.aws",
           "version": 1
         },
@@ -11045,6 +11414,9 @@
             "lastCpuUsage": "The output of node's process.cpuUsage",
             "lastMemoryUsage": "The output of node's process.memoryUsage"
           },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
           "type": "monitor.resources",
           "version": 1
         },
@@ -11054,6 +11426,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be calculated over in a time span."
           },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
           "type": "monitor.measure",
           "version": 1
         },
@@ -11063,6 +11438,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be summed over a time span."
           },
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
           "type": "monitor.count",
           "version": 1
         },
@@ -11073,6 +11451,9 @@
             "name": "The name of the error.",
             "stack": "A nodejs stack trace."
           },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
           "type": "monitor.error",
           "version": 1
         },
@@ -11082,6 +11463,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
           "type": "monitor.timekeeper",
           "version": 1
         },
@@ -11089,6 +11473,9 @@
           "description": "An internal type for logging simple messages. No required fields.",
           "fields": {
           },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
           "type": "monitor.generic",
           "version": 1
         },
@@ -11096,6 +11483,9 @@
           "description": "An internal type for reporting malformed logging calls.",
           "fields": {
           },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
           "type": "monitor.loggingError",
           "version": 1
         }
@@ -11390,6 +11780,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "basicTimer",
+          "title": "Basic Timer",
           "type": "monitor.timer",
           "version": 1
         },
@@ -11400,6 +11793,9 @@
             "name": "The name of the handler.",
             "status": "Whether or not the handler resolved succesfully."
           },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
           "type": "monitor.timedHandler",
           "version": 1
         },
@@ -11415,6 +11811,9 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 1
         },
@@ -11426,6 +11825,9 @@
             "region": "The AWS region this service is in.",
             "service": "The name of the aws service being accessed."
           },
+          "level": "info",
+          "name": "awsTimer",
+          "title": "AWS Request Report",
           "type": "monitor.aws",
           "version": 1
         },
@@ -11435,6 +11837,9 @@
             "lastCpuUsage": "The output of node's process.cpuUsage",
             "lastMemoryUsage": "The output of node's process.memoryUsage"
           },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
           "type": "monitor.resources",
           "version": 1
         },
@@ -11444,6 +11849,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be calculated over in a time span."
           },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
           "type": "monitor.measure",
           "version": 1
         },
@@ -11453,6 +11861,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be summed over a time span."
           },
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
           "type": "monitor.count",
           "version": 1
         },
@@ -11463,6 +11874,9 @@
             "name": "The name of the error.",
             "stack": "A nodejs stack trace."
           },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
           "type": "monitor.error",
           "version": 1
         },
@@ -11472,6 +11886,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
           "type": "monitor.timekeeper",
           "version": 1
         },
@@ -11479,6 +11896,9 @@
           "description": "An internal type for logging simple messages. No required fields.",
           "fields": {
           },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
           "type": "monitor.generic",
           "version": 1
         },
@@ -11486,6 +11906,9 @@
           "description": "An internal type for reporting malformed logging calls.",
           "fields": {
           },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
           "type": "monitor.loggingError",
           "version": 1
         }
@@ -11504,6 +11927,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "basicTimer",
+          "title": "Basic Timer",
           "type": "monitor.timer",
           "version": 1
         },
@@ -11514,6 +11940,9 @@
             "name": "The name of the handler.",
             "status": "Whether or not the handler resolved succesfully."
           },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
           "type": "monitor.timedHandler",
           "version": 1
         },
@@ -11529,6 +11958,9 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 1
         },
@@ -11540,6 +11972,9 @@
             "region": "The AWS region this service is in.",
             "service": "The name of the aws service being accessed."
           },
+          "level": "info",
+          "name": "awsTimer",
+          "title": "AWS Request Report",
           "type": "monitor.aws",
           "version": 1
         },
@@ -11549,6 +11984,9 @@
             "lastCpuUsage": "The output of node's process.cpuUsage",
             "lastMemoryUsage": "The output of node's process.memoryUsage"
           },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
           "type": "monitor.resources",
           "version": 1
         },
@@ -11558,6 +11996,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be calculated over in a time span."
           },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
           "type": "monitor.measure",
           "version": 1
         },
@@ -11567,6 +12008,9 @@
             "key": "An arbitrary key.",
             "val": "A number that should be summed over a time span."
           },
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
           "type": "monitor.count",
           "version": 1
         },
@@ -11577,6 +12021,9 @@
             "name": "The name of the error.",
             "stack": "A nodejs stack trace."
           },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
           "type": "monitor.error",
           "version": 1
         },
@@ -11586,6 +12033,9 @@
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
           "type": "monitor.timekeeper",
           "version": 1
         },
@@ -11593,6 +12043,9 @@
           "description": "An internal type for logging simple messages. No required fields.",
           "fields": {
           },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
           "type": "monitor.generic",
           "version": 1
         },
@@ -11600,6 +12053,9 @@
           "description": "An internal type for reporting malformed logging calls.",
           "fields": {
           },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
           "type": "monitor.loggingError",
           "version": 1
         },
@@ -11619,6 +12075,9 @@
             "sourceIp": "The ip address of the original request.",
             "status": "Whether or not the authentication was successful."
           },
+          "level": "notice",
+          "name": "signatureValidation",
+          "title": "Signature Validation",
           "type": "signature-validation",
           "version": 1
         }
