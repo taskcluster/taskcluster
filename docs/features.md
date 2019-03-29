@@ -33,24 +33,29 @@ This feature was added in generic-worker 5.3.0, with gpg support.
 
 #### Since: generic-worker 12.0.0
 
-Enabling this feature will mean that the generic worker will publish three
-additional task artifacts: `public/chain-of-trust.json`,
-`public/chain-of-trust.json.sig`, and `public/chainOfTrust.json.asc`. These
-are a text json object, storing the SHA 256 hashes of the task artifacts,
-plus some information about the worker. The `.sig` file is signed by an
-ed25519 private key, and the `.asc` file is signed by a openpgp private key,
-both generated and stored on the worker. These private keys are never
-transmitted across the network. In future you will be able to verify the
-signature of this artifact against the public keys of the worker type,
-to be confident that it really was created by the worker. However currently
-this is not possible, since we do not yet publish the public keys anywhere.
-When this has been implemented, this page will be updated with details about
-how to retrieve the public key, for signature verification.
+This feature was updated in generic worker 12.0.0, adding ed25519 support.
 
-The worker uses the openpgp and ed25519 private keys from the file locations specified by the
+#### Since: generic-worker 13.0.0
+
+This feature was updated to remove gpg support.
+
+Enabling this feature will mean that the generic worker will publish three
+additional task artifacts: `public/chain-of-trust.json` and
+`public/chain-of-trust.json.sig`. These are a text json object, storing the
+SHA 256 hashes of the task artifacts, plus some information about the worker.
+The `.sig` file is signed by an ed25519 private key, generated and stored on
+the worker. This private key is never transmitted across the network. In
+the future you will be able to verify the signature of this artifact against
+the public keys of the worker type, to be confident that it really was
+created by the worker. However currently this is not possible, since we do
+not yet publish the public keys anywhere. When this has been implemented,
+this page will be updated with details about how to retrieve the public key,
+for signature verification.
+
+The worker uses ed25519 private keys from the file locations specified by the
 [worker configuration
 setting](/reference/workers/generic-worker#set-up-your-env)
-`openpgpSigningKeyLocation` and `ed25519SigningKeyLocation`.
+`ed25519SigningKeyLocation`.
 
 No scopes are presently required for enabling this feature.
 
