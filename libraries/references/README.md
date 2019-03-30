@@ -14,7 +14,7 @@ meta-schemas under `schemas/`.
 ## Built Services
 
 This input format corresponds to a directory structure built by
-[taskcluster-builder](https://github.com/taskcluster/taskcluster-builder)
+[taskcluster-builder](https://github.com/taskcluster/taskcluster/tree/master/infrastructure/builder)
 during the cluster build process:
 
 ```
@@ -32,7 +32,7 @@ during the cluster build process:
 ```
 
 This is a subset of the
-[taskcluster-lib-docs](https://github.com/taskcluster/taskcluster-lib-docs)
+[taskcluster-lib-docs](https://github.com/taskcluster/taskcluster/tree/master/libraries/loader)
 documentation tarball format, and `metadata.json` is defined there.  The
 library will in fact load any `.json` files in `references` and interpret them
 according to their schema.  So, the `$schema` property of every file in
