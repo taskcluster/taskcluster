@@ -4,7 +4,7 @@ This library supports Taskcluster microservices, providing a pre-built Express
 server based on a common configuration format.
 
 The usage is pretty simple.  It is generally invoked in a
-[taskcluster-lib-loader](https://github.com/taskcluster/taskcluster-lib-loader)
+[taskcluster-lib-loader](https://github.com/taskcluster/taskcluster/tree/master/libraries/loader)
 stanza named server, like this:
 
 ```js
@@ -34,7 +34,7 @@ The configuration (here `cfg.server`) has the following options:
  * `robotsTxt`: include a /robots.txt; *default is true*
 
 The values of the `apis` key are from
-[taskcluster-lib-api](https://github.com/taskcluster/taskcluster-lib-api); each
+[taskcluster-lib-api](https://github.com/taskcluster/taskcluster/tree/master/libraries/api); each
 is the result of the `APIBuilder.build` method in that library. In particular,
 each object should have an `express(app)` method which configures an Express
 app for the API.
