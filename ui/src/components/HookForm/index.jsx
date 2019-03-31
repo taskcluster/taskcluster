@@ -116,8 +116,7 @@ const initialHook = {
     fontSize: theme.typography.pxToRem(16),
   },
   errorPanel: {
-    maxHeight: 300,
-    maxWidth: '75ch',
+    maxHeight: '85vh',
     overflow: 'auto',
   },
   headline: {
