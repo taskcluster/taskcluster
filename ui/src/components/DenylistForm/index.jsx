@@ -41,7 +41,7 @@ export default class DenylistForm extends Component {
      */
     address,
     /** Set to `true` when adding a new address. */
-    isNewaddress: bool,
+    isNewAddress: bool,
     /** Callback function fired when an address is created. */
     onAddressAdd: func.isRequired,
     /** Callback function fired when an address is deleted. */
@@ -54,7 +54,6 @@ export default class DenylistForm extends Component {
     isNewAddress: false,
     address: null,
     loading: false,
-    onAddressDelete: null,
   };
 
   state = {
