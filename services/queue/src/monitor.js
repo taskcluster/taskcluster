@@ -4,8 +4,15 @@ const manager = new MonitorManager({
   serviceName: 'queue',
 });
 
+/**
+ * For ease of debugging, all log messages about tasks have a top-level
+ * `taskId` field.  In cases where multiple tasks are handled together, prefer
+ * to make individual log entries for each task.
+ */
+
 manager.register({
   name: 'azureQueuePoll',
+  title: 'Azure Queue Poll',
   type: 'azure-queue-poll',
   version: 1,
   level: 'info',
@@ -18,23 +25,132 @@ manager.register({
 });
 
 manager.register({
-  name: 'workClaimed',
-  type: 'work-claimed',
+  name: 'taskDefined',
+  title: 'Task Defined',
+  type: 'task-defined',
   version: 1,
   level: 'notice',
-  description: 'Results of a claimWork from a worker.',
+  description: `
+    A task has been created (via defineTask or createTask).  This is logged when the task-defined
+    pulse message is sent.`,
+  fields: {
+    taskId: 'The task\'s taskId.',
+  },
+});
+
+manager.register({
+  name: 'taskPending',
+  title: 'Task Pending',
+  type: 'task-pending',
+  version: 1,
+  level: 'notice',
+  description: `
+    A task is now pending and ready to be executed.  This is logged when the task-pending pulse
+    message is sent.`,
+  fields: {
+    taskId: 'The task\'s taskId.',
+    runId: 'The runId that is now pending.',
+  },
+});
+
+manager.register({
+  name: 'taskRunning',
+  title: 'Task Running',
+  type: 'task-running',
+  version: 1,
+  level: 'notice',
+  description: `
+    A task is now being executed.  This is logged when the task-running pulse message is sent.`,
+  fields: {
+    taskId: 'The task\'s taskId.',
+    runId: 'The runId that is now running.',
+  },
+});
+
+manager.register({
+  name: 'taskCompleted',
+  title: 'Task Completed',
+  type: 'task-completed',
+  version: 1,
+  level: 'notice',
+  description: `
+    A task run has been resolved as completed.  This is logged when the task-completed pulse
+    message is sent.`,
+  fields: {
+    taskId: 'The task\'s taskId.',
+    runId: 'The runId that was resolved.',
+  },
+});
+
+manager.register({
+  name: 'taskFailed',
+  title: 'Task Failed',
+  type: 'task-failed',
+  version: 1,
+  level: 'notice',
+  description: `
+    A task run has been resolved as failed.  This is logged when the task-failed pulse
+    message is sent.`,
+  fields: {
+    taskId: 'The task\'s taskId.',
+    runId: 'The runId that was resolved.',
+  },
+});
+
+manager.register({
+  name: 'taskException',
+  title: 'Task Exception',
+  type: 'task-exception',
+  version: 1,
+  level: 'notice',
+  description: `
+    A task run has been resolved as an exception.  This is logged when the task-exception pulse
+    message is sent.`,
+  fields: {
+    taskId: 'The task\'s taskId.',
+    runId: 'The runId that was resolved.',
+  },
+});
+
+manager.register({
+  name: 'taskClaimed',
+  title: 'Task Claimed',
+  type: 'task-claimed',
+  version: 1,
+  level: 'notice',
+  description: `
+    A worker has claimed a task.  In cases where multple tasks were claimed,
+    one log message will be produced for each task.`,
   fields: {
     provisionerId: 'Provisioner that provisioned the worker claiming work.',
     workerType: 'Type of worker claiming work.',
     workerGroup: 'Group of worker claiming work.',
     workerId: 'The id of the claiming worker.',
-    requested: 'The number of tasks the worker requested.',
-    tasks: 'An array of taskId that were given to the worker.',
+    taskId: 'The task given to the worker.',
+    runId: 'The run of this task assigned to the worker.',
+  },
+});
+
+manager.register({
+  name: 'taskReclaimed',
+  title: 'Task Reclaimed',
+  type: 'task-reclaimed',
+  version: 1,
+  level: 'notice',
+  description: `
+    A worker has reclaimed a task it had previously claimed, extending its takenUntil
+    timestamp.`,
+  fields: {
+    workerGroup: 'Group of the reclaiming worker.',
+    workerId: 'Id of the reclaiming worker.',
+    taskId: 'The task being reclaimed.',
+    runId: 'The run of this task being reclaimed.',
   },
 });
 
 manager.register({
   name: 'hintPoller',
+  title: 'Hint Poller Report',
   type: 'hint-poller',
   version: 1,
   level: 'info',

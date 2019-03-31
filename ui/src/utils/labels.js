@@ -35,4 +35,13 @@ export default {
   OR: 'info',
   SUCCESS: 'success',
   ERROR: 'error',
+  EMERG: 'error',
+  ALERT: 'error',
+  CRIT: 'error',
+  ERR: 'error',
+  WARNING: 'warning',
+  NOTICE: 'success',
+  INFO: 'info',
+  DEBUG: 'info',
+  ANY: 'default',
 };

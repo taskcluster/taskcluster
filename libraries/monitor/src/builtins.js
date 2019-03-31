@@ -1,6 +1,7 @@
 module.exports = [
   {
     name: 'basicTimer',
+    title: 'Basic Timer',
     type: 'monitor.timer',
     level: 'info',
     version: 1,
@@ -12,6 +13,7 @@ module.exports = [
   },
   {
     name: 'handlerTimer',
+    title: 'Handler Timer',
     type: 'monitor.timedHandler',
     level: 'info',
     version: 1,
@@ -24,6 +26,7 @@ module.exports = [
   },
   {
     name: 'apiMethod',
+    title: 'API Method Report',
     type: 'monitor.apiMethod',
     level: 'notice',
     version: 1,
@@ -48,6 +51,7 @@ module.exports = [
   },
   {
     name: 'awsTimer',
+    title: 'AWS Request Report',
     type: 'monitor.aws',
     level: 'info',
     version: 1,
@@ -61,6 +65,7 @@ module.exports = [
   },
   {
     name: 'resourceMetrics',
+    title: 'Resource Usage Metrics',
     type: 'monitor.resources',
     level: 'info',
     version: 1,
@@ -73,6 +78,7 @@ module.exports = [
   {
     name: 'measureMetric',
     type: 'monitor.measure',
+    title: 'Generic Measure',
     level: 'info',
     version: 1,
     description: 'A simple measurement. The reported values are expected to have statistics calculated over them.',
@@ -84,6 +90,7 @@ module.exports = [
   {
     name: 'countMetric',
     type: 'monitor.count',
+    title: 'Generic Count',
     level: 'info',
     version: 1,
     description: 'A simple count. The reported values should be summed up in a time span.',
@@ -95,6 +102,7 @@ module.exports = [
   {
     name: 'errorReport',
     type: 'monitor.error',
+    title: 'Error Report',
     level: 'any',
     version: 1,
     description: 'A specifically formatted error report. Will have at least the following but can contain more.',
@@ -107,6 +115,7 @@ module.exports = [
   {
     name: 'timekeeper',
     type: 'monitor.timekeeper',
+    title: 'TimeKeeper Report',
     level: 'info',
     version: 1,
     description: 'A simple timekeeper for measuring arbitrary time spans.',
@@ -118,7 +127,8 @@ module.exports = [
   {
     name: 'generic',
     type: 'monitor.generic',
-    level: 'info',
+    title: 'Generic Message',
+    level: 'any',
     version: 1,
     description: 'An internal type for logging simple messages. No required fields.',
     fields: {},
@@ -126,6 +136,7 @@ module.exports = [
   {
     name: 'loggingError',
     type: 'monitor.loggingError',
+    title: 'Error in Logging',
     level: 'err',
     version: 1,
     description: 'An internal type for reporting malformed logging calls.',

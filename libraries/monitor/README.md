@@ -25,7 +25,7 @@ const manager = new MonitorManager({
   serviceName: 'foo',
 });
 manager.setup({
-  mock: cfg.monitor.mock,  // false in production, true in testing
+  mock: cfg.monitor.mock,      // false in production, true in testing
   processName: 'server',       // or otherwise for e.g., periodic tasks
 });
 const monitor = manager.monitor(); // To get a root monitor
@@ -122,6 +122,7 @@ const manager = new MonitorManager({
 
 manager.register({
   name: 'email',
+  title: 'Email Request',
   type: 'email',
   version: 1,
   level: 'info',
@@ -133,6 +134,7 @@ manager.register({
 
 manager.register({
   name: 'errorReport',
+  title: 'Error Report',
   type: 'error-report',
   version: 1,
   level: 'any', // Notice that this is `any`
@@ -339,3 +341,16 @@ This function will:
  * shut down and flush monitoring
  * call `process.exit` on success or failure
 Note, then, that the function **does not return**.
+
+### Testing
+
+If the `mock` option is true, then all messges logged are available from the `messages` property on the MonitorManager, in the format `{Type, Fields, Logger}`.
+These messages can be cleared with the `reset()` method -- generally done in a Mocha `setup` function.
+This allows tests to assert that a message was logged correctly:
+
+```js
+assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-claimed'), {
+  Type: 'task-claimed',
+  Fields: {...}
+});
+```

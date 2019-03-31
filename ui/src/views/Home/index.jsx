@@ -69,8 +69,9 @@ export default class Home extends Component {
             </Typography>
           </Hidden>
           <Typography variant="h5">
-            Gather insight and intelligence for the build systems and pipelines
-            that create your software.
+            {
+              "A task execution framework that supports Mozilla's continuous integration and release processes."
+            }
           </Typography>
           <Divider className={classes.divider} />
           <div className={classes.actions}>

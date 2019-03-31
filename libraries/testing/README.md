@@ -349,7 +349,7 @@ For cases where the credentials are not generated with SAS (that is, when testin
 This function assumes the following config values:
  * `cfg.azure.accountId`
  * `cfg.taskcluster.rootUrl`
- * `cfg.taskclsuter.credentials`
+ * `cfg.taskcluster.credentials`
 
 And assumes that the `exports` argument has a `load` function corresponding to a sticky loader.
 

@@ -15,6 +15,7 @@ import FileVideoIcon from 'mdi-react/FileVideoIcon';
 import FileImageIcon from 'mdi-react/FileImageIcon';
 import FileMusicIcon from 'mdi-react/FileMusicIcon';
 import FileIcon from 'mdi-react/FileIcon';
+import AccountHeartOutlineIcon from 'mdi-react/AccountHeartOutlineIcon';
 import { join } from 'path';
 
 // eslint-disable-next-line import/prefer-default-export
@@ -36,6 +37,7 @@ export const HOOKS_LAST_FIRE_TYPE = {
 
 export const THEME = {
   WHITE: '#fff',
+  BLACK: '#000',
   TEN_PERCENT_WHITE: fade('#fff', 0.1),
   TEN_PERCENT_BLACK: fade('#000', 0.1),
   DARK_THEME_BACKGROUND: '#12202c',
@@ -193,6 +195,12 @@ export const DOCS_MENU_ITEMS = [
     path: join(DOCS_PATH_PREFIX, 'reference'),
     hasChildren: true,
     icon: BookOpenOutlineIcon,
+  },
+  {
+    label: 'People',
+    path: join(DOCS_PATH_PREFIX, 'people'),
+    hasChildren: false,
+    icon: AccountHeartOutlineIcon,
   },
   {
     label: 'Resources',

@@ -1,6 +1,0 @@
-{
-  "version": 1,
-  "project": "taskcluster-hooks",
-  "tier": "core",
-  "menuIndex": 10
-}

@@ -60,6 +60,18 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Create task');
     const r1 = await helper.queue.createTask(taskId, taskDef);
 
+    debug('### Check for log messages');
+    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-defined'), {
+      Logger: 'taskcluster.queue.root.api',
+      Type: 'task-defined',
+      Fields: {taskId, v: 1},
+    });
+    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-pending'), {
+      Logger: 'taskcluster.queue.root.api',
+      Type: 'task-pending',
+      Fields: {taskId, runId: 0, v: 1},
+    });
+
     debug('### Wait for defined message');
     helper.checkNextMessage('task-defined', m =>
       assume(r1.status).deep.equals(m.payload.status));

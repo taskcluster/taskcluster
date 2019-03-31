@@ -7,13 +7,11 @@ const request = require('superagent');
 const debug = require('debug')('test:queueservice');
 const xml2js = require('xml2js');
 const assume = require('assume');
-const MonitorManager = require('taskcluster-lib-monitor');
 const testing = require('taskcluster-lib-testing');
 const helper = require('./helper');
 
 helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
   let queueService;
-  let monitorManager;
 
   suiteSetup(async () => {
     if (skipping()) {
@@ -21,14 +19,7 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
     }
 
     const cfg = await helper.load('cfg');
-
-    monitorManager = new MonitorManager({
-      serviceName: 'test',
-    });
-    monitorManager.setup({
-      enable: false,
-      level: 'warning',
-    });
+    const monitorManager = await helper.load('monitor');
 
     if (mock) {
       queueService = new QueueService({
@@ -60,8 +51,6 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
     if (skipping()) {
       return;
     }
-
-    monitorManager.reset();
 
     if (queueService) {
       queueService.terminate();

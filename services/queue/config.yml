@@ -198,8 +198,9 @@ test:
     publicArtifactBucketProxies:
       'us-east-1':    'proxy-for-us-east-1'
   monitoring:
-    level: warning
-    enable: false
+    level: debug
+    enable: true
+    mock: true
   server:
     port:             60401
     env:              development
