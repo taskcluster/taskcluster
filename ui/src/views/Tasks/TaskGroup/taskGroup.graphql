@@ -14,8 +14,13 @@ query TaskGroup($taskGroupId: ID!, $taskGroupConnection: PageConnection, $filter
         }
         taskGroupId
         status {
+          # Required to properly update the cache
           taskId
           state
+          runs {
+            # Required to properly update the cache
+            runId
+          }
         }
       }
     }

@@ -3,6 +3,11 @@ subscription TaskGroupSubscription($taskGroupId: ID!, $subscriptions: [TaskSubsc
     ...on TaskDefined {
       status {
         state
+        runs {
+          # Required to properly update the cache
+          runId
+        }
+        # Required to properly update the cache
         taskId
         taskGroupId
         task {
@@ -21,6 +26,11 @@ subscription TaskGroupSubscription($taskGroupId: ID!, $subscriptions: [TaskSubsc
     ...on TaskPending {
       status {
         state
+        runs {
+          # Required to properly update the cache
+          runId
+        }
+        # Required to properly update the cache
         taskId
         taskGroupId
         task {
@@ -38,6 +48,11 @@ subscription TaskGroupSubscription($taskGroupId: ID!, $subscriptions: [TaskSubsc
     ...on TaskRunning {
       status {
         state
+        runs {
+          # Required to properly update the cache
+          runId
+        }
+        # Required to properly update the cache
         taskId
         taskGroupId
         task {
@@ -55,6 +70,11 @@ subscription TaskGroupSubscription($taskGroupId: ID!, $subscriptions: [TaskSubsc
     ...on TaskCompleted {
       status {
         state
+        runs {
+          # Required to properly update the cache
+          runId
+        }
+        # Required to properly update the cache
         taskId
         taskGroupId
         task {
@@ -72,6 +92,11 @@ subscription TaskGroupSubscription($taskGroupId: ID!, $subscriptions: [TaskSubsc
     ...on TaskFailed {
       status {
         state
+        runs {
+          # Required to properly update the cache
+          runId
+        }
+        # Required to properly update the cache
         taskId
         taskGroupId
         task {
@@ -89,6 +114,11 @@ subscription TaskGroupSubscription($taskGroupId: ID!, $subscriptions: [TaskSubsc
     ...on TaskException {
       status {
         state
+        runs {
+          # Required to properly update the cache
+          runId
+        }
+        # Required to properly update the cache
         taskId
         taskGroupId
         task {

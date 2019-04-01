@@ -46,6 +46,7 @@ let previousCursor;
 @withApollo
 @graphql(taskGroupQuery, {
   options: props => ({
+    fetchPolicy: 'network-only',
     errorPolicy: 'all',
     variables: {
       taskGroupId: props.match.params.taskGroupId,
