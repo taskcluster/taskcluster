@@ -1,0 +1,17 @@
+web:
+  type: web
+  command: node src/main.js server
+scheduler:
+  type: background
+  command: node src/main.js scheduler
+write-docs:
+  type: build
+  command: node src/main.js writeDocs
+listeners:
+  type: background
+  command: node src/main.js listeners
+expires:
+  type: cron
+  schedule: '10 0 * * *'
+  deadline: 86400
+  command: node src/main.js expires

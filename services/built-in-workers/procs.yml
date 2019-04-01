@@ -1,0 +1,6 @@
+server:
+  type: web
+  command: node src/main.js server
+write-docs:
+  type: build
+  command: node src/main.js writeDocs

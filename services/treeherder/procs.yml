@@ -1,0 +1,6 @@
+handlers:
+  type: heroku-only # TODO: This does not work in kube yet
+  command: node src/main.js server
+write-docs:
+  type: build
+  command: node src/main writeDocs
