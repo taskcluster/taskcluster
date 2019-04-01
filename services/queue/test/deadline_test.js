@@ -56,6 +56,16 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
         assume(message.payload.status.runs[0].reasonCreated).equals('exception');
         assume(message.payload.status.runs[0].reasonResolved).equals('deadline-exceeded');
       });
+
+      assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-exception'), {
+        Type: 'task-exception',
+        Logger: 'taskcluster.queue.root.deadline-resolver',
+        Fields: {
+          v: 1,
+          taskId,
+          runId: 0,
+        },
+      });
     }, Infinity);
 
     debug('### Stop deadlineReaper');

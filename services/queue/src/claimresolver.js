@@ -230,7 +230,7 @@ class ClaimResolver {
           runId: runId + 1,
         }, task.routes),
       ]);
-      this.monitor.taskPending({taskId, runId: runId + 1});
+      this.monitor.log.taskPending({taskId, runId: runId + 1});
     } else {
       // Update dependencyTracker
       await this.dependencyTracker.resolveTask(taskId, task.taskGroupId, task.schedulerId, 'exception');
@@ -242,7 +242,7 @@ class ClaimResolver {
         workerGroup: run.workerGroup,
         workerId: run.workerId,
       }, task.routes);
-      this.monitor.taskException({taskId, runId});
+      this.monitor.log.taskException({taskId, runId});
     }
 
     return remove();
