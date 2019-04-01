@@ -2814,10 +2814,10 @@ create-hmac@^1.1.0, create-hmac@^1.1.2, create-hmac@^1.1.4:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
-cron-parser@2.9.0:
-  version "2.9.0"
-  resolved "https://registry.yarnpkg.com/cron-parser/-/cron-parser-2.9.0.tgz#7358377dee4b77c1a2b6a319efaf09ae13040e0d"
-  integrity sha512-WkHhWssz4OxEdepOIt3dXYQiKZgPwgeF1yzBMlLwnUCwv0ziNeINNbMs5haoG10ikM/j0LMrrhEsuK2Blt638w==
+cron-parser@2.10.0:
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/cron-parser/-/cron-parser-2.10.0.tgz#d6bed39cfa6163930f89b1ade82df7b46f52b82b"
+  integrity sha512-E181Gbg+wYT0hSikwBOokL7VHgJDYUlFsRFHIlnTP8GGefhcIyf8PSc2IXztmghj5mhAZupU0n3jKfEpZVEmVg==
   dependencies:
     is-nan "^1.2.1"
     moment-timezone "^0.5.23"
