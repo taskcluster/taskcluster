@@ -21,8 +21,7 @@ suite('handlers/mozilla-auth0', function() {
     const identities = [
       {provider: 'ad', connection: 'Mozilla-LDAP'},
       {provider: 'github', connection: 'github', user_id: 1234},
-      {provider: 'oauth2', connection: 'firefoxaccounts',
-        profileData: {fxa_sub: 'abcdef', email: 'rockets@ksc'}},
+      {provider: 'oauth2', connection: 'firefoxaccounts'},
       {provider: 'email', connection: 'email', user_id: 'slashy/slashy'},
     ];
     return {
@@ -42,6 +41,8 @@ suite('handlers/mozilla-auth0', function() {
         case 'oauth2|firefoxaccounts|abcdef':
           return {
             user_id: 'oauth2|firefoxaccounts|abcdef',
+            email: 'rockets@ksc',
+            fxa_sub: 'abcdef',
             identities,
           };
         case 'email|slashy/slashy':
