@@ -100,7 +100,7 @@ export default class MarkdownTextArea extends Component {
   };
 
   render() {
-    const { placeholder, classes, onChange, rows, ...props } = this.props;
+    const { classes, onChange, rows, ...props } = this.props;
     const { tabIndex, value } = this.state;
     const isPreview = tabIndex === 1;
 
@@ -118,11 +118,11 @@ export default class MarkdownTextArea extends Component {
           {!isPreview && (
             <TextField
               name="Write"
-              placeholder={placeholder}
               onChange={this.handleValueChange}
               fullWidth
               multiline
               rows={rows}
+              {...props}
               value={props.value || value}
             />
           )}
