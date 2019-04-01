@@ -268,7 +268,7 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 
 	// check for a websocket request
 	if websocket.IsWebSocketUpgrade(r) {
-		_ = p.websocketProxy(w, r, session, id)
+		_ = p.websocketProxy(w, r, session, id, path)
 		return
 	}
 

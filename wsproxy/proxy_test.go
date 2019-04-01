@@ -318,6 +318,10 @@ func TestProxyWebsocket(t *testing.T) {
 	defer server.Close()
 
 	clientHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/abc" {
+			t.Fatalf("Got incorrect path %s", r.URL.Path)
+		}
+
 		if !websocket.IsWebSocketUpgrade(r) {
 			http.NotFound(w, r)
 		}
@@ -356,7 +360,7 @@ func TestProxyWebsocket(t *testing.T) {
 	}()
 
 	// create websocket connection
-	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/wsworker/", nil)
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/wsworker/abc", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1171,7 +1175,7 @@ func TestProxyWebSocketPath(t *testing.T) {
 		if !websocket.IsWebSocketUpgrade(r) {
 			panic("request should be a websocket upgrade")
 		}
-		if r.URL.RequestURI() != "/myclient"+reqURI {
+		if r.URL.RequestURI() != reqURI {
 			panic(fmt.Sprintf("invalid request uri propogated: %s", r.URL.RequestURI()))
 		}
 		conn, err := upgrader.Upgrade(w, r, nil)
