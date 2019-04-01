@@ -24,7 +24,13 @@ export default class PulseIterator {
   }
 
   next() {
-    return this.pullValue();
+    // pull a value from the iterator; the resulting promise resolves when a value
+    // is available or the iterator is finished, and rejects if the iterator encounters
+    // an error
+    return new Promise((resolve, reject) => {
+      this.pullQueue = this.pullQueue.push({resolve, reject});
+      this.match();
+    });
   }
 
   return() {
@@ -57,16 +63,6 @@ export default class PulseIterator {
     }
     return new Promise((resolve, reject) => {
       this.pushQueue = this.pushQueue.push({resolve, reject, value, done: false});
-      this.match();
-    });
-  }
-
-  // pull a value from the iterator; the resulting promise resolves when a value
-  // is available or the iterator is finished, and rejects if the iterator encounters
-  // an error
-  pullValue() {
-    return new Promise((resolve, reject) => {
-      this.pullQueue = this.pullQueue.push({resolve, reject});
       this.match();
     });
   }
