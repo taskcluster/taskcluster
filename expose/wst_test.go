@@ -54,7 +54,7 @@ type wstServer struct {
 	server   *http.Server
 }
 
-func makeWstServer(t *testing.T) wstServer {
+func makeWSTServer(t *testing.T) wstServer {
 	listener, port, err := listenOnRandomPort()
 	if err != nil {
 		t.Fatalf("listenOnRandomPort: %s", err)
@@ -104,7 +104,7 @@ func (s *wstServer) close() {
 }
 
 // Create a new exposer with fake auth
-func makeWstExposer(t *testing.T, serverURL string) Exposer {
+func makeWSTExposer(t *testing.T, serverURL string) Exposer {
 	exposer, err := NewWST(
 		serverURL,
 		WST_AUDIENCE,
@@ -120,7 +120,7 @@ func makeWstExposer(t *testing.T, serverURL string) Exposer {
 
 // Test exposing a basic HTTP server
 func TestBasicWSTExposeHTTP(t *testing.T) {
-	wstServer := makeWstServer(t)
+	wstServer := makeWSTServer(t)
 	defer wstServer.close()
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -133,7 +133,7 @@ func TestBasicWSTExposeHTTP(t *testing.T) {
 	testPort, _ := strconv.Atoi(testPortStr)
 	t.Logf("testPort: %d", testPort)
 
-	exposer := makeWstExposer(t, wstServer.url())
+	exposer := makeWSTExposer(t, wstServer.url())
 	exposure, err := exposer.ExposeHTTP(uint16(testPort))
 	if err != nil {
 		t.Fatalf("ExposeHTTP returned an error: %v", err)
@@ -162,7 +162,7 @@ func TestBasicWSTExposeHTTP(t *testing.T) {
 
 // Test exposing an HTTP server that serves websockets (requiring full-duplex communication, etc.)
 func TestWSTExposeHTTPWebsocket(t *testing.T) {
-	wstServer := makeWstServer(t)
+	wstServer := makeWSTServer(t)
 	defer wstServer.close()
 
 	ts := websockEchoServer(t)
@@ -173,7 +173,7 @@ func TestWSTExposeHTTPWebsocket(t *testing.T) {
 	testPort, _ := strconv.Atoi(testPortStr)
 	t.Logf("testPort: %d", testPort)
 
-	exposer := makeWstExposer(t, wstServer.url())
+	exposer := makeWSTExposer(t, wstServer.url())
 	exposure, err := exposer.ExposeHTTP(uint16(testPort))
 	if err != nil {
 		t.Fatalf("ExposeHTTP returned an error: %v", err)
@@ -218,7 +218,7 @@ func TestWSTExposeHTTPWebsocket(t *testing.T) {
 
 // Test exposing a TCP port
 func TestWSTExposeTCPPort(t *testing.T) {
-	wstServer := makeWstServer(t)
+	wstServer := makeWSTServer(t)
 	defer wstServer.close()
 
 	// set up a TCP echo server on a random port
@@ -233,7 +233,7 @@ func TestWSTExposeTCPPort(t *testing.T) {
 	t.Logf("echo server listening on %d", tcpListenerPort)
 	connClosed := tcpEchoServer(tcpListener)
 
-	exposer := makeWstExposer(t, wstServer.url())
+	exposer := makeWSTExposer(t, wstServer.url())
 	exposure, err := exposer.ExposeTCPPort(uint16(tcpListenerPort))
 	if err != nil {
 		t.Fatalf("ExposeTCPPort returned an error: %v", err)

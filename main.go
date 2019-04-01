@@ -331,10 +331,10 @@ func loadConfig(filename string, queryAWSUserData bool, queryGCPMetaData bool) (
 var exposer expose.Exposer
 
 func setupExposer() (err error) {
-	if config.WstAudience != "" && config.WstServerURL != "" {
+	if config.WSTAudience != "" && config.WSTServerURL != "" {
 		exposer, err = expose.NewWST(
-			config.WstServerURL,
-			config.WstAudience,
+			config.WSTServerURL,
+			config.WSTAudience,
 			config.WorkerGroup,
 			config.WorkerID,
 			config.Auth())

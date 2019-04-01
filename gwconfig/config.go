@@ -67,8 +67,8 @@ type (
 		WorkerID                       string                 `json:"workerId"`
 		WorkerType                     string                 `json:"workerType"`
 		WorkerTypeMetadata             map[string]interface{} `json:"workerTypeMetadata"`
-		WstAudience                    string                 `json:"wstAudience"`
-		WstServerURL                   string                 `json:"wstServerURL"`
+		WSTAudience                    string                 `json:"wstAudience"`
+		WSTServerURL                   string                 `json:"wstServerURL"`
 	}
 
 	PrivateConfig struct {
