@@ -16,6 +16,7 @@
     "test": "mocha test/*_test.js test/bidding-strategies/*_test.js test/providers/*_test.js"
   },
   "dependencies": {
+    "@google-cloud/compute": "^0.12.0",
     "array.prototype.flat": "^1.2.1",
     "array.prototype.flatmap": "^1.2.1",
     "moment": "^2.22.2"

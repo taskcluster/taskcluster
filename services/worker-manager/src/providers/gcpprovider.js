@@ -2,7 +2,8 @@
 
 const {Bid} = require('../bid');
 const {Provider} = require('../provider');
-const {Worker} = require('../worker');
+const Worker = require('../worker');
+const Compute = require('@google-cloud/compute');
 
 class GCPProvider extends Provider {
 
@@ -11,6 +12,28 @@ class GCPProvider extends Provider {
    */
   constructor({id}) {
     super({id});
+    this.gcpCompute = new Compute();
+  }
+
+  convertToGCPStatus(taskclusterWorkerState) {
+    switch (taskclusterWorkerState) {
+      case Provider.states.booting: return ['STAGING'];
+      case Provider.states.requested: return ['PROVISIONING'];
+      case Provider.states.running: return ['RUNNING'];
+      case Provider.states.terminating: return ['STOPPING', 'SUSPENDING', 'SUSPENDED', 'TERMINATED'];
+    }
+  }
+
+  convertFromGCPStatus(gcpInstanceStatus) {
+    switch (gcpInstanceStatus) {
+      case 'PROVISIONING': return Provider.states.requested;
+      case 'STAGING': return Provider.states.requested;
+      case 'RUNNING': return Provider.states.running;
+      case 'STOPPING': return Provider.states.terminating;
+      case 'SUSPENDING': return Provider.states.terminating;
+      case 'SUSPENDED': return Provider.states.terminating;
+      case 'TERMINATED': return Provider.states.terminating;
+    }
   }
 
   /**
@@ -23,26 +46,23 @@ class GCPProvider extends Provider {
   async listWorkers({states, workerTypes}) {
     console.log(`Got states: ${states}, and worker types: ${workerTypes}`);
 
-    const workersInAllStates = workerTypes.flatMap(wt => {
-      let gcpInfo = gcp.getWrokersOfType(wt); // pseudocode start
-      // this whole part may actually be wrong....maybe we don't map over gcpInfo.....capacity is just .length of smth
-      // also, I see the potential to use this.queryWorkerState and this.workerInfo here
-      return gcpInfo.map(i => new Worker({
-        id: i.id,
-        group: i.group,
-        workerType: i.workerType,
-        state: i.state,
-        capacity: i.capacity,
-        workerConfigurationId: i.workerConfigurationId, // ???
-        providerData: i.fluff, // pseudocode end
-      }));
-    });
+    let filter = workerTypes.map(wt => `(labels.worker-type = ${wt})`).join(' OR ');
 
-    const workersInNeededStates = workersInAllStates.filter(
-      wt => states.includes(wt.state)
-    );
+    const instances = (await this.gcpCompute.getVMs({
+      autoPaginate: false,
+      filter,
+    }))[0]
+      .filter(i => states.includes(this.convertFromGCPStatus(i.metadata.status)));
 
-    return workersInNeededStates;
+    return instances.map(i => new Worker({
+      id: i.id, // i.id same as i.name (must be unique); i.metadata.id is numerical id of the instance
+      group: i.zone.id,
+      workerType: i.metadata.labels['worker-type'],
+      state: this.convertFromGCPStatus(i.metadata.status),
+      capacity: 1,
+      workerConfigurationId: i.metadata.labels['worker-configuration-id'],
+      providerData: {}, // todo I am not sure what provider data is supposed to be
+    }));
   }
 
   async queryWorkerState({workerId}) {
