@@ -1,12 +1,13 @@
-import classNames from 'classnames';
-import { string, func, number } from 'prop-types';
 import React, { Component } from 'react';
+import classNames from 'classnames';
+import { object, string, func, number } from 'prop-types';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import TextField from '@material-ui/core/TextField';
 import { withStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import Markdown from '../Markdown';
+import pickClassName from '../../utils/pickClassName';
 
 @withStyles(theme => {
   const borderColor =
@@ -63,6 +64,10 @@ export default class MarkdownTextArea extends Component {
      * A number used to control the amount of rows displayed for the input area.
      */
     rows: number,
+    /**
+     * Properties applied to the Markdown component.
+     */
+    markdownProps: object,
   };
 
   static defaultProps = {
@@ -71,6 +76,7 @@ export default class MarkdownTextArea extends Component {
     placeholder: null,
     defaultTabIndex: 0,
     rows: 5,
+    markdownProps: null,
   };
 
   constructor(props) {
@@ -100,7 +106,7 @@ export default class MarkdownTextArea extends Component {
   };
 
   render() {
-    const { classes, onChange, rows, ...props } = this.props;
+    const { classes, onChange, rows, markdownProps, ...props } = this.props;
     const { tabIndex, value } = this.state;
     const isPreview = tabIndex === 1;
 
@@ -127,7 +133,12 @@ export default class MarkdownTextArea extends Component {
             />
           )}
           {isPreview && (
-            <Markdown className={classes.markdown}>
+            <Markdown
+              {...markdownProps}
+              className={classNames(
+                classes.markdown,
+                pickClassName(markdownProps)
+              )}>
               {props.value || value || 'Nothing to Preview'}
             </Markdown>
           )}
