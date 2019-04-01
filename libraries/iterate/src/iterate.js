@@ -195,6 +195,7 @@ class Iterate extends events.EventEmitter {
         });
       }
       debug('experienced iteration failure');
+      console.log('🚨', err);
       this.failures.push(err);
     }
     this.emit('iteration-complete');

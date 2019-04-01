@@ -4,7 +4,7 @@ const {WMObject, errors} = require('./base');
 const {Ruleset} = require('./rules');
 
 /**
- * A WorkerConfiguration in the simplist terms maps an identifier
+ * A WorkerConfiguration in the simplest terms maps an identifier
  * to a list of worker type names and rules which can be used to generate
  * data for providers, bidding strategies and metadata services.
  *
@@ -32,13 +32,13 @@ const {Ruleset} = require('./rules');
  * In order to ensure that the difference between these two is clear, any
  * worker type which has either a provisonerIds list or biddingStrategyId must
  * have both.  The bidding strategy id is a string and provider ids is a list of
- * strings.  Each of these ids referes to the id of the respective type of object.
+ * strings.  Each of these ids refers to the id of the respective type of object.
  *
  * Rules:
  *
  * The rules provided will be evaluated by bidding strategies, providers and
  * metadata endpoints.  Each evaluator of these rules will pass in the relevant
- * satifiers for itself.  All of the rules must evaluate to an object in the
+ * satisfiers for itself.  All of the rules must evaluate to an object in the
  * shape {workerType: String, provider: {}, biddingStrategy: {},
  * documentation: {}, schemas: {}}.  Each of these sections is relevant to an
  * area of the worker manager.  The bidding strategy data must be valid to the
@@ -172,6 +172,8 @@ class WorkerConfiguration extends WMObject {
   biddingStrategyIdForWorkerType(workerType) {
     for (let workerTypeConfiguration of this.workerTypeConfigurations) {
       if (workerTypeConfiguration.get('workerType') === workerType) {
+        console.log('🦋', workerTypeConfiguration.get('workerType'));
+        console.log('🦋🦋', workerTypeConfiguration.get);
         return workerTypeConfiguration.get('biddingStrategyId');
       }
     }

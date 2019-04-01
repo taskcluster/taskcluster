@@ -42,6 +42,7 @@ let bidProxyHandler = {
  */
 class Provisioner extends WMObject {
   constructor({iterationGap=30, providers, biddingStrategies, datastore}) {
+    console.log('🥝', 'Provisioner constructor');
     super({id: 'provisioner'});
     this.providers = providers;
     this.biddingStrategies = biddingStrategies;
@@ -65,6 +66,7 @@ class Provisioner extends WMObject {
    * Start the Provisioner
    */
   async initiate() {
+    console.log('🍍', 'Provisioner initiate');
     await Promise.all([
       Array.from(this.providers.values()).map(x => x.initiate()),
       Array.from(this.biddingStrategies.values()).map(x => x.initiate()),
@@ -93,15 +95,21 @@ class Provisioner extends WMObject {
    * Run a single provisioning iteration
    */
   async provision() {
+    console.log('🥥', 'Provisioner provision');
     let workerConfigurationNames = await this.datastore.list('worker-configurations');
+    console.log('🐡', workerConfigurationNames);
     let workerConfigurations = await Promise.all(workerConfigurationNames
       .map(async x => buildWorkerConfiguration(await this.datastore.get('worker-configurations', x))));
+
+    console.log('🐡🐡', workerConfigurations);
 
     let bids = await Promise.all(workerConfigurations.flatMap(workerConfiguration => {
       return workerConfiguration.workerTypes()
         .map(workerType => this.bidsForWorkerType({workerConfiguration, workerType}));
     }));
-    bids = bids.flat();
+    bids = bids.flat(); // todo owlish: why are flattening again?
+
+    console.log('🐡🐡🐡', bids);
 
     await Promise.all(Array.from(this.providers.values()).map(provider => {
       let providerBids = bids.filter(bid => bid.providerId === provider.id);
@@ -116,15 +124,19 @@ class Provisioner extends WMObject {
    *
    */
   async bidsForWorkerType({workerConfiguration, workerType}) {
+    console.log('🐍', workerConfiguration, workerType);
     let biddingStrategyId = workerConfiguration.biddingStrategyIdForWorkerType(workerType);
+    console.log('🐍🐍', biddingStrategyId);
     if (!biddingStrategyId) {
       return [];
     }
+    console.log('🐠', this.biddingStrategies.get);
 
     let biddingStrategy = this.biddingStrategies.get(biddingStrategyId);
     if (!biddingStrategy) {
       return [];
     }
+    console.log('🐍🐍🐍', biddingStrategy);
 
     // Get the list of providers which are relevant to this worker
     // configuration.  In the case that there aren't configured providers for
@@ -136,13 +148,14 @@ class Provisioner extends WMObject {
     if (providers.length < 1) {
       return [];
     }
+    console.log('🐍🐍🐍🐍', providers);
 
     // Determine the number of pending and running capacity units
     let runningCapacity = 0;
     let pendingCapacity = 0;
     for (let provider of providers) {
       let workers = await provider.listWorkers({
-        states: [Provider.requested, Provider.booting, Provider.running],
+        states: [Provider.states.terminating, Provider.states.booting, Provider.states.running],
         workerTypes: [workerType],
       });
 
@@ -154,6 +167,7 @@ class Provisioner extends WMObject {
         }
       }
     }
+    console.log('🐍🐍🐍🐍🐍', runningCapacity, pendingCapacity);
 
     // We only want to pass bidding strategy data to bidding strategies.  This
     // is to ensure that bidding strategy data is the only input to bidding
@@ -178,6 +192,7 @@ class Provisioner extends WMObject {
     if (demand < 1) {
       return [];
     }
+    console.log('🐍🐍🐍🐍🐍🐍', demand);
 
     // Ask each provider for bids.  The workerConfiguration passed is proxied
     // through a handler which removes all of the *Data fields from the
@@ -190,11 +205,11 @@ class Provisioner extends WMObject {
         demand,
       });
     }));
-    bids = bids.flat();
-
+    bids = bids.flat(); // owlish: why flatenning?
+    console.log('🐍🐍🐍🐍🐍🐍🐍', bids);
     // We'll map the bids between their id and their true value so that we can
     // send a stripped down copy of the bid to the bidding strategy which does
-    // not included any *Data key other than biddingStrategyData.  We do this
+    // not include any *Data key other than biddingStrategyData.  We do this
     // to ensure that bidding strategies only consider relevant parts, and do
     // not begin to consider provider specific data.  As well, it ensures that
     // bidding strategies do not tamper with bids.
@@ -230,4 +245,5 @@ class Provisioner extends WMObject {
 
 module.exports = {
   Provisioner,
+  providerDataProxyHandler, // for tests
 };
