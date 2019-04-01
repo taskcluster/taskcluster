@@ -124,7 +124,6 @@ func setup(t *testing.T) (teardown func()) {
 			LiveLogKey:                "",
 			LiveLogPUTPort:            43264,
 			NumberOfTasksToRun:        1,
-			OpenPGPSigningKeyLocation: filepath.Join(testdataDir, "private-opengpg-key"),
 			PrivateIP:                 net.ParseIP("87.65.43.21"),
 			ProvisionerBaseURL:        "",
 			ProvisionerID:             "test-provisioner",

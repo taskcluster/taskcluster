@@ -55,7 +55,6 @@ func (m *MockAWSProvisionedEnvironment) ValidPublicConfig(t *testing.T) map[stri
 		"sentryProject":                  "generic-worker-tests",
 		"shutdownMachineOnIdle":          false,
 		"shutdownMachineOnInternalError": false,
-		"openpgpSigningKeyLocation":      filepath.Join(testdataDir, "private-opengpg-key"),
 		"ed25519SigningKeyLocation":      filepath.Join(testdataDir, "ed25519_private_key"),
 		"subdomain":                      "taskcluster-worker.net",
 		"tasksDir":                       filepath.Join(testdataDir, t.Name()),
