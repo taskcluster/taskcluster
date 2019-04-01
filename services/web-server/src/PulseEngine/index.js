@@ -3,105 +3,17 @@ import { slugid } from 'taskcluster-client';
 import PulseIterator from './PulseIterator';
 import MessageIterator from './MessageIterator';
 import EventIterator from './EventIterator';
+import Subscription from './Subscription';
 
 const debug = Debug('PulseEngine');
-
-class Subscription {
-  constructor({ subscriptionId, onMessage, subscriptions }) {
-    this.subscriptionId = subscriptionId;
-    this.onMessage = onMessage;
-    this.subscriptions = subscriptions;
-
-    // state tracking for reconciliation
-    this.listening = false;
-    this.unsubscribed = false;
-  }
-
-  /**
-   * Reset this subscription to its non-listening state
-   */
-  reset() {
-    this.listening = false;
-  }
-
-  /**
-   * Flag this subscription as needing unsubscription at the next
-   * reconciliation
-   */
-  unsubscribe() {
-    this.unsubscribed = true;
-  }
-
-  /**
-   * Reconcile the AMQP state with this subscription's state.
-   */
-  async reconcile(client, connection, channel) {
-    const { subscriptionId, listening, unsubscribed } = this;
-    const queueName = client.fullObjectName('queue', subscriptionId);
-
-    if (listening && unsubscribed) {
-      debug(`Unbinding subscription ${subscriptionId}`);
-      await channel.cancel(this.consumerTag);
-      await channel.deleteQueue(queueName);
-      this.listening = false;
-    } else if (!listening && !unsubscribed) {
-      debug(`Binding subscription ${subscriptionId}`);
-      const { onMessage, subscriptions } = this;
-
-      await channel.assertQueue(queueName, {
-        exclusive: false,
-        durable: true,
-        autoDelete: true,
-      });
-
-      await Promise.all(
-        subscriptions.map(({ pattern, exchange }) =>
-          channel.bindQueue(queueName, exchange, pattern)
-        )
-      );
-
-      const { consumerTag } = await channel.consume(queueName, amqpMsg => {
-        const message = {
-          payload: JSON.parse(amqpMsg.content.toString('utf8')),
-          exchange: amqpMsg.fields.exchange,
-          routingKey: amqpMsg.fields.routingKey,
-          redelivered: amqpMsg.fields.redelivered,
-          cc: [],
-        };
-
-        if (
-          amqpMsg.properties &&
-          amqpMsg.properties.headers &&
-          Array.isArray(amqpMsg.properties.headers.cc)
-        ) {
-          message.cc = amqpMsg.properties.headers.cc;
-        }
-
-        onMessage(message);
-      });
-
-      this.consumerTag = consumerTag;
-      this.listening = true;
-    }
-  }
-
-  /**
-   * If true, this subscription is complete and can be dropped from the list.
-   */
-  get garbage() {
-    return this.unsubscribed && !this.listening;
-  }
-}
 
 export default class PulseEngine {
   /* Operation:
    *
    * Each subscription gets one queue (named after the subscriptionId), with a
    * binding for each item in `subscriptions`. We then consume from that queue.
-   * All queues are ephemeral, meaning they will go away when this service
-   * restarts or the connection recycles. We automatically re-bind on
-   * connection recycles, and rely on the caller to re-subscribe on service
-   * restart. */
+   * We automatically re-bind on connection recycles, and rely on the caller to
+   * re-subscribe on service restart. */
 
   constructor({ monitor, pulseClient }) {
     this.monitor = monitor;
@@ -124,7 +36,6 @@ export default class PulseEngine {
 
   reset() {
     this.connection = null;
-    this.channel = null;
   }
 
   connected(connection) {
@@ -137,14 +48,15 @@ export default class PulseEngine {
     this.reconcileSubscriptions();
   }
 
-  subscribe(subscriptions, onMessage) {
+  subscribe(subscriptions, handleMessage, handleError) {
     const subscriptionId = slugid();
 
     this.subscriptions.set(
       subscriptionId,
       new Subscription({
         subscriptionId,
-        onMessage,
+        handleMessage,
+        handleError,
         subscriptions,
       })
     );
@@ -198,15 +110,9 @@ export default class PulseEngine {
         return;
       }
 
-      if (!this.channel) {
-        this.channel = await connection.amqp.createChannel();
-      }
-
-      const { channel } = this;
-
       await Promise.all(
         Array.from(this.subscriptions.values()).map(sub =>
-          sub.reconcile(client, connection, channel)
+          sub.reconcile(client, connection)
         )
       );
 
