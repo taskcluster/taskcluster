@@ -123,32 +123,43 @@ module.exports = {
 
     log('read userdata', { text: userdata });
 
-    let provisioner = new taskcluster.AwsProvisioner({rootUrl});
+    let credentials;
+    if (securityToken) {
+      let provisioner = new taskcluster.AwsProvisioner({rootUrl});
 
-    // Retrieve secrets
-    let secrets;
-    try {
-      secrets = await provisioner.getSecret(securityToken);
-    }
-    catch (e) {
-      // It's bad if credentials cannot be retrieved.  Either this could happen when
-      // worker first starts up because of an issue communicating with the provisioner
-      // or if the worker respawned (because of an uncaught exception).  Either way,
-      // alert and set capacity to 0.
-      log('[alert-operator] error retrieving credentials from provisioner', {stack: e.stack});
+      // Retrieve secrets
+      let secrets;
+      try {
+        secrets = await provisioner.getSecret(securityToken);
+      }
+      catch (e) {
+        // It's bad if credentials cannot be retrieved.  Either this could happen when
+        // worker first starts up because of an issue communicating with the provisioner
+        // or if the worker respawned (because of an uncaught exception).  Either way,
+        // alert and set capacity to 0.
+        log('[alert-operator] error retrieving credentials from provisioner', {stack: e.stack});
+        spawn('shutdown', ['-h', 'now']);
+      }
+
+      log('read secrets');
+
+      await provisioner.removeSecret(securityToken);
+
+      credentials = secrets.credentials;
+    } else if (userdata.credentials) {
+      log('using static credentials from userdata');
+      credentials = userdata.credentials;
+    } else {
+      log('[alert-operator] no taskcluster credentials available');
       spawn('shutdown', ['-h', 'now']);
     }
-
-    log('read secrets');
-
-    await provisioner.removeSecret(securityToken);
 
     // Log config for record of configuration but without secrets
     log('config', config);
 
     let tcsecrets = new taskcluster.Secrets({
       rootUrl,
-      credentials: secrets.credentials
+      credentials: credentials
     });
 
     let workerTypeSecret;
@@ -170,7 +181,7 @@ module.exports = {
     // taskcluster credentials (if perma creds are provided by secrets.data)
     return _.defaultsDeep(
       workerTypeSecret.secret,
-      {taskcluster: secrets.credentials},
+      {taskcluster: credentials},
       {rootUrl},
       userdata.data,
       {
