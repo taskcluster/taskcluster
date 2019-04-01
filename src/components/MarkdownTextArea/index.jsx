@@ -29,9 +29,13 @@ import Markdown from '../Markdown';
       borderRadius: theme.shape.borderRadius,
       borderStyle: 'solid',
     },
+    markdown: {
+      '& > :first-child': {
+        marginTop: '0',
+      },
+    },
   };
 })
-
 /**
  * An input text field with a markdown preview feature.
  */
@@ -98,6 +102,7 @@ export default class MarkdownTextArea extends Component {
   render() {
     const { placeholder, classes, onChange, rows, ...props } = this.props;
     const { tabIndex, value } = this.state;
+    const isPreview = tabIndex === 1;
 
     return (
       <div className={classNames(classes.tab)}>
@@ -106,10 +111,11 @@ export default class MarkdownTextArea extends Component {
           <Tab label="Preview" />
         </Tabs>
         <div
+          style={isPreview ? { minHeight: rows * 20 } : null}
           className={classNames(classes.tabContent, {
-            [classes.markdownContainer]: tabIndex === 1,
+            [classes.markdownContainer]: isPreview,
           })}>
-          {tabIndex === 0 && (
+          {!isPreview && (
             <TextField
               name="Write"
               placeholder={placeholder}
@@ -120,7 +126,11 @@ export default class MarkdownTextArea extends Component {
               value={props.value || value}
             />
           )}
-          {tabIndex === 1 && <Markdown>{props.value || value}</Markdown>}
+          {isPreview && (
+            <Markdown className={classes.markdown}>
+              {props.value || value || 'Nothing to Preview'}
+            </Markdown>
+          )}
         </div>
       </div>
     );
