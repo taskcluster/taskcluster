@@ -40,14 +40,6 @@ import Markdown from '../Markdown';
  * An input text field with a markdown preview feature.
  */
 export default class MarkdownTextArea extends Component {
-  static defaultProps = {
-    onChange: null,
-    value: undefined,
-    placeholder: null,
-    defaultTabIndex: 0,
-    rows: 5,
-  };
-
   static propTypes = {
     /**
      * A function to handle changes to the markdown text.
@@ -71,6 +63,14 @@ export default class MarkdownTextArea extends Component {
      * A number used to control the amount of rows displayed for the input area.
      */
     rows: number,
+  };
+
+  static defaultProps = {
+    onChange: null,
+    value: undefined,
+    placeholder: null,
+    defaultTabIndex: 0,
+    rows: 5,
   };
 
   constructor(props) {
