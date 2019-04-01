@@ -1,6 +1,5 @@
 import React, { Component, Fragment } from 'react';
 import { bool, func } from 'prop-types';
-import { titleCase, upperCase } from 'change-case';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -11,6 +10,7 @@ import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import { notificationAddress as address } from '../../utils/prop-types';
 import { DENYLIST_NOTIFICATION_TYPES } from '../../utils/constants';
+import titleCase from '../../utils/titleCase';
 import Button from '../Button';
 
 @withStyles(theme => ({
@@ -43,15 +43,17 @@ export default class DenylistForm extends Component {
     /** Set to `true` when adding a new address. */
     isNewAddress: bool,
     /** Callback function fired when an address is created. */
-    onAddressAdd: func.isRequired,
+    onAddressAdd: func,
     /** Callback function fired when an address is deleted. */
-    onAddressDelete: func.isRequired,
+    onAddressDelete: func,
     /** If true, form actions will be disabled. */
     loading: bool,
   };
 
   static defaultProps = {
     isNewAddress: false,
+    onAddressDelete: null,
+    onAddressAdd: null,
     address: null,
     loading: false,
   };
@@ -142,16 +144,6 @@ export default class DenylistForm extends Component {
     return !hasEmptyFields && isAddressValid;
   };
 
-  prettify = str =>
-    titleCase(str)
-      .split(' ')
-      .map(word => {
-        const pretty = word === 'Irc' ? upperCase(word) : word;
-
-        return pretty;
-      })
-      .join(' ');
-
   render() {
     const { address, classes, isNewAddress, loading } = this.props;
     const { notificationType, notificationAddress, validation } = this.state;
@@ -172,7 +164,7 @@ export default class DenylistForm extends Component {
                 name="notificationType">
                 {Object.values(DENYLIST_NOTIFICATION_TYPES).map(type => (
                   <MenuItem key={type} value={type}>
-                    {this.prettify(type)}
+                    {titleCase(type)}
                   </MenuItem>
                 ))}
               </TextField>
@@ -197,7 +189,7 @@ export default class DenylistForm extends Component {
             <ListItem>
               <ListItemText
                 primary="Notification Type"
-                secondary={this.prettify(notificationType)}
+                secondary={titleCase(notificationType)}
               />
             </ListItem>
             <ListItem>

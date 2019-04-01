@@ -2,6 +2,7 @@ import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
+import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../../components/Dashboard';
 import DenylistForm from '../../../components/DenylistForm';
 import ErrorPanel from '../../../components/ErrorPanel';
@@ -77,7 +78,15 @@ export default class ViewDenylistAddress extends Component {
 
   render() {
     const { loading, error } = this.state;
-    const { isNewAddress, data } = this.props;
+    const {
+      isNewAddress,
+      data,
+      match: { params },
+    } = this.props;
+    const hasDenylistAddresses =
+      data &&
+      data.listDenylistAddresses &&
+      data.listDenylistAddresses.edges.length;
 
     return (
       <Dashboard
@@ -93,13 +102,18 @@ export default class ViewDenylistAddress extends Component {
           <Fragment>
             {data.loading && <Spinner loading />}
             {data && <ErrorPanel error={data.error} />}
-            {data && data.listDenylistAddresses && (
+            {hasDenylistAddresses && (
               <DenylistForm
                 loading={loading}
                 address={data.listDenylistAddresses.edges[0].node}
-                onAddressAdd={this.handleAddressAdd}
                 onAddressDelete={this.handleAddressDelete}
               />
+            )}
+            {!data.loading && !hasDenylistAddresses && (
+              <Typography>
+                <em>{decodeURIComponent(params.notificationAddress)}</em> cannot
+                be found.
+              </Typography>
             )}
           </Fragment>
         )}
