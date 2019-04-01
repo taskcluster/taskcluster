@@ -3,7 +3,7 @@ const path = require('path');
 const amqplib = require('amqplib');
 const assume = require('assume');
 const assert = require('assert');
-const libMonitor = require('taskcluster-lib-monitor');
+const MonitorManager = require('taskcluster-lib-monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const libUrls = require('taskcluster-lib-urls');
 const libTesting = require('taskcluster-lib-testing');
@@ -54,6 +54,23 @@ suite('publisher_test.js', function() {
     routingKeyBuilder: msg => msg,
     CCBuilder: msg => [],
   };
+
+  let monitorManager = null;
+  let monitor;
+
+  setup(async function() {
+    monitorManager = new MonitorManager({
+      serviceName: 'lib-pulse-test',
+    });
+    monitorManager.setup({
+      mock: true,
+    });
+    monitor = monitorManager.monitor('tests');
+  });
+
+  teardown(() => {
+    monitorManager.terminate();
+  });
 
   suite('Exchanges', function() {
     test('constructor args required', function() {
@@ -186,7 +203,6 @@ suite('publisher_test.js', function() {
         return;
       }
 
-      const monitor = await libMonitor({projectName: exchangeOptions.projectName, mock: true});
       client = new Client({
         credentials: connectionStringCredentials(PULSE_CONNECTION_STRING),
         retirementDelay: 50,

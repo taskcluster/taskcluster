@@ -3,7 +3,7 @@ const {Connection} = require('../src/client');
 const amqplib = require('amqplib');
 const assume = require('assume');
 const debugModule = require('debug');
-const libMonitor = require('taskcluster-lib-monitor');
+const MonitorManager = require('taskcluster-lib-monitor');
 const slugid = require('slugid');
 
 const PULSE_CONNECTION_STRING = process.env.PULSE_CONNECTION_STRING;
@@ -22,10 +22,21 @@ const connectionTests = connectionString => {
   const message = Buffer.from('Hello');
   const debug = debugModule('test');
 
+  let monitorManager = null;
   let monitor;
 
   setup(async function() {
-    monitor = await libMonitor({projectName: 'tests', mock: true});
+    monitorManager = new MonitorManager({
+      serviceName: 'lib-pulse-test',
+    });
+    monitorManager.setup({
+      mock: true,
+    });
+    monitor = monitorManager.monitor('tests');
+  });
+
+  teardown(() => {
+    monitorManager.terminate();
   });
 
   // publish a message to the exchange using just amqplib, declaring the
