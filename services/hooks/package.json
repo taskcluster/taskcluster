@@ -11,7 +11,7 @@
   "dependencies": {
     "ajv": "6.10.0",
     "azure-entities": "^5.2.0",
-    "cron-parser": "2.9.0",
+    "cron-parser": "2.10.0",
     "debug": "^4.0.0",
     "json-e": "^2.3.5",
     "lodash": "^4.17.4",
