@@ -1,5 +1,7 @@
 'use strict';
 
+const {providerDataProxyHandler} = require('../../src/provisioner');
+
 const assume = require('assume');
 const {Provider} = require('../../src/provider');
 const {Bid} = require('../../src/bid');
@@ -28,7 +30,7 @@ const {Worker} = require('../../src/worker');
  * await runAfter(subject);
  *
  * The assumption is that these tests can safely call the api methods as many
- * times as needed and nothing will happen externally.  In otherwords, the
+ * times as needed and nothing will happen externally.  In other words, the
  * provider must be fully mocked.
  *
  * The provided workerConfiguration must be a valid worker configuration for this
@@ -104,12 +106,14 @@ function testProvider(subject, workerConfiguration, runBefore, runAfter) {
       assume(subject.workerInfo({worker})).is.an('object');
     });
 
-    test('.proposeBids() should work as specified', async () => {
+    test.only('.proposeBids() should work as specified', async () => {
       let bids = await subject.proposeBids({
         workerType,
-        workerConfiguration,
+        workerConfiguration: new Proxy(workerConfiguration, providerDataProxyHandler),
         demand: 10,
       });
+
+      console.log('😛', JSON.stringify(bids, null, 2));
 
       assume(bids).not.empty();
 

@@ -13,7 +13,7 @@
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
     "fixlint": "eslint --fix src/*.js test/*.js",
-    "test": "mocha test/*_test.js test/bidding-strategies/*_test.js"
+    "test": "mocha test/*_test.js test/bidding-strategies/*_test.js test/providers/*_test.js"
   },
   "dependencies": {
     "array.prototype.flat": "^1.2.1",

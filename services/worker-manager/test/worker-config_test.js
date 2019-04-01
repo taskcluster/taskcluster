@@ -339,3 +339,5 @@ suite('buildWorkerConfiguration', () => {
     });
   });
 });
+
+module.exports = { mockRules };

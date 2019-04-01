@@ -2,9 +2,9 @@
 
 const {testProvider} = require('./provider_test');
 const {GCPProvider} = require('../../src/providers/gcpprovider');
-const {mockRules} = require('worker-config_test');
+const {mockRules} = require('../worker-config_test');
 
-suite.only('GCP Provider', () => {
+suite('GCP Provider', () => {
   let subject = new GCPProvider({
     id: 'gcp-provider',
   });
@@ -19,8 +19,4 @@ suite.only('GCP Provider', () => {
   };
 
   testProvider(subject, workerConfig);
-
-  test('proposes some bids', async () => {
-
-  });
 });
