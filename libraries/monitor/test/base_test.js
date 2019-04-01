@@ -276,7 +276,7 @@ suite('BaseMonitor', function() {
         '--shouldUnhandle',
       ], (done, code, output) => {
         assert.equal(code, 0);
-        assert(output.includes('UnhandledPromiseRejectionWarning: whaaa'));
+        assert(output.match(/UnhandledPromiseRejectionWarning:.*whaaa/));
         assert.throws(() => JSON.parse(output));
         done();
       });
@@ -289,7 +289,7 @@ suite('BaseMonitor', function() {
         '--bailOnUnhandledRejection',
       ], (done, code, output) => {
         assert.equal(code, 1);
-        assert(output.includes('Unhandled Rejection at'));
+        assert(output.includes('whaaa'));
         assert(JSON.parse(output));
         done();
       });
@@ -301,7 +301,7 @@ suite('BaseMonitor', function() {
         '--patchGlobal',
       ], (done, code, output) => {
         assert.equal(code, 0);
-        assert(output.includes('Unhandled Rejection at'));
+        assert(output.includes('whaaa'));
         assert(JSON.parse(output));
         done();
       });
