@@ -51,34 +51,37 @@ export default class App extends Component {
         ('node' in object &&
           'status' in object.node &&
           object.node.status.taskId);
+      const status = object.status || ('task' in object && object.task.status);
+      const runs = object.runs || (status && status.runs) || [];
+      const runId = runs.length - 1;
 
       switch (object.__typename) {
         case 'TaskDefined': {
-          return taskId || defaultDataIdFromObject(object);
+          return `${taskId}/${runId}` || defaultDataIdFromObject(object);
         }
 
         case 'TaskPending': {
-          return taskId || defaultDataIdFromObject(object);
+          return `${taskId}/${runId}` || defaultDataIdFromObject(object);
         }
 
         case 'TaskRunning': {
-          return taskId || defaultDataIdFromObject(object);
+          return `${taskId}/${runId}` || defaultDataIdFromObject(object);
         }
 
         case 'TaskCompleted': {
-          return taskId || defaultDataIdFromObject(object);
+          return `${taskId}/${runId}` || defaultDataIdFromObject(object);
         }
 
         case 'TaskFailed': {
-          return taskId || defaultDataIdFromObject(object);
+          return `${taskId}/${runId}` || defaultDataIdFromObject(object);
         }
 
         case 'TaskException': {
-          return taskId || defaultDataIdFromObject(object);
+          return `${taskId}/${runId}` || defaultDataIdFromObject(object);
         }
 
         case 'TaskStatus': {
-          return taskId || defaultDataIdFromObject(object);
+          return `${taskId}/${runId}` || defaultDataIdFromObject(object);
         }
 
         default: {
