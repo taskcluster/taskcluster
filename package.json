@@ -62,6 +62,7 @@
     "markdown-it-link-attributes": "^2.1.0",
     "mdi-react": "^4.0.0",
     "prop-types": "^15.6.2",
+    "ramda": "^0.26.1",
     "react-codemirror2": "^5.1.0",
     "react-fout-stager": "^3.0.0",
     "react-router-dom": "^4.3.1",
