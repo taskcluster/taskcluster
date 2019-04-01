@@ -115,12 +115,12 @@ export default [
   {
     component: CachePurges,
     path: '/purge-caches',
-    route: cachePurgeRoutes('/purge-caches'),
+    routes: cachePurgeRoutes('/purge-caches'),
   },
   {
     component: Denylist,
     path: '/notify/denylist',
-    route: denylistRoutes('/notify/denylist'),
+    routes: denylistRoutes('/notify/denylist'),
   },
   {
     component: PulseMessages,
