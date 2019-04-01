@@ -115,7 +115,6 @@ func (c *Config) Validate() error {
 		{value: c.LiveLogExecutable, name: "livelogExecutable", disallowed: ""},
 		{value: c.LiveLogPUTPort, name: "livelogPUTPort", disallowed: 0},
 		{value: c.LiveLogGETPort, name: "livelogGETPort", disallowed: 0},
-		{value: c.LiveLogSecret, name: "livelogSecret", disallowed: ""},
 		{value: c.ProvisionerID, name: "provisionerId", disallowed: ""},
 		{value: c.PublicIP, name: "publicIP", disallowed: net.IP(nil)},
 		{value: c.RootURL, name: "rootURL", disallowed: ""},
