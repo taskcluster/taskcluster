@@ -9,6 +9,9 @@ export default class Subscription {
     this.handleError = handleError;
     this.subscriptions = subscriptions;
 
+    // the identifier for the active consumer, if any (used to cancel it)
+    this.consumerTag = null;
+
     // state tracking for reconciliation
     this.listening = false;
     this.unsubscribed = false;
