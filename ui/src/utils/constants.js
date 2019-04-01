@@ -217,3 +217,5 @@ export const DENYLIST_NOTIFICATION_TYPES = {
   IRC_USER: 'IRC_USER',
   IRC_CHANNEL: 'IRC_CHANNEL',
 };
+
+export const KNOWN_ACRONYMS = ['IRC', 'API'];
