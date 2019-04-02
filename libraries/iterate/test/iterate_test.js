@@ -66,7 +66,13 @@ suite(testing.suiteName(), () => {
     sandbox.restore();
   });
 
-  test('should be able to start and stop', testing.runWithFakeTime(async function() {
+  const runWithFakeTime = fn => {
+    return testing.runWithFakeTime(fn, {
+      systemTime: 0,
+    });
+  };
+
+  test('should be able to start and stop', runWithFakeTime(async function() {
     let iterations = 0;
 
     let i = new subject({
@@ -92,7 +98,7 @@ suite(testing.suiteName(), () => {
     assume(err).to.equal(null);
     assume(iterations).equals(5);
     assume(i.keepGoing).is.ok();
-    i.stop();
+    await i.stop();
     assume(i.keepGoing).is.not.ok();
     assume(manager.messages.length).equals(5);
     manager.messages.forEach(message => {
@@ -100,7 +106,42 @@ suite(testing.suiteName(), () => {
     });
   }));
 
-  test('should stop after correct number of iterations', testing.runWithFakeTime(async function() {
+  test('should stop after current iteration completes', runWithFakeTime(async function() {
+    let i = new subject({
+      maxIterationTime: 3000,
+      waitTime: 10,
+      maxIterations: 5,
+      watchDog: 0,
+      handler: async (watchdog, state) => {
+        await testing.sleep(500);
+      },
+    });
+
+    i.start();
+    await i.stop();
+
+    assume(+new Date()).atleast(500);
+  }));
+
+  test('should stop in the midst of waitTime', runWithFakeTime(async function() {
+    let i = new subject({
+      maxIterationTime: 3000,
+      waitTime: 1000,
+      maxIterations: 2,
+      watchDog: 0,
+      handler: async (watchdog, state) => {
+        await testing.sleep(500);
+      },
+    });
+
+    i.start();
+    await testing.sleep(1000);
+    await i.stop();
+
+    assume(+new Date()).between(1000, 1100);
+  }));
+
+  test('should stop after correct number of iterations', runWithFakeTime(async function() {
     let iterations = 0;
 
     let i = new subject({
@@ -118,15 +159,14 @@ suite(testing.suiteName(), () => {
     i.start();
 
     await new Promise(resolve => {
-      i.on('completed', resolve);
+      i.on('stopped', resolve);
     });
 
     assume(iterations).equals(5);
     assume(i.keepGoing).is.not.ok();
-    i.stop();
   }));
 
-  test('should emit error when iteration watchdog expires', testing.runWithFakeTime(async function() {
+  test('should emit error when iteration watchdog expires', runWithFakeTime(async function() {
     let i = new subject({
       maxIterationTime: 5000,
       watchdogTime: 1000,
@@ -148,7 +188,7 @@ suite(testing.suiteName(), () => {
     assume(err).matches(/watchdog exceeded/);
   }));
 
-  test('should emit error when overall iteration limit is hit', testing.runWithFakeTime(async function() {
+  test('should emit error when overall iteration limit is hit', runWithFakeTime(async function() {
     let i = new subject({
       maxIterationTime: 1000,
       waitTime: 1000,
@@ -174,7 +214,7 @@ suite(testing.suiteName(), () => {
     assume(err).matches(/Iteration exceeded maximum time allowed/);
   }));
 
-  test('should emit iteration-failure when async handler fails', testing.runWithFakeTime(async function() {
+  test('should emit iteration-failure when async handler fails', runWithFakeTime(async function() {
     let i = new subject({
       maxIterationTime: 1000,
       waitTime: 1000,
@@ -195,7 +235,7 @@ suite(testing.suiteName(), () => {
     assume(sawEvent).is.ok();
   }));
 
-  test('should emit iteration-failure when sync handler fails', testing.runWithFakeTime(async function() {
+  test('should emit iteration-failure when sync handler fails', runWithFakeTime(async function() {
     let i = new subject({
       maxIterationTime: 1000,
       waitTime: 1000,
@@ -216,7 +256,7 @@ suite(testing.suiteName(), () => {
     assume(sawEvent).is.ok();
   }));
 
-  test('should emit iteration-failure when iteration is too quick', testing.runWithFakeTime(async function() {
+  test('should emit iteration-failure when iteration is too quick', runWithFakeTime(async function() {
     let i = new subject({
       maxIterationTime: 12000,
       minIterationTime: 10000,
@@ -237,7 +277,7 @@ suite(testing.suiteName(), () => {
     assume(iterFailed).is.ok();
   }));
 
-  test('should emit error after too many failures', testing.runWithFakeTime(async function() {
+  test('should emit error after too many failures', runWithFakeTime(async function() {
     let i = new subject({
       maxIterationTime: 12000,
       maxFailures: 1,
@@ -297,7 +337,7 @@ suite(testing.suiteName(), () => {
 
   });
 
-  test('should share state between iterations', testing.runWithFakeTime(async function() {
+  test('should share state between iterations', runWithFakeTime(async function() {
     let iterations = 0;
 
     let i = new subject({
@@ -329,7 +369,7 @@ suite(testing.suiteName(), () => {
     assume(iterFailed).is.not.ok();
   }));
 
-  test('should emit correct events for single iteration', testing.runWithFakeTime(async function() {
+  test('should emit correct events for single iteration', runWithFakeTime(async function() {
     let i = new subject({
       maxIterationTime: 3000,
       waitTime: 1000,
@@ -347,17 +387,12 @@ suite(testing.suiteName(), () => {
     ]);
 
     i.start();
-
-    // stop and wait for the stop to take effect..
-    await new Promise(resolve => {
-      i.on('stopped', resolve);
-      i.stop();
-    });
+    await i.stop();
 
     events.assert();
   }));
 
-  test('should emit correct events with maxIterations', testing.runWithFakeTime(async function() {
+  test('should emit correct events with maxIterations', runWithFakeTime(async function() {
     let i = new subject({
       maxIterationTime: 3000,
       maxIterations: 1,
@@ -372,24 +407,19 @@ suite(testing.suiteName(), () => {
       'iteration-start',
       'iteration-success',
       'iteration-complete',
-      'completed',
       'stopped',
     ]);
 
     i.start();
-
-    // stop and wait for the stop to take effect..
-    await new Promise(resolve => {
-      i.on('stopped', resolve);
-      i.stop();
-    });
+    await testing.sleep(2000);
+    await i.stop();
 
     events.assert();
   }));
 
   suite('event emission ordering', () => {
 
-    test('should be correct with maxFailures and maxIterations', testing.runWithFakeTime(async function() {
+    test('should be correct with maxFailures and maxIterations', runWithFakeTime(async function() {
       let i = new subject({
         maxIterationTime: 3000,
         maxIterations: 1,
@@ -406,24 +436,17 @@ suite(testing.suiteName(), () => {
         'iteration-start',
         'iteration-failure',
         'iteration-complete',
-        'completed',
-        'stopped',
         'error',
+        'stopped',
       ]);
 
-      i.on('started', () => {
-        i.stop();
-      });
-
-      await new Promise(resolve => {
-        i.on('error', resolve);
-        i.start();
-      });
+      i.start();
+      await i.stop();
 
       events.assert();
     }));
 
-    test('should be correct with maxFailures only', testing.runWithFakeTime(async function() {
+    test('should be correct with maxFailures only', runWithFakeTime(async function() {
       let i = new subject({
         maxIterationTime: 3000,
         maxFailures: 1,
@@ -439,23 +462,17 @@ suite(testing.suiteName(), () => {
         'iteration-start',
         'iteration-failure',
         'iteration-complete',
-        'stopped',
         'error',
+        'stopped',
       ]);
 
-      i.on('started', () => {
-        i.stop();
-      });
-
-      await new Promise(resolve => {
-        i.on('error', resolve);
-        i.start();
-      });
+      i.start();
+      await i.stop();
 
       events.assert();
     }));
 
-    test('should be correct when handler takes too little time', testing.runWithFakeTime(async function() {
+    test('should be correct when handler takes too little time', runWithFakeTime(async function() {
       let i = new subject({
         maxIterationTime: 3000,
         minIterationTime: 100000,
@@ -471,23 +488,17 @@ suite(testing.suiteName(), () => {
         'iteration-start',
         'iteration-failure',
         'iteration-complete',
-        'stopped',
         'error',
+        'stopped',
       ]);
 
-      i.on('started', () => {
-        i.stop();
-      });
-
-      await new Promise(resolve => {
-        i.on('error', resolve);
-        i.start();
-      });
+      i.start();
+      await i.stop();
 
       events.assert();
     }));
 
-    test('should be correct when handler takes too long (incremental watchdog)', testing.runWithFakeTime(async function() {
+    test('should be correct when handler takes too long (incremental watchdog)', runWithFakeTime(async function() {
       let i = new subject({
         maxIterationTime: 5000,
         maxFailures: 1,
@@ -503,23 +514,17 @@ suite(testing.suiteName(), () => {
         'iteration-start',
         'iteration-failure',
         'iteration-complete',
-        'stopped',
         'error',
+        'stopped',
       ]);
 
-      i.on('started', () => {
-        i.stop();
-      });
-
-      await new Promise(resolve => {
-        i.on('error', resolve);
-        i.start();
-      });
+      i.start();
+      await i.stop();
 
       events.assert();
     }));
 
-    test('should be correct when handler takes too long (overall time)', testing.runWithFakeTime(async function() {
+    test('should be correct when handler takes too long (overall time)', runWithFakeTime(async function() {
       let i = new subject({
         maxIterationTime: 3000,
         maxFailures: 1,
@@ -534,23 +539,17 @@ suite(testing.suiteName(), () => {
         'iteration-start',
         'iteration-failure',
         'iteration-complete',
-        'stopped',
         'error',
+        'stopped',
       ]);
 
-      i.on('started', () => {
-        i.stop();
-      });
-
-      await new Promise(resolve => {
-        i.on('error', resolve);
-        i.start();
-      });
+      i.start();
+      await i.stop();
 
       events.assert();
     }));
 
-    test('should be correct with mixed results', testing.runWithFakeTime(async function() {
+    test('should be correct with mixed results', runWithFakeTime(async function() {
       let iterations = 0;
 
       let i = new subject({
@@ -587,13 +586,12 @@ suite(testing.suiteName(), () => {
         'iteration-start',
         'iteration-success',
         'iteration-complete',
-        'completed',
         'stopped',
       ]);
 
       i.start();
 
-      // stop and wait for the stop to take effect..
+      // wait for the maxIterations to take effect..
       await new Promise(resolve => {
         i.on('stopped', resolve);
       });
