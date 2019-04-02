@@ -51,8 +51,8 @@ All times are in milliseconds.
 * `waitTime`: the time to wait between finishing an iteration and beginning the next.
 * `maxIterations` (optional, default infinite): Complete up to this many
   iterations and then successfully exit.  Failed iterations count.
-* `maxFailures` (optional, default 7): number of failures to tolerate before considering the iteration loop a failure by emitting an `error` event.
-  This provides a balance between quick recovery from transient errors and the crashing the process for persistent errors.
+* `maxFailures` (optional, default 0): number of consecutive failures to tolerate before considering the iteration loop a failure by emitting an `error` event.
+  Disabled if set to 0.
 * `watchdogTime`: this is the time within which `watchdog.touch` must be called or the iteration is considered a failure.
   If this value is omitted or zero, the watchdog is disabled.
 
@@ -74,6 +74,17 @@ It allows each iteration to accumulate data and use on following iterations.
 Because this object is passed in by reference, changes to properties on the object are saved, but reassignment of the state variable will not be saved.
 In other words, do `state.data = {count: 1}` and not `state = {count:1}`.
 
+If `maxFailures` is set, then the `Iterate` instance will emit an `error` event when the specified number of iteration failures have occurred with out intervening successful iterations.
+This provides an escape from the situation where an application is "wedged" and some external action is required to restart it.
+Typically, this entails exiting the process and allowing the hosting environment to automatically restart it.
+Since all of the intervening failures were logged, this can be as simple as:
+
+```js
+iterator.on('error', () => {
+  process.exit(1);
+});
+```
+
 ## Events
 
 Iterate is an event emitter.  When relevant events occur, the following events
@@ -86,6 +97,5 @@ exit with a non-zero exit code when it would otherwise be emitted.
 * `iteration-success`: when an individual iteration completes successfully
 * `iteration-failure`: when an individual iteration fails
 * `iteration-complete`: when an iteration completes, regardless of outcome
-* `error`: when the iteration is considered to be concluded and provides
-  list of iteration errors.  If there are no handlers and this event is
-  emitted, an exception will be thrown in a process.nextTick callback.
+* `error`: when the Iterate instance has failed (due to reaching maxFailures),
+  containing the most recent error.

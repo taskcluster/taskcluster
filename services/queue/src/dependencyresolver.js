@@ -52,6 +52,11 @@ class DependencyResolver {
         await Promise.all(loops);
       },
     });
+
+    this.iterator.on('error', () => {
+      this.monitor.alert('iteration failed repeatedly; terminating process');
+      process.exit(1);
+    });
   }
 
   /** Start polling for resolved-task messages */

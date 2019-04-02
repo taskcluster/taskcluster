@@ -295,47 +295,8 @@ suite(testing.suiteName(), () => {
     i.stop();
 
     assume(i.keepGoing).is.not.ok();
-    // yep, err is an Array..
-    assume(err.length).equals(1);
-    assume(err[0]).matches(/uhoh/);
+    assume(err).matches(/uhoh/);
   }));
-
-  test('should cause uncaughtException when error event is unhandled', done => {
-    // NOTE: Mocha has it's own uncaught exception listener.  If we were to
-    // leave it in force during this test, we'd end up getting two results from
-    // the test.  One failure from the mocha handler and one pass from our own
-    // handler.  This is obviously not ideal, and it's sort of a risk that we
-    // mess up the uncaught exception handling for future tests
-
-    let origListeners = process.listeners('uncaughtException');
-    process.removeAllListeners('uncaughtException');
-
-    let uncaughtHandler = function(err) {
-      process.removeAllListeners('uncaughtException');
-      for (let listener of origListeners) {
-        process.on('uncaughtException', listener);
-      }
-      i.stop();
-      assume(i.keepGoing).is.not.ok();
-      done();
-    };
-
-    process.on('uncaughtException', uncaughtHandler);
-
-    let i = new subject({
-      maxIterationTime: 12000,
-      maxFailures: 1,
-      waitTime: 1000,
-      handler: async (watchdog, state) => {
-        return new Promise((res, rej) => {
-          rej(new Error('hi'));
-        });
-      },
-    });
-
-    i.start();
-
-  });
 
   test('should share state between iterations', runWithFakeTime(async function() {
     let iterations = 0;
