@@ -1,135 +1,24 @@
 subscription TaskGroupSubscription($taskGroupId: ID!, $subscriptions: [TaskSubscriptions]!) {
   tasksSubscriptions(taskGroupId: $taskGroupId, subscriptions: $subscriptions) {
-    ...on TaskDefined {
-      status {
-        state
-        runs {
-          # Required to properly update the cache
-          runId
-        }
-        # Required to properly update the cache
-        taskId
-        taskGroupId
-        task {
-          metadata {
-            name
-          }
-          taskGroupId
-          status {
-            taskId
-            state
-          }
-        }
-      }
+    state
+    runs {
+      # Required to properly update the cache
+      runId
     }
-
-    ...on TaskPending {
-      status {
-        state
-        runs {
-          # Required to properly update the cache
-          runId
-        }
-        # Required to properly update the cache
-        taskId
-        taskGroupId
-        task {
-          metadata {
-            name
-          }
-          taskGroupId
-          status {
-            taskId
-            state
-          }
-        }
+    # Required to properly update the cache
+    taskId
+    taskGroupId
+    task {
+      metadata {
+        name
       }
-    }
-    ...on TaskRunning {
+      taskGroupId
+      taskId
       status {
+        taskId
         state
         runs {
-          # Required to properly update the cache
           runId
-        }
-        # Required to properly update the cache
-        taskId
-        taskGroupId
-        task {
-          metadata {
-            name
-          }
-          taskGroupId
-          status {
-            taskId
-            state
-          }
-        }
-      }
-    }
-    ...on TaskCompleted {
-      status {
-        state
-        runs {
-          # Required to properly update the cache
-          runId
-        }
-        # Required to properly update the cache
-        taskId
-        taskGroupId
-        task {
-          metadata {
-            name
-          }
-          taskGroupId
-          status {
-            taskId
-            state
-          }
-        }
-      }
-    }
-    ...on TaskFailed {
-      status {
-        state
-        runs {
-          # Required to properly update the cache
-          runId
-        }
-        # Required to properly update the cache
-        taskId
-        taskGroupId
-        task {
-          metadata {
-            name
-          }
-          taskGroupId
-          status {
-            taskId
-            state
-          }
-        }
-      }
-    }
-    ...on TaskException {
-      status {
-        state
-        runs {
-          # Required to properly update the cache
-          runId
-        }
-        # Required to properly update the cache
-        taskId
-        taskGroupId
-        task {
-          metadata {
-            name
-          }
-          taskGroupId
-          status {
-            taskId
-            state
-          }
         }
       }
     }

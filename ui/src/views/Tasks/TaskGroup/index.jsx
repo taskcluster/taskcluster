@@ -200,12 +200,11 @@ export default class TaskGroup extends Component {
       },
       updateQuery(previousResult, { subscriptionData }) {
         const { tasksSubscriptions } = subscriptionData.data;
-        const newTask = tasksSubscriptions.status.task;
         // Make sure data is not from another task group which
         // can happen when a message is in flight and a user searches for
         // a different task group.
         const isFromSameTaskGroupId =
-          newTask.status.taskGroupId === taskGroupId;
+          tasksSubscriptions.taskGroupId === taskGroupId;
 
         if (
           !previousResult ||
@@ -217,27 +216,29 @@ export default class TaskGroup extends Component {
 
         let taskExists = false;
         const edges = previousResult.taskGroup.edges.map(edge => {
-          if (newTask.status.taskId === edge.node.status.taskId) {
-            taskExists = true;
-
-            return dotProp.set(edge, 'node', node =>
-              dotProp.set(node, 'state', newTask.status.state)
-            );
+          if (tasksSubscriptions.taskId !== edge.node.status.taskId) {
+            return edge;
           }
 
-          return edge;
+          taskExists = true;
+
+          return dotProp.set(edge, 'node', node =>
+            dotProp.set(node, 'status', status =>
+              dotProp.set(status, 'state', tasksSubscriptions.state)
+            )
+          );
         });
 
         if (!taskExists) {
-          const task = {
+          const node = {
             // eslint-disable-next-line no-underscore-dangle
             __typename: 'TasksEdge',
             node: {
-              ...cloneDeep(newTask),
+              ...cloneDeep(tasksSubscriptions.task),
             },
           };
 
-          edges.push(task);
+          edges.push(node);
         }
 
         return dotProp.set(previousResult, 'taskGroup', taskGroup =>
@@ -379,7 +380,7 @@ export default class TaskGroup extends Component {
             return previousResult;
           }
 
-          const result = dotProp.set(previousResult, 'taskGroup', taskGroup =>
+          return dotProp.set(previousResult, 'taskGroup', taskGroup =>
             dotProp.set(
               dotProp.set(
                 taskGroup,
@@ -390,8 +391,6 @@ export default class TaskGroup extends Component {
               pageInfo
             )
           );
-
-          return result;
         }
       },
     });

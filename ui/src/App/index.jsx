@@ -45,43 +45,13 @@ export default class App extends Component {
     fragmentMatcher: this.fragmentMatcher,
     /* eslint-disable no-underscore-dangle */
     dataIdFromObject: object => {
-      const taskId =
-        object.taskId ||
-        ('status' in object && object.status.taskId) ||
-        ('node' in object &&
-          'status' in object.node &&
-          object.node.status.taskId);
-      const status = object.status || ('task' in object && object.task.status);
-      const runs = object.runs || (status && status.runs) || [];
-      const runId = runs.length - 1;
-
       switch (object.__typename) {
-        case 'TaskDefined': {
-          return `${taskId}/${runId}` || defaultDataIdFromObject(object);
-        }
-
-        case 'TaskPending': {
-          return `${taskId}/${runId}` || defaultDataIdFromObject(object);
-        }
-
-        case 'TaskRunning': {
-          return `${taskId}/${runId}` || defaultDataIdFromObject(object);
-        }
-
-        case 'TaskCompleted': {
-          return `${taskId}/${runId}` || defaultDataIdFromObject(object);
-        }
-
-        case 'TaskFailed': {
-          return `${taskId}/${runId}` || defaultDataIdFromObject(object);
-        }
-
-        case 'TaskException': {
-          return `${taskId}/${runId}` || defaultDataIdFromObject(object);
-        }
-
         case 'TaskStatus': {
-          return `${taskId}/${runId}` || defaultDataIdFromObject(object);
+          const taskId = object.taskId || null;
+
+          return taskId
+            ? `${object.taskId}-${object.__typename}`
+            : defaultDataIdFromObject(object);
         }
 
         default: {
