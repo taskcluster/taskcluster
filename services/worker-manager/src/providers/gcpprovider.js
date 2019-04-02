@@ -46,13 +46,14 @@ class GCPProvider extends Provider {
   async listWorkers({states, workerTypes}) {
     console.log(`Got states: ${states}, and worker types: ${workerTypes}`);
 
-    let filter = workerTypes.map(wt => `(labels.worker-type = ${wt})`).join(' OR ');
+    let wtFilter = workerTypes.map(wt => `labels.worker-type = ${wt}`).join(' OR ');
 
-    const instances = (await this.gcpCompute.getVMs({
-      autoPaginate: false,
-      filter,
-    }))[0]
-      .filter(i => states.includes(this.convertFromGCPStatus(i.metadata.status)));
+    let gcpStates = states.flatMap(this.convertToGCPStatus);
+    let sFilter = gcpStates.map(s => `status = ${s}`).join(' OR ');
+
+    let filter = `(${wtFilter}) AND (${sFilter})`;
+
+    const instances = (await this.gcpCompute.getVMs({filter}))[0];
 
     return instances.map(i => new Worker({
       id: i.id, // i.id same as i.name (must be unique); i.metadata.id is numerical id of the instance
