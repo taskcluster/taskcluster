@@ -89,10 +89,7 @@ class DeadlineResolver {
 
   /** Terminate iteration, returns promise that polling is stopped */
   terminate() {
-    return new Promise((res, rej) => {
-      this.iterator.once('stopped', res);
-      this.iterator.stop();
-    });
+    return this.iterator.stop();
   }
 
   /** Poll for messages and handle them in a loop */

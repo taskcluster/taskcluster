@@ -57,7 +57,10 @@ All times are in milliseconds.
   If this value is omitted or zero, the watchdog is disabled.
 
 The main function of the `Iterate` instance is to call `handler` repeatedly.
-This is an async function, receiving two parameters -- `(watchdog, state)`.
+This begins after a call to the `Iterate` instance's `start()` method (which returns immediately).
+To stop iteration, call the `stop()` method; this returns a Promise that resolves when any ongoing iterations are complete.
+
+The handler is an async function, receiving two parameters -- `(watchdog, state)`.
 
 The `watchdog` parameter is basically a ticking timebomb that must be defused frequently by calling its `.touch()` method.
 It has methods `.start()`, `.stop()` and `.touch()` and emits `expired` when it expires.
@@ -77,10 +80,8 @@ Iterate is an event emitter.  When relevant events occur, the following events
 are emitted.  If the `error` event does not have a listener, the process will
 exit with a non-zero exit code when it would otherwise be emitted.
 
-* `started`: when overall iteration starts
-* `stopped`: when overall iteration is finished
-* `completed`: only when we have a max number of iterations, when we
-  finish the last iteration
+* `started`: when Iterate instance starts
+* `stopped`: when Iterate instance has stopped
 * `iteration-start`: when an individual iteration starts
 * `iteration-success`: when an individual iteration completes successfully
 * `iteration-failure`: when an individual iteration fails

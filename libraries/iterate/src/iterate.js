@@ -14,8 +14,8 @@ class Iterate extends events.EventEmitter {
     // Set default values
     opts = Object.assign({}, {
       watchdogTime: 0,
-      maxIterations: 0,
       maxFailures: 7,
+      maxIterations: 0,
       minIterationTime: 0,
     }, opts);
 
@@ -61,6 +61,12 @@ class Iterate extends events.EventEmitter {
 
     // Decide whether iteration should continue
     this.keepGoing = false;
+
+    // Called when stop is called (used to break out of waitTime sleep)
+    this.onStopCall = null
+
+    // Fires when stopped, only set when started
+    this.stopPromise = null;
 
     // We want to be able to share state between iterations
     this.sharedState = {};
@@ -149,27 +155,32 @@ class Iterate extends events.EventEmitter {
       // When we reach the end of a set number of iterations, we'll stop
       if (this.maxIterations > 0 && currentIteration >= this.maxIterations) {
         debug(`reached max iterations of ${this.maxIterations}`);
-        this.stop();
-        this.emit('completed');
-        // fall through to also send 'stopped'
+        this.keepGoing = false;
       }
 
       if (failures.length >= this.maxFailures) {
         this.__emitFatalError(failures);
-        return;
+        break;
       } else if (!this.keepGoing) {
-        this.stop();
-        this.emit('stopped');
-        return;
+        break;
       }
 
       if (this.waitTime > 0) {
-        debug('waiting for next iteration');
-        await new Promise(resolve => {
+        debug('waiting for next iteration or stop');
+        const stopPromise = new Promise(resolve => {
+          this.onStopCall = resolve;
+        });
+        const waitTimePromise = new Promise(resolve => {
           this.currentTimeout = setTimeout(resolve, this.waitTime);
         });
+        await Promise.race([stopPromise, waitTimePromise]);
+        this.onStopCall = null;
+        if (!this.keepGoing) {
+          break;
+        }
       }
     }
+    this.emit('stopped');
   }
 
   /**
@@ -181,8 +192,6 @@ class Iterate extends events.EventEmitter {
     if (this.currentTimeout) {
       clearTimeout(this.currentTimeout);
     }
-    this.stop();
-    this.emit('stopped');
     if (this.monitor) {
       let err = new Error('Fatal iteration error');
       err.failures = failures;
@@ -204,6 +213,9 @@ class Iterate extends events.EventEmitter {
 
   start() {
     debug('starting');
+    this.stoppedPromise = new Promise(resolve => {
+      this.on('stopped', resolve);
+    });
     this.keepGoing = true;
 
     // Two reasons we call it this way:
@@ -222,7 +234,10 @@ class Iterate extends events.EventEmitter {
 
   stop() {
     this.keepGoing = false;
-    debug('stopped');
+    if (this.onStopCall) {
+      this.onStopCall();
+    }
+    return this.stoppedPromise;
   }
 }
 
