@@ -82,10 +82,9 @@ exit with a non-zero exit code when it would otherwise be emitted.
 * `completed`: only when we have a max number of iterations, when we
   finish the last iteration
 * `iteration-start`: when an individual iteration starts
-* `iteration-success`: when an individual iteration completes with
-  success.  provides the value that handler resolves with
-* `iteration-failure`: provides iteration error
-* `iteration-complete`: when an iteration is complete regardless of outcome
+* `iteration-success`: when an individual iteration completes successfully
+* `iteration-failure`: when an individual iteration fails
+* `iteration-complete`: when an iteration completes, regardless of outcome
 * `error`: when the iteration is considered to be concluded and provides
   list of iteration errors.  If there are no handlers and this event is
   emitted, an exception will be thrown in a process.nextTick callback.
