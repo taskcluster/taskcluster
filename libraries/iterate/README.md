@@ -57,7 +57,7 @@ All times are in milliseconds.
   If this value is omitted or zero, the watchdog is disabled.
 
 The main function of the `Iterate` instance is to call `handler` repeatedly.
-This begins after a call to the `Iterate` instance's `start()` method (which returns immediately).
+This begins after a call to the `Iterate` instance's `start()` method, which returns a Promise that resolves once the first iteration begins (on the next tick).
 To stop iteration, call the `stop()` method; this returns a Promise that resolves when any ongoing iterations are complete.
 
 The handler is an async function, receiving two parameters -- `(watchdog, state)`.
