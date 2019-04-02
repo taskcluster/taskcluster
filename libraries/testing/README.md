@@ -353,8 +353,8 @@ This function assumes the following config values:
 
 And assumes that the `exports` argument has a `load` function corresponding to a sticky loader.
 
-Utilities
----------
+Time
+----
 
 ### Sleep
 
@@ -363,6 +363,30 @@ The `sleep` function returns a promise that resolves after a delay.
 **NOTE** tests that depend on timing are notoriously unreliable, and suggest
 poorly-isolated tests. Consider writing the tests to use a "fake" clock or to
 poll for the expected state.
+
+### Fake Time
+
+When testing functionality that involves timers, it is helpful to be able to simulate the rapid passage of time.
+The `testing.runWithFakeTime(<fn>, {mock, maxTime, ...})` uses [zurvan](https://github.com/tlewowski/zurvan) to do just that.
+It is used to wrap an argument to a Mocha `test` function, avoiding interfering with Mocha's timers:
+```js
+test('noun should verb', runWithFakeTime(async function() {
+  ...
+}, {
+  mock,
+  maxTime: 60000,
+}));
+```
+
+The `maxTime` option is the total amount of simulated time to spend running the test; it defaults to 30 seconds.
+
+The `mock` option is for use with `mockSuite` and can be omitted otherwise.
+Fake time is only used when mocking; in a real situation, we are interacting with real services and must use the same clock they do.
+
+Any other options are passed directly to zurvan.
+
+Utilities
+---------
 
 ### Poll
 

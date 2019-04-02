@@ -10,8 +10,6 @@ const mockAwsS3 = require('mock-aws-s3');
 const nock = require('nock');
 const FakeBlobStore = require('./fake_blob_store');
 const {fakeauth, stickyLoader, Secrets, withEntity} = require('taskcluster-lib-testing');
-const zurvan = require('zurvan');
-const timers = require('timers');
 const {FakeClient} = require('taskcluster-lib-pulse');
 
 const helper = module.exports;
@@ -64,58 +62,6 @@ setup(async function() {
   helper.monitor = await helper.load('monitor');
   helper.monitor.reset();
 });
-
-/**
- * helper.runWithFakeTime(<fn>, <time>), will run async function <fn> for <time>
- * fake milliseconds.  It is intended to wrap the function argument to Mocha's `test`.
- *
- * Fake time is only used when mock is true; in a real situation, we are interacting with
- * real services and must use the same clock they do.
- */
-helper.runWithFakeTime = (fn, mock, maxTime=30000) => {
-  if (!mock) {
-    // if not mocking, we can't use fake time as it will cause all sorts
-    // of timeouts to occur immediately
-    return fn;
-  }
-  return async function wrap() {
-    await zurvan.interceptTimers({
-      systemTime: new Date(),
-      denyImplicitTimer: true,
-      throwOnInvalidClearTimer: false, // superagent does this..
-      rejectOnCallbackFailure: true,
-      fakeNodeDedicatedTimers: false, // so we can call a real timers.setImmediate
-    });
-
-    let finished, err;
-    this.slow(maxTime);
-    fn.apply(this, []).then(
-      () => {
-        finished = true;
-      },
-      e => {
-        finished = true;
-        err = e;
-      });
-
-    // intermingle setImmediate calls with advanceTime calls, so that things zurvan cannot
-    // successfully fake (like JS files internal to Node) get a chance to run.
-    let time = maxTime;
-    while (time > 0 && !finished) {
-      await zurvan.advanceTime(100);
-      time -= 100;
-      await new Promise(resolve => timers.setImmediate(resolve));
-    }
-
-    await zurvan.releaseTimers();
-    if (err) {
-      throw err;
-    }
-    if (!finished) {
-      throw new Error(`test case not finished after faked passage of ${maxTime}ms`);
-    }
-  };
-};
 
 /**
  * Set up to use mock-aws-s3 for S3 operations when mocking.

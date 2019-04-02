@@ -37,7 +37,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     },
   });
 
-  test('can claimTask', helper.runWithFakeTime(async function() {
+  test('can claimTask', testing.runWithFakeTime(async function() {
     const taskId = slugid.v4();
 
     debug('### Creating task');
@@ -98,7 +98,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     assume(takenUntil4.getTime()).is.greaterThan(takenUntil.getTime() - 1);
     assume(takenUntil4.getTime()).is.greaterThan(takenUntil2.getTime() - 1);
     assume(takenUntil4.getTime()).is.greaterThan(takenUntil3.getTime() - 1);
-  }, mock));
+  }, {mock}));
 
   test('claimTask is idempotent', async () => {
     const taskId = slugid.v4();

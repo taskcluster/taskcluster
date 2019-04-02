@@ -1,12 +1,10 @@
-exports.PulseTestReceiver = require('./pulse');
-exports.schemas = require('./schemas');
-exports.fakeauth = require('./fakeauth');
-exports.stickyLoader = require('./stickyloader');
-exports.Secrets = require('./secrets');
-exports.poll = require('./poll');
-exports.sleep = require('./sleep');
-exports.withEntity = require('./with-entity');
-
-exports.createMockAuthServer = () => {
-  throw new Error('No longer available; use fakeauth instead');
+module.exports = {
+  PulseTestReceiver: require('./pulse'),
+  schemas: require('./schemas'),
+  fakeauth: require('./fakeauth'),
+  stickyLoader: require('./stickyloader'),
+  Secrets: require('./secrets'),
+  poll: require('./poll'),
+  ...require('./time'),
+  withEntity: require('./with-entity'),
 };

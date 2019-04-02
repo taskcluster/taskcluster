@@ -1,6 +1,6 @@
 const Debug = require('debug');
 const debug = Debug('taskcluster-lib-testing:poll');
-const sleep = require('./sleep');
+const {sleep} = require('./time');
 
 /**
  * Poll a function that returns a promise until the promise is resolved without

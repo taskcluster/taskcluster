@@ -4,6 +4,7 @@ const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
 const assume = require('assume');
 const helper = require('./helper');
+const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withAmazonIPRanges(mock, skipping);
@@ -34,7 +35,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     };
   };
 
-  test('claimWork from empty queue', helper.runWithFakeTime(async function() {
+  test('claimWork from empty queue', testing.runWithFakeTime(async function() {
     helper.scopes(
       'queue:claim-work:no-provisioner-extended-extended/' + workerType,
       'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
@@ -48,7 +49,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     });
     assert(result.tasks.length === 0, 'Did not expect any claims');
     assert(new Date() - started >= 20 * 1000, 'Expected 20s sleep');
-  }, mock, 25000));
+  }, {mock, maxTime: 25000}));
 
   test('claimWork requires scopes', async () => {
     // wrong provisionerId scope
