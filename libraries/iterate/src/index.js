@@ -68,9 +68,6 @@ class Iterate extends events.EventEmitter {
     // Fires when stopped, only set when started
     this.stopPromise = null;
 
-    // We want to be able to share state between iterations
-    this.sharedState = {};
-
     // Store the iteration timeout so that a `.stop()` call during an iteration
     // inhibits a handler from running
     this.currentTimeout = null;
@@ -99,7 +96,7 @@ class Iterate extends events.EventEmitter {
       watchdog.start();
       await Promise.race([
         timeoutRejector,
-        Promise.resolve(this.handler(watchdog, this.sharedState)),
+        Promise.resolve(this.handler(watchdog)),
       ]);
     } finally {
       // stop the timers regardless of success or failure

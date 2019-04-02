@@ -17,7 +17,7 @@ i = new Iterate({
   maxIterationTime: 10000,
   watchdogTime: 5000,
   waitTime: 2000,
-  handler: async (watchdog, state) => {
+  handler: async watchdog => {
     await doSomeWork();
     watchdog.touch();  // tell Iterate that we`re doing work still
     await doMoreWork();
@@ -39,7 +39,7 @@ i.on(`stopped`, () => {
 The constructor for the `Iterate` class takes an options object, with the following properties.
 All times are in milliseconds.
 
-* `handler`: the async function to call repeatedly, called as `await handler(watchdog, state)`.
+* `handler`: the async function to call repeatedly, called as `await handler(watchdog)`.
   See details below.
 * `monitor` (optional): instance of a `taskcluster-lib-monitor` instance with a name appropriate for this iterate instance.
   This is used to report errors.
@@ -60,19 +60,13 @@ The main function of the `Iterate` instance is to call `handler` repeatedly.
 This begins after a call to the `Iterate` instance's `start()` method, which returns a Promise that resolves once the first iteration begins (on the next tick).
 To stop iteration, call the `stop()` method; this returns a Promise that resolves when any ongoing iterations are complete.
 
-The handler is an async function, receiving two parameters -- `(watchdog, state)`.
-
-The `watchdog` parameter is basically a ticking timebomb that must be defused frequently by calling its `.touch()` method.
+The handler is an async function, receiving one parameter -- `watchdog`.
+This is basically a ticking timebomb that must be defused frequently by calling its `.touch()` method (unless it is not enabled).
 It has methods `.start()`, `.stop()` and `.touch()` and emits `expired` when it expires.
-What it allows an implementor is the abilty to say that while the absolute maximum iteration interval (`maxIterationTime`), incremental progress should be made.
+What it allows an implementor is the abilty to say that within the absolute maximum iteration interval (`maxIterationTime`), incremental progress should be made.
 The idea here is that after each chunk of work in the handler, you run `.touch()`.
 If the `watchdogTime` duration elapses without a touch, then the iteration is considered faild.
 This way, you can have a handler that can be marked as failing without waiting the full `maxIterationTime`.
-
-The `state` parameter is an object that is passed in to the handler function.
-It allows each iteration to accumulate data and use on following iterations.
-Because this object is passed in by reference, changes to properties on the object are saved, but reassignment of the state variable will not be saved.
-In other words, do `state.data = {count: 1}` and not `state = {count:1}`.
 
 If `maxFailures` is set, then the `Iterate` instance will emit an `error` event when the specified number of iteration failures have occurred with out intervening successful iterations.
 This provides an escape from the situation where an application is "wedged" and some external action is required to restart it.

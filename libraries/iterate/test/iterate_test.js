@@ -74,7 +74,7 @@ suite(testing.suiteName(), () => {
       maxIterationTime: 3000,
       waitTime: 1000,
       watchDog: 0,
-      handler: async (watchdog, state) => {
+      handler: async watchdog => {
         debug('iterate!');
         iterations++;
         return 1;
@@ -107,7 +107,7 @@ suite(testing.suiteName(), () => {
       waitTime: 10,
       maxIterations: 5,
       watchDog: 0,
-      handler: async (watchdog, state) => {
+      handler: async watchdog => {
         await testing.sleep(500);
       },
     });
@@ -124,7 +124,7 @@ suite(testing.suiteName(), () => {
       waitTime: 1000,
       maxIterations: 2,
       watchDog: 0,
-      handler: async (watchdog, state) => {
+      handler: async watchdog => {
         await testing.sleep(500);
       },
     });
@@ -144,7 +144,7 @@ suite(testing.suiteName(), () => {
       waitTime: 10,
       maxIterations: 5,
       watchDog: 0,
-      handler: async (watchdog, state) => {
+      handler: async watchdog => {
         debug('iterate!');
         iterations++;
         return 1;
@@ -167,7 +167,7 @@ suite(testing.suiteName(), () => {
       watchdogTime: 1000,
       waitTime: 1000,
       maxFailures: 1,
-      handler: async (watchdog, state) => {
+      handler: async watchdog => {
         return testing.sleep(2000);
       },
     });
@@ -188,7 +188,7 @@ suite(testing.suiteName(), () => {
       maxIterationTime: 1000,
       waitTime: 1000,
       maxFailures: 1,
-      handler: async (watchdog, state) => {
+      handler: async watchdog => {
         watchdog.stop();
         return new Promise((res, rej) => {
           setTimeout(() => {
@@ -214,7 +214,7 @@ suite(testing.suiteName(), () => {
       maxIterationTime: 1000,
       waitTime: 1000,
       maxFailures: 100,
-      handler: async (watchdog, state) => {
+      handler: async watchdog => {
         throw new Error('uhoh');
       },
     });
@@ -235,7 +235,7 @@ suite(testing.suiteName(), () => {
       maxIterationTime: 1000,
       waitTime: 1000,
       maxFailures: 100,
-      handler: (watchdog, state) => {
+      handler: watchdog => {
         throw new Error('uhoh');
       },
     });
@@ -257,7 +257,7 @@ suite(testing.suiteName(), () => {
       minIterationTime: 10000,
       waitTime: 1000,
       watchDog: 0,
-      handler: async (watchdog, state) => {
+      handler: async watchdog => {
         await testing.sleep(100);
       },
     });
@@ -277,7 +277,7 @@ suite(testing.suiteName(), () => {
       maxIterationTime: 12000,
       maxFailures: 1,
       waitTime: 1000,
-      handler: async (watchdog, state) => {
+      handler: async watchdog => {
         throw new Error('uhoh');
       },
     });
@@ -293,43 +293,11 @@ suite(testing.suiteName(), () => {
     assume(err).matches(/uhoh/);
   }));
 
-  test('should share state between iterations', runWithFakeTime(async function() {
-    let iterations = 0;
-
-    const i = new subject({
-      maxIterationTime: 3000,
-      waitTime: 10,
-      maxIterations: 20,
-      maxFailures: 1,
-      watchDog: 0,
-      handler: async (watchdog, state) => {
-        if (!state.v) {
-          state.v = {count: 0};
-        }
-        assume(state.v.count === iterations);
-        state.v.count += 1;
-        iterations += 1;
-      },
-    });
-
-    let iterFailed = false;
-    i.on('iteration-failure', () => { iterFailed = true; });
-
-    i.start();
-    await testing.sleep(3000);
-
-    assume(iterations).equals(20);
-    assume(i.keepGoing).is.not.ok();
-    i.stop();
-    assume(i.keepGoing).is.not.ok();
-    assume(iterFailed).is.not.ok();
-  }));
-
   test('should emit correct events for single iteration', runWithFakeTime(async function() {
     const i = new subject({
       maxIterationTime: 3000,
       waitTime: 1000,
-      handler: async (watchdog, state) => {
+      handler: async watchdog => {
         debug('iterate!');
       },
     });
@@ -353,7 +321,7 @@ suite(testing.suiteName(), () => {
       maxIterationTime: 3000,
       maxIterations: 1,
       waitTime: 1000,
-      handler: async (watchdog, state) => {
+      handler: async watchdog => {
         debug('iterate!');
       },
     });
@@ -381,7 +349,7 @@ suite(testing.suiteName(), () => {
         maxIterations: 1,
         maxFailures: 1,
         waitTime: 1000,
-        handler: async (watchdog, state) => {
+        handler: async watchdog => {
           debug('iterate!');
           throw new Error('hi');
         },
@@ -407,7 +375,7 @@ suite(testing.suiteName(), () => {
         maxIterationTime: 3000,
         maxFailures: 1,
         waitTime: 1000,
-        handler: async (watchdog, state) => {
+        handler: async watchdog => {
           debug('iterate!');
           throw new Error('hi');
         },
@@ -434,7 +402,7 @@ suite(testing.suiteName(), () => {
         minIterationTime: 100000,
         maxFailures: 1,
         waitTime: 1000,
-        handler: async (watchdog, state) => {
+        handler: async watchdog => {
           return true;
         },
       });
@@ -460,7 +428,7 @@ suite(testing.suiteName(), () => {
         maxFailures: 1,
         watchdogTime: 100,
         waitTime: 1000,
-        handler: async (watchdog, state) => {
+        handler: async watchdog => {
           await testing.sleep(3000);
         },
       });
@@ -485,7 +453,7 @@ suite(testing.suiteName(), () => {
         maxIterationTime: 3000,
         maxFailures: 1,
         waitTime: 1000,
-        handler: async (watchdog, state) => {
+        handler: async watchdog => {
           await testing.sleep(6000);
         },
       });
@@ -513,7 +481,7 @@ suite(testing.suiteName(), () => {
         maxIterations: 6,
         maxFailures: 5,
         waitTime: 1000,
-        handler: async (watchdog, state) => {
+        handler: async watchdog=> {
           if (iterations++ % 2 === 0) {
             throw new Error('even, so failing');
           } else {
