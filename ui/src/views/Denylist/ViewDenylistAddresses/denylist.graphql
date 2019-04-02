@@ -1,0 +1,17 @@
+query DenylistedNotification($notificationsConnection: PageConnection, $filter: JSON) {
+  listDenylistAddresses(connection: $notificationsConnection, filter: $filter) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      cursor
+      previousCursor
+      nextCursor
+    }
+    edges {
+      node {
+        notificationAddress
+        notificationType
+      }
+    }
+  }
+}
