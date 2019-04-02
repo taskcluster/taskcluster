@@ -1,0 +1,10 @@
+apiVersion: v1
+name: taskcluster
+version: 0.0.1 # TODO Get this from global version
+description: A task execution framework that supports Mozilla's continuous integration and release processes.
+sources:
+  - https://github.com/taskcluster/taskcluster
+maintainers:
+  - name: The Taskcluster Team
+    url: https://github.com/taskcluster/taskcluster#contributors
+icon: http://media.taskcluster.net/logo/logo.png

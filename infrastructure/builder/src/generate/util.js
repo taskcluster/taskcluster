@@ -92,3 +92,13 @@ exports.gitLsFiles = async () => {
 exports.readYAML = async filename => {
   return yaml.safeLoad(await exports.readFile(filename));
 };
+
+/**
+ * Asynchronously write a yaml file with potentially many documents
+ */
+exports.writeYAML = async (filename, ...objects) => {
+  const res = objects.map(obj => '---\n' + yaml.safeDump(obj, {
+    sortKeys: true,
+  })).join('');
+  return await writeFile(filename, res);
+};
