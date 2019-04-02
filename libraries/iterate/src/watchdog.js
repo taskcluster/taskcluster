@@ -1,4 +1,4 @@
-let events = require('events');
+const events = require('events');
 
 /**
  * This is a watch dog timer.  Think of it as a ticking timebomb which will

@@ -1,6 +1,6 @@
-let WatchDog = require('./watchdog');
-let debug = require('debug')('iterate');
-let events = require('events');
+const WatchDog = require('./watchdog');
+const debug = require('debug')('iterate');
+const events = require('events');
 
 /**
  * The Iterate Class.  See README.md for explanation of constructor
@@ -78,13 +78,13 @@ class Iterate extends events.EventEmitter {
 
   async single_iteration() {
     debug('running handler');
-    let start = new Date();
-    let watchdog = new WatchDog(this.watchdogTime);
+    const start = new Date();
+    const watchdog = new WatchDog(this.watchdogTime);
     let maxIterationTimeTimer;
 
     // build a promise that will reject when either the watchdog
     // times out or the maxIterationTimeTimer expires
-    let timeoutRejector = new Promise((resolve, reject) => {
+    const timeoutRejector = new Promise((resolve, reject) => {
       watchdog.on('expired', () => {
         debug('watchdog expired');
         reject(new Error('watchdog exceeded'));
@@ -107,7 +107,7 @@ class Iterate extends events.EventEmitter {
       watchdog.stop();
     }
 
-    let duration = new Date() - start;
+    const duration = new Date() - start;
     if (this.minIterationTime > 0 && duration < this.minIterationTime) {
       throw new Error('Handler duration was less than minIterationTime');
     }

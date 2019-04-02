@@ -1,6 +1,6 @@
-let subject = require('../src/watchdog');
-let assume = require('assume');
-let testing = require('taskcluster-lib-testing');
+const subject = require('../src/watchdog');
+const assume = require('assume');
+const testing = require('taskcluster-lib-testing');
 
 suite('watchdog', function() {
   let events;
@@ -17,7 +17,7 @@ suite('watchdog', function() {
   };
 
   test('should emit expired event', runWithFakeTime(async function() {
-    let w = new subject(1 * 1000);
+    const w = new subject(1 * 1000);
     listen(w);
     w.start();
     await testing.sleep(1000);
@@ -27,7 +27,7 @@ suite('watchdog', function() {
   }));
 
   test('should not expire early', runWithFakeTime(async function() {
-    let w = new subject(1 * 1000);
+    const w = new subject(1 * 1000);
     listen(w);
     w.start();
     await testing.sleep(999);
@@ -36,7 +36,7 @@ suite('watchdog', function() {
   }));
 
   test('should expire on time', runWithFakeTime(async function() {
-    let w = new subject(1 * 1000);
+    const w = new subject(1 * 1000);
     listen(w);
     w.start();
     await testing.sleep(1000);
@@ -47,7 +47,7 @@ suite('watchdog', function() {
   }));
 
   test('should not expire twice', runWithFakeTime(async function() {
-    let w = new subject(1 * 1000);
+    const w = new subject(1 * 1000);
     listen(w);
     w.start();
     await testing.sleep(3000);
@@ -58,7 +58,7 @@ suite('watchdog', function() {
   }));
 
   test('touching should reset timer', runWithFakeTime(async function() {
-    let w = new subject(1 * 1000);
+    const w = new subject(1 * 1000);
     listen(w);
     w.start();
     // We do this three times to ensure that the
