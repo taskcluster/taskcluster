@@ -49,15 +49,18 @@ class Provisioner extends WMObject {
     this.iterationGap = iterationGap;
 
     this.iterate = new Iterate({
-      maxFailures: 30, // We really don't want it to crash
+      maxFailures: 10,
       maxIterationTime: 300000,
       waitTime: iterationGap,
       handler: async () => {
         await this.provision();
       },
     });
-    // TODO:
-    // make sure that iteration failures have a handler that's useful
+
+    this.iterate.on('error', () => {
+      console.log('iteration failed repeatedly; terminating process');
+      process.exit(1);
+    });
   }
 
   /**

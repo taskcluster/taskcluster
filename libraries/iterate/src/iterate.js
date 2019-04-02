@@ -14,7 +14,7 @@ class Iterate extends events.EventEmitter {
     // Set default values
     opts = Object.assign({}, {
       watchdogTime: 0,
-      maxFailures: 7,
+      maxFailures: 0,
       maxIterations: 0,
       minIterationTime: 0,
     }, opts);
@@ -86,6 +86,7 @@ class Iterate extends events.EventEmitter {
     // times out or the maxIterationTimeTimer expires
     let timeoutRejector = new Promise((resolve, reject) => {
       watchdog.on('expired', () => {
+        debug('watchdog expired');
         reject(new Error('watchdog exceeded'));
       });
 
@@ -161,10 +162,11 @@ class Iterate extends events.EventEmitter {
         this.keepGoing = false;
       }
 
-      if (failures.length >= this.maxFailures) {
-        this.__emitFatalError(failures);
-        break;
-      } else if (!this.keepGoing) {
+      if (this.maxFailures > 0 && failures.length >= this.maxFailures) {
+        this.emit('error', failures[failures.length - 1]);
+      }
+
+      if (!this.keepGoing) {
         break;
       }
 
@@ -188,31 +190,6 @@ class Iterate extends events.EventEmitter {
       }
     }
     this.emit('stopped');
-  }
-
-  /**
-   * Special function which knows how to emit the final error and then throw an
-   * unhandled exception where appropriate.  Also stop trying to iterate
-   * further.
-   */
-  __emitFatalError(failures) {
-    if (this.monitor) {
-      let err = new Error('Fatal iteration error');
-      err.failures = failures;
-      this.monitor.reportError(err);
-    }
-    if (this.listeners('error').length > 0) {
-      this.emit('error', failures);
-    } else {
-      debug('fatal error:');
-      for (let x of failures) {
-        debug(`  * ${x.stack || x}`);
-      }
-      debug('trying to crash process');
-      process.nextTick(() => {
-        throw new Error(`Errors:\n=====\n${failures.map(x => x.stack || x).join('=====\n')}`);
-      });
-    }
   }
 
   start() {
