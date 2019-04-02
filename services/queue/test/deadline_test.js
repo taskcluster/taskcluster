@@ -36,7 +36,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     return {taskId: slugid.v4(), task};
   };
 
-  test('Resolve unscheduled task deadline', helper.runWithFakeTime(async () => {
+  test('Resolve unscheduled task deadline', testing.runWithFakeTime(async () => {
     const {taskId, task} = makeTask();
 
     debug('### Define task');
@@ -74,9 +74,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     debug('### Validate task status');
     const r2 = await helper.queue.status(taskId);
     assume(r2.status.state).equals('exception');
-  }, mock));
+  }, {mock}));
 
-  test('Resolve pending task deadline', helper.runWithFakeTime(async () => {
+  test('Resolve pending task deadline', testing.runWithFakeTime(async () => {
     const {taskId, task} = makeTask();
 
     debug('### Creating task');
@@ -105,9 +105,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     debug('### Validate task status');
     const r2 = await helper.queue.status(taskId);
     assume(r2.status.state).deep.equals('exception');
-  }, mock));
+  }, {mock}));
 
-  test('Resolve running task deadline', helper.runWithFakeTime(async () => {
+  test('Resolve running task deadline', testing.runWithFakeTime(async () => {
     const {taskId, task} = makeTask();
 
     debug('### Creating task');
@@ -143,9 +143,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     debug('### Validate task status');
     const r3 = await helper.queue.status(taskId);
     assume(r3.status.state).deep.equals('exception');
-  }, mock));
+  }, {mock}));
 
-  test('Resolve completed task by deadline (no change)', helper.runWithFakeTime(async () => {
+  test('Resolve completed task by deadline (no change)', testing.runWithFakeTime(async () => {
     const {taskId, task} = makeTask();
 
     debug('### Creating task');
@@ -179,5 +179,5 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     debug('### Validate task status');
     const r4 = await helper.queue.status(taskId);
     assume(r4.status).deep.equals(r3.status);
-  }, mock));
+  }, {mock}));
 });

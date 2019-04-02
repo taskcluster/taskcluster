@@ -35,7 +35,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     };
   };
 
-  test('claimWork from empty queue', helper.runWithFakeTime(async function() {
+  test('claimWork from empty queue', testing.runWithFakeTime(async function() {
     helper.scopes(
       'queue:claim-work:no-provisioner-extended-extended/' + workerType,
       'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
@@ -49,7 +49,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     });
     assert(result.tasks.length === 0, 'Did not expect any claims');
     assert(new Date() - started >= 20 * 1000, 'Expected 20s sleep');
-  }, mock, 25000));
+  }, {mock, maxTime: 25000}));
 
   test('claimWork requires scopes', async () => {
     // wrong provisionerId scope
