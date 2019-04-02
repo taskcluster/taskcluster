@@ -90,10 +90,6 @@
   name = "github.com/taskcluster/taskcluster-client-go"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/taskcluster/websocktunnel"
-
-[[constraint]]
   name = "github.com/xeipuuv/gojsonschema"
   version = "1.0.0"
 

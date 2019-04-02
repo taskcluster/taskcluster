@@ -167,7 +167,33 @@ func TestStreamingProxy(t *testing.T) {
 // Test that a websocket connection is properly proxied via proxyHTTP
 func TestProxyHTTPWebsocket(t *testing.T) {
 	// a websocket server that reads a message, echoes it back, and closes
-	server := websockEchoServer(t)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		upgrader := websocket.Upgrader{
+			Subprotocols: websocket.Subprotocols(r),
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		}
+
+		wsconn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Could not upgrade: %s", err), 500)
+			return
+		}
+		defer wsconn.Close()
+
+		messageType, payload, err := wsconn.ReadMessage()
+		if err != nil {
+			t.Logf("server ReadMessage: %s", err)
+			return
+		}
+
+		err = wsconn.WriteMessage(messageType, payload)
+		if err != nil {
+			t.Logf("server WriteMessage: %s", err)
+			return
+		}
+	}))
 	defer server.Close()
 
 	u, _ := url.Parse(server.URL)
@@ -273,7 +299,18 @@ func TestProxyTCPPort(t *testing.T) {
 
 	// run a tcp echo server on that listener, that will send to
 	// connClosed once the connection is closed
-	connClosed := tcpEchoServer(tcpListener)
+	connClosed := make(chan bool, 0)
+	go func() {
+		stream, err := tcpListener.Accept()
+		if err != nil {
+			t.Logf("err accepting: %s", err)
+			return
+		}
+
+		io.Copy(stream, stream)
+		_ = stream.Close()
+		connClosed <- true
+	}()
 
 	// set up a WS proxy to that port
 	listener, listenPort, err := listenOnRandomPort()
