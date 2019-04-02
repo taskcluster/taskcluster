@@ -14,26 +14,6 @@ export default {
     ALL_COMPLETED: 'all-completed',
     ALL_RESOLVED: 'all-resolved',
   },
-  TaskSubscription: {
-    // eslint-disable-next-line consistent-return
-    __resolveType(obj) {
-      // eslint-disable-next-line default-case
-      switch (obj.status.state) {
-        case 'unscheduled':
-          return 'TaskDefined';
-        case 'pending':
-          return 'TaskPending';
-        case 'running':
-          return 'TaskRunning';
-        case 'completed':
-          return 'TaskCompleted';
-        case 'failed':
-          return 'TaskFailed';
-        case 'exception':
-          return 'TaskException';
-      }
-    },
-  },
   TaskSubscriptions: {
     tasksDefined: 'tasksDefined',
     tasksPending: 'tasksPending',
@@ -132,84 +112,6 @@ export default {
     },
   },
   Subscription: {
-    tasksDefined: {
-      subscribe(parent, { taskGroupId }, { pulseEngine, clients }) {
-        const routingKey = { taskGroupId };
-        const binding = clients.queueEvents.taskDefined(routingKey);
-
-        return pulseEngine.eventIterator('tasksDefined', [
-          {
-            exchange: binding.exchange,
-            pattern: binding.routingKeyPattern,
-          },
-        ]);
-      },
-    },
-    tasksPending: {
-      subscribe(parent, { taskGroupId }, { pulseEngine, clients }) {
-        const routingKey = { taskGroupId };
-        const binding = clients.queueEvents.taskPending(routingKey);
-
-        return pulseEngine.eventIterator('tasksPending', [
-          {
-            exchange: binding.exchange,
-            pattern: binding.routingKeyPattern,
-          },
-        ]);
-      },
-    },
-    tasksRunning: {
-      subscribe(parent, { taskGroupId }, { pulseEngine, clients }) {
-        const routingKey = { taskGroupId };
-        const binding = clients.queueEvents.taskRunning(routingKey);
-
-        return pulseEngine.eventIterator('tasksRunning', [
-          {
-            exchange: binding.exchange,
-            pattern: binding.routingKeyPattern,
-          },
-        ]);
-      },
-    },
-    tasksCompleted: {
-      subscribe(parent, { taskGroupId }, { pulseEngine, clients }) {
-        const routingKey = { taskGroupId };
-        const binding = clients.queueEvents.taskCompleted(routingKey);
-
-        return pulseEngine.eventIterator('tasksCompleted', [
-          {
-            exchange: binding.exchange,
-            pattern: binding.routingKeyPattern,
-          },
-        ]);
-      },
-    },
-    tasksFailed: {
-      subscribe(parent, { taskGroupId }, { pulseEngine, clients }) {
-        const routingKey = { taskGroupId };
-        const binding = clients.queueEvents.taskFailed(routingKey);
-
-        return pulseEngine.eventIterator('tasksFailed', [
-          {
-            exchange: binding.exchange,
-            pattern: binding.routingKeyPattern,
-          },
-        ]);
-      },
-    },
-    tasksException: {
-      subscribe(parent, { taskGroupId }, { pulseEngine, clients }) {
-        const routingKey = { taskGroupId };
-        const binding = clients.queueEvents.taskException(routingKey);
-
-        return pulseEngine.eventIterator('tasksException', [
-          {
-            exchange: binding.exchange,
-            pattern: binding.routingKeyPattern,
-          },
-        ]);
-      },
-    },
     tasksSubscriptions: {
       subscribe(
         parent,
@@ -230,6 +132,9 @@ export default {
             };
           })
         );
+      },
+      resolve: ({ tasksSubscriptions }) => {
+        return tasksSubscriptions.status;
       },
     },
   },
