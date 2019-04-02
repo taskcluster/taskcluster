@@ -445,13 +445,14 @@ export default class TaskGroup extends Component {
         />
         {taskGroup && (
           <TaskGroupProgress
-            taskGroup={taskGroup}
             taskGroupId={taskGroupId}
+            taskGroupLoaded={taskGroupLoaded}
+            taskGroup={taskGroup}
             filter={filter}
             onStatusClick={this.handleStatusClick}
           />
         )}
-        {!loading && taskGroupLoaded && (
+        {!loading && (
           <Search
             formProps={{ className: classes.taskNameFormSearch }}
             placeholder="Name contains"
@@ -459,8 +460,8 @@ export default class TaskGroup extends Component {
           />
         )}
         <br />
-        {!error && !taskGroupLoaded && <Spinner loading />}
-        {!loading && taskGroupLoaded && (
+        {!error && loading && <Spinner loading />}
+        {!loading && (
           <TaskGroupTable
             searchTerm={searchTerm}
             filter={filter}

@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { func, shape, arrayOf, string } from 'prop-types';
+import { bool, func, shape, arrayOf, string } from 'prop-types';
 import memoize from 'fast-memoize';
 import { sum, pipe, filter, map, sort as rSort } from 'ramda';
 import { lowerCase, title } from 'change-case';
 import classNames from 'classnames';
+import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import amber from '@material-ui/core/colors/amber';
 import blue from '@material-ui/core/colors/blue';
@@ -157,19 +158,24 @@ const getStatusCount = memoize(
   noTasksButton: {
     opacity: 0.3,
   },
+  spinner: {
+    left: '47%',
+    bottom: '42%',
+    position: 'absolute',
+  },
 }))
 export default class TaskGroupProgress extends Component {
-  static defaultProps = {
-    taskGroup: null,
-    filter: null,
-  };
-
   static propTypes = {
     /** The selected task state. This will change the card icon. */
     filter: taskState,
     /** Callback fired when the a state card is clicked */
     onStatusClick: func.isRequired,
-    /* eslint-disable react/no-unused-prop-types */
+    /**
+     * If false, a spinner indicator will be displayed in the card.
+     * This is useful to have when loading is done in steps
+     * (e.g., 1000 tasks at a time)
+     * */
+    taskGroupLoaded: bool,
     /** The task group ID being inspected. */
     taskGroupId: string.isRequired,
     /** A Task GraphQL PageConnection instance. */
@@ -177,35 +183,34 @@ export default class TaskGroupProgress extends Component {
       pageInfo,
       edges: arrayOf(task),
     }),
-    /* eslint-enable react/no-unused-prop-types */
+  };
+
+  static defaultProps = {
+    taskGroup: null,
+    filter: null,
+    taskGroupLoaded: true,
   };
 
   state = {
     statusCount: initialStatusCount,
+    previousTaskGroupId: this.props.taskGroupId,
   };
 
-  static getDerivedStateFromProps(props) {
+  static getDerivedStateFromProps(props, state) {
     const { taskGroupId, taskGroup } = props;
-    // Make sure data is not from another task group which
-    // can happen when a user searches for a different task group
-    const isFromSameTaskGroupId =
-      taskGroup &&
-      (taskGroup.edges[0]
-        ? taskGroup.edges[0].node.taskGroupId === taskGroupId
-        : true);
 
-    // We're done counting
-    if (isFromSameTaskGroupId && !taskGroup.pageInfo.hasNextPage) {
-      const newStatusCount = taskGroup.edges
-        ? getStatusCount(taskGroup.edges)
-        : {};
-
-      return { statusCount: newStatusCount };
+    if (!taskGroup || state.previousTaskGroupId !== taskGroupId) {
+      return {
+        statusCount: initialStatusCount,
+        previousTaskGroupId: taskGroupId,
+      };
     }
 
-    return {
-      statusCount: initialStatusCount,
-    };
+    const newStatusCount = taskGroup.edges
+      ? getStatusCount(taskGroup.edges)
+      : {};
+
+    return { statusCount: newStatusCount };
   }
 
   getStatusIcon = status => {
@@ -272,7 +277,7 @@ export default class TaskGroupProgress extends Component {
   };
 
   render() {
-    const { classes, onStatusClick } = this.props;
+    const { classes, onStatusClick, taskGroupLoaded } = this.props;
     const { statusCount } = this.state;
     const showDots = Object.values(statusCount).reduce((a, b) => a + b) === 0;
     const taskGroupState = this.getTaskGroupState();
@@ -300,6 +305,9 @@ export default class TaskGroupProgress extends Component {
               )}>
               <div>
                 <Icon color="white" className={classes.statusIcon} size={32} />
+                {!taskGroupLoaded && !showDots && (
+                  <Spinner size={12} className={classes.spinner} />
+                )}
               </div>
               <div>
                 <Typography
