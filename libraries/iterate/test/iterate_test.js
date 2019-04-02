@@ -1,5 +1,4 @@
 const subject = require('../');
-const sandbox = require('sinon').createSandbox();
 const assume = require('assume');
 const debug = require('debug')('iterate-test');
 const MonitorManager = require('taskcluster-lib-monitor');
@@ -60,10 +59,6 @@ suite(testing.suiteName(), () => {
 
   suiteTeardown(() => {
     manager.terminate();
-  });
-
-  teardown(() => {
-    sandbox.restore();
   });
 
   const runWithFakeTime = fn => {
