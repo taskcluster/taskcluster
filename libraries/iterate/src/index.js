@@ -63,7 +63,7 @@ class Iterate extends events.EventEmitter {
     this.keepGoing = false;
 
     // Called when stop is called (used to break out of waitTime sleep)
-    this.onStopCall = null
+    this.onStopCall = null;
 
     // Fires when stopped, only set when started
     this.stopPromise = null;
@@ -116,6 +116,9 @@ class Iterate extends events.EventEmitter {
   async iterate() {
     let currentIteration = 0;
     let failures = [];
+
+    this.emit('started');
+
     while (true) {
       currentIteration++;
       let iterError;
@@ -170,11 +173,15 @@ class Iterate extends events.EventEmitter {
         const stopPromise = new Promise(resolve => {
           this.onStopCall = resolve;
         });
+        let waitTimeTimeout;
         const waitTimePromise = new Promise(resolve => {
-          this.currentTimeout = setTimeout(resolve, this.waitTime);
+          waitTimeTimeout = setTimeout(resolve, this.waitTime);
         });
         await Promise.race([stopPromise, waitTimePromise]);
+
         this.onStopCall = null;
+        clearTimeout(waitTimeTimeout);
+
         if (!this.keepGoing) {
           break;
         }
@@ -189,9 +196,6 @@ class Iterate extends events.EventEmitter {
    * further.
    */
   __emitFatalError(failures) {
-    if (this.currentTimeout) {
-      clearTimeout(this.currentTimeout);
-    }
     if (this.monitor) {
       let err = new Error('Fatal iteration error');
       err.failures = failures;
@@ -218,18 +222,10 @@ class Iterate extends events.EventEmitter {
     });
     this.keepGoing = true;
 
-    // Two reasons we call it this way:
-    //   1. first call should have same exec env as following
-    //   2. start should return immediately
-    this.currentTimeout = setTimeout(async () => {
-      debug('starting iteration');
-      this.emit('started');
-      try {
-        await this.iterate();
-      } catch (err) {
-        console.error(err.stack || err);
-      }
-    }, 0);
+    return new Promise(resolve => {
+      this.once('started', resolve);
+      process.nextTick(() => this.iterate());
+    });
   }
 
   stop() {

@@ -68,10 +68,7 @@ class Provisioner extends WMObject {
       Array.from(this.providers.values()).map(x => x.initiate()),
       Array.from(this.biddingStrategies.values()).map(x => x.initiate()),
     ].flat());
-    await new Promise(resolve => {
-      this.iterate.once('started', resolve);
-      this.iterate.start();
-    });
+    await this.iterate.start();
   }
 
   /**
