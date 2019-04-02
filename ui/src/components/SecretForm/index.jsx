@@ -17,10 +17,6 @@ import DatePicker from '../DatePicker';
 import SpeedDialAction from '../SpeedDialAction';
 import { secret } from '../../utils/prop-types';
 
-const newSecret = safeDump({
-  foo: 'bar',
-});
-
 @withStyles(theme => ({
   fab: {
     ...theme.mixins.fab,
@@ -43,25 +39,6 @@ const newSecret = safeDump({
 }))
 /** A form to view/edit/create a secret */
 export default class SecretForm extends Component {
-  static defaultProps = {
-    loading: false,
-    isNewSecret: false,
-    secret: null,
-    onDeleteSecret: null,
-  };
-
-  static getDerivedStateFromProps({ isNewSecret, secret }, state) {
-    if (isNewSecret || state.secretName) {
-      return null;
-    }
-
-    return {
-      secretName: secret.name,
-      expires: secret.expires,
-      editorValue: safeDump(secret.secret),
-    };
-  }
-
   static propTypes = {
     /** A GraphQL secret response. Not needed when creating a new secret.  */
     // eslint-disable-next-line react/no-unused-prop-types
@@ -76,10 +53,23 @@ export default class SecretForm extends Component {
     loading: bool,
   };
 
+  static defaultProps = {
+    loading: false,
+    isNewSecret: false,
+    secret: null,
+    onDeleteSecret: null,
+  };
+
   state = {
-    secretName: '',
-    expires: addYears(new Date(), 1000),
-    editorValue: null,
+    secretName: this.props.isNewSecret ? '' : this.props.secret.name,
+    expires: this.props.isNewSecret
+      ? addYears(new Date(), 1000)
+      : this.props.secret.expires,
+    editorValue: this.props.isNewSecret
+      ? safeDump({
+          foo: 'bar',
+        })
+      : safeDump(this.props.secret.secret),
   };
 
   handleDeleteSecret = () => {
@@ -162,9 +152,7 @@ export default class SecretForm extends Component {
                 onChange={this.handleEditorChange}
                 mode="yaml"
                 lint
-                value={
-                  typeof editorValue === 'object' ? newSecret : editorValue
-                }
+                value={editorValue}
               />
             </ListItem>
           </List>
