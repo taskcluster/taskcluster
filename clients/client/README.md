@@ -8,25 +8,19 @@ references from which Client classes are already constructed.
 ## Calling API End-Points
 To invoke an API end-point instantiate a taskcluster Client class, these are
 classes can be created from a JSON reference object, but a number of them are
-also built-in to this library. In the following example we instantiate an
-instance of the `Queue` Client class and use to to create a task.
+also built-in to this library. The following example instantiates an
+instance of the `Queue` Client class, showing all available options, and
+uses it to to create a task.  Note that only the `rootUrl` option is required.
 
 ```js
 var taskcluster = require('taskcluster-client');
 
 // Instantiate the Queue Client class
 var queue = new taskcluster.Queue({
-  // rootUrl for this Taskcluster instance
+  // rootUrl for this Taskcluster instance (required)
   rootUrl: 'https://taskcluster.myproject.org',
 
-  timeout: 30 * 1000, // timeout for _each_ invidual http request
-
-  // By default we share a global agent if you specify your instance
-  // will have it's own agent with the given options...
-  agent: {
-    // https://nodejs.org/api/http.html#http_new_agent_options
-  },
-
+  // Taskcluster credentials (required only for API methods that require scopes)
   credentials: {
     clientId:     '...',
     accessToken:  '...',
@@ -34,6 +28,31 @@ var queue = new taskcluster.Queue({
     // this can be either a JSON object or a JSON string.
     certificate:  {...}   // Only applicable for temporary credentials
   }
+
+  // timeout for _each_ invidual http request
+  timeout: 30 * 1000,
+
+  // maximum number of retries for transient errors (default 5)
+  retries: 5,
+
+  // Multiplier for computation of retry delay: 2 ^ retry * delayFactor,
+  // 100 ms is solid for servers, and 500ms - 1s is suitable for background
+  // processes
+  delayFactor: 100,
+
+  // Randomization factor added as.
+  // delay = delay * random([1 - randomizationFactor; 1 + randomizationFactor])
+  randomizationFactor: 0.25,
+
+  // Maximum retry delay (defaults to 30 seconds)
+  maxDelay: 30 * 1000,
+
+  // By default we share a global HTTP agent. If you specify one, your instance
+  // will have its own agent with the given options...
+  agent: undefined,
+
+  // Fake methods, for testing
+  fake: null,
 });
 
 // Create task using the queue client
