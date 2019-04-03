@@ -367,7 +367,10 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
 
       const dockerfile = [
         `FROM ${nodeAlpineImage}`,
-        'RUN apk update && apk add nginx && mkdir /run/nginx',
+        `RUN apk update && \
+          apk add nginx && \
+          mkdir /run/nginx && \
+          apk add bash`,
         'COPY app /app',
         'ENV HOME=/app',
         'WORKDIR /app',
