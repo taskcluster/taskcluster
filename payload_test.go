@@ -242,10 +242,10 @@ func TestInvalidPayload(t *testing.T) {
   "mounts": [
     {
       "content": {
-        "sha356": "0bb12875044674d632d1f1b2f53cf33510a6df914178fe672f3f70f6f6cdf80d",
-        "url": "https://storage.googleapis.com/golang/go1.10.2.windows-386.zip"
+        "sha356": "9ded97d830bef3734ea6de70df0159656d6a63e01484175b34d72b8db326bda0",
+        "url": "https://storage.googleapis.com/golang/go1.10.8.windows-386.zip"
       },
-      "directory": "go1.10.2",
+      "directory": "go1.10.8",
       "format": "zip"
     }
   ]

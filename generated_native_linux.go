@@ -17,8 +17,9 @@ type (
 		// is/are served over HTTP(S). If not provided (this property is optional) the worker will
 		// guess the content type of artifacts based on the filename extension of the file storing
 		// the artifact content. It does this by looking at the system filename-to-mimetype mappings
-		// defined in the Windows registry. Note, setting `contentType` on a directory artifact will
-		// apply the same contentType to all files contained in the directory.
+		// defined in multiple `mime.types` files located under `/etc`. Note, setting `contentType`
+		// on a directory artifact will apply the same contentType to all files contained in the
+		// directory.
 		//
 		// See [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).
 		//
@@ -118,32 +119,12 @@ type (
 	FeatureFlags struct {
 
 		// Artifacts named `public/chain-of-trust.json` and
-		// `public/chain-of-trust.json.sig` should be generated which will
+		// `public/chain-of-trust.json.sig`, should be generated which will
 		// include information for downstream tasks to build a level of trust
 		// for the artifacts produced by the task and the environment it ran in.
 		//
 		// Since: generic-worker 5.3.0
 		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
-
-		// Runs commands with UAC elevation. Only set to true when UAC is
-		// enabled on the worker and Administrative privileges are required by
-		// task commands. When UAC is disabled on the worker, task commands will
-		// already run with full user privileges, and therefore a value of true
-		// will result in a malformed-payload task exception.
-		//
-		// A value of true does not add the task user to the `Administrators`
-		// group - see the `osGroups` property for that. Typically
-		// `task.payload.osGroups` should include an Administrative group, such
-		// as `Administrators`, when setting to true.
-		//
-		// For security, `runAsAdministrator` feature cannot be used in
-		// conjunction with `chainOfTrust` feature.
-		//
-		// Requires scope
-		// `generic-worker:run-as-administrator:<provisionerId>/<workerType>`.
-		//
-		// Since: generic-worker 10.11.0
-		RunAsAdministrator bool `json:"runAsAdministrator,omitempty"`
 
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
@@ -177,26 +158,20 @@ type (
 		// Since: generic-worker 1.0.0
 		Artifacts []Artifact `json:"artifacts,omitempty"`
 
-		// One entry per command (consider each entry to be interpreted as a full line of
-		// a Windows™ .bat file). For example:
-		// ```
-		// [
-		//   "set",
-		//   "echo hello world > hello_world.txt",
-		//   "set GOPATH=C:\\Go"
-		// ]
-		// ```
+		// One array per command (each command is an array of arguments). Several arrays
+		// for several commands.
 		//
 		// Since: generic-worker 0.0.1
 		//
 		// Array items:
-		Command []string `json:"command"`
+		// Array items:
+		Command [][]string `json:"command"`
 
 		// Env vars must be string to __string__ mappings (not number or boolean). For example:
 		// ```
 		// {
-		//   "PATH": "C:\\Windows\\system32;C:\\Windows",
-		//   "GOOS": "windows",
+		//   "PATH": "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+		//   "GOOS": "darwin",
 		//   "FOO_ENABLE": "true",
 		//   "BAR_TOTAL": "3"
 		// }
@@ -237,42 +212,14 @@ type (
 		// based on exit code of task commands.
 		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitempty"`
 
-		// A list of OS Groups that the task user should be a member of. Requires scope
-		// `generic-worker:os-group:<provisionerId>/<workerType>/<os-group>` for each
-		// group listed.
+		// A list of OS Groups that the task user should be a member of. Not yet implemented on
+		// non-Windows platforms, therefore this optional property may only be an empty array if
+		// provided.
 		//
 		// Since: generic-worker 6.0.0
 		//
 		// Array items:
 		OSGroups []string `json:"osGroups,omitempty"`
-
-		// Specifies an artifact name for publishing RDP connection information.
-		//
-		// Since this is potentially sensitive data, care should be taken to publish
-		// to a suitably locked down path, such as
-		// `login-identity/<login-identity>/rdpinfo.json` which is only readable for
-		// the given login identity (for example
-		// `login-identity/mozilla-ldap/pmoore@mozilla.com/rdpinfo.json`). See the
-		// [artifact namespace guide](https://docs.taskcluster.net/manual/design/namespaces#artifacts) for more information.
-		//
-		// Use of this feature requires scope
-		// `generic-worker:allow-rdp:<provisionerId>/<workerType>` which must be
-		// declared as a task scope.
-		//
-		// The RDP connection data is published during task startup so that a user
-		// may interact with the running task.
-		//
-		// The task environment will be retained for 12 hours after the task
-		// completes, to enable an interactive user to perform investigative tasks.
-		// After these 12 hours, the worker will delete the task's Windows user
-		// account, and then continue with other tasks.
-		//
-		// No guarantees are given about the resolution status of the interactive
-		// task, since the task is inherently non-reproducible and no automation
-		// should rely on this value.
-		//
-		// Since: generic-worker 10.5.0
-		RdpInfo string `json:"rdpInfo,omitempty"`
 
 		// URL of a service that can indicate tasks superseding this one; the current `taskId`
 		// will be appended as a query argument `taskId`. The service should return an object with
@@ -465,10 +412,10 @@ func taskPayloadSchema() string {
         },
         {
           "additionalProperties": false,
-          "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0 ",
+          "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
           "properties": {
             "base64": {
-              "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0 ",
+              "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
               "maxLength": 65536,
               "pattern": "^[A-Za-z0-9/+]+[=]{0,2}$",
               "title": "Base64",
@@ -604,7 +551,7 @@ func taskPayloadSchema() string {
         "additionalProperties": false,
         "properties": {
           "contentType": {
-            "description": "Explicitly set the value of the HTTP ` + "`" + `Content-Type` + "`" + ` response header when the artifact(s)\nis/are served over HTTP(S). If not provided (this property is optional) the worker will\nguess the content type of artifacts based on the filename extension of the file storing\nthe artifact content. It does this by looking at the system filename-to-mimetype mappings\ndefined in the Windows registry. Note, setting ` + "`" + `contentType` + "`" + ` on a directory artifact will\napply the same contentType to all files contained in the directory.\n\nSee [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).\n\nSince: generic-worker 10.4.0",
+            "description": "Explicitly set the value of the HTTP ` + "`" + `Content-Type` + "`" + ` response header when the artifact(s)\nis/are served over HTTP(S). If not provided (this property is optional) the worker will\nguess the content type of artifacts based on the filename extension of the file storing\nthe artifact content. It does this by looking at the system filename-to-mimetype mappings\ndefined in multiple ` + "`" + `mime.types` + "`" + ` files located under ` + "`" + `/etc` + "`" + `. Note, setting ` + "`" + `contentType` + "`" + `\non a directory artifact will apply the same contentType to all files contained in the\ndirectory.\n\nSee [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).\n\nSince: generic-worker 10.4.0",
             "title": "Content-Type header when serving artifact over HTTP",
             "type": "string"
           },
@@ -645,9 +592,13 @@ func taskPayloadSchema() string {
       "type": "array"
     },
     "command": {
-      "description": "One entry per command (consider each entry to be interpreted as a full line of\na Windows™ .bat file). For example:\n` + "`" + `` + "`" + `` + "`" + `\n[\n  \"set\",\n  \"echo hello world \u003e hello_world.txt\",\n  \"set GOPATH=C:\\\\Go\"\n]\n` + "`" + `` + "`" + `` + "`" + `\n\nSince: generic-worker 0.0.1",
+      "description": "One array per command (each command is an array of arguments). Several arrays\nfor several commands.\n\nSince: generic-worker 0.0.1",
       "items": {
-        "type": "string"
+        "items": {
+          "type": "string"
+        },
+        "minItems": 1,
+        "type": "array"
       },
       "minItems": 1,
       "title": "Commands to run",
@@ -657,7 +608,7 @@ func taskPayloadSchema() string {
       "additionalProperties": {
         "type": "string"
       },
-      "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"PATH\": \"C:\\\\Windows\\\\system32;C:\\\\Windows\",\n  \"GOOS\": \"windows\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nSince: generic-worker 0.0.1",
+      "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"PATH\": \"/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin\",\n  \"GOOS\": \"darwin\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nSince: generic-worker 0.0.1",
       "title": "Env vars",
       "type": "object"
     },
@@ -666,13 +617,8 @@ func taskPayloadSchema() string {
       "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
       "properties": {
         "chainOfTrust": {
-          "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + ` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0",
+          "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + `, should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0",
           "title": "Enable generation of signed Chain of Trust artifacts",
-          "type": "boolean"
-        },
-        "runAsAdministrator": {
-          "description": "Runs commands with UAC elevation. Only set to true when UAC is\nenabled on the worker and Administrative privileges are required by\ntask commands. When UAC is disabled on the worker, task commands will\nalready run with full user privileges, and therefore a value of true\nwill result in a malformed-payload task exception.\n\nA value of true does not add the task user to the ` + "`" + `Administrators` + "`" + `\ngroup - see the ` + "`" + `osGroups` + "`" + ` property for that. Typically\n` + "`" + `task.payload.osGroups` + "`" + ` should include an Administrative group, such\nas ` + "`" + `Administrators` + "`" + `, when setting to true.\n\nFor security, ` + "`" + `runAsAdministrator` + "`" + ` feature cannot be used in\nconjunction with ` + "`" + `chainOfTrust` + "`" + ` feature.\n\nRequires scope\n` + "`" + `generic-worker:run-as-administrator:\u003cprovisionerId\u003e/\u003cworkerType\u003e` + "`" + `.\n\nSince: generic-worker 10.11.0",
-          "title": "Run commands with UAC process elevation",
           "type": "boolean"
         },
         "taskclusterProxy": {
@@ -719,17 +665,13 @@ func taskPayloadSchema() string {
       "type": "object"
     },
     "osGroups": {
-      "description": "A list of OS Groups that the task user should be a member of. Requires scope\n` + "`" + `generic-worker:os-group:\u003cprovisionerId\u003e/\u003cworkerType\u003e/\u003cos-group\u003e` + "`" + ` for each\ngroup listed.\n\nSince: generic-worker 6.0.0",
+      "description": "A list of OS Groups that the task user should be a member of. Not yet implemented on\nnon-Windows platforms, therefore this optional property may only be an empty array if\nprovided.\n\nSince: generic-worker 6.0.0",
       "items": {
         "type": "string"
       },
+      "maxItems": 0,
       "title": "OS Groups",
       "type": "array"
-    },
-    "rdpInfo": {
-      "description": "Specifies an artifact name for publishing RDP connection information.\n\nSince this is potentially sensitive data, care should be taken to publish\nto a suitably locked down path, such as\n` + "`" + `login-identity/\u003clogin-identity\u003e/rdpinfo.json` + "`" + ` which is only readable for\nthe given login identity (for example\n` + "`" + `login-identity/mozilla-ldap/pmoore@mozilla.com/rdpinfo.json` + "`" + `). See the\n[artifact namespace guide](https://docs.taskcluster.net/manual/design/namespaces#artifacts) for more information.\n\nUse of this feature requires scope\n` + "`" + `generic-worker:allow-rdp:\u003cprovisionerId\u003e/\u003cworkerType\u003e` + "`" + ` which must be\ndeclared as a task scope.\n\nThe RDP connection data is published during task startup so that a user\nmay interact with the running task.\n\nThe task environment will be retained for 12 hours after the task\ncompletes, to enable an interactive user to perform investigative tasks.\nAfter these 12 hours, the worker will delete the task's Windows user\naccount, and then continue with other tasks.\n\nNo guarantees are given about the resolution status of the interactive\ntask, since the task is inherently non-reproducible and no automation\nshould rely on this value.\n\nSince: generic-worker 10.5.0",
-      "title": "RDP Info",
-      "type": "string"
     },
     "supersederUrl": {
       "description": "URL of a service that can indicate tasks superseding this one; the current ` + "`" + `taskId` + "`" + `\nwill be appended as a query argument ` + "`" + `taskId` + "`" + `. The service should return an object with\na ` + "`" + `supersedes` + "`" + ` key containing a list of ` + "`" + `taskId` + "`" + `s, including the supplied ` + "`" + `taskId` + "`" + `. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",

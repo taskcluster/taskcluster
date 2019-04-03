@@ -47,3 +47,4 @@ directory-caches.json
 file-caches.json
 tasks-resolved-count.txt
 /revision.txt
+/generic-worker-*

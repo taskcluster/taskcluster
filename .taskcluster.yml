@@ -11,6 +11,520 @@ tasks:
 
 
   ##########################################################
+  ########### Windows Server 2012 R2 Native Build ##########
+  ##########################################################
+
+  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
+    workerType: win2012r2-cu
+    metadata:
+      name: "Build/test 64 bit generic-worker (native engine) on Windows Server 2012 R2"
+      description: "This builds and tests the 64 bit Windows version of generic-worker (native engine) on Windows Server 2012 R2"
+      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+    extra:
+      github:
+        # Events that will trigger this task
+        events:
+          - pull_request.synchronize
+          - push
+    scopes:
+      - generic-worker:cache:generic-worker-checkout
+    payload:
+      maxRunTime: 3600
+      command:
+        - set CGO_ENABLED=0
+        - set GOPATH=%CD%\gopath1.10.8
+        - set GOROOT=%CD%\go1.10.8\go
+        - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
+        - git config --global core.autocrlf false
+        - go version
+        - go env
+        - 'if not exist "%GOPATH%\src\github.com\taskcluster" mkdir "%GOPATH%\src\github.com\taskcluster"'
+        - 'cd "%GOPATH%\src\github.com\taskcluster"'
+        - 'if not exist generic-worker git clone {{ event.head.repo.url }} generic-worker'
+        - 'cd generic-worker'
+        - 'git fetch "{{ event.head.repo.url }}" "+{{ event.head.ref }}:refs/heads/X%TASK_ID%"'
+        - 'git checkout -f "X%TASK_ID%"'
+        - 'git reset --hard "{{ event.head.sha }}"'
+        - 'git clean -fdx'
+        - 'git checkout -B tmp -t "X%TASK_ID%"'
+        - go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
+        - cd gw-codegen
+        - go get -v
+        - cd ..
+        - go generate
+        - |
+          :: this counts the number of lines returned by git status
+          :: dump temp file a directory higher, otherwise git status reports the tmp1.txt file!
+          git status --porcelain | C:\Windows\System32\find.exe /v /c "" > ..\tmp1.txt
+          set /P lines=<..\tmp1.txt
+          :: this checks that if more than 0 lines are returned, we fail
+          if %lines% gtr 0 exit /b 64
+          :: find.exe will have exited with exit code 1, so need to explicitly exit with 0
+          exit /b 0
+        - git rev-parse HEAD > revision.txt
+        - set /p revision=< revision.txt
+        - go install -tags nativeEngine -v -ldflags "-X main.revision=%revision%" ./...
+        - set CGO_ENABLED=1
+        - set GORACE=history_size=7
+        - C:\generic-worker\generic-worker-test-creds.cmd
+        - 'go test -tags nativeEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
+        - set GW_TESTS_RUN_AS_TASK_USER=true
+        - 'go test -tags nativeEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
+        - ineffassign .
+      artifacts:
+        - name: public/build/generic-worker-windows-amd64.exe
+          path: gopath1.10.8\bin\generic-worker.exe
+          expires: "{{ '2 weeks' | $fromNow }}"
+          type: file
+      mounts:
+        - cacheName: generic-worker-checkout
+          directory: gopath1.10.8\src
+        - content:
+            url: https://storage.googleapis.com/golang/go1.10.8.windows-amd64.zip
+            sha256: ab63b55c349f75cce4b93aefa9b52828f50ebafb302da5057db0e686d7873d7a
+          directory: go1.10.8
+          format: zip
+        - content:
+            url: https://github.com/git-for-windows/git/releases/download/v2.14.1.windows.1/MinGit-2.14.1-64-bit.zip
+            sha256: 65c12e4959b8874187b68ec37e532fe7fc526e10f6f0f29e699fa1d2449e7d92
+          directory: git
+          format: zip
+
+
+  ##########################################################
+  ############## Windows 7 Native Build ####################
+  ##########################################################
+
+  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
+    workerType: gecko-t-win7-32-cu
+    metadata:
+      name: "Build/test 32 bit generic-worker (native engine) on Windows 7"
+      description: "This builds and tests the 32 bit Windows version of generic-worker (native engine) on Windows 7"
+      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+    extra:
+      github:
+        # Events that will trigger this task
+        events:
+          - pull_request.synchronize
+          - push
+    scopes:
+      - generic-worker:cache:generic-worker-checkout
+    payload:
+      maxRunTime: 3600
+      command:
+        - set CGO_ENABLED=0
+        - set GOPATH=%CD%\gopath1.10.8
+        - set GOROOT=%CD%\go1.10.8\go
+        - set PATH=%CD%\git\bin;%GOPATH%\bin;%GOROOT%\bin;%PATH%
+        - git config --global core.autocrlf false
+        - go version
+        - go env
+        - 'if not exist "%GOPATH%\src\github.com\taskcluster" mkdir "%GOPATH%\src\github.com\taskcluster"'
+        - 'cd "%GOPATH%\src\github.com\taskcluster"'
+        - 'if not exist generic-worker git clone {{ event.head.repo.url }} generic-worker'
+        - 'cd generic-worker'
+        - 'git fetch "{{ event.head.repo.url }}" "+{{ event.head.ref }}:refs/heads/X%TASK_ID%"'
+        - 'git checkout -f "X%TASK_ID%"'
+        - 'git reset --hard "{{ event.head.sha }}"'
+        - 'git clean -fdx'
+        - 'git checkout -B tmp -t "X%TASK_ID%"'
+        - go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
+        - cd gw-codegen
+        - go get -v
+        - cd ..
+        - go generate
+        - set revision={{ event.head.sha }}
+        - go install -tags nativeEngine -v -ldflags "-X main.revision=%revision%" ./...
+        - set GORACE=history_size=7
+        - C:\generic-worker\generic-worker-test-creds.cmd
+        - 'go test -tags nativeEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v ./...'
+        - set GW_TESTS_RUN_AS_TASK_USER=true
+        - 'go test -tags nativeEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v'
+        - ineffassign .
+      artifacts:
+        - name: public/build/generic-worker-windows-386.exe
+          path: gopath1.10.8\bin\generic-worker.exe
+          expires: "{{ '2 weeks' | $fromNow }}"
+          type: file
+      mounts:
+        - cacheName: generic-worker-checkout
+          directory: gopath1.10.8\src
+        - content:
+            url: https://storage.googleapis.com/golang/go1.10.8.windows-386.zip
+            sha256: 9ded97d830bef3734ea6de70df0159656d6a63e01484175b34d72b8db326bda0
+          directory: go1.10.8
+          format: zip
+        - content:
+            url: https://github.com/git-for-windows/git/releases/download/v2.11.0.windows.3/Git-2.11.0.3-32-bit.tar.bz2
+            sha256: 0f0e2f78fc9b91d6c860eb7de742f3601b0ccd13c5c61444c7cf55b00bcb4ed4
+          directory: git
+          format: tar.bz2
+
+
+  ##########################################################
+  ############## Windows 10 Native Build ###################
+  ##########################################################
+
+  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
+    workerType: gecko-t-win10-64-cu
+    metadata:
+      name: "Build/test 64 bit generic-worker (native engine) on Windows 10"
+      description: "This builds and tests the 32 bit Windows version of generic-worker (native engine) on Windows 10"
+      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+    extra:
+      github:
+        # Events that will trigger this task
+        events:
+          - pull_request.synchronize
+          - push
+    scopes:
+      - generic-worker:cache:generic-worker-checkout
+    payload:
+      maxRunTime: 3600
+      command:
+        - set CGO_ENABLED=0
+        - set GOPATH=%CD%\gopath1.10.8
+        - set GOROOT=%CD%\go1.10.8\go
+        - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
+        - git config --global core.autocrlf false
+        - go version
+        - go env
+        - 'if not exist "%GOPATH%\src\github.com\taskcluster" mkdir "%GOPATH%\src\github.com\taskcluster"'
+        - 'cd "%GOPATH%\src\github.com\taskcluster"'
+        - 'if not exist generic-worker git clone {{ event.head.repo.url }} generic-worker'
+        - 'cd generic-worker'
+        - 'git fetch "{{ event.head.repo.url }}" "+{{ event.head.ref }}:refs/heads/X%TASK_ID%"'
+        - 'git checkout -f "X%TASK_ID%"'
+        - 'git reset --hard "{{ event.head.sha }}"'
+        - 'git clean -fdx'
+        - 'git checkout -B tmp -t "X%TASK_ID%"'
+        - go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
+        - cd gw-codegen
+        - go get -v
+        - cd ..
+        - go generate
+        - |
+          :: this counts the number of lines returned by git status
+          :: dump temp file a directory higher, otherwise git status reports the tmp1.txt file!
+          git status --porcelain | C:\Windows\System32\find.exe /v /c "" > ..\tmp1.txt
+          set /P lines=<..\tmp1.txt
+          :: this checks that if more than 0 lines are returned, we fail
+          if %lines% gtr 0 exit /b 64
+          :: find.exe will have exited with exit code 1, so need to explicitly exit with 0
+          exit /b 0
+        - git rev-parse HEAD > revision.txt
+        - set /p revision=< revision.txt
+        - go install -tags nativeEngine -v -ldflags "-X main.revision=%revision%" ./...
+        - set CGO_ENABLED=1
+        - set GORACE=history_size=7
+        - C:\generic-worker\generic-worker-test-creds.cmd
+        - 'go test -tags nativeEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
+        - set GW_TESTS_RUN_AS_TASK_USER=true
+        - 'go test -tags nativeEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
+        - ineffassign .
+      artifacts:
+        - name: public/build/generic-worker-windows-amd64.exe
+          path: gopath1.10.8\bin\generic-worker.exe
+          expires: "{{ '2 weeks' | $fromNow }}"
+          type: file
+      mounts:
+        - cacheName: generic-worker-checkout
+          directory: gopath1.10.8\src
+        - content:
+            url: https://storage.googleapis.com/golang/go1.10.8.windows-amd64.zip
+            sha256: ab63b55c349f75cce4b93aefa9b52828f50ebafb302da5057db0e686d7873d7a
+          directory: go1.10.8
+          format: zip
+        - content:
+            url: https://github.com/git-for-windows/git/releases/download/v2.14.1.windows.1/MinGit-2.14.1-64-bit.zip
+            sha256: 65c12e4959b8874187b68ec37e532fe7fc526e10f6f0f29e699fa1d2449e7d92
+          directory: git
+          format: zip
+
+
+  ##########################################################
+  ######### macOS High Sierra 10.13 Native Build ###########
+  ##########################################################
+
+  - provisionerId: pmoore-manual
+    workerType: mac-os-x
+    metadata:
+      name: "Build/test 64 bit generic-worker (native engine) on macOS High Sierra 10.13"
+      description: "This builds the 64 bit macOS version of generic-worker (native engine)"
+      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+    extra:
+      github:
+        # Events that will trigger this task
+        events:
+          - pull_request.synchronize
+          - push
+    scopes:
+      - generic-worker:cache:generic-worker-checkout
+    payload:
+      maxRunTime: 3600
+      command:
+        - - /bin/bash
+          - -vxec
+          - |
+            export CGO_ENABLED=0
+            export GOROOT="$(pwd)/go1.10.8/go"
+            export GOPATH="$(pwd)/gopath1.10.8"
+            export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
+            go version
+            go env
+            source "${GW_CREDS_BOOTSTRAP}"
+            mkdir -p "${GOPATH}/src/github.com/taskcluster"
+            cd "${GOPATH}/src/github.com/taskcluster"
+            if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
+            cd 'generic-worker'
+            git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/X${TASK_ID}"
+            git checkout -f "X${TASK_ID}"
+            git reset --hard '{{ event.head.sha }}'
+            git clean -fdx
+            git checkout -B tmp -t "X${TASK_ID}"
+            go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
+            cd gw-codegen
+            go get -v
+            cd ..
+            go generate
+            go install -tags nativeEngine -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
+            # output of wc command can contain spaces on darwin, so no quotes around expression
+            test $(git status --porcelain | wc -l) == 0
+            GORACE=history_size=7 CGO_ENABLED=1 go test -tags nativeEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -v ./...
+            ineffassign .
+      artifacts:
+        - name: public/build/generic-worker-darwin-amd64
+          path: gopath1.10.8/bin/generic-worker
+          expires: "{{ '2 weeks' | $fromNow }}"
+          type: file
+      mounts:
+        - cacheName: generic-worker-checkout
+          directory: gopath1.10.8/src
+        - content:
+            url: https://storage.googleapis.com/golang/go1.10.8.darwin-amd64.tar.gz
+            sha256: f41bc914a721ac98a187df824b3b40f0a7f35bfb3c6d31221bdd940d537d3c28
+          directory: go1.10.8
+          format: tar.gz
+
+
+  ##########################################################
+  ################ Linux ARM6 Native Build #################
+  ##########################################################
+
+
+  ##########################################################
+  # Currently Raspberry PI is not available (being used for other things)
+  # Will reenable when I have it back again
+  ##########################################################
+
+  # - provisionerId: pmoore-manual
+  #   workerType: raspberry-pi-3b
+  #   metadata:
+  #     name: "Build/test ARM6 generic-worker on Linux (Raspberry Pi)"
+  #     description: "This builds the ARM6 Linux version of generic-worker"
+  #     owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+  #     source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+  #   extra:
+  #     github:
+  #       # Events that will trigger this task
+  #       events:
+  #         - pull_request.synchronize
+  #         - push
+  #   scopes:
+  #     - generic-worker:cache:generic-worker-checkout
+  #   payload:
+  #     maxRunTime: 3600
+  #     command:
+  #       - - /bin/bash
+  #         - -vxec
+  #         - |
+  #           export CGO_ENABLED=0
+  #           export GOROOT="$(pwd)/go1.10.8/go"
+  #           export GOPATH="$(pwd)/gopath1.10.8"
+  #           export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
+  #           export CGO_ENABLED=0
+  #           go version
+  #           go env
+  #           source "${GW_CREDS_BOOTSTRAP}"
+  #           mkdir -p "${GOPATH}/src/github.com/taskcluster"
+  #           cd "${GOPATH}/src/github.com/taskcluster"
+  #           if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
+  #           cd 'generic-worker'
+  #           git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/X${TASK_ID}"
+  #           git checkout -f "X${TASK_ID}"
+  #           git reset --hard '{{ event.head.sha }}'
+  #           git clean -fdx
+  #           git checkout -B tmp -t "X${TASK_ID}"
+  #           go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
+  #           cd gw-codegen
+  #           go get -v
+  #           cd ..
+  #           go generate
+  #           go install -tags nativeEngine -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
+  #           test "$(git status --porcelain | wc -l)" == 0
+  #           GORACE=history_size=7 go test -tags nativeEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v ./...
+  #           ineffassign .
+  #     artifacts:
+  #       - name: public/build/generic-worker-linux-armv6l
+  #         path: gopath1.10.8/bin/generic-worker
+  #         expires: "{{ '2 weeks' | $fromNow }}"
+  #         type: file
+  #     mounts:
+  #       - cacheName: generic-worker-checkout
+  #         directory: gopath1.10.8/src
+  #       - content:
+  #           url: https://storage.googleapis.com/golang/go1.10.8.linux-armv6l.tar.gz
+  #           sha256: 6fdbc67524fc4c15fc87014869dddce9ecda7958b78f3cb1bbc5b0a9b61bfb95
+  #         directory: go1.10.8
+  #         format: tar.gz
+
+
+  ##########################################################
+  ################ Linux amd64 Native Build ################
+  ##########################################################
+
+  - provisionerId: pmoore-manual
+    workerType: linux-amd64
+    metadata:
+      name: "Build/test 64 bit generic-worker (native engine) on Ubuntu 17.04 VM"
+      description: "This builds the 64 bit linux version of generic-worker (native engine)"
+      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+    extra:
+      github:
+        # Events that will trigger this task
+        events:
+          - pull_request.synchronize
+          - push
+    scopes:
+      - generic-worker:cache:generic-worker-checkout
+      - secrets:get:repo:github.com/taskcluster/generic-worker
+    payload:
+      features:
+        taskclusterProxy:
+          true
+      maxRunTime: 3600
+      command:
+        - - /bin/bash
+          - -vxec
+          - |
+            export CGO_ENABLED=0
+            export GOROOT="$(pwd)/go1.10.8/go"
+            export GOPATH="$(pwd)/gopath1.10.8"
+            export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
+            go version
+            go env
+            curl -s "${TASKCLUSTER_PROXY_URL}/secrets/v1/secret/repo:github.com/taskcluster/generic-worker" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -d > ~/env_private.sh
+            source ~/env_private.sh
+            mkdir -p "${GOPATH}/src/github.com/taskcluster"
+            cd "${GOPATH}/src/github.com/taskcluster"
+            if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
+            cd 'generic-worker'
+            git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/X${TASK_ID}"
+            git checkout -f "X${TASK_ID}"
+            git reset --hard '{{ event.head.sha }}'
+            git clean -fdx
+            git checkout -B tmp -t "X${TASK_ID}"
+            go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
+            cd gw-codegen
+            go get -v
+            cd ..
+            go generate
+            go install -tags nativeEngine -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
+            test "$(git status --porcelain | wc -l)" == 0
+            GORACE=history_size=7 CGO_ENABLED=1 go test -tags nativeEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race ./...
+            "${GOPATH}/bin/ineffassign" .
+      artifacts:
+        - name: public/build/generic-worker-linux-amd64
+          path: gopath1.10.8/bin/generic-worker
+          expires: "{{ '2 weeks' | $fromNow }}"
+          type: file
+      mounts:
+        - cacheName: generic-worker-checkout
+          directory: gopath1.10.8/src
+        - content:
+            url: https://storage.googleapis.com/golang/go1.10.8.linux-amd64.tar.gz
+            sha256: d8626fb6f9a3ab397d88c483b576be41fa81eefcec2fd18562c87626dbb3c39e
+          directory: go1.10.8
+          format: tar.gz
+
+
+  ##########################################################
+  ################ Linux amd64 Docker Build ################
+  ##########################################################
+
+  - provisionerId: pmoore-manual
+    workerType: linux-amd64
+    metadata:
+      name: "Build/test 64 bit generic-worker (docker engine) on Ubuntu 17.04 VM"
+      description: "This builds the 64 bit linux version of generic-worker (docker engine)"
+      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+    extra:
+      github:
+        # Events that will trigger this task
+        events:
+          - pull_request.opened
+          - pull_request.synchronize
+          - push
+    scopes:
+      - generic-worker:cache:generic-worker-checkout
+      - secrets:get:repo:github.com/taskcluster/generic-worker
+    payload:
+      features:
+        taskclusterProxy:
+          true
+      maxRunTime: 3600
+      command:
+        - - /bin/bash
+          - -vxec
+          - |
+            export CGO_ENABLED=0
+            export GOROOT="$(pwd)/go1.10.8/go"
+            export GOPATH="$(pwd)/gopath1.10.8"
+            export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
+            go version
+            go env
+            curl -s "${TASKCLUSTER_PROXY_URL}/secrets/v1/secret/repo:github.com/taskcluster/generic-worker" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -d > ~/env_private.sh
+            source ~/env_private.sh
+            mkdir -p "${GOPATH}/src/github.com/taskcluster"
+            cd "${GOPATH}/src/github.com/taskcluster"
+            if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
+            cd 'generic-worker'
+            git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/X${TASK_ID}"
+            git checkout -f "X${TASK_ID}"
+            git reset --hard '{{ event.head.sha }}'
+            git clean -fdx
+            git checkout -B tmp -t "X${TASK_ID}"
+            go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
+            cd gw-codegen
+            go get -v
+            cd ..
+            go generate
+            go install -tags dockerEngine -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
+            test "$(git status --porcelain | wc -l)" == 0
+            GORACE=history_size=7 CGO_ENABLED=1 go test -tags dockerEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race ./...
+            "${GOPATH}/bin/ineffassign" .
+      artifacts:
+        - name: public/build/generic-worker-linux-amd64
+          path: gopath1.10.8/bin/generic-worker
+          expires: "{{ '2 weeks' | $fromNow }}"
+          type: file
+      mounts:
+        - cacheName: generic-worker-checkout
+          directory: gopath1.10.8/src
+        - content:
+            url: https://storage.googleapis.com/golang/go1.10.8.linux-amd64.tar.gz
+            sha256: d8626fb6f9a3ab397d88c483b576be41fa81eefcec2fd18562c87626dbb3c39e
+          directory: go1.10.8
+          format: tar.gz
+
+
+  ##########################################################
   ###################### Docs Upload #######################
   ##########################################################
 
@@ -48,457 +562,13 @@ tasks:
 
 
   ##########################################################
-  ############## Windows Server 2012 R2 Build ##############
-  ##########################################################
-
-  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
-    workerType: win2012r2-cu
-    metadata:
-      name: "Build/test 64 bit generic-worker on Windows Server 2012 R2"
-      description: "This builds and tests the 64 bit Windows version of generic-worker on Windows Server 2012 R2"
-      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
-      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
-    extra:
-      github:
-        # Events that will trigger this task
-        events:
-          - pull_request.synchronize
-          - push
-    scopes:
-      - generic-worker:cache:generic-worker-checkout
-    payload:
-      maxRunTime: 3600
-      env:
-        # once bug 1508383 is landed, this won't be required (the worker will supply it)
-        TASKCLUSTER_ROOT_URL: https://taskcluster.net
-      command:
-        - set CGO_ENABLED=0
-        - set GOPATH=%CD%\gopath1.10.3
-        - set GOROOT=%CD%\go1.10.3\go
-        - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
-        - git config --global core.autocrlf false
-        - go version
-        - go env
-        - 'if not exist "%GOPATH%\src\github.com\taskcluster" mkdir "%GOPATH%\src\github.com\taskcluster"'
-        - 'cd "%GOPATH%\src\github.com\taskcluster"'
-        - 'if not exist generic-worker git clone {{ event.head.repo.url }} generic-worker'
-        - 'cd generic-worker'
-        - 'git fetch "{{ event.head.repo.url }}" "+{{ event.head.ref }}:refs/heads/X%TASK_ID%"'
-        - 'git checkout -f "X%TASK_ID%"'
-        - 'git reset --hard "{{ event.head.sha }}"'
-        - 'git clean -fdx'
-        - 'git checkout -B tmp -t "X%TASK_ID%"'
-        - go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
-        - cd gw-codegen
-        - go get -v -u
-        - cd ..
-        - go generate
-        - |
-          :: this counts the number of lines returned by git status
-          :: dump temp file a directory higher, otherwise git status reports the tmp1.txt file!
-          git status --porcelain | C:\Windows\System32\find.exe /v /c "" > ..\tmp1.txt
-          set /P lines=<..\tmp1.txt
-          :: this checks that if more than 0 lines are returned, we fail
-          if %lines% gtr 0 exit /b 64
-          :: find.exe will have exited with exit code 1, so need to explicitly exit with 0
-          exit /b 0
-        - git rev-parse HEAD > revision.txt
-        - set /p revision=< revision.txt
-        - go install -v -ldflags "-X main.revision=%revision%" ./...
-        - set CGO_ENABLED=1
-        - set GORACE=history_size=7
-        - C:\generic-worker\generic-worker-test-creds.cmd
-        - 'go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
-        - set GW_TESTS_RUN_AS_TASK_USER=true
-        - 'go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
-        - ineffassign .
-      artifacts:
-        - name: public/build/generic-worker-windows-amd64.exe
-          path: gopath1.10.3\bin\generic-worker.exe
-          expires: "{{ '2 weeks' | $fromNow }}"
-          type: file
-      mounts:
-        - cacheName: generic-worker-checkout
-          directory: gopath1.10.3\src
-        - content:
-            url: https://storage.googleapis.com/golang/go1.10.3.windows-amd64.zip
-            sha256: a3f19d4fc0f4b45836b349503e347e64e31ab830dedac2fc9c390836d4418edb
-          directory: go1.10.3
-          format: zip
-        - content:
-            url: https://github.com/git-for-windows/git/releases/download/v2.14.1.windows.1/MinGit-2.14.1-64-bit.zip
-            sha256: 65c12e4959b8874187b68ec37e532fe7fc526e10f6f0f29e699fa1d2449e7d92
-          directory: git
-          format: zip
-
-
-  ##########################################################
-  #################### Windows 7 Build #####################
-  ##########################################################
-
-  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
-    workerType: gecko-t-win7-32-cu
-    metadata:
-      name: "Build/test 32 bit generic-worker on Windows 7"
-      description: "This builds and tests the 32 bit Windows version of generic-worker on Windows 7"
-      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
-      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
-    extra:
-      github:
-        # Events that will trigger this task
-        events:
-          - pull_request.synchronize
-          - push
-    scopes:
-      - generic-worker:cache:generic-worker-checkout
-    payload:
-      maxRunTime: 3600
-      env:
-        # once bug 1508383 is landed, this won't be required (the worker will supply it)
-        TASKCLUSTER_ROOT_URL: https://taskcluster.net
-      command:
-        - set CGO_ENABLED=0
-        - set GOPATH=%CD%\gopath1.10.3
-        - set GOROOT=%CD%\go1.10.3\go
-        - set PATH=%CD%\git\bin;%GOPATH%\bin;%GOROOT%\bin;%PATH%
-        - git config --global core.autocrlf false
-        - go version
-        - go env
-        - 'if not exist "%GOPATH%\src\github.com\taskcluster" mkdir "%GOPATH%\src\github.com\taskcluster"'
-        - 'cd "%GOPATH%\src\github.com\taskcluster"'
-        - 'if not exist generic-worker git clone {{ event.head.repo.url }} generic-worker'
-        - 'cd generic-worker'
-        - 'git fetch "{{ event.head.repo.url }}" "+{{ event.head.ref }}:refs/heads/X%TASK_ID%"'
-        - 'git checkout -f "X%TASK_ID%"'
-        - 'git reset --hard "{{ event.head.sha }}"'
-        - 'git clean -fdx'
-        - 'git checkout -B tmp -t "X%TASK_ID%"'
-        - go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
-        - cd gw-codegen
-        - go get -v -u
-        - cd ..
-        - go generate
-        - set revision={{ event.head.sha }}
-        - go install -v -ldflags "-X main.revision=%revision%" ./...
-        - set GORACE=history_size=7
-        - C:\generic-worker\generic-worker-test-creds.cmd
-        - 'go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v ./...'
-        - set GW_TESTS_RUN_AS_TASK_USER=true
-        - 'go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v'
-        - ineffassign .
-      artifacts:
-        - name: public/build/generic-worker-windows-386.exe
-          path: gopath1.10.3\bin\generic-worker.exe
-          expires: "{{ '2 weeks' | $fromNow }}"
-          type: file
-      mounts:
-        - cacheName: generic-worker-checkout
-          directory: gopath1.10.3\src
-        - content:
-            url: https://storage.googleapis.com/golang/go1.10.3.windows-386.zip
-            sha256: 89696a29bdf808fa9861216a21824ae8eb2e750a54b1424ce7f2a177e5cd1466
-          directory: go1.10.3
-          format: zip
-        - content:
-            url: https://github.com/git-for-windows/git/releases/download/v2.11.0.windows.3/Git-2.11.0.3-32-bit.tar.bz2
-            sha256: 0f0e2f78fc9b91d6c860eb7de742f3601b0ccd13c5c61444c7cf55b00bcb4ed4
-          directory: git
-          format: tar.bz2
-
-
-  ##########################################################
-  #################### Windows 10 Build ####################
-  ##########################################################
-
-  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
-    workerType: gecko-t-win10-64-cu
-    metadata:
-      name: "Build/test 64 bit generic-worker on Windows 10"
-      description: "This builds and tests the 32 bit Windows version of generic-worker on Windows 10"
-      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
-      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
-    extra:
-      github:
-        # Events that will trigger this task
-        events:
-          - pull_request.synchronize
-          - push
-    scopes:
-      - generic-worker:cache:generic-worker-checkout
-    payload:
-      maxRunTime: 3600
-      env:
-        # once bug 1508383 is landed, this won't be required (the worker will supply it)
-        TASKCLUSTER_ROOT_URL: https://taskcluster.net
-      command:
-        - set CGO_ENABLED=0
-        - set GOPATH=%CD%\gopath1.10.3
-        - set GOROOT=%CD%\go1.10.3\go
-        - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
-        - git config --global core.autocrlf false
-        - go version
-        - go env
-        - 'if not exist "%GOPATH%\src\github.com\taskcluster" mkdir "%GOPATH%\src\github.com\taskcluster"'
-        - 'cd "%GOPATH%\src\github.com\taskcluster"'
-        - 'if not exist generic-worker git clone {{ event.head.repo.url }} generic-worker'
-        - 'cd generic-worker'
-        - 'git fetch "{{ event.head.repo.url }}" "+{{ event.head.ref }}:refs/heads/X%TASK_ID%"'
-        - 'git checkout -f "X%TASK_ID%"'
-        - 'git reset --hard "{{ event.head.sha }}"'
-        - 'git clean -fdx'
-        - 'git checkout -B tmp -t "X%TASK_ID%"'
-        - go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
-        - cd gw-codegen
-        - go get -v -u
-        - cd ..
-        - go generate
-        - |
-          :: this counts the number of lines returned by git status
-          :: dump temp file a directory higher, otherwise git status reports the tmp1.txt file!
-          git status --porcelain | C:\Windows\System32\find.exe /v /c "" > ..\tmp1.txt
-          set /P lines=<..\tmp1.txt
-          :: this checks that if more than 0 lines are returned, we fail
-          if %lines% gtr 0 exit /b 64
-          :: find.exe will have exited with exit code 1, so need to explicitly exit with 0
-          exit /b 0
-        - git rev-parse HEAD > revision.txt
-        - set /p revision=< revision.txt
-        - go install -v -ldflags "-X main.revision=%revision%" ./...
-        - set CGO_ENABLED=1
-        - set GORACE=history_size=7
-        - C:\generic-worker\generic-worker-test-creds.cmd
-        - 'go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
-        - set GW_TESTS_RUN_AS_TASK_USER=true
-        - 'go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
-        - ineffassign .
-      artifacts:
-        - name: public/build/generic-worker-windows-amd64.exe
-          path: gopath1.10.3\bin\generic-worker.exe
-          expires: "{{ '2 weeks' | $fromNow }}"
-          type: file
-      mounts:
-        - cacheName: generic-worker-checkout
-          directory: gopath1.10.3\src
-        - content:
-            url: https://storage.googleapis.com/golang/go1.10.3.windows-amd64.zip
-            sha256: a3f19d4fc0f4b45836b349503e347e64e31ab830dedac2fc9c390836d4418edb
-          directory: go1.10.3
-          format: zip
-        - content:
-            url: https://github.com/git-for-windows/git/releases/download/v2.14.1.windows.1/MinGit-2.14.1-64-bit.zip
-            sha256: 65c12e4959b8874187b68ec37e532fe7fc526e10f6f0f29e699fa1d2449e7d92
-          directory: git
-          format: zip
-
-
-  ##########################################################
-  ############# macOS High Sierra 10.13 Build ##############
-  ##########################################################
-
-  - provisionerId: pmoore-manual
-    workerType: mac-os-x
-    metadata:
-      name: "Build/test 64 bit generic-worker on macOS High Sierra 10.13"
-      description: "This builds the 64 bit macOS version of generic-worker"
-      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
-      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
-    extra:
-      github:
-        # Events that will trigger this task
-        events:
-          - pull_request.synchronize
-          - push
-    scopes:
-      - generic-worker:cache:generic-worker-checkout
-    payload:
-      maxRunTime: 3600
-      env:
-        # once bug 1508383 is landed, this won't be required (the worker will supply it)
-        TASKCLUSTER_ROOT_URL: https://taskcluster.net
-      command:
-        - - /bin/bash
-          - -vxec
-          - |
-            export CGO_ENABLED=0
-            export GOROOT="$(pwd)/go1.10.3/go"
-            export GOPATH="$(pwd)/gopath1.10.3"
-            export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
-            go version
-            go env
-            source "${GW_CREDS_BOOTSTRAP}"
-            mkdir -p "${GOPATH}/src/github.com/taskcluster"
-            cd "${GOPATH}/src/github.com/taskcluster"
-            if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
-            cd 'generic-worker'
-            git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/X${TASK_ID}"
-            git checkout -f "X${TASK_ID}"
-            git reset --hard '{{ event.head.sha }}'
-            git clean -fdx
-            git checkout -B tmp -t "X${TASK_ID}"
-            go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
-            cd gw-codegen
-            go get -v -u
-            cd ..
-            go generate
-            go install -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
-            # output of wc command can contain spaces on darwin, so no quotes around expression
-            test $(git status --porcelain | wc -l) == 0
-            GORACE=history_size=7 CGO_ENABLED=1 go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -v ./...
-            ineffassign .
-      artifacts:
-        - name: public/build/generic-worker-darwin-amd64
-          path: gopath1.10.3/bin/generic-worker
-          expires: "{{ '2 weeks' | $fromNow }}"
-          type: file
-      mounts:
-        - cacheName: generic-worker-checkout
-          directory: gopath1.10.3/src
-        - content:
-            url: https://storage.googleapis.com/golang/go1.10.3.darwin-amd64.tar.gz
-            sha256: 131fd430350a3134d352ee75c5ca456cdf4443e492d0527a9651c7c04e2b458d
-          directory: go1.10.3
-          format: tar.gz
-
-
-  ##########################################################
-  #################### Linux ARM6 Build ####################
-  ##########################################################
-
-
-  ##########################################################
-  # Currently Raspberry PI is not available (being used for other things)
-  # Will reenable when I have it back again
-  ##########################################################
-
-  # - provisionerId: pmoore-manual
-  #   workerType: raspberry-pi-3b
-  #   metadata:
-  #     name: "Build/test ARM6 generic-worker on Linux (Raspberry Pi)"
-  #     description: "This builds the ARM6 Linux version of generic-worker"
-  #     owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
-  #     source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
-  #   extra:
-  #     github:
-  #       # Events that will trigger this task
-  #       events:
-  #         - pull_request.synchronize
-  #         - push
-  #   scopes:
-  #     - generic-worker:cache:generic-worker-checkout
-  #   payload:
-  #     maxRunTime: 3600
-  #     command:
-  #       - - /bin/bash
-  #         - -vxec
-  #         - |
-  #           export CGO_ENABLED=0
-  #           export GOROOT="$(pwd)/go1.10.3/go"
-  #           export GOPATH="$(pwd)/gopath1.10.3"
-  #           export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
-  #           export CGO_ENABLED=0
-  #           go version
-  #           go env
-  #           source "${GW_CREDS_BOOTSTRAP}"
-  #           mkdir -p "${GOPATH}/src/github.com/taskcluster"
-  #           cd "${GOPATH}/src/github.com/taskcluster"
-  #           if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
-  #           cd 'generic-worker'
-  #           git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/X${TASK_ID}"
-  #           git checkout -f "X${TASK_ID}"
-  #           git reset --hard '{{ event.head.sha }}'
-  #           git clean -fdx
-  #           git checkout -B tmp -t "X${TASK_ID}"
-  #           go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
-  #           cd gw-codegen
-  #           go get -v -u
-  #           cd ..
-  #           go generate
-  #           go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v -u -t ./...
-  #           test "$(git status --porcelain | wc -l)" == 0
-  #           GORACE=history_size=7 go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v ./...
-  #           ineffassign .
-  #     artifacts:
-  #       - name: public/build/generic-worker-linux-armv6l
-  #         path: gopath1.10.3/bin/generic-worker
-  #         expires: "{{ '2 weeks' | $fromNow }}"
-  #         type: file
-  #     mounts:
-  #       - cacheName: generic-worker-checkout
-  #         directory: gopath1.10.3/src
-  #       - content:
-  #           url: https://storage.googleapis.com/golang/go1.10.3.linux-armv6l.tar.gz
-  #           sha256: d3df3fa3d153e81041af24f31a82f86a21cb7b92c1b5552fb621bad0320f06b6
-  #         directory: go1.10.3
-  #         format: tar.gz
-
-
-  ##########################################################
-  ################### Linux amd64 Build ####################
+  ############## Check vendored dependencies ###############
   ##########################################################
 
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
     workerType: "{{ taskcluster.docker.workerType }}"
     metadata:
-      name: "Build/test 64 bit generic-worker on Debian GNU/Linux 8 (jessie)"
-      description: "This builds the 64 bit linux version of generic-worker"
-      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
-      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
-    extra:
-      github:
-        # Events that will trigger this task
-        events:
-          - pull_request.synchronize
-          - push
-    scopes:
-      - secrets:get:repo:github.com/taskcluster/generic-worker
-      - docker-worker:cache:generic-worker-checkout
-    payload:
-      features:
-        taskclusterProxy: true
-      maxRunTime: 3600
-      image: golang
-      env:
-        # once bug 1508383 is landed, this won't be required (the worker will supply it)
-        TASKCLUSTER_ROOT_URL: https://taskcluster.net
-      command:
-        - /bin/bash
-        - -vxec
-        - |
-          export CGO_ENABLED=0
-          go version
-          go env
-          curl -s http://taskcluster/secrets/v1/secret/repo:github.com/taskcluster/generic-worker | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -d > ~/env_private.sh
-          source ~/env_private.sh
-          mkdir -p "${GOPATH}/src/github.com/taskcluster"
-          cd "${GOPATH}/src/github.com/taskcluster"
-          if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
-          cd 'generic-worker'
-          git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/X${TASK_ID}"
-          git checkout -f "X${TASK_ID}"
-          git reset --hard '{{ event.head.sha }}'
-          git clean -fdx
-          git checkout -B tmp -t "X${TASK_ID}"
-          go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
-          cd gw-codegen
-          go get -v -u
-          cd ..
-          go generate
-          go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v -u -t ./...
-          test "$(git status --porcelain | wc -l)" == 0
-          GORACE=history_size=7 CGO_ENABLED=1 go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race ./...
-          "${GOPATH}/bin/ineffassign" .
-      artifacts:
-        public/build/generic-worker-linux-amd64:
-          path: "/go/bin/generic-worker"
-          expires: "{{ '2 weeks' | $fromNow }}"
-          type: file
-      cache:
-        generic-worker-checkout: /go/src
-
-  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
-    workerType: "{{ taskcluster.docker.workerType }}"
-    metadata:
-      name: dep-check
+      name: "Run 'dep check' to ensure dependencies are up to date"
       description: "Run 'dep check' to ensure dependencies are up to date"
       owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
       source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
@@ -517,9 +587,6 @@ tasks:
         taskclusterProxy: true
       maxRunTime: 3600
       image: golang:1.10
-      env:
-        # once bug 1508383 is landed, this won't be required (the worker will supply it)
-        TASKCLUSTER_ROOT_URL: https://taskcluster.net
       command:
         - /bin/bash
         - -vxec

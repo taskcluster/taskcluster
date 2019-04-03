@@ -26,6 +26,10 @@
 
 
 [[constraint]]
+  name = "github.com/docker/docker"
+  revision = "ec87479b7e2bf6f1b5bcc657a377c6e6a847574f"
+
+[[constraint]]
   name = "github.com/aws/aws-sdk-go"
   version = "1.15.78"
 

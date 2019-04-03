@@ -1,3 +1,5 @@
+// +build !dockerEngine
+
 package main
 
 import (
