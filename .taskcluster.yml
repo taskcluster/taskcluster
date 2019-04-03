@@ -62,7 +62,6 @@ tasks:
       github:
         # Events that will trigger this task
         events:
-          - pull_request.opened
           - pull_request.synchronize
           - push
     scopes:
@@ -148,7 +147,6 @@ tasks:
       github:
         # Events that will trigger this task
         events:
-          - pull_request.opened
           - pull_request.synchronize
           - push
     scopes:
@@ -223,7 +221,6 @@ tasks:
       github:
         # Events that will trigger this task
         events:
-          - pull_request.opened
           - pull_request.synchronize
           - push
     scopes:
@@ -309,7 +306,6 @@ tasks:
       github:
         # Events that will trigger this task
         events:
-          - pull_request.opened
           - pull_request.synchronize
           - push
     scopes:
@@ -385,7 +381,6 @@ tasks:
   #     github:
   #       # Events that will trigger this task
   #       events:
-  #         - pull_request.opened
   #         - pull_request.synchronize
   #         - push
   #   scopes:
@@ -452,7 +447,6 @@ tasks:
       github:
         # Events that will trigger this task
         events:
-          - pull_request.opened
           - pull_request.synchronize
           - push
     scopes:
@@ -462,7 +456,7 @@ tasks:
       features:
         taskclusterProxy: true
       maxRunTime: 3600
-      image: golang:1.10
+      image: golang
       env:
         # once bug 1508383 is landed, this won't be required (the worker will supply it)
         TASKCLUSTER_ROOT_URL: https://taskcluster.net

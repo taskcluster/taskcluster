@@ -20,7 +20,6 @@ import (
 	"time"
 
 	docopt "github.com/docopt/docopt-go"
-	"github.com/taskcluster/generic-worker/expose"
 	"github.com/taskcluster/generic-worker/fileutil"
 	"github.com/taskcluster/generic-worker/gwconfig"
 	"github.com/taskcluster/generic-worker/process"
@@ -633,26 +632,6 @@ func loadConfig(filename string, queryAWSUserData bool, queryGCPMetaData bool) (
 	return c, nil
 }
 
-var exposer expose.Exposer
-
-func setupExposer() (err error) {
-	if config.LiveLogSecret != "" {
-		exposer, err = expose.NewStatelessDNS(
-			config.PublicIP,
-			config.Subdomain,
-			config.LiveLogSecret,
-			// Allow each exposure to last for 24 hours. After the task completes, the exposure URL
-			// will no longer work anyway (because the port number is dynamic), so this extra validity
-			// does not hurt anything.
-			24*time.Hour,
-			config.LiveLogCertificate,
-			config.LiveLogKey)
-	} else {
-		exposer, err = expose.NewLocal(config.PublicIP)
-	}
-	return err
-}
-
 func ReadTasksResolvedFile() uint {
 	b, err := ioutil.ReadFile("tasks-resolved-count.txt")
 	if err != nil {
@@ -708,12 +687,6 @@ func RunWorker() (exitCode ExitCode) {
 
 	// This *DOESN'T* output secret fields, so is SAFE
 	log.Printf("Config: %v", config)
-
-	err = setupExposer()
-	if err != nil {
-		log.Printf("Could not initialize exposer: %v", err)
-		return INTERNAL_ERROR
-	}
 
 	log.Printf("Detected %s platform", runtime.GOOS)
 	// number of tasks resolved since worker first ran
