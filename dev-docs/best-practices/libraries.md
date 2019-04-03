@@ -12,3 +12,4 @@ This file will automatically be linked from the `README.md` in the root of the r
 
 Library source code should be in a `src` subdirectory.
 No transpilation should be used: write JS that can be interpreted directly by the Node version in use in the repository.
+The `main` property in `package.json` should point to `src/index.js`, which may then load other parts of the library.
