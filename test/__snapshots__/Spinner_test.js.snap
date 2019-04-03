@@ -2,8 +2,6 @@
 
 exports[`<Spinner /> should render correctly 1`] = `
 <WithStyles(Spinner)
-  className={null}
-  color="primary"
   loading={true}
 >
   <Spinner

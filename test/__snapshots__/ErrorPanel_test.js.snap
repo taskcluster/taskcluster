@@ -2,11 +2,7 @@
 
 exports[`<ErrorPanel /> should render correctly 1`] = `
 <WithStyles(ErrorPanel)
-  className={null}
-  disableStackTrace={true}
   error="Foo"
-  onClose={null}
-  warning={false}
 >
   <ErrorPanel
     className={null}

@@ -1,3 +1,3 @@
-import { prop } from 'ramda';
+import prop from 'ramda/src/prop';
 
 export default prop('className');

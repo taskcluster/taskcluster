@@ -2,8 +2,6 @@
 
 exports[`<Label /> should render correctly 1`] = `
 <WithStyles(Label)
-  className={null}
-  mini={false}
   status="default"
 >
   <Label
