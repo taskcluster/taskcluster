@@ -6,13 +6,13 @@
   "license": "MPL-2.0",
   "main": "./index.js",
   "scripts": {
-    "changelog": "auto-changelog",
     "start": "styleguidist server",
     "build": "webpack --mode production && scripts/copyFiles",
     "lint": "eslint --cache --format codeframe --ext js,jsx src",
     "test": "jest",
     "update:authors": "scripts/authors",
     "styleguide:build": "styleguidist build",
+    "styleguide:deploy": "styleguidist build && gh-pages -d styleguide --remote upstream",
     "semantic-release": "semantic-release"
   },
   "devDependencies": {
@@ -24,12 +24,12 @@
     "@neutrinojs/react-components": "^9.0.0-rc.0",
     "@semantic-release/changelog": "^3.0.0",
     "@semantic-release/git": "^7.0.4",
-    "auto-changelog": "^1.8.0",
     "conventional-changelog-eslint": "^3.0.0",
     "enzyme": "^3.8.0",
     "enzyme-adapter-react-16": "^1.7.1",
     "enzyme-to-json": "^3.3.5",
     "eslint": "^5.8.0",
+    "gh-pages": "^2.0.1",
     "jest": "^23.6.0",
     "jest-prop-type-error": "^1.1.0",
     "neutrino": "^9.0.0-rc.0",
