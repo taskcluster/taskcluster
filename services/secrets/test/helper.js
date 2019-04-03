@@ -3,6 +3,7 @@ const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
 const load = require('../src/main');
 const data = require('../src/data');
 const builder = require('../src/api.js');
+const libUrls = require('taskcluster-lib-urls');
 const {withEntity} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
@@ -17,7 +18,7 @@ exports.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/taskcluster-secrets',
   secrets: {
     taskcluster: [
-      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl'},
+      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl', mock: libUrls.testRootUrl()},
       {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId'},
       {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
     ],
