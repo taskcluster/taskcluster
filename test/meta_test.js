@@ -68,10 +68,6 @@ suite('Repo Meta Tests', function() {
 
   test('Dependencies are not missing/unused', async function() {
     const depOptions = {
-      ignoreMatches: [
-        'morgan', // Peer dependency of morgan-debug
-        'ejs', // This dependency is used in web-server (see createApp.js)
-      ],
       specials: [], // don't target webpack
     };
     const root = await depcheck(ROOT_DIR, depOptions);
