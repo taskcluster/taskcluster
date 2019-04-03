@@ -212,17 +212,10 @@ client.onConnected(async (conn) => {
 
 ## Fakes for Testing
 
-The `FakeClient` class can be used instead of `Client` in testing situations,
-to avoid the need for an actual AMQP server.  The class itself has no
-functionality, but serves as a semaphore to activate a "fake" mode when passed
-to higher-level components such as `PulseConsumer`: `fakeConsumer =
-consume({client: new FakeClient(), ..})`.
+This library coordinates with [taskcluster-lib-testing](../testing) to support both fake produces and fake consumers.
 
-The `stop` and `recycle` methods do nothing.  The `activeConnection` property
-is always undefined.  All of `onConnected`, `withConnection`, and `withChannel`
-return immediately without invoking their callback.
-
-A fake client has `client.isFakeClient` set to true.
+Note that while the producer and consumer behavior is properly faked, AMQP connections themselves are not faked.
+Services that interact dirctly with AMQP will need their own, more careful approaches to testing.
 
 # PulseConsumer
 
@@ -341,22 +334,6 @@ still consuming.  Use `queue.withChannel` (above) for this purpose. In this
 case, it is simplest to provide an empty `bindings: []` to the PulseConsumer
 constructor and manage bindings entirely via `withChannel`. Note that with this
 arrangement, routing key reference is not supported.
-
-## Fake Mode
-
-If passed a `FakeClient`, `consume` will return a fake consumer.  That object
-does not interface with an AMQP server, but has an async `fakeMessage` method
-which will call back the message-handling function with the same arguments.
-
-```javascript
-const consumer = consume({
-  client: new FakeClient(),
-  ...
-}, async ({payload, exchange, routingKey, redelivered, routes, routing}) => {
-  // ...
-});
-await consumer.fakeMessage({payload: .., exchange: .., ..});
-```
 
 # PulsePublisher
 
@@ -507,24 +484,6 @@ Default is 12 seconds.
 For compatibility with the deployment at `taskcluster.net`, this function also
 accepts parameters `publish` and `aws`, which control publishing the references
 to an Amazon S3 bucket.
-
-## Fake Mode
-
-If given a `FakeClient`, the resulting publisher will not actually send messages.
-Instead, it is an EventEmitter that will emit a `message` event for every message
-it sends, containing the processed exchange name, routing key, and so on:
-
-```javascript
-publisher.on('message', msg => {
-  assume(msg).to.deeply.equal({
-    exchange: 'exchange/taskcluster-lib-pulse/v2/egg-hatched',
-    routingKey: 'badEgg',
-    payload: {eggId: 'badEgg'},
-    CCs: [],
-  });
-});
-await publisher.eggHatched({eggId: 'badEgg'});
-```
 
 # Testing
 

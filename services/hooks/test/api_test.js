@@ -113,16 +113,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       const r1 = await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       const r2 = await helper.hooks.hook('foo', 'bar');
       assume(r1).deep.equals(r2);
-      helper.checkNextMessage('hook-created', ({payload}) =>
-        assume({hookGroupId: 'foo', hookId: 'bar'}).deep.equals(payload));
+      helper.assertPulseMessage('hook-created', ({payload}) =>
+        _.isEqual({hookGroupId: 'foo', hookId: 'bar'}, payload));
     });
 
     test('creates a hook with slash in hookId', async () => {
       const r1 = await helper.hooks.createHook('foo', 'bar/slash', hookWithTriggerSchema);
       const r2 = await helper.hooks.hook('foo', 'bar/slash');
       assume(r1).deep.equals(r2);
-      helper.checkNextMessage('hook-created', ({payload}) =>
-        assume({hookGroupId: 'foo', hookId: 'bar/slash'}).deep.equals(payload));
+      helper.assertPulseMessage('hook-created', ({payload}) =>
+        _.isEqual({hookGroupId: 'foo', hookId: 'bar/slash'}, payload));
     });
 
     test('with invalid scopes', async () => {
@@ -254,8 +254,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       const r2 = await helper.hooks.updateHook('foo', 'bar', inputWithTriggerSchema);
       assume(r2.metadata).deep.not.equals(r1.metadata);
       assume(r2.task).deep.equals(r1.task);
-      helper.checkNextMessage('hook-updated', ({payload}) =>
-        assume({hookId: 'bar', hookGroupId: 'foo'}).deep.equals(payload));
+      helper.assertPulseMessage('hook-updated', ({payload}) =>
+        _.isEqual({hookId: 'bar', hookGroupId: 'foo'}, payload));
     });
 
     test('fails if resource doesn\'t exist', async () => {
@@ -292,8 +292,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       await helper.hooks.hook('foo', 'bar').then(
         () => { throw new Error('The resource in Hook Table should not exist'); },
         (err) => { assume(err.statusCode).equals(404); });
-      helper.checkNextMessage('hook-deleted', ({payload}) =>
-        assume({hookGroupId: 'foo', hookId: 'bar'}).deep.equals(payload));
+      helper.assertPulseMessage('hook-deleted', ({payload}) =>
+        _.isEqual({hookGroupId: 'foo', hookId: 'bar'}, payload));
       await helper.hooks.listLastFires('foo', 'bar').then(
         () => { throw new Error('The resource in LastFires table should not exist'); },
         (err) => { assume(err.statusCode).equals(404); });
@@ -752,22 +752,26 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       const r1 = await helper.hooks.createHook('foo', 'bar', hookWithBindings);
       const r2 = await helper.hooks.hook('foo', 'bar');
       assume(r1).deep.equals(r2);
-      helper.checkNextMessage('hook-created', ({payload}) =>
-        assume({hookGroupId: 'foo', hookId: 'bar'}).deep.equals(payload));
+      helper.assertPulseMessage('hook-created', ({payload}) =>
+        _.isEqual({hookGroupId: 'foo', hookId: 'bar'}, payload));
     });
 
     test('hook-created message reconciles consumers', async () => {
+      const listener = await helper.load('listeners');
       await helper.hooks.createHook('foo', 'bar', hookWithBindings);
       let reconciledConsumers = false;
-      helper.Listener.reconcileConsumers = async () => reconciledConsumers = true;
-      await helper.Listener.pulseHookChangedListener.fakeMessage({
+      listener.reconcileConsumers = async () => reconciledConsumers = true;
+      await helper.fakePulseMessage({
         payload: {
           hookId: 'bar',
           hookGroupId: 'foo',
-        }, exchange: 'exchange/taskcluster-hooks/v1/hook-created',
+        },
+        exchange: 'exchange/taskcluster-hooks/v1/hook-created',
+        routingKey: '-',
       });
       assert(reconciledConsumers);
     });
+
     test('creating a hook with denied exchanges fails', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithDeniedBindings).then(
         () => { throw new Error('Expected an error'); },

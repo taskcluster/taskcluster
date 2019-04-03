@@ -12,6 +12,7 @@ const testing = require('taskcluster-lib-testing');
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withFakeGithub(mock, skipping);
+  helper.withPulse(mock, skipping);
 
   const URL_PREFIX = 'https://tc-tests.example.com/task-group-inspector/#/';
 

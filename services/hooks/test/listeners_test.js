@@ -194,18 +194,31 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
   });
 
   suite('firing hooks', function() {
+    let hookListeners;
+
     suiteSetup(function() {
       if (skipping()) {
         this.skip();
       }
     });
 
+    setup('load and mock HookListeners', async function() {
+      // force-reload the listeners component for each test
+      helper.load.remove('listeners');
+      hookListeners = await helper.load('listeners');
+    });
+
     test('triggers hook with a pulse message', async () => {
       await makeHookEntities({hookId, bindings: [{exchange: 'e', routingKeyPattern: 'rkp'}]});
-      await helper.Listener.reconcileConsumers();
+      await hookListeners.reconcileConsumers();
 
-      const listener = helper.Listener.listeners[qn(hookGroupId, hookId)];
-      await listener.fakeMessage({payload: {location: 'Orlando'}, exchange: 'e'});
+      await helper.fakePulseMessage({
+        exchange: 'e',
+        routingKey: 'rkp',
+        routes: [],
+        payload: {location: 'Orlando'},
+      });
+
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId,
         hookId,
@@ -216,23 +229,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
 
     test('does nothing if the hook is gone', async () => {
       await makeHookEntities({hookId, bindings: [{exchange: 'e', routingKeyPattern: 'rkp'}]});
-      await helper.Listener.reconcileConsumers();
+      await hookListeners.reconcileConsumers();
 
       await deleteHookEntity(hookId);
-      const listener = helper.Listener.listeners[qn(hookGroupId, hookId)];
-      await listener.fakeMessage({payload: {location: 'Orlando'}, exchange: 'e'});
+
+      await helper.fakePulseMessage({
+        exchange: 'e',
+        routingKey: 'rkp',
+        routes: [],
+        payload: {location: 'Orlando'},
+      });
       assume(helper.creator.fireCalls).deep.equals([]);
     });
 
     test('does nothing if the hook is gone and reconciliation has occurred', async () => {
       await makeHookEntities({hookId, bindings: [{exchange: 'e', routingKeyPattern: 'rkp'}]});
-      await helper.Listener.reconcileConsumers();
+      await hookListeners.reconcileConsumers();
 
       await deleteHookEntity(hookId);
-      await helper.Listener.reconcileConsumers();
+      await hookListeners.reconcileConsumers();
 
       // listener should be gone now
-      assume(helper.Listener.listeners).deep.equals({});
+      assume(hookListeners.listeners).deep.equals({});
     });
   });
 });

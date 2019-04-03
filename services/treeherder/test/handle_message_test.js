@@ -4,6 +4,7 @@ const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
   helper.withLoader();
+  helper.withPulse();
   helper.withHandler();
 
   test('invalid message - more than one matching route', async () => {

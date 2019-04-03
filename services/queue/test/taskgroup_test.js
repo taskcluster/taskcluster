@@ -77,20 +77,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     await helper.startPollingService('dependency-resolver');
 
     await testing.poll(async () => {
-      // When using real queues, we may get results from dependency resolution
-      // of other tests' tasks here, so we look specifically for the message we
-      // want to find and ignore the rest.
-      helper.messages.some(message => {
-        if (message.exchange.endsWith('task-group-resolved') &&
-          message.payload.taskGroupId === taskGroupId &&
-          message.payload.schedulerId === 'dummy-scheduler-extended-extended') {
-          return true;
-        }
-        return false;
-      });
+      helper.assertPulseMessage('task-group-resolved', m => (
+        m.payload.taskGroupId === taskGroupId &&
+        m.payload.schedulerId === 'dummy-scheduler-extended-extended'));
+      // note that depending on timing we are likely to get two such
+      // messages; that's OK
     }, Infinity);
-    // note that depending on timing we are likely to get two such
-    // messages; that's OK
 
     await helper.stopPollingService();
   });

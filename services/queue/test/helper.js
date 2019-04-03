@@ -8,8 +8,7 @@ const temporary = require('temporary');
 const mockAwsS3 = require('mock-aws-s3');
 const nock = require('nock');
 const FakeBlobStore = require('./fake_blob_store');
-const {fakeauth, stickyLoader, Secrets, withEntity} = require('taskcluster-lib-testing');
-const {FakeClient} = require('taskcluster-lib-pulse');
+const {fakeauth, stickyLoader, Secrets, withEntity, withPulse} = require('taskcluster-lib-testing');
 
 const helper = module.exports;
 
@@ -278,55 +277,8 @@ exports.withServer = (mock, skipping) => {
   });
 };
 
-/**
- * Set up PulsePublisher in fake mode, at helper.publisher. Messages are stored
- * in helper.messages.  The `helper.assertPulseMessage` function allows asserting the
- * content of the next message, and `helper.assertNoPulseMessage` is an assertion that
- * no such message is in the queue.  `helper.clearMessages` clears the accumulated
- * messages.
- */
 exports.withPulse = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    await helper.load('cfg');
-    helper.load.inject('pulseClient', new FakeClient());
-    helper.publisher = await helper.load('publisher');
-
-    const matchingMessageExists = (exchange, check) =>
-      helper.messages.some(message =>
-        message.exchange.endsWith(exchange) &&
-        (!check || check(message)));
-
-    helper.assertPulseMessage = (exchange, check) => {
-      if (!matchingMessageExists(exchange, check)) {
-        throw new Error(`No matching messages found on exchange ${exchange}; ` +
-          `found messages with exchanges: ${JSON.stringify(helper.messages.map(m => m.exchange))}`);
-      }
-    };
-
-    helper.assertNoPulseMessage = (exchange, check) => {
-      if (matchingMessageExists(exchange, check)) {
-        throw new Error(`Matching messages found on exchange ${exchange}`);
-      }
-    };
-
-    helper.clearPulseMessages = () => {
-      helper.messages = [];
-    };
-  });
-
-  const fakePublish = msg => { helper.messages.push(msg); };
-  setup(function() {
-    helper.messages = [];
-    helper.publisher.on('message', fakePublish);
-  });
-
-  teardown(function() {
-    helper.publisher.removeListener('message', fakePublish);
-  });
+  withPulse({helper, skipping, namespace: 'taskcluster-queue'});
 };
 
 /**

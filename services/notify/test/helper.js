@@ -2,8 +2,7 @@ const assert = require('assert');
 const path = require('path');
 const aws = require('aws-sdk');
 const taskcluster = require('taskcluster-client');
-const {FakeClient} = require('taskcluster-lib-pulse');
-const {stickyLoader, Secrets, fakeauth, withEntity} = require('taskcluster-lib-testing');
+const {stickyLoader, Secrets, fakeauth, withEntity, withPulse} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const load = require('../src/main');
 const RateLimit = require('../src/ratelimit');
@@ -24,7 +23,6 @@ exports.load = stickyLoader(load);
 suiteSetup(async function() {
   exports.load.inject('profile', 'test');
   exports.load.inject('process', 'test');
-  exports.load.inject('pulseClient', new FakeClient());
 });
 
 // set up the testing secrets
@@ -67,7 +65,7 @@ class MockSQS {
 exports.withSQS = (mock, skipping) => {
   let sqs;
 
-  suiteSetup(async function() {
+  suiteSetup('withSQS', async function() {
     if (skipping()) {
       return;
     }
@@ -122,7 +120,7 @@ exports.withSQS = (mock, skipping) => {
     }
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown('withSQS', async function() {
     if (skipping()) {
       return;
     }
@@ -153,7 +151,7 @@ exports.withSES = (mock, skipping) => {
   let ses;
   let sqs;
 
-  suiteSetup(async function() {
+  suiteSetup('withSES', async function() {
     if (skipping()) {
       return;
     }
@@ -164,7 +162,7 @@ exports.withSES = (mock, skipping) => {
       ses = new MockSES();
       exports.load.inject('ses', ses);
       exports.checkEmails = (check) => {
-        assert(ses.emails.length === 1, `Not exactly one email present! (${ses.emails.length})`);
+        assert.equal(ses.emails.length, 1, 'Not exactly one email present!');
         check(ses.emails.pop());
       };
     } else {
@@ -225,7 +223,7 @@ exports.withSES = (mock, skipping) => {
     }
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown('withSES', async function() {
     if (skipping()) {
       return;
     }
@@ -271,7 +269,7 @@ const stubbedQueue = () => {
  * The component is available at `helper.queue`.
  */
 exports.withFakeQueue = (mock, skipping) => {
-  suiteSetup(function() {
+  suiteSetup('withFakeQueue', function() {
     if (skipping()) {
       return;
     }
@@ -281,64 +279,8 @@ exports.withFakeQueue = (mock, skipping) => {
   });
 };
 
-/**
- * Set up PulsePublisher in fake mode, at helper.publisher. Messages are stored
- * in helper.messages.  The `helper.checkNextMessage` function allows asserting the
- * content of the next message, and `helper.checkNoNextMessage` is an assertion that
- * no such message is in the queue.
- */
 exports.withPulse = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    await exports.load('cfg');
-    exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
-    exports.publisher = await exports.load('publisher');
-
-    exports.checkNextMessage = (exchange, check) => {
-      for (let i = 0; i < exports.messages.length; i++) {
-        const message = exports.messages[i];
-        // skip messages for other exchanges; this allows us to ignore
-        // ordering of messages that occur in indeterminate order
-        if (!message.exchange.endsWith(exchange)) {
-          continue;
-        }
-        check && check(message);
-        exports.messages.splice(i, 1); // delete message from queue
-        return;
-      }
-      throw new Error(`No messages found on exchange ${exchange}; ` +
-        `message exchanges: ${JSON.stringify(exports.messages.map(m => m.exchange))}`);
-    };
-
-    exports.checkNoNextMessage = exchange => {
-      assert(!exports.messages.some(m => m.exchange.endsWith(exchange)));
-    };
-  });
-
-  const fakePublish = msg => { exports.messages.push(msg); };
-  setup(function() {
-    exports.messages = [];
-    exports.publisher.on('message', fakePublish);
-  });
-
-  teardown(function() {
-    exports.publisher.removeListener('message', fakePublish);
-  });
-};
-
-exports.withHandler = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    const handler = await exports.load('handler');
-    exports.handler = handler;
-    exports.pq = handler.pq;
-  });
+  withPulse({helper: exports, skipping, namespace: 'taskcluster-notify'});
 };
 
 /**
@@ -347,7 +289,7 @@ exports.withHandler = (mock, skipping) => {
 exports.withServer = (mock, skipping) => {
   let webServer;
 
-  suiteSetup(async function() {
+  suiteSetup('withServer', async function() {
     if (skipping()) {
       return;
     }

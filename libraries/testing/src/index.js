@@ -7,4 +7,5 @@ module.exports = {
   ...require('./time'),
   withEntity: require('./with-entity'),
   suiteName: require('./suite-name'),
+  withPulse: require('./with-pulse'),
 };

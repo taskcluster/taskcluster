@@ -43,6 +43,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     };
   };
 
+  suiteSetup('load handlers', async function() {
+    if (skipping()) {
+      return;
+    }
+
+    // set up the handlers component so we can send pulse messages to it
+    await helper.load('handlers');
+  });
+
   test('Run task and test indexing', async function() {
     const taskId = slugid.nice();
     const task = makeTask();
@@ -51,13 +60,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     debug('### Send fake message, taskid ' + taskId);
     const message = {
       exchange: 'exchange/taskcluster-queue/v1/task-completed',
-      routingKey: 'ignored',
+      routingKey: 'route.index.abc',
       routes: task.routes,
       payload: {
         status: {taskId},
       },
     };
-    helper.pq.fakeMessage(message);
+    await helper.fakePulseMessage(message);
 
     // poll until all of these succeed, as it's not well-defined in what
     // order they will start succeeding
@@ -121,13 +130,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     debug('### Send fake message');
     const message = {
       exchange: 'exchange/taskcluster-queue/v1/task-completed',
-      routingKey: 'ignored',
+      routingKey: 'route.index.abc',
       routes: task.routes,
       payload: {
         status: {taskId},
       },
     };
-    helper.pq.fakeMessage(message);
+    await helper.fakePulseMessage(message);
 
     debug('### Find task in index');
     let result = await testing.poll(function() {

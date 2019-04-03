@@ -10,13 +10,14 @@ const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), () => {
   let monitor, scopeResolver;
-  setup(async () => {
+
+  setup(() => {
     monitorManager.setup({
       mock: true,
     });
     monitor = monitorManager.monitor();
-    scopeResolver = new ScopeResolver({monitor, disableCache: true});
   });
+
   teardown(() => {
     monitorManager.terminate();
   });
@@ -29,6 +30,8 @@ suite(testing.suiteName(), () => {
 
     setup('mock scoperesolver reloading', async function() {
       reloads = [];
+
+      scopeResolver = new ScopeResolver({monitor, disableCache: true});
 
       scopeResolver.reload = () => reloads.push('all');
       scopeResolver.reloadClient = (clientId) => reloads.push(clientId);
@@ -46,8 +49,17 @@ suite(testing.suiteName(), () => {
       reloads = [];
     });
 
+    teardown('stop scoperesovler consumers', async function() {
+      await scopeResolver.stop();
+    });
+
     test('client messages reload specific clients', async function() {
-      await scopeResolver._clientPq.fakeMessage({payload: {clientId: 'clid'}});
+      await helper.fakePulseMessage({
+        exchange: 'exchange/taskcluster-auth/v1/client-created',
+        routingKey: '-',
+        routes: [],
+        payload: {clientId: 'clid'},
+      });
       assume(reloads).to.deeply.equal(['clid']);
     });
 
@@ -57,7 +69,13 @@ suite(testing.suiteName(), () => {
     });
 
     test('role messages reload all roles', async function() {
-      await scopeResolver._rolePq.fakeMessage({payload: {}});
+      assume(reloads).to.deeply.equal([]);
+      await helper.fakePulseMessage({
+        exchange: 'exchange/taskcluster-auth/v1/role-created',
+        routingKey: '-',
+        routes: [],
+        payload: {},
+      });
       assume(reloads).to.deeply.equal(['roles']);
     });
   });

@@ -1,7 +1,5 @@
 import assert from 'assert';
 import MonitorManager from 'taskcluster-lib-monitor';
-import {FakeClient} from 'taskcluster-lib-pulse';
-import PulseEngine from '../src/PulseEngine';
 import PulseIterator from '../src/PulseEngine/PulseIterator';
 const testing = require('taskcluster-lib-testing');
 
@@ -32,11 +30,6 @@ suite(testing.suiteName(), function() {
   // pause for "a beat" to let async things filter out; `for await` in particular
   // does not activate immediately
   const beat = () => new Promise(resolve => setTimeout(resolve, 1));
-
-  test('can be constructed with a fake client', function() {
-    // can't test much more of this since PulseEngine accesses amqplib APIs directly
-    new PulseEngine({monitor: manager.monitor(), pulseClient: new FakeClient()});
-  });
 
   suite('PulseIterator', function() {
     test('queues up pushed messages', async function() {

@@ -216,10 +216,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     debug('### Wait for taskB, taskC, taskD, taskE to be pending');
     await testing.poll(async () => {
-      const nowPending = new Set(helper.messages
-        .filter(m => m.exchange.endsWith('task-pending'))
-        .map(m => m.payload.status.taskId));
-      assume(nowPending).to.deeply.equal(new Set([taskIdB, taskIdC, taskIdD, taskIdE]));
+      helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdB);
+      helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdC);
+      helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdD);
+      helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdE);
     }, 10, 250);
 
     debug('### listTaskDependents, limit = 2');

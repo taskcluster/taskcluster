@@ -137,9 +137,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
   test('createTask is idempotent even when it fails sending pulse messages', async () => {
     const taskId = slugid.v4();
+    const publisher = await helper.load('publisher');
     // make the `this.publisher.taskDefined` call in createTask fail..
-    const oldTD = helper.publisher.taskDefined;
-    helper.publisher.taskDefined = async () => {
+    const oldTD = publisher.taskDefined;
+    publisher.taskDefined = async () => {
       debug('publisher.taskDefined failing with fake error');
       throw new Error('uhoh');
     };
@@ -154,7 +155,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
         }
       }
     } finally {
-      helper.publisher.taskDefined = oldTD;
+      publisher.taskDefined = oldTD;
     }
     await helper.queue.createTask(taskId, taskDef);
   });

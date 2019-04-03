@@ -124,7 +124,10 @@ class HookListeners {
     const fullQueueName = this.client.fullObjectName('queue', queueName);
     const result = [...oldBindings];
 
-    if (!this.client.isFakeClient) {
+    if (this.client.isFakeClient) {
+      // update the bindings for the FakePulseConsumer
+      this.listeners[queueName].setFakeBindings(newBindings);
+    } else {
       let intersection = _.intersectionWith(oldBindings, newBindings, _.isEqual);
       const delBindings = _.differenceWith(oldBindings, intersection, _.isEqual);
       const addBindings = _.differenceWith(newBindings, intersection, _.isEqual);

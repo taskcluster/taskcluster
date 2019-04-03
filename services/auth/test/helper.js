@@ -1,5 +1,4 @@
 const debug = require('debug')('test-helper');
-const assert = require('assert');
 const _ = require('lodash');
 const data = require('../src/data');
 const builder = require('../src/api');
@@ -10,8 +9,7 @@ const azure = require('fast-azure-storage');
 const uuid = require('uuid');
 const Builder = require('taskcluster-lib-api');
 const SchemaSet = require('taskcluster-lib-validate');
-const {stickyLoader, Secrets, withEntity} = require('taskcluster-lib-testing');
-const {FakeClient} = require('taskcluster-lib-pulse');
+const {stickyLoader, Secrets, withEntity, withPulse} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
 
@@ -200,55 +198,8 @@ exports.withSentry = (mock, skipping) => {
   });
 };
 
-/**
- * Set up tc-lib-pulse in fake mode, with a publisher at at helper.publisher.
- * Messages are stored in helper.messages.  The `helper.checkNextMessage`
- * function allows asserting the content of the next message, and
- * `helper.checkNoNextMessage` is an assertion that no such message is in the
- * queue.
- */
 exports.withPulse = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    exports.load.inject('pulseClient', new FakeClient());
-
-    await exports.load('cfg');
-    exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
-    exports.publisher = await exports.load('publisher');
-
-    exports.checkNextMessage = (exchange, check) => {
-      for (let i = 0; i < exports.messages.length; i++) {
-        const message = exports.messages[i];
-        // skip messages for other exchanges; this allows us to ignore
-        // ordering of messages that occur in indeterminate order
-        if (!message.exchange.endsWith(exchange)) {
-          continue;
-        }
-        check && check(message);
-        exports.messages.splice(i, 1); // delete message from queue
-        return;
-      }
-      throw new Error(`No messages found on exchange ${exchange}; ` +
-        `message exchanges: ${JSON.stringify(exports.messages.map(m => m.exchange))}`);
-    };
-
-    exports.checkNoNextMessage = exchange => {
-      assert(!exports.messages.some(m => m.exchange.endsWith(exchange)));
-    };
-  });
-
-  const recordMessage = msg => exports.messages.push(msg);
-  setup(function() {
-    exports.messages = [];
-    exports.publisher.on('message', recordMessage);
-  });
-
-  teardown(function() {
-    exports.publisher.removeListener('message', recordMessage);
-  });
+  withPulse({helper: exports, skipping, namespace: 'taskcluster-auth'});
 };
 
 const testServiceBuilder = new Builder({

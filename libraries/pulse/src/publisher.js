@@ -1,7 +1,6 @@
 const assert = require('assert');
 const libUrls = require('taskcluster-lib-urls');
 const debug = require('debug')('taskcluster-lib-pulse.publisher');
-const EventEmitter = require('events');
 const url = require('url');
 const AWS = require('aws-sdk');
 
@@ -47,7 +46,7 @@ class Exchanges {
     }
 
     if (client.isFakeClient) {
-      publisher = new FakePulsePublisher({rootUrl, schemaset, exchanges: this});
+      publisher = client.makeFakePublisher({rootUrl, schemaset, client, exchanges: this, PulsePublisher});
     } else {
       publisher = new PulsePublisher({rootUrl, schemaset, client, sendDeadline, exchanges: this});
     }
@@ -421,29 +420,5 @@ class PulsePublisher {
       Body: JSON.stringify(reference, undefined, 2),
       ContentType: 'application/json',
     }).promise();
-  }
-}
-
-class FakePulsePublisher extends EventEmitter {
-  constructor({rootUrl, schemaset, client, exchanges}) {
-    super();
-    this.rootUrl = rootUrl;
-    this.schemaset = schemaset;
-    this.exchanges = exchanges;
-
-    // bind a few methods from the real PulsePublisher here
-    this._declareMethods = PulsePublisher.prototype._declareMethods.bind(this);
-    this._validateMessage = PulsePublisher.prototype._validateMessage.bind(this);
-    this._routingKeyToString = PulsePublisher.prototype._routingKeyToString.bind(this);
-  }
-
-  async _start() {
-    // steal _declareMethods from the real PulsePublisher; the resulting
-    // methods will call our _send method
-    await this._declareMethods();
-  }
-
-  async _send(exchange, routingKey, payload, CCs) {
-    this.emit('message', {exchange, routingKey, payload: JSON.parse(payload), CCs});
   }
 }

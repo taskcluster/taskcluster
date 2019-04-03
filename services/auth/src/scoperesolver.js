@@ -97,6 +97,11 @@ class ScopeResolver extends events.EventEmitter {
     }, options.cacheExpiry);
   }
 
+  async stop() {
+    await this._clientPq.stop();
+    await this._rolePq.stop();
+  }
+
   /**
    * Reload clients, roles, or both on notifications of changes via pulse.
    */

@@ -29,7 +29,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure'], function(mock, s
   const CLIENT_ID = 'nobody/sds:ad_asd/df-sAdSfchsdfsdfs';
   test('auth.deleteClient (non-existent)', async () => {
     await helper.apiClient.deleteClient(CLIENT_ID);
-    helper.checkNextMessage('client-deleted', m => assert.equal(m.payload.clientId, CLIENT_ID));
+    helper.assertPulseMessage('client-deleted', m => m.payload.clientId === CLIENT_ID);
   });
 
   test('auth.deleteClient (invalid root credentials)', async () => {
@@ -39,7 +39,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure'], function(mock, s
       accessToken: 'wrong',
     })).deleteClient(CLIENT_ID).then(() => {
       assert(false, 'Expected an error');
-      helper.checkNoNextMessage();
+      helper.assertNoPulseMessage();
     }, err => {
     });
   });
@@ -51,7 +51,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure'], function(mock, s
       accessToken: 'no-secret',
     })).deleteClient(CLIENT_ID).then(() => {
       assert(false, 'Expected an error');
-      helper.checkNoNextMessage();
+      helper.assertNoPulseMessage();
     }, err => {
       // Expected error
     });
@@ -75,7 +75,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure'], function(mock, s
     assume(client2).has.not.own('accessToken');
     assume(client2.expandedScopes).to.deeply.equal([]);
 
-    helper.checkNextMessage('client-created', m => assert.equal(m.payload.clientId, CLIENT_ID));
+    helper.assertPulseMessage('client-created', m => m.payload.clientId === CLIENT_ID);
     await helper.apiClient.deleteClient(CLIENT_ID);
   });
 
@@ -106,7 +106,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure'], function(mock, s
     assume(client2.scopes).not.contains('assume:client-id:' + CLIENT_ID);
     assume(client2.expandedScopes).not.contains('assume:client-id:' + CLIENT_ID);
 
-    helper.checkNextMessage('client-created', m => assert.equal(m.payload.clientId, CLIENT_ID));
+    helper.assertPulseMessage('client-created', m => m.payload.clientId === CLIENT_ID);
   });
 
   test('create client with a **-scope', async () => {
@@ -131,7 +131,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure'], function(mock, s
       expires, description, scopes,
     });
 
-    helper.checkNextMessage('client-created', m => assert.equal(m.payload.clientId, CLIENT_ID));
+    helper.assertPulseMessage('client-created', m => m.payload.clientId === CLIENT_ID);
   };
 
   test('auth.resetAccessToken', async () => {
@@ -140,7 +140,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure'], function(mock, s
     assume(new Date(client.lastRotated).getTime())
       .is.greaterThan(new Date(client.lastModified).getTime());
     assume(client.accessToken).is.a('string');
-    helper.checkNextMessage('client-updated', m => assert.equal(m.payload.clientId, CLIENT_ID));
+    helper.assertPulseMessage('client-updated', m => m.payload.clientId === CLIENT_ID);
 
     let client2 = await helper.apiClient.client(CLIENT_ID);
     assume(client2.lastRotated).equals(client.lastRotated);
@@ -204,7 +204,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure'], function(mock, s
     assume(client.scopes).contains('myapi:*');
     assume(client.expandedScopes).contains('scope1');
     assume(client.expandedScopes).contains('myapi:*');
-    helper.checkNextMessage('client-updated', m => assert.equal(m.payload.clientId, CLIENT_ID));
+    helper.assertPulseMessage('client-updated', m => m.payload.clientId === CLIENT_ID);
 
     let client2 = await helper.apiClient.client(CLIENT_ID);
     assume(client2.lastModified).equals(client.lastModified);
@@ -237,7 +237,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure'], function(mock, s
     assume(client.expandedScopes).contains('scope2');
     assume(client.expandedScopes).contains('scope3');
     assume(client.expandedScopes).not.contains('myapi:*');
-    helper.checkNextMessage('client-updated', m => assert.equal(m.payload.clientId, CLIENT_ID));
+    helper.assertPulseMessage('client-updated', m => m.payload.clientId === CLIENT_ID);
 
     let client2 = await helper.apiClient.client(CLIENT_ID);
     assume(client2.lastModified).equals(client.lastModified);
@@ -288,7 +288,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure'], function(mock, s
     await helper.apiClient.deleteClient(CLIENT_ID);
     await helper.apiClient.deleteClient(CLIENT_ID);
 
-    helper.checkNextMessage('client-deleted', m => assert.equal(m.payload.clientId, CLIENT_ID));
+    helper.assertPulseMessage('client-deleted', m => m.payload.clientId === CLIENT_ID);
 
     await helper.apiClient.client(CLIENT_ID).then(() => {
       assert(false, 'Expected an error');
@@ -325,12 +325,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure'], function(mock, s
       scopes: ['assume:myrole:a', 'myapi:b:a'],
     });
 
-    helper.checkNextMessage('role-created', m => {
-      assert.equal(m.payload.roleId, 'myrole:a');
-    });
-    helper.checkNextMessage('role-created', m => {
-      assert.equal(m.payload.roleId, 'myrole:b');
-    });
+    helper.assertPulseMessage('role-created', m => m.payload.roleId === 'myrole:a');
+    helper.assertPulseMessage('role-created', m => m.payload.roleId === 'myrole:b');
 
     assumeScopesetsEqual(await helper.apiClient.expandScopes({scopes: [
       'assume:myrole:b',

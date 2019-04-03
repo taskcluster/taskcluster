@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
@@ -25,10 +26,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(m
 
   test('pulse', async function() {
     await helper.apiClient.pulse({routingKey: 'notify-test', message: {test: 123}});
-    helper.checkNextMessage('notification', m => {
-      assert.deepEqual(m.payload.message, {test: 123});
-      assert.deepEqual(m.CCs, ['route.notify-test']);
-    });
+    helper.assertPulseMessage('notification', m => (
+      _.isEqual(m.payload.message, {test: 123}) &&
+      _.isEqual(m.CCs, ['route.notify-test'])));
   });
 
   test('does not send notifications to denylisted pulse address', async function() {
