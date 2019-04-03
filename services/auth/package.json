@@ -7,21 +7,5 @@
     "test": "mocha test/*_test.js",
     "test:cleanup": "mocha test/cleanup.js",
     "lint": "eslint src/*.js test/*.js"
-  },
-  "dependencies": {
-    "aws-sdk": "^2.150.0",
-    "azure-blob-storage": "^4.1.0",
-    "azure-entities": "^5.2.0",
-    "debug": "^4.0.0",
-    "fast-azure-storage": "^2.3.0",
-    "hashids": "^1.2.2",
-    "hawk": "^7.0.10",
-    "jsonwebtoken": "^8.1.0",
-    "lodash": "^4.17.4",
-    "quick-lru": "^3.0.0",
-    "sentry-api": "^0.1.1",
-    "slugid": "^2.0.0",
-    "statsum": "^0.6.0",
-    "superagent": "^4.0.0"
   }
 }

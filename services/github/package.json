@@ -5,17 +5,5 @@
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
     "test": "mocha test/*_test.js"
-  },
-  "dependencies": {
-    "@octokit/rest": "^16.15.0",
-    "ajv": "^6.5.0",
-    "azure-entities": "^5.2.0",
-    "debug": "^4.0.0",
-    "js-yaml": "^3.10.0",
-    "json-e": "^2.5.0",
-    "json-parameterization": "^0.2.0",
-    "jsonwebtoken": "^8.1.0",
-    "lodash": "^4.11.1",
-    "slugid": "^2.0.0"
   }
 }

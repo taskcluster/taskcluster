@@ -6,15 +6,5 @@
     "lint": "eslint src/*.js test/*.js",
     "test": "mocha test/*_test.js"
   },
-  "author": "",
-  "license": "MPL-2.0",
-  "dependencies": {
-    "ajv": "6.10.0",
-    "azure-entities": "^5.2.0",
-    "cron-parser": "2.10.0",
-    "debug": "^4.0.0",
-    "json-e": "^2.3.5",
-    "lodash": "^4.17.4",
-    "promise": "^8.0.1"
-  }
+  "license": "MPL-2.0"
 }

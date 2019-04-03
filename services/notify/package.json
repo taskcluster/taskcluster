@@ -7,17 +7,5 @@
   "scripts": {
     "test": "mocha test/*_test.js",
     "lint": "eslint src/*.js test/*.js"
-  },
-  "dependencies": {
-    "aws-sdk": "^2.379.0",
-    "azure-entities": "^5.2.0",
-    "debug": "^4.0.0",
-    "email-templates": "^5.0.2",
-    "irc-upd": "^0.10.0",
-    "json-e": "^2.5.0",
-    "lodash": "^4.11.1",
-    "marked": "^0.6.0",
-    "nodemailer": "^5.0.0",
-    "slugid": "^2.0.0"
   }
 }
