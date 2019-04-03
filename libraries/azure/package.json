@@ -9,10 +9,5 @@
     "lint": "eslint src/*.js test/*.js",
     "test": "mocha test/*_test.js"
   },
-  "files": [
-    "src"
-  ],
-  "main": "./src/index.js",
-  "dependencies": {
-  }
+  "main": "./src/index.js"
 }

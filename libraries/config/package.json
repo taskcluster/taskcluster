@@ -9,13 +9,5 @@
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
     "test": "mocha test/*_test.js"
-  },
-  "files": [
-    "src"
-  ],
-  "dependencies": {
-    "debug": "^4.1.0",
-    "js-yaml": "^3.12.1",
-    "lodash": "^4.17.11"
   }
 }

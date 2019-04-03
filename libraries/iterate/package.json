@@ -8,18 +8,6 @@
     "lint": "eslint src/*.js test/*.js",
     "test": "mocha"
   },
-  "files": [
-    "src/*"
-  ],
-  "keywords": [
-    "taskcluster"
-  ],
   "author": "John Ford <jhford@mozilla.com>",
-  "license": "MPL-2.0",
-  "dependencies": {
-    "debug": "^4.1.0"
-  },
-  "engines": {
-    "node": ">=8"
-  }
+  "license": "MPL-2.0"
 }

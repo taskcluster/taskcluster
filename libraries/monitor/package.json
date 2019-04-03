@@ -9,17 +9,5 @@
     "lint": "eslint src/*.js test/*.js",
     "test": "mocha test/*_test.js"
   },
-  "files": [
-    "src"
-  ],
-  "dependencies": {
-    "app-root-dir": "^1.0.2",
-    "chalk": "^2.4.2",
-    "fast-json-stable-stringify": "^2.0.0",
-    "serialize-error": "^4.0.0"
-  },
-  "main": "./src/index.js",
-  "engines": {
-    "node": ">=8"
-  }
+  "main": "./src/index.js"
 }
