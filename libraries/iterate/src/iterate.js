@@ -198,7 +198,9 @@ class Iterate extends events.EventEmitter {
 
     return new Promise(resolve => {
       this.once('started', resolve);
-      process.nextTick(() => this.iterate());
+      // start iteration; any failures here are a programming error in this
+      // library and so should be considered fatal
+      this.iterate().catch(err => this.emit('error', err));
     });
   }
 
