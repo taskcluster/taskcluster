@@ -4,8 +4,9 @@ const {getCommonSchemas} = require('../src/common-schemas');
 const {makeSerializable} = require('../src/serializable');
 const mockFs = require('mock-fs');
 const References = require('..');
+const testing = require('taskcluster-lib-testing');
 
-suite('references_test.js', function() {
+suite(testing.suiteName(), function() {
   teardown(function() {
     mockFs.restore();
   });

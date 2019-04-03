@@ -3,8 +3,9 @@ let App = require('../');
 let request = require('superagent');
 let express = require('express');
 let isUUID = require('is-uuid');
+const testing = require('taskcluster-lib-testing');
 
-suite('app', function() {
+suite(testing.suiteName(), function() {
 
   // Test app creation
   suite('app({port: 1459})', function() {

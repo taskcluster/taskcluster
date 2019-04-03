@@ -1,8 +1,9 @@
 const sinon = require('sinon');
 const assume = require('assume');
 const {BaseDatastore, InMemoryDatastore} = require('../src/data-storage');
+const testing = require('taskcluster-lib-testing');
 
-suite('Base Datastore', () => {
+suite(testing.suiteName(), () => {
   const sandbox = sinon.createSandbox();
 
   let ds;

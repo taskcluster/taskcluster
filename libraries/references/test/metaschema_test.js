@@ -1,8 +1,9 @@
 const {getCommonSchemas} = require('../src/common-schemas');
 const References = require('..');
 const libUrls = require('taskcluster-lib-urls');
+const testing = require('taskcluster-lib-testing');
 
-suite('metaschema_test.js', function() {
+suite(testing.suiteName(), function() {
   let validate;
 
   suiteSetup('setup Ajv', function() {

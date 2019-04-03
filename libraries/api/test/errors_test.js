@@ -5,8 +5,9 @@ const helper = require('./helper');
 const _ = require('lodash');
 const libUrls = require('taskcluster-lib-urls');
 const expressError = require('../src/middleware/express-error.js');
+const testing = require('taskcluster-lib-testing');
 
-suite('api/errors', function() {
+suite(testing.suiteName(), function() {
   // Create test api
   const builder = new APIBuilder({
     title: 'Test Api',

@@ -4,8 +4,9 @@ const _ = require('lodash');
 const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');
 const yaml = require('js-yaml');
+const testing = require('taskcluster-lib-testing');
 
-suite('intree config', function() {
+suite(testing.suiteName(), function() {
   let intree;
 
   suiteSetup(async function() {

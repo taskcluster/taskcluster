@@ -1,4 +1,3 @@
-const helper = require('./helper');
 const path = require('path');
 const testing = require('taskcluster-lib-testing');
 
@@ -68,7 +67,7 @@ const testCases = [
   },
 ];
 
-suite(helper.suiteName(__filename), function() {
+suite(testing.suiteName(), function() {
   // Run test cases using schemas testing utility from taskcluster-lib-testing
   testing.schemas({
     schemasetOptions: {

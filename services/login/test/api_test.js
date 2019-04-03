@@ -1,11 +1,10 @@
 const libUrls = require('taskcluster-lib-urls');
-require('mocha');
+const assume = require('assume');
+const helper = require('./helper');
+const request = require('superagent');
+const testing = require('taskcluster-lib-testing');
 
-suite('API', function() {
-  let assume = require('assume');
-  let helper = require('./helper');
-  let request = require('superagent');
-
+suite(testing.suiteName(), function() {
   helper.setup();
 
   suite('credentialsFromAccessToken', function() {

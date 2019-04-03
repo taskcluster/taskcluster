@@ -2,9 +2,9 @@ const _ = require('lodash');
 const assert = require('assert');
 const MockDate = require('mockdate');
 const RateLimit = require('../src/ratelimit');
-const helper = require('./helper');
+const testing = require('taskcluster-lib-testing');
 
-suite(helper.suiteName(__filename), function() {
+suite(testing.suiteName(), function() {
   let rateLimit;
 
   setup(async function() {

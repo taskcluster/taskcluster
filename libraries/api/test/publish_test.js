@@ -3,8 +3,9 @@ const config = require('taskcluster-lib-config');
 const aws = require('aws-sdk');
 const assert = require('assert');
 const libUrls = require('taskcluster-lib-urls');
+const testing = require('taskcluster-lib-testing');
 
-suite('api/publish', function() {
+suite(testing.suiteName(), function() {
   const cfg = config({});
 
   if (!cfg.aws || !cfg.referenceTestBucket) {

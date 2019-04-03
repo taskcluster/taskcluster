@@ -1,9 +1,10 @@
-suite('client credential handling', function() {
-  let taskcluster = require('../');
-  let assert = require('assert');
-  let request = require('superagent');
-  let _ = require('lodash');
+const taskcluster = require('../');
+const assert = require('assert');
+const request = require('superagent');
+const _ = require('lodash');
+const testing = require('taskcluster-lib-testing');
 
+suite(testing.suiteName(), function() {
   // This suite exercises the credential-handling functionality of the client
   // against a the auth service's testAuthenticate endpoint.
 

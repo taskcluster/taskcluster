@@ -1,9 +1,9 @@
-const {Secrets, stickyLoader} = require('../');
+const {Secrets, stickyLoader, suiteName} = require('../');
 const _ = require('lodash');
 const assert = require('assert');
 const nock = require('nock');
 
-suite('Secrets', function() {
+suite(suiteName(), function() {
   let oldTaskId;
   let savedEnv;
 

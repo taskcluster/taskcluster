@@ -6,7 +6,7 @@ const assume = require('assume');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withPollingServices(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withS3(mock, skipping);

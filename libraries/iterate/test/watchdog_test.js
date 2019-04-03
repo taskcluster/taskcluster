@@ -1,8 +1,9 @@
 let subject = require('../src/watchdog');
 let sinon = require('sinon');
 let assume = require('assume');
+const testing = require('taskcluster-lib-testing');
 
-suite('watchdog', function() {
+suite(testing.suiteName(), function() {
   let events, start;
 
   setup(function() {

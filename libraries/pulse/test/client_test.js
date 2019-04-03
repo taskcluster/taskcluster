@@ -5,6 +5,7 @@ const assume = require('assume');
 const debugModule = require('debug');
 const libMonitor = require('taskcluster-lib-monitor');
 const slugid = require('slugid');
+const testing = require('taskcluster-lib-testing');
 
 const PULSE_CONNECTION_STRING = process.env.PULSE_CONNECTION_STRING;
 
@@ -298,7 +299,7 @@ const connectionTests = connectionString => {
   });
 };
 
-suite('Client', function() {
+suite(testing.suiteName(), function() {
   suite('with RabbitMQ', function() {
     suiteSetup(function() {
       if (!PULSE_CONNECTION_STRING) {

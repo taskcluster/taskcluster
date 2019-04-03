@@ -7,8 +7,9 @@ const taskcluster = require('taskcluster-client');
 const _ = require('lodash');
 const hookDef = require('./test_definition');
 const libUrls = require('taskcluster-lib-urls');
+const testing = require('taskcluster-lib-testing');
 
-suite('taskcreator_test.js', function() {
+suite(testing.suiteName(), function() {
   helper.secrets.mockSuite('TaskCreator', ['taskcluster'], function(mock, skipping) {
     helper.withEntities(mock, skipping);
 

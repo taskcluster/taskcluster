@@ -1,8 +1,9 @@
 const helper = require('./helper');
 const taskcluster = require('taskcluster-client');
 const assert = require('assert');
+const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(helper.suiteName(__filename), ['app'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['app'], function(mock, skipping) {
   if (!mock) {
     return; // We don't test this with real credentials for now!
   }

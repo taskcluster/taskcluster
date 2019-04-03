@@ -3,8 +3,9 @@ const helper = require('./helper');
 const _ = require('lodash');
 const azure = require('fast-azure-storage');
 const taskcluster = require('taskcluster-client');
+const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure'], function(mock, skipping) {
   if (mock) {
     return; // We only test this with real creds
   }

@@ -3,8 +3,9 @@ const slugid = require('slugid');
 const aws = require('aws-sdk');
 const helper = require('./helper');
 const debug = require('debug')('s3_test');
+const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['app', 'aws'], function(mock, skipping) {
   if (mock) {
     return; // This is actually testing sts tokens and we are not going to mock those
   }

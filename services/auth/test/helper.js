@@ -2,7 +2,6 @@ const debug = require('debug')('test-helper');
 const assert = require('assert');
 const http = require('http');
 const httpProxy = require('http-proxy');
-const path = require('path');
 const _ = require('lodash');
 const data = require('../src/data');
 const builder = require('../src/api');
@@ -16,8 +15,6 @@ const SchemaSet = require('taskcluster-lib-validate');
 const App = require('taskcluster-lib-app');
 const {stickyLoader, Secrets, withEntity} = require('taskcluster-lib-testing');
 const {FakeClient} = require('taskcluster-lib-pulse');
-
-exports.suiteName = path.basename;
 
 exports.load = stickyLoader(load);
 

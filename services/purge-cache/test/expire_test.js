@@ -1,8 +1,9 @@
 const helper = require('./helper');
 const taskcluster = require('taskcluster-client');
 const assume = require('assume');
+const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
 
   test('expire nothing', async function() {

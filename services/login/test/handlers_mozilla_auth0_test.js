@@ -1,7 +1,8 @@
 const assume = require('assume');
 const Handler = require('../src/handlers/mozilla-auth0');
+const testing = require('taskcluster-lib-testing');
 
-suite('handlers/mozilla-auth0', function() {
+suite(testing.suiteName(), function() {
   let handler = new Handler({
     name: 'mozilla-auth0',
     cfg: {

@@ -1,7 +1,8 @@
 const assume = require('assume');
 const {encode, decode} = require('../src/utils');
+const testing = require('taskcluster-lib-testing');
 
-suite('utils', function() {
+suite(testing.suiteName(), function() {
   suite('encoding', () => {
     test('encode does not encode the pipe symbol', () => {
       const result = encode('ad|Mozilla-LDAP|haali');

@@ -6,8 +6,9 @@ const request = require('superagent');
 const slugid = require('slugid');
 const path = require('path');
 const helper = require('./helper');
+const testing = require('taskcluster-lib-testing');
 
-suite('API (context)', function() {
+suite(testing.suiteName(), function() {
   const rootUrl = 'http://localhost:4321';
   test('Provides context', async () => {
     // Create test api
