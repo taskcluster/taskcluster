@@ -42,8 +42,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef());
-    helper.checkNextMessage('task-defined');
-    helper.checkNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined');
+    helper.assertPulseMessage('task-pending');
 
     debug('### Claim task');
     // Reduce scopes available to test minimum set of scopes required
@@ -58,7 +58,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    helper.checkNextMessage('task-running');
+    helper.assertPulseMessage('task-running');
 
     const takenUntil = new Date(r1.takenUntil);
     // Compare to time before the request, because claimTimeout is very small

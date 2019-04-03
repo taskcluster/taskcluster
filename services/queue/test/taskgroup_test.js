@@ -42,14 +42,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     const r1 = await helper.queue.createTask(taskIdA, _.defaults({taskGroupId}, taskDef));
 
     debug('### Listening for task-defined for taskA');
-    helper.checkNextMessage('task-defined', message => assert(message.payload.status.taskId === taskIdA));
-    helper.checkNextMessage('task-pending', message => assert(message.payload.status.taskId === taskIdA));
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdA);
+    helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdA);
 
     debug('### Creating taskB');
     let taskIdB = slugid.v4();
     await helper.queue.createTask(taskIdB, _.defaults({taskGroupId}, taskDef));
-    helper.checkNextMessage('task-defined', message => assert(message.payload.status.taskId === taskIdB));
-    helper.checkNextMessage('task-pending', message => assert(message.payload.status.taskId === taskIdB));
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdB);
+    helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdB);
 
     // Check taskA status (still pending)
     const r2 = await helper.queue.status(taskIdA);
@@ -60,18 +60,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    helper.checkNextMessage('task-running', message => message.payload.status.taskId === taskIdA);
+    helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdA);
     await helper.queue.reportCompleted(taskIdA, 0);
-    helper.checkNextMessage('task-completed', message => message.payload.status.taskId === taskIdA);
+    helper.assertPulseMessage('task-completed', m => m.payload.status.taskId === taskIdA);
 
     debug('### Claim and resolve taskB');
     await helper.queue.claimTask(taskIdB, 0, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    helper.checkNextMessage('task-running', message => message.payload.status.taskId === taskIdB);
+    helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdB);
     await helper.queue.reportCompleted(taskIdB, 0);
-    helper.checkNextMessage('task-completed', message => message.payload.status.taskId === taskIdB);
+    helper.assertPulseMessage('task-completed', m => m.payload.status.taskId === taskIdB);
 
     // dependencies are resolved by an out-of-band process, so wait for it to complete
     await helper.startPollingService('dependency-resolver');

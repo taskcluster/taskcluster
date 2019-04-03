@@ -83,13 +83,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     );
   });
 
-  test('claimWork, reclaimTask, reportCompleted', async () => {
+  test('claimWork, reportCompleted', async () => {
     let taskId = slugid.v4();
+
+    await require('taskcluster-lib-testing').sleep(10000);
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, makeTask('normal', workerType));
-    helper.checkNextMessage('task-defined');
-    helper.checkNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined');
+    helper.assertPulseMessage('task-pending');
 
     debug('### Claim task');
     // Reduce scopes available to test minimum set of scopes required
@@ -130,8 +132,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     assume(r1.tasks[0].task).deep.equals(await helper.queue.task(taskId));
 
     debug('### Waiting for task running message');
-    helper.checkNextMessage('task-running',
-      message => assume(message.payload.status).deep.equals(r1.tasks[0].status));
+    helper.assertPulseMessage('task-running');
 
     debug('### Fetch task status');
     let r2 = await helper.queue.status(taskId);
@@ -141,7 +142,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     // Report completed with temp creds from claimWork
     let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.tasks[0].credentials});
     await queue.reportCompleted(taskId, 0);
-    helper.checkNextMessage('task-completed');
+    helper.assertPulseMessage('task-completed');
   });
 
   test('claimWork, reclaimTask, reportCompleted', async () => {
@@ -149,8 +150,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, makeTask('normal', workerType));
-    helper.checkNextMessage('task-defined');
-    helper.checkNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined');
+    helper.assertPulseMessage('task-pending');
 
     debug('### Claim task');
     // Reduce scopes available to test minimum set of scopes required
@@ -176,8 +177,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     assume(r1.tasks[0].task).deep.equals(await helper.queue.task(taskId));
 
     debug('### Waiting for task running message');
-    helper.checkNextMessage('task-running',
-      message => assume(message.payload.status).deep.equals(r1.tasks[0].status));
+    helper.assertPulseMessage('task-running');
 
     debug('### Fetch task status');
     let r2 = await helper.queue.status(taskId);
@@ -207,7 +207,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     // Report completed with temp creds from reclaimTask
     queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r3.credentials});
     await queue.reportCompleted(taskId, 0);
-    helper.checkNextMessage('task-completed');
+    helper.assertPulseMessage('task-completed');
   });
 
   test('claimWork gets "high" before "normal" priority', async () => {
@@ -216,11 +216,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     debug('### Creating task');
     await helper.queue.createTask(taskIdB, makeTask('normal', workerType));
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdB));
-    helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdB));
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdB);
+    helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdB);
+    helper.clearPulseMessages();
+
     await helper.queue.createTask(taskIdA, makeTask('high', workerType));
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdA));
-    helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdA);
+    helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdA);
+    helper.clearPulseMessages();
 
     debug('### ClaimWork');
     let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
@@ -230,7 +233,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     });
     assert(r1.tasks.length === 1, 'Expected a task');
     assert(r1.tasks[0].status.taskId === taskIdA, 'Expected high priorty task');
-    helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdA);
+    helper.assertNoPulseMessage('task-running', m => m.payload.status.taskId === taskIdB);
+    helper.clearPulseMessages();
 
     debug('### ClaimWork');
     let r2 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
@@ -240,7 +245,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     });
     assert(r2.tasks.length === 1, 'Expected a task');
     assert(r2.tasks[0].status.taskId === taskIdB, 'Expected high priorty task');
-    helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdB));
+    helper.assertNoPulseMessage('task-running', m => m.payload.status.taskId === taskIdA);
+    helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdB);
+    helper.clearPulseMessages();
 
     debug('### reportCompleted');
     // Report completed with temp creds from claimWork
@@ -260,12 +267,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, task);
-    helper.checkNextMessage('task-defined');
-    helper.checkNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskId);
+    helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskId);
+    helper.clearPulseMessages();
+
     debug('### Creating task (again)');
     await helper.queue.createTask(taskId, task);
-    helper.checkNextMessage('task-defined');
-    helper.checkNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskId);
+    helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskId);
+    helper.clearPulseMessages();
 
     debug('### Claim task');
     let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {

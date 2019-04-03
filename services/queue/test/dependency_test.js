@@ -46,8 +46,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     debug('### Create taskA and taskB');
     let r1 = await helper.queue.createTask(taskIdA, taskA);
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdA));
-    helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdA);
+    helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdA);
     assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-defined'), {
       Logger: 'taskcluster.queue.root.api',
       Type: 'task-defined',
@@ -58,10 +58,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       Type: 'task-pending',
       Fields: {taskId: taskIdA, runId: 0, v: 1},
     });
+    helper.clearPulseMessages();
     helper.monitor.reset();
 
     let r2 = await helper.queue.createTask(taskIdB, taskB);
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdB));
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdB);
     assume(r1.status.state).equals('pending');
     assume(r2.status.state).equals('unscheduled');
     assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-defined'), {
@@ -70,6 +71,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       Fields: {taskId: taskIdB, v: 1},
     });
     assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-pending'), undefined);
+    helper.clearPulseMessages();
+    helper.monitor.reset();
 
     debug('### listTaskDependents');
     {
@@ -88,41 +91,48 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       workerId: 'my-worker-extended-extended',
     });
 
-    helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdA);
     assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-running'), {
       Logger: 'taskcluster.queue.root.work-claimer',
       Type: 'task-running',
       Fields: {taskId: taskIdA, runId: 0, v: 1},
     });
+    helper.clearPulseMessages();
+    helper.monitor.reset();
 
     await helper.queue.reportCompleted(taskIdA, 0);
-    helper.checkNextMessage('task-completed', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.assertPulseMessage('task-completed', m => m.payload.status.taskId === taskIdA);
     assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-completed'), {
       Logger: 'taskcluster.queue.root.api',
       Type: 'task-completed',
       Fields: {taskId: taskIdA, runId: 0, v: 1},
     });
+    helper.clearPulseMessages();
+    helper.monitor.reset();
 
     // task B should become pending on next poll
     await testing.poll(
       async () => {
-        helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdB));
+        helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdB);
         assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-pending'), {
           Logger: 'taskcluster.queue.root.dependency-tracker',
           Type: 'task-pending',
           Fields: {taskId: taskIdB, runId: 0, v: 1},
         });
       },
-      Infinity);
+      10, 250);
+    helper.clearPulseMessages();
+    helper.monitor.reset();
 
     debug('### Claim and resolve taskB');
     await helper.queue.claimTask(taskIdB, 0, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdB));
+    helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdB);
     await helper.queue.reportCompleted(taskIdB, 0);
-    helper.checkNextMessage('task-completed', m => assert.equal(m.payload.status.taskId, taskIdB));
+    helper.assertPulseMessage('task-completed', m => m.payload.status.taskId === taskIdB);
+    helper.clearPulseMessages();
 
     debug('### listTaskDependents');
     {
@@ -158,8 +168,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     debug('### Create taskA');
     await helper.queue.createTask(taskIdA, taskA);
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdA));
-    helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdA);
+    helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdA);
+    helper.clearPulseMessages();
 
     debug('### listTaskDependents');
     let d1 = await helper.queue.listDependentTasks(taskIdA);
@@ -168,17 +179,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     debug('### Create taskB, taskC, taskD, taskE');
     await helper.queue.createTask(taskIdB, taskB);
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdB));
-    helper.checkNoNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdB);
+    helper.assertNoPulseMessage('task-pending');
+    helper.clearPulseMessages();
     await helper.queue.createTask(taskIdC, taskC);
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdC));
-    helper.checkNoNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdC);
+    helper.assertNoPulseMessage('task-pending');
+    helper.clearPulseMessages();
     await helper.queue.createTask(taskIdD, taskD);
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdD));
-    helper.checkNoNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdD);
+    helper.assertNoPulseMessage('task-pending');
+    helper.clearPulseMessages();
     await helper.queue.createTask(taskIdE, taskE);
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdE));
-    helper.checkNoNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdE);
+    helper.assertNoPulseMessage('task-pending');
+    helper.clearPulseMessages();
 
     debug('### listTaskDependents');
     let d2 = await helper.queue.listDependentTasks(taskIdA);
@@ -194,16 +209,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdA);
     await helper.queue.reportCompleted(taskIdA, 0);
-    helper.checkNextMessage('task-completed', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.assertPulseMessage('task-completed', m => m.payload.status.taskId === taskIdA);
+    helper.clearPulseMessages();
 
     debug('### Wait for taskB, taskC, taskD, taskE to be pending');
-    await testing.poll(async () => assert(helper.messages.length >= 4), Infinity);
-    const nowPending = new Set(helper.messages
-      .filter(m => m.exchange.endsWith('task-pending'))
-      .map(m => m.payload.status.taskId));
-    assume(nowPending).to.deeply.equal(new Set([taskIdB, taskIdC, taskIdD, taskIdE]));
+    await testing.poll(async () => {
+      const nowPending = new Set(helper.messages
+        .filter(m => m.exchange.endsWith('task-pending'))
+        .map(m => m.payload.status.taskId));
+      assume(nowPending).to.deeply.equal(new Set([taskIdB, taskIdC, taskIdD, taskIdE]));
+    }, 10, 250);
 
     debug('### listTaskDependents, limit = 2');
     let d3 = await helper.queue.listDependentTasks(taskIdA, {limit: 2});
@@ -244,17 +261,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     debug('### Create taskA, taskB, taskC');
     let r1 = await helper.queue.createTask(taskIdA, taskA);
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdA));
-    helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdA);
+    helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdA);
+    helper.clearPulseMessages();
     let r2 = await helper.queue.createTask(taskIdB, taskB);
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdB));
-    helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdB));
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdB);
+    helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdB);
+    helper.clearPulseMessages();
     let r3 = await helper.queue.createTask(taskIdC, taskC);
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdC));
-    helper.checkNoNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdC);
+    helper.assertNoPulseMessage('task-pending');
+    helper.clearPulseMessages();
     let r4 = await helper.queue.createTask(taskIdD, taskD);
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdD));
-    helper.checkNoNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdD);
+    helper.assertNoPulseMessage('task-pending');
+    helper.clearPulseMessages();
     assume(r1.status.state).equals('pending');
     assume(r2.status.state).equals('pending');
     assume(r3.status.state).equals('unscheduled');
@@ -265,30 +286,36 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdA);
+    helper.clearPulseMessages();
     await helper.queue.claimTask(taskIdB, 0, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdB));
+    helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdB);
+    helper.clearPulseMessages();
 
     debug('### Resolve taskA');
     await helper.queue.reportCompleted(taskIdA, 0);
-    helper.checkNextMessage('task-completed', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.assertPulseMessage('task-completed', m => m.payload.status.taskId === taskIdA);
+    helper.clearPulseMessages();
 
     debug('### Wait for taskD to be pending');
     await testing.poll(
-      async () => helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdD)),
-      Infinity);
+      async () => helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdD),
+      10, 250);
+    helper.clearPulseMessages();
 
     debug('### Resolve taskB');
     await helper.queue.reportCompleted(taskIdB, 0);
-    helper.checkNextMessage('task-completed', m => assert.equal(m.payload.status.taskId, taskIdB));
+    helper.assertPulseMessage('task-completed', m => m.payload.status.taskId === taskIdB);
+    helper.clearPulseMessages();
 
     debug('### Wait for taskC to be pending');
     await testing.poll(
-      async () => helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdC)),
-      Infinity);
+      async () => helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdC),
+      10, 250);
+    helper.clearPulseMessages();
 
     await helper.stopPollingService();
   }, {mock}));
@@ -302,12 +329,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     debug('### Create taskA');
     let r1 = await helper.queue.createTask(taskIdA, taskA);
     assume(r1.status.state).equals('unscheduled');
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdA));
-    helper.checkNoNextMessage('task-pending'); // because of the self-dep
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdA);
+    helper.assertNoPulseMessage('task-pending'); // because of the self-dep
+    helper.clearPulseMessages();
 
     debug('### scheduleTask');
     await helper.queue.scheduleTask(taskIdA);
-    helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdA);
+    helper.clearPulseMessages();
 
     debug('### claimTask');
     await helper.queue.claimTask(taskIdA, 0, {
@@ -330,24 +359,29 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     let r2 = await helper.queue.createTask(taskIdB, taskB);
     assume(r1.status.state).equals('pending');
     assume(r2.status.state).equals('unscheduled');
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdA));
-    helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdA));
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdB));
-    helper.checkNoNextMessage('task-pending'); // because of the dep and the self-dep
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdA);
+    helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdA);
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdB);
+    // no pending for taskIdB because of the dep and the self-dep
+    helper.assertNoPulseMessage('task-pending', m => m.payload.status.taskId === taskIdB);
+    helper.clearPulseMessages();
 
     debug('### claimTask and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdA);
+    helper.clearPulseMessages();
     await helper.queue.reportCompleted(taskIdA, 0);
-    helper.checkNextMessage('task-completed', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.assertPulseMessage('task-completed', m => m.payload.status.taskId === taskIdA);
+    helper.clearPulseMessages();
 
     debug('### Check B is still unscheduled');
     let r3 = await helper.queue.status(taskIdB);
     assume(r3.status.state).equals('unscheduled');
-    helper.checkNoNextMessage('task-pending'); // because of the self-dep
+    helper.assertNoPulseMessage('task-pending'); // because of the self-dep
+    helper.clearPulseMessages();
   }, {mock}));
 
   test('taskX <- taskA (missing dependency)', async () => {
@@ -459,24 +493,27 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     let r2 = await helper.queue.createTask(taskIdB, taskB);
     assume(r1.status.state).equals('pending');
     assume(r2.status.state).equals('unscheduled');
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdA));
-    helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdA));
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdB));
-    helper.checkNoNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdA);
+    helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdA);
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdB);
+    helper.assertNoPulseMessage('task-pending', m => m.payload.status.taskId === taskIdB);
+    helper.clearPulseMessages();
 
     debug('### Claim and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdA);
     await helper.queue.reportFailed(taskIdA, 0);
-    helper.checkNextMessage('task-failed', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.assertPulseMessage('task-failed', m => m.payload.status.taskId === taskIdA);
+    helper.clearPulseMessages();
 
     debug('### Wait for taskB to be pending');
     await testing.poll(
-      async () => helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdB)),
-      Infinity);
+      async () => helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdB),
+      10, 250);
+    helper.clearPulseMessages();
 
     await helper.stopPollingService();
   }, {mock}));
@@ -501,9 +538,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     const r2 = await helper.queue.createTask(taskIdB, taskB);
     assume(r1.status.state).equals('unscheduled');
     assume(r2.status.state).equals('unscheduled');
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdA));
-    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdB));
-    helper.checkNoNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdA);
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdB);
+    helper.assertNoPulseMessage('task-pending');
+    helper.clearPulseMessages();
 
     debug('### Get new data wrappers');
     const TaskDependency = helper.TaskDependency;

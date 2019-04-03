@@ -1,4 +1,3 @@
-const assert = require('assert');
 const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
 const libUrls = require('taskcluster-lib-urls');
@@ -281,9 +280,10 @@ exports.withServer = (mock, skipping) => {
 
 /**
  * Set up PulsePublisher in fake mode, at helper.publisher. Messages are stored
- * in helper.messages.  The `helper.checkNextMessage` function allows asserting the
- * content of the next message, and `helper.checkNoNextMessage` is an assertion that
- * no such message is in the queue.
+ * in helper.messages.  The `helper.assertPulseMessage` function allows asserting the
+ * content of the next message, and `helper.assertNoPulseMessage` is an assertion that
+ * no such message is in the queue.  `helper.clearMessages` clears the accumulated
+ * messages.
  */
 exports.withPulse = (mock, skipping) => {
   suiteSetup(async function() {
@@ -295,24 +295,26 @@ exports.withPulse = (mock, skipping) => {
     helper.load.inject('pulseClient', new FakeClient());
     helper.publisher = await helper.load('publisher');
 
-    helper.checkNextMessage = (exchange, check) => {
-      for (let i = 0; i < helper.messages.length; i++) {
-        const message = helper.messages[i];
-        // skip messages for other exchanges; this allows us to ignore
-        // ordering of messages that occur in indeterminate order
-        if (!message.exchange.endsWith(exchange)) {
-          continue;
-        }
-        check && check(message);
-        helper.messages.splice(i, 1); // delete message from queue
-        return;
+    const matchingMessageExists = (exchange, check) =>
+      helper.messages.some(message =>
+        message.exchange.endsWith(exchange) &&
+        (!check || check(message)));
+
+    helper.assertPulseMessage = (exchange, check) => {
+      if (!matchingMessageExists(exchange, check)) {
+        throw new Error(`No matching messages found on exchange ${exchange}; ` +
+          `found messages with exchanges: ${JSON.stringify(helper.messages.map(m => m.exchange))}`);
       }
-      throw new Error(`No messages found on exchange ${exchange}; ` +
-        `message exchanges: ${JSON.stringify(helper.messages.map(m => m.exchange))}`);
     };
 
-    helper.checkNoNextMessage = exchange => {
-      assert(!helper.messages.some(m => m.exchange.endsWith(exchange)));
+    helper.assertNoPulseMessage = (exchange, check) => {
+      if (matchingMessageExists(exchange, check)) {
+        throw new Error(`Matching messages found on exchange ${exchange}`);
+      }
+    };
+
+    helper.clearPulseMessages = () => {
+      helper.messages = [];
     };
   });
 
