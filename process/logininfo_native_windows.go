@@ -1,3 +1,5 @@
+// +build nativeEngine
+
 package process
 
 import (

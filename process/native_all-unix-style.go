@@ -1,4 +1,4 @@
-// +build !windows
+// +build nativeEngine,darwin nativeEngine,linux
 
 package process
 
@@ -88,6 +88,10 @@ func NewCommand(commandLine []string, workingDirectory string, env []string) (*C
 		Cmd:   cmd,
 		abort: make(chan struct{}),
 	}, nil
+}
+
+func (c *Command) SetEnv(envVar, value string) {
+	c.Cmd.Env = append(c.Cmd.Env, envVar+"="+value)
 }
 
 // ExitCode returns the exit code, or

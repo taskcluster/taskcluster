@@ -21,7 +21,7 @@ import (
 func main() {
 	configureLogging()
 	input, output, buildConstraints := parseCommandLine()
-	types := generateTypes(input, buildConstraints)
+	types := generateTypes(input, output, buildConstraints)
 	functions := generateFunctions(input)
 	code := append(types, functions...)
 	formatSourceAndSave(code, output)
@@ -46,26 +46,23 @@ func parseCommandLine() (string, string, string) {
 	return input, output, buildConstraints
 }
 
-func generateTypes(input, constraint string) []byte {
-	// Get working directory
+func generateTypes(input, output, constraint string) []byte {
+	// Get target directory
 	currentFolder, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("Unable to obtain current working directory: %s", err)
 	}
-	// Read current package
-	pkg, err := build.ImportDir(currentFolder, build.AllowBinary)
+	parentDir := filepath.Dir(filepath.Join(currentFolder, output))
+	// Read existing package of target directory
+	pkg, err := build.ImportDir(parentDir, build.AllowBinary)
 	if err != nil {
-		log.Fatalf("Failed to determine go package inside directory '%s' - is your GOPATH set correctly ('%s')? Error: %s", currentFolder, os.Getenv("GOPATH"), err)
-	}
-	file, err := filepath.Abs(input)
-	if err != nil {
-		log.Fatalf("Hit error: %v", err)
+		log.Fatalf("Failed to determine go package inside directory '%s' - is your GOPATH set correctly ('%s')? Error: %s", parentDir, os.Getenv("GOPATH"), err)
 	}
 	job := jsonschema2go.Job{
 		Package:              pkg.Name,
 		ExportTypes:          true,
 		HideStructMembers:    false,
-		URLs:                 []string{"file://" + file},
+		URLs:                 []string{input},
 		SkipCodeGen:          false,
 		DisableNestedStructs: true,
 	}
@@ -75,12 +72,16 @@ func generateTypes(input, constraint string) []byte {
 	}
 	source := result.SourceCode
 	if len(constraint) > 0 {
-		source = append([]byte("// +build "+constraint+"\n"), result.SourceCode...)
+		source = append([]byte("// +build "+constraint+"\n\n"), result.SourceCode...)
 	}
 	return source
 }
 
 func generateFunctions(ymlFile string) []byte {
+	if !strings.HasPrefix(ymlFile, "file://") {
+		return []byte{}
+	}
+	ymlFile = ymlFile[7:]
 	data, err := ioutil.ReadFile(ymlFile)
 	if err != nil {
 		log.Fatalf("ERROR: Problem reading from file '%v' - %s", ymlFile, err)

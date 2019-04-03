@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -exv
 
 cd "$(dirname "${0}")"
 
@@ -47,60 +47,36 @@ export PATH="$(go env GOPATH)/bin:${PATH}"
 go generate ./...
 
 function install {
-  if [ "${1}" != 'native' ]; then
-    GOOS="${1}" GOARCH="${2}" CGO_ENABLED=0 go install -ldflags "-X main.revision=$(git rev-parse HEAD)" -v ./...
-    # GOOS="${1}" GOARCH="${2}" go vet ./...
-    # note, this just builds tests, it doesn't run them!
-    GOOS="${1}" GOARCH="${2}" CGO_ENABLED=0 go test -c github.com/taskcluster/generic-worker
-    GOOS="${1}" GOARCH="${2}" CGO_ENABLED=0 go test -c github.com/taskcluster/generic-worker/livelog
-  else
-    CGO_ENABLED=0 go install -ldflags "-X main.revision=$(git rev-parse HEAD)" -v ./...
-    go vet ./...
-    # note, this just builds tests, it doesn't run them!
-    CGO_ENABLED=0 go test -c github.com/taskcluster/generic-worker
-    CGO_ENABLED=0 go test -c github.com/taskcluster/generic-worker/livelog
+  GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go install -ldflags "-X main.revision=$(git rev-parse HEAD)" -tags "${1}" -v ./...
+  # TODO: go vet currently broken on windows, although code itself seems safe and works
+  if [ "${2}" != 'windows' ]; then
+    GOOS="${2}" GOARCH="${3}" go vet -tags "${1}" ./...
   fi
+  # note, this just builds tests, it doesn't run them!
+  GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go test -tags "${1}" -c github.com/taskcluster/generic-worker
+  GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go test -tags "${1}" -c github.com/taskcluster/generic-worker/livelog
+  GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go build -o generic-worker-${1}-${2}-${3} -ldflags "-X main.revision=$(git rev-parse HEAD)" -tags "${1}" -v .
 }
 
 if ${ALL_PLATFORMS}; then
-  # build windows first
-  install windows 386
-  install windows amd64
-  # darwin
-  install darwin     386
-  install darwin     amd64
-  # linux
-  install linux      386
-  install linux      amd64
-  install linux      arm
-  install linux      arm64
-else
-  install native
-fi
+  install dockerEngine  linux    amd64
 
-# now the rest
-## install android    arm
-##install darwin     arm
-##install darwin     arm64
-#install dragonfly  amd64
-#install freebsd    386
-#install freebsd    amd64
-#install freebsd    arm
-#install linux      arm
-#install linux      arm64
-#install linux      ppc64
-#install linux      ppc64le
-#install linux      mips64
-#install linux      mips64le
-#install netbsd     386
-#install netbsd     amd64
-#install netbsd     arm
-#install openbsd    386
-#install openbsd    amd64
-#install openbsd    arm
-##install plan9      386
-##install plan9      amd64
-#install solaris    amd64
+  install nativeEngine  windows  amd64
+  install nativeEngine  windows  386
+
+  install nativeEngine  darwin   amd64
+  install nativeEngine  darwin   386
+
+  install nativeEngine  linux    amd64
+  install nativeEngine  linux    386
+  install nativeEngine  linux    arm
+  install nativeEngine  linux    arm64
+else
+  install nativeEngine  "$(go env GOHOSTOS)"  "$(go env GOHOSTARCH)"
+  if [ "$(go env GOHOSTOS)" == "linux" ]; then
+    install dockerEngine  "$(go env GOHOSTOS)"  "$(go env GOHOSTARCH)"
+  fi
+fi
 
 find "${GOPATH}/bin" -name 'generic-worker*'
 
@@ -110,7 +86,6 @@ if $TEST; then
   go get github.com/taskcluster/taskcluster-proxy
   CGO_ENABLED=1 GORACE="history_size=7" go test -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
 fi
-go vet ./...
 go get golang.org/x/lint/golint
 golint ./...
 go get github.com/gordonklaus/ineffassign

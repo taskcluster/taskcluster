@@ -17,22 +17,27 @@ the worker implementation, and tells the worker what to execute, and which
 artifacts to upload. This page documents the payload property for
 generic-worker, on all the platforms that it is supported on.
 
-* [Windows](#generic-worker-on-windows)
-* [macOS](#generic-worker-on-macos)
-* [Linux](#generic-worker-on-linux)
+* [Windows](#generic-worker-on-windows-native-engine)
+* [macOS](#generic-worker-on-macos-native-engine)
+* [Linux (docker engine)](#generic-worker-on-linux-docker-engine)
+* [Linux (native engine)](#generic-worker-on-linux-native-engine)
 
 
-# Generic Worker on Windows
+# Generic Worker on Windows (native engine)
 
-<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/windows.json"></div>
+<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/native-windows.json"></div>
 
-# Generic Worker on macOS
+# Generic Worker on macOS (native engine)
 
-<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/macos.json"></div>
+<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/native-darwin.json"></div>
 
-# Generic Worker on Linux
+# Generic Worker on Linux (docker engine)
 
-<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/linux.json"></div>
+<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/docker-linux.json"></div>
+
+# Generic Worker on Linux (native engine)
+
+<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/native-linux.json"></div>
 
 The payload comprises of a command to run, environment variables to be set
 (optionally encrypted) and a timeout for the task (`maxRunTime`).

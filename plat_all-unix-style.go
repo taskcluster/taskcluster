@@ -108,7 +108,7 @@ func install(arguments map[string]interface{}) (err error) {
 // NewTaskFeature method to set variables for the task.
 func (task *TaskRun) setVariable(variable string, value string) error {
 	for i := range task.Commands {
-		task.Commands[i].Cmd.Env = append(task.Commands[i].Cmd.Env, fmt.Sprintf("%s=%s", variable, value))
+		task.Commands[i].SetEnv(variable, value)
 	}
 	return nil
 }

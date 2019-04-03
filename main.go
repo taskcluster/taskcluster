@@ -1,5 +1,8 @@
-//go:generate gw-codegen all-unix-style.yml generated_all-unix-style.go !windows
-//go:generate gw-codegen windows.yml generated_windows.go
+//go:generate gw-codegen file://docker_linux.yml          generated_docker_linux.go dockerEngine
+//go:generate gw-codegen file://native_all-unix-style.yml generated_native_linux.go nativeEngine
+//go:generate gw-codegen file://native_all-unix-style.yml generated_darwin.go       nativeEngine
+//go:generate gw-codegen file://native_windows.yml        generated_windows.go      nativeEngine
+// //go:generate gw-codegen https://raw.githubusercontent.com/taskcluster/docker-worker/66dfa0ec97602285fa5f05c2d8cbf487f52c7e27/schemas/payload.json dockerworker/payload.go
 
 package main
 

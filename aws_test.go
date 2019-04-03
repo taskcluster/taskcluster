@@ -92,20 +92,6 @@ func TestAdditionalFieldInWorkerTypeSecret(t *testing.T) {
 	defer m.ExpectError(t, "json: unknown field")()
 }
 
-func TestWorkerShutdown(t *testing.T) {
-	m := &MockAWSProvisionedEnvironment{
-		Terminating: true,
-	}
-	defer m.ExpectNoError(t)()
-	payload := GenericWorkerPayload{
-		Command:    sleep(20),
-		MaxRunTime: 15,
-	}
-	td := testTask(t)
-
-	_ = submitAndAssert(t, td, payload, "exception", "worker-shutdown")
-}
-
 func TestNoShutdown(t *testing.T) {
 	m := &MockAWSProvisionedEnvironment{}
 	defer m.ExpectNoError(t)()
