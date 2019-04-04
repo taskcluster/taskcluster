@@ -1,7 +1,5 @@
 const debug = require('debug')('test-helper');
 const assert = require('assert');
-const http = require('http');
-const httpProxy = require('http-proxy');
 const _ = require('lodash');
 const data = require('../src/data');
 const builder = require('../src/api');
@@ -12,7 +10,6 @@ const azure = require('fast-azure-storage');
 const uuid = require('uuid');
 const Builder = require('taskcluster-lib-api');
 const SchemaSet = require('taskcluster-lib-validate');
-const App = require('taskcluster-lib-app');
 const {stickyLoader, Secrets, withEntity} = require('taskcluster-lib-testing');
 const {FakeClient} = require('taskcluster-lib-pulse');
 
@@ -23,8 +20,7 @@ suiteSetup(async function() {
   exports.load.inject('process', 'test');
 });
 
-const PROXY_PORT = 60551;
-exports.rootUrl = `http://localhost:${PROXY_PORT}`;
+exports.rootUrl = `http://localhost:60552`;
 
 // set up the testing secrets
 exports.secrets = new Secrets({
@@ -315,8 +311,6 @@ exports.withServers = (mock, skipping) => {
     };
     exports.setupScopes();
 
-    webServer = await exports.load('server');
-
     // Now set up the test service
     exports.TestClient = taskcluster.createClient(testServiceBuilder.reference());
     exports.testClient = new exports.TestClient({
@@ -336,30 +330,12 @@ exports.withServers = (mock, skipping) => {
       }),
     });
 
-    testServer = await App({
-      port: 60553,
-      env: 'development',
-      forceSSL: false,
-      trustProxy: false,
-      rootDocsLink: false,
-      apis: [testServiceApi],
-    });
-
-    // Finally, we set up a proxy that runs on rootUrl
-    // and sends requests to either of the services based on path.
-
-    const proxy = httpProxy.createProxyServer({});
-    proxier = http.createServer(function(req, res) {
-      if (req.url.startsWith('/api/auth/')) {
-        proxy.web(req, res, {target: 'http://localhost:60552'});
-      } else if (req.url.startsWith(`/api/${testServiceName}/`)) {
-        proxy.web(req, res, {target: 'http://localhost:60553'});
-      } else {
-        throw new Error(`Unknown service request: ${req.url}`);
-      }
-    });
-    proxier.listen(PROXY_PORT);
-
+    // include this test API in the APIs served, alongside the normal auth service
+    exports.load.inject('apis', [
+      await exports.load('api'),
+      testServiceApi,
+    ]);
+    webServer = await exports.load('server');
   });
 
   setup(() => {

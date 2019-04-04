@@ -5,12 +5,10 @@ const MonitorManager = require('taskcluster-lib-monitor');
 const APIBuilder = require('taskcluster-lib-api');
 const testing = require('taskcluster-lib-testing');
 const App = require('taskcluster-lib-app');
-const http = require('http');
-const httpProxy = require('http-proxy');
+
+const rootUrl = `http://localhost:60526`;
 
 suite(testing.suiteName(), function() {
-  const PROXY_PORT = 60551;
-  const rootUrl = `http://localhost:${PROXY_PORT}`;
   let proxier;
 
   // Construct API
@@ -144,24 +142,6 @@ suite(testing.suiteName(), function() {
       trustProxy: false,
       apis: [api],
     });
-
-    // Finally, we set up a proxy that runs on rootUrl
-    // and sends requests to either of the services based on path.
-
-    const proxy = httpProxy.createProxyServer({proxyTimeout: 0});
-    proxy.on('error', (err, req, res) => {
-      req.connection.end(); // Nasty hack to make httpProxy pass along the connection close
-    });
-    proxier = http.createServer(function(req, res) {
-      if (req.url.startsWith('/api/auth/')) {
-        proxy.web(req, res, {target: 'http://localhost:60552'});
-      } else if (req.url.startsWith('/api/retrytest/')) {
-        proxy.web(req, res, {target: 'http://localhost:60526'});
-      } else {
-        throw new Error(`Unknown service request: ${req.url}`);
-      }
-    });
-    proxier.listen(PROXY_PORT);
   });
 
   // Close server
