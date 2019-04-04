@@ -38,12 +38,12 @@ class Worker extends WMObject {
     if (typeof capacity !== 'number') {
       this._throw(errors.InvalidWorker, 'capacity must be number');
     }
-    this.this.capacity = capacity;
+    this.capacity = capacity;
 
     if (typeof providerData !== 'object') {
       this._throw(errors.InvalidWorker, 'providerData must be an object');
     }
-    this.this.providerData = providerData;
+    this.providerData = providerData;
   }
 }
 

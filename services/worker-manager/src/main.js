@@ -97,26 +97,26 @@ let load = loader({
   providers: {
     requires: ['cfg'],
     setup: async ({cfg}) => {
-      let providers = [];
+      let p = new Map();
       for (let x of cfg.providers) {
         let providerClass = Provider.load(x.className);
         let provider = new providerClass(...x.args);
-        providers.push(provider);
+        p.set(provider.id, provider);
       }
-      return providers;
+      return p;
     },
   },
 
   biddingStrategies: {
     requires: ['cfg'],
     setup: async ({cfg}) => {
-      let biddingStrategies = [];
+      let bs = new Map();
       for (let x of cfg.biddingStrategies) {
         let biddingStrategyClass = BiddingStrategy.load(x.className);
         let biddingStrategy = new biddingStrategyClass(...x.args);
-        biddingStrategies.push(biddingStrategy);
+        bs.set(biddingStrategy.id, biddingStrategy);
       }
-      return biddingStrategies;
+      return bs;
     },
   },
 

@@ -260,7 +260,7 @@ export default class TaskGroupProgress extends Component {
       return;
     }
 
-    if (failed > 0) {
+    if (failed > 0 || exception > 0) {
       return TASK_STATE.FAILED;
     }
 

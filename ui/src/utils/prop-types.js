@@ -10,6 +10,7 @@ import {
   shape,
   string,
 } from 'prop-types';
+import { DENYLIST_NOTIFICATION_TYPES } from './constants';
 
 export const user = shape({
   name: string,
@@ -358,6 +359,15 @@ export const secrets = arrayOf(
     name: string,
   })
 );
+
+export const notificationType = oneOf(
+  Object.values(DENYLIST_NOTIFICATION_TYPES)
+);
+
+export const notificationAddress = shape({
+  notificationType,
+  notificationAddress: string,
+});
 
 export const namespace = shape({
   name: string,

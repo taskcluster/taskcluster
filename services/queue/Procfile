@@ -1,3 +1,5 @@
+# GENERATED FILE from `yarn generate`! To update, change procs.yml and regenerate.
+
 web: cd services/queue && node src/main server
 write-docs: cd services/queue && node src/main writeDocs
 claimResolver: cd services/queue && node src/main claim-resolver

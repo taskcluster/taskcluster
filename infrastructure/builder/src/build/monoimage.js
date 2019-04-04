@@ -6,6 +6,7 @@ const rimraf = util.promisify(require('rimraf'));
 const {quote} = require('shell-quote');
 const tar = require('tar-fs');
 const copy = require('recursive-copy');
+const yaml = require('js-yaml');
 const Stamp = require('./stamp');
 const appRootDir = require('app-root-dir');
 const {
@@ -98,21 +99,13 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
     },
     entrypoints: async (requirements, utils, procs) => {
       services.forEach(name => {
-        const procfilePath = path.join(appDir, 'services', name, 'Procfile');
-        if (!fs.existsSync(procfilePath)) {
-          throw new Error(`Service ${name} has no Procfile`);
+        const procsPath = path.join(appDir, 'services', name, 'procs.yml');
+        if (!fs.existsSync(procsPath)) {
+          throw new Error(`Service ${name} has no procs.yml`);
         }
-        const Procfile = fs.readFileSync(procfilePath).toString();
-        Procfile.split('\n').forEach(line => {
-          if (!line || line.startsWith('#')) {
-            return;
-          }
-          const parts = /^([^:]+):?\s+(.*)$/.exec(line.trim());
-          if (!parts) {
-            throw new Error(`unexpected line in Procfile: ${line}`);
-          }
-          // each Procfile entry will be runnable as <serviceName>/<process>
-          procs[`${name}/${parts[1]}`] = parts[2];
+        const processes = yaml.safeLoad(fs.readFileSync(procsPath));
+        Object.entries(processes).forEach(([proc, {command}]) => {
+          procs[`${name}/${proc}`] = `cd services/${name} && ${command}`;
         });
       });
       return procs;

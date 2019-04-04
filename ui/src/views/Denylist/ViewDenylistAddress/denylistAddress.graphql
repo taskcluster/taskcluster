@@ -1,0 +1,10 @@
+query DenylistedNotifications($filter: JSON) {
+  listDenylistAddresses(filter: $filter) {
+    edges {
+      node {
+        notificationAddress
+        notificationType
+      }
+    }
+  }
+}

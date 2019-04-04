@@ -27,6 +27,7 @@ export const VIEW_CLIENTS_PAGE_SIZE = 1000;
 export const VIEW_CLIENT_SCOPES_INSPECT_SIZE = 10;
 export const VIEW_ROLES_PAGE_SIZE = 1000;
 export const VIEW_SECRETS_PAGE_SIZE = 100;
+export const VIEW_DENYLIST_PAGE_SIZE = 20;
 export const VIEW_NAMESPACES_PAGE_SIZE = 20;
 export const VIEW_CACHE_PURGES_PAGE_SIZE = 20;
 export const HOOKS_LAST_FIRE_TYPE = {
@@ -209,3 +210,12 @@ export const DOCS_MENU_ITEMS = [
     icon: OpenInNewIcon,
   },
 ];
+
+export const DENYLIST_NOTIFICATION_TYPES = {
+  EMAIL: 'EMAIL',
+  PULSE: 'PULSE',
+  IRC_USER: 'IRC_USER',
+  IRC_CHANNEL: 'IRC_CHANNEL',
+};
+
+export const KNOWN_ACRONYMS = ['IRC', 'API'];

@@ -1,0 +1,7 @@
+web:
+  type: web
+  command: yarn build && node build/index.js devServer
+  readinessPath: /.well-known/apollo/server-health
+write-docs:
+  type: build
+  command: yarn build && node build/index.js writeDocs

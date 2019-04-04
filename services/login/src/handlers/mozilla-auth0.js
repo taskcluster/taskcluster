@@ -169,9 +169,12 @@ class Handler {
       for (let {provider, connection, profileData} of profile.identities) {
         if (provider === 'oauth2' && connection === 'firefoxaccounts') {
           // we expect the auth0 user_id to be `oauth|firefoxaccounts|<fxa_sub>`
-          assert(user_id.endsWith(profileData.fxa_sub),
+          // sometimes fxa_sub is on profileData, sometimes on the profile
+          const fxa_sub = profileData ? profileData.fxa_sub : profile.fxa_sub;
+          assert(user_id.endsWith(fxa_sub),
             `Auth0 user_id ${user_id} not formatted as expected`);
-          identity += `|${profileData.email}`;
+          const email = profileData ? profileData.email : profile.email;
+          identity += `|${email}`;
           break;
         }
       }

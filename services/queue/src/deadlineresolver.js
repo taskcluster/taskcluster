@@ -214,7 +214,7 @@ class DeadlineResolver {
         status: task.status(),
         runId,
       }, task.routes);
-      this.monitor.taskException({taskId, runId});
+      this.monitor.log.taskException({taskId, runId});
     }
 
     return remove();

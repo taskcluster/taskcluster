@@ -1,0 +1,12 @@
+web:
+  type: web
+  command: node src/main server
+irc:
+  type: background
+  command: node src/main irc
+handler:
+  type: background
+  command: node src/main handler
+write-docs:
+  type: build
+  command: node src/main writeDocs
