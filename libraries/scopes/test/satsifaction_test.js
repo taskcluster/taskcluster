@@ -1,7 +1,8 @@
 const assert = require('assert');
 const utils = require('../src');
+const testing = require('taskcluster-lib-testing');
 
-suite('satisfaction', function() {
+suite(testing.suiteName(), function() {
 
   let mktest = function(scopePatterns, scopesets, matches) {
     return function() {

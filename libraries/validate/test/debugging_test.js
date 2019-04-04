@@ -1,11 +1,12 @@
-suite('Debugging Tests', () => {
-  let assert = require('assert');
-  let SchemaSet = require('../');
-  let rimraf = require('rimraf');
-  let fs = require('fs');
-  let intercept = require('intercept-stdout');
-  let libUrls = require('taskcluster-lib-urls');
+const assert = require('assert');
+const SchemaSet = require('../');
+const rimraf = require('rimraf');
+const fs = require('fs');
+const intercept = require('intercept-stdout');
+const libUrls = require('taskcluster-lib-urls');
+const testing = require('taskcluster-lib-testing');
 
+suite(testing.suiteName(), () => {
   test('preview previews', async function() {
     let stdout = '';
     const unhook = intercept(txt => {

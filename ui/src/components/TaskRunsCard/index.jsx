@@ -199,9 +199,11 @@ export default class TaskRunsCard extends Component {
   };
 
   getLiveLogArtifactFromRun = run => {
-    const artifact = run.artifacts.edges.find(
-      ({ node: { name } }) => name === 'public/logs/live.log'
-    );
+    const artifact =
+      run &&
+      run.artifacts.edges.find(
+        ({ node: { name } }) => name === 'public/logs/live.log'
+      );
 
     if (!artifact) {
       return;
@@ -226,7 +228,8 @@ export default class TaskRunsCard extends Component {
   renderArtifactsTable() {
     const { classes, onArtifactsPageChange } = this.props;
     const run = this.getCurrentRun();
-    const artifacts = this.createSortedArtifactsConnection(run.artifacts);
+    const artifacts =
+      run && this.createSortedArtifactsConnection(run.artifacts);
 
     return (
       <ConnectionDataTable
@@ -299,7 +302,7 @@ export default class TaskRunsCard extends Component {
         <div>
           <CardContent classes={{ root: classes.cardContent }}>
             <Typography variant="h5" className={classes.headline}>
-              Task Run {selectedRunId}
+              {run ? `Task Run ${selectedRunId}` : 'Task Run'}
             </Typography>
             {run ? (
               <List>
@@ -488,7 +491,7 @@ export default class TaskRunsCard extends Component {
               <Button
                 size="small"
                 onClick={this.handleNext}
-                disabled={selectedRunId === runs.length - 1}>
+                disabled={run ? selectedRunId === runs.length - 1 : true}>
                 Next
                 <ChevronRightIcon />
               </Button>
@@ -497,7 +500,7 @@ export default class TaskRunsCard extends Component {
               <Button
                 size="small"
                 onClick={this.handlePrevious}
-                disabled={selectedRunId === 0}>
+                disabled={run ? selectedRunId === 0 : true}>
                 <ChevronLeftIcon />
                 Previous
               </Button>

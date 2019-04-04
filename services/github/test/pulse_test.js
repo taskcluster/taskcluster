@@ -1,8 +1,9 @@
 const helper = require('./helper');
 const assert = require('assert');
 const libUrls = require('taskcluster-lib-urls');
+const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite('pulse', ['taskcluster'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withFakePublisher(mock, skipping);
   helper.withFakeGithub(mock, skipping);

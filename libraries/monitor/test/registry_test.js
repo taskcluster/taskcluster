@@ -1,7 +1,8 @@
 const assert = require('assert');
 const MonitorManager = require('../src');
+const testing = require('taskcluster-lib-testing');
 
-suite('Registry', function() {
+suite(testing.suiteName(), function() {
 
   test('can add custom message types', function() {
     const manager = new MonitorManager({

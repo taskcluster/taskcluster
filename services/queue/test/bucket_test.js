@@ -4,8 +4,9 @@ const Bucket = require('../src/bucket');
 const debug = require('debug')('test:bucket_test');
 const request = require('superagent');
 const helper = require('./helper');
+const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(__filename, ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withS3(mock, skipping);
 
   if (mock) {

@@ -1,7 +1,8 @@
 const assert = require('assert');
 const {checkRefs} = require('../src/util');
+const testing = require('taskcluster-lib-testing');
 
-suite('test_util.js', function() {
+suite(testing.suiteName(), function() {
   suite('checkRefs', function() {
     // include some arrays and objects to test the "deepness" of the check
     const schemaWith = innards => ({

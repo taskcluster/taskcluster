@@ -10,6 +10,7 @@ const APIBuilder = require('taskcluster-lib-api');
 const {Exchanges} = require('taskcluster-lib-pulse');
 const MockS3UploadStream = require('./mockS3UploadStream');
 const tmp = require('tmp');
+const testing = require('taskcluster-lib-testing');
 
 function assertInTarball(shoulds, tarball) {
   shoulds.push('metadata.json');
@@ -38,7 +39,7 @@ function assertInTarball(shoulds, tarball) {
   });
 }
 
-suite('documenter', () => {
+suite(testing.suiteName(), () => {
   let schemaset = null;
   let exchanges = null;
   let references = null;

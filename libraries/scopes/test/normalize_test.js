@@ -1,8 +1,9 @@
-suite('normalize', () => {
-  const utils = require('../src');
-  const assert = require('assert');
-  const _ = require('lodash');
+const utils = require('../src');
+const assert = require('assert');
+const _ = require('lodash');
+const testing = require('taskcluster-lib-testing');
 
+suite(testing.suiteName(), () => {
   suite('scope comparing', function() {
     const cmp = (a, b) => {
       if (a < b) {

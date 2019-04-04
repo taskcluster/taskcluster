@@ -3,8 +3,9 @@ const {sasCredentials} = require('..');
 const nock = require('nock');
 const url = require('url');
 const libUrls = require('taskcluster-lib-urls');
+const testing = require('taskcluster-lib-testing');
 
-suite('index_test.js', function() {
+suite(testing.suiteName(), function() {
   let scope;
 
   const mockAzureTableSAS = (accessLevel) => {

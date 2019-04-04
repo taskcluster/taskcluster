@@ -15,7 +15,6 @@ rules:
   require-atomic-updates: error
   array-callback-return: error
   curly: error
-  default-case: error
   guard-for-in: error
   no-alert: error
   no-eval: error
@@ -53,6 +52,7 @@ rules:
   indent:
     - error
     - 2
+    - SwitchCase: 1
   eqeqeq:
     - error
     - smart

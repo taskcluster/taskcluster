@@ -3,12 +3,13 @@ const helper = require('./helper');
 const assert = require('assert');
 const sinon = require('sinon');
 const libUrls = require('taskcluster-lib-urls');
+const testing = require('taskcluster-lib-testing');
 
 /**
  * This tests the event handlers, faking out all of the services they
  * interact with.
  */
-helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withFakeGithub(mock, skipping);
 

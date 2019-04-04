@@ -1,7 +1,8 @@
 const assume = require('assume');
 const Handler = require('../src/handlers/mozilla-auth0');
+const testing = require('taskcluster-lib-testing');
 
-suite('handlers/mozilla-auth0', function() {
+suite(testing.suiteName(), function() {
   let handler = new Handler({
     name: 'mozilla-auth0',
     cfg: {
@@ -27,31 +28,31 @@ suite('handlers/mozilla-auth0', function() {
     return {
       getUser: ({id}) => {
         switch (id) {
-        case 'ad|Mozilla-LDAP|dmitchell':
-          return {
-            user_id: 'ad|Mozilla-LDAP|dmitchell',
-            identities,
-          };
-        case 'github|1234':
-          return {
-            user_id: 'github|1234',
-            nickname: 'helfi92',
-            identities,
-          };
-        case 'oauth2|firefoxaccounts|abcdef':
-          return {
-            user_id: 'oauth2|firefoxaccounts|abcdef',
-            email: 'rockets@ksc',
-            fxa_sub: 'abcdef',
-            identities,
-          };
-        case 'email|slashy/slashy':
-          return {
-            user_id: 'email|slashy/slashy',
-            identities,
-          };
-        default:
-          return null;
+          case 'ad|Mozilla-LDAP|dmitchell':
+            return {
+              user_id: 'ad|Mozilla-LDAP|dmitchell',
+              identities,
+            };
+          case 'github|1234':
+            return {
+              user_id: 'github|1234',
+              nickname: 'helfi92',
+              identities,
+            };
+          case 'oauth2|firefoxaccounts|abcdef':
+            return {
+              user_id: 'oauth2|firefoxaccounts|abcdef',
+              email: 'rockets@ksc',
+              fxa_sub: 'abcdef',
+              identities,
+            };
+          case 'email|slashy/slashy':
+            return {
+              user_id: 'email|slashy/slashy',
+              identities,
+            };
+          default:
+            return null;
         }
       },
     };

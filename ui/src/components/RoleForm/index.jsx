@@ -38,10 +38,23 @@ import splitLines from '../../utils/splitLines';
 }))
 /** A form to view/edit/create a role */
 export default class RoleForm extends Component {
+  static propTypes = {
+    /** A GraphQL role response. Not needed when creating a new role  */
+    role,
+    /** Set to `true` when creating a new role. */
+    isNewRole: bool,
+    /** Callback function fired when a role is created/updated. */
+    onRoleSave: func.isRequired,
+    /** Callback function fired when a role is deleted. */
+    onRoleDelete: func,
+    /** If true, form actions will be disabled. */
+    loading: bool,
+  };
+
   static defaultProps = {
     isNewRole: false,
     role: null,
-    onDeleteRole: null,
+    onRoleDelete: null,
     loading: null,
   };
 
@@ -60,19 +73,6 @@ export default class RoleForm extends Component {
     };
   }
 
-  static propTypes = {
-    /** A GraphQL role response. Not needed when creating a new role  */
-    role,
-    /** Set to `true` when creating a new role. */
-    isNewRole: bool,
-    /** Callback function fired when a role is created/updated. */
-    onSaveRole: func.isRequired,
-    /** Callback function fired when a role is deleted. */
-    onDeleteRole: func,
-    /** If true, form actions will be disabled. */
-    loading: bool,
-  };
-
   state = {
     description: '',
     scopeText: '',
@@ -83,7 +83,7 @@ export default class RoleForm extends Component {
   };
 
   handleDeleteRole = () => {
-    this.props.onDeleteRole(this.state.roleId);
+    this.props.onRoleDelete(this.state.roleId);
   };
 
   handleInputChange = ({ target: { name, value } }) => {
@@ -98,7 +98,7 @@ export default class RoleForm extends Component {
       description,
     };
 
-    this.props.onSaveRole(role, roleId);
+    this.props.onRoleSave(role, roleId);
   };
 
   render() {

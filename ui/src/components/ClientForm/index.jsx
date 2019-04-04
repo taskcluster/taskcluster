@@ -54,6 +54,25 @@ import Link from '../../utils/Link';
 }))
 /** A form to view/edit/create a client */
 export default class ClientForm extends Component {
+  static propTypes = {
+    /** A GraphQL client response. Not needed when creating a new client  */
+    client,
+    /** Set to `true` when creating a new client. */
+    isNewClient: bool,
+    /** Callback function fired when a client is created/updated. */
+    onSaveClient: func.isRequired,
+    /** Callback function fired when a client is deleted. */
+    onDeleteClient: func,
+    /** Callback function fired when a client is disabled. */
+    onDisableClient: func,
+    /** Callback function fired when a client is enabled. */
+    onEnableClient: func,
+    /** Callback function fired when a client resets its access token. */
+    onResetAccessToken: func,
+    /** If true, form actions will be disabled. */
+    loading: bool,
+  };
+
   static defaultProps = {
     isNewClient: false,
     client: null,
@@ -84,25 +103,6 @@ export default class ClientForm extends Component {
       prevClient: client,
     };
   }
-
-  static propTypes = {
-    /** A GraphQL client response. Not needed when creating a new client  */
-    client,
-    /** Set to `true` when creating a new client. */
-    isNewClient: bool,
-    /** Callback function fired when a client is created/updated. */
-    onSaveClient: func.isRequired,
-    /** Callback function fired when a client is deleted. */
-    onDeleteClient: func,
-    /** Callback function fired when a client is disabled. */
-    onDisableClient: func,
-    /** Callback function fired when a client is enabled. */
-    onEnableClient: func,
-    /** Callback function fired when a client resets its access token. */
-    onResetAccessToken: func,
-    /** If true, form actions will be disabled. */
-    loading: bool,
-  };
 
   state = {
     description: '',

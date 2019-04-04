@@ -1,8 +1,8 @@
-const libTesting = require('../');
 const path = require('path');
+const testing = require('taskcluster-lib-testing');
 
-suite('testing.schema', function() {
-  libTesting.schemas({
+suite(testing.suiteName(), function() {
+  testing.schemas({
     schemasetOptions: {
       folder: path.join(__dirname, 'schemas'),
       serviceName: 'test',

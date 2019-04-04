@@ -4,8 +4,9 @@ const assume = require('assume');
 const debug = require('debug')('test:api:createhook');
 const taskcluster = require('taskcluster-client');
 const helper = require('./helper');
+const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withTaskCreator(mock, skipping);
   helper.withPulse(mock, skipping);

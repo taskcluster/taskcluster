@@ -129,19 +129,19 @@ async function main(argv) {
 
   for (let i = 2; i < argv.length; i++) {
     switch(argv[i]) {
-    case '--input':
-      if (argv[++i] && fs.existsSync(argv[i])) {
-        inputStream = fs.createReadStream(argv[i]);
-      }
-      break;
-    case '--output':
-      if (argv[++i] && fs.existsSync(argv[i])) {
-        outputStream = fs.createWriteStream(argv[i]);
-      }
-      break;
-    default:
-      process.stderr.write('unsupported argument: ' + argv[i] + '\n');
-      process.exit(1);
+      case '--input':
+        if (argv[++i] && fs.existsSync(argv[i])) {
+          inputStream = fs.createReadStream(argv[i]);
+        }
+        break;
+      case '--output':
+        if (argv[++i] && fs.existsSync(argv[i])) {
+          outputStream = fs.createWriteStream(argv[i]);
+        }
+        break;
+      default:
+        process.stderr.write('unsupported argument: ' + argv[i] + '\n');
+        process.exit(1);
     }
   }
 

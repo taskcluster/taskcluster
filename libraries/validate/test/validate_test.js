@@ -1,9 +1,10 @@
-suite('Valid Schema Tests', () => {
-  const assert = require('assert');
-  const SchemaSet = require('../');
-  const debug = require('debug')('test');
-  const libUrls = require('taskcluster-lib-urls');
+const assert = require('assert');
+const SchemaSet = require('../');
+const debug = require('debug')('test');
+const libUrls = require('taskcluster-lib-urls');
+const testing = require('taskcluster-lib-testing');
 
+suite(testing.suiteName(), () => {
   const rootUrl = libUrls.testRootUrl();
 
   let validate = null;

@@ -197,10 +197,16 @@ const load = Loader({
     },
   },
 
+  // tests use this to inject other APIs.
+  apis: {
+    requires: ['api'],
+    setup: ({api}) => [api],
+  },
+
   server: {
-    requires: ['cfg', 'api', 'docs'],
-    setup: async ({cfg, api, docs}) => App({
-      apis: [api],
+    requires: ['cfg', 'apis', 'docs'],
+    setup: async ({cfg, apis, docs}) => App({
+      apis,
       ...cfg.server,
     }),
   },

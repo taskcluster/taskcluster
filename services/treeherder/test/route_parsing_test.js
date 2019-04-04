@@ -1,7 +1,8 @@
 const assert = require('assert');
 const parseRoute = require('../src/util/route_parser');
+const testing = require('taskcluster-lib-testing');
 
-suite('route parsing', () => {
+suite(testing.suiteName(), () => {
   test('valid v2 format', async () => {
     assert.deepEqual(
       parseRoute('treeherder.v2.try.XYZ.234'),

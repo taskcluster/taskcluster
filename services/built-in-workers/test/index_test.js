@@ -1,7 +1,8 @@
 const helper = require('./helper');
 const slugid = require('slugid');
+const testing = require('taskcluster-lib-testing');
 
-suite('TaskQueue_test.js', function() {
+suite(testing.suiteName(), function() {
   helper.withFakeQueue();
 
   test('check succeed worker', async function() {

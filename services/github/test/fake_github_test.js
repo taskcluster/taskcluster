@@ -2,8 +2,9 @@ const assert = require('assert');
 const _ = require('lodash');
 const github = require('@octokit/rest');
 const fakeGithubAuth = require('./github-auth');
+const testing = require('taskcluster-lib-testing');
 
-suite('fake github', function() {
+suite(testing.suiteName(), function() {
 
   function checkKeys(obj, platonic) {
     let ours = _.filter(Object.keys(obj), k => !k.startsWith('_'));
