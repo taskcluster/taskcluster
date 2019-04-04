@@ -9,6 +9,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
 import SignInDialog from '../SignInDialog';
 import { withAuth } from '../../utils/Auth';
+import getPictureFromUser from '../../utils/getPictureFromUser';
 
 @withAuth
 @withApollo
@@ -44,6 +45,7 @@ export default class UserMenuList extends Component {
       onSignInDialogClose,
       onMenuClick,
     } = this.props;
+    const avatarSrc = getPictureFromUser(user);
 
     if (!user) {
       return (
@@ -81,11 +83,8 @@ export default class UserMenuList extends Component {
             aria-controls="user-menu"
             aria-label="user menu"
             onClick={onMenuClick}>
-            {user.profile.photos && user.profile.photos.length ? (
-              <Avatar
-                alt={user.profile.displayName}
-                src={user.profile.photos[0].value}
-              />
+            {avatarSrc ? (
+              <Avatar alt={user.profile.displayName} src={avatarSrc} />
             ) : (
               <Avatar alt={user.profile.displayName}>
                 {user.profile.displayName[0]}

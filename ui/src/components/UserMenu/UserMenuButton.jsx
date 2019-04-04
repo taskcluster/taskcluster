@@ -8,6 +8,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Button from '../Button';
 import SignInDialog from '../SignInDialog';
 import { withAuth } from '../../utils/Auth';
+import getPictureFromUser from '../../utils/getPictureFromUser';
 
 @withAuth
 @withApollo
@@ -42,6 +43,7 @@ export default class UserMenuButton extends Component {
       onMenuClick,
       ...props
     } = this.props;
+    const avatarSrc = getPictureFromUser(user);
 
     if (!user) {
       return (
@@ -69,10 +71,10 @@ export default class UserMenuButton extends Component {
         aria-label="user menu"
         onClick={onMenuClick}
         {...props}>
-        {user.profile.photos && user.profile.photos.length ? (
+        {avatarSrc ? (
           <Avatar
             alt={user.profile.displayName}
-            src={user.profile.photos[0].value}
+            src={avatarSrc}
             {...avatarProps}
           />
         ) : (
