@@ -1,7 +1,8 @@
 const assert = require('assert');
 const utils = require('../src');
+const testing = require('taskcluster-lib-testing');
 
-suite('sets', function() {
+suite(testing.suiteName(), function() {
   suite('scopeUnion', () => {
     const testScopeUnion = (scope1, scope2, expected, message) => {
       assert.deepEqual(utils.scopeUnion(scope1, scope2).sort(), expected.sort(), message);

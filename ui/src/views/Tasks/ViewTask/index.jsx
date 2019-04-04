@@ -749,7 +749,7 @@ export default class ViewTask extends Component {
                   selectedRunId={
                     match.params.runId
                       ? parseInt(match.params.runId, 10)
-                      : task.status.runs.length - 1
+                      : Math.max(task.status.runs.length - 1, 0)
                   }
                   runs={task.status.runs}
                   workerType={task.workerType}

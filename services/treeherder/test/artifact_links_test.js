@@ -3,10 +3,11 @@ const artifactLinkTransform = require('../src/transform/artifact_links');
 const helper = require('./helper');
 const taskcluster = require('taskcluster-client');
 const MonitorManager = require('taskcluster-lib-monitor');
+const testing = require('taskcluster-lib-testing');
 
 let monitor, queue, fakeArtifacts;
 
-suite('artifact link transform', () => {
+suite(testing.suiteName(), () => {
   helper.withLoader();
 
   suiteSetup(async () => {

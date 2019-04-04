@@ -4,8 +4,9 @@ const APIBuilder = require('../');
 const MonitorManager = require('taskcluster-lib-monitor');
 const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');
+const testing = require('taskcluster-lib-testing');
 
-suite('api/responsetimer', function() {
+suite(testing.suiteName(), function() {
   // Create test api
   const builder = new APIBuilder({
     title: 'Test Api',

@@ -5,10 +5,11 @@ const jobMessage = require('./fixtures/job_message');
 const parseRoute = require('../src/util/route_parser');
 const libUrls = require('taskcluster-lib-urls');
 const helper = require('./helper');
+const testing = require('taskcluster-lib-testing');
 
 let task, status, expected, pushInfo;
 
-suite('build job message', () => {
+suite(testing.suiteName(), () => {
   helper.withLoader();
   helper.withHandler();
 

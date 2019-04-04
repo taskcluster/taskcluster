@@ -3,8 +3,9 @@ const assert = require('assert');
 const References = require('..');
 const {readUriStructured, writeUriStructured} = require('../src/uri-structured');
 const mockFs = require('mock-fs');
+const testing = require('taskcluster-lib-testing');
 
-suite('uri-structured_test.js', function() {
+suite(testing.suiteName(), function() {
   teardown(function() {
     mockFs.restore();
   });

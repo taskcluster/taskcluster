@@ -7,6 +7,7 @@ import provisionerRoutes from '../views/Provisioners/routes';
 import clientRoutes from '../views/Clients/routes';
 import roleRoutes from '../views/Roles/routes';
 import hookRoutes from '../views/Hooks/routes';
+import denylistRoutes from '../views/Denylist/routes';
 import awsProvisionerRoutes from '../views/AwsProvisioner/routes';
 import cachePurgeRoutes from '../views/CachePurges/routes';
 import lazy from '../utils/lazy';
@@ -58,6 +59,9 @@ const Display = lazy(() =>
 );
 const HomeOrDashboard = lazy(() =>
   import(/* webpackChunkName: 'HomeOrDashboard' */ '../views/HomeOrDashboard')
+);
+const Denylist = lazy(() =>
+  import(/* webpackChunkName: 'Denylist' */ '../views/Denylist')
 );
 const NotFound = lazy(() =>
   import(/* webpackChunkName: 'NotFound' */ '../views/NotFound')
@@ -111,7 +115,12 @@ export default [
   {
     component: CachePurges,
     path: '/purge-caches',
-    route: cachePurgeRoutes('/purge-caches'),
+    routes: cachePurgeRoutes('/purge-caches'),
+  },
+  {
+    component: Denylist,
+    path: '/notify/denylist',
+    routes: denylistRoutes('/notify/denylist'),
   },
   {
     component: PulseMessages,

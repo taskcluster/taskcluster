@@ -47,7 +47,7 @@ const filterTasksByState = curry((filter, tasks) =>
 const filterTasksByName = curry((searchTerm, tasks) =>
   searchTerm
     ? tasks.filter(({ node: { metadata: { name } } }) =>
-        name.includes(searchTerm)
+        lowerCase(name).includes(searchTerm)
       )
     : tasks
 );
@@ -205,7 +205,7 @@ export default class TaskGroupTable extends Component {
       sortBy,
       sortDirection,
       filter,
-      searchTerm
+      lowerCase(searchTerm)
     );
     const itemCount = items.length;
     const ItemRenderer = ({ index, style }) => {

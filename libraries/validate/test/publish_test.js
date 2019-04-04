@@ -1,12 +1,13 @@
-suite('Publish Tests', () => {
-  let SchemaSet = require('../');
-  let awsMock = require('mock-aws-s3');
-  let os = require('os');
-  let path = require('path');
-  let rimraf = require('rimraf');
-  let debug = require('debug')('test');
-  let libUrls = require('taskcluster-lib-urls');
+const SchemaSet = require('../');
+const awsMock = require('mock-aws-s3');
+const os = require('os');
+const path = require('path');
+const rimraf = require('rimraf');
+const debug = require('debug')('test');
+const libUrls = require('taskcluster-lib-urls');
+const testing = require('taskcluster-lib-testing');
 
+suite(testing.suiteName(), () => {
   let s3 = null;
   let mockdir = path.join(os.tmpdir(), 'tc-lib-validate', 'buckets');
 

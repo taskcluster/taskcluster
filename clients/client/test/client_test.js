@@ -1,10 +1,11 @@
-suite('client requests/responses', function() {
-  let taskcluster = require('../');
-  let assert = require('assert');
-  let path = require('path');
-  let nock = require('nock');
-  let MonitorManager = require('taskcluster-lib-monitor');
+const taskcluster = require('../');
+const assert = require('assert');
+const path = require('path');
+const nock = require('nock');
+const MonitorManager = require('taskcluster-lib-monitor');
+const testing = require('taskcluster-lib-testing');
 
+suite(testing.suiteName(), function() {
   // This suite exercises the request and response functionality of
   // the client against a totally fake service defined by this reference
   // and implemented via Nock.

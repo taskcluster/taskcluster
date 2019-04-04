@@ -6,8 +6,9 @@ const taskcluster = require('taskcluster-client');
 const request = require('superagent');
 const assume = require('assume');
 const libUrls = require('taskcluster-lib-urls');
+const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withFakeQueue(mock, skipping);
   helper.withPulse(mock, skipping);

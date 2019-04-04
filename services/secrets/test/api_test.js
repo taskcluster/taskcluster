@@ -2,8 +2,9 @@ const helper = require('./helper');
 const assert = require('assert');
 const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
+const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withServer(mock, skipping);
 

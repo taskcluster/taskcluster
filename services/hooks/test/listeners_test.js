@@ -3,8 +3,9 @@ const assume = require('assume');
 const taskcluster = require('taskcluster-client');
 const sinon = require('sinon');
 const helper = require('./helper');
+const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite('listeners_test.js', ['taskcluster'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withTaskCreator(mock, skipping);
   helper.withPulse(mock, skipping);

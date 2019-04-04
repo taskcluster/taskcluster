@@ -19,18 +19,18 @@ export default {
     __resolveType(obj) {
       // eslint-disable-next-line default-case
       switch (obj.status.state) {
-      case 'unscheduled':
-        return 'TaskDefined';
-      case 'pending':
-        return 'TaskPending';
-      case 'running':
-        return 'TaskRunning';
-      case 'completed':
-        return 'TaskCompleted';
-      case 'failed':
-        return 'TaskFailed';
-      case 'exception':
-        return 'TaskException';
+        case 'unscheduled':
+          return 'TaskDefined';
+        case 'pending':
+          return 'TaskPending';
+        case 'running':
+          return 'TaskRunning';
+        case 'completed':
+          return 'TaskCompleted';
+        case 'failed':
+          return 'TaskFailed';
+        case 'exception':
+          return 'TaskException';
       }
     },
   },

@@ -4,10 +4,11 @@ const assume = require('assume');
 const debugModule = require('debug');
 const MonitorManager = require('taskcluster-lib-monitor');
 const assert = require('assert');
+const testing = require('taskcluster-lib-testing');
 
 const PULSE_CONNECTION_STRING = process.env.PULSE_CONNECTION_STRING;
 
-suite('consumer_test.js', function() {
+suite(testing.suiteName(), function() {
   let monitorManager = null;
   let monitor;
 

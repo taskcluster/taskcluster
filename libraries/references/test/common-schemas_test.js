@@ -1,7 +1,8 @@
 const assert = require('assert');
 const {getCommonSchemas} = require('../src/common-schemas');
+const testing = require('taskcluster-lib-testing');
 
-suite('common-schemas_test.js', function() {
+suite(testing.suiteName(), function() {
   test('loads common schemas', function() {
     const schemas = getCommonSchemas();
     assert(schemas.some(

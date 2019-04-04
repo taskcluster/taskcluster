@@ -2,8 +2,9 @@ const assume = require('assume');
 const {client: _client, server: _server} = require('./helper');
 const fs = require('fs');
 const path = require('path');
+const testing = require('taskcluster-lib-testing');
 
-suite('API', () => {
+suite(testing.suiteName(), () => {
   let server;
   let client;
   let workerConfig;

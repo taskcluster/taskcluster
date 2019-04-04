@@ -147,13 +147,13 @@ export default class WebListener {
     });
 
     switch (message.event) {
-    case 'ready':
-    case 'bound':
-    case 'message':
-    case 'error':
-      return this.emitter.emit(message.event, message.payload || null);
-    default:
-      this.emit('error', new Error('Unknown event type from server'));
+      case 'ready':
+      case 'bound':
+      case 'message':
+      case 'error':
+        return this.emitter.emit(message.event, message.payload || null);
+      default:
+        this.emit('error', new Error('Unknown event type from server'));
     }
   }
 

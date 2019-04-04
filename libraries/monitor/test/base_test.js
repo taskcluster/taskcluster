@@ -5,7 +5,7 @@ const testing = require('taskcluster-lib-testing');
 const stream = require('stream');
 const MonitorManager = require('../src');
 
-suite('BaseMonitor', function() {
+suite(testing.suiteName(), function() {
   let manager, monitor, messages;
 
   setup(function() {

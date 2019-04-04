@@ -10,6 +10,7 @@ const taskcluster = require('taskcluster-client');
 const Promise = require('promise');
 const path = require('path');
 const libUrls = require('taskcluster-lib-urls');
+const testing = require('taskcluster-lib-testing');
 
 const builder = new APIBuilder({
   title: 'Test Server',
@@ -37,9 +38,9 @@ builder.declare({
   }
 });
 
-suite('fakeauth', function() {
+suite(testing.suiteName(), function() {
   const rootUrl = 'http://localhost:1208';
-  let fakeauth = require('../src/fakeauth');
+  let fakeauth = testing.fakeauth;
   let server;
 
   suiteSetup(async function() {

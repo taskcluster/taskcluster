@@ -1,6 +1,7 @@
 const helper = require('./helper');
+const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
   helper.withQueueService(mock, skipping);
 
   // test functionality elsewhere, here we just test that it can actually run
