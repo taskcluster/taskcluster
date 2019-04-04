@@ -440,7 +440,7 @@ class FakePulsePublisher extends EventEmitter {
   async _start() {
     // steal _declareMethods from the real PulsePublisher; the resulting
     // methods will call our _send method
-    this._declareMethods();
+    await this._declareMethods();
   }
 
   async _send(exchange, routingKey, payload, CCs) {
