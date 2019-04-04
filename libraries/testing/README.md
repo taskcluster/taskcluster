@@ -231,47 +231,6 @@ The test output for the first suite will contain something like
 ```
 
 
-PulseTestReceiver
------------------
-
-A utility for tests written in mocha, that makes it very easy to wait for a
-specific pulse message.  This uses real pulse messages, so pulse credentials
-will be required.
-
-**Example:**
-```js
-suite("MyTests", function() {
-  let credentials = {
-    username:     '...',  // Pulse username
-    password:     '...'   // Pulse password
-  };
-  let receiver = new testing.PulseTestReceiver(credentials, mocha)
-
-  test("create task message arrives", async function() {
-    var taskId = slugid.v4();
-
-    // Start listening for a message with the above taskId, giving
-    // it a local name (here, `my-create-task-message`)
-    await receiver.listenFor(
-      'my-create-task-message',
-      queueEvents.taskCreated({taskId: taskId})
-    );
-
-    // We are now listen for a message with the taskId
-    // So let's create a task with it
-    await queue.createTask(taskId, {...});
-
-    // Now we wait for the message to arrive
-    let message = await receiver.waitFor('my-create-task-message');
-  });
-});
-```
-
-The `receiver` object will setup an PulseConnection before all tests and close
-the PulseConnection after all tests. This should make tests run faster.  All
-internal state, ie. the names given to `listenFor` and `waitFor` will be reset
-between all tests.
-
 schemas
 -------
 
