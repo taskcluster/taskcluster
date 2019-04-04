@@ -12,7 +12,6 @@ export default user => {
       return user.profile.picture;
     }
 
-    // A profile returned from passportjs.
     // http://www.passportjs.org/docs/profile/
     case 'github': {
       return user.profile.photos && user.profile.photos.length

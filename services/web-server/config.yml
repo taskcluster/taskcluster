@@ -2,6 +2,7 @@ defaults:
   app:
     # the URL at which this service will be available, without a trailing `/`
     publicUrl: !env PUBLIC_URL
+    sessionSecretKey: !env SESSION_SECRET_KEY
     loginStrategies: !env:list LOGIN_STRATEGIES
     # if true, serve the /playground path
     playground: false
@@ -37,10 +38,20 @@ defaults:
     clientId: !env GITHUB_CLIENT_ID
     clientSecret: !env GITHUB_CLIENT_SECRET
 
+  # config for the mozilla auth0 login provider
+  mozillaAuth0Login:
+    domain: !env MOZILLA_AUTH0_DOMAIN
+    # client ID and secret for the github OAuth application
+    clientId: !env MOZILLA_AUTH0_CLIENT_ID
+    clientSecret: !env MOZILLA_AUTH0_CLIENT_SECRET
+    audience: !env MOZILLA_AUTH0_AUDIENCE
+    scope: !env MOZILLA_AUTH0_SCOPE
+
 development:
   app:
     # this assumes that taskcluster-ui's dev server is running on port 5080
     publicUrl: http://localhost:5080
+    sessionSecretKey: i-like-cats
     loginStrategies: []
     playground: true
   server:

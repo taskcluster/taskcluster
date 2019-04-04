@@ -43,6 +43,7 @@ export default (app, cfg) => {
           credentials,
           expires,
           profile,
+          providerId: 'github',
         });
       }
     )
