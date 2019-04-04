@@ -117,8 +117,8 @@ Start-Process "powershell" -ArgumentList "-command `"& {&'Import-Module' Carbon}
 # MSI (s) (E8:9C) [17:40:24:801]: Rejecting product '{7808D6D7-9C0D-4593-8808-B83EF9EC8884}': Non-assigned apps are disabled for non-admin users.
 #
 # Relevant doc: https://docs.microsoft.com/fr-fr/windows/desktop/Msi/disablemsi
-New-Item -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\Installer" -Force
-New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\Installer" -Name "DisableMSI" -Value "0x00000000" -PropertyType Dword -Force
+### WTF: New-Item -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\Installer" -Force
+### WTF: New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\Installer" -Name "DisableMSI" -Value "0x00000000" -PropertyType Dword -Force
 
 # Ensure proper PATH setup
 [Environment]::SetEnvironmentVariable("PATH", $Env:Path + ";C:\tools\msys64\usr\bin;C:\Python36;C:\Program Files\Git\bin", "Machine")
