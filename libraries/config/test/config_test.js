@@ -1,7 +1,9 @@
-suite('config', function() {
-  let config = require('../');
-  let path = require('path');
-  let assume = require('assume');
+const config = require('../');
+const path = require('path');
+const assume = require('assume');
+const testing = require('taskcluster-lib-testing');
+
+suite(testing.suiteName(), function() {
 
   test('load yaml', () => {
     let cfg = config({

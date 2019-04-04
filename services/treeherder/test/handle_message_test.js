@@ -1,7 +1,8 @@
 const assert = require('assert');
 const helper = require('./helper');
+const testing = require('taskcluster-lib-testing');
 
-suite('handle message', function() {
+suite(testing.suiteName(), function() {
   helper.withLoader();
   helper.withHandler();
 

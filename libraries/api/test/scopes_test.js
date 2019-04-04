@@ -1,7 +1,8 @@
 const assert = require('assert');
 const APIBuilder = require('../');
+const testing = require('taskcluster-lib-testing');
 
-suite('api/route', function() {
+suite(testing.suiteName(), function() {
   // Create test api
   const builder = new APIBuilder({
     title: 'Test Api',

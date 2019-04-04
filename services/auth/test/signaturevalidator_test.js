@@ -1,4 +1,3 @@
-const helper = require('./helper');
 const hawk = require('hawk');
 const _ = require('lodash');
 const assume = require('assume');
@@ -7,8 +6,9 @@ const crypto = require('crypto');
 const taskcluster = require('taskcluster-client');
 const sigvalidator = require('../src/signaturevalidator');
 const monitorManager = require('../src/monitor');
+const testing = require('taskcluster-lib-testing');
 
-suite(helper.suiteName(__filename), function() {
+suite(testing.suiteName(), function() {
   let one_hour = taskcluster.fromNow('1 hour');
   let two_hours = taskcluster.fromNow('2 hour');
   let three_hours = taskcluster.fromNow('3 hour');

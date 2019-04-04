@@ -1,8 +1,9 @@
 import { createServer } from 'http';
 import assert from 'assert';
 import fetch from '../src/utils/fetch';
+import testing from 'taskcluster-lib-testing';
 
-describe('fetch', () => {
+describe(testing.suiteName(), () => {
   let server;
 
   afterEach(() => {

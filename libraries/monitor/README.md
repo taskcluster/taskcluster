@@ -265,16 +265,12 @@ A common pattern in Taskcluster projects is to have handler functions in a worke
 can be timed (in milliseconds) by wrapping them with `taskcluster-lib-monitor`:
 
 ```js
-const listener = new taskcluster.PulseListener({
-  credentials: {clientId: 'test-client', accessToken: 'test'},
-  queueName: 'a-queue-name',
-});
-
 const handler = function(message) {
   console.log(message);
 };
 
-listener.on('message', monitor.timedHandler('logging-listener', handler));
+const consumer = libPulse.consume({..},
+  monitor.timedHandler('pulse-listener', handler));
 ```
 
 Specifically, `timedHandler` takes a function and wraps it with timing logic, returning a function with the same signature.

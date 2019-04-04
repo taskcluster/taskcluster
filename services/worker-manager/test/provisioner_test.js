@@ -3,6 +3,7 @@ const fs = require('fs');
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 const moment = require('moment');
+const testing = require('taskcluster-lib-testing');
 
 const {InMemoryDatastore} = require('../src/data-storage');
 const {Provisioner} = require('../src/provisioner');
@@ -53,7 +54,7 @@ class FakeBiddingStrategy extends BiddingStrategy {
   async selectBids() {}
 }
 
-suite('Provisioner', () => {
+suite(testing.suiteName(), () => {
   let datastore;
   let provider;
   let biddingStrategy;

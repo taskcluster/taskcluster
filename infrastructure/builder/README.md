@@ -46,7 +46,7 @@ docker run -ti --rm -e PORT=80 -e .. <image> auth/web
 To run an interactive shell in the image, use
 
 ```shell
-docker run -ti --rm -e PORT=80 -e .. <image> sh
+docker run -ti --rm -e PORT=80 -e .. <image> bash
 ```
 
 ## Skipping Tasks

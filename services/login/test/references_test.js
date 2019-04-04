@@ -1,8 +1,9 @@
 const builder = require('../src/api');
 const helper = require('./helper');
 const References = require('taskcluster-lib-references');
+const testing = require('taskcluster-lib-testing');
 
-suite('references_test.js', function() {
+suite(testing.suiteName(), function() {
   helper.setup();
 
   test('references validate', async function() {

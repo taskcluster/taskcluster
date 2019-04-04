@@ -1,13 +1,14 @@
-suite('retry-test', function() {
-  const taskcluster = require('../');
-  const assert = require('assert');
-  const SchemaSet = require('taskcluster-lib-validate');
-  const MonitorManager = require('taskcluster-lib-monitor');
-  const APIBuilder = require('taskcluster-lib-api');
-  const testing = require('taskcluster-lib-testing');
-  const App = require('taskcluster-lib-app');
+const taskcluster = require('../');
+const assert = require('assert');
+const SchemaSet = require('taskcluster-lib-validate');
+const MonitorManager = require('taskcluster-lib-monitor');
+const APIBuilder = require('taskcluster-lib-api');
+const testing = require('taskcluster-lib-testing');
+const App = require('taskcluster-lib-app');
 
-  const rootUrl = `http://localhost:60526`;
+const rootUrl = `http://localhost:60526`;
+
+suite(testing.suiteName(), function() {
   let proxier;
 
   // Construct API

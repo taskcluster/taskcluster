@@ -6,8 +6,9 @@ const libUrls = require('taskcluster-lib-urls');
 const path = require('path');
 const SchemaSet = require('taskcluster-lib-validate');
 const MonitorManager = require('taskcluster-lib-monitor');
+const testing = require('taskcluster-lib-testing');
 
-suite('api/validate', function() {
+suite(testing.suiteName(), function() {
   const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);
 
   // Create test api

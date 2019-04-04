@@ -1,8 +1,9 @@
-suite('taskcluster.credentialInfo', function() {
-  let taskcluster = require('../');
-  let assert = require('assert');
-  let nock = require('nock');
+const taskcluster = require('../');
+const assert = require('assert');
+const nock = require('nock');
+const testing = require('taskcluster-lib-testing');
 
+suite(testing.suiteName(), function() {
   teardown(function() {
     assert(nock.isDone());
     nock.cleanAll();

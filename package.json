@@ -46,6 +46,7 @@
     "dockerode": "^2.5.8",
     "dot": "^1.1.2",
     "ejs": "^2.6.1",
+    "error-stack-parser": "^2.0.2",
     "eslint": "5.16.0",
     "fs-extra": "^7.0.1",
     "glob": "^7.1.3",
