@@ -2,8 +2,9 @@ const assert = require('assert');
 const {load} = require('../src/built-services');
 const mockFs = require('mock-fs');
 const References = require('..');
+const testing = require('taskcluster-lib-testing');
 
-suite('built-services_test.js', function() {
+suite(testing.suiteName(), function() {
   teardown(function() {
     mockFs.restore();
   });

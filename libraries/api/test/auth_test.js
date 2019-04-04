@@ -10,7 +10,7 @@ const testing = require('taskcluster-lib-testing');
 const path = require('path');
 const debug = require('debug')('auth_test');
 
-suite('api/auth', function() {
+suite(testing.suiteName(), function() {
   // Reference for test api server
   let _apiServer = null;
 

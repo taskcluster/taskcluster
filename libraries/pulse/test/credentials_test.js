@@ -1,8 +1,9 @@
 const {pulseCredentials} = require('../src');
 const assert = require('assert');
 const assume = require('assume');
+const testing = require('taskcluster-lib-testing');
 
-suite('pulseCredentials', function() {
+suite(testing.suiteName(), function() {
   test('missing arguments are an error', async function() {
     assume(() => pulseCredentials({password: 'pw', hostname: 'h', vhost: 'v'}))
       .throws(/username/);

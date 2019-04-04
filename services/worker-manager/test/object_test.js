@@ -1,7 +1,8 @@
 const assume = require('assume');
 const {WMObject, errors} = require('../src/base');
+const testing = require('taskcluster-lib-testing');
 
-suite('WMObject', () => {
+suite(testing.suiteName(), () => {
   test('should be creatable', () => {
     const actual = new WMObject({id: 'wm-1'});
     assume(actual).has.property('id', 'wm-1');

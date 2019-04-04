@@ -10,7 +10,7 @@ const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
 const helper = require('./helper');
 
-helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
   let queueService;
 
   suiteSetup(async () => {

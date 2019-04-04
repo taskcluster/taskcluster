@@ -1,9 +1,9 @@
-const helper = require('./helper');
 const assume = require('assume');
 const _ = require('lodash');
 const ScopeSetBuilder = require('../src/scopesetbuilder');
 const trie = require('../src/trie');
 const trietestcases = require('./trietestcases');
+const testing = require('taskcluster-lib-testing');
 
 // This test suite was designed to test every conceivable combination of
 // inputs to the trie implementation, in an effort to suss out any hidden bugs
@@ -13,7 +13,7 @@ const trietestcases = require('./trietestcases');
 // total test suite, just set FULL_TESTS=1.
 const FULL_TESTS = !!process.env.FULL_TESTS;
 
-suite(helper.suiteName(__filename), () => {
+suite(testing.suiteName(), () => {
 
   /**
    * Return scope without kleene '*' at the end if scope ends with kleene, otherwise

@@ -3,6 +3,7 @@ let sandbox = require('sinon').createSandbox();
 let assume = require('assume');
 let debug = require('debug')('iterate-test');
 let MonitorManager = require('taskcluster-lib-monitor');
+const testing = require('taskcluster-lib-testing');
 
 let possibleEvents = [
   'started',
@@ -49,7 +50,7 @@ class IterateEvents {
 
 }
 
-suite('Iterate', () => {
+suite(testing.suiteName(), () => {
   let manager;
   let monitor;
 

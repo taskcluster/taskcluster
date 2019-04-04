@@ -1,14 +1,14 @@
-suite('retry-test', function() {
-  const taskcluster = require('../');
-  const assert = require('assert');
-  const SchemaSet = require('taskcluster-lib-validate');
-  const MonitorManager = require('taskcluster-lib-monitor');
-  const APIBuilder = require('taskcluster-lib-api');
-  const testing = require('taskcluster-lib-testing');
-  const App = require('taskcluster-lib-app');
-  const http = require('http');
-  const httpProxy = require('http-proxy');
+const taskcluster = require('../');
+const assert = require('assert');
+const SchemaSet = require('taskcluster-lib-validate');
+const MonitorManager = require('taskcluster-lib-monitor');
+const APIBuilder = require('taskcluster-lib-api');
+const testing = require('taskcluster-lib-testing');
+const App = require('taskcluster-lib-app');
+const http = require('http');
+const httpProxy = require('http-proxy');
 
+suite(testing.suiteName(), function() {
   const PROXY_PORT = 60551;
   const rootUrl = `http://localhost:${PROXY_PORT}`;
   let proxier;

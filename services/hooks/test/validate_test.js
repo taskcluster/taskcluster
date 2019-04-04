@@ -1,7 +1,7 @@
 const testing = require('taskcluster-lib-testing');
 const path = require('path');
 
-suite('validate', function() {
+suite(testing.suiteName(), function() {
   testing.schemas({
     schemasetOptions: {
       folder: path.join(__dirname, '..', 'schemas'),

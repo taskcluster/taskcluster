@@ -3,6 +3,7 @@ import MonitorManager from 'taskcluster-lib-monitor';
 import {FakeClient} from 'taskcluster-lib-pulse';
 import PulseEngine from '../src/PulseEngine';
 import PulseIterator from '../src/PulseEngine/PulseIterator';
+const testing = require('taskcluster-lib-testing');
 
 class FakePulseEngine {
   subscribe(subscriptions, handleMessage, handleError) {
@@ -19,7 +20,7 @@ class FakePulseEngine {
   }
 }
 
-describe('PulseEngine', function() {
+describe(testing.suiteName(), function() {
   const manager = new MonitorManager({
     serviceName: 'web-server',
   });

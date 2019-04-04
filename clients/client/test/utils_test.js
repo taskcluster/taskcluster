@@ -1,8 +1,9 @@
-suite('taskcluster utilities', function() {
-  let taskcluster = require('../');
-  let parseTime = require('../src/parsetime');
-  let assert = require('assert');
+const taskcluster = require('../');
+const parseTime = require('../src/parsetime');
+const assert = require('assert');
+const testing = require('taskcluster-lib-testing');
 
+suite(testing.suiteName(), function() {
   test('parseTime 1 year', function() {
     assert.equal(parseTime('1y').years, 1);
     assert.equal(parseTime('1 yr').years, 1);

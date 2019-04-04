@@ -1,10 +1,11 @@
 const helper = require('./helper');
 const assert = require('assert');
+const testing = require('taskcluster-lib-testing');
 
 /**
  * Tests of installation syncing
  */
-helper.secrets.mockSuite('syncInstallations', ['taskcluster'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withFakeGithub(mock, skipping);
   helper.withServer(mock, skipping);

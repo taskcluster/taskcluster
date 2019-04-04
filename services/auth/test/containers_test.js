@@ -3,13 +3,14 @@ const uuid = require('uuid');
 const assert = require('assert');
 const helper = require('./helper');
 const azure = require('fast-azure-storage');
+const testing = require('taskcluster-lib-testing');
 
 const sorted = (arr) => {
   arr.sort();
   return arr;
 };
 
-helper.secrets.mockSuite(helper.suiteName(__filename), ['azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
   if (mock) {
     return; // This test file only works on real things apparently
   }

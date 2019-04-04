@@ -6,11 +6,11 @@ const assert = require('assert');
 const libMonitor = require('taskcluster-lib-monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const libUrls = require('taskcluster-lib-urls');
-const libTesting = require('taskcluster-lib-testing');
+const testing = require('taskcluster-lib-testing');
 
 const PULSE_CONNECTION_STRING = process.env.PULSE_CONNECTION_STRING;
 
-suite('publisher_test.js', function() {
+suite(testing.suiteName(), function() {
   const exchangeOptions = {
     serviceName: 'lib-pulse',
     projectName: 'taskcluster-lib-pulse',
@@ -248,7 +248,7 @@ suite('publisher_test.js', function() {
     test('publish a message', async function() {
       await publisher.eggHatched({eggId: 'yolks-on-you'});
 
-      await libTesting.poll(async () => {
+      await testing.poll(async () => {
         assert.equal(messages.length, 1);
         const got = messages[0];
         assert.equal(got.fields.routingKey, 'yolks-on-you');
@@ -264,7 +264,7 @@ suite('publisher_test.js', function() {
       const eggIds = [...Array(10000).keys()].map(id => id.toString());
       await Promise.all(eggIds.map(eggId => publisher.eggHatched({eggId})));
 
-      await libTesting.poll(async () => {
+      await testing.poll(async () => {
         const got = messages.map(msg => msg.fields.routingKey);
         assert.deepEqual(got.length, eggIds.length, 'got expected number of messages');
         assert.deepEqual(got.sort(), eggIds.sort(), 'got exactly the expected messages');
@@ -278,7 +278,7 @@ suite('publisher_test.js', function() {
       client.connections[0].amqp.close(); // force closure..
       await Promise.all(['x', 'y', 'z'].map(eggId => publisher.eggHatched({eggId})));
 
-      await libTesting.poll(async () => {
+      await testing.poll(async () => {
         const got = messages.map(msg => msg.fields.routingKey).sort();
         assert.deepEqual(got, ['a', 'b', 'c', 'i', 'j', 'k', 'l', 'm', 'x', 'y', 'z']);
       });

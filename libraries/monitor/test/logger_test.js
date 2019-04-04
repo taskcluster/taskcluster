@@ -2,8 +2,9 @@ const assert = require('assert');
 const stream = require('stream');
 const Ajv = require('ajv');
 const MonitorManager = require('../src');
+const testing = require('taskcluster-lib-testing');
 
-suite('Logging', function() {
+suite(testing.suiteName(), function() {
   let manager, monitor, messages, destination;
 
   setup(function() {

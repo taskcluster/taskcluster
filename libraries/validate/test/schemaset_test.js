@@ -2,8 +2,9 @@ const assert = require('assert');
 const SchemaSet = require('../');
 const _ = require('lodash');
 const libUrls = require('taskcluster-lib-urls');
+const testing = require('taskcluster-lib-testing');
 
-suite('schemaset_test.js', () => {
+suite(testing.suiteName(), () => {
   const rootUrl = libUrls.testRootUrl();
 
   const makeSchemaSet = () => {

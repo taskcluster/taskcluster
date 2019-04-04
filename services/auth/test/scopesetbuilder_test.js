@@ -1,9 +1,10 @@
-suite('ScopeSetBuilder', () => {
-  const assume = require('assume');
-  const _ = require('lodash');
-  const {mergeScopeSets, scopeCompare} = require('taskcluster-lib-scopes');
-  const ScopeSetBuilder = require('../src/scopesetbuilder');
+const assume = require('assume');
+const _ = require('lodash');
+const {mergeScopeSets, scopeCompare} = require('taskcluster-lib-scopes');
+const ScopeSetBuilder = require('../src/scopesetbuilder');
+const testing = require('taskcluster-lib-testing');
 
+suite(testing.suiteName(), () => {
   test('scopes()', () => {
     assume(new ScopeSetBuilder().scopes()).eql([]);
   });
