@@ -128,6 +128,9 @@ const initialHook = {
     paddingBottom: theme.spacing.double,
     width: 400,
   },
+  hookFiredTableListItem: {
+    display: 'list-item',
+  },
 }))
 /** A form to view/edit/create a hook */
 export default class HookForm extends Component {
@@ -566,18 +569,14 @@ export default class HookForm extends Component {
               <ListSubheader className={classes.subheader}>
                 Last Fired Results
               </ListSubheader>
-              <ListItem>
-                <ListItemText
-                  primary={
-                    hookLastFires && (
-                      <HookLastFiredTable
-                        items={hookLastFires}
-                        onErrorClick={this.handleDrawerOpen}
-                        paginate
-                      />
-                    )
-                  }
-                />
+              <ListItem className={classes.hookFiredTableListItem}>
+                {hookLastFires && (
+                  <HookLastFiredTable
+                    items={hookLastFires}
+                    onErrorClick={this.handleDrawerOpen}
+                    paginate
+                  />
+                )}
               </ListItem>
             </Fragment>
           )}

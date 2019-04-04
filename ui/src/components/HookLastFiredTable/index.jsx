@@ -5,6 +5,7 @@ import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
+import { titleCase } from 'change-case';
 import IconButton from '@material-ui/core/IconButton';
 import LinkIcon from 'mdi-react/LinkIcon';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
@@ -29,7 +30,7 @@ function HookLastFiredTable({ classes, ...props }) {
   return (
     <DataTable
       items={items}
-      headers={['Task ID', 'Fired By', 'Result', 'Attempted']}
+      headers={['Task ID', 'Reason', 'Result', 'Attempted']}
       renderRow={hookFire => (
         <TableRow key={hookFire.taskId}>
           <TableCell>
@@ -47,7 +48,7 @@ function HookLastFiredTable({ classes, ...props }) {
             )) || <Typography>{hookFire.taskId}</Typography>}
           </TableCell>
           <TableCell>
-            <Typography>{hookFire.firedBy}</Typography>
+            <Typography>{titleCase(hookFire.firedBy)}</Typography>
           </TableCell>
           <TableCell>
             <StatusLabel state={hookFire.result} />
