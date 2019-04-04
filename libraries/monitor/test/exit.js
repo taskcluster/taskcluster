@@ -20,5 +20,5 @@ if (options.shouldError) {
   throw new Error('hello there');
 }
 if (options.shouldUnhandle) {
-  Promise.reject('whaaa');
+  Promise.reject(new Error('whaaa'));
 }
