@@ -39,10 +39,6 @@ suite(testing.suiteName(), function() {
     const debug = debugModule('test');
 
     suiteSetup(async function() {
-      if (!PULSE_CONNECTION_STRING) {
-        this.skip();
-        return;
-      }
 
       // otherwise, set up the exchange
       const conn = await amqplib.connect(PULSE_CONNECTION_STRING);

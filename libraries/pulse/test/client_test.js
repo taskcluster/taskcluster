@@ -9,11 +9,6 @@ const testing = require('taskcluster-lib-testing');
 
 const PULSE_CONNECTION_STRING = process.env.PULSE_CONNECTION_STRING;
 
-if (!PULSE_CONNECTION_STRING) {
-  console.log('WARNING: $PULSE_CONNECTION_STRING is not set; skipping tests that require an active server');
-  console.log('see README.md for details');
-}
-
 const connectionTests = connectionString => {
   // use a unique name for each test run, just to ensure nothing interferes
   const unique = new Date().getTime().toString();

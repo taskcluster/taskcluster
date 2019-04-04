@@ -198,10 +198,6 @@ suite(testing.suiteName(), function() {
     let client, conn, chan, exchanges, schemaset, publisher, messages;
 
     suiteSetup(async function() {
-      if (!PULSE_CONNECTION_STRING) {
-        this.skip();
-        return;
-      }
 
       client = new Client({
         credentials: connectionStringCredentials(PULSE_CONNECTION_STRING),
