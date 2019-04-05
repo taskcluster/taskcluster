@@ -1,7 +1,7 @@
 # Pulse Library
 
 Library for interacting with Pulse and Taskcluster-Pulse.  See [the
-docs](https://github.com/taskcluster/taskcluster/blob/doc/ui/docs/manual/design/apis/pulse.md) for more
+docs](../../ui/docs/manual/design/apis/pulse.md) for more
 information on Pulse.
 
 This library is designed for use in Taskcluster services, both for producing
@@ -365,7 +365,7 @@ support for sending messages is quite simple, but this component also handles
 declaring exchanges, message schemas, and so on, and producing a reference
 document that can be consumed by client libraries to generate easy-to-use
 clients. All of this is similar to what
-[taskcluster-lib-api](https://github.com/taskcluster/taskcluster/tree/master/libraries/api) does
+[taskcluster-lib-api](../api) does
 for HTTP APIs.
 
 ## Declaring Exchanges
