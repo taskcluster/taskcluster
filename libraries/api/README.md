@@ -140,7 +140,7 @@ Examples:
 ### Scopes
 
 Scopes should be specified in
-[scope expression form](https://github.com/taskcluster/taskcluster/tree/master/libraries/scopes#new-style).
+[scope expression form](../scopes#new-style).
 Parameters are substituted into scopes with `<paramName>`
 syntax.  For example, the following definition allows the method when *either*
 the caller's scopes satisfy `queue:create-task..` for the given `provisionerId`
