@@ -33,14 +33,14 @@ production service starts up.  The tarball contains a mixture of documentation
 from the project's README, auto-generated documentation for pulse exchanges and
 APIs, and hand-written documentation.
 
-The [taskcluster-docs](/docs/) project
+The [taskcluster-docs](docs/) project
 then downloads those tarballs and incorporates the results into the
 documentation page.
 
 Documentation Format
 --------------------
 
-The format for the tarball that is uploaded to s3 is [documented here](/docs/format.md).
+The format for the tarball that is uploaded to s3 is [documented here](docs/format.md).
 
 Usage
 -----
