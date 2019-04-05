@@ -8,7 +8,7 @@ Terraform.  As such, it complies with Terraform's odd data structure
 requirements.  It contains an object with a single property, `locals`, the
 value of which is an object with string values providing local variables
 expected by the
-[Taskcluster-Terraform](https://github.com/taskcluster/taskcluster/tree/master/infrastructure/terraform)
+[Taskcluster-Terraform](../../terraform)
 deployment system.
 
 In particular, it has properties:
