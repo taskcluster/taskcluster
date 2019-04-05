@@ -33,21 +33,21 @@ production service starts up.  The tarball contains a mixture of documentation
 from the project's README, auto-generated documentation for pulse exchanges and
 APIs, and hand-written documentation.
 
-The [taskcluster-docs](https://github.com/taskcluster/taskcluster/blob/master/libraries/docs/docs/) project
+The [taskcluster-docs](/docs/) project
 then downloads those tarballs and incorporates the results into the
 documentation page.
 
 Documentation Format
 --------------------
 
-The format for the tarball that is uploaded to s3 is [documented here](https://github.com/taskcluster/taskcluster/blob/master/libraries/docs/docs/format.md).
+The format for the tarball that is uploaded to s3 is [documented here](/docs/format.md).
 
 Usage
 -----
 
 **[Old Way Only] Do not forget to add the scopes before pushing your service to production! `[auth:aws-s3:read-write:taskcluster-raw-docs/<project>/]`**
 
-This library should be included as a component in a [Taskcluster Component Loader](https://github.com/taskcluster/taskcluster/tree/master/libraries/loader)
+This library should be included as a component in a [Taskcluster Component Loader](../loader)
 setup so that it is called upon a service starting in Heroku or as a post-publish step in a library. Options and defaults are listed
 below.
 
