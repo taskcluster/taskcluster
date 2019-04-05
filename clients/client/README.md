@@ -65,7 +65,7 @@ This replaces any given options with new values.
 
 **NOTE** `PulseListener` is no longer included in `taskcluster-client`;
 instead, use `PulseConsumer` from
-[taskcluster-lib-pulse](https://github.com/taskcluster/tree/master/libraries/pulse).
+[taskcluster-lib-pulse](../../libraries/pulse).
 
 However, this library helpfully includes bindings for exchanges declared by
 various Taskcluster services.  To use these with `taskcluster-lib-pulse`,
@@ -90,7 +90,7 @@ let pc = await pulse.consume({
 
 The set of API entries listed below is generated from the built-in references.
 Detailed documentation with description, payload and result format details is
-available in the [docs reference section](https://github.com/taskcluster/taskcluster/tree/master/libraries/references).
+available in the reference section of the Taskcluster documentation.
 
 On the documentation site, entries have a
 _signature_.  You'll find that it matches the signatures below. Notice that all
