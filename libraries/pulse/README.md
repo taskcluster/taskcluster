@@ -389,11 +389,11 @@ const exchanges = new Exchanges({
 ```
 
 The `serviceName` should match that passed to
-[taskcluster-lib-validate](https://github.com/taskcluster/taskcluster/tree/master/libraries/validate).
+[taskcluster-lib-validate](../validate).
 The `projectName` is used to construct exchange and queue names.  It should
 match the pulse namespace (at least in production deployments) and the name
 passed to
-[taskcluster-lib-monitor](https://github.com/taskcluster/taskcluster/tree/master/libraries/monitor),
+[taskcluster-lib-monitor](../monitor),
 
 Having created the `exchanges` instance, declare exchanges on it:
 
@@ -472,7 +472,7 @@ By convention, these are prefixed with `route.`.
 The `exchanges.reference()` method will return a reference document suitable
 for publication under `<rootUrl>/references`.
 
-This is typically passed to [taskcluster-lib-docs](https://github.com/taskcluster/taskcluster/tree/master/libraries/docs) like this:
+This is typically passed to [taskcluster-lib-docs](../docs) like this:
 
 ```javascript
 Docs.documenter({
