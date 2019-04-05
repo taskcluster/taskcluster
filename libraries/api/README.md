@@ -406,7 +406,7 @@ not repeat it!
 
 The `APIBuilder` instance will have an async `build` method that takes additional options and
 returns an API instance which can be passed to
-[taskcluster-lib-app](https://github.com/taskcluster/taskcluster/tree/master/libraries/app).  The
+[taskcluster-lib-app](../app).  The
 options to `builder.build` are:
 
  * `rootUrl` - the root URL for this instance of Taskcluster; this is used both to call the
@@ -417,9 +417,9 @@ options to `builder.build` are:
    specified in `context` when the API was declared.  The purpose of this parameter is to
    provide uesful application-specific objects such as Azure table objects or
    other API clients to the API methods.
- * `monitor` (required) - an instance of [taskcluster-lib-monitor](https://github.com/taskcluster/taskcluster/tree/master/libraries/monitor)
+ * `monitor` (required) - an instance of [taskcluster-lib-monitor](../monitor)
  * `schemaset` (required) - a schemaset; this is from
-   [taskcluster-lib-validate](https://github.com/taskcluster/taskcluster/tree/master/libraries/validate).
+   [taskcluster-lib-validate](../validate).
  * `signatureValidator` - a validator for Hawk signatures; this is only required for
    the Auth service, as the default signature validator consults the Auth service.
  * `nonceManager` - a function to check for replay attacks (seldom used)
@@ -437,7 +437,7 @@ reference data structure, and an `express(app)` method that configures the API
 on the given express app.
 
 For most Taskcluster services, the startup process uses
-[taskcluster-lib-loader](https://github.com/taskcluster/taskcluster/tree/master/libraries/loader),
+[taskcluster-lib-loader](../loader),
 and the relevant loader components are defined like this:
 
 ```js
@@ -477,4 +477,4 @@ It should pass, although some tests will be skipped.
 If you are not modifing functionality tested by the skipped tests you're ready to get started: write some tests for the new functionality, then implement it!
 If you are modifying something requiring credentials, copy `user-config-example.yml` to `user-config.yml` and fill in the necessary credentials based on the comments in that file.
 
-The taskcluster team has a series of [best practices](https://github.com/taskcluster/taskcluster/blob/master/ui/docs/manual/design/devel/best-practices) which may help guide you in modifying the source code and making a pull request.
+The taskcluster team has a series of [best practices](../../ui/docs/manual/design/devel/best-practices) which may help guide you in modifying the source code and making a pull request.
