@@ -41,6 +41,7 @@ const updateTaskGroupIdHistory = id => {
 };
 
 let previousCursor;
+let tasks;
 
 @hot(module)
 @withApollo
@@ -150,6 +151,7 @@ export default class TaskGroup extends Component {
     super(props);
 
     previousCursor = INITIAL_CURSOR;
+    tasks = new Map();
   }
 
   state = {
@@ -214,32 +216,26 @@ export default class TaskGroup extends Component {
           return previousResult;
         }
 
-        let taskExists = false;
-        const edges = previousResult.taskGroup.edges.map(edge => {
-          if (tasksSubscriptions.taskId !== edge.node.status.taskId) {
-            return edge;
-          }
+        const edges = tasks.has(tasksSubscriptions.taskId)
+          ? previousResult.taskGroup.edges.map(edge => {
+              if (tasksSubscriptions.taskId !== edge.node.status.taskId) {
+                return edge;
+              }
 
-          taskExists = true;
-
-          return dotProp.set(edge, 'node', node =>
-            dotProp.set(node, 'status', status =>
-              dotProp.set(status, 'state', tasksSubscriptions.state)
-            )
-          );
-        });
-
-        if (!taskExists) {
-          const node = {
-            // eslint-disable-next-line no-underscore-dangle
-            __typename: 'TasksEdge',
-            node: {
-              ...cloneDeep(tasksSubscriptions.task),
-            },
-          };
-
-          edges.push(node);
-        }
+              return dotProp.set(edge, 'node', node =>
+                dotProp.set(node, 'status', status =>
+                  dotProp.set(status, 'state', tasksSubscriptions.state)
+                )
+              );
+            })
+          : tasks.set(tasksSubscriptions.taskId) &&
+            previousResult.taskGroup.edges.concat({
+              // eslint-disable-next-line no-underscore-dangle
+              __typename: 'TasksEdge',
+              node: {
+                ...cloneDeep(tasksSubscriptions.task),
+              },
+            });
 
         return dotProp.set(previousResult, 'taskGroup', taskGroup =>
           dotProp.set(taskGroup, 'edges', edges)
@@ -262,6 +258,7 @@ export default class TaskGroup extends Component {
     } = this.props;
 
     if (prevProps.match.params.taskGroupId !== taskGroupId) {
+      tasks.clear();
       updateTaskGroupIdHistory(taskGroupId);
       TaskGroup.subscribe({ taskGroupId, subscribeToMore });
     }
@@ -380,12 +377,22 @@ export default class TaskGroup extends Component {
             return previousResult;
           }
 
+          const filteredEdges = edges.filter(edge => {
+            if (tasks.has(edge.node.status.taskId)) {
+              return false;
+            }
+
+            tasks.set(edge.node.status.taskId);
+
+            return true;
+          });
+
           return dotProp.set(previousResult, 'taskGroup', taskGroup =>
             dotProp.set(
               dotProp.set(
                 taskGroup,
                 'edges',
-                previousResult.taskGroup.edges.concat(edges)
+                previousResult.taskGroup.edges.concat(filteredEdges)
               ),
               'pageInfo',
               pageInfo
@@ -424,6 +431,16 @@ export default class TaskGroup extends Component {
       data: { taskGroup, error, loading },
       classes,
     } = this.props;
+    // Make sure data is not from another task group which
+    // can happen when a user searches for a different task group
+    const isFromSameTaskGroupId =
+      taskGroup && taskGroup.edges[0]
+        ? taskGroup.edges[0].node.taskGroupId === taskGroupId
+        : true;
+
+    if (!tasks.size && taskGroup && isFromSameTaskGroupId) {
+      taskGroup.edges.forEach(edge => tasks.set(edge.node.status.taskId));
+    }
 
     return (
       <Dashboard
