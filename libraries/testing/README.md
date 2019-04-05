@@ -280,7 +280,7 @@ Test schemas with a positive and negative test cases.
 The method should be called within a `suite`, as it will call the mocha `test`
 function to define a test for each schema case.
 
- * `schemasetOptions` - {}  // options to pass to the [taskcluster-lib-validate](https://github.com/taskcluster/taskcluster/tree/master/libraries/validate) constructor
+ * `schemasetOptions` - {}  // options to pass to the [taskcluster-lib-validate](../validate) constructor
  * `cases` - array of test cases
  * `basePath` -  base path for relative pathnames in test cases (default `path.join(__dirname, 'validate')`)
 
