@@ -33,7 +33,7 @@ get the (longish) list of `-e` environment variables that must be supplied from 
 
 ## Documentation and Metadata
 
-Services annotated with `docs: generated` in the build spec are expected to produce a documentation directory as defined by [taskcluster-lib-docs](https://github.com/taskcluster/taskcluster/tree/master/libraries/docs) when the `write-docs` component is run:
+Services annotated with `docs: generated` in the build spec are expected to produce a documentation directory as defined by [taskcluster-lib-docs](../../../libraries/docs) when the `write-docs` component is run:
 
 ```
 DOCS_OUTPUT_DIR=/output/docs docker run -v $somepath:/output write-docs
