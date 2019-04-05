@@ -11,7 +11,7 @@ by the web application.
 
 ## Configuration
 
-Configuration is done via [taskcluster-lib-config](https://github.com/taskcluster/taskcluster/tree/master/libraries/loader) like all
+Configuration is done via [taskcluster-lib-config](../../libraries/config) like all
 other Taskcluster services. The main configuration file is `config.yml`, and
 that refers to environment variables.  In production, those environment
 variables are provided as part of the deployment.  During development,
