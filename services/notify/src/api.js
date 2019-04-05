@@ -44,7 +44,7 @@ builder.declare({
   // Ensure that the address is not in the denylist
   let response = await this.DenylistedNotification.load(address, true);
   if(response) {
-    return res.reportError('DenylistedAddress', `${req.body.address} is denylisted`, {});
+    return res.reportError('DenylistedAddress', `Email ${req.body.address} is denylisted`, {});
   } else {
     await this.notifier.email(req.body);
     res.sendStatus(200);
@@ -64,7 +64,6 @@ builder.declare({
 }, async function(req, res) {
   this.monitor.log.pulse({routingKey: req.body.routingKey});
   await req.authorize({routingKey: req.body.routingKey});
-  await this.notifier.pulse(req.body);
 
   let notificationAddress = {
     notificationType: "pulse",
@@ -73,7 +72,7 @@ builder.declare({
   // Ensure that the address is not in the denylist
   let response = await this.DenylistedNotification.load(notificationAddress, true);
   if(response) {
-    return res.reportError('DenylistedAddress', `${req.body.address} is denylisted`, {});
+    return res.reportError('DenylistedAddress', `Pulse routing key pattern ${req.body.routingKey} is denylisted`, {});
   } else {
     await this.notifier.pulse(req.body);
     res.sendStatus(200);
@@ -120,7 +119,7 @@ builder.declare({
   // Ensure that the address is not in the denylist
   let response = await this.DenylistedNotification.load(notificationAddress, true);
   if(response) {
-    return res.reportError('DenylistedAddress', `${input.channel || input.user} is denylisted`, {});
+    return res.reportError('DenylistedAddress', `IRC address ${input.channel || input.user} is denylisted`, {});
   } else {
     await this.notifier.irc(input);
     res.sendStatus(200);

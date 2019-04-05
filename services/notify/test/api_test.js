@@ -20,6 +20,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(m
     notificationAddress: "username",
   };
 
+  setup('reset notifier', async function() {
+    const notifier = helper.load('notifier');
+    notifier.hashCache = [];
+  });
+
   test('ping', async function() {
     await helper.apiClient.ping();
   });
@@ -37,12 +42,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(m
       notificationType: 'pulse',
       notificationAddress: 'notify-test',
     });
+
     // Ensure sending notification to that address fails with appropriate error
     try {
       await helper.apiClient.pulse({routingKey: 'notify-test', message: {test: 123}});
     } catch(e) {
       assert(e.code, 'DenylistedAddress');
     }
+
+    helper.assertNoPulseMessage('notification');
   });
 
   test('email', async function() {
