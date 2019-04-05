@@ -82,7 +82,7 @@ messages that are concerned about, such as only a particular destination
 
 ## Schema
 
-All jobs messages must validate against a [published schema](v1/pulse-job.yml).
+All jobs messages must validate against a [published schema](schemas/v1/pulse-job.yml).
 Any jobs that do not match this schema will be reported in the application logs and
 an administrator of the application can review the logs if a job is not appearing
 on the pulse exchange.
