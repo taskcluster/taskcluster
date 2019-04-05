@@ -51,7 +51,7 @@ let previousCursor;
     variables: {
       taskGroupId: props.match.params.taskGroupId,
       taskGroupConnection: {
-        limit: TASK_GROUP_PAGE_SIZE,
+        limit: 20,
       },
       taskActionsFilter: {
         kind: {
