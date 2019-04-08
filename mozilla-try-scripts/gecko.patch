@@ -1,7 +1,7 @@
 diff --git a/taskcluster/taskgraph/transforms/task.py b/taskcluster/taskgraph/transforms/task.py
 --- a/taskcluster/taskgraph/transforms/task.py
 +++ b/taskcluster/taskgraph/transforms/task.py
-@@ -1685,6 +1685,42 @@ def add_index_routes(config, tasks):
+@@ -1663,6 +1663,43 @@ def add_index_routes(config, tasks):
  
  
  @transforms.add
@@ -15,6 +15,7 @@ diff --git a/taskcluster/taskgraph/transforms/task.py b/taskcluster/taskgraph/tr
 +            level,
 +        )
 +        task['worker-type'] = '/'.join([provisioner_id, worker_type])
++        yield task
 +
 +
 +@transforms.add
