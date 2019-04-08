@@ -13,7 +13,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/taskcluster/generic-worker/runtime"
 	"github.com/taskcluster/generic-worker/win32"
 )
 
@@ -206,9 +205,4 @@ func (c *Command) Kill() (killOutput []byte, err error) {
 	bytes, err := exec.Command("taskkill.exe", "/pid", strconv.Itoa(c.Process.Pid), "/f", "/t").CombinedOutput()
 	log.Print("taskkill.exe output:\n" + string(bytes))
 	return bytes, err
-}
-
-type LogonSession struct {
-	User      *runtime.OSUser
-	LoginInfo *LoginInfo
 }

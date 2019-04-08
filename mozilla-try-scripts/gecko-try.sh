@@ -92,10 +92,10 @@ function updateSHA512 {
   jq --arg sha512 "${SHA512}" --arg componentName "${OCC_COMPONENT}" '(.Components[] | select(.ComponentName == $componentName) | .sha512) |= $sha512' "${MANIFEST}.bak" > "${MANIFEST}"
 }
 
-add_github "taskcluster/generic-worker"    "${NEW_GW_VERSION}" "generic-worker-windows-386.exe"      "Intel 80386"
-add_github "taskcluster/generic-worker"    "${NEW_GW_VERSION}" "generic-worker-windows-amd64.exe"    "x86-64"
-add_github "taskcluster/taskcluster-proxy" "${NEW_TP_VERSION}" "taskcluster-proxy-windows-386.exe"   "Intel 80386"
-add_github "taskcluster/taskcluster-proxy" "${NEW_TP_VERSION}" "taskcluster-proxy-windows-amd64.exe" "x86-64"
+add_github "taskcluster/generic-worker"    "${NEW_GW_VERSION}" "generic-worker-nativeEngine-windows-386.exe"   "Intel 80386"
+add_github "taskcluster/generic-worker"    "${NEW_GW_VERSION}" "generic-worker-nativeEngine-windows-amd64.exe" "x86-64"
+add_github "taskcluster/taskcluster-proxy" "${NEW_TP_VERSION}" "taskcluster-proxy-windows-386.exe"             "Intel 80386"
+add_github "taskcluster/taskcluster-proxy" "${NEW_TP_VERSION}" "taskcluster-proxy-windows-amd64.exe"           "x86-64"
 
 cat manifest.tt
 "${THIS_SCRIPT_DIR}/lib/tooltool.py" upload -v --authentication-file="$(echo ~/.tooltool-upload)" --message "Upgrade *STAGING* worker types to use generic-worker ${NEW_GW_VERSION} / taskcluster-proxy ${NEW_TP_VERSION}"
@@ -105,16 +105,16 @@ cd OpenCloudConfig/userdata/Manifest
 for MANIFEST in *-b.json *-cu.json *-beta.json; do
   cat "${MANIFEST}" > "${MANIFEST}.bak"
   cat "${MANIFEST}.bak" \
-    | sed "s_\\(generic-worker/releases/download/v\\)[^/]*\\(/generic-worker-windows-\\)_\\1${NEW_GW_VERSION}\\2_" | sed "s_\\(\"generic-worker \\)[^ ]*\\(.*\\)\$_\\1${NEW_GW_VERSION}\\2_" \
+    | sed "s_\\(generic-worker/releases/download/v\\)[^/]*\\(/generic-worker-nativeEngine-windows-\\)_\\1${NEW_GW_VERSION}\\2_" | sed "s_\\(\"generic-worker \\)[^ ]*\\(.*\\)\$_\\1${NEW_GW_VERSION}\\2_" \
     | sed "s_\\(taskcluster-proxy/releases/download/v\\)[^/]*\\(/taskcluster-proxy-windows-\\)_\\1${NEW_TP_VERSION}\\2_" \
     > "${MANIFEST}"
   cat "${MANIFEST}" > "${MANIFEST}.bak"
-  THIS_ARCH="$(cat "${MANIFEST}" | sed -n 's/.*\/generic-worker-windows-\(.*\)\.exe.*/\1/p' | sort -u)"
+  THIS_ARCH="$(cat "${MANIFEST}" | sed -n 's/.*\/generic-worker-nativeEngine-windows-\(.*\)\.exe.*/\1/p' | sort -u)"
   if [ "${THIS_ARCH}" != "386" ] && [ "${THIS_ARCH}" != "amd64" ]; then
     echo "NOOOOOOO - cannot recognise ARCH '${THIS_ARCH}'" >&2
     exit 67
   fi
-  updateSHA512 "generic-worker-windows-${THIS_ARCH}.exe" "GenericWorkerDownload"
+  updateSHA512 "generic-worker-nativeEngine-windows-${THIS_ARCH}.exe" "GenericWorkerDownload"
   cat "${MANIFEST}" > "${MANIFEST}.bak"
   updateSHA512 "taskcluster-proxy-windows-${THIS_ARCH}.exe" "TaskClusterProxyDownload"
   rm "${MANIFEST}.bak"
