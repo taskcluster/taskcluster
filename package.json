@@ -81,7 +81,7 @@
     "tar-stream": "^2.0.0",
     "taskcluster-lib-testing": "link:libraries/testing",
     "temporary": "^1.0.0",
-    "tmp": "^0.0.33",
+    "tmp": "^0.1.0",
     "url-join": "^4.0.0",
     "uuid": "^3.3.2",
     "webpack": "^4.25.1",
