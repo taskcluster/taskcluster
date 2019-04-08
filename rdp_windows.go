@@ -76,12 +76,11 @@ func (l *RDPTask) Stop(err *ExecutionErrors) {
 }
 
 func (l *RDPTask) createRDPArtifact() {
-	autoLogonUser, autoLogonPassword := AutoLogonCredentials()
 	l.info = &RDPInfo{
 		Host:     config.PublicIP,
 		Port:     3389,
-		Username: autoLogonUser,
-		Password: autoLogonPassword,
+		Username: taskContext.User.Name,
+		Password: taskContext.User.Password,
 	}
 	rdpInfoFile := filepath.Join(taskContext.TaskDir, rdpInfoPath)
 	err := fileutil.WriteToFileAsJSON(l.info, rdpInfoFile)

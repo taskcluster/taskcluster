@@ -10,6 +10,9 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/taskcluster/generic-worker/gwconfig"
+	"github.com/taskcluster/generic-worker/runtime"
 )
 
 // Test failure should resolve as "failed"
@@ -170,10 +173,11 @@ func TestRemoveTaskDirs(t *testing.T) {
 		}
 	}()
 	for _, dir := range []string{
-		"task_12345",     // should be deleted
-		"task_task_test", // should be deleted
-		"testt_12345",    // should remain
-		"bfdnbdfd",       // should remain
+		"task_1234561234", // should remain
+		"task_12345",      // should be deleted
+		"task_task_test",  // should be deleted
+		"test_12345",      // should remain
+		"bfdnbdfd",        // should remain
 	} {
 		err = os.MkdirAll(filepath.Join(d, dir), 0777)
 		if err != nil {
@@ -181,18 +185,29 @@ func TestRemoveTaskDirs(t *testing.T) {
 		}
 	}
 	for _, file := range []string{
-		"task_23456",                         // should remain
-		"task_best_vest",                     // should remain
-		"testt_65536",                        // should remain
-		"applesnpears",                       // should remain
-		filepath.Join("task_12345", "abcde"), // should be deleted
+		filepath.Join("task_1234561234", "xyz"), // should remain
+		"task_23456",                            // should remain
+		"task_best_vest",                        // should remain
+		"testt_65536",                           // should remain
+		"applesnpears",                          // should remain
+		filepath.Join("task_12345", "abcde"),    // should be deleted
 	} {
 		err = ioutil.WriteFile(filepath.Join(d, file), []byte("hello world"), 0777)
 		if err != nil {
 			t.Fatalf("Could not write %v file: %v", file, err)
 		}
 	}
-	err = removeTaskDirs(d)
+	config = &gwconfig.Config{
+		PublicConfig: gwconfig.PublicConfig{
+			TasksDir: d,
+		},
+	}
+	taskContext = &TaskContext{
+		User: &runtime.OSUser{
+			Name: "task_1234561234",
+		},
+	}
+	err = deleteTaskDirs()
 	if err != nil {
 		t.Fatalf("Could not remove task directories: %v", err)
 	}
@@ -211,8 +226,9 @@ func TestRemoveTaskDirs(t *testing.T) {
 		t.Fatalf("Error reading directory listing of %v: %v", d, err)
 	}
 	expectedDirs := map[string]bool{
-		"testt_12345": true,
-		"bfdnbdfd":    true,
+		"task_1234561234": true,
+		"test_12345":      true,
+		"bfdnbdfd":        true,
 	}
 	expectedFiles := map[string]bool{
 		"task_23456":     true,

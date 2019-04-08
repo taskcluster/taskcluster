@@ -83,8 +83,9 @@ func (pd *PlatformData) ReleaseResources() error {
 }
 
 type TaskContext struct {
-	TaskDir      string
-	LogonSession *process.LogonSession
+	TaskDir   string
+	User      *runtime.OSUser
+	LoginInfo *process.LoginInfo
 }
 
 func platformFeatures() []Feature {
@@ -126,7 +127,7 @@ func processCommandOutput(callback func(line string), prog string, options ...st
 	return nil
 }
 
-func deleteTaskDir(path string) error {
+func deleteDir(path string) error {
 	log.Print("Trying to remove directory '" + path + "' via os.RemoveAll(path) call...")
 	err := os.RemoveAll(path)
 	if err == nil {
@@ -148,12 +149,12 @@ func deleteTaskDir(path string) error {
 }
 
 func prepareTaskUser(userName string) (reboot bool) {
-	taskContext.LogonSession = &process.LogonSession{
-		User: &runtime.OSUser{
-			Name: userName,
-		},
-	}
-	if autoLogonUser, _ := AutoLogonCredentials(); userName == autoLogonUser {
+	reboot = true
+	if autoLogonUser := AutoLogonCredentials(); strings.HasPrefix(autoLogonUser.Name, "task_") {
+		taskContext.User = &runtime.OSUser{
+			Name:     autoLogonUser.Name,
+			Password: autoLogonUser.Password,
+		}
 		// make sure user has completed logon before doing anything else
 		// timeout of 3 minutes should be plenty - note, this function will
 		// return as soon as user has logged in *and* user profile directory
@@ -174,7 +175,7 @@ func prepareTaskUser(userName string) (reboot bool) {
 		// Make sure task user has full control of task directory. Due to
 		// https://bugzilla.mozilla.org/show_bug.cgi?id=1439588#c38 we can't
 		// assume previous MkdirAll has granted this permission.
-		err = exec.Command("icacls", taskContext.TaskDir, "/grant", taskContext.LogonSession.User.Name+":(OI)(CI)F").Run()
+		err = exec.Command("icacls", taskContext.TaskDir, "/grant", autoLogonUser.Name+":(OI)(CI)F").Run()
 		if err != nil {
 			panic(err)
 		}
@@ -193,20 +194,42 @@ func prepareTaskUser(userName string) (reboot bool) {
 				panic(result.CrashCause())
 			}
 		}
-		return false
+		reboot = false
+
+		// If there is precisely one more task to run, no need to create a
+		// future task user, as we already have a task user created for the
+		// current task, which we found in the Windows registry settings for
+		// auto-logon.
+		//
+		// This also protects against generic-worker tests creating task users,
+		// since in tests we always set NumberOfTasksToRun to 1. We don't want
+		// tests to create OS users since the new users can only be used after
+		// a reboot and we can't reboot mid-task in a CI test. Therefore we
+		// allow the hosting generic-worker to create a single task user for
+		// the CI task run, and the tests for the current CI task all use this
+		// task user, whose credentials they find in the Windows logon regsitry
+		// settings.
+		if config.NumberOfTasksToRun == 1 {
+			return false
+		}
 	}
-	// create user
-	user := &runtime.OSUser{
+
+	// Bug 1533694
+	//
+	// Create user for subsequent task run already, before we've run current
+	// task, in case worker restarts unexpectedly during current task, due to
+	// e.g. Blue Screen of Death.
+	nextTaskUser := &runtime.OSUser{
 		Name:     userName,
 		Password: generatePassword(),
 	}
-	err := user.CreateNew()
+	err := nextTaskUser.CreateNew()
 	if err != nil {
 		panic(err)
 	}
 	// set APPDATA
 	var loginInfo *process.LoginInfo
-	loginInfo, err = process.NewLoginInfo(user.Name, user.Password)
+	loginInfo, err = process.NewLoginInfo(nextTaskUser.Name, nextTaskUser.Password)
 	if err != nil {
 		panic(err)
 	}
@@ -219,12 +242,11 @@ func prepareTaskUser(userName string) (reboot bool) {
 		panic(err)
 	}
 	// configure worker to auto-login to this newly generated user account
-	err = SetAutoLogin(user)
+	err = SetAutoLogin(nextTaskUser)
 	if err != nil {
 		panic(err)
 	}
-	log.Print("Exiting worker so it can reboot...")
-	return true
+	return reboot
 }
 
 // Uses [A-Za-z0-9] characters (default set) to avoid strange escaping problems
@@ -242,7 +264,7 @@ func generatePassword() string {
 
 func deleteExistingOSUsers() error {
 	log.Print("Looking for existing task users to delete...")
-	err := processCommandOutput(deleteOSUserAccount, "wmic", "useraccount", "get", "name")
+	err := processCommandOutput(deleteOSUserAccountIfOldTaskUser, "wmic", "useraccount", "get", "name")
 	if err != nil {
 		log.Print("WARNING: could not list existing Windows user accounts")
 		log.Printf("%v", err)
@@ -250,17 +272,25 @@ func deleteExistingOSUsers() error {
 	return nil
 }
 
-func deleteOSUserAccount(line string) {
-	if strings.HasPrefix(line, "task_") {
-		if autoLogonUser, _ := AutoLogonCredentials(); line != autoLogonUser {
-			user := line
-			log.Print("Attempting to remove Windows user " + user + "...")
-			err := runtime.RunCommands(false, []string{"net", "user", user, "/delete"})
-			if err != nil {
-				log.Print("WARNING: Could not remove Windows user account " + user)
-				log.Printf("%v", err)
-			}
-		}
+func deleteOSUserAccountIfOldTaskUser(user string) {
+	// filter out user accounts that aren't task accounts
+	if !strings.HasPrefix(user, "task_") {
+		return
+	}
+	// don't delete current task user account
+	if user == taskContext.User.Name {
+		return
+	}
+	// don't delete task user account for next task
+	if user == AutoLogonCredentials().Name {
+		return
+	}
+	// anything else is an old task user and can be deleted
+	log.Print("Attempting to remove Windows user " + user + "...")
+	err := runtime.RunCommands(false, []string{"net", "user", user, "/delete"})
+	if err != nil {
+		log.Print("WARNING: Could not remove Windows user account " + user)
+		log.Printf("%v", err)
 	}
 }
 
@@ -413,17 +443,21 @@ func (task *TaskRun) setVariable(variable string, value string) error {
 
 // Only return critical errors
 func purgeOldTasks() error {
-	if config.CleanUpTaskDirs {
-		err := deleteTaskDirs()
-		if err != nil {
-			log.Printf("Could not delete old task directories:\n%v", err)
-		}
+	if !config.CleanUpTaskDirs {
+		log.Printf("WARNING: Not purging previous task directories/users since config setting cleanUpTaskDirs is false")
+		return nil
+	}
+	err := deleteTaskDirs()
+	if err != nil {
+		log.Printf("Could not delete old task directories:\n%v", err)
+		return err
 	}
 	// note if this fails, we carry on without throwing an error
 	if !config.RunTasksAsCurrentUser {
-		err := deleteExistingOSUsers()
+		err = deleteExistingOSUsers()
 		if err != nil {
 			log.Printf("Could not delete old task users:\n%v", err)
+			return err
 		}
 	}
 	return nil
@@ -580,13 +614,13 @@ func (task *TaskRun) formatCommand(index int) string {
 func makeDirReadableForTaskUser(task *TaskRun, dir string) error {
 	// It doesn't concern us if config.RunTasksAsCurrentUser is set or not
 	// because files inside task directory should be owned/managed by task user
-	task.Infof("[mounts] Granting %v full control of '%v'", taskContext.LogonSession.User.Name, dir)
+	task.Infof("[mounts] Granting %v full control of '%v'", taskContext.User.Name, dir)
 	err := runtime.RunCommands(
 		false,
-		[]string{"icacls", dir, "/grant:r", taskContext.LogonSession.User.Name + ":(OI)(CI)F"},
+		[]string{"icacls", dir, "/grant:r", taskContext.User.Name + ":(OI)(CI)F"},
 	)
 	if err != nil {
-		return fmt.Errorf("[mounts] Not able to make directory %v writable for %v: %v", dir, taskContext.LogonSession.User.Name, err)
+		return fmt.Errorf("[mounts] Not able to make directory %v writable for %v: %v", dir, taskContext.User.Name, err)
 	}
 	return nil
 }
@@ -595,13 +629,13 @@ func makeDirReadableForTaskUser(task *TaskRun, dir string) error {
 func makeDirUnreadableForTaskUser(task *TaskRun, dir string) error {
 	// It doesn't concern us if config.RunTasksAsCurrentUser is set or not
 	// because files inside task directory should be owned/managed by task user
-	task.Infof("[mounts] Denying %v access to '%v'", taskContext.LogonSession.User.Name, dir)
+	task.Infof("[mounts] Denying %v access to '%v'", taskContext.User.Name, dir)
 	err := runtime.RunCommands(
 		false,
-		[]string{"icacls", dir, "/remove:g", taskContext.LogonSession.User.Name},
+		[]string{"icacls", dir, "/remove:g", taskContext.User.Name},
 	)
 	if err != nil {
-		return fmt.Errorf("[mounts] Not able to make directory %v unreadable for %v: %v", dir, taskContext.LogonSession.User.Name, err)
+		return fmt.Errorf("[mounts] Not able to make directory %v unreadable for %v: %v", dir, taskContext.User.Name, err)
 	}
 	return nil
 }
@@ -675,7 +709,7 @@ func (task *TaskRun) addUserToGroups(groups []string) (updatedGroups []string, n
 		return []string{}, []string{}
 	}
 	for _, group := range groups {
-		err := runtime.RunCommands(false, []string{"net", "localgroup", group, "/add", taskContext.LogonSession.User.Name})
+		err := runtime.RunCommands(false, []string{"net", "localgroup", group, "/add", taskContext.User.Name})
 		if err == nil {
 			updatedGroups = append(updatedGroups, group)
 		} else {
@@ -690,7 +724,7 @@ func (task *TaskRun) removeUserFromGroups(groups []string) (updatedGroups []stri
 		return []string{}, []string{}
 	}
 	for _, group := range groups {
-		err := runtime.RunCommands(false, []string{"net", "localgroup", group, "/delete", taskContext.LogonSession.User.Name})
+		err := runtime.RunCommands(false, []string{"net", "localgroup", group, "/delete", taskContext.User.Name})
 		if err == nil {
 			updatedGroups = append(updatedGroups, group)
 		} else {
@@ -734,41 +768,24 @@ func UACEnabled() bool {
 	return enableLUA == 1
 }
 
-func AutoLogonCredentials() (username, password string) {
+func AutoLogonCredentials() (user runtime.OSUser) {
 	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`, registry.QUERY_VALUE)
 	if err != nil {
 		log.Printf("Hit error reading Winlogon registry key - assume no autologon set: %v", err)
 		return
 	}
 	defer k.Close()
-	username, _, err = k.GetStringValue("DefaultUserName")
+	user.Name, _, err = k.GetStringValue("DefaultUserName")
 	if err != nil {
 		log.Printf("Hit error reading winlogon DefaultUserName registry value - assume no autologon set: %v", err)
-		return "", ""
+		return
 	}
-	password, _, err = k.GetStringValue("DefaultPassword")
+	user.Password, _, err = k.GetStringValue("DefaultPassword")
 	if err != nil {
 		log.Printf("Hit error reading winlogon DefaultPassword registry value - assume no autologon set: %v", err)
-		return "", ""
+		return
 	}
 	return
-}
-
-func chooseTaskDirName() string {
-	taskDirName, _ := AutoLogonCredentials()
-	if taskDirName == "" {
-		return "task_" + strconv.Itoa(int(time.Now().Unix()))
-	}
-	return taskDirName
-}
-
-func unsetAutoLogon() {
-	err := SetAutoLogin(
-		&runtime.OSUser{},
-	)
-	if err != nil {
-		panic(err)
-	}
 }
 
 func deleteTaskDirs() error {
@@ -784,7 +801,8 @@ func (pd *PlatformData) RefreshLoginSession() {
 	if err != nil {
 		panic(err)
 	}
-	user, pass := AutoLogonCredentials()
+	user := taskContext.User.Name
+	pass := taskContext.User.Password
 	pd.LoginInfo, err = process.NewLoginInfo(user, pass)
 	if err != nil {
 		// implies a serious bug
@@ -907,4 +925,27 @@ func GrantSIDFullControlOfInteractiveWindowsStationAndDesktop(sid string) (err e
 		return
 	}
 	return
+}
+
+func rebootBetweenTasks() bool {
+	return true
+}
+
+func removeTaskDirs(parentDir string) error {
+	currentTaskUser := taskContext.User.Name
+	nextTaskUser := AutoLogonCredentials().Name
+	taskDirs, err := taskDirsIn(parentDir)
+	if err != nil {
+		return err
+	}
+	for _, taskDir := range taskDirs {
+		name := filepath.Base(taskDir)
+		if name != currentTaskUser && name != nextTaskUser {
+			err = deleteDir(taskDir)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
