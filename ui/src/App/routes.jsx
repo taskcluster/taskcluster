@@ -36,6 +36,9 @@ const Hooks = lazy(() =>
 const AwsProvisioner = lazy(() =>
   import(/* webpackChunkName: 'AWS Provisioner' */ '../views/AwsProvisioner')
 );
+const WorkerManager = lazy(() =>
+  import(/* webpackChunkName: 'Worker Manager' */ '../views/WorkerManager')
+);
 const Secrets = lazy(() =>
   import(/* webpackChunkName: 'Secrets' */ '../views/Secrets')
 );
@@ -106,6 +109,10 @@ export default [
     component: AwsProvisioner,
     path: '/aws-provisioner',
     routes: awsProvisionerRoutes('/aws-provisioner'),
+  },
+  {
+    component: WorkerManager,
+    path: '/worker-manager',
   },
   {
     component: Secrets,
