@@ -30,17 +30,6 @@ Set-Service "WinDefend" -StartupType Disabled -Status Stopped
 # Disable disk indexing
 Set-Service "WSearch" -StartupType Disabled -Status Stopped
 
-# Toggle DisableMSI to allow Python MSI packages installation with pyenv-win
-# If we don't do this, installer fails with:
-# MSI (s) (E8:9C) [17:40:24:801]: Machine policy value 'DisableMsi' is 1
-# MSI (s) (E8:9C) [17:40:24:801]: Rejecting product '{7808D6D7-9C0D-4593-8808-B83EF9EC8884}': Non-assigned apps are disabled for non-admin users.
-#
-# Relevant doc: https://docs.microsoft.com/fr-fr/windows/desktop/Msi/disablemsi
-#
-# Doing it early, as doing it after granting SeCreateSymbolicLinkPrivilege seems to have broken SeCreateSymbolicLinkPrivilege
-New-Item -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\Installer" -Force
-New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\Installer" -Name "DisableMSI" -Value "0" -PropertyType Dword -Force
-
 # install chocolatey package manager
 Invoke-Expression ($client.DownloadString('https://chocolatey.org/install.ps1'))
 
