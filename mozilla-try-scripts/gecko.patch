@@ -1,20 +1,20 @@
 diff --git a/taskcluster/taskgraph/transforms/task.py b/taskcluster/taskgraph/transforms/task.py
 --- a/taskcluster/taskgraph/transforms/task.py
 +++ b/taskcluster/taskgraph/transforms/task.py
-@@ -1388,15 +1388,48 @@ def add_index_routes(config, tasks):
-         del task['index']
-         yield task
+@@ -1685,6 +1685,42 @@ def add_index_routes(config, tasks):
  
  
  @transforms.add
-+def replace_level_in_workertype(config, tasks):
-+    """
-+    This transform replaces {level} in workerType name with actual scm level.
-+    """
++def set_worker_type(config, tasks):
 +    for task in tasks:
 +        level = str(config.params['level'])
-+        task['worker-type'] = task['worker-type'].format(level=level)
-+        yield task
++
++        provisioner_id, worker_type = get_worker_type(
++            config.graph_config,
++            task['worker-type'],
++            level,
++        )
++        task['worker-type'] = '/'.join([provisioner_id, worker_type])
 +
 +
 +@transforms.add
@@ -44,11 +44,3 @@ diff --git a/taskcluster/taskgraph/transforms/task.py b/taskcluster/taskgraph/tr
  def build_task(config, tasks):
      for task in tasks:
          level = str(config.params['level'])
--        worker_type = task['worker-type'].format(level=level)
--        provisioner_id, worker_type = worker_type.split('/', 1)
-+        provisioner_id, worker_type = task['worker-type'].split('/', 1)
-         project = config.params['project']
- 
-         routes = task.get('routes', [])
-         scopes = [s.format(level=level, project=project) for s in task.get('scopes', [])]
- 
