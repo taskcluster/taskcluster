@@ -74,8 +74,8 @@ choco install -y nuget.commandline --version 4.9.3
 choco install -y carbon --version 2.5.0
 
 # Install NVIDIA Display Driver v412.29 for Tesla, CUDA 10.0, Winows 2012 R2 64bits
-$client.DownloadFile("http://us.download.nvidia.com/tesla/412.29/412.29-tesla-desktop-winserver2008-2012r2-64bit-international.exe", "C:\412.29-tesla-desktop-winserver2008-2012r2-64bit-international.exe")
-Start-Process -FilePath "C:\412.29-tesla-desktop-winserver2008-2012r2-64bit-international.exe" -ArgumentList "-s -noeula -passive -noreboot -clean" -Wait -NoNewWindow
+## $client.DownloadFile("http://us.download.nvidia.com/tesla/412.29/412.29-tesla-desktop-winserver2008-2012r2-64bit-international.exe", "C:\412.29-tesla-desktop-winserver2008-2012r2-64bit-international.exe")
+## Start-Process -FilePath "C:\412.29-tesla-desktop-winserver2008-2012r2-64bit-international.exe" -ArgumentList "-s -noeula -passive -noreboot -clean" -Wait -NoNewWindow
 
 # Prepare CUDA v9.0
 #$client.DownloadFile("https://developer.nvidia.com/compute/cuda/9.0/Prod/local_installers/cuda_9.0.176_win10-exe", "C:\cuda_9.0.176_win10.exe")
