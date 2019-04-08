@@ -12,7 +12,6 @@ let crypto = require('crypto');
 let slugid = require('slugid');
 let http = require('http');
 let https = require('https');
-let Promise = require('promise');
 let querystring = require('querystring');
 let tcUrl = require('taskcluster-lib-urls');
 

@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const assert = require('assert');
 const debug = require('debug')('taskcluster-lib-validate');
-const Promise = require('promise');
 const fs = require('fs');
 const path = require('path');
 const mkdirp = require('mkdirp');
