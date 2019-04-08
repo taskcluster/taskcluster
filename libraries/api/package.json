@@ -27,5 +27,5 @@
   "engines": {
     "node": ">=8"
   },
-  "main": "./src/builder.js"
+  "main": "./src/index.js"
 }
