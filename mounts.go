@@ -84,7 +84,9 @@ func (cache *Cache) Rating() float64 {
 }
 
 func (cache *Cache) Expunge(task *TaskRun) error {
-	task.Infof("[mounts] Removing cache %v from cache table", cache.Key)
+	if task != nil {
+		task.Infof("[mounts] Removing cache %v from cache table", cache.Key)
+	}
 	delete(cache.Owner, cache.Key)
 	if task != nil {
 		task.Infof("[mounts] Deleting cache %v file(s) at %v", cache.Key, cache.Location)
