@@ -2,3 +2,4 @@ node_modules
 .eslintcache
 user-build-config.yml
 *.log
+user-config.yml

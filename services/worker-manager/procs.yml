@@ -3,7 +3,7 @@ web:
   command: node src/main.js server
 provisioner:
   type: background
-  command: node src/main.js provisionerservice
+  command: node src/main.js provisioner
 write-docs:
   type: build
   command: node src/main.js writeDocs

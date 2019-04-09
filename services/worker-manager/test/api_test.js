@@ -1,114 +1,134 @@
-const assume = require('assume');
-const {client: _client, server: _server} = require('./helper');
-const fs = require('fs');
-const path = require('path');
+const assert = require('assert');
+const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
-suite(testing.suiteName(), () => {
-  let server;
-  let client;
-  let workerConfig;
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
+  helper.withEntities(mock, skipping);
+  helper.withServer(mock, skipping);
 
-  suiteSetup(async () => {
-    client = await _client;
-    server = await _server;
+  test('ping', async function() {
+    await helper.workerManager.ping();
   });
 
-  setup(async () => {
-    workerConfig = await new Promise((resolve, reject) => {
-      fs.readFile(path.join(__dirname, 'convert-expected.json'), (err, data) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(JSON.parse(data));
-        }
-      });
-    });
+  const workerTypeCompare = (name, input, result, desiredRenderedConfig = {}) => {
+    const {created, lastModified, renderedConfig, ...definition} = result;
+    assert(created);
+    assert(lastModified);
+    assert.equal(lastModified, created);
+    assert.deepEqual(renderedConfig, desiredRenderedConfig);
+    assert.deepEqual({name, ...input}, definition);
+  };
+
+  test('create workertype', async function() {
+    const name = 'ee';
+    const input = {
+      provider: 'foo',
+      description: 'bar',
+      configTemplate: {},
+    };
+    workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
+    const name2 = 'ee2';
+    const input2 = {
+      provider: 'baz',
+      description: 'bing',
+      configTemplate: {},
+    };
+    workerTypeCompare(name2, input2, await helper.workerManager.createWorkerType(name2, input2));
   });
 
-  suiteTeardown(async () => {
-    (await server).terminate();
+  test('update workertype', async function() {
+    const name = 'ee';
+    const input = {
+      provider: 'foo',
+      description: 'bar',
+      configTemplate: {},
+    };
+    workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
+    const input2 = {
+      provider: 'baz',
+      description: 'bing',
+      configTemplate: {},
+    };
+    workerTypeCompare(name, input2, await helper.workerManager.updateWorkerType(name, input2));
   });
 
-  suite('worker configs', () => {
-    test('should list, create, retrieve, update and remove worker configs', async () => {
-      let name = 'worker-config-1';
-      workerConfig.id = name;
-
-      // Should start with no worker configurations
-      assume(await client.listWorkerConfigurations()).has.lengthOf(0);
-
-      // Should create worker configuration (idempotent)
-      await client.createWorkerConfiguration(name, workerConfig);
-      await client.createWorkerConfiguration(name, workerConfig);
-      assume(await client.listWorkerConfigurations()).has.lengthOf(1);
-
-      // Should retrieve worker configuration
-      let oldWorkerConfig = await client.getWorkerConfiguration(name);
-      assume(oldWorkerConfig).deeply.equals(workerConfig);
-
-      // Should update worker configuration
-      workerConfig.rules[0].id = 'rule-1';
-      await client.updateWorkerConfiguration(name, workerConfig);
-      let newWorkerConfig = await client.getWorkerConfiguration(name);
-      assume(newWorkerConfig).deeply.equals(workerConfig);
-
-      // Should be able to remove worker configuration
-      await client.removeWorkerConfiguration(name);
-      assume(await client.listWorkerConfigurations()).has.lengthOf(0);
-
-      // Removing a non-existing worker configuration should not exist
-      await client.removeWorkerConfiguration(name);
-
-      // Should throw an error when requesting a worker configuration which
-      // doesn't exist
-      await assume(() => client.getWorkerConfiguration(name)).rejects();
-      await assume(() => client.updateWorkerConfiguration(name, workerConfig)).rejects();
+  test('create workertype (already exists)', async function() {
+    await helper.workerManager.createWorkerType('oo', {
+      provider: 'q',
+      description: 'e',
+      configTemplate: {},
     });
-
-    test('should raise an error when a different worker config has same worker type', async () => {
-      let name1 = 'worker-config-1';
-      let name2 = 'worker-config-2';
-
-      workerConfig.id = name1;
-
-      await client.createWorkerConfiguration(workerConfig.id, workerConfig);
-
-      workerConfig.id = name2;
-      await assume(client.createWorkerConfiguration(workerConfig.id, workerConfig)).rejects();
-      await assume(client.updateWorkerConfiguration(workerConfig.id, workerConfig)).rejects();
-      await client.removeWorkerConfiguration(name1);
-      await client.removeWorkerConfiguration(name2);
-    });
-
-    test('should be able to preview worker configuration', async () => {
-      await client.createWorkerConfiguration(workerConfig.id, workerConfig);
-
-      let result = await client.testWorkerConfiguration({
-        workerConfiguration: workerConfig,
-        satisfiers: {
-          biddingStrategyId: 'queue-pending-ratio',
-          workerType: 'gecko-3-b-linux-extended-extended',
-          region: 'us-east-1',
-          instanceType: 'c5d.4xlarge',
-          availabilityZone: 'us-east-1a',
-        },
+    try {
+      await helper.workerManager.createWorkerType('oo', {
+        provider: 'q',
+        description: 'e',
+        configTemplate: {},
       });
-      assume(result).deeply.equals(JSON.parse(fs.readFileSync(path.join(__dirname, 'convert-eval-expected.json'))));
-    });
+    } catch (err) {
+      if (err.code !== 'RequestConflict') {
+        throw err;
+      }
+      return;
+    }
+    throw new Error('creation of an already existing workertype succeeded');
+  });
 
-    test('should be able to test worker configuration', async () => {
-      let result = await client.testWorkerConfiguration({
-        workerConfiguration: workerConfig,
-        satisfiers: {
-          biddingStrategyId: 'queue-pending-ratio',
-          workerType: 'gecko-3-b-linux-extended-extended',
-          region: 'us-east-1',
-          instanceType: 'c5d.4xlarge',
-          availabilityZone: 'us-east-1a',
-        },
+  test('update workertype (does not exist)', async function() {
+    try {
+      await helper.workerManager.updateWorkerType('oo', {
+        provider: 'q',
+        description: 'e',
+        configTemplate: {},
       });
-      assume(result).deeply.equals(JSON.parse(fs.readFileSync(path.join(__dirname, 'convert-eval-expected.json'))));
-    });
+    } catch (err) {
+      if (err.code !== 'ResourceNotFound') {
+        throw err;
+      }
+      return;
+    }
+    throw new Error('update of non-existent workertype succeeded');
+  });
+
+  test('get workertype', async function() {
+    const name = 'ee';
+    const input = {
+      provider: 'foo',
+      description: 'bar',
+      configTemplate: {},
+    };
+    await helper.workerManager.createWorkerType(name, input);
+    workerTypeCompare(name, input, await helper.workerManager.workerType(name));
+  });
+
+  test('get workertype (does not exist)', async function() {
+    try {
+      await helper.workerManager.workerType('oo');
+    } catch (err) {
+      if (err.code !== 'ResourceNotFound') {
+        throw err;
+      }
+      return;
+    }
+    throw new Error('get of non-existent workertype succeeded');
+  });
+
+  test('delete workertype', async function() {
+    const name = 'ee';
+    const input = {
+      provider: 'foo',
+      description: 'bar',
+      configTemplate: {},
+    };
+    workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
+    await helper.workerManager.deleteWorkerType(name);
+    try {
+      await helper.workerManager.workerType(name);
+    } catch (err) {
+      if (err.code !== 'ResourceNotFound') {
+        throw err;
+      }
+      return;
+    }
+    throw new Error('get of a deleted workertype succeeded');
   });
 });
