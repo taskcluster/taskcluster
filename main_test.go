@@ -203,6 +203,7 @@ func TestRemoveTaskDirs(t *testing.T) {
 		},
 	}
 	taskContext = &TaskContext{
+		TaskDir: filepath.Join(d, "task_1234561234"),
 		User: &runtime.OSUser{
 			Name: "task_1234561234",
 		},
@@ -237,9 +238,16 @@ func TestRemoveTaskDirs(t *testing.T) {
 		"applesnpears":   true,
 	}
 	if len(fi) != len(expectedDirs)+len(expectedFiles) {
+		t.Logf("Found:")
 		for _, file := range fi {
-			t.Logf("File %v", file.Name())
+			if file.IsDir() {
+				t.Logf("  Directory %v", file.Name())
+			} else {
+				t.Logf("  File %v", file.Name())
+			}
 		}
+		t.Logf("Expected files: %v", expectedFiles)
+		t.Logf("Expected directories: %v", expectedDirs)
 		t.Fatalf("Expected to find %v directory records (%v dirs + %v files) but found %v", len(expectedDirs)+len(expectedFiles), len(expectedDirs), len(expectedFiles), len(fi))
 	}
 	for _, file := range fi {

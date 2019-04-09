@@ -8,11 +8,10 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	sysruntime "runtime"
+	"runtime"
 	"strings"
 
 	"github.com/taskcluster/generic-worker/process"
-	"github.com/taskcluster/generic-worker/runtime"
 	"github.com/taskcluster/shell"
 )
 
@@ -29,11 +28,6 @@ func (task *TaskRun) NewPlatformData() (pd *PlatformData, err error) {
 
 func (pd *PlatformData) ReleaseResources() error {
 	return nil
-}
-
-type TaskContext struct {
-	TaskDir string
-	User    *runtime.OSUser
 }
 
 func immediateShutdown(cause string) {
@@ -153,15 +147,15 @@ func (task *TaskRun) formatCommand(index int) string {
 	return shell.Escape(task.Payload.Command[index]...)
 }
 
-func prepareTaskUser(username string) bool {
-	taskContext.User = &runtime.OSUser{
-		Name: username,
+func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
+	taskContext = &TaskContext{
+		TaskDir: filepath.Join(config.TasksDir, taskDirName),
 	}
 	err := os.MkdirAll(taskContext.TaskDir, 0777)
 	if err != nil {
 		panic(err)
 	}
-	return false
+	return
 }
 
 func deleteDir(path string) error {
@@ -182,13 +176,17 @@ func defaultTasksDir() string {
 }
 
 func deleteTaskDirs() error {
-	currentTaskUser := taskContext.User.Name
+	currentTaskDir := taskContext.TaskDir
 	taskDirs, err := taskDirsIn(config.TasksDir)
 	if err != nil {
 		return err
 	}
 	for _, taskDir := range taskDirs {
-		if filepath.Base(taskDir) != currentTaskUser {
+		// this string comparison works because both taskDir and currentTaskDir
+		// are constructed from filepath.Join(config.TasksDir, taskDir) - but
+		// if this becomes a problem, we can call os.Stat against both files
+		// and use os.SameFile to check if they are the same file (directory).
+		if taskDir != currentTaskDir {
 			err = deleteDir(taskDir)
 			if err != nil {
 				return err
@@ -199,7 +197,7 @@ func deleteTaskDirs() error {
 }
 
 func GrantSIDFullControlOfInteractiveWindowsStationAndDesktop(sid string) (err error) {
-	return fmt.Errorf("Cannot grant %v full control of interactive windows station and desktop; platform %v does not have such entities", sid, sysruntime.GOOS)
+	return fmt.Errorf("Cannot grant %v full control of interactive windows station and desktop; platform %v does not have such entities", sid, runtime.GOOS)
 }
 
 func rebootBetweenTasks() bool {
