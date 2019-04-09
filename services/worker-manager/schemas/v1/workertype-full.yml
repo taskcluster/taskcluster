@@ -1,0 +1,54 @@
+$schema: "/schemas/common/metaschema.json#"
+title: WorkerType Full
+description: |
+  TODO
+type:               object
+properties:
+  name:
+    type:           string
+    minLength:      {$const: identifier-min-length}
+    maxLength:      {$const: identifier-max-length}
+    pattern:        {$const: identifier-pattern}
+    description: |
+      The name of this workertype.
+  provider:
+    type:           string
+    minLength:      {$const: identifier-min-length}
+    maxLength:      {$const: identifier-max-length}
+    pattern:        {$const: identifier-pattern}
+    description: |
+      The provider responsible for managing this workertype.
+  description:
+    type:           string
+    maxLength:      10240
+    description: |
+      A description of this workerType.
+  created:
+    description: |
+      Date and time when this workerType was created
+    type:                   string
+    format:                 date-time
+  lastModified: # TODO: Make all of the shared fields come from a common base
+    description: |
+      Date and time when this workerType was last updated
+    type:                   string
+    format:                 date-time
+  configTemplate:
+    type: object
+    additionalProperties: true
+    description: |
+      The template that will be turned into a fully formed worker-type config.
+      This will be different per provider.
+  renderedConfig:
+    type: object
+    additionalProperties: true
+    description: |
+      A fully formed worker-type config. This will be different per provider.
+additionalProperties: false
+required:
+  - provider
+  - description
+  - created
+  - lastModified
+  - configTemplate
+  - renderedConfig

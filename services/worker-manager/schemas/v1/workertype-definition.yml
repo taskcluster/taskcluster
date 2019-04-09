@@ -1,0 +1,32 @@
+$schema: "/schemas/common/metaschema.json#"
+title: WorkerType Definition
+description: |
+  Fields that are defined by a user for a workertype.
+  Used to create and modify definitions. There is a larger
+  set of fields for viewing since some parts are generated
+  by the service.
+type: object
+properties:
+  provider:
+    type: string
+    minLength: {$const: identifier-min-length}
+    maxLength: {$const: identifier-max-length}
+    pattern: {$const: identifier-pattern}
+    description: |
+      The provider responsible for managing this workertype.
+  description:
+    type: string
+    maxLength: 10240
+    description: |
+      A description of this workerType.
+  configTemplate:
+    type: object
+    additionalProperties: true
+    description: |
+      The template that will be turned into a fully formed worker-type config.
+      This will be different per provider.
+additionalProperties: false
+required:
+  - provider
+  - description
+  - configTemplate

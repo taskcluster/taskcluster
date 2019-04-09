@@ -1,0 +1,26 @@
+$schema: "/schemas/common/metaschema.json#"
+title: WorkerType Definition
+description: |
+  ... TODO: Move shared fields into constants
+type:               object
+properties:
+  name:
+    type:           string
+    minLength:      {$const: identifier-min-length}
+    maxLength:      {$const: identifier-max-length}
+    pattern:        {$const: identifier-pattern}
+    description: |
+      WorkerType name. This maps to the workerType in tasks
+      that the workers will call claimWork with.
+  provider:
+    type:           string
+    minLength:      {$const: identifier-min-length}
+    maxLength:      {$const: identifier-max-length}
+    pattern:        {$const: identifier-pattern}
+    description: |
+      The provider responsible for managing this workertype.
+additionalProperties: false
+required:
+  - name
+  - provider
+

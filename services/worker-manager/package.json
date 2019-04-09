@@ -6,12 +6,9 @@
   "author": "John Ford <john@johnford.org>",
   "license": "MPL-2.0",
   "private": true,
-  "bin": {
-    "convert-worker-type": "./bin/convert.js"
-  },
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
     "fixlint": "eslint --fix src/*.js test/*.js",
-    "test": "mocha test/*_test.js test/bidding-strategies/*_test.js"
+    "test": "mocha test/*_test.js"
   }
 }

@@ -1,7 +1,8 @@
 defaults:
   app:
     publishMetaData: !env:bool PUBLISH_METADATA
-    statsComponent: 'worker-manager'
+    workerTypeTableName: WorkerTypes
+    provisionerId: worker-manager
   monitoring:
     enable: !env:bool MONITORING_ENABLE
     pretty: !env:bool PRETTY_LOGGING
@@ -11,33 +12,22 @@ defaults:
     credentials:
       clientId: !env TASKCLUSTER_CLIENT_ID
       accessToken: !env TASKCLUSTER_ACCESS_TOKEN
+  azure:
+    accountId: !env AZURE_ACCOUNT
   server:
     port: !env:number PORT
-    env: 'development'
-    forceSSL: false
-    trustProxy: false
-  aws:
-    accessKeyId: !env AWS_ACCESS_KEY_ID
-    secretAccessKey: !env AWS_SECRET_ACCESS_KEY
-    region: 'us-west-2'
-    apiVersion: '2014-01-01'
-  biddingStrategies:
-    - className: QueuePending
-      args:
-        - rootUrl: !env TASKCLUSTER_ROOT_URL
-          credentials:
-            clientId: !env TASKCLUSTER_CLIENT_ID
-            accessToken: !env TASKCLUSTER_ACCESS_TOKEN
-            certificate: !env TASKCLUSTER_CERTIFICATE
-  providers: []
+    env: !env NODE_ENV
+    forceSSL: !env:bool FORCE_SSL
+    trustProxy: !env:bool TRUST_PROXY
+
 test:
-  taskcluster:
-    rootUrl: 'http://localhost:5555'
   monitoring:
-    level: warning
-    enable: false
+    level: debug
+    pretty: false
+    enable: true
+    mock: true
   server:
-    port: 5555
+    port: 60409
     env: 'development'
     forceSSL: false
     trustProxy: false
