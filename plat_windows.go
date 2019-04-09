@@ -82,12 +82,6 @@ func (pd *PlatformData) ReleaseResources() error {
 	return pd.LoginInfo.Release()
 }
 
-type TaskContext struct {
-	TaskDir   string
-	User      *runtime.OSUser
-	LoginInfo *process.LoginInfo
-}
-
 func platformFeatures() []Feature {
 	return []Feature{
 		&RDPFeature{},
@@ -148,12 +142,16 @@ func deleteDir(path string) error {
 	return err
 }
 
-func prepareTaskUser(userName string) (reboot bool) {
+func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 	reboot = true
 	if autoLogonUser := AutoLogonCredentials(); strings.HasPrefix(autoLogonUser.Name, "task_") {
-		taskContext.User = &runtime.OSUser{
-			Name:     autoLogonUser.Name,
-			Password: autoLogonUser.Password,
+		reboot = false
+		taskContext = &TaskContext{
+			User: &runtime.OSUser{
+				Name:     autoLogonUser.Name,
+				Password: autoLogonUser.Password,
+			},
+			TaskDir: filepath.Join(config.TasksDir, autoLogonUser.Name),
 		}
 		// make sure user has completed logon before doing anything else
 		// timeout of 3 minutes should be plenty - note, this function will
@@ -194,7 +192,6 @@ func prepareTaskUser(userName string) (reboot bool) {
 				panic(result.CrashCause())
 			}
 		}
-		reboot = false
 
 		// If there is precisely one more task to run, no need to create a
 		// future task user, as we already have a task user created for the
@@ -210,7 +207,7 @@ func prepareTaskUser(userName string) (reboot bool) {
 		// task user, whose credentials they find in the Windows logon regsitry
 		// settings.
 		if config.NumberOfTasksToRun == 1 {
-			return false
+			return
 		}
 	}
 
@@ -219,8 +216,16 @@ func prepareTaskUser(userName string) (reboot bool) {
 	// Create user for subsequent task run already, before we've run current
 	// task, in case worker restarts unexpectedly during current task, due to
 	// e.g. Blue Screen of Death.
+
+	// Regardless of whether we run tasks as current user or not, we should
+	// make sure there is a task user created - since runTasksAsCurrentUser is
+	// now only something for CI so on Windows a generic-worker test can
+	// execute in the context of a Windows Service running under LocalSystem
+	// account. Username can only be 20 chars, uuids are too long, therefore
+	// use prefix (5 chars) plus seconds since epoch (10 chars).
+
 	nextTaskUser := &runtime.OSUser{
-		Name:     userName,
+		Name:     taskDirName,
 		Password: generatePassword(),
 	}
 	err := nextTaskUser.CreateNew()
@@ -233,7 +238,7 @@ func prepareTaskUser(userName string) (reboot bool) {
 	if err != nil {
 		panic(err)
 	}
-	err = RedirectAppData(loginInfo.AccessToken(), filepath.Join(taskContext.TaskDir, "AppData"))
+	err = RedirectAppData(loginInfo.AccessToken(), filepath.Join(config.TasksDir, nextTaskUser.Name, "AppData"))
 	if err != nil {
 		panic(err)
 	}
@@ -246,7 +251,7 @@ func prepareTaskUser(userName string) (reboot bool) {
 	if err != nil {
 		panic(err)
 	}
-	return reboot
+	return
 }
 
 // Uses [A-Za-z0-9] characters (default set) to avoid strange escaping problems

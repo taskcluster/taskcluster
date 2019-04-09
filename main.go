@@ -26,6 +26,7 @@ import (
 	"github.com/taskcluster/generic-worker/fileutil"
 	"github.com/taskcluster/generic-worker/gwconfig"
 	"github.com/taskcluster/generic-worker/process"
+	gwruntime "github.com/taskcluster/generic-worker/runtime"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/tcqueue"
@@ -1110,17 +1111,7 @@ func convertNilToEmptyString(val interface{}) string {
 
 func PrepareTaskEnvironment() (reboot bool) {
 	taskDirName := "task_" + strconv.Itoa(int(time.Now().Unix()))
-	taskContext = &TaskContext{
-		TaskDir: filepath.Join(config.TasksDir, taskDirName),
-	}
-	// Regardless of whether we run tasks as current user or not, we should
-	// make sure there is a task user created - since runTasksAsCurrentUser is
-	// now only something for CI so on Windows a generic-worker test can
-	// execute in the context of a Windows Service running under LocalSystem
-	// account. Username can only be 20 chars, uuids are too long, therefore
-	// use prefix (5 chars) plus seconds since epoch (10 chars).
-	userName := taskDirName
-	reboot = prepareTaskUser(userName)
+	reboot = PlatformTaskEnvironmentSetup(taskDirName)
 	if reboot {
 		return
 	}
@@ -1158,4 +1149,9 @@ func taskDirsIn(parentDir string) ([]string, error) {
 
 func (task *TaskRun) ReleaseResources() error {
 	return task.PlatformData.ReleaseResources()
+}
+
+type TaskContext struct {
+	TaskDir string
+	User    *gwruntime.OSUser
 }
