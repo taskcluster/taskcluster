@@ -1,0 +1,14 @@
+query workerTypes {
+  WMWorkerTypeSummaries {
+    name
+    pendingCapacity
+    runningCapacity
+    pendingTasks
+    lastActive
+    lastResolved
+    failedNumber
+    exceptionNumber
+    unscheduledNumber
+    provider
+  }
+}

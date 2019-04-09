@@ -1,0 +1,25 @@
+type WMWorkerTypeSummary {
+    name: String!
+    description: String
+    owner: String!
+
+    minCapacity: Int!
+    maxCapacity: Int!
+    requestedCapacity: Int!
+    pendingCapacity: Int!
+    runningCapacity: Int!
+
+    lastActive: DateTime!
+    lastResolved: DateTime!
+
+    pendingTasks: Int!
+    failedNumber: Int!
+    exceptionNumber: Int!
+    unscheduledNumber: Int!
+
+    provider: String!
+}
+
+extend type Query {
+    WMWorkerTypeSummaries(filter: JSON): [WMWorkerTypeSummary]
+}
