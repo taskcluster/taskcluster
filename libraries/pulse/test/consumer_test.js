@@ -4,15 +4,19 @@ const assume = require('assume');
 const debugModule = require('debug');
 const MonitorManager = require('taskcluster-lib-monitor');
 const assert = require('assert');
-const testing = require('taskcluster-lib-testing');
+const helper = require('./helper');
+const {suiteName} = require('taskcluster-lib-testing');
 
-const PULSE_CONNECTION_STRING = process.env.PULSE_CONNECTION_STRING;
-
-suite(testing.suiteName(), function() {
+helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
+  if (mock) {
+    return; // Only test with real creds
+  }
+  let connectionString;
   let monitorManager = null;
   let monitor;
 
   setup(async function() {
+    connectionString = helper.secrets.get('pulse').connectionString;
     monitorManager = new MonitorManager({
       serviceName: 'lib-pulse-test',
     });
@@ -41,7 +45,7 @@ suite(testing.suiteName(), function() {
     suiteSetup(async function() {
 
       // otherwise, set up the exchange
-      const conn = await amqplib.connect(PULSE_CONNECTION_STRING);
+      const conn = await amqplib.connect(connectionString);
       const chan = await conn.createChannel();
       await chan.assertExchange(exchangeName, 'topic');
       await chan.close();
@@ -49,7 +53,7 @@ suite(testing.suiteName(), function() {
     });
 
     const publishMessages = async () => {
-      const conn = await amqplib.connect(PULSE_CONNECTION_STRING);
+      const conn = await amqplib.connect(connectionString);
       const chan = await conn.createChannel();
 
       for (let i = 0; i < 10; i++) {
@@ -64,7 +68,7 @@ suite(testing.suiteName(), function() {
 
     test('consume messages', async function() {
       const client = new Client({
-        credentials: connectionStringCredentials(PULSE_CONNECTION_STRING),
+        credentials: connectionStringCredentials(connectionString),
         retirementDelay: 50,
         minReconnectionInterval: 20,
         monitor,
@@ -134,7 +138,7 @@ suite(testing.suiteName(), function() {
 
     test('consume messages ephemerally', async function() {
       const client = new Client({
-        credentials: connectionStringCredentials(PULSE_CONNECTION_STRING),
+        credentials: connectionStringCredentials(connectionString),
         retirementDelay: 50,
         minReconnectionInterval: 20,
         monitor,
@@ -218,7 +222,7 @@ suite(testing.suiteName(), function() {
 
     test('no queueuName is an error', async function() {
       const client = new Client({
-        credentials: connectionStringCredentials(PULSE_CONNECTION_STRING),
+        credentials: connectionStringCredentials(connectionString),
         retirementDelay: 50,
         minReconnectionInterval: 20,
         monitor,

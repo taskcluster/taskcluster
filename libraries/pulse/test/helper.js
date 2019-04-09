@@ -7,5 +7,4 @@ exports.secrets = new Secrets({
       {env: 'PULSE_CONNECTION_STRING', name: 'connectionString'},
     ],
   },
-  load: exports.load,
 });
