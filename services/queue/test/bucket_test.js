@@ -17,7 +17,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   }
 
   let bucket;
-  setup(async function() {
+  setup('load bucket', async function() {
     if (!skipping()) {
       bucket = await helper.load('publicArtifactBucket');
     }

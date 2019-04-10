@@ -66,22 +66,21 @@ class ClaimResolver {
         await Promise.all(loops);
       },
     });
+
+    this.iterator.on('error', () => {
+      this.monitor.alert('iteration failed repeatedly; terminating process');
+      process.exit(1);
+    });
   }
 
   /** Start polling */
   async start() {
-    return new Promise((res, rej) => {
-      this.iterator.once('started', res);
-      this.iterator.start();
-    });
+    return this.iterator.start();
   }
 
   /** Terminate iteration, returns promise that polling is stopped */
   terminate() {
-    return new Promise((res, rej) => {
-      this.iterator.once('stopped', res);
-      this.iterator.stop();
-    });
+    return this.iterator.stop();
   }
 
   /** Poll for messages and handle them in a loop */

@@ -1,11 +1,10 @@
-let subject = require('../');
-let sandbox = require('sinon').createSandbox();
-let assume = require('assume');
-let debug = require('debug')('iterate-test');
-let MonitorManager = require('taskcluster-lib-monitor');
+const subject = require('../');
+const assume = require('assume');
+const debug = require('debug')('iterate-test');
+const MonitorManager = require('taskcluster-lib-monitor');
 const testing = require('taskcluster-lib-testing');
 
-let possibleEvents = [
+const possibleEvents = [
   'started',
   'stopped',
   'completed',
@@ -28,57 +27,54 @@ class IterateEvents {
     }
   }
 
-  assert(f) {
-    let dl = () => { // dl === dump list
+  assert() {
+    const dl = () => { // dl === dump list
       return `\nExpected: ${JSON.stringify(this.expectedOrder, null, 2)}` +
         `\nActual: ${JSON.stringify(this.orderOfEmission, null, 2)}`;
     };
 
     if (this.orderOfEmission.length !== this.expectedOrder.length) {
-      return f(new Error(`order emitted differs in length from expectation ${dl()}`));
+      throw(new Error(`order emitted differs in length from expectation ${dl()}`));
     }
 
     for (let i = 0 ; i < this.orderOfEmission.length ; i++) {
       if (this.orderOfEmission[i] !== this.expectedOrder[i]) {
-        return f(new Error(`order emitted differs in content ${dl()}`));
+        throw(new Error(`order emitted differs in content ${dl()}`));
       }
     }
 
     debug(`Events Emitted: ${JSON.stringify(this.orderOfEmission)}`);
-    return f();
   }
-
 }
 
 suite(testing.suiteName(), () => {
   let manager;
   let monitor;
 
-  setup(async () => {
+  suiteSetup(async () => {
     manager = new MonitorManager({serviceName: 'iterate'});
     manager.setup({mock: true});
     monitor = manager.monitor();
   });
 
-  teardown(() => {
-    sandbox.restore();
+  suiteTeardown(() => {
     manager.terminate();
   });
 
-  test('should be able to start and stop', done => {
+  const runWithFakeTime = fn => {
+    return testing.runWithFakeTime(fn, {
+      systemTime: 0,
+    });
+  };
+
+  test('should be able to start and stop', runWithFakeTime(async function() {
     let iterations = 0;
 
-    let i = new subject({
+    const i = new subject({
       maxIterationTime: 3000,
       waitTime: 1000,
-      handler: async (watchdog, state) => {
-        // In order to get the looping stuff to work, I had to stop the
-        // watchdog timer.  This will be tested in the tests for the
-        // Iterate.iterate method
-        watchdog.on('expired', () => {
-          done(new Error('incremental watch dog expiration'));
-        });
-
+      watchDog: 0,
+      handler: async watchdog => {
         debug('iterate!');
         iterations++;
         return 1;
@@ -86,93 +82,113 @@ suite(testing.suiteName(), () => {
       monitor,
     });
 
-    i.on('error', err => {
-      done(err);
-    });
-
-    i.on('stopped', () => {
-      done();
-    });
+    let err = null;
+    i.on('error', e => { err = e; });
+    i.on('stopped', () => { err = new Error('unexpected stopped event'); });
 
     i.start();
 
-    setTimeout(() => {
-      assume(iterations).equals(5);
-      assume(i.keepGoing).is.ok();
-      i.stop();
-      assume(i.keepGoing).is.not.ok();
-      assume(manager.messages.length).equals(5);
-      manager.messages.forEach(message => {
-        assume(message.Fields.status).equals('success');
-      });
-    }, 5000);
+    await testing.sleep(5000);
 
-  });
+    assume(err).to.equal(null);
+    assume(iterations).equals(5);
+    assume(i.keepGoing).is.ok();
+    await i.stop();
+    assume(i.keepGoing).is.not.ok();
+    assume(manager.messages.length).equals(5);
+    manager.messages.forEach(message => {
+      assume(message.Fields.status).equals('success');
+    });
+  }));
 
-  test('should stop after correct number of iterations', done => {
-    let iterations = 0;
-
-    let i = new subject({
+  test('should stop after current iteration completes', runWithFakeTime(async function() {
+    const i = new subject({
       maxIterationTime: 3000,
       waitTime: 10,
       maxIterations: 5,
-      handler: async (watchdog, state) => {
-        watchdog.on('expired', () => {
-          done(new Error('incremental watch dog expiration'));
-        });
+      watchDog: 0,
+      handler: async watchdog => {
+        await testing.sleep(500);
+      },
+    });
 
+    i.start();
+    await i.stop();
+
+    assume(+new Date()).atleast(500);
+  }));
+
+  test('should stop in the midst of waitTime', runWithFakeTime(async function() {
+    const i = new subject({
+      maxIterationTime: 3000,
+      waitTime: 1000,
+      maxIterations: 2,
+      watchDog: 0,
+      handler: async watchdog => {
+        await testing.sleep(500);
+      },
+    });
+
+    i.start();
+    await testing.sleep(1000);
+    await i.stop();
+
+    assume(+new Date()).between(1000, 1100);
+  }));
+
+  test('should stop after correct number of iterations', runWithFakeTime(async function() {
+    let iterations = 0;
+
+    const i = new subject({
+      maxIterationTime: 3000,
+      waitTime: 10,
+      maxIterations: 5,
+      watchDog: 0,
+      handler: async watchdog => {
         debug('iterate!');
         iterations++;
         return 1;
       },
     });
 
-    i.on('error', err => {
-      done(err);
-    });
-
     i.start();
 
-    i.on('completed', () => {
-      assume(iterations).equals(5);
-      assume(i.keepGoing).is.not.ok();
-      i.stop();
-      done();
+    await new Promise(resolve => {
+      i.on('stopped', resolve);
     });
-  });
 
-  test('should emit error when iteration watchdog expires', done => {
-    let i = new subject({
+    assume(iterations).equals(5);
+    assume(i.keepGoing).is.not.ok();
+  }));
+
+  test('should emit error when iteration watchdog expires', runWithFakeTime(async function() {
+    const i = new subject({
       maxIterationTime: 5000,
       watchdogTime: 1000,
       waitTime: 1000,
       maxFailures: 1,
-      handler: async (watchdog, state) => {
-        // In order to get the looping stuff to work, I had to stop the
-        // watchdog timer.  This will be tested in the tests for the
-        // Iterate.iterate method
-        i.on('error', err => {
-          debug('correctly getting expired watchdog timer');
-          i.stop();
-          assume(i.keepGoing).is.not.ok();
-          done();
-        });
-        return new Promise((res, rej) => {
-          setTimeout(res, 2000);
-        });
-
+      handler: async watchdog => {
+        return testing.sleep(2000);
       },
     });
 
-    i.start();
-  });
+    let err = null;
+    i.on('error', e => { err = e; });
 
-  test('should emit error when overall iteration limit is hit', done => {
-    let i = new subject({
+    i.start();
+    await testing.sleep(1500);
+    i.stop();
+
+    assume(i.keepGoing).is.not.ok();
+    assume(err).matches(/watchdog exceeded/);
+  }));
+
+  test('should emit error when overall iteration limit is hit', runWithFakeTime(async function() {
+    const i = new subject({
       maxIterationTime: 1000,
       waitTime: 1000,
       maxFailures: 1,
-      handler: async (watchdog, state) => {
+      handler: async watchdog => {
         watchdog.stop();
         return new Promise((res, rej) => {
           setTimeout(() => {
@@ -182,200 +198,111 @@ suite(testing.suiteName(), () => {
       },
     });
 
-    i.on('error', err => {
-      i.stop();
-      assume(i.keepGoing).is.not.ok();
-      done();
-    });
+    let err = null;
+    i.on('error', e => { err = e; });
 
     i.start();
-  });
+    await testing.sleep(1500);
+    i.stop();
 
-  test('should emit iteration-failure when async handler fails', done => {
-    let i = new subject({
+    assume(i.keepGoing).is.not.ok();
+    assume(err).matches(/Iteration exceeded maximum time allowed/);
+  }));
+
+  test('should emit iteration-failure when async handler fails', runWithFakeTime(async function() {
+    const i = new subject({
       maxIterationTime: 1000,
       waitTime: 1000,
       maxFailures: 100,
-      handler: async (watchdog, state) => {
+      handler: async watchdog => {
         throw new Error('uhoh');
       },
     });
 
-    i.on('iteration-failure', err => {
-      i.stop();
-      assume(i.keepGoing).is.not.ok();
-      done();
-    });
+    let sawEvent = false;
+    i.on('iteration-failure', () => { sawEvent = true; });
 
     i.start();
-  });
+    await testing.sleep(500);
+    i.stop();
 
-  test('should emit iteration-failure when sync handler fails', done => {
-    let i = new subject({
+    assume(i.keepGoing).is.not.ok();
+    assume(sawEvent).is.ok();
+  }));
+
+  test('should emit iteration-failure when sync handler fails', runWithFakeTime(async function() {
+    const i = new subject({
       maxIterationTime: 1000,
       waitTime: 1000,
       maxFailures: 100,
-      handler: (watchdog, state) => {
+      handler: watchdog => {
         throw new Error('uhoh');
       },
     });
 
-    i.on('iteration-failure', err => {
-      i.stop();
-      assume(i.keepGoing).is.not.ok();
-      done();
-    });
+    let sawEvent = false;
+    i.on('iteration-failure', () => { sawEvent = true; });
 
     i.start();
-  });
+    await testing.sleep(500);
+    i.stop();
 
-  test('should emit error when iteration is too quick', done => {
-    let i = new subject({
+    assume(i.keepGoing).is.not.ok();
+    assume(sawEvent).is.ok();
+  }));
+
+  test('should emit iteration-failure when iteration is too quick', runWithFakeTime(async function() {
+    const i = new subject({
       maxIterationTime: 12000,
       minIterationTime: 10000,
       waitTime: 1000,
-      handler: async (watchdog, state) => {
-        watchdog.stop();
-        return 1;
+      watchDog: 0,
+      handler: async watchdog => {
+        await testing.sleep(100);
       },
     });
 
+    let iterFailed = false;
+    i.on('iteration-failure', () => { iterFailed = true; });
+
     i.start();
+    await testing.sleep(300);
+    i.stop();
 
-    i.on('error', err => {
-      debug('correctly getting expired watchdog timer');
-      i.stop();
-      assume(i.keepGoing).is.not.ok();
-      done();
-    });
-  });
+    assume(iterFailed).is.ok();
+  }));
 
-  test('should emit error after too many failures', done => {
-    let i = new subject({
+  test('should emit error after too many failures', runWithFakeTime(async function() {
+    const i = new subject({
       maxIterationTime: 12000,
       maxFailures: 1,
       waitTime: 1000,
-      handler: async (watchdog, state) => {
-        return new Promise((res, rej) => {
-          rej(new Error('hi'));
-        });
+      handler: async watchdog => {
+        throw new Error('uhoh');
       },
     });
 
-    i.start();
-
-    i.on('error', err => {
-      i.stop();
-      assume(i.keepGoing).is.not.ok();
-      done();
-    });
-
-  });
-
-  test('should cause uncaughtException when error event is unhandled', done => {
-    // NOTE: Mocha has it's own uncaught exception listener.  If we were to
-    // leave it in force during this test, we'd end up getting two results from
-    // the test.  One failure from the mocha handler and one pass from our own
-    // handler.  This is obviously not ideal, and it's sort of a risk that we
-    // mess up the uncaught exception handling for future tests
-
-    let origListeners = process.listeners('uncaughtException');
-    process.removeAllListeners('uncaughtException');
-
-    let uncaughtHandler = function(err) {
-      process.removeAllListeners('uncaughtException');
-      for (let listener of origListeners) {
-        process.on('uncaughtException', listener);
-      }
-      i.stop();
-      assume(i.keepGoing).is.not.ok();
-      done();
-    };
-
-    process.on('uncaughtException', uncaughtHandler);
-
-    let i = new subject({
-      maxIterationTime: 12000,
-      maxFailures: 1,
-      waitTime: 1000,
-      handler: async (watchdog, state) => {
-        return new Promise((res, rej) => {
-          rej(new Error('hi'));
-        });
-      },
-    });
+    let err = null;
+    i.on('error', e => { err = e; });
 
     i.start();
+    await testing.sleep(1500);
+    i.stop();
 
-  });
+    assume(i.keepGoing).is.not.ok();
+    assume(err).matches(/uhoh/);
+  }));
 
-  test('should share state between iterations', done => {
-    let iterations = 0;
-    let v = {a: 1};
-
-    let i = new subject({
+  test('should emit correct events for single iteration', runWithFakeTime(async function() {
+    const i = new subject({
       maxIterationTime: 3000,
       waitTime: 1000,
-      maxIterations: 2,
-      maxFailures: 1,
-      handler: async (watchdog, state) => {
-        watchdog.on('expired', () => {
-          done(new Error('incremental watch dog expiration'));
-        });
-
-        if (iterations === 0) {
-          assume(state).deeply.equals({});
-          state.v = v;
-        } else if (iterations === 1) {
-          assume(state.v).deeply.equals(v);
-          assume(state.v).equals(v);
-        } else {
-          done(new Error('too many iterations'));
-        }
-
+      handler: async watchdog => {
         debug('iterate!');
-        iterations++;
-        return 1;
       },
     });
 
-    i.on('error', err => {
-      done(err);
-    });
-
-    i.on('iteration-error', err => {
-      done(err);
-    });
-
-    i.start();
-
-    i.on('completed', () => {
-      assume(iterations).equals(2);
-      assume(i.keepGoing).is.not.ok();
-      i.stop();
-      assume(i.keepGoing).is.not.ok();
-      done();
-    });
-  });
-
-  test('should emit correct events for single iteration', done => {
-    let iterations = 0; //eslint-disable-line no-unused-vars
-
-    let i = new subject({
-      maxIterationTime: 3000,
-      waitTime: 1000,
-      handler: async (watchdog, state) => {
-        debug('iterate!');
-        iterations++;
-        return 1;
-      },
-    });
-
-    i.on('error', err => {
-      done(err);
-    });
-
-    let events = new IterateEvents(i, [
+    const events = new IterateEvents(i, [
       'started',
       'iteration-start',
       'iteration-success',
@@ -383,230 +310,178 @@ suite(testing.suiteName(), () => {
       'stopped',
     ]);
 
-    i.on('stopped', () => {
-      events.assert(done);
-    });
-
-    i.on('started', () => {
-      i.stop();
-    });
-
     i.start();
-  });
+    await i.stop();
 
-  test('should emit correct events with maxIterations', done => {
-    let iterations = 0; //eslint-disable-line no-unused-vars
+    events.assert();
+  }));
 
-    let i = new subject({
+  test('should emit correct events with maxIterations', runWithFakeTime(async function() {
+    const i = new subject({
       maxIterationTime: 3000,
       maxIterations: 1,
       waitTime: 1000,
-      handler: async (watchdog, state) => {
+      handler: async watchdog => {
         debug('iterate!');
-        iterations++;
-        return 1;
       },
     });
 
-    i.on('error', err => {
-      done(err);
-    });
-
-    let events = new IterateEvents(i, [
+    const events = new IterateEvents(i, [
       'started',
       'iteration-start',
       'iteration-success',
       'iteration-complete',
-      'completed',
       'stopped',
     ]);
 
-    i.on('error', err => {
-      done(err);
-    });
-
-    i.on('stopped', () => {
-      events.assert(done);
-    });
-
-    i.on('started', () => {
-      i.stop();
-    });
-
     i.start();
-  });
+    await testing.sleep(2000);
+    await i.stop();
+
+    events.assert();
+  }));
 
   suite('event emission ordering', () => {
 
-    test('should be correct with maxFailures and maxIterations', done => {
-      let i = new subject({
+    test('should be correct with maxFailures and maxIterations', runWithFakeTime(async function() {
+      const i = new subject({
         maxIterationTime: 3000,
         maxIterations: 1,
         maxFailures: 1,
         waitTime: 1000,
-        handler: async (watchdog, state) => {
+        handler: async watchdog => {
           debug('iterate!');
           throw new Error('hi');
         },
       });
 
-      let events = new IterateEvents(i, [
+      const events = new IterateEvents(i, [
         'started',
         'iteration-start',
         'iteration-failure',
         'iteration-complete',
-        'completed',
-        'stopped',
         'error',
+        'stopped',
       ]);
 
-      i.on('error', () => {
-        events.assert(done);
-      });
-
-      i.on('started', () => {
-        i.stop();
-      });
-
       i.start();
-    });
+      await i.stop();
 
-    test('should be correct with maxFailures only', done => {
-      let i = new subject({
+      events.assert();
+    }));
+
+    test('should be correct with maxFailures only', runWithFakeTime(async function() {
+      const i = new subject({
         maxIterationTime: 3000,
         maxFailures: 1,
         waitTime: 1000,
-        handler: async (watchdog, state) => {
+        handler: async watchdog => {
           debug('iterate!');
           throw new Error('hi');
         },
       });
 
-      let events = new IterateEvents(i, [
+      const events = new IterateEvents(i, [
         'started',
         'iteration-start',
         'iteration-failure',
         'iteration-complete',
-        'stopped',
         'error',
+        'stopped',
       ]);
 
-      i.on('error', () => {
-        events.assert(done);
-      });
-
-      i.on('started', () => {
-        i.stop();
-      });
-
       i.start();
-    });
+      await i.stop();
 
-    test('should be correct when handler takes too little time', done => {
-      let i = new subject({
+      events.assert();
+    }));
+
+    test('should be correct when handler takes too little time', runWithFakeTime(async function() {
+      const i = new subject({
         maxIterationTime: 3000,
         minIterationTime: 100000,
         maxFailures: 1,
         waitTime: 1000,
-        handler: async (watchdog, state) => {
+        handler: async watchdog => {
           return true;
         },
       });
 
-      let events = new IterateEvents(i, [
+      const events = new IterateEvents(i, [
         'started',
         'iteration-start',
         'iteration-failure',
         'iteration-complete',
-        'stopped',
         'error',
+        'stopped',
       ]);
 
-      i.on('error', () => {
-        events.assert(done);
-      });
-
-      i.on('started', () => {
-        i.stop();
-      });
-
       i.start();
-    });
+      await i.stop();
 
-    test('should be correct when handler takes too long (incremental watchdog)', done => {
-      let i = new subject({
+      events.assert();
+    }));
+
+    test('should be correct when handler takes too long (incremental watchdog)', runWithFakeTime(async function() {
+      const i = new subject({
         maxIterationTime: 5000,
         maxFailures: 1,
         watchdogTime: 100,
         waitTime: 1000,
-        handler: async (watchdog, state) => {
-          return new Promise((res, rej) => {
-            setTimeout(res, 3000);
-          });
+        handler: async watchdog => {
+          await testing.sleep(3000);
         },
       });
 
-      let events = new IterateEvents(i, [
+      const events = new IterateEvents(i, [
         'started',
         'iteration-start',
         'iteration-failure',
         'iteration-complete',
-        'stopped',
         'error',
+        'stopped',
       ]);
 
-      i.on('error', () => {
-        events.assert(done);
-      });
-
-      i.on('started', () => {
-        i.stop();
-      });
-
       i.start();
-    });
+      await i.stop();
 
-    test('should be correct when handler takes too long (overall time)', done => {
-      let i = new subject({
+      events.assert();
+    }));
+
+    test('should be correct when handler takes too long (overall time)', runWithFakeTime(async function() {
+      const i = new subject({
         maxIterationTime: 3000,
         maxFailures: 1,
         waitTime: 1000,
-        handler: async (watchdog, state) => {
-          return new Promise((res, rej) => {
-            setTimeout(res, 6000);
-          });
+        handler: async watchdog => {
+          await testing.sleep(6000);
         },
       });
 
-      let events = new IterateEvents(i, [
+      const events = new IterateEvents(i, [
         'started',
         'iteration-start',
         'iteration-failure',
         'iteration-complete',
-        'stopped',
         'error',
+        'stopped',
       ]);
 
-      i.on('error', () => {
-        events.assert(done);
-      });
-
-      i.on('started', () => {
-        i.stop();
-      });
-
       i.start();
-    });
+      await i.stop();
 
-    test('should be correct with mixed results', done => {
+      events.assert();
+    }));
+
+    test('should be correct with mixed results', runWithFakeTime(async function() {
       let iterations = 0;
 
-      let i = new subject({
+      const i = new subject({
         maxIterationTime: 3000,
         maxIterations: 6,
         maxFailures: 5,
         waitTime: 1000,
-        handler: async (watchdog, state) => {
+        handler: async watchdog=> {
           if (iterations++ % 2 === 0) {
             throw new Error('even, so failing');
           } else {
@@ -615,7 +490,7 @@ suite(testing.suiteName(), () => {
         },
       });
 
-      let events = new IterateEvents(i, [
+      const events = new IterateEvents(i, [
         'started',
         'iteration-start',
         'iteration-failure',
@@ -635,19 +510,17 @@ suite(testing.suiteName(), () => {
         'iteration-start',
         'iteration-success',
         'iteration-complete',
-        'completed',
         'stopped',
       ]);
 
-      i.on('stopped', () => {
-        events.assert(done);
-      });
-
-      i.on('error', err => {
-        done(err);
-      });
-
       i.start();
-    });
+
+      // wait for the maxIterations to take effect..
+      await new Promise(resolve => {
+        i.on('stopped', resolve);
+      });
+
+      events.assert();
+    }));
   });
 });

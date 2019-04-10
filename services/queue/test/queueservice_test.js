@@ -61,7 +61,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   const workerType = 'no-worker';
   const provisionerId = slugid.v4(); // make a unique provisionerId
 
-  test('putDeadlineMessage, pollDeadlineQueue', helper.runWithFakeTime(async () => {
+  test('putDeadlineMessage, pollDeadlineQueue', testing.runWithFakeTime(async () => {
     const taskId = slugid.v4();
     const taskGroupId = slugid.v4();
     const schedulerId = slugid.v4();
@@ -87,9 +87,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       });
       assert(foundTaskId, 'Expected to see taskId at some point');
     }, Infinity);
-  }, mock));
+  }, {mock}));
 
-  test('putClaimMessage, pollClaimQueue', helper.runWithFakeTime(async () => {
+  test('putClaimMessage, pollClaimQueue', testing.runWithFakeTime(async () => {
     const taskId = slugid.v4();
     const takenUntil = new Date(new Date().getTime() + 2 * 1000);
     debug('Putting message with taskId: %s', taskId);
@@ -113,9 +113,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       });
       assert(foundTaskId, 'Expected to see taskId at some point');
     }, Infinity);
-  }, mock));
+  }, {mock}));
 
-  test('putResolvedMessage, pollResolvedQueue', helper.runWithFakeTime(async () => {
+  test('putResolvedMessage, pollResolvedQueue', testing.runWithFakeTime(async () => {
     const taskId = slugid.v4();
     const taskGroupId = slugid.v4();
     const schedulerId = slugid.v4();
@@ -140,10 +140,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       });
       assert(foundTaskId, 'Expected to see taskId at some point');
     }, Infinity);
-  }, mock));
+  }, {mock}));
 
   // not supported for mock QueueService
-  test('put, poll, release, poll, delete (priority: lowest)', helper.runWithFakeTime(async () => {
+  test('put, poll, release, poll, delete (priority: lowest)', testing.runWithFakeTime(async () => {
     const taskId = slugid.v4();
     const runId = 0;
     const task = {
@@ -197,7 +197,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
     // Remove message
     await message.remove();
-  }, mock));
+  }, {mock}));
 
   test('countPendingMessages', async () => {
     const count = await queueService.countPendingMessages(

@@ -1,6 +1,6 @@
-let WatchDog = require('./watchdog');
-let debug = require('debug')('iterate');
-let events = require('events');
+const WatchDog = require('./watchdog');
+const debug = require('debug')('iterate');
+const events = require('events');
 
 /**
  * The Iterate Class.  See README.md for explanation of constructor
@@ -14,8 +14,8 @@ class Iterate extends events.EventEmitter {
     // Set default values
     opts = Object.assign({}, {
       watchdogTime: 0,
+      maxFailures: 0,
       maxIterations: 0,
-      maxFailures: 7,
       minIterationTime: 0,
     }, opts);
 
@@ -62,8 +62,11 @@ class Iterate extends events.EventEmitter {
     // Decide whether iteration should continue
     this.keepGoing = false;
 
-    // We want to be able to share state between iterations
-    this.sharedState = {};
+    // Called when stop is called (used to break out of waitTime sleep)
+    this.onStopCall = null;
+
+    // Fires when stopped, only set when started
+    this.stopPromise = null;
 
     // Store the iteration timeout so that a `.stop()` call during an iteration
     // inhibits a handler from running
@@ -72,14 +75,15 @@ class Iterate extends events.EventEmitter {
 
   async single_iteration() {
     debug('running handler');
-    let start = new Date();
-    let watchdog = new WatchDog(this.watchdogTime);
+    const start = new Date();
+    const watchdog = new WatchDog(this.watchdogTime);
     let maxIterationTimeTimer;
 
     // build a promise that will reject when either the watchdog
     // times out or the maxIterationTimeTimer expires
-    let timeoutRejector = new Promise((resolve, reject) => {
+    const timeoutRejector = new Promise((resolve, reject) => {
       watchdog.on('expired', () => {
+        debug('watchdog expired');
         reject(new Error('watchdog exceeded'));
       });
 
@@ -92,7 +96,7 @@ class Iterate extends events.EventEmitter {
       watchdog.start();
       await Promise.race([
         timeoutRejector,
-        Promise.resolve(this.handler(watchdog, this.sharedState)),
+        Promise.resolve(this.handler(watchdog)),
       ]);
     } finally {
       // stop the timers regardless of success or failure
@@ -100,7 +104,7 @@ class Iterate extends events.EventEmitter {
       watchdog.stop();
     }
 
-    let duration = new Date() - start;
+    const duration = new Date() - start;
     if (this.minIterationTime > 0 && duration < this.minIterationTime) {
       throw new Error('Handler duration was less than minIterationTime');
     }
@@ -110,6 +114,9 @@ class Iterate extends events.EventEmitter {
   async iterate() {
     let currentIteration = 0;
     let failures = [];
+
+    this.emit('started');
+
     while (true) {
       currentIteration++;
       let iterError;
@@ -149,80 +156,60 @@ class Iterate extends events.EventEmitter {
       // When we reach the end of a set number of iterations, we'll stop
       if (this.maxIterations > 0 && currentIteration >= this.maxIterations) {
         debug(`reached max iterations of ${this.maxIterations}`);
-        this.stop();
-        this.emit('completed');
-        // fall through to also send 'stopped'
+        this.keepGoing = false;
       }
 
-      if (failures.length >= this.maxFailures) {
-        this.__emitFatalError(failures);
-        return;
-      } else if (!this.keepGoing) {
-        this.stop();
-        this.emit('stopped');
-        return;
+      if (this.maxFailures > 0 && failures.length >= this.maxFailures) {
+        this.emit('error', failures[failures.length - 1]);
+      }
+
+      if (!this.keepGoing) {
+        break;
       }
 
       if (this.waitTime > 0) {
-        debug('waiting for next iteration');
-        await new Promise(resolve => {
-          this.currentTimeout = setTimeout(resolve, this.waitTime);
+        debug('waiting for next iteration or stop');
+        const stopPromise = new Promise(resolve => {
+          this.onStopCall = resolve;
         });
-      }
-    }
-  }
+        let waitTimeTimeout;
+        const waitTimePromise = new Promise(resolve => {
+          waitTimeTimeout = setTimeout(resolve, this.waitTime);
+        });
+        await Promise.race([stopPromise, waitTimePromise]);
 
-  /**
-   * Special function which knows how to emit the final error and then throw an
-   * unhandled exception where appropriate.  Also stop trying to iterate
-   * further.
-   */
-  __emitFatalError(failures) {
-    if (this.currentTimeout) {
-      clearTimeout(this.currentTimeout);
-    }
-    this.stop();
-    this.emit('stopped');
-    if (this.monitor) {
-      let err = new Error('Fatal iteration error');
-      err.failures = failures;
-      this.monitor.reportError(err);
-    }
-    if (this.listeners('error').length > 0) {
-      this.emit('error', failures);
-    } else {
-      debug('fatal error:');
-      for (let x of failures) {
-        debug(`  * ${x.stack || x}`);
+        this.onStopCall = null;
+        clearTimeout(waitTimeTimeout);
+
+        if (!this.keepGoing) {
+          break;
+        }
       }
-      debug('trying to crash process');
-      process.nextTick(() => {
-        throw new Error(`Errors:\n=====\n${failures.map(x => x.stack || x).join('=====\n')}`);
-      });
     }
+    this.emit('stopped');
   }
 
   start() {
     debug('starting');
+    this.stoppedPromise = new Promise(resolve => {
+      this.on('stopped', resolve);
+    });
     this.keepGoing = true;
 
-    // Two reasons we call it this way:
-    //   1. first call should have same exec env as following
-    //   2. start should return immediately
-    this.currentTimeout = setTimeout(async () => {
-      debug('starting iteration');
-      this.emit('started');
-      try {
-        await this.iterate();
-      } catch (err) {
-        console.error(err.stack || err);
-      }
-    }, 0);
+    return new Promise(resolve => {
+      this.once('started', resolve);
+      // start iteration; any failures here are a programming error in this
+      // library and so should be considered fatal
+      this.iterate().catch(err => this.emit('error', err));
+    });
   }
 
   stop() {
     this.keepGoing = false;
-    debug('stopped');
+    if (this.onStopCall) {
+      this.onStopCall();
+    }
+    return this.stoppedPromise;
   }
 }
 

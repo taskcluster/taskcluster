@@ -49,15 +49,18 @@ class Provisioner extends WMObject {
     this.iterationGap = iterationGap;
 
     this.iterate = new Iterate({
-      maxFailures: 30, // We really don't want it to crash
+      maxFailures: 10,
       maxIterationTime: 300000,
       waitTime: iterationGap,
       handler: async () => {
         await this.provision();
       },
     });
-    // TODO:
-    // make sure that iteration failures have a handler that's useful
+
+    this.iterate.on('error', () => {
+      console.log('iteration failed repeatedly; terminating process');
+      process.exit(1);
+    });
   }
 
   /**
@@ -68,10 +71,7 @@ class Provisioner extends WMObject {
       Array.from(this.providers.values()).map(x => x.initiate()),
       Array.from(this.biddingStrategies.values()).map(x => x.initiate()),
     ].flat());
-    await new Promise(resolve => {
-      this.iterate.once('started', resolve);
-      this.iterate.start();
-    });
+    await this.iterate.start();
   }
 
   /**
@@ -82,10 +82,7 @@ class Provisioner extends WMObject {
       Array.from(this.providers.values()).map(x => x.terminate()),
       Array.from(this.biddingStrategies.values()).map(x => x.terminate()),
     ].flat());
-    await new Promise(resolve => {
-      this.iterate.once('stopped', resolve);
-      this.iterate.stop();
-    });
+    await this.iterate.stop();
   }
 
   /**

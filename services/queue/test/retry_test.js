@@ -31,7 +31,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     },
   };
 
-  test('createTask, claimTask, claim-expired, retry, ...', helper.runWithFakeTime(async () => {
+  test('createTask, claimTask, claim-expired, retry, ...', testing.runWithFakeTime(async () => {
     const taskId = slugid.v4();
 
     debug('### Creating task');
@@ -98,5 +98,5 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     const r5 = await helper.queue.status(taskId);
     // this time it's exception, since it's out of retries
     assume(r5.status.state).equals('exception');
-  }, mock));
+  }, {mock}));
 });
