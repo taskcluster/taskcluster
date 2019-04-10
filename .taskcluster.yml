@@ -30,33 +30,35 @@ tasks:
           url: ${event.pull_request.head.repo.url}
           ref: ${event.pull_request.head.sha}
 
+      # We keep the separate from "others" so that we can assert a 1-1 mapping onto existing packages
       packages:
-      - taskcluster-lib-api
-      - taskcluster-lib-app
-      - taskcluster-lib-azure
-      - taskcluster-lib-docs
-      - taskcluster-lib-iterate
-      - taskcluster-lib-loader
-      - taskcluster-lib-monitor
-      - taskcluster-lib-pulse
-      - taskcluster-lib-references
-      - taskcluster-lib-scopes
-      - taskcluster-lib-testing
-      - taskcluster-lib-config
-      - taskcluster-lib-validate
-      - taskcluster-auth
-      - taskcluster-built-in-workers
-      - taskcluster-github
-      - taskcluster-hooks
-      - taskcluster-index
-      - taskcluster-login
-      - taskcluster-notify
-      - taskcluster-purge-cache
-      - taskcluster-queue
-      - taskcluster-worker-manager
-      - taskcluster-secrets
-      - taskcluster-treeherder
-      - taskcluster-web-server
+      - name: taskcluster-lib-api
+      - name: taskcluster-lib-app
+      - name: taskcluster-lib-azure
+      - name: taskcluster-lib-docs
+      - name: taskcluster-lib-iterate
+      - name: taskcluster-lib-loader
+      - name: taskcluster-lib-monitor
+      - name: taskcluster-lib-pulse
+        image: 'taskcluster/rabbit-test:${node}'
+      - name: taskcluster-lib-references
+      - name: taskcluster-lib-scopes
+      - name: taskcluster-lib-testing
+      - name: taskcluster-lib-config
+      - name: taskcluster-lib-validate
+      - name: taskcluster-auth
+      - name: taskcluster-built-in-workers
+      - name: taskcluster-github
+      - name: taskcluster-hooks
+      - name: taskcluster-index
+      - name: taskcluster-login
+      - name: taskcluster-notify
+      - name: taskcluster-purge-cache
+      - name: taskcluster-queue
+      - name: taskcluster-worker-manager
+      - name: taskcluster-secrets
+      - name: taskcluster-treeherder
+      - name: taskcluster-web-server
       others:
       - name: lint
         command: yarn lint
@@ -112,22 +114,20 @@ tasks:
       $let:
         js:
           $map:
-            $flatten:
-              # for "packages", run tests for that package
-              - $map: {$eval: packages}
-                each(package):
-                  name: ${package}
-                  image: node:${node}
-                  command: yarn workspace ${package} test
-              # for "others", do whatever they say to do
-              - $map: {$eval: others}
-                each(other):
-                  name: ${other.name}
-                  image:  # use `image` if given, falling back to the node image
-                    $if: other['image']
-                    then: ${other.image}
-                    else: "node:${node}"
-                  command: ${other.command}
+            $map:
+              $flatten:
+                - $eval: packages
+                - $eval: others
+            each(entry):
+              name: ${entry.name}
+              image:  # use `image` if given, falling back to the node image
+                $if: entry['image']
+                then: ${entry.image}
+                else: "node:${node}"
+              command:  # use `command` if given, falling back to basic yarn test
+                $if: entry['command']
+                then: ${entry.command}
+                else: yarn workspace ${entry.name} test
           each(job):
             taskId: {$eval: as_slugid(job.name)}
             provisionerId: aws-provisioner-v1

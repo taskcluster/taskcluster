@@ -19,7 +19,7 @@ suite('Repo Meta Tests', function() {
   const taskclusterYml = yaml.safeLoad(fs.readFileSync(taskclusterYmlFile, 'utf8'));
 
   test('All packages in CI', async function() {
-    const configured = taskclusterYml.tasks.in.$let.packages;
+    const configured = taskclusterYml.tasks.in.$let.packages.map(pkg => pkg.name);
 
     const {stdout} = await exec('yarn workspaces info -s');
     const existing = Object.keys(JSON.parse(stdout))
