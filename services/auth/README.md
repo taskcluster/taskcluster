@@ -14,4 +14,4 @@ To do so, copy `user-config-example.yml` to `user-config.yml` and fill in the ne
 Taskcluster team members can provide you with some testing-only credentials -- just ask, and provide a GPG key (use https://keybase.io if you don't have one).
 You can get your own pulse credentials at https://pulseguardian.mozilla.org.
 
-The taskcluster team has a series of [best practices](/docs/manual/devel/best-practices) which may help guide you in modifying the source code and making a pull request.
+The taskcluster team has a series of [best practices](../../dev-docs/best-practices) which may help guide you in modifying the source code and making a pull request.

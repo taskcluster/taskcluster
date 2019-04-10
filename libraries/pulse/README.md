@@ -1,7 +1,7 @@
 # Pulse Library
 
 Library for interacting with Pulse and Taskcluster-Pulse.  See [the
-docs](https://docs.taskcluster.net/manual/design/apis/pulse) for more
+docs](../../ui/docs/manual/design/apis/pulse.md) for more
 information on Pulse.
 
 This library is designed for use in Taskcluster services, both for producing
@@ -365,7 +365,7 @@ support for sending messages is quite simple, but this component also handles
 declaring exchanges, message schemas, and so on, and producing a reference
 document that can be consumed by client libraries to generate easy-to-use
 clients. All of this is similar to what
-[taskcluster-lib-api](https://github.com/taskcluster/taskcluster-lib-api) does
+[taskcluster-lib-api](../api) does
 for HTTP APIs.
 
 ## Declaring Exchanges
@@ -389,11 +389,11 @@ const exchanges = new Exchanges({
 ```
 
 The `serviceName` should match that passed to
-[taskcluster-lib-validate](https://github.com/taskcluster/taskcluster-lib-validate).
+[taskcluster-lib-validate](../validate).
 The `projectName` is used to construct exchange and queue names.  It should
 match the pulse namespace (at least in production deployments) and the name
 passed to
-[taskcluster-lib-monitor](https://github.com/taskcluster/taskcluster-lib-monitor),
+[taskcluster-lib-monitor](../monitor),
 
 Having created the `exchanges` instance, declare exchanges on it:
 
@@ -472,7 +472,7 @@ By convention, these are prefixed with `route.`.
 The `exchanges.reference()` method will return a reference document suitable
 for publication under `<rootUrl>/references`.
 
-This is typically passed to [taskcluster-lib-docs](https://github.com/taskcluster/taskcluster-lib-docs) like this:
+This is typically passed to [taskcluster-lib-docs](../docs) like this:
 
 ```javascript
 Docs.documenter({
