@@ -40,13 +40,20 @@ tasks:
       - name: taskcluster-lib-loader
       - name: taskcluster-lib-monitor
       - name: taskcluster-lib-pulse
-        image: 'taskcluster/rabbit-test:${node}'
+        image: taskcluster/rabbit-test:${node}
+        env:
+          PULSE_CONNECTION_STRING: amqp://guest:guest@localhost:5672/
+        command: |
+          service rabbitmq-server start &&
+          yarn workspace taskcluster-lib-pulse test
       - name: taskcluster-lib-references
       - name: taskcluster-lib-scopes
       - name: taskcluster-lib-testing
       - name: taskcluster-lib-config
       - name: taskcluster-lib-validate
       - name: taskcluster-auth
+        env:
+          TEST_BUCKET: test-bucket-for-any-garbage
       - name: taskcluster-built-in-workers
       - name: taskcluster-github
       - name: taskcluster-hooks
@@ -128,6 +135,10 @@ tasks:
                 $if: entry['command']
                 then: ${entry.command}
                 else: yarn workspace ${entry.name} test
+              env: # add in any custom env vars that this package needs
+                $if: entry['env']
+                then: {$eval: entry.env}
+                else: {}
           each(job):
             taskId: {$eval: as_slugid(job.name)}
             provisionerId: aws-provisioner-v1
@@ -151,12 +162,13 @@ tasks:
               features:
                 taskclusterProxy: true
               env:
-                DEBUG: ${debug}
-                NO_TEST_SKIP:
-                  $if: 'job.name != "taskcluster-lib-testing"'
-                  then: true
-                TEST_BUCKET: 'test-bucket-for-any-garbage' # TODO: Allow each project to specify its own env
-                YARN_CACHE_FOLDER: /yarn-cache
+                $merge:
+                - DEBUG: ${debug}
+                  NO_TEST_SKIP:
+                    $if: 'job.name != "taskcluster-lib-testing"'
+                    then: true
+                  YARN_CACHE_FOLDER: /yarn-cache
+                - {$eval: job.env}
               maxRunTime: 1200
               cache:
                   project-taskcluster-test-yarn-cache: /yarn-cache
