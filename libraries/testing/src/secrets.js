@@ -148,6 +148,7 @@ class Secrets {
     });
 
     suite(`${title} (real)`, function() {
+      let saveOccured = false;
       suiteSetup(async function() {
         await that.setup();
         const missing = secretList.filter(name => !that.have(name));
@@ -163,6 +164,7 @@ class Secrets {
 
         if (that.load) {
           that.load.save();
+          saveOccured = true;
           // update the loader's cfg for every secret that has a cfg property; this will be restored
           // by the `load.restore()` in suiteTeardown.
           secretList.forEach(name => {
@@ -178,7 +180,7 @@ class Secrets {
       fn.call(this, false, () => skipping);
 
       suiteTeardown(function() {
-        if (that.load) {
+        if (saveOccured) {
           that.load.restore();
         }
       });
