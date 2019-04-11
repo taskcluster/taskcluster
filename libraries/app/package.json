@@ -9,20 +9,5 @@
     "lint": "eslint src/*.js test/*.js",
     "test": "mocha test/*_test.js"
   },
-  "files": [
-    "src"
-  ],
-  "dependencies": {
-    "content-security-policy": "^0.3.0",
-    "debug": "^4.0.0",
-    "express": "4.16.4",
-    "express-sslify": "1.2.0",
-    "hsts": "^2.1.0",
-    "lodash": "4.17.11",
-    "morgan-debug": "^2.0.0",
-    "morgan": "^1.0.0",
-    "promise": "^8.0.1",
-    "uuid": "^3.3.2"
-  },
   "main": "./src/index.js"
 }

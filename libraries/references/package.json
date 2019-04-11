@@ -3,27 +3,10 @@
   "private": true,
   "version": "1.5.0",
   "main": "src/index.js",
-  "engine-strict": true,
-  "engines": {
-    "node": ">=8.6.0",
-    "yarn": "^1.0.0"
-  },
-  "files": [
-    "src",
-    "schemas"
-  ],
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
     "test": "mocha test/*_test.js"
   },
   "author": "Dustin J. Mitchell <dustin@mozilla.com>",
-  "license": "MPL-2.0",
-  "dependencies": {
-    "ajv": "^6.5.5",
-    "js-yaml": "^3.12.1",
-    "lodash": "^4.17.10",
-    "mkdirp": "^0.5.1",
-    "regex-escape": "^3.4.8",
-    "rimraf": "^2.6.2"
-  }
+  "license": "MPL-2.0"
 }

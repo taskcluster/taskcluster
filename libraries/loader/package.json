@@ -11,23 +11,6 @@
     "test": "mocha test/*.js",
     "lint": "eslint src/*.js test/*.js"
   },
-  "files": [
-    "src"
-  ],
-  "keywords": [
-    "loader",
-    "taskcluster",
-    "component"
-  ],
   "author": "John Ford <jhford.mozilla@com>",
-  "license": "MPL-2.0",
-  "bugs": {
-    "url": "https://github.com/taskcluster/taskcluster-lib-loader/issues"
-  },
-  "homepage": "https://github.com/taskcluster/taskcluster-lib-loader",
-  "dependencies": {
-    "assume": "^2.1.0",
-    "debug": "^4.1.0",
-    "topo-sort": "^1.0.0"
-  }
+  "license": "MPL-2.0"
 }

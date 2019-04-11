@@ -9,11 +9,5 @@
     "lint": "eslint src/*.js test/*.js",
     "test": "mocha test/*_test.js"
   },
-  "engines": {
-    "node": ">=8.0.0"
-  },
-  "main": "./src/index",
-  "files": [
-    "src"
-  ]
+  "main": "./src/index"
 }

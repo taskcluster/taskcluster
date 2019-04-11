@@ -9,17 +9,5 @@
   "scripts": {
     "test": "mocha test/*_test.js",
     "lint": "eslint src/*.js test/*.js"
-  },
-  "files": [
-    "src"
-  ],
-  "engines": {
-    "node": ">=8"
-  },
-  "engineStrict": true,
-  "dependencies": {
-    "amqplib": "^0.5.2",
-    "aws-sdk": "^2.331.0",
-    "debug": "^4.0.0"
   }
 }

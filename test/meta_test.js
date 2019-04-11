@@ -6,6 +6,7 @@ const exec = util.promisify(require('child_process').exec);
 const _ = require('lodash');
 const yaml = require('js-yaml');
 const depcheck = require('depcheck');
+const glob = require('glob');
 
 const ROOT_DIR = path.join(__dirname, '..');
 
@@ -67,10 +68,6 @@ suite('Repo Meta Tests', function() {
 
   test('Dependencies are not missing/unused', async function() {
     const depOptions = {
-      ignoreMatches: [
-        'morgan', // Peer dependency of morgan-debug
-        'ejs', // This dependency is used in web-server (see createApp.js)
-      ],
       specials: [], // don't target webpack
     };
     const root = await depcheck(ROOT_DIR, depOptions);
@@ -100,4 +97,26 @@ suite('Repo Meta Tests', function() {
     assert(Object.keys(missing).length === 0, `Missing dependencies: ${JSON.stringify(missing, null, 2)}`);
   });
 
+  test('workspace package.jsons do not have forbidden fields', async function() {
+    const packageJsons = glob.sync(
+      '{services,libraries}/*/package.json',
+      {cwd: ROOT_DIR});
+
+    const forbidden = [
+      'engines',
+      'engineStrict',
+      'engine-strict',
+      'dependencies',
+      'devDependencies',
+      'files',
+    ];
+    for (let filename of packageJsons) {
+      const pj = JSON.parse(fs.readFileSync(filename));
+      for (let prop of forbidden) {
+        if (pj[prop]) {
+          throw new Error(`${filename} contains forbidden property ${prop}`);
+        }
+      }
+    }
+  });
 });
