@@ -5,6 +5,7 @@ const merge = require('lodash/merge');
 const omit = require('lodash/omit');
 const References = require('..');
 const {validate} = require('../src/validate');
+const testing = require('taskcluster-lib-testing');
 
 class RefBuilder {
   constructor() {
@@ -76,7 +77,7 @@ class RefBuilder {
   }
 }
 
-suite('validate_test.js', function() {
+suite(testing.suiteName(), function() {
   const assertProblems = (references, expected) => {
     try {
       validate(references);

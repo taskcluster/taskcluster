@@ -2,12 +2,11 @@ const path = require('path');
 const fs = require('fs');
 const assume = require('assume');
 const {convert} = require('../bin/convert');
-
 const {buildWorkerConfiguration} = require('../src/worker-config');
-
 const memory = require('memory-streams');
+const testing = require('taskcluster-lib-testing');
 
-suite('AWS Provisioner WorkerType conversion', () => {
+suite(testing.suiteName(), () => {
   test('should convert as expected', async () => {
     let output = new memory.WritableStream();
     let input = fs.createReadStream(path.join(__dirname, 'convert-input.json'));

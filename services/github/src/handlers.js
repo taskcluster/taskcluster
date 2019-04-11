@@ -133,7 +133,6 @@ class Handlers {
 
     const callHandler = (name, handler) => message => {
       handler.call(this, message).catch(async err => {
-        debug(`Error (reported to sentry) while calling ${name} handler: ${err}`);
         await this.monitor.reportError(err);
         return err;
       }).then((err=null) => {

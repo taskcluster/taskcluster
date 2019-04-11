@@ -6,8 +6,9 @@ const monitorManager = require('../src/monitor');
 const assert = require('assert');
 const _ = require('lodash');
 const assume = require('assume');
+const testing = require('taskcluster-lib-testing');
 
-suite(helper.suiteName(__filename), () => {
+suite(testing.suiteName(), () => {
   let monitor, scopeResolver;
   setup(async () => {
     monitorManager.setup({

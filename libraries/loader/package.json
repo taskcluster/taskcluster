@@ -3,7 +3,7 @@
   "private": true,
   "version": "11.0.0",
   "description": "a component loader for taskcluster",
-  "main": "src/loader.js",
+  "main": "src/index.js",
   "directories": {
     "test": "test"
   },

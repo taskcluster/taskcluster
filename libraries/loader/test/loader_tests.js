@@ -1,5 +1,5 @@
 let assume = require('assume');
-let subject = require('../src/loader');
+let subject = require('../src');
 let assert = require('assert');
 
 suite('component loader', () => {

@@ -1,7 +1,8 @@
 const assume = require('assume');
 const {errors} = require('../src/base');
+const testing = require('taskcluster-lib-testing');
 
-suite('errors', () => {
+suite(testing.suiteName(), () => {
   test('should be able to create an error', () => {
     let error = new errors.InvalidProvider('errMsg', {prop1: 123});
     assume(error).has.property('code', 'InvalidProvider');

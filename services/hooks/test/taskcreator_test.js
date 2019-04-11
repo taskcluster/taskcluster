@@ -4,11 +4,13 @@ const taskcreator = require('../src/taskcreator');
 const debug = require('debug')('test:test_schedule_hooks');
 const helper = require('./helper');
 const taskcluster = require('taskcluster-client');
+const {sleep} = require('taskcluster-lib-testing');
 const _ = require('lodash');
 const hookDef = require('./test_definition');
 const libUrls = require('taskcluster-lib-urls');
+const testing = require('taskcluster-lib-testing');
 
-suite('taskcreator_test.js', function() {
+suite(testing.suiteName(), function() {
   helper.secrets.mockSuite('TaskCreator', ['taskcluster'], function(mock, skipping) {
     helper.withEntities(mock, skipping);
 
@@ -222,6 +224,24 @@ suite('taskcreator_test.js', function() {
 
       const task = await fetchFiredTask(taskId);
       assume(task.taskGroupId).equals(hook.task.then.taskGroupId);
+    });
+
+    test('firing a task with options.created always generates the same task', async function() {
+      await helper.Hook.create(defaultHook);
+      const now = new Date();
+      const taskIdA = taskcluster.slugid();
+      await creator.fire(defaultHook, {firedBy: 'foo'}, {taskId: taskIdA, created: now});
+      const taskA = await fetchFiredTask(taskIdA);
+
+      await sleep(10); // ..enough time passes to have different ms timestamps
+
+      const taskIdB = taskcluster.slugid();
+      await creator.fire(defaultHook, {firedBy: 'foo'}, {taskId: taskIdB, created: now});
+      const taskB = await fetchFiredTask(taskIdB);
+
+      assume(taskA.created).deeply.equal(taskB.created);
+      assume(taskA.deadline).deeply.equal(taskB.deadline);
+      assume(taskA.expires).deeply.equal(taskB.expires);
     });
 
     test('firing a real task includes values from context', async function() {

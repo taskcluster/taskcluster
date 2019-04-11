@@ -211,8 +211,7 @@ class MonitorManager {
   }
 
   _unhandledRejectionHandler(reason, p) {
-    const err = 'Unhandled Rejection at: Promise ' + p + ' reason: ' + reason;
-    this.rootMonitor.reportError(err);
+    this.rootMonitor.reportError(reason);
     if (!this.bailOnUnhandledRejection) {
       return;
     }

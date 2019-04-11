@@ -1,8 +1,9 @@
 const _ = require('lodash');
 const assert = require('assert');
 const helper = require('./helper');
+const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withFakeQueue(mock, skipping);
   helper.withSES(mock, skipping);
   helper.withPulse(mock, skipping);

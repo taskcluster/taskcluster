@@ -1,7 +1,8 @@
 const assume = require('assume');
 const {Bid} = require('../src/bid');
+const testing = require('taskcluster-lib-testing');
 
-suite('Bid', () => {
+suite(testing.suiteName(), () => {
   test('should be able to create a Bid', () => {
     new Bid({
       providerId: 'provider-1',

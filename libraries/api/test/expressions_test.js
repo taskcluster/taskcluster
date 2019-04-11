@@ -1,7 +1,8 @@
 const assert = require('assert');
 const ScopeExpressionTemplate = require('../src/expressions');
+const testing = require('taskcluster-lib-testing');
 
-suite('expression expansion success', function() {
+suite(testing.suiteName(), function() {
 
   function scenario(expr, params, result, shouldFail=false) {
     return () => {

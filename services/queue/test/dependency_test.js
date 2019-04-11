@@ -7,7 +7,7 @@ const testing = require('taskcluster-lib-testing');
 const assume = require('assume');
 const helper = require('./helper');
 
-helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPollingServices(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -32,7 +32,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     },
   });
 
-  test('taskA <- taskB', helper.runWithFakeTime(async () => {
+  test('taskA <- taskB', testing.runWithFakeTime(async () => {
     let taskIdA = slugid.v4();
     let taskIdB = slugid.v4();
 
@@ -136,9 +136,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     }
 
     await helper.stopPollingService();
-  }, mock));
+  }, {mock}));
 
-  test('taskA <- taskB, taskC, taskD, taskE', helper.runWithFakeTime(async () => {
+  test('taskA <- taskB, taskC, taskD, taskE', testing.runWithFakeTime(async () => {
     let taskIdA = slugid.v4();
     let taskIdB = slugid.v4();
     let taskIdC = slugid.v4();
@@ -222,9 +222,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     assume(tids).contains(taskIdE);
 
     await helper.stopPollingService();
-  }, mock));
+  }, {mock}));
 
-  test('taskA, taskB <- taskC && taskA <- taskD', helper.runWithFakeTime(async () => {
+  test('taskA, taskB <- taskC && taskA <- taskD', testing.runWithFakeTime(async () => {
     let taskIdA = slugid.v4();
     let taskIdB = slugid.v4();
     let taskIdC = slugid.v4();
@@ -291,9 +291,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       Infinity);
 
     await helper.stopPollingService();
-  }, mock));
+  }, {mock}));
 
-  test('taskA <- taskA (self-dependency)', helper.runWithFakeTime(async () => {
+  test('taskA <- taskA (self-dependency)', testing.runWithFakeTime(async () => {
     let taskIdA = slugid.v4();
     let taskA = _.defaults({
       dependencies: [taskIdA],
@@ -314,9 +314,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-  }, mock));
+  }, {mock}));
 
-  test('taskA, taskB <- taskB (self-dependency)', helper.runWithFakeTime(async () => {
+  test('taskA, taskB <- taskB (self-dependency)', testing.runWithFakeTime(async () => {
     let taskIdA = slugid.v4();
     let taskIdB = slugid.v4();
 
@@ -348,7 +348,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     let r3 = await helper.queue.status(taskIdB);
     assume(r3.status.state).equals('unscheduled');
     helper.checkNoNextMessage('task-pending'); // because of the self-dep
-  }, mock));
+  }, {mock}));
 
   test('taskX <- taskA (missing dependency)', async () => {
     let taskIdA = slugid.v4();
@@ -377,7 +377,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     );
   });
 
-  test('taskA <- taskB (reportFailed)', helper.runWithFakeTime(async () => {
+  test('taskA <- taskB (reportFailed)', testing.runWithFakeTime(async () => {
     let taskIdA = slugid.v4();
     let taskIdB = slugid.v4();
 
@@ -409,9 +409,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     assume(r3.status.state).equals('unscheduled');
 
     await helper.stopPollingService();
-  }, mock));
+  }, {mock}));
 
-  test('taskA <- taskB (cancelTask)', helper.runWithFakeTime(async () => {
+  test('taskA <- taskB (cancelTask)', testing.runWithFakeTime(async () => {
     let taskIdA = slugid.v4();
     let taskIdB = slugid.v4();
 
@@ -439,9 +439,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     assume(r3.status.state).equals('unscheduled');
 
     await helper.stopPollingService();
-  }, mock));
+  }, {mock}));
 
-  test('taskA <- taskB (reportFailed w. all-resolved)', helper.runWithFakeTime(async () => {
+  test('taskA <- taskB (reportFailed w. all-resolved)', testing.runWithFakeTime(async () => {
     let taskIdA = slugid.v4();
     let taskIdB = slugid.v4();
 
@@ -479,9 +479,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       Infinity);
 
     await helper.stopPollingService();
-  }, mock));
+  }, {mock}));
 
-  test('expiration of relationships', helper.runWithFakeTime(async () => {
+  test('expiration of relationships', testing.runWithFakeTime(async () => {
     const taskIdA = slugid.v4();
     const taskA = _.defaults({
       dependencies: [taskIdA],
@@ -533,6 +533,5 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     const r10 = await TaskRequirement.load({taskId: taskIdB, requiredTaskId: taskIdB}, true);
     assert(r9, 'Expected TaskDependency');
     assert(r10, 'Expected TaskRequirement');
-  }, mock));
-
+  }, {mock}));
 });

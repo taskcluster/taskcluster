@@ -8,25 +8,19 @@ references from which Client classes are already constructed.
 ## Calling API End-Points
 To invoke an API end-point instantiate a taskcluster Client class, these are
 classes can be created from a JSON reference object, but a number of them are
-also built-in to this library. In the following example we instantiate an
-instance of the `Queue` Client class and use to to create a task.
+also built-in to this library. The following example instantiates an
+instance of the `Queue` Client class, showing all available options, and
+uses it to to create a task.  Note that only the `rootUrl` option is required.
 
 ```js
 var taskcluster = require('taskcluster-client');
 
 // Instantiate the Queue Client class
 var queue = new taskcluster.Queue({
-  // rootUrl for this Taskcluster instance
+  // rootUrl for this Taskcluster instance (required)
   rootUrl: 'https://taskcluster.myproject.org',
 
-  timeout: 30 * 1000, // timeout for _each_ invidual http request
-
-  // By default we share a global agent if you specify your instance
-  // will have it's own agent with the given options...
-  agent: {
-    // https://nodejs.org/api/http.html#http_new_agent_options
-  },
-
+  // Taskcluster credentials (required only for API methods that require scopes)
   credentials: {
     clientId:     '...',
     accessToken:  '...',
@@ -34,6 +28,31 @@ var queue = new taskcluster.Queue({
     // this can be either a JSON object or a JSON string.
     certificate:  {...}   // Only applicable for temporary credentials
   }
+
+  // timeout for _each_ invidual http request
+  timeout: 30 * 1000,
+
+  // maximum number of retries for transient errors (default 5)
+  retries: 5,
+
+  // Multiplier for computation of retry delay: 2 ^ retry * delayFactor,
+  // 100 ms is solid for servers, and 500ms - 1s is suitable for background
+  // processes
+  delayFactor: 100,
+
+  // Randomization factor added as.
+  // delay = delay * random([1 - randomizationFactor; 1 + randomizationFactor])
+  randomizationFactor: 0.25,
+
+  // Maximum retry delay (defaults to 30 seconds)
+  maxDelay: 30 * 1000,
+
+  // By default we share a global HTTP agent. If you specify one, your instance
+  // will have its own agent with the given options...
+  agent: undefined,
+
+  // Fake methods, for testing
+  fake: null,
 });
 
 // Create task using the queue client
@@ -65,7 +84,7 @@ This replaces any given options with new values.
 
 **NOTE** `PulseListener` is no longer included in `taskcluster-client`;
 instead, use `PulseConsumer` from
-[taskcluster-lib-pulse](https://github.com/taskcluster/taskcluster-lib-pulse).
+[taskcluster-lib-pulse](../../libraries/pulse).
 
 However, this library helpfully includes bindings for exchanges declared by
 various Taskcluster services.  To use these with `taskcluster-lib-pulse`,
@@ -90,7 +109,7 @@ let pc = await pulse.consume({
 
 The set of API entries listed below is generated from the built-in references.
 Detailed documentation with description, payload and result format details is
-available in the [docs reference section](https://docs.taskcluster.net/docs/reference).
+available in the reference section of the Taskcluster documentation.
 
 On the documentation site, entries have a
 _signature_.  You'll find that it matches the signatures below. Notice that all
@@ -631,75 +650,6 @@ queue.defineTask(taskId taskDefinition).then(function(result) {
 });
 ```
 
-
-## Using the Listener
-Taskcluster relies on pulse for exchange of messages. You'll need an pulse
-credentials for using `taskcluster.PulseListener`.
-An outline of how to create an instance and use is given below. Note, you
-must call `resume()` before message starts arriving.
-
-```js
-var listener = new taskcluster.PulseListener({
-  prefetch:             5,          // Number of tasks to process in parallel
-  credentials: {                    // If not instance of PulseConnection
-    username:           '...',      // Pulse username from pulse guardian
-    password:           '...',      // Pulse password from pulse guardian
-    hostname:           '...',      // hostname to connect to using username/password
-    vhost   :           '...'       // virtual host to use on the AMQP host   
-  },
-  connection:           connection, // If credentials isn't provided
-  // If no queue name is given, the queue is:
-  //    exclusive, autodeleted and non-durable
-  // If a queue name is given, the queue is:
-  //    durable, not auto-deleted and non-exclusive
-  queueName:          'my-queue',   // Queue name, undefined if none
-  maxLength:          0,            // Max allowed queue size
-});
-
-listener.bind({exchange, routingKeyPattern}).then(...);
-                                    // bind to an exchange; note that for
-                                    // Taskcluster components the argument
-                                    // can be created by Client; see above.
-listener.connect().then(...);       // Setup listener and bind queue
-listener.resume().then(...);        // Start getting new messages
-listener.pause().then(...);         // Pause retrieval of new messages
-listener.deleteQueue();             // Delete named queue and disconnect
-listener.close();                   // Disconnect from pulse
-```
-
-To actually receive messages, subscribe to the listener's `message` event:
-
-```js
-listener.on('message', (message) => async {
-  message.exchange
-  message.payload
-  .. etc. (see "Listening for Events", above)
-});
-```
-
-**Using `PulseConnection`**, instead of giving a `username` and `password` it
-is possible to give the `Listener` the key `connection` which must then be a
-`taskcluster.PulseConnection` object. Using a `PulseConnection` object it's
-possible to have multiple listeners using the same AMQP TCP connection, which
-is the recommended way of using AMQP. Notice, that the `PulseConnection` will
-not be closed with the `Listener`s, so you must `close()` it manually.
-
-```js
-var connection = new taskcluster.PulseConnection({
-  username:           '...',        // Pulse username from pulse guardian
-  password:           '...',        // Pulse password from pulse guardian
-  hostname:           '...',        // hostname to connect to using username/password
-  vhost   :           '...'         // virtual host to use on the AMQP host   
-});
-
-// Create listener
-var listener = new taskcluster.PulseListener({
-  connection:         connection,   // AMQP connection object
-});
-
-
-connection.close();                 // Disconnect from AMQP/pulse
-```
 
 ## Relative Date-time Utilities
 A lot of taskcluster APIs requires ISO 8601 time stamps offset into the future

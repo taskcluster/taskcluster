@@ -3,7 +3,7 @@
   "private": true,
   "version": "11.0.0",
   "description": "A library to share iteration logic",
-  "main": "src/iterate.js",
+  "main": "src/index.js",
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
     "test": "mocha"

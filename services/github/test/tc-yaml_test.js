@@ -1,7 +1,8 @@
 const TcYaml = require('../src/tc-yaml');
 const assume = require('assume');
+const testing = require('taskcluster-lib-testing');
 
-suite('tc-yaml_test.js', function() {
+suite(testing.suiteName(), function() {
   suite('VersionOne', function() {
     const tcyaml = TcYaml.instantiate(1);
     const cfg = {

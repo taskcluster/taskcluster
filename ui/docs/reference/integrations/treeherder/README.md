@@ -24,7 +24,7 @@ All jobs that are reported to Treeherder must have some basic information about 
 itself, such as job symbol, job name, platform, etc.
 
 This configuration needs to be declared in the task definition under `task.extra.treeherder`
-and is validated against a [published schema](https://schemas.taskcluster.net/treeherder/v1/task-treeherder-config.json#).
+and is validated against a [published schema](treeherder/task-treeherder-config).
 
 ## Example  Task
 
@@ -80,7 +80,7 @@ messages that are concerned about, such as only a particular destination
 
 ## Schema
 
-All jobs messages must validate against a [published schema](https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#).
+All jobs messages must validate against a [published schema](treeherder/exchanges#jobs).
 Any jobs that do not match this schema will be reported in the application logs and
 an administrator of the application can review the logs if a job is not appearing
 on the pulse exchange.

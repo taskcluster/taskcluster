@@ -5,7 +5,7 @@ const assume = require('assume');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withS3(mock, skipping);
@@ -31,7 +31,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     },
   };
 
-  test('createTask, claimTask, claim-expired, retry, ...', helper.runWithFakeTime(async () => {
+  test('createTask, claimTask, claim-expired, retry, ...', testing.runWithFakeTime(async () => {
     const taskId = slugid.v4();
 
     debug('### Creating task');
@@ -98,5 +98,5 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     const r5 = await helper.queue.status(taskId);
     // this time it's exception, since it's out of retries
     assume(r5.status.state).equals('exception');
-  }, mock));
+  }, {mock}));
 });

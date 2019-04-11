@@ -3,8 +3,9 @@ const References = require('..');
 const {makeSerializable} = require('../src/serializable');
 const {getCommonSchemas} = require('../src/common-schemas');
 const libUrls = require('taskcluster-lib-urls');
+const testing = require('taskcluster-lib-testing');
 
-suite('serializable_test.js', function() {
+suite(testing.suiteName(), function() {
   const rootUrl = libUrls.testRootUrl();
   const legacyRootUrl = 'https://taskcluster.net';
 

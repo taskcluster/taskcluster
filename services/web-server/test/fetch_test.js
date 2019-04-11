@@ -1,18 +1,19 @@
 import { createServer } from 'http';
 import assert from 'assert';
 import fetch from '../src/utils/fetch';
+import testing from 'taskcluster-lib-testing';
 
-describe('fetch', () => {
+suite(testing.suiteName(), () => {
   let server;
 
-  afterEach(() => {
+  teardown(() => {
     if (server) {
       server.close();
       server = undefined;
     }
   });
 
-  it('should retry a 500', () => {
+  test('should retry a 500', () => {
     let attemptCount = 0;
 
     server = createServer((req, res) => {
@@ -45,7 +46,7 @@ describe('fetch', () => {
     });
   });
 
-  it('should throw a 400', () => {
+  test('should throw a 400', () => {
     server = createServer((req, res) => {
       res.writeHead(400);
       res.end();
@@ -69,7 +70,7 @@ describe('fetch', () => {
     });
   });
 
-  it('should fail after max retries', () => {
+  test('should fail after max retries', () => {
     server = createServer((req, res) => {
       res.writeHead(500);
       res.end();

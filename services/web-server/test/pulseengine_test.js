@@ -3,6 +3,7 @@ import MonitorManager from 'taskcluster-lib-monitor';
 import {FakeClient} from 'taskcluster-lib-pulse';
 import PulseEngine from '../src/PulseEngine';
 import PulseIterator from '../src/PulseEngine/PulseIterator';
+const testing = require('taskcluster-lib-testing');
 
 class FakePulseEngine {
   subscribe(subscriptions, handleMessage, handleError) {
@@ -19,7 +20,7 @@ class FakePulseEngine {
   }
 }
 
-describe('PulseEngine', function() {
+suite(testing.suiteName(), function() {
   const manager = new MonitorManager({
     serviceName: 'web-server',
   });
@@ -32,13 +33,13 @@ describe('PulseEngine', function() {
   // does not activate immediately
   const beat = () => new Promise(resolve => setTimeout(resolve, 1));
 
-  it('can be constructed with a fake client', function() {
+  test('can be constructed with a fake client', function() {
     // can't test much more of this since PulseEngine accesses amqplib APIs directly
     new PulseEngine({monitor: manager.monitor(), pulseClient: new FakeClient()});
   });
 
-  describe('PulseIterator', function() {
-    it('queues up pushed messages', async function() {
+  suite('PulseIterator', function() {
+    test('queues up pushed messages', async function() {
       const engine = new FakePulseEngine();
       const pi = new PulseIterator(engine, []);
 
@@ -68,7 +69,7 @@ describe('PulseEngine', function() {
       assert.deepEqual(received, ['M1', 'M2', 'M3']);
     });
 
-    it('waits for pushed messages', async function() {
+    test('waits for pushed messages', async function() {
       const engine = new FakePulseEngine();
       const pi = new PulseIterator(engine, []);
 
@@ -103,7 +104,7 @@ describe('PulseEngine', function() {
       assert.equal(engine.subscribed, false, "should have been unsubscribed");
     });
 
-    it('throws errors into the iterator', async function() {
+    test('throws errors into the iterator', async function() {
       const engine = new FakePulseEngine();
       const pi = new PulseIterator(engine, []);
 

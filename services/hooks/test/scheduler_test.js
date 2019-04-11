@@ -2,8 +2,9 @@ const _ = require('lodash');
 const assume = require('assume');
 const helper = require('./helper');
 const taskcluster = require('taskcluster-client');
+const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withTaskCreator(mock, skipping);
 
@@ -176,6 +177,32 @@ helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, sk
 
       assume(updatedHook.nextTaskId).is.not.equal(oldTaskId);
       assume(updatedHook.nextScheduledDate).is.not.equal(oldScheduledDate);
+    });
+
+    test('on 500 error, no email and nothing changes', async () => {
+      let oldTaskId = hook.nextTaskId;
+      let oldScheduledDate = hook.nextScheduledDate;
+
+      helper.creator.shouldFail = {
+        statusCode: 500,
+      };
+
+      let emailSent = false;
+      scheduler.sendFailureEmail = async (hook, err) => { emailSent = true; };
+
+      await scheduler.handleHook(hook);
+
+      // no email sent for a 500
+      assume(emailSent).is.equal(false);
+
+      let updatedHook = await helper.Hook.load({
+        hookGroupId: 'tests',
+        hookId: 'test',
+      }, true);
+
+      // nothing got updated..
+      assume(updatedHook.nextTaskId).is.equal(oldTaskId);
+      assume(updatedHook.nextScheduledDate).is.deeply.equal(oldScheduledDate);
     });
 
     test('on error, notify is used with correct options', async () => {

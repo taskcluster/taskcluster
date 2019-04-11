@@ -3,8 +3,9 @@ const assert = require('assert');
 const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
 const helper = require('./helper');
+const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withS3(mock, skipping);

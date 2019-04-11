@@ -1,7 +1,7 @@
 const testing = require('taskcluster-lib-testing');
 const path = require('path');
 
-suite('validate_test.js', () => {
+suite(testing.suiteName(), () => {
   // Run test cases using schemas testing utility from taskcluster-base
   testing.schemas({
     schemasetOptions: {

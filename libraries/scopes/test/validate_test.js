@@ -1,7 +1,8 @@
 const assert = require('assert');
 const utils = require('../src');
+const testing = require('taskcluster-lib-testing');
 
-suite('validate', function() {
+suite(testing.suiteName(), function() {
   test('Normal-looking scopes are OK', function() {
     assert(utils.validScope('auth:credentials'));
   });

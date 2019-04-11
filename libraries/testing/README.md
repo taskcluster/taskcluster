@@ -231,47 +231,6 @@ The test output for the first suite will contain something like
 ```
 
 
-PulseTestReceiver
------------------
-
-A utility for tests written in mocha, that makes it very easy to wait for a
-specific pulse message.  This uses real pulse messages, so pulse credentials
-will be required.
-
-**Example:**
-```js
-suite("MyTests", function() {
-  let credentials = {
-    username:     '...',  // Pulse username
-    password:     '...'   // Pulse password
-  };
-  let receiver = new testing.PulseTestReceiver(credentials, mocha)
-
-  test("create task message arrives", async function() {
-    var taskId = slugid.v4();
-
-    // Start listening for a message with the above taskId, giving
-    // it a local name (here, `my-create-task-message`)
-    await receiver.listenFor(
-      'my-create-task-message',
-      queueEvents.taskCreated({taskId: taskId})
-    );
-
-    // We are now listen for a message with the taskId
-    // So let's create a task with it
-    await queue.createTask(taskId, {...});
-
-    // Now we wait for the message to arrive
-    let message = await receiver.waitFor('my-create-task-message');
-  });
-});
-```
-
-The `receiver` object will setup an PulseConnection before all tests and close
-the PulseConnection after all tests. This should make tests run faster.  All
-internal state, ie. the names given to `listenFor` and `waitFor` will be reset
-between all tests.
-
 schemas
 -------
 
@@ -280,7 +239,7 @@ Test schemas with a positive and negative test cases.
 The method should be called within a `suite`, as it will call the mocha `test`
 function to define a test for each schema case.
 
- * `schemasetOptions` - {}  // options to pass to the [taskcluster-lib-validate](https://github.com/taskcluster/taskcluster-lib-validate) constructor
+ * `schemasetOptions` - {}  // options to pass to the [taskcluster-lib-validate](../validate) constructor
  * `cases` - array of test cases
  * `basePath` -  base path for relative pathnames in test cases (default `path.join(__dirname, 'validate')`)
 
@@ -353,8 +312,8 @@ This function assumes the following config values:
 
 And assumes that the `exports` argument has a `load` function corresponding to a sticky loader.
 
-Utilities
----------
+Time
+----
 
 ### Sleep
 
@@ -363,6 +322,30 @@ The `sleep` function returns a promise that resolves after a delay.
 **NOTE** tests that depend on timing are notoriously unreliable, and suggest
 poorly-isolated tests. Consider writing the tests to use a "fake" clock or to
 poll for the expected state.
+
+### Fake Time
+
+When testing functionality that involves timers, it is helpful to be able to simulate the rapid passage of time.
+The `testing.runWithFakeTime(<fn>, {mock, maxTime, ...})` uses [zurvan](https://github.com/tlewowski/zurvan) to do just that.
+It is used to wrap an argument to a Mocha `test` function, avoiding interfering with Mocha's timers:
+```js
+test('noun should verb', runWithFakeTime(async function() {
+  ...
+}, {
+  mock,
+  maxTime: 60000,
+}));
+```
+
+The `maxTime` option is the total amount of simulated time to spend running the test; it defaults to 30 seconds.
+
+The `mock` option is for use with `mockSuite` and can be omitted otherwise.
+Fake time is only used when mocking; in a real situation, we are interacting with real services and must use the same clock they do.
+
+Any other options are passed directly to zurvan.
+
+Utilities
+---------
 
 ### Poll
 

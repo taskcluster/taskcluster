@@ -5,8 +5,9 @@ const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
 const assume = require('assume');
 const helper = require('./helper');
+const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withAmazonIPRanges(mock, skipping);
   helper.withS3(mock, skipping);
   helper.withQueueService(mock, skipping);
@@ -134,6 +135,30 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
         throw err;
       }
     });
+  });
+
+  test('createTask is idempotent even when it fails sending pulse messages', async () => {
+    const taskId = slugid.v4();
+    // make the `this.publisher.taskDefined` call in createTask fail..
+    const oldTD = helper.publisher.taskDefined;
+    helper.publisher.taskDefined = async () => {
+      debug('publisher.taskDefined failing with fake error');
+      throw new Error('uhoh');
+    };
+    try {
+      try {
+        await helper.queue
+          .use({retries: 0})
+          .createTask(taskId, taskDef);
+      } catch (err) {
+        if (!err.toString().match(/uhoh/)) {
+          throw err;
+        }
+      }
+    } finally {
+      helper.publisher.taskDefined = oldTD;
+    }
+    await helper.queue.createTask(taskId, taskDef);
   });
 
   test('defineTask', async () => {

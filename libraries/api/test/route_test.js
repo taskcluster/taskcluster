@@ -4,8 +4,9 @@ const APIBuilder = require('../');
 const slugid = require('slugid');
 const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');
+const testing = require('taskcluster-lib-testing');
 
-suite('api/route', function() {
+suite(testing.suiteName(), function() {
   const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);
 
   // Create test api

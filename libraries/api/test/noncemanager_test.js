@@ -2,8 +2,9 @@ const API = require('../src/api');
 const assert = require('assert');
 const Promise = require('promise');
 const debug = require('debug')('base:test:nonceManager');
+const testing = require('taskcluster-lib-testing');
 
-suite('nonceManager test', function() {
+suite(testing.suiteName(), function() {
   // Create a new nonceManager for each test
   let nonceManager = null;
   setup(function() {

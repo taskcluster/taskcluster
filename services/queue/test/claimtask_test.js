@@ -5,7 +5,7 @@ const assume = require('assume');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withS3(mock, skipping);
@@ -37,7 +37,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     },
   });
 
-  test('can claimTask', helper.runWithFakeTime(async function() {
+  test('can claimTask', testing.runWithFakeTime(async function() {
     const taskId = slugid.v4();
 
     debug('### Creating task');
@@ -98,7 +98,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     assume(takenUntil4.getTime()).is.greaterThan(takenUntil.getTime() - 1);
     assume(takenUntil4.getTime()).is.greaterThan(takenUntil2.getTime() - 1);
     assume(takenUntil4.getTime()).is.greaterThan(takenUntil3.getTime() - 1);
-  }, mock));
+  }, {mock}));
 
   test('claimTask is idempotent', async () => {
     const taskId = slugid.v4();

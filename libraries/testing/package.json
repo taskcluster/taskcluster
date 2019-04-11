@@ -9,5 +9,5 @@
     "lint": "eslint src/*.js test/*.js",
     "test": "mocha test/*_test.js"
   },
-  "main": "./src/testing.js"
+  "main": "./src/index.js"
 }

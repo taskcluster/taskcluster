@@ -1,8 +1,8 @@
 const _ = require('lodash');
 const assert = require('assert');
-const {stickyLoader} = require('../');
+const {stickyLoader, suiteName} = require('../');
 
-suite('stickyLoader', function() {
+suite(suiteName(), function() {
   let loads, sticky;
 
   const loader = (component, overwrites) => {
