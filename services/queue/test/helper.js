@@ -1,4 +1,3 @@
-const assert = require('assert');
 const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
 const libUrls = require('taskcluster-lib-urls');
@@ -9,8 +8,7 @@ const temporary = require('temporary');
 const mockAwsS3 = require('mock-aws-s3');
 const nock = require('nock');
 const FakeBlobStore = require('./fake_blob_store');
-const {fakeauth, stickyLoader, Secrets, withEntity} = require('taskcluster-lib-testing');
-const {FakeClient} = require('taskcluster-lib-pulse');
+const {fakeauth, stickyLoader, Secrets, withEntity, withPulse} = require('taskcluster-lib-testing');
 
 const helper = module.exports;
 
@@ -279,52 +277,8 @@ exports.withServer = (mock, skipping) => {
   });
 };
 
-/**
- * Set up PulsePublisher in fake mode, at helper.publisher. Messages are stored
- * in helper.messages.  The `helper.checkNextMessage` function allows asserting the
- * content of the next message, and `helper.checkNoNextMessage` is an assertion that
- * no such message is in the queue.
- */
 exports.withPulse = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    await helper.load('cfg');
-    helper.load.inject('pulseClient', new FakeClient());
-    helper.publisher = await helper.load('publisher');
-
-    helper.checkNextMessage = (exchange, check) => {
-      for (let i = 0; i < helper.messages.length; i++) {
-        const message = helper.messages[i];
-        // skip messages for other exchanges; this allows us to ignore
-        // ordering of messages that occur in indeterminate order
-        if (!message.exchange.endsWith(exchange)) {
-          continue;
-        }
-        check && check(message);
-        helper.messages.splice(i, 1); // delete message from queue
-        return;
-      }
-      throw new Error(`No messages found on exchange ${exchange}; ` +
-        `message exchanges: ${JSON.stringify(helper.messages.map(m => m.exchange))}`);
-    };
-
-    helper.checkNoNextMessage = exchange => {
-      assert(!helper.messages.some(m => m.exchange.endsWith(exchange)));
-    };
-  });
-
-  const fakePublish = msg => { helper.messages.push(msg); };
-  setup(function() {
-    helper.messages = [];
-    helper.publisher.on('message', fakePublish);
-  });
-
-  teardown(function() {
-    helper.publisher.removeListener('message', fakePublish);
-  });
+  withPulse({helper, skipping, namespace: 'taskcluster-queue'});
 };
 
 /**

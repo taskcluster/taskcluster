@@ -10,6 +10,7 @@ let task, status, expected, pushInfo;
 
 suite(testing.suiteName(), () => {
   helper.withLoader();
+  helper.withPulse();
   helper.withHandler();
 
   setup(() => {

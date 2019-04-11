@@ -1,13 +1,10 @@
-const assert = require('assert');
 const data = require('../src/data');
 const taskcluster = require('taskcluster-client');
 const taskcreator = require('../src/taskcreator');
-const {stickyLoader, fakeauth, Secrets, withEntity} = require('taskcluster-lib-testing');
+const {stickyLoader, fakeauth, Secrets, withEntity, withPulse} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const load = require('../src/main');
 const libUrls = require('taskcluster-lib-urls');
-const {FakeClient} = require('taskcluster-lib-pulse');
-const HookListeners = require('../src/listeners');
 
 const helper = exports;
 
@@ -16,7 +13,6 @@ helper.rootUrl = 'http://localhost:60401';
 helper.load = stickyLoader(load);
 helper.load.inject('profile', 'test');
 helper.load.inject('process', 'test');
-helper.load.inject('pulseClient', new FakeClient());
 
 helper.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/taskcluster-hooks',
@@ -61,74 +57,8 @@ helper.withTaskCreator = function(mock, skipping) {
   });
 };
 
-/**
- * Set up tc-lib-pulse in fake mode, with a publisher at at helper.publisher.
- * Messages are stored in helper.messages.  The `helper.checkNextMessage`
- * function allows asserting the content of the next message, and
- * `helper.checkNoNextMessage` is an assertion that no such message is in the
- * queue.
- */
-helper.withPulse = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    await helper.load('cfg');
-    helper.publisher = await helper.load('publisher');
-    helper.checkNextMessage = (exchange, check) => {
-      for (let i = 0; i < helper.messages.length; i++) {
-        const message = helper.messages[i];
-        // skip messages for other exchanges; this allows us to ignore
-        // ordering of messages that occur in indeterminate order
-        if (!message.exchange.endsWith(exchange)) {
-          continue;
-        }
-        check && check(message);
-        helper.messages.splice(i, 1); // delete message from queue
-        return;
-      }
-      throw new Error(`No messages found on exchange ${exchange}; ` +
-        `message exchanges: ${JSON.stringify(helper.messages.map(m => m.exchange))}`);
-    };
-
-    helper.checkNoNextMessage = exchange => {
-      assert(!helper.messages.some(m => m.exchange.endsWith(exchange)));
-    };
-  });
-
-  const recordMessage = msg => helper.messages.push(msg);
-  setup(async function() {
-    helper.messages = [];
-    helper.publisher.on('message', recordMessage);
-    if (helper.Listener) {
-      await helper.Listener.terminate();
-      helper.Listener = null;
-    }
-    let Hook = helper.Hook;
-    let Queues = helper.Queues;
-    let taskcreator = helper.creator;
-
-    helper.Listener = new HookListeners({
-      Hook,
-      Queues,
-      taskcreator,
-      client: new FakeClient(),
-    });
-
-    await helper.Listener.setup();
-  });
-
-  teardown(async function() {
-    helper.publisher.removeListener('message', recordMessage);
-  });
-
-  suiteTeardown(async function() {
-    if (helper.Listener) {
-      await helper.Listener.terminate();
-      helper.Listener = null;
-    }
-  });
+exports.withPulse = (mock, skipping) => {
+  withPulse({helper: exports, skipping, namespace: 'taskcluster-hooks'});
 };
 
 /**

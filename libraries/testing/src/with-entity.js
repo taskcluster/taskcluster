@@ -63,7 +63,18 @@ module.exports = (mock, skipping, helper, loaderComponent, cls,
   if (!cleanup) {
     cleanup = async () => {
       if (!skipping() && component) {
-        await component.scan({}, {handler: e => e.remove()});
+        await component.scan({}, {
+          handler: async e => {
+            try {
+              await e.remove();
+            } catch (err) {
+              // ResourceNotFoundError is OK, at least it's deleted..
+              if (err.name !== 'ResourceNotFoundError') {
+                throw err;
+              }
+            }
+          },
+        });
       }
     };
   }

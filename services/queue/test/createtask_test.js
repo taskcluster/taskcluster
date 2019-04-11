@@ -74,12 +74,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     });
 
     debug('### Wait for defined message');
-    helper.checkNextMessage('task-defined', m =>
-      assume(r1.status).deep.equals(m.payload.status));
+    helper.assertPulseMessage('task-defined', m => _.isEqual(m.payload.status, r1.status));
 
     debug('### Wait for pending message');
-    helper.checkNextMessage('task-pending', m =>
-      assume(r1.status).deep.equals(m.payload.status));
+    helper.assertPulseMessage('task-pending', m => _.isEqual(m.payload.status, r1.status));
 
     debug('### Get task status');
     const r2 = await helper.queue.status(taskId);
@@ -139,9 +137,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
   test('createTask is idempotent even when it fails sending pulse messages', async () => {
     const taskId = slugid.v4();
+    const publisher = await helper.load('publisher');
     // make the `this.publisher.taskDefined` call in createTask fail..
-    const oldTD = helper.publisher.taskDefined;
-    helper.publisher.taskDefined = async () => {
+    const oldTD = publisher.taskDefined;
+    publisher.taskDefined = async () => {
       debug('publisher.taskDefined failing with fake error');
       throw new Error('uhoh');
     };
@@ -156,7 +155,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
         }
       }
     } finally {
-      helper.publisher.taskDefined = oldTD;
+      publisher.taskDefined = oldTD;
     }
     await helper.queue.createTask(taskId, taskDef);
   });
@@ -171,24 +170,23 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     await helper.queue.defineTask(taskId, taskDef);
 
-    helper.checkNextMessage('task-defined');
-    helper.checkNoNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined');
+    helper.assertNoPulseMessage('task-pending');
   });
 
   test('defineTask and scheduleTask', async () => {
     const taskId = slugid.v4();
 
     await helper.queue.defineTask(taskId, taskDef);
-    helper.checkNextMessage('task-defined');
-    helper.checkNoNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined');
+    helper.assertNoPulseMessage('task-pending');
 
     helper.scopes(
       'queue:schedule-task',
       'assume:scheduler-id:my-scheduler-extended-extended/dSlITZ4yQgmvxxAi4A8fHQ',
     );
     const r1 = await helper.queue.scheduleTask(taskId);
-    helper.checkNextMessage('task-pending', m =>
-      assume(r1.status).deep.equals(m.payload.status));
+    helper.assertPulseMessage('task-pending', m => _.isEqual(m.payload.status, r1.status));
   });
 
   test('defineTask is idempotent', async () => {
@@ -297,10 +295,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     debug('### Creating task');
     const r1 = await helper.queue.createTask(taskId, taskDef);
-    helper.checkNextMessage('task-defined', m =>
-      assume(r1.status).deep.equals(m.payload.status));
-    helper.checkNextMessage('task-pending', m =>
-      assume(r1.status).deep.equals(m.payload.status));
+    helper.assertPulseMessage('task-defined', m => _.isEqual(m.payload.status, r1.status));
+    helper.assertPulseMessage('task-pending', m => _.isEqual(m.payload.status, r1.status));
 
     const r2 = await helper.queue.status(taskId);
     assume(r1.status).deep.equals(r2.status);

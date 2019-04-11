@@ -8,7 +8,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.withSES(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withSQS(mock, skipping);
-  helper.withHandler(mock, skipping);
+  helper.withServer(mock, skipping);
 
   const created = new Date();
   const deadline = new Date();
@@ -64,6 +64,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     ],
   };
 
+  suiteSetup('create handler', async function() {
+    if (skipping()) {
+      return;
+    }
+
+    // load the handler so it listens for pulse messages
+    await helper.load('handler');
+  });
+
   ['canceled', 'deadline-exceeded'].forEach(reasonResolved => {
     test(`does not publish for ${reasonResolved}`, async () => {
       const route = 'test-notify.pulse.notify-test.on-any';
@@ -72,7 +81,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       status.state = 'exception';
       status.runs[0].state = 'exception';
       status.runs[0].reasonResolved = reasonResolved;
-      await helper.pq.fakeMessage({
+      await helper.fakePulseMessage({
         payload: {status},
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
         routingKey: 'doesnt-matter',
@@ -82,16 +91,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       // wait long enough for the promises to resolve..
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      helper.checkNoNextMessage('notification');
+      helper.assertNoPulseMessage('notification');
     });
   });
 
   test('pulse', async () => {
-    const p = new Promise(resolve => helper.publisher.once('message', resolve));
-
     const route = 'test-notify.pulse.notify-test.on-any';
     helper.queue.addTask(baseStatus.taskId, makeTask([route]));
-    await helper.pq.fakeMessage({
+    await helper.fakePulseMessage({
       payload: {
         status: baseStatus,
       },
@@ -99,14 +106,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       routingKey: 'doesnt-matter',
       routes: [route],
     });
-    await p;
-    helper.checkNextMessage('notification', m => assert.deepEqual(m.CCs, ['route.notify-test']));
+    helper.assertPulseMessage('notification', m => m.CCs[0] === 'route.notify-test');
   });
 
   test('email', async () => {
     const route = 'test-notify.email.success@simulator.amazonses.com.on-any';
     helper.queue.addTask(baseStatus.taskId, makeTask([route]));
-    await helper.handler.onMessage({
+    await helper.fakePulseMessage({
       payload: {
         status: baseStatus,
       },
@@ -124,7 +130,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const task = makeTask([route]);
     task.extra = {notify: {ircChannelMessage: 'it worked with taskid ${status.taskId}'}};
     helper.queue.addTask(baseStatus.taskId, task);
-    await helper.handler.onMessage({
+    await helper.fakePulseMessage({
       payload: {
         status: baseStatus,
       },

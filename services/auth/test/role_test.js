@@ -52,7 +52,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure'], function(mock, s
     });
     assume(role2).deep.equals(role);
 
-    helper.checkNextMessage('role-created', m => assert.equal(m.payload.roleId, `thing-id:${clientId}`));
+    helper.assertPulseMessage('role-created', m => m.payload.roleId === `thing-id:${clientId}`);
 
     let client = await helper.apiClient.client(clientId);
     assume(client.expandedScopes.sort()).deep.equals(
@@ -72,7 +72,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure'], function(mock, s
       scopes: ['dummy-scope-2'],
     });
 
-    helper.checkNextMessage('role-created', m => assert.equal(m.payload.roleId, roleId));
+    helper.assertPulseMessage('role-created', m => m.payload.roleId === roleId);
 
     assume(role.description).equals('test prefix role');
     assume(new Date(role.created).getTime()).is.atmost(Date.now());
@@ -341,7 +341,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure'], function(mock, s
     assume(new Date(r2.lastModified).getTime()).greaterThan(
       new Date(r1.lastModified).getTime()
     );
-    helper.checkNextMessage('role-updated', m => assert.equal(m.payload.roleId, `thing-id:${clientId}`));
+    helper.assertPulseMessage('role-updated', m => m.payload.roleId === `thing-id:${clientId}`);
 
     let role = await helper.apiClient.role(`thing-id:${clientId}`);
     assume(role.expandedScopes.sort()).deep.equals([
@@ -364,7 +364,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure'], function(mock, s
     }, err => assert(err.statusCode === 404, 'Expected 404'));
 
     // At least one of them should trigger this message
-    helper.checkNextMessage('role-deleted', m => assert.equal(m.payload.roleId, `thing-id:${clientId}`));
+    helper.assertPulseMessage('role-deleted', m => m.payload.roleId === `thing-id:${clientId}`);
   });
 
   test('create a role introducing a parameter cycle', async () => {

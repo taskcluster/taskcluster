@@ -42,9 +42,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
-    helper.checkNextMessage('task-defined');
-    helper.checkNextMessage('task-pending', m =>
-      assert.equal(m.payload.runId, 0));
+    helper.assertPulseMessage('task-defined');
+    helper.assertPulseMessage('task-pending', m => m.payload.runId === 0);
 
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
@@ -52,11 +51,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    helper.checkNextMessage('task-running');
+    helper.assertPulseMessage('task-running');
 
     debug('### Reporting task completed');
     await helper.queue.reportCompleted(taskId, 0);
-    helper.checkNextMessage('task-completed');
+    helper.assertPulseMessage('task-completed');
 
     debug('### Requesting task rerun');
     helper.scopes(
@@ -66,14 +65,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     await helper.queue.rerunTask(taskId);
 
     debug('### Waiting for pending message again');
-    helper.checkNextMessage('task-pending', m => {
-      assert.equal(m.payload.runId, 1);
-    });
+    helper.assertPulseMessage('task-pending', m => m.payload.runId === 1);
 
     debug('### Requesting task rerun (again - idempotent)');
     await helper.queue.rerunTask(taskId);
-    helper.checkNextMessage('task-pending', m =>
-      assert.equal(m.payload.runId, 1));
+    helper.assertPulseMessage('task-pending', m => m.payload.runId === 1);
   });
 
   test('throw error on missing task', async () => {

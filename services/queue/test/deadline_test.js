@@ -23,7 +23,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       workerType: 'test-worker-extended-extended',
       // Legal because we allow a small bit of clock drift
       created: taskcluster.fromNowJSON('- 5 seconds'),
-      deadline: taskcluster.fromNowJSON('15 seconds'),
+      deadline: taskcluster.fromNowJSON('5 seconds'),
       retries: 1,
       payload: {},
       metadata: {
@@ -43,19 +43,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     const r1 = await helper.queue.defineTask(taskId, task);
     assume(r1.status.state).equals('unscheduled');
     assume(r1.status.runs.length).equals(0);
-    helper.checkNextMessage('task-defined');
+    helper.assertPulseMessage('task-defined');
 
     debug('### Start deadlineReaper');
     await helper.startPollingService('deadline-resolver');
 
     debug('### Check for task-exception message');
     await testing.poll(async () => {
-      helper.checkNextMessage('task-exception', message => {
-        assume(message.payload.status.state).equals('exception');
-        assume(message.payload.status.runs.length).equals(1);
-        assume(message.payload.status.runs[0].reasonCreated).equals('exception');
-        assume(message.payload.status.runs[0].reasonResolved).equals('deadline-exceeded');
-      });
+      helper.assertPulseMessage('task-exception', m => (
+        m.payload.status.state === 'exception' &&
+        m.payload.status.runs.length === 1 &&
+        m.payload.status.runs[0].reasonCreated === 'exception' &&
+        m.payload.status.runs[0].reasonResolved === 'deadline-exceeded'));
 
       assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-exception'), {
         Type: 'task-exception',
@@ -83,21 +82,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     const r1 = await helper.queue.createTask(taskId, task);
     assume(r1.status.state).equals('pending');
     assume(r1.status.runs.length).equals(1);
-    helper.checkNextMessage('task-defined');
-    helper.checkNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined');
+    helper.assertPulseMessage('task-pending');
 
     debug('### Start deadlineReaper');
     await helper.startPollingService('deadline-resolver');
-    await testing.poll(async () => assert(helper.messages.length >= 1), Infinity);
-
-    debug('### Check for task-exception message');
-    helper.checkNextMessage('task-group-resolved');
-    helper.checkNextMessage('task-exception', message => {
-      assume(message.payload.status.state).equals('exception');
-      assume(message.payload.status.runs.length).equals(1);
-      assume(message.payload.status.runs[0].reasonCreated).equals('scheduled');
-      assume(message.payload.status.runs[0].reasonResolved).equals('deadline-exceeded');
-    });
+    await testing.poll(async () => {
+      helper.assertPulseMessage('task-group-resolved');
+      helper.assertPulseMessage('task-exception', m => (
+        m.payload.status.state === 'exception' &&
+        m.payload.status.runs.length === 1 &&
+        m.payload.status.runs[0].reasonCreated === 'scheduled' &&
+        m.payload.status.runs[0].reasonResolved === 'deadline-exceeded'));
+    }, 20, 1000);
 
     debug('### Stop deadlineReaper');
     await helper.stopPollingService();
@@ -114,28 +111,26 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     const r1 = await helper.queue.createTask(taskId, task);
     assume(r1.status.state).equals('pending');
     assume(r1.status.runs.length).equals(1);
-    helper.checkNextMessage('task-defined');
-    helper.checkNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined');
+    helper.assertPulseMessage('task-pending');
 
     debug('### Claim task');
     await helper.queue.claimTask(taskId, 0, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    helper.checkNextMessage('task-running');
+    helper.assertPulseMessage('task-running');
 
     debug('### Start deadlineReaper');
     await helper.startPollingService('deadline-resolver');
-    await testing.poll(async () => assert(helper.messages.length >= 1), Infinity);
-
-    debug('### Check for task-exception message');
-    helper.checkNextMessage('task-group-resolved');
-    helper.checkNextMessage('task-exception', message => {
-      assume(message.payload.status.state).equals('exception');
-      assume(message.payload.status.runs.length).equals(1);
-      assume(message.payload.status.runs[0].reasonCreated).equals('scheduled');
-      assume(message.payload.status.runs[0].reasonResolved).equals('deadline-exceeded');
-    });
+    await testing.poll(async () => {
+      helper.assertPulseMessage('task-group-resolved');
+      helper.assertPulseMessage('task-exception', m => (
+        m.payload.status.state === 'exception' &&
+        m.payload.status.runs.length === 1 &&
+        m.payload.status.runs[0].reasonCreated === 'scheduled' &&
+        m.payload.status.runs[0].reasonResolved === 'deadline-exceeded'));
+    }, 20, 1000);
 
     debug('### Stop deadlineReaper');
     await helper.stopPollingService();
@@ -152,26 +147,26 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     const r1 = await helper.queue.createTask(taskId, task);
     assume(r1.status.state).equals('pending');
     assume(r1.status.runs.length).equals(1);
-    helper.checkNextMessage('task-defined');
-    helper.checkNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined');
+    helper.assertPulseMessage('task-pending');
 
     debug('### Claim task');
     await helper.queue.claimTask(taskId, 0, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    helper.checkNextMessage('task-running');
+    helper.assertPulseMessage('task-running');
 
     debug('### Report task completed');
     const r3 = await helper.queue.reportCompleted(taskId, 0);
-    helper.checkNextMessage('task-completed');
+    helper.assertPulseMessage('task-completed');
 
     debug('### Start deadlineReaper');
     await helper.startPollingService('deadline-resolver');
 
     debug('### Ensure that we got no task-exception message');
     await testing.sleep(1000); // give it time to poll
-    assume(helper.messages.length).to.equal(0);
+    helper.assertNoPulseMessage('task-exception');
 
     debug('### Stop deadlineReaper');
     await helper.stopPollingService();

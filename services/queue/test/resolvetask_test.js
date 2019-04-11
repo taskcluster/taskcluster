@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const debug = require('debug')('test:completed');
 const assert = require('assert');
 const slugid = require('slugid');
@@ -50,7 +51,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    helper.checkNoNextMessage('task-completed');
+    helper.assertNoPulseMessage('task-completed');
 
     debug('### Reporting task completed');
     helper.scopes(
@@ -58,8 +59,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
     await helper.queue.reportCompleted(taskId, 0);
-    helper.checkNextMessage('task-completed', m =>
-      assume(m.payload.status.runs[0].state).equals('completed'));
+    helper.assertPulseMessage('task-completed', m => m.payload.status.runs[0].state === 'completed');
+    helper.clearPulseMessages();
 
     assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-completed'), {
       Logger: 'taskcluster.queue.root.api',
@@ -70,14 +71,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     debug('### Reporting task completed (again)');
     await helper.queue.reportCompleted(taskId, 0);
     // idempotent, but sends the message again..
-    helper.checkNextMessage('task-completed', m =>
-      assume(m.payload.status.runs[0].state).equals('completed'));
+    helper.assertPulseMessage('task-completed', m => m.payload.status.runs[0].state === 'completed');
+    helper.clearPulseMessages();
 
     debug('### Reporting task completed (using temp creds)');
     let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
     await queue.reportCompleted(taskId, 0);
-    helper.checkNextMessage('task-completed', m =>
-      assume(m.payload.status.runs[0].state).equals('completed'));
+    helper.assertPulseMessage('task-completed', m => m.payload.status.runs[0].state === 'completed');
+    helper.clearPulseMessages();
   });
 
   test('reportFailed is idempotent', async () => {
@@ -92,7 +93,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    helper.checkNoNextMessage('task-completed');
+    helper.assertNoPulseMessage('task-completed');
 
     debug('### Reporting task failed');
     helper.scopes(
@@ -100,8 +101,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
     await helper.queue.reportFailed(taskId, 0);
-    helper.checkNextMessage('task-failed', m =>
-      assume(m.payload.status.runs[0].state).equals('failed'));
+    helper.assertPulseMessage('task-failed', m => m.payload.status.runs[0].state === 'failed');
+    helper.clearPulseMessages();
 
     assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-failed'), {
       Logger: 'taskcluster.queue.root.api',
@@ -111,14 +112,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     debug('### Reporting task failed (again)');
     await helper.queue.reportFailed(taskId, 0);
-    helper.checkNextMessage('task-failed', m =>
-      assume(m.payload.status.runs[0].state).equals('failed'));
+    helper.assertPulseMessage('task-failed', m => m.payload.status.runs[0].state === 'failed');
+    helper.clearPulseMessages();
 
     debug('### Reporting task failed (using temp creds)');
     let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
     await queue.reportFailed(taskId, 0);
-    helper.checkNextMessage('task-failed', m =>
-      assume(m.payload.status.runs[0].state).equals('failed'));
+    helper.assertPulseMessage('task-failed', m => m.payload.status.runs[0].state === 'failed');
+    helper.clearPulseMessages();
   });
 
   test('reportException (malformed-payload) is idempotent', async () => {
@@ -142,10 +143,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     await helper.queue.reportException(taskId, 0, {
       reason: 'malformed-payload',
     });
-    helper.checkNextMessage('task-exception', m => {
-      assume(m.payload.status.runs[0].state).equals('exception');
-      assume(m.payload.status.runs[0].reasonResolved).equals('malformed-payload');
-    });
+    helper.assertPulseMessage('task-exception', m => (
+      m.payload.status.runs[0].state === 'exception' &&
+      m.payload.status.runs[0].reasonResolved === 'malformed-payload'));
+    helper.clearPulseMessages();
 
     assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-exception'), {
       Logger: 'taskcluster.queue.root.api',
@@ -157,7 +158,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     await helper.queue.reportException(taskId, 0, {
       reason: 'malformed-payload',
     });
-    helper.checkNextMessage('task-exception');
+    helper.assertPulseMessage('task-exception', m => (
+      m.payload.status.runs[0].state === 'exception' &&
+      m.payload.status.runs[0].reasonResolved === 'malformed-payload'));
+    helper.clearPulseMessages();
 
     debug('### Check status of task');
     const {status: s2} = await helper.queue.status(taskId);
@@ -169,7 +173,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     await queue.reportException(taskId, 0, {
       reason: 'malformed-payload',
     });
-    helper.checkNextMessage('task-exception');
+    helper.assertPulseMessage('task-exception', m => (
+      m.payload.status.runs[0].state === 'exception' &&
+      m.payload.status.runs[0].reasonResolved === 'malformed-payload'));
   });
 
   test('reportException (resource-unavailable) is idempotent', async () => {
@@ -193,16 +199,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     await helper.queue.reportException(taskId, 0, {
       reason: 'resource-unavailable',
     });
-    helper.checkNextMessage('task-exception', m => {
-      assume(m.payload.status.runs[0].state).equals('exception');
-      assume(m.payload.status.runs[0].reasonResolved).equals('resource-unavailable');
-    });
+    helper.assertPulseMessage('task-exception', m => (
+      m.payload.status.runs[0].state === 'exception' &&
+      m.payload.status.runs[0].reasonResolved === 'resource-unavailable'));
+    helper.clearPulseMessages();
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 0, {
       reason: 'resource-unavailable',
     });
-    helper.checkNextMessage('task-exception');
+    helper.assertPulseMessage('task-exception', m => (
+      m.payload.status.runs[0].state === 'exception' &&
+      m.payload.status.runs[0].reasonResolved === 'resource-unavailable'));
+    helper.clearPulseMessages();
 
     debug('### Check status of task');
     const {status: s2} = await helper.queue.status(taskId);
@@ -214,7 +223,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     await queue.reportException(taskId, 0, {
       reason: 'resource-unavailable',
     });
-    helper.checkNextMessage('task-exception');
+    helper.assertPulseMessage('task-exception', m => (
+      m.payload.status.runs[0].state === 'exception' &&
+      m.payload.status.runs[0].reasonResolved === 'resource-unavailable'));
+    helper.clearPulseMessages();
   });
 
   test('reportException (internal-error) is idempotent', async () => {
@@ -238,16 +250,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     await helper.queue.reportException(taskId, 0, {
       reason: 'internal-error',
     });
-    helper.checkNextMessage('task-exception', m => {
-      assume(m.payload.status.runs[0].state).equals('exception');
-      assume(m.payload.status.runs[0].reasonResolved).equals('internal-error');
-    });
+    helper.assertPulseMessage('task-exception', m => (
+      m.payload.status.runs[0].state === 'exception' &&
+      m.payload.status.runs[0].reasonResolved === 'internal-error'));
+    helper.clearPulseMessages();
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 0, {
       reason: 'internal-error',
     });
-    helper.checkNextMessage('task-exception');
+    helper.assertPulseMessage('task-exception', m => (
+      m.payload.status.runs[0].state === 'exception' &&
+      m.payload.status.runs[0].reasonResolved === 'internal-error'));
+    helper.clearPulseMessages();
 
     debug('### Check status of task');
     const {status: s2} = await helper.queue.status(taskId);
@@ -259,7 +274,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     await queue.reportException(taskId, 0, {
       reason: 'internal-error',
     });
-    helper.checkNextMessage('task-exception');
+    helper.assertPulseMessage('task-exception', m => (
+      m.payload.status.runs[0].state === 'exception' &&
+      m.payload.status.runs[0].reasonResolved === 'internal-error'));
+    helper.clearPulseMessages();
   });
 
   test('reportException (superseded) is idempotent', async () => {
@@ -283,16 +301,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     await helper.queue.reportException(taskId, 0, {
       reason: 'superseded',
     });
-    helper.checkNextMessage('task-exception', m => {
-      assume(m.payload.status.runs[0].state).equals('exception');
-      assume(m.payload.status.runs[0].reasonResolved).equals('superseded');
-    });
+    helper.assertPulseMessage('task-exception', m => (
+      m.payload.status.runs[0].state === 'exception' &&
+      m.payload.status.runs[0].reasonResolved === 'superseded'));
+    helper.clearPulseMessages();
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 0, {
       reason: 'superseded',
     });
-    helper.checkNextMessage('task-exception');
+    helper.assertPulseMessage('task-exception', m => (
+      m.payload.status.runs[0].state === 'exception' &&
+      m.payload.status.runs[0].reasonResolved === 'superseded'));
+    helper.clearPulseMessages();
 
     debug('### Check status of task');
     const {status: s2} = await helper.queue.status(taskId);
@@ -304,7 +325,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     await queue.reportException(taskId, 0, {
       reason: 'superseded',
     });
-    helper.checkNextMessage('task-exception');
+    helper.assertPulseMessage('task-exception', m => (
+      m.payload.status.runs[0].state === 'exception' &&
+      m.payload.status.runs[0].reasonResolved === 'superseded'));
+    helper.clearPulseMessages();
   });
 
   test('reportException can\'t overwrite reason', async () => {
@@ -352,8 +376,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
-    helper.checkNextMessage('task-defined');
-    helper.checkNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined');
+    helper.assertPulseMessage('task-pending');
 
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
@@ -361,7 +385,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    helper.checkNextMessage('task-running');
+    helper.assertPulseMessage('task-running');
+    helper.clearPulseMessages();
 
     debug('### Reporting task exception (worker-shutdown)');
     helper.scopes(
@@ -378,33 +403,35 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     assume(r1.status.runs[1].reasonCreated).equals('retry');
 
     // no exception message, just right back to pending
-    helper.checkNoNextMessage('task-exception');
-    helper.checkNextMessage('task-pending', m => {
-      assume(m.payload.status).deep.equals(r1.status);
-      assume(m.payload.runId).equals(1);
-    });
+    helper.assertNoPulseMessage('task-exception');
+    helper.assertPulseMessage('task-pending', m => (
+      _.isEqual(m.payload.status, r1.status) &&
+      m.payload.runId === 1));
+    helper.clearPulseMessages();
 
     await helper.queue.reportException(taskId, 0, {
       reason: 'worker-shutdown',
     });
-    helper.checkNoNextMessage('task-exception');
-    helper.checkNextMessage('task-pending');
+    helper.assertNoPulseMessage('task-exception');
+    helper.assertPulseMessage('task-pending');
+    helper.clearPulseMessages();
 
     helper.scopes();
     await helper.queue.claimTask(taskId, 1, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    helper.checkNextMessage('task-running');
+    helper.assertPulseMessage('task-running');
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 1, {
       reason: 'worker-shutdown',
     });
-    helper.checkNextMessage('task-exception', m => {
-      assume(m.payload.status.runs[1].state).equals('exception');
-      assume(m.payload.status.runs.length).equals(2);
-    });
+    helper.assertPulseMessage('task-exception', m => (
+      m.payload.status.runs[0].state === 'exception' &&
+      m.payload.status.runs[0].reasonResolved === 'worker-shutdown' &&
+      m.payload.status.runs[1].state === 'exception' &&
+      m.payload.status.runs[1].reasonResolved === 'worker-shutdown'));
   });
 
   test('reportComplete with bad scopes', async () => {
@@ -438,8 +465,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
-    helper.checkNextMessage('task-defined');
-    helper.checkNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined');
+    helper.assertPulseMessage('task-pending');
 
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
@@ -447,7 +474,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    helper.checkNextMessage('task-running');
+    helper.assertPulseMessage('task-running');
+    helper.clearPulseMessages();
 
     debug('### Reporting task exception (intermittent-task)');
     helper.scopes(
@@ -463,28 +491,27 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     await helper.queue.reportException(taskId, 0, {
       reason: 'intermittent-task',
     });
-    helper.checkNextMessage('task-pending', m => {
-      assume(m.payload.status).deep.equals(r1.status);
-      assume(m.payload.runId).equals(1);
-      assume(m.payload.status.runs[0].reasonResolved).equals('intermittent-task');
-      assume(m.payload.status.runs[1].reasonCreated).equals('task-retry');
-    });
+    helper.assertPulseMessage('task-pending', m => (
+      _.isEqual(m.payload.status, r1.status) &&
+      m.payload.runId === 1 &&
+      m.payload.status.runs[0].reasonResolved === 'intermittent-task' &&
+      m.payload.status.runs[1].reasonCreated === 'task-retry'));
+    helper.clearPulseMessages();
 
     helper.scopes();
     await helper.queue.claimTask(taskId, 1, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    helper.checkNextMessage('task-running');
+    helper.assertPulseMessage('task-running');
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 1, {
       reason: 'intermittent-task',
     });
 
-    helper.checkNextMessage('task-exception', m => {
-      assume(m.payload.status.runs[1].state).equals('exception');
-      assume(m.payload.status.runs.length).equals(2);
-    });
+    helper.assertPulseMessage('task-exception', m => (
+      m.payload.status.runs[1].state === 'exception' &&
+      m.payload.status.runs.length === 2));
   });
 });

@@ -880,7 +880,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     });
 
     debug('### Wait for artifact created message');
-    helper.checkNextMessage('artifact-created');
+    helper.assertPulseMessage('artifact-created');
 
     debug('### Downloading artifact');
     const url = helper.queue.buildUrl(

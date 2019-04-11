@@ -1,16 +1,15 @@
-const helper = require('./helper');
 const assert = require('assert');
+const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
-  helper.withFakePublisher(mock, skipping);
+  helper.withPulse(mock, skipping);
   helper.withFakeGithub(mock, skipping);
   helper.withServer(mock, skipping);
 
   let github = null;
-  let publisher = null;
 
   setup(async function() {
     await helper.load('cfg');
@@ -19,8 +18,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     github = await helper.load('github');
     github.inst(5808).setUser({id: 14795478, email: 'someuser@github.com', username: 'TaskclusterRobot'});
     github.inst(5808).setUser({id: 18102552, email: 'anotheruser@github.com', username: 'owlishDeveloper'});
-
-    publisher = await helper.load('publisher');
   });
 
   /**
@@ -38,40 +35,29 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
    **/
   function pulseTest(params) {
     test(params.testName, async function() {
-      let published = [];
-      let fakePublish = event => {
-        published.push(event);
-      };
-      publisher.on('message', fakePublish);
-
       // Trigger a pull-request message
-      try {
-        let res = await helper.jsonHttpRequest('./test/data/webhooks/' + params.jsonFile);
-        res.connection.destroy();
-      } finally {
-        publisher.removeListener('message', fakePublish);
-      }
+      let res = await helper.jsonHttpRequest('./test/data/webhooks/' + params.jsonFile);
+      res.connection.destroy();
 
-      let expected = [{
-        exchange: `exchange/taskcluster-fake/v1/${params.listenFor}`,
-        routingKey: params.routingKey,
-        payload: {
-          organization: 'TaskclusterRobot',
-          details: params.details,
-          installationId: 5808,
-          repository: 'hooks-testing',
-          eventId: params.eventId,
-          version: 1,
-          body: require('./data/webhooks/' + params.jsonFile).body,
-          tasks_for: params.tasks_for,
-          branch: params.branch,
-        },
-        CCs: [],
-      }];
-      if (params.action) {
-        expected[0].payload.action = params.action;
-      }
-      assert.deepEqual(published, expected);
+      helper.assertPulseMessage(params.listenFor, m => {
+        if (m.routingKey === params.routingKey && m.payload.eventId === params.eventId) {
+          // use assert.deepEqual so we get a decent diff of this large object on error
+          assert.deepEqual(m.payload, {
+            organization: 'TaskclusterRobot',
+            details: params.details,
+            installationId: 5808,
+            repository: 'hooks-testing',
+            eventId: params.eventId,
+            version: 1,
+            body: require('./data/webhooks/' + params.jsonFile).body,
+            tasks_for: params.tasks_for,
+            branch: params.branch,
+            ...params.action ? {action: params.action} : {},
+          });
+          return true;
+        }
+        return false;
+      });
     });
   }
 

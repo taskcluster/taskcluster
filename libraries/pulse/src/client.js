@@ -236,41 +236,6 @@ class Client extends events.EventEmitter {
 
 exports.Client = Client;
 
-/**
- * A fake client is basically just a semaphore for users like PulseConsumer to
- * invoke their own fakery, but has a few fake methods of its own that do nothing.
- */
-class FakeClient {
-  constructor() {
-    this.isFakeClient = true;
-    this.debug = debug('taskcluster-lib-pulse.conn-fake');
-  }
-
-  fullObjectName(kind, name) {
-    return `${kind}/namespace/${name}`;
-  }
-
-  async stop() { }
-  async recycle() {}
-  get activeConnection() {
-    return undefined;
-  }
-
-  async onConnected() {
-    this.debug('FakeClient.onConnected will never call its callback');
-  }
-
-  async withConnection() {
-    this.debug('FakeClient.withConnection returns immediately without calling its callback');
-  }
-
-  async withChannel() {
-    this.debug('FakeClient.withChannel returns immediately without calling its callback');
-  }
-}
-
-exports.FakeClient = FakeClient;
-
 let nextConnectionId = 1;
 
 /**

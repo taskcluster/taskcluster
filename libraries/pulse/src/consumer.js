@@ -275,45 +275,6 @@ class PulseConsumer {
   }
 }
 
-class FakePulseConsumer {
-  constructor({client, bindings, queueName, prefetch, ephemeral, onConnected, handleMessage, ...queueOptions}) {
-    assert(handleMessage, 'Must provide a message handler function');
-
-    if (ephemeral) {
-      assert(!queueName, 'Must not pass a queueName for ephemeral consumers');
-      assert(onConnected, 'Must pass onConnected for ephemeral consumers');
-    } else {
-      assert(queueName, 'Must pass a queueName');
-    }
-    this.ephemeral = ephemeral;
-    this.handleMessage = handleMessage;
-    this.onConnected = onConnected;
-    this.debug = debug('FakePulseConsumer');
-  }
-
-  async stop() {
-    this.debug('stopping');
-    // do nothing
-  }
-
-  /**
-   * Simulate a connection.  Use this only with ephemeral consumers
-   */
-  async connected() {
-    assert(this.ephemeral, 'not an ephemeral consumer');
-    await this.onConnected();
-  }
-
-  /**
-   * Inject a fake message.  This calls the supplied handleMessage
-   * function directly.
-   */
-  async fakeMessage(msg) {
-    this.debug(`injecting fake message ${JSON.stringify(msg)}`);
-    await this.handleMessage(msg);
-  }
-}
-
 const consume = async (options, handleMessage, onConnected) => {
   if (handleMessage) {
     options.handleMessage = handleMessage;
@@ -322,9 +283,7 @@ const consume = async (options, handleMessage, onConnected) => {
     options.onConnected = onConnected;
   }
   if (options.client.isFakeClient) {
-    const pq = new FakePulseConsumer(options);
-    options.client.pulseConsumer = pq;
-    return pq;
+    return options.client.makeFakeConsumer(options);
   }
 
   const pq = new PulseConsumer(options);

@@ -4,8 +4,7 @@ const Handler = require('../src/handler');
 const load = require('../src/main');
 const libUrls = require('taskcluster-lib-urls');
 const MonitorManager = require('taskcluster-lib-monitor');
-const {stickyLoader} = require('taskcluster-lib-testing');
-const {FakeClient} = require('taskcluster-lib-pulse');
+const {stickyLoader, withPulse} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
 
@@ -31,6 +30,10 @@ exports.withLoader = () => {
   });
 };
 
+exports.withPulse = (mock, skipping) => {
+  withPulse({helper: exports, skipping, namespace: 'taskcluster-hooks'});
+};
+
 /**
  * Set up a Handler instance at helper.handler.  Call this after
  * withLoader.
@@ -50,7 +53,7 @@ exports.withHandler = () => {
   setup(async function() {
     const cfg = await exports.load('cfg');
     const validator = await exports.load('validator');
-    const pulseClient = new FakeClient();
+    const pulseClient = await exports.load('pulseClient');
 
     exports.monitorManager = new MonitorManager({
       serviceName: 'foo',

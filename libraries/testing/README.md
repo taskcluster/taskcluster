@@ -313,6 +313,39 @@ This function assumes the following config values:
 
 And assumes that the `exports` argument has a `load` function corresponding to a sticky loader.
 
+withPulse
+---------
+
+This function helps test applications that publish pulse messages.
+It is typically set up in `test/helper.js` like this:
+
+```js
+const {withPulse} = require('taskcluster-lib-testing');
+exports.withPulse = (mock, skipping) => {
+  withPulse({helper, skipping, namespace: 'taskcluster-someservice'});
+};
+```
+
+It assumes that `helper.loader` is set up as a sticky loader, and that there is a loader component named `pulseClient`.
+It replaces this client with a fake version, for which `libPulse.consume()` and `exchanges.publisher()` will produce fake consumers and publishers, respectively.
+The fake client can be identified by having a truthy `isFakeClient` property.
+
+For fake publishers, it offers the following:
+
+ * `assertPulseMessage(exchange, check)` - assert that a matching message has been sent to pulse.
+   The optional `exchange` is a suffix of the expected exchange (just the portion after `/v1/`); all messages will match if omitted.
+   The optional `check` function is called with each message on that exchange and should return true for matching messages.
+ * `assertNoPulseMessage(exchange, check)` - the opposite of `assertPulseMessage`
+ * `clearPulseMessages` - clear the accumulated pulse messages.
+   This is useful when you expect duplicte messages: asert that the first one was sent, then clear, then assert that the second was sent.
+
+Messages are reset before each test case.
+
+To simulate receipt of a pulse message by a consumer, call `await helper.fakePulseMessage({exchange, routingKey, routes, payload})`.
+The message will be routed to consumers with matching bindings.
+
+A consumer for which bindings are changed at runtime, using amqplib functions `bindQueue` and `unbindQueue`, can be faked by calling `consumer.setFakeBindings(bindings)`.
+
 Time
 ----
 

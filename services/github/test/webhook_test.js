@@ -5,6 +5,7 @@ const testing = require('taskcluster-lib-testing');
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withFakeGithub(mock, skipping);
+  helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
 
   let github = null;

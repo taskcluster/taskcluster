@@ -1,4 +1,4 @@
-const {FakeClient, Client, Exchanges, connectionStringCredentials} = require('../src');
+const {Client, Exchanges, connectionStringCredentials} = require('../src');
 const path = require('path');
 const amqplib = require('amqplib');
 const assume = require('assume');
@@ -308,43 +308,6 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       await client.stop();
       await chan.close();
       await conn.close();
-    });
-  });
-
-  suite('FakePulsePublisher', function() {
-    let client, exchanges, schemaset, publisher;
-
-    suiteSetup(async function() {
-      client = new FakeClient();
-      // this won't be necessary when namespace is a proper argument to the
-      // FakeClient class..
-      client.namespace = exchangeOptions.projectName;
-
-      exchanges = new Exchanges(exchangeOptions);
-      exchanges.declare({...declarationNoConstant});
-
-      schemaset = new SchemaSet({
-        serviceName: exchangeOptions.serviceName,
-        folder: path.join(__dirname, 'schemas'),
-      });
-
-      publisher = await exchanges.publisher({ // eslint-disable-line require-atomic-updates
-        rootUrl: libUrls.testRootUrl(),
-        schemaset,
-        client,
-      });
-    });
-
-    test('fake publishing', async function() {
-      const messages = [];
-      publisher.on('message', msg => messages.push(msg));
-      await publisher.eggHatched({eggId: 'badEgg'});
-      assume(messages).to.deeply.equal([{
-        exchange: 'exchange/taskcluster-lib-pulse/v2/egg-hatched',
-        routingKey: 'badEgg',
-        payload: {eggId: 'badEgg'},
-        CCs: [],
-      }]);
     });
   });
 });

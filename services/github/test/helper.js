@@ -7,17 +7,13 @@ const load = require('../src/main');
 const fakeGithubAuth = require('./github-auth');
 const data = require('../src/data');
 const libUrls = require('taskcluster-lib-urls');
-const {fakeauth, stickyLoader, Secrets, withEntity} = require('taskcluster-lib-testing');
-const {FakeClient} = require('taskcluster-lib-pulse');
+const {fakeauth, stickyLoader, Secrets, withEntity, withPulse} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
 
 suiteSetup(async function() {
   exports.load.inject('profile', 'test');
   exports.load.inject('process', 'test');
-  let fakePulseClient = new FakeClient();
-  fakePulseClient.namespace = 'taskcluster-fake';
-  exports.load.inject('pulseClient', fakePulseClient);
 });
 
 // set up the testing secrets
@@ -58,29 +54,6 @@ exports.jsonHttpRequest = function(jsonFile, options) {
 };
 
 /**
- * Set up a fake publisher.  Call this before withServer to ensure the server
- * uses the same publisher.
- */
-exports.withFakePublisher = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-    exports.load.save();
-
-    exports.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
-    await exports.load('publisher');
-  });
-
-  suiteTeardown(function() {
-    if (skipping()) {
-      return;
-    }
-    exports.load.restore();
-  });
-};
-
-/**
  * Set helper.<name> for each entity class
  */
 exports.withEntities = (mock, skipping) => {
@@ -88,6 +61,10 @@ exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'OwnersDirectory', data.OwnersDirectory, {orderedTests: true});
   withEntity(mock, skipping, exports, 'CheckRuns', data.CheckRuns, {orderedTests: true});
   withEntity(mock, skipping, exports, 'ChecksToTasks', data.ChecksToTasks, {orderedTests: true});
+};
+
+exports.withPulse = (mock, skipping) => {
+  withPulse({helper: exports, skipping, namespace: 'taskcluster-github'});
 };
 
 /**

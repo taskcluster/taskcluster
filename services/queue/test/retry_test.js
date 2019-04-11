@@ -36,8 +36,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
-    helper.checkNextMessage('task-defined');
-    helper.checkNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined');
+    helper.assertPulseMessage('task-pending');
 
     debug('### Claim task (runId: 0)');
     const r2 = await helper.queue.claimTask(taskId, 0, {
@@ -45,21 +45,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       workerId: 'my-worker-extended-extended',
     });
     debug(`claimed until ${r2.takenUntil}, ${new Date(r2.takenUntil) - new Date()}ms from now`);
-    helper.checkNextMessage('task-running');
+    helper.assertPulseMessage('task-running');
 
     debug('### Start claim-resolver');
     await helper.startPollingService('claim-resolver');
 
     debug('### Wait for task-pending message after reaping');
     await testing.poll(async () => {
-      helper.checkNextMessage('task-pending', m => {
-        assume(m.payload.status.runs.length).equals(2);
-        assume(m.payload.status.runs[0].state).equals('exception');
-        assume(m.payload.status.runs[0].reasonResolved).equals('claim-expired');
-      });
+      helper.assertPulseMessage('task-pending', m => (
+        m.payload.status.runs.length === 2 &&
+        m.payload.status.runs[0].state === 'exception' &&
+        m.payload.status.runs[0].reasonResolved === 'claim-expired'));
     }, Infinity);
     // there should be no task-exception message in this case
-    helper.checkNoNextMessage('task-exception');
+    helper.assertNoPulseMessage('task-exception');
+    helper.clearPulseMessages();
 
     debug('### Stop claimResolver');
     await helper.stopPollingService();
@@ -81,15 +81,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     debug('### Wait for task-exception message (again)');
     await testing.poll(async () => {
-      helper.checkNextMessage('task-exception', m => {
-        assume(m.payload.status.runs.length).equals(2);
-        assume(m.payload.status.runs[0].state).equals('exception');
-        assume(m.payload.status.runs[0].reasonResolved).equals('claim-expired');
-        assume(m.payload.status.runs[1].state).equals('exception');
-        assume(m.payload.status.runs[1].reasonResolved).equals('claim-expired');
-      });
+      helper.assertPulseMessage('task-exception', m => (
+        m.payload.status.runs.length === 2 &&
+        m.payload.status.runs[0].state === 'exception' &&
+        m.payload.status.runs[0].reasonResolved === 'claim-expired' &&
+        m.payload.status.runs[1].state === 'exception' &&
+        m.payload.status.runs[1].reasonResolved === 'claim-expired'));
     }, Infinity);
-    helper.checkNoNextMessage('task-exception');
 
     debug('### Stop claimResolver (again)');
     await helper.stopPollingService();

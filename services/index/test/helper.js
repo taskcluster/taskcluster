@@ -4,8 +4,7 @@ const builder = require('../src/api');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
 const libUrls = require('taskcluster-lib-urls');
-const {fakeauth, stickyLoader, Secrets, withEntity} = require('taskcluster-lib-testing');
-const {FakeClient} = require('taskcluster-lib-pulse');
+const {fakeauth, stickyLoader, Secrets, withEntity, withPulse} = require('taskcluster-lib-testing');
 
 const helper = module.exports;
 
@@ -14,7 +13,6 @@ exports.load = stickyLoader(load);
 suiteSetup(async function() {
   exports.load.inject('profile', 'test');
   exports.load.inject('process', 'test');
-  exports.load.inject('pulseClient', new FakeClient());
 });
 
 // set up the testing secrets
@@ -41,19 +39,8 @@ exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'Namespace', data.Namespace);
 };
 
-/**
- * Create the handlers component with a fake pulse listener, and add that
- * listener at helper.listener.
- */
 exports.withPulse = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    const handlers = await helper.load('handlers');
-    helper.pq = handlers.pq;
-  });
+  withPulse({helper: exports, skipping, namespace: 'taskcluster-index'});
 };
 
 /**

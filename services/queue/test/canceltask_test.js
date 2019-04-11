@@ -1,5 +1,5 @@
+const _ = require('lodash');
 const debug = require('debug')('test:cancel');
-const assert = require('assert');
 const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
 const assume = require('assume');
@@ -44,7 +44,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     debug('### Define task');
     const r1 = await helper.queue.defineTask(taskId, taskDef);
     assume(r1.status.state).equals('unscheduled');
-    helper.checkNextMessage('task-defined', message => assert(message.payload.status.taskId === taskId));
+    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskId);
 
     debug('### Cancel Task');
     const r2 = await helper.queue.cancelTask(taskId);
@@ -54,16 +54,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     assume(r2.status.runs[0].reasonCreated).equals('exception');
     assume(r2.status.runs[0].reasonResolved).equals('canceled');
 
-    helper.checkNextMessage('task-exception',
-      message => assume(message.payload.status).deep.equals(r2.status));
+    helper.assertPulseMessage('task-exception', m => _.isEqual(m.payload.status, r2.status));
+    helper.clearPulseMessages();
 
     debug('### Cancel Task (again)');
     const r3 = await helper.queue.cancelTask(taskId);
     assume(r3.status).deep.equals(r2.status);
     // exception message is sent again..
-    helper.checkNextMessage('task-exception',
-      message => assume(message.payload.status).deep.equals(r2.status));
-    assume(helper.messages).to.deeply.equal([]);
+    helper.assertPulseMessage('task-exception', m => _.isEqual(m.payload.status, r2.status));
   });
 
   test('createTask, cancelTask (idempotent)', async () => {
@@ -74,8 +72,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     assume(r1.status.state).equals('pending');
     assume(r1.status.runs.length).equals(1);
     assume(r1.status.runs[0].state).equals('pending');
-    helper.checkNextMessage('task-defined');
-    helper.checkNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined');
+    helper.assertPulseMessage('task-pending');
 
     debug('### Cancel Task');
     const r2 = await helper.queue.cancelTask(taskId);
@@ -84,15 +82,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     assume(r2.status.runs[0].state).equals('exception');
     assume(r2.status.runs[0].reasonCreated).equals('scheduled');
     assume(r2.status.runs[0].reasonResolved).equals('canceled');
-    helper.checkNextMessage('task-exception',
-      message => assume(message.payload.status).deep.equals(r2.status));
+    helper.assertPulseMessage('task-exception', m => _.isEqual(m.payload.status, r2.status));
+    helper.clearPulseMessages();
 
     debug('### Cancel Task (again)');
     const r3 = await helper.queue.cancelTask(taskId);
     assume(r3.status).deep.equals(r2.status);
-    helper.checkNextMessage('task-exception',
-      message => assume(message.payload.status).deep.equals(r2.status));
-    assume(helper.messages).to.deeply.equal([]);
+    helper.assertPulseMessage('task-exception', m => _.isEqual(m.payload.status, r2.status));
   });
 
   test('createTask, claimTask, cancelTask (idempotent)', async () => {
@@ -103,8 +99,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     assume(r1.status.state).equals('pending');
     assume(r1.status.runs.length).equals(1);
     assume(r1.status.runs[0].state).equals('pending');
-    helper.checkNextMessage('task-defined');
-    helper.checkNextMessage('task-pending');
+    helper.assertPulseMessage('task-defined');
+    helper.assertPulseMessage('task-pending');
 
     debug('### Claim task');
     const r2 = await helper.queue.claimTask(taskId, 0, {
@@ -112,7 +108,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       workerId: 'my-worker-extended-extended',
     });
     assume(r2.status.state).equals('running');
-    helper.checkNextMessage('task-running');
+    helper.assertPulseMessage('task-running');
 
     debug('### Cancel Task');
     const r3 = await helper.queue.cancelTask(taskId);
@@ -121,14 +117,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     assume(r3.status.runs[0].state).equals('exception');
     assume(r3.status.runs[0].reasonCreated).equals('scheduled');
     assume(r3.status.runs[0].reasonResolved).equals('canceled');
-    helper.checkNextMessage('task-exception',
-      message => assume(message.payload.status).deep.equals(r3.status));
+    helper.assertPulseMessage('task-exception', m => _.isEqual(m.payload.status, r3.status));
+    helper.clearPulseMessages();
 
     debug('### Cancel Task (again)');
     const r4 = await helper.queue.cancelTask(taskId);
     assume(r4.status).deep.equals(r3.status);
-    helper.checkNextMessage('task-exception',
-      message => assume(message.payload.status).deep.equals(r3.status));
-    assume(helper.messages).to.deeply.equal([]);
+    helper.assertPulseMessage('task-exception', m => _.isEqual(m.payload.status, r3.status));
   });
 });
