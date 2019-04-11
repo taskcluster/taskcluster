@@ -43,6 +43,10 @@ GRAPHQL_SUBSCRIPTION_ENDPOINT=wss://mydomain.com/subscription
 GRAPHQL_ENDPOINT=https://mydomain.com/graphql
 ```
 
+### Deployments
+
+If you are only looking to deploy the docs site, configure `DOCS_ONLY` to be `true`.
+
 ### Auth0 Config
 
 **Note:** At the preset, this web application relies on an Auth0 client for

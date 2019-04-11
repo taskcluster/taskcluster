@@ -226,8 +226,10 @@ export default class Dashboard extends Component {
           <Typography
             onMouseEnter={this.handleTitleToggle}
             onMouseLeave={this.handleTitleToggle}
-            component={Link}
-            to="/"
+            {...!process.env.DOCS_ONLY && {
+              component: Link,
+              to: '/',
+            }}
             variant="h6"
             noWrap
             className={classes.title}>

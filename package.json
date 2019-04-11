@@ -169,7 +169,7 @@
     "build": "node infrastructure/builder/src/main.js build",
     "generate": "node infrastructure/builder/src/main.js generate",
     "heroku-prebuild": "echo $SOURCE_VERSION > .git-version",
-    "heroku-postbuild": "echo Skip build on Heroku"
+    "heroku-postbuild": "if [ $DOCS_ONLY ]; then cd ui && yarn install --frozen-lockfile && yarn build; fi"
   },
   "renovate": {
     "extends": [

@@ -69,6 +69,7 @@ module.exports = {
         GRAPHQL_ENDPOINT: 'http://localhost:5080/graphql',
         GA_TRACKING_ID: '',
         SENTRY_DSN: '',
+        DOCS_ONLY: false,
       },
     }],
     (neutrino) => {
