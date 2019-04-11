@@ -6,12 +6,11 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"strconv"
 	"time"
 
+	"github.com/taskcluster/generic-worker/expose"
 	"github.com/taskcluster/generic-worker/livelog"
 	"github.com/taskcluster/generic-worker/process"
-	"github.com/taskcluster/stateless-dns-go/hostname"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
@@ -41,10 +40,8 @@ func (feature *LiveLogFeature) IsEnabled(task *TaskRun) bool {
 }
 
 type LiveLogTask struct {
-	// The canonical name of the log file as reported to the Queue, which
-	// is typically the relative location of the log file to the user home
-	// directory
 	liveLog        *livelog.LiveLog
+	exposure       expose.Exposure
 	task           *TaskRun
 	backingLogFile *os.File
 }
@@ -67,7 +64,7 @@ func (l *LiveLogTask) RequiredScopes() scopes.Required {
 }
 
 func (l *LiveLogTask) Start() *CommandExecutionError {
-	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogCertificate, config.LiveLogKey, config.LiveLogPUTPort, config.LiveLogGETPort)
+	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogPUTPort, config.LiveLogGETPort)
 	if err != nil {
 		log.Printf("WARNING: could not create livelog: %s", err)
 		// then run without livelog, is only a "best effort" service
@@ -79,9 +76,9 @@ func (l *LiveLogTask) Start() *CommandExecutionError {
 		return updateErr
 	}
 
-	err = l.uploadLiveLog()
+	err = l.uploadLiveLogArtifact()
 	if err != nil {
-		log.Printf("WARNING: could not upload livelog: %s", err)
+		log.Printf("WARNING: could not upload livelog artifact: %s", err)
 	}
 	return nil
 }
@@ -143,6 +140,13 @@ func (l *LiveLogTask) Stop(err *ExecutionErrors) {
 			URL: logURL,
 		},
 	))
+
+	if l.exposure != nil {
+		closeErr := l.exposure.Close()
+		if closeErr != nil {
+			log.Printf("WARNING: could not terminate livelog exposure: %s", closeErr)
+		}
+	}
 }
 
 func (l *LiveLogTask) reinstateBackingLog() {
@@ -153,30 +157,35 @@ func (l *LiveLogTask) reinstateBackingLog() {
 	}
 }
 
-func (l *LiveLogTask) uploadLiveLog() error {
-	// add an extra 15 minutes, to adequately cover client/server clock drift or task initialisation delays
-	maxRunTimeDeadline := time.Now().Add(time.Duration(l.task.Payload.MaxRunTime+900) * time.Second)
-	// deduce stateless DNS name to use
-	statelessHostname := hostname.New(config.PublicIP, config.Subdomain, maxRunTimeDeadline, config.LiveLogSecret)
-	getURL, err := url.Parse(l.liveLog.GetURL)
+func (l *LiveLogTask) uploadLiveLogArtifact() error {
+	var err error
+	l.exposure, err = exposer.ExposeHTTP(config.LiveLogGETPort)
 	if err != nil {
 		return err
 	}
-	if l.liveLog.SSLCert != "" && l.liveLog.SSLKey != "" {
-		getURL.Scheme = "https"
-	} else {
-		getURL.Scheme = "http"
+
+	// combine the path from the livelog URL with the expose URL
+	logURL, err := url.Parse(l.liveLog.GetURL)
+	if err != nil {
+		return err
 	}
-	getURL.Host = statelessHostname + ":" + strconv.Itoa(int(l.liveLog.GETPort))
+	exposeURL := l.exposure.GetURL()
+	if exposeURL.Path == "/" {
+		exposeURL.Path = logURL.Path
+	} else {
+		exposeURL.Path = exposeURL.Path + logURL.Path
+	}
+
+	// add an extra 15 minutes, to adequately cover client/server clock drift or task initialisation delays
+	expires := time.Now().Add(time.Duration(l.task.Payload.MaxRunTime+900) * time.Second)
 	uploadErr := l.task.uploadArtifact(
 		&RedirectArtifact{
 			BaseArtifact: &BaseArtifact{
-				Name: livelogName,
-				// livelog expires when task must have completed
-				Expires:     tcclient.Time(maxRunTimeDeadline),
+				Name:        livelogName,
+				Expires:     tcclient.Time(expires),
 				ContentType: "text/plain; charset=utf-8",
 			},
-			URL: getURL.String(),
+			URL: exposeURL.String(),
 		},
 	)
 	if uploadErr != nil {
