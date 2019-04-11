@@ -83,7 +83,7 @@ exports.secrets = new Secrets({
     'project/taskcluster/testing/taskcluster-foo',
     'project/taskcluster/testing/taskcluster-foo/master-only',
   ],
-  // provide a stickyLoader instance for use in mockSuite
+  // (optional) provide a stickyLoader instance for use in mockSuite
   load,
   secrets: {
    pulse: [
@@ -105,6 +105,7 @@ exports.secrets = new Secrets({
 If a secret is defined in the loaded configuration, that value will be used even if the `env` key is also set.
 Secrets should not have any value set in `config.yml` (although `!env` is OK), or this class will not function properly.
 If the system you are testing does not use `taskcluster-lib-config`, simply do not specify the `cfg` properties to the constructor.
+You can also leave out `load` in this case.
 
 You can then call `await secrets.setup()`  to set up the secrets (reading from `cfg` if necessary).
 This *must* be called during Mocha's runtime, so either in a setup function or a test.

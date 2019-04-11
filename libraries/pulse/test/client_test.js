@@ -5,16 +5,15 @@ const assume = require('assume');
 const debugModule = require('debug');
 const MonitorManager = require('taskcluster-lib-monitor');
 const slugid = require('slugid');
-const testing = require('taskcluster-lib-testing');
+const helper = require('./helper');
+const {suiteName} = require('taskcluster-lib-testing');
 
-const PULSE_CONNECTION_STRING = process.env.PULSE_CONNECTION_STRING;
+helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
+  if (mock) {
+    return; // Only test with real creds
+  }
+  let connectionString;
 
-if (!PULSE_CONNECTION_STRING) {
-  console.log('WARNING: $PULSE_CONNECTION_STRING is not set; skipping tests that require an active server');
-  console.log('see README.md for details');
-}
-
-const connectionTests = connectionString => {
   // use a unique name for each test run, just to ensure nothing interferes
   const unique = new Date().getTime().toString();
   const exchangeName = `exchanges/test/${unique}`;
@@ -27,6 +26,7 @@ const connectionTests = connectionString => {
   let monitor;
 
   setup(async function() {
+    connectionString = helper.secrets.get('pulse').connectionString;
     monitorManager = new MonitorManager({
       serviceName: 'lib-pulse-test',
     });
@@ -307,17 +307,5 @@ const connectionTests = connectionString => {
     } finally {
       await client.stop();
     }
-  });
-};
-
-suite(testing.suiteName(), function() {
-  suite('with RabbitMQ', function() {
-    suiteSetup(function() {
-      if (!PULSE_CONNECTION_STRING) {
-        this.skip();
-      }
-    });
-
-    connectionTests(PULSE_CONNECTION_STRING);
   });
 });

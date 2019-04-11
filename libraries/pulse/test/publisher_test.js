@@ -6,11 +6,14 @@ const assert = require('assert');
 const MonitorManager = require('taskcluster-lib-monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const libUrls = require('taskcluster-lib-urls');
-const testing = require('taskcluster-lib-testing');
+const helper = require('./helper');
+const {suiteName, poll} = require('taskcluster-lib-testing');
 
-const PULSE_CONNECTION_STRING = process.env.PULSE_CONNECTION_STRING;
-
-suite(testing.suiteName(), function() {
+helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
+  if (mock) {
+    return; // Only test with real creds
+  }
+  let connectionString;
   const exchangeOptions = {
     serviceName: 'lib-pulse',
     projectName: 'taskcluster-lib-pulse',
@@ -59,6 +62,7 @@ suite(testing.suiteName(), function() {
   let monitor;
 
   setup(async function() {
+    connectionString = helper.secrets.get('pulse').connectionString;
     monitorManager = new MonitorManager({
       serviceName: 'lib-pulse-test',
     });
@@ -198,13 +202,9 @@ suite(testing.suiteName(), function() {
     let client, conn, chan, exchanges, schemaset, publisher, messages;
 
     suiteSetup(async function() {
-      if (!PULSE_CONNECTION_STRING) {
-        this.skip();
-        return;
-      }
 
       client = new Client({
-        credentials: connectionStringCredentials(PULSE_CONNECTION_STRING),
+        credentials: connectionStringCredentials(connectionString),
         retirementDelay: 50,
         minReconnectionInterval: 20,
         monitor,
@@ -230,7 +230,7 @@ suite(testing.suiteName(), function() {
 
       // otherwise, set up a queue to listen for messages, using amqplib
       // directly to avoid assuming the test subject works
-      conn = await amqplib.connect(PULSE_CONNECTION_STRING);
+      conn = await amqplib.connect(connectionString);
       chan = await conn.createChannel();
       const queueName = `queue/${client.namespace}/${unique}`;
       await chan.assertQueue(queueName, 'topic', {
@@ -264,7 +264,7 @@ suite(testing.suiteName(), function() {
     test('publish a message', async function() {
       await publisher.eggHatched({eggId: 'yolks-on-you'});
 
-      await testing.poll(async () => {
+      await poll(async () => {
         assert.equal(messages.length, 1);
         const got = messages[0];
         assert.equal(got.fields.routingKey, 'yolks-on-you');
@@ -280,7 +280,7 @@ suite(testing.suiteName(), function() {
       const eggIds = [...Array(10000).keys()].map(id => id.toString());
       await Promise.all(eggIds.map(eggId => publisher.eggHatched({eggId})));
 
-      await testing.poll(async () => {
+      await poll(async () => {
         const got = messages.map(msg => msg.fields.routingKey);
         assert.deepEqual(got.length, eggIds.length, 'got expected number of messages');
         assert.deepEqual(got.sort(), eggIds.sort(), 'got exactly the expected messages');
@@ -294,14 +294,14 @@ suite(testing.suiteName(), function() {
       client.connections[0].amqp.close(); // force closure..
       await Promise.all(['x', 'y', 'z'].map(eggId => publisher.eggHatched({eggId})));
 
-      await testing.poll(async () => {
+      await poll(async () => {
         const got = messages.map(msg => msg.fields.routingKey).sort();
         assert.deepEqual(got, ['a', 'b', 'c', 'i', 'j', 'k', 'l', 'm', 'x', 'y', 'z']);
       });
     });
 
     suiteTeardown(async function() {
-      if (!PULSE_CONNECTION_STRING) {
+      if (!connectionString) {
         return;
       }
 

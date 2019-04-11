@@ -36,7 +36,7 @@ class Secrets {
           // delay loading cfg until we know we need it (allowing this to work with
           // loaders that do not have a `cfg` component); note that this also ensures
           // later calls to load.cfg(..) will work.
-          if (!cfg) {
+          if (!cfg && this.load) {
             cfg = await this.load('cfg');
           }
           const value = _.get(cfg, secret.cfg);
@@ -124,30 +124,33 @@ class Secrets {
       suiteSetup(async function() {
         skipping = false;
         await that.setup();
-        that.load.save();
+        if (that.load) {
+          that.load.save();
 
-        // update the loader's cfg with `mock` default values
-        secretList.forEach(name => {
-          that.secrets[name].forEach(secret => {
-            if (secret.cfg && secret.mock) {
-              that.load.cfg(secret.cfg, secret.mock);
-            }
+          // update the loader's cfg with `mock` default values
+          secretList.forEach(name => {
+            that.secrets[name].forEach(secret => {
+              if (secret.cfg && secret.mock) {
+                that.load.cfg(secret.cfg, secret.mock);
+              }
+            });
           });
-        });
+        }
       });
 
       fn.call(this, true, () => skipping);
 
       suiteTeardown(function() {
-        that.load.restore();
+        if (that.load) {
+          that.load.restore();
+        }
       });
     });
 
     suite(`${title} (real)`, function() {
+      let saveOccured = false;
       suiteSetup(async function() {
         await that.setup();
-        that.load.save();
-
         const missing = secretList.filter(name => !that.have(name));
         if (missing.length) {
           if (process.env.NO_TEST_SKIP) {
@@ -159,21 +162,27 @@ class Secrets {
           skipping = false;
         }
 
-        // update the loader's cfg for every secret that has a cfg property; this will be restored
-        // by the `load.restore()` in suiteTeardown.
-        secretList.forEach(name => {
-          that.secrets[name].forEach(secret => {
-            if (secret.cfg) {
-              that.load.cfg(secret.cfg, secret.value);
-            }
+        if (that.load) {
+          that.load.save();
+          saveOccured = true;
+          // update the loader's cfg for every secret that has a cfg property; this will be restored
+          // by the `load.restore()` in suiteTeardown.
+          secretList.forEach(name => {
+            that.secrets[name].forEach(secret => {
+              if (secret.cfg) {
+                that.load.cfg(secret.cfg, secret.value);
+              }
+            });
           });
-        });
+        }
       });
 
       fn.call(this, false, () => skipping);
 
       suiteTeardown(function() {
-        that.load.restore();
+        if (saveOccured) {
+          that.load.restore();
+        }
       });
     });
   }
