@@ -126,7 +126,7 @@ class API {
       middleware.push(
         buildReportErrorMethod(),
         parseBody({inputLimit}),
-        remoteAuthentication({signatureValidator, entry}),
+        remoteAuthentication({signatureValidator, entry, monitor}),
         parameterValidator({context, entry}),
         queryValidator({context, entry}),
         validateSchemas({validator, absoluteSchemas, rootUrl, serviceName, entry}),

@@ -107,7 +107,7 @@ const ErrorReply = require('../error-reply');
  *
  * Reports 401 if authentication fails.
  */
-const remoteAuthentication = ({signatureValidator, entry}) => {
+const remoteAuthentication = ({signatureValidator, entry, monitor}) => {
   assert(signatureValidator instanceof Function,
     'Expected signatureValidator to be a function!');
 
