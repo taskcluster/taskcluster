@@ -176,6 +176,7 @@ func (l *LiveLogTask) uploadLiveLogArtifact() error {
 		exposeURL.Path = exposeURL.Path + logURL.Path
 	}
 
+	// add an extra 15 minutes, to adequately cover client/server clock drift or task initialisation delays
 	expires := time.Now().Add(time.Duration(l.task.Payload.MaxRunTime+900) * time.Second)
 	uploadErr := l.task.uploadArtifact(
 		&RedirectArtifact{

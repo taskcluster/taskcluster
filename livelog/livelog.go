@@ -21,10 +21,12 @@ import (
 // LiveLog provides access to a livelog process running on the OS. Use
 // New(liveLogExecutable string) to start a new livelog instance.
 type LiveLog struct {
-	secret    string
-	PUTPort   uint16
-	GETPort   uint16
-	GetURL    string
+	secret  string
+	PUTPort uint16
+	GETPort uint16
+	// The localhost URL where GET requests will get a streaming copy of the log
+	GetURL string
+	// The localhost URL where PUT requests can add to the accumulating log data
 	putURL    string
 	logReader io.ReadCloser
 	// The io.WriteCloser to write your log to
