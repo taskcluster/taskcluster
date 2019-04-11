@@ -16,7 +16,7 @@ sudo ln -sf /vagrant /worker
 sudo sh -c 'echo "DOCKER_OPTS=\"--storage-driver overlay2\"" > /etc/default/docker'
 
 # Keep in sync with deploy/packer/base/scripts/packages.sh.
-NODE_VERSION=v8.6.0
+NODE_VERSION=v8.15.0
 
 # Install node
 cd /usr/local/ && \

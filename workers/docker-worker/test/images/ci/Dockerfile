@@ -1,6 +1,6 @@
 FROM ubuntu:14.04
 
-ENV NODE_VERSION 8.6.0
+ENV NODE_VERSION 8.15.0
 ENV DOCKER_VERSION 17.12.0~ce-0~ubuntu
 
 RUN apt-get update && apt-get install -y apt-transport-https

@@ -9,7 +9,7 @@ tool to get it:
 You also need the
 [Taskcluster team passwordstore repo](https://github.com/taskcluster/passwordstore-garbage)
 proper configured. Talk to :dustin to know how to get access to it.
-The deploy scripts require node version >= 8.6.0.
+The deploy scripts require node version >= 8.15.0.
 With all these done, type:
 ```sh
 # ./deploy.sh
