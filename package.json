@@ -89,7 +89,7 @@
     "slugid": "^2.0.0",
     "statsum": "^0.6.0",
     "subscriptions-transport-ws": "^0.9.7",
-    "superagent": "^4.0.0",
+    "superagent": "^5.0.0",
     "tar-stream": "^2.0.0",
     "taskcluster-client": "link:clients/client",
     "taskcluster-lib-api": "link:libraries/api",
