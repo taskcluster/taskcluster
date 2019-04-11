@@ -338,7 +338,18 @@ func setupExposer() (err error) {
 			config.WorkerGroup,
 			config.WorkerID,
 			config.Auth())
-	} else if config.LiveLogSecret != "" {
+	} else if config.LiveLogSecret != "" && config.LiveLogCertificate != "" && config.LiveLogKey != "" {
+		var cert, key []byte
+		cert, err = ioutil.ReadFile(config.LiveLogCertificate)
+		if err != nil {
+			return
+		}
+
+		key, err = ioutil.ReadFile(config.LiveLogKey)
+		if err != nil {
+			return
+		}
+
 		exposer, err = expose.NewStatelessDNS(
 			config.PublicIP,
 			config.Subdomain,
@@ -347,8 +358,8 @@ func setupExposer() (err error) {
 			// will no longer work anyway (because the port number is dynamic), so this extra validity
 			// does not hurt anything.
 			24*time.Hour,
-			config.LiveLogCertificate,
-			config.LiveLogKey)
+			string(cert),
+			string(key))
 	} else {
 		exposer, err = expose.NewLocal(config.PublicIP)
 	}
