@@ -145,3 +145,17 @@ builder.declare({
   await this.WorkerType.remove({name}, true);
   return res.reply();
 });
+
+builder.declare({
+  method: 'get',
+  route: '/workertypes',
+  name: 'listWorkerTypes',
+  title: 'List All WorkerTypes',
+  stability: APIBuilder.stability.experimental,
+  description: [
+    'TODO',
+  ].join('\n'),
+}, async function(req, res) {
+  await this.WorkerType.scan();
+  return res.reply();
+});
