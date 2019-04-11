@@ -136,6 +136,55 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       assume(numbers).to.deeply.equal([0, 1, 2, 4, 5, 6, 7, 8, 9]);
     });
 
+    test('handle connection failure during consumption', async function() {
+      const client = new Client({
+        credentials: connectionStringCredentials(connectionString),
+        retirementDelay: 50,
+        minReconnectionInterval: 20,
+        monitor,
+        namespace: 'guest',
+      });
+      const got = [];
+
+      await new Promise(async (resolve, reject) => {
+        try {
+          await consume({
+            client,
+            queueName: unique,
+            bindings: [{
+              exchange: exchangeName,
+              routingKeyPattern: '#',
+              routingKeyReference,
+            }],
+            prefetch: 2,
+          }, async message => {
+            debug(`handling message ${message.payload.i}`);
+
+            // Foricibly kill the connection after the first message
+            if (got.length === 1) {
+              client.connections[0].amqp.close();
+            }
+
+            got.push(message);
+            if (got.length === 11) {
+              resolve();
+            }
+          });
+
+          // queue is bound by now, so it's safe to send messages
+          await publishMessages();
+        } catch (err) {
+          reject(err);
+        }
+      });
+
+      await client.stop();
+
+      const numbers = got.map(msg => msg.payload.i);
+      numbers.sort(); // with prefetch, order is not guaranteed
+      assume(numbers).to.deeply.equal([0, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    });
+
     test('consume messages ephemerally', async function() {
       const client = new Client({
         credentials: connectionStringCredentials(connectionString),

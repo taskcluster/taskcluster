@@ -93,7 +93,14 @@ class PulseConsumer {
 
     if (channel && consumerTag) {
       this.consumerTag = null;
-      await channel.cancel(consumerTag);
+      try {
+        await channel.cancel(consumerTag);
+      } catch (err) {
+        if (!(err instanceof amqplib.IllegalOperationError)) {
+          throw err;
+        }
+        // IllegalOperationError happens when we are draining a broken channel; ignore
+      }
     }
 
     // if messages are being processed, arrange to continue when they
@@ -106,7 +113,14 @@ class PulseConsumer {
 
     if (channel) {
       this.channel = null;
-      await channel.close();
+      try {
+        await channel.close();
+      } catch (err) {
+        if (!(err instanceof amqplib.IllegalOperationError)) {
+          throw err;
+        }
+        // IllegalOperationError happens when we are draining a broken channel; ignore
+      }
     }
   }
 
@@ -202,7 +216,13 @@ class PulseConsumer {
 
       // when retirement of this connection begins, stop consuming on this
       // channel and close the channel as soon sa all messages are handled.
-      conn.on('retiring', () => this._drainChannel());
+      conn.on('retiring', async () => {
+        try {
+          await this._drainChannel();
+        } catch (err) {
+          this.client.monitor.reportError(err);
+        }
+      });
     } catch (err) {
       this.client.monitor.reportError(err);
       conn.failed();
