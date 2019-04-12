@@ -121,14 +121,16 @@ for MANIFEST in *-b.json *-cu.json *-beta.json; do
 done
 
 DEPLOY="deploy: $(git status --porcelain | sed -n 's/^ M userdata\/Manifest\/\(.*\)\.json$/\1/p' | tr '\n' ' ')"
+THIS_REV="$(git -C "${THIS_SCRIPT_DIR}" rev-parse HEAD)"
+THIS_FILE="$(git -C "${THIS_SCRIPT_DIR}" ls-files --full-name "$(basename "${0}")")"
 git add .
 git commit -m "Testing generic-worker ${NEW_GW_VERSION} / taskcluster-proxy ${NEW_TP_VERSION} on *STAGING*
 
 This change does _not_ affect any production workers. Commit made with:
 
-    ${0} ${@}
+    ${0} $(echo ${@})
 
-See https://github.com/taskcluster/generic-worker/blob/$(git -C "${THIS_SCRIPT_DIR}" rev-parse HEAD)/$(git -C "${THIS_SCRIPT_DIR}" ls-files --full-name "$(basename "${0}")")" -m "${DEPLOY}"
+See https://github.com/taskcluster/generic-worker/blob/$THIS_REV/$THIS_FILE -m \"${DEPLOY}\""
 OCC_COMMIT="$(git rev-parse HEAD)"
 git push
 
