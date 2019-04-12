@@ -40,9 +40,6 @@ const updateTaskGroupIdHistory = id => {
   db.taskGroupIdsHistory.put({ taskGroupId: id });
 };
 
-let previousCursor;
-let tasks;
-
 @hot(module)
 @withApollo
 @graphql(taskGroupQuery, {
@@ -95,7 +92,7 @@ let tasks;
 export default class TaskGroup extends Component {
   static getDerivedStateFromProps(props, state) {
     const { taskGroupId } = props.match.params;
-    const { taskActions, taskGroup, subscribeToMore } = props.data;
+    const { taskActions, taskGroup } = props.data;
     const groupActions = [];
     const actionInputs = state.actionInputs || {};
     const actionData = state.actionData || {};
@@ -106,8 +103,6 @@ export default class TaskGroup extends Component {
       taskGroup && taskGroup.edges[0]
         ? taskGroup.edges[0].node.taskGroupId === taskGroupId
         : true;
-
-    TaskGroup.subscribe({ taskGroupId, subscribeToMore });
 
     if (
       isFromSameTaskGroupId &&
@@ -150,8 +145,9 @@ export default class TaskGroup extends Component {
   constructor(props) {
     super(props);
 
-    previousCursor = INITIAL_CURSOR;
-    tasks = new Map();
+    this.previousCursor = INITIAL_CURSOR;
+    this.listener = null;
+    this.tasks = new Map();
   }
 
   state = {
@@ -169,22 +165,22 @@ export default class TaskGroup extends Component {
     searchTerm: null,
   };
 
-  static unsubscribe() {
-    if (!TaskGroup.listener) {
+  unsubscribe = () => {
+    if (!this.listener) {
       return;
     }
 
-    TaskGroup.listener.unsubscribe();
-    TaskGroup.listener = null;
-  }
+    this.listener.unsubscribe();
+    this.listener = null;
+  };
 
-  static subscribe({ taskGroupId, subscribeToMore }) {
-    if (TaskGroup.listener && TaskGroup.listener.taskGroupId === taskGroupId) {
-      return TaskGroup.listener;
+  subscribe = ({ taskGroupId, subscribeToMore }) => {
+    if (this.listener && this.listener.taskGroupId === taskGroupId) {
+      return this.listener;
     }
 
-    if (TaskGroup.listener && TaskGroup.listener.taskGroupId !== taskGroupId) {
-      TaskGroup.unsubscribe();
+    if (this.listener && this.listener.taskGroupId !== taskGroupId) {
+      this.unsubscribe();
     }
 
     const unsubscribe = subscribeToMore({
@@ -200,7 +196,7 @@ export default class TaskGroup extends Component {
           'tasksException',
         ],
       },
-      updateQuery(previousResult, { subscriptionData }) {
+      updateQuery: (previousResult, { subscriptionData }) => {
         const { tasksSubscriptions } = subscriptionData.data;
         // Make sure data is not from another task group which
         // can happen when a message is in flight and a user searches for
@@ -216,7 +212,7 @@ export default class TaskGroup extends Component {
           return previousResult;
         }
 
-        const edges = tasks.has(tasksSubscriptions.taskId)
+        const edges = this.tasks.has(tasksSubscriptions.taskId)
           ? previousResult.taskGroup.edges.map(edge => {
               if (tasksSubscriptions.taskId !== edge.node.status.taskId) {
                 return edge;
@@ -228,7 +224,7 @@ export default class TaskGroup extends Component {
                 )
               );
             })
-          : tasks.set(tasksSubscriptions.taskId) &&
+          : this.tasks.set(tasksSubscriptions.taskId) &&
             previousResult.taskGroup.edges.concat({
               // eslint-disable-next-line no-underscore-dangle
               __typename: 'TasksEdge',
@@ -243,11 +239,11 @@ export default class TaskGroup extends Component {
       },
     });
 
-    TaskGroup.listener = {
+    this.listener = {
       taskGroupId,
       unsubscribe,
     };
-  }
+  };
 
   componentDidUpdate(prevProps) {
     const {
@@ -258,14 +254,14 @@ export default class TaskGroup extends Component {
     } = this.props;
 
     if (prevProps.match.params.taskGroupId !== taskGroupId) {
-      tasks.clear();
+      this.tasks.clear();
       updateTaskGroupIdHistory(taskGroupId);
-      TaskGroup.subscribe({ taskGroupId, subscribeToMore });
+      this.subscribe({ taskGroupId, subscribeToMore });
     }
 
     if (
       taskGroup &&
-      previousCursor === taskGroup.pageInfo.cursor &&
+      this.previousCursor === taskGroup.pageInfo.cursor &&
       taskGroup.pageInfo.hasNextPage
     ) {
       this.fetchMoreTasks();
@@ -367,22 +363,24 @@ export default class TaskGroup extends Component {
           },
         },
       },
-      updateQuery(previousResult, { fetchMoreResult, variables }) {
-        if (variables.taskGroupConnection.previousCursor === previousCursor) {
+      updateQuery: (previousResult, { fetchMoreResult, variables }) => {
+        if (
+          variables.taskGroupConnection.previousCursor === this.previousCursor
+        ) {
           const { edges, pageInfo } = fetchMoreResult.taskGroup;
 
-          previousCursor = variables.taskGroupConnection.cursor;
+          this.previousCursor = variables.taskGroupConnection.cursor;
 
           if (!edges.length) {
             return previousResult;
           }
 
           const filteredEdges = edges.filter(edge => {
-            if (tasks.has(edge.node.status.taskId)) {
+            if (this.tasks.has(edge.node.status.taskId)) {
               return false;
             }
 
-            tasks.set(edge.node.status.taskId);
+            this.tasks.set(edge.node.status.taskId);
 
             return true;
           });
@@ -428,7 +426,7 @@ export default class TaskGroup extends Component {
       match: {
         params: { taskGroupId },
       },
-      data: { taskGroup, error, loading },
+      data: { taskGroup, error, loading, subscribeToMore },
       classes,
     } = this.props;
     // Make sure data is not from another task group which
@@ -438,8 +436,10 @@ export default class TaskGroup extends Component {
         ? taskGroup.edges[0].node.taskGroupId === taskGroupId
         : true;
 
-    if (!tasks.size && taskGroup && isFromSameTaskGroupId) {
-      taskGroup.edges.forEach(edge => tasks.set(edge.node.status.taskId));
+    this.subscribe({ taskGroupId, subscribeToMore });
+
+    if (!this.tasks.size && taskGroup && isFromSameTaskGroupId) {
+      taskGroup.edges.forEach(edge => this.tasks.set(edge.node.status.taskId));
     }
 
     return (
