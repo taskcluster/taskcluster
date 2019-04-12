@@ -212,26 +212,33 @@ export default class TaskGroup extends Component {
           return previousResult;
         }
 
-        const edges = this.tasks.has(tasksSubscriptions.taskId)
-          ? previousResult.taskGroup.edges.map(edge => {
-              if (tasksSubscriptions.taskId !== edge.node.status.taskId) {
-                return edge;
-              }
+        let edges;
 
-              return dotProp.set(edge, 'node', node =>
-                dotProp.set(node, 'status', status =>
-                  dotProp.set(status, 'state', tasksSubscriptions.state)
-                )
-              );
-            })
-          : this.tasks.set(tasksSubscriptions.taskId) &&
-            previousResult.taskGroup.edges.concat({
-              // eslint-disable-next-line no-underscore-dangle
-              __typename: 'TasksEdge',
-              node: {
-                ...cloneDeep(tasksSubscriptions.task),
-              },
-            });
+        if (this.tasks.has(tasksSubscriptions.taskId)) {
+          // already have this task, so just update the state
+          edges = previousResult.taskGroup.edges.map(edge => {
+            if (tasksSubscriptions.taskId !== edge.node.status.taskId) {
+              return edge;
+            }
+
+            return dotProp.set(edge, 'node', node =>
+              dotProp.set(node, 'status', status =>
+                dotProp.set(status, 'state', tasksSubscriptions.state)
+              )
+            );
+          });
+        } else {
+          // unseen task, so keep the Task and TaskStatus values
+          this.tasks.set(tasksSubscriptions.taskId);
+
+          edges = previousResult.taskGroup.edges.concat({
+            // eslint-disable-next-line no-underscore-dangle
+            __typename: 'TasksEdge',
+            node: {
+              ...cloneDeep(tasksSubscriptions.task),
+            },
+          });
+        }
 
         return dotProp.set(previousResult, 'taskGroup', taskGroup =>
           dotProp.set(taskGroup, 'edges', edges)
