@@ -9,18 +9,11 @@ subscription TaskGroupSubscription($taskGroupId: ID!, $subscriptions: [TaskSubsc
     taskId
     taskGroupId
     task {
+      taskId
       metadata {
         name
       }
       taskGroupId
-      taskId
-      status {
-        taskId
-        state
-        runs {
-          runId
-        }
-      }
     }
   }
 }

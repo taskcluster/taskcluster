@@ -217,7 +217,7 @@ export default class TaskGroup extends Component {
         if (this.tasks.has(tasksSubscriptions.taskId)) {
           // already have this task, so just update the state
           edges = previousResult.taskGroup.edges.map(edge => {
-            if (tasksSubscriptions.taskId !== edge.node.status.taskId) {
+            if (tasksSubscriptions.taskId !== edge.node.taskId) {
               return edge;
             }
 
@@ -230,12 +230,15 @@ export default class TaskGroup extends Component {
         } else {
           // unseen task, so keep the Task and TaskStatus values
           this.tasks.set(tasksSubscriptions.taskId);
-
           edges = previousResult.taskGroup.edges.concat({
             // eslint-disable-next-line no-underscore-dangle
             __typename: 'TasksEdge',
             node: {
               ...cloneDeep(tasksSubscriptions.task),
+              status: {
+                state: tasksSubscriptions.state,
+                __typename: 'TaskStatus',
+              },
             },
           });
         }
@@ -383,11 +386,11 @@ export default class TaskGroup extends Component {
           }
 
           const filteredEdges = edges.filter(edge => {
-            if (this.tasks.has(edge.node.status.taskId)) {
+            if (this.tasks.has(edge.node.taskId)) {
               return false;
             }
 
-            this.tasks.set(edge.node.status.taskId);
+            this.tasks.set(edge.node.taskId);
 
             return true;
           });
@@ -446,7 +449,7 @@ export default class TaskGroup extends Component {
     this.subscribe({ taskGroupId, subscribeToMore });
 
     if (!this.tasks.size && taskGroup && isFromSameTaskGroupId) {
-      taskGroup.edges.forEach(edge => this.tasks.set(edge.node.status.taskId));
+      taskGroup.edges.forEach(edge => this.tasks.set(edge.node.taskId));
     }
 
     return (
