@@ -444,6 +444,41 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v14.0.2 since v14.0.1
+========================
+
+* [Bug 1533694 - generic-worker: create new task user *before* using current task user](https://bugzil.la/1533694)
+* [Bug 1543082 - generic-worker: sentry issue GENERIC-WORKER-1J - runtime error: invalid memory address or nil pointer dereference](https://bugzil.la/1543082)
+
+In v14.0.1 since v14.0.0
+========================
+
+Please do not use this release! It has a buggy implementation of bug 1533694 which was fixed in v14.0.2.
+* [Bug 1533694 - generic-worker: create new task user *before* using current task user](https://bugzil.la/1533694)
+
+The following bug was backed out:
+* [Bug 1436195 - Deploy websocktunnel on generic-worker](https://bugzil.la/1436195)
+
+Support for websocktunnel will be added back in, in generic-worker release 14.1.0.
+
+In v14.0.0 since v13.0.4
+========================
+
+The backwardly-incompatible change in release 14.0.0 is that open pgp support has been removed from
+Chain Of Trust feature. The following configuration property is no longer supported, and is not
+allowed in the generic-worker config file:
+
+```
+openpgpSigningKeyLocation
+```
+
+**Please note, you need to remove this config property from your config file, if it exists, in order to 
+work with generic-worker 14 onwards.**
+
+* [Bug 1436195 - Deploy websocktunnel on generic-worker](https://bugzil.la/1436195)
+* [Bug 1502335 - Support running a task inside a fixed docker image](https://bugzil.la/1502335)
+* [Bug 1534506 - remove cot gpg support](https://bugzil.la/1534506)
+
 In v13.0.4 since v13.0.3
 ========================
 
