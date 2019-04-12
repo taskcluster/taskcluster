@@ -75,19 +75,6 @@ if [ -n "$modified" ]; then
   exit 68
 fi
 
-# Make sure that build environment is clean
-if [ "$(git clean -ndx 2>&1 | wc -l | tr -d ' ')" != 0 ]; then
-  echo "You have local changes to files/directories that are in your git ignore list."
-  echo "These need to be removed, as they may interfere with the build. Release builds"
-  echo "need to be clean builds. To clean your directory, run:"
-  echo
-  echo "  git -C '$(pwd)' clean -fdx"
-  echo
-  echo "This will have the following effect:"
-  git clean -ndx
-  exit 70
-fi
-
 # ******** If making a NON-alpha release only **********
 # Check that the current HEAD is also the tip of the official repo master
 # branch. If the commits match, it does not matter what the local branch
