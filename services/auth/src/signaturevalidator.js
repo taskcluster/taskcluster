@@ -351,7 +351,6 @@ const createSignatureValidator = function(options) {
     }
     options.monitor.log.signatureValidation({
       expires: credentials? credentials.expires : '',
-      scopes: credentials? credentials.scopes : [],
       clientId: credentials? credentials.clientId : '',
       status: result.status || '',
       scheme: result.scheme || '',

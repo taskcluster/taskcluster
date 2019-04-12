@@ -7560,15 +7560,17 @@
           "version": 1
         },
         {
-          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
-            "clientId": "The clientId that made the request if there was one.",
-            "duration": "The duration in ms of the endpoint.",
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
             "hasAuthed": "Will be true if the request had req.authorize() called on it.",
-            "method": "The http method of the request. Should match the one in auth audit log.",
-            "name": "The name of the endpoint.",
-            "public": "Will be true if the endpoint requires no scopes.",
-            "resource": "The path of the http request. Should match the one in auth audit log.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
           "level": "notice",
@@ -7837,15 +7839,17 @@
           "version": 1
         },
         {
-          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
-            "clientId": "The clientId that made the request if there was one.",
-            "duration": "The duration in ms of the endpoint.",
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
             "hasAuthed": "Will be true if the request had req.authorize() called on it.",
-            "method": "The http method of the request. Should match the one in auth audit log.",
-            "name": "The name of the endpoint.",
-            "public": "Will be true if the endpoint requires no scopes.",
-            "resource": "The path of the http request. Should match the one in auth audit log.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
           "level": "notice",
@@ -8025,15 +8029,17 @@
           "version": 1
         },
         {
-          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
-            "clientId": "The clientId that made the request if there was one.",
-            "duration": "The duration in ms of the endpoint.",
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
             "hasAuthed": "Will be true if the request had req.authorize() called on it.",
-            "method": "The http method of the request. Should match the one in auth audit log.",
-            "name": "The name of the endpoint.",
-            "public": "Will be true if the endpoint requires no scopes.",
-            "resource": "The path of the http request. Should match the one in auth audit log.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
           "level": "notice",
@@ -8260,15 +8266,17 @@
           "version": 1
         },
         {
-          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
-            "clientId": "The clientId that made the request if there was one.",
-            "duration": "The duration in ms of the endpoint.",
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
             "hasAuthed": "Will be true if the request had req.authorize() called on it.",
-            "method": "The http method of the request. Should match the one in auth audit log.",
-            "name": "The name of the endpoint.",
-            "public": "Will be true if the endpoint requires no scopes.",
-            "resource": "The path of the http request. Should match the one in auth audit log.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
           "level": "notice",
@@ -9897,15 +9905,17 @@
           "version": 1
         },
         {
-          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
-            "clientId": "The clientId that made the request if there was one.",
-            "duration": "The duration in ms of the endpoint.",
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
             "hasAuthed": "Will be true if the request had req.authorize() called on it.",
-            "method": "The http method of the request. Should match the one in auth audit log.",
-            "name": "The name of the endpoint.",
-            "public": "Will be true if the endpoint requires no scopes.",
-            "resource": "The path of the http request. Should match the one in auth audit log.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
           "level": "notice",
@@ -10119,15 +10129,17 @@
           "version": 1
         },
         {
-          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
-            "clientId": "The clientId that made the request if there was one.",
-            "duration": "The duration in ms of the endpoint.",
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
             "hasAuthed": "Will be true if the request had req.authorize() called on it.",
-            "method": "The http method of the request. Should match the one in auth audit log.",
-            "name": "The name of the endpoint.",
-            "public": "Will be true if the endpoint requires no scopes.",
-            "resource": "The path of the http request. Should match the one in auth audit log.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
           "level": "notice",
@@ -10491,15 +10503,17 @@
           "version": 1
         },
         {
-          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
-            "clientId": "The clientId that made the request if there was one.",
-            "duration": "The duration in ms of the endpoint.",
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
             "hasAuthed": "Will be true if the request had req.authorize() called on it.",
-            "method": "The http method of the request. Should match the one in auth audit log.",
-            "name": "The name of the endpoint.",
-            "public": "Will be true if the endpoint requires no scopes.",
-            "resource": "The path of the http request. Should match the one in auth audit log.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
           "level": "notice",
@@ -10678,15 +10692,17 @@
           "version": 1
         },
         {
-          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
-            "clientId": "The clientId that made the request if there was one.",
-            "duration": "The duration in ms of the endpoint.",
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
             "hasAuthed": "Will be true if the request had req.authorize() called on it.",
-            "method": "The http method of the request. Should match the one in auth audit log.",
-            "name": "The name of the endpoint.",
-            "public": "Will be true if the endpoint requires no scopes.",
-            "resource": "The path of the http request. Should match the one in auth audit log.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
           "level": "notice",
@@ -10935,15 +10951,17 @@
           "version": 1
         },
         {
-          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
-            "clientId": "The clientId that made the request if there was one.",
-            "duration": "The duration in ms of the endpoint.",
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
             "hasAuthed": "Will be true if the request had req.authorize() called on it.",
-            "method": "The http method of the request. Should match the one in auth audit log.",
-            "name": "The name of the endpoint.",
-            "public": "Will be true if the endpoint requires no scopes.",
-            "resource": "The path of the http request. Should match the one in auth audit log.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
           "level": "notice",
@@ -11377,15 +11395,17 @@
           "version": 1
         },
         {
-          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
-            "clientId": "The clientId that made the request if there was one.",
-            "duration": "The duration in ms of the endpoint.",
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
             "hasAuthed": "Will be true if the request had req.authorize() called on it.",
-            "method": "The http method of the request. Should match the one in auth audit log.",
-            "name": "The name of the endpoint.",
-            "public": "Will be true if the endpoint requires no scopes.",
-            "resource": "The path of the http request. Should match the one in auth audit log.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
           "level": "notice",
@@ -11800,15 +11820,17 @@
           "version": 1
         },
         {
-          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
-            "clientId": "The clientId that made the request if there was one.",
-            "duration": "The duration in ms of the endpoint.",
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
             "hasAuthed": "Will be true if the request had req.authorize() called on it.",
-            "method": "The http method of the request. Should match the one in auth audit log.",
-            "name": "The name of the endpoint.",
-            "public": "Will be true if the endpoint requires no scopes.",
-            "resource": "The path of the http request. Should match the one in auth audit log.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
           "level": "notice",
@@ -11947,15 +11969,17 @@
           "version": 1
         },
         {
-          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
-            "clientId": "The clientId that made the request if there was one.",
-            "duration": "The duration in ms of the endpoint.",
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
             "hasAuthed": "Will be true if the request had req.authorize() called on it.",
-            "method": "The http method of the request. Should match the one in auth audit log.",
-            "name": "The name of the endpoint.",
-            "public": "Will be true if the endpoint requires no scopes.",
-            "resource": "The path of the http request. Should match the one in auth audit log.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
           "level": "notice",
@@ -12063,7 +12087,7 @@
           "description": "Records results of authenticating a client.\nThis contains the verified hawk headers that were sent\nto auth in addition to info about the client.\n\nIn these fields, there are two requests that might be\nmentioned. The first is the original request from a\nclient to a service and the second is the request from\nthe service to auth itself.",
           "fields": {
             "clientId": "The clientId that was authenticated.",
-            "expires": "After this time the authentication is no longer valid.",
+            "expires": "After this time the credential is no longer valid.",
             "hash": "The hash of the request payload of the original request, if there was one.",
             "host": "The hostname of the authorizer of the request.",
             "message": "A reason for failure if failed. Otherwise empty.",
@@ -12071,7 +12095,6 @@
             "port": "The port of the original request.",
             "resource": "The path of the original request",
             "scheme": "Currently always `hawk`.",
-            "scopes": "All scopes that this client has available.",
             "sourceIp": "The ip address of the original request.",
             "status": "Whether or not the authentication was successful."
           },

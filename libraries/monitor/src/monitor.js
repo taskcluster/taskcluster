@@ -116,44 +116,6 @@ class Monitor {
     };
   }
 
-  /**
-   * Given an express api method, this will time it
-   * and report via the monitor.
-   */
-  expressMiddleware(name) {
-    return (req, res, next) => {
-      let sent = false;
-      const start = process.hrtime();
-      const send = async () => {
-        try {
-          // Avoid sending twice
-          if (sent) {
-            return;
-          }
-          sent = true;
-
-          const d = process.hrtime(start);
-
-          this.log.apiMethod({
-            name,
-            public: req.public,
-            hasAuthed: req.hasAuthed,
-            resource: req.originalUrl,
-            method: req.method,
-            clientId: req.hasAuthed ? await req.clientId() : '',
-            statusCode: res.statusCode,
-            duration: d[0] * 1000 + d[1] / 1000000,
-          });
-        } catch (err) {
-          this.reportError(err);
-        }
-      };
-      res.once('finish', send);
-      res.once('close', send);
-      next();
-    };
-  }
-
   /*
    * Simply return a Timekeeper object
    */

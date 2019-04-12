@@ -107,7 +107,7 @@ const ErrorReply = require('../error-reply');
  *
  * Reports 401 if authentication fails.
  */
-const remoteAuthentication = ({signatureValidator, entry, monitor}) => {
+const remoteAuthentication = ({signatureValidator, entry}) => {
   assert(signatureValidator instanceof Function,
     'Expected signatureValidator to be a function!');
 
@@ -256,10 +256,10 @@ const remoteAuthentication = ({signatureValidator, entry, monitor}) => {
         const scopeExpression = scopeTemplate.render(params);
 
         // Test that we have scope intersection, and hence, is authorized
-        const authed = !scopeExpression || scopes.satisfiesExpression(result.scopes, scopeExpression);
+        const satisfyingScopes = !scopeExpression || scopes.scopesSatisfying(result.scopes, scopeExpression);
         req.hasAuthed = true;
 
-        if (!authed) {
+        if (!satisfyingScopes) {
           const clientId = await req.clientId();
           throw new ErrorReply({
             code: 'InsufficientScopes',
@@ -289,6 +289,7 @@ const remoteAuthentication = ({signatureValidator, entry, monitor}) => {
             },
           });
         }
+        req.satisfyingScopes = satisfyingScopes;
       };
 
       req.hasAuthed = false;
