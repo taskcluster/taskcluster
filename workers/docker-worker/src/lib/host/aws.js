@@ -121,7 +121,7 @@ module.exports = {
       spawn('shutdown', ['-h', 'now']);
     }
 
-    log('read userdata', { text: userdata });
+    log('read userdata', { text: _.omit(userdata, ['securityToken']) });
 
     let credentials;
     if (securityToken) {
