@@ -57,7 +57,8 @@ function inline_sed {
 # Make sure git tag doesn't already exist on remote
 if [ "$(git ls-remote -t "${OFFICIAL_GIT_REPO}" "v${NEW_VERSION}" 2>&1 | wc -l | tr -d ' ')" != '0' ]; then
   echo "git tag '${NEW_VERSION}' already exists remotely on ${OFFICIAL_GIT_REPO},"
-  echo "or there was an error checking whether it existed."
+  echo "or there was an error checking whether it existed:"
+  git ls-remote -t "${OFFICIAL_GIT_REPO}" "v${NEW_VERSION}"
   exit 67
 fi
 
