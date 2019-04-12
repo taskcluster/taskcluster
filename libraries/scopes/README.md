@@ -134,7 +134,19 @@ scopeUtils.satisfiesExpression(
 )
 ```
 
-If you wish to understand why a certain expression was not satisfied by a scopeset
+#### Scopes Satisfying an Expression
+
+If you wish to understand why a certain expression was satisfied by a scopeset you can use the `scopesSatisfying` function.
+This takes the same `(scopeset, expression)` argument as `satisfiesExpression`, and returns `undefined` when the expression is not satisfied.
+When the expression is satisfied, it returns a set of scopes that satisfied the expression.
+The returned set of scopes is always a subset of the input `scopeset`.
+In the case that the expression is satisfied, it is always true that `satisfiesExpression(scopesSatisfying(scopeset, expression))`.
+The returned set of scopes is intuitively "the minimal set of scopes required to satisfy the expression" but is not quite minimal in one sense:
+If several alternatives of an `AnyOf` are satisfied, then the scopes used to satisfy all such alternatives are included.
+
+#### Scopes Required to Satisfy an Expression
+
+If you wish to understand why a certain expression was *not* satisfied by a scopeset
 you can use the `removeGivenScopes` function. The function returns a scope expression
 where all scopes that exist are missing from the scopeset. Any scopes under an
 `AllOf` key are definitely needed to satisfy the expression and at least

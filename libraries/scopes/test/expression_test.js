@@ -1,5 +1,6 @@
 const assert = require('assert');
 const utils = require('../src/expressions.js');
+const {scopeIntersection} = require('../src');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
@@ -50,8 +51,10 @@ suite(testing.suiteName(), function() {
   });
 
   suite('scope expression satisfaction:', function() {
+    // We want to be confident that `satisfiesExpression` and `scopesSatisfyingExpression` both
+    // accept and reject the same inputs, so they are tested in parallel.
 
-    function scenario(scopes, expr, shouldFail=false) {
+    function satisfiesExpressionScenario(scopes, expr, shouldFail=false) {
       return () => {
         try {
           assert(utils.satisfiesExpression(scopes, expr));
@@ -64,6 +67,32 @@ suite(testing.suiteName(), function() {
         if (shouldFail) {
           throw new Error('Should have failed!');
         }
+      };
+    }
+
+    function scopesSatisfyingScenario(scopes, expr, expected) {
+      return () => {
+        const got = utils.scopesSatisfying(scopes, expr);
+        assert.deepEqual(got, expected);
+      };
+    }
+
+    function scopesSatisfyingSatisfiesScenario(scopes, expr) {
+      return () => {
+        assert(utils.satisfiesExpression(
+          utils.scopesSatisfying(scopes, expr),
+          expr));
+      };
+    }
+
+    function scopesSatisfyingIsSubsetScenario(scopes, expr) {
+      return () => {
+        const satisfyingScopes = utils.scopesSatisfying(scopes, expr);
+        // assert that satisfyingScopes is a subset of scopes by checking
+        // that it does not change under intersection
+        assert.deepEqual(
+          scopeIntersection(scopes, satisfyingScopes),
+          satisfyingScopes);
       };
     }
 
@@ -81,24 +110,44 @@ suite(testing.suiteName(), function() {
       [[''], {AnyOf: ['abc', 'def']}],
       [['abc:def'], {AnyOf: ['abc', 'def']}],
       [['xyz', 'abc'], {AllOf: [{AnyOf: [{AllOf: ['foo']}, {AllOf: ['bar']}]}]}],
+      [['a*', 'b*', 'c*'], {AllOf: ['bx', 'cx', {AnyOf: ['xxx', 'yyyy']}]}],
     ].forEach(([s, e]) => {
-      test(`${JSON.stringify(e)} is _not_ satisfied by ${JSON.stringify(s)}`, scenario(s, e, 'should-fail'));
+      test(`${JSON.stringify(e)} is _not_ satisfied by ${JSON.stringify(s)}`, satisfiesExpressionScenario(s, e, 'should-fail'));
+      test(`${JSON.stringify(e)} does _not_ have scopes satisfying ${JSON.stringify(s)}`, scopesSatisfyingScenario(s, e, undefined));
     });
 
     // The following should succeed
     [
-      [[], {AllOf: []}],
-      [['A'], {AllOf: ['A']}],
-      [['A', 'B'], 'A'],
-      [['abc'], {AnyOf: ['abc', 'def']}],
-      [['def'], {AnyOf: ['abc', 'def']}],
-      [['abc', 'def'], {AnyOf: ['abc', 'def']}],
-      [['abc*'], {AnyOf: ['abc', 'def']}],
-      [['abc*'], {AnyOf: ['abc']}],
-      [['abc*', 'def*'], {AnyOf: ['abc', 'def']}],
-      [['foo'], {AllOf: [{AnyOf: [{AllOf: ['foo']}, {AllOf: ['bar']}]}]}],
-    ].forEach(([s, e]) => {
-      test(`${JSON.stringify(e)} is satisfied by ${JSON.stringify(s)}`, scenario(s, e));
+      [[], {AllOf: []}, []],
+      [['A'], {AllOf: ['A']}, ['A']],
+      [['A', 'B'], 'A', ['A']],
+      [['a*', 'b*', 'c*'], 'abc', ['abc']],
+      [['abc'], {AnyOf: ['abc', 'def']}, ['abc']],
+      [['def'], {AnyOf: ['abc', 'def']}, ['def']],
+      [['abc', 'def'], {AnyOf: ['abc', 'def']}, ['abc', 'def']],
+      [['abc*'], {AnyOf: ['abc', 'def']}, ['abc']],
+      [['abc*'], {AnyOf: ['abc']}, ['abc']],
+      [['abc*', 'def*'], {AnyOf: ['abc', 'def']}, ['abc', 'def']],
+      [['foo'], {AllOf: [{AnyOf: [{AllOf: ['foo']}, {AllOf: ['bar']}]}]}, ['foo']],
+      [['a*', 'b*', 'c*'], {AnyOf: ['cfoo', 'dfoo']}, ['cfoo']],
+      [['a*', 'b*', 'c*'], {AnyOf: ['bx', 'by']}, ['bx', 'by']],
+      [['a*', 'b*', 'c*'], {AllOf: ['bx', 'cx']}, ['bx', 'cx']],
+      // complex expression with only some AnyOf branches matching
+      [
+        ['a*', 'b*', 'c*'],
+        {AnyOf: [
+          {AllOf: ['ax', 'jx']}, // doesn't match
+          {AllOf: ['bx', 'cx']}, // does match
+          'bbb',
+        ]},
+        ['bbb', 'bx', 'cx'],
+      ],
+
+    ].forEach(([s, e, sat]) => {
+      test(`${JSON.stringify(e)} is satisfied by ${JSON.stringify(s)}`, satisfiesExpressionScenario(s, e));
+      test(`${JSON.stringify(e)} has scopes ${JSON.stringify(sat)} satisfying ${JSON.stringify(s)}`, scopesSatisfyingScenario(s, e, sat));
+      test(`${JSON.stringify(e)}: Satisfying scopes ${JSON.stringify(sat)} actually do satisfy ${JSON.stringify(s)}`, scopesSatisfyingSatisfiesScenario(s, e));
+      test(`${JSON.stringify(e)}: Satisfying scopes ${JSON.stringify(sat)} are a subset of ${JSON.stringify(s)}`, scopesSatisfyingIsSubsetScenario(s, e));
     });
 
   });
