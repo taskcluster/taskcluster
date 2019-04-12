@@ -1,5 +1,7 @@
 export default {
   Query: {
-    WMWorkerTypeSummaries() {},
+    WMWorkerTypeSummaries(parent, { filter }, { loaders }) {
+      return loaders.WMWorkerTypeSummaries.load({ filter });
+    },
   },
 };
