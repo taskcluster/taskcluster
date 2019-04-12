@@ -6,7 +6,7 @@ const WMViewWorkerTypes = lazy(() =>
 const WMViewWorkers = lazy(() =>
   import(/* webpackChunkName: 'WorkerManager.WMViewWorkerType' */ './WMViewWorkers')
 );
-
+// todo these paths should be stored in vars somewhere in one place - editing them is going to be a pain
 export default path => [
   {
     component: WMViewWorkers,
