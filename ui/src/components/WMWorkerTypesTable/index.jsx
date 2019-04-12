@@ -142,6 +142,7 @@ export default class WMWorkerTypesTable extends Component {
         sortDirection={sortDirection}
         onHeaderClick={this.handleHeaderClick}
         renderRow={this.renderRow}
+        padding="dense"
       />
     );
   }
