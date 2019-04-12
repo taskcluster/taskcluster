@@ -109,6 +109,7 @@ const getStatusCount = memoize(
       flexDirection: 'column',
       width: '100%',
     },
+    borderRadius: theme.spacing.unit / 4,
   },
   statusButtonTypography: {
     color: THEME.PRIMARY_TEXT_DARK,
