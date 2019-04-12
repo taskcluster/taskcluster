@@ -16,6 +16,7 @@ export default class WMWorkerTypesTable extends Component {
   static propTypes = {
     workerTypes: arrayOf(WMWorkerTypeSummary).isRequired,
     searchTerm: string,
+    path: string,
   };
 
   state = {
@@ -63,7 +64,7 @@ export default class WMWorkerTypesTable extends Component {
   };
 
   renderRow = workerType => {
-    const {match: { path }} = this.props;
+    const { path } = this.props;
     const iconSize = 16;
     const { failedNumber, exceptionNumber, unscheduledNumber } = workerType;
 
