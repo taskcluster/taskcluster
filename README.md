@@ -86,7 +86,7 @@ Once you have been granted the above scope:
 To see a full description of all the config options available to you, run `generic-worker --help`:
 
 ```
-generic-worker 14.0.2
+generic-worker 14.1.0
 
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -180,9 +180,6 @@ and reports back results to the queue.
           clientId                          Taskcluster client ID used by generic worker to
                                             talk to taskcluster queue.
           ed25519SigningKeyLocation         The ed25519 signing key for signing artifacts with.
-          livelogSecret                     This should match the secret used by the
-                                            stateless dns server; see
-                                            https://github.com/taskcluster/stateless-dns-server
           publicIP                          The IP address for clients to be directed to
                                             for serving live logs; see
                                             https://github.com/taskcluster/livelog and
@@ -265,6 +262,10 @@ and reports back results to the queue.
                                             over https. If not set, http will be used.
           livelogPUTPort                    Port number for livelog HTTP PUT requests.
                                             [default: 60022]
+          livelogSecret                     This should match the secret used by the
+                                            stateless dns server; see
+                                            https://github.com/taskcluster/stateless-dns-server
+                                            Optional if stateless DNS is not in use.
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
           privateIP                         The private IP of the worker, used by chain of trust.
@@ -339,7 +340,7 @@ and reports back results to the queue.
           taskclusterProxyPort              Port number for taskcluster-proxy HTTP requests.
                                             [default: 80]
           tasksDir                          The location where task directories should be
-                                            created on the worker. [default: /Users]
+                                            created on the worker. [default: /home]
           workerGroup                       Typically this would be an aws region - an
                                             identifier to uniquely identify which pool of
                                             workers this worker logically belongs to.
@@ -351,6 +352,13 @@ and reports back results to the queue.
                                             the worker type will have more information about how
                                             it was set up (for example what has been installed on
                                             the machine).
+          wstAudience                       The audience value for which to request websocktunnel
+                                            credentials, identifying a set of WST servers this
+                                            worker could connect to.  Optional if not using websocktunnel
+                                            to expose live logs.
+          wstServerURL                      The URL of the websocktunnel server with which to expose
+                                            live logs.  Optional if not using websocktunnel to expose
+                                            live logs.
 
     If an optional config setting is not provided in the json configuration file, the
     default will be taken (defaults documented above).
@@ -433,7 +441,7 @@ go test -v ./...
 Run the `release.sh` script like so:
 
 ```
-$ ./release.sh 14.0.2
+$ ./release.sh 14.1.0
 ```
 
 This will perform some checks, tag the repo, push the tag to github, which will then trigger travis-ci to run tests, and publish the new release.
