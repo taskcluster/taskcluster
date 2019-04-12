@@ -1,15 +1,16 @@
-import React, {Component} from 'react';
-import {arrayOf, string} from 'prop-types';
-import {WMWorkerTypeSummary} from '../../utils/prop-types';
-import DataTable from '../DataTable';
+import React, { Component } from 'react';
+import { arrayOf, string } from 'prop-types';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography/';
 import LinkIcon from 'mdi-react/LinkIcon';
 import memoize from 'fast-memoize';
-import {camelCase} from 'change-case';
-import {isEmpty, map, pipe, sort as rSort} from 'ramda';
+import { camelCase } from 'change-case';
+import { isEmpty, map, pipe, sort as rSort } from 'ramda';
+import { WMWorkerTypeSummary } from '../../utils/prop-types';
+import DataTable from '../DataTable';
 import sort from '../../utils/sort';
+import Link from '../../utils/Link';
 
 export default class WMWorkerTypesTable extends Component {
   static propTypes = {
@@ -26,21 +27,25 @@ export default class WMWorkerTypesTable extends Component {
     (workerTypes, sortBy, sortDirection, searchTerm) => {
       const sortByProperty = camelCase(sortBy);
       const filteredWorkerTypes = searchTerm
-        ? workerTypes.filter(({ workerType }) => workerType.includes(searchTerm))
+        ? workerTypes.filter(({ workerType }) =>
+            workerType.includes(searchTerm)
+          )
         : workerTypes;
 
       return isEmpty(filteredWorkerTypes)
         ? filteredWorkerTypes
         : [...filteredWorkerTypes].sort((a, b) => {
-            const firstElement = sortDirection === 'desc' ? b[sortByProperty] : a[sortByProperty];
-            const secondElement = sortDirection === 'desc' ? a[sortByProperty] : b[sortByProperty];
+            const firstElement =
+              sortDirection === 'desc' ? b[sortByProperty] : a[sortByProperty];
+            const secondElement =
+              sortDirection === 'desc' ? a[sortByProperty] : b[sortByProperty];
 
             return sort(firstElement, secondElement);
           });
     },
     {
       serializer: ([workerTypes, sortBy, sortDirection, searchTerm]) => {
-        const ids =  pipe(
+        const ids = pipe(
           rSort((a, b) => sort(a.workerType, b.workerType)),
           map(({ workerType }) => workerType)
         )(workerTypes);
@@ -59,30 +64,49 @@ export default class WMWorkerTypesTable extends Component {
 
   renderRow = workerType => {
     const {match: { path }} = this.props;
+    const iconSize = 16;
+    const { failedNumber, exceptionNumber, unscheduledNumber } = workerType;
+
     return (
       <TableRow key={workerType.name}>
-        <TableCell button component={Link} to={`${path}/worker-types/${workerType.name}`}>
+        <TableCell
+          button
+          component={Link}
+          to={`${path}/worker-types/${workerType.name}`}>
           <Typography>{workerType.name}</Typography>
           <LinkIcon size={iconSize} />
         </TableCell>
 
-        <TableCell><Typography>{workerType.pendingCapacity}</Typography></TableCell>
+        <TableCell>
+          <Typography>{workerType.pendingCapacity}</Typography>
+        </TableCell>
 
-        <TableCell><Typography>{workerType.runningCapacity}</Typography></TableCell>
+        <TableCell>
+          <Typography>{workerType.runningCapacity}</Typography>
+        </TableCell>
 
-        <TableCell><Typography>{workerType.pendingTasks}</Typography></TableCell>
+        <TableCell>
+          <Typography>{workerType.pendingTasks}</Typography>
+        </TableCell>
 
-        <TableCell><Typography>{workerType.lastActive}</Typography></TableCell>
+        <TableCell>
+          <Typography>{workerType.lastActive}</Typography>
+        </TableCell>
 
-        <TableCell><Typography>{workerType.lastResolved}</Typography></TableCell>
+        <TableCell>
+          <Typography>{workerType.lastResolved}</Typography>
+        </TableCell>
 
         <TableCell>
           <Typography>
-            {`${workerType.failedNumber} / ${workerType.exceptionNumber} / ${workerType.unscheduledNumber}`}
-            </Typography>
+            {`${failedNumber} / ${exceptionNumber} / ${unscheduledNumber}`}
+          </Typography>
         </TableCell>
 
-        <TableCell button component={Link} to={`${path}/providers/${workerType.provider}`}>
+        <TableCell
+          button
+          component={Link}
+          to={`${path}/providers/${workerType.provider}`}>
           <Typography>{workerType.provider}</Typography>
           <LinkIcon size={iconSize} />
         </TableCell>
