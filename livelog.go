@@ -16,7 +16,8 @@ import (
 )
 
 var (
-	livelogName = "public/logs/live.log"
+	livelogName            = "public/logs/live.log"
+	internalGETPort uint16 = 60099
 )
 
 type LiveLogFeature struct {
@@ -64,7 +65,7 @@ func (l *LiveLogTask) RequiredScopes() scopes.Required {
 }
 
 func (l *LiveLogTask) Start() *CommandExecutionError {
-	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogPUTPort, config.LiveLogGETPort)
+	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogPUTPort, internalGETPort)
 	if err != nil {
 		log.Printf("WARNING: could not create livelog: %s", err)
 		// then run without livelog, is only a "best effort" service
@@ -159,7 +160,7 @@ func (l *LiveLogTask) reinstateBackingLog() {
 
 func (l *LiveLogTask) uploadLiveLogArtifact() error {
 	var err error
-	l.exposure, err = exposer.ExposeHTTP(config.LiveLogGETPort)
+	l.exposure, err = exposer.ExposeHTTP(internalGETPort)
 	if err != nil {
 		return err
 	}
