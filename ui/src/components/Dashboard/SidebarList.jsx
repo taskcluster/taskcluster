@@ -68,9 +68,11 @@ export default class SidebarList extends Component {
           AWS Provisioner
         </SidebarListItem>
 
-        <SidebarListItem to="/worker-manager" icon={<HexagonSlice4 />}>
-          Worker Manager
-        </SidebarListItem>
+        {process.env.SHOW_WORKER_MANAGER && (
+          <SidebarListItem to="/worker-manager" icon={<HexagonSlice4 />}>
+            Worker Manager
+          </SidebarListItem>
+        )}
 
         <SidebarListItem to="/provisioners" icon={<MixcloudIcon />}>
           Provisioners
