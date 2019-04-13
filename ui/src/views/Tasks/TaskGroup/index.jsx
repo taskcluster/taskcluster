@@ -265,6 +265,7 @@ export default class TaskGroup extends Component {
 
     if (prevProps.match.params.taskGroupId !== taskGroupId) {
       this.tasks.clear();
+      this.previousCursor = INITIAL_CURSOR;
       updateTaskGroupIdHistory(taskGroupId);
       this.subscribe({ taskGroupId, subscribeToMore });
     }
