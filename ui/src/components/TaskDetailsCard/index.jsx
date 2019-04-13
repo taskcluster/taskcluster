@@ -36,7 +36,7 @@ import Link from '../../utils/Link';
     paddingTop: theme.spacing.double,
     paddingBottom: theme.spacing.double,
     '&:last-child': {
-      paddingBottom: theme.spacing.triple,
+      paddingBottom: theme.spacing.double,
     },
   },
   sourceHeadline: {
@@ -97,12 +97,7 @@ export default class TaskDetailsCard extends Component {
 
   state = {
     showPayload: false,
-    showExtra: false,
     showMore: false,
-  };
-
-  handleToggleExtra = () => {
-    this.setState({ showExtra: !this.state.showExtra });
   };
 
   handleTogglePayload = () => {
@@ -115,7 +110,7 @@ export default class TaskDetailsCard extends Component {
 
   render() {
     const { classes, task, dependentTasks } = this.props;
-    const { showPayload, showExtra, showMore } = this.state;
+    const { showPayload, showMore } = this.state;
     const isExternal = task.metadata.source.startsWith('https://');
     const payload = deepSortObject(task.payload);
 
@@ -126,8 +121,13 @@ export default class TaskDetailsCard extends Component {
             <Typography variant="h5" className={classes.headline}>
               Task Details
             </Typography>
-
             <List>
+              <ListItem>
+                <ListItemText
+                  primary="State"
+                  secondary={<StatusLabel state={task.status.state} />}
+                />
+              </ListItem>
               <ListItem
                 button
                 className={classes.listItemButton}
@@ -152,42 +152,6 @@ export default class TaskDetailsCard extends Component {
                 rel="noopener noreferrer">
                 <ListItemText primary="View task definition" />
                 <OpenInNewIcon />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Task Group ID"
-                  secondary={task.taskGroupId}
-                />
-                <ListItemSecondaryAction
-                  className={classes.listItemSecondaryAction}>
-                  <CopyToClipboard
-                    title={`${task.taskGroupId} (Copy)`}
-                    text={task.taskGroupId}>
-                    <IconButton>
-                      <ContentCopyIcon />
-                    </IconButton>
-                  </CopyToClipboard>
-                  <IconButton
-                    title="View Task Group"
-                    component={Link}
-                    to={`/tasks/groups/${task.taskGroupId}`}>
-                    <LinkIcon />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItem>
-              <CopyToClipboard
-                title={`${task.taskId} (Copy)`}
-                text={task.taskId}>
-                <ListItem button className={classes.listItemButton}>
-                  <ListItemText primary="Task ID" secondary={task.taskId} />
-                  <ContentCopyIcon />
-                </ListItem>
-              </CopyToClipboard>
-              <ListItem>
-                <ListItemText
-                  primary="State"
-                  secondary={<StatusLabel state={task.status.state} />}
-                />
               </ListItem>
               <CopyToClipboard
                 title={`${task.created} (Copy)`}
@@ -230,70 +194,6 @@ export default class TaskDetailsCard extends Component {
                   </IconButton>
                 </ListItemSecondaryAction>
               </ListItem>
-              {dependentTasks && dependentTasks.length ? (
-                <Fragment>
-                  <ListItem>
-                    <ListItemText
-                      primary="Dependencies"
-                      secondary={
-                        <Fragment>
-                          This task will be scheduled when
-                          <strong>
-                            <em> dependencies </em>
-                          </strong>
-                          are
-                          {task.requires === 'ALL_COMPLETED' ? (
-                            <Fragment>
-                              &nbsp;
-                              <code>all-completed</code> successfully.
-                            </Fragment>
-                          ) : (
-                            <Fragment>
-                              &nbsp;
-                              <code>all-resolved</code> with any resolution.
-                            </Fragment>
-                          )}
-                        </Fragment>
-                      }
-                    />
-                  </ListItem>
-                  <List dense disablePadding>
-                    {dependentTasks.map(task => (
-                      <ListItem
-                        classes={{
-                          container: classes.listItemWithSecondaryAction,
-                        }}
-                        key={task.taskId}>
-                        <StatusLabel state={task.status.state} />
-                        <ListItemText primary={task.metadata.name} />
-                        <ListItemSecondaryAction
-                          className={classes.listItemSecondaryAction}>
-                          <CopyToClipboard
-                            title={`${task.metadata.name} (Copy)`}
-                            text={task.metadata.name}>
-                            <IconButton>
-                              <ContentCopyIcon />
-                            </IconButton>
-                          </CopyToClipboard>
-                          <IconButton
-                            title="View Task"
-                            component={Link}
-                            to={`/tasks/${task.taskId}`}>
-                            <LinkIcon />
-                          </IconButton>
-                        </ListItemSecondaryAction>
-                      </ListItem>
-                    ))}
-                  </List>
-                </Fragment>
-              ) : (
-                <ListItem>
-                  <ListItemText
-                    primary="Dependencies"
-                    secondary={<em>n/a</em>}
-                  />
-                </ListItem>
-              )}
               <ListItem
                 button
                 className={classes.listItemButton}
@@ -315,32 +215,6 @@ export default class TaskDetailsCard extends Component {
                   </ListItem>
                 </List>
               </Collapse>
-
-              {Object.keys(task.extra).length !== 0 && (
-                <Fragment>
-                  <ListItem
-                    button
-                    className={classes.listItemButton}
-                    onClick={this.handleToggleExtra}>
-                    <ListItemText primary="Extra" />
-                    {showExtra ? <ChevronUpIcon /> : <ChevronDownIcon />}
-                  </ListItem>
-                  <Collapse in={showExtra} timeout="auto">
-                    <List component="div" disablePadding>
-                      <ListItem>
-                        <ListItemText
-                          disableTypography
-                          primary={
-                            <Code language="json">
-                              {JSON.stringify(task.extra, null, 2)}
-                            </Code>
-                          }
-                        />
-                      </ListItem>
-                    </List>
-                  </Collapse>
-                </Fragment>
-              )}
               <ListItem
                 button
                 className={classes.listItemButton}
@@ -394,6 +268,70 @@ export default class TaskDetailsCard extends Component {
                     }
                   />
                 </ListItem>
+                {dependentTasks && dependentTasks.length ? (
+                  <Fragment>
+                    <ListItem>
+                      <ListItemText
+                        primary="Dependencies"
+                        secondary={
+                          <Fragment>
+                            This task will be scheduled when
+                            <strong>
+                              <em> dependencies </em>
+                            </strong>
+                            are
+                            {task.requires === 'ALL_COMPLETED' ? (
+                              <Fragment>
+                                &nbsp;
+                                <code>all-completed</code> successfully.
+                              </Fragment>
+                            ) : (
+                              <Fragment>
+                                &nbsp;
+                                <code>all-resolved</code> with any resolution.
+                              </Fragment>
+                            )}
+                          </Fragment>
+                        }
+                      />
+                    </ListItem>
+                    <List dense disablePadding>
+                      {dependentTasks.map(task => (
+                        <ListItem
+                          classes={{
+                            container: classes.listItemWithSecondaryAction,
+                          }}
+                          key={task.taskId}>
+                          <StatusLabel state={task.status.state} />
+                          <ListItemText primary={task.metadata.name} />
+                          <ListItemSecondaryAction
+                            className={classes.listItemSecondaryAction}>
+                            <CopyToClipboard
+                              title={`${task.metadata.name} (Copy)`}
+                              text={task.metadata.name}>
+                              <IconButton>
+                                <ContentCopyIcon />
+                              </IconButton>
+                            </CopyToClipboard>
+                            <IconButton
+                              title="View Task"
+                              component={Link}
+                              to={`/tasks/${task.taskId}`}>
+                              <LinkIcon />
+                            </IconButton>
+                          </ListItemSecondaryAction>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Fragment>
+                ) : (
+                  <ListItem>
+                    <ListItemText
+                      primary="Dependencies"
+                      secondary={<em>n/a</em>}
+                    />
+                  </ListItem>
+                )}
                 <ListItem>
                   <ListItemText
                     primary="Scheduler ID"
@@ -452,6 +390,21 @@ export default class TaskDetailsCard extends Component {
                     }
                   />
                 </ListItem>
+                {Object.keys(task.extra).length !== 0 && (
+                  <ListItem>
+                    <ListItemText
+                      disableTypography
+                      primary={
+                        <Typography variant="subtitle1">Extra</Typography>
+                      }
+                      secondary={
+                        <Code language="json">
+                          {JSON.stringify(task.extra, null, 2)}
+                        </Code>
+                      }
+                    />
+                  </ListItem>
+                )}
               </List>
             </Collapse>
           </CardContent>
