@@ -34,8 +34,6 @@ class Provisioner {
    * Start the Provisioner
    */
   async initiate() {
-    // TODO: Get full list of workers here and pass in ones for each provider
-    // at startup. This will let them prepare for whatever they need to do later
     await Promise.all(Object.values(this.providers).map(x => x.initiate()));
     await this.iterate.start();
   }
@@ -52,6 +50,10 @@ class Provisioner {
    * Run a single provisioning iteration
    */
   async provision(watchdog) {
+    // Any once-per-loop work a provider may want to do
+    await Promise.all(Object.values(this.providers).map(x => x.prepare()));
+
+    // Now for each workertype we ask the providers to do stuff
     await this.WorkerType.scan({}, {
       handler: async workerType => {
         const provider = this.providers[workerType.provider];
@@ -78,6 +80,9 @@ class Provisioner {
         watchdog.touch();
       },
     });
+
+    // Now allow providers to do whatever per-loop cleanup they may need
+    await Promise.all(Object.values(this.providers).map(x => x.cleanup()));
   }
 }
 

@@ -44,11 +44,26 @@ class Provider {
   }
 
   /**
+   * Anything a provider may want to do every provisioning loop but not tied
+   * to any one workertype. Called _before_ provision() are all called.
+   */
+  async prepare() {
+  }
+
+  /**
    * Given a WorkerType configuration, do whatever the provider might
    * do with this worker type. This may mean nothing at all in the case of
    * static provider!
    */
-  provision({workerType}) {
+  async provision({workerType}) {
+  }
+
+  /**
+   * Anything a provider may want to do every provisioning loop but not tied
+   * to any one workertype. Called _after_ all provision() calls are complete.
+   * You may want to use this time to remove outdated workertypes for instance.
+   */
+  async cleanup() {
   }
 
   /**
