@@ -11,6 +11,7 @@ import { WMWorkerTypeSummary } from '../../utils/prop-types';
 import DataTable from '../DataTable';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
+import DateDistance from '../DateDistance';
 
 export default class WMWorkerTypesTable extends Component {
   static propTypes = {
@@ -91,11 +92,15 @@ export default class WMWorkerTypesTable extends Component {
         </TableCell>
 
         <TableCell>
-          <Typography>{workerType.lastActive}</Typography>
+          <Typography>
+            <DateDistance from={workerType.lastActive} />
+          </Typography>
         </TableCell>
 
         <TableCell>
-          <Typography>{workerType.lastResolved}</Typography>
+          <Typography>
+            <DateDistance from={workerType.lastResolved} />
+          </Typography>
         </TableCell>
 
         <TableCell>
