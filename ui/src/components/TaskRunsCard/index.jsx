@@ -150,6 +150,7 @@ export default class TaskRunsCard extends Component {
 
   state = {
     showArtifacts: false,
+    showMore: false,
   };
 
   getCurrentRun() {
@@ -284,6 +285,10 @@ export default class TaskRunsCard extends Component {
     );
   }
 
+  handleToggleMore = () => {
+    this.setState({ showMore: !this.state.showMore });
+  };
+
   render() {
     const {
       classes,
@@ -293,7 +298,7 @@ export default class TaskRunsCard extends Component {
       workerType,
       theme,
     } = this.props;
-    const { showArtifacts } = this.state;
+    const { showArtifacts, showMore } = this.state;
     const run = this.getCurrentRun();
     const liveLogArtifact = this.getLiveLogArtifactFromRun(run);
 
@@ -305,167 +310,183 @@ export default class TaskRunsCard extends Component {
               {run ? `Task Run ${selectedRunId}` : 'Task Run'}
             </Typography>
             {run ? (
-              <List>
-                <ListItem>
-                  <ListItemText
-                    primary="State"
-                    secondary={<StatusLabel state={run.state} />}
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Reason Created"
-                    secondary={<StatusLabel state={run.reasonCreated} />}
-                  />
-                </ListItem>
-                <CopyToClipboard
-                  title={`${run.scheduled} (Copy)`}
-                  text={run.scheduled}>
-                  <ListItem button className={classes.listItemButton}>
+              <Fragment>
+                <List>
+                  <ListItem>
                     <ListItemText
-                      primary="Scheduled"
-                      secondary={<DateDistance from={run.scheduled} />}
+                      primary="State"
+                      secondary={<StatusLabel state={run.state} />}
                     />
-                    <ContentCopyIcon />
                   </ListItem>
-                </CopyToClipboard>
-                <CopyToClipboard
-                  title={`${run.started} (Copy)`}
-                  text={run.started}>
-                  <ListItem button className={classes.listItemButton}>
-                    <ListItemText
-                      primary="Started"
-                      secondary={
-                        run.started ? (
-                          <DateDistance
-                            from={run.started}
-                            offset={run.scheduled}
-                          />
-                        ) : (
-                          <em>n/a</em>
-                        )
-                      }
-                    />
-                    <ContentCopyIcon />
-                  </ListItem>
-                </CopyToClipboard>
-                <CopyToClipboard
-                  title={`${run.resolved} (Copy)`}
-                  text={run.resolved}>
-                  <ListItem button className={classes.listItemButton}>
-                    <ListItemText
-                      primary="Resolved"
-                      secondary={
-                        run.resolved ? (
-                          <DateDistance
-                            from={run.resolved}
-                            offset={run.started}
-                          />
-                        ) : (
-                          <em>n/a</em>
-                        )
-                      }
-                    />
-                    <ContentCopyIcon />
-                  </ListItem>
-                </CopyToClipboard>
-                <ListItem>
-                  <ListItemText
-                    primary="Reason Resolved"
-                    secondary={
-                      run.reasonResolved ? (
-                        <StatusLabel state={run.reasonResolved} />
-                      ) : (
-                        <em>n/a</em>
-                      )
-                    }
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Worker Group"
-                    secondary={run.workerGroup || <em>n/a</em>}
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText primary="Worker ID" secondary={run.workerId} />
-                  <ListItemSecondaryAction
-                    className={classes.listItemSecondaryAction}>
-                    <CopyToClipboard
-                      title={`${run.workerId} (Copy)`}
-                      text={run.workerId}>
-                      <IconButton>
-                        <ContentCopyIcon />
-                      </IconButton>
-                    </CopyToClipboard>
-                    <IconButton
-                      title="View Worker"
+                  {liveLogArtifact && (
+                    <ListItem
+                      button
+                      className={classes.listItemButton}
                       component={Link}
-                      to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${
-                        run.workerId
-                      }`}>
+                      to={this.getArtifactUrl(liveLogArtifact)}>
+                      <ListItemText
+                        primary={
+                          <Fragment>
+                            View Live Log{' '}
+                            <Label
+                              status="info"
+                              mini
+                              className={classes.liveLogLabel}>
+                              LOG
+                            </Label>
+                          </Fragment>
+                        }
+                        secondary={liveLogArtifact.name}
+                      />
                       <LinkIcon />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-                <CopyToClipboard
-                  title={`${run.takenUntil} (Copy)`}
-                  text={run.takenUntil}>
-                  <ListItem button className={classes.listItemButton}>
-                    <ListItemText
-                      primary="Taken Until"
-                      secondary={
-                        run.takenUntil ? (
-                          <DateDistance from={run.takenUntil} />
-                        ) : (
-                          <em>n/a</em>
-                        )
-                      }
-                    />
-                    <ContentCopyIcon />
-                  </ListItem>
-                </CopyToClipboard>
-                {liveLogArtifact && (
+                    </ListItem>
+                  )}
                   <ListItem
                     button
                     className={classes.listItemButton}
-                    component={Link}
-                    to={this.getArtifactUrl(liveLogArtifact)}>
-                    <ListItemText
-                      primary={
-                        <Fragment>
-                          View Live Log{' '}
-                          <Label
-                            status="info"
-                            mini
-                            className={classes.liveLogLabel}>
-                            LOG
-                          </Label>
-                        </Fragment>
-                      }
-                      secondary={liveLogArtifact.name}
-                    />
-                    <LinkIcon />
+                    onClick={this.handleToggleArtifacts}>
+                    <ListItemText primary="Artifacts" />
+                    {showArtifacts ? <ChevronUpIcon /> : <ChevronDownIcon />}
                   </ListItem>
-                )}
-                <ListItem
-                  button
-                  className={classes.listItemButton}
-                  onClick={this.handleToggleArtifacts}>
-                  <ListItemText primary="Artifacts" />
-                  {showArtifacts ? <ChevronUpIcon /> : <ChevronDownIcon />}
-                </ListItem>
-                <Collapse in={showArtifacts} timeout="auto">
-                  <List component="div" disablePadding>
-                    <ListItem
-                      className={classes.artifactsListItemContainer}
-                      component="div"
-                      disableGutters>
-                      {this.renderArtifactsTable()}
+                  <Collapse in={showArtifacts} timeout="auto">
+                    <List component="div" disablePadding>
+                      <ListItem
+                        className={classes.artifactsListItemContainer}
+                        component="div"
+                        disableGutters>
+                        {this.renderArtifactsTable()}
+                      </ListItem>
+                    </List>
+                  </Collapse>
+                  <CopyToClipboard
+                    title={`${run.scheduled} (Copy)`}
+                    text={run.scheduled}>
+                    <ListItem button className={classes.listItemButton}>
+                      <ListItemText
+                        primary="Scheduled"
+                        secondary={<DateDistance from={run.scheduled} />}
+                      />
+                      <ContentCopyIcon />
                     </ListItem>
+                  </CopyToClipboard>
+                  <CopyToClipboard
+                    title={`${run.started} (Copy)`}
+                    text={run.started}>
+                    <ListItem button className={classes.listItemButton}>
+                      <ListItemText
+                        primary="Started"
+                        secondary={
+                          run.started ? (
+                            <DateDistance
+                              from={run.started}
+                              offset={run.scheduled}
+                            />
+                          ) : (
+                            <em>n/a</em>
+                          )
+                        }
+                      />
+                      <ContentCopyIcon />
+                    </ListItem>
+                  </CopyToClipboard>
+                  <CopyToClipboard
+                    title={`${run.resolved} (Copy)`}
+                    text={run.resolved}>
+                    <ListItem button className={classes.listItemButton}>
+                      <ListItemText
+                        primary="Resolved"
+                        secondary={
+                          run.resolved ? (
+                            <DateDistance
+                              from={run.resolved}
+                              offset={run.started}
+                            />
+                          ) : (
+                            <em>n/a</em>
+                          )
+                        }
+                      />
+                      <ContentCopyIcon />
+                    </ListItem>
+                  </CopyToClipboard>
+                  <ListItem
+                    button
+                    className={classes.listItemButton}
+                    onClick={this.handleToggleMore}>
+                    <ListItemText primary={showMore ? 'Less...' : 'More...'} />
+                    {showMore ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                  </ListItem>
+                </List>
+                <Collapse in={showMore} timeout="auto">
+                  <List component="div" disablePadding>
+                    <ListItem>
+                      <ListItemText
+                        primary="Reason Created"
+                        secondary={<StatusLabel state={run.reasonCreated} />}
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText
+                        primary="Reason Resolved"
+                        secondary={
+                          run.reasonResolved ? (
+                            <StatusLabel state={run.reasonResolved} />
+                          ) : (
+                            <em>n/a</em>
+                          )
+                        }
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText
+                        primary="Worker Group"
+                        secondary={run.workerGroup || <em>n/a</em>}
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText
+                        primary="Worker ID"
+                        secondary={run.workerId}
+                      />
+                      <ListItemSecondaryAction
+                        className={classes.listItemSecondaryAction}>
+                        <CopyToClipboard
+                          title={`${run.workerId} (Copy)`}
+                          text={run.workerId}>
+                          <IconButton>
+                            <ContentCopyIcon />
+                          </IconButton>
+                        </CopyToClipboard>
+                        <IconButton
+                          title="View Worker"
+                          component={Link}
+                          to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${
+                            run.workerId
+                          }`}>
+                          <LinkIcon />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                    <CopyToClipboard
+                      title={`${run.takenUntil} (Copy)`}
+                      text={run.takenUntil}>
+                      <ListItem button className={classes.listItemButton}>
+                        <ListItemText
+                          primary="Taken Until"
+                          secondary={
+                            run.takenUntil ? (
+                              <DateDistance from={run.takenUntil} />
+                            ) : (
+                              <em>n/a</em>
+                            )
+                          }
+                        />
+                        <ContentCopyIcon />
+                      </ListItem>
+                    </CopyToClipboard>
                   </List>
                 </Collapse>
-              </List>
+              </Fragment>
             ) : (
               <div className={classes.boxVariant}>
                 <NoRunsIcon
