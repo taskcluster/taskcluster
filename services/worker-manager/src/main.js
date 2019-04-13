@@ -9,6 +9,8 @@ const data = require('./data');
 const builder = require('./api');
 const {sasCredentials} = require('taskcluster-lib-azure');
 
+const TestingProvider = require('./provider_testing');
+const StaticProvider = require('./provider_static');
 const {Provisioner} = require('./provisioner');
 
 let load = loader({
@@ -104,9 +106,17 @@ let load = loader({
   },
 
   providers: {
-    requires: ['cfg'],
-    setup: ({cfg}) => {
-      return {};
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => {
+      const _providers = {};
+      Object.entries(cfg.providers).forEach(([name, meta]) => {
+        switch(meta.implementation) {
+          case 'testing': _providers[name] = new TestingProvider({name, monitor: monitor.monitor(name)}); break;
+          case 'static': _providers[name] = new StaticProvider({name, monitor: monitor.monitor(name)}); break;
+          default: throw new Error(`Unkown provider ${meta.implementation} selected for provider ${name}.`);
+        }
+      });
+      return _providers;
     },
   },
 

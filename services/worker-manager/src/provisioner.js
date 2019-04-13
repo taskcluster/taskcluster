@@ -17,15 +17,15 @@ class Provisioner {
       },
       monitor,
       ...{
-        maxFailures: 1, // TODO: Back to something reasonable
+        maxFailures: 10,
         watchdogTime: 10000, // Each provider gets 10 seconds to provision instances per workertype
-        waitTime: 1000, // TODO: Back to 10000 and set it lower in tests or use zurvan
+        waitTime: 10000,
         maxIterationTime: 300000, // We really should be making it through the list at least once every 5 minutes
         ...iterateConf,
       },
     });
     this.iterate.on('error', () => {
-      console.log('iteration failed repeatedly; terminating process');
+      this.monitor.alert('iteration failed repeatedly; terminating process');
       process.exit(1);
     });
   }
@@ -53,11 +53,27 @@ class Provisioner {
    */
   async provision(watchdog) {
     await this.WorkerType.scan({}, {
-      handler: async entry => {
-        const {pendingTasks} = await this.queue.pendingTasks(this.provisionerId, entry.name);
+      handler: async workerType => {
+        const provider = this.providers[workerType.provider];
+
+        // This should not happen because we assert at workertype
+        // creation/update time that the provider exists and we
+        // don't allow providers that have workertypes to be deleted
+        // but that logic seems iffy enough that an explicit alert
+        // here would be nice
+        if (!provider) {
+          const err = new Error('Missing Provider');
+          err.provider = workerType.provider;
+          err.available = Object.keys(this.providers);
+          throw err;
+        }
+
+        // TODO: Time this and report below
+        provider.provision(workerType);
+
         this.monitor.log.workertypeProvision({
-          workertype: entry.name,
-          pending: pendingTasks,
+          workerType: workerType.name,
+          provider: workerType.provider,
         });
         watchdog.touch();
       },

@@ -12,8 +12,8 @@ manager.register({
   level: 'info',
   description: 'The results of a single provisioner iteration for a workertype.',
   fields: {
-    workertype: 'The name of the workertype.',
-    pending: 'The pending count from the queue for this type.',
+    workerType: 'The name of the workertype.',
+    provider: 'The name of the provider that did the work for this workertype.',
   },
 });
 

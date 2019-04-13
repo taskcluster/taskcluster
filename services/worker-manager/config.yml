@@ -19,6 +19,7 @@ defaults:
     env: !env NODE_ENV
     forceSSL: !env:bool FORCE_SSL
     trustProxy: !env:bool TRUST_PROXY
+  providers: !env:json PROVIDERS
 
 test:
   monitoring:
@@ -31,3 +32,10 @@ test:
     env: 'development'
     forceSSL: false
     trustProxy: false
+  providers:
+    testing1:
+      implementation: testing
+    testing2:
+      implementation: testing
+    static:
+      implementation: static

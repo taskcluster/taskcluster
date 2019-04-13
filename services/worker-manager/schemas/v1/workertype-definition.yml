@@ -13,7 +13,9 @@ properties:
     maxLength: {$const: identifier-max-length}
     pattern: {$const: identifier-pattern}
     description: |
-      The provider responsible for managing this workertype.
+      The provider responsible for managing this workertype. This isn't necessarily
+      just a provider implementation. For instance, there can be multiple gcp providers
+      running if two separate accounts are providing instances.
   description:
     type: string
     maxLength: 10240

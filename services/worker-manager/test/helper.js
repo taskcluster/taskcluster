@@ -11,12 +11,6 @@ exports.load = stickyLoader(load);
 exports.load.inject('profile', 'test');
 exports.load.inject('process', 'test');
 
-// flush the mock log messages for each test case
-setup(async function() {
-  exports.monitor = await exports.load('monitor');
-  exports.monitor.reset();
-});
-
 // set up the testing secrets
 exports.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/taskcluster-worker-manager',
@@ -41,13 +35,23 @@ exports.withProvisioner = (mock, skipping) => {
     if (skipping()) {
       return;
     }
-    provisioner = await exports.load('provisioner');
+    exports.initiateProvisioner = async () => {
+      provisioner = await exports.load('provisioner');
+      // remove it right away, as it is started on load
+      exports.load.remove('provisioner');
+      return provisioner;
+    };
+    exports.terminateProvisioner = async () => {
+      if (provisioner) {
+        await provisioner.terminate();
+        provisioner = null;
+      }
+    };
   });
 
-  suiteTeardown(async function() {
+  teardown(function() {
     if (provisioner) {
-      await provisioner.terminate();
-      provisioner = null;
+      throw new Error('Must call terminateProvisioner if you have started it');
     }
   });
 };
@@ -67,6 +71,23 @@ exports.withFakeQueue = (mock, skipping) => {
 
     exports.queue = stubbedQueue();
     exports.load.inject('queue', exports.queue);
+  });
+};
+
+exports.withMonitor = (mock, skipping) => {
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+    exports.monitor = await exports.load('monitor');
+    exports.load.inject('monitor', exports.monitor);
+  });
+
+  // flush the mock log messages for each test case
+  setup(function() {
+    if (exports.monitor) {
+      exports.monitor.reset();
+    }
   });
 };
 

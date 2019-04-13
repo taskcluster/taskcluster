@@ -44,6 +44,14 @@ class Provider {
   }
 
   /**
+   * Given a WorkerType configuration, do whatever the provider might
+   * do with this worker type. This may mean nothing at all in the case of
+   * static provider!
+   */
+  provision({workerType}) {
+  }
+
+  /**
    * Any code which is required to be run by this Provider must only be
    * initiated by this method.  If there's any taskcluster-lib-iterate loops to
    * run, this is where they should be initiated.  Once the returned promise is
