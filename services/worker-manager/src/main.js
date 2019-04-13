@@ -53,11 +53,12 @@ let load = loader({
   },
 
   api: {
-    requires: ['cfg', 'schemaset', 'monitor', 'WorkerType'],
-    setup: async ({cfg, schemaset, monitor, WorkerType}) => builder.build({
+    requires: ['cfg', 'schemaset', 'monitor', 'WorkerType', 'providers'],
+    setup: async ({cfg, schemaset, monitor, WorkerType, providers}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {
         WorkerType,
+        providers,
       },
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,

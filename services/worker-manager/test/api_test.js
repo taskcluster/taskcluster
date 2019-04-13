@@ -21,14 +21,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
   test('create workertype', async function() {
     const name = 'ee';
     const input = {
-      provider: 'foo',
+      provider: 'testing1',
       description: 'bar',
       config: {},
     };
     workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
     const name2 = 'ee2';
     const input2 = {
-      provider: 'baz',
+      provider: 'testing1',
       description: 'bing',
       config: {},
     };
@@ -38,28 +38,65 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
   test('update workertype', async function() {
     const name = 'ee';
     const input = {
-      provider: 'foo',
+      provider: 'testing1',
       description: 'bar',
       config: {},
     };
     workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
     const input2 = {
-      provider: 'baz',
+      provider: 'testing2',
       description: 'bing',
       config: {},
     };
     workerTypeCompare(name, input2, await helper.workerManager.updateWorkerType(name, input2));
   });
 
+  test('create workertype (invalid provider)', async function() {
+    try {
+      await helper.workerManager.createWorkerType('oo', {
+        provider: 'foo',
+        description: 'e',
+        config: {},
+      });
+    } catch (err) {
+      if (err.code !== 'InputError') {
+        throw err;
+      }
+      return;
+    }
+    throw new Error('Allowed to specify an invalid provider');
+  });
+
+  test('update workertype (invalid provider)', async function() {
+    await helper.workerManager.createWorkerType('oo', {
+      provider: 'testing1',
+      description: 'e',
+      config: {},
+    });
+    try {
+      await helper.workerManager.updateWorkerType('oo', {
+        provider: 'foo',
+        description: 'e',
+        config: {},
+      });
+    } catch (err) {
+      if (err.code !== 'InputError') {
+        throw err;
+      }
+      return;
+    }
+    throw new Error('Allowed to specify an invalid provider');
+  });
+
   test('create workertype (already exists)', async function() {
     await helper.workerManager.createWorkerType('oo', {
-      provider: 'q',
+      provider: 'testing1',
       description: 'e',
       config: {},
     });
     try {
       await helper.workerManager.createWorkerType('oo', {
-        provider: 'q',
+        provider: 'testing2',
         description: 'e',
         config: {},
       });
@@ -75,7 +112,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
   test('update workertype (does not exist)', async function() {
     try {
       await helper.workerManager.updateWorkerType('oo', {
-        provider: 'q',
+        provider: 'testing1',
         description: 'e',
         config: {},
       });
@@ -91,7 +128,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
   test('get workertype', async function() {
     const name = 'ee';
     const input = {
-      provider: 'foo',
+      provider: 'testing1',
       description: 'bar',
       config: {},
     };
@@ -114,7 +151,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
   test('delete workertype', async function() {
     const name = 'ee';
     const input = {
-      provider: 'foo',
+      provider: 'testing1',
       description: 'bar',
       config: {},
     };

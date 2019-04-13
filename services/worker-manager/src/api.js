@@ -9,6 +9,7 @@ let builder = new APIBuilder({
   apiVersion: 'v1',
   context: [
     'WorkerType',
+    'providers',
   ],
 });
 
@@ -32,9 +33,17 @@ builder.declare({
 }, async function(req, res) {
   const {name} = req.params;
   const input = req.body;
-  const provider = input.provider;
+  const providerName = input.provider;
 
-  await req.authorize({name, provider});
+  await req.authorize({name, provider: providerName});
+
+  const provider = this.providers[providerName];
+  if (!provider) {
+    return res.reportError('InputError', 'Invalid Provider', {
+      provider: providerName,
+      validProviders: Object.keys(this.providers),
+    });
+  }
 
   const now = new Date();
   let workerType;
@@ -42,7 +51,7 @@ builder.declare({
   try {
     workerType = await this.WorkerType.create({
       name,
-      provider,
+      provider: providerName,
       description: input.description,
       config: input.config, // TODO: validate this
       created: now,
@@ -55,7 +64,7 @@ builder.declare({
     workerType = await this.WorkerType.load({name});
 
     // TODO: Do this whole thing with deep compare and include config!
-    if (workerType.provider !== provider ||
+    if (workerType.provider !== providerName ||
       workerType.description !== input.description ||
       workerType.created.getTime() !== now.getTime() ||
       workerType.lastModified.getTime() !== now.getTime()
@@ -84,9 +93,17 @@ builder.declare({
 }, async function(req, res) {
   const {name} = req.params;
   const input = req.body;
-  const provider = input.provider;
+  const providerName = input.provider;
 
-  await req.authorize({name, provider});
+  await req.authorize({name, provider: providerName});
+
+  const provider = this.providers[providerName];
+  if (!provider) {
+    return res.reportError('InputError', 'Invalid Provider', {
+      provider: providerName,
+      validProviders: Object.keys(this.providers),
+    });
+  }
 
   const workerType = await this.WorkerType.load({
     name,
@@ -98,7 +115,7 @@ builder.declare({
   await workerType.modify(wt => {
     wt.config = input.config; // TODO: validate
     wt.description = input.description;
-    wt.provider = provider;
+    wt.provider = providerName;
     wt.lastModifed = new Date().toJSON();
   });
 
