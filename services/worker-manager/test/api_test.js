@@ -10,12 +10,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     await helper.workerManager.ping();
   });
 
-  const workerTypeCompare = (name, input, result, desiredRenderedConfig = {}) => {
-    const {created, lastModified, renderedConfig, ...definition} = result;
+  const workerTypeCompare = (name, input, result) => {
+    const {created, lastModified, ...definition} = result;
     assert(created);
     assert(lastModified);
     assert.equal(lastModified, created);
-    assert.deepEqual(renderedConfig, desiredRenderedConfig);
     assert.deepEqual({name, ...input}, definition);
   };
 
@@ -24,14 +23,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     const input = {
       provider: 'foo',
       description: 'bar',
-      configTemplate: {},
+      config: {},
     };
     workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
     const name2 = 'ee2';
     const input2 = {
       provider: 'baz',
       description: 'bing',
-      configTemplate: {},
+      config: {},
     };
     workerTypeCompare(name2, input2, await helper.workerManager.createWorkerType(name2, input2));
   });
@@ -41,13 +40,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     const input = {
       provider: 'foo',
       description: 'bar',
-      configTemplate: {},
+      config: {},
     };
     workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
     const input2 = {
       provider: 'baz',
       description: 'bing',
-      configTemplate: {},
+      config: {},
     };
     workerTypeCompare(name, input2, await helper.workerManager.updateWorkerType(name, input2));
   });
@@ -56,13 +55,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     await helper.workerManager.createWorkerType('oo', {
       provider: 'q',
       description: 'e',
-      configTemplate: {},
+      config: {},
     });
     try {
       await helper.workerManager.createWorkerType('oo', {
         provider: 'q',
         description: 'e',
-        configTemplate: {},
+        config: {},
       });
     } catch (err) {
       if (err.code !== 'RequestConflict') {
@@ -78,7 +77,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       await helper.workerManager.updateWorkerType('oo', {
         provider: 'q',
         description: 'e',
-        configTemplate: {},
+        config: {},
       });
     } catch (err) {
       if (err.code !== 'ResourceNotFound') {
@@ -94,7 +93,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     const input = {
       provider: 'foo',
       description: 'bar',
-      configTemplate: {},
+      config: {},
     };
     await helper.workerManager.createWorkerType(name, input);
     workerTypeCompare(name, input, await helper.workerManager.workerType(name));
@@ -117,7 +116,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     const input = {
       provider: 'foo',
       description: 'bar',
-      configTemplate: {},
+      config: {},
     };
     workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
     await helper.workerManager.deleteWorkerType(name);

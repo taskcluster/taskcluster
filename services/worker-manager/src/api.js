@@ -44,8 +44,7 @@ builder.declare({
       name,
       provider,
       description: input.description,
-      configTemplate: input.configTemplate,
-      renderedConfig: input.configTemplate, // TODO: render
+      config: input.config, // TODO: validate this
       created: now,
       lastModified: now,
     });
@@ -97,8 +96,7 @@ builder.declare({
   }
 
   await workerType.modify(wt => {
-    wt.configTemplate = input.configTemplate;
-    wt.renderedTemplate = input.configTemplate; // TODO: Actually render
+    wt.config = input.config; // TODO: validate
     wt.description = input.description;
     wt.provider = provider;
     wt.lastModifed = new Date().toJSON();

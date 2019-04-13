@@ -10,8 +10,7 @@ const WorkerType = Entity.configure({
     description: Entity.types.String,
     created: Entity.types.Date,
     lastModified: Entity.types.Date,
-    configTemplate: Entity.types.JSON,
-    renderedConfig: Entity.types.JSON,
+    config: Entity.types.JSON,
     // Add an owner field
   },
 });
@@ -23,8 +22,7 @@ WorkerType.prototype.serializable = function() {
     description: this.description,
     created: this.created.toJSON(),
     lastModified: this.lastModified.toJSON(),
-    configTemplate: this.configTemplate,
-    renderedConfig: this.renderedConfig,
+    config: this.config,
   };
 };
 

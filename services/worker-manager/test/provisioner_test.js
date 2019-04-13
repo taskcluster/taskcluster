@@ -44,7 +44,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       input: {
         provider: 'testing1',
         description: 'bar',
-        configTemplate: {},
+        config: {},
       },
     },
   ]));
@@ -56,7 +56,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       input: {
         provider: 'testing1',
         description: 'bar',
-        configTemplate: {},
+        config: {},
       },
     },
     {
@@ -65,7 +65,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       input: {
         provider: 'testing1',
         description: 'bar',
-        configTemplate: {},
+        config: {},
       },
     },
   ]));
@@ -77,7 +77,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       input: {
         provider: 'testing1',
         description: 'bar',
-        configTemplate: {},
+        config: {},
       },
     },
     {
@@ -86,7 +86,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       input: {
         provider: 'testing2',
         description: 'bar',
-        configTemplate: {},
+        config: {},
       },
     },
   ]));

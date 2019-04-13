@@ -21,14 +21,14 @@ properties:
     maxLength: 10240
     description: |
       A description of this workerType.
-  configTemplate:
+  config:
     type: object
     additionalProperties: true
     description: |
-      The template that will be turned into a fully formed worker-type config.
-      This will be different per provider.
+      A workertype configuration. It will be different based on the provider
+      and the format is validated internally.
 additionalProperties: false
 required:
   - provider
   - description
-  - configTemplate
+  - config
