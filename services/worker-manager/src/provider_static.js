@@ -3,4 +3,6 @@ const {Provider} = require('./provider');
 class StaticProvider extends Provider {
 }
 
-module.exports = StaticProvider;
+module.exports = {
+  StaticProvider,
+};
