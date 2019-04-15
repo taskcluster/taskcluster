@@ -220,7 +220,7 @@ export default class TaskGroupTable extends Component {
             role="cell">
             <Link
               className={classes.listItemCell}
-              to={`/tasks/${taskGroup.status.taskId}`}>
+              to={`/tasks/${taskGroup.taskId}`}>
               <Typography className={classes.taskGroupName}>
                 {taskGroup.metadata.name}
               </Typography>
