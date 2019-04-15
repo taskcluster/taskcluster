@@ -36,6 +36,7 @@ import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
 import DialogAction from '../../../components/DialogAction';
 import TaskActionForm from '../../../components/TaskActionForm';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 import {
   ACTIONS_JSON_KNOWN_KINDS,
   ARTIFACTS_PAGE_SIZE,
@@ -50,6 +51,7 @@ import removeKeys from '../../../utils/removeKeys';
 import parameterizeTask from '../../../utils/parameterizeTask';
 import { nice } from '../../../utils/slugid';
 import formatTaskMutation from '../../../utils/formatTaskMutation';
+import Link from '../../../utils/Link';
 import submitTaskAction from '../submitTaskAction';
 import taskQuery from './task.graphql';
 import scheduleTaskQuery from './scheduleTask.graphql';
@@ -93,6 +95,9 @@ const getCachesFromTask = task =>
   dialogListItem: {
     paddingTop: 0,
     paddingBottom: 0,
+  },
+  link: {
+    ...theme.mixins.link,
   },
 }))
 @graphql(taskQuery, {
@@ -710,9 +715,18 @@ export default class ViewTask extends Component {
         />
         {task && (
           <Fragment>
-            <Typography variant="h5" className={classes.title}>
-              {task.metadata.name}
-            </Typography>
+            <Breadcrumbs>
+              <Typography
+                className={classes.link}
+                component={Link}
+                to={`/tasks/groups/${task.taskGroupId}`}>
+                Task Group
+              </Typography>
+              <Typography color="textSecondary">
+                {task.metadata.name}
+              </Typography>
+            </Breadcrumbs>
+            <br />
             <Typography variant="subtitle1">
               <Markdown>{task.metadata.description}</Markdown>
             </Typography>
