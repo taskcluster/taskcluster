@@ -20,6 +20,9 @@ exports.secrets = new Secrets({
       {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
       {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl', mock: libUrls.testRootUrl()},
     ],
+    azure: [
+      {env: 'AZURE_ACCOUNT', cfg: 'azure.accountId', name: 'accountId'},
+    ],
   },
   load: exports.load,
 });
