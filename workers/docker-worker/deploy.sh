@@ -10,6 +10,46 @@ if [ "$TASKCLUSTER_CLIENT_ID" == "" -o "$TASKCLUSTER_ACCESS_TOKEN" == "" ]; then
     exit 1
 fi
 
+if [ "$TASKCLUSTER_ROOT_URL" == "" ]; then
+    echo "TASKCLUSTER_ROOT_URL must be set" >&2
+    exit 1
+fi
+
+export DEPLOYMENT
+case "$TASKCLUSTER_ROOT_URL" in
+    # note that these names correspond to the deployment names in taskcluster-mozilla-terraform
+    https://taskcluster.net) DEPLOYMENT=taskcluster-net;;
+    https://taskcluster-staging.net) DEPLOYMENT=taskcluster-staging-net;;
+    https://*.taskcluster-dev.net) DEPLOYMENT=$(echo $TASKCLUSTER_ROOT_URL | sed 's!https://\(.*\)\.taskcluster-dev.net!\1!')-dev;;
+    *)
+        echo "Unrecognized TASKCLUSTER_ROOT_URL" >&2
+        exit 1;;
+esac
+
+echo "Configuring TC environment ${DEPLOYMENT}" >&2
+
+export AWS_ACCOUNT
+case "$DEPLOYMENT" in
+    taskcluster-net) AWS_ACCOUNT=mozilla-taskcluster;;
+    taskcluster-staging-net) AWS_ACCOUNT=taskcluster-aws-staging;;
+    *-dev) AWS_ACCOUNT=taskcluster-aws-staging;;
+    *)
+        echo "No AWS account defined for this environment" >&2
+        exit 1;;
+esac
+
+found=false
+for alias in `aws iam list-account-aliases | jq -r '.AccountAliases[]'`; do
+    if [ "$alias" == "$AWS_ACCOUNT" ]; then
+        found=true
+    fi
+done
+if ! $found; then
+    echo "Not signed into AWS account $aws_account_alias - sign in and try again" >&2
+    exit 1
+fi
+echo "Using AWS account $aws_account_alias" >&2
+
 if [ 0$NODE_VERSION_MAJOR -lt 8 -o 0$NODE_VERSION_MAJOR -eq 8 -a 0$NODE_VERSION_MINOR -lt 15 ]; then
   echo "$0 requires node version 8.5.0 or higher." >&2
   exit 1
@@ -28,6 +68,10 @@ https://mana.mozilla.org/wiki/display/IT/Mozilla+VPN for information on how to s
 fi
 
 deploy/bin/import-docker-worker-secrets
+trap 'rm -rf /tmp/docker-worker*' EXIT
 deploy/bin/build app
-deploy/bin/update-worker-types.js $*
-rm -f /tmp/docker-worker*
+if [ "$DEPLOYMENT" == "taskcluster-net" ]; then
+    deploy/bin/update-worker-types.js $*
+else
+    echo "Not deploying worker-types as this is not the taskcluster-net deployment"
+fi

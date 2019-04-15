@@ -48,6 +48,20 @@ cmd_app() {
   tar_docker_worker
   local git_rev=$(git rev-parse --verify HEAD)
 
+  local hvmSourceAMI
+  case "$AWS_ACCOUNT" in
+      # NOTE: if building a new base AMI, either generate for all of these
+      # accounts, or comment out the accounts you have not updated so that
+      # the next person is not surprised by using an old base
+      mozilla-taskcluster) hvmSourceAMI=ami-0b592dde206b04775;;
+      taskcluster-aws-staging) hvmSourceAMI=ami-0fed78ad135e76d63;;
+      *)
+          echo "No base AMI defined for AWS account $AWS_ACCOUNT; create one" >&2
+          echo "  ./deploy/bin/build base" >&2
+          echo "and then edit 'deploy/bin/base' to include that AMI ID" >&2
+          exit 1;;
+  esac
+
   # Configure the deployment if needed...
   make -j100 -C deploy
 
@@ -58,6 +72,7 @@ cmd_app() {
     -var "templateContents=deploy/deploy.tar.gz" \
     -var "npmPackage=docker-worker.tgz" \
     -var "workerRevision=$git_rev" \
+    -var "hvmSourceAMI=$hvmSourceAMI" \
     $(packer_config app)
 }
 

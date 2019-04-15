@@ -225,6 +225,9 @@ are important.
       ./deploy/bin/build base
       ```
 
+      Once this is complete, edit `deploy/bin/base` to include the new AMI ID.
+      Note the comments there: either build the base AMI for all AWS accounts, or remove the AMI for accounts where you did not build it.
+
   2. Building the [app](/deploy/packer/app.json) AMI. Do this when:
       - You want to test new code/features.
 
@@ -234,10 +237,13 @@ are important.
       using it.. Usually you need to also update a provisioner workerType with
       the new AMI id.
 
+      To do this, run `./deploy.sh`, which gathers the necessary secrets and, on `https://taskcluster.net`, deploys to worker types.
+      The secrets come from files in passwordstore named after the deploymnet, which is determined from `TASKCLUSTER_ROOT_URL`.
+
       *Example*:
 
       ```sh
-      ./deploy/bin/build app
+      ./deploy.sh
       ```
 
 ### Deployment Implementation

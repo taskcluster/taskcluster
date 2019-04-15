@@ -53,7 +53,7 @@ module.exports = {
         clientId: process.env.TASKCLUSTER_CLIENT_ID,
         accessToken: process.env.TASKCLUSTER_ACCESS_TOKEN
       },
-      rootUrl: 'https://taskcluster.net'
+      rootUrl: process.env.TASKCLUSTER_ROOT_URL,
     });
   },
 
