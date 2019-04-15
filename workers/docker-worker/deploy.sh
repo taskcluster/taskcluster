@@ -45,13 +45,13 @@ for alias in `aws iam list-account-aliases | jq -r '.AccountAliases[]'`; do
     fi
 done
 if ! $found; then
-    echo "Not signed into AWS account $aws_account_alias - sign in and try again" >&2
+    echo "Not signed into AWS account $AWS_ACCOUNT - sign in and try again" >&2
     exit 1
 fi
-echo "Using AWS account $aws_account_alias" >&2
+echo "Using AWS account $AWS_ACCOUNT" >&2
 
 if [ 0$NODE_VERSION_MAJOR -lt 8 -o 0$NODE_VERSION_MAJOR -eq 8 -a 0$NODE_VERSION_MINOR -lt 15 ]; then
-  echo "$0 requires node version 8.5.0 or higher." >&2
+  echo "$0 requires node version 8.15.0 or higher." >&2
   exit 1
 fi
 
