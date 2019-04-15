@@ -57,7 +57,8 @@ function inline_sed {
 # Make sure git tag doesn't already exist on remote
 if [ "$(git ls-remote -t "${OFFICIAL_GIT_REPO}" "v${NEW_VERSION}" 2>&1 | wc -l | tr -d ' ')" != '0' ]; then
   echo "git tag '${NEW_VERSION}' already exists remotely on ${OFFICIAL_GIT_REPO},"
-  echo "or there was an error checking whether it existed."
+  echo "or there was an error checking whether it existed:"
+  git ls-remote -t "${OFFICIAL_GIT_REPO}" "v${NEW_VERSION}"
   exit 67
 fi
 
@@ -72,19 +73,6 @@ if [ -n "$modified" ]; then
   echo
   git status
   exit 68
-fi
-
-# Make sure that build environment is clean
-if [ "$(git clean -ndx 2>&1 | wc -l | tr -d ' ')" != 0 ]; then
-  echo "You have local changes to files/directories that are in your git ignore list."
-  echo "These need to be removed, as they may interfere with the build. Release builds"
-  echo "need to be clean builds. To clean your directory, run:"
-  echo
-  echo "  git -C '$(pwd)' clean -fdx"
-  echo
-  echo "This will have the following effect:"
-  git clean -ndx
-  exit 70
 fi
 
 # ******** If making a NON-alpha release only **********
