@@ -56,6 +56,9 @@ builder.declare({
       config: input.config, // TODO: validate this
       created: now,
       lastModified: now,
+      errors: [],
+      owner: input.owner,
+      providerData: {},
     });
   } catch (err) {
     if (err.code !== 'EntityAlreadyExists') {
@@ -67,7 +70,8 @@ builder.declare({
     if (workerType.provider !== providerName ||
       workerType.description !== input.description ||
       workerType.created.getTime() !== now.getTime() ||
-      workerType.lastModified.getTime() !== now.getTime()
+      workerType.lastModified.getTime() !== now.getTime() ||
+      workerType.owner !== input.owner
     ) {
       return res.reportError('RequestConflict', 'WorkerType already exists', {});
     }
@@ -116,6 +120,7 @@ builder.declare({
     wt.config = input.config; // TODO: validate
     wt.description = input.description;
     wt.provider = providerName;
+    wt.owner = input.owner;
     wt.lastModifed = new Date().toJSON();
   });
 

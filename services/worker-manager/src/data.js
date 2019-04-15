@@ -11,7 +11,9 @@ const WorkerType = Entity.configure({
     created: Entity.types.Date,
     lastModified: Entity.types.Date,
     config: Entity.types.JSON,
-    // Add an owner field
+    errors: Entity.types.JSON,
+    owner: Entity.types.String,
+    providerData: Entity.types.JSON, // providers can use this to remember values between provisioning runs
   },
 });
 
@@ -23,7 +25,26 @@ WorkerType.prototype.serializable = function() {
     created: this.created.toJSON(),
     lastModified: this.lastModified.toJSON(),
     config: this.config,
+    errors: this.errors,
+    owner: this.owner,
   };
+};
+
+WorkerType.prototype.reportError = async function({type, title, description, extra, notify, owner}) {
+  await this.modify(wt => {
+    wt.errors.unshift({ // TODO: Add a timestamp in here
+      type,
+      title,
+      description,
+      ...extra,
+    });
+    wt.errors = wt.errors.slice(0, 10); // TODO Not hardcoded? need to change in schema too
+  });
+  await notify.email({
+    address: owner,
+    subject: 'TODO',
+    content: 'TODO',
+  });
 };
 
 module.exports = {

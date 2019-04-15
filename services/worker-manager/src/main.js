@@ -107,17 +107,29 @@ let load = loader({
     setup: ({cfg}) => new taskcluster.Queue(cfg.taskcluster),
   },
 
+  notify: {
+    requires: ['cfg'],
+    setup: ({cfg}) => new taskcluster.Notify(cfg.taskcluster),
+  },
+
   providers: {
-    requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) => {
+    requires: ['cfg', 'monitor', 'notify'],
+    setup: ({cfg, monitor, notify}) => {
       const _providers = {};
       Object.entries(cfg.providers).forEach(([name, meta]) => {
+        let Prov;
         switch(meta.implementation) {
-          case 'testing': _providers[name] = new TestingProvider({name, monitor: monitor.monitor(name)}); break;
-          case 'static': _providers[name] = new StaticProvider({name, monitor: monitor.monitor(name)}); break;
-          case 'google': _providers[name] = new GoogleProvider({name, monitor: monitor.monitor(name)}); break;
+          case 'testing': Prov = TestingProvider; break;
+          case 'static': Prov = StaticProvider; break;
+          case 'google': Prov = GoogleProvider; break;
           default: throw new Error(`Unkown provider ${meta.implementation} selected for provider ${name}.`);
         }
+        _providers[name] = new Prov({
+          name,
+          notify,
+          monitor: monitor.monitor(name),
+          ...meta,
+        });
       });
       return _providers;
     },

@@ -11,9 +11,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
   });
 
   const workerTypeCompare = (name, input, result) => {
-    const {created, lastModified, ...definition} = result;
+    const {created, lastModified, errors, ...definition} = result;
     assert(created);
     assert(lastModified);
+    assert(errors);
     assert.equal(lastModified, created);
     assert.deepEqual({name, ...input}, definition);
   };
@@ -24,6 +25,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       provider: 'testing1',
       description: 'bar',
       config: {},
+      owner: 'example@example.com',
     };
     workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
     const name2 = 'ee2';
@@ -31,6 +33,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       provider: 'testing1',
       description: 'bing',
       config: {},
+      owner: 'example@example.com',
     };
     workerTypeCompare(name2, input2, await helper.workerManager.createWorkerType(name2, input2));
   });
@@ -41,12 +44,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       provider: 'testing1',
       description: 'bar',
       config: {},
+      owner: 'example@example.com',
     };
     workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
     const input2 = {
       provider: 'testing2',
       description: 'bing',
       config: {},
+      owner: 'example@example.com',
     };
     workerTypeCompare(name, input2, await helper.workerManager.updateWorkerType(name, input2));
   });
@@ -57,6 +62,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         provider: 'foo',
         description: 'e',
         config: {},
+        owner: 'example@example.com',
       });
     } catch (err) {
       if (err.code !== 'InputError') {
@@ -72,12 +78,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       provider: 'testing1',
       description: 'e',
       config: {},
+      owner: 'example@example.com',
     });
     try {
       await helper.workerManager.updateWorkerType('oo', {
         provider: 'foo',
         description: 'e',
         config: {},
+        owner: 'example@example.com',
       });
     } catch (err) {
       if (err.code !== 'InputError') {
@@ -93,12 +101,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       provider: 'testing1',
       description: 'e',
       config: {},
+      owner: 'example@example.com',
     });
     try {
       await helper.workerManager.createWorkerType('oo', {
         provider: 'testing2',
         description: 'e',
         config: {},
+        owner: 'example@example.com',
       });
     } catch (err) {
       if (err.code !== 'RequestConflict') {
@@ -115,6 +125,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         provider: 'testing1',
         description: 'e',
         config: {},
+        owner: 'example@example.com',
       });
     } catch (err) {
       if (err.code !== 'ResourceNotFound') {
@@ -131,6 +142,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       provider: 'testing1',
       description: 'bar',
       config: {},
+      owner: 'example@example.com',
     };
     await helper.workerManager.createWorkerType(name, input);
     workerTypeCompare(name, input, await helper.workerManager.workerType(name));
@@ -154,6 +166,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       provider: 'testing1',
       description: 'bar',
       config: {},
+      owner: 'example@example.com',
     };
     workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
     await helper.workerManager.deleteWorkerType(name);

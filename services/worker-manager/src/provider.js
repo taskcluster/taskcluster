@@ -6,9 +6,10 @@ class Provider {
    * a cloud provider for terminating/listing instances. Any provisioning
    * logic should be started in `initiate` below.
    */
-  constructor({id, monitor}) {
+  constructor({id, monitor, notify}) {
     this.id = id;
     this.monitor = monitor;
+    this.notify = notify;
   }
 
   /**

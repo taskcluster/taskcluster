@@ -27,8 +27,15 @@ properties:
     description: |
       A workertype configuration. It will be different based on the provider
       and the format is validated internally.
+  owner:
+    type: string
+    format: email
+    description: |
+      An email address to notify when there are provisioning errors for this
+      workertype.
 additionalProperties: false
 required:
   - provider
   - description
   - config
+  - owner

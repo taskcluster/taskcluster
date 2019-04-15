@@ -45,6 +45,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         provider: 'testing1',
         description: 'bar',
         config: {},
+        owner: 'example@example.com',
       },
     },
   ]));
@@ -57,6 +58,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         provider: 'testing1',
         description: 'bar',
         config: {},
+        owner: 'example@example.com',
       },
     },
     {
@@ -66,6 +68,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         provider: 'testing1',
         description: 'bar',
         config: {},
+        owner: 'example@example.com',
       },
     },
   ]));
@@ -78,6 +81,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         provider: 'testing1',
         description: 'bar',
         config: {},
+        owner: 'example@example.com',
       },
     },
     {
@@ -87,6 +91,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         provider: 'testing2',
         description: 'bar',
         config: {},
+        owner: 'example@example.com',
       },
     },
   ]));

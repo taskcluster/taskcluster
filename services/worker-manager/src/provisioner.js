@@ -71,7 +71,7 @@ class Provisioner {
         }
 
         // TODO: Time this and report below
-        provider.provision(workerType);
+        provider.provision({workerType});
 
         this.monitor.log.workertypeProvision({
           workerType: workerType.name,

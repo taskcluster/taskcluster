@@ -39,6 +39,17 @@ properties:
     description: |
       A workertype configuration. It will be different based on the provider
       and the format is validated internally.
+  errors:
+    type: array
+    description: |
+      The last 10 errors a provider faced when trying to provision
+      this workertype.
+  owner:
+    type: string
+    format: email
+    description: |
+      An email address to notify when there are provisioning errors for this
+      workertype.
 additionalProperties: false
 required:
   - provider
@@ -46,3 +57,5 @@ required:
   - created
   - lastModified
   - config
+  - owner
+  - errors
