@@ -118,7 +118,6 @@ class MonitorManager {
     if (!enable || mock) {
       patchGlobal = false;
       processName = null;
-      pretty = false;
     }
 
     this.mock = mock;
