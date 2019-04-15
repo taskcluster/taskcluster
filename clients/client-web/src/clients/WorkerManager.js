@@ -11,13 +11,10 @@ export default class WorkerManager extends Client {
       ...options,
     });
     this.ping.entry = {"args":[],"method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.createWorkerConfiguration.entry = {"args":["workerConfigurationId"],"input":true,"method":"put","name":"createWorkerConfiguration","query":[],"route":"/worker-configurations/<workerConfigurationId>","scopes":"worker-manager:manage-worker-configuration:<workerConfigurationId>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.updateWorkerConfiguration.entry = {"args":["workerConfigurationId"],"input":true,"method":"post","name":"updateWorkerConfiguration","query":[],"route":"/worker-configurations/<workerConfigurationId>","scopes":"worker-manager:manage-worker-configuration:<workerConfigurationId>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.getWorkerConfiguration.entry = {"args":["workerConfigurationId"],"method":"get","name":"getWorkerConfiguration","output":true,"query":[],"route":"/worker-configurations/<workerConfigurationId>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.removeWorkerConfiguration.entry = {"args":["workerConfigurationId"],"method":"delete","name":"removeWorkerConfiguration","query":[],"route":"/worker-configurations/<workerConfigurationId>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.listWorkerConfigurations.entry = {"args":[],"method":"get","name":"listWorkerConfigurations","query":[],"route":"/worker-configurations","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.testWorkerConfiguration.entry = {"args":[],"input":true,"method":"post","name":"testWorkerConfiguration","output":true,"query":[],"route":"/worker-configuration","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.evaluateWorkerConfiguration.entry = {"args":["workerConfigurationId"],"input":true,"method":"post","name":"evaluateWorkerConfiguration","output":true,"query":[],"route":"/worker-configurations/<workerConfigurationId>/evaluate","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.createWorkerType.entry = {"args":["name"],"input":true,"method":"put","name":"createWorkerType","output":true,"query":[],"route":"/workertype/<name>","scopes":{"AllOf":["worker-manager:create-worker-type:<name>","worker-manager:provider:<provider>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
+    this.updateWorkerType.entry = {"args":["name"],"input":true,"method":"post","name":"updateWorkerType","output":true,"query":[],"route":"/workertype/<name>","scopes":{"AllOf":["worker-manager:update-worker-type:<name>","worker-manager:provider:<provider>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
+    this.workerType.entry = {"args":["name"],"method":"get","name":"workerType","output":true,"query":[],"route":"/workertype/<name>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.deleteWorkerType.entry = {"args":["name"],"method":"delete","name":"deleteWorkerType","query":[],"route":"/workertype/<name>","scopes":"worker-manager:delete-worker-type:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -29,60 +26,35 @@ export default class WorkerManager extends Client {
     return this.request(this.ping.entry, args);
   }
   /* eslint-disable max-len */
-  // Create a worker configuration
+  // TODO
   /* eslint-enable max-len */
-  createWorkerConfiguration(...args) {
-    this.validate(this.createWorkerConfiguration.entry, args);
+  createWorkerType(...args) {
+    this.validate(this.createWorkerType.entry, args);
 
-    return this.request(this.createWorkerConfiguration.entry, args);
+    return this.request(this.createWorkerType.entry, args);
   }
   /* eslint-disable max-len */
-  // Update a worker configuration
+  // TODO
   /* eslint-enable max-len */
-  updateWorkerConfiguration(...args) {
-    this.validate(this.updateWorkerConfiguration.entry, args);
+  updateWorkerType(...args) {
+    this.validate(this.updateWorkerType.entry, args);
 
-    return this.request(this.updateWorkerConfiguration.entry, args);
+    return this.request(this.updateWorkerType.entry, args);
   }
   /* eslint-disable max-len */
-  // Get a worker configuration
+  // TODO
   /* eslint-enable max-len */
-  getWorkerConfiguration(...args) {
-    this.validate(this.getWorkerConfiguration.entry, args);
+  workerType(...args) {
+    this.validate(this.workerType.entry, args);
 
-    return this.request(this.getWorkerConfiguration.entry, args);
+    return this.request(this.workerType.entry, args);
   }
   /* eslint-disable max-len */
-  // Get a worker configuration
+  // TODO
   /* eslint-enable max-len */
-  removeWorkerConfiguration(...args) {
-    this.validate(this.removeWorkerConfiguration.entry, args);
+  deleteWorkerType(...args) {
+    this.validate(this.deleteWorkerType.entry, args);
 
-    return this.request(this.removeWorkerConfiguration.entry, args);
-  }
-  /* eslint-disable max-len */
-  // Retrieve a worker configuration as a set of rules
-  /* eslint-enable max-len */
-  listWorkerConfigurations(...args) {
-    this.validate(this.listWorkerConfigurations.entry, args);
-
-    return this.request(this.listWorkerConfigurations.entry, args);
-  }
-  /* eslint-disable max-len */
-  // Evaluate a worker configuration against a set of satisfiers
-  /* eslint-enable max-len */
-  testWorkerConfiguration(...args) {
-    this.validate(this.testWorkerConfiguration.entry, args);
-
-    return this.request(this.testWorkerConfiguration.entry, args);
-  }
-  /* eslint-disable max-len */
-  // Preview the currently stored worker configurations evaluation result against
-  // the provided satisfiers
-  /* eslint-enable max-len */
-  evaluateWorkerConfiguration(...args) {
-    this.validate(this.evaluateWorkerConfiguration.entry, args);
-
-    return this.request(this.evaluateWorkerConfiguration.entry, args);
+    return this.request(this.deleteWorkerType.entry, args);
   }
 }

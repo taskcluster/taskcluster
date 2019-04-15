@@ -55,7 +55,7 @@ class GoogleProvider extends Provider {
     if (!await this.ensureImage({workerType})) {
       return;
     }
-    const account = await this.configureServiceAccount({workerType});
+    await this.configureServiceAccount({workerType});
     //const role = await this.configureRole(workerType);
     //await this.configurePolicies({account, role});
     //const template = await this.setupTemplate({workerType, account});
