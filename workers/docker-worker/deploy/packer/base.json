@@ -56,7 +56,7 @@
       "type": "amazon-ebs",
       "name": "hvm-builder",
       "region": "us-west-2",
-      "source_ami": "ami-25cf1c5d",
+      "source_ami": "ami-005bdb005fb00e791",
       "ami_virtualization_type": "hvm",
       "instance_type": "m5.large",
       "ssh_username": "ubuntu",

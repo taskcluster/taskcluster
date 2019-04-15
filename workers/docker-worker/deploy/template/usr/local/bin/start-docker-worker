@@ -1,0 +1,6 @@
+#!/bin/bash
+
+DOCKER_WORKER='node /home/ubuntu/docker_worker/src/bin/worker.js'
+DOCKER_WORKER_OPTS=
+
+$DOCKER_WORKER $DOCKER_WORKER_OPTS --host $HOST production 2>&1 | logger --tag docker-worker

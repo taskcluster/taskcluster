@@ -2,9 +2,9 @@
 
 set -e -v
 
-DOCKER_VERSION=18.06.0~ce~3-0~ubuntu
-KERNEL_VER=4.4.0-1014-aws
-V4L2LOOPBACK_VERSION=0.10.0
+DOCKER_VERSION=5:18.09.5~3-0~ubuntu-bionic
+KERNEL_VER=4.15.0-47-generic
+V4L2LOOPBACK_VERSION=0.12.0
 
 lsb_release -a
 
@@ -22,75 +22,66 @@ fi
 
 sudo usermod -a -G docker $user
 
-[ -e /usr/lib/apt/methods/https ] || {
-  apt-get install apt-transport-https
-}
+sudo apt-get install -yq \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg-agent \
+    software-properties-common
 
-sudo apt-get install -y software-properties-common
-sudo apt-add-repository -y ppa:taskcluster/ppa
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
-# Add docker gpg key and update sources
-sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
-sudo sh -c 'echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu trusty stable" \
-  > /etc/apt/sources.list.d/docker.list'
+sudo apt-key fingerprint 0EBFCD88
+
+sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
 
 ## Update to pick up new registries
 sudo apt-get update -y
 
-## Update kernel
-sudo apt-get install -y \
+# Upgrade to the latest aws kernel. If not, a bug in apt-get remove
+# may install a newer kernel after we remove the old one
+sudo apt-get install -yq unattended-upgrades
+sudo unattended-upgrades
+sudo apt-get auto-remove -y
+
+# Uninstall aws kernels
+sudo DEBIAN_FRONTEND=noninteractive apt-get remove -yq \
+    $(ls -1 /boot/vmlinuz-*aws | sed -e 's,/boot/vmlinuz,linux-image,')
+
+# Update kernel
+# We install the generic kernel because it has the V4L2 driver
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq \
     linux-image-$KERNEL_VER \
     linux-headers-$KERNEL_VER \
+    linux-modules-$KERNEL_VER \
+    linux-modules-extra-$KERNEL_VER \
     dkms
 
-# Clean up old 3.13 kernel.
-sudo apt-get remove -y linux-image-extra-virtual
-sudo apt-get autoremove -y
-
-if [ -z "${VAGRANT_PROVISION}" ]; then
-    # On paravirtualized instances, PV-GRUB looks at /boot/grub/menu.lst, which is different from the
-    # /boot/grub/grub.cfg that dpkg just updated.  So we have to update menu.list manually.
-    cat <<EOF | sudo tee /boot/grub/menu.lst >&2
-default         0
-timeout         0
-hiddenmenu
-
-title           Ubuntu 14.04.2 LTS, kernel ${KERNEL_VER}
-root            (hd0)
-kernel          /boot/vmlinuz-${KERNEL_VER} root=LABEL=cloudimg-rootfs ro console=hvc0
-initrd          /boot/initrd.img-${KERNEL_VER}
-
-title           Ubuntu 14.04.2 LTS, kernel ${KERNEL_VER} (recovery mode)
-root            (hd0)
-kernel          /boot/vmlinuz-${KERNEL_VER} root=LABEL=cloudimg-rootfs ro  single
-initrd          /boot/initrd.img-${KERNEL_VER}
-EOF
-fi
-
 ## Install all the packages
-sudo apt-get install -y \
-    unattended-upgrades \
+sudo apt-get install -yq \
     docker-ce=$DOCKER_VERSION \
     lvm2 \
     curl \
     build-essential \
     git-core \
-    gstreamer0.10-alsa \
-    gstreamer0.10-plugins-bad \
-    gstreamer0.10-plugins-base \
-    gstreamer0.10-plugins-good \
-    gstreamer0.10-plugins-ugly \
-    gstreamer0.10-tools \
+    gstreamer1.0-alsa \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-ugly \
+    gstreamer1.0-tools \
     pbuilder \
     python-mock \
     python-configobj \
-    python-support \
+    dh-python \
     cdbs \
     python-pip \
     jq \
     rsyslog-gnutls \
     openvpn \
-    lxc \
     rng-tools \
     liblz4-tool
 
@@ -108,10 +99,6 @@ sudo mv zstd /usr/bin
 cd /
 sudo rm -rf /zstd
 
-if [ -z "${VAGRANT_PROVISION}" ]; then
-    ## Clear mounts created in base image so fstab is empty in other builds...
-    sudo sh -c 'echo "" > /etc/fstab'
-fi
 
 ## Install v4l2loopback
 cd /usr/src

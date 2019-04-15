@@ -9,28 +9,17 @@ if [ $(uname -s) == Linux ]; then
 fi
 
 # Generate gpg key
-cat >gen_key_conf <<EOF
-  %echo Generating GPG signing key
-  Key-Type: RSA
-  Key-Length: 2048
-  Name-Real: $name
-  Name-Email: taskcluster-accounts+gpgsigning@mozilla.com
-  %commit
-  %echo Done generating key
-EOF
-
 echo "Generating signing key"
-gpg --batch --gen-key gen_key_conf
-rm gen_key_conf
+gpg --batch --quick-gen-key --yes --passphrase "" $name
 
-key=$(gpg --list-key $name | head -1 | awk '{print $2}' | awk -F/ '{print $2}')
-fingerprint=$(gpg --fingerprint $key | grep "fingerprint" | awk -F= '{print $2}' | tr -d " ")
+key=$(gpg --list-key $name | head -2 | tail -1 | awk '{print $1}')
+fingerprint=$(gpg --fingerprint $key | head -2 | tail -1 | tr -d " ")
 
 echo "Exporting private signing key"
-gpg -a --export-secret-key $key > docker-worker-gpg-signing-key.key
+gpg -a --batch --export-secret-key $key > docker-worker-gpg-signing-key.key
 
 echo "Exporting public signing key"
-gpg -a --export $key > docker-worker.pub
+gpg -a --batch --export $key > docker-worker.pub
 
-gpg --batch --delete-secret-and-public-key $fingerprint
+gpg --batch --yes --delete-secret-and-public-key $fingerprint
 

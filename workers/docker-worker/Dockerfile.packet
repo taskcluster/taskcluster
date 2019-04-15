@@ -119,4 +119,18 @@ RUN cd $HOME/docker_worker && tar xzf /tmp/docker-worker.tgz -C . && yarn instal
 
 RUN ln -sf /usr/lib/systemd/system/docker-worker.service /etc/systemd/system/multi-user.target.wants/docker-worker.service
 
+RUN bash -c 'cat > /lib/systemd/system/docker-worker.service <<EOF
+[Unit]
+Description=Taskcluster docker worker
+After=docker.service
+
+[Service]
+Type=notify
+ExecStart=/usr/local/bin/start-docker-worker
+User=root
+Environment="HOST=packet"
+EOF'
+
+RUN systemctl enable docker-worker
+
 # END OF APP IMAGE
