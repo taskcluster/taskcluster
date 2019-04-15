@@ -48,7 +48,7 @@
     "graphql-depth-limit": "^1.1.0",
     "graphql-iso-date": "^3.5.0",
     "graphql-playground-middleware-express": "^1.7.8",
-    "graphql-type-json": "^0.2.0",
+    "graphql-type-json": "^0.3.0",
     "graphql-validation-complexity": "^0.2.3",
     "hashids": "^1.2.2",
     "hawk": "^7.0.10",
