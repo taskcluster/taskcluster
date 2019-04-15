@@ -128,31 +128,6 @@ export default class TaskDetailsCard extends Component {
                   secondary={<StatusLabel state={task.status.state} />}
                 />
               </ListItem>
-              <ListItem
-                button
-                className={classes.listItemButton}
-                component="a"
-                href={task.metadata.source}
-                target="_blank"
-                rel="noopener noreferrer">
-                <ListItemText
-                  className={classes.sourceHeadlineText}
-                  classes={{ secondary: classes.sourceHeadline }}
-                  primary="Source"
-                  secondary={task.metadata.source}
-                />
-                {isExternal ? <OpenInNewIcon /> : <LinkIcon />}
-              </ListItem>
-              <ListItem
-                button
-                className={classes.listItemButton}
-                component="a"
-                href={urls.api('queue', 'v1', `task/${task.taskId}`)}
-                target="_blank"
-                rel="noopener noreferrer">
-                <ListItemText primary="View task definition" />
-                <OpenInNewIcon />
-              </ListItem>
               <CopyToClipboard
                 title={`${task.created} (Copy)`}
                 text={task.created}>
@@ -218,6 +193,16 @@ export default class TaskDetailsCard extends Component {
               <ListItem
                 button
                 className={classes.listItemButton}
+                component="a"
+                href={urls.api('queue', 'v1', `task/${task.taskId}`)}
+                target="_blank"
+                rel="noopener noreferrer">
+                <ListItemText primary="View task definition" />
+                <OpenInNewIcon />
+              </ListItem>
+              <ListItem
+                button
+                className={classes.listItemButton}
                 onClick={this.handleToggleMore}>
                 <ListItemText primary={showMore ? 'Less...' : 'More...'} />
                 {showMore ? <ChevronUpIcon /> : <ChevronDownIcon />}
@@ -225,6 +210,21 @@ export default class TaskDetailsCard extends Component {
             </List>
             <Collapse in={showMore} timeout="auto">
               <List>
+                <ListItem
+                  button
+                  className={classes.listItemButton}
+                  component="a"
+                  href={task.metadata.source}
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  <ListItemText
+                    className={classes.sourceHeadlineText}
+                    classes={{ secondary: classes.sourceHeadline }}
+                    primary="Source"
+                    secondary={task.metadata.source}
+                  />
+                  {isExternal ? <OpenInNewIcon /> : <LinkIcon />}
+                </ListItem>
                 <ListItem>
                   <ListItemText
                     primary="Retries Left"
