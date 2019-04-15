@@ -34,7 +34,9 @@ The `pullRequests` policy controls this behavior:
 
 * `public` -- tasks are created for all pull requests.
 
-* `collaborators` (the default) -- tasks are created if the user who made the pull request is a collaborator on the repository.
+* `collaborators` (the default) -- tasks are created if the user who made the pull request is a collaborator on the repository. If the user is not a collaborator then we leave a comment "No taskcluster jobs were created.."  on the pullRequests.
+
+* `collaborators_quiet` -- tasks are created if the user who made the pull request is a collaborator on the repository. we don't make any comment on the pull request if the user is not a collaborator, which we are doing in **collaborators** policy. 
 Github [defines
   collaborators](https://developer.github.com/v3/repos/collaborators/#list-collaborators) as "outside collaborators, organization members with access through team memberships, organization members with access through default organization permissions, and organization owners."
 
