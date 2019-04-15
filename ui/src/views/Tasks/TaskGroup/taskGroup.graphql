@@ -9,12 +9,12 @@ query TaskGroup($taskGroupId: ID!, $taskGroupConnection: PageConnection, $filter
     }
     edges {
       node {
+        taskId
         metadata {
           name
         }
         taskGroupId
         status {
-          taskId
           state
         }
       }

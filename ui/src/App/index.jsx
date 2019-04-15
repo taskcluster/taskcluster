@@ -12,6 +12,7 @@ import { setContext } from 'apollo-link-context';
 import {
   InMemoryCache,
   IntrospectionFragmentMatcher,
+  defaultDataIdFromObject,
 } from 'apollo-cache-inmemory';
 import { CachePersistor } from 'apollo-cache-persist';
 import ReactGA from 'react-ga';
@@ -40,7 +41,27 @@ export default class App extends Component {
     introspectionQueryResultData,
   });
 
-  cache = new InMemoryCache({ fragmentMatcher: this.fragmentMatcher });
+  cache = new InMemoryCache({
+    fragmentMatcher: this.fragmentMatcher,
+    /* eslint-disable no-underscore-dangle */
+    dataIdFromObject: object => {
+      switch (object.__typename) {
+        case 'TaskStatus': {
+          const taskId = object.taskId || null;
+
+          return taskId
+            ? `${object.taskId}-${object.__typename}`
+            : defaultDataIdFromObject(object);
+        }
+
+        default: {
+          // fall back to default handling
+          return defaultDataIdFromObject(object);
+        }
+      }
+    },
+    /* eslint-enable no-underscore-dangle */
+  });
 
   persistence = new CachePersistor({
     cache: this.cache,

@@ -168,14 +168,10 @@ export default class TaskGroupTable extends Component {
   static getDerivedStateFromProps(props) {
     const { taskGroupConnection } = props;
 
-    if (!taskGroupConnection.pageInfo.hasNextPage) {
-      return {
-        tasks: [...taskGroupConnection.edges],
-        windowHeight: window.innerHeight,
-      };
-    }
-
-    return null;
+    return {
+      tasks: [...taskGroupConnection.edges],
+      windowHeight: window.innerHeight,
+    };
   }
 
   handleHeaderClick = ({ target }) => {

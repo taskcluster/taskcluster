@@ -279,50 +279,6 @@ type TasksConnection implements Connection {
   edges: [TasksEdge]
 }
 
-type TaskDefined {
-  version: Int!
-  status: TaskStatus!
-}
-
-type TaskPending {
-  version: Int!
-  status: TaskStatus!
-  runId: Int!
-}
-
-type TaskRunning {
-  version: Int!
-  status: TaskStatus!
-  runId: Int!
-  workerGroup: String!
-  workerId: ID!
-  takenUntil: DateTime!
-}
-
-type TaskCompleted {
-  version: Int!
-  status: TaskStatus!
-  runId: Int!
-  workerGroup: String!
-  workerId: ID!
-}
-
-type TaskFailed {
-  version: Int!
-  status: TaskStatus!
-  runId: Int!
-  workerGroup: String!
-  workerId: ID!
-}
-
-type TaskException {
-  version: Int!
-  status: TaskStatus!
-  runId: Int
-  workerGroup: String
-  workerId: ID
-}
-
 type TaskActionsJson {
   actions: [JSON]!
   variables: JSON!
@@ -337,14 +293,6 @@ enum TaskSubscriptions {
   tasksFailed
   tasksException
 }
-
-union TaskSubscription =
-  TaskDefined |
-  TaskPending |
-  TaskRunning |
-  TaskCompleted |
-  TaskFailed |
-  TaskException
 
 extend type Query {
   # Definition of a task that can be scheduled.
@@ -421,26 +369,6 @@ extend type Mutation {
 }
 
 extend type Subscription {
-  # Subscribe to the definition of tasks within a task group.
-  tasksDefined(taskGroupId: ID!): TaskDefined
-
-  # Subscribe to the tasks entering the `PENDING` state within a task group.
-  tasksPending(taskGroupId: ID!): TaskPending
-
-  # Subscribe to the tasks entering the `RUNNING` state within a task group.
-  tasksRunning(taskGroupId: ID!): TaskRunning
-
-  # Subscribe to the tasks entering the `COMPLETED` state within a task group.
-  tasksCompleted(taskGroupId: ID!): TaskCompleted
-
-  # Subscribe to the tasks entering the `FAILED` state within a task group.
-  tasksFailed(taskGroupId: ID!): TaskFailed
-
-  # Subscribe to the tasks entering the `EXCEPTION` state within a task group.
-  tasksException(taskGroupId: ID!): TaskException
-
-  # Subscribe to multiple task group subscriptions. For example, instead of
-  # using the `tasksRunning()` and `tasksFailed()` subscriptions separately,
-  # you can bind to multiple subscriptions with `["tasksRunning", "tasksFailed"]`.
-  tasksSubscriptions(taskGroupId: ID!, subscriptions: [TaskSubscriptions]!): TaskSubscription
+  # Subscribe to multiple task group subscriptions.
+  tasksSubscriptions(taskGroupId: ID!, subscriptions: [TaskSubscriptions]!): TaskStatus
 }

@@ -1,0 +1,19 @@
+subscription TaskGroupSubscription($taskGroupId: ID!, $subscriptions: [TaskSubscriptions]!) {
+  tasksSubscriptions(taskGroupId: $taskGroupId, subscriptions: $subscriptions) {
+    state
+    runs {
+      # Required to properly update the cache
+      runId
+    }
+    # Required to properly update the cache
+    taskId
+    taskGroupId
+    task {
+      taskId
+      metadata {
+        name
+      }
+      taskGroupId
+    }
+  }
+}

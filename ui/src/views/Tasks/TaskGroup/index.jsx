@@ -1,4 +1,5 @@
 import { hot } from 'react-hot-loader';
+import cloneDeep from 'lodash.clonedeep';
 import React, { Component } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
@@ -21,7 +22,6 @@ import TaskGroupTable from '../../../components/TaskGroupTable';
 import TaskActionForm from '../../../components/TaskActionForm';
 import {
   TASK_GROUP_PAGE_SIZE,
-  TASK_GROUP_POLLING_INTERVAL,
   VALID_TASK,
   ACTIONS_JSON_KNOWN_KINDS,
   INITIAL_CURSOR,
@@ -29,6 +29,7 @@ import {
 import db from '../../../utils/db';
 import ErrorPanel from '../../../components/ErrorPanel';
 import taskGroupQuery from './taskGroup.graphql';
+import taskGroupSubscription from './taskGroupSubscription.graphql';
 import submitTaskAction from '../submitTaskAction';
 
 const updateTaskGroupIdHistory = id => {
@@ -39,18 +40,16 @@ const updateTaskGroupIdHistory = id => {
   db.taskGroupIdsHistory.put({ taskGroupId: id });
 };
 
-let previousCursor;
-
 @hot(module)
 @withApollo
 @graphql(taskGroupQuery, {
   options: props => ({
-    pollInterval: TASK_GROUP_POLLING_INTERVAL,
+    fetchPolicy: 'network-only',
     errorPolicy: 'all',
     variables: {
       taskGroupId: props.match.params.taskGroupId,
       taskGroupConnection: {
-        limit: TASK_GROUP_PAGE_SIZE,
+        limit: 20,
       },
       taskActionsFilter: {
         kind: {
@@ -92,7 +91,7 @@ let previousCursor;
 }))
 export default class TaskGroup extends Component {
   static getDerivedStateFromProps(props, state) {
-    const taskGroupId = props.match.params.taskGroupId || '';
+    const { taskGroupId } = props.match.params;
     const { taskActions, taskGroup } = props.data;
     const groupActions = [];
     const actionInputs = state.actionInputs || {};
@@ -146,7 +145,9 @@ export default class TaskGroup extends Component {
   constructor(props) {
     super(props);
 
-    previousCursor = INITIAL_CURSOR;
+    this.previousCursor = INITIAL_CURSOR;
+    this.listener = null;
+    this.tasks = new Map();
   }
 
   state = {
@@ -164,21 +165,114 @@ export default class TaskGroup extends Component {
     searchTerm: null,
   };
 
+  unsubscribe = () => {
+    if (!this.listener) {
+      return;
+    }
+
+    this.listener.unsubscribe();
+    this.listener = null;
+  };
+
+  subscribe = ({ taskGroupId, subscribeToMore }) => {
+    if (this.listener && this.listener.taskGroupId === taskGroupId) {
+      return this.listener;
+    }
+
+    if (this.listener && this.listener.taskGroupId !== taskGroupId) {
+      this.unsubscribe();
+    }
+
+    const unsubscribe = subscribeToMore({
+      document: taskGroupSubscription,
+      variables: {
+        taskGroupId,
+        subscriptions: [
+          'tasksDefined',
+          'tasksPending',
+          'tasksRunning',
+          'tasksCompleted',
+          'tasksFailed',
+          'tasksException',
+        ],
+      },
+      updateQuery: (previousResult, { subscriptionData }) => {
+        const { tasksSubscriptions } = subscriptionData.data;
+        // Make sure data is not from another task group which
+        // can happen when a message is in flight and a user searches for
+        // a different task group.
+        const isFromSameTaskGroupId =
+          tasksSubscriptions.taskGroupId === taskGroupId;
+
+        if (
+          !previousResult ||
+          !previousResult.taskGroup ||
+          !isFromSameTaskGroupId
+        ) {
+          return previousResult;
+        }
+
+        let edges;
+
+        if (this.tasks.has(tasksSubscriptions.taskId)) {
+          // already have this task, so just update the state
+          edges = previousResult.taskGroup.edges.map(edge => {
+            if (tasksSubscriptions.taskId !== edge.node.taskId) {
+              return edge;
+            }
+
+            return dotProp.set(edge, 'node', node =>
+              dotProp.set(node, 'status', status =>
+                dotProp.set(status, 'state', tasksSubscriptions.state)
+              )
+            );
+          });
+        } else {
+          // unseen task, so keep the Task and TaskStatus values
+          this.tasks.set(tasksSubscriptions.taskId);
+          edges = previousResult.taskGroup.edges.concat({
+            // eslint-disable-next-line no-underscore-dangle
+            __typename: 'TasksEdge',
+            node: {
+              ...cloneDeep(tasksSubscriptions.task),
+              status: {
+                state: tasksSubscriptions.state,
+                __typename: 'TaskStatus',
+              },
+            },
+          });
+        }
+
+        return dotProp.set(previousResult, 'taskGroup', taskGroup =>
+          dotProp.set(taskGroup, 'edges', edges)
+        );
+      },
+    });
+
+    this.listener = {
+      taskGroupId,
+      unsubscribe,
+    };
+  };
+
   componentDidUpdate(prevProps) {
     const {
-      data: { taskGroup },
+      data: { taskGroup, subscribeToMore },
       match: {
         params: { taskGroupId },
       },
     } = this.props;
 
     if (prevProps.match.params.taskGroupId !== taskGroupId) {
+      this.tasks.clear();
+      this.previousCursor = INITIAL_CURSOR;
       updateTaskGroupIdHistory(taskGroupId);
+      this.subscribe({ taskGroupId, subscribeToMore });
     }
 
     if (
       taskGroup &&
-      previousCursor === taskGroup.pageInfo.cursor &&
+      this.previousCursor === taskGroup.pageInfo.cursor &&
       taskGroup.pageInfo.hasNextPage
     ) {
       this.fetchMoreTasks();
@@ -280,35 +374,39 @@ export default class TaskGroup extends Component {
           },
         },
       },
-      updateQuery(previousResult, { fetchMoreResult, variables }) {
-        if (variables.taskGroupConnection.previousCursor === previousCursor) {
+      updateQuery: (previousResult, { fetchMoreResult, variables }) => {
+        if (
+          variables.taskGroupConnection.previousCursor === this.previousCursor
+        ) {
           const { edges, pageInfo } = fetchMoreResult.taskGroup;
 
-          if (!pageInfo.hasNextPage) {
-            // Resetting to the initial cursor will allow us to
-            // capture updates since the query has a polling interval
-            previousCursor = INITIAL_CURSOR;
-          } else {
-            previousCursor = variables.taskGroupConnection.cursor;
-          }
+          this.previousCursor = variables.taskGroupConnection.cursor;
 
           if (!edges.length) {
             return previousResult;
           }
 
-          const result = dotProp.set(previousResult, 'taskGroup', taskGroup =>
+          const filteredEdges = edges.filter(edge => {
+            if (this.tasks.has(edge.node.taskId)) {
+              return false;
+            }
+
+            this.tasks.set(edge.node.taskId);
+
+            return true;
+          });
+
+          return dotProp.set(previousResult, 'taskGroup', taskGroup =>
             dotProp.set(
               dotProp.set(
                 taskGroup,
                 'edges',
-                previousResult.taskGroup.edges.concat(edges)
+                previousResult.taskGroup.edges.concat(filteredEdges)
               ),
               'pageInfo',
               pageInfo
             )
           );
-
-          return result;
         }
       },
     });
@@ -339,9 +437,21 @@ export default class TaskGroup extends Component {
       match: {
         params: { taskGroupId },
       },
-      data: { taskGroup, error, loading },
+      data: { taskGroup, error, loading, subscribeToMore },
       classes,
     } = this.props;
+    // Make sure data is not from another task group which
+    // can happen when a user searches for a different task group
+    const isFromSameTaskGroupId =
+      taskGroup && taskGroup.edges[0]
+        ? taskGroup.edges[0].node.taskGroupId === taskGroupId
+        : true;
+
+    this.subscribe({ taskGroupId, subscribeToMore });
+
+    if (!this.tasks.size && taskGroup && isFromSameTaskGroupId) {
+      taskGroup.edges.forEach(edge => this.tasks.set(edge.node.taskId));
+    }
 
     return (
       <Dashboard
@@ -363,13 +473,14 @@ export default class TaskGroup extends Component {
         />
         {taskGroup && (
           <TaskGroupProgress
-            taskGroup={taskGroup}
             taskGroupId={taskGroupId}
+            taskGroupLoaded={taskGroupLoaded}
+            taskGroup={taskGroup}
             filter={filter}
             onStatusClick={this.handleStatusClick}
           />
         )}
-        {!loading && taskGroupLoaded && (
+        {!loading && (
           <Search
             formProps={{ className: classes.taskNameFormSearch }}
             placeholder="Name contains"
@@ -377,8 +488,8 @@ export default class TaskGroup extends Component {
           />
         )}
         <br />
-        {!error && !taskGroupLoaded && <Spinner loading />}
-        {!loading && taskGroupLoaded && (
+        {!error && loading && <Spinner loading />}
+        {!loading && (
           <TaskGroupTable
             searchTerm={searchTerm}
             filter={filter}
