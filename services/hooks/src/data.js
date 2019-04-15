@@ -1,5 +1,4 @@
 const Entity = require('azure-entities');
-const Promise = require('promise');
 const _ = require('lodash');
 
 /** Entity for tracking hooks and associated state **/

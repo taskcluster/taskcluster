@@ -3,7 +3,6 @@ let _ = require('lodash');
 let debug = require('debug')('base:app');
 let assert = require('assert');
 let morganDebug = require('morgan-debug');
-let Promise = require('promise');
 let http = require('http');
 let sslify = require('express-sslify');
 let hsts = require('hsts');

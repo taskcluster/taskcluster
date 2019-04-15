@@ -7,7 +7,6 @@ const MonitorManager = require('taskcluster-lib-monitor');
 const App = require('taskcluster-lib-app');
 const assert = require('assert');
 const taskcluster = require('taskcluster-client');
-const Promise = require('promise');
 const path = require('path');
 const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');

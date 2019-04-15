@@ -3,7 +3,6 @@ const events = require('events');
 const Entity = require('azure-entities');
 const data = require('./data');
 const debug = require('debug')('hooks:scheduler');
-const Promise = require('promise');
 const taskcluster = require('taskcluster-client');
 const nextDate = require('./nextdate');
 const taskcreator = require('./taskcreator');
