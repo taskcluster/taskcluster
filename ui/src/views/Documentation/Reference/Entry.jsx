@@ -99,7 +99,9 @@ export default class Entry extends Component {
   };
 
   state = {
-    expanded: this.props.entry.name === window.location.hash.slice(1),
+    expanded:
+      this.props.entry.name === window.location.hash.slice(1) ||
+      this.props.entry.type === window.location.hash.slice(1),
   };
 
   getSignatureFromEntry(entry) {
@@ -492,14 +494,14 @@ export default class Entry extends Component {
     );
   };
 
-  handlePanelChange = () => {
+  handlePanelChange = key => () => {
     const { entry, history } = this.props;
     const { expanded } = this.state;
 
-    if (window.location.hash === `#${entry.name}` || expanded) {
+    if (window.location.hash === `#${entry[key]}` || expanded) {
       history.push(history.location.pathname);
     } else {
-      history.push(`#${entry.name}`);
+      history.push(`#${entry[key]}`);
     }
 
     this.setState({
@@ -513,11 +515,12 @@ export default class Entry extends Component {
     const isEntryExchange = type === 'topic-exchange';
     const isLogType = type === 'logs';
     const isFunctionType = !isLogType && !isEntryExchange;
+    const entryHashKey = isLogType ? 'type' : 'name';
 
     return (
       <ExpansionPanel
         defaultExpanded={expanded}
-        onChange={this.handlePanelChange}
+        onChange={this.handlePanelChange(entryHashKey)}
         CollapseProps={{ unmountOnExit: true }}>
         <ExpansionPanelSummary
           classes={{
