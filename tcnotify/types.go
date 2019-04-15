@@ -58,7 +58,7 @@ type (
 	ListOfNotificationAdresses struct {
 
 		// See https://taskcluster-staging.net/schemas/notify/v1/notification-address-list.json#/properties/addresses
-		Addresses []NotificaitonTypeAndAddress `json:"addresses"`
+		Addresses []NotificationTypeAndAddress `json:"addresses"`
 
 		// A continuation token is returned if there are more results than listed
 		// here. You can optionally provide the token in the request payload to
@@ -71,7 +71,7 @@ type (
 	// Type of notification and its corresponding address.
 	//
 	// See https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#
-	NotificaitonTypeAndAddress struct {
+	NotificationTypeAndAddress struct {
 
 		// See https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#/properties/notificationAddress
 		NotificationAddress string `json:"notificationAddress"`

@@ -8,25 +8,7 @@
 // This package was generated from the schema defined at
 // https://taskcluster-staging.net/references/hooks/v1/api.json
 
-// Hooks are a mechanism for creating tasks in response to events.
-//
-// Hooks are identified with a `hookGroupId` and a `hookId`.
-//
-// When an event occurs, the resulting task is automatically created.  The
-// task is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,
-// which must have scopes to make the createTask call, including satisfying all
-// scopes in `task.scopes`.  The new task has a `taskGroupId` equal to its
-// `taskId`, as is the convention for decision tasks.
-//
-// Hooks can have a "schedule" indicating specific times that new tasks should
-// be created.  Each schedule is in a simple cron format, per
-// https://www.npmjs.com/package/cron-parser.  For example:
-//  * `['0 0 1 * * *']` -- daily at 1:00 UTC
-//  * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
-//
-// The task definition is used as a JSON-e template, with a context depending on how it is fired.  See
-// [/docs/reference/core/taskcluster-hooks/docs/firing-hooks](firing-hooks)
-// for more information.
+// The hooks service provides a mechanism for creating tasks in response to events.
 //
 // See:
 //
@@ -50,7 +32,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // https://taskcluster-staging.net/references/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 25 Mar 2019 at 18:29:00 UTC. The code was generated
+// Mon, 15 Apr 2019 at 20:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tchooks
 

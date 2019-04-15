@@ -1,4 +1,4 @@
-Generated: 1553538568
+Generated: 1555359808
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -12,39 +12,7 @@ services. These API end-points are of interest if you wish to:
   * Manage clients and roles,
   * Inspect or audit clients and roles,
   * Gain access to various services guarded by this API.
-
-Note that in this service "authentication" refers to validating the
-correctness of the supplied credentials (that the caller posesses the
-appropriate access token). This service does not provide any kind of user
-authentication (identifying a particular person).
-
-### Clients
-The authentication service manages _clients_, at a high-level each client
-consists of a `clientId`, an `accessToken`, scopes, and some metadata.
-The `clientId` and `accessToken` can be used for authentication when
-calling Taskcluster APIs.
-
-The client's scopes control the client's access to Taskcluster resources.
-The scopes are *expanded* by substituting roles, as defined below.
-
-### Roles
-A _role_ consists of a `roleId`, a set of scopes and a description.
-Each role constitutes a simple _expansion rule_ that says if you have
-the scope: `assume:<roleId>` you get the set of scopes the role has.
-Think of the `assume:<roleId>` as a scope that allows a client to assume
-a role.
-
-As in scopes the `*` kleene star also have special meaning if it is
-located at the end of a `roleId`. If you have a role with the following
-`roleId`: `my-prefix*`, then any client which has a scope staring with
-`assume:my-prefix` will be allowed to assume the role.
-
-### Guarded Services
-The authentication service also has API end-points for delegating access
-to some guarded service such as AWS S3, or Azure Table Storage.
-Generally, we add API end-points to this server when we wish to use
-Taskcluster credentials to grant access to a third-party service used
-by many Taskcluster components.'
+'
 Entry 0     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -3319,7 +3287,7 @@ properties:
       TYPE_NAME: ""
       description: |
         Id for the websocktunnel client connection; this will be the same as the requested `wstClient`.
-      pattern: ^[A-Za-z0-9!@/:.+|_-]+$
+      pattern: ^[a-zA-Z0-9_~.%-]+$
       title: Websocktunnel Client
       type: string
   SortedPropertyNames:
@@ -4815,25 +4783,8 @@ https://taskcluster-staging.net/references/hooks/v1/api.json
 ============================================================
 Schema      = 'https://taskcluster-staging.net/schemas/common/api-reference-v0.json#'
 Title       = 'Hooks API Documentation'
-Description = 'Hooks are a mechanism for creating tasks in response to events.
-
-Hooks are identified with a `hookGroupId` and a `hookId`.
-
-When an event occurs, the resulting task is automatically created.  The
-task is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,
-which must have scopes to make the createTask call, including satisfying all
-scopes in `task.scopes`.  The new task has a `taskGroupId` equal to its
-`taskId`, as is the convention for decision tasks.
-
-Hooks can have a "schedule" indicating specific times that new tasks should
-be created.  Each schedule is in a simple cron format, per 
-https://www.npmjs.com/package/cron-parser.  For example:
- * `['0 0 1 * * *']` -- daily at 1:00 UTC
- * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
-
-The task definition is used as a JSON-e template, with a context depending on how it is fired.  See
-[/docs/reference/core/taskcluster-hooks/docs/firing-hooks](firing-hooks)
-for more information.'
+Description = 'The hooks service provides a mechanism for creating tasks in response to events.
+'
 Entry 0     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -8017,98 +7968,11 @@ https://taskcluster-staging.net/references/index/v1/api.json
 ============================================================
 Schema      = 'https://taskcluster-staging.net/schemas/common/api-reference-v0.json#'
 Title       = 'Task Index API Documentation'
-Description = 'The task index is responsible for indexing tasks. The service ensures that
-tasks can be located by recency and/or arbitrary strings. Common
-use-cases include:
+Description = 'The index service is responsible for indexing tasks. The service ensures that
+tasks can be located by user-defined names.
 
- * Locate tasks by git or mercurial `<revision>`, or
- * Locate latest task from given `<branch>`, such as a release.
-
-**Index hierarchy**, tasks are indexed in a dot (`.`) separated hierarchy
-called a namespace. For example a task could be indexed with the index path
-`some-app.<revision>.linux-64.release-build`. In this case the following
-namespaces is created.
-
- 1. `some-app`,
- 1. `some-app.<revision>`, and,
- 2. `some-app.<revision>.linux-64`
-
-Inside the namespace `some-app.<revision>` you can find the namespace
-`some-app.<revision>.linux-64` inside which you can find the indexed task
-`some-app.<revision>.linux-64.release-build`. This is an example of indexing
-builds for a given platform and revision.
-
-**Task Rank**, when a task is indexed, it is assigned a `rank` (defaults
-to `0`). If another task is already indexed in the same namespace with
-lower or equal `rank`, the index for that task will be overwritten. For example
-consider index path `mozilla-central.linux-64.release-build`. In
-this case one might choose to use a UNIX timestamp or mercurial revision
-number as `rank`. This way the latest completed linux 64 bit release
-build is always available at `mozilla-central.linux-64.release-build`.
-
-Note that this does mean index paths are not immutable: the same path may
-point to a different task now than it did a moment ago.
-
-**Indexed Data**, when a task is retrieved from the index the result includes
-a `taskId` and an additional user-defined JSON blob that was indexed with
-the task.
-
-**Entry Expiration**, all indexed entries must have an expiration date.
-Typically this defaults to one year, if not specified. If you are
-indexing tasks to make it easy to find artifacts, consider using the
-artifact's expiration date.
-
-**Valid Characters**, all keys in a namespace `<key1>.<key2>` must be
-in the form `/[a-zA-Z0-9_!~*'()%-]+/`. Observe that this is URL-safe and
-that if you strictly want to put another character you can URL encode it.
-
-**Indexing Routes**, tasks can be indexed using the API below, but the
-most common way to index tasks is adding a custom route to `task.routes` of the
-form `index.<namespace>`. In order to add this route to a task you'll
-need the scope `queue:route:index.<namespace>`. When a task has
-this route, it will be indexed when the task is **completed successfully**.
-The task will be indexed with `rank`, `data` and `expires` as specified
-in `task.extra.index`. See the example below:
-
-```js
-{
-  payload:  { /* ... */ },
-  routes: [
-    // index.<namespace> prefixed routes, tasks CC'ed such a route will
-    // be indexed under the given <namespace>
-    "index.mozilla-central.linux-64.release-build",
-    "index.<revision>.linux-64.release-build"
-  ],
-  extra: {
-    // Optional details for indexing service
-    index: {
-      // Ordering, this taskId will overwrite any thing that has
-      // rank <= 4000 (defaults to zero)
-      rank:       4000,
-
-      // Specify when the entries expire (Defaults to 1 year)
-      expires:          new Date().toJSON(),
-
-      // A little informal data to store along with taskId
-      // (less 16 kb when encoded as JSON)
-      data: {
-        hgRevision:   "...",
-        commitMessae: "...",
-        whatever...
-      }
-    },
-    // Extra properties for other services...
-  }
-  // Other task properties...
-}
-```
-
-**Remark**, when indexing tasks using custom routes, it's also possible
-to listen for messages about these tasks. For
-example one could bind to `route.index.some-app.*.release-build`,
-and pick up all messages about release builds. Hence, it is a
-good idea to document task index hierarchies, as these make up extension
-points in their own.'
+As described in the service documentation, tasks are typically indexed via Pulse
+messages, so the most common use of API methods is to read from the index.'
 Entry 0     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -9673,7 +9537,7 @@ properties:
           IS_REQUIRED: false
           PROPERTY_NAME: ""
           SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#
-          TYPE_NAME: NotificaitonTypeAndAddress
+          TYPE_NAME: NotificationTypeAndAddress
           additionalProperties:
             Boolean: false
             Properties: null
@@ -9708,7 +9572,7 @@ properties:
           required:
           - notificationType
           - notificationAddress
-          title: Notificaiton Type And Address
+          title: Notification Type And Address
           type: object
         SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/notification-address-list.json#/properties/addresses/items
         TYPE_NAME: ""
@@ -9742,7 +9606,7 @@ $schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#
-TYPE_NAME: NotificaitonTypeAndAddress
+TYPE_NAME: NotificationTypeAndAddress
 additionalProperties:
   Boolean: false
   Properties: null
@@ -9777,7 +9641,7 @@ properties:
 required:
 - notificationType
 - notificationAddress
-title: Notificaiton Type And Address
+title: Notification Type And Address
 type: object
 
 

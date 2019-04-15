@@ -900,7 +900,7 @@ type (
 
 		// Id for the websocktunnel client connection; this will be the same as the requested `wstClient`.
 		//
-		// Syntax:     ^[A-Za-z0-9!@/:.+|_-]+$
+		// Syntax:     ^[a-zA-Z0-9_~.%-]+$
 		//
 		// See https://taskcluster-staging.net/schemas/auth/v1/websocktunnel-token-response.json#/properties/wstClient
 		WstClient string `json:"wstClient"`

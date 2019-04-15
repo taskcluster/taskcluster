@@ -33,7 +33,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // https://taskcluster-staging.net/references/notify/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 25 Mar 2019 at 18:29:00 UTC. The code was generated
+// Mon, 15 Apr 2019 at 20:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcnotify
 
@@ -165,7 +165,7 @@ func (notify *Notify) Irc(payload *PostIRCMessageRequest) error {
 //   notify:manage-denylist:<notificationType>/<notificationAddress>
 //
 // See #addDenylistAddress
-func (notify *Notify) AddDenylistAddress(payload *NotificaitonTypeAndAddress) error {
+func (notify *Notify) AddDenylistAddress(payload *NotificationTypeAndAddress) error {
 	cd := tcclient.Client(*notify)
 	_, _, err := (&cd).APICall(payload, "POST", "/denylist/add", nil, nil)
 	return err
@@ -179,7 +179,7 @@ func (notify *Notify) AddDenylistAddress(payload *NotificaitonTypeAndAddress) er
 //   notify:manage-denylist:<notificationType>/<notificationAddress>
 //
 // See #deleteDenylistAddress
-func (notify *Notify) DeleteDenylistAddress(payload *NotificaitonTypeAndAddress) error {
+func (notify *Notify) DeleteDenylistAddress(payload *NotificationTypeAndAddress) error {
 	cd := tcclient.Client(*notify)
 	_, _, err := (&cd).APICall(payload, "DELETE", "/denylist/delete", nil, nil)
 	return err

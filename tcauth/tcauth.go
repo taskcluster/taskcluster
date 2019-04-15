@@ -15,39 +15,6 @@
 //   * Inspect or audit clients and roles,
 //   * Gain access to various services guarded by this API.
 //
-// Note that in this service "authentication" refers to validating the
-// correctness of the supplied credentials (that the caller posesses the
-// appropriate access token). This service does not provide any kind of user
-// authentication (identifying a particular person).
-//
-// ### Clients
-// The authentication service manages _clients_, at a high-level each client
-// consists of a `clientId`, an `accessToken`, scopes, and some metadata.
-// The `clientId` and `accessToken` can be used for authentication when
-// calling Taskcluster APIs.
-//
-// The client's scopes control the client's access to Taskcluster resources.
-// The scopes are *expanded* by substituting roles, as defined below.
-//
-// ### Roles
-// A _role_ consists of a `roleId`, a set of scopes and a description.
-// Each role constitutes a simple _expansion rule_ that says if you have
-// the scope: `assume:<roleId>` you get the set of scopes the role has.
-// Think of the `assume:<roleId>` as a scope that allows a client to assume
-// a role.
-//
-// As in scopes the `*` kleene star also have special meaning if it is
-// located at the end of a `roleId`. If you have a role with the following
-// `roleId`: `my-prefix*`, then any client which has a scope staring with
-// `assume:my-prefix` will be allowed to assume the role.
-//
-// ### Guarded Services
-// The authentication service also has API end-points for delegating access
-// to some guarded service such as AWS S3, or Azure Table Storage.
-// Generally, we add API end-points to this server when we wish to use
-// Taskcluster credentials to grant access to a third-party service used
-// by many Taskcluster components.
-//
 // See:
 //
 // How to use this package
@@ -70,7 +37,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // https://taskcluster-staging.net/references/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 25 Mar 2019 at 18:29:00 UTC. The code was generated
+// Mon, 15 Apr 2019 at 20:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcauth
 
