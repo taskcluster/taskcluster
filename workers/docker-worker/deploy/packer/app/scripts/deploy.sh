@@ -3,7 +3,7 @@
 ## Get recent CA bundle for papertrail
 sudo curl -o /etc/papertrail-bundle.pem https://papertrailapp.com/tools/papertrail-bundle.pem
 md5=md5sum /etc/papertrail-bundle.pem | awk '{ print $1 }'
-if [ $md5 != "c75ce425e553e416bde4e412439e3d09" ]; then
+if [ "$md5" != "2c43548519379c083d60dd9e84a1b724" ]; then
     echo "md5 for papertrail CA bundle does not match"
     exit -1
 fi

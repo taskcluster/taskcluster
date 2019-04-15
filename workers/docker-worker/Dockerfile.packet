@@ -107,7 +107,7 @@ COPY deploy/bin/gen-signing-key /tmp
 RUN chmod +x /tmp/gen-signing-key
 
 RUN curl -o /etc/papertrail-bundle.pem https://papertrailapp.com/tools/papertrail-bundle.pem
-# RUN test `md5sum /etc/papertrail-bundle.pem | awk '{ print $1 }'` == "c75ce425e553e416bde4e412439e3d09"
+# RUN test `md5sum /etc/papertrail-bundle.pem | awk '{ print $1 }'` == "2c43548519379c083d60dd9e84a1b724"
 
 RUN apt-get install -y python-statsd
 
