@@ -105,7 +105,7 @@ class Logger {
       fields = {values: fields};
     }
     if (typeof fields === 'string' || typeof fields === 'number') {
-      fields = {message: fields};
+      fields = {message: fields.toString()};
     }
 
     if (fields === null || typeof fields === 'boolean') {
@@ -135,16 +135,17 @@ class Logger {
       fields.meta = this.metadata;
     }
 
+    // include a top-level message for the log entry..
     let message = fields.stack || fields.message;
+    // .. but only the first line
+    if (message) {
+      message = message.toString().split('\n', 1)[0];
+    }
 
     if (this.pretty) {
       message = message ? message.toString().replace(/\n/g, '\\n') : '';
-      const extra = Object.keys(fields).reduce((s, f) => {
-        if (f !== 'msg') {
-          s = s + `\n\t${f}: ${fields[f].toString().replace(/\n/g, '\\n')}`;
-        }
-        return s;
-      }, '');
+      const extra = Object.keys(fields).reduce((s, f) =>
+        s + `\n\t${f}: ${fields[f].toString().replace(/\n/g, '\\n')}`, '');
       const line = chalk`${(new Date()).toJSON()} ${LEVELS_REVERSE_COLOR[level]} (${type}): {blue ${message}}{gray ${extra}}\n`;
       this.destination.write(line);
     } else {
