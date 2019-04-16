@@ -1,6 +1,6 @@
-# taskcluster-base-go
+<img align="right" src="http://media.taskcluster.net/logo/logo-96x120.png" />
 
-[![logo](https://media.taskcluster.net/logo/logo-96x120.png)](https://media.taskcluster.net/logo/logo-96x120.png)
+# taskcluster-base-go
 
 [![Build Status](https://travis-ci.org/taskcluster/taskcluster-base-go.svg?branch=master)](http://travis-ci.org/taskcluster/taskcluster-base-go)
 [![GoDoc](https://godoc.org/github.com/taskcluster/taskcluster-base-go?status.svg)](https://godoc.org/github.com/taskcluster/taskcluster-base-go)
