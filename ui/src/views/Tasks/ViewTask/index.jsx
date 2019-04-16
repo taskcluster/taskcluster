@@ -705,7 +705,12 @@ export default class ViewTask extends Component {
           />
         }>
         <Helmet state={task && task.status.state} />
-        {loading && <Spinner loading />}
+        {loading && (
+          <Fragment>
+            <Spinner loading />
+            <br />
+          </Fragment>
+        )}
         <ErrorPanel
           error={error}
           warning={Boolean(task)}
