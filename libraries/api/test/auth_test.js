@@ -285,16 +285,20 @@ suite(testing.suiteName(), function() {
         await req.authorize({param: 'myfolder/resource'});
         res.reply({});
       } catch (err) {
+        const withAuth = await req.clientId() === 'nobody';
         if (err.code === 'InsufficientScopes') {
           debug(`got details: ${JSON.stringify(err.details, null, 2)}`);
-          if (!_.isEqual(err.details.scopes, ['another-irrelevant-scope'])) {
-            throw err;
-          }
+          debug(`got message: ${err.message}`);
           if (!_.isEqual(err.details.required, { AllOf: ['service:myfolder/resource', 'another-irrelevant-scope']})) {
             throw err;
           }
-          if (!_.isEqual(err.details.unsatisfied, 'service:myfolder/resource')) {
+          if (!_.isEqual(err.details.unsatisfied, withAuth ? 'service:myfolder/resource' : undefined)) {
             throw err;
+          }
+          if (withAuth) {
+            assert(err.message.match(/Client ID nobody does not/));
+          } else {
+            assert(err.message.match(/This request requires Taskcluster/));
           }
 
           return res.reply({});
@@ -305,10 +309,15 @@ suite(testing.suiteName(), function() {
     },
     tests: [
       {
-        label: 'insufficient scopes has documented details',
+        label: 'insufficient scopes with auth has documented details',
         id: 'nobody',
         desiredStatus: 200,
         tester: (auth, url) => requestWithHawk(url, auth),
+      },
+      {
+        label: 'insufficient scopes without auth has documented details',
+        desiredStatus: 200,
+        tester: (auth, url) => request.get(url),
       },
     ],
   });

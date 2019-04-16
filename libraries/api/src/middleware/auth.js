@@ -261,31 +261,33 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
 
         if (!satisfyingScopes) {
           const clientId = await req.clientId();
+
+          const gotCreds = result.status === 'auth-success';
+          const message = (gotCreds ? [
+            'Client ID ' + clientId + ' does not have sufficient scopes and is missing the following scopes:',
+            '',
+            '```',
+            '{{unsatisfied}}',
+            '```',
+            '',
+            'This request requires the client to satisfy the following scope expression:',
+            '',
+            '```',
+            '{{required}}',
+            '```',
+          ] : [
+            'This request requires Taskcluster credentials that satisfy the following scope expression:',
+            '',
+            '```',
+            '{{required}}',
+            '```',
+          ]).join('\n');
           throw new ErrorReply({
             code: 'InsufficientScopes',
-            message: [
-              'Client ID ' + clientId + ' does not have sufficient scopes and are missing the following scopes:',
-              '',
-              '```',
-              '{{unsatisfied}}',
-              '```',
-              '',
-              'You have the scopes:',
-              '',
-              '```',
-              '{{scopes}}',
-              '```',
-              '',
-              'This request requires you to satisfy this scope expression:',
-              '',
-              '```',
-              '{{required}}',
-              '```',
-            ].join('\n'),
+            message,
             details: {
-              scopes: result.scopes,
               required: scopeExpression,
-              unsatisfied: scopes.removeGivenScopes(result.scopes, scopeExpression),
+              unsatisfied: gotCreds ? scopes.removeGivenScopes(result.scopes, scopeExpression) : undefined,
             },
           });
         }
