@@ -17,6 +17,7 @@ import secretsQuery from './secrets.graphql';
 @hot(module)
 @graphql(secretsQuery, {
   options: () => ({
+    fetchPolicy: 'network-only',
     variables: {
       secretsConnection: {
         limit: VIEW_SECRETS_PAGE_SIZE,
