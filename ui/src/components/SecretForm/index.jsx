@@ -9,6 +9,8 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import TextField from '@material-ui/core/TextField';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import Button from '../Button';
@@ -35,6 +37,9 @@ import { secret } from '../../utils/prop-types';
   },
   deleteIcon: {
     ...theme.mixins.errorIcon,
+  },
+  secretSubheader: {
+    display: 'flex',
   },
 }))
 /** A form to view/edit/create a secret */
@@ -70,6 +75,7 @@ export default class SecretForm extends Component {
           foo: 'bar',
         })
       : safeDump(this.props.secret.secret),
+    showSecret: this.props.isNewSecret,
   };
 
   handleDeleteSecret = () => {
@@ -113,9 +119,13 @@ export default class SecretForm extends Component {
     }
   };
 
+  handleSecretToggle = ({ target }) => {
+    this.setState({ showSecret: target.checked });
+  };
+
   render() {
     const { classes, isNewSecret, loading } = this.props;
-    const { secretName, editorValue, expires } = this.state;
+    const { secretName, editorValue, expires, showSecret } = this.state;
 
     return (
       <Fragment>
@@ -146,15 +156,33 @@ export default class SecretForm extends Component {
             />
           </ListItem>
           <List
-            subheader={<ListSubheader>Secret Value (in YAML)</ListSubheader>}>
-            <ListItem className={classes.editorListItem}>
-              <CodeEditor
-                onChange={this.handleEditorChange}
-                mode="yaml"
-                lint
-                value={editorValue}
-              />
-            </ListItem>
+            subheader={
+              <div className={classes.secretSubheader}>
+                <ListSubheader>Secret Value (in YAML)</ListSubheader>
+                {!isNewSecret && (
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={showSecret}
+                        onChange={this.handleSecretToggle}
+                        value={showSecret}
+                      />
+                    }
+                    label="Show Secret"
+                  />
+                )}
+              </div>
+            }>
+            {showSecret && (
+              <ListItem className={classes.editorListItem}>
+                <CodeEditor
+                  onChange={this.handleEditorChange}
+                  mode="yaml"
+                  lint
+                  value={editorValue}
+                />
+              </ListItem>
+            )}
           </List>
         </List>
         {isNewSecret ? (
