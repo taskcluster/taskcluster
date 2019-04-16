@@ -56,7 +56,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
         m.payload.status.runs.length === 2 &&
         m.payload.status.runs[0].state === 'exception' &&
         m.payload.status.runs[0].reasonResolved === 'claim-expired'));
-    }, Infinity);
+    }, 100, 250);
     // there should be no task-exception message in this case
     helper.assertNoPulseMessage('task-exception');
     helper.clearPulseMessages();
@@ -87,7 +87,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
         m.payload.status.runs[0].reasonResolved === 'claim-expired' &&
         m.payload.status.runs[1].state === 'exception' &&
         m.payload.status.runs[1].reasonResolved === 'claim-expired'));
-    }, Infinity);
+    }, 100, 250);
 
     debug('### Stop claimResolver (again)');
     await helper.stopPollingService();

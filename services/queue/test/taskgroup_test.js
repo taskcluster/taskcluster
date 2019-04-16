@@ -82,7 +82,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
         m.payload.schedulerId === 'dummy-scheduler-extended-extended'));
       // note that depending on timing we are likely to get two such
       // messages; that's OK
-    }, Infinity);
+    }, 100, 250);
 
     await helper.stopPollingService();
   });
