@@ -213,16 +213,10 @@ are important.
 
       - You need to update ssl/gpg keys
 
-      Note that you need to _manually_ update the `sourceAMI` field in
-      the `app.json` file after you create a new base AMI.
-
-      Also note to generate this base AMI, access to the ssl and gpg keys that
-      the work needs is necessary.
-
       *Example*:
 
       ```sh
-      ./deploy/bin/build base
+      ./deploy.sh base
       ```
 
       Once this is complete, edit `deploy/bin/base` to include the new AMI ID.
@@ -237,14 +231,14 @@ are important.
       using it.. Usually you need to also update a provisioner workerType with
       the new AMI id.
 
-      To do this, run `./deploy.sh`, which gathers the necessary secrets and, on `https://taskcluster.net`, deploys to worker types.
-      The secrets come from files in passwordstore named after the deploymnet, which is determined from `TASKCLUSTER_ROOT_URL`.
+To do this, run `./deploy.sh <target>`, which gathers the necessary secrets and, on `https://taskcluster.net`, deploys to worker types.
+The secrets come from files in passwordstore named after the deployment, which is determined from `TASKCLUSTER_ROOT_URL`.
 
-      *Example*:
+*Example*:
 
-      ```sh
-      ./deploy.sh
-      ```
+```sh
+./deploy.sh app
+```
 
 ### Deployment Implementation
 

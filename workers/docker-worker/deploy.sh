@@ -1,9 +1,10 @@
 #!/bin/bash -e
 
-deploy_json=deploy/deploy.json;
-
-NODE_VERSION_MAJOR=$(node --version | tr -d v | awk -F. '{print $1}')
-NODE_VERSION_MINOR=$(node --version | tr -d v | awk -F. '{print $2}')
+export BUILD_TARGET=$1
+if [ -z "$BUILD_TARGET" ]; then
+    echo "USAGE: ./deploy.sh <target>   (base, app, etc.)" >&2
+    exit 1
+fi
 
 if [ "$TASKCLUSTER_CLIENT_ID" == "" -o "$TASKCLUSTER_ACCESS_TOKEN" == "" ]; then
     echo "You don't seem to have proper Taskcluster credentials, please run 'taskcluster-cli signin' command" >&2
@@ -50,6 +51,8 @@ if ! $found; then
 fi
 echo "Using AWS account $AWS_ACCOUNT" >&2
 
+NODE_VERSION_MAJOR=$(node --version | tr -d v | awk -F. '{print $1}')
+NODE_VERSION_MINOR=$(node --version | tr -d v | awk -F. '{print $2}')
 if [ 0$NODE_VERSION_MAJOR -lt 8 -o 0$NODE_VERSION_MAJOR -eq 8 -a 0$NODE_VERSION_MINOR -lt 15 ]; then
   echo "$0 requires node version 8.15.0 or higher." >&2
   exit 1
@@ -69,9 +72,9 @@ fi
 
 deploy/bin/import-docker-worker-secrets
 trap 'rm -rf /tmp/docker-worker*' EXIT
-deploy/bin/build app
-if [ "$DEPLOYMENT" == "taskcluster-net" ]; then
+deploy/bin/build $BUILD_TARGET
+if [ "$DEPLOYMENT" == "taskcluster-net" -a "$BUILD_TARGET" == "app" ]; then
     deploy/bin/update-worker-types.js $*
 else
-    echo "Not deploying worker-types as this is not the taskcluster-net deployment"
+    echo "Not deploying worker-types as this is not the taskcluster-net app deployment"
 fi
