@@ -13,10 +13,6 @@ packet: $(DEPLOY_TAR)
 
 .PHONY: packet
 
-# Pick up changes when we update variables.js or configure.js
-$(CONFIG_FILE): variables.js bin/configure.js
-	./bin/configure $(CONFIG_FILE)
-
 # Build the template files
 # Note that $< is need here instead of $^ which would include the $CONFIG_FILE
 # part of the statement in the invocation.
