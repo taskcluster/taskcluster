@@ -1,6 +1,8 @@
+<img align="right" src="http://media.taskcluster.net/logo/logo-96x120.png" />
+
 # taskcluster-proxy
 
-<img align="right" src="https://avatars3.githubusercontent.com/u/6257436?s=256" /> taskcluster-proxy is the proxy server which is used by Taskcluster workers to
+taskcluster-proxy is the proxy server which is used by Taskcluster workers to
 enable individual tasks to talk to various Taskcluster services (auth, queue,
 scheduler, ...) without hardcoding credentials into the containers themselves.
 
