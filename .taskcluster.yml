@@ -170,6 +170,10 @@ tasks:
                   YARN_CACHE_FOLDER: /yarn-cache
                 - {$eval: job.env}
               maxRunTime: 1200
+              onExitStatus:
+                # the `yarn --frozen-lockfile` invocation will exit with this status if it fails,
+                # in which case we want to retry (assuming it's some upstream issue)
+                retry: [99]
               cache:
                   project-taskcluster-test-yarn-cache: /yarn-cache
               image: ${job.image}
@@ -180,7 +184,7 @@ tasks:
                   git clone --quiet --depth=1 --no-single-branch ${repo.git_url} taskcluster &&
                   cd taskcluster &&
                   git checkout ${repo.ref} &&
-                  yarn --frozen-lockfile &&
+                  { yarn --frozen-lockfile || exit 99; } &&
                   ${job.command}
             metadata:
               name: ${job.name}
