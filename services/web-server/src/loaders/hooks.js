@@ -39,9 +39,17 @@ export default ({ hooks }) => {
   const hookLastFires = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({hookGroupId, hookId, filter}) => {
-        const { lastFires } = await hooks.listLastFires(hookGroupId, hookId);
+        try {
+          const { lastFires } = await hooks.listLastFires(hookGroupId, hookId);
 
-        return filter ? sift(filter, lastFires) : lastFires;
+          return filter ? sift(filter, lastFires) : lastFires;
+        } catch(e) {
+          if (e.statusCode === 404 || e.statusCode === 424) {
+            return null;
+          }
+
+          return e;
+        }
       }
       )
     )

@@ -21,6 +21,7 @@ export default {
     SCHEDULE: 'schedule',
     TRIGGER_HOOK: 'triggerHook',
     TRIGGER_HOOK_WITH_TOKEN: 'triggerHookWithToken',
+    PULSE_MESSAGE: 'pulseMessage',
   },
   Hook: {
     status({ hookGroupId, hookId }, args, { loaders }) {
