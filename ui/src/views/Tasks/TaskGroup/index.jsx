@@ -480,7 +480,7 @@ export default class TaskGroup extends Component {
             onStatusClick={this.handleStatusClick}
           />
         )}
-        {!loading && (
+        {!loading && taskGroup && (
           <Search
             formProps={{ className: classes.taskNameFormSearch }}
             placeholder="Name contains"
@@ -489,7 +489,7 @@ export default class TaskGroup extends Component {
         )}
         <br />
         {!error && loading && <Spinner loading />}
-        {!loading && (
+        {!loading && taskGroup && (
           <TaskGroupTable
             searchTerm={searchTerm}
             filter={filter}
