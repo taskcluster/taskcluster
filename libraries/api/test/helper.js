@@ -15,7 +15,9 @@ exports.rootUrl = rootUrl;
  * specified, it is added to the router.
  */
 exports.setupServer = async ({builder, monitor, context}) => {
-  testing.fakeauth.start([], {rootUrl});
+  testing.fakeauth.start({
+    'client-with-aa-bb-dd': ['aa', 'bb', 'dd'],
+  }, {rootUrl});
   assert(runningServer === null);
 
   const schemaset = new SchemaSet({

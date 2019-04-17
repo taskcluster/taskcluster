@@ -20,8 +20,7 @@ manager.register({
                 the service to auth itself.`,
   fields: {
     clientId: 'The clientId that was authenticated.',
-    expires: 'After this time the authentication is no longer valid.',
-    scopes: 'All scopes that this client has available.',
+    expires: 'After this time the credential is no longer valid.',
     status: 'Whether or not the authentication was successful.',
     scheme: 'Currently always `hawk`.',
     message: 'A reason for failure if failed. Otherwise empty.',

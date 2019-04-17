@@ -275,17 +275,6 @@ const consumer = libPulse.consume({..},
 
 Specifically, `timedHandler` takes a function and wraps it with timing logic, returning a function with the same signature.
 
-### Express Timing Middleware
-
-Most Taskcluster services are Express services. We can easily time how long endpoints take to respond to requests by inserting `taskcluster-lib-monitor`
-as middleware:
-
-```js
-middleware.push(monitor.expressMiddleware('name_of_function'));
-```
-This is already integrated in `taskcluster-lib-api` and probably doesn't need to be implemented in your service on its own.
-
-
 ### Timing AWS SDK Calls
 
 Oftentimes a lot of a service's time will be spent interacting with AWS services. These interactions can be measured

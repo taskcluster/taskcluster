@@ -14,6 +14,7 @@ const {parameterValidator} = require('./middleware/parameters');
 const {remoteAuthentication} = require('./middleware/auth');
 const {parseBody} = require('./middleware/parse');
 const {expressError} = require('./middleware/express-error');
+const {logRequest} = require('./middleware/logging');
 
 const debug = Debug('api');
 
@@ -121,12 +122,11 @@ class API {
       // Route pattern
       const middleware = [entry.route];
 
-      middleware.push(monitor.expressMiddleware(entry.name));
-
       middleware.push(
+        logRequest({builder: this.builder, entry, monitor}),
         buildReportErrorMethod(),
         parseBody({inputLimit}),
-        remoteAuthentication({signatureValidator, entry, monitor}),
+        remoteAuthentication({signatureValidator, entry}),
         parameterValidator({context, entry}),
         queryValidator({context, entry}),
         validateSchemas({validator, absoluteSchemas, rootUrl, serviceName, entry}),

@@ -1,5 +1,6 @@
 const assert = require('assert');
 const {validScope} = require('./validate');
+const {scopeCompare, normalizeScopeSet} = require('./normalize');
 const {patternMatch} = require('./satisfaction');
 
 /** Validate a scope expression */
@@ -34,6 +35,64 @@ exports.satisfiesExpression = function(scopeset, expression) {
   };
 
   return isSatisfied(expression);
+};
+
+/**
+
+ * Given a scope expression and set of scopes that satisfies it, return a
+ * subset of those scopes that satisfies the scope expression.  This subset is
+ * not necessarily minimal: in the case of AnyOf, it includes all scopes
+ * satsifying any branch of that alternative.  To do otherwise would return
+ * only one of several possible minimal scope sets.
+ *
+ * Returns undefined if the scopeset does not satisfy the expression.
+ */
+exports.scopesSatisfying = (scopeset, expression) => {
+  let used = [];
+  /* Evaluate the given expression, appending all used scopes to `scopes` and
+   * returning true if satisfied, otherwise returning false and leaving `scopes`
+   * as it was found.
+   */
+  const recurse = expr => {
+    if (typeof expr === 'string') {
+      if (scopeset.some(s => patternMatch(s, expr))) {
+        used.push(expr);
+        return true;
+      }
+      return false;
+    }
+
+    if (expr.hasOwnProperty('AllOf')) {
+      let startIndex = used.length;
+      for (let subexpr of expr.AllOf) {
+        if (!recurse(subexpr)) {
+          // does not match the AllOf, so bail out now and do not return any of
+          // the accumulated scopes
+          used.splice(startIndex);
+          return false;
+        }
+      }
+      return true;
+    }
+
+    if (expr.hasOwnProperty('AnyOf')) {
+      let startIndex = used.length;
+      let found = false;
+      for (let subexpr of expr.AnyOf) {
+        found = recurse(subexpr) || found;
+      }
+      if (!found) {
+        // reset the scopes array
+        used.splice(startIndex);
+      }
+      return found;
+    }
+  };
+
+  if (recurse(expression)) {
+    used.sort(scopeCompare);
+    return normalizeScopeSet(used);
+  }
 };
 
 /**
