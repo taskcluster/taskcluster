@@ -153,10 +153,12 @@ const load = loader(
 
         /* eslint-disable no-console */
         console.log(`\n\nWeb server running on port ${cfg.server.port}.`);
-        console.log(
-          `\nOpen the interactive GraphQL Playground and schema explorer in your browser at:
-        http://localhost:${cfg.server.port}/playground\n`
-        );
+        if (cfg.app.playground) {
+          console.log(
+            `\nOpen the interactive GraphQL Playground and schema explorer in your browser at:
+          http://localhost:${cfg.server.port}/playground\n`
+          );
+        }
         /* eslint-enable no-console */
       },
     },

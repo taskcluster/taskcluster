@@ -21,13 +21,16 @@ export default async ({ cfg }) => {
       limit: '1mb',
     })
   );
-  app.get(
-    '/playground',
-    playground({
-      endpoint: '/graphql',
-      subscriptionsEndpoint: '/subscription',
-    })
-  );
+
+  if (cfg.app.playground) {
+    app.get(
+      '/playground',
+      playground({
+        endpoint: '/graphql',
+        subscriptionsEndpoint: '/subscription',
+      })
+    );
+  }
 
   cfg.app.loginStrategies.forEach(strategy => {
     const { default: loginStrategy } = require(`../login/${strategy}`);
