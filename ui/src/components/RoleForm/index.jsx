@@ -219,15 +219,6 @@ export default class RoleForm extends Component {
             <SpeedDialAction
               requiresAuth
               tooltipOpen
-              icon={<ContentSaveIcon />}
-              onClick={this.handleSaveRole}
-              className={classes.saveIcon}
-              tooltipTitle="Save"
-              ButtonProps={{ disabled: loading }}
-            />
-            <SpeedDialAction
-              requiresAuth
-              tooltipOpen
               icon={<DeleteIcon />}
               onClick={this.handleDeleteRole}
               tooltipTitle="Delete"
@@ -235,6 +226,15 @@ export default class RoleForm extends Component {
               ButtonProps={{
                 disabled: loading,
               }}
+            />
+            <SpeedDialAction
+              requiresAuth
+              tooltipOpen
+              icon={<ContentSaveIcon />}
+              onClick={this.handleSaveRole}
+              className={classes.saveIcon}
+              tooltipTitle="Save"
+              ButtonProps={{ disabled: loading }}
             />
           </SpeedDial>
         )}

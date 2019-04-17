@@ -202,23 +202,23 @@ export default class SecretForm extends Component {
             <SpeedDialAction
               requiresAuth
               tooltipOpen
-              icon={<ContentSaveIcon />}
-              onClick={this.handleSaveSecret}
-              className={classes.saveIcon}
-              tooltipTitle="Save Secret"
-              ButtonProps={{
-                disabled: loading || !this.validSecret(),
-              }}
-            />
-            <SpeedDialAction
-              requiresAuth
-              tooltipOpen
               icon={<DeleteIcon />}
               onClick={this.handleDeleteSecret}
               className={classes.deleteIcon}
               tooltipTitle="Delete Secret"
               ButtonProps={{
                 disabled: loading,
+              }}
+            />
+            <SpeedDialAction
+              requiresAuth
+              tooltipOpen
+              icon={<ContentSaveIcon />}
+              onClick={this.handleSaveSecret}
+              className={classes.saveIcon}
+              tooltipTitle="Save Secret"
+              ButtonProps={{
+                disabled: loading || !this.validSecret(),
               }}
             />
           </SpeedDial>

@@ -272,19 +272,19 @@ export default class ViewAwsWorkerTypeDefinition extends Component {
           <SpeedDial>
             <SpeedDialAction
               requiresAuth
-              icon={<ContentSaveIcon />}
-              className={classes.successIcon}
-              tooltipTitle="Update Worker Type"
-              onClick={this.handleUpdateWorkerType}
-              ButtonProps={{ disabled: invalidDefinition || actionLoading }}
-            />
-            <SpeedDialAction
-              requiresAuth
               icon={<DeleteIcon />}
               tooltipTitle="Delete Worker Type"
               className={classes.deleteIcon}
               onClick={this.handleDeleteWorkerType}
               ButtonProps={{ disabled: actionLoading }}
+            />
+            <SpeedDialAction
+              requiresAuth
+              icon={<ContentSaveIcon />}
+              className={classes.successIcon}
+              tooltipTitle="Update Worker Type"
+              onClick={this.handleUpdateWorkerType}
+              ButtonProps={{ disabled: invalidDefinition || actionLoading }}
             />
           </SpeedDial>
         )}

@@ -339,19 +339,19 @@ export default class ClientForm extends Component {
             <SpeedDialAction
               requiresAuth
               tooltipOpen
-              icon={<ContentSaveIcon className={classes.saveIcon} />}
-              onClick={this.handleSaveClient}
-              className={classes.saveIcon}
-              tooltipTitle="Save"
+              icon={<DeleteIcon />}
+              onClick={this.handleDeleteClient}
+              className={classes.deleteIcon}
+              tooltipTitle="Delete"
               ButtonProps={{ disabled: loading }}
             />
             <SpeedDialAction
               requiresAuth
               tooltipOpen
-              icon={<DeleteIcon />}
-              onClick={this.handleDeleteClient}
-              className={classes.deleteIcon}
-              tooltipTitle="Delete"
+              icon={<ContentSaveIcon className={classes.saveIcon} />}
+              onClick={this.handleSaveClient}
+              className={classes.saveIcon}
+              tooltipTitle="Save"
               ButtonProps={{ disabled: loading }}
             />
             <SpeedDialAction
