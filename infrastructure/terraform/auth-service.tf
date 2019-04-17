@@ -128,6 +128,15 @@ locals {
       ]
     },
     {
+      clientId    = "static/taskcluster/purge-cache"
+      accessToken = "${random_string.purge_cache_access_token.result}"
+      description = "..."
+
+      scopes = [
+        "auth:azure-table:read-write:${azurerm_storage_account.base.name}/CachePurges",
+      ]
+    },
+    {
       clientId    = "static/taskcluster/built-in-workers"
       accessToken = "${random_string.built_in_workers_access_token.result}"
       description = "..."
