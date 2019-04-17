@@ -239,6 +239,16 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
        * code = 'AuthenticationFailed'.
        */
       req.authorize = async (params) => {
+        // Render the scope expression template
+        const scopeExpression = scopeTemplate.render(params);
+
+        // if there's no scope expression then this is a public request (as
+        // occurs with getArtifact for a public artifact, for example)
+        if (!scopeExpression) {
+          req.public = true;
+          return;
+        }
+
         // This lint can be disabled because authenticate() will always return the same value
         result = await (result || authenticate(req)); // eslint-disable-line require-atomic-updates
 
@@ -252,11 +262,8 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
           });
         }
 
-        // Render the scope expression template
-        const scopeExpression = scopeTemplate.render(params);
-
         // Test that we have scope intersection, and hence, is authorized
-        const satisfyingScopes = !scopeExpression || scopes.scopesSatisfying(result.scopes, scopeExpression);
+        const satisfyingScopes = scopes.scopesSatisfying(result.scopes, scopeExpression);
         req.hasAuthed = true;
 
         if (!satisfyingScopes) {

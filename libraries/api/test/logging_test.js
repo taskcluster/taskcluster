@@ -63,6 +63,24 @@ suite(testing.suiteName(), function() {
 
   builder.declare({
     method: 'get',
+    route: '/sometimes-require-no-scopes',
+    name: 'sometimesRequireNoScopes',
+    title: 'Requre no scopes when private is false',
+    description: 'Place we can call to test something',
+    query: {
+      private: /[01]/,
+    },
+    scopes: {
+      if: 'private',
+      then: 'aa',
+    },
+  }, async function(req, res) {
+    await req.authorize({private: req.query.private === '1'});
+    res.reply({});
+  });
+
+  builder.declare({
+    method: 'get',
     route: '/require-extra-scopes',
     name: 'requireExtraScopes',
     title: 'Requre extra scopse',
@@ -121,6 +139,60 @@ suite(testing.suiteName(), function() {
         public: true,
         resource: '/api/test/v1/require-no-scopes',
         satisfyingScopes: [],
+        statusCode: 200,
+        v: 1,
+      },
+      Logger: 'taskcluster.foo.root',
+    });
+  });
+
+  test('optionally scope-less api method is logged without scopes', async function() {
+    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/sometimes-require-no-scopes?private=0');
+    const {header} = hawk.client.header(url, 'GET', {
+      credentials: {id: 'client-with-aa-bb-dd', key: 'ignored', algorithm: 'sha256'},
+    });
+    await request.get(url).set('Authorization', header);
+
+    assert.equal(monitorManager.messages.length, 1);
+    delete monitorManager.messages[0].Fields.duration;
+    assert.deepEqual(monitorManager.messages[0], {
+      Type: 'monitor.apiMethod',
+      Fields: {
+        name: 'sometimesRequireNoScopes',
+        apiVersion: 'v1',
+        clientId: '',
+        hasAuthed: false,
+        method: 'GET',
+        public: true,
+        resource: '/api/test/v1/sometimes-require-no-scopes?private=0',
+        satisfyingScopes: [],
+        statusCode: 200,
+        v: 1,
+      },
+      Logger: 'taskcluster.foo.root',
+    });
+  });
+
+  test('optionally scope-less api method is logged with scopes', async function() {
+    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/sometimes-require-no-scopes?private=1');
+    const {header} = hawk.client.header(url, 'GET', {
+      credentials: {id: 'client-with-aa-bb-dd', key: 'ignored', algorithm: 'sha256'},
+    });
+    await request.get(url).set('Authorization', header);
+
+    assert.equal(monitorManager.messages.length, 1);
+    delete monitorManager.messages[0].Fields.duration;
+    assert.deepEqual(monitorManager.messages[0], {
+      Type: 'monitor.apiMethod',
+      Fields: {
+        name: 'sometimesRequireNoScopes',
+        apiVersion: 'v1',
+        clientId: 'client-with-aa-bb-dd',
+        hasAuthed: true,
+        method: 'GET',
+        public: false,
+        resource: '/api/test/v1/sometimes-require-no-scopes?private=1',
+        satisfyingScopes: ['aa'],
         statusCode: 200,
         v: 1,
       },
