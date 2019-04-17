@@ -570,12 +570,14 @@ export default class HookForm extends Component {
                 Last Fired Results
               </ListSubheader>
               <ListItem className={classes.hookFiredTableListItem}>
-                {hookLastFires && (
+                {hookLastFires ? (
                   <HookLastFiredTable
                     items={hookLastFires}
                     onErrorClick={this.handleDrawerOpen}
                     paginate
                   />
+                ) : (
+                  'n/a'
                 )}
               </ListItem>
             </Fragment>
