@@ -192,7 +192,7 @@ export default class ViewTask extends Component {
     selectedCaches: null,
   };
 
-  handleActionClick = ({ target: { name } }) => {
+  handleActionClick = ({ currentTarget: { name } }) => {
     const { action } = this.state.actionData[name];
 
     this.setState({
