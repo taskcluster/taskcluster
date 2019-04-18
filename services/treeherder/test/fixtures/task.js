@@ -77,7 +77,7 @@ module.exports = `
             "tier": 1,
             "jobKind": "build",
             "build": {
-                "platform": "b2g-emu-x86-kk"
+                "platform": "linux64"
             },
             "collection": {
               "opt": true
@@ -85,9 +85,9 @@ module.exports = `
             "groupName": "Reftest",
             "groupSymbol": "tc-R",
             "machine": {
-                "platform": "b2g-emu-x86-kk"
+                "platform": "linux64"
             },
-            "productName": "b2g",
+            "productName": "firefox",
             "symbol": "R3"
         },
         "treeherderEnv": [

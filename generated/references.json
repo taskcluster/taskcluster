@@ -221,13 +221,13 @@
           "type": "object"
         },
         "productName": {
-          "description": "Examples include:\n-  'b2g'\n-  'firefox'\n-  'taskcluster'\n-  'xulrunner'\n",
+          "description": "Examples include:\n-  'firefox'\n-  'taskcluster'\n-  'xulrunner'\n",
           "maxLength": 125,
           "minLength": 1,
           "type": "string"
         },
         "reason": {
-          "description": "Examples include:\n- scheduled\n- scheduler\n- Self-serve: Rebuilt by foo@example.com\n- Self-serve: Requested by foo@example.com\n- The Nightly scheduler named 'b2g_mozilla-inbound periodic' triggered this build\n- unknown\n",
+          "description": "Examples include:\n- scheduled\n- scheduler\n- Self-serve: Rebuilt by foo@example.com\n- Self-serve: Requested by foo@example.com\n- The Nightly scheduler named 'mozilla-inbound periodic' triggered this build\n- unknown\n",
           "maxLength": 125,
           "minLength": 1,
           "type": "string"
@@ -626,20 +626,20 @@
           ]
         },
         "owner": {
-          "description": "Description of who submitted the job: gaia | scheduler name | username | email\n",
+          "description": "Description of who submitted the job:  scheduler name | username | email\n",
           "maxLength": 50,
           "minLength": 1,
           "title": "Owner",
           "type": "string"
         },
         "productName": {
-          "description": "Examples include:\n-  'b2g'\n-  'firefox'\n-  'taskcluster'\n-  'xulrunner'\n",
+          "description": "Examples include:\n-  'firefox'\n-  'taskcluster'\n-  'xulrunner'\n",
           "maxLength": 125,
           "minLength": 1,
           "type": "string"
         },
         "reason": {
-          "description": "Examples include:\n- scheduled\n- scheduler\n- Self-serve: Rebuilt by foo@example.com\n- Self-serve: Requested by foo@example.com\n- The Nightly scheduler named 'b2g_mozilla-inbound periodic' triggered this build\n- unknown\n",
+          "description": "Examples include:\n- scheduled\n- scheduler\n- Self-serve: Rebuilt by foo@example.com\n- Self-serve: Requested by foo@example.com\n- The Nightly scheduler named 'mozilla-inbound periodic' triggered this build\n- unknown\n",
           "maxLength": 125,
           "minLength": 1,
           "type": "string"

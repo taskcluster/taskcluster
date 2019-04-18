@@ -8,7 +8,7 @@
     "task":
     {
         "provisionerId": "aws-provisioner-v1",
-        "workerType": "b2gtest",
+        "workerType": "desktop-test-xlarge",
         "payload": {},
         "metadata": {
             "name": "Example Task",
