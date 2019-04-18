@@ -1,5 +1,5 @@
-import Debug from 'debug';
-import fetch from 'node-fetch';
+const Debug = require('debug');
+const fetch = require('node-fetch');
 
 const debug = Debug('fetch');
 // eslint-disable-next-line max-len
@@ -40,7 +40,7 @@ const handleResponse = response =>
       );
     });
 
-export default (url, opts = {}) => {
+module.exports = (url, opts = {}) => {
   const options = {
     ...defaults,
     ...opts,
