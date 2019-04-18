@@ -18,7 +18,7 @@ class Provisioner {
       },
       monitor,
       maxFailures: 10,
-      watchdogTime: 10000, // Each provider gets 10 seconds to provision instances per workertype
+      watchdogTime: 20000, // Each provider gets 20 seconds to provision instances per workertype
       waitTime: 10000,
       maxIterationTime: 300000, // We really should be making it through the list at least once every 5 minutes
       ...iterateConf,
@@ -77,7 +77,7 @@ class Provisioner {
           return;
         }
 
-        provider.provision({workerType});
+        await provider.provision({workerType});
 
         this.monitor.log.workertypeProvisioned({
           workerType: workerType.name,
