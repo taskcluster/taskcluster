@@ -1,11 +1,12 @@
-import passport from 'passport';
-import { Strategy } from 'passport-github';
-import { createTemporaryCredentials, fromNow } from 'taskcluster-client';
+const passport = require('passport');
+const { Strategy } = require('passport-github');
+const { createTemporaryCredentials, fromNow } = require('taskcluster-client');
 
-export default (app, cfg) => {
+export default ({ app, cfg, handlers }) => {
   const { credentials } = cfg.taskcluster;
+  const handlerCfg = cfg.login.handlers['github-oauth2'];
 
-  if (!cfg.githubLogin.clientId || !cfg.githubLogin.clientSecret) {
+  if (!handlerCfg.clientId || !handlerCfg.clientSecret) {
     throw new Error(
       'Unable to use "github" login strategy without GitHub client ID or secret'
     );
@@ -22,13 +23,13 @@ export default (app, cfg) => {
   passport.use(
     new Strategy(
       {
-        clientID: cfg.githubLogin.clientId,
-        clientSecret: cfg.githubLogin.clientSecret,
+        clientID: handlerCfg.clientId,
+        clientSecret: handlerCfg.clientSecret,
         callbackURL: `${cfg.app.publicUrl}${callback}`,
       },
       (accessToken, refreshToken, profile, next) => {
         const expires = fromNow('7 days');
-        const identity = `github/${encodeURIComponent(profile.id)}|${
+        const identity = `github-oauth2/${encodeURIComponent(profile.id)}|${
           profile.username
         }`;
         const credentials = createTemporaryCredentials({
@@ -43,7 +44,7 @@ export default (app, cfg) => {
           credentials,
           expires,
           profile,
-          providerId: 'github',
+          identityProviderId: 'github-oauth2',
         });
       }
     )
