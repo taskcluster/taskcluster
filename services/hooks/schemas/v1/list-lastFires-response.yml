@@ -15,6 +15,11 @@ properties:
         hookId:             {$const: hookId} 
         firedBy:
           type: string
+          enum: 
+            - schedule
+            - triggerHook
+            - triggerHookWithToken
+            - pulseMessage
         taskId:
           title:          "Task Identifier"
           description: |
