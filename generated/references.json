@@ -626,7 +626,7 @@
           ]
         },
         "owner": {
-          "description": "Description of who submitted the job:  scheduler name | username | email\n",
+          "description": "Description of who submitted the job: scheduler name | username | email\n",
           "maxLength": 50,
           "minLength": 1,
           "title": "Owner",
