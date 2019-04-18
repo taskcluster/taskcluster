@@ -28,5 +28,12 @@ query Hook($hookGroupId: ID!, $hookId: ID!) {
     }
     triggerSchema
     task
+  },
+  hookLastFires(hookGroupId: $hookGroupId, hookId: $hookId) {
+        taskId
+        firedBy
+        taskCreateTime
+        result
+        error
   }
 }

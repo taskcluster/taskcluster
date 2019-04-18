@@ -22,6 +22,7 @@ enum HookFiredBy {
   SCHEDULE
   TRIGGER_HOOK
   TRIGGER_HOOK_WITH_TOKEN
+  PULSE_MESSAGE
 }
 
 type HookSuccessfulFire {

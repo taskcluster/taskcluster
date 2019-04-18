@@ -163,6 +163,12 @@ export default class ViewHook extends Component {
       snackbar,
     } = this.state;
     const error = (data && data.error) || err;
+    const hookLastFires =
+      data &&
+      data.hookLastFires &&
+      data.hookLastFires.sort(
+        (a, b) => new Date(b.taskCreateTime) - new Date(a.taskCreateTime)
+      );
 
     return (
       <Dashboard title={isNewHook ? 'Create Hook' : 'Hook'}>
@@ -184,6 +190,7 @@ export default class ViewHook extends Component {
                 dialogError={dialogError}
                 actionLoading={actionLoading}
                 hook={data.hook}
+                hookLastFires={hookLastFires}
                 dialogOpen={dialogOpen}
                 onTriggerHook={this.handleTriggerHook}
                 onUpdateHook={this.handleUpdateHook}
