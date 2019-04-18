@@ -236,7 +236,7 @@ properties:
 
   owner:
     description: |
-      Description of who submitted the job: gaia | scheduler name | username | email
+      Description of who submitted the job: scheduler name | username | email
     title: "Owner"
     type: "string"
     minLength: 1
@@ -248,7 +248,7 @@ properties:
       - scheduler
       - Self-serve: Rebuilt by foo@example.com
       - Self-serve: Requested by foo@example.com
-      - The Nightly scheduler named 'b2g_mozilla-inbound periodic' triggered this build
+      - The Nightly scheduler named 'mozilla-inbound periodic' triggered this build
       - unknown
     type: "string"
     minLength: 1
@@ -256,7 +256,6 @@ properties:
   productName:
     description: |
       Examples include:
-      -  'b2g'
       -  'firefox'
       -  'taskcluster'
       -  'xulrunner'

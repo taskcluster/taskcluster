@@ -3,7 +3,7 @@ module.exports = `
     "status": {
         "taskId": "5UMTRzgESFG3Bn8kCBwxxQ",
         "provisionerId": "aws-provisioner-v1",
-        "workerType": "b2gtest-emulator",
+        "workerType": "gecko-t-linux-xlarge",
         "schedulerId": "task-graph-scheduler",
         "taskGroupId": "DUMMY_TASK_GROUP_ID",
         "deadline": "2016-04-16T18:12:25.211Z",

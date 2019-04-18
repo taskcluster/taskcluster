@@ -242,9 +242,6 @@ The namespaces for these caches help to avoid collisions and prevent cache-poiso
 
 Cache names do not contain directory separators.
 
-* `gaia-…` -
-  Caches with this prefix are used by gaia builds, limited to the https://github.com/mozilla-b2g/gaia repository
-
 * `tooltool-cache` -
   This cache contains cached downloads from tooltool.
   Since tooltool is content-addressible, and verifies hashes on files in the cache, there is no risk of cache poisoning or collisions.
@@ -292,10 +289,6 @@ The index provides a nice, dot-separated hierarchy of names. When using these as
 * `funsize.v1` -
    Tasks indexed under this tree represent funsize tasks.
    These are the responsibility of the release engineering team.
-
-* `gaia.npm_cache.<nodever>.<platform>.<revision>` -
-   Tasks indexed here have generated the `node_modules` directory required for the given revision.
-   These are the responsibility of the B2G automation team.
 
 * `garbage.<ircnick>` -
    Anything goes under this index path.

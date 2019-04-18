@@ -100,17 +100,4 @@ suite(testing.suiteName(), () => {
     let job = await helper.handler.buildMessage(pushInfo, task, status.runId, status);
     assert.deepEqual(job, expected);
   });
-
-  test('build machine - platform from task', async () => {
-    status.status.runs[status.runId].workerId = 'testworkerid';
-    expected.buildMachine = {
-      name: 'testworkerid',
-      platform: 'b2g-emu-x86-kk',
-      os: '-',
-      architecture: '-',
-    };
-
-    let job = await helper.handler.buildMessage(pushInfo, task, status.runId, status);
-    assert.deepEqual(job, expected);
-  });
 });

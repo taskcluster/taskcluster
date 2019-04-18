@@ -26,7 +26,7 @@ module.exports = `
         "revision": "dummya98d9bed366c133ebdf1feb5cf365a3c3703a337",
         "pushLogID": 123
     },
-    "productName": "b2g",
+    "productName": "firefox",
     "jobInfo": {
         "summary": "Dummy Task Description",
         "links": []
@@ -35,6 +35,6 @@ module.exports = `
         "architecture": "-",
         "name": "unknown",
         "os": "-",
-        "platform": "b2g-emu-x86-kk"
+        "platform": "linux64"
     }
 }`;
