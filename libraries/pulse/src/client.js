@@ -215,9 +215,9 @@ class Client extends events.EventEmitter {
       const method = confirmChannel ? 'createConfirmChannel' : 'createChannel';
       const channel = await conn.amqp[method]();
 
-      // consider any errors on the channel to be potentially fatal to the whole
-      // connection, out of an abundance of caution
-      channel.on('error', () => conn.failed());
+      // any errors on this channel will be handled as exceptions thrown within `fn`,
+      // so the events can be ignored
+      channel.on('error', () => {});
 
       try {
         return await fn(channel);
