@@ -91,7 +91,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
   const lastFire = {
     hookGroupId: 'test-listlastfires',
     hookId: 'bar',
-    firedBy: 'test',
+    firedBy: 'triggerHook',
     taskId: taskcluster.slugid(),
     taskCreateTime: new Date(),
     result: 'success',
@@ -406,7 +406,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         hookId: 'bar',
         taskId: 'E5SBRfo-RfOIxh0V4187Qg',
         taskCreateTime: now,
-        firedBy: 'thing',
+        firedBy: 'triggerHook',
         result: 'success',
         error: '',
       });
@@ -425,7 +425,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         hookId: 'bar',
         taskId: 'E5SBRfo-RfOIxh0V4187Qg',
         taskCreateTime: now,
-        firedBy: 'thing',
+        firedBy: 'triggerHook',
         result: 'error',
         error: '{"msg": "uhoh"}',
       });

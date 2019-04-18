@@ -4452,6 +4452,12 @@
                 "type": "string"
               },
               "firedBy": {
+                "enum": [
+                  "schedule",
+                  "triggerHook",
+                  "triggerHookWithToken",
+                  "pulseMessage"
+                ],
                 "type": "string"
               },
               "hookGroupId": {
