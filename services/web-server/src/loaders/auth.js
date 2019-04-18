@@ -1,5 +1,4 @@
 import DataLoader from 'dataloader';
-import { fromNow } from 'taskcluster-client';
 import WebServerError from '../utils/WebServerError';
 
 export default (clients, isAuthed, rootUrl, handlers, credentialsFromRequest, cfg) => {

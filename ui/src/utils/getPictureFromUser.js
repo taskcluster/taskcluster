@@ -6,14 +6,14 @@ export default user => {
     return null;
   }
 
-  switch (user.providerId) {
+  switch (user.identityProviderId) {
     // A profile returned from mozilla auth0
     case 'mozilla-auth0': {
       return user.profile.picture;
     }
 
     // http://www.passportjs.org/docs/profile/
-    case 'github': {
+    case 'github-oauth2': {
       return user.profile.photos && user.profile.photos.length
         ? user.profile.photos[0].value
         : null;

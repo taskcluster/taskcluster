@@ -14,7 +14,7 @@
             credentials: <%- JSON.stringify(user.credentials) %>,
             expires: <%- JSON.stringify(user.expires.toISOString()) %>,
             profile: <%- JSON.stringify(user.profile) %>,
-            providerId: <%- JSON.stringify(user.providerId) %>,
+            identityProviderId: <%- JSON.stringify(user.identityProviderId) %>,
           }, window.opener.location);
           window.close();
         }

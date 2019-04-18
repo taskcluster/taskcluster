@@ -1,6 +1,5 @@
 const passport = require('passport');
 const Auth0Strategy = require('passport-auth0');
-const { fromNow } = require('taskcluster-client');
 const WebServerError = require('../../utils/WebServerError');
 
 export default ({ app, cfg, handlers }) => {

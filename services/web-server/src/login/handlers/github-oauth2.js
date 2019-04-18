@@ -1,6 +1,8 @@
 const assert = require('assert');
 const Debug = require('debug');
+const User = require('../User');
 const encode = require('../../utils/encode');
+const { CLIENT_ID_PATTERN } = require('../../utils/constants');
 
 const debug = Debug('handlers.github-oauth2');
 

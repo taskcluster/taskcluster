@@ -1,16 +1,20 @@
 import clients from './clients';
 import loaders from './loaders';
 
-export default ({ pulseEngine, rootUrl }) => ({ req, connection }) => {
+export default ({ pulseEngine, rootUrl, handlers, cfg }) => ({ req, connection }) => {
   if (req) {
+    const { credentials } = req;
     const currentClients = clients({
       credentials: req.credentials,
       rootUrl,
     });
     const currentLoaders = loaders(
       currentClients,
-      Boolean(req.credentials),
-      rootUrl
+      Boolean(credentials),
+      rootUrl,
+      handlers,
+      credentials,
+      cfg,
     );
 
     return {

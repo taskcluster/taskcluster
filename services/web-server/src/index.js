@@ -16,6 +16,7 @@ import createSubscriptionServer from './servers/createSubscriptionServer';
 import resolvers from './resolvers';
 import typeDefs from './graphql';
 import PulseEngine from './PulseEngine';
+import scanner from './login/scanner';
 
 const load = loader(
   {
@@ -102,17 +103,19 @@ const load = loader(
     },
 
     context: {
-      requires: ['cfg', 'pulseEngine'],
-      setup: ({ cfg, pulseEngine }) =>
+      requires: ['cfg', 'pulseEngine', 'handlers'],
+      setup: ({ cfg, pulseEngine, handlers }) =>
         createContext({
           pulseEngine,
           rootUrl: cfg.taskcluster.rootUrl,
+          handlers,
+          cfg,
         }),
     },
 
     app: {
-      requires: ['cfg'],
-      setup: ({ cfg }) => createApp({ cfg }),
+      requires: ['cfg', 'handlers'],
+      setup: ({ cfg, handlers }) => createApp({ cfg, handlers }),
     },
 
     server: {
@@ -136,6 +139,28 @@ const load = loader(
         });
 
         return httpServer;
+      },
+    },
+
+    // Login handlers
+    handlers: {
+      requires: ['cfg'],
+      setup: ({ cfg }) => {
+        const handlers = {};
+
+        Object.keys(cfg.login.handlers).forEach((name) => {
+          const Handler = require('./login/handlers/' + name);
+          handlers[name] = new Handler({ name, cfg });
+        });
+
+        return handlers;
+      },
+    },
+
+    scanner: {
+      requires: ['cfg', 'handlers'],
+      setup: async ({ cfg, handlers }) => {
+        return scanner(cfg, handlers);
       },
     },
 

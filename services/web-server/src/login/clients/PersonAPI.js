@@ -30,7 +30,7 @@ module.exports = class PersonAPI {
       .set('Authorization', this.accessToken);
 
     if (!profile) {
-      debug(`profile for uuid ${uuid} not found`)
+      debug(`profile for uuid ${uuid} not found`);
     }
 
     return profile;
@@ -42,7 +42,7 @@ module.exports = class PersonAPI {
       .set('Authorization', this.accessToken);
 
     if (!profile) {
-      debug(`profile for primary email ${primaryEmail} not found`)
+      debug(`profile for primary email ${primaryEmail} not found`);
     }
 
     return profile;
@@ -54,7 +54,7 @@ module.exports = class PersonAPI {
       .set('Authorization', this.accessToken);
 
     if (!profile) {
-      debug(`profile for primary username ${primaryUsername} not found`)
+      debug(`profile for primary username ${primaryUsername} not found`);
     }
 
     return profile;
