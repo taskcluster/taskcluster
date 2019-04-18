@@ -8,10 +8,10 @@
   YARN_VERSION = "1.10.1"
   NODE_VERSION = "10.15.3"
   APPLICATION_NAME = "Taskcluster"
-  GRAPHQL_ENDPOINT = "https://taskcluster-web-server.herokuapp.com/graphql"
-  GRAPHQL_SUBSCRIPTION_ENDPOINT = "wss://taskcluster-web-server.herokuapp.com/subscription"
+  GRAPHQL_ENDPOINT = "https://taskcluster-staging.net/graphql"
+  GRAPHQL_SUBSCRIPTION_ENDPOINT = "wss://taskcluster-staging.net/subscription"
   LOGIN_STRATEGIES = ""
-  TASKCLUSTER_ROOT_URL = "https://taskcluster.net"
+  TASKCLUSTER_ROOT_URL = "https://taskcluster-staging.net"
 
 # Rule for Single Page Applications (docs)
 [[redirects]]
