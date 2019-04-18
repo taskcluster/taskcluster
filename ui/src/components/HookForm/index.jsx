@@ -116,8 +116,11 @@ const initialHook = {
     fontSize: theme.typography.pxToRem(16),
   },
   errorPanel: {
-    maxHeight: '85vh',
-    overflow: 'auto',
+    maxHeight: '88vh',
+    overflow: 'scroll',
+    '& span:first-child': {
+      overflow: 'unset',
+    },
   },
   headline: {
     paddingLeft: theme.spacing.triple,
@@ -126,10 +129,12 @@ const initialHook = {
   metadataContainer: {
     paddingTop: theme.spacing.double,
     paddingBottom: theme.spacing.double,
-    width: 400,
   },
-  hookFiredTableListItem: {
-    display: 'list-item',
+  drawerPaper: {
+    width: '40vw',
+    [theme.breakpoints.down('sm')]: {
+      width: '90vw',
+    },
   },
 }))
 /** A form to view/edit/create a hook */
@@ -566,19 +571,26 @@ export default class HookForm extends Component {
                   }
                 />
               </ListItem>
-              <ListSubheader className={classes.subheader}>
-                Last Fired Results
-              </ListSubheader>
-              <ListItem className={classes.hookFiredTableListItem}>
-                {hookLastFires ? (
-                  <HookLastFiredTable
-                    items={hookLastFires}
-                    onErrorClick={this.handleDrawerOpen}
-                    paginate
-                  />
-                ) : (
-                  'n/a'
-                )}
+              <ListItem>
+                <ListItemText
+                  disableTypography
+                  primary={
+                    <Typography variant="subtitle1">
+                      Last Fired Results
+                    </Typography>
+                  }
+                  secondary={
+                    hookLastFires ? (
+                      <HookLastFiredTable
+                        items={hookLastFires}
+                        onErrorClick={this.handleDrawerOpen}
+                        paginate
+                      />
+                    ) : (
+                      'n/a'
+                    )
+                  }
+                />
               </ListItem>
             </Fragment>
           )}
@@ -785,6 +797,9 @@ export default class HookForm extends Component {
         <Drawer
           anchor="right"
           open={drawerOpen}
+          classes={{
+            paper: classes.drawerPaper,
+          }}
           onClose={this.handleDrawerClose}>
           <div className={classes.metadataContainer}>
             <Typography variant="title" className={classes.headline}>

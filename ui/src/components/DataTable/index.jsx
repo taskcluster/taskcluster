@@ -27,17 +27,6 @@ import TablePagination from '@material-ui/core/TablePagination';
  * A table to display a set of data elements.
  */
 export default class DataTable extends Component {
-  static defaultProps = {
-    columnsSize: null,
-    headers: null,
-    onHeaderClick: null,
-    sortByHeader: null,
-    sortDirection: 'desc',
-    noItemsMessage: 'No items for this page.',
-    paginate: false,
-    rowsPerPage: 5,
-  };
-
   static propTypes = {
     /**
      * The number of columns the table contains.
@@ -77,13 +66,25 @@ export default class DataTable extends Component {
      */
     noItemsMessage: string,
     /**
-     * Whether to paginate the table
+     * If true, the table will be paginated.
      */
     paginate: bool,
     /**
-     * No. of rows to display per page of the table
+     * The number of rows per page.
+     * Relevant if `paginate` is set to `true`.
      */
     rowsPerPage: number,
+  };
+
+  static defaultProps = {
+    columnsSize: null,
+    headers: null,
+    onHeaderClick: null,
+    sortByHeader: null,
+    sortDirection: 'desc',
+    noItemsMessage: 'No items for this page.',
+    paginate: false,
+    rowsPerPage: 5,
   };
 
   state = {
