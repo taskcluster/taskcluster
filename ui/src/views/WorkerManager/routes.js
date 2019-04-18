@@ -1,25 +1,25 @@
 import lazy from '../../utils/lazy';
 
-const WMViewWorkerTypes = lazy(() =>
-  import(/* webpackChunkName: 'WorkerManager.WMViewWorkerTypes' */ './WMViewWorkerTypes')
+const WorkerManagerViewWorkerTypes = lazy(() =>
+  import(/* webpackChunkName: 'WorkerManager.WorkerManagerViewWorkerTypes' */ './WorkerManagerViewWorkerTypes')
 );
-const WMViewWorkers = lazy(() =>
-  import(/* webpackChunkName: 'WorkerManager.WMViewWorkerType' */ './WMViewWorkers')
+const WorkerManagerViewWorkers = lazy(() =>
+  import(/* webpackChunkName: 'WorkerManager.WorkerManagerViewWorkerType' */ './WorkerManagerViewWorkers')
 );
 
 export default path => [
   {
-    component: WMViewWorkers,
+    component: WorkerManagerViewWorkers,
     path: `${path}/worker-types/:workerType`,
     description: 'View workers for that specific worker type',
   },
   {
-    component: WMViewWorkers,
+    component: WorkerManagerViewWorkers,
     path: `${path}/providers/:provider`,
     description: 'View workers for that specific provider',
   },
   {
-    component: WMViewWorkerTypes,
+    component: WorkerManagerViewWorkerTypes,
     path,
     description:
       'Manage worker types known to the Worker Manager and check on the status of the nodes.',

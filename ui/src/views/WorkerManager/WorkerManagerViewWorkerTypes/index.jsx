@@ -3,14 +3,14 @@ import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../components/Dashboard';
-import workerTypesQuery from './WMWorkerTypes.graphql';
+import workerTypesQuery from './WorkerManagerWorkerTypes.graphql';
 import ErrorPanel from '../../../components/ErrorPanel';
-import WMWorkerTypesTable from '../../../components/WMWorkerTypesTable';
+import WorkerManagerWorkerTypesTable from '../../../components/WorkerManagerWorkerTypesTable';
 import Search from '../../../components/Search';
 
 @hot(module)
 @graphql(workerTypesQuery)
-export default class WMWorkerTypesView extends Component {
+export default class WorkerManagerWorkerTypesView extends Component {
   state = {
     workerTypeSearch: '',
   };
@@ -21,7 +21,7 @@ export default class WMWorkerTypesView extends Component {
 
   render() {
     const {
-      data: { loading, error, WMWorkerTypeSummaries },
+      data: { loading, error, WorkerManagerWorkerTypeSummaries },
       match: { path },
     } = this.props;
     const { workerTypeSearch } = this.state;
@@ -37,12 +37,12 @@ export default class WMWorkerTypesView extends Component {
           />
         }>
         <>
-          {!WMWorkerTypeSummaries && loading && <Spinner loading />}
+          {!WorkerManagerWorkerTypeSummaries && loading && <Spinner loading />}
           <ErrorPanel error={error} />
-          {WMWorkerTypeSummaries && (
-            <WMWorkerTypesTable
+          {WorkerManagerWorkerTypeSummaries && (
+            <WorkerManagerWorkerTypesTable
               searchTerm={workerTypeSearch}
-              workerTypes={WMWorkerTypeSummaries}
+              workerTypes={WorkerManagerWorkerTypeSummaries}
               path={path}
             />
           )}

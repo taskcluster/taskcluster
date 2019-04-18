@@ -2,7 +2,7 @@ import DataLoader from 'dataloader';
 import sift from 'sift';
 
 export default ({ workerManager }) => {
-  // const WMWorkerTypeSummaries = new DataLoader(queries =>
+  // const WorkerManagerWorkerTypeSummaries = new DataLoader(queries =>
   //   Promise.all(
   //     queries.map(async (filter) => {
   //       const summaries = await workerManager.listWorkerTypes();
@@ -12,9 +12,9 @@ export default ({ workerManager }) => {
   //   )
   // );
 
-  const WMWorkerTypeSummaries = new DataLoader(queries => {
+  const WorkerManagerWorkerTypeSummaries = new DataLoader(queries => {
     return Promise.all(
-      queries.map( ({ filter }) => {
+      queries.map(({ filter }) => {
         const summaries = [
           {
             name: 'banana',
@@ -48,6 +48,6 @@ export default ({ workerManager }) => {
   });
 
   return {
-    WMWorkerTypeSummaries,
+    WorkerManagerWorkerTypeSummaries,
   };
 };

@@ -3,8 +3,8 @@ import React, { Component } from 'react';
 import Dashboard from '../../../components/Dashboard';
 
 @hot(module)
-export default class WorkerManager extends Component {
+export default class WorkerManagerViewWorkers extends Component {
   render() {
-    return <Dashboard title="Worker Type View" />;
+    return <Dashboard title="Workers View" />;
   }
 }

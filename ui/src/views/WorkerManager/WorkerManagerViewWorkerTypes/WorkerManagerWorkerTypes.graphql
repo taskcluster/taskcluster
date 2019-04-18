@@ -1,5 +1,5 @@
 query workerTypes {
-  WMWorkerTypeSummaries {
+  WorkerManagerWorkerTypeSummaries {
     name
     pendingCapacity
     runningCapacity

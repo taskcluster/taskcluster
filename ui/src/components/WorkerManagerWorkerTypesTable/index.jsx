@@ -7,15 +7,15 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case';
 import { isEmpty, map, pipe, sort as rSort } from 'ramda';
-import { WMWorkerTypeSummary } from '../../utils/prop-types';
+import { WorkerManagerWorkerTypeSummary } from '../../utils/prop-types';
 import DataTable from '../DataTable';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
 import DateDistance from '../DateDistance';
 
-export default class WMWorkerTypesTable extends Component {
+export default class WorkerManagerWorkerTypesTable extends Component {
   static propTypes = {
-    workerTypes: arrayOf(WMWorkerTypeSummary).isRequired,
+    workerTypes: arrayOf(WorkerManagerWorkerTypeSummary).isRequired,
     searchTerm: string,
     path: string,
   };

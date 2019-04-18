@@ -1,7 +1,7 @@
 export default {
   Query: {
-    WMWorkerTypeSummaries(parent, { filter }, { loaders }) {
-      return loaders.WMWorkerTypeSummaries.load({ filter });
+    WorkerManagerWorkerTypeSummaries(parent, { filter }, { loaders }) {
+      return loaders.WorkerManagerWorkerTypeSummaries.load({ filter });
     },
   },
 };
