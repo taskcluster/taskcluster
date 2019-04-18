@@ -273,6 +273,7 @@ export default class ViewAwsWorkerTypeDefinition extends Component {
             <SpeedDialAction
               requiresAuth
               icon={<DeleteIcon />}
+              tooltipOpen
               tooltipTitle="Delete Worker Type"
               className={classes.deleteIcon}
               onClick={this.handleDeleteWorkerType}
@@ -282,6 +283,7 @@ export default class ViewAwsWorkerTypeDefinition extends Component {
               requiresAuth
               icon={<ContentSaveIcon />}
               className={classes.successIcon}
+              tooltipOpen
               tooltipTitle="Update Worker Type"
               onClick={this.handleUpdateWorkerType}
               ButtonProps={{ disabled: invalidDefinition || actionLoading }}
