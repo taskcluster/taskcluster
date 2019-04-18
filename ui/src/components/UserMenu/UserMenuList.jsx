@@ -47,28 +47,27 @@ export default class UserMenuList extends Component {
 
     if (!user) {
       return (
-        <List component="nav">
-          <ListItem
-            button
-            aria-haspopup="true"
-            aria-controls="user-menu"
-            aria-label="user menu"
-            onClick={onSignInDialogOpen}>
-            <ListItemIcon className={classes.icon}>
-              <AccountCircleIcon />
-            </ListItemIcon>
-            <ListItemText
-              disableTypography
-              className={classes.text}
-              inset
-              primary="Sign In"
-            />
-            <SignInDialog
-              open={signInDialogOpen}
-              onClose={onSignInDialogClose}
-            />
-          </ListItem>
-        </List>
+        <Fragment>
+          <List component="nav">
+            <ListItem
+              button
+              aria-haspopup="true"
+              aria-controls="user-menu"
+              aria-label="user menu"
+              onClick={onSignInDialogOpen}>
+              <ListItemIcon className={classes.icon}>
+                <AccountCircleIcon />
+              </ListItemIcon>
+              <ListItemText
+                disableTypography
+                className={classes.text}
+                inset
+                primary="Sign In"
+              />
+            </ListItem>
+          </List>
+          <SignInDialog open={signInDialogOpen} onClose={onSignInDialogClose} />
+        </Fragment>
       );
     }
 
