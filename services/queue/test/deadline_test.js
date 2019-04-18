@@ -65,7 +65,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
           runId: 0,
         },
       });
-    }, Infinity);
+    }, 100, 250);
 
     debug('### Stop deadlineReaper');
     await helper.stopPollingService();

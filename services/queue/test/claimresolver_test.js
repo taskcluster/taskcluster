@@ -66,7 +66,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
           Fields: {taskId, runId: 1, v: 1},
         });
       },
-      Infinity);
+      100, 250);
 
     await helper.stopPollingService();
   });
@@ -101,7 +101,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
           Fields: {taskId, runId: 0, v: 1},
         });
       },
-      Infinity);
+      100, 250);
 
     await helper.stopPollingService();
   });

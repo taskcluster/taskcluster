@@ -86,7 +86,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
                message.schedulerId === schedulerId && message.deadline.getTime() === deadline.getTime();
       });
       assert(foundTaskId, 'Expected to see taskId at some point');
-    }, Infinity);
+    }, 100, 250);
   }, {mock}));
 
   test('putClaimMessage, pollClaimQueue', testing.runWithFakeTime(async () => {
@@ -112,7 +112,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
                message.takenUntil.getTime() === takenUntil.getTime();
       });
       assert(foundTaskId, 'Expected to see taskId at some point');
-    }, Infinity);
+    }, 100, 250);
   }, {mock}));
 
   test('putResolvedMessage, pollResolvedQueue', testing.runWithFakeTime(async () => {
@@ -139,7 +139,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
                message.schedulerId === schedulerId && message.resolution === 'completed';
       });
       assert(foundTaskId, 'Expected to see taskId at some point');
-    }, Infinity);
+    }, 100, 250);
   }, {mock}));
 
   // not supported for mock QueueService
@@ -170,7 +170,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         }
       }
       throw new Error('Expected message');
-    }, Infinity);
+    }, 100, 250);
 
     // Check message
     assert(message.taskId === taskId);
@@ -188,7 +188,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         }
       }
       throw new Error('Expected message to return');
-    }, Infinity);
+    }, 100, 250);
 
     // Check message
     assert(message.taskId === taskId);
