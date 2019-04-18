@@ -5,11 +5,11 @@ const keys = [
 ];
 const loaders = keys.map(key => importer(key).default);
 
-module.exports = (clients, isAuthed, rootUrl) =>
+module.exports = (clients, isAuthed, rootUrl, handlers, credentials, cfg) =>
   loaders.reduce(
     (loaders, loader) => ({
       ...loaders,
-      ...loader(clients, isAuthed, rootUrl),
+      ...loader(clients, isAuthed, rootUrl, handlers, credentials, cfg),
     }),
     {}
   );
