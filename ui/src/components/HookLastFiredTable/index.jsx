@@ -1,5 +1,5 @@
 import React from 'react';
-import { func, bool, array } from 'prop-types';
+import { func, array } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
