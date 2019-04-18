@@ -10,8 +10,5 @@
     "start": "NODE_ENV=development webpack",
     "lint": "eslint --cache --format codeframe --ext mjs,js src test",
     "test": "mocha --require mocha.config.js --recursive"
-  },
-  "dependencies": {
-    "passport-auth0": "^1.1.0"
   }
 }
