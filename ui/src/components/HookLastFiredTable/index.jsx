@@ -88,13 +88,8 @@ function HookLastFiredTable({ classes, ...props }) {
 HookLastFiredTable.propTypes = {
   /** An array of hooks last fired results. */
   items: array.isRequired,
-  paginate: bool,
   /** Callback function fired when the error information icon is clicked. */
   onErrorClick: func.isRequired,
-};
-
-HookLastFiredTable.defaultProps = {
-  paginate: false,
 };
 
 export default useStyles(HookLastFiredTable);
