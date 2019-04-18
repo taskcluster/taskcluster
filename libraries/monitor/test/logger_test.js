@@ -111,6 +111,13 @@ suite(testing.suiteName(), function() {
     assert.equal(messages[0].Fields.message, 5.0);
   });
 
+  test('multiline fields.message is truncated in message', function() {
+    monitor.info('foobar', {message: 'title\nmore info\neven more'});
+    assert.equal(messages[0].Type, 'foobar');
+    assert.equal(messages[0].message, 'title');
+    assert.equal(messages[0].Fields.message, 'title\nmore info\neven more');
+  });
+
   test('null data still logs', function() {
     monitor.info('something', null);
     assert.equal(messages[0].Type, 'monitor.loggingError');
@@ -191,10 +198,11 @@ suite(testing.suiteName(), function() {
       pretty: true,
     });
     const m = b.monitor();
-    m.info('something', {whatever: 5});
+    m.info('something', {message: 'hey', whatever: 5});
     assert.equal(messages.length, 1);
     const message = messages[0].toString();
     assert(message.includes('INFO'));
+    assert(message.includes('message: hey'));
     assert(message.includes('whatever: 5'));
   });
 
