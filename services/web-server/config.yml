@@ -23,6 +23,17 @@ defaults:
     credentials:
       clientId: !env TASKCLUSTER_CLIENT_ID
       accessToken: !env TASKCLUSTER_ACCESS_TOKEN
+    temporaryCredentials:
+      # Set the credentials to be valid 15 min before creation
+      # (allowing for a bit of clock skew)
+      startOffset:    '- 15 min'
+      # Set the credential to expire after 3 days
+      expiry:         '3 days'
+      # Credentials to temporary credentials; these should have all of the roles that
+      # the service might hand out.  It's OK for these to be the same as app.credentials.
+      credentials:
+        clientId:     !env TASKCLUSTER_CLIENT_ID
+        accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
 
   # Pulse credentials
   pulse:
@@ -32,20 +43,20 @@ defaults:
     hostname: !env PULSE_HOSTNAME
     vhost: !env PULSE_VHOST
 
-  # config for the github login strategy
-  githubLogin:
-      # client ID and secret for the github OAuth application
-    clientId: !env GITHUB_CLIENT_ID
-    clientSecret: !env GITHUB_CLIENT_SECRET
-
-  # config for the mozilla auth0 login provider
-  mozillaAuth0Login:
-    domain: !env MOZILLA_AUTH0_DOMAIN
-    # client ID and secret for the github OAuth application
-    clientId: !env MOZILLA_AUTH0_CLIENT_ID
-    clientSecret: !env MOZILLA_AUTH0_CLIENT_SECRET
-    audience: !env MOZILLA_AUTH0_AUDIENCE
-    scope: !env MOZILLA_AUTH0_SCOPE
+  login:
+    handlers:
+      # config for the mozilla auth0 login provider
+      mozilla-auth0:
+        domain: !env MOZILLA_AUTH0_DOMAIN
+        clientId: !env MOZILLA_AUTH0_CLIENT_ID
+        clientSecret: !env MOZILLA_AUTH0_CLIENT_SECRET
+        audience: !env MOZILLA_AUTH0_AUDIENCE
+        scope: !env MOZILLA_AUTH0_SCOPE
+      # config for the github login strategy
+      github-oauth2:
+        # client ID and secret for the github OAuth application
+        clientId: !env GITHUB_CLIENT_ID
+        clientSecret: !env GITHUB_CLIENT_SECRET
 
 development:
   app:
