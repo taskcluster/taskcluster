@@ -44,7 +44,7 @@ export default class SpeedDialAction extends Component {
       ...ButtonProps,
       ...(lackingAuth ? { disabled: true } : {}),
     };
-    const title = props.tooltipOpen
+    const title = tooltipTitle
       ? {
           tooltipTitle: lackingAuth
             ? `${tooltipTitle} (Auth Required)`
