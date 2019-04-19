@@ -109,6 +109,10 @@ export default class Entry extends Component {
       ? entry.args.concat(`{${entry.query.join(', ')}}`)
       : entry.args;
 
+    if (entry.input) {
+      parameters.unshift('payload');
+    }
+
     return `${entry.name}(${parameters.join(', ')}) : ${
       entry.output ? 'result' : 'void'
     }`;
