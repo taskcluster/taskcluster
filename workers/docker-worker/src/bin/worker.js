@@ -162,7 +162,7 @@ program.parse(process.argv);
   let monitor = await monitoring({
     rootUrl: config.rootUrl,
     projectName: config.monitorProject,
-    credentials: config.taskcluster,
+    enable: false,
     mock: profile === 'test',
     reportUsage: false
   });
