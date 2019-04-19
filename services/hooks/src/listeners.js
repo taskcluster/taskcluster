@@ -117,39 +117,78 @@ class HookListeners {
     }
   }
 
-  /** Add / Remove bindings from he queue */
+  /** Add / Remove bindings from the queue and return the set of bindings that
+   * are in place.  This may differ from newBindings if, for example, an exchange
+   * does not exist or a routingKeyPattern is invalid.
+   */
   async syncBindings(queueName, newBindings, oldBindings) {
     // for direct AMQP operations, we need the full name of the queue (with the
     // queue/<namespace> prefix)
     const fullQueueName = this.client.fullObjectName('queue', queueName);
-    const result = [...oldBindings];
+    let result = [...oldBindings];
 
     if (this.client.isFakeClient) {
       // update the bindings for the FakePulseConsumer
       this.listeners[queueName].setFakeBindings(newBindings);
-    } else {
-      let intersection = _.intersectionWith(oldBindings, newBindings, _.isEqual);
-      const delBindings = _.differenceWith(oldBindings, intersection, _.isEqual);
-      const addBindings = _.differenceWith(newBindings, intersection, _.isEqual);
-      if (!addBindings.length && !delBindings.length) {
-        return;
-      }
-      debug(`${queueName}: updating bindings to ${JSON.stringify(newBindings)}`);
-      await this.client.withChannel(async channel => {
-        // perform unbinds first; these do not fail if the binding doesn't exist,
-        // making them idempotent.
-        for (let {exchange, routingKeyPattern} of delBindings) {
-          await channel.unbindQueue(fullQueueName, exchange, routingKeyPattern);
-        }
-        // bindings will fail if the exchange doesn't exist, and such a failure
-        // will kill the connection.  So if a user adds two new binding, and the
-        // first is invalid, the second won't be added until the first is fixed.
-        // Errors will be reported via monitor.
-        for (let {exchange, routingKeyPattern} of addBindings) {
-          await channel.bindQueue(fullQueueName, exchange, routingKeyPattern);
-        }
-      });
+      return newBindings;
     }
+
+    let intersection = _.intersectionWith(oldBindings, newBindings, _.isEqual);
+    const delBindings = _.differenceWith(oldBindings, intersection, _.isEqual);
+    const addBindings = _.differenceWith(newBindings, intersection, _.isEqual);
+    if (!addBindings.length && !delBindings.length) {
+      return newBindings;
+    }
+    debug(`${queueName}: updating bindings to ${JSON.stringify(newBindings)}`);
+
+    // each op tries to add or remove a binding, then updates `result` to correspond.
+    const ops = [
+      ...delBindings.map(({exchange, routingKeyPattern}) => async channel => {
+        try {
+          await channel.unbindQueue(fullQueueName, exchange, routingKeyPattern);
+        } catch (err) {
+          debug(`error unbinding from ${exchange} with ${routingKeyPattern}: ${err} (ignored)`);
+          throw err;
+        }
+        result = result.filter(({exchange: e, routingKeyPattern: r}) => e !== exchange || r !== routingKeyPattern);
+      }),
+      ...addBindings.map(({exchange, routingKeyPattern}) => async channel => {
+        try {
+          await channel.bindQueue(fullQueueName, exchange, routingKeyPattern);
+        } catch (err) {
+          debug(`error binding to ${exchange} with ${routingKeyPattern}: ${err} (ignored)`);
+          throw err;
+        }
+        result.push({exchange, routingKeyPattern});
+      }),
+    ];
+
+    await this.client.withConnection(async connection => {
+      let channel;
+      for (let op of ops) {
+        if (!channel) {
+          channel = await connection.amqp.createChannel();
+        }
+        try {
+          await op(channel);
+        } catch (err) {
+          // this is probably a nonexistent exchange or something. Try to
+          // close the channel so we'll open a new one on the next iteration
+          try {
+            await channel.close();
+          } catch (err) {
+            // apparently this error killed the connection, too?
+            connection.failed();
+            return;
+          }
+          channel = null;
+        }
+      }
+
+      if (channel) {
+        await channel.close();
+      }
+    });
 
     return result;
   }
@@ -195,13 +234,15 @@ class HookListeners {
                 await this.createListener(hookGroupId, hookId, queue.queueName);
               }
 
-              // update the bindings of the queue to be in sync with the Hooks table
-              await this.syncBindings(queue.queueName, hook.bindings, queue.bindings);
+              // update the bindings of the queue based on what was actually boubnd; if this
+              // is still not equal to the bindings in the hooks table, then on the next
+              // reconciliation we will try again
+              const boundBindings = await this.syncBindings(queue.queueName, hook.bindings, queue.bindings);
 
               // update the bindings in the Queues Azure table
               if (!_.isEqual(queue.bindings, hook.bindings)) {
                 await queue.modify((queue) => {
-                  queue.bindings = hook.bindings;
+                  queue.bindings = boundBindings;
                 });
               }
 
@@ -209,14 +250,14 @@ class HookListeners {
               _.pull(queues, queue);
             } else {
               await this.createListener(hookGroupId, hookId, queueName);
-              await this.syncBindings(queueName, hook.bindings, []);
+              const boundBindings = await this.syncBindings(queueName, hook.bindings, []);
 
               // Add to Queues table
               await this.Queues.create({
                 hookGroupId,
                 hookId,
                 queueName: `${hookGroupId}/${hookId}`,
-                bindings: hook.bindings,
+                bindings: boundBindings,
               });
             }
           } catch (err) {

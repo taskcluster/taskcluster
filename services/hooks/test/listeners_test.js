@@ -56,16 +56,145 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
 
   const qn = (hookGroupId, hookId) => `${hookGroupId}/${hookId}`;
 
+  suite('syncBindings', function() {
+    let hookListeners;
+    let connFailed = false;
+    let channels = [];
+
+    suiteSetup(async function() {
+      if (skipping()) {
+        this.skip();
+      }
+
+      hookListeners = await helper.load('listeners');
+
+      // syncBindings stubs itself out for fake clients, because fake clients don't
+      // support withConnection.  We're faking withConnection and part of amqplib
+      // here in ordre to stress-test this function without involving an AMQP server.
+      //
+      class Channel {
+        constructor() {
+          this.id = channels.length;
+          this.bindings = [];
+          this.unbindings = [];
+          this.closed = false;
+          channels.push(this);
+        }
+
+        async bindQueue(queueName, exchange, routingKeyPattern) {
+          if (exchange === 'nonexistent') {
+            throw new Error('no such exchange');
+          }
+          this.bindings.push({queueName, exchange, routingKeyPattern});
+        }
+
+        async unbindQueue(queueName, exchange, routingKeyPattern) {
+          this.unbindings.push({queueName, exchange, routingKeyPattern});
+        }
+
+        async close() {
+          this.closed = true;
+        }
+      }
+
+      hookListeners.client = {
+        fullObjectName: hookListeners.client.fullObjectName,
+        isFakeClient: false,
+        withConnection: async fn => {
+          const connection = {
+            amqp: {
+              createChannel: async () => new Channel(),
+            },
+            failed: () => {
+              connFailed = true;
+            },
+          };
+          await fn(connection);
+        },
+      };
+    });
+
+    setup(function() {
+      channels = [];
+      connFailed = false;
+    });
+
+    suiteTeardown(function() {
+      if (skipping()) {
+        this.skip();
+      }
+
+      helper.load.remove('listeners');
+    });
+
+    const binding = (exchange, routingKeyPattern) => ({exchange, routingKeyPattern});
+    const namedbinding = (name, exchange, routingKeyPattern) => ({
+      queueName: `queue/undefined/${name}`,
+      exchange,
+      routingKeyPattern,
+    });
+
+    test('add bindings', async function() {
+      const res = await hookListeners.syncBindings('qn',
+        [binding('e', 'r1'), binding('e', 'r2')],
+        [binding('e', 'r2')]);
+
+      assert.deepEqual(new Set(res), new Set([binding('e', 'r1'), binding('e', 'r2')]));
+
+      assert.equal(channels.length, 1);
+      assert.deepEqual(channels[0].bindings, [namedbinding('qn', 'e', 'r1')]);
+      assert.deepEqual(channels[0].unbindings, []);
+      assert(channels[0].closed);
+      assert(!connFailed);
+    });
+
+    test('add bindings with error', async function() {
+      const res = await hookListeners.syncBindings('qn',
+        [binding('e', 'r1'), binding('nonexistent', 'xx'), binding('e', 'r2')],
+        []);
+
+      assert.deepEqual(new Set(res), new Set([binding('e', 'r1'), binding('e', 'r2')]));
+
+      assert.equal(channels.length, 2);
+      assert.deepEqual(channels[0].bindings, [namedbinding('qn', 'e', 'r1')]);
+      assert.deepEqual(channels[0].unbindings, []);
+      assert(channels[0].closed);
+      assert.deepEqual(channels[1].bindings, [namedbinding('qn', 'e', 'r2')]);
+      assert.deepEqual(channels[1].unbindings, []);
+      assert(channels[1].closed);
+      assert(!connFailed);
+    });
+
+    test('remove bindings', async function() {
+      const res = await hookListeners.syncBindings('qn',
+        [binding('e', 'r2')],
+        [binding('e', 'r1'), binding('e', 'r2')]);
+
+      assert.deepEqual(res, [binding('e', 'r2')]);
+
+      assert.equal(channels.length, 1);
+      assert.deepEqual(channels[0].bindings, []);
+      assert.deepEqual(channels[0].unbindings, [namedbinding('qn', 'e', 'r1')]);
+      assert(channels[0].closed);
+      assert(!connFailed);
+    });
+
+    test('no change', async function() {
+      const res = await hookListeners.syncBindings('qn',
+        [binding('e', 'r1'), binding('e', 'r2')],
+        [binding('e', 'r1'), binding('e', 'r2')]);
+
+      assert.deepEqual(new Set(res), new Set([binding('e', 'r1'), binding('e', 'r2')]));
+
+      assert.equal(channels.length, 0);
+      assert(!connFailed);
+    });
+  });
+
   suite('reconcileConsumers', function() {
     let hookListeners;
     let createdListeners;
     let createdQueues;
-
-    suiteSetup(function() {
-      if (skipping()) {
-        this.skip();
-      }
-    });
 
     setup('load and mock HookListeners', async function() {
       hookListeners = await helper.load('listeners');
@@ -84,6 +213,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       hookListeners.syncBindings = sinon.fake(
         async (queueName, newBindings, oldBindings) => {
           createdQueues.set(queueName, newBindings);
+          return newBindings;
         });
     });
 
