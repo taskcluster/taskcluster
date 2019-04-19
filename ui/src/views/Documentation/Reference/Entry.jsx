@@ -107,9 +107,9 @@ export default class Entry extends Component {
   getSignatureFromEntry(entry) {
     const parameters = entry.query.length
       ? entry.args.concat(`{${entry.query.join(', ')}}`)
-      : entry.args;
+      : [...entry.args];
 
-    if (entry.input && parameters.indexOf('payload') === -1) {
+    if (entry.input) {
       parameters.push('payload');
     }
 
