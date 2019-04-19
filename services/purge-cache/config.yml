@@ -30,11 +30,6 @@ defaults:
   azure:
     accountId:                !env AZURE_ACCOUNT
 
-  pulse:
-    namespace:               !env PULSE_NAMESPACE
-    expiresAfter:            !env PULSE_EXPIRES_AFTER
-    contact:                 !env PULSE_CONTACT
-
   taskcluster:
     rootUrl:                     !env TASKCLUSTER_ROOT_URL
     credentials:
@@ -54,9 +49,6 @@ defaults:
 production:
   server:
     env:                          'production'
-
-  pulse:
-    username:                     'taskcluster-purge-cache'
 
 test:
   app:

@@ -25,9 +25,10 @@ export default class PurgeCache extends Client {
     return this.request(this.ping.entry, args);
   }
   /* eslint-disable max-len */
-  // Publish a purge-cache message to purge caches named `cacheName` with
-  // `provisionerId` and `workerType` in the routing-key. Workers should
-  // be listening for this message and purge caches when they see it.
+  // Publish a request to purge caches named `cacheName` with
+  // on `provisionerId`/`workerType` workers.
+  // If such a request already exists, its `before` timestamp is updated to
+  // the current time.
   /* eslint-enable max-len */
   purgeCache(...args) {
     this.validate(this.purgeCache.entry, args);
@@ -35,6 +36,7 @@ export default class PurgeCache extends Client {
     return this.request(this.purgeCache.entry, args);
   }
   /* eslint-disable max-len */
+  // View all active purge requests.
   // This is useful mostly for administors to view
   // the set of open purge requests. It should not
   // be used by workers. They should use the purgeRequests
@@ -47,9 +49,9 @@ export default class PurgeCache extends Client {
     return this.request(this.allPurgeRequests.entry, args);
   }
   /* eslint-disable max-len */
-  // List of caches that need to be purged if they are from before
-  // a certain time. This is safe to be used in automation from
-  // workers.
+  // List the caches for this `provisionerId`/`workerType` that should to be
+  // purged if they are from before the time given in the response.
+  // This is intended to be used by workers to determine which caches to purge.
   /* eslint-enable max-len */
   purgeRequests(...args) {
     this.validate(this.purgeRequests.entry, args);

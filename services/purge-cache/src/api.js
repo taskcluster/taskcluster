@@ -20,11 +20,11 @@ const builder = new APIBuilder({
     workerType: GENERIC_ID_PATTERN,
   },
   description: [
-    'The purge-cache service is responsible for publishing a pulse',
-    'message for workers, so they can purge cache upon request.',
+    'The purge-cache service is responsible for tracking cache-purge requests.',
     '',
-    'This document describes the API end-point for publishing the pulse',
-    'message. This is mainly intended to be used by tools.',
+    'User create purge requests for specific caches on specific workers, and',
+    'these requests are timestamped.  Workers consult the service before',
+    'starting a new task, and purge any caches older than the timestamp.',
   ].join('\n'),
   serviceName: 'purge-cache',
   apiVersion: 'v1',
@@ -43,9 +43,11 @@ builder.declare({
   title: 'Purge Worker Cache',
   stability: APIBuilder.stability.stable,
   description: [
-    'Publish a purge-cache message to purge caches named `cacheName` with',
-    '`provisionerId` and `workerType` in the routing-key. Workers should',
-    'be listening for this message and purge caches when they see it.',
+    'Publish a request to purge caches named `cacheName` with',
+    'on `provisionerId`/`workerType` workers.',
+    '',
+    'If such a request already exists, its `before` timestamp is updated to',
+    'the current time.',
   ].join('\n'),
 }, async function(req, res) {
   let {provisionerId, workerType} = req.params;
@@ -95,6 +97,8 @@ builder.declare({
   title: 'All Open Purge Requests',
   stability: APIBuilder.stability.stable,
   description: [
+    'View all active purge requests.',
+    '',
     'This is useful mostly for administors to view',
     'the set of open purge requests. It should not',
     'be used by workers. They should use the purgeRequests',
@@ -129,9 +133,10 @@ builder.declare({
   title: 'Open Purge Requests for a provisionerId/workerType pair',
   stability: APIBuilder.stability.stable,
   description: [
-    'List of caches that need to be purged if they are from before',
-    'a certain time. This is safe to be used in automation from',
-    'workers.',
+    'List the caches for this `provisionerId`/`workerType` that should to be',
+    'purged if they are from before the time given in the response.',
+    '',
+    'This is intended to be used by workers to determine which caches to purge.',
   ].join('\n'),
 }, async function(req, res) {
 

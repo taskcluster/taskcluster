@@ -2,9 +2,6 @@
 defaults:
   azure:
     account: "..."
-  pulse:
-    username: "..."
-    password: "..."
   taskcluster:
     credentials:
       clientId: "..."
