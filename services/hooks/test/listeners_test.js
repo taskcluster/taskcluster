@@ -58,7 +58,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
 
   suite('syncBindings', function() {
     let hookListeners;
-    let connFailed = false;
     let channels = [];
 
     suiteSetup(async function() {
@@ -77,46 +76,44 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
           this.id = channels.length;
           this.bindings = [];
           this.unbindings = [];
-          this.closed = false;
+          this.failed = false;
           channels.push(this);
         }
 
         async bindQueue(queueName, exchange, routingKeyPattern) {
+          assert(!this.failed);
           if (exchange === 'nonexistent') {
-            throw new Error('no such exchange');
+            this.failed = true;
+            const err = new Error('no such exchange');
+            err.code = 404;
+            throw err;
+          }
+          if (exchange === 'explode') {
+            this.failed = true;
+            const err = new Error('boom');
+            err.code = 500;
+            throw err;
           }
           this.bindings.push({queueName, exchange, routingKeyPattern});
         }
 
         async unbindQueue(queueName, exchange, routingKeyPattern) {
+          assert(!this.failed);
           this.unbindings.push({queueName, exchange, routingKeyPattern});
-        }
-
-        async close() {
-          this.closed = true;
         }
       }
 
       hookListeners.client = {
         fullObjectName: hookListeners.client.fullObjectName,
         isFakeClient: false,
-        withConnection: async fn => {
-          const connection = {
-            amqp: {
-              createChannel: async () => new Channel(),
-            },
-            failed: () => {
-              connFailed = true;
-            },
-          };
-          await fn(connection);
+        withChannel: async fn => {
+          await fn(new Channel());
         },
       };
     });
 
     setup(function() {
       channels = [];
-      connFailed = false;
     });
 
     suiteTeardown(function() {
@@ -144,25 +141,29 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       assert.equal(channels.length, 1);
       assert.deepEqual(channels[0].bindings, [namedbinding('qn', 'e', 'r1')]);
       assert.deepEqual(channels[0].unbindings, []);
-      assert(channels[0].closed);
-      assert(!connFailed);
     });
 
-    test('add bindings with error', async function() {
+    test('add bindings with nonexistent exchange', async function() {
       const res = await hookListeners.syncBindings('qn',
         [binding('e', 'r1'), binding('nonexistent', 'xx'), binding('e', 'r2')],
         []);
 
       assert.deepEqual(new Set(res), new Set([binding('e', 'r1'), binding('e', 'r2')]));
 
-      assert.equal(channels.length, 2);
+      assert.equal(channels.length, 3);
       assert.deepEqual(channels[0].bindings, [namedbinding('qn', 'e', 'r1')]);
       assert.deepEqual(channels[0].unbindings, []);
-      assert(channels[0].closed);
-      assert.deepEqual(channels[1].bindings, [namedbinding('qn', 'e', 'r2')]);
-      assert.deepEqual(channels[1].unbindings, []);
-      assert(channels[1].closed);
-      assert(!connFailed);
+      assert.deepEqual(channels[1].failed, true);
+      assert.deepEqual(channels[2].bindings, [namedbinding('qn', 'e', 'r2')]);
+      assert.deepEqual(channels[2].unbindings, []);
+    });
+
+    test('add bindings with error', async function() {
+      assert.rejects(async () => {
+        await hookListeners.syncBindings('qn',
+          [binding('explode', 'xx')],
+          []);
+      }, /boom/);
     });
 
     test('remove bindings', async function() {
@@ -175,8 +176,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       assert.equal(channels.length, 1);
       assert.deepEqual(channels[0].bindings, []);
       assert.deepEqual(channels[0].unbindings, [namedbinding('qn', 'e', 'r1')]);
-      assert(channels[0].closed);
-      assert(!connFailed);
     });
 
     test('no change', async function() {
@@ -187,7 +186,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       assert.deepEqual(new Set(res), new Set([binding('e', 'r1'), binding('e', 'r2')]));
 
       assert.equal(channels.length, 0);
-      assert(!connFailed);
     });
   });
 
