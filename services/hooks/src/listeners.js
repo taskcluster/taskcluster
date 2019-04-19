@@ -141,54 +141,36 @@ class HookListeners {
     }
     debug(`${queueName}: updating bindings to ${JSON.stringify(newBindings)}`);
 
-    // each op tries to add or remove a binding, then updates `result` to correspond.
-    const ops = [
-      ...delBindings.map(({exchange, routingKeyPattern}) => async channel => {
-        try {
+    // unbinding queues will always succeed, even if the binding is not in place, so we don't
+    // do any special error handling here.
+    if (delBindings.length > 0) {
+      await this.client.withChannel(async channel => {
+        for (let {exchange, routingKeyPattern} of delBindings) {
           await channel.unbindQueue(fullQueueName, exchange, routingKeyPattern);
-        } catch (err) {
-          debug(`error unbinding from ${exchange} with ${routingKeyPattern}: ${err} (ignored)`);
-          throw err;
+          result = result.filter(
+            ({exchange: e, routingKeyPattern: r}) => e !== exchange || r !== routingKeyPattern);
         }
-        result = result.filter(({exchange: e, routingKeyPattern: r}) => e !== exchange || r !== routingKeyPattern);
-      }),
-      ...addBindings.map(({exchange, routingKeyPattern}) => async channel => {
-        try {
-          await channel.bindQueue(fullQueueName, exchange, routingKeyPattern);
-        } catch (err) {
-          debug(`error binding to ${exchange} with ${routingKeyPattern}: ${err} (ignored)`);
-          throw err;
-        }
+      });
+    }
+
+    // We performe each of the bind operations in a distinct channel, as a failure of the operation
+    // will invalidate the channel.  Failures are handled by simply not marking the binding
+    // as complete and leaving if for the next reconciliation to try again.
+    for (let {exchange, routingKeyPattern} of addBindings) {
+      try {
+        await this.client.withChannel(channel =>
+          channel.bindQueue(fullQueueName, exchange, routingKeyPattern));
+        // success! add that binding to the list
         result.push({exchange, routingKeyPattern});
-      }),
-    ];
-
-    await this.client.withConnection(async connection => {
-      let channel;
-      for (let op of ops) {
-        if (!channel) {
-          channel = await connection.amqp.createChannel();
+      } catch (err) {
+        if (err.code !== 404) {
+          throw err;
         }
-        try {
-          await op(channel);
-        } catch (err) {
-          // this is probably a nonexistent exchange or something. Try to
-          // close the channel so we'll open a new one on the next iteration
-          try {
-            await channel.close();
-          } catch (err) {
-            // apparently this error killed the connection, too?
-            connection.failed();
-            return;
-          }
-          channel = null;
-        }
-      }
 
-      if (channel) {
-        await channel.close();
+        // no such exchange.. better luck next time..
+        debug(`error binding exchange ${exchange} with ${routingKeyPattern}: ${err} (ignored)`);
       }
-    });
+    }
 
     return result;
   }
