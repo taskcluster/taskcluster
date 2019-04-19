@@ -115,6 +115,7 @@ export default class DataTable extends Component {
       noItemsMessage,
       rowsPerPage,
       paginate,
+      ...props
     } = this.props;
     const colSpan = columnsSize || (headers && headers.length) || 0;
     const { page } = this.state;
@@ -122,7 +123,7 @@ export default class DataTable extends Component {
     return (
       <Fragment>
         <div className={classes.tableWrapper}>
-          <Table>
+          <Table {...props}>
             {headers && (
               <TableHead>
                 <TableRow>
