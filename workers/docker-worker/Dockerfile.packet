@@ -6,7 +6,7 @@ LABEL Description="docker-worker packet image" Vendor="Mozilla"
 
 ENV DEBIAN_FRONTEND noninteractive
 
-ENV PAPERTRAIL logs2.papertrailapp.com:22395
+ENV PAPERTRAIL logs.papertrailapp.com:52806
 
 COPY ./deploy/packer/base/scripts/configure_syslog.sh /tmp/
 COPY ./deploy/packer/base/scripts/node.sh /tmp/
