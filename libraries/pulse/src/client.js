@@ -225,9 +225,12 @@ class Client extends events.EventEmitter {
         try {
           await channel.close();
         } catch (err) {
-          // an error trying to close the channel suggests the connection is dead, so
-          // recycle, but continue to throw the first error
-          conn.failed();
+          if (!(err instanceof amqplib.IllegalOperationError)) {
+            // IllegalOperationError happens when we are closing a broken
+            // channel; any other error trying to close the channel suggests
+            // the connection is dead, so mark it failed.
+            conn.failed();
+          }
         }
       }
     });

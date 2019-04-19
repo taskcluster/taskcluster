@@ -208,43 +208,100 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
     assume([gotConnection, finishedWithConnection]).to.eqls([true, true]);
   });
 
-  test('withChannel', async function() {
-    const client = new Client({
-      credentials,
-      retirementDelay: 50,
-      minReconnectionInterval: 20,
-      monitor,
-      namespace: 'guest',
+  suite('withChannel', function() {
+    let client;
+
+    setup(function() {
+      if (skipping()) {
+        return;
+      }
+
+      client = new Client({
+        credentials,
+        retirementDelay: 50,
+        minReconnectionInterval: 20,
+        monitor,
+        namespace: 'guest',
+      });
     });
 
-    const queueName = client.fullObjectName('queue', slugid.v4());
+    teardown(async function() {
+      if (skipping()) {
+        return;
+      }
 
-    let gotException;
-    try {
+      await client.stop();
+    });
+
+    test('asserting a queue', async function() {
+      const queueName = client.fullObjectName('queue', slugid.v4());
 
       await client.withChannel(async chan => {
         await chan.assertQueue(queueName);
-        // throw an error to exercise error-handling code
-        throw new Error('uhoh');
       });
-    } catch (err) {
-      if (/uhoh/.test(err)) {
-        // note that we can't tell if the channel was closed properly
-        gotException = true;
-      } else {
-        throw err;
-      }
-    }
-    assume(gotException).to.equal(true);
 
-    let queueInfo;
-    await client.withChannel(async chan => {
-      queueInfo = await chan.checkQueue(queueName);
-      await chan.deleteQueue(queueName);
+      let queueInfo;
+      await client.withChannel(async chan => {
+        queueInfo = await chan.checkQueue(queueName);
+        await chan.deleteQueue(queueName);
+      });
+
+      assume(queueInfo.queue).to.equal(queueName);
     });
 
-    await client.stop();
-    assume(queueInfo.queue).to.equal(queueName);
+    test('with an error', async function() {
+      const queueName = client.fullObjectName('queue', slugid.v4());
+
+      let gotException;
+      try {
+        await client.withChannel(async chan => {
+          // throw an error to exercise error-handling code
+          throw new Error('uhoh');
+        });
+      } catch (err) {
+        if (/uhoh/.test(err)) {
+          // note that we can't tell if the channel was closed properly
+          gotException = true;
+        } else {
+          throw err;
+        }
+      }
+      assume(gotException).to.equal(true);
+
+      // clean up..
+      await client.withChannel(async chan => {
+        await chan.deleteQueue(queueName);
+      });
+
+      // check that it did not kill the connection
+      assume(client.connections.length).to.equal(1);
+    });
+
+    test('binding nonexistent exchange', async function() {
+      const queueName = client.fullObjectName('queue', slugid.v4());
+
+      await client.withChannel(async chan => {
+        await chan.assertQueue(queueName);
+      });
+
+      let err;
+      try {
+        await client.withChannel(async chan => {
+          await chan.bindQueue(queueName, 'nosuchexchange', '#');
+        });
+      } catch (e) {
+        err = e;
+      }
+      assume(err.code).to.equal(404);
+
+      // clean up..
+      await client.withChannel(async chan => {
+        await chan.deleteQueue(queueName);
+      });
+
+      // check that it did not kill the connection
+      assume(client.connections.length).to.equal(1);
+    });
   });
 
   test('consumer (with failures)', async function() {
