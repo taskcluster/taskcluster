@@ -109,8 +109,8 @@ export default class Entry extends Component {
       ? entry.args.concat(`{${entry.query.join(', ')}}`)
       : entry.args;
 
-    if (entry.input) {
-      parameters.unshift('payload');
+    if (entry.input && parameters.indexOf('payload') === -1) {
+      parameters.push('payload');
     }
 
     return `${entry.name}(${parameters.join(', ')}) : ${
