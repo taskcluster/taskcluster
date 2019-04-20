@@ -143,37 +143,23 @@ const load = loader({
     setup: ({cfg}) => new aws.SES(cfg.aws),
   },
 
-  sqs: {
-    requires: ['cfg'],
-    setup: ({cfg}) => new aws.SQS({
-      ...cfg.aws,
+  notifier: {
+    requires: ['cfg', 'publisher', 'rateLimit', 'ses'],
+    setup: ({cfg, publisher, rateLimit, ses}) => new Notifier({
+      emailBlacklist: cfg.app.emailBlacklist,
+      publisher,
+      rateLimit,
+      ses,
+      sourceEmail: cfg.app.sourceEmail,
     }),
   },
 
-  notifier: {
-    requires: ['cfg', 'publisher', 'rateLimit', 'ses', 'sqs'],
-    setup: async ({cfg, publisher, rateLimit, ses, sqs}) => {
-      const n = new Notifier({
-        queueName: cfg.app.sqsQueueName,
-        emailBlacklist: cfg.app.emailBlacklist,
-        publisher,
-        rateLimit,
-        ses,
-        sqs,
-        sourceEmail: cfg.app.sourceEmail,
-      });
-      await n.setup();
-      return n;
-    },
-  },
-
   irc: {
-    requires: ['cfg', 'monitor'],
-    setup: async ({cfg, monitor}) => {
+    requires: ['cfg', 'pulseClient', 'monitor'],
+    setup: async ({cfg, pulseClient, monitor}) => {
       let client = new IRC(_.merge(cfg.irc, {
-        aws: cfg.aws,
-        queueName: cfg.app.sqsQueueName,
         monitor: monitor.monitor('irc'),
+        pulseClient,
       }));
       await client.start();
       return client;

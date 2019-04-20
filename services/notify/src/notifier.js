@@ -18,7 +18,6 @@ class Notifier {
     });
     this.hashCache = [];
     this.publisher = options.publisher;
-    this.sqs = options.sqs;
     this.rateLimit = options.rateLimit;
     this.queueName = this.options.queueName;
     this.sender = options.sourceEmail;
@@ -38,12 +37,6 @@ class Notifier {
         },
       },
     });
-  }
-
-  async setup() {
-    this.queueUrl = (await this.sqs.createQueue({
-      QueueName: this.queueName,
-    }).promise()).QueueUrl;
   }
 
   key(idents) {
@@ -117,7 +110,8 @@ class Notifier {
     });
   }
 
-  async irc({channel, user, message}) {
+  async irc(msg) {
+    const {channel, user, message} = msg;
     if (channel && !/^[#&][^ ,\u{0007}]{1,199}$/u.test(channel)) {
       debug('irc channel ' + channel + ' invalid format. Not attempting to send.');
       return;
@@ -126,12 +120,9 @@ class Notifier {
       debug('Duplicate irc message send detected. Not attempting resend.');
       return;
     }
-    debug(`sending irc message to ${user || channel}.`);
-    return this.sqs.sendMessage({
-      QueueUrl: this.queueUrl,
-      MessageBody: JSON.stringify({channel, user, message}),
-      DelaySeconds: 0,
-    }).promise().then(res => {
+
+    debug(`Publishing message on irc for ${user || channel}.`);
+    return this.publisher.ircNotify({message:msg}, ['irc']).then(res => {
       this.markSent(channel, user, message);
       return res;
     });

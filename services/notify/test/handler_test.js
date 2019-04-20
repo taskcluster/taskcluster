@@ -7,7 +7,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.withFakeQueue(mock, skipping);
   helper.withSES(mock, skipping);
   helper.withPulse(mock, skipping);
-  helper.withSQS(mock, skipping);
   helper.withServer(mock, skipping);
 
   const created = new Date();
@@ -138,9 +137,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       routingKey: 'doesnt-matter',
       routes: [route],
     });
-    await helper.checkSQSMessage(helper.ircSQSQueue, body => {
-      assert.equal(body.channel, '#taskcluster-test');
-      assert.equal(body.message, 'it worked with taskid DKPZPsvvQEiw67Pb3rkdNg');
+    helper.assertPulseMessage('irc-notification', m => {
+      const {channel, message} = m.payload.message;
+      return _.isEqual(channel, '#taskcluster-test') &&
+      _.isEqual(message, 'it worked with taskid DKPZPsvvQEiw67Pb3rkdNg');
     });
   });
 });
