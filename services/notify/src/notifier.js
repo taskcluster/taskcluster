@@ -122,7 +122,7 @@ class Notifier {
     }
 
     debug(`Publishing message on irc for ${user || channel}.`);
-    return this.publisher.ircNotify({message:msg}, ['irc']).then(res => {
+    return this.publisher.ircNotify({message: msg}, ['irc']).then(res => {
       this.markSent(channel, user, message);
       return res;
     });

@@ -82,7 +82,7 @@ exchanges.declare({
   title: 'IRC Notification Messages',
   description: [
     'A message which is to be sent to an irc channel or',
-    'user is published to this exchange'
+    'user is published to this exchange',
   ].join('\n'),
   routingKey: buildCommonRoutingKey(),
   schema: 'notification-message.yml',
