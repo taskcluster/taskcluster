@@ -425,7 +425,7 @@ suite('component loader', () => {
         'dep1': null,
       });
     } catch (e) {
-      if (!e.message.match(/assertation failure occured/)) {
+      if (!e.message.match(/virtual keys must not have definitions in the loader/)) {
         throw e;
       }
       return;

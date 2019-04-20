@@ -1,5 +1,5 @@
 const util = require('util');
-const assume = require('assume');
+const assert = require('assert');
 const TopoSort = require('topo-sort');
 const debug = require('debug')('taskcluster-lib-loader');
 
@@ -57,7 +57,7 @@ function renderGraph(componentDirectory, sortedComponents) {
  * Usage is detailed in README.
  */
 function loader(componentDirectory, virtualComponents = {}) {
-  assume(componentDirectory).is.an('object');
+  assert(typeof componentDirectory === 'object');
   if (virtualComponents instanceof Array) {
     virtualComponents = virtualComponents.reduce((acc, k) => {
       acc[k] = null;
@@ -65,7 +65,8 @@ function loader(componentDirectory, virtualComponents = {}) {
     }, {});
   }
   const virtualKeys = Object.keys(virtualComponents);
-  assume(Object.keys(componentDirectory).filter(x => virtualKeys.includes(x))).has.length(0);
+  assert(Object.keys(componentDirectory).every(k => !virtualKeys.includes(k)),
+    'virtual keys must not have definitions in the loader');
   componentDirectory = Object.assign({}, componentDirectory);
 
   // Check for undefined components
