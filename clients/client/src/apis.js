@@ -2133,7 +2133,7 @@ module.exports = {
     "reference": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The purge-cache service is responsible for publishing a pulse\nmessage for workers, so they can purge cache upon request.\n\nThis document describes the API end-point for publishing the pulse\nmessage. This is mainly intended to be used by tools.",
+      "description": "The purge-cache service is responsible for tracking cache-purge requests.\n\nUser create purge requests for specific caches on specific workers, and\nthese requests are timestamped.  Workers consult the service before\nstarting a new task, and purge any caches older than the timestamp.",
       "entries": [
         {
           "args": [
@@ -2153,7 +2153,7 @@ module.exports = {
             "provisionerId",
             "workerType"
           ],
-          "description": "Publish a purge-cache message to purge caches named `cacheName` with\n`provisionerId` and `workerType` in the routing-key. Workers should\nbe listening for this message and purge caches when they see it.",
+          "description": "Publish a request to purge caches named `cacheName` with\non `provisionerId`/`workerType` workers.\n\nIf such a request already exists, its `before` timestamp is updated to\nthe current time.",
           "input": "v1/purge-cache-request.json#",
           "method": "post",
           "name": "purgeCache",
@@ -2168,7 +2168,7 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "This is useful mostly for administors to view\nthe set of open purge requests. It should not\nbe used by workers. They should use the purgeRequests\nendpoint that is specific to their workerType and\nprovisionerId.",
+          "description": "View all active purge requests.\n\nThis is useful mostly for administors to view\nthe set of open purge requests. It should not\nbe used by workers. They should use the purgeRequests\nendpoint that is specific to their workerType and\nprovisionerId.",
           "method": "get",
           "name": "allPurgeRequests",
           "output": "v1/all-purge-cache-request-list.json#",
@@ -2186,7 +2186,7 @@ module.exports = {
             "provisionerId",
             "workerType"
           ],
-          "description": "List of caches that need to be purged if they are from before\na certain time. This is safe to be used in automation from\nworkers.",
+          "description": "List the caches for this `provisionerId`/`workerType` that should to be\npurged if they are from before the time given in the response.\n\nThis is intended to be used by workers to determine which caches to purge.",
           "method": "get",
           "name": "purgeRequests",
           "output": "v1/purge-cache-request-list.json#",
