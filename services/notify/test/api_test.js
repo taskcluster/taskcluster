@@ -175,17 +175,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(m
     await helper.apiClient.deleteDenylistAddress(dummyAddress1);
   });
 
-  test('Denylist: list()', async function() {
-    // Call list() on an empty table
-    let addressList = await helper.apiClient.list();
+  test('Denylist: listDenylist()', async function() {
+    // Call listDenylist() on an empty table
+    let addressList = await helper.apiClient.listDenylist();
     assert(addressList.addresses, []);
 
     // Add some items
     await helper.DenylistedNotification.create(dummyAddress1);
     await helper.DenylistedNotification.create(dummyAddress2);
 
-    // check the result of list()
-    addressList = await helper.apiClient.list();
+    // check the result of listDenylist()
+    addressList = await helper.apiClient.listDenylist();
     let expectedResult = [dummyAddress1, dummyAddress2].sort();
     assert.deepEqual(addressList.addresses.sort(), expectedResult);
   });

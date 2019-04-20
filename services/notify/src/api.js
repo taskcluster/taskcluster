@@ -188,7 +188,7 @@ builder.declare({
 builder.declare({
   method: 'get',
   route: '/denylist/list',
-  name: 'list',
+  name: 'listDenylist',
   scopes: 'notify:manage-denylist',
   output: 'notification-address-list.yml',
   title: 'List Denylisted Notifications',
