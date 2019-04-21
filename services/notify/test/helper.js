@@ -6,7 +6,6 @@ const {stickyLoader, Secrets, fakeauth, withEntity, withPulse} = require('taskcl
 const builder = require('../src/api');
 const load = require('../src/main');
 const RateLimit = require('../src/ratelimit');
-const slugid = require('slugid');
 const data = require('../src/data');
 const libUrls = require('taskcluster-lib-urls');
 
@@ -41,94 +40,6 @@ exports.secrets = new Secrets({
   },
   load: exports.load,
 });
-
-class MockSQS {
-  constructor() {
-    this.queues = {};
-  }
-
-  createQueue({QueueName}) {
-    this.queues[QueueName] = [];
-    return {promise: async () => ({QueueUrl: QueueName})};
-  }
-
-  sendMessage({QueueUrl, MessageBody, DelaySeconds}) {
-    this.queues[QueueUrl].unshift(MessageBody);
-    return {promise: async () => ({})};
-  }
-
-  reset() {
-    this.queues = {};
-  }
-}
-
-exports.withSQS = (mock, skipping) => {
-  let sqs;
-
-  suiteSetup('withSQS', async function() {
-    if (skipping()) {
-      return;
-    }
-
-    const cfg = await exports.load('cfg');
-
-    if (mock) {
-      sqs = new MockSQS();
-      const queueSuffix = slugid.nice().replace(/[_-]/g, '').slice(-10);
-      // use a unique sqs queue name to allow multiple versions of this test to run
-      // simultaneously without stepping on toes
-      exports.ircSQSQueue = `${cfg.app.sqsQueueName}-${queueSuffix}`;
-      exports.load.cfg('app.sqsQueueName', exports.ircSQSQueue);
-      exports.load.inject('sqs', sqs);
-      exports.checkSQSMessage = (queueUrl, check) => {
-        const messages = sqs.queues[queueUrl];
-        assert(messages, `Queue "${queueUrl}" not yet created.`);
-        assert(messages.length > 0, `Queue "${queueUrl}" has too few messages.`);
-        assert(messages.length === 1, `Queue "${queueUrl}" has too many messages.`);
-        check(JSON.parse(messages.pop()));
-      };
-    } else {
-      sqs = new aws.SQS({...cfg.aws});
-      const notifier = await exports.load('notifier');
-      exports.ircSQSQueue = await notifier.queueUrl;
-      let approxLen = await sqs.getQueueAttributes({
-        QueueUrl: exports.ircSQSQueue,
-        AttributeNames: ['ApproximateNumberOfMessages'],
-      }).promise().then(req => req.Attributes.ApproximateNumberOfMessages);
-      if (approxLen !== '0') {
-        console.log(`Detected ${approxLen} messages in irc queue. Purging.`);
-        await sqs.purgeQueue({
-          QueueUrl: exports.ircSQSQueue,
-        }).promise();
-      }
-      exports.checkSQSMessage = async (queueUrl, check) => {
-        const resp = await sqs.receiveMessage({
-          QueueUrl: queueUrl,
-          AttributeNames: ['ApproximateReceiveCount'],
-          MaxNumberOfMessages: 10,
-          VisibilityTimeout: 30,
-          WaitTimeSeconds: 20,
-        }).promise();
-        const messages = resp.Messages;
-        await sqs.deleteMessage({
-          QueueUrl: queueUrl,
-          ReceiptHandle: messages[0].ReceiptHandle,
-        }).promise();
-        assert.equal(messages.length, 1);
-        check(JSON.parse(messages[0].Body));
-      };
-    }
-  });
-
-  suiteTeardown('withSQS', async function() {
-    if (skipping()) {
-      return;
-    }
-    if (mock) {
-      sqs.reset();
-    }
-  });
-};
 
 class MockSES {
   constructor() {
@@ -166,7 +77,7 @@ exports.withSES = (mock, skipping) => {
         check(ses.emails.pop());
       };
     } else {
-      sqs = await exports.load('sqs');
+      sqs = new aws.SQS(cfg.aws);
       const emailSQSQueue = await sqs.createQueue({
         QueueName: 'taskcluster-notify-test-emails',
       }).promise().then(req => req.QueueUrl);

@@ -7,7 +7,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(m
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withSES(mock, skipping);
-  helper.withSQS(mock, skipping);
   helper.withServer(mock, skipping);
 
   // Dummy address for denylist tests
