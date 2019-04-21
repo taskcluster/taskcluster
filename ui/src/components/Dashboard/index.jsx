@@ -218,7 +218,12 @@ export default class Dashboard extends Component {
     const { error, navOpen, showHelpView } = this.state;
     const drawer = (
       <nav>
-        <div className={classes.toolbar}>
+        <div
+          {...!process.env.DOCS_ONLY && {
+            component: Link,
+            to: '/',
+          }}
+          className={classes.toolbar}>
           <img
             className={classes.logoStyle}
             height={30}
