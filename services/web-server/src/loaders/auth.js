@@ -1,12 +1,17 @@
 import DataLoader from 'dataloader';
 import WebServerError from '../utils/WebServerError';
 
-export default (clients, isAuthed, rootUrl, handlers, credentialsFromRequest, cfg) => {
-  const oidcCredentials = new DataLoader(queries => {
+export default (clients, isAuthed, rootUrl, handlers, req, cfg) => {
+  const getCredentials = new DataLoader(queries => {
     return Promise.all(
-      queries.map(async provider => {
+      queries.map(async (provider, accessToken) => {
         const handler = handlers[provider];
-        const user = handler.userFromClientId(credentialsFromRequest.clientId);
+
+        if (!handler) {
+          throw new WebServerError('InputError', `Could not find a handler for provider ${provider}`);
+        }
+
+        const user = await handler.userFromRequest(req);
 
         if (!user) {
           // Don't report much to the user, to avoid revealing sensitive information, although
@@ -32,6 +37,6 @@ export default (clients, isAuthed, rootUrl, handlers, credentialsFromRequest, cf
   });
 
   return {
-    oidcCredentials,
+    getCredentials,
   };
 };

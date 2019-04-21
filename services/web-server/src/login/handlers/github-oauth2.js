@@ -33,6 +33,11 @@ class Handler {
     return user;
   }
 
+  async userFromRequest(req, res) {
+    // TODO: return a user
+    return;
+  }
+
   // exposed method
   userFromClientId(clientId) {
     const patternMatch = CLIENT_ID_PATTERN.exec(clientId);

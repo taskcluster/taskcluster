@@ -25,6 +25,9 @@ export default ({ app, cfg, handlers }) => {
         scope: handlerCfg.scope,
         callbackURL: `${cfg.app.publicUrl}${callback}`,
       },
+      // accessToken is the token to call Auth0 API (not needed in most cases)
+      // extraParams.id_token has the JSON Web Token
+      // profile has all the information from the user
       async (accessToken, refreshToken, extraParams, profile, done) => {
         const user = await handler.getUser({ userId: profile.user_id });
 

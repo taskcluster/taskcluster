@@ -3,16 +3,16 @@ enum AuthProvider {
   GITHUB_OAUTH2
 }
 
-# A response containing credentials corresponding to a supplied OIDC `access_token`.
+# Taskcluster credentials.
 type TaskclusterCredentials {
   clientId: ID!
   accessToken: ID!
   certificate: String
 }
 
-type OidcCredentials {
+type Credentials {
   # Time after which the credentials are no longer valid.
-  # Callers should call `oidcCredentials` again to get fresh
+  # Callers should call `getCredentials` again to get fresh
   # credentials before this time.
   expires: Date!
   # Taskcluster credentials. Note that the credentials may not contain a certificate!
@@ -20,19 +20,19 @@ type OidcCredentials {
 }
 
 extend type Query {
-  # Given an OIDC `access_token` from a trusted OpenID provider, return a
-  # set of Taskcluster credentials for use on behalf of the identified
-  # user.
+  # Given a token, return a set of Taskcluster credentials
+  # for use on behalf of the identified user.
+  #
+  # | -- | --- |
+  # | Provider | Token type |
+  # | mozilla-auth0 | An OIDC token from a trusted OpenID provider |
+  # | github-oauth2 | An OAuth 2.0 token |
   #
   # This method is typically not called with a Taskcluster client library
-  # and does not accept Hawk credentials. The `access_token` should be
-  # given in an `Authorization` header:
-  # ```
-  # Authorization: Bearer abc.xyz
-  # ```
+  # and does not accept Hawk credentials.
   #
-  # The `access_token` is first verified against the named
-  # :provider, then passed to the provider\'s APIBuilder to retrieve a user
+  # The `accessToken` is first verified against the named
+  # `provider`, then passed to the provider\'s APIBuilder to retrieve a user
   # profile. That profile is then used to generate Taskcluster credentials
   # appropriate to the user. Note that the resulting credentials may or may
   # not include a `certificate` property. Callers should be prepared for either
@@ -41,5 +41,5 @@ extend type Query {
   # The given credentials will expire in a relatively short time. Callers should
   # monitor this expiration and refresh the credentials if necessary, by calling
   # this endpoint again, if they have expired.
-  oidcCredentials(provider: AuthProvider!): OidcCredentials
+  getCredentials(provider: AuthProvider!, accessToken: ID!): Credentials
 }

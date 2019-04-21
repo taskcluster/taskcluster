@@ -4,7 +4,7 @@ const request = require('superagent');
 const jwt = require('jsonwebtoken');
 const expressJwt = require('express-jwt');
 const jwks = require('jwks-rsa');
-const User = require('../user');
+const User = require('../User');
 const PersonAPI = require('../clients/PersonAPI');
 const { CLIENT_ID_PATTERN } = require('../../utils/constants');
 const encode = require('../../utils/encode');
@@ -41,6 +41,7 @@ class Handler {
       issuer: `https://${this.domain}/`,
       algorithms: ['RS256'],
       credentialsRequired: true,
+      getToken: req => req.body.variables.accessToken,
     });
   }
 
@@ -81,12 +82,12 @@ class Handler {
     const userProfile = await personApi.getProfileFromUserId(userId);
     const user = new User();
 
-    if ('active' in userProfile && !userProfile.active) {
-      debug('user is not active; rejecting');
+    if (!userProfile || !userProfile.user_id) {
       return;
     }
 
-    if (!userProfile || !userProfile.user_id) {
+    if ('active' in userProfile && !userProfile.active) {
+      debug('user is not active; rejecting');
       return;
     }
 
@@ -105,7 +106,7 @@ class Handler {
 
   // expose method
   async userFromRequest(req, res) {
-    // check the JWT's validity, setting req.user if sucessful
+    // check the JWT's validity, setting req.user if successful
     try {
       await new Promise((resolve, reject) =>
         this.jwtCheck(req, res, (err) => err ? reject(err) : resolve()));
