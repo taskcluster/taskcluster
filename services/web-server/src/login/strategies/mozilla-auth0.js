@@ -11,6 +11,7 @@ const PersonAPI = require('../clients/PersonAPI');
 const WebServerError = require('../../utils/WebServerError');
 const { CLIENT_ID_PATTERN } = require('../../utils/constants');
 const { encode, decode } = require('../../utils/codec');
+const identityFromClientId = require('../../utils/identityFromClientId');
 
 const debug = Debug('strategies.mozilla-auth0');
 
@@ -140,8 +141,7 @@ module.exports = class MozillaAuth0 {
 
   // exposed method
   userFromClientId(clientId) {
-    const patternMatch = CLIENT_ID_PATTERN.exec(clientId);
-    const identity = patternMatch && patternMatch[1];
+    const identity = identityFromClientId(clientId);
 
     if (!identity) {
       return;

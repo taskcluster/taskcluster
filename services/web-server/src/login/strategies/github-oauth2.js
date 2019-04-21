@@ -5,7 +5,8 @@ const { Strategy } = require('passport-github');
 const { createTemporaryCredentials, fromNow } = require('taskcluster-client');
 const User = require('../User');
 const { encode } = require('../../utils/codec');
-const { CLIENT_ID_PATTERN } = require('../../utils/constants');
+const identityFromClientId = require('../../utils/identityFromClientId');
+
 
 const debug = Debug('strategies.github-oauth2');
 
@@ -43,8 +44,7 @@ module.exports = class GithubOauth2 {
 
   // exposed method
   userFromClientId(clientId) {
-    const patternMatch = CLIENT_ID_PATTERN.exec(clientId);
-    const identity = patternMatch && patternMatch[1];
+    const identity = identityFromClientId(clientId);
 
     if (!identity) {
       return;
