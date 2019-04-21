@@ -158,9 +158,9 @@ const load = loader(
     },
 
     scanner: {
-      requires: ['cfg', 'strategies'],
-      setup: async ({ cfg, strategies }) => {
-        return scanner(cfg, strategies);
+      requires: ['cfg', 'strategies', 'monitor'],
+      setup: async ({ cfg, strategies, monitor }) => {
+        return monitor.monitor().oneShot('scanner', () => scanner(cfg, strategies));
       },
     },
 
