@@ -7,6 +7,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.withFakeQueue(mock, skipping);
   helper.withSES(mock, skipping);
   helper.withPulse(mock, skipping);
+  helper.withSQS(mock, skipping);
   helper.withServer(mock, skipping);
 
   const created = new Date();

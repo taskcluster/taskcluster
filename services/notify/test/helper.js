@@ -88,7 +88,7 @@ exports.withSQS = (mock, skipping) => {
         check(JSON.parse(messages.pop()));
       };
     } else {
-      sqs = await exports.load('sqs');
+      sqs = new aws.SQS({...cfg.aws,});
       const notifier = await exports.load('notifier');
       exports.ircSQSQueue = await notifier.queueUrl;
       let approxLen = await sqs.getQueueAttributes({
