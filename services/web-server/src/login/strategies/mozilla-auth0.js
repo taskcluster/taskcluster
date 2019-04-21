@@ -9,7 +9,6 @@ const jwks = require('jwks-rsa');
 const User = require('../User');
 const PersonAPI = require('../clients/PersonAPI');
 const WebServerError = require('../../utils/WebServerError');
-const { CLIENT_ID_PATTERN } = require('../../utils/constants');
 const { encode, decode } = require('../../utils/codec');
 const identityFromClientId = require('../../utils/identityFromClientId');
 
@@ -230,6 +229,9 @@ module.exports = class MozillaAuth0 {
           audience: strategyCfg.audience,
           scope: strategyCfg.scope,
           callbackURL: `${cfg.app.publicUrl}${callback}`,
+          // The state parameter requires session support to be enabled.
+          // We can't use cookies until we implement CORS and revisit the RRA.
+          state: false,
         },
         // accessToken is the token to call Auth0 API (not needed in most cases)
         // extraParams.id_token has the JSON Web Token
@@ -269,7 +271,7 @@ module.exports = class MozillaAuth0 {
     // Called by the provider
     app.get(
       callback,
-      passport.authenticate('auth0'),
+      passport.authenticate('auth0', { session: false }),
       (request, response) => {
         response.render('callback', {
           user: request.user,

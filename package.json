@@ -39,7 +39,6 @@
     "email-templates": "^5.0.2",
     "express": "4.16.4",
     "express-jwt": "^5.3.0",
-    "express-session": "^1.16.1",
     "express-sslify": "1.2.0",
     "fast-azure-storage": "^2.3.0",
     "fast-json-stable-stringify": "^2.0.0",
