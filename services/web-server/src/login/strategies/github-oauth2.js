@@ -4,7 +4,7 @@ const passport = require('passport');
 const { Strategy } = require('passport-github');
 const { createTemporaryCredentials, fromNow } = require('taskcluster-client');
 const User = require('../User');
-const encode = require('../../utils/encode');
+const { encode } = require('../../utils/codec');
 const { CLIENT_ID_PATTERN } = require('../../utils/constants');
 
 const debug = Debug('strategies.github-oauth2');

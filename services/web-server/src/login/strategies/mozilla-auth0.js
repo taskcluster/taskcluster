@@ -10,8 +10,7 @@ const User = require('../User');
 const PersonAPI = require('../clients/PersonAPI');
 const WebServerError = require('../../utils/WebServerError');
 const { CLIENT_ID_PATTERN } = require('../../utils/constants');
-const encode = require('../../utils/encode');
-const decode = require('../../utils/decode');
+const { encode, decode } = require('../../utils/codec');
 
 const debug = Debug('strategies.mozilla-auth0');
 
