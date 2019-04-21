@@ -1,17 +1,17 @@
 import DataLoader from 'dataloader';
 import WebServerError from '../utils/WebServerError';
 
-export default (clients, isAuthed, rootUrl, handlers, req, cfg) => {
+export default (clients, isAuthed, rootUrl, strategies, req, cfg) => {
   const getCredentials = new DataLoader(queries => {
     return Promise.all(
       queries.map(async (provider, accessToken) => {
-        const handler = handlers[provider];
+        const strategy = strategies[provider];
 
-        if (!handler) {
-          throw new WebServerError('InputError', `Could not find a handler for provider ${provider}`);
+        if (!strategy) {
+          throw new WebServerError('InputError', `Could not find a strategy for provider ${provider}`);
         }
 
-        const user = await handler.userFromRequest(req);
+        const user = await strategy.userFromRequest(req);
 
         if (!user) {
           // Don't report much to the user, to avoid revealing sensitive information, although

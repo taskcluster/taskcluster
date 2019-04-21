@@ -44,7 +44,7 @@ defaults:
     vhost: !env PULSE_VHOST
 
   login:
-    handlers:
+    strategies:
       # config for the mozilla auth0 login provider
       mozilla-auth0:
         domain: !env MOZILLA_AUTH0_DOMAIN

@@ -28,9 +28,6 @@ extend type Query {
   # | mozilla-auth0 | An OIDC token from a trusted OpenID provider |
   # | github-oauth2 | An OAuth 2.0 token |
   #
-  # This method is typically not called with a Taskcluster client library
-  # and does not accept Hawk credentials.
-  #
   # The `accessToken` is first verified against the named
   # `provider`, then passed to the provider\'s APIBuilder to retrieve a user
   # profile. That profile is then used to generate Taskcluster credentials

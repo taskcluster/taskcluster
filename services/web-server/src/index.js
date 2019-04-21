@@ -103,19 +103,19 @@ const load = loader(
     },
 
     context: {
-      requires: ['cfg', 'pulseEngine', 'handlers'],
-      setup: ({ cfg, pulseEngine, handlers }) =>
+      requires: ['cfg', 'pulseEngine', 'strategies'],
+      setup: ({ cfg, pulseEngine, strategies }) =>
         createContext({
           pulseEngine,
           rootUrl: cfg.taskcluster.rootUrl,
-          handlers,
+          strategies,
           cfg,
         }),
     },
 
     app: {
-      requires: ['cfg', 'handlers'],
-      setup: ({ cfg, handlers }) => createApp({ cfg, handlers }),
+      requires: ['cfg', 'strategies'],
+      setup: ({ cfg, strategies }) => createApp({ cfg, strategies }),
     },
 
     server: {
@@ -142,25 +142,25 @@ const load = loader(
       },
     },
 
-    // Login handlers
-    handlers: {
+    // Login strategies
+    strategies: {
       requires: ['cfg'],
       setup: ({ cfg }) => {
-        const handlers = {};
+        const strategies = {};
 
-        Object.keys(cfg.login.handlers).forEach((name) => {
-          const Handler = require('./login/handlers/' + name);
-          handlers[name] = new Handler({ name, cfg });
+        Object.keys(cfg.login.strategies).forEach((name) => {
+          const Strategy = require('./login/strategies/' + name);
+          strategies[name] = new Strategy({ name, cfg });
         });
 
-        return handlers;
+        return strategies;
       },
     },
 
     scanner: {
-      requires: ['cfg', 'handlers'],
-      setup: async ({ cfg, handlers }) => {
-        return scanner(cfg, handlers);
+      requires: ['cfg', 'strategies'],
+      setup: async ({ cfg, strategies }) => {
+        return scanner(cfg, strategies);
       },
     },
 

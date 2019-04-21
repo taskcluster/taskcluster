@@ -5,7 +5,7 @@ const { CLIENT_ID_PATTERN } = require('../utils/constants');
 
 const debug = Debug('scanner');
 
-module.exports = async (cfg, handlers) => {
+module.exports = async (cfg, strategies) => {
   // NOTE: this function performs once auth operation at a time.  It is better
   // for scans to take longer than for the auth service to be overloaded.
   const auth = new Auth({
@@ -15,8 +15,8 @@ module.exports = async (cfg, handlers) => {
 
   async function scan(h) {
     const clients = [];
-    const handler = handlers[h];
-    const query = {prefix: `${handler.identityProviderId}/`};
+    const strategy = strategies[h];
+    const query = {prefix: `${strategy.identityProviderId}/`};
 
     // Get all clients
     while (true) {
@@ -53,7 +53,7 @@ module.exports = async (cfg, handlers) => {
       const identity = patternMatch && patternMatch[1];
 
       if (!user || user.identity !== identity) {
-        user = await handler.userFromClientId(client.clientId);
+        user = await strategy.userFromClientId(client.clientId);
 
         if (!user) {
           continue;
@@ -74,7 +74,7 @@ module.exports = async (cfg, handlers) => {
 
   await Promise.all(
     Object
-      .keys(cfg.login.handlers)
+      .keys(cfg.login.strategies)
       .map(scan)
   );
 };
