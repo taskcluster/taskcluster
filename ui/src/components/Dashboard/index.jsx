@@ -63,6 +63,7 @@ import SkipNavigation from '../SkipNavigation';
     toolbar: {
       ...theme.mixins.toolbar,
       paddingLeft: theme.spacing.double,
+      paddingRight: theme.spacing.double,
       display: 'flex',
       flexGrow: 1,
       flexDirection: 'row',
@@ -100,7 +101,7 @@ import SkipNavigation from '../SkipNavigation';
       paddingBottom: theme.spacing.triple * 4,
     },
     logoStyle: {
-      marginTop: theme.spacing.unit,
+      paddingRight: theme.spacing.double,
     },
     content: {
       maxWidth: 1592,
@@ -187,7 +188,6 @@ export default class Dashboard extends Component {
     navOpen: false,
     showHelpView: false,
     error: null,
-    showLogo: false,
   };
 
   handleDrawerToggle = () => {
@@ -196,10 +196,6 @@ export default class Dashboard extends Component {
 
   handleHelpViewToggle = () => {
     this.setState({ showHelpView: !this.state.showHelpView });
-  };
-
-  handleTitleToggle = () => {
-    this.setState({ showLogo: !this.state.showLogo });
   };
 
   render() {
@@ -219,13 +215,22 @@ export default class Dashboard extends Component {
       staticContext: _,
       ...props
     } = this.props;
-    const { error, navOpen, showHelpView, showLogo } = this.state;
+    const { error, navOpen, showHelpView } = this.state;
     const drawer = (
       <nav>
-        <div className={classes.toolbar}>
+        <div
+          {...!process.env.DOCS_ONLY && {
+            component: Link,
+            to: '/',
+          }}
+          className={classes.toolbar}>
+          <img
+            className={classes.logoStyle}
+            height={30}
+            alt="logo"
+            src={Logo}
+          />
           <Typography
-            onMouseEnter={this.handleTitleToggle}
-            onMouseLeave={this.handleTitleToggle}
             {...!process.env.DOCS_ONLY && {
               component: Link,
               to: '/',
@@ -233,16 +238,7 @@ export default class Dashboard extends Component {
             variant="h6"
             noWrap
             className={classes.title}>
-            {showLogo ? (
-              <img
-                className={classes.logoStyle}
-                height={30}
-                alt="logo"
-                src={Logo}
-              />
-            ) : (
-              process.env.APPLICATION_NAME
-            )}
+            {process.env.APPLICATION_NAME}
           </Typography>
         </div>
         <Divider />
