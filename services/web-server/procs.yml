@@ -2,6 +2,9 @@ web:
   type: web
   command: yarn build && node build/index.js devServer
   readinessPath: /.well-known/apollo/server-health
+scanner:
+  type: heroku-only # TODO: This does not work in kube yet
+  command: yarn start scanner
 write-docs:
   type: build
   command: yarn build && node build/index.js writeDocs
