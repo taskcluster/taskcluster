@@ -245,7 +245,7 @@ module.exports = class MozillaAuth0 {
             throw new WebServerError('InputError', 'Could not generate credentials for this access token');
           }
 
-          const { credentials: issuer, startOffset } = cfg.taskcluster.temporaryCredentials;
+          const { credentials: issuer, temporaryCredentials: { startOffset } } = cfg.taskcluster;
           const { credentials, expires } = user.createCredentials({
             credentials: issuer,
             startOffset,

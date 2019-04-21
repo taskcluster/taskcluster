@@ -28,11 +28,6 @@ defaults:
       startOffset:    '- 15 min'
       # Set the credential to expire after 3 days
       expiry:         '3 days'
-      # Credentials to temporary credentials; these should have all of the roles that
-      # the service might hand out.  It's OK for these to be the same as app.credentials.
-      credentials:
-        clientId:     !env TASKCLUSTER_CLIENT_ID
-        accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
 
   # Pulse credentials
   pulse:
