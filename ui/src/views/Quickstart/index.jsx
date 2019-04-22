@@ -411,7 +411,7 @@ export default class QuickStart extends Component {
               contact the organization owner to have it set up!"
             />
           )}
-          <Typography variant="title">Create Your Task Definition</Typography>
+          <Typography variant="h6">Create Your Task Definition</Typography>
           <List>
             <ListItem>
               <TextField

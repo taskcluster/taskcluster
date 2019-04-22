@@ -802,7 +802,7 @@ export default class HookForm extends Component {
           }}
           onClose={this.handleDrawerClose}>
           <div className={classes.metadataContainer}>
-            <Typography variant="title" className={classes.headline}>
+            <Typography variant="h6" className={classes.headline}>
               {drawerData && drawerData.taskId}
             </Typography>
             <List>
