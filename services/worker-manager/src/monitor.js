@@ -5,12 +5,12 @@ const manager = new MonitorManager({
 });
 
 manager.register({
-  name: 'workertypeProvision',
-  title: 'Workertype Provisioning',
-  type: 'workertype-provision',
+  name: 'workertypeProvisioned',
+  title: 'Workertype Provisioned',
+  type: 'workertype-provisioned',
   version: 1,
   level: 'info',
-  description: 'The results of a single provisioner iteration for a workertype.',
+  description: 'A workerType\'s provisioning run has completed',
   fields: {
     workerType: 'The name of the workertype.',
     provider: 'The name of the provider that did the work for this workertype.',

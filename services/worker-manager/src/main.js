@@ -9,9 +9,6 @@ const data = require('./data');
 const builder = require('./api');
 const {sasCredentials} = require('taskcluster-lib-azure');
 
-const {TestingProvider} = require('./provider_testing');
-const {StaticProvider} = require('./provider_static');
-const {GoogleProvider} = require('./provider_google');
 const {Provisioner} = require('./provisioner');
 
 let load = loader({
@@ -119,9 +116,9 @@ let load = loader({
       Object.entries(cfg.providers).forEach(([name, meta]) => {
         let Prov;
         switch(meta.implementation) {
-          case 'testing': Prov = TestingProvider; break;
-          case 'static': Prov = StaticProvider; break;
-          case 'google': Prov = GoogleProvider; break;
+          case 'testing': Prov = require('./provider_testing').TestingProvider; break;
+          case 'static': Prov = require('./provider_static').StaticProvider; break;
+          case 'google': Prov = require('./provider_google').GoogleProvider; break;
           default: throw new Error(`Unkown provider ${meta.implementation} selected for provider ${name}.`);
         }
         _providers[name] = new Prov({
@@ -136,14 +133,15 @@ let load = loader({
   },
 
   provisioner: {
-    requires: ['cfg', 'queue', 'monitor', 'WorkerType', 'providers'],
-    setup: async ({cfg, queue, monitor, WorkerType, providers}) => {
+    requires: ['cfg', 'queue', 'monitor', 'WorkerType', 'providers', 'notify'],
+    setup: async ({cfg, queue, monitor, WorkerType, providers, notify}) => {
       const provisioner = new Provisioner({
         queue,
         monitor: monitor.monitor('provisioner'),
         provisionerId: cfg.app.provisionerId,
         WorkerType,
         providers,
+        notify,
       });
       await provisioner.initiate();
       return provisioner;

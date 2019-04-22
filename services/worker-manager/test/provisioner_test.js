@@ -5,6 +5,7 @@ const testing = require('taskcluster-lib-testing');
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function(mock, skipping) {
   helper.withMonitor(mock, skipping);
   helper.withEntities(mock, skipping);
+  helper.withFakeNotify(mock, skipping);
   helper.withFakeQueue(mock, skipping);
   helper.withServer(mock, skipping);
   helper.withProvisioner(mock, skipping);
@@ -23,9 +24,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
           throw new Error(JSON.stringify(error, null, 2));
         }
         await Promise.all(workerTypes.map(async wt => {
-          assert.deepEqual(helper.monitor.messages.find(msg => msg.Type === 'workertype-provision' && msg.Fields.workerType === wt.name), {
+          assert.deepEqual(helper.monitor.messages.find(msg => msg.Type === 'workertype-provisioned' && msg.Fields.workerType === wt.name), {
             Logger: 'taskcluster.worker-manager.root.provisioner',
-            Type: 'workertype-provision',
+            Type: 'workertype-provisioned',
             Fields: {workerType: wt.name, provider: wt.input.provider, v: 1},
           });
         }));

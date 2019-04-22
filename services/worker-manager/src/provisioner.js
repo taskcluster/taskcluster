@@ -4,25 +4,24 @@ const Iterate = require('taskcluster-lib-iterate');
  * Run all provisioning logic
  */
 class Provisioner {
-  constructor({queue, provisionerId, providers, iterateConf, WorkerType, monitor}) {
+  constructor({queue, provisionerId, providers, iterateConf, WorkerType, monitor, notify}) {
     this.queue = queue;
     this.provisionerId = provisionerId;
     this.providers = providers;
     this.WorkerType = WorkerType;
     this.monitor = monitor;
+    this.notify = notify;
 
     this.iterate = new Iterate({
       handler: async (watchdog) => {
         await this.provision(watchdog);
       },
       monitor,
-      ...{
-        maxFailures: 10,
-        watchdogTime: 10000, // Each provider gets 10 seconds to provision instances per workertype
-        waitTime: 10000,
-        maxIterationTime: 300000, // We really should be making it through the list at least once every 5 minutes
-        ...iterateConf,
-      },
+      maxFailures: 10,
+      watchdogTime: 10000, // Each provider gets 10 seconds to provision instances per workertype
+      waitTime: 10000,
+      maxIterationTime: 300000, // We really should be making it through the list at least once every 5 minutes
+      ...iterateConf,
     });
     this.iterate.on('error', () => {
       this.monitor.alert('iteration failed repeatedly; terminating process');
@@ -42,8 +41,8 @@ class Provisioner {
    * Terminate the Provisioner
    */
   async terminate() {
-    await Promise.all(Object.values(this.providers).map(x => x.terminate()));
     await this.iterate.stop();
+    await Promise.all(Object.values(this.providers).map(x => x.terminate()));
   }
 
   /**
@@ -64,15 +63,23 @@ class Provisioner {
         // but that logic seems iffy enough that an explicit alert
         // here would be nice
         if (!provider) {
-          const err = new Error('Missing Provider');
-          err.provider = workerType.provider;
-          err.available = Object.keys(this.providers);
-          throw err;
+          await workerType.reportError({
+            kind: 'unknown-provider',
+            title: 'Unknown Provider',
+            description: 'The selected provider does not exist in Taskcluster.',
+            extra: {
+              provider,
+              available: Object.keys(this.providers),
+            },
+            notify: this.notify,
+            owner: workerType.owner,
+          });
+          return;
         }
 
         provider.provision({workerType});
 
-        this.monitor.log.workertypeProvision({
+        this.monitor.log.workertypeProvisioned({
           workerType: workerType.name,
           provider: workerType.provider,
         });

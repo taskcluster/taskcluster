@@ -46,7 +46,7 @@ class Provider {
 
   /**
    * Anything a provider may want to do every provisioning loop but not tied
-   * to any one workertype. Called _before_ provision() are all called.
+   * to any one workertype. Called _before_ provision() is called.
    */
   async prepare() {
   }

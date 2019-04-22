@@ -4,7 +4,7 @@
       "$id": "/schemas/worker-manager/v1/workertype-full.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
-      "description": "TODO\n",
+      "description": "A complete workerType definition.\n",
       "properties": {
         "config": {
           "additionalProperties": true,
@@ -22,8 +22,36 @@
           "type": "string"
         },
         "errors": {
-          "description": "The last 10 errors a provider faced when trying to provision\nthis workertype.\n",
-          "type": "array"
+          "description": "The last 100 errors a provider faced when trying to provision\nthis workertype.\n",
+          "items": [
+            {
+              "additionalProperties": true,
+              "description": "A single error",
+              "properties": {
+                "description": {
+                  "description": "A human-readable explanation of what caused this error and possible fixes",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "A unique identifier of this error type",
+                  "type": "string"
+                },
+                "reported": {
+                  "description": "The timestamp of when this error was encountered",
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "title": {
+                  "description": "A human-readable name for this error",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          ],
+          "maxItems": 100,
+          "type": "array",
+          "uniqueItems": false
         },
         "lastModified": {
           "description": "Date and time when this workerType was last updated\n",
@@ -66,32 +94,22 @@
   },
   {
     "content": {
-      "$id": "/schemas/worker-manager/v1/workertype-definition.json#",
+      "$id": "/schemas/worker-manager/v1/create-workertype-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
       "description": "Fields that are defined by a user for a workertype.\nUsed to create and modify definitions. There is a larger\nset of fields for viewing since some parts are generated\nby the service.\n",
       "properties": {
         "config": {
-          "additionalProperties": true,
-          "description": "A workertype configuration. It will be different based on the provider\nand the format is validated internally.\n",
-          "type": "object"
+          "$ref": "workertype-full.json#/properties/config"
         },
         "description": {
-          "description": "A description of this workerType.\n",
-          "maxLength": 10240,
-          "type": "string"
+          "$ref": "workertype-full.json#/properties/description"
         },
         "owner": {
-          "description": "An email address to notify when there are provisioning errors for this\nworkertype.\n",
-          "format": "email",
-          "type": "string"
+          "$ref": "workertype-full.json#/properties/owner"
         },
         "provider": {
-          "description": "The provider responsible for managing this workertype. This isn't necessarily\njust a provider implementation. For instance, there can be multiple gcp providers\nrunning if two separate accounts are providing instances.\n",
-          "maxLength": 38,
-          "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_]*)$",
-          "type": "string"
+          "$ref": "workertype-full.json#/properties/provider"
         }
       },
       "required": [
@@ -103,7 +121,7 @@
       "title": "WorkerType Definition",
       "type": "object"
     },
-    "filename": "schemas/worker-manager/v1/workertype-definition.json"
+    "filename": "schemas/worker-manager/v1/create-workertype-request.json"
   },
   {
     "content": {
@@ -7636,15 +7654,15 @@
           "version": 1
         },
         {
-          "description": "The results of a single provisioner iteration for a workertype.",
+          "description": "A workerType's provisioning run has completed",
           "fields": {
             "provider": "The name of the provider that did the work for this workertype.",
             "workerType": "The name of the workertype."
           },
           "level": "info",
-          "name": "workertypeProvision",
-          "title": "Workertype Provisioning",
-          "type": "workertype-provision",
+          "name": "workertypeProvisioned",
+          "title": "Workertype Provisioned",
+          "type": "workertype-provisioned",
           "version": 1
         }
       ]
@@ -7674,8 +7692,8 @@
           "args": [
             "name"
           ],
-          "description": "TODO",
-          "input": "v1/workertype-definition.json#",
+          "description": "Create a new workertype. If the workertype already exists, this will throw an error.",
+          "input": "v1/create-workertype-request.json#",
           "method": "put",
           "name": "createWorkerType",
           "output": "v1/workertype-full.json#",
@@ -7696,8 +7714,8 @@
           "args": [
             "name"
           ],
-          "description": "TODO",
-          "input": "v1/workertype-definition.json#",
+          "description": "Given an existing workertype definition, this will modify it and return the new definition.",
+          "input": "v1/create-workertype-request.json#",
           "method": "post",
           "name": "updateWorkerType",
           "output": "v1/workertype-full.json#",
@@ -7718,7 +7736,7 @@
           "args": [
             "name"
           ],
-          "description": "TODO",
+          "description": "Given an existing workertype defition, this will fetch it.",
           "method": "get",
           "name": "workerType",
           "output": "v1/workertype-full.json#",
@@ -7733,7 +7751,7 @@
           "args": [
             "name"
           ],
-          "description": "TODO",
+          "description": "Delete an existing workertype definition.",
           "method": "delete",
           "name": "deleteWorkerType",
           "query": [

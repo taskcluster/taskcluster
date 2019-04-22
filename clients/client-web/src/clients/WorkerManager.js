@@ -26,7 +26,7 @@ export default class WorkerManager extends Client {
     return this.request(this.ping.entry, args);
   }
   /* eslint-disable max-len */
-  // TODO
+  // Create a new workertype. If the workertype already exists, this will throw an error.
   /* eslint-enable max-len */
   createWorkerType(...args) {
     this.validate(this.createWorkerType.entry, args);
@@ -34,7 +34,7 @@ export default class WorkerManager extends Client {
     return this.request(this.createWorkerType.entry, args);
   }
   /* eslint-disable max-len */
-  // TODO
+  // Given an existing workertype definition, this will modify it and return the new definition.
   /* eslint-enable max-len */
   updateWorkerType(...args) {
     this.validate(this.updateWorkerType.entry, args);
@@ -42,7 +42,7 @@ export default class WorkerManager extends Client {
     return this.request(this.updateWorkerType.entry, args);
   }
   /* eslint-disable max-len */
-  // TODO
+  // Given an existing workertype defition, this will fetch it.
   /* eslint-enable max-len */
   workerType(...args) {
     this.validate(this.workerType.entry, args);
@@ -50,7 +50,7 @@ export default class WorkerManager extends Client {
     return this.request(this.workerType.entry, args);
   }
   /* eslint-disable max-len */
-  // TODO
+  // Delete an existing workertype definition.
   /* eslint-enable max-len */
   deleteWorkerType(...args) {
     this.validate(this.deleteWorkerType.entry, args);

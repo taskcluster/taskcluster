@@ -77,6 +77,26 @@ exports.withFakeQueue = (mock, skipping) => {
   });
 };
 
+/**
+ * Set up a fake tc-notify object that supports only the `email` method,
+ * and inject that into the loader.  This is injected regardless of
+ * whether we are mocking.
+ *
+ * The component is available at `helper.notify`.
+ *
+ * We consider any emailing to be test-failing at the moment
+ */
+exports.withFakeNotify = (mock, skipping) => {
+  suiteSetup(function() {
+    if (skipping()) {
+      return;
+    }
+
+    exports.notify = stubbedNotify();
+    exports.load.inject('notify', exports.notify);
+  });
+};
+
 exports.withMonitor = (mock, skipping) => {
   suiteSetup(async function() {
     if (skipping()) {
@@ -161,4 +181,24 @@ const stubbedQueue = () => {
   };
 
   return queue;
+};
+
+/**
+ * make a notify object with the `email` method stubbed out
+ */
+const stubbedNotify = () => {
+  const notify = new taskcluster.Notify({
+    rootUrl: exports.rootUrl,
+    credentials: {
+      clientId: 'worker-manager',
+      accessToken: 'none',
+    },
+    fake: {
+      email: async (address, subject, content) => {
+        throw new Error(content);
+      },
+    },
+  });
+
+  return notify;
 };

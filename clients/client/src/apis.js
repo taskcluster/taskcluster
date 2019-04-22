@@ -3714,8 +3714,8 @@ module.exports = {
           "args": [
             "name"
           ],
-          "description": "TODO",
-          "input": "v1/workertype-definition.json#",
+          "description": "Create a new workertype. If the workertype already exists, this will throw an error.",
+          "input": "v1/create-workertype-request.json#",
           "method": "put",
           "name": "createWorkerType",
           "output": "v1/workertype-full.json#",
@@ -3736,8 +3736,8 @@ module.exports = {
           "args": [
             "name"
           ],
-          "description": "TODO",
-          "input": "v1/workertype-definition.json#",
+          "description": "Given an existing workertype definition, this will modify it and return the new definition.",
+          "input": "v1/create-workertype-request.json#",
           "method": "post",
           "name": "updateWorkerType",
           "output": "v1/workertype-full.json#",
@@ -3758,7 +3758,7 @@ module.exports = {
           "args": [
             "name"
           ],
-          "description": "TODO",
+          "description": "Given an existing workertype defition, this will fetch it.",
           "method": "get",
           "name": "workerType",
           "output": "v1/workertype-full.json#",
@@ -3773,7 +3773,7 @@ module.exports = {
           "args": [
             "name"
           ],
-          "description": "TODO",
+          "description": "Delete an existing workertype definition.",
           "method": "delete",
           "name": "deleteWorkerType",
           "query": [

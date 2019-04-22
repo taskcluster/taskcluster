@@ -6,15 +6,35 @@ const WorkerType = Entity.configure({
   partitionKey: Entity.keys.StringKey('name'),
   rowKey: Entity.keys.ConstantKey('workerType'),
   properties: {
+    // A unique name for this workertype. This maps to a workertype name in tc-queue.
     name: Entity.types.String,
+
+    // Each workertype must choose a single "provider" that will do any provisioning on its behalf
     provider: Entity.types.String,
+
+    // A useful human-readable description of what this workertype is for
     description: Entity.types.String,
+
+    // A timestamp of when this workertype was initially created
     created: Entity.types.Date,
+
+    // A timestamp of when configuration data was last modified. This does not count for things like
+    // errors or providerData
     lastModified: Entity.types.Date,
+
+    // The contents of this will be different based on which provider is selected. The providers must
+    // provide some sort of schema for this.
     config: Entity.types.JSON,
+
+    // A list of errors that providers have encountered recently when attempting to provision
+    // this workertype
     errors: Entity.types.JSON,
+
+    // An email address that gets a notification when there is an error provisioning
     owner: Entity.types.String,
-    providerData: Entity.types.JSON, // providers can use this to remember values between provisioning runs
+
+    // Providers can use this to remember values between provisioning runs
+    providerData: Entity.types.JSON,
   },
 });
 

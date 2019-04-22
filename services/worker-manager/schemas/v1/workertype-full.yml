@@ -45,8 +45,9 @@ properties:
     description: |
       The last 100 errors a provider faced when trying to provision
       this workertype.
+    uniqueItems: false
     items:
-      type: object
+    - type: object
       description: A single error
       properties:
         reported:
