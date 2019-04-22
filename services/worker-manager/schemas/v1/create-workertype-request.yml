@@ -1,0 +1,19 @@
+$schema: "/schemas/common/metaschema.json#"
+title: WorkerType Definition
+description: |
+  Fields that are defined by a user for a workertype.
+  Used to create and modify definitions. There is a larger
+  set of fields for viewing since some parts are generated
+  by the service.
+type: object
+properties:
+  provider: {$ref: "workertype-full.json#/properties/provider"}
+  description: {$ref: "workertype-full.json#/properties/description"}
+  config: {$ref: "workertype-full.json#/properties/config"}
+  owner: {$ref: "workertype-full.json#/properties/owner"}
+additionalProperties: false
+required:
+  - provider
+  - description
+  - config
+  - owner

@@ -1,6 +1,0 @@
-$schema: "/schemas/common/metaschema.json#"
-title: "Rule Condition Satisfiers"
-description: |
-  An object which satisfies conditions for rules in a rule set
-additionalProperties:
-  type: string

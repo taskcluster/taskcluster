@@ -1,15 +1,15 @@
 const loader = require('taskcluster-lib-loader');
+const taskcluster = require('taskcluster-client');
 const App = require('taskcluster-lib-app');
 const monitorManager = require('./monitor');
 const config = require('taskcluster-lib-config');
 const SchemaSet = require('taskcluster-lib-validate');
 const docs = require('taskcluster-lib-docs');
+const data = require('./data');
 const builder = require('./api');
+const {sasCredentials} = require('taskcluster-lib-azure');
 
-const {InMemoryDatastore} = require('./data-storage');
 const {Provisioner} = require('./provisioner');
-const {Provider} = require('./provider');
-const {BiddingStrategy} = require('./bidding-strategy');
 
 let load = loader({
   cfg: {
@@ -26,11 +26,18 @@ let load = loader({
     }),
   },
 
-  datastore: {
-    require: ['cfg'],
-    setup: async ({cfg}) =>{
-      return new InMemoryDatastore({id: 'worker-manager'});
-    },
+  WorkerType: {
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => data.WorkerType.setup({
+      tableName: cfg.app.workerTypeTableName,
+      credentials: sasCredentials({
+        accountId: cfg.azure.accountId,
+        tableName: cfg.app.workerTypeTableName,
+        rootUrl: cfg.taskcluster.rootUrl,
+        credentials: cfg.taskcluster.credentials,
+      }),
+      monitor: monitor.monitor('table.workerTypes'),
+    }),
   },
 
   schemaset: {
@@ -44,11 +51,12 @@ let load = loader({
   },
 
   api: {
-    requires: ['cfg', 'schemaset', 'monitor', 'datastore'],
-    setup: async ({cfg, schemaset, monitor, datastore}) => builder.build({
+    requires: ['cfg', 'schemaset', 'monitor', 'WorkerType', 'providers'],
+    setup: async ({cfg, schemaset, monitor, WorkerType, providers}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {
-        datastore,
+        WorkerType,
+        providers,
       },
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,
@@ -86,56 +94,57 @@ let load = loader({
   server: {
     requires: ['cfg', 'api'],
     setup: ({cfg, api}) => App({
-      port: Number(process.env.PORT || cfg.server.port),
-      env: cfg.server.env,
-      forceSSL: cfg.server.forceSSL,
-      trustProxy: cfg.server.trustProxy,
       apis: [api],
+      ...cfg.server,
     }),
   },
 
-  providers: {
+  queue: {
     requires: ['cfg'],
-    setup: async ({cfg}) => {
-      let p = new Map();
-      for (let x of cfg.providers) {
-        let providerClass = Provider.load(x.className);
-        let provider = new providerClass(...x.args);
-        p.set(provider.id, provider);
-      }
-      return p;
-    },
+    setup: ({cfg}) => new taskcluster.Queue(cfg.taskcluster),
   },
 
-  biddingStrategies: {
+  notify: {
     requires: ['cfg'],
-    setup: async ({cfg}) => {
-      let bs = new Map();
-      for (let x of cfg.biddingStrategies) {
-        let biddingStrategyClass = BiddingStrategy.load(x.className);
-        let biddingStrategy = new biddingStrategyClass(...x.args);
-        bs.set(biddingStrategy.id, biddingStrategy);
-      }
-      return bs;
+    setup: ({cfg}) => new taskcluster.Notify(cfg.taskcluster),
+  },
+
+  providers: {
+    requires: ['cfg', 'monitor', 'notify'],
+    setup: ({cfg, monitor, notify}) => {
+      const _providers = {};
+      Object.entries(cfg.providers).forEach(([name, meta]) => {
+        let Prov;
+        switch(meta.implementation) {
+          case 'testing': Prov = require('./provider_testing').TestingProvider; break;
+          case 'static': Prov = require('./provider_static').StaticProvider; break;
+          case 'google': Prov = require('./provider_google').GoogleProvider; break;
+          default: throw new Error(`Unkown provider ${meta.implementation} selected for provider ${name}.`);
+        }
+        _providers[name] = new Prov({
+          name,
+          notify,
+          monitor: monitor.monitor(name),
+          ...meta,
+        });
+      });
+      return _providers;
     },
   },
 
   provisioner: {
-    requires: ['providers', 'biddingStrategies', 'datastore'],
-    setup: async ({providers, biddingStrategies, datastore}) => {
-      return new Provisioner({
-        iterationGap: 60000,
+    requires: ['cfg', 'queue', 'monitor', 'WorkerType', 'providers', 'notify'],
+    setup: async ({cfg, queue, monitor, WorkerType, providers, notify}) => {
+      const provisioner = new Provisioner({
+        queue,
+        monitor: monitor.monitor('provisioner'),
+        provisionerId: cfg.app.provisionerId,
+        WorkerType,
         providers,
-        biddingStrategies,
-        datastore,
+        notify,
       });
-    },
-  },
-
-  provisionerservice: {
-    requires: ['provisioner'],
-    setup: async ({provisioner}) => {
       await provisioner.initiate();
+      return provisioner;
     },
   },
 }, {

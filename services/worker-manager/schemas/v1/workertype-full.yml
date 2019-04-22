@@ -1,0 +1,81 @@
+$schema: "/schemas/common/metaschema.json#"
+title: WorkerType Full
+description: |
+  A complete workerType definition.
+type:               object
+properties:
+  name:
+    type:           string
+    minLength:      {$const: identifier-min-length}
+    maxLength:      {$const: identifier-max-length}
+    pattern:        {$const: identifier-pattern}
+    description: |
+      The name of this workertype.
+  provider:
+    type:           string
+    minLength:      {$const: identifier-min-length}
+    maxLength:      {$const: identifier-max-length}
+    pattern:        {$const: identifier-pattern}
+    description: |
+      The provider responsible for managing this workertype.
+  description:
+    type:           string
+    maxLength:      10240
+    description: |
+      A description of this workerType.
+  created:
+    description: |
+      Date and time when this workerType was created
+    type:                   string
+    format:                 date-time
+  lastModified:
+    description: |
+      Date and time when this workerType was last updated
+    type:                   string
+    format:                 date-time
+  config:
+    type: object
+    additionalProperties: true
+    description: |
+      A workertype configuration. It will be different based on the provider
+      and the format is validated internally.
+  errors:
+    type: array
+    maxItems: 100
+    description: |
+      The last 100 errors a provider faced when trying to provision
+      this workertype.
+    uniqueItems: false
+    items:
+    - type: object
+      description: A single error
+      properties:
+        reported:
+          type: string
+          format: date-time
+          description: The timestamp of when this error was encountered
+        kind:
+          type: string
+          description: A unique identifier of this error type
+        title:
+          type: string
+          description: A human-readable name for this error
+        description:
+          type: string
+          description: A human-readable explanation of what caused this error and possible fixes
+      additionalProperties: true
+  owner:
+    type: string
+    format: email
+    description: |
+      An email address to notify when there are provisioning errors for this
+      workertype.
+additionalProperties: false
+required:
+  - provider
+  - description
+  - created
+  - lastModified
+  - config
+  - owner
+  - errors

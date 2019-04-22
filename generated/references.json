@@ -1,154 +1,127 @@
 [
   {
     "content": {
-      "$id": "/schemas/worker-manager/v1/worker-configuration.json#",
+      "$id": "/schemas/worker-manager/v1/workertype-full.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
-      "description": "Worker Configuration\n",
+      "description": "A complete workerType definition.\n",
       "properties": {
-        "biddingStrategyId": {
+        "config": {
+          "additionalProperties": true,
+          "description": "A workertype configuration. It will be different based on the provider\nand the format is validated internally.\n",
+          "type": "object"
+        },
+        "created": {
+          "description": "Date and time when this workerType was created\n",
+          "format": "date-time",
           "type": "string"
         },
-        "id": {
+        "description": {
+          "description": "A description of this workerType.\n",
+          "maxLength": 10240,
           "type": "string"
         },
-        "providerIds": {
-          "items": {
-            "type": "string"
-          },
-          "type": "array",
-          "uniqueItems": true
-        },
-        "rules": {
-          "$ref": "ruleset.json#"
-        },
-        "workerTypes": {
-          "items": {
-            "additionalProperties": false,
-            "maxLength": 38,
-            "minLength": 1,
-            "pattern": "^([a-zA-Z0-9-_]*)$",
-            "properties": {
-              "biddingStrategyId": {
-                "type": "string"
+        "errors": {
+          "description": "The last 100 errors a provider faced when trying to provision\nthis workertype.\n",
+          "items": [
+            {
+              "additionalProperties": true,
+              "description": "A single error",
+              "properties": {
+                "description": {
+                  "description": "A human-readable explanation of what caused this error and possible fixes",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "A unique identifier of this error type",
+                  "type": "string"
+                },
+                "reported": {
+                  "description": "The timestamp of when this error was encountered",
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "title": {
+                  "description": "A human-readable name for this error",
+                  "type": "string"
+                }
               },
-              "providerIds": {
-                "type": "string"
-              },
-              "workerType": {
-                "maxLength": 38,
-                "minLength": 1,
-                "pattern": "^([a-zA-Z0-9-_]*)$",
-                "type": "string"
-              }
-            },
-            "required": [
-              "workerType"
-            ],
-            "type": [
-              "string",
-              "object"
-            ]
-          },
+              "type": "object"
+            }
+          ],
+          "maxItems": 100,
           "type": "array",
-          "uniqueItems": true
+          "uniqueItems": false
+        },
+        "lastModified": {
+          "description": "Date and time when this workerType was last updated\n",
+          "format": "date-time",
+          "type": "string"
+        },
+        "name": {
+          "description": "The name of this workertype.\n",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "type": "string"
+        },
+        "owner": {
+          "description": "An email address to notify when there are provisioning errors for this\nworkertype.\n",
+          "format": "email",
+          "type": "string"
+        },
+        "provider": {
+          "description": "The provider responsible for managing this workertype.\n",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "type": "string"
         }
       },
       "required": [
-        "id",
-        "rules",
-        "workerTypes"
+        "provider",
+        "description",
+        "created",
+        "lastModified",
+        "config",
+        "owner",
+        "errors"
       ],
-      "title": "Worker Configuration",
+      "title": "WorkerType Full",
       "type": "object"
     },
-    "filename": "schemas/worker-manager/v1/worker-configuration.json"
+    "filename": "schemas/worker-manager/v1/workertype-full.json"
   },
   {
     "content": {
-      "$id": "/schemas/worker-manager/v1/test-worker-configuration.json#",
+      "$id": "/schemas/worker-manager/v1/create-workertype-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
-      "description": "Request body for testing a worker configuration\n",
+      "description": "Fields that are defined by a user for a workertype.\nUsed to create and modify definitions. There is a larger\nset of fields for viewing since some parts are generated\nby the service.\n",
       "properties": {
-        "satisfiers": {
-          "$ref": "satisfiers.json#"
+        "config": {
+          "$ref": "workertype-full.json#/properties/config"
         },
-        "workerConfiguration": {
-          "$ref": "worker-configuration.json#"
+        "description": {
+          "$ref": "workertype-full.json#/properties/description"
+        },
+        "owner": {
+          "$ref": "workertype-full.json#/properties/owner"
+        },
+        "provider": {
+          "$ref": "workertype-full.json#/properties/provider"
         }
       },
       "required": [
-        "workerConfiguration",
-        "satisfiers"
+        "provider",
+        "description",
+        "config",
+        "owner"
       ],
-      "title": "Worker Configuration Testing",
+      "title": "WorkerType Definition",
       "type": "object"
     },
-    "filename": "schemas/worker-manager/v1/test-worker-configuration.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/worker-manager/v1/satisfiers.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": {
-        "type": "string"
-      },
-      "description": "An object which satisfies conditions for rules in a rule set\n",
-      "title": "Rule Condition Satisfiers"
-    },
-    "filename": "schemas/worker-manager/v1/satisfiers.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/worker-manager/v1/ruleset.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "description": "Ruleset\n",
-      "items": {
-        "additionalProperties": false,
-        "properties": {
-          "conditions": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "required": [
-            ],
-            "type": [
-              "object",
-              "null"
-            ]
-          },
-          "description": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "values": {
-            "type": "object"
-          }
-        },
-        "required": [
-          "id",
-          "conditions",
-          "values",
-          "description"
-        ],
-        "type": "object"
-      },
-      "title": "Ruleset",
-      "type": "array",
-      "uniqueItems": true
-    },
-    "filename": "schemas/worker-manager/v1/ruleset.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/worker-manager/v1/anything.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "title": "Anything"
-    },
-    "filename": "schemas/worker-manager/v1/anything.json"
+    "filename": "schemas/worker-manager/v1/create-workertype-request.json"
   },
   {
     "content": {
@@ -7679,6 +7652,18 @@
           "title": "Error in Logging",
           "type": "monitor.loggingError",
           "version": 1
+        },
+        {
+          "description": "A workerType's provisioning run has completed",
+          "fields": {
+            "provider": "The name of the provider that did the work for this workertype.",
+            "workerType": "The name of the workertype."
+          },
+          "level": "info",
+          "name": "workertypeProvisioned",
+          "title": "Workertype Provisioned",
+          "type": "workertype-provisioned",
+          "version": 1
         }
       ]
     },
@@ -7705,107 +7690,76 @@
         },
         {
           "args": [
-            "workerConfigurationId"
+            "name"
           ],
-          "description": "Create a worker configuration",
-          "input": "v1/worker-configuration.json#",
+          "description": "Create a new workertype. If the workertype already exists, this will throw an error.",
+          "input": "v1/create-workertype-request.json#",
           "method": "put",
-          "name": "createWorkerConfiguration",
+          "name": "createWorkerType",
+          "output": "v1/workertype-full.json#",
           "query": [
           ],
-          "route": "/worker-configurations/<workerConfigurationId>",
-          "scopes": "worker-manager:manage-worker-configuration:<workerConfigurationId>",
+          "route": "/workertype/<name>",
+          "scopes": {
+            "AllOf": [
+              "worker-manager:create-worker-type:<name>",
+              "worker-manager:provider:<provider>"
+            ]
+          },
           "stability": "experimental",
-          "title": "Create Worker Configuration",
+          "title": "Create WorkerType",
           "type": "function"
         },
         {
           "args": [
-            "workerConfigurationId"
+            "name"
           ],
-          "description": "Update a worker configuration",
-          "input": "v1/worker-configuration.json#",
+          "description": "Given an existing workertype definition, this will modify it and return the new definition.",
+          "input": "v1/create-workertype-request.json#",
           "method": "post",
-          "name": "updateWorkerConfiguration",
+          "name": "updateWorkerType",
+          "output": "v1/workertype-full.json#",
           "query": [
           ],
-          "route": "/worker-configurations/<workerConfigurationId>",
-          "scopes": "worker-manager:manage-worker-configuration:<workerConfigurationId>",
+          "route": "/workertype/<name>",
+          "scopes": {
+            "AllOf": [
+              "worker-manager:update-worker-type:<name>",
+              "worker-manager:provider:<provider>"
+            ]
+          },
           "stability": "experimental",
-          "title": "Update Worker Configuration",
+          "title": "Update WorkerType",
           "type": "function"
         },
         {
           "args": [
-            "workerConfigurationId"
+            "name"
           ],
-          "description": "Get a worker configuration",
+          "description": "Given an existing workertype defition, this will fetch it.",
           "method": "get",
-          "name": "getWorkerConfiguration",
-          "output": "v1/worker-configuration.json#",
+          "name": "workerType",
+          "output": "v1/workertype-full.json#",
           "query": [
           ],
-          "route": "/worker-configurations/<workerConfigurationId>",
+          "route": "/workertype/<name>",
           "stability": "experimental",
-          "title": "Get Worker Configuration",
+          "title": "Get WorkerType",
           "type": "function"
         },
         {
           "args": [
-            "workerConfigurationId"
+            "name"
           ],
-          "description": "Get a worker configuration",
+          "description": "Delete an existing workertype definition.",
           "method": "delete",
-          "name": "removeWorkerConfiguration",
+          "name": "deleteWorkerType",
           "query": [
           ],
-          "route": "/worker-configurations/<workerConfigurationId>",
+          "route": "/workertype/<name>",
+          "scopes": "worker-manager:delete-worker-type:<name>",
           "stability": "experimental",
-          "title": "Remove Worker Configuration",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "description": "Retrieve a worker configuration as a set of rules",
-          "method": "get",
-          "name": "listWorkerConfigurations",
-          "query": [
-          ],
-          "route": "/worker-configurations",
-          "stability": "experimental",
-          "title": "Retrieve Worker Configuration",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "description": "Evaluate a worker configuration against a set of satisfiers",
-          "input": "v1/test-worker-configuration.json#",
-          "method": "post",
-          "name": "testWorkerConfiguration",
-          "output": "v1/anything.json#",
-          "query": [
-          ],
-          "route": "/worker-configuration",
-          "stability": "experimental",
-          "title": "Test Worker Configuration Evaluation",
-          "type": "function"
-        },
-        {
-          "args": [
-            "workerConfigurationId"
-          ],
-          "description": "Preview the currently stored worker configurations evaluation result against\nthe provided satisfiers",
-          "input": "v1/satisfiers.json#",
-          "method": "post",
-          "name": "evaluateWorkerConfiguration",
-          "output": "v1/anything.json#",
-          "query": [
-          ],
-          "route": "/worker-configurations/<workerConfigurationId>/evaluate",
-          "stability": "experimental",
-          "title": "Preview Evaluation of Worker Configuration",
+          "title": "Delete WorkerType",
           "type": "function"
         }
       ],

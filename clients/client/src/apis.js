@@ -3712,107 +3712,76 @@ module.exports = {
         },
         {
           "args": [
-            "workerConfigurationId"
+            "name"
           ],
-          "description": "Create a worker configuration",
-          "input": "v1/worker-configuration.json#",
+          "description": "Create a new workertype. If the workertype already exists, this will throw an error.",
+          "input": "v1/create-workertype-request.json#",
           "method": "put",
-          "name": "createWorkerConfiguration",
+          "name": "createWorkerType",
+          "output": "v1/workertype-full.json#",
           "query": [
           ],
-          "route": "/worker-configurations/<workerConfigurationId>",
-          "scopes": "worker-manager:manage-worker-configuration:<workerConfigurationId>",
+          "route": "/workertype/<name>",
+          "scopes": {
+            "AllOf": [
+              "worker-manager:create-worker-type:<name>",
+              "worker-manager:provider:<provider>"
+            ]
+          },
           "stability": "experimental",
-          "title": "Create Worker Configuration",
+          "title": "Create WorkerType",
           "type": "function"
         },
         {
           "args": [
-            "workerConfigurationId"
+            "name"
           ],
-          "description": "Update a worker configuration",
-          "input": "v1/worker-configuration.json#",
+          "description": "Given an existing workertype definition, this will modify it and return the new definition.",
+          "input": "v1/create-workertype-request.json#",
           "method": "post",
-          "name": "updateWorkerConfiguration",
+          "name": "updateWorkerType",
+          "output": "v1/workertype-full.json#",
           "query": [
           ],
-          "route": "/worker-configurations/<workerConfigurationId>",
-          "scopes": "worker-manager:manage-worker-configuration:<workerConfigurationId>",
+          "route": "/workertype/<name>",
+          "scopes": {
+            "AllOf": [
+              "worker-manager:update-worker-type:<name>",
+              "worker-manager:provider:<provider>"
+            ]
+          },
           "stability": "experimental",
-          "title": "Update Worker Configuration",
+          "title": "Update WorkerType",
           "type": "function"
         },
         {
           "args": [
-            "workerConfigurationId"
+            "name"
           ],
-          "description": "Get a worker configuration",
+          "description": "Given an existing workertype defition, this will fetch it.",
           "method": "get",
-          "name": "getWorkerConfiguration",
-          "output": "v1/worker-configuration.json#",
+          "name": "workerType",
+          "output": "v1/workertype-full.json#",
           "query": [
           ],
-          "route": "/worker-configurations/<workerConfigurationId>",
+          "route": "/workertype/<name>",
           "stability": "experimental",
-          "title": "Get Worker Configuration",
+          "title": "Get WorkerType",
           "type": "function"
         },
         {
           "args": [
-            "workerConfigurationId"
+            "name"
           ],
-          "description": "Get a worker configuration",
+          "description": "Delete an existing workertype definition.",
           "method": "delete",
-          "name": "removeWorkerConfiguration",
+          "name": "deleteWorkerType",
           "query": [
           ],
-          "route": "/worker-configurations/<workerConfigurationId>",
+          "route": "/workertype/<name>",
+          "scopes": "worker-manager:delete-worker-type:<name>",
           "stability": "experimental",
-          "title": "Remove Worker Configuration",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "description": "Retrieve a worker configuration as a set of rules",
-          "method": "get",
-          "name": "listWorkerConfigurations",
-          "query": [
-          ],
-          "route": "/worker-configurations",
-          "stability": "experimental",
-          "title": "Retrieve Worker Configuration",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "description": "Evaluate a worker configuration against a set of satisfiers",
-          "input": "v1/test-worker-configuration.json#",
-          "method": "post",
-          "name": "testWorkerConfiguration",
-          "output": "v1/anything.json#",
-          "query": [
-          ],
-          "route": "/worker-configuration",
-          "stability": "experimental",
-          "title": "Test Worker Configuration Evaluation",
-          "type": "function"
-        },
-        {
-          "args": [
-            "workerConfigurationId"
-          ],
-          "description": "Preview the currently stored worker configurations evaluation result against\nthe provided satisfiers",
-          "input": "v1/satisfiers.json#",
-          "method": "post",
-          "name": "evaluateWorkerConfiguration",
-          "output": "v1/anything.json#",
-          "query": [
-          ],
-          "route": "/worker-configurations/<workerConfigurationId>/evaluate",
-          "stability": "experimental",
-          "title": "Preview Evaluation of Worker Configuration",
+          "title": "Delete WorkerType",
           "type": "function"
         }
       ],
