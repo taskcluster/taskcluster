@@ -24,7 +24,7 @@ const sort = (referenceElement, compareElement) => {
     return compareDesc(referenceElement, compareElement);
   }
 
-  return or(referenceElement, '').localeCompare(compareElement);
+  return or(referenceElement, '').localeCompare(or(compareElement, ''));
 };
 
 export default sort;
