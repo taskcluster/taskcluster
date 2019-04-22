@@ -113,10 +113,6 @@ import SkipNavigation from '../SkipNavigation';
         minHeight: 'calc(100vh - 64px)',
         marginTop: 64,
       },
-      '& div h2': {
-        color: theme.palette.text.primary,
-        marginTop: '20px',
-      },
     },
     docsContent: {
       position: 'relative',

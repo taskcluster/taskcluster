@@ -8,6 +8,10 @@ import Typography from '@material-ui/core/Typography';
 @withStyles(theme => ({
   header: {
     color: theme.palette.text.primary,
+    marginTop: theme.spacing.quad,
+    '&:first-child': {
+      marginTop: 0,
+    },
     '& .anchor-link-style': {
       opacity: 0,
       // To prevent the link to get the focus.
