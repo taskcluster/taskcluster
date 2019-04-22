@@ -4,13 +4,15 @@ const {Provider} = require('./provider');
 
 class GoogleProvider extends Provider {
 
-  constructor({id, monitor, notify, project, credsFile}) {
+  constructor({id, monitor, notify, project, creds, credsFile}) {
     super({id, monitor, notify});
 
     this.project = project;
 
-    // TODO: Just have it passed in from env instead of reading from a file
-    const client = google.auth.fromJSON(JSON.parse(fs.readFileSync(credsFile)));
+    if (!creds && credsFile) {
+      creds = JSON.parse(fs.readFileSync(credsFile));
+    }
+    const client = google.auth.fromJSON(creds);
     client.scopes = [
       'https://www.googleapis.com/auth/compute', // For configuring instance templates, groups, etc
       'https://www.googleapis.com/auth/iam', // For setting up service accounts for each workertype
@@ -41,17 +43,9 @@ class GoogleProvider extends Provider {
   }
 
   async prepare() {
-    // TODO: I don't think there's anyhting to do here
   }
 
   async provision({workerType}) {
-    // TODO: Remove the hardcoding
-    await workerType.modify(wt => {
-      wt.config = {
-        image: 'generic-worker-test-1',
-      };
-    });
-
     if (!await this.ensureImage({workerType})) {
       return;
     }
@@ -89,7 +83,7 @@ class GoogleProvider extends Provider {
         throw err;
       }
       await workerType.reportError({
-        type: 'unknown-image',
+        kind: 'unknown-image',
         title: 'Unknown Image',
         description: 'Image does not exist in project. Possibly the image was generated in a different project?',
         extra: {

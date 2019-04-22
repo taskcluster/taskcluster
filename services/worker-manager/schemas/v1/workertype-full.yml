@@ -1,7 +1,7 @@
 $schema: "/schemas/common/metaschema.json#"
 title: WorkerType Full
 description: |
-  TODO
+  A complete workerType definition.
 type:               object
 properties:
   name:
@@ -28,7 +28,7 @@ properties:
       Date and time when this workerType was created
     type:                   string
     format:                 date-time
-  lastModified: # TODO: Make all of the shared fields come from a common base
+  lastModified:
     description: |
       Date and time when this workerType was last updated
     type:                   string
@@ -41,9 +41,28 @@ properties:
       and the format is validated internally.
   errors:
     type: array
+    maxItems: 100
     description: |
-      The last 10 errors a provider faced when trying to provision
+      The last 100 errors a provider faced when trying to provision
       this workertype.
+    items:
+      type: object
+      description: A single error
+      properties:
+        reported:
+          type: string
+          format: date-time
+          description: The timestamp of when this error was encountered
+        kind:
+          type: string
+          description: A unique identifier of this error type
+        title:
+          type: string
+          description: A human-readable name for this error
+        description:
+          type: string
+          description: A human-readable explanation of what caused this error and possible fixes
+      additionalProperties: true
   owner:
     type: string
     format: email

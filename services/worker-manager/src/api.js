@@ -21,14 +21,14 @@ builder.declare({
   name: 'createWorkerType',
   title: 'Create WorkerType',
   stability: APIBuilder.stability.experimental,
-  input: 'workertype-definition.yml',
+  input: 'create-workertype-request.yml',
   output: 'workertype-full.yml',
   scopes: {AllOf: [
     'worker-manager:create-worker-type:<name>',
     'worker-manager:provider:<provider>',
   ]},
   description: [
-    'TODO',
+    'Create a new workertype. If the workertype already exists, this will throw an error.',
   ].join('\n'),
 }, async function(req, res) {
   const {name} = req.params;
@@ -85,14 +85,14 @@ builder.declare({
   name: 'updateWorkerType',
   title: 'Update WorkerType',
   stability: APIBuilder.stability.experimental,
-  input: 'workertype-definition.yml',
+  input: 'create-workertype-request.yml',
   output: 'workertype-full.yml',
   scopes: {AllOf: [
     'worker-manager:update-worker-type:<name>',
     'worker-manager:provider:<provider>',
   ]},
   description: [
-    'TODO',
+    'Given an existing workertype definition, this will modify it and return the new definition.',
   ].join('\n'),
 }, async function(req, res) {
   const {name} = req.params;
@@ -135,7 +135,7 @@ builder.declare({
   stability: APIBuilder.stability.experimental,
   output: 'workertype-full.yml',
   description: [
-    'TODO',
+    'Given an existing workertype defition, this will fetch it.',
   ].join('\n'),
 }, async function(req, res) {
   const {name} = req.params;
@@ -157,7 +157,7 @@ builder.declare({
   scopes: 'worker-manager:delete-worker-type:<name>',
   stability: APIBuilder.stability.experimental,
   description: [
-    'TODO',
+    'Delete an existing workertype definition.',
   ].join('\n'),
 }, async function(req, res) {
   const {name} = req.params;

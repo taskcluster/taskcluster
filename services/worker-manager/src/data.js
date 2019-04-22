@@ -1,3 +1,4 @@
+const yaml = require('js-yaml');
 const Entity = require('azure-entities');
 
 const WorkerType = Entity.configure({
@@ -30,20 +31,33 @@ WorkerType.prototype.serializable = function() {
   };
 };
 
-WorkerType.prototype.reportError = async function({type, title, description, extra, notify, owner}) {
+WorkerType.prototype.reportError = async function({kind, title, description, extra, notify, owner}) {
   await this.modify(wt => {
-    wt.errors.unshift({ // TODO: Add a timestamp in here
-      type,
+    wt.errors.unshift({
+      reported: new Date(),
+      kind,
       title,
       description,
-      ...extra,
+      extra,
     });
-    wt.errors = wt.errors.slice(0, 10); // TODO Not hardcoded? need to change in schema too
+    wt.errors = wt.errors.slice(0, 100);
   });
   await notify.email({
     address: owner,
-    subject: 'TODO',
-    content: 'TODO',
+    subject: `Taskcluster Worker Manager Error: ${title}`,
+    content: `
+Worker Manager has encountered an error while trying to provision the workertype ${this.name}:
+
+\`\`\`
+${description}
+\`\`\`
+
+It includes the extra information:
+
+\`\`\`json
+${yaml.safeDump(extra)}
+\`\`\`
+    `.trim(),
   });
 };
 

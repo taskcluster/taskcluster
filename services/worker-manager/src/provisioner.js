@@ -70,7 +70,6 @@ class Provisioner {
           throw err;
         }
 
-        // TODO: Time this and report below
         provider.provision({workerType});
 
         this.monitor.log.workertypeProvision({
