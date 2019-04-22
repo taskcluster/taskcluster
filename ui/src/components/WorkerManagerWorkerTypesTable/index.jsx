@@ -105,7 +105,19 @@ export default class WorkerManagerWorkerTypesTable extends Component {
 
         <TableCell>
           <Typography>
-            {`${failedNumber} / ${exceptionNumber} / ${unscheduledNumber}`}
+            {failedNumber}
+          </Typography>
+        </TableCell>
+
+        <TableCell>
+          <Typography>
+            {exceptionNumber}
+          </Typography>
+        </TableCell>
+
+        <TableCell>
+          <Typography>
+            {unscheduledNumber}
           </Typography>
         </TableCell>
 
@@ -138,9 +150,11 @@ export default class WorkerManagerWorkerTypesTable extends Component {
           'Pending Tasks',
           'Running Capacity',
           'Pending Capacity',
-          'Last active',
-          'Last resolved',
-          'Failed / Exception / Unscheduled',
+          'Last Active',
+          'Last Resolved',
+          'Failed',
+          'Exception',
+          'Unscheduled',
           'Provider',
         ]}
         sortByHeader={sortBy}
