@@ -438,11 +438,19 @@ class GoogleProvider extends Provider {
     for (const op of workerType.providerData.trackedOperations) {
       if (op.region) {
         const region = op.region.split('/').slice(-1)[0];
-        const operation = (await this.compute.regionOperations.get({
-          project: this.project,
-          region: region,
-          operation: op.name,
-        })).data;
+        let operation;
+        try {
+          operation = (await this.compute.regionOperations.get({
+            project: this.project,
+            region: region,
+            operation: op.name,
+          })).data;
+        } catch (err) {
+          if (err.code !== 404) {
+            throw err;
+          }
+          continue;
+        }
         if (operation.status === 'DONE') {
           if (operation.error) {
             errors.push(operation);
@@ -456,10 +464,18 @@ class GoogleProvider extends Provider {
           ongoing.push(operation);
         }
       } else {
-        const operation = (await this.compute.globalOperations.get({
-          project: this.project,
-          operation: op.name,
-        })).data;
+        let operation;
+        try {
+          operation = (await this.compute.globalOperations.get({
+            project: this.project,
+            operation: op.name,
+          })).data;
+        } catch (err) {
+          if (err.code !== 404) {
+            throw err;
+          }
+          continue;
+        }
         if (operation.status === 'DONE') {
           if (operation.error) {
             errors.push(operation);
