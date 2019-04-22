@@ -33,7 +33,7 @@ function ExploreCard({ classes, to, title, description, icon, ...props }) {
         href={to}>
         <CardContent className={classes.titleCardContent}>
           {icon}
-          <Typography variant="title" className={classes.title}>
+          <Typography variant="h6" className={classes.title}>
             {title}
           </Typography>
         </CardContent>
