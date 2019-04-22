@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { func, string } from 'prop-types';
 import { formatDistanceStrict } from 'date-fns';
-import { pipe, filter, map, sort as rSort } from 'ramda';
+import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -20,14 +20,11 @@ import Link from '../../utils/Link';
 import sort from '../../utils/sort';
 
 const sorted = pipe(
-  filter(worker => worker.node.latestTask),
-  rSort((a, b) =>
-    sort(a.node.latestTask.run.workerId, b.node.latestTask.run.workerId)
-  ),
+  rSort((a, b) => sort(a.node.workerId, b.node.workerId)),
   map(
-    ({ node: { latestTask } }) =>
-      `${latestTask.run.workerId}.${latestTask.run.taskId}.${
-        latestTask.run.runId
+    ({ node: { workerId, latestTask } }) =>
+      `${workerId}.${latestTask ? latestTask.run.taskId : '-'}.${
+        latestTask ? latestTask.run.runId : '-'
       }`
   )
 );
@@ -54,20 +51,13 @@ export default class WorkersTable extends Component {
 
   createSortedWorkersConnection = memoize(
     (workersConnection, sortBy, sortDirection) => {
-      const filteredEdges = workersConnection.edges.filter(
-        worker => worker.node.latestTask
-      );
-
       if (!sortBy) {
-        return {
-          ...workersConnection,
-          edges: filteredEdges,
-        };
+        return workersConnection;
       }
 
       return {
         ...workersConnection,
-        edges: filteredEdges.sort((a, b) => {
+        edges: [...workersConnection.edges].sort((a, b) => {
           const firstElement =
             sortDirection === 'desc'
               ? this.valueFromNode(b.node)
@@ -100,13 +90,13 @@ export default class WorkersTable extends Component {
 
   valueFromNode(node) {
     const mapping = {
-      'Worker Group': node.latestTask.run.workerGroup,
-      'Worker ID': node.latestTask.run.workerId,
-      'Most Recent Task': node.latestTask.run.taskId,
-      'Task State': node.latestTask.run.state,
-      'Task Started': node.latestTask.run.started,
-      'Task Resolved': node.latestTask.run.resolved,
+      'Worker Group': node.workerGroup,
+      'Worker ID': node.workerId,
       'First Claim': node.firstClaim,
+      'Most Recent Task': node.latestTask && node.latestTask.run.taskId,
+      'Task State': node.latestTask && node.latestTask.run.state,
+      'Task Started': node.latestTask && node.latestTask.run.started,
+      'Task Resolved': node.latestTask && node.latestTask.run.resolved,
       Quarantined: node.quarantineUntil,
     };
 
@@ -137,81 +127,29 @@ export default class WorkersTable extends Component {
         sortDirection={sortDirection}
         onHeaderClick={this.handleHeaderClick}
         onPageChange={onPageChange}
-        renderRow={({ node: { latestTask, firstClaim, quarantineUntil } }) => (
-          <TableRow
-            key={`${latestTask.run.workerId}-${latestTask.run.runId}-${
-              latestTask.run.taskId
-            }`}>
-            <TableCell>{latestTask.run.workerGroup}</TableCell>
+        renderRow={({
+          node: {
+            workerId,
+            workerGroup,
+            latestTask,
+            firstClaim,
+            quarantineUntil,
+          },
+        }) => (
+          <TableRow key={workerId}>
+            <TableCell>{workerGroup}</TableCell>
             <TableCell>
               <TableCellListItem
                 button
                 component={Link}
-                to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${
-                  latestTask.run.workerGroup
-                }/${latestTask.run.workerId}`}>
+                to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${workerGroup}/${workerId}`}>
                 <ListItemText
                   disableTypography
-                  primary={<Typography>{latestTask.run.workerId}</Typography>}
+                  primary={<Typography>{workerId}</Typography>}
                 />
                 <LinkIcon size={iconSize} />
               </TableCellListItem>
             </TableCell>
-            <TableCell>
-              <TableCellListItem
-                button
-                component={Link}
-                to={`/tasks/${latestTask.run.taskId}/runs/${
-                  latestTask.run.runId
-                }`}>
-                <ListItemText
-                  disableTypography
-                  primary={<Typography>{latestTask.run.taskId}</Typography>}
-                />
-                <LinkIcon size={iconSize} />
-              </TableCellListItem>
-            </TableCell>
-            <TableCell>
-              {<StatusLabel state={latestTask.run.state} />}
-            </TableCell>
-            <CopyToClipboard
-              title={`${latestTask.run.started} (Copy)`}
-              text={latestTask.run.started}>
-              <TableCell>
-                <TableCellListItem button>
-                  <ListItemText
-                    disableTypography
-                    primary={
-                      <Typography>
-                        <DateDistance from={latestTask.run.started} />
-                      </Typography>
-                    }
-                  />
-                  <ContentCopyIcon size={iconSize} />
-                </TableCellListItem>
-              </TableCell>
-            </CopyToClipboard>
-            <CopyToClipboard
-              title={`${latestTask.run.resolved} (Copy)`}
-              text={latestTask.run.resolved}>
-              <TableCell>
-                {latestTask.run.resolved ? (
-                  <TableCellListItem button>
-                    <ListItemText
-                      disableTypography
-                      primary={
-                        <Typography>
-                          <DateDistance from={latestTask.run.resolved} />
-                        </Typography>
-                      }
-                    />
-                    <ContentCopyIcon size={iconSize} />
-                  </TableCellListItem>
-                ) : (
-                  <Typography>n/a</Typography>
-                )}
-              </TableCell>
-            </CopyToClipboard>
             <CopyToClipboard title={`${firstClaim} (Copy)`} text={firstClaim}>
               <TableCell>
                 <TableCellListItem button>
@@ -228,22 +166,95 @@ export default class WorkersTable extends Component {
               </TableCell>
             </CopyToClipboard>
             <TableCell>
-              {quarantineUntil
-                ? formatDistanceStrict(new Date(), quarantineUntil, {
-                    unit: 'd',
-                  })
-                : 'n/a'}
+              {latestTask ? (
+                <TableCellListItem
+                  button
+                  component={Link}
+                  to={`/tasks/${latestTask.run.taskId}/runs/${
+                    latestTask.run.runId
+                  }`}>
+                  <ListItemText
+                    disableTypography
+                    primary={<Typography>{latestTask.run.taskId}</Typography>}
+                  />
+                  <LinkIcon size={iconSize} />
+                </TableCellListItem>
+              ) : (
+                <Typography>n/a</Typography>
+              )}
+            </TableCell>
+            <TableCell>
+              {latestTask ? (
+                <StatusLabel state={latestTask.run.state} />
+              ) : (
+                <Typography>n/a</Typography>
+              )}
+            </TableCell>
+            {latestTask ? (
+              <CopyToClipboard
+                title={`${latestTask.run.started} (Copy)`}
+                text={latestTask.run.started}>
+                <TableCell>
+                  <TableCellListItem button>
+                    <ListItemText
+                      disableTypography
+                      primary={
+                        <Typography>
+                          <DateDistance from={latestTask.run.started} />
+                        </Typography>
+                      }
+                    />
+                    <ContentCopyIcon size={iconSize} />
+                  </TableCellListItem>
+                </TableCell>
+              </CopyToClipboard>
+            ) : (
+              <TableCell>
+                <Typography>n/a</Typography>
+              </TableCell>
+            )}
+            {latestTask ? (
+              <CopyToClipboard
+                title={`${latestTask.run.resolved} (Copy)`}
+                text={latestTask.run.resolved}>
+                <TableCell>
+                  <TableCellListItem button>
+                    <ListItemText
+                      disableTypography
+                      primary={
+                        <Typography>
+                          <DateDistance from={latestTask.run.resolved} />
+                        </Typography>
+                      }
+                    />
+                    <ContentCopyIcon size={iconSize} />
+                  </TableCellListItem>
+                </TableCell>
+              </CopyToClipboard>
+            ) : (
+              <TableCell>
+                <Typography>n/a</Typography>
+              </TableCell>
+            )}
+            <TableCell>
+              {quarantineUntil ? (
+                formatDistanceStrict(new Date(), quarantineUntil, {
+                  unit: 'd',
+                })
+              ) : (
+                <Typography>n/a</Typography>
+              )}
             </TableCell>
           </TableRow>
         )}
         headers={[
           'Worker Group',
           'Worker ID',
+          'First Claim',
           'Most Recent Task',
           'Task State',
           'Task Started',
           'Task Resolved',
-          'First Claim',
           'Quarantined',
         ]}
         {...props}

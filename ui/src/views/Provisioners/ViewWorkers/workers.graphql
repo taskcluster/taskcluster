@@ -9,10 +9,10 @@ query ViewWorkers($provisionerId: String!, $workerType: String!, $workersConnect
     }
     edges {
       node {
+        workerId
+        workerGroup
         latestTask {
           run {
-            workerGroup
-            workerId
             taskId
             runId
             started
