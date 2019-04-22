@@ -7,7 +7,6 @@ const User = require('../User');
 const { encode } = require('../../utils/codec');
 const identityFromClientId = require('../../utils/identityFromClientId');
 
-
 const debug = Debug('strategies.github-oauth2');
 
 module.exports = class GithubOauth2 {
