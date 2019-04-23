@@ -12,6 +12,8 @@ import DataTable from '../DataTable';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
 import DateDistance from '../DateDistance';
+import ListItemText from '@material-ui/core/ListItemText/ListItemText';
+import TableCellListItem from '../TableCellListItem';
 
 export default class WorkerManagerWorkerTypesTable extends Component {
   static propTypes = {
@@ -71,12 +73,17 @@ export default class WorkerManagerWorkerTypesTable extends Component {
 
     return (
       <TableRow key={workerType.name}>
-        <TableCell
-          button
-          component={Link}
-          to={`${path}/worker-types/${workerType.name}`}>
-          <Typography>{workerType.name}</Typography>
-          <LinkIcon size={iconSize} />
+        <TableCell>
+          <TableCellListItem
+            button
+            component={Link}
+            to={`${path}/worker-types/${workerType.name}`}>
+            <ListItemText
+              disableTypography
+              primary={<Typography>{workerType.name}</Typography>}
+            />
+            <LinkIcon size={iconSize} />
+          </TableCellListItem>
         </TableCell>
 
         <TableCell>
@@ -121,12 +128,17 @@ export default class WorkerManagerWorkerTypesTable extends Component {
           </Typography>
         </TableCell>
 
-        <TableCell
-          button
-          component={Link}
-          to={`${path}/providers/${workerType.provider}`}>
-          <Typography>{workerType.provider}</Typography>
-          <LinkIcon size={iconSize} />
+        <TableCell>
+          <TableCellListItem
+            button
+            component={Link}
+            to={`${path}/providers/${workerType.provider}`}>
+            <ListItemText
+              disableTypography
+              primary={<Typography>{workerType.provider}</Typography>}
+            />
+            <LinkIcon size={iconSize} />
+          </TableCellListItem>
         </TableCell>
       </TableRow>
     );
