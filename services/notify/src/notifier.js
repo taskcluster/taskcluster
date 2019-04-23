@@ -110,8 +110,8 @@ class Notifier {
     });
   }
 
-  async irc(msg) {
-    const {channel, user, message} = msg;
+  async irc(messageRequest) {
+    const {channel, user, message} = messageRequest;
     if (channel && !/^[#&][^ ,\u{0007}]{1,199}$/u.test(channel)) {
       debug('irc channel ' + channel + ' invalid format. Not attempting to send.');
       return;
@@ -122,7 +122,7 @@ class Notifier {
     }
 
     debug(`Publishing message on irc for ${user || channel}.`);
-    return this.publisher.ircNotify({message: msg}, ['irc']).then(res => {
+    return this.publisher.ircNotify({message: messageRequest}, ['irc']).then(res => {
       this.markSent(channel, user, message);
       return res;
     });

@@ -14,5 +14,5 @@ Example routes:
   "notify.pulse.<a-pulse-routing-key>.on-exception"
 ]
 ```
-
+**Note**: However all notifications are transmitted via pulse and should not be considered private.
 Further specification of this is contained in the [usage docs](/docs/reference/core/notify/usage). **Note: The channel should have the # preceeding it.**

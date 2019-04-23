@@ -3,8 +3,6 @@ const {consume} = require('taskcluster-lib-pulse');
 const irc = require('irc-upd');
 const assert = require('assert');
 
-const MAX_RETRIES = 5;
-
 /** IRC bot for delivering notifications */
 class IRCBot {
   /**
@@ -80,36 +78,24 @@ class IRCBot {
 
   async onMessage({payload}) {
     let {channel, user, message} = payload.message;
-    let retires = 0;
     if (channel && !/^[#&][^ ,\u{0007}]{1,199}$/u.test(channel)) {
       debug('irc channel ' + channel + ' invalid format. Not attempting to send.');
       return;
     }
     debug(`Sending message to ${user || channel}: ${message}.`);
-    while(true) {
-      try {
-        if (channel) {
-          // This callback does not ever have an error. If it triggers, we have succeeded
-          // Time this out after 10 seconds to avoid blocking forever
-          await new Promise((accept, reject) => {
-            setTimeout(() => {
-              debug('Timed out joining channel, may be ok. Proceeding.');
-              accept();
-            }, 10000);
-            this.client.join(channel, accept);
-          });
-        }
-        // Post message to user or channel (which ever is given)
-        this.client.say(user || channel, message);
-        return;
-      } catch(err) {
-        console.log('Failed to send IRC notification: %j, %s', err, err.stack);
-        retires++;
-        if ( retires > MAX_RETRIES) {
-          return;
-        }
-      }
+    if (channel) {
+      // This callback does not ever have an error. If it triggers, we have succeeded
+      // Time this out after 10 seconds to avoid blocking forever
+      await new Promise((accept, reject) => {
+        setTimeout(() => {
+          debug('Timed out joining channel, may be ok. Proceeding.');
+          accept();
+        }, 10000);
+        this.client.join(channel, accept);
+      });
     }
+    // Post message to user or channel (which ever is given)
+    this.client.say(user || channel, message);
   }
 
   async terminate() {
