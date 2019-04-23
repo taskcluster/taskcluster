@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../components/Dashboard';
@@ -35,7 +35,7 @@ export default class WorkerManagerWorkerTypesView extends Component {
             placeholder="Worker type contains"
           />
         }>
-        <>
+        <Fragment>
           {!WorkerManagerWorkerTypeSummaries && loading && <Spinner loading />}
           <ErrorPanel error={error} />
           {WorkerManagerWorkerTypeSummaries && (
@@ -44,7 +44,7 @@ export default class WorkerManagerWorkerTypesView extends Component {
               workerTypes={WorkerManagerWorkerTypeSummaries}
             />
           )}
-        </>
+        </Fragment>
       </Dashboard>
     );
   }
