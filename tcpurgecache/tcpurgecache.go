@@ -8,11 +8,11 @@
 // This package was generated from the schema defined at
 // https://taskcluster-staging.net/references/purge-cache/v1/api.json
 
-// The purge-cache service is responsible for publishing a pulse
-// message for workers, so they can purge cache upon request.
+// The purge-cache service is responsible for tracking cache-purge requests.
 //
-// This document describes the API end-point for publishing the pulse
-// message. This is mainly intended to be used by tools.
+// User create purge requests for specific caches on specific workers, and
+// these requests are timestamped.  Workers consult the service before
+// starting a new task, and purge any caches older than the timestamp.
 //
 // See:
 //
@@ -36,7 +36,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // https://taskcluster-staging.net/references/purge-cache/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 15 Apr 2019 at 20:23:00 UTC. The code was generated
+// Tue, 23 Apr 2019 at 18:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcpurgecache
 
@@ -101,9 +101,11 @@ func (purgeCache *PurgeCache) Ping() error {
 	return err
 }
 
-// Publish a purge-cache message to purge caches named `cacheName` with
-// `provisionerId` and `workerType` in the routing-key. Workers should
-// be listening for this message and purge caches when they see it.
+// Publish a request to purge caches named `cacheName` with
+// on `provisionerId`/`workerType` workers.
+//
+// If such a request already exists, its `before` timestamp is updated to
+// the current time.
 //
 // Required scopes:
 //   purge-cache:<provisionerId>/<workerType>:<cacheName>
@@ -115,6 +117,8 @@ func (purgeCache *PurgeCache) PurgeCache(provisionerId, workerType string, paylo
 	return err
 }
 
+// View all active purge requests.
+//
 // This is useful mostly for administors to view
 // the set of open purge requests. It should not
 // be used by workers. They should use the purgeRequests
@@ -135,9 +139,10 @@ func (purgeCache *PurgeCache) AllPurgeRequests(continuationToken, limit string) 
 	return responseObject.(*OpenAllPurgeRequestsList), err
 }
 
-// List of caches that need to be purged if they are from before
-// a certain time. This is safe to be used in automation from
-// workers.
+// List the caches for this `provisionerId`/`workerType` that should to be
+// purged if they are from before the time given in the response.
+//
+// This is intended to be used by workers to determine which caches to purge.
 //
 // See #purgeRequests
 func (purgeCache *PurgeCache) PurgeRequests(provisionerId, workerType, since string) (*OpenPurgeRequestList, error) {

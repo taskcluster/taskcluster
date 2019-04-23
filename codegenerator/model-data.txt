@@ -1,4 +1,4 @@
-Generated: 1555359808
+Generated: 1556043816
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -6280,6 +6280,11 @@ properties:
               PROPERTY_NAME: firedBy
               SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/list-lastFires-response.json#/properties/lastFires/items/properties/firedBy
               TYPE_NAME: ""
+              enum:
+              - schedule
+              - triggerHook
+              - triggerHookWithToken
+              - pulseMessage
               type: string
             hookGroupId:
               IS_REQUIRED: true
@@ -6392,6 +6397,11 @@ properties:
       PROPERTY_NAME: firedBy
       SOURCE_URL: https://taskcluster-staging.net/schemas/hooks/v1/list-lastFires-response.json#/properties/lastFires/items/properties/firedBy
       TYPE_NAME: ""
+      enum:
+      - schedule
+      - triggerHook
+      - triggerHookWithToken
+      - pulseMessage
       type: string
     hookGroupId:
       IS_REQUIRED: true
@@ -9778,11 +9788,11 @@ https://taskcluster-staging.net/references/purge-cache/v1/api.json
 ==================================================================
 Schema      = 'https://taskcluster-staging.net/schemas/common/api-reference-v0.json#'
 Title       = 'Purge Cache API'
-Description = 'The purge-cache service is responsible for publishing a pulse
-message for workers, so they can purge cache upon request.
+Description = 'The purge-cache service is responsible for tracking cache-purge requests.
 
-This document describes the API end-point for publishing the pulse
-message. This is mainly intended to be used by tools.'
+User create purge requests for specific caches on specific workers, and
+these requests are timestamped.  Workers consult the service before
+starting a new task, and purge any caches older than the timestamp.'
 Entry 0     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -9813,9 +9823,11 @@ Entry 1     =
     Entry Output      = ''
     Entry OutputURL   = ''
     Entry Title       = 'Purge Worker Cache'
-    Entry Description = 'Publish a purge-cache message to purge caches named `cacheName` with
-`provisionerId` and `workerType` in the routing-key. Workers should
-be listening for this message and purge caches when they see it.'
+    Entry Description = 'Publish a request to purge caches named `cacheName` with
+on `provisionerId`/`workerType` workers.
+
+If such a request already exists, its `before` timestamp is updated to
+the current time.'
 Entry 2     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -9830,7 +9842,9 @@ Entry 2     =
     Entry Output      = 'v1/all-purge-cache-request-list.json#'
     Entry OutputURL   = 'https://taskcluster-staging.net/schemas/purge-cache/v1/all-purge-cache-request-list.json#'
     Entry Title       = 'All Open Purge Requests'
-    Entry Description = 'This is useful mostly for administors to view
+    Entry Description = 'View all active purge requests.
+
+This is useful mostly for administors to view
 the set of open purge requests. It should not
 be used by workers. They should use the purgeRequests
 endpoint that is specific to their workerType and
@@ -9849,9 +9863,10 @@ Entry 3     =
     Entry Output      = 'v1/purge-cache-request-list.json#'
     Entry OutputURL   = 'https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-request-list.json#'
     Entry Title       = 'Open Purge Requests for a provisionerId/workerType pair'
-    Entry Description = 'List of caches that need to be purged if they are from before
-a certain time. This is safe to be used in automation from
-workers.'
+    Entry Description = 'List the caches for this `provisionerId`/`workerType` that should to be
+purged if they are from before the time given in the response.
+
+This is intended to be used by workers to determine which caches to purge.'
 
 
 https://taskcluster-staging.net/schemas/purge-cache/v1/all-purge-cache-request-list.json#
@@ -30695,7 +30710,7 @@ properties:
       SOURCE_URL: https://taskcluster-staging.net/schemas/treeherder/v1/pulse-job.json#/properties/owner
       TYPE_NAME: ""
       description: |
-        Description of who submitted the job: gaia | scheduler name | username | email
+        Description of who submitted the job: scheduler name | username | email
       maxLength: 50
       minLength: 1
       title: Owner
@@ -30707,7 +30722,6 @@ properties:
       TYPE_NAME: ""
       description: |
         Examples include:
-        -  'b2g'
         -  'firefox'
         -  'taskcluster'
         -  'xulrunner'
@@ -30725,7 +30739,7 @@ properties:
         - scheduler
         - Self-serve: Rebuilt by foo@example.com
         - Self-serve: Requested by foo@example.com
-        - The Nightly scheduler named 'b2g_mozilla-inbound periodic' triggered this build
+        - The Nightly scheduler named 'mozilla-inbound periodic' triggered this build
         - unknown
       maxLength: 125
       minLength: 1

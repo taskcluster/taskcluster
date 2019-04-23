@@ -228,7 +228,7 @@ type (
 		// See https://taskcluster-staging.net/schemas/treeherder/v1/pulse-job.json#/properties/origin
 		Origin json.RawMessage `json:"origin"`
 
-		// Description of who submitted the job: gaia | scheduler name | username | email
+		// Description of who submitted the job: scheduler name | username | email
 		//
 		// Min length: 1
 		// Max length: 50
@@ -237,7 +237,6 @@ type (
 		Owner string `json:"owner,omitempty"`
 
 		// Examples include:
-		// -  'b2g'
 		// -  'firefox'
 		// -  'taskcluster'
 		// -  'xulrunner'
@@ -253,7 +252,7 @@ type (
 		// - scheduler
 		// - Self-serve: Rebuilt by foo@example.com
 		// - Self-serve: Requested by foo@example.com
-		// - The Nightly scheduler named 'b2g_mozilla-inbound periodic' triggered this build
+		// - The Nightly scheduler named 'mozilla-inbound periodic' triggered this build
 		// - unknown
 		//
 		// Min length: 1
