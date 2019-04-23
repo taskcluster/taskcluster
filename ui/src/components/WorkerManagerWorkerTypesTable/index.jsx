@@ -5,6 +5,8 @@ import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography/';
 import ListItemText from '@material-ui/core/ListItemText/ListItemText';
 import LinkIcon from 'mdi-react/LinkIcon';
+import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { withRouter } from 'react-router-dom';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case';
@@ -99,17 +101,41 @@ export default class WorkerManagerWorkerTypesTable extends Component {
           <Typography>{workerType.pendingTasks}</Typography>
         </TableCell>
 
-        <TableCell>
-          <Typography>
-            <DateDistance from={workerType.lastActive} />
-          </Typography>
-        </TableCell>
+        <CopyToClipboard
+          title={`${workerType.lastActive} (Copy)`}
+          text={workerType.lastActive}>
+          <TableCell>
+            <TableCellListItem button>
+              <ListItemText
+                disableTypography
+                primary={
+                  <Typography>
+                    <DateDistance from={workerType.lastActive} />
+                  </Typography>
+                }
+              />
+              <ContentCopyIcon size={iconSize} />
+            </TableCellListItem>
+          </TableCell>
+        </CopyToClipboard>
 
-        <TableCell>
-          <Typography>
-            <DateDistance from={workerType.lastResolved} />
-          </Typography>
-        </TableCell>
+        <CopyToClipboard
+          title={`${workerType.lastResolved} (Copy)`}
+          text={workerType.lastResolved}>
+          <TableCell>
+            <TableCellListItem button>
+              <ListItemText
+                disableTypography
+                primary={
+                  <Typography>
+                    <DateDistance from={workerType.lastResolved} />
+                  </Typography>
+                }
+              />
+              <ContentCopyIcon size={iconSize} />
+            </TableCellListItem>
+          </TableCell>
+        </CopyToClipboard>
 
         <TableCell>
           <Typography>
