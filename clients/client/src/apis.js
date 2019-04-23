@@ -3823,6 +3823,22 @@ module.exports = {
           "stability": "experimental",
           "title": "List All WorkerTypes",
           "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "description": "Get Taskcluster credentials for a worker given an Instance Identity Token",
+          "input": "v1/credentials-google-request.json#",
+          "method": "post",
+          "name": "credentialsGoogle",
+          "output": "v1/temp-creds-response.json#",
+          "query": [
+          ],
+          "route": "/credentials/google/<name>",
+          "stability": "experimental",
+          "title": "Google Credentials",
+          "type": "function"
         }
       ],
       "serviceName": "worker-manager",

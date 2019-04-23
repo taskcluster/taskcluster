@@ -121,7 +121,7 @@ builder.declare({
     wt.description = input.description;
     wt.provider = providerName;
     wt.owner = input.owner;
-    wt.lastModifed = new Date().toJSON();
+    wt.lastModified = new Date();
   });
 
   res.reply(workerType.serializable());
@@ -195,3 +195,38 @@ builder.declare({
   }
   return res.reply(data);
 });
+
+/*
+ * ************** BELOW HERE LIVE PROVIDER ENDPOINTS **************
+ */
+
+builder.declare({
+  method: 'post',
+  route: '/credentials/google/:name',
+  name: 'credentialsGoogle',
+  title: 'Google Credentials',
+  stability: APIBuilder.stability.experimental,
+  input: 'credentials-google-request.yml',
+  output: 'temp-creds-response.yml',
+  description: [
+    'Get Taskcluster credentials for a worker given an Instance Identity Token',
+  ].join('\n'),
+}, async function(req, res) {
+  const {name} = req.params;
+
+  try {
+    const workerType = await this.WorkerType.load({name});
+    return res.reply(await this.providers[workerType.provider].verifyIdToken({
+      token: req.body.token,
+      workerType,
+    }));
+  } catch (err) {
+    // We will internally record what went wrong and report back something generic
+    this.monitor.reportError(err, 'warning');
+    return res.reportError('InputError', 'Invalid Token', {});
+  }
+});
+
+/*
+ * ************** THIS SECTION FOR PROVIDER ENDPOINTS **************
+ */

@@ -15,7 +15,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     assert(created);
     assert(lastModified);
     assert(errors);
-    assert.equal(lastModified, created);
     assert.deepEqual({name, ...input}, definition);
   };
 
@@ -46,14 +45,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       config: {},
       owner: 'example@example.com',
     };
-    workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
+    const initial = await helper.workerManager.createWorkerType(name, input);
+    workerTypeCompare(name, input, initial);
     const input2 = {
       provider: 'testing2',
       description: 'bing',
       config: {},
       owner: 'example@example.com',
     };
-    workerTypeCompare(name, input2, await helper.workerManager.updateWorkerType(name, input2));
+    const updated = await helper.workerManager.updateWorkerType(name, input2);
+    workerTypeCompare(name, input2, updated);
+
+    assert.equal(initial.lastModified, initial.created);
+    assert.equal(initial.created, updated.created);
+    assert(updated.lastModifed !== updated.created);
   });
 
   test('create workertype (invalid provider)', async function() {
@@ -179,5 +184,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       return;
     }
     throw new Error('get of a deleted workertype succeeded');
+  });
+
+  test('credentials google', async function() {
+    const name = 'ee';
+    const input = {
+      provider: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+    };
+    workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
+    await helper.workerManager.credentialsGoogle(name, {token: 'abc'});
   });
 });

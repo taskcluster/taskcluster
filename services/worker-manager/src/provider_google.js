@@ -1,5 +1,7 @@
 const assert = require('assert');
 const fs = require('fs');
+const taskcluster = require('taskcluster-client');
+const libUrls = require('taskcluster-lib-urls');
 const uuid = require('uuid');
 const {TimedCache} = require('./timedcache');
 const {google} = require('googleapis');
@@ -7,8 +9,8 @@ const {Provider} = require('./provider');
 
 class GoogleProvider extends Provider {
 
-  constructor({id, monitor, notify, project, creds, credsFile}) {
-    super({id, monitor, notify});
+  constructor({name, taskclusterCredentials, monitor, notify, provisionerId, rootUrl, project, creds, credsFile}) {
+    super({name, taskclusterCredentials, monitor, notify, provisionerId, rootUrl});
     this.cache = new TimedCache();
 
     this.project = project;
@@ -34,6 +36,54 @@ class GoogleProvider extends Provider {
     this.crm = google.cloudresourcemanager({
       version: 'v1',
       auth: client,
+    });
+
+    this.oauth2 = new google.auth.OAuth2();
+  }
+
+  /**
+   * Given a workerType and instance identity token from google, we return
+   * taskcluster credentials for a worker to use if it is valid.
+   *
+   * All fields we check in the token are signed by google rather than the
+   * requester so we know that they are not forged arbitrarily. Be careful
+   * when selecting new fields to validate here, they may come from the requester.
+   */
+  async verifyIdToken({token, workerType}) {
+    // This will throw an error if the token is invalid at all
+    let {payload} = await this.oauth2.verifyIdToken({
+      idToken: token,
+      audience: workerType.name,
+    });
+    const dat = payload.google.compute_engine;
+
+    // First check to see if the request is coming from the project this provider manages
+    if (dat.project_id !== this.project) {
+      const error = new Error(`Invalid project ${dat.project_id} is not ${this.project}`);
+      error.project = dat.project_id;
+      error.validProject = this.project;
+      throw error;
+    }
+
+    // Now check to make sure that the serviceAccount that the worker has is the
+    // serviceAccount that we have configured that worker to use. Nobody else in the project
+    // should have permissions to create instances with this serviceAccount.
+    if (payload.sub !== workerType.providerData.serviceAccountId) {
+      const error = new Error('Attempt to claim workertype creds from non-workertype instance');
+      error.requestingAccountId = payload.sub;
+      error.correctAccountId = workerType.providerData.serviceAccountId;
+      throw error;
+    }
+
+    return taskcluster.createTemporaryCredentials({
+      clientId: `worker/google/${this.project}/${dat.instance_id}`,
+      scopes: [
+        `assume:worker-type:${this.provisionerId}/${workerType.name}`,
+        `assume:worker-id:${dat.instance_id}`,
+      ],
+      start: taskcluster.fromNow('-15 minutes'),
+      expiry: taskcluster.fromNow('96 hours'),
+      credentials: this.taskclusterCredentials,
     });
   }
 
@@ -72,18 +122,6 @@ class GoogleProvider extends Provider {
   }
 
   async provision({workerType}) {
-    // TODO: Remove the hardcoding
-    await workerType.modify(wt => {
-      //wt.config = {
-      //  permissions: ['logging.logEntries.create'],
-      //  ...wt.config,
-      //};
-      //wt.providerData.trackedOperations = [];
-    });
-
-    if (!await this.ensureImage({workerType})) {
-      return;
-    }
     const {email: accountEmail} = await this.configureServiceAccount({workerType});
     const {name: roleId} = await this.configureRole({workerType});
 
@@ -91,6 +129,10 @@ class GoogleProvider extends Provider {
     // in cleanup to avoid lots of contention and this will also allow us to
     // know which types need removed!
     this.seen[roleId] = accountEmail;
+
+    if (!await this.ensureImage({workerType})) {
+      return;
+    }
 
     const template = await this.setupTemplate({workerType, accountEmail});
     if (!template) {
@@ -180,7 +222,7 @@ class GoogleProvider extends Provider {
   }
 
   async configureServiceAccount({workerType}) {
-    const accountName = `taskcluster-worker-${workerType.name}`;
+    const accountName = `tcw-${workerType.name}`;
     const accountEmail = `${accountName}@${this.project}.iam.gserviceaccount.com`;
     const fullName = `projects/${this.project}/serviceAccounts/${accountEmail}`;
     return await this.getSetOrUpdate({
@@ -214,6 +256,9 @@ class GoogleProvider extends Provider {
               description: workerType.description,
             },
           },
+        });
+        await workerType.modify(wt => {
+          wt.providerData.serviceAccountId = account.data.uniqueId;
         });
         // Now we grant ourlves the ability to create workertypes with this user
         await this.iam.projects.serviceAccounts.setIamPolicy({
@@ -292,7 +337,8 @@ class GoogleProvider extends Provider {
         project: this.project,
         instanceTemplate: templateName,
       }),
-      compare: () => true, // These are immutable so if a value exists it is correct (also no need for modify here)
+      // These are immutable so if a value exists it is correct (also no need for modify here)
+      compare: current => current.name === templateName,
       set: async () => {
         const operation = await this.compute.instanceTemplates.insert({
           project: this.project,
@@ -303,26 +349,24 @@ class GoogleProvider extends Provider {
               serviceAccounts: [{
                 email: accountEmail,
               }],
-              machineType: 'n1-standard-2', // TODO: From config
-              networkInterfaces: [ // TODO: From config
-                {
-                  accessConfigs: [
-                    {type: 'ONE_TO_ONE_NAT'},
-                  ],
-                },
-              ],
-              disks: [ // TODO: From config
-                {
-                  type: 'PERSISTENT',
-                  boot: true,
-                  mode: 'READ_WRITE',
-                  autoDelete: true,
-                  initializeParams: {
-                    sourceImage: `global/images/${workerType.config.image}`,
-                    diskSizeGb: 10,
+              machineType: workerType.config.machineType,
+              metadata: {
+                items: [
+                  {
+                    key: 'config',
+                    value: JSON.stringify({
+                      provisionerId: this.provisionerId,
+                      workerType: workerType.name,
+                      workerGroup: `${workerType.name}-${workerType.config.region}`,
+                      credentialUrl: libUrls.api(this.rootUrl, 'worker-manager', 'v1', `credentials/google/${workerType.name}`),
+                      rootUrl: this.rootUrl,
+                      ed25519SigningKeyLocation: '/home/taskcluster/signing.key', // TODO: from config?
+                    }),
                   },
-                },
-              ],
+                ],
+              },
+              networkInterfaces: workerType.config.networkInterfaces,
+              disks: workerType.config.disks,
             },
           },
         });
@@ -353,11 +397,11 @@ class GoogleProvider extends Provider {
       key: 'group',
       read: async () => this.compute.regionInstanceGroupManagers.get({
         project: this.project,
-        region: 'us-east1', // TODO: From config
+        region: workerType.config.region,
         instanceGroupManager: resourceId,
       }),
       compare: current => {
-        if (current.region.endsWith('us-east1')) { // TODO: From config
+        if (current.region.endsWith(workerType.config.region)) {
           return false;
         }
         try {
@@ -370,7 +414,7 @@ class GoogleProvider extends Provider {
             description: workerType.description,
             instanceTemplate: templateId,
             baseInstancename: workerType.name,
-            targetSize: 1, // TODO: From config
+            targetSize: 1, // TODO: From config + estimators
           }, {
           });
         } catch (err) {
@@ -381,13 +425,13 @@ class GoogleProvider extends Provider {
       modify: async current => {
         const operation = await this.compute.regionInstanceGroupManagers.patch({
           project: this.project,
-          region: 'us-east1', // TODO: From config
+          region: workerType.config.region,
           instanceGroupManager: resourceId,
           requestBody: {
             description: workerType.description,
             instanceTemplate: templateId,
             baseInstancename: workerType.name,
-            targetSize: 1, // TODO: From config
+            targetSize: 1, // TODO: From config + estimators
           },
         });
         await workerType.modify(wt => {
@@ -402,13 +446,13 @@ class GoogleProvider extends Provider {
       set: async () => {
         const operation = await this.compute.regionInstanceGroupManagers.insert({
           project: this.project,
-          region: 'us-east1', // TODO: From config
+          region: workerType.config.region,
           requestBody: {
             name: resourceId,
             description: workerType.description,
             instanceTemplate: templateId,
             baseInstancename: workerType.name,
-            targetSize: 1, // TODO: From config
+            targetSize: 1, // TODO: From config + estimators
           },
         });
         await workerType.modify(wt => {

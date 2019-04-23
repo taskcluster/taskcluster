@@ -102,6 +102,9 @@ let load = loader({
           name,
           notify,
           monitor: monitor.childMonitor(name),
+          provisionerId: cfg.app.provisionerId,
+          rootUrl: cfg.taskcluster.rootUrl,
+          taskclusterCredentials: cfg.taskcluster.credentials,
           ...meta,
         });
       });
