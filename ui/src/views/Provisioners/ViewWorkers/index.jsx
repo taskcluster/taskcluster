@@ -91,8 +91,6 @@ export default class ViewWorkers extends Component {
         params: { provisionerId, workerType },
       },
     } = this.props;
-    const quarantinedOpts =
-      target.value === 'Quarantined' ? { quarantined: true } : null;
 
     this.setState({ filterBy: target.value });
 
@@ -102,7 +100,7 @@ export default class ViewWorkers extends Component {
       workersConnection: {
         limit: VIEW_WORKERS_PAGE_SIZE,
       },
-      ...quarantinedOpts,
+      quarantined: target.value === 'Quarantined' ? true : null,
     });
   };
 
