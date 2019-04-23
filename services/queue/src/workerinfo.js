@@ -86,7 +86,7 @@ class WorkerInfo {
           });
         }
 
-        return createEntry(this.Provisioner, {
+        await createEntry(this.Provisioner, {
           provisionerId,
           expires,
           description: '',
@@ -110,7 +110,7 @@ class WorkerInfo {
           });
         }
 
-        createEntry(this.WorkerType, {
+        await createEntry(this.WorkerType, {
           provisionerId,
           workerType,
           expires,
@@ -121,21 +121,17 @@ class WorkerInfo {
       }));
     }
 
-    // worker  seen
+    // worker seen
     if (provisionerId && workerType && workerGroup && workerId) {
       promises.push(this.valueSeen(`${provisionerId}/${workerType}/${workerGroup}/${workerId}`, async () => {
         // perform an Azure upsert, trying the update first as it is more common
         const worker = await this.Worker.load({provisionerId, workerType, workerGroup, workerId}, true);
 
         if (worker) {
-          try {
-            return worker.modify(entity => updateExpiration(entity, expires));
-          } catch (err) {
-            throw err;
-          }
+          return worker.modify(entity => updateExpiration(entity, expires));
         }
 
-        createEntry(this.Worker, {
+        await createEntry(this.Worker, {
           provisionerId,
           workerType,
           workerGroup,

@@ -68,7 +68,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
   test('queue.listProvisioners returns an empty list', async () => {
     const result = await helper.queue.listProvisioners();
-    assert(result.provisioners.length === 0, 'Did not expect any provisioners');
+    assert.equal(result.provisioners.length, 0, 'Did not expect any provisioners');
   });
 
   test('queue.listProvisioners returns provisioners', async () => {
@@ -76,11 +76,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     const result = await helper.queue.listProvisioners();
 
-    assert(result.provisioners.length === 1, 'expected provisioners');
+    assert.equal(result.provisioners.length, 1, 'expected provisioners');
     assert(result.provisioners[0].provisionerId === provisioner.provisionerId, 'expected prov1-extended-extended-extended');
     assert(result.provisioners[0].description === provisioner.description, 'expected description');
     assert(result.provisioners[0].stability === provisioner.stability, 'expected stability');
-    assert(result.provisioners[0].actions.length === 0, 'expected no actions');
+    assert.equal(result.provisioners[0].actions.length, 0, 'expected no actions');
   });
 
   test('provisioner seen creates and updates a provisioner', async () => {
@@ -93,7 +93,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     await workerInfo.seen('prov2');
 
     const result = await helper.queue.listProvisioners();
-    assert(result.provisioners.length === 1, 'expected a provisioner');
+    assert.equal(result.provisioners.length, 1, 'expected a provisioner');
   });
 
   test('provisioner expiration works', async () => {
@@ -102,13 +102,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     await helper.runExpiration('expire-worker-info');
 
     const result = await helper.queue.listProvisioners();
-    assert(result.provisioners.length === 0, 'expected no provisioners');
+    assert.equal(result.provisioners.length, 0, 'expected no provisioners');
   });
 
   test('queue.listWorkerTypes returns an empty list', async () => {
     const result = await helper.queue.listWorkerTypes('no-provisioner');
 
-    assert(result.workerTypes.length === 0, 'did not expect any worker-types');
+    assert.equal(result.workerTypes.length, 0, 'did not expect any worker-types');
   });
 
   test('queue.listWorkerTypes returns workerTypes', async () => {
@@ -116,7 +116,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     const result = await helper.queue.listWorkerTypes('prov1-extended-extended-extended');
 
-    assert(result.workerTypes.length === 1, 'expected workerTypes');
+    assert.equal(result.workerTypes.length, 1, 'expected workerTypes');
     assert(result.workerTypes[0].workerType === wType.workerType, `expected ${wType.workerType}`);
   });
 
@@ -143,7 +143,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     const result = await helper.queue.listWorkerTypes('prov-B');
 
-    assert(result.workerTypes.length === 1, 'expected workerTypes');
+    assert.equal(result.workerTypes.length, 1, 'expected workerTypes');
     assert(result.workerTypes[0].workerType === wType.workerType, `expected ${wType.workerType}`);
   });
 
@@ -154,7 +154,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     let result = await helper.queue.listWorkerTypes('prov1-extended-extended-extended', {limit: 1});
 
     assert(result.continuationToken);
-    assert(result.workerTypes.length === 1);
+    assert.equal(result.workerTypes.length, 1);
 
     result = await helper.queue.listWorkerTypes('prov1-extended-extended-extended', {
       limit: 1,
@@ -162,7 +162,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     });
 
     assert(!result.continuationToken);
-    assert(result.workerTypes.length === 1);
+    assert.equal(result.workerTypes.length, 1);
   });
 
   test('worker-type seen creates and updates a worker-type', async () => {
@@ -175,7 +175,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     ]);
 
     const result = await helper.queue.listWorkerTypes('prov2');
-    assert(result.workerTypes.length === 1, 'expected a worker-type');
+    assert.equal(result.workerTypes.length, 1, 'expected a worker-type');
   });
 
   test('worker-type expiration works', async () => {
@@ -186,13 +186,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     await helper.runExpiration('expire-worker-info');
 
     const result = await helper.queue.listWorkerTypes('prov1-extended-extended-extended');
-    assert(result.workerTypes.length === 0, 'expected no worker-types');
+    assert.equal(result.workerTypes.length, 0, 'expected no worker-types');
   });
 
   test('queue.listWorkers returns an empty list', async () => {
     const result = await helper.queue.listWorkers('prov1-extended-extended-extended', 'gecko-b-2-linux-extended-extended');
 
-    assert(result.workers.length === 0, 'Did not expect any workers');
+    assert.equal(result.workers.length, 0, 'Did not expect any workers');
   });
 
   test('queue.listWorkers returns workers', async () => {
@@ -205,7 +205,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     const result = await helper.queue.listWorkers(worker.provisionerId, worker.workerType);
 
-    assert(result.workers.length === 1, 'expected workers');
+    assert.equal(result.workers.length, 1, 'expected workers');
     assert(result.workers[0].workerGroup === worker.workerGroup, `expected ${worker.workerGroup}`);
     assert(result.workers[0].workerId === worker.workerId, `expected ${worker.workerId}`);
     assert(!result.workers[0].quarantineUntil, 'expected quarantineUntil to not be defined');
@@ -227,7 +227,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     const result = await helper.queue.listWorkers(workers[0].provisionerId, workers[0].workerType);
 
-    assert(result.workers.length === 3, 'expected three workers');
+    assert.equal(result.workers.length, 3, 'expected three workers');
     assert(result.workers.some(w => w.workerId === 'q'));
     assert(result.workers.some(w => w.workerId === 'new'));
     assert(result.workers.some(w => w.workerId === 'newq'));
@@ -255,7 +255,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     const result = await helper.queue.listWorkers(worker.provisionerId, worker.workerType);
 
-    assert(result.workers.length === 1, 'expected workers');
+    assert.equal(result.workers.length, 1, 'expected workers');
     assert(result.workers[0].workerId === worker.workerId, `expected ${worker.workerId}`);
   });
 
@@ -270,8 +270,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       worker.provisionerId, worker.workerType, {quarantined: true}
     );
 
-    assert(result.workers.length === 1, 'expected 1 worker');
-    assert(result2.workers.length === 0, 'expected no worker');
+    assert.equal(result.workers.length, 1, 'expected 1 worker');
+    assert.equal(result2.workers.length, 0, 'expected no worker');
   });
 
   test('list workers (limit and continuationToken)', async () => {
@@ -283,14 +283,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     let result = await helper.queue.listWorkers(provisionerId, workerType, {limit: 1});
     assert(result.continuationToken);
-    assert(result.workers.length === 1);
+    assert.equal(result.workers.length, 1);
 
     result = await helper.queue.listWorkers(provisionerId, workerType, {
       limit: 1,
       continuationToken: result.continuationToken,
     });
     assert(!result.continuationToken);
-    assert(result.workers.length === 1);
+    assert.equal(result.workers.length, 1);
   });
 
   test('workerSeen creates and updates a worker', async () => {
@@ -306,7 +306,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     ]);
 
     const result = await helper.queue.listWorkers(provisionerId, workerType);
-    assert(result.workers.length === 1, 'expected a worker');
+    assert.equal(result.workers.length, 1, 'expected a worker');
   });
 
   test('worker expiration works', async () => {
@@ -317,7 +317,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     const result = await helper.queue.listWorkers(worker.provisionerId, worker.workerType);
 
-    assert(result.workers.length === 0, 'expected no workers');
+    assert.equal(result.workers.length, 0, 'expected no workers');
   });
 
   test('queue.quarantineWorker quarantines a worker', async () => {
@@ -413,7 +413,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     const result = await helper.queue.getWorkerType(wType.provisionerId, wType.workerType);
 
     assert(result.workerType === wType.workerType, `expected ${wType.workerType}`);
-    assert(result.actions.length === 1, 'expected 1 action');
+    assert.equal(result.actions.length, 1, 'expected 1 action');
     assert(result.actions[0].context === 'worker-type', 'expected action with context worker-type');
   });
 
@@ -463,7 +463,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     assert(result.provisionerId === provisioner.provisionerId, `expected ${provisioner.provisionerId}`);
     assert(result.description === provisioner.description, `expected ${provisioner.description}`);
     assert(result.stability === provisioner.stability, `expected ${provisioner.stability}`);
-    assert(result.actions.length === 0, 'expected no actions');
+    assert.equal(result.actions.length, 0, 'expected no actions');
     assert(new Date(result.expires).getTime() === provisioner.expires.getTime(), `expected ${provisioner.expires}`);
   });
 
@@ -557,7 +557,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     const result = await helper.queue.getProvisioner(provisioner.provisionerId);
 
-    assert(result.actions.length === 2, 'expected 2 actions');
+    assert.equal(result.actions.length, 2, 'expected 2 actions');
     assert(result.actions[0].url === actionOne.url, `expected url to be ${actionOne.url}`);
     assert(result.actions[1].url === actionTwo.url, `expected url to be ${actionTwo.url}`);
   });
@@ -790,7 +790,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     assert(worker.workerType === workerType, `expected ${workerType}`);
     assert(worker.workerGroup === workerGroup, `expected ${workerGroup}`);
     assert(worker.workerId === workerId, `expected ${workerId}`);
-    assert(worker.recentTasks.length === 0);
+    assert.equal(worker.recentTasks.length, 0);
     assert(new Date(worker.expires).getTime() === updateProps.expires.getTime(), `expected ${updateProps.expires}`);
 
     const provisioner = await helper.queue.getProvisioner(provisionerId);
