@@ -138,21 +138,15 @@ export default class WorkerManagerWorkerTypesTable extends Component {
         </CopyToClipboard>
 
         <TableCell>
-          <Typography>
-            {failedNumber}
-          </Typography>
+          <Typography>{failedNumber}</Typography>
         </TableCell>
 
         <TableCell>
-          <Typography>
-            {exceptionNumber}
-          </Typography>
+          <Typography>{exceptionNumber}</Typography>
         </TableCell>
 
         <TableCell>
-          <Typography>
-            {unscheduledNumber}
-          </Typography>
+          <Typography>{unscheduledNumber}</Typography>
         </TableCell>
 
         <TableCell>
