@@ -3,7 +3,9 @@ import { arrayOf, string } from 'prop-types';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography/';
+import ListItemText from '@material-ui/core/ListItemText/ListItemText';
 import LinkIcon from 'mdi-react/LinkIcon';
+import { withRouter } from 'react-router-dom';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case';
 import { isEmpty, map, pipe, sort as rSort } from 'ramda';
@@ -12,14 +14,13 @@ import DataTable from '../DataTable';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
 import DateDistance from '../DateDistance';
-import ListItemText from '@material-ui/core/ListItemText/ListItemText';
 import TableCellListItem from '../TableCellListItem';
 
+@withRouter
 export default class WorkerManagerWorkerTypesTable extends Component {
   static propTypes = {
     workerTypes: arrayOf(WorkerManagerWorkerTypeSummary).isRequired,
     searchTerm: string,
-    path: string,
   };
 
   state = {

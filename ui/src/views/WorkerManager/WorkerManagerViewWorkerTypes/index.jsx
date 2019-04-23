@@ -22,7 +22,6 @@ export default class WorkerManagerWorkerTypesView extends Component {
   render() {
     const {
       data: { loading, error, WorkerManagerWorkerTypeSummaries },
-      match: { path },
     } = this.props;
     const { workerTypeSearch } = this.state;
 
@@ -43,7 +42,6 @@ export default class WorkerManagerWorkerTypesView extends Component {
             <WorkerManagerWorkerTypesTable
               searchTerm={workerTypeSearch}
               workerTypes={WorkerManagerWorkerTypeSummaries}
-              path={path}
             />
           )}
         </>
