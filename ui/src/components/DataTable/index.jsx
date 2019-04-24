@@ -115,6 +115,7 @@ export default class DataTable extends Component {
       noItemsMessage,
       rowsPerPage,
       paginate,
+      onHeaderClick,
       ...props
     } = this.props;
     const colSpan = columnsSize || (headers && headers.length) || 0;
