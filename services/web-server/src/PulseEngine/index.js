@@ -13,15 +13,18 @@ export default class PulseEngine {
    * Each subscription gets one queue (named after the subscriptionId), with a
    * binding for each item in `subscriptions`. We then consume from that queue.
    * We automatically re-bind on connection recycles, and rely on the caller to
-   * re-subscribe on service restart. */
-
+   * re-subscribe on service restart.
+   *
+   * If the pulseClient is null, this will do nothing, as if no pulse messages
+   * were received.
+   */
   constructor({ monitor, pulseClient }) {
     this.monitor = monitor;
     this.subscriptions = new Map();
 
     this.client = pulseClient;
 
-    if (this.client.isFakeClient) {
+    if (!this.client) {
       // we are now set up to accept subscription requests, but won't do
       // anything with them.
       return;

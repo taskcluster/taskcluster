@@ -5,7 +5,7 @@ import loader from 'taskcluster-lib-loader';
 import docs from 'taskcluster-lib-docs';
 import config from 'taskcluster-lib-config';
 import { createServer } from 'http';
-import { FakeClient, Client, pulseCredentials } from 'taskcluster-lib-pulse';
+import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
 import { ApolloServer } from 'apollo-server-express';
 import monitorManager from './monitor';
 import createApp from './servers/createApp';
@@ -68,7 +68,7 @@ const load = loader(
             `\n\nNo Pulse namespace defined; no Pulse messages will be received.`
           );
 
-          return new FakeClient();
+          return null;
         }
 
         return new Client({
