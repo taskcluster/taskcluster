@@ -75,6 +75,18 @@ This is then imported and set up in `main.js`:
 }
 ```
 
+Please note that if your endpoint needs a continuation token, the name of the query parameter should be `continuationToken`:
+
+```js
+api.declare({
+  // ...
+  query: {
+    continuationToken: /./,
+  },
+  // ...
+});
+```
+
 #### Error Handling
 
 Do not use `res.status(..)` to return error messages.
