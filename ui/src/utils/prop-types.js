@@ -230,6 +230,19 @@ export const awsProvisionerWorkerType = shape({
   owner: string,
 });
 
+export const WorkerManagerWorkerTypeSummary = shape({
+  workerType: string,
+  pendingCapacity: number,
+  runningCapacity: number,
+  pendingTasks: number,
+  lastActive: date,
+  lastResolved: date,
+  failed: number,
+  exception: number,
+  unscheduled: number,
+  provider: string,
+});
+
 export const awsProvisionerWorkerTypeSummary = shape({
   workerType: string,
   minCapacity: number,

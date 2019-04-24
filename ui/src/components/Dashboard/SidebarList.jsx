@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import List from '@material-ui/core/List';
 import HexagonMultipleIcon from 'mdi-react/HexagonMultipleIcon';
+import HexagonSlice4 from 'mdi-react/HexagonSlice4Icon';
 import PlusCircleIcon from 'mdi-react/PlusCircleIcon';
 import GroupIcon from 'mdi-react/GroupIcon';
 import AccountMultipleIcon from 'mdi-react/AccountMultipleIcon';
@@ -66,6 +67,12 @@ export default class SidebarList extends Component {
         <SidebarListItem to="/aws-provisioner" icon={<AmazonIcon />}>
           AWS Provisioner
         </SidebarListItem>
+
+        {process.env.SHOW_WORKER_MANAGER && (
+          <SidebarListItem to="/worker-manager" icon={<HexagonSlice4 />}>
+            Worker Manager
+          </SidebarListItem>
+        )}
 
         <SidebarListItem to="/provisioners" icon={<MixcloudIcon />}>
           Provisioners
