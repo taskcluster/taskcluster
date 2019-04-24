@@ -70,7 +70,9 @@ export default class WorkerManagerWorkerTypesTable extends Component {
   };
 
   renderRow = workerType => {
-    const { path } = this.props;
+    const {
+      match: { path },
+    } = this.props;
     const iconSize = 16;
 
     return (
