@@ -169,6 +169,10 @@ builder.declare({
 builder.declare({
   method: 'get',
   route: '/workertypes',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
   name: 'listWorkerTypes',
   title: 'List All WorkerTypes',
   stability: APIBuilder.stability.experimental,
@@ -176,6 +180,17 @@ builder.declare({
     'TODO',
   ].join('\n'),
 }, async function(req, res) {
-  await this.WorkerType.scan();
-  return res.reply();
+  const { continuationToken } = req.query;
+  const limit = parseInt(req.query.limit || 100, 10);
+  const scanOptions = {
+    continuation: continuationToken,
+    limit,
+  };
+
+  const data = await this.WorkerType.scan({}, scanOptions);
+
+  if (data.continuation) {
+    data.continuationToken = data.continuation;
+  }
+  return res.reply(data);
 });
