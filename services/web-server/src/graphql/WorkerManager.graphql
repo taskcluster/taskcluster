@@ -1,5 +1,5 @@
 type WorkerManagerWorkerTypeSummary {
-    name: String!
+    workerType: String!
     description: String
     owner: String!
     minCapacity: Int!
@@ -10,9 +10,9 @@ type WorkerManagerWorkerTypeSummary {
     lastActive: DateTime!
     lastResolved: DateTime!
     pendingTasks: Int!
-    failedNumber: Int!
-    exceptionNumber: Int!
-    unscheduledNumber: Int!
+    failed: Int!
+    exception: Int!
+    unscheduled: Int!
     provider: String!
 }
 

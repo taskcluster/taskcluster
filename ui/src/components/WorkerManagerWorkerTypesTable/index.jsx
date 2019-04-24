@@ -72,18 +72,17 @@ export default class WorkerManagerWorkerTypesTable extends Component {
   renderRow = workerType => {
     const { path } = this.props;
     const iconSize = 16;
-    const { failedNumber, exceptionNumber, unscheduledNumber } = workerType;
 
     return (
-      <TableRow key={workerType.name}>
+      <TableRow key={workerType.workerType}>
         <TableCell>
           <TableCellListItem
             button
             component={Link}
-            to={`${path}/worker-types/${workerType.name}`}>
+            to={`${path}/worker-types/${workerType.workerType}`}>
             <ListItemText
               disableTypography
-              primary={<Typography>{workerType.name}</Typography>}
+              primary={<Typography>{workerType.workerType}</Typography>}
             />
             <LinkIcon size={iconSize} />
           </TableCellListItem>
@@ -138,15 +137,15 @@ export default class WorkerManagerWorkerTypesTable extends Component {
         </CopyToClipboard>
 
         <TableCell>
-          <Typography>{failedNumber}</Typography>
+          <Typography>{workerType.failed}</Typography>
         </TableCell>
 
         <TableCell>
-          <Typography>{exceptionNumber}</Typography>
+          <Typography>{workerType.exception}</Typography>
         </TableCell>
 
         <TableCell>
-          <Typography>{unscheduledNumber}</Typography>
+          <Typography>{workerType.unscheduled}</Typography>
         </TableCell>
 
         <TableCell>

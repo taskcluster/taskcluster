@@ -1,14 +1,14 @@
 query workerTypes {
   WorkerManagerWorkerTypeSummaries {
-    name
+    workerType
     pendingCapacity
     runningCapacity
     pendingTasks
     lastActive
     lastResolved
-    failedNumber
-    exceptionNumber
-    unscheduledNumber
+    failed
+    exception
+    unscheduled
     provider
   }
 }
