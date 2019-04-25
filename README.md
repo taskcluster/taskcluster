@@ -452,6 +452,17 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v14.1.0 since v14.0.2
+========================
+
+* [Bug 1436195 - Add support for live-logs via websocktunnel](https://bugzil.la/1436195) (note that existing livelog support via stateless DNS still works)
+
+  To enable websocktunnel, include configuration options `wstAudience` and `wstServerURL` to correspond to the websocktunnel server the worker should use.
+  Omit the configuration items `livelogCertificate`, `livelogKey`, and `livelogSecret`.
+  These options will be removed in a future release.
+
+  Ensure that the worker's credentials have scope `auth:websocktunnel-token:<wstAudience>/<workerGroup>.<workerId>.*`.
+
 In v14.0.2 since v14.0.1
 ========================
 
