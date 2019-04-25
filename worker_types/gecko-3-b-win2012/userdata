@@ -177,7 +177,7 @@ Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "-m pip install
 Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "-m pip install --upgrade psutil==4.1.0" -Wait -NoNewWindow
 
 # ToolToolInstall
-$client.DownloadFile("https://raw.githubusercontent.com/mozilla/build-tooltool/master/tooltool.py", "C:\mozilla-build\tooltool.py")
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla/release-services/master/src/tooltool/client/tooltool.py", "C:\mozilla-build\tooltool.py")
 
 # Win32ToolToolManifest: Latest tooltool manifest from mozilla central
 $client.DownloadFile("https://hg.mozilla.org/mozilla-central/raw-file/tip/browser/config/tooltool-manifests/win32/releng.manifest", "C:\Windows\Temp\releng.manifest.win32.tt")
