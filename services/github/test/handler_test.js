@@ -276,7 +276,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
         content: require('./data/yml/valid-yaml.json'),
       });
-      handlers.createTasks.returns(Promise.reject({body: {error: 'oh noes'}}));
+      handlers.createTasks.rejects({body: {error: 'oh noes'}});
       await simulateJobMessage({user: 'TaskclusterRobot'});
 
       assert(github.inst(5828).repos.createCommitComment.calledOnce);
