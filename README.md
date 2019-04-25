@@ -458,6 +458,17 @@ In v14.1.0 since v14.0.2
 * [Bug 1436195 - Add support for live-logs via websocktunnel](https://bugzil.la/1436195) (note that existing livelog support via stateless DNS still works)
 
   To enable websocktunnel, include configuration options `wstAudience` and `wstServerURL` to correspond to the websocktunnel server the worker should use.
+  For the current production environment that would be:
+  
+  ```json
+  {
+    ...
+    "wstAudience": "taskcluster-net",
+    "wstServerURL": "https://websocktunnel.tasks.build",
+    ...
+  }
+  ```
+  
   Omit the configuration items `livelogCertificate`, `livelogKey`, and `livelogSecret`.
   These options will be removed in a future release.
 
