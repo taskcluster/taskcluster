@@ -1,4 +1,4 @@
-import logo from '../images/logo.png';
+import logo from '../images/brandLogo.png';
 
 /*
  Display a Desktop notification using the Notifications API to the user.

@@ -25,7 +25,7 @@ import SidebarList from './SidebarList';
 import { THEME, DOCS_PATH_PREFIX } from '../../utils/constants';
 import { withThemeToggler } from '../../utils/ToggleTheme';
 import Link from '../../utils/Link';
-import Logo from '../../images/logo.png';
+import Logo from '../../images/brandLogo.png';
 import ErrorPanel from '../ErrorPanel';
 import DocsSidebarList from './DocsSidebarList';
 import SkipNavigation from '../SkipNavigation';
