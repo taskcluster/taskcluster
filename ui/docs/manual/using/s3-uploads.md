@@ -12,7 +12,7 @@ rendered site to a bucket. For these cases, Taskcluster artifacts are not
 suitable.
 
 The recommended approach to this requirement is to store S3 credentials in the
-[taskcluster-secrets service](/docs/reference/core/taskcluster-secrets), then
+[taskcluster-secrets service](/docs/reference/core/secrets), then
 download those credentials within the task and use them to upload the
 appropriate files.
 

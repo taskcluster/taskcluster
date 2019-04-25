@@ -36,5 +36,5 @@ When superseding is possible, the worker marks older tasks as "supserseded"
 while performing the newest task.
 
 See the [queue
-reference](/docs/reference/platform/taskcluster-queue/docs/superseding) for the
+reference](/docs/reference/platform/queue/superseding) for the
 technical details of the supserseding convention.

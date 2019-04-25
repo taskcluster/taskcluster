@@ -72,7 +72,7 @@ needed, and should support automatically refreshing expired credentials as
 needed. The credentials may expire before the `access_token` or `id_token`.
 
 To get credentials, call the [`oidcCredentials`
-endpoint](/docs/reference/integrations/taskcluster-login/references/api#oidcCredentials)
+endpoint](/docs/reference/integrations/login/api#oidcCredentials)
 with provider `mozilla-auth0`.  Pass the `access_token` from Auth0 in the
 `Authorization` header as described in the API documentation.
 

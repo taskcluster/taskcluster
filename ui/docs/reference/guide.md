@@ -44,7 +44,7 @@ The [index service](core/index) provides a way to index tasks efficiently using 
 With careful design of these namespaces, it is easy to look up completed tasks of particular types and to find the artifacts those tasks created.
 The [hooks service](core/hooks) supports execution of tasks at specific times or in response to external events.
 The [secrets service](core/secrets) provides a scope-protected store for secret data that can be made available selectively to tasks or other users.
-The [taskcluster-notify service](core/taskcluster-notify) handles sending notifications to users via email, irc, etc.
+The [taskcluster-notify service](core/notify) handles sending notifications to users via email, irc, etc.
 
 ### Workers
 
@@ -69,7 +69,7 @@ The [taskcluster-github service](integrations/github) integrates with Github, su
 Within Mozilla, the *mozilla-taskcluster service* monitors pushes to https://hg.mozilla.org and creates tasks for them.
 It does not handle task status, though -- that is the business of the [taskcluster-treeherder](integrations/treeherder) service, which relays task results to [Treeherder](https://treeherder.mozilla.org).
 
-The [taskcluster-pulse service](integrations/taskcluster-pulse) provides temporary Pulse credentials for consuming or publishing Pulse messages.
+The [taskcluster-pulse service](integrations/pulse) provides temporary Pulse credentials for consuming or publishing Pulse messages.
 It functions like the auth service in that it allows applications to be configured with Taskcluster credentials only but still have managed access to Pulse.
 
 The [cloud-mirror service](integrations/cloud-mirror) automatically copies task artifacts between cloud-storage regions to ensure that data close to where it is required.

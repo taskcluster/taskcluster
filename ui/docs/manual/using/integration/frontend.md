@@ -318,5 +318,5 @@ here is the full code we wrote in order to make this happen:
 ## Details
 
 For more details, see the [Taskcluster-Login
-Reference](/docs/reference/integrations/taskcluster-login/docs/getting-user-creds).
+Reference](/docs/reference/integrations/login/getting-user-creds).
 

@@ -15,5 +15,5 @@ requirements that depend on the body of the request; read the endpoint
 documentation carefully to discover these.
 
 See [the taskcluster-auth
-docs](/docs/reference/platform/taskcluster-auth/docs/scopes) for more detailed
+docs](/docs/reference/platform/auth/scopes) for more detailed
 information on scopes, scope satisfaction, and stars in scopes.

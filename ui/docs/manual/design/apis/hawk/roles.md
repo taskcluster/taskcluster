@@ -12,7 +12,7 @@ constitutes a simple _expansion rule_ that says if you have the scope
 `roleId`. Roles can refer to other roles in the same way.
 
 See [the taskcluster-auth
-docs](/docs/reference/platform/taskcluster-auth/docs/roles) for more detailed
+docs](/docs/reference/platform/auth/roles) for more detailed
 information on roles and role expansion.
 
 ## In Practice

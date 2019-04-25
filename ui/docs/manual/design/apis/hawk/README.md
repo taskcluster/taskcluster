@@ -7,7 +7,7 @@ order: 10
 All Taskcluster components use [Hawk](https://github.com/hueniverse/hawk) over
 SSL for authentication and authorize access based on a set of "scopes"
 associated with each client. Credentials and scopes are managed by the
-[authentication](/docs/reference/platform/taskcluster-auth/references/api) component.
+[authentication](/docs/reference/platform/auth/api) component.
 
 The details are documented here, but note that you can use one of the fine
 [Taskcluster clients](/docs/manual/tools/clients) to handle all of these details for

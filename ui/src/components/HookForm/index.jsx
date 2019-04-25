@@ -661,7 +661,7 @@ export default class HookForm extends Component {
                       rel="noopener noreferrer"
                       href={docs(
                         process.env.TASKCLUSTER_ROOT_URL,
-                        'reference/core/taskcluster-hooks/docs/firing-hooks'
+                        'reference/core/hooks/firing-hooks'
                       )}>
                       {'"'}
                       firing hooks
