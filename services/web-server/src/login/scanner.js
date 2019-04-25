@@ -1,7 +1,7 @@
 const scopeUtils = require('taskcluster-lib-scopes');
 const Debug = require('debug');
 const { Auth } = require('taskcluster-client');
-const { CLIENT_ID_PATTERN } = require('../utils/constants');
+const identityFromClientId = require('../utils/identityFromClientId');
 
 const debug = Debug('scanner');
 
@@ -44,13 +44,11 @@ module.exports = async (cfg, strategies) => {
     for (const client of clients) {
       debug('examining client', client.clientId);
 
-      const patternMatch = client.clientId.match(CLIENT_ID_PATTERN);
+      const identity = identityFromClientId(client.clientId);
 
-      if (!patternMatch || client.disabled) {
+      if (!identity || client.disabled) {
         continue;
       }
-
-      const identity = patternMatch && patternMatch[1];
 
       if (!user || user.identity !== identity) {
         user = await strategy.userFromClientId(client.clientId);

@@ -4,13 +4,15 @@ const request = require('superagent');
 const passport = require('passport');
 const Auth0Strategy = require('passport-auth0');
 const jwt = require('jsonwebtoken');
-const expressJwt = require('express-jwt');
-const jwks = require('jwks-rsa');
 const User = require('../User');
 const PersonAPI = require('../clients/PersonAPI');
 const WebServerError = require('../../utils/WebServerError');
 const { encode, decode } = require('../../utils/codec');
+const { LOGIN_PROVIDERS } = require('../../utils/constants');
 const identityFromClientId = require('../../utils/identityFromClientId');
+const verifyJwt = require('../../utils/verifyJwt');
+const tryCatch = require('../../utils/tryCatch');
+const credentialsQuery = require('../queries/Credentials.graphql').default;
 
 const debug = Debug('strategies.mozilla-auth0');
 
@@ -29,22 +31,6 @@ module.exports = class MozillaAuth0 {
     this._personApi = null;
     this._personApiExp = null;
     this.identityProviderId = 'mozilla-auth0';
-    // use express-jwt to validate JWTs against auth0
-    this.jwtCheck = expressJwt({
-      secret: jwks.expressJwtSecret({
-        cache: true,
-        rateLimit: true,
-        jwksRequestsPerMinute: 5,
-        jwksUri: `https://${this.domain}/.well-known/jwks.json`,
-      }),
-      // expect to see our audience in the JWT
-      audience: this.apiAudience,
-      // and expect a token issued by auth0
-      issuer: `https://${this.domain}/`,
-      algorithms: ['RS256'],
-      credentialsRequired: true,
-      getToken: req => req.body.variables.accessToken,
-    });
   }
 
   // Get a personAPI instance, by requesting an API token as needed.
@@ -106,39 +92,30 @@ module.exports = class MozillaAuth0 {
     return user;
   }
 
-  // expose method
-  async userFromRequest(req, res) {
-    // check the JWT's validity, setting req.user if successful
-    try {
-      await new Promise((resolve, reject) =>
-        this.jwtCheck(req, res, (err) => err ? reject(err) : resolve()));
-    } catch (err) {
-      debug(`error validating jwt: ${err}`);
+  async userFromToken(accessToken) {
+    const [jwtError, profile] = await tryCatch(
+      verifyJwt({ token: accessToken, audience: this.audience, domain: this.domain })
+    );
+
+    if (jwtError) {
+      debug(`error validating jwt: ${jwtError}`);
       return;
     }
 
-    debug(`received valid access_token for subject ${req.user.sub}`);
+    debug(`received valid access_token for subject ${profile.sub}`);
 
-    const scopes = req.user.scope ? req.user.scope.split(' ') : [];
+    const [err, user] = await tryCatch(this.getUser({ userId: profile.sub }));
 
-    if (!scopes.includes('taskcluster-credentials')) {
-      debug(`request did not have the 'taskcluster-credentials' scope; had ${req.user.scope}`);
+    if (err) {
+      debug(`error retrieving profile from accessToken: ${err}\n${err.stack}`);
       return;
     }
 
-    try {
-      const user = this.getUser({ userId: req.user.sub });
+    user.expires = new Date(profile.exp * 1000);
 
-      user.expires = new Date(req.user.exp * 1000);
-
-      return user;
-    } catch (err) {
-      debug(`error retrieving profile from request: ${err}\n${err.stack}`);
-      return;
-    }
+    return user;
   }
 
-  // exposed method
   userFromClientId(clientId) {
     const identity = identityFromClientId(clientId);
 
@@ -208,7 +185,7 @@ module.exports = class MozillaAuth0 {
     user.addRole(...groups);
   }
 
-  useStrategy(app, cfg) {
+  useStrategy(app, cfg, graphqlClient) {
     const { credentials } = cfg.taskcluster;
     const strategyCfg = cfg.login.strategies['mozilla-auth0'];
 
@@ -245,20 +222,18 @@ module.exports = class MozillaAuth0 {
             throw new WebServerError('InputError', 'Could not generate credentials for this access token');
           }
 
-          const { credentials: issuer, temporaryCredentials: { startOffset } } = cfg.taskcluster;
-          const { credentials, expires } = user.createCredentials({
-            credentials: issuer,
-            startOffset,
-            expiry: '7 days',
+          const { data } = await graphqlClient({
+            requestString: credentialsQuery,
+            variableValues: {
+              provider: LOGIN_PROVIDERS.MOZILLA_AUTH0,
+              accessToken: extraParams.id_token,
+            },
           });
-
-          // Move expires back by 30 seconds to ensure the user refreshes well in advance of the
-          // actual credential expiration time
-          expires.setSeconds(expires.getSeconds() - 30);
+          const { credentials, expires } = data.getCredentials;
 
           done(null, {
             credentials,
-            expires,
+            expires: new Date(expires),
             profile,
             identityProviderId: 'mozilla-auth0',
           });

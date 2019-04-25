@@ -1,7 +1,7 @@
 const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 
-class User {
+module.exports = class User {
   constructor() {
     this._identity = null;
     this.roles = [];
@@ -66,15 +66,4 @@ class User {
       }),
     };
   }
-
-  /** Get user from request */
-  static get(req) {
-    if (req.user instanceof User) {
-      return req.user;
-    }
-
-    return new User();
-  }
-}
-
-module.exports = User;
+};

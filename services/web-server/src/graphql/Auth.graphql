@@ -1,4 +1,4 @@
-enum AuthProvider {
+enum LoginStrategy {
   MOZILLA_AUTH0
   GITHUB_OAUTH2
 }
@@ -29,7 +29,7 @@ extend type Query {
   # | github-oauth2 | An OAuth 2.0 token |
   #
   # The `accessToken` is first verified against the named
-  # `provider`, then passed to the provider\'s APIBuilder to retrieve a user
+  # `provider`, then passed to the provider\'s API to retrieve a user
   # profile. That profile is then used to generate Taskcluster credentials
   # appropriate to the user. Note that the resulting credentials may or may
   # not include a `certificate` property. Callers should be prepared for either
@@ -38,5 +38,5 @@ extend type Query {
   # The given credentials will expire in a relatively short time. Callers should
   # monitor this expiration and refresh the credentials if necessary, by calling
   # this endpoint again, if they have expired.
-  getCredentials(provider: AuthProvider!, accessToken: ID!): Credentials
+  getCredentials(provider: LoginStrategy!, accessToken: ID!): Credentials
 }

@@ -2,10 +2,13 @@ const assert = require('assert');
 const Debug = require('debug');
 const passport = require('passport');
 const { Strategy } = require('passport-github');
-const { createTemporaryCredentials, fromNow } = require('taskcluster-client');
 const User = require('../User');
-const { encode } = require('../../utils/codec');
 const identityFromClientId = require('../../utils/identityFromClientId');
+const tryCatch = require('../../utils/tryCatch');
+const { decode, encode } = require('../../utils/codec');
+const { LOGIN_PROVIDERS } = require('../../utils/constants');
+const credentialsQuery = require('../queries/Credentials.graphql').default;
+const GithubClient = require('../clients/GithubClient');
 
 const debug = Debug('strategies.github-oauth2');
 
@@ -36,12 +39,24 @@ module.exports = class GithubOauth2 {
     return user;
   }
 
-  async userFromRequest(req, res) {
-    // TODO: return a user
-    return;
+  async userFromToken(accessToken) {
+    const githubClient = new GithubClient();
+    const [githubErr, githubUser] = await tryCatch(githubClient.userFromToken(accessToken));
+
+    if (githubErr) {
+      debug(`error retrieving user data from Github: ${githubErr}\n${githubErr.stack}`);
+    }
+
+    const [err, user] = await tryCatch(this.getUser({ userId: githubUser.login }));
+
+    if (err) {
+      debug(`error retrieving user profile from the username: ${err}\n${err.stack}`);
+      return;
+    }
+
+    return user;
   }
 
-  // exposed method
   userFromClientId(clientId) {
     const identity = identityFromClientId(clientId);
 
@@ -49,11 +64,12 @@ module.exports = class GithubOauth2 {
       return;
     }
 
-    // TODO: return a user
-    return;
+    const encodedUserId = identity.split('/')[1];
+
+    return this.getUser({ userId: decode(encodedUserId) });
   }
 
-  useStrategy(app, cfg) {
+  useStrategy(app, cfg, graphqlClient) {
     const { credentials } = cfg.taskcluster;
     const strategyCfg = cfg.login.strategies['github-oauth2'];
 
@@ -78,22 +94,19 @@ module.exports = class GithubOauth2 {
           clientSecret: strategyCfg.clientSecret,
           callbackURL: `${cfg.app.publicUrl}${callback}`,
         },
-        (accessToken, refreshToken, profile, next) => {
-          const expires = fromNow('7 days');
-          const identity = `github-oauth2/${encodeURIComponent(profile.id)}|${
-            profile.username
-          }`;
-          const credentials = createTemporaryCredentials({
-            clientId: identity,
-            start: fromNow(),
-            expiry: expires,
-            scopes: [`assume:login-identity:${identity}`],
-            credentials: cfg.taskcluster.credentials,
+        async (accessToken, refreshToken, profile, next) => {
+          const { data } = await graphqlClient({
+            requestString: credentialsQuery,
+            variableValues: {
+              provider: LOGIN_PROVIDERS.GITHUB_OAUTH2,
+              accessToken,
+            },
           });
+          const { credentials, expires } = data.getCredentials;
 
           next(null, {
             credentials,
-            expires,
+            expires: new Date(expires),
             profile,
             identityProviderId: 'github-oauth2',
           });
