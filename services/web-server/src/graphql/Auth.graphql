@@ -14,7 +14,7 @@ type Credentials {
   # Time after which the credentials are no longer valid.
   # Callers should call `getCredentials` again to get fresh
   # credentials before this time.
-  expires: Date!
+  expires: DateTime!
   # Taskcluster credentials. Note that the credentials may not contain a certificate!
   credentials: TaskclusterCredentials!
 }

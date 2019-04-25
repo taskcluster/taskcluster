@@ -6,8 +6,6 @@ const User = require('../User');
 const identityFromClientId = require('../../utils/identityFromClientId');
 const tryCatch = require('../../utils/tryCatch');
 const { decode, encode } = require('../../utils/codec');
-const { LOGIN_PROVIDERS } = require('../../utils/constants');
-const credentialsQuery = require('../queries/Credentials.graphql').default;
 const GithubClient = require('../clients/GithubClient');
 
 const debug = Debug('strategies.github-oauth2');
@@ -69,7 +67,7 @@ module.exports = class GithubOauth2 {
     return this.getUser({ userId: decode(encodedUserId) });
   }
 
-  useStrategy(app, cfg, graphqlClient) {
+  useStrategy(app, cfg) {
     const { credentials } = cfg.taskcluster;
     const strategyCfg = cfg.login.strategies['github-oauth2'];
 
@@ -95,19 +93,9 @@ module.exports = class GithubOauth2 {
           callbackURL: `${cfg.app.publicUrl}${callback}`,
         },
         async (accessToken, refreshToken, profile, next) => {
-          const { data } = await graphqlClient({
-            requestString: credentialsQuery,
-            variableValues: {
-              provider: LOGIN_PROVIDERS.GITHUB_OAUTH2,
-              accessToken,
-            },
-          });
-          const { credentials, expires } = data.getCredentials;
-
           next(null, {
-            credentials,
-            expires: new Date(expires),
             profile,
+            accessToken,
             identityProviderId: 'github-oauth2',
           });
         }

@@ -6,7 +6,7 @@ import playground from 'graphql-playground-middleware-express';
 import passport from 'passport';
 import credentials from './credentials';
 
-export default async ({ cfg, strategies, graphqlClient }) => {
+export default async ({ cfg, strategies }) => {
   const app = express();
 
   app.set('view engine', 'ejs');
@@ -36,7 +36,7 @@ export default async ({ cfg, strategies, graphqlClient }) => {
   passport.deserializeUser((obj, done) => done(null, obj));
 
   Object.values(strategies).forEach(strategy => {
-    strategy.useStrategy(app, cfg, graphqlClient);
+    strategy.useStrategy(app, cfg);
   });
 
   return app;

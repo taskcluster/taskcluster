@@ -11,10 +11,9 @@
         if (window.opener) {
           window.opener.postMessage({
             type: 'login',
-            credentials: <%- JSON.stringify(user.credentials) %>,
-            expires: <%- JSON.stringify(user.expires.toISOString()) %>,
             profile: <%- JSON.stringify(user.profile) %>,
             identityProviderId: <%- JSON.stringify(user.identityProviderId) %>,
+            accessToken: <%- JSON.stringify(user.accessToken) %>
           }, window.opener.location);
           window.close();
         }

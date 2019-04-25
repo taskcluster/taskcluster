@@ -15,7 +15,6 @@ import createSchema from './createSchema';
 import createSubscriptionServer from './servers/createSubscriptionServer';
 import resolvers from './resolvers';
 import typeDefs from './graphql';
-import graphqlClient from './graphql/client';
 import PulseEngine from './PulseEngine';
 import scanner from './login/scanner';
 
@@ -115,8 +114,8 @@ const load = loader(
     },
 
     app: {
-      requires: ['cfg', 'strategies', 'graphqlClient'],
-      setup: ({ cfg, strategies, graphqlClient }) => createApp({ cfg, strategies, graphqlClient }),
+      requires: ['cfg', 'strategies'],
+      setup: ({ cfg, strategies }) => createApp({ cfg, strategies }),
     },
 
     server: {
@@ -155,13 +154,6 @@ const load = loader(
         });
 
         return strategies;
-      },
-    },
-
-    graphqlClient: {
-      requires: ['schema', 'context'],
-      setup: ({ schema, context }) => {
-        return graphqlClient({ schema, context: context({ req: {}, connection: null }) });
       },
     },
 

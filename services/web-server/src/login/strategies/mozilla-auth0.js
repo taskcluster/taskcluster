@@ -8,11 +8,9 @@ const User = require('../User');
 const PersonAPI = require('../clients/PersonAPI');
 const WebServerError = require('../../utils/WebServerError');
 const { encode, decode } = require('../../utils/codec');
-const { LOGIN_PROVIDERS } = require('../../utils/constants');
 const identityFromClientId = require('../../utils/identityFromClientId');
 const verifyJwt = require('../../utils/verifyJwt');
 const tryCatch = require('../../utils/tryCatch');
-const credentialsQuery = require('../queries/Credentials.graphql').default;
 
 const debug = Debug('strategies.mozilla-auth0');
 
@@ -94,7 +92,7 @@ module.exports = class MozillaAuth0 {
 
   async userFromToken(accessToken) {
     const [jwtError, profile] = await tryCatch(
-      verifyJwt({ token: accessToken, audience: this.audience, domain: this.domain })
+      verifyJwt({ token: accessToken, domain: this.domain })
     );
 
     if (jwtError) {
@@ -185,7 +183,7 @@ module.exports = class MozillaAuth0 {
     user.addRole(...groups);
   }
 
-  useStrategy(app, cfg, graphqlClient) {
+  useStrategy(app, cfg) {
     const { credentials } = cfg.taskcluster;
     const strategyCfg = cfg.login.strategies['mozilla-auth0'];
 
@@ -222,19 +220,9 @@ module.exports = class MozillaAuth0 {
             throw new WebServerError('InputError', 'Could not generate credentials for this access token');
           }
 
-          const { data } = await graphqlClient({
-            requestString: credentialsQuery,
-            variableValues: {
-              provider: LOGIN_PROVIDERS.MOZILLA_AUTH0,
-              accessToken: extraParams.id_token,
-            },
-          });
-          const { credentials, expires } = data.getCredentials;
-
           done(null, {
-            credentials,
-            expires: new Date(expires),
             profile,
+            accessToken: extraParams.id_token,
             identityProviderId: 'mozilla-auth0',
           });
         }

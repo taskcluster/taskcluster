@@ -2,10 +2,9 @@ const assert = require('assert');
 const jwt = require('jsonwebtoken');
 const jwks = require('jwks-rsa');
 
-module.exports = async ({ token, domain, audience }) => new Promise((resolve, reject) => {
+module.exports = async ({ token, domain }) => new Promise((resolve, reject) => {
   assert(token, 'No authorization token was found');
   assert(domain, 'A domain is required to verify the jwt');
-  assert(audience, 'An api audience is required to verify the jwt');
 
   const client = jwks({
     cache: true,
@@ -25,9 +24,6 @@ module.exports = async ({ token, domain, audience }) => new Promise((resolve, re
     token,
     getKey,
     {
-      // expect to see our audience in the JWT
-      // https://github.com/mozilla-iam/cis/issues/423
-      // audience,
       // and expect a token issued by auth0
       issuer: `https://${domain}/`,
       algorithms: ['RS256'],

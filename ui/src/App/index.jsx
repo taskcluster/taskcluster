@@ -1,4 +1,5 @@
 import { hot } from 'react-hot-loader';
+import { upper, snake } from 'change-case';
 import React, { Component } from 'react';
 import { arrayOf } from 'prop-types';
 import storage from 'localforage';
@@ -28,6 +29,7 @@ import reportError from '../utils/reportError';
 import theme from '../theme';
 import introspectionQueryResultData from '../fragments/fragmentTypes.json';
 import { route } from '../utils/prop-types';
+import credentialsQuery from './credentials.graphql';
 
 const AUTH_STORE = '@@TASKCLUSTER_WEB_AUTH';
 
@@ -162,6 +164,21 @@ export default class App extends Component {
   }
 
   authorize = async (user, persist = true) => {
+    const provider = upper(snake(user.identityProviderId));
+    const { data } = await this.apolloClient.query({
+      query: credentialsQuery,
+      variables: {
+        accessToken: user.accessToken,
+        provider,
+      },
+    });
+    const { credentials, expires } = data.getCredentials;
+
+    Object.assign(user, {
+      credentials,
+      expires,
+    });
+
     if (persist) {
       localStorage.setItem(AUTH_STORE, JSON.stringify(user));
     }
