@@ -130,7 +130,7 @@ builder.declare({
   method: 'post',
   route: '/denylist/add',
   name: 'addDenylistAddress',
-  scopes: 'notify:manage-denylist:<notificationType>/<notificationAddress>',
+  scopes: 'notify:manage-denylist',
   input: 'notification-address.yml',
   title: 'Denylist Given Address',
   description: [
@@ -161,7 +161,7 @@ builder.declare({
   method: 'delete',
   route: '/denylist/delete',
   name: 'deleteDenylistAddress',
-  scopes: 'notify:manage-denylist:<notificationType>/<notificationAddress>',
+  scopes: 'notify:manage-denylist',
   input: 'notification-address.yml',
   title: 'Delete Denylisted Address',
   description: [
@@ -188,7 +188,8 @@ builder.declare({
 builder.declare({
   method: 'get',
   route: '/denylist/list',
-  name: 'list',
+  name: 'listDenylist',
+  scopes: 'notify:manage-denylist',
   output: 'notification-address-list.yml',
   title: 'List Denylisted Notifications',
   query: {
@@ -211,6 +212,9 @@ builder.declare({
 }, async function(req, res) {
   const continuation = req.query.continuationToken || null;
   const limit = Math.min(parseInt(req.query.limit || 1000, 10), 1000);
+
+  await req.authorize(req.body);
+
   const query = await this.DenylistedNotification.scan({}, {continuation, limit});
 
   return res.reply({

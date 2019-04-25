@@ -14,9 +14,9 @@ export default class Notify extends Client {
     this.email.entry = {"args":[],"input":true,"method":"post","name":"email","query":[],"route":"/email","scopes":"notify:email:<address>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.pulse.entry = {"args":[],"input":true,"method":"post","name":"pulse","query":[],"route":"/pulse","scopes":"notify:pulse:<routingKey>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.irc.entry = {"args":[],"input":true,"method":"post","name":"irc","query":[],"route":"/irc","scopes":{"else":"notify:irc-user:<user>","if":"channelRequest","then":"notify:irc-channel:<channel>"},"stability":"experimental","type":"function"}; // eslint-disable-line
-    this.addDenylistAddress.entry = {"args":[],"input":true,"method":"post","name":"addDenylistAddress","query":[],"route":"/denylist/add","scopes":"notify:manage-denylist:<notificationType>/<notificationAddress>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.deleteDenylistAddress.entry = {"args":[],"input":true,"method":"delete","name":"deleteDenylistAddress","query":[],"route":"/denylist/delete","scopes":"notify:manage-denylist:<notificationType>/<notificationAddress>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.list.entry = {"args":[],"method":"get","name":"list","output":true,"query":["continuationToken","limit"],"route":"/denylist/list","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.addDenylistAddress.entry = {"args":[],"input":true,"method":"post","name":"addDenylistAddress","query":[],"route":"/denylist/add","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.deleteDenylistAddress.entry = {"args":[],"input":true,"method":"delete","name":"deleteDenylistAddress","query":[],"route":"/denylist/delete","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.listDenylist.entry = {"args":[],"method":"get","name":"listDenylist","output":true,"query":["continuationToken","limit"],"route":"/denylist/list","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -92,9 +92,9 @@ export default class Notify extends Client {
   // If you are not interested in listing all the members at once, you may
   // use the query-string option `limit` to return fewer.
   /* eslint-enable max-len */
-  list(...args) {
-    this.validate(this.list.entry, args);
+  listDenylist(...args) {
+    this.validate(this.listDenylist.entry, args);
 
-    return this.request(this.list.entry, args);
+    return this.request(this.listDenylist.entry, args);
   }
 }

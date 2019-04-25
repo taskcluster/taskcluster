@@ -3,7 +3,7 @@ import ConnectionLoader from '../ConnectionLoader';
 
 export default ({ notify }) => {
   const listDenylistAddresses = new ConnectionLoader(async ({ filter, options }) => {
-    const raw = await notify.list(options);
+    const raw = await notify.listDenylist(options);
     const addresses = raw.addresses.map(address => {
       return {
         notificationType: address.notificationType,

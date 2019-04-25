@@ -10354,7 +10354,7 @@
           "query": [
           ],
           "route": "/denylist/add",
-          "scopes": "notify:manage-denylist:<notificationType>/<notificationAddress>",
+          "scopes": "notify:manage-denylist",
           "stability": "experimental",
           "title": "Denylist Given Address",
           "type": "function"
@@ -10369,7 +10369,7 @@
           "query": [
           ],
           "route": "/denylist/delete",
-          "scopes": "notify:manage-denylist:<notificationType>/<notificationAddress>",
+          "scopes": "notify:manage-denylist",
           "stability": "experimental",
           "title": "Delete Denylisted Address",
           "type": "function"
@@ -10379,13 +10379,14 @@
           ],
           "description": "Lists all the denylisted addresses.\n\nBy default this end-point will try to return up to 1000 addresses in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `list` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
           "method": "get",
-          "name": "list",
+          "name": "listDenylist",
           "output": "v1/notification-address-list.json#",
           "query": [
             "continuationToken",
             "limit"
           ],
           "route": "/denylist/list",
+          "scopes": "notify:manage-denylist",
           "stability": "experimental",
           "title": "List Denylisted Notifications",
           "type": "function"
