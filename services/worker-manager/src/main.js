@@ -7,6 +7,7 @@ const SchemaSet = require('taskcluster-lib-validate');
 const libReferences = require('taskcluster-lib-references');
 const data = require('./data');
 const builder = require('./api');
+const {Estimator} = require('./estimator');
 const {sasCredentials} = require('taskcluster-lib-azure');
 
 const {Provisioner} = require('./provisioner');
@@ -86,9 +87,17 @@ let load = loader({
     setup: ({cfg}) => new taskcluster.Notify(cfg.taskcluster),
   },
 
+  estimator: {
+    requires: ['cfg', 'queue'],
+    setup: ({cfg, queue}) => new Estimator({
+      provisionerId: cfg.app.provisionerId,
+      queue,
+    }),
+  },
+
   providers: {
-    requires: ['cfg', 'monitor', 'notify'],
-    setup: ({cfg, monitor, notify}) => {
+    requires: ['cfg', 'monitor', 'notify', 'estimator'],
+    setup: ({cfg, monitor, notify, estimator}) => {
       const _providers = {};
       Object.entries(cfg.providers).forEach(([name, meta]) => {
         let Prov;
@@ -105,6 +114,7 @@ let load = loader({
           provisionerId: cfg.app.provisionerId,
           rootUrl: cfg.taskcluster.rootUrl,
           taskclusterCredentials: cfg.taskcluster.credentials,
+          estimator,
           ...meta,
         });
       });
@@ -113,10 +123,9 @@ let load = loader({
   },
 
   provisioner: {
-    requires: ['cfg', 'queue', 'monitor', 'WorkerType', 'providers', 'notify'],
-    setup: async ({cfg, queue, monitor, WorkerType, providers, notify}) => {
+    requires: ['cfg', 'monitor', 'WorkerType', 'providers', 'notify'],
+    setup: async ({cfg, monitor, WorkerType, providers, notify}) => {
       const provisioner = new Provisioner({
-        queue,
         monitor: monitor.childMonitor('provisioner'),
         provisionerId: cfg.app.provisionerId,
         WorkerType,

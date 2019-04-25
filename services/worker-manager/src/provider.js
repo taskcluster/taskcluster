@@ -6,13 +6,14 @@ class Provider {
    * a cloud provider for terminating/listing instances. Any provisioning
    * logic should be started in `initiate` below.
    */
-  constructor({name, monitor, notify, provisionerId, rootUrl, taskclusterCredentials}) {
+  constructor({name, monitor, notify, provisionerId, rootUrl, taskclusterCredentials, estimator}) {
     this.name = name;
     this.monitor = monitor;
     this.notify = notify;
     this.provisionerId = provisionerId;
     this.rootUrl = rootUrl;
     this.taskclusterCredentials = taskclusterCredentials;
+    this.estimator = estimator;
   }
 
   /**

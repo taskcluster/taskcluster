@@ -9,8 +9,19 @@ const {Provider} = require('./provider');
 
 class GoogleProvider extends Provider {
 
-  constructor({name, taskclusterCredentials, monitor, notify, provisionerId, rootUrl, project, creds, credsFile}) {
-    super({name, taskclusterCredentials, monitor, notify, provisionerId, rootUrl});
+  constructor({
+    name,
+    taskclusterCredentials,
+    monitor,
+    estimator,
+    notify,
+    provisionerId,
+    rootUrl,
+    project,
+    creds,
+    credsFile,
+  }) {
+    super({name, taskclusterCredentials, monitor, notify, provisionerId, rootUrl, estimator});
     this.cache = new TimedCache();
 
     this.project = project;
@@ -392,6 +403,12 @@ class GoogleProvider extends Provider {
   async setupInstanceGroup({workerType, template}) {
     const templateId = template.selfLink;
     const resourceId = workerType.name;
+    const targetSize = await this.estimator.simple({
+      name: workerType.name,
+      capacityPerInstance: workerType.config.capacityPerInstance,
+      min: workerType.config.minCapacity,
+      max: workerType.config.maxCapacity,
+    });
     return await this.getSetOrUpdate({
       workerType,
       key: 'group',
@@ -414,7 +431,7 @@ class GoogleProvider extends Provider {
             description: workerType.description,
             instanceTemplate: templateId,
             baseInstancename: workerType.name,
-            targetSize: 1, // TODO: From config + estimators
+            targetSize,
           }, {
           });
         } catch (err) {
@@ -431,7 +448,7 @@ class GoogleProvider extends Provider {
             description: workerType.description,
             instanceTemplate: templateId,
             baseInstancename: workerType.name,
-            targetSize: 1, // TODO: From config + estimators
+            targetSize,
           },
         });
         await workerType.modify(wt => {
@@ -452,7 +469,7 @@ class GoogleProvider extends Provider {
             description: workerType.description,
             instanceTemplate: templateId,
             baseInstancename: workerType.name,
-            targetSize: 1, // TODO: From config + estimators
+            targetSize,
           },
         });
         await workerType.modify(wt => {

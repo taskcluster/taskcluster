@@ -4,8 +4,7 @@ const Iterate = require('taskcluster-lib-iterate');
  * Run all provisioning logic
  */
 class Provisioner {
-  constructor({queue, provisionerId, providers, iterateConf, WorkerType, monitor, notify}) {
-    this.queue = queue;
+  constructor({provisionerId, providers, iterateConf, WorkerType, monitor, notify}) {
     this.provisionerId = provisionerId;
     this.providers = providers;
     this.WorkerType = WorkerType;
