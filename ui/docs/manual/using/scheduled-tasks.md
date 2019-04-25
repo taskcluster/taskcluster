@@ -10,7 +10,7 @@ It is common to build a project on a nightly basis, or to "refresh" some output
 periodically. For example, this documentation site is regenerated several times
 per hour, combining documentation from all of the Taskcluster repositories.
 
-The [Hooks service](/docs/reference/core/taskcluster-hooks) is responsible for creating
+The [Hooks service](/docs/reference/core/hooks) is responsible for creating
 pre-defined tasks in response to external events.  At the moment, it only
 supports creating tasks at particular times, but this is exactly the
 functionality we need. For this site, a hook is configured to

@@ -14,11 +14,11 @@ routes:
 ```
 
 This method is described in detail on the Taskcluster-Notify [usage
-page](/docs/reference/core/taskcluster-notify/docs/usage).
+page](/docs/reference/core/notify/usage).
 
 The second method is to call the Taskcluster-Notify service directly.  The API
 definitions are available on the [reference
-page](/docs/reference/core/taskcluster-notify/references/api). The API is available
+page](/docs/reference/core/notify/api). The API is available
 through the
 [Taskcluster-Proxy](/docs/reference/workers/docker-worker/docs/features#feature-taskclusterproxy-)
 if you're working from within a task.

@@ -10,7 +10,7 @@ requests to Taskcluster services. Each client has a set of scopes associated
 with it, controlling what that client can do.
 
 See [the taskcluster-auth
-docs](/docs/reference/platform/taskcluster-auth/docs/clients) for more detailed
+docs](/docs/reference/platform/auth/clients) for more detailed
 information.
 
 The set of defined clients is visible in the [Clients

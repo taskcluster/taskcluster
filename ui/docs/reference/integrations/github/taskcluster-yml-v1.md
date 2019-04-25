@@ -141,7 +141,7 @@ tasks:
         - 'notify.email.<you@you.com>.on-any'
 ```
 
-More on routes you can read [here](https://docs.taskcluster.net/docs/reference/core/taskcluster-notify) and [here](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/task-schema)
+More on routes you can read [here](https://docs.taskcluster.net/docs/reference/core/notify/) and [here](https://docs.taskcluster.net/docs/reference/platform/queue/task-schema)
 
 ### Branch Filtering
 
@@ -199,7 +199,7 @@ You need to know which provisioner and which worker type you want to use to run 
 
 # Scopes and Roles
 
-[Roles](https://docs.taskcluster.net/manual/design/apis/hawk/roles) are, in a nutshell, sets of [scopes](https://docs.taskcluster.net/reference/platform/taskcluster-auth/docs/scopes). Taskcluster-Github uses a very specific role to create tasks for each project.  That role has the form
+[Roles](https://docs.taskcluster.net/manual/design/apis/hawk/roles) are, in a nutshell, sets of [scopes](https://docs.taskcluster.net/reference/platform/auth/scopes). Taskcluster-Github uses a very specific role to create tasks for each project.  That role has the form
 * `assume:repo:github.com/<owner>/<repo>:branch:<branch>` for a push event
 * `assume:repo:github.com/<owner>/<repo>:pull-request` for a pull request
 * `assume:repo:github.com/<owner>/<repo>:release` for a release event

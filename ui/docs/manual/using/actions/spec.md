@@ -210,7 +210,7 @@ templates.  The context for that rendering contains:
 `ownTaskId`:   (`kind == 'task'` only) the `taskId` of the action task itself.
     This is useful for indexing without collisions and other similar needs; for
     `kind == 'hook'`, use the `taskId` provided by [the hooks
-    service](/docs/reference/core/taskcluster-hooks/docs/firing-hooks).
+    service](/docs/reference/core/hooks/firing-hooks).
 
 `input`:   the input matching the `schema` property, `null` if the action
     doesn't have a `schema` property. See "Action Input" below.
@@ -290,7 +290,7 @@ order to trigger the action.
 ### "hook" kind
 
 An action with `kind: 'hook'` specifies a hook that should be triggered via the
-[`hooks.triggerHook`](/docs/reference/core/taskcluster-hooks/references/api#triggerHook)
+[`hooks.triggerHook`](/docs/reference/core/hooks/api#triggerHook)
 API method when the action is executed.  The hook is specified in the `hookId`
 and `hookGroupId` properties.
 

@@ -33,7 +33,7 @@ result in an automatic re-run if there are sufficient retries left for the
 task. Task cancellation and a few other unusual circumstances are also
 represented by the `exception` state, and distinguished by the `reason` field
 in the task status -- see the [queue API
-reference](/docs/reference/platform/taskcluster-queue/references/api) for details.
+reference](/docs/reference/platform/queue/api) for details.
 
 A task's state is based on the state of its latest run, with the addition of an
 `unscheduled` state for a task with no runs (as is the case when the task's

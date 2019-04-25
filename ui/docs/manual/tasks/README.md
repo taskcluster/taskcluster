@@ -16,7 +16,7 @@ A task is described by a task definition, which is a simple data structure
 usually encoded in JSON or YAML.  Each task has a unique `taskId`, assigned
 randomly by the caller when the task is created.  The full schema for the task
 definition is given in [the reference
-documentation](/docs/reference/platform/taskcluster-queue/docs/task-schema), but a
+documentation](/docs/reference/platform/queue/task-schema), but a
 simple task might look like this:
 
 ```yaml

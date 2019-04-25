@@ -19,7 +19,7 @@ import SchemaTable from 'taskcluster-ui/components/SchemaTable'
 ## Constructing a Task Definition
 
 To create a task we must construct a _task definition_, the API [reference
-documentation](/docs/reference/platform/taskcluster-queue/references/api) for the
+documentation](/docs/reference/platform/queue/api) for the
 Queue service specifies a JSON schema for the `queue.createTask` method.  The
 payload for that method is:
 
