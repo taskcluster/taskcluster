@@ -60,8 +60,9 @@ same APIs. For example, [scriptworker](http://scriptworker.readthedocs.io/) was
 developed by release engineering to run release-related scripts in a limited,
 secure context.
 
-The Taskcluster-provided worker implementations, including their payload
-formats, are described in the [workers reference](/docs/reference/workers).
+The Taskcluster-provided worker implementations, including their payload formats, are described in:
+* [generic-worker](https://github.com/taskcluster/generic-worker/blob/master/README.md)
+* [docker-worker](https://github.com/taskcluster/docker-worker/blob/master/README.md)
 
 The protocol for interacting with the Queue service is described in
 [Queue-Worker
