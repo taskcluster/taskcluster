@@ -18,12 +18,14 @@ class GoogleProvider extends Provider {
     provisionerId,
     rootUrl,
     project,
+    instancePermissions,
     creds,
     credsFile,
   }) {
     super({name, taskclusterCredentials, monitor, notify, provisionerId, rootUrl, estimator});
     this.cache = new TimedCache();
 
+    this.instancePermissions = instancePermissions;
     this.project = project;
 
     if (!creds && credsFile) {
@@ -176,6 +178,11 @@ class GoogleProvider extends Provider {
     const toDelete = existing.filter(r => !this.seen[r]);
     const toAdd = Object.keys(this.seen).filter(r => !existing.includes(r));
 
+    // In this case, nothing has changed, let's move on
+    if (!toAdd.length && !toDelete.length) {
+      return;
+    }
+
     // Do all of this cleanup first so that if anything fails
     // the workertype will still be listed in the account policies next time around
     // to finish cleanup.
@@ -189,11 +196,6 @@ class GoogleProvider extends Provider {
         role,
         members: [`serviceAccount:${this.seen[role]}`],
       });
-    }
-
-    // In this case, nothing has changed, let's move on
-    if (!toAdd.length && !toDelete.length) {
-      return;
     }
 
     // TODO: Handle etag conflict with retries or document that
@@ -303,7 +305,7 @@ class GoogleProvider extends Provider {
             includedPermissions: current.includedPermissions,
             description: current.description,
           }, {
-            includedPermissions: workerType.config.permissions,
+            includedPermissions: this.instancePermissions,
             description: workerType.description,
           });
         } catch (err) {
@@ -315,7 +317,7 @@ class GoogleProvider extends Provider {
         const updated = {
           ...current,
           description: workerType.description,
-          includedPermissions: workerType.config.permissions,
+          includedPermissions: this.instancePermissions,
         };
         await this.iam.projects.roles.patch({
           name: roleName,
@@ -331,7 +333,7 @@ class GoogleProvider extends Provider {
           role: {
             title: `Taskcluster ${workerType.name} Worker Role`,
             description: workerType.description,
-            includedPermissions: workerType.config.permissions,
+            includedPermissions: this.instancePermissions,
           },
         },
       }),
@@ -356,9 +358,24 @@ class GoogleProvider extends Provider {
           requestId: uuid(),
           requestBody: {
             name: templateName,
+            description: workerType.description,
             properties: {
+              description: workerType.description,
               serviceAccounts: [{
                 email: accountEmail,
+                scopes: [
+                  /*
+                   * This looks scary but is ok. According to
+                   * https://cloud.google.com/compute/docs/access/service-accounts#accesscopesiam
+                   *
+                   * "A best practice is to set the full cloud-platform
+                   * access scope on the instance, then securely limit
+                   * the service account's API access with IAM roles."
+                   *
+                   * Which is what we do.
+                   */
+                  'https://www.googleapis.com/auth/cloud-platform',
+                ],
               }],
               machineType: workerType.config.machineType,
               metadata: {
@@ -371,13 +388,16 @@ class GoogleProvider extends Provider {
                       workerGroup: `${workerType.name}-${workerType.config.region}`,
                       credentialUrl: libUrls.api(this.rootUrl, 'worker-manager', 'v1', `credentials/google/${workerType.name}`),
                       rootUrl: this.rootUrl,
+                      extra: workerType.config.extra,
                       ed25519SigningKeyLocation: '/home/taskcluster/signing.key', // TODO: from config?
                     }),
                   },
                 ],
               },
+              scheduling: workerType.config.scheduling,
               networkInterfaces: workerType.config.networkInterfaces,
               disks: workerType.config.disks,
+              // We can add things like guestaccelerators and minCpuPlatform here if we want as well
             },
           },
         });
