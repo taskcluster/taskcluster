@@ -1201,3 +1201,27 @@ type TaskContext struct {
 	TaskDir string
 	User    *gwruntime.OSUser
 }
+
+// deleteTaskDirs deletes all task directories (directories whose name starts
+// with `task_`) inside directory parentDir, except those whose names are in
+// skipNames
+func deleteTaskDirs(parentDir string, skipNames ...string) error {
+	taskDirs, err := taskDirsIn(parentDir)
+	if err != nil {
+		return err
+	}
+outer:
+	for _, taskDir := range taskDirs {
+		name := filepath.Base(taskDir)
+		for _, skip := range skipNames {
+			if name == skip {
+				continue outer
+			}
+		}
+		err = deleteDir(taskDir)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
