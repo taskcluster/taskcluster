@@ -13,11 +13,12 @@ const badcreds = {
 };
 
 suite(testing.suiteName(), function() {
-  helper.secrets.mockSuite('testAuth', ['app', 'azure'], function(mock, skipping) {
+  helper.secrets.mockSuite('testAuth', ['app', 'azure', 'gcp'], function(mock, skipping) {
     helper.withPulse(mock, skipping);
     helper.withEntities(mock, skipping);
     helper.withRoles(mock, skipping);
     helper.withServers(mock, skipping);
+    helper.withCfg(mock, skipping);
 
     let testAuth = (name, {config, requiredScopes, clientScopes, errorCode}) => {
       test(name, async () => {
@@ -99,7 +100,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  helper.secrets.mockSuite('testAuthGet', ['app', 'azure'], function(mock, skipping) {
+  helper.secrets.mockSuite('testAuthGet', ['app', 'azure', 'gcp'], function(mock, skipping) {
     helper.withPulse(mock, skipping);
     helper.withEntities(mock, skipping);
     helper.withRoles(mock, skipping);

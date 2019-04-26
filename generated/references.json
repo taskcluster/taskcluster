@@ -6953,6 +6953,34 @@
   },
   {
     "content": {
+      "$id": "/schemas/auth/v1/gcp-credentials-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response for a request to get a GCP temporary credential.\n",
+      "properties": {
+        "accessToken": {
+          "description": "Temporary oauth2 access token to access the given service account\n",
+          "title": "Temporary access token",
+          "type": "string"
+        },
+        "expireTime": {
+          "description": "The access token expire time",
+          "format": "date-time",
+          "title": "Expire time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "accessToken",
+        "expireTime"
+      ],
+      "title": "GCP Credentials Response",
+      "type": "object"
+    },
+    "filename": "schemas/auth/v1/gcp-credentials-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/auth/v1/create-role-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -12694,6 +12722,23 @@
           "scopes": "auth:websocktunnel-token:<wstAudience>/<wstClient>",
           "stability": "stable",
           "title": "Get a client token for the Websocktunnel service",
+          "type": "function"
+        },
+        {
+          "args": [
+            "projectId",
+            "serviceAccount"
+          ],
+          "description": "Get temporary GCP credentials for the given projectId and serviceAccount.\nYou can use the tag \"-\" to refer for the same projectId as the running auth\nservice.\n\nThe call adds the necessary policy if the serviceAccount doesn't have it.\nThe credentials are set to expire after an hour, but this behavior is\nsubject to change. Hence, you should always read the `expires` property\nfrom the response, if you intend to maintain active credentials in your\napplication.",
+          "method": "get",
+          "name": "gcpCredentials",
+          "output": "v1/gcp-credentials-response.json#",
+          "query": [
+          ],
+          "route": "/gcp/credentials/<projectId>/<serviceAccount>",
+          "scopes": "auth:gcp:access-token:serviceAccount/<serviceAccount>",
+          "stability": "stable",
+          "title": "Get Temporary Read/Write GCP Credentials",
           "type": "function"
         },
         {

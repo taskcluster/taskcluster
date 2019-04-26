@@ -54,6 +54,7 @@ tasks:
       - name: taskcluster-auth
         env:
           TEST_BUCKET: test-bucket-for-any-garbage
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/auth-creds.json
       - name: taskcluster-built-in-workers
       - name: taskcluster-github
       - name: taskcluster-hooks

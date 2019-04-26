@@ -22,7 +22,7 @@ suite(testing.suiteName(), () => {
     monitorManager.terminate();
   });
 
-  helper.secrets.mockSuite('setup and listening', ['app', 'azure'], function(mock, skipping) {
+  helper.secrets.mockSuite('setup and listening', ['app', 'azure', 'gcp'], function(mock, skipping) {
     helper.withEntities(mock, skipping);
     helper.withRoles(mock, skipping);
     helper.withPulse(mock, skipping);

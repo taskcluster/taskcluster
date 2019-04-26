@@ -122,6 +122,9 @@ const builder = new APIBuilder({
 
     // The websocktunnel config (with property `secret`)
     'websocktunnel',
+
+    // The serviceAccount used by the service
+    'serviceAccount',
   ],
 });
 
@@ -953,6 +956,7 @@ require('./azure');
 require('./sentry');
 require('./statsum');
 require('./websocktunnel');
+require('./gcp');
 
 /** Get all client information */
 builder.declare({

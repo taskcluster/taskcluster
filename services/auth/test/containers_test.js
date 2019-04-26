@@ -10,7 +10,7 @@ const sorted = (arr) => {
   return arr;
 };
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
   if (mock) {
     return; // This test file only works on real things apparently
   }

@@ -520,6 +520,23 @@ module.exports = {
         },
         {
           "args": [
+            "projectId",
+            "serviceAccount"
+          ],
+          "description": "Get temporary GCP credentials for the given projectId and serviceAccount.\nYou can use the tag \"-\" to refer for the same projectId as the running auth\nservice.\n\nThe call adds the necessary policy if the serviceAccount doesn't have it.\nThe credentials are set to expire after an hour, but this behavior is\nsubject to change. Hence, you should always read the `expires` property\nfrom the response, if you intend to maintain active credentials in your\napplication.",
+          "method": "get",
+          "name": "gcpCredentials",
+          "output": "v1/gcp-credentials-response.json#",
+          "query": [
+          ],
+          "route": "/gcp/credentials/<projectId>/<serviceAccount>",
+          "scopes": "auth:gcp:access-token:serviceAccount/<serviceAccount>",
+          "stability": "stable",
+          "title": "Get Temporary Read/Write GCP Credentials",
+          "type": "function"
+        },
+        {
+          "args": [
           ],
           "description": "Validate the request signature given on input and return list of scopes\nthat the authenticating client has.\n\nThis method is used by other services that wish rely on Taskcluster\ncredentials for authentication. This way we can use Hawk without having\nthe secret credentials leave this service.",
           "input": "v1/authenticate-hawk-request.json#",
