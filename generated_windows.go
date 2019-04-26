@@ -465,10 +465,10 @@ func taskPayloadSchema() string {
         },
         {
           "additionalProperties": false,
-          "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0 ",
+          "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
           "properties": {
             "base64": {
-              "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0 ",
+              "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
               "maxLength": 65536,
               "pattern": "^[A-Za-z0-9/+]+[=]{0,2}$",
               "title": "Base64",

@@ -119,7 +119,7 @@ type (
 	FeatureFlags struct {
 
 		// Artifacts named `public/chain-of-trust.json` and
-		// `public/chain-of-trust.json.sig`, should be generated which will
+		// `public/chain-of-trust.json.sig` should be generated which will
 		// include information for downstream tasks to build a level of trust
 		// for the artifacts produced by the task and the environment it ran in.
 		//
@@ -617,7 +617,7 @@ func taskPayloadSchema() string {
       "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
       "properties": {
         "chainOfTrust": {
-          "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + `, should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0",
+          "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + ` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0",
           "title": "Enable generation of signed Chain of Trust artifacts",
           "type": "boolean"
         },

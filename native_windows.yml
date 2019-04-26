@@ -448,12 +448,12 @@ definitions:
             Since: generic-worker 11.1.0
       additionalProperties: false
       required:
-      - raw  
+      - raw
     - title: Base64 Content
       description: |-
         Base64 encoded content of file/archive, up to 64KB (encoded) in size.
 
-        Since: generic-worker 11.1.0 
+        Since: generic-worker 11.1.0
       type: object
       properties:
         base64:
@@ -463,7 +463,7 @@ definitions:
           description: |-
             Base64 encoded content of file/archive, up to 64KB (encoded) in size.
 
-            Since: generic-worker 11.1.0 
+            Since: generic-worker 11.1.0
           pattern: '^[A-Za-z0-9/+]+[=]{0,2}$'
       additionalProperties: false
       required:
