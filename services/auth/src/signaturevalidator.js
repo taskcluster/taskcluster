@@ -349,19 +349,6 @@ const createSignatureValidator = function(options) {
         message: message.toString(),
       };
     }
-    options.monitor.log.signatureValidation({
-      expires: credentials? credentials.expires : '',
-      clientId: credentials? credentials.clientId : '',
-      status: result.status || '',
-      scheme: result.scheme || '',
-      message: result.message || '',
-      hash: result.hash || '',
-      host: req.host,
-      port: req.port,
-      resource: req.resource,
-      method: req.method.toUpperCase(),
-      sourceIp: req.sourceIp || '0.0.0.0',
-    });
 
     return result;
   };
