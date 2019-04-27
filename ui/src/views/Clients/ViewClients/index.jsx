@@ -12,11 +12,9 @@ import Button from '../../../components/Button';
 import ClientsTable from '../../../components/ClientsTable';
 import { VIEW_CLIENTS_PAGE_SIZE } from '../../../utils/constants';
 import clientsQuery from './clients.graphql';
-import { withAuth } from '../../../utils/Auth';
 import ErrorPanel from '../../../components/ErrorPanel';
 
 @hot(module)
-@withAuth
 @graphql(clientsQuery, {
   options: props => ({
     variables: {
@@ -43,6 +41,14 @@ export default class ViewClients extends PureComponent {
     value: null,
   };
 
+  componentDidMount() {
+    if (this.props.history.location.search) {
+      this.setState({
+        clientSearch: this.props.history.location.search.substring(8),
+      });
+    }
+  }
+
   handleClientSearchSubmit = clientSearch => {
     const {
       data: { refetch },
@@ -59,9 +65,12 @@ export default class ViewClients extends PureComponent {
       },
     });
 
-    this.props.history.push(
-      clientSearch.length > 0 ? `?search=${clientSearch}` : '/auth/clients'
-    );
+    // Prevent searching for the same query as the one already loaded
+    if (clientSearch !== this.props.history.location.search.substring(8)) {
+      this.props.history.push(
+        clientSearch.length > 0 ? `?search=${clientSearch}` : '/auth/clients'
+      );
+    }
   };
 
   handleCreate = () => {
@@ -113,7 +122,7 @@ export default class ViewClients extends PureComponent {
       description,
       data: { loading, error, clients },
     } = this.props;
-    const { value } = this.state;
+    const { clientSearch, value } = this.state;
 
     return (
       <Dashboard
@@ -124,6 +133,7 @@ export default class ViewClients extends PureComponent {
             disabled={loading}
             onSubmit={this.handleClientSearchSubmit}
             onChange={this.handleClientSearchChange}
+            defaultValue={clientSearch}
             value={value}
             placeholder="Client starts with"
           />
