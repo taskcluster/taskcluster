@@ -113,7 +113,7 @@ export default class ViewClients extends PureComponent {
       description,
       data: { loading, error, clients },
     } = this.props;
-    const { clientSearch, value } = this.state;
+    const { value } = this.state;
 
     return (
       <Dashboard
@@ -124,7 +124,6 @@ export default class ViewClients extends PureComponent {
             disabled={loading}
             onSubmit={this.handleClientSearchSubmit}
             onChange={this.handleClientSearchChange}
-            defaultValue={clientSearch}
             value={value}
             placeholder="Client starts with"
           />
