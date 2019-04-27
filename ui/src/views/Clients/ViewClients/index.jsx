@@ -21,7 +21,9 @@ import ErrorPanel from '../../../components/ErrorPanel';
   options: props => ({
     variables: {
       clientOptions: {
-        ...(props.user ? { prefix: props.user.credentials.clientId } : null),
+        ...(props.history.location.search
+          ? { prefix: props.history.location.search.substring(8) }
+          : null),
       },
       clientsConnection: {
         limit: VIEW_CLIENTS_PAGE_SIZE,
@@ -37,36 +39,9 @@ import ErrorPanel from '../../../components/ErrorPanel';
 export default class ViewClients extends PureComponent {
   state = {
     clientSearch: '',
-    // eslint-disable-next-line react/no-unused-state
-    previousClientId: '',
     // This needs to be initially null in order for the defaultValue to work
     value: null,
   };
-
-  static getDerivedStateFromProps(props, state) {
-    // Any time the current user changes,
-    // Reset state to reflect new user / log out and default clientSearch query
-    if (
-      props.user &&
-      props.user.credentials.clientId !== state.previousClientId
-    ) {
-      return {
-        clientSearch: props.user.credentials.clientId,
-        previousClientId: props.user.credentials.clientId,
-      };
-    }
-
-    if (!props.user && state.previousClientId !== '') {
-      return {
-        clientSearch: '',
-        previousClientId: '',
-      };
-    }
-
-    return null;
-  }
-
-  //test
 
   handleClientSearchSubmit = clientSearch => {
     const {
@@ -83,6 +58,10 @@ export default class ViewClients extends PureComponent {
         limit: VIEW_CLIENTS_PAGE_SIZE,
       },
     });
+
+    this.props.history.push(
+      clientSearch.length > 0 ? `?search=${clientSearch}` : '/auth/clients'
+    );
   };
 
   handleCreate = () => {
@@ -134,10 +113,7 @@ export default class ViewClients extends PureComponent {
       description,
       data: { loading, error, clients },
     } = this.props;
-    const { value } = this.state;
-    const searchDefaultValue = this.props.user
-      ? this.props.user.credentials.clientId
-      : null;
+    const { clientSearch, value } = this.state;
 
     return (
       <Dashboard
@@ -148,7 +124,7 @@ export default class ViewClients extends PureComponent {
             disabled={loading}
             onSubmit={this.handleClientSearchSubmit}
             onChange={this.handleClientSearchChange}
-            defaultValue={searchDefaultValue}
+            defaultValue={clientSearch}
             value={value}
             placeholder="Client starts with"
           />
