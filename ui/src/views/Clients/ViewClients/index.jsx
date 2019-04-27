@@ -66,6 +66,8 @@ export default class ViewClients extends PureComponent {
     return null;
   }
 
+  //test
+
   handleClientSearchSubmit = clientSearch => {
     const {
       data: { refetch },
