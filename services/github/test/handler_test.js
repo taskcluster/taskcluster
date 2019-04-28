@@ -45,32 +45,34 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     });
   }
 
-  function simulateExchangeMessage({taskGroupId, exchange, queue, taskId, state, reasonResolved}) {
+  async function simulateExchangeMessage({taskGroupId, exchange, routingKey, taskId, state, reasonResolved}) {
     // set up to resolve when the handler has finished (even if it finishes with error)
-    return new Promise((resolve, reject) => {
+    const handlerComplete = new Promise((resolve, reject) => {
       handlers.handlerComplete = resolve;
-
-      debug(`publishing ${JSON.stringify({taskGroupId, exchange})}`);
-      const message = {
-        exchange,
-        routingKey: 'ignored',
-        routes: [],
-        payload: {
-          status: {
-            taskGroupId,
-            taskId,
-            state,
-            runs: [{
-              reasonResolved,
-            }],
-          },
-          taskGroupId,
-          runId: 0,
-        },
-      };
-
-      handlers[queue].fakeMessage(message);
+      handlers.handlerRejected = reject;
     });
+
+    debug(`publishing ${JSON.stringify({taskGroupId, exchange})}`);
+    const message = {
+      exchange,
+      routingKey,
+      routes: [],
+      payload: {
+        status: {
+          taskGroupId,
+          taskId,
+          state,
+          runs: [{
+            reasonResolved,
+          }],
+        },
+        taskGroupId,
+        runId: 0,
+      },
+    };
+
+    await helper.fakePulseMessage(message);
+    await handlerComplete;
   }
 
   setup(async function() {
@@ -93,6 +95,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
           },
         });
       },
+      listTaskGroup: async () => ({tasks: []}),
     };
 
     // set up the allowPullRequests key
@@ -115,49 +118,60 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       }
     });
 
-    function simulateJobMessage({user, head, base, eventType='push'}) {
+    async function simulateJobMessage({user, head, base, eventType='push'}) {
       // set up to resolve when the handler has finished (even if it finishes with error)
-      return new Promise((resolve, reject) => {
+      const handlerComplete = new Promise((resolve, reject) => {
         handlers.handlerComplete = resolve;
         handlers.handlerRejected = reject;
-
-        let details = {
-          'event.type': eventType,
-          'event.base.repo.branch': 'tc-gh-tests',
-          'event.head.repo.branch': 'tc-gh-tests',
-          'event.head.user.login': user,
-          'event.head.repo.url': 'https://github.com/TaskclusterRobot/hooks-testing.git',
-          'event.head.sha': head || '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
-          'event.head.ref': 'refs/heads/tc-gh-tests',
-          'event.base.sha': base || '2bad4edf90e7d4fb4643456a4df333da348bbed4',
-          'event.head.user.id': 190790,
-        };
-        if (eventType === 'tag') {
-          details['event.head.tag'] = 'v1.0.2';
-          delete details['event.head.repo.branch'];
-          delete details['event.base.repo.branch'];
-        }
-
-        debug(`publishing ${JSON.stringify({user, head, base, eventType})}`);
-        const message = {
-          exchange: 'exchange/taskcluster-github/v1/release',
-          routingKey: 'ignored',
-          routes: [],
-          payload: {
-            organization: 'TaskclusterRobot',
-            details: details,
-            repository: 'hooks-testing',
-            eventId: '26370a80-ed65-11e6-8f4c-80082678482d',
-            installationId: 5828,
-            version: 1,
-          },
-        };
-        if (eventType.startsWith('pull_request.')) {
-          message.payload.details['event.pullNumber'] = 36;
-        }
-
-        handlers.jobPq.fakeMessage(message);
       });
+
+      let details = {
+        'event.type': eventType,
+        'event.base.repo.branch': 'tc-gh-tests',
+        'event.head.repo.branch': 'tc-gh-tests',
+        'event.head.user.login': user,
+        'event.head.repo.url': 'https://github.com/TaskclusterRobot/hooks-testing.git',
+        'event.head.sha': head || '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+        'event.head.ref': 'refs/heads/tc-gh-tests',
+        'event.base.sha': base || '2bad4edf90e7d4fb4643456a4df333da348bbed4',
+        'event.head.user.id': 190790,
+      };
+      if (eventType === 'tag') {
+        details['event.head.tag'] = 'v1.0.2';
+        delete details['event.head.repo.branch'];
+        delete details['event.base.repo.branch'];
+      }
+
+      debug(`publishing ${JSON.stringify({user, head, base, eventType})}`);
+      const [eventBase, eventAction] = eventType.split('.');
+      const exchange = {
+        // 'tag' events arrive on the 'push' exchange..
+        tag: 'push',
+        push: 'push',
+        pull_request: 'pull-request',
+        release: 'release',
+      }[eventBase];
+      const message = {
+        exchange: `exchange/taskcluster-github/v1/${exchange}`,
+        routingKey: eventBase === 'pull_request' ?
+          `primary.TaskclusterRobot.hooks-testing.${eventAction}` :
+          'primary.TaskclusterRobot.hooks-testing',
+        routes: [],
+        payload: {
+          organization: 'TaskclusterRobot',
+          details: details,
+          repository: 'hooks-testing',
+          eventId: '26370a80-ed65-11e6-8f4c-80082678482d',
+          installationId: 5828,
+          version: 1,
+        },
+      };
+      if (eventBase === 'pull_request') {
+        message.payload.details['event.pullNumber'] = 36;
+      }
+
+      await helper.fakePulseMessage(message);
+      await handlerComplete;
     }
 
     test('valid push (owner is collaborator) creates a taskGroup', async function() {
@@ -276,7 +290,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
         content: require('./data/yml/valid-yaml.json'),
       });
-      handlers.createTasks.returns(Promise.reject({body: {error: 'oh noes'}}));
+      handlers.createTasks.rejects({body: {error: 'oh noes'}});
       await simulateJobMessage({user: 'TaskclusterRobot'});
 
       assert(github.inst(5828).repos.createCommitComment.calledOnce);
@@ -391,36 +405,36 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       assert.equal(build.state, state);
     }
 
-    test('task success gets a success comment', async function() {
+    test('taskgroup success gets a success status', async function() {
       await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
-        exchange: 'exchange/taskcluster-queue/v1/task-completed',
-        queue: 'deprecatedResultStatusPq',
+        exchange: 'exchange/taskcluster-queue/v1/task-group-resolved',
+        routingKey: 'primary.foo.tc-gh-devel.foo',
         taskId: null,
       });
       await assertStatusUpdate('success');
       await assertBuildState('success');
     });
 
-    test('task failure gets a failure comment', async function() {
+    test('task failure gets a failure status', async function() {
       await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-failed',
-        queue: 'deprecatedResultStatusPq',
+        routingKey: 'route.statuses',
         taskId: null,
       });
       await assertStatusUpdate('failure');
       await assertBuildState('failure');
     });
 
-    test('task exception gets a failure comment', async function() {
+    test('task exception gets a failure status', async function() {
       await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-exception',
-        queue: 'deprecatedResultStatusPq',
+        routingKey: 'route.statuses',
         taskId: null,
       });
       await assertStatusUpdate('failure');
@@ -484,13 +498,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       });
     }
 
-    test('task success gets a success comment', async function() {
+    test('task success gets a success check result', async function() {
       await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
       await addCheckRun({taskGroupId: TASKGROUPID, taskId: TASKID});
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
-        queue: 'resultStatusPq',
+        routingKey: 'route.checks',
         taskId: TASKID,
         reasonResolved: 'completed',
         state: 'completed',
@@ -498,13 +512,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       await assertStatusUpdate('completed');
     });
 
-    test('task failure gets a failure comment', async function() {
+    test('task failure gets a failure check result', async function() {
       await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
       await addCheckRun({taskGroupId: TASKGROUPID, taskId: TASKID});
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-failed',
-        queue: 'resultStatusPq',
+        routingKey: 'route.checks',
         taskId: TASKID,
         reasonResolved: 'failed',
         state: 'failed',
@@ -512,13 +526,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       await assertStatusUpdate('failed');
     });
 
-    test('task exception gets a failure comment', async function() {
+    test('task exception gets a failure check result', async function() {
       await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
       await addCheckRun({taskGroupId: TASKGROUPID, taskId: TASKID});
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-exception',
-        queue: 'resultStatusPq',
+        routingKey: 'route.checks',
         taskId: TASKID,
         reasonResolved: 'resource-unavailable',
         state: 'exception',
@@ -531,7 +545,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
-        queue: 'resultStatusPq',
+        routingKey: 'route.checks',
         taskId: TASKID,
         reasonResolved: 'completed',
         state: 'completed',
@@ -544,7 +558,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
-        queue: 'resultStatusPq',
+        routingKey: 'route.checks',
         taskId: TASKID,
         reasonResolved: 'banana',
         state: 'completed',
@@ -588,7 +602,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-github/v1/task-group-creation-requested',
-        queue: 'deprecatedInitialStatusPq',
+        routingKey: 'route.statuses',
       });
       assertStatusCreation('pending');
     });
@@ -625,12 +639,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       });
     }
 
-    test('create pending status when task is defined', async function() {
+    test('create pending check result when task is defined', async function() {
       await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-defined',
-        queue: 'initialTaskStatusPq',
+        routingKey: 'route.checks',
         taskId: TASKID,
       });
       assertStatusCreate('pending');
