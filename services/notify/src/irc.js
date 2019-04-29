@@ -16,7 +16,6 @@ class IRCBot {
    *   userName: '',
    *   realName: '',
    *   password: '',
-   *   aws:      {...},
    * }
    * ```
    */
@@ -28,7 +27,6 @@ class IRCBot {
     assert(options.userName, 'options.userName is required');
     assert(options.realName, 'options.realName is required');
     assert(options.password, 'options.password is required');
-    assert(options.aws, 'options.aws is required');
     assert(options.queueName, 'options.queueName is required');
     assert(options.monitor, 'options.monitor is required');
     this.monitor = options.monitor;
