@@ -71,7 +71,7 @@
     "ramda": "^0.26.1",
     "react": "^16.8.2",
     "react-apollo": "^2.5.3",
-    "react-codemirror2": "^5.1.0",
+    "react-codemirror2": "^6.0.0",
     "react-copy-to-clipboard": "^5.0.1",
     "react-dom": "^16.8.2",
     "react-fout-stager": "^3.0.0",
