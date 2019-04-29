@@ -3788,7 +3788,7 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "TODO",
+          "description": "Get the list of all the existing workertypes",
           "method": "get",
           "name": "listWorkerTypes",
           "query": [

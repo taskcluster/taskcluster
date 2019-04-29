@@ -59,7 +59,7 @@ export default class WorkerManager extends Client {
     return this.request(this.deleteWorkerType.entry, args);
   }
   /* eslint-disable max-len */
-  // TODO
+  // Get the list of all the existing workertypes
   /* eslint-enable max-len */
   listWorkerTypes(...args) {
     this.validate(this.listWorkerTypes.entry, args);
