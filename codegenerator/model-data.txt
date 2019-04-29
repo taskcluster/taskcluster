@@ -1,4 +1,4 @@
-Generated: 1556043816
+Generated: 1556551398
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -8951,7 +8951,7 @@ Entry 4     =
     Entry Query        = '[]'
     Entry Name        = 'addDenylistAddress'
     Entry Stability   = 'experimental'
-    Entry Scopes      = 'notify:manage-denylist:<notificationType>/<notificationAddress>'
+    Entry Scopes      = 'notify:manage-denylist'
     Entry Input       = 'v1/notification-address.json#'
     Entry InputURL    = 'https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#'
     Entry Output      = ''
@@ -8969,7 +8969,7 @@ Entry 5     =
     Entry Query        = '[]'
     Entry Name        = 'deleteDenylistAddress'
     Entry Stability   = 'experimental'
-    Entry Scopes      = 'notify:manage-denylist:<notificationType>/<notificationAddress>'
+    Entry Scopes      = 'notify:manage-denylist'
     Entry Input       = 'v1/notification-address.json#'
     Entry InputURL    = 'https://taskcluster-staging.net/schemas/notify/v1/notification-address.json#'
     Entry Output      = ''
@@ -8982,9 +8982,9 @@ Entry 6     =
     Entry Route       = '/denylist/list'
     Entry Args        = '[]'
     Entry Query        = '[continuationToken limit]'
-    Entry Name        = 'list'
+    Entry Name        = 'listDenylist'
     Entry Stability   = 'experimental'
-    Entry Scopes      = ''
+    Entry Scopes      = 'notify:manage-denylist'
     Entry Input       = ''
     Entry InputURL    = ''
     Entry Output      = 'v1/notification-address-list.json#'

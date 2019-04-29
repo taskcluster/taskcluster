@@ -33,12 +33,13 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // https://taskcluster-staging.net/references/notify/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 23 Apr 2019 at 18:23:00 UTC. The code was generated
+// Mon, 29 Apr 2019 at 15:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcnotify
 
 import (
 	"net/url"
+	"time"
 
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
@@ -162,7 +163,7 @@ func (notify *Notify) Irc(payload *PostIRCMessageRequest) error {
 // by the notification service.
 //
 // Required scopes:
-//   notify:manage-denylist:<notificationType>/<notificationAddress>
+//   notify:manage-denylist
 //
 // See #addDenylistAddress
 func (notify *Notify) AddDenylistAddress(payload *NotificationTypeAndAddress) error {
@@ -176,7 +177,7 @@ func (notify *Notify) AddDenylistAddress(payload *NotificationTypeAndAddress) er
 // Delete the specified address from the notification denylist.
 //
 // Required scopes:
-//   notify:manage-denylist:<notificationType>/<notificationAddress>
+//   notify:manage-denylist
 //
 // See #deleteDenylistAddress
 func (notify *Notify) DeleteDenylistAddress(payload *NotificationTypeAndAddress) error {
@@ -199,8 +200,11 @@ func (notify *Notify) DeleteDenylistAddress(payload *NotificationTypeAndAddress)
 // If you are not interested in listing all the members at once, you may
 // use the query-string option `limit` to return fewer.
 //
-// See #list
-func (notify *Notify) List(continuationToken, limit string) (*ListOfNotificationAdresses, error) {
+// Required scopes:
+//   notify:manage-denylist
+//
+// See #listDenylist
+func (notify *Notify) ListDenylist(continuationToken, limit string) (*ListOfNotificationAdresses, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
@@ -211,4 +215,22 @@ func (notify *Notify) List(continuationToken, limit string) (*ListOfNotification
 	cd := tcclient.Client(*notify)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/denylist/list", new(ListOfNotificationAdresses), v)
 	return responseObject.(*ListOfNotificationAdresses), err
+}
+
+// Returns a signed URL for ListDenylist, valid for the specified duration.
+//
+// Required scopes:
+//   notify:manage-denylist
+//
+// See ListDenylist for more details.
+func (notify *Notify) ListDenylist_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*notify)
+	return (&cd).SignedURL("/denylist/list", v, duration)
 }
