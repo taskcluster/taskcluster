@@ -113,7 +113,7 @@ class DependencyTracker {
       if (missing.length > 0) {
         msg += '`task.dependencies` references non-existing tasks: \n';
         msg += missing.map(taskId => {
-          return ' * ' + taskId + ',';
+          return ' * ' + taskId;
         }).join('\n') + '\n';
         msg += 'All taskIds in `task.dependencies` **must** exist\n';
         msg += 'before the task is created.\n';
