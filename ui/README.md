@@ -1,4 +1,4 @@
-# Taskcluster Web
+# Taskcluster UI
 
 This repository contains a collection of useful tools for use with Taskcluster.
 Generally, we strive to not add UI to Taskcluster components, but instead offer
@@ -9,7 +9,7 @@ Taskcluster.
 
 The taskcluster-ui application relies on a server application in order to
 perform queries to the Taskcluster APIs. That package is
-[web-server](https://github.com/taskcluster/taskcluster/tree/master/services/web-server).
+[web-server](../services/web-server).
 **Follow the instructions** for starting it prior to launching
 the web UI. You will need to launch web-server in a terminal
 instance separate from the UI in order to run both simultaneously.
@@ -21,8 +21,15 @@ http://localhost:3050.
 
 ## Environment
 
-To get started local development, create a file in the root of the repo named
-`.env` with the following content:
+To get started local development, just:
+
+* ensure web-server is running as suggested above
+* change to the `ui/` directory
+* install the dependencies with `yarn`
+* start the UI server with `yarn start`
+
+You can customize the settings if you'd like, but this is not required for most development.
+Create a file in the `ui/` directory named `.env` with the following content:
 
 ```bash
 APPLICATION_NAME="Taskcluster"

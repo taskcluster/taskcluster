@@ -5,6 +5,8 @@ It should be used in concert with the READMEs for the services and libraries, an
 
 The [Taskcluster monorepo](https://github.com/taskcluster/taskcluster) on Github contains the source code for all of the microservices, a collection of supporting libraries, and more.
 
+See the [development process](development-process.md) for help getting started developing with the monorepo.
+
 ## RFCs
 
 Taskcluster manages major changes to the platform through "requests for comment", known as RFCs.
