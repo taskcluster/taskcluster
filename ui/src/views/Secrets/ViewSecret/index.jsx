@@ -18,6 +18,7 @@ import deleteSecretQuery from './deleteSecret.graphql';
 @graphql(secretQuery, {
   skip: ({ match: { params } }) => !params.secret,
   options: ({ match: { params } }) => ({
+    fetchPolicy: 'network-only',
     variables: {
       name: decodeURIComponent(params.secret),
     },

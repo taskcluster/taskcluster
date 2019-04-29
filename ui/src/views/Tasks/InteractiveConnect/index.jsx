@@ -57,6 +57,7 @@ const getInteractiveStatus = ({
 @withAuth
 @graphql(taskQuery, {
   options: props => ({
+    fetchPolicy: 'network-only',
     errorPolicy: 'all',
     pollInterval: INTERACTIVE_CONNECT_TASK_POLL_INTERVAL,
     variables: {
