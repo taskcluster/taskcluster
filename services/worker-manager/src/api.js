@@ -177,7 +177,7 @@ builder.declare({
   title: 'List All WorkerTypes',
   stability: APIBuilder.stability.experimental,
   description: [
-    'TODO',
+    'Get the list of all the existing workertypes',
   ].join('\n'),
 }, async function(req, res) {
   const { continuationToken } = req.query;
