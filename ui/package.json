@@ -105,7 +105,7 @@
     "@neutrinojs/karma": "9.0.0-beta.1",
     "@neutrinojs/react": "9.0.0-beta.1",
     "babel-loader": "^8.0.5",
-    "babel-merge": "^2.0.1",
+    "babel-merge": "^3.0.0",
     "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
     "chai": "^4.2.0",
     "dotenv-cli": "^2.0.0",
