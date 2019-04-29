@@ -67,28 +67,13 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [Treeherder Service](services/treeherder#readme)
     * [Web-Server Service](services/web-server#readme)
     * [Worker Manager](services/worker-manager#readme)
-* [Taskcluster Web](ui#readme)
+* [Taskcluster UI](ui#readme)
     * [ui/src/components/DateDistance](ui/src/components/DateDistance#readme)
     * [ui/src/components/Search](ui/src/components/Search#readme)
     * [ui/src/components/Snackbar](ui/src/components/Snackbar#readme)
     * [ui/src/components/SpeedDial](ui/src/components/SpeedDial#readme)
     * [ui/src/components/StatusLabel](ui/src/components/StatusLabel#readme)
 <!-- TOC END -->
-
-### Setup
-
-To set up the repository, run `yarn` in the root directory.
-This will install all required dependencies from the Yarn registry.
-
-### Test
-
-To run tests for a specific package, you can either cd into the directory and `yarn test` from there or run `yarn workspace <package name> test` from the root.
-
-### Build
-
-To build the Taskcluster services, run `yarn build`.
-The configuration for this command is in `build-config.yml`, and can be overridden with `user-build-config.yml` as necessary.
-See `build-config.yml` for advice on what to override.
 
 ## Team Mentions
 

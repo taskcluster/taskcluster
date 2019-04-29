@@ -11,6 +11,7 @@ If the project you're interested in working on isn't covered by a bug or issue, 
 
 Once you've found an issue to work on and written a patch, submit a pull request. Some things that will increase the chance that your pull request is accepted:
 
+* Check out our [development processes][developmentprocesses].
 * Follow our [best practices][bestpractices].
 * This includes [writing or updating tests][testing].
 * Write a [good commit message][commit].
@@ -25,8 +26,9 @@ You can add new people to the list using the [@all-contributors bot][all-contrib
 [bugsahoy]: https://www.joshmatthews.net/bugsahoy/?taskcluster=1
 [goodfirstbug]: http://www.joshmatthews.net/bugsahoy/?taskcluster=1&simple=1
 [irc]: https://wiki.mozilla.org/IRC
-[bestpractices]: https://docs.taskcluster.net/docs/manual/design/devel/best-practices
-[testing]: https://docs.taskcluster.net/docs/manual/design/devel/best-practices/testing
-[commit]: https://docs.taskcluster.net/docs/manual/design/devel/best-practices/commits
+[bestpractices]: dev-docs/best-practices
+[developmentprocesses]: dev-docs/development-processes
+[testing]: dev-docs/best-practices/testing.md
+[commit]: dev-docs/best-practices/commit.md
 [all-contributors]: https://allcontributors.org/
 [all-contributors-bot]: https://allcontributors.org/docs/en/bot/usage
