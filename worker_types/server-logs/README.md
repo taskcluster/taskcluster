@@ -12,7 +12,19 @@ command line tools, I'm placing it in here for now.
 Note, it requires that you have created a ~/.papertrail.yml file with an appropriate access token, and
 that you have installed the [papertrail-cli](https://github.com/papertrail/papertrail-cli).
 
-Example usage:
+### Installing
+
+```
+go get github.com/taskcluster/generic-worker/worker_types/server-logs
+```
+
+### Running
+
+```
+$ server-logs TASK_ID [RUN_ID]
+```
+
+### Example
 
 ```
 $ server-logs AByVjWqKT26vrLgc7GobNA
