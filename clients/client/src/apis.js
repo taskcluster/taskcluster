@@ -3791,6 +3791,7 @@ module.exports = {
           "description": "Get the list of all the existing workertypes",
           "method": "get",
           "name": "listWorkerTypes",
+          "output": "v1/workertype-list.json#",
           "query": [
             "continuationToken",
             "limit"
