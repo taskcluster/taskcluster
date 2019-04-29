@@ -112,7 +112,7 @@ let app = async function(options) {
   }
 
   if (options.trustProxy) {
-    app.set('trust proxy');
+    app.set('trust proxy', true);
   }
 
   // keep cheap security vuln scanners happy..
