@@ -1300,13 +1300,59 @@
         },
         "name": "guide",
         "next": {
-          "path": "reference/platform/README",
-          "title": "Taskcluster Platform"
+          "path": "reference/schema",
+          "title": "schema"
         },
         "path": "reference/guide",
         "prev": {
           "path": "reference/README",
           "title": "Taskcluster Reference"
+        },
+        "up": {
+          "path": "reference/README",
+          "title": "Taskcluster Reference"
+        }
+      },
+      {
+        "children": [
+          {
+            "children": [
+            ],
+            "data": {
+              "inline": true,
+              "order": 1,
+              "title": "schema"
+            },
+            "name": "index",
+            "next": {
+              "path": "reference/platform/README",
+              "title": "Taskcluster Platform"
+            },
+            "path": "reference/schema/index",
+            "prev": {
+              "path": "reference/schema",
+              "title": "schema"
+            },
+            "up": {
+              "path": "reference/schema",
+              "title": "schema"
+            }
+          }
+        ],
+        "data": {
+          "inline": true,
+          "order": 1,
+          "title": "schema"
+        },
+        "name": "schema",
+        "next": {
+          "path": "reference/schema/index",
+          "title": "schema"
+        },
+        "path": "reference/schema",
+        "prev": {
+          "path": "reference/guide",
+          "title": "Guide to The Microservices"
         },
         "up": {
           "path": "reference/README",
@@ -1737,8 +1783,8 @@
         },
         "path": "reference/platform/README",
         "prev": {
-          "path": "reference/guide",
-          "title": "Guide to The Microservices"
+          "path": "reference/schema/index",
+          "title": "schema"
         },
         "up": {
           "path": "reference/README",
