@@ -176,6 +176,7 @@ builder.declare({
   name: 'listWorkerTypes',
   title: 'List All WorkerTypes',
   stability: APIBuilder.stability.experimental,
+  output: 'workertype-list.yml',
   description: [
     'Get the list of all the existing workertypes',
   ].join('\n'),

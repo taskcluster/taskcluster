@@ -1,9 +1,9 @@
 $schema: "/schemas/common/metaschema.json#"
-title: WorkerType Full
-description: A complete workerType definition
+title: WorkerType List
+description: A list of worker types
 type: object
 properties:
-  data:
+  workertypes:
     type: array
     title: "List of all workertypes"
     description: List of all workertypes
