@@ -23,6 +23,8 @@ const logRequest = ({builder, entry, monitor}) => {
         resource: req.originalUrl,
         method: req.method,
         clientId: req.hasAuthed ? await req.clientId() : '',
+        expires: req.hasAuthed ? await req.expires() : '',
+        sourceIp: req.ip,
         satisfyingScopes: req.satisfyingScopes ? req.satisfyingScopes : [],
         statusCode: res.statusCode,
         duration: d[0] * 1000 + d[1] / 1000000,

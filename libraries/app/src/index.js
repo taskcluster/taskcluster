@@ -111,6 +111,10 @@ let app = async function(options) {
     }));
   }
 
+  if (options.trustProxy) {
+    app.set('trust proxy');
+  }
+
   // keep cheap security vuln scanners happy..
   app.disable('x-powered-by');
   app.use((req, res, next) => {

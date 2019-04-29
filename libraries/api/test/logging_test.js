@@ -100,6 +100,8 @@ suite(testing.suiteName(), function() {
     assert.equal(monitorManager.messages.length, 1);
     assert(monitorManager.messages[0].Fields.duration > 0); // it exists..
     delete monitorManager.messages[0].Fields.duration;
+    assert(new Date(monitorManager.messages[0].Fields.expires) > new Date());
+    delete monitorManager.messages[0].Fields.expires;
     assert.deepEqual(monitorManager.messages[0], {
       Type: 'monitor.apiMethod',
       Fields: {
@@ -112,6 +114,7 @@ suite(testing.suiteName(), function() {
         public: false,
         resource: '/api/test/v1/require-some-scopes',
         satisfyingScopes: ['aa', 'bb', 'dd'],
+        sourceIp: '::ffff:127.0.0.1',
         statusCode: 200,
         v: 1,
       },
@@ -128,6 +131,7 @@ suite(testing.suiteName(), function() {
 
     assert.equal(monitorManager.messages.length, 1);
     delete monitorManager.messages[0].Fields.duration;
+    delete monitorManager.messages[0].Fields.expires;
     assert.deepEqual(monitorManager.messages[0], {
       Type: 'monitor.apiMethod',
       Fields: {
@@ -139,6 +143,7 @@ suite(testing.suiteName(), function() {
         public: true,
         resource: '/api/test/v1/require-no-scopes',
         satisfyingScopes: [],
+        sourceIp: '::ffff:127.0.0.1',
         statusCode: 200,
         v: 1,
       },
@@ -155,6 +160,7 @@ suite(testing.suiteName(), function() {
 
     assert.equal(monitorManager.messages.length, 1);
     delete monitorManager.messages[0].Fields.duration;
+    delete monitorManager.messages[0].Fields.expires;
     assert.deepEqual(monitorManager.messages[0], {
       Type: 'monitor.apiMethod',
       Fields: {
@@ -166,6 +172,7 @@ suite(testing.suiteName(), function() {
         public: true,
         resource: '/api/test/v1/sometimes-require-no-scopes?private=0',
         satisfyingScopes: [],
+        sourceIp: '::ffff:127.0.0.1',
         statusCode: 200,
         v: 1,
       },
@@ -182,6 +189,7 @@ suite(testing.suiteName(), function() {
 
     assert.equal(monitorManager.messages.length, 1);
     delete monitorManager.messages[0].Fields.duration;
+    delete monitorManager.messages[0].Fields.expires;
     assert.deepEqual(monitorManager.messages[0], {
       Type: 'monitor.apiMethod',
       Fields: {
@@ -193,6 +201,7 @@ suite(testing.suiteName(), function() {
         public: false,
         resource: '/api/test/v1/sometimes-require-no-scopes?private=1',
         satisfyingScopes: ['aa'],
+        sourceIp: '::ffff:127.0.0.1',
         statusCode: 200,
         v: 1,
       },
@@ -215,6 +224,7 @@ suite(testing.suiteName(), function() {
 
     assert.equal(monitorManager.messages.length, 1);
     delete monitorManager.messages[0].Fields.duration;
+    delete monitorManager.messages[0].Fields.expires;
     assert.deepEqual(monitorManager.messages[0], {
       Type: 'monitor.apiMethod',
       Fields: {
@@ -226,6 +236,7 @@ suite(testing.suiteName(), function() {
         public: false,
         resource: '/api/test/v1/require-extra-scopes',
         satisfyingScopes: [],
+        sourceIp: '::ffff:127.0.0.1',
         statusCode: 403,
         v: 1,
       },
