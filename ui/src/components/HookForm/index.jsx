@@ -576,7 +576,7 @@ export default class HookForm extends Component {
                   disableTypography
                   primary={
                     <Typography variant="subtitle1">
-                      Last Fired Results
+                      Last Fired Attempts
                     </Typography>
                   }
                   secondary={

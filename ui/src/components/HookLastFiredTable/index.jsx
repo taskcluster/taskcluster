@@ -30,7 +30,7 @@ function HookLastFiredTable({ classes, ...props }) {
   return (
     <DataTable
       items={items}
-      headers={['Task ID', 'Reason', 'Result', 'Attempted']}
+      headers={['Task ID', 'Reason', 'Fire Status', 'Attempted']}
       renderRow={hookFire => (
         <TableRow key={hookFire.taskId}>
           <TableCell>
