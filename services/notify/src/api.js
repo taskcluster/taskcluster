@@ -12,6 +12,7 @@ const builder = new APIBuilder({
   context: [
     'notifier',
     'DenylistedNotification',
+    'denier',
   ],
   errorCodes: {
     DenylistedAddress: 400,
@@ -37,18 +38,12 @@ builder.declare({
   this.monitor.log.email({address: req.body.address});
   await req.authorize(req.body);
 
-  let address = {
-    notificationType: "email",
-    notificationAddress: req.body.address,
-  };
-  // Ensure that the address is not in the denylist
-  let response = await this.DenylistedNotification.load(address, true);
-  if(response) {
+  if (await this.denier.isDenied('email', req.body.address)) {
     return res.reportError('DenylistedAddress', `Email ${req.body.address} is denylisted`, {});
-  } else {
-    await this.notifier.email(req.body);
-    res.sendStatus(200);
   }
+
+  await this.notifier.email(req.body);
+  res.sendStatus(200);
 });
 
 builder.declare({
@@ -65,18 +60,12 @@ builder.declare({
   this.monitor.log.pulse({routingKey: req.body.routingKey});
   await req.authorize({routingKey: req.body.routingKey});
 
-  let notificationAddress = {
-    notificationType: "pulse",
-    notificationAddress: req.body.routingKey,
-  };
-  // Ensure that the address is not in the denylist
-  let response = await this.DenylistedNotification.load(notificationAddress, true);
-  if(response) {
+  if (await this.denier.isDenied('pulse', req.body.routingKey)) {
     return res.reportError('DenylistedAddress', `Pulse routing key pattern ${req.body.routingKey} is denylisted`, {});
-  } else {
-    await this.notifier.pulse(req.body);
-    res.sendStatus(200);
   }
+
+  await this.notifier.pulse(req.body);
+  res.sendStatus(200);
 });
 
 builder.declare({
@@ -112,18 +101,14 @@ builder.declare({
     user: input.user,
   });
 
-  let notificationAddress = {
-    notificationType: input.user ? "irc-user" : "irc-channel",
-    notificationAddress: input.user ? input.user : input.channel,
-  };
-  // Ensure that the address is not in the denylist
-  let response = await this.DenylistedNotification.load(notificationAddress, true);
-  if(response) {
+  if (await this.denier.isDenied(
+    input.user ? "irc-user" : "irc-channel",
+    input.user ? input.user : input.channel)) {
     return res.reportError('DenylistedAddress', `IRC address ${input.channel || input.user} is denylisted`, {});
-  } else {
-    await this.notifier.irc(input);
-    res.sendStatus(200);
   }
+
+  await this.notifier.irc(input);
+  res.sendStatus(200);
 });
 
 builder.declare({

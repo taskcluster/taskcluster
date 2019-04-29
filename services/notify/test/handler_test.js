@@ -3,7 +3,8 @@ const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(mock, skipping) {
+  helper.withDenier(mock, skipping);
   helper.withFakeQueue(mock, skipping);
   helper.withSES(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -106,6 +107,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       routes: [route],
     });
     helper.assertPulseMessage('notification', m => m.CCs[0] === 'route.notify-test');
+  });
+
+  test('pulse denylisted', async () => {
+    const route = 'test-notify.pulse.notify-test-denied.on-any';
+    helper.queue.addTask(baseStatus.taskId, makeTask([route]));
+    await helper.fakePulseMessage({
+      payload: {
+        status: baseStatus,
+      },
+      exchange: 'exchange/taskcluster-queue/v1/task-completed',
+      routingKey: 'doesnt-matter',
+      routes: [route],
+    });
+    helper.assertNoPulseMessage('notification', m => m.CCs[0] === 'route.notify-test');
   });
 
   test('email', async () => {

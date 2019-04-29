@@ -79,8 +79,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(m
         link: {text: 'Inspect Task', href: 'https://tools.taskcluster.net/task-inspector/#Z-tDsP4jQ3OUTjN0Q6LNKQ'},
       });
     } catch(e) {
-      assert.equal(e.code, "DenylistedAddress");
+      if (e.code !== "DenylistedAddress") {
+        throw e;
+      }
+      return;
     }
+    throw new Error('expected an error');
   });
 
   test('email without link', async function() {
@@ -125,8 +129,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(m
     try {
       await helper.apiClient.irc({message: 'Does this work?', channel: '#taskcluster-test'});
     } catch(e) {
-      assert(e.code, 'DenylistedAddress');
+      if (e.code !== "DenylistedAddress") {
+        throw e;
+      }
+      return;
     }
+    throw new Error('expected an error');
   });
 
   test('does not send notifications to denylisted irc user', async function() {
@@ -134,8 +142,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(m
     try {
       await helper.apiClient.irc({message: 'Does this work?', user: 'notify-me'});
     } catch(e) {
-      assert(e.code, 'DenylistedAddress');
+      if (e.code !== "DenylistedAddress") {
+        throw e;
+      }
+      return;
     }
+    throw new Error('expected an error');
   });
 
   test('Denylist: addDenylistAddress()', async function() {

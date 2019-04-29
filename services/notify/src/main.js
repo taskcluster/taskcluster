@@ -11,6 +11,7 @@ const monitorManager = require('./monitor');
 const builder = require('./api');
 const Notifier = require('./notifier');
 const RateLimit = require('./ratelimit');
+const Denier = require('./denier');
 const Handler = require('./handler');
 const exchanges = require('./exchanges');
 const IRC = require('./irc');
@@ -143,10 +144,16 @@ const load = loader({
     setup: ({cfg}) => new aws.SES(cfg.aws),
   },
 
+  denier: {
+    requires: ['cfg', 'DenylistedNotification'],
+    setup: ({cfg, DenylistedNotification}) =>
+      new Denier({DenylistedNotification, emailBlacklist: cfg.app.emailBlacklist}),
+  },
+
   notifier: {
-    requires: ['cfg', 'publisher', 'rateLimit', 'ses'],
-    setup: ({cfg, publisher, rateLimit, ses}) => new Notifier({
-      emailBlacklist: cfg.app.emailBlacklist,
+    requires: ['cfg', 'publisher', 'rateLimit', 'ses', 'denier'],
+    setup: ({cfg, publisher, rateLimit, ses, denier}) => new Notifier({
+      denier,
       publisher,
       rateLimit,
       ses,
@@ -185,10 +192,10 @@ const load = loader({
   },
 
   api: {
-    requires: ['cfg', 'monitor', 'schemaset', 'notifier', 'DenylistedNotification'],
-    setup: ({cfg, monitor, schemaset, notifier, DenylistedNotification}) => builder.build({
+    requires: ['cfg', 'monitor', 'schemaset', 'notifier', 'DenylistedNotification', 'denier'],
+    setup: ({cfg, monitor, schemaset, notifier, DenylistedNotification, denier}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
-      context: {notifier, DenylistedNotification},
+      context: {notifier, DenylistedNotification, denier},
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,
       monitor: monitor.monitor('api'),

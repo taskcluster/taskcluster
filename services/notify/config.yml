@@ -78,6 +78,7 @@ test:
     routePrefix: test-notify
     denylistedNotificationTableName: TestDenylistedNotification
     publishMetaData: false
+    emailBlacklist: []
   azure:
     accountId:        'jungle'
   monitoring:
