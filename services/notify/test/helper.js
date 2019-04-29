@@ -41,6 +41,22 @@ exports.secrets = new Secrets({
   load: exports.load,
 });
 
+/**
+ * Define a fake denier that will deny anything with 'denied' in the address
+ */
+exports.withDenier = (mock, skipping) => {
+  suiteSetup('withDenier', async function() {
+    if (skipping()) {
+      return;
+    }
+
+    exports.load.inject('denier', {
+      isDenied: async (notificationType, notificationAddress) =>
+        /denied/.test(notificationAddress),
+    });
+  });
+};
+
 class MockSES {
   constructor() {
     this.emails = [];

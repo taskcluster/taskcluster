@@ -151,9 +151,9 @@ const load = loader({
   },
 
   notifier: {
-    requires: ['cfg', 'publisher', 'rateLimit', 'ses'],
-    setup: ({cfg, publisher, rateLimit, ses}) => new Notifier({
-      emailBlacklist: cfg.app.emailBlacklist,
+    requires: ['cfg', 'publisher', 'rateLimit', 'ses', 'denier'],
+    setup: ({cfg, publisher, rateLimit, ses, denier}) => new Notifier({
+      denier,
       publisher,
       rateLimit,
       ses,

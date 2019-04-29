@@ -12,10 +12,7 @@ const nodemailer = require('nodemailer');
  */
 class Notifier {
   constructor(options = {}) {
-    // Set default options
-    this.options = _.defaults({}, options, {
-      emailBlacklist: [],
-    });
+    this.options = options;
     this.hashCache = [];
     this.publisher = options.publisher;
     this.rateLimit = options.rateLimit;
@@ -61,9 +58,8 @@ class Notifier {
       return;
     }
 
-    // Don't notify emails on the denylist
-    if (this.options.emailBlacklist.includes(address)) {
-      debug('Denylist email: %s send detected, discarding the notification', address);
+    if (await this.options.denier.isDenied('email', address)) {
+      debug('Denylist email: denylisted send detected, discarding the notification');
       return;
     }
 
@@ -103,6 +99,12 @@ class Notifier {
       debug('Duplicate pulse send detected. Not attempting resend.');
       return;
     }
+
+    if (await this.options.denier.isDenied('pulse', routingKey)) {
+      debug('Denylist pulse: denylisted send detected, discarding the notification');
+      return;
+    }
+
     debug(`Publishing message on ${routingKey}`);
     return this.publisher.notify({message}, [routingKey]).then(res => {
       this.markSent(routingKey, message);
@@ -116,8 +118,16 @@ class Notifier {
       debug('irc channel ' + channel + ' invalid format. Not attempting to send.');
       return;
     }
+
     if (this.isDuplicate(channel, user, message)) {
       debug('Duplicate irc message send detected. Not attempting resend.');
+      return;
+    }
+
+    const notificationType = user ? 'irc-user' : 'irc-channel';
+    const notificationAddress = user || channel;
+    if (await this.options.denier.isDenied(notificationType, notificationAddress)) {
+      debug('Denylist irc: denylisted send detected, discarding the notification');
       return;
     }
 
