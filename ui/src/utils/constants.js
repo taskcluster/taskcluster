@@ -218,3 +218,4 @@ export const DENYLIST_NOTIFICATION_TYPES = {
 };
 
 export const KNOWN_ACRONYMS = ['IRC', 'API'];
+export const AUTH_STORE = '@@TASKCLUSTER_WEB_AUTH';

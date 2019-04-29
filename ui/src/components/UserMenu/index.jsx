@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { bool, string } from 'prop-types';
+import { bool } from 'prop-types';
 import { Link } from 'react-router-dom';
 import { withApollo } from 'react-apollo';
 import classNames from 'classnames';
@@ -40,12 +40,10 @@ import { THEME } from '../../utils/constants';
 }))
 export default class UserMenu extends Component {
   static defaultProps = {
-    user: '',
     appBar: false,
   };
 
   static propTypes = {
-    user: string,
     appBar: bool,
   };
 
@@ -90,7 +88,6 @@ export default class UserMenu extends Component {
               classes: { containedPrimary: classes.buttonContainedPrimary },
             }}
             className={classNames({ [classes.userMenuButton]: !user })}
-            user={user}
             signInDialogOpen={signInDialogOpen}
             onSignInDialogClose={this.handleSignInDialogClose}
             onSignInDialogOpen={this.handleSignInDialogOpen}
@@ -98,7 +95,6 @@ export default class UserMenu extends Component {
           />
         ) : (
           <UserMenuList
-            user={user}
             signInDialogOpen={signInDialogOpen}
             onSignInDialogClose={this.handleSignInDialogClose}
             onSignInDialogOpen={this.handleSignInDialogOpen}
