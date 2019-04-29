@@ -7,7 +7,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(m
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withSES(mock, skipping);
-  helper.withSQS(mock, skipping);
   helper.withServer(mock, skipping);
 
   // Dummy address for denylist tests
@@ -109,9 +108,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(m
 
   test('irc', async function() {
     await helper.apiClient.irc({message: 'Does this work?', channel: '#taskcluster-test'});
-    await helper.checkSQSMessage(helper.ircSQSQueue, body => {
-      assert.equal(body.channel, '#taskcluster-test');
-      assert.equal(body.message, 'Does this work?');
+    helper.assertPulseMessage('irc-notification', m => {
+      const {channel, message} = m.payload.message;
+      return _.isEqual(channel, '#taskcluster-test') &&
+        _.isEqual(message, 'Does this work?');
     });
   });
 

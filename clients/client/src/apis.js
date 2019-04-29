@@ -2123,6 +2123,29 @@ module.exports = {
           "schema": "v1/notification-message.json#",
           "title": "Notification Messages",
           "type": "topic-exchange"
+        },
+        {
+          "description": "A message which is to be sent to an irc channel or\nuser is published to this exchange",
+          "exchange": "irc-notification",
+          "name": "ircNotify",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/notification-message.json#",
+          "title": "IRC Notification Messages",
+          "type": "topic-exchange"
         }
       ],
       "exchangePrefix": "exchange/taskcluster-notify/v1/",

@@ -1,9 +1,7 @@
 const debug = require('debug')('notify');
+const {consume} = require('taskcluster-lib-pulse');
 const irc = require('irc-upd');
 const assert = require('assert');
-const aws = require('aws-sdk');
-
-const MAX_RETRIES = 5;
 
 /** IRC bot for delivering notifications */
 class IRCBot {
@@ -52,8 +50,7 @@ class IRCBot {
     this.client.on('unhandled', msg => {
       this.monitor.notice(msg);
     });
-    this.sqs = new aws.SQS(options.aws);
-    this.queueName = options.queueName;
+    this.pulseClient = options.pulseClient;
     this.stopping = false;
     this.done = Promise.resolve(null);
   }
@@ -70,51 +67,17 @@ class IRCBot {
       }
     });
 
-    let queueUrl = await this.sqs.createQueue({
-      QueueName: this.queueName,
-    }).promise().then(req => req.QueueUrl);
-
-    this.done = (async () => {
-      debug('Connecting to: ' + queueUrl);
-      while (!this.stopping) {
-        debug('Waiting for message from sqs.');
-        let req = await this.sqs.receiveMessage({
-          QueueUrl: queueUrl,
-          AttributeNames: ['ApproximateReceiveCount'],
-          MaxNumberOfMessages: 10,
-          VisibilityTimeout: 30,
-          WaitTimeSeconds: 20,
-        }).promise();
-        if (!req.Messages) {
-          debug('Did not receive any messages from sqs in timeout.');
-          continue;
-        }
-        debug(`Received ${req.Messages.length} messages from sqs.`);
-        let success = 0;
-        for (let message of req.Messages) {
-          try {
-            await this.notify(JSON.parse(message.Body));
-          } catch (err) {
-            console.log('Failed to send IRC notification: %j, %s', err, err.stack);
-            // Skip deleting if we're below MAX_RETRIES
-            if (message.Attributes.ApproximateReceiveCount < MAX_RETRIES) {
-              continue;
-            }
-          }
-          // Delete message
-          await this.sqs.deleteMessage({
-            QueueUrl: queueUrl,
-            ReceiptHandle: message.ReceiptHandle,
-          }).promise();
-          success += 1;
-        }
-        debug(`Deleted ${success} message from sqs.`);
-      }
-      debug('Stopping irc sqs loop');
-    })();
+    this.pq = await consume({
+      client: this.pulseClient,
+      bindings: [{exchange: 'irc-notification', routingKeyPattern: 'irc'}],
+      queueName: 'irc-notifications',
+    },
+    this.monitor.timedHandler('notification', this.onMessage.bind(this))
+    );
   }
 
-  async notify({channel, user, message}) {
+  async onMessage({payload}) {
+    let {channel, user, message} = payload.message;
     if (channel && !/^[#&][^ ,\u{0007}]{1,199}$/u.test(channel)) {
       debug('irc channel ' + channel + ' invalid format. Not attempting to send.');
       return;
