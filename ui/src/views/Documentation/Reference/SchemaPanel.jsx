@@ -45,52 +45,44 @@ export default class SchemaPanel extends Component {
     expanded: false,
   };
 
-  renderExchangeExpansionPanelSummary = () => {
+  renderExpansionPanelSummary = () => {
     const { entry, classes } = this.props;
 
     return (
       <Grid className={classes.gridContainer} container spacing={8}>
         <Grid item xs={5}>
           <div>
-            <Typography id={entry.content.$schema} component="h3">
-              {entry.content.title
-                ? entry.content.title
-                : entry.content.$schema}
+            <Typography id={entry.content.$id} component="h3">
+              {entry.content.title}
             </Typography>
           </div>
         </Grid>
         <Grid item xs={7}>
           <div>
-            <Typography>
-              {entry.content.$id ? entry.content.$id : entry.content.$schema}
-            </Typography>
+            <Typography>{entry.content.$id}</Typography>
           </div>
         </Grid>
       </Grid>
     );
   };
 
-  renderSchemaTable = (schema, headerTitle) => {
-    const { serviceName } = this.props;
+  renderSchemaTable = (schema, headerTitle) => (
+    <ListItem>
+      <ListItemText
+        primaryTypographyProps={primaryTypographyProps}
+        disableTypography
+        primary={<Typography variant="body1">{headerTitle}</Typography>}
+        secondary={
+          <Fragment>
+            <br />
+            <SchemaTable schema={schema} serviceName="unknown" />
+          </Fragment>
+        }
+      />
+    </ListItem>
+  );
 
-    return (
-      <ListItem>
-        <ListItemText
-          primaryTypographyProps={primaryTypographyProps}
-          disableTypography
-          primary={<Typography variant="body1">{headerTitle}</Typography>}
-          secondary={
-            <Fragment>
-              <br />
-              <SchemaTable schema={schema} serviceName={serviceName} />
-            </Fragment>
-          }
-        />
-      </ListItem>
-    );
-  };
-
-  renderExchangeExpansionDetails = () => {
+  renderExpansionDetails = () => {
     const { classes, entry } = this.props;
     const { expanded } = this.state;
 
@@ -119,9 +111,9 @@ export default class SchemaPanel extends Component {
   };
 
   render() {
-    const { classes, entry } = this.props;
+    const { classes } = this.props;
     const { expanded } = this.state;
-    const entryHashKey = entry.content.$id ? '$id' : '$schema';
+    const entryHashKey = 'content.$id';
 
     return (
       <ExpansionPanel
@@ -133,10 +125,10 @@ export default class SchemaPanel extends Component {
             content: classNames(classes.expansionPanelSummary),
           }}
           expandIcon={<ExpandMoreIcon />}>
-          {this.renderExchangeExpansionPanelSummary()}
+          {this.renderExpansionPanelSummary()}
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>
-          {this.renderExchangeExpansionDetails()}
+          {this.renderExpansionDetails()}
         </ExpansionPanelDetails>
       </ExpansionPanel>
     );

@@ -4,6 +4,6 @@ inline: true
 title: schema
 ---
 
-import Schema from 'taskcluster-ui/views/Documentation/Reference/Schema'
+import SchemaIndex from 'taskcluster-ui/views/Documentation/Reference/SchemaIndex'
 
-<Schema serviceName="schema" apiVersion="v1" />
+<SchemaIndex />
