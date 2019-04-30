@@ -40,16 +40,6 @@ import ErrorPanel from '../../../components/ErrorPanel';
   },
 }))
 export default class ViewClients extends PureComponent {
-  componentDidMount() {
-    if (this.props.history.location.search) {
-      this.setState({
-        clientSearch: decodeURIComponent(
-          parse(this.props.history.location.search)['?search']
-        ),
-      });
-    }
-  }
-
   state = {
     clientSearch: '',
     // This needs to be initially undefined in order for defaultValue to work
