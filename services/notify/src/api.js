@@ -35,7 +35,6 @@ builder.declare({
     'HTML version of the email',
   ].join('\n'),
 }, async function(req, res) {
-  this.monitor.log.email({address: req.body.address});
   await req.authorize(req.body);
 
   if (await this.denier.isDenied('email', req.body.address)) {
@@ -57,7 +56,6 @@ builder.declare({
     'Publish a message on pulse with the given `routingKey`.',
   ].join('\n'),
 }, async function(req, res) {
-  this.monitor.log.pulse({routingKey: req.body.routingKey});
   await req.authorize({routingKey: req.body.routingKey});
 
   if (await this.denier.isDenied('pulse', req.body.routingKey)) {
@@ -94,7 +92,6 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let input = req.body;
-  this.monitor.log.irc({dest: input.user || input.channel});
   await req.authorize({
     channelRequest: input.channel !== undefined,
     channel: input.channel,

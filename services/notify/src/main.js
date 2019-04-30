@@ -151,22 +151,25 @@ const load = loader({
   },
 
   notifier: {
-    requires: ['cfg', 'publisher', 'rateLimit', 'ses', 'denier'],
-    setup: ({cfg, publisher, rateLimit, ses, denier}) => new Notifier({
+    requires: ['cfg', 'publisher', 'rateLimit', 'ses', 'denier', 'monitor'],
+    setup: ({cfg, publisher, rateLimit, ses, denier, monitor}) => new Notifier({
       denier,
       publisher,
       rateLimit,
       ses,
       sourceEmail: cfg.app.sourceEmail,
+      monitor: monitor.monitor('notifier'),
     }),
   },
 
   irc: {
-    requires: ['cfg', 'pulseClient', 'monitor'],
-    setup: async ({cfg, pulseClient, monitor}) => {
+    requires: ['cfg', 'pulseClient', 'monitor', 'reference'],
+    setup: async ({cfg, pulseClient, monitor, reference}) => {
       let client = new IRC(_.merge(cfg.irc, {
         monitor: monitor.monitor('irc'),
         pulseClient,
+        reference,
+        rootUrl: cfg.taskcluster.rootUrl,
       }));
       await client.start();
       return client;

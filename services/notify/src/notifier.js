@@ -18,6 +18,7 @@ class Notifier {
     this.rateLimit = options.rateLimit;
     this.queueName = this.options.queueName;
     this.sender = options.sourceEmail;
+    this.monitor = options.monitor;
 
     const transport = nodemailer.createTransport({
       SES: options.ses,
@@ -91,6 +92,7 @@ class Notifier {
     });
     this.rateLimit.markEvent(address);
     this.markSent(address, subject, content, link, replyTo);
+    this.monitor.log.email({address});
     return res;
   }
 
@@ -106,10 +108,10 @@ class Notifier {
     }
 
     debug(`Publishing message on ${routingKey}`);
-    return this.publisher.notify({message}, [routingKey]).then(res => {
-      this.markSent(routingKey, message);
-      return res;
-    });
+    const res = this.publisher.notify({message}, [routingKey]);
+    this.markSent(routingKey, message);
+    this.monitor.log.pulse({routingKey});
+    return res;
   }
 
   async irc(messageRequest) {
@@ -132,10 +134,10 @@ class Notifier {
     }
 
     debug(`Publishing message on irc for ${user || channel}.`);
-    return this.publisher.ircNotify({message: messageRequest}, ['irc']).then(res => {
-      this.markSent(channel, user, message);
-      return res;
-    });
+    const res = await this.publisher.ircRequest({channel, user, message});
+    this.markSent(channel, user, message);
+    this.monitor.log.irc({dest: user || channel});
+    return res;
   }
 }
 

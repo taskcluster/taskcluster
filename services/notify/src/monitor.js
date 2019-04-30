@@ -6,11 +6,11 @@ const manager = new MonitorManager({
 
 manager.register({
   name: 'email',
-  title: 'Email Request',
+  title: 'Email Sent',
   type: 'email',
   version: 1,
   level: 'info',
-  description: 'A request to send an email.',
+  description: 'Email has been sent.',
   fields: {
     address: 'The requested recepient of the email.',
   },
@@ -18,11 +18,11 @@ manager.register({
 
 manager.register({
   name: 'pulse',
-  title: 'Pulse Request',
+  title: 'Pulse Event Published',
   type: 'pulse',
   version: 1,
   level: 'info',
-  description: 'A request to send a pulse message.',
+  description: 'A pulse event has been published.',
   fields: {
     routingKey: 'The requested routingKey of the message.',
   },
@@ -30,11 +30,11 @@ manager.register({
 
 manager.register({
   name: 'irc',
-  title: 'IRC Message Request',
+  title: 'IRC Message Sent',
   type: 'irc',
   version: 1,
   level: 'info',
-  description: 'A request to send an irc message.',
+  description: 'An irc message has been sent.',
   fields: {
     dest: 'A user or channel. Will begin with "#" if a channel.',
   },

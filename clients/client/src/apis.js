@@ -2126,8 +2126,8 @@ module.exports = {
         },
         {
           "description": "A message which is to be sent to an irc channel or\nuser is published to this exchange",
-          "exchange": "irc-notification",
-          "name": "ircNotify",
+          "exchange": "irc-request",
+          "name": "ircRequest",
           "routingKey": [
             {
               "constant": "primary",
@@ -2143,8 +2143,8 @@ module.exports = {
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
             }
           ],
-          "schema": "v1/notification-message.json#",
-          "title": "IRC Notification Messages",
+          "schema": "v1/irc-request.json#",
+          "title": "Request for irc notification",
           "type": "topic-exchange"
         }
       ],

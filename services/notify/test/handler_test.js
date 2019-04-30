@@ -152,8 +152,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(m
       routingKey: 'doesnt-matter',
       routes: [route],
     });
-    helper.assertPulseMessage('irc-notification', m => {
-      const {channel, message} = m.payload.message;
+    helper.assertPulseMessage('irc-request', m => {
+      const {channel, message} = m.payload;
       return _.isEqual(channel, '#taskcluster-test') &&
       _.isEqual(message, 'it worked with taskid DKPZPsvvQEiw67Pb3rkdNg');
     });

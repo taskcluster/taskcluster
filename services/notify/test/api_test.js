@@ -112,8 +112,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(m
 
   test('irc', async function() {
     await helper.apiClient.irc({message: 'Does this work?', channel: '#taskcluster-test'});
-    helper.assertPulseMessage('irc-notification', m => {
-      const {channel, message} = m.payload.message;
+    helper.assertPulseMessage('irc-request', m => {
+      const {channel, message} = m.payload;
       return _.isEqual(channel, '#taskcluster-test') &&
         _.isEqual(message, 'Does this work?');
     });

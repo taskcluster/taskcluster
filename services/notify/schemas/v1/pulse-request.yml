@@ -12,7 +12,7 @@ properties:
   message:
     type:           object
     description: |
-      IRC message to send as plain text.
+      Pulse message to send as plain text.
 additionalProperties: false
 required:
   - routingKey

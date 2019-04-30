@@ -1,6 +1,7 @@
 const debug = require('debug')('notify');
 const {consume} = require('taskcluster-lib-pulse');
 const irc = require('irc-upd');
+const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 
 /** IRC bot for delivering notifications */
@@ -27,8 +28,10 @@ class IRCBot {
     assert(options.userName, 'options.userName is required');
     assert(options.realName, 'options.realName is required');
     assert(options.password, 'options.password is required');
-    assert(options.queueName, 'options.queueName is required');
     assert(options.monitor, 'options.monitor is required');
+    assert(options.reference, 'options.reference is required');
+    assert(options.rootUrl, 'options.rootUrl is required');
+    assert(options.pulseQueueName, 'options.pulseQueueName is required');
     this.monitor = options.monitor;
     this.client = new irc.Client(options.server, options.nick, {
       userName: options.userName,
@@ -49,8 +52,9 @@ class IRCBot {
       this.monitor.notice(msg);
     });
     this.pulseClient = options.pulseClient;
-    this.stopping = false;
-    this.done = Promise.resolve(null);
+    this.reference = options.reference;
+    this.rootUrl = options.rootUrl;
+    this.pulseQueueName = options.pulseQueueName;
   }
 
   async start() {
@@ -65,17 +69,20 @@ class IRCBot {
       }
     });
 
+    const NotifyEvents = taskcluster.createClient(this.reference);
+    const notifyEvents = new NotifyEvents({rootUrl: this.rootUrl});
+
     this.pq = await consume({
       client: this.pulseClient,
-      bindings: [{exchange: 'irc-notification', routingKeyPattern: 'irc'}],
-      queueName: 'irc-notifications',
+      bindings: [notifyEvents.ircRequest()],
+      queueName: this.pulseQueueName,
     },
     this.monitor.timedHandler('notification', this.onMessage.bind(this))
     );
   }
 
   async onMessage({payload}) {
-    let {channel, user, message} = payload.message;
+    let {channel, user, message} = payload;
     if (channel && !/^[#&][^ ,\u{0007}]{1,199}$/u.test(channel)) {
       debug('irc channel ' + channel + ' invalid format. Not attempting to send.');
       return;
@@ -97,8 +104,6 @@ class IRCBot {
   }
 
   async terminate() {
-    this.stopping = true;
-    await this.done;
     await new Promise((resolve, reject) => {
       try {
         this.client.disconnect(resolve);
