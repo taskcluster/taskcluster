@@ -87,10 +87,7 @@ section, and paste a JSON object with a key of "Authorization" with a value of
 
 ### GitHub
 
-In order to enable the GitHub login strategy, add `github` to the
-space-separated `LOGIN_STRATEGIES` environment variable, or set `app.loginStrategies` in `user-config.yml`.
-
-Next, specify the GitHub client ID and secret for an OAuth application created
+In order to enable the GitHub login strategy, specify the GitHub client ID and secret for an OAuth application created
 for use against this service and its web UI, either as environment variables:
 
 ```sh
@@ -98,7 +95,8 @@ GITHUB_CLIENT_ID="<insert GitHub client ID here>"
 GITHUB_CLIENT_SECRET="<insert GitHub client secret here>"
 ```
 
-or as `githubLogin.clientId` and `githubLogin.clientSecret` in `user-config.yml`.
+or as `login.strategies.github-oauth2.clientId` and `login.strategies.github-oauth2.clientSecret`
+in `user-config.yml`.
 
 Now, start the service as you normally would.
 
