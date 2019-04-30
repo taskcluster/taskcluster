@@ -30,6 +30,10 @@ spec:
           backend:
             serviceName: taskcluster-web-server
             servicePort: 80
+        - path: '/login'
+          backend:
+            serviceName: taskcluster-web-server
+            servicePort: 80
         - $map:
             - {service_name: auth, project_name: taskcluster-auth}
             - {service_name: secrets, project_name: taskcluster-secrets}

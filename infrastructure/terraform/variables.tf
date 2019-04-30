@@ -108,3 +108,38 @@ variable "gce_provider_image_name" {
   type        = "string"
   description = "Image name to use for workers spawned by gce_provider."
 }
+
+variable "web_server_mozilla_auth0_domain" {
+  type        = "string"
+  description = "auth0 domain for mozilla-auth0 login strategy"
+}
+
+variable "web_server_mozilla_auth0_client_id" {
+  type        = "string"
+  description = "auth0 client id for mozilla-auth0 login strategy"
+}
+
+variable "web_server_mozilla_auth0_client_secret" {
+  type        = "string"
+  description = "auth0 client secret for mozilla-auth0 login strategy"
+}
+
+variable "web_server_mozilla_auth0_audience" {
+  type        = "string"
+  description = "auth0 audience for mozilla-auth0 login strategy"
+}
+
+variable "web_server_mozilla_auth0_scope" {
+  type        = "string"
+  description = "auth0 scope for mozilla-auth0 login strategy"
+}
+
+variable "web_server_github_client_id" {
+  type        = "string"
+  description = "github client id for mozilla-auth0 login strategy"
+}
+
+variable "web_server_github_client_secret" {
+  type        = "string"
+  description = "github client secret for mozilla-auth0 login strategy"
+}
