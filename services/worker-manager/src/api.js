@@ -165,3 +165,33 @@ builder.declare({
   await this.WorkerType.remove({name}, true);
   return res.reply();
 });
+
+builder.declare({
+  method: 'get',
+  route: '/workertypes',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
+  name: 'listWorkerTypes',
+  title: 'List All WorkerTypes',
+  stability: APIBuilder.stability.experimental,
+  output: 'workertype-list.yml',
+  description: [
+    'Get the list of all the existing workertypes',
+  ].join('\n'),
+}, async function(req, res) {
+  const { continuationToken } = req.query;
+  const limit = parseInt(req.query.limit || 100, 10);
+  const scanOptions = {
+    continuation: continuationToken,
+    limit,
+  };
+
+  const data = await this.WorkerType.scan({}, scanOptions);
+
+  if (data.continuation) {
+    data.continuationToken = data.continuation;
+  }
+  return res.reply(data);
+});

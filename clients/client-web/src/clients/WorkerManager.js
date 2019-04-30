@@ -15,6 +15,7 @@ export default class WorkerManager extends Client {
     this.updateWorkerType.entry = {"args":["name"],"input":true,"method":"post","name":"updateWorkerType","output":true,"query":[],"route":"/workertype/<name>","scopes":{"AllOf":["worker-manager:update-worker-type:<name>","worker-manager:provider:<provider>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.workerType.entry = {"args":["name"],"method":"get","name":"workerType","output":true,"query":[],"route":"/workertype/<name>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.deleteWorkerType.entry = {"args":["name"],"method":"delete","name":"deleteWorkerType","query":[],"route":"/workertype/<name>","scopes":"worker-manager:delete-worker-type:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.listWorkerTypes.entry = {"args":[],"method":"get","name":"listWorkerTypes","output":true,"query":["continuationToken","limit"],"route":"/workertypes","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -56,5 +57,13 @@ export default class WorkerManager extends Client {
     this.validate(this.deleteWorkerType.entry, args);
 
     return this.request(this.deleteWorkerType.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Get the list of all the existing workertypes
+  /* eslint-enable max-len */
+  listWorkerTypes(...args) {
+    this.validate(this.listWorkerTypes.entry, args);
+
+    return this.request(this.listWorkerTypes.entry, args);
   }
 }

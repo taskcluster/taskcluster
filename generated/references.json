@@ -1,6 +1,36 @@
 [
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/workertype-list.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": true,
+      "description": "A list of worker types",
+      "properties": {
+        "continuationToken": {
+          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of worker-types in the worker-manager.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called `listWorkerTypes` with `continuationToken`\nuntil you get a result without a `continuationToken`.\n",
+          "title": "Continuation Token",
+          "type": "string"
+        },
+        "workertypes": {
+          "description": "List of all workertypes",
+          "items": {
+            "$ref": "workertype-full.json#"
+          },
+          "title": "List of all workertypes",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "WorkerType List",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/workertype-list.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/workertype-full.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -7762,6 +7792,22 @@
           "scopes": "worker-manager:delete-worker-type:<name>",
           "stability": "experimental",
           "title": "Delete WorkerType",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Get the list of all the existing workertypes",
+          "method": "get",
+          "name": "listWorkerTypes",
+          "output": "v1/workertype-list.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/workertypes",
+          "stability": "experimental",
+          "title": "List All WorkerTypes",
           "type": "function"
         }
       ],

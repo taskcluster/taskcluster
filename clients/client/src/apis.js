@@ -3807,6 +3807,22 @@ module.exports = {
           "stability": "experimental",
           "title": "Delete WorkerType",
           "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Get the list of all the existing workertypes",
+          "method": "get",
+          "name": "listWorkerTypes",
+          "output": "v1/workertype-list.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/workertypes",
+          "stability": "experimental",
+          "title": "List All WorkerTypes",
+          "type": "function"
         }
       ],
       "serviceName": "worker-manager",
