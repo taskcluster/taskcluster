@@ -113,6 +113,12 @@ import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
 
 <sup>* We use this library because it provides substantially more icons with minimal file-system headaches.</sup>
 
+## Necessary Practices
+
+1. For views showing secret, user-linked data or are using `client.fetchMore` to load more data
+on page load, graphql queries of that view must include the `fetchPolicy: 'network-only'` option to ensure
+data reflects the user's permissions and is up-to-date when a user logs in/out.
+
 ## Table of Contents
 
 <!-- TOC BEGIN -->

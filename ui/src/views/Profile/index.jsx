@@ -14,7 +14,11 @@ import profileQuery from './profile.graphql';
 
 @hot(module)
 @withAuth
-@graphql(profileQuery)
+@graphql(profileQuery, {
+  options: () => ({
+    fetchPolicy: 'network-only',
+  }),
+})
 export default class Profile extends Component {
   render() {
     const {

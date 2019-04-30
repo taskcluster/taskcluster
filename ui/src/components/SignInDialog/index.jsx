@@ -52,7 +52,7 @@ export default class SignInDialog extends Component {
     this.setState({ credentialsDialogOpen: true });
   };
 
-  handleCredentialsSignIn = async credentials => {
+  handleCredentialsSignIn = credentials => {
     const inOneWeek = new Date();
 
     inOneWeek.setDate(inOneWeek.getDate() + 7);
@@ -67,7 +67,6 @@ export default class SignInDialog extends Component {
         displayName: credentials.clientId,
       },
     });
-    await this.props.client.resetStore();
     this.props.onClose();
   };
 
