@@ -1,6 +1,7 @@
 import React, { PureComponent, Fragment } from 'react';
 import { hot } from 'react-hot-loader';
 import { graphql } from 'react-apollo';
+import { parse } from 'qs';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
@@ -20,7 +21,11 @@ import ErrorPanel from '../../../components/ErrorPanel';
     variables: {
       clientOptions: {
         ...(props.history.location.search
-          ? { prefix: props.history.location.search.substring(8) }
+          ? {
+              prefix: decodeURIComponent(
+                parse(props.history.location.search)['?search']
+              ),
+            }
           : null),
       },
       clientsConnection: {
@@ -35,28 +40,33 @@ import ErrorPanel from '../../../components/ErrorPanel';
   },
 }))
 export default class ViewClients extends PureComponent {
-  state = {
-    clientSearch: '',
-    // This needs to be initially null in order for the defaultValue to work
-    value: null,
-  };
-
   componentDidMount() {
     if (this.props.history.location.search) {
       this.setState({
-        clientSearch: this.props.history.location.search.substring(8),
+        clientSearch: decodeURIComponent(
+          parse(this.props.history.location.search)['?search']
+        ),
       });
     }
   }
 
-  handleClientSearchSubmit = clientSearch => {
+  state = {
+    clientSearch: '',
+    // This needs to be initially undefined in order for defaultValue to work
+    value: undefined,
+  };
+
+  handleClientSearchSubmit = async clientSearch => {
     const {
       data: { refetch },
     } = this.props;
+    const searchUri = this.props.history.location.search
+      ? decodeURIComponent(parse(this.props.history.location.search)['?search'])
+      : '';
 
     this.setState({ clientSearch });
 
-    refetch({
+    await refetch({
       clientOptions: {
         ...(clientSearch ? { prefix: clientSearch } : null),
       },
@@ -65,10 +75,11 @@ export default class ViewClients extends PureComponent {
       },
     });
 
-    // Prevent searching for the same query as the one already loaded
-    if (clientSearch !== this.props.history.location.search.substring(8)) {
+    if (clientSearch !== searchUri) {
       this.props.history.push(
-        clientSearch.length > 0 ? `?search=${clientSearch}` : '/auth/clients'
+        clientSearch.length > 0
+          ? `?search=${encodeURIComponent(clientSearch)}`
+          : '/auth/clients'
       );
     }
   };
@@ -122,7 +133,7 @@ export default class ViewClients extends PureComponent {
       description,
       data: { loading, error, clients },
     } = this.props;
-    const { clientSearch, value } = this.state;
+    const { value } = this.state;
 
     return (
       <Dashboard
@@ -133,7 +144,6 @@ export default class ViewClients extends PureComponent {
             disabled={loading}
             onSubmit={this.handleClientSearchSubmit}
             onChange={this.handleClientSearchChange}
-            defaultValue={clientSearch}
             value={value}
             placeholder="Client starts with"
           />
