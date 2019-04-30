@@ -16,6 +16,7 @@ import createSubscriptionServer from './servers/createSubscriptionServer';
 import resolvers from './resolvers';
 import typeDefs from './graphql';
 import PulseEngine from './PulseEngine';
+import scanner from './login/scanner';
 
 const load = loader(
   {
@@ -102,17 +103,19 @@ const load = loader(
     },
 
     context: {
-      requires: ['cfg', 'pulseEngine'],
-      setup: ({ cfg, pulseEngine }) =>
+      requires: ['cfg', 'pulseEngine', 'strategies'],
+      setup: ({ cfg, pulseEngine, strategies }) =>
         createContext({
           pulseEngine,
           rootUrl: cfg.taskcluster.rootUrl,
+          strategies,
+          cfg,
         }),
     },
 
     app: {
-      requires: ['cfg'],
-      setup: ({ cfg }) => createApp({ cfg }),
+      requires: ['cfg', 'strategies'],
+      setup: ({ cfg, strategies }) => createApp({ cfg, strategies }),
     },
 
     server: {
@@ -136,6 +139,28 @@ const load = loader(
         });
 
         return httpServer;
+      },
+    },
+
+    // Login strategies
+    strategies: {
+      requires: ['cfg'],
+      setup: ({ cfg }) => {
+        const strategies = {};
+
+        Object.keys(cfg.login.strategies).forEach((name) => {
+          const Strategy = require('./login/strategies/' + name);
+          strategies[name] = new Strategy({ name, cfg });
+        });
+
+        return strategies;
+      },
+    },
+
+    scanner: {
+      requires: ['cfg', 'strategies', 'monitor'],
+      setup: async ({ cfg, strategies, monitor }) => {
+        return monitor.monitor().oneShot('scanner', () => scanner(cfg, strategies));
       },
     },
 

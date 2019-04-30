@@ -24,10 +24,7 @@ export default class DashboardView extends Component {
 
     return (
       <Dashboard>
-        <Typography variant="h4">
-          Hello,
-          {user.profile.displayName}!
-        </Typography>
+        <Typography variant="h4">Hello, {user.profile.displayName}!</Typography>
         <br />
         <br />
 

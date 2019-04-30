@@ -1,0 +1,42 @@
+enum LoginStrategy {
+  MOZILLA_AUTH0
+  GITHUB_OAUTH2
+}
+
+# Taskcluster credentials.
+type TaskclusterCredentials {
+  clientId: ID!
+  accessToken: ID!
+  certificate: String
+}
+
+type Credentials {
+  # Time after which the credentials are no longer valid.
+  # Callers should call `getCredentials` again to get fresh
+  # credentials before this time.
+  expires: DateTime!
+  # Taskcluster credentials. Note that the credentials may not contain a certificate!
+  credentials: TaskclusterCredentials!
+}
+
+extend type Query {
+  # Given a token, return a set of Taskcluster credentials
+  # for use on behalf of the identified user.
+  #
+  # | -- | --- |
+  # | Provider | Token type |
+  # | mozilla-auth0 | An OIDC token from a trusted OpenID provider |
+  # | github-oauth2 | An OAuth 2.0 token |
+  #
+  # The `accessToken` is first verified against the named
+  # `provider`, then passed to the provider\'s API to retrieve a user
+  # profile. That profile is then used to generate Taskcluster credentials
+  # appropriate to the user. Note that the resulting credentials may or may
+  # not include a `certificate` property. Callers should be prepared for either
+  # alternative.
+  #
+  # The given credentials will expire in a relatively short time. Callers should
+  # monitor this expiration and refresh the credentials if necessary, by calling
+  # this endpoint again, if they have expired.
+  getCredentials(provider: LoginStrategy!, accessToken: ID!): Credentials
+}

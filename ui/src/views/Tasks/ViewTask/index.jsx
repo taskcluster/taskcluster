@@ -1,6 +1,6 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
-import { graphql, withApollo } from 'react-apollo';
+import { graphql } from 'react-apollo';
 import { omit, pathOr } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
@@ -78,7 +78,6 @@ const getCachesFromTask = task =>
   Object.keys(pathOr({}, ['payload', 'cache'], task));
 
 @hot(module)
-@withApollo
 @withStyles(theme => ({
   title: {
     marginBottom: theme.spacing.unit,
@@ -101,7 +100,6 @@ const getCachesFromTask = task =>
   },
 }))
 @graphql(taskQuery, {
-  skip: props => !props.match.params.taskId,
   options: props => ({
     fetchPolicy: 'network-only',
     pollInterval: TASK_POLL_INTERVAL,

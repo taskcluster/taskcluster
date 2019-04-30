@@ -28,8 +28,7 @@ import reportError from '../utils/reportError';
 import theme from '../theme';
 import introspectionQueryResultData from '../fragments/fragmentTypes.json';
 import { route } from '../utils/prop-types';
-
-const AUTH_STORE = '@@TASKCLUSTER_WEB_AUTH';
+import AuthController from '../auth/AuthController';
 
 @hot(module)
 export default class App extends Component {
@@ -112,6 +111,10 @@ export default class App extends Component {
 
   constructor(props) {
     super(props);
+
+    this.authController = new AuthController(this.apolloClient);
+    this.authController.on('user-changed', this.handleUserChanged);
+
     const state = {
       error: null,
       theme: theme.darkTheme,
@@ -121,20 +124,6 @@ export default class App extends Component {
         unauthorize: this.unauthorize,
       },
     };
-    const auth = localStorage.getItem(AUTH_STORE);
-
-    if (auth) {
-      const user = JSON.parse(auth);
-      const expires = new Date(user.expires);
-      const now = new Date();
-
-      if (expires > now) {
-        Object.assign(state.auth, { user });
-        setTimeout(this.unauthorize, expires.getTime() - now.getTime());
-      } else {
-        localStorage.removeItem(AUTH_STORE);
-      }
-    }
 
     if (process.env.GA_TRACKING_ID) {
       // Unique Google Analytics tracking number
@@ -153,37 +142,35 @@ export default class App extends Component {
     return { error };
   }
 
-  async componentDidMount() {
-    const themeType = await db.userPreferences.get('theme');
-
-    if (themeType === 'light') {
-      this.setState({ theme: theme.lightTheme });
-    }
-  }
-
-  authorize = async (user, persist = true) => {
-    if (persist) {
-      localStorage.setItem(AUTH_STORE, JSON.stringify(user));
-    }
-
+  handleUserChanged = user => {
     this.setState({
       auth: {
-        // eslint-disable-next-line react/no-access-state-in-setstate
         ...this.state.auth,
         user,
       },
     });
   };
 
+  componentWillUnmount() {
+    this.authController.off('user-changed', this.handleUserChanged);
+  }
+
+  async componentDidMount() {
+    const themeType = await db.userPreferences.get('theme');
+
+    this.authController.loadUser();
+
+    if (themeType === 'light') {
+      this.setState({ theme: theme.lightTheme });
+    }
+  }
+
+  authorize = async user => {
+    this.authController.renew(user);
+  };
+
   unauthorize = () => {
-    localStorage.removeItem(AUTH_STORE);
-    this.setState({
-      auth: {
-        // eslint-disable-next-line react/no-access-state-in-setstate
-        ...this.state.auth,
-        user: null,
-      },
-    });
+    this.authController.setUser(null);
   };
 
   toggleTheme = () => {
