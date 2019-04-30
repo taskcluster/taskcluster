@@ -1,4 +1,3 @@
-const debug = require('debug')('notify');
 const _ = require('lodash');
 const jsone = require('json-e');
 const {consume} = require('taskcluster-lib-pulse');
@@ -64,7 +63,6 @@ class Handler {
     // If task was canceled, we don't send a notification since this was a deliberate user action
     if (status.state === 'exception') {
       if (this.ignoreTaskReasonResolved.includes((_.last(status.runs) || {}).reasonResolved)) {
-        debug('Received message for %s with notify routes, ignoring because task was canceled', status.taskId);
         return null;
       }
     }
@@ -75,9 +73,6 @@ class Handler {
     let href = libUrls.ui(this.rootUrl, `tasks/${taskId}`);
     let groupHref = libUrls.ui(this.rootUrl, `groups/${taskId}/tasks`);
     let runCount = status.runs.length;
-
-    debug(`Received message for ${taskId} with notify routes. Finding notifications.`);
-    this.monitor.count('notification-requested.any');
 
     return Promise.all(message.routes.map(entry => {
       let route = entry.split('.');
@@ -92,7 +87,6 @@ class Handler {
 
       switch (route[1]) {
         case 'irc-user': {
-          this.monitor.count('notification-requested.irc-user');
           if (_.has(task, 'extra.notify.ircUserMessage')) {
             ircMessage = this.renderMessage(task.extra.notify.ircUserMessage, {task, status});
           }
@@ -102,7 +96,6 @@ class Handler {
           });
         }
         case 'irc-channel': {
-          this.monitor.count('notification-requested.irc-channel');
           if (_.has(task, 'extra.notify.ircChannelMessage')) {
             ircMessage = this.renderMessage(task.extra.notify.ircChannelMessage, {task, status});
           }
@@ -112,14 +105,12 @@ class Handler {
           });
         }
         case 'pulse': {
-          this.monitor.count('notification-requested.pulse');
           return this.notifier.pulse({
             routingKey: _.join(_.slice(route, 2, route.length - 1), '.'),
             message: status,
           });
         }
         case 'email': {
-          this.monitor.count('notification-requested.email');
           let content = `
 Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHref}) is complete.
 

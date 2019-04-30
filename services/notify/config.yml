@@ -57,14 +57,15 @@ defaults:
     password:         !env IRC_PASSWORD
     port:             !env IRC_PORT
     debug:            !env IRC_DEBUG
+    pulseQueueName:   !env IRC_PULSE_QUEUE_NAME
 
 # Configuration in production
 production:
   server:
     env:              production
   irc:
-    queueName:        irc-notifications
     port:             6697
+    pulseQueueName:   irc-notifications
   pulse:
     namespace: taskcluster-notify
 
@@ -94,5 +95,5 @@ test:
     nick:             taskcluster-test
     userName:         taskcluster-test
     realName:         Taskcluster Test Robot
-    queueName:        irc-test-notifications
     port:             6697
+    pulseQueueName:   irc-test-notifications

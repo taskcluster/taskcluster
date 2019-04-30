@@ -3604,7 +3604,7 @@
       "description": "Request to post a message on pulse.\n",
       "properties": {
         "message": {
-          "description": "IRC message to send as plain text.\n",
+          "description": "Pulse message to send as plain text.\n",
           "type": "object"
         },
         "routingKey": {
@@ -10262,35 +10262,35 @@
           "version": 1
         },
         {
-          "description": "A request to send an email.",
+          "description": "Email has been sent.",
           "fields": {
             "address": "The requested recepient of the email."
           },
           "level": "info",
           "name": "email",
-          "title": "Email Request",
+          "title": "Email Sent",
           "type": "email",
           "version": 1
         },
         {
-          "description": "A request to send a pulse message.",
+          "description": "A pulse event has been published.",
           "fields": {
             "routingKey": "The requested routingKey of the message."
           },
           "level": "info",
           "name": "pulse",
-          "title": "Pulse Request",
+          "title": "Pulse Event Published",
           "type": "pulse",
           "version": 1
         },
         {
-          "description": "A request to send an irc message.",
+          "description": "An irc message has been sent.",
           "fields": {
             "dest": "A user or channel. Will begin with \"#\" if a channel."
           },
           "level": "info",
           "name": "irc",
-          "title": "IRC Message Request",
+          "title": "IRC Message Sent",
           "type": "irc",
           "version": 1
         }
@@ -10329,8 +10329,8 @@
         },
         {
           "description": "A message which is to be sent to an irc channel or\nuser is published to this exchange",
-          "exchange": "irc-notification",
-          "name": "ircNotify",
+          "exchange": "irc-request",
+          "name": "ircRequest",
           "routingKey": [
             {
               "constant": "primary",
@@ -10346,8 +10346,8 @@
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
             }
           ],
-          "schema": "v1/notification-message.json#",
-          "title": "IRC Notification Messages",
+          "schema": "v1/irc-request.json#",
+          "title": "Request for irc notification",
           "type": "topic-exchange"
         }
       ],

@@ -77,16 +77,21 @@ exchanges.declare({
 });
 
 exchanges.declare({
-  exchange: 'irc-notification',
-  name: 'ircNotify',
-  title: 'IRC Notification Messages',
+  exchange: 'irc-request',
+  name: 'ircRequest',
+  title: 'Request for irc notification',
   description: [
     'A message which is to be sent to an irc channel or',
     'user is published to this exchange',
   ].join('\n'),
   routingKey: buildCommonRoutingKey(),
-  schema: 'notification-message.yml',
-  messageBuilder: commonMessageBuilder,
+  schema: 'irc-request.yml',
+  messageBuilder: ({user, channel, message}) => {
+    if (channel) {
+      return {channel, message};
+    }
+    return {user, message};
+  },
   routingKeyBuilder: commonRoutingKeyBuilder,
-  CCBuilder: commonCCBuilder,
+  CCBuilder: () => [],
 });
