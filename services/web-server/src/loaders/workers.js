@@ -1,9 +1,9 @@
-import DataLoader from 'dataloader';
-import sift from 'sift';
-import ConnectionLoader from '../ConnectionLoader';
-import WorkerCompact from '../entities/WorkerCompact';
+const DataLoader = require('dataloader');
+const sift = require('sift');
+const ConnectionLoader = require('../ConnectionLoader');
+const WorkerCompact = require('../entities/WorkerCompact');
 
-export default ({ queue }) => {
+module.exports = ({ queue }) => {
   const worker = new DataLoader(queries =>
     Promise.all(
       queries.map(

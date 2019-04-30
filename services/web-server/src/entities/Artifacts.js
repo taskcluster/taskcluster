@@ -1,6 +1,6 @@
-import Artifact from './Artifact';
+const Artifact = require('./Artifact');
 
-export default class Artifacts {
+module.exports = class Artifacts {
   constructor(taskId, runId, { artifacts, ...data }) {
     Object.assign(this, data);
     this.taskId = taskId;
@@ -13,4 +13,4 @@ export default class Artifacts {
       artifact => new Artifact(taskId, artifact, runId)
     );
   }
-}
+};

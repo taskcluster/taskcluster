@@ -1,8 +1,8 @@
-import DataLoader from 'dataloader';
-import sift from 'sift';
-import ConnectionLoader from '../ConnectionLoader';
+const DataLoader = require('dataloader');
+const sift = require('sift');
+const ConnectionLoader = require('../ConnectionLoader');
 
-export default ({ secrets }) => {
+module.exports = ({ secrets }) => {
   const secretsList = new ConnectionLoader(async ({ filter, options }) => {
     const raw = await secrets.list(options);
     const secretsList = raw.secrets.map(name => ({ name }));

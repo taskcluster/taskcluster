@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   LoginStrategy: {
     MOZILLA_AUTH0: 'mozilla-auth0',
     GITHUB: 'github',

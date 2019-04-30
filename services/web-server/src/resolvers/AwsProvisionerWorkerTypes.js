@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   /* eslint-disable camelcase */
   AwsProvisionerTerminationHealth: {
     cleanShutdown({ clean_shutdown }) {

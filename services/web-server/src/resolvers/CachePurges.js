@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   Query: {
     cachePurges(parent, { connection, filter }, { loaders }) {
       return loaders.cachePurges.load({ connection, filter });

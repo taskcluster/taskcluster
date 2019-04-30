@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   Query: {
     roles(parent, { filter }, { loaders }) {
       return loaders.roles.load({ filter });

@@ -1,7 +1,7 @@
-import DataLoader from 'dataloader';
-import WebServerError from '../utils/WebServerError';
+const DataLoader = require('dataloader');
+const WebServerError = require('../utils/WebServerError');
 
-export default (clients, isAuthed, rootUrl, strategies, req, cfg) => {
+module.exports = (clients, isAuthed, rootUrl, strategies, req, cfg) => {
   const getCredentials = new DataLoader(queries => {
     return Promise.all(
       queries.map(async ({ provider, accessToken }) => {

@@ -1,6 +1,6 @@
-import assert from 'assert';
-import MonitorManager from 'taskcluster-lib-monitor';
-import PulseIterator from '../src/PulseEngine/PulseIterator';
+const assert = require('assert');
+const MonitorManager = require('taskcluster-lib-monitor');
+const PulseIterator = require('../src/PulseEngine/PulseIterator');
 const testing = require('taskcluster-lib-testing');
 
 class FakePulseEngine {

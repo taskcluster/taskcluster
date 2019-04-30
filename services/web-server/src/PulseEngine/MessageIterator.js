@@ -1,6 +1,6 @@
-import { $$asyncIterator } from 'iterall';
+const { $$asyncIterator } = require('iterall');
 
-export default class MessageIterator {
+module.exports = class MessageIterator {
   /**
    * Wrapper around a PulseIterator that yields pulse messages, transforming
    * them to {[eventName]: {payload, ..}} format as expected by pulse-messages
@@ -29,4 +29,4 @@ export default class MessageIterator {
   [$$asyncIterator]() {
     return this;
   }
-}
+};

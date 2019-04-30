@@ -1,6 +1,6 @@
-import TaskStatus from './TaskStatus';
+const TaskStatus = require('./TaskStatus');
 
-export default class Task {
+module.exports = class Task {
   constructor(taskId, status, data) {
     this.taskId = taskId;
 
@@ -10,4 +10,4 @@ export default class Task {
 
     Object.assign(this, data);
   }
-}
+};

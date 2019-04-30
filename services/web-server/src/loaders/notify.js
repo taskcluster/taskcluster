@@ -1,7 +1,7 @@
-import sift from 'sift';
-import ConnectionLoader from '../ConnectionLoader';
+const sift = require('sift');
+const ConnectionLoader = require('../ConnectionLoader');
 
-export default ({ notify }) => {
+module.exports = ({ notify }) => {
   const listDenylistAddresses = new ConnectionLoader(async ({ filter, options }) => {
     const raw = await notify.listDenylist(options);
     const addresses = raw.addresses.map(address => {

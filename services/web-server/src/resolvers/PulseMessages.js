@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   Subscription: {
     pulseMessages: {
       subscribe(parent, { subscriptions }, { pulseEngine }) {

@@ -1,13 +1,13 @@
-import Debug from 'debug';
-import { slugid } from 'taskcluster-client';
-import PulseIterator from './PulseIterator';
-import MessageIterator from './MessageIterator';
-import EventIterator from './EventIterator';
-import Subscription from './Subscription';
+const Debug = require('debug');
+const { slugid } = require('taskcluster-client');
+const PulseIterator = require('./PulseIterator');
+const MessageIterator = require('./MessageIterator');
+const EventIterator = require('./EventIterator');
+const Subscription = require('./Subscription');
 
 const debug = Debug('PulseEngine');
 
-export default class PulseEngine {
+module.exports = class PulseEngine {
   /* Operation:
    *
    * Each subscription gets one queue (named after the subscriptionId), with a
@@ -143,4 +143,4 @@ export default class PulseEngine {
   eventIterator(eventName, subscriptions) {
     return new EventIterator(new PulseIterator(this, subscriptions), eventName);
   }
-}
+};

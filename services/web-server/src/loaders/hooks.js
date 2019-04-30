@@ -1,7 +1,7 @@
-import DataLoader from 'dataloader';
-import sift from 'sift';
+const DataLoader = require('dataloader');
+const sift = require('sift');
 
-export default ({ hooks }) => {
+module.exports = ({ hooks }) => {
   const hookGroups = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ filter }) => {

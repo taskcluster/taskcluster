@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   RunState: {
     PENDING: 'pending',
     RUNNING: 'running',

@@ -1,7 +1,7 @@
-import DataLoader from 'dataloader';
-import TaskStatus from '../entities/TaskStatus';
+const DataLoader = require('dataloader');
+const TaskStatus = require('../entities/TaskStatus');
 
-export default ({ queue }) => {
+module.exports = ({ queue }) => {
   const status = new DataLoader(taskIds =>
     Promise.all(
       taskIds.map(async taskId => {

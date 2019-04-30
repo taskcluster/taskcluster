@@ -1,7 +1,7 @@
-import sift from 'sift';
-import ConnectionLoader from '../ConnectionLoader';
+const sift = require('sift');
+const ConnectionLoader = require('../ConnectionLoader');
 
-export default ({ index }) => {
+module.exports = ({ index }) => {
   const namespaces = new ConnectionLoader(
     async ({ namespace, options, filter }) => {
       const raw = await index.listNamespaces(namespace, options);

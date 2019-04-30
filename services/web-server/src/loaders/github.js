@@ -1,6 +1,6 @@
-import DataLoader from 'dataloader';
+const DataLoader = require('dataloader');
 
-export default ({ github }) => {
+module.exports = ({ github }) => {
   const githubRepository = new DataLoader(queries =>
     Promise.all(
       queries.map(({ owner, repo }) => github.repository(owner, repo))

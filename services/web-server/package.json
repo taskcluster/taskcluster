@@ -2,13 +2,12 @@
   "name": "taskcluster-web-server",
   "version": "0.0.0-private",
   "private": true,
-  "main": "build/index.js",
+  "main": "./src/index.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
   "scripts": {
-    "build": "NODE_ENV=production webpack",
-    "start": "NODE_ENV=development webpack",
+    "start": "NODE_ENV=development node src/index.js devServer",
     "lint": "eslint --cache --format codeframe --ext mjs,js src test",
-    "test": "mocha --require mocha.config.js --recursive"
+    "test": "mocha test/*_test.js"
   }
 }
