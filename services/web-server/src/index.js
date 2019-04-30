@@ -149,8 +149,12 @@ const load = loader(
         const strategies = {};
 
         Object.keys(cfg.login.strategies).forEach((name) => {
-          const Strategy = require('./login/strategies/' + name);
-          strategies[name] = new Strategy({ name, cfg });
+          const hasConfigValues = Object.values(cfg.login.strategies[name]).filter(Boolean).length !== 0;
+
+          if (hasConfigValues) {
+            const Strategy = require('./login/strategies/' + name);
+            strategies[name] = new Strategy({ name, cfg });
+          }
         });
 
         return strategies;
