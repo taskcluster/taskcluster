@@ -459,17 +459,15 @@ In v14.1.0 since v14.0.2
 
   To enable websocktunnel, include configuration options `wstAudience` and `wstServerURL` to correspond to the websocktunnel server the worker should use.
   For the current production environment that would be:
-  
+
   ```json
   {
-    ...
     "wstAudience": "taskcluster-net",
-    "wstServerURL": "https://websocktunnel.tasks.build",
-    ...
+    "wstServerURL": "https://websocktunnel.tasks.build"
   }
   ```
-  
-  Omit the configuration items `livelogCertificate`, `livelogKey`, and `livelogSecret`.
+
+  Omit the configuration items `subdomain`, `livelogGETPort`, `livelogCertificate`, `livelogKey`, and `livelogSecret`.
   These options will be removed in a future release.
 
   Ensure that the worker's credentials have scope `auth:websocktunnel-token:<wstAudience>/<workerGroup>.<workerId>.*`.
