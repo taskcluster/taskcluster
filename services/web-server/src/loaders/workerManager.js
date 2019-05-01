@@ -1,5 +1,5 @@
 const DataLoader = require('dataloader');
-const sift = require('sift');
+const sift = require('sift').default;
 
 module.exports = ({ workerManager }) => {
   // const WorkerManagerWorkerTypeSummaries = new DataLoader(queries =>

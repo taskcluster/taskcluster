@@ -1,5 +1,5 @@
 const DataLoader = require('dataloader');
-const sift = require('sift');
+const sift = require('sift').default;
 const { isNil } = require('ramda');
 const { withRootUrl } = require('taskcluster-lib-urls');
 const ConnectionLoader = require('../ConnectionLoader');

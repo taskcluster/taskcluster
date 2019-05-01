@@ -1,5 +1,5 @@
 const DataLoader = require('dataloader');
-const sift = require('sift');
+const sift = require('sift').default;
 
 module.exports = ({ hooks }) => {
   const hookGroups = new DataLoader(queries =>

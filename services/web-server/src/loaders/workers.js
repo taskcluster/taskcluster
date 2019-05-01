@@ -1,5 +1,5 @@
 const DataLoader = require('dataloader');
-const sift = require('sift');
+const sift = require('sift').default;
 const ConnectionLoader = require('../ConnectionLoader');
 const WorkerCompact = require('../entities/WorkerCompact');
 

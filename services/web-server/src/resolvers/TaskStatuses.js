@@ -1,4 +1,4 @@
-const sift = require('sift');
+const sift = require('sift').default;
 
 module.exports = {
   TaskState: {

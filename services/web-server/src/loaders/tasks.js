@@ -1,5 +1,5 @@
 const DataLoader = require('dataloader');
-const sift = require('sift');
+const sift = require('sift').default;
 const fetch = require('../utils/fetch');
 const ConnectionLoader = require('../ConnectionLoader');
 const Task = require('../entities/Task');
