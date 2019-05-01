@@ -1,12 +1,34 @@
 class Estimator {
-  constructor({queue, provisionerId}) {
+  constructor({queue, provisionerId, monitor}) {
     this.queue = queue;
     this.provisionerId = provisionerId;
+    this.monitor = monitor;
   }
 
-  async simple({name, min, max, capacityPerInstance}) {
+  async simple({name, minCapacity, maxCapacity, capacityPerInstance, currentSize}) {
     const {pendingTasks} = await this.queue.pendingTasks(this.provisionerId, name);
-    return Math.max(min, Math.min(Math.round(pendingTasks / capacityPerInstance), max));
+
+    const runningTasks = currentSize * capacityPerInstance;
+
+    // First we find the amount of capacity we want. This is a very simple approximation
+    const desiredCapacity = Math.max(minCapacity, Math.min(runningTasks + pendingTasks, maxCapacity));
+
+    const desiredSize = Math.round(desiredCapacity / capacityPerInstance);
+
+    this.monitor.log.simpleEstimate({
+      workerType: name,
+      pendingTasks,
+      minCapacity,
+      maxCapacity,
+      capacityPerInstance,
+      currentSize,
+      desiredSize,
+    });
+
+    return desiredSize;
+
+    // We don't ever turn off instances via the group. Instances delete themselves
+    //return Math.max(currentSize, desiredSize);
   }
 }
 

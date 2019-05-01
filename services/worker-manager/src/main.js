@@ -88,10 +88,11 @@ let load = loader({
   },
 
   estimator: {
-    requires: ['cfg', 'queue'],
-    setup: ({cfg, queue}) => new Estimator({
+    requires: ['cfg', 'queue', 'monitor'],
+    setup: ({cfg, queue, monitor}) => new Estimator({
       provisionerId: cfg.app.provisionerId,
       queue,
+      monitor: monitor.monitor('estimator'),
     }),
   },
 
