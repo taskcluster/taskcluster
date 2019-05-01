@@ -2,11 +2,11 @@
   "name": "taskcluster-web-server",
   "version": "0.0.0-private",
   "private": true,
-  "main": "./src/index.js",
+  "main": "./src/main.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
   "scripts": {
-    "start": "NODE_ENV=development node src/index.js devServer",
+    "start": "NODE_ENV=development node src/main.js devServer",
     "lint": "eslint --cache --format codeframe --ext mjs,js src test",
     "test": "mocha test/*_test.js"
   }
