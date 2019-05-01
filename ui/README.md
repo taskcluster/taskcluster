@@ -66,7 +66,7 @@ Taskcluster supports the following strategies:
 _Example: Enabling the `github` and `mozilla-auth0` strategies_
 
 ```bash
-LOGIN_STRATEGIES="github, mozilla-auth0"
+LOGIN_STRATEGIES="github mozilla-auth0"
 ```
 
 _Note: Each strategy requires its own set of config in `web-server`. Be sure to reference the
