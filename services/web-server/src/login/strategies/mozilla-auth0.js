@@ -92,7 +92,7 @@ module.exports = class MozillaAuth0 {
 
   async userFromToken(accessToken) {
     const [jwtError, profile] = await tryCatch(
-      verifyJwt({ token: accessToken, domain: this.domain })
+      verifyJwt({ token: accessToken, domain: this.domain, audience: this.clientId })
     );
 
     if (jwtError) {
