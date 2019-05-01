@@ -1,18 +1,13 @@
 const assert = require('assert');
 const jwt = require('jsonwebtoken');
-const jwks = require('jwks-rsa');
+const jwksClient = require('./jwksClient');
 
 module.exports = async ({ token, domain, audience }) => new Promise((resolve, reject) => {
   assert(token, 'No authorization token was found');
   assert(domain, 'A domain is required to verify the jwt');
   assert(audience, `An audience is required to verify the jwt`);
 
-  const client = jwks({
-    cache: true,
-    rateLimit: true,
-    jwksRequestsPerMinute: 5,
-    jwksUri: `https://${domain}/.well-known/jwks.json`,
-  });
+  const client = jwksClient({ domain });
   const getKey = (header, callback) => {
     client.getSigningKey(header.kid, (err, key) => {
       const signingKey = key.publicKey || key.rsaPublicKey;
