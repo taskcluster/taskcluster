@@ -1315,29 +1315,6 @@
       },
       {
         "children": [
-          {
-            "children": [
-            ],
-            "data": {
-              "inline": true,
-              "order": 1,
-              "title": "schema"
-            },
-            "name": "index",
-            "next": {
-              "path": "reference/platform/README",
-              "title": "Taskcluster Platform"
-            },
-            "path": "reference/schema/index",
-            "prev": {
-              "path": "reference/schema",
-              "title": "schema"
-            },
-            "up": {
-              "path": "reference/schema",
-              "title": "schema"
-            }
-          }
         ],
         "data": {
           "inline": true,
@@ -1346,8 +1323,8 @@
         },
         "name": "schema",
         "next": {
-          "path": "reference/schema/index",
-          "title": "schema"
+          "path": "reference/platform/README",
+          "title": "Taskcluster Platform"
         },
         "path": "reference/schema",
         "prev": {
@@ -1783,7 +1760,7 @@
         },
         "path": "reference/platform/README",
         "prev": {
-          "path": "reference/schema/index",
+          "path": "reference/schema",
           "title": "schema"
         },
         "up": {

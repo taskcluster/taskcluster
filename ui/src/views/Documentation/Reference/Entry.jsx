@@ -5,6 +5,7 @@ import { oneOf, object, string } from 'prop-types';
 import { upperCase } from 'change-case';
 import { toString } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
+import get from 'lodash/get';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -85,7 +86,7 @@ const primaryTypographyProps = { variant: 'body1' };
 export default class Entry extends Component {
   static propTypes = {
     /** Entry type. */
-    type: oneOf(['function', 'topic-exchange', 'logs']).isRequired,
+    type: oneOf(['function', 'topic-exchange', 'logs', 'schema']).isRequired,
     /** The reference entry. */
     entry: object.isRequired,
     /** Required when `type` is `topic-exchange`. */
@@ -191,6 +192,27 @@ export default class Entry extends Component {
         <Grid item xs={1}>
           <div>
             <StatusLabel state={upperCase(entry.level)} />
+          </div>
+        </Grid>
+      </Grid>
+    );
+  };
+
+  renderSchemaExpansionPanelSummary = () => {
+    const { entry, classes } = this.props;
+
+    return (
+      <Grid className={classes.gridContainer} container spacing={8}>
+        <Grid item xs={5}>
+          <div>
+            <Typography id={entry.content.$id} component="h3">
+              {entry.content.title}
+            </Typography>
+          </div>
+        </Grid>
+        <Grid item xs={7}>
+          <div>
+            <Typography>{entry.content.$id}</Typography>
           </div>
         </Grid>
       </Grid>
@@ -498,14 +520,27 @@ export default class Entry extends Component {
     );
   };
 
+  renderSchemaExpansionDetails = () => {
+    const { classes, entry } = this.props;
+    const { expanded } = this.state;
+
+    return (
+      expanded && (
+        <List className={classes.list}>
+          {this.renderSchemaTable(entry.content.$id, entry.content.description)}
+        </List>
+      )
+    );
+  };
+
   handlePanelChange = key => () => {
     const { entry, history } = this.props;
     const { expanded } = this.state;
 
-    if (window.location.hash === `#${entry[key]}` || expanded) {
+    if (window.location.hash === `#${get(entry, key)}` || expanded) {
       history.push(history.location.pathname);
     } else {
-      history.push(`#${entry[key]}`);
+      history.push(`#${get(entry, key)}`);
     }
 
     this.setState({
@@ -513,13 +548,22 @@ export default class Entry extends Component {
     });
   };
 
+  getEntryHashKey = (isLogType, isEntrySchema) => {
+    if (isEntrySchema) {
+      return 'content.$id';
+    }
+
+    return isLogType ? 'type' : 'name';
+  };
+
   render() {
     const { classes, type } = this.props;
     const { expanded } = this.state;
+    const isEntrySchema = type === 'schema';
     const isEntryExchange = type === 'topic-exchange';
     const isLogType = type === 'logs';
-    const isFunctionType = !isLogType && !isEntryExchange;
-    const entryHashKey = isLogType ? 'type' : 'name';
+    const isFunctionType = !isLogType && !isEntryExchange && !isEntrySchema;
+    const entryHashKey = this.getEntryHashKey(isLogType, isEntrySchema);
 
     return (
       <ExpansionPanel
@@ -533,11 +577,13 @@ export default class Entry extends Component {
             }),
           }}
           expandIcon={<ExpandMoreIcon />}>
+          {isEntrySchema && this.renderSchemaExpansionPanelSummary()}
           {isEntryExchange && this.renderExchangeExpansionPanelSummary()}
           {isLogType && this.renderLogsExpansionPanelSummary()}
           {isFunctionType && this.renderFunctionExpansionPanelSummary()}
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>
+          {isEntrySchema && this.renderSchemaExpansionDetails()}
           {isEntryExchange && this.renderExchangeExpansionDetails()}
           {isLogType && this.renderLogsExpansionDetails()}
           {isFunctionType && this.renderFunctionExpansionDetails()}

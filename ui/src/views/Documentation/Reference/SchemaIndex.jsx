@@ -1,21 +1,13 @@
 import React, { Component, Fragment } from 'react';
-import { string } from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import sortBy from 'lodash/sortBy';
 import filter from 'lodash/filter';
-import SchemaPanel from './SchemaPanel';
+import Entry from './Entry';
 import HeaderWithAnchor from '../components/HeaderWithAnchor';
 import references from '../../../../../generated/references.json';
 
 @withRouter
 export default class SchemaIndex extends Component {
-  static propTypes = {
-    // the service name to document
-    serviceName: string.isRequired,
-    // the version of that service to document
-    apiVersion: string.isRequired,
-  };
-
   // Filters only schemas, sorted by $id
   getSortedReferences = () => {
     const sortedReferences = filter(references, entry =>
@@ -26,7 +18,6 @@ export default class SchemaIndex extends Component {
   };
 
   render() {
-    const { serviceName } = this.props;
     const sortedReferences = this.getSortedReferences();
 
     return (
@@ -34,9 +25,9 @@ export default class SchemaIndex extends Component {
         <HeaderWithAnchor>Schema Index</HeaderWithAnchor>
         <Fragment>
           {sortedReferences.map(entry => (
-            <SchemaPanel
+            <Entry
               key={entry.content.$id}
-              serviceName={serviceName}
+              serviceName="unknown"
               type="schema"
               entry={entry}
             />
