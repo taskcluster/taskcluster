@@ -10,7 +10,7 @@ suite(testing.suiteName(), () => {
       .filter(key => key.endsWith('requireContext.js'))
       .map(key => importer(key));
 
-    assert.equal(result.length, 1, 'should of had a file')
+    assert.equal(result.length, 1, 'should of had a file');
   });
 
   test('should be able to require a file with extension', () => {
@@ -19,9 +19,7 @@ suite(testing.suiteName(), () => {
 
     assert(keys.length > 0, 'should of had files');
 
-    keys.map(key => {
-      assert.equal(path.extname(key), '.graphql', 'should of had extension .graphql')
-    })
+    keys.map(key => assert.equal(path.extname(key), '.graphql', 'should of had extension .graphql'));
   });
 
   test('should be able to require a file in a subdirectory', () => {
@@ -43,9 +41,10 @@ suite(testing.suiteName(), () => {
 
   test('should be able to use importer.keys()', () => {
     const importer = requireContext('./');
-    const key = importer.keys().find(key => key === __filename);
+    const basename = path.basename(__filename);
+    const key = importer.keys().find(key => key === basename);
 
-    assert.equal(key, __filename, 'should of had been able to use importer.keys()');
+    assert.equal(key, basename, 'should of had been able to use importer.keys()');
   });
 
   test('should be able to use importer.keys() with loader', () => {
@@ -53,6 +52,6 @@ suite(testing.suiteName(), () => {
     const key = importer.keys().find(key => key.endsWith('requireContext.js'));
     const result = importer(key);
 
-    assert.equal(result, requireContext, 'should of had the same content')
+    assert.equal(result, requireContext, 'should of had the same content');
   });
 });
