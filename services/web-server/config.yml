@@ -46,7 +46,7 @@ defaults:
         audience: !env MOZILLA_AUTH0_AUDIENCE
         scope: !env MOZILLA_AUTH0_SCOPE
       # config for the github login strategy
-      github-oauth2:
+      github:
         # client ID and secret for the github OAuth application
         clientId: !env GITHUB_CLIENT_ID
         clientSecret: !env GITHUB_CLIENT_SECRET

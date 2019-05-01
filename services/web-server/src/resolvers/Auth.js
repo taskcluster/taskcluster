@@ -1,7 +1,7 @@
 export default {
   LoginStrategy: {
     MOZILLA_AUTH0: 'mozilla-auth0',
-    GITHUB_OAUTH2: 'github-oauth2',
+    GITHUB: 'github',
   },
   Query: {
     getCredentials(parent, { provider, accessToken }, { loaders }) {
