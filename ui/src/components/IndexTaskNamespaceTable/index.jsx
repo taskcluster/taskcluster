@@ -12,6 +12,7 @@ import TableCellListItem from '../TableCellListItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_NAMESPACES_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
+import Link from '../../utils/Link';
 import { pageInfo, indexedTask } from '../../utils/prop-types';
 
 const sorted = pipe(
@@ -117,8 +118,8 @@ export default class IndexTaskNamespaceTable extends Component {
                 className={classes.listItemCell}
                 dense
                 button
-                component="a"
-                href={`/tasks/index/${encodeURIComponent(
+                component={Link}
+                to={`/tasks/index/${encodeURIComponent(
                   namespace
                     .split('.')
                     .slice(0, -1)
