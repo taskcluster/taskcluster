@@ -9,6 +9,6 @@ defaults:
     vhost: ..
   login:
     strategies:
-      github-oauth2:
+      github:
         clientId: ...
         clientSecret: ...

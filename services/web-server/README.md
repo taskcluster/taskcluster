@@ -95,7 +95,7 @@ GITHUB_CLIENT_ID="<insert GitHub client ID here>"
 GITHUB_CLIENT_SECRET="<insert GitHub client secret here>"
 ```
 
-or as `login.strategies.github-oauth2.clientId` and `login.strategies.github-oauth2.clientSecret`
+or as `login.strategies.github.clientId` and `login.strategies.github.clientSecret`
 in `user-config.yml`.
 
 Now, start the service as you normally would.

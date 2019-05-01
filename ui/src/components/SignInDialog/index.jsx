@@ -98,7 +98,7 @@ export default class SignInDialog extends Component {
                 <ListItemText primary="Sign in with Auth0" />
               </ListItem>
             )}
-            {process.env.LOGIN_STRATEGIES.includes('github-oauth2') && (
+            {process.env.LOGIN_STRATEGIES.includes('github') && (
               <ListItem
                 button
                 component="a"

@@ -8,9 +8,9 @@ const tryCatch = require('../../utils/tryCatch');
 const { decode, encode } = require('../../utils/codec');
 const GithubClient = require('../clients/GithubClient');
 
-const debug = Debug('strategies.github-oauth2');
+const debug = Debug('strategies.github');
 
-module.exports = class GithubOauth2 {
+module.exports = class Github {
   constructor({ name, cfg }) {
     const strategyCfg = cfg.login.strategies[name];
 
@@ -18,7 +18,7 @@ module.exports = class GithubOauth2 {
     assert(strategyCfg.clientSecret, `${name}.clientSecret is required`);
 
     Object.assign(this, strategyCfg);
-    this.identityProviderId = 'github-oauth2';
+    this.identityProviderId = 'github';
   }
 
   async getUser({ userId }) {
@@ -69,7 +69,7 @@ module.exports = class GithubOauth2 {
 
   useStrategy(app, cfg) {
     const { credentials } = cfg.taskcluster;
-    const strategyCfg = cfg.login.strategies['github-oauth2'];
+    const strategyCfg = cfg.login.strategies['github'];
 
     if (!strategyCfg.clientId || !strategyCfg.clientSecret) {
       throw new Error(
@@ -96,7 +96,7 @@ module.exports = class GithubOauth2 {
           next(null, {
             profile,
             accessToken,
-            identityProviderId: 'github-oauth2',
+            identityProviderId: 'github',
           });
         }
       )

@@ -1,6 +1,6 @@
 enum LoginStrategy {
   MOZILLA_AUTH0
-  GITHUB_OAUTH2
+  GITHUB
 }
 
 # Taskcluster credentials.
@@ -26,7 +26,7 @@ extend type Query {
   # | -- | --- |
   # | Provider | Token type |
   # | mozilla-auth0 | An OIDC token from a trusted OpenID provider |
-  # | github-oauth2 | An OAuth 2.0 token |
+  # | github | An OAuth 2.0 token |
   #
   # The `accessToken` is first verified against the named
   # `provider`, then passed to the provider\'s API to retrieve a user
