@@ -35,7 +35,7 @@ class GithubEvents(BaseClient):
         exchange with the designated `organization` and `repository`
         in the routing-key along with event specific metadata in the payload.
 
-        This exchange outputs: ``v1/github-pull-request-message.json#``This exchange takes the following keys:
+        This exchange takes the following keys:
 
          * routingKeyKind: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key. (required)
 
@@ -68,7 +68,6 @@ class GithubEvents(BaseClient):
                     'name': 'action',
                 },
             ],
-            'schema': 'v1/github-pull-request-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -80,7 +79,7 @@ class GithubEvents(BaseClient):
         exchange with the designated `organization` and `repository`
         in the routing-key along with event specific metadata in the payload.
 
-        This exchange outputs: ``v1/github-push-message.json#``This exchange takes the following keys:
+        This exchange takes the following keys:
 
          * routingKeyKind: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key. (required)
 
@@ -107,7 +106,6 @@ class GithubEvents(BaseClient):
                     'name': 'repository',
                 },
             ],
-            'schema': 'v1/github-push-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -119,7 +117,7 @@ class GithubEvents(BaseClient):
         exchange with the designated `organization` and `repository`
         in the routing-key along with event specific metadata in the payload.
 
-        This exchange outputs: ``v1/github-release-message.json#``This exchange takes the following keys:
+        This exchange takes the following keys:
 
          * routingKeyKind: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key. (required)
 
@@ -146,7 +144,6 @@ class GithubEvents(BaseClient):
                     'name': 'repository',
                 },
             ],
-            'schema': 'v1/github-release-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -161,7 +158,7 @@ class GithubEvents(BaseClient):
         Pass in the array of routes as a second argument to the publish method. Currently, we do
         use the statuses routes to bind the handler that creates the initial status.
 
-        This exchange outputs: ``v1/task-group-creation-requested.json#``This exchange takes the following keys:
+        This exchange takes the following keys:
 
          * routingKeyKind: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key. (required)
 
@@ -188,7 +185,6 @@ class GithubEvents(BaseClient):
                     'name': 'repository',
                 },
             ],
-            'schema': 'v1/task-group-creation-requested.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 

@@ -39,8 +39,6 @@ class EC2Manager(AsyncBaseClient):
 
         This method is only for debugging the ec2-manager
 
-        This method gives output: ``v1/list-worker-types.json#``
-
         This method is ``experimental``
         """
 
@@ -51,8 +49,6 @@ class EC2Manager(AsyncBaseClient):
         Run an instance
 
         Request an instance of a worker type
-
-        This method takes input: ``v1/run-instance-request.json#``
 
         This method is ``experimental``
         """
@@ -76,8 +72,6 @@ class EC2Manager(AsyncBaseClient):
 
         Return an object which has a generic state description. This only contains counts of instances
 
-        This method gives output: ``v1/worker-type-resources.json#``
-
         This method is ``experimental``
         """
 
@@ -88,8 +82,6 @@ class EC2Manager(AsyncBaseClient):
         Look up the resource health for a workerType
 
         Return a view of the health of a given worker type
-
-        This method gives output: ``v1/health.json#``
 
         This method is ``experimental``
         """
@@ -102,8 +94,6 @@ class EC2Manager(AsyncBaseClient):
 
         Return a list of the most recent errors encountered by a worker type
 
-        This method gives output: ``v1/errors.json#``
-
         This method is ``experimental``
         """
 
@@ -115,8 +105,6 @@ class EC2Manager(AsyncBaseClient):
 
         Return state information for a given worker type
 
-        This method gives output: ``v1/worker-type-state.json#``
-
         This method is ``experimental``
         """
 
@@ -127,8 +115,6 @@ class EC2Manager(AsyncBaseClient):
         Ensure a KeyPair for a given worker type exists
 
         Idempotently ensure that a keypair of a given name exists
-
-        This method takes input: ``v1/create-key-pair.json#``
 
         This method is ``experimental``
         """
@@ -163,8 +149,6 @@ class EC2Manager(AsyncBaseClient):
 
         Return a list of possible prices for EC2
 
-        This method gives output: ``v1/prices.json#``
-
         This method is ``experimental``
         """
 
@@ -175,10 +159,6 @@ class EC2Manager(AsyncBaseClient):
         Request prices for EC2
 
         Return a list of possible prices for EC2
-
-        This method takes input: ``v1/prices-request.json#``
-
-        This method gives output: ``v1/prices.json#``
 
         This method is ``experimental``
         """
@@ -191,8 +171,6 @@ class EC2Manager(AsyncBaseClient):
 
         Give some basic stats on the health of our EC2 account
 
-        This method gives output: ``v1/health.json#``
-
         This method is ``experimental``
         """
 
@@ -203,8 +181,6 @@ class EC2Manager(AsyncBaseClient):
         Look up the most recent errors in the provisioner across all worker types
 
         Return a list of recent errors encountered
-
-        This method gives output: ``v1/errors.json#``
 
         This method is ``experimental``
         """
@@ -333,7 +309,6 @@ class EC2Manager(AsyncBaseClient):
         },
         "ensureKeyPair": {
             'args': ['name'],
-            'input': 'v1/create-key-pair.json#',
             'method': 'get',
             'name': 'ensureKeyPair',
             'route': '/key-pairs/<name>',
@@ -343,7 +318,6 @@ class EC2Manager(AsyncBaseClient):
             'args': [],
             'method': 'get',
             'name': 'getHealth',
-            'output': 'v1/health.json#',
             'route': '/health',
             'stability': 'experimental',
         },
@@ -351,7 +325,6 @@ class EC2Manager(AsyncBaseClient):
             'args': [],
             'method': 'get',
             'name': 'getPrices',
-            'output': 'v1/prices.json#',
             'route': '/prices',
             'stability': 'experimental',
         },
@@ -359,16 +332,13 @@ class EC2Manager(AsyncBaseClient):
             'args': [],
             'method': 'get',
             'name': 'getRecentErrors',
-            'output': 'v1/errors.json#',
             'route': '/errors',
             'stability': 'experimental',
         },
         "getSpecificPrices": {
             'args': [],
-            'input': 'v1/prices-request.json#',
             'method': 'post',
             'name': 'getSpecificPrices',
-            'output': 'v1/prices.json#',
             'route': '/prices',
             'stability': 'experimental',
         },
@@ -376,7 +346,6 @@ class EC2Manager(AsyncBaseClient):
             'args': [],
             'method': 'get',
             'name': 'listWorkerTypes',
-            'output': 'v1/list-worker-types.json#',
             'route': '/worker-types',
             'stability': 'experimental',
         },
@@ -410,7 +379,6 @@ class EC2Manager(AsyncBaseClient):
         },
         "runInstance": {
             'args': ['workerType'],
-            'input': 'v1/run-instance-request.json#',
             'method': 'put',
             'name': 'runInstance',
             'route': '/worker-types/<workerType>/instance',
@@ -441,7 +409,6 @@ class EC2Manager(AsyncBaseClient):
             'args': ['workerType'],
             'method': 'get',
             'name': 'workerTypeErrors',
-            'output': 'v1/errors.json#',
             'route': '/worker-types/<workerType>/errors',
             'stability': 'experimental',
         },
@@ -449,7 +416,6 @@ class EC2Manager(AsyncBaseClient):
             'args': ['workerType'],
             'method': 'get',
             'name': 'workerTypeHealth',
-            'output': 'v1/health.json#',
             'route': '/worker-types/<workerType>/health',
             'stability': 'experimental',
         },
@@ -457,7 +423,6 @@ class EC2Manager(AsyncBaseClient):
             'args': ['workerType'],
             'method': 'get',
             'name': 'workerTypeState',
-            'output': 'v1/worker-type-state.json#',
             'route': '/worker-types/<workerType>/state',
             'stability': 'experimental',
         },
@@ -465,7 +430,6 @@ class EC2Manager(AsyncBaseClient):
             'args': ['workerType'],
             'method': 'get',
             'name': 'workerTypeStats',
-            'output': 'v1/worker-type-resources.json#',
             'route': '/worker-types/<workerType>/stats',
             'stability': 'experimental',
         },

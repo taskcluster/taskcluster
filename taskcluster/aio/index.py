@@ -131,8 +131,6 @@ class Index(AsyncBaseClient):
         Find a task by index path, returning the highest-rank task with that path. If no
         task exists for the given path, this API end-point will respond with a 404 status.
 
-        This method gives output: ``v1/indexed-task-response.json#``
-
         This method is ``stable``
         """
 
@@ -149,8 +147,6 @@ class Index(AsyncBaseClient):
         `continuationToken` will be returned, which can be given in the next
         request. For the initial request, the payload should be an empty JSON
         object.
-
-        This method gives output: ``v1/list-namespaces-response.json#``
 
         This method is ``stable``
         """
@@ -172,8 +168,6 @@ class Index(AsyncBaseClient):
         **Remark**, this end-point is designed for humans browsing for tasks, not
         services, as that makes little sense.
 
-        This method gives output: ``v1/list-tasks-response.json#``
-
         This method is ``stable``
         """
 
@@ -188,10 +182,6 @@ class Index(AsyncBaseClient):
 
         Please see the introduction above for information
         about indexing successfully completed tasks automatically using custom routes.
-
-        This method takes input: ``v1/insert-task-request.json#``
-
-        This method gives output: ``v1/indexed-task-response.json#``
 
         This method is ``stable``
         """
@@ -234,16 +224,13 @@ class Index(AsyncBaseClient):
             'args': ['indexPath'],
             'method': 'get',
             'name': 'findTask',
-            'output': 'v1/indexed-task-response.json#',
             'route': '/task/<indexPath>',
             'stability': 'stable',
         },
         "insertTask": {
             'args': ['namespace'],
-            'input': 'v1/insert-task-request.json#',
             'method': 'put',
             'name': 'insertTask',
-            'output': 'v1/indexed-task-response.json#',
             'route': '/task/<namespace>',
             'stability': 'stable',
         },
@@ -251,7 +238,6 @@ class Index(AsyncBaseClient):
             'args': ['namespace'],
             'method': 'get',
             'name': 'listNamespaces',
-            'output': 'v1/list-namespaces-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/namespaces/<namespace>',
             'stability': 'stable',
@@ -260,7 +246,6 @@ class Index(AsyncBaseClient):
             'args': ['namespace'],
             'method': 'get',
             'name': 'listTasks',
-            'output': 'v1/list-tasks-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/tasks/<namespace>',
             'stability': 'stable',

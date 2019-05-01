@@ -49,8 +49,6 @@ class Queue(AsyncBaseClient):
         definition may have been modified by queue, if an optional property is
         not specified the queue may provide a default value.
 
-        This method gives output: ``v1/task.json#``
-
         This method is ``stable``
         """
 
@@ -61,8 +59,6 @@ class Queue(AsyncBaseClient):
         Get task status
 
         Get task status structure from `taskId`
-
-        This method gives output: ``v1/task-status-response.json#``
 
         This method is ``stable``
         """
@@ -90,8 +86,6 @@ class Queue(AsyncBaseClient):
         If you are not interested in listing all the members at once, you may
         use the query-string option `limit` to return fewer.
 
-        This method gives output: ``v1/list-task-group-response.json#``
-
         This method is ``stable``
         """
 
@@ -117,8 +111,6 @@ class Queue(AsyncBaseClient):
 
         If you are not interested in listing all the tasks at once, you may
         use the query-string option `limit` to return fewer.
-
-        This method gives output: ``v1/list-dependent-tasks-response.json#``
 
         This method is ``stable``
         """
@@ -160,10 +152,6 @@ class Queue(AsyncBaseClient):
         legacy and should not be used. Note that the new, non-legacy scopes require
         a `queue:scheduler-id:..` scope as well as scopes for the proper priority.
 
-        This method takes input: ``v1/create-task-request.json#``
-
-        This method gives output: ``v1/task-status-response.json#``
-
         This method is ``stable``
         """
 
@@ -175,10 +163,6 @@ class Queue(AsyncBaseClient):
 
         **Deprecated**, this is the same as `createTask` with a **self-dependency**.
         This is only present for legacy.
-
-        This method takes input: ``v1/create-task-request.json#``
-
-        This method gives output: ``v1/task-status-response.json#``
 
         This method is ``deprecated``
         """
@@ -203,8 +187,6 @@ class Queue(AsyncBaseClient):
         **Note** this operation is **idempotent** and will not fail or complain
         if called with a `taskId` that is already scheduled, or even resolved.
         To reschedule a task previously resolved, use `rerunTask`.
-
-        This method gives output: ``v1/task-status-response.json#``
 
         This method is ``stable``
         """
@@ -231,8 +213,6 @@ class Queue(AsyncBaseClient):
         is not either `failed` or `completed`, this operation will just return
         the current task status.
 
-        This method gives output: ``v1/task-status-response.json#``
-
         This method is ``deprecated``
         """
 
@@ -255,8 +235,6 @@ class Queue(AsyncBaseClient):
         isn't `unscheduled`, `pending` or `running`, this operation will just
         return the current task status.
 
-        This method gives output: ``v1/task-status-response.json#``
-
         This method is ``stable``
         """
 
@@ -275,10 +253,6 @@ class Queue(AsyncBaseClient):
         service in an error condition) and call the endpoint again.  This is a
         simple implementation of "long polling".
 
-        This method takes input: ``v1/claim-work-request.json#``
-
-        This method gives output: ``v1/claim-work-response.json#``
-
         This method is ``stable``
         """
 
@@ -289,10 +263,6 @@ class Queue(AsyncBaseClient):
         Claim Task
 
         claim a task - never documented
-
-        This method takes input: ``v1/task-claim-request.json#``
-
-        This method gives output: ``v1/task-claim-response.json#``
 
         This method is ``deprecated``
         """
@@ -325,8 +295,6 @@ class Queue(AsyncBaseClient):
         should abort the task and forget about the given `runId`. There is no
         need to resolve the run or upload artifacts.
 
-        This method gives output: ``v1/task-reclaim-response.json#``
-
         This method is ``stable``
         """
 
@@ -337,8 +305,6 @@ class Queue(AsyncBaseClient):
         Report Run Completed
 
         Report a task completed, resolving the run as `completed`.
-
-        This method gives output: ``v1/task-status-response.json#``
 
         This method is ``stable``
         """
@@ -356,8 +322,6 @@ class Queue(AsyncBaseClient):
         Do not use this if the task couldn't be run because if malformed
         payload, or other unexpected condition. In these cases we have a task
         exception, which should be reported with `reportException`.
-
-        This method gives output: ``v1/task-status-response.json#``
 
         This method is ``stable``
         """
@@ -381,10 +345,6 @@ class Queue(AsyncBaseClient):
         Do not use this to signal that some user-specified code crashed for any
         reason specific to this code. If user-specific code hits a resource that
         is temporarily unavailable worker should report task _failed_.
-
-        This method takes input: ``v1/task-exception-request.json#``
-
-        This method gives output: ``v1/task-status-response.json#``
 
         This method is ``stable``
         """
@@ -465,10 +425,6 @@ class Queue(AsyncBaseClient):
         updated. You should only use this to update the `url` property for
         reference artifacts your process has created.
 
-        This method takes input: ``v1/post-artifact-request.json#``
-
-        This method gives output: ``v1/post-artifact-response.json#``
-
         This method is ``stable``
         """
 
@@ -487,8 +443,6 @@ class Queue(AsyncBaseClient):
         the `present` entity field will be set to `true` to reflect that the
         artifact is now present and a message published to pulse.  NOTE: This
         endpoint *must* be called for all artifacts of storageType 'blob'
-
-        This method takes input: ``v1/put-artifact-request.json#``
 
         This method is ``experimental``
         """
@@ -622,8 +576,6 @@ class Queue(AsyncBaseClient):
         By default this end-point will list up-to 1000 artifacts in a single page
         you may limit this with the query-string parameter `limit`.
 
-        This method gives output: ``v1/list-artifacts-response.json#``
-
         This method is ``experimental``
         """
 
@@ -643,8 +595,6 @@ class Queue(AsyncBaseClient):
 
         By default this end-point will list up-to 1000 artifacts in a single page
         you may limit this with the query-string parameter `limit`.
-
-        This method gives output: ``v1/list-artifacts-response.json#``
 
         This method is ``experimental``
         """
@@ -666,8 +616,6 @@ class Queue(AsyncBaseClient):
         option. By default this end-point will list up to 1000 provisioners in a single
         page. You may limit this with the query-string parameter `limit`.
 
-        This method gives output: ``v1/list-provisioners-response.json#``
-
         This method is ``experimental``
         """
 
@@ -682,8 +630,6 @@ class Queue(AsyncBaseClient):
         The term "provisioner" is taken broadly to mean anything with a provisionerId.
         This does not necessarily mean there is an associated service performing any
         provisioning activity.
-
-        This method gives output: ``v1/provisioner-response.json#``
 
         This method is ``experimental``
         """
@@ -705,10 +651,6 @@ class Queue(AsyncBaseClient):
         This does not necessarily mean there is an associated service performing any
         provisioning activity.
 
-        This method takes input: ``v1/update-provisioner-request.json#``
-
-        This method gives output: ``v1/provisioner-response.json#``
-
         This method is ``experimental``
         """
 
@@ -726,8 +668,6 @@ class Queue(AsyncBaseClient):
         should be no means expect this to be an accurate number.
         It is, however, a solid estimate of the number of pending tasks.
 
-        This method gives output: ``v1/pending-tasks-response.json#``
-
         This method is ``stable``
         """
 
@@ -744,8 +684,6 @@ class Queue(AsyncBaseClient):
         option. By default this end-point will list up to 1000 worker-types in a single
         page. You may limit this with the query-string parameter `limit`.
 
-        This method gives output: ``v1/list-workertypes-response.json#``
-
         This method is ``experimental``
         """
 
@@ -756,8 +694,6 @@ class Queue(AsyncBaseClient):
         Get a worker-type
 
         Get a worker-type from a provisioner.
-
-        This method gives output: ``v1/workertype-response.json#``
 
         This method is ``experimental``
         """
@@ -774,10 +710,6 @@ class Queue(AsyncBaseClient):
         possessed. For example, a request to update the `gecko-b-1-w2008` worker-type within the `aws-provisioner-v1`
         provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
         `queue:declare-worker-type:aws-provisioner-v1/gecko-b-1-w2008#description`.
-
-        This method takes input: ``v1/update-workertype-request.json#``
-
-        This method gives output: ``v1/workertype-response.json#``
 
         This method is ``experimental``
         """
@@ -799,8 +731,6 @@ class Queue(AsyncBaseClient):
         option. By default this end-point will list up to 1000 workers in a single
         page. You may limit this with the query-string parameter `limit`.
 
-        This method gives output: ``v1/list-workers-response.json#``
-
         This method is ``experimental``
         """
 
@@ -812,8 +742,6 @@ class Queue(AsyncBaseClient):
 
         Get a worker from a worker-type.
 
-        This method gives output: ``v1/worker-response.json#``
-
         This method is ``experimental``
         """
 
@@ -824,10 +752,6 @@ class Queue(AsyncBaseClient):
         Quarantine a worker
 
         Quarantine a worker
-
-        This method takes input: ``v1/quarantine-worker-request.json#``
-
-        This method gives output: ``v1/worker-response.json#``
 
         This method is ``experimental``
         """
@@ -843,10 +767,6 @@ class Queue(AsyncBaseClient):
         `declareWorker` allows updating one or more properties of a worker as long as the required scopes are
         possessed.
 
-        This method takes input: ``v1/update-worker-request.json#``
-
-        This method gives output: ``v1/worker-response.json#``
-
         This method is ``experimental``
         """
 
@@ -857,31 +777,25 @@ class Queue(AsyncBaseClient):
             'args': ['taskId'],
             'method': 'post',
             'name': 'cancelTask',
-            'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/cancel',
             'stability': 'stable',
         },
         "claimTask": {
             'args': ['taskId', 'runId'],
-            'input': 'v1/task-claim-request.json#',
             'method': 'post',
             'name': 'claimTask',
-            'output': 'v1/task-claim-response.json#',
             'route': '/task/<taskId>/runs/<runId>/claim',
             'stability': 'deprecated',
         },
         "claimWork": {
             'args': ['provisionerId', 'workerType'],
-            'input': 'v1/claim-work-request.json#',
             'method': 'post',
             'name': 'claimWork',
-            'output': 'v1/claim-work-response.json#',
             'route': '/claim-work/<provisionerId>/<workerType>',
             'stability': 'stable',
         },
         "completeArtifact": {
             'args': ['taskId', 'runId', 'name'],
-            'input': 'v1/put-artifact-request.json#',
             'method': 'put',
             'name': 'completeArtifact',
             'route': '/task/<taskId>/runs/<runId>/artifacts/<name>',
@@ -889,55 +803,43 @@ class Queue(AsyncBaseClient):
         },
         "createArtifact": {
             'args': ['taskId', 'runId', 'name'],
-            'input': 'v1/post-artifact-request.json#',
             'method': 'post',
             'name': 'createArtifact',
-            'output': 'v1/post-artifact-response.json#',
             'route': '/task/<taskId>/runs/<runId>/artifacts/<name>',
             'stability': 'stable',
         },
         "createTask": {
             'args': ['taskId'],
-            'input': 'v1/create-task-request.json#',
             'method': 'put',
             'name': 'createTask',
-            'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>',
             'stability': 'stable',
         },
         "declareProvisioner": {
             'args': ['provisionerId'],
-            'input': 'v1/update-provisioner-request.json#',
             'method': 'put',
             'name': 'declareProvisioner',
-            'output': 'v1/provisioner-response.json#',
             'route': '/provisioners/<provisionerId>',
             'stability': 'experimental',
         },
         "declareWorker": {
             'args': ['provisionerId', 'workerType', 'workerGroup', 'workerId'],
-            'input': 'v1/update-worker-request.json#',
             'method': 'put',
             'name': 'declareWorker',
-            'output': 'v1/worker-response.json#',
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>',
             'stability': 'experimental',
         },
         "declareWorkerType": {
             'args': ['provisionerId', 'workerType'],
-            'input': 'v1/update-workertype-request.json#',
             'method': 'put',
             'name': 'declareWorkerType',
-            'output': 'v1/workertype-response.json#',
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>',
             'stability': 'experimental',
         },
         "defineTask": {
             'args': ['taskId'],
-            'input': 'v1/create-task-request.json#',
             'method': 'post',
             'name': 'defineTask',
-            'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/define',
             'stability': 'deprecated',
         },
@@ -959,7 +861,6 @@ class Queue(AsyncBaseClient):
             'args': ['provisionerId'],
             'method': 'get',
             'name': 'getProvisioner',
-            'output': 'v1/provisioner-response.json#',
             'route': '/provisioners/<provisionerId>',
             'stability': 'experimental',
         },
@@ -967,7 +868,6 @@ class Queue(AsyncBaseClient):
             'args': ['provisionerId', 'workerType', 'workerGroup', 'workerId'],
             'method': 'get',
             'name': 'getWorker',
-            'output': 'v1/worker-response.json#',
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>',
             'stability': 'experimental',
         },
@@ -975,7 +875,6 @@ class Queue(AsyncBaseClient):
             'args': ['provisionerId', 'workerType'],
             'method': 'get',
             'name': 'getWorkerType',
-            'output': 'v1/workertype-response.json#',
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>',
             'stability': 'experimental',
         },
@@ -983,7 +882,6 @@ class Queue(AsyncBaseClient):
             'args': ['taskId', 'runId'],
             'method': 'get',
             'name': 'listArtifacts',
-            'output': 'v1/list-artifacts-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/task/<taskId>/runs/<runId>/artifacts',
             'stability': 'experimental',
@@ -992,7 +890,6 @@ class Queue(AsyncBaseClient):
             'args': ['taskId'],
             'method': 'get',
             'name': 'listDependentTasks',
-            'output': 'v1/list-dependent-tasks-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/task/<taskId>/dependents',
             'stability': 'stable',
@@ -1001,7 +898,6 @@ class Queue(AsyncBaseClient):
             'args': ['taskId'],
             'method': 'get',
             'name': 'listLatestArtifacts',
-            'output': 'v1/list-artifacts-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/task/<taskId>/artifacts',
             'stability': 'experimental',
@@ -1010,7 +906,6 @@ class Queue(AsyncBaseClient):
             'args': [],
             'method': 'get',
             'name': 'listProvisioners',
-            'output': 'v1/list-provisioners-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/provisioners',
             'stability': 'experimental',
@@ -1019,7 +914,6 @@ class Queue(AsyncBaseClient):
             'args': ['taskGroupId'],
             'method': 'get',
             'name': 'listTaskGroup',
-            'output': 'v1/list-task-group-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/task-group/<taskGroupId>/list',
             'stability': 'stable',
@@ -1028,7 +922,6 @@ class Queue(AsyncBaseClient):
             'args': ['provisionerId'],
             'method': 'get',
             'name': 'listWorkerTypes',
-            'output': 'v1/list-workertypes-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/provisioners/<provisionerId>/worker-types',
             'stability': 'experimental',
@@ -1037,7 +930,6 @@ class Queue(AsyncBaseClient):
             'args': ['provisionerId', 'workerType'],
             'method': 'get',
             'name': 'listWorkers',
-            'output': 'v1/list-workers-response.json#',
             'query': ['continuationToken', 'limit', 'quarantined'],
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>/workers',
             'stability': 'experimental',
@@ -1046,7 +938,6 @@ class Queue(AsyncBaseClient):
             'args': ['provisionerId', 'workerType'],
             'method': 'get',
             'name': 'pendingTasks',
-            'output': 'v1/pending-tasks-response.json#',
             'route': '/pending/<provisionerId>/<workerType>',
             'stability': 'stable',
         },
@@ -1059,10 +950,8 @@ class Queue(AsyncBaseClient):
         },
         "quarantineWorker": {
             'args': ['provisionerId', 'workerType', 'workerGroup', 'workerId'],
-            'input': 'v1/quarantine-worker-request.json#',
             'method': 'put',
             'name': 'quarantineWorker',
-            'output': 'v1/worker-response.json#',
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>',
             'stability': 'experimental',
         },
@@ -1070,7 +959,6 @@ class Queue(AsyncBaseClient):
             'args': ['taskId', 'runId'],
             'method': 'post',
             'name': 'reclaimTask',
-            'output': 'v1/task-reclaim-response.json#',
             'route': '/task/<taskId>/runs/<runId>/reclaim',
             'stability': 'stable',
         },
@@ -1078,16 +966,13 @@ class Queue(AsyncBaseClient):
             'args': ['taskId', 'runId'],
             'method': 'post',
             'name': 'reportCompleted',
-            'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/runs/<runId>/completed',
             'stability': 'stable',
         },
         "reportException": {
             'args': ['taskId', 'runId'],
-            'input': 'v1/task-exception-request.json#',
             'method': 'post',
             'name': 'reportException',
-            'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/runs/<runId>/exception',
             'stability': 'stable',
         },
@@ -1095,7 +980,6 @@ class Queue(AsyncBaseClient):
             'args': ['taskId', 'runId'],
             'method': 'post',
             'name': 'reportFailed',
-            'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/runs/<runId>/failed',
             'stability': 'stable',
         },
@@ -1103,7 +987,6 @@ class Queue(AsyncBaseClient):
             'args': ['taskId'],
             'method': 'post',
             'name': 'rerunTask',
-            'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/rerun',
             'stability': 'deprecated',
         },
@@ -1111,7 +994,6 @@ class Queue(AsyncBaseClient):
             'args': ['taskId'],
             'method': 'post',
             'name': 'scheduleTask',
-            'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/schedule',
             'stability': 'stable',
         },
@@ -1119,7 +1001,6 @@ class Queue(AsyncBaseClient):
             'args': ['taskId'],
             'method': 'get',
             'name': 'status',
-            'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/status',
             'stability': 'stable',
         },
@@ -1127,7 +1008,6 @@ class Queue(AsyncBaseClient):
             'args': ['taskId'],
             'method': 'get',
             'name': 'task',
-            'output': 'v1/task.json#',
             'route': '/task/<taskId>',
             'stability': 'stable',
         },

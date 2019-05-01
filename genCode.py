@@ -122,10 +122,6 @@ def createStaticClient(name, api, genAsync=False):
                 ds = entry.get('description', '')
                 if entry.get('title'):
                     ds = entry.get('title') + '\n\n' + ds
-                if entry.get('input'):
-                    ds = '%s\n\nThis method takes input: ``%s``' % (ds, entry['input'])
-                if entry.get('output'):
-                    ds = '%s\n\nThis method gives output: ``%s``' % (ds, entry['output'])
                 if entry.get('stability'):
                     ds = '%s\n\nThis method is ``%s``' % (ds, entry['stability'])
 
@@ -166,12 +162,10 @@ def createStaticClient(name, api, genAsync=False):
                 ds = entry.get('description', '')
                 if entry.get('title'):
                     ds = entry.get('title') + '\n\n' + ds
-                if entry.get('schema'):
-                    ds = '%s\n\nThis exchange has outputs' % ds, entry['schema']
                 if entry.get('stability'):
                     ds = '%s\n\nThis method is ``%s``' % (ds, entry['stability'])
 
-                ds += 'This exchange takes the following keys:'
+                ds += '\n\nThis exchange takes the following keys:'
                 for key in entry['routingKey']:
                     ds += '\n\n * %s: %s%s' % (key.get('name'), key.get('summary', ''), ' (required)' if key['required'] else '')
 
