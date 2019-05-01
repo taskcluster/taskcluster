@@ -7,7 +7,7 @@ module "web_ui_secrets" {
     PORT                          = ""
     GRAPHQL_ENDPOINT              = "${var.root_url}/graphql"
     GRAPHQL_SUBSCRIPTION_ENDPOINT = "${var.root_url}/subscription"
-    LOGIN_STRATEGIES              = ""
+    LOGIN_STRATEGIES              = "github mozilla-auth0"
   }
 }
 
