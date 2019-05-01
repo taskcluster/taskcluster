@@ -30,13 +30,9 @@ suite(testing.suiteName(), () => {
   });
 
   test('should throw an exception if the module does not exists', () => {
-    try {
+    assert.throws(function() {
       requireContext('./cat');
-
-      assert.fail('should of had an error');
-    } catch (e) {
-      assert.ok(e);
-    }
+    }, /^Error: ENOENT/);
   });
 
   test('should be able to use importer.keys()', () => {
