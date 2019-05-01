@@ -86,16 +86,18 @@ export default class Entry extends Component {
   static propTypes = {
     /** Entry type. */
     type: oneOf(['function', 'topic-exchange', 'logs', 'schema']).isRequired,
-    /** The reference entry. */
-    entry: object.isRequired,
+    /** The reference entry, or {$id, schema} for a schema. */
+    entry: object,
     /** Required when `type` is `topic-exchange`. */
     exchangePrefix: string,
-    /** The service name in which the entry belongs to. */
-    serviceName: string.isRequired,
+    /** The service name to which the entry belongs, or null for a schema. */
+    serviceName: string,
   };
 
   static defaultProps = {
     exchangePrefix: null,
+    serviceName: null,
+    entry: null,
   };
 
   state = {
@@ -207,40 +209,36 @@ export default class Entry extends Component {
         <Grid item xs={5}>
           <div>
             <Typography
-              id={encodeURIComponent(entry.content.$id)}
+              id={encodeURIComponent(entry.schema.$id)}
               component="h3">
-              {entry.content.title}
+              {entry.schema.title}
             </Typography>
           </div>
         </Grid>
         <Grid item xs={7}>
           <div>
-            <Typography>{entry.content.$id}</Typography>
+            <Typography>{entry.schema.$id}</Typography>
           </div>
         </Grid>
       </Grid>
     );
   };
 
-  renderSchemaTable = (schema, headerTitle) => {
-    const { serviceName } = this.props;
-
-    return (
-      <ListItem>
-        <ListItemText
-          primaryTypographyProps={primaryTypographyProps}
-          disableTypography
-          primary={<Typography variant="body1">{headerTitle}</Typography>}
-          secondary={
-            <Fragment>
-              <br />
-              <SchemaTable schema={schema} serviceName={serviceName} />
-            </Fragment>
-          }
-        />
-      </ListItem>
-    );
-  };
+  renderSchemaTable = (schemaId, headerTitle) => (
+    <ListItem>
+      <ListItemText
+        primaryTypographyProps={primaryTypographyProps}
+        disableTypography
+        primary={<Typography variant="body1">{headerTitle}</Typography>}
+        secondary={
+          <Fragment>
+            <br />
+            <SchemaTable schema={schemaId} />
+          </Fragment>
+        }
+      />
+    </ListItem>
+  );
 
   renderScopeExpression(scopes) {
     const { classes } = this.props;
@@ -329,7 +327,7 @@ export default class Entry extends Component {
   }
 
   renderFunctionExpansionDetails = () => {
-    const { classes, entry } = this.props;
+    const { serviceName, classes, entry } = this.props;
     const signature = this.getSignatureFromEntry(entry);
 
     return (
@@ -392,15 +390,22 @@ export default class Entry extends Component {
             />
           </ListItem>
         )}
-        {entry.input && this.renderSchemaTable(entry.input, 'Request Payload')}
+        {entry.input &&
+          this.renderSchemaTable(
+            `/schemas/${serviceName}/${entry.input}`,
+            'Request Payload'
+          )}
         {entry.output &&
-          this.renderSchemaTable(entry.output, 'Response Payload')}
+          this.renderSchemaTable(
+            `/schemas/${serviceName}/${entry.output}`,
+            'Response Payload'
+          )}
       </List>
     );
   };
 
   renderExchangeExpansionDetails = () => {
-    const { classes, entry, exchangePrefix } = this.props;
+    const { classes, entry, exchangePrefix, serviceName } = this.props;
     const { expanded } = this.state;
     const exchange = `${exchangePrefix}${entry.exchange}`;
 
@@ -477,7 +482,10 @@ export default class Entry extends Component {
             />
           </ListItem>
           {entry.schema &&
-            this.renderSchemaTable(entry.schema, 'Message Payload')}
+            this.renderSchemaTable(
+              `/schemas/${serviceName}/${entry.schema}`,
+              'Message Payload'
+            )}
         </List>
       )
     );
@@ -530,7 +538,7 @@ export default class Entry extends Component {
     return (
       expanded && (
         <List className={classes.list}>
-          {this.renderSchemaTable(entry.content.$id, entry.content.description)}
+          {this.renderSchemaTable(entry.$id, entry.schema.description)}
         </List>
       )
     );
@@ -555,7 +563,7 @@ export default class Entry extends Component {
   getEntryHashKey = type => {
     switch (type) {
       case 'schema':
-        return 'content.$id';
+        return '$id';
       case 'logs':
         return 'type';
       default:
@@ -566,10 +574,10 @@ export default class Entry extends Component {
   render() {
     const { classes, type } = this.props;
     const { expanded } = this.state;
-    const isEntrySchema = type === 'schema';
-    const isEntryExchange = type === 'topic-exchange';
+    const isSchemaType = type === 'schema';
+    const isExchangeType = type === 'topic-exchange';
     const isLogType = type === 'logs';
-    const isFunctionType = !isLogType && !isEntryExchange && !isEntrySchema;
+    const isFunctionType = type === 'function';
     const entryHashKey = this.getEntryHashKey(type);
 
     return (
@@ -580,18 +588,18 @@ export default class Entry extends Component {
         <ExpansionPanelSummary
           classes={{
             content: classNames(classes.expansionPanelSummary, {
-              [classes.expansionPanelSummaryContent]: !isEntryExchange,
+              [classes.expansionPanelSummaryContent]: !isExchangeType,
             }),
           }}
           expandIcon={<ExpandMoreIcon />}>
-          {isEntrySchema && this.renderSchemaExpansionPanelSummary()}
-          {isEntryExchange && this.renderExchangeExpansionPanelSummary()}
+          {isSchemaType && this.renderSchemaExpansionPanelSummary()}
+          {isExchangeType && this.renderExchangeExpansionPanelSummary()}
           {isLogType && this.renderLogsExpansionPanelSummary()}
           {isFunctionType && this.renderFunctionExpansionPanelSummary()}
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>
-          {isEntrySchema && this.renderSchemaExpansionDetails()}
-          {isEntryExchange && this.renderExchangeExpansionDetails()}
+          {isSchemaType && this.renderSchemaExpansionDetails()}
+          {isExchangeType && this.renderExchangeExpansionDetails()}
           {isLogType && this.renderLogsExpansionDetails()}
           {isFunctionType && this.renderFunctionExpansionDetails()}
         </ExpansionPanelDetails>

@@ -1,14 +1,22 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
-import { join } from 'path';
 import RefParser from 'json-schema-ref-parser';
 import { string } from 'prop-types';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Table from 'react-schema-viewer/lib/SchemaTable';
+import cloneDeep from 'lodash.clonedeep';
+import jsonSchemaDraft06 from 'ajv/lib/refs/json-schema-draft-06.json';
+import jsonSchemaDraft07 from 'ajv/lib/refs/json-schema-draft-07.json';
 import ErrorPanel from '../ErrorPanel';
 import { THEME } from '../../utils/constants';
 import references from '../../../../generated/references.json';
+
+// Local copies of the json-schemas schemas, since TC schemas $refer to these
+const EXTERNAL_SCHEMAS = [jsonSchemaDraft06, jsonSchemaDraft07].reduce(
+  (schemas, schema) => ({ ...schemas, [schema.$id]: schema }),
+  {}
+);
 
 @withRouter
 @withStyles(
@@ -83,19 +91,8 @@ import references from '../../../../generated/references.json';
  */
 export default class SchemaTable extends Component {
   static propTypes = {
+    // The $id of the schema to render
     schema: string.isRequired,
-    /**
-     * The service name in which the entry belongs to.
-     * Required for a reference document (api or exchanges) because
-     * the `input` and `output` property values of the schema are relative URIs.
-     * The service name helps us find the referenced schema given
-     * the relative path.
-     * */
-    serviceName: string,
-  };
-
-  static defaultProps = {
-    serviceName: null,
   };
 
   state = {
@@ -119,24 +116,45 @@ export default class SchemaTable extends Component {
     }
   }
 
-  readReference(schemaPath) {
-    const { serviceName } = this.props;
-    const id = schemaPath.startsWith('/')
-      ? schemaPath
-      : join('/', 'schemas', serviceName, schemaPath);
-    const schemaId = id.endsWith('#') ? id : `${id}#`;
+  readReference(file) {
+    const external = EXTERNAL_SCHEMAS[`${file.url}#`];
 
-    return references.find(({ content }) => content.$id === schemaId);
+    if (external) {
+      return external;
+    }
+
+    const { protocol, hostname, pathname } = new URL(file.url);
+
+    // since json-schema-ref-parser uses the window's location for relative
+    // URIs, only map those to our local schema list
+    if (
+      protocol !== window.location.protocol ||
+      hostname !== window.location.hostname
+    ) {
+      throw new Error(`External schema ${file.url} not available`);
+    }
+
+    const schemaId = `${pathname}#`;
+    const schema = references.find(({ content }) => content.$id === schemaId);
+
+    if (!schema) {
+      throw new Error(`Schema ${file.url} not found`);
+    }
+
+    return schema.content;
   }
 
   async getSchemaContent(schemaPath) {
-    const schemaRef = this.readReference(schemaPath);
+    // json-schema-ref-parser uses the window's location for relative URIs, so
+    // we adapt the path to match..
+    const fullSchemaPath = new URL(schemaPath, window.location.href);
+    const schema = cloneDeep(
+      this.readReference({ url: fullSchemaPath.toString() })
+    );
 
-    if (!schemaRef) {
+    if (!schema) {
       throw new Error(`Cannot find ${schemaPath}.`);
     }
-
-    const schema = schemaRef.content;
 
     await RefParser.dereference(schema.$id, schema, {
       resolve: {
@@ -145,12 +163,7 @@ export default class SchemaTable extends Component {
         any: {
           order: 1,
           canRead: true,
-          read: file => {
-            const { pathname } = new URL(file.url);
-            const schema = this.readReference(pathname);
-
-            return schema.content;
-          },
+          read: file => this.readReference(file),
         },
       },
       dereference: {

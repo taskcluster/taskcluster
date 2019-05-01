@@ -21,12 +21,14 @@ export default class SchemaIndex extends Component {
     return (
       <div>
         <HeaderWithAnchor>Schema Index</HeaderWithAnchor>
-        {sortedReferences.map(entry => (
+        {sortedReferences.map(ref => (
           <Entry
-            key={entry.content.$id}
-            serviceName="unknown"
+            key={ref.content.$id}
             type="schema"
-            entry={entry}
+            entry={{
+              $id: ref.content.$id,
+              schema: ref.content,
+            }}
           />
         ))}
       </div>
