@@ -1301,7 +1301,7 @@
         "name": "guide",
         "next": {
           "path": "reference/schema",
-          "title": "schema"
+          "title": "Schema Index"
         },
         "path": "reference/guide",
         "prev": {
@@ -1319,7 +1319,7 @@
         "data": {
           "inline": true,
           "order": 1,
-          "title": "schema"
+          "title": "Schema Index"
         },
         "name": "schema",
         "next": {
@@ -1761,7 +1761,7 @@
         "path": "reference/platform/README",
         "prev": {
           "path": "reference/schema",
-          "title": "schema"
+          "title": "Schema Index"
         },
         "up": {
           "path": "reference/README",

@@ -102,7 +102,9 @@ export default class Entry extends Component {
   state = {
     expanded:
       this.props.entry.name === window.location.hash.slice(1) ||
-      this.props.entry.type === window.location.hash.slice(1),
+      this.props.entry.type === window.location.hash.slice(1) ||
+      encodeURIComponent(this.props.entry.content.$id) ===
+        window.location.hash.slice(1),
   };
 
   getSignatureFromEntry(entry) {
@@ -537,10 +539,13 @@ export default class Entry extends Component {
     const { entry, history } = this.props;
     const { expanded } = this.state;
 
-    if (window.location.hash === `#${get(entry, key)}` || expanded) {
+    if (
+      window.location.hash === `#${encodeURIComponent(get(entry, key))}` ||
+      expanded
+    ) {
       history.push(history.location.pathname);
     } else {
-      history.push(`#${get(entry, key)}`);
+      history.push(`#${encodeURIComponent(get(entry, key))}`);
     }
 
     this.setState({

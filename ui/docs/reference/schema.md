@@ -1,7 +1,7 @@
 ---
 order: 1
 inline: true
-title: schema
+title: Schema Index
 ---
 
 import SchemaIndex from 'taskcluster-ui/views/Documentation/Reference/SchemaIndex'
