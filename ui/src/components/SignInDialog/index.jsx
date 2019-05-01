@@ -75,8 +75,11 @@ export default class SignInDialog extends Component {
   render() {
     const { onClose, open } = this.props;
     const { credentialsDialogOpen } = this.state;
+    const strategies = process.env.UI_LOGIN_STRATEGY_NAMES
+      ? process.env.UI_LOGIN_STRATEGY_NAMES.split(' ')
+      : [];
 
-    return process.env.LOGIN_STRATEGIES ? (
+    return strategies.length > 0 ? (
       <Dialog
         open={open}
         onClose={onClose}
@@ -84,7 +87,7 @@ export default class SignInDialog extends Component {
         <DialogTitle id="sign-in-dialog-title">Sign In</DialogTitle>
         <DialogContent>
           <List>
-            {process.env.LOGIN_STRATEGIES.includes('mozilla-auth0') && (
+            {strategies.includes('mozilla-auth0') && (
               <ListItem
                 button
                 component="a"
@@ -98,7 +101,7 @@ export default class SignInDialog extends Component {
                 <ListItemText primary="Sign in with Auth0" />
               </ListItem>
             )}
-            {process.env.LOGIN_STRATEGIES.includes('github') && (
+            {strategies.includes('github') && (
               <ListItem
                 button
                 component="a"

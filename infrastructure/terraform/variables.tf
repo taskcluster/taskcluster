@@ -109,37 +109,12 @@ variable "gce_provider_image_name" {
   description = "Image name to use for workers spawned by gce_provider."
 }
 
-variable "web_server_mozilla_auth0_domain" {
+variable "ui_login_strategies" {
   type        = "string"
-  description = "auth0 domain for mozilla-auth0 login strategy"
+  description = "JSON string configuring the login strategies for tc-web-server and tc-ui"
 }
 
-variable "web_server_mozilla_auth0_client_id" {
+variable "ui_login_strategy_names" {
   type        = "string"
-  description = "auth0 client id for mozilla-auth0 login strategy"
-}
-
-variable "web_server_mozilla_auth0_client_secret" {
-  type        = "string"
-  description = "auth0 client secret for mozilla-auth0 login strategy"
-}
-
-variable "web_server_mozilla_auth0_audience" {
-  type        = "string"
-  description = "auth0 audience for mozilla-auth0 login strategy"
-}
-
-variable "web_server_mozilla_auth0_scope" {
-  type        = "string"
-  description = "auth0 scope for mozilla-auth0 login strategy"
-}
-
-variable "web_server_github_client_id" {
-  type        = "string"
-  description = "github client id for mozilla-auth0 login strategy"
-}
-
-variable "web_server_github_client_secret" {
-  type        = "string"
-  description = "github client secret for mozilla-auth0 login strategy"
+  description = "space-separated keys from ui_login_strategies; terraform can't figure this out on its own"
 }
