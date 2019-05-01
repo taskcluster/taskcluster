@@ -42,6 +42,7 @@
     "express-sslify": "1.2.0",
     "fast-azure-storage": "^2.3.0",
     "fast-json-stable-stringify": "^2.0.0",
+    "get-caller-file": "^2.0.5",
     "googleapis": "^39.2.0",
     "graphql": "^14.0.2",
     "graphql-depth-limit": "^1.1.0",

@@ -2,7 +2,7 @@ const requireContext = require('../utils/requireContext');
 const path = require('path');
 
 // eslint-disable-next-line padding-line-between-statements
-const importer = requireContext('./loaders', true, /\.js/);
+const importer = requireContext('./', true, /\.js/);
 const indexFile = path.resolve(__dirname, 'index.js');
 const keys = [
   ...new Set([...importer.keys().filter(key => key !== indexFile)]),

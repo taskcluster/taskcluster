@@ -1,13 +1,17 @@
 const fs = require('fs');
 const path = require('path');
+const getCallerFile = require('get-caller-file');
 
 require.extensions['.graphql'] = function (module, filename) {
   module.exports = fs.readFileSync(filename, 'utf8');
 };
 
 // Mock webpack's implementation of require.context
-module.exports = (base = '.', scanSubDirectories = false, regularExpression = /\.js$/) => {
+// https://webpack.js.org/guides/dependency-management/#requirecontext
+module.exports = (directory = '.', scanSubDirectories = false, regularExpression = /\.js$/) => {
   const files = {};
+  const callerDirname = path.dirname(getCallerFile());
+  const base = path.isAbsolute(directory) ? directory : path.resolve(callerDirname, directory);
 
   function readDirectory(directory) {
     fs.readdirSync(directory).forEach((file) => {
@@ -19,13 +23,15 @@ module.exports = (base = '.', scanSubDirectories = false, regularExpression = /\
         return;
       }
 
-      if (!regularExpression.test(fullPath)) {return;}
+      if (!regularExpression.test(fullPath)) {
+        return;
+      }
 
       files[fullPath] = true;
     });
   }
 
-  readDirectory(path.resolve(__dirname, '..', base));
+  readDirectory(base);
 
   function Module(file) {
     return require(file);
