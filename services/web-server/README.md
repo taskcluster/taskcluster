@@ -85,6 +85,10 @@ section, and paste a JSON object with a key of "Authorization" with a value of
 
 ## Login Strategies
 
+Taskcluster supports the following strategies:
+* GitHub
+* Mozilla Auth0
+
 ### GitHub
 
 In order to enable the GitHub login strategy, specify the GitHub client ID and secret for an OAuth application created
@@ -95,8 +99,36 @@ GITHUB_CLIENT_ID="<insert GitHub client ID here>"
 GITHUB_CLIENT_SECRET="<insert GitHub client secret here>"
 ```
 
-or as `login.strategies.github.clientId` and `login.strategies.github.clientSecret`
-in `user-config.yml`.
+or in `user-config.yml` as
+* `login.strategies.github.clientId`
+* `login.strategies.github.clientSecret`
+
+Now, start the service as you normally would.
+
+**Note: be sure to not commit these environment variables to source control,
+and use a separate client ID and secret for production than used in
+development.**
+
+
+### Mozilla Auth0
+
+In order to enable the Mozilla Auth0 login strategy, specify the GitHub client ID and secret for an OAuth application created
+for use against this service and its web UI, either as environment variables:
+
+```sh
+MOZILLA_AUTH0_DOMAIN="<insert Mozilla auth0 domain here>"
+MOZILLA_AUTH0_CLIENT_ID="<insert Mozilla auth0 client ID here>"
+MOZILLA_AUTH0_CLIENT_SECRET="<insert Mozilla auth0 client secret here>"
+MOZILLA_AUTH0_AUDIENCE="<insert Mozilla auth0 audience here>"
+MOZILLA_AUTH0_SCOPE="<insert scopes to access here>"
+```
+
+or in `user-config.yml` as
+* `login.strategies.mozilla-auth0.domain`
+* `login.strategies.mozilla-auth0.clientId`
+* `login.strategies.mozilla-auth0.clientSecret`
+* `login.strategies.mozilla-auth0.audience`
+* `login.strategies.mozilla-auth0.scope`
 
 Now, start the service as you normally would.
 

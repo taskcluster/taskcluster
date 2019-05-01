@@ -54,27 +54,24 @@ GRAPHQL_ENDPOINT=https://mydomain.com/graphql
 
 If you are only looking to deploy the docs site, configure `DOCS_ONLY` to be `true`.
 
-### Auth0 Config
+### Login Strategies
 
-**Note:** At the preset, this web application relies on an Auth0 client for
-performing authenticated interactions with the Taskcluster APIs via the
-taskcluster-web-server. In order to perform this authentication flow locally,
-you will need the following environment variables. Specify them in your `.env`
-file and they will be picked up automatically when starting this web app:
+Login strategies are specifed in `LOGIN_STRATEGIES`, split on space. They are used to identify which
+login widget(s) to display to the end user.
+
+Taskcluster supports the following strategies:
+* `github` - GitHub
+* `mozilla-auth0` - Mozilla Auth0
+
+_Example: Enabling the `github` and `mozilla-auth0` strategies_
 
 ```bash
-APPLICATION_NAME="Taskcluster"
-AUTH0_DOMAIN="auth.mozilla.auth0.com"
-AUTH0_CLIENT_ID="29t2n3LKKnyTbGtWmfTkQpau0mp7QmMH"
-AUTH0_REDIRECT_URI="http://localhost:5080/login"
-AUTH0_RESPONSE_TYPE="token id_token"
-AUTH0_SCOPE="openid profile"
-PORT="5080"
+LOGIN_STRATEGIES="github, mozilla-auth0"
 ```
 
-This Auth0 client is real, but can only be used locally on `localhost:5080`, so
-the development server must be run with `PORT=5080`, and accessed at
-http://localhost:5080 in the browser.
+_Note: Each strategy requires its own set of config in `web-server`. Be sure to reference the
+[web-server instructions](https://github.com/taskcluster/taskcluster/tree/master/services/web-server#login-strategies)
+for properly configuring the server._
 
 ### Tracking Events
 
