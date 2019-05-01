@@ -77,7 +77,10 @@ export default class AuthController {
 
   async renew(user) {
     try {
-      const { credentials, expires } = await this.getCredentials(user);
+      const { credentials, expires } =
+        user.identityProviderId === 'manual'
+          ? user
+          : await this.getCredentials(user);
 
       this.setUser({
         ...user,

@@ -61,6 +61,7 @@ export default class SignInDialog extends Component {
     // Since Apollo caches query results, it’s important to get rid of them
     // when the login state changes.
     this.props.onAuthorize({
+      identityProviderId: 'manual',
       credentials,
       expires: inOneWeek.toISOString(),
       profile: {
