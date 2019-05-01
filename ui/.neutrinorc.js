@@ -149,6 +149,12 @@ module.exports = {
           .test(/\.all-contributorsrc$/)
           .use('json-loader')
             .loader('json-loader');
+            
+      neutrino.config.module
+        .rule('git-version')
+          .test(/\.git-version$/)
+          .use('raw-loader')
+            .loader('raw-loader');
 
     },
     (neutrino) => {

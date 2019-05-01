@@ -134,6 +134,15 @@ import SkipNavigation from '../SkipNavigation';
       top: theme.spacing.unit,
       right: theme.spacing.unit,
     },
+    version: {
+      ...theme.mixins.toolbar,
+      paddingLeft: theme.spacing.double,
+      paddingRight: theme.spacing.double,
+      display: 'flex',
+      flexGrow: 1,
+      flexDirection: 'row',
+      marginTop: '25vh',
+    },
   }),
   { withTheme: true }
 )
@@ -188,7 +197,25 @@ export default class Dashboard extends Component {
     navOpen: false,
     showHelpView: false,
     error: null,
+    versionNumber: null,
   };
+
+  componentDidMount() {
+    this.loadVersionNumber();
+  }
+
+  async loadVersionNumber() {
+    try {
+      const {
+        default: versionNumber,
+      } = await import(`../../../../.git-version`);
+
+      this.setState({ versionNumber });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
 
   handleDrawerToggle = () => {
     this.setState({ navOpen: !this.state.navOpen });
@@ -215,7 +242,7 @@ export default class Dashboard extends Component {
       staticContext: _,
       ...props
     } = this.props;
-    const { error, navOpen, showHelpView } = this.state;
+    const { error, navOpen, showHelpView, versionNumber } = this.state;
     const drawer = (
       <nav>
         <div
@@ -245,6 +272,16 @@ export default class Dashboard extends Component {
         <UserMenu />
         <Divider />
         {docs ? <DocsSidebarList /> : <SidebarList />}
+        {versionNumber && docs ? (
+          <div className={classes.version}>
+            <Typography variant="h6" noWrap>
+              VersionNumber <br />
+              {versionNumber}
+            </Typography>
+          </div>
+        ) : (
+          ''
+        )}
       </nav>
     );
     const isDocs = history.location.pathname.startsWith(DOCS_PATH_PREFIX);
