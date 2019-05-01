@@ -60,8 +60,6 @@ class Login(AsyncBaseClient):
         monitor this expiration and refresh the credentials if necessary, by calling
         this endpoint again, if they have expired.
 
-        This method gives output: ``v1/oidc-credentials-response.json#``
-
         This method is ``experimental``
         """
 
@@ -72,7 +70,6 @@ class Login(AsyncBaseClient):
             'args': ['provider'],
             'method': 'get',
             'name': 'oidcCredentials',
-            'output': 'v1/oidc-credentials-response.json#',
             'route': '/oidc-credentials/<provider>',
             'stability': 'experimental',
         },

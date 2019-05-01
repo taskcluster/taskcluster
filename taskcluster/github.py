@@ -60,8 +60,6 @@ class Github(BaseClient):
         Taskcluster. Can be filtered on various git-specific
         fields.
 
-        This method gives output: ``v1/build-list.json#``
-
         This method is ``experimental``
         """
 
@@ -85,8 +83,6 @@ class Github(BaseClient):
 
         Returns any repository metadata that is
         useful within Taskcluster related services.
-
-        This method gives output: ``v1/repository.json#``
 
         This method is ``experimental``
         """
@@ -117,8 +113,6 @@ class Github(BaseClient):
         The status is either OK (green check) or FAILURE (red cross),
         made of a custom title and link.
 
-        This method takes input: ``v1/create-status.json#``
-
         This method is ``experimental``
         """
 
@@ -129,8 +123,6 @@ class Github(BaseClient):
         Post a comment on a given GitHub Issue or Pull Request
 
         For a given Issue or Pull Request of a repository, this will write a new message.
-
-        This method takes input: ``v1/create-comment.json#``
 
         This method is ``experimental``
         """
@@ -149,14 +141,12 @@ class Github(BaseClient):
             'args': [],
             'method': 'get',
             'name': 'builds',
-            'output': 'v1/build-list.json#',
             'query': ['continuationToken', 'limit', 'organization', 'repository', 'sha'],
             'route': '/builds',
             'stability': 'experimental',
         },
         "createComment": {
             'args': ['owner', 'repo', 'number'],
-            'input': 'v1/create-comment.json#',
             'method': 'post',
             'name': 'createComment',
             'route': '/repository/<owner>/<repo>/issues/<number>/comments',
@@ -164,7 +154,6 @@ class Github(BaseClient):
         },
         "createStatus": {
             'args': ['owner', 'repo', 'sha'],
-            'input': 'v1/create-status.json#',
             'method': 'post',
             'name': 'createStatus',
             'route': '/repository/<owner>/<repo>/statuses/<sha>',
@@ -195,7 +184,6 @@ class Github(BaseClient):
             'args': ['owner', 'repo'],
             'method': 'get',
             'name': 'repository',
-            'output': 'v1/repository.json#',
             'route': '/repository/<owner>/<repo>',
             'stability': 'experimental',
         },

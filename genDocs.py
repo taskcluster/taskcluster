@@ -71,10 +71,10 @@ def docApi(name, ref):
             lines.append('')
 
         if hasInput:
-            lines.append('Required [input schema](%s)' % function.get('input'))
+            lines.append('Has required input schema')
             lines.append('')
         if hasOutput:
-            lines.append('Required [output schema](%s)' % function.get('output'))
+            lines.append('Has required output schema')
             lines.append('')
 
         lines.append('```python')

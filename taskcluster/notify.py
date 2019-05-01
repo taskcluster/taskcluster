@@ -43,8 +43,6 @@ class Notify(BaseClient):
         email. If a link is included, it will be rendered to a nice button in the
         HTML version of the email
 
-        This method takes input: ``v1/email-request.json#``
-
         This method is ``experimental``
         """
 
@@ -55,8 +53,6 @@ class Notify(BaseClient):
         Publish a Pulse Message
 
         Publish a message on pulse with the given `routingKey`.
-
-        This method takes input: ``v1/pulse-request.json#``
 
         This method is ``experimental``
         """
@@ -79,8 +75,6 @@ class Notify(BaseClient):
         error. We maybe improve this behavior in the future. For now just keep
         in mind that IRC is a best-effort service.
 
-        This method takes input: ``v1/irc-request.json#``
-
         This method is ``experimental``
         """
 
@@ -95,8 +89,6 @@ class Notify(BaseClient):
         or IRC(user or channel). Addresses in the denylist will be ignored
         by the notification service.
 
-        This method takes input: ``v1/notification-address.json#``
-
         This method is ``experimental``
         """
 
@@ -107,8 +99,6 @@ class Notify(BaseClient):
         Delete Denylisted Address
 
         Delete the specified address from the notification denylist.
-
-        This method takes input: ``v1/notification-address.json#``
 
         This method is ``experimental``
         """
@@ -131,8 +121,6 @@ class Notify(BaseClient):
         If you are not interested in listing all the members at once, you may
         use the query-string option `limit` to return fewer.
 
-        This method gives output: ``v1/notification-address-list.json#``
-
         This method is ``experimental``
         """
 
@@ -141,7 +129,6 @@ class Notify(BaseClient):
     funcinfo = {
         "addDenylistAddress": {
             'args': [],
-            'input': 'v1/notification-address.json#',
             'method': 'post',
             'name': 'addDenylistAddress',
             'route': '/denylist/add',
@@ -149,7 +136,6 @@ class Notify(BaseClient):
         },
         "deleteDenylistAddress": {
             'args': [],
-            'input': 'v1/notification-address.json#',
             'method': 'delete',
             'name': 'deleteDenylistAddress',
             'route': '/denylist/delete',
@@ -157,7 +143,6 @@ class Notify(BaseClient):
         },
         "email": {
             'args': [],
-            'input': 'v1/email-request.json#',
             'method': 'post',
             'name': 'email',
             'route': '/email',
@@ -165,7 +150,6 @@ class Notify(BaseClient):
         },
         "irc": {
             'args': [],
-            'input': 'v1/irc-request.json#',
             'method': 'post',
             'name': 'irc',
             'route': '/irc',
@@ -175,7 +159,6 @@ class Notify(BaseClient):
             'args': [],
             'method': 'get',
             'name': 'list',
-            'output': 'v1/notification-address-list.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/denylist/list',
             'stability': 'experimental',
@@ -189,7 +172,6 @@ class Notify(BaseClient):
         },
         "pulse": {
             'args': [],
-            'input': 'v1/pulse-request.json#',
             'method': 'post',
             'name': 'pulse',
             'route': '/pulse',

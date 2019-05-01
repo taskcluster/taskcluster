@@ -85,8 +85,6 @@ class Auth(AsyncBaseClient):
         keep calling `listClients` with the last `continuationToken` until you
         get a result without a `continuationToken`.
 
-        This method gives output: ``v1/list-clients-response.json#``
-
         This method is ``stable``
         """
 
@@ -97,8 +95,6 @@ class Auth(AsyncBaseClient):
         Get Client
 
         Get information about a single client.
-
-        This method gives output: ``v1/get-client-response.json#``
 
         This method is ``stable``
         """
@@ -122,10 +118,6 @@ class Auth(AsyncBaseClient):
 
         The caller's scopes must satisfy `scopes`.
 
-        This method takes input: ``v1/create-client-request.json#``
-
-        This method gives output: ``v1/create-client-response.json#``
-
         This method is ``stable``
         """
 
@@ -142,8 +134,6 @@ class Auth(AsyncBaseClient):
         There is no way to retrieve an existing `accessToken`, so if you loose it
         you must reset the accessToken to acquire it again.
 
-        This method gives output: ``v1/create-client-response.json#``
-
         This method is ``stable``
         """
 
@@ -158,10 +148,6 @@ class Auth(AsyncBaseClient):
         satisfy all scopes being added to the client in the update operation.
         If no scopes are given in the request, the client's scopes remain
         unchanged
-
-        This method takes input: ``v1/create-client-request.json#``
-
-        This method gives output: ``v1/get-client-response.json#``
 
         This method is ``stable``
         """
@@ -178,8 +164,6 @@ class Auth(AsyncBaseClient):
         This is typically used by identity providers to re-enable clients that
         had been disabled when the corresponding identity's scopes changed.
 
-        This method gives output: ``v1/get-client-response.json#``
-
         This method is ``stable``
         """
 
@@ -193,8 +177,6 @@ class Auth(AsyncBaseClient):
 
         This is typically used by identity providers to disable clients when the
         corresponding identity's scopes no longer satisfy the client's scopes.
-
-        This method gives output: ``v1/get-client-response.json#``
 
         This method is ``stable``
         """
@@ -220,8 +202,6 @@ class Auth(AsyncBaseClient):
         Get a list of all roles, each role object also includes the list of
         scopes it expands to.
 
-        This method gives output: ``v1/list-roles-response.json#``
-
         This method is ``stable``
         """
 
@@ -234,8 +214,6 @@ class Auth(AsyncBaseClient):
         If no limit is given, the roleIds of all roles are returned. Since this
         list may become long, callers can use the `limit` and `continuationToken`
         query arguments to page through the responses.
-
-        This method gives output: ``v1/list-role-ids-response.json#``
 
         This method is ``stable``
         """
@@ -250,8 +228,6 @@ class Auth(AsyncBaseClient):
         list may become long, callers can use the `limit` and `continuationToken`
         query arguments to page through the responses.
 
-        This method gives output: ``v1/list-roles2-response.json#``
-
         This method is ``stable``
         """
 
@@ -263,8 +239,6 @@ class Auth(AsyncBaseClient):
 
         Get information about a single role, including the set of scopes that the
         role expands to.
-
-        This method gives output: ``v1/get-role-response.json#``
 
         This method is ``stable``
         """
@@ -285,10 +259,6 @@ class Auth(AsyncBaseClient):
         Creation of a role that will generate an infinite expansion will result
         in an error response.
 
-        This method takes input: ``v1/create-role-request.json#``
-
-        This method gives output: ``v1/get-role-response.json#``
-
         This method is ``stable``
         """
 
@@ -305,10 +275,6 @@ class Auth(AsyncBaseClient):
 
         An update of a role that will generate an infinite expansion will result
         in an error response.
-
-        This method takes input: ``v1/create-role-request.json#``
-
-        This method gives output: ``v1/get-role-response.json#``
 
         This method is ``stable``
         """
@@ -337,10 +303,6 @@ class Auth(AsyncBaseClient):
         This call uses the GET method with an HTTP body.  It remains only for
         backward compatibility.
 
-        This method takes input: ``v1/scopeset.json#``
-
-        This method gives output: ``v1/scopeset.json#``
-
         This method is ``deprecated``
         """
 
@@ -352,10 +314,6 @@ class Auth(AsyncBaseClient):
 
         Return an expanded copy of the given scopeset, with scopes implied by any
         roles included.
-
-        This method takes input: ``v1/scopeset.json#``
-
-        This method gives output: ``v1/scopeset.json#``
 
         This method is ``stable``
         """
@@ -369,8 +327,6 @@ class Auth(AsyncBaseClient):
         Return the expanded scopes available in the request, taking into account all sources
         of scopes and scope restrictions (temporary credentials, assumeScopes, client scopes,
         and roles).
-
-        This method gives output: ``v1/scopeset.json#``
 
         This method is ``stable``
         """
@@ -447,8 +403,6 @@ class Auth(AsyncBaseClient):
         For details on the format returned by EC2 metadata service see:
         [EC2 User Guide](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).
 
-        This method gives output: ``v1/aws-s3-credentials-response.json#``
-
         This method is ``stable``
         """
 
@@ -460,8 +414,6 @@ class Auth(AsyncBaseClient):
 
         Retrieve a list of all Azure accounts managed by Taskcluster Auth.
 
-        This method gives output: ``v1/azure-account-list-response.json#``
-
         This method is ``stable``
         """
 
@@ -472,8 +424,6 @@ class Auth(AsyncBaseClient):
         List Tables in an Account Managed by Auth
 
         Retrieve a list of all tables in an account.
-
-        This method gives output: ``v1/azure-table-list-response.json#``
 
         This method is ``stable``
         """
@@ -491,8 +441,6 @@ class Auth(AsyncBaseClient):
         which type of credentials are returned.  If level is read-write, it will create the
         table if it doesn't already exist.
 
-        This method gives output: ``v1/azure-table-access-response.json#``
-
         This method is ``stable``
         """
 
@@ -503,8 +451,6 @@ class Auth(AsyncBaseClient):
         List containers in an Account Managed by Auth
 
         Retrieve a list of all containers in an account.
-
-        This method gives output: ``v1/azure-container-list-response.json#``
 
         This method is ``stable``
         """
@@ -521,8 +467,6 @@ class Auth(AsyncBaseClient):
         The `level` parameter can be `read-write` or `read-only` and determines
         which type of credentials are returned.  If level is read-write, it will create the
         container if it doesn't already exist.
-
-        This method gives output: ``v1/azure-container-response.json#``
 
         This method is ``stable``
         """
@@ -541,8 +485,6 @@ class Auth(AsyncBaseClient):
         initial team configured for this component. Contact a Sentry admin
         to have the project transferred to a team you have access to if needed
 
-        This method gives output: ``v1/sentry-dsn-response.json#``
-
         This method is ``stable``
         """
 
@@ -555,8 +497,6 @@ class Auth(AsyncBaseClient):
         Get temporary `token` and `baseUrl` for sending metrics to statsum.
 
         The token is valid for 24 hours, clients should refresh after expiration.
-
-        This method gives output: ``v1/statsum-token-response.json#``
 
         This method is ``stable``
         """
@@ -578,8 +518,6 @@ class Auth(AsyncBaseClient):
         The token is valid for a limited time (on the scale of hours). Callers should
         refresh it before expiration.
 
-        This method gives output: ``v1/websocktunnel-token-response.json#``
-
         This method is ``stable``
         """
 
@@ -595,10 +533,6 @@ class Auth(AsyncBaseClient):
         This method is used by other services that wish rely on Taskcluster
         credentials for authentication. This way we can use Hawk without having
         the secret credentials leave this service.
-
-        This method takes input: ``v1/authenticate-hawk-request.json#``
-
-        This method gives output: ``v1/authenticate-hawk-response.json#``
 
         This method is ``stable``
         """
@@ -620,10 +554,6 @@ class Auth(AsyncBaseClient):
         applied, and the resulting scopes are checked against `requiredScopes`
         from the request body. On success, the response contains the clientId
         and scopes as seen by the API method.
-
-        This method takes input: ``v1/test-authenticate-request.json#``
-
-        This method gives output: ``v1/test-authenticate-response.json#``
 
         This method is ``stable``
         """
@@ -650,8 +580,6 @@ class Auth(AsyncBaseClient):
         This method may later be extended to allow specification of client and
         required scopes via query arguments.
 
-        This method gives output: ``v1/test-authenticate-response.json#``
-
         This method is ``stable``
         """
 
@@ -660,10 +588,8 @@ class Auth(AsyncBaseClient):
     funcinfo = {
         "authenticateHawk": {
             'args': [],
-            'input': 'v1/authenticate-hawk-request.json#',
             'method': 'post',
             'name': 'authenticateHawk',
-            'output': 'v1/authenticate-hawk-response.json#',
             'route': '/authenticate-hawk',
             'stability': 'stable',
         },
@@ -671,7 +597,6 @@ class Auth(AsyncBaseClient):
             'args': ['level', 'bucket', 'prefix'],
             'method': 'get',
             'name': 'awsS3Credentials',
-            'output': 'v1/aws-s3-credentials-response.json#',
             'query': ['format'],
             'route': '/aws/s3/<level>/<bucket>/<prefix>',
             'stability': 'stable',
@@ -680,7 +605,6 @@ class Auth(AsyncBaseClient):
             'args': [],
             'method': 'get',
             'name': 'azureAccounts',
-            'output': 'v1/azure-account-list-response.json#',
             'route': '/azure/accounts',
             'stability': 'stable',
         },
@@ -688,7 +612,6 @@ class Auth(AsyncBaseClient):
             'args': ['account', 'container', 'level'],
             'method': 'get',
             'name': 'azureContainerSAS',
-            'output': 'v1/azure-container-response.json#',
             'route': '/azure/<account>/containers/<container>/<level>',
             'stability': 'stable',
         },
@@ -696,7 +619,6 @@ class Auth(AsyncBaseClient):
             'args': ['account'],
             'method': 'get',
             'name': 'azureContainers',
-            'output': 'v1/azure-container-list-response.json#',
             'query': ['continuationToken'],
             'route': '/azure/<account>/containers',
             'stability': 'stable',
@@ -705,7 +627,6 @@ class Auth(AsyncBaseClient):
             'args': ['account', 'table', 'level'],
             'method': 'get',
             'name': 'azureTableSAS',
-            'output': 'v1/azure-table-access-response.json#',
             'route': '/azure/<account>/table/<table>/<level>',
             'stability': 'stable',
         },
@@ -713,7 +634,6 @@ class Auth(AsyncBaseClient):
             'args': ['account'],
             'method': 'get',
             'name': 'azureTables',
-            'output': 'v1/azure-table-list-response.json#',
             'query': ['continuationToken'],
             'route': '/azure/<account>/tables',
             'stability': 'stable',
@@ -722,25 +642,20 @@ class Auth(AsyncBaseClient):
             'args': ['clientId'],
             'method': 'get',
             'name': 'client',
-            'output': 'v1/get-client-response.json#',
             'route': '/clients/<clientId>',
             'stability': 'stable',
         },
         "createClient": {
             'args': ['clientId'],
-            'input': 'v1/create-client-request.json#',
             'method': 'put',
             'name': 'createClient',
-            'output': 'v1/create-client-response.json#',
             'route': '/clients/<clientId>',
             'stability': 'stable',
         },
         "createRole": {
             'args': ['roleId'],
-            'input': 'v1/create-role-request.json#',
             'method': 'put',
             'name': 'createRole',
-            'output': 'v1/get-role-response.json#',
             'route': '/roles/<roleId>',
             'stability': 'stable',
         },
@@ -748,7 +663,6 @@ class Auth(AsyncBaseClient):
             'args': [],
             'method': 'get',
             'name': 'currentScopes',
-            'output': 'v1/scopeset.json#',
             'route': '/scopes/current',
             'stability': 'stable',
         },
@@ -770,7 +684,6 @@ class Auth(AsyncBaseClient):
             'args': ['clientId'],
             'method': 'post',
             'name': 'disableClient',
-            'output': 'v1/get-client-response.json#',
             'route': '/clients/<clientId>/disable',
             'stability': 'stable',
         },
@@ -778,25 +691,20 @@ class Auth(AsyncBaseClient):
             'args': ['clientId'],
             'method': 'post',
             'name': 'enableClient',
-            'output': 'v1/get-client-response.json#',
             'route': '/clients/<clientId>/enable',
             'stability': 'stable',
         },
         "expandScopes": {
             'args': [],
-            'input': 'v1/scopeset.json#',
             'method': 'post',
             'name': 'expandScopes',
-            'output': 'v1/scopeset.json#',
             'route': '/scopes/expand',
             'stability': 'stable',
         },
         "expandScopesGet": {
             'args': [],
-            'input': 'v1/scopeset.json#',
             'method': 'get',
             'name': 'expandScopesGet',
-            'output': 'v1/scopeset.json#',
             'route': '/scopes/expand',
             'stability': 'deprecated',
         },
@@ -804,7 +712,6 @@ class Auth(AsyncBaseClient):
             'args': [],
             'method': 'get',
             'name': 'listClients',
-            'output': 'v1/list-clients-response.json#',
             'query': ['prefix', 'continuationToken', 'limit'],
             'route': '/clients/',
             'stability': 'stable',
@@ -813,7 +720,6 @@ class Auth(AsyncBaseClient):
             'args': [],
             'method': 'get',
             'name': 'listRoleIds',
-            'output': 'v1/list-role-ids-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/roleids/',
             'stability': 'stable',
@@ -822,7 +728,6 @@ class Auth(AsyncBaseClient):
             'args': [],
             'method': 'get',
             'name': 'listRoles',
-            'output': 'v1/list-roles-response.json#',
             'route': '/roles/',
             'stability': 'stable',
         },
@@ -830,7 +735,6 @@ class Auth(AsyncBaseClient):
             'args': [],
             'method': 'get',
             'name': 'listRoles2',
-            'output': 'v1/list-roles2-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/roles2/',
             'stability': 'stable',
@@ -846,7 +750,6 @@ class Auth(AsyncBaseClient):
             'args': ['clientId'],
             'method': 'post',
             'name': 'resetAccessToken',
-            'output': 'v1/create-client-response.json#',
             'route': '/clients/<clientId>/reset',
             'stability': 'stable',
         },
@@ -854,7 +757,6 @@ class Auth(AsyncBaseClient):
             'args': ['roleId'],
             'method': 'get',
             'name': 'role',
-            'output': 'v1/get-role-response.json#',
             'route': '/roles/<roleId>',
             'stability': 'stable',
         },
@@ -862,7 +764,6 @@ class Auth(AsyncBaseClient):
             'args': ['project'],
             'method': 'get',
             'name': 'sentryDSN',
-            'output': 'v1/sentry-dsn-response.json#',
             'route': '/sentry/<project>/dsn',
             'stability': 'stable',
         },
@@ -870,16 +771,13 @@ class Auth(AsyncBaseClient):
             'args': ['project'],
             'method': 'get',
             'name': 'statsumToken',
-            'output': 'v1/statsum-token-response.json#',
             'route': '/statsum/<project>/token',
             'stability': 'stable',
         },
         "testAuthenticate": {
             'args': [],
-            'input': 'v1/test-authenticate-request.json#',
             'method': 'post',
             'name': 'testAuthenticate',
-            'output': 'v1/test-authenticate-response.json#',
             'route': '/test-authenticate',
             'stability': 'stable',
         },
@@ -887,25 +785,20 @@ class Auth(AsyncBaseClient):
             'args': [],
             'method': 'get',
             'name': 'testAuthenticateGet',
-            'output': 'v1/test-authenticate-response.json#',
             'route': '/test-authenticate-get/',
             'stability': 'stable',
         },
         "updateClient": {
             'args': ['clientId'],
-            'input': 'v1/create-client-request.json#',
             'method': 'post',
             'name': 'updateClient',
-            'output': 'v1/get-client-response.json#',
             'route': '/clients/<clientId>',
             'stability': 'stable',
         },
         "updateRole": {
             'args': ['roleId'],
-            'input': 'v1/create-role-request.json#',
             'method': 'post',
             'name': 'updateRole',
-            'output': 'v1/get-role-response.json#',
             'route': '/roles/<roleId>',
             'stability': 'stable',
         },
@@ -913,7 +806,6 @@ class Auth(AsyncBaseClient):
             'args': ['wstAudience', 'wstClient'],
             'method': 'get',
             'name': 'websocktunnelToken',
-            'output': 'v1/websocktunnel-token-response.json#',
             'route': '/websocktunnel/<wstAudience>/<wstClient>',
             'stability': 'stable',
         },

@@ -35,7 +35,7 @@ class AuthEvents(AsyncBaseClient):
 
         Message that a new client has been created.
 
-        This exchange outputs: ``v1/client-message.json#``This exchange takes the following keys:
+        This exchange takes the following keys:
 
          * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
         """
@@ -49,7 +49,6 @@ class AuthEvents(AsyncBaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'v1/client-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -59,7 +58,7 @@ class AuthEvents(AsyncBaseClient):
 
         Message that a new client has been updated.
 
-        This exchange outputs: ``v1/client-message.json#``This exchange takes the following keys:
+        This exchange takes the following keys:
 
          * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
         """
@@ -73,7 +72,6 @@ class AuthEvents(AsyncBaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'v1/client-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -83,7 +81,7 @@ class AuthEvents(AsyncBaseClient):
 
         Message that a new client has been deleted.
 
-        This exchange outputs: ``v1/client-message.json#``This exchange takes the following keys:
+        This exchange takes the following keys:
 
          * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
         """
@@ -97,7 +95,6 @@ class AuthEvents(AsyncBaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'v1/client-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -107,7 +104,7 @@ class AuthEvents(AsyncBaseClient):
 
         Message that a new role has been created.
 
-        This exchange outputs: ``v1/role-message.json#``This exchange takes the following keys:
+        This exchange takes the following keys:
 
          * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
         """
@@ -121,7 +118,6 @@ class AuthEvents(AsyncBaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'v1/role-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -131,7 +127,7 @@ class AuthEvents(AsyncBaseClient):
 
         Message that a new role has been updated.
 
-        This exchange outputs: ``v1/role-message.json#``This exchange takes the following keys:
+        This exchange takes the following keys:
 
          * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
         """
@@ -145,7 +141,6 @@ class AuthEvents(AsyncBaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'v1/role-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -155,7 +150,7 @@ class AuthEvents(AsyncBaseClient):
 
         Message that a new role has been deleted.
 
-        This exchange outputs: ``v1/role-message.json#``This exchange takes the following keys:
+        This exchange takes the following keys:
 
          * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
         """
@@ -169,7 +164,6 @@ class AuthEvents(AsyncBaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'v1/role-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
