@@ -3,9 +3,8 @@ import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { oneOf, object, string } from 'prop-types';
 import { upperCase } from 'change-case';
-import { toString } from 'ramda';
+import { toString, path } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import get from 'lodash/get';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -103,7 +102,7 @@ export default class Entry extends Component {
     expanded:
       this.props.entry.name === window.location.hash.slice(1) ||
       this.props.entry.type === window.location.hash.slice(1) ||
-      encodeURIComponent(get(this.props.entry, 'content.$id')) ===
+      encodeURIComponent(path(['content', '$id'], this.props.entry)) ===
         window.location.hash.slice(1),
   };
 
@@ -538,14 +537,12 @@ export default class Entry extends Component {
   handlePanelChange = key => () => {
     const { entry, history } = this.props;
     const { expanded } = this.state;
+    const hash = `#${encodeURIComponent(path(key.split('.'), entry))}`;
 
-    if (
-      window.location.hash === `#${encodeURIComponent(get(entry, key))}` ||
-      expanded
-    ) {
+    if (window.location.hash === hash || expanded) {
       history.push(history.location.pathname);
     } else {
-      history.push(`#${encodeURIComponent(get(entry, key))}`);
+      history.push(hash);
     }
 
     this.setState({
@@ -571,7 +568,7 @@ export default class Entry extends Component {
     const isEntryExchange = type === 'topic-exchange';
     const isLogType = type === 'logs';
     const isFunctionType = !isLogType && !isEntryExchange && !isEntrySchema;
-    const entryHashKey = this.getEntryHashKey(isLogType, isEntrySchema);
+    const entryHashKey = this.getEntryHashKey(type);
 
     return (
       <ExpansionPanel
