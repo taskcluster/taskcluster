@@ -1,27 +1,19 @@
-query ViewWorkers($provisionerId: String!, $workerType: String!, $workersConnection: PageConnection, $quarantined: Boolean) {
-  workers(provisionerId: $provisionerId, workerType: $workerType, connection: $workersConnection, isQuarantined: $quarantined) {
-    pageInfo {
-      hasNextPage
-      hasPreviousPage
-      cursor
-      previousCursor
-      nextCursor
+query ViewWorkers($providerId: String!, $workerType: String!, $quarantined: Boolean, $taskStatus: String!) {
+  WorkerManagerWorkers(provisionerId: $provisionerId, workerType: $workerType, isQuarantined: $quarantined) {
+    workerId
+    workerGroup
+    latestTask {
+      run {
+        taskId
+        runId
+        started
+        resolved
+        state
+      }
     }
-    edges {
-      node {
-        workerId
-        workerGroup
-        latestTask {
-          run {
-            taskId
-            runId
-            started
-            resolved
-            state
-          }
-        }
-        firstClaim
-        quarantineUntil
+    firstClaim
+    quarantineUntil
+    recentErrors
       }
     }
   }

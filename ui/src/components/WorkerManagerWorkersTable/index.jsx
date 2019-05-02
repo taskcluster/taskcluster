@@ -18,8 +18,11 @@ import {isEmpty, map, pipe, sort as rSort} from 'ramda';
 import sort from '../../utils/sort';
 import {withRouter} from 'react-router-dom';
 import { workerManagerWorkers } from '../../utils/prop-types';
+import { WorkerManagerWorkersquery } from './WorkerManagerWorkers.graphql';
+import { graphql } from 'graphql';
 
 @withRouter
+@graphql(WorkerManagerWorkersquery)
 export default class WorkerManagerWorkersTable extends Component {
   static propTypes = {
     workers: workerManagerWorkers.isRequired,

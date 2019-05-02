@@ -1,21 +1,45 @@
-query WorkerManagerWorkerType($workerType: String!) {
-  WorkerManagerWorkerTypeErrors(workerType: $workerType) {
-    code
-    type
-    region
-    instanceType
-    workerType
-    time
-    message
+query WorkerManagerWorkers($provisionerId: String!, $workerType: String!, $workersConnection: PageConnection, $quarantined: Boolean) {
+  workers(provisionerId: $provisionerId, workerType: $workerType, connection: $workersConnection, isQuarantined: $quarantined) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      cursor
+      previousCursor
+      nextCursor
+    }
+    edges {
+      node {
+        workerId
+        workerGroup
+        latestTask {
+          run {
+            taskId
+            runId
+            started
+            resolved
+            state
+          }
+        }
+        firstClaim
+        quarantineUntil
+      }
+    }
   }
 
-  WorkerManagerWorkerTypeState(workerType: $workerType)
-
-  WorkerManagerWorkerType(workerType: $workerType) {
-    instanceTypes {
-      instanceType
-      capacity
+  workerType(provisionerId: $provisionerId, workerType: $workerType) {
+    actions {
+      name
+      description
+      title
+      url
     }
-    launchSpec
+  }
+
+  provisioners {
+    edges {
+      node {
+        provisionerId
+      }
+    }
   }
 }

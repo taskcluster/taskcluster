@@ -6,8 +6,11 @@ import Tabs from '@material-ui/core/Tabs/Tabs';
 import Tab from '@material-ui/core/Tab/Tab';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import WorkerManagerWorkersTable from '../../../components/WorkerManagerWorkersTable';
+import {graphql} from 'react-apollo';
+import workersQuery from 'WorkerManagerWorkers.graphql';
 
 @hot(module)
+@graphql(workersQuery)
 export default class WorkerManagerViewWorkers extends Component {
   state = {
     currentTab: 0,
@@ -19,6 +22,9 @@ export default class WorkerManagerViewWorkers extends Component {
 
   render() {
     const {currentTab} = this.state;
+    const {
+      data: { loading, error, WorkerManagerWorkerSummaries },
+    } = this.props;
 
     return <Dashboard title={`${workerType} - Workers`}>
       <ErrorPanel error={error} />

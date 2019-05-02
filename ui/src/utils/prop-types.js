@@ -157,18 +157,18 @@ export const task = shape({
 
 Object.assign(task, { taskGroup: task });
 
+const task = shape({
+  taskId: string,
+  runId: number,
+  run,
+});
+
 export const worker = shape({
   provisionerId: string,
   workerType: string,
   workerGroup: string,
   workerId: string,
-  recentTasks: arrayOf(
-    shape({
-      taskId: string,
-      runId: number,
-      run,
-    })
-  ),
+  recentTasks: arrayOf(task),
   expires: date,
   quarantineUntil: date,
   latestTasks: arrayOf(task),
@@ -183,10 +183,14 @@ export const workers = shape({
 export const workerManagerWorkers = arrayOf(shape({
   workerId: string,
   workerGroup: string,
-  latestTask: string,
+  latestTask: task,
   firstClaim: date,
   quarantineUntil: date,
-  recentErrors: number
+  recentErrors: number,
+
+  providerId: string,
+  workerType: string,
+  recentTasks: arrayOf(task),
 }));
 
 export const workerType = shape({
