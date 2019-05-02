@@ -37,19 +37,22 @@ defaults:
     vhost: !env PULSE_VHOST
 
   login:
-    strategies:
-      # config for the mozilla auth0 login provider
-      mozilla-auth0:
-        domain: !env MOZILLA_AUTH0_DOMAIN
-        clientId: !env MOZILLA_AUTH0_CLIENT_ID
-        clientSecret: !env MOZILLA_AUTH0_CLIENT_SECRET
-        audience: !env MOZILLA_AUTH0_AUDIENCE
-        scope: !env MOZILLA_AUTH0_SCOPE
-      # config for the github login strategy
-      github:
-        # client ID and secret for the github OAuth application
-        clientId: !env GITHUB_CLIENT_ID
-        clientSecret: !env GITHUB_CLIENT_SECRET
+    # This is an array containing {strategy-name: config}.  It can be empty
+    # or can include any of the below:
+    #
+    # mozilla-auth0:
+    #   domain: auth0 domain
+    #   clientId: auth0 clientId
+    #   clientSecret: auth0 accessToken corresponding to that ID
+    #   audience: (to be removed)
+    #   scope: (to be removed)
+    #
+    # github:
+    #   # client id and secret for a Github OAuth2 application -- create a
+    #   # fresh one on the GitHub website.
+    #   clientId: !env GITHUB_CLIENT_ID
+    #   clientSecret: !env GITHUB_CLIENT_SECRET
+    strategies: !env:json UI_LOGIN_STRATEGIES
 
 development:
   app:

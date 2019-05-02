@@ -7,7 +7,10 @@ module "web_ui_secrets" {
     PORT                          = ""
     GRAPHQL_ENDPOINT              = "${var.root_url}/graphql"
     GRAPHQL_SUBSCRIPTION_ENDPOINT = "${var.root_url}/subscription"
-    LOGIN_STRATEGIES              = "github mozilla-auth0"
+
+    # NOTE: this must only contain the names, as the value is available in the
+    # generated content sent to the browser -- thist must not contain secrets!
+    UI_LOGIN_STRATEGY_NAMES = "${var.ui_login_strategy_names}"
   }
 }
 
