@@ -26,8 +26,9 @@ const sorted = pipe(
       node: {
         metadata: { name },
         status: { state },
+        taskId,
       },
-    }) => `${name}-${state}`
+    }) => `${taskId}-${name}-${state}`
   )
 );
 const valueFromNode = (node, sortBy) => {
