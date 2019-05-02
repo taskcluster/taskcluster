@@ -1,24 +1,22 @@
 import React, { Component, Fragment } from 'react';
-import { withRouter } from 'react-router-dom';
-import sortBy from 'lodash/sortBy';
-import filter from 'lodash/filter';
+import { filter, map, pipe, sort as rSort } from 'ramda';
+import sort from '../../../utils/sort';
 import Entry from './Entry';
 import HeaderWithAnchor from '../components/HeaderWithAnchor';
 import references from '../../../../../generated/references.json';
 
-@withRouter
+const filteredSchemas = pipe(
+  filter(entry => entry.filename.startsWith('schemas/')),
+  map(entry => entry)
+);
+const sortSchemas = pipe(
+  rSort((a, b) => sort(a.content.$id, b.content.$id)),
+  map(entry => entry)
+);
+
 export default class SchemaIndex extends Component {
-  // Filters only schemas, sorted by $id
-  getSortedReferences = () => {
-    const sortedReferences = filter(references, entry =>
-      entry.filename.startsWith('schemas/')
-    );
-
-    return sortBy(sortedReferences, ['content.$id']);
-  };
-
   render() {
-    const sortedReferences = this.getSortedReferences();
+    const sortedReferences = sortSchemas(filteredSchemas(references));
 
     return (
       <div>

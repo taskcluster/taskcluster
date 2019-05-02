@@ -103,7 +103,7 @@ export default class Entry extends Component {
     expanded:
       this.props.entry.name === window.location.hash.slice(1) ||
       this.props.entry.type === window.location.hash.slice(1) ||
-      encodeURIComponent(this.props.entry.content.$id) ===
+      encodeURIComponent(get(this.props.entry, 'content.$id')) ===
         window.location.hash.slice(1),
   };
 
@@ -553,12 +553,15 @@ export default class Entry extends Component {
     });
   };
 
-  getEntryHashKey = (isLogType, isEntrySchema) => {
-    if (isEntrySchema) {
-      return 'content.$id';
+  getEntryHashKey = type => {
+    switch (type) {
+      case 'schema':
+        return 'content.$id';
+      case 'logs':
+        return 'type';
+      default:
+        return 'name';
     }
-
-    return isLogType ? 'type' : 'name';
   };
 
   render() {
