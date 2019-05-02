@@ -206,7 +206,9 @@ export default class Entry extends Component {
       <Grid className={classes.gridContainer} container spacing={8}>
         <Grid item xs={5}>
           <div>
-            <Typography id={entry.content.$id} component="h3">
+            <Typography
+              id={encodeURIComponent(entry.content.$id)}
+              component="h3">
               {entry.content.title}
             </Typography>
           </div>
