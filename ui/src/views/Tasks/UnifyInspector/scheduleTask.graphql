@@ -1,5 +1,0 @@
-mutation ScheduleTask($taskId: ID!) {
-  scheduleTask(taskId: $taskId) {
-    taskId
-  }
-}
