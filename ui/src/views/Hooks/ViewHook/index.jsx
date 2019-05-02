@@ -17,6 +17,7 @@ import triggerHookQuery from './triggerHook.graphql';
 @graphql(hookQuery, {
   skip: ({ match: { params } }) => !params.hookId,
   options: ({ match: { params } }) => ({
+    fetchPolicy: 'network-only',
     variables: {
       hookGroupId: params.hookGroupId,
       hookId: decodeURIComponent(params.hookId),
