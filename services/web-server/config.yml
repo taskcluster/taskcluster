@@ -37,7 +37,7 @@ defaults:
     vhost: !env PULSE_VHOST
 
   login:
-    # This is an array containing {strategy-name: config}.  It can be empty
+    # This is an object containing {strategy-name: config}.  It can be empty
     # or can include any of the below:
     #
     # mozilla-auth0:
