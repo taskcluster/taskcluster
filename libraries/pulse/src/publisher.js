@@ -174,6 +174,7 @@ class PulsePublisher {
     this.client = client;
     this.exchanges = exchanges;
     this.sendDeadline = sendDeadline || 12000;
+    this.blocked = true;
 
     if (process.env.NODE_ENV === 'production') {
       assert.equal(client.namespace, exchanges.projectName,
@@ -214,6 +215,7 @@ class PulsePublisher {
       // we now have no working channel, so clear everything
       // and set up to resolve channelPromise when we get one
       this._channel = null;
+      this.blocked = true;
       if (!this._resolveChannelPromise) {
         this.channelPromise = new Promise(resolve => {
           this._resolveChannelPromise = resolve;
@@ -231,6 +233,15 @@ class PulsePublisher {
       const channel = await connection.amqp.createConfirmChannel();
       debug('using new channel');
       this._setChannel(channel);
+      connection.on('blocked', () => {
+        this.client.monitor.warning('AMQP connection entered blocking state');
+        this.blocked = true;
+      });
+      connection.on('unblocked', () => {
+        this.client.monitor.warning('AMQP connection no longer blocking');
+        this.blocked = false;
+      });
+      this.blocked = false;
     } catch (err) {
       this.client.monitor.reportError(err);
       this._connection = null;

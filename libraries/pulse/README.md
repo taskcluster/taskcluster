@@ -485,6 +485,15 @@ For compatibility with the deployment at `taskcluster.net`, this function also
 accepts parameters `publish` and `aws`, which control publishing the references
 to an Amazon S3 bucket.
 
+## Blocked Connections
+
+When RabbitMQ gets low on resources, it [sends a message to publishing channels indicating that it is blocking](https://www.rabbitmq.com/connection-blocked.html).
+Typically this means that RabbtiMQ will slow down or stop accepting new messages, protecting the server.
+However, on a busy system it can easily cause send operations to hit their `sendDeadline`, creating cascading failures.
+
+The publisher sets its `blocked` property to true when the server indicates that it is currently being blocked by the server or when it is not connected to a server.
+Services using this facility can check the `blocked` property and elect to propagate this upstream as a temporary error.
+
 # Testing
 
 To run the tests, a simple `yarn test` will do.  But it will skip most of the tests!

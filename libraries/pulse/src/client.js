@@ -333,6 +333,12 @@ class Connection extends events.EventEmitter {
         }
       });
 
+      // pass on blocked/unblocked messages; see
+      // https://www.rabbitmq.com/connection-blocked.html#capabilities. Amqplib
+      // includes 'connection.blocked' in the client properties for us
+      amqp.on('blocked', () => { this.emit('blocked'); });
+      amqp.on('unblocked', () => { this.emit('unblocked'); });
+
       this.debug('connected');
       this.state = 'connected';
       this.emit('connected');
