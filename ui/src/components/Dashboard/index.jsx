@@ -200,20 +200,18 @@ export default class Dashboard extends Component {
     versionNumber: null,
   };
 
-  componentDidMount() {
-    this.loadVersionNumber();
+  async componentDidMount() {
+    const { default: versionNumber } = await this.loadVersionNumber();
+
+    this.setState({ versionNumber });
   }
 
   async loadVersionNumber() {
     try {
-      const {
-        default: versionNumber,
-      } = await import(`../../../../.git-version`);
-
-      this.setState({ versionNumber });
-    } catch (error) {
+      return await import(`../../../../.git-version`);
+    } catch (err) {
       // eslint-disable-next-line no-console
-      console.log(error);
+      console.log(err);
     }
   }
 
