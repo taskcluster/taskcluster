@@ -56,7 +56,7 @@ If you are only looking to deploy the docs site, configure `DOCS_ONLY` to be `tr
 
 ### Login Strategies
 
-Login strategies are specifed in `LOGIN_STRATEGIES`, split on space. They are used to identify which
+Login strategies are specifed in `UI_LOGIN_STRATEGY_NAMES`, split on space. They are used to identify which
 login widget(s) to display to the end user.
 
 Taskcluster supports the following strategies:
@@ -66,7 +66,7 @@ Taskcluster supports the following strategies:
 _Example: Enabling the `github` and `mozilla-auth0` strategies_
 
 ```bash
-LOGIN_STRATEGIES="github mozilla-auth0"
+UI_LOGIN_STRATEGY_NAMES="github mozilla-auth0"
 ```
 
 _Note: Each strategy requires its own set of config in `web-server`. Be sure to reference the

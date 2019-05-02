@@ -10,7 +10,7 @@
   APPLICATION_NAME = "Taskcluster"
   GRAPHQL_ENDPOINT = "https://taskcluster-web-server.herokuapp.com/graphql"
   GRAPHQL_SUBSCRIPTION_ENDPOINT = "wss://taskcluster-web-server.herokuapp.com/subscription"
-  LOGIN_STRATEGIES = ""
+  UI_LOGIN_STRATEGY_NAMES = ""
   TASKCLUSTER_ROOT_URL = "https://taskcluster.net"
 
 # Rule for Single Page Applications (docs)
