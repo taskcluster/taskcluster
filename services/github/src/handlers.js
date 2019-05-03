@@ -296,7 +296,7 @@ class Handlers {
     try {
       response = await instGithub.repos.getContents({owner, repo, path: '.taskcluster.yml', ref});
     } catch (e) {
-      if (e.code === 404) {
+      if (e.status === 404) {
         debug(`${owner}/${repo} has no '.taskcluster.yml' at ${ref}. Skipping.`);
         return null;
       }
@@ -607,7 +607,7 @@ async function jobHandler(message) {
         repo: repository,
         username: login,
       }).catch(e => {
-        if (e.code !== 404) {
+        if (e.status !== 404) {
           throw e;
         }
       });
