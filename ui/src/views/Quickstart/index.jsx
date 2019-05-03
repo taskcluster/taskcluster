@@ -366,7 +366,7 @@ export default class QuickStart extends Component {
                 to the{' '}
                 <a
                   href={urls.docs(
-                    'reference/integrations/taskcluster-github/docs/taskcluster-yml-v1'
+                    'reference/integrations/github/taskcluster-yml-v1'
                   )}
                   target="_blank"
                   rel="noopener noreferrer">
