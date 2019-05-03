@@ -134,14 +134,14 @@ import SkipNavigation from '../SkipNavigation';
       top: theme.spacing.unit,
       right: theme.spacing.unit,
     },
-    version: {
-      ...theme.mixins.toolbar,
-      paddingLeft: theme.spacing.double,
-      paddingRight: theme.spacing.double,
+    deploymentVersion: {
+      padding: theme.spacing.unit,
+    },
+    nav: {
       display: 'flex',
-      flexGrow: 1,
-      flexDirection: 'row',
-      marginTop: '25vh',
+      flexDirection: 'column',
+      flex: 1,
+      justifyContent: 'space-between',
     },
   }),
   { withTheme: true }
@@ -197,21 +197,20 @@ export default class Dashboard extends Component {
     navOpen: false,
     showHelpView: false,
     error: null,
-    versionNumber: null,
+    deploymentVersion: null,
   };
 
   async componentDidMount() {
-    const { default: versionNumber } = await this.loadVersionNumber();
+    const { default: deploymentVersion } = await this.getDeploymentVersion();
 
-    this.setState({ versionNumber });
+    this.setState({ deploymentVersion });
   }
 
-  async loadVersionNumber() {
+  getDeploymentVersion() {
     try {
-      return await import(`../../../../.git-version`);
+      return import(`../../../../.git-version`);
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.log(err);
+      // ignore
     }
   }
 
@@ -240,45 +239,45 @@ export default class Dashboard extends Component {
       staticContext: _,
       ...props
     } = this.props;
-    const { error, navOpen, showHelpView, versionNumber } = this.state;
+    const { error, navOpen, showHelpView, deploymentVersion } = this.state;
     const drawer = (
-      <nav>
-        <div
-          {...!process.env.DOCS_ONLY && {
-            component: Link,
-            to: '/',
-          }}
-          className={classes.toolbar}>
-          <img
-            className={classes.logoStyle}
-            height={30}
-            alt="logo"
-            src={Logo}
-          />
-          <Typography
+      <nav className={classes.nav}>
+        <div>
+          <div
             {...!process.env.DOCS_ONLY && {
               component: Link,
               to: '/',
             }}
-            variant="h6"
-            noWrap
-            className={classes.title}>
-            {process.env.APPLICATION_NAME}
-          </Typography>
-        </div>
-        <Divider />
-        <UserMenu />
-        <Divider />
-        {docs ? <DocsSidebarList /> : <SidebarList />}
-        {versionNumber && docs ? (
-          <div className={classes.version}>
-            <Typography variant="h6" noWrap>
-              VersionNumber <br />
-              {versionNumber}
+            className={classes.toolbar}>
+            <img
+              className={classes.logoStyle}
+              height={30}
+              alt="logo"
+              src={Logo}
+            />
+            <Typography
+              {...!process.env.DOCS_ONLY && {
+                component: Link,
+                to: '/',
+              }}
+              variant="h6"
+              noWrap
+              className={classes.title}>
+              {process.env.APPLICATION_NAME}
             </Typography>
           </div>
-        ) : (
-          ''
+          <Divider />
+          <UserMenu />
+          <Divider />
+          {docs ? <DocsSidebarList /> : <SidebarList />}
+        </div>
+        {deploymentVersion && (
+          <Typography
+            className={classes.deploymentVersion}
+            variant="caption"
+            noWrap>
+            {deploymentVersion}
+          </Typography>
         )}
       </nav>
     );
