@@ -103,13 +103,14 @@ const load = loader(
     },
 
     context: {
-      requires: ['cfg', 'pulseEngine', 'strategies'],
-      setup: ({ cfg, pulseEngine, strategies }) =>
+      requires: ['cfg', 'pulseEngine', 'strategies', 'monitor'],
+      setup: ({ cfg, pulseEngine, strategies, monitor }) =>
         createContext({
           pulseEngine,
           rootUrl: cfg.taskcluster.rootUrl,
           strategies,
           cfg,
+          monitor: monitor.monitor('context'),
         }),
     },
 

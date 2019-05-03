@@ -1,7 +1,7 @@
 const DataLoader = require('dataloader');
 const WebServerError = require('../utils/WebServerError');
 
-module.exports = (clients, isAuthed, rootUrl, strategies, req, cfg) => {
+module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => {
   const getCredentials = new DataLoader(queries => {
     return Promise.all(
       queries.map(async ({ provider, accessToken }) => {
@@ -30,6 +30,11 @@ module.exports = (clients, isAuthed, rootUrl, strategies, req, cfg) => {
         // Move expires back by 30 seconds to ensure the user refreshes well in advance of the
         // actual credential expiration time
         expires.setSeconds(expires.getSeconds() - 30);
+
+        monitor.log.createCredentials({
+          credentials: userCredentials,
+          expires,
+        });
 
         return {
           credentials: userCredentials,
