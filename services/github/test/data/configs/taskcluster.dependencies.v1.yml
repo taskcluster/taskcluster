@@ -1,0 +1,70 @@
+version: 1
+policy:
+  pullRequests: public
+tasks:
+  $if: 'tasks_for == "github-push"'
+  then:
+    - taskId: "docker_build"
+      dependencies:
+      - "py36"
+      - "py37"
+      provisionerId: aws-provisioner-v1
+      workerType: releng-svc
+      created: {$fromNow: ''}
+      deadline: {$fromNow: '1 hour'}
+      payload:
+        command:
+        - taskboot
+      metadata:
+        name: docker build
+        description: build latest docker image
+        owner: owner
+        source: source
+
+    - taskId: "py36"
+      provisionerId: aws-provisioner-v1
+      workerType: github-worker
+      created: {$fromNow: ''}
+      deadline: {$fromNow: '1 hour'}
+      payload:
+        maxRunTime: 3600
+        image: python:3.6
+        command:
+          - sh
+      metadata:
+        name: tox py36
+        description: code linting & unit tests on py36
+        owner: owner
+        source: source
+
+    - taskId: "docker_push"
+      dependencies:
+      - "docker_build"
+      provisionerId: aws-provisioner-v1
+      workerType: releng-svc
+      created: {$fromNow: ''}
+      deadline: {$fromNow: '1 hour'}
+      payload:
+        command:
+        - taskboot
+      metadata:
+        name: docker push
+        description: push docker image
+        owner: owner
+        source: source
+
+    - taskId: "py37"
+      provisionerId: aws-provisioner-v1
+      workerType: github-worker
+      created: {$fromNow: ''}
+      deadline: {$fromNow: '1 hour'}
+      payload:
+        maxRunTime: 3600
+        image: python:3.7
+        command:
+          - sh
+      metadata:
+        name: tox py37
+        description: code linting & unit tests on py37
+        owner: owner
+        source: source
