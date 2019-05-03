@@ -177,9 +177,6 @@ const load = Loader({
         },
         schemaset,
         signatureValidator,
-        publish: cfg.app.publishMetaData,
-        aws: cfg.aws,
-        referenceBucket: cfg.app.buckets.references,
         monitor: monitor.monitor('api'),
       });
     },

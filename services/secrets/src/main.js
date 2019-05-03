@@ -56,8 +56,6 @@ let load = loader({
     setup: async ({cfg, Secret, schemaset, monitor}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {cfg, Secret},
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
       monitor: monitor.monitor('api'),
       schemaset,
     }),

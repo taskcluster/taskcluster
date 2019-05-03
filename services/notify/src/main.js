@@ -191,8 +191,6 @@ const load = loader({
     setup: ({cfg, monitor, schemaset, notifier, DenylistedNotification, denier}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {notifier, DenylistedNotification, denier},
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
       monitor: monitor.monitor('api'),
       schemaset,
     }),

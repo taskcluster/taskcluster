@@ -71,8 +71,6 @@ let load = loader({
       schemaset,
       context: {cfg, handlers},
       rootUrl: cfg.taskcluster.rootUrl,
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
       monitor: monitor.monitor('api'),
     }),
   },

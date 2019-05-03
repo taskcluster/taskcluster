@@ -64,8 +64,6 @@ const load = loader({
       context: {cfg, CachePurge, cachePurgeCache: {}},
       rootUrl: cfg.taskcluster.rootUrl,
       schemaset,
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
       monitor: monitor.monitor('api'),
     }),
   },

@@ -166,8 +166,6 @@ const load = loader({
         ajv,
         monitor: monitor.monitor('api-context'),
       },
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
       monitor: monitor.monitor('api'),
       schemaset,
     }),

@@ -119,8 +119,6 @@ const load = loader({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {Hook, LastFire, taskcreator, publisher, denylist: cfg.pulse.denylist},
       schemaset,
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws.validator,
       monitor: monitor.monitor('api'),
     }),
   },

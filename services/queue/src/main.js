@@ -462,8 +462,6 @@ let load = loader({
       },
       rootUrl: ctx.cfg.taskcluster.rootUrl,
       schemaset: ctx.schemaset,
-      publish: ctx.cfg.app.publishMetaData,
-      aws: ctx.cfg.aws,
       monitor: ctx.monitor.monitor('api'),
     }),
   },

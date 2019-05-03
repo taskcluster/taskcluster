@@ -55,8 +55,6 @@ let load = loader({
         WorkerType,
         providers,
       },
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
       monitor: monitor.monitor('api'),
       schemaset,
     }),

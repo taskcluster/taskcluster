@@ -110,8 +110,6 @@ let load = loader({
         Namespace,
       },
       rootUrl: cfg.taskcluster.rootUrl,
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
       schemaset,
       monitor: monitor.monitor('api'),
     }),
