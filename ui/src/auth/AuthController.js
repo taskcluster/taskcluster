@@ -2,6 +2,7 @@ import mitt from 'mitt';
 import { snake, upper } from 'change-case';
 import { AUTH_STORE } from '../utils/constants';
 import credentialsQuery from './credentials.graphql';
+import removeKeys from '../utils/removeKeys';
 
 /**
  * Controller for authentication-related pieces of the site.
@@ -110,6 +111,6 @@ export default class AuthController {
       },
     });
 
-    return data.getCredentials;
+    return removeKeys(data.getCredentials, ['__typename']);
   };
 }
