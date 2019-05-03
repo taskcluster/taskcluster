@@ -1,3 +1,4 @@
+const debug = require('debug');
 const loader = require('taskcluster-lib-loader');
 const taskcluster = require('taskcluster-client');
 const App = require('taskcluster-lib-app');
@@ -27,6 +28,20 @@ let load = loader({
     }),
   },
 
+  Worker: {
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => data.Worker.setup({
+      tableName: cfg.app.workerTableName,
+      credentials: sasCredentials({
+        accountId: cfg.azure.accountId,
+        tableName: cfg.app.workerTableName,
+        rootUrl: cfg.taskcluster.rootUrl,
+        credentials: cfg.taskcluster.credentials,
+      }),
+      monitor: monitor.monitor('table.workers'),
+    }),
+  },
+
   WorkerType: {
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => data.WorkerType.setup({
@@ -39,6 +54,44 @@ let load = loader({
       }),
       monitor: monitor.childMonitor('table.workerTypes'),
     }),
+  },
+
+  WorkerTypeError: {
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => data.WorkerTypeError.setup({
+      tableName: cfg.app.workerTypeErrorTableName,
+      credentials: sasCredentials({
+        accountId: cfg.azure.accountId,
+        tableName: cfg.app.workerTypeErrorTableName,
+        rootUrl: cfg.taskcluster.rootUrl,
+        credentials: cfg.taskcluster.credentials,
+      }),
+      monitor: monitor.monitor('table.workerTypeErrors'),
+    }),
+  },
+
+  expireWorkers: {
+    requires: ['cfg', 'Worker', 'monitor'],
+    setup: ({cfg, Worker, monitor}) => {
+      return monitor.monitor().oneShot('expire workers', async () => {
+        const threshold = taskcluster.fromNow(cfg.app.workersExpirationDelay);
+        debug('Expiring workers');
+        const count = await Worker.expire(threshold);
+        debug(`Expired ${count} rows`);
+      });
+    },
+  },
+
+  expireErrors: {
+    requires: ['cfg', 'WorkerTypeError', 'monitor'],
+    setup: ({cfg, WorkerTypeError, monitor}) => {
+      return monitor.monitor().oneShot('expire workerTypeErrors', async () => {
+        const threshold = taskcluster.fromNow(cfg.app.errorsExpirationDelay);
+        debug('Expiring workerTypeErrors');
+        const count = await WorkerTypeError.expire(threshold);
+        debug(`Expired ${count} rows`);
+      });
+    },
   },
 
   schemaset: {
@@ -97,8 +150,8 @@ let load = loader({
   },
 
   providers: {
-    requires: ['cfg', 'monitor', 'notify', 'estimator'],
-    setup: ({cfg, monitor, notify, estimator}) => {
+    requires: ['cfg', 'monitor', 'notify', 'estimator', 'Worker'],
+    setup: ({cfg, monitor, notify, estimator, Worker}) => {
       const _providers = {};
       Object.entries(cfg.providers).forEach(([name, meta]) => {
         let Prov;
@@ -116,6 +169,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           taskclusterCredentials: cfg.taskcluster.credentials,
           estimator,
+          Worker,
           ...meta,
         });
       });

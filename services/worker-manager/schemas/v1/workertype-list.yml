@@ -3,7 +3,7 @@ title: WorkerType List
 description: A list of worker types
 type: object
 properties:
-  workertypes:
+  workerTypes:
     type: array
     title: "List of all workertypes"
     description: List of all workertypes
@@ -21,7 +21,6 @@ properties:
       return additional results, but it can. Thus, you can only be sure to have
       all the results if you've called `listWorkerTypes` with `continuationToken`
       until you get a result without a `continuationToken`.
-
-additionalProperties: true
+additionalProperties: false
 required:
-  - data
+  - workerTypes

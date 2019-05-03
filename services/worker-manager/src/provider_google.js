@@ -21,8 +21,9 @@ class GoogleProvider extends Provider {
     instancePermissions,
     creds,
     credsFile,
+    Worker,
   }) {
-    super({name, taskclusterCredentials, monitor, notify, provisionerId, rootUrl, estimator});
+    super({name, taskclusterCredentials, monitor, notify, provisionerId, rootUrl, estimator, Worker});
     this.cache = new TimedCache();
 
     this.instancePermissions = instancePermissions;
@@ -90,13 +91,22 @@ class GoogleProvider extends Provider {
       throw error;
     }
 
-    //TODO: Add this worker to workers table here
+    // Google docs say instance id is globally unique even across projects
+    const workerId = `gcp-${dat.instance_id}`;
+
+    // This will throw an error if the workertype already checked in.
+    // Workers that fail to get creds after this should terminate themselves
+    await this.Worker.create({
+      workerType: workerType.name,
+      workerId,
+      credentialed: new Date(),
+    });
 
     return taskcluster.createTemporaryCredentials({
       clientId: `worker/google/${this.project}/${dat.instance_id}`,
       scopes: [
         `assume:worker-type:${this.provisionerId}/${workerType.name}`,
-        `assume:worker-id:gcp-${dat.instance_id}`, // Google docs say instance id is globally unique even across projects
+        `assume:worker-id:${workerId}`,
       ],
       start: taskcluster.fromNow('-15 minutes'),
       expiry: taskcluster.fromNow('96 hours'),

@@ -4,6 +4,16 @@ web:
 provisioner:
   type: background
   command: node src/main.js provisioner
+expire-workers:
+  type: cron
+  schedule: '0 0 * * *'
+  deadline: 86400
+  command: node src/main.js expireWorkers
+expire-errors:
+  type: cron
+  schedule: '10 0 * * *'
+  deadline: 86400
+  command: node src/main.js expireErrors
 write-docs:
   type: build
   command: node src/main.js writeDocs

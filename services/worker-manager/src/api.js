@@ -56,9 +56,9 @@ builder.declare({
       config: input.config, // TODO: validate this
       created: now,
       lastModified: now,
-      errors: [],
       owner: input.owner,
       providerData: {},
+      scheduledForDeletion: false,
     });
   } catch (err) {
     if (err.code !== 'EntityAlreadyExists') {
@@ -162,7 +162,17 @@ builder.declare({
 }, async function(req, res) {
   const {name} = req.params;
 
-  await this.WorkerType.remove({name}, true);
+  const workerType = await this.WorkerType.load({
+    name,
+  }, true);
+  if (!workerType) {
+    return res.reportError('ResourceNotFound', 'WorkerType does not exist', {});
+  }
+
+  await workerType.modify(wt => {
+    wt.scheduledForDeletion = true;
+  });
+
   return res.reply();
 });
 

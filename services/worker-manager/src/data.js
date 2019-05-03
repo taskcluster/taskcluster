@@ -1,3 +1,4 @@
+const slugid = require('slugid');
 const yaml = require('js-yaml');
 const Entity = require('azure-entities');
 
@@ -15,6 +16,9 @@ const WorkerType = Entity.configure({
     // A useful human-readable description of what this workertype is for
     description: Entity.types.String,
 
+    // If this is true, a provider should clean up any resources with this and then delete it
+    scheduledForDeletion: Entity.types.Boolean,
+
     // A timestamp of when this workertype was initially created
     created: Entity.types.Date,
 
@@ -25,10 +29,6 @@ const WorkerType = Entity.configure({
     // The contents of this will be different based on which provider is selected. The providers must
     // provide some sort of schema for this.
     config: Entity.types.JSON,
-
-    // A list of errors that providers have encountered recently when attempting to provision
-    // this workertype
-    errors: Entity.types.JSON,
 
     // An email address that gets a notification when there is an error provisioning
     owner: Entity.types.String,
@@ -46,21 +46,20 @@ WorkerType.prototype.serializable = function() {
     created: this.created.toJSON(),
     lastModified: this.lastModified.toJSON(),
     config: this.config,
-    errors: this.errors,
+    scheduledForDeletion: this.scheduledForDeletion,
     owner: this.owner,
   };
 };
 
-WorkerType.prototype.reportError = async function({kind, title, description, extra, notify, owner}) {
-  await this.modify(wt => {
-    wt.errors.unshift({
-      reported: new Date(),
-      kind,
-      title,
-      description,
-      extra,
-    });
-    wt.errors = wt.errors.slice(0, 100);
+WorkerType.prototype.reportError = async ({kind, title, description, extra, notify, owner}) => {
+  await WorkerTypeError.create({
+    workerType: this.name,
+    errorId: slugid.v4(),
+    reported: new Date(),
+    kind,
+    title,
+    description,
+    extra,
   });
   await notify.email({
     address: owner,
@@ -81,6 +80,86 @@ ${yaml.safeDump(extra)}
   });
 };
 
+const WorkerTypeError = Entity.configure({
+  version: 1,
+  partitionKey: Entity.keys.StringKey('workerType'),
+  rowKey: Entity.keys.StringKey('errorId'),
+  properties: {
+    // The workertype this maps to.
+    workerType: Entity.types.String,
+
+    // An arbitrary id for this error
+    errorId: Entity.types.SlugId,
+
+    // The datetime this error occured
+    reported: Entity.types.Date,
+
+    // The sort of error this is. Can be used by UIs to differentiate
+    kind: Entity.types.String,
+
+    // A human readable name for this error
+    title: Entity.types.String,
+
+    // A human readable description of this error and what can be done to fix it
+    description: Entity.types.String,
+
+    // Anything else that a reporter may want to add in a structured way
+    extra: Entity.types.JSON,
+  },
+});
+
+WorkerTypeError.prototype.serializable = function() {
+  return {
+    workerType: this.workerType,
+    errorId: this.errorId,
+    reported: this.reported.toJSON(),
+    kind: this.kind,
+    title: this.title,
+    description: this.description,
+    extra: this.extra,
+  };
+};
+
+WorkerTypeError.expire = async (threshold) => {
+  await this.scan({
+    reported: Entity.op.lessThan(threshold),
+  }, {
+    limit: 500,
+    handler: async item => {
+      await item.remove();
+    },
+  });
+};
+
+const Worker = Entity.configure({
+  version: 1,
+  partitionKey: Entity.keys.StringKey('workerType'),
+  rowKey: Entity.keys.StringKey('workerId'),
+  properties: {
+    // The workertype this maps to.
+    workerType: Entity.types.String,
+
+    // The id of this worker
+    workerId: Entity.types.String,
+
+    // The time that this worker requested credentials
+    credentialed: Entity.types.Date,
+  },
+});
+
+Worker.expire = async (threshold) => {
+  await this.scan({
+    credentialed: Entity.op.lessThan(threshold),
+  }, {
+    limit: 500,
+    handler: async item => {
+      await item.remove();
+    },
+  });
+};
+
 module.exports = {
+  Worker,
   WorkerType,
+  WorkerTypeError,
 };

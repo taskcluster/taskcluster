@@ -39,37 +39,15 @@ properties:
     description: |
       A workertype configuration. It will be different based on the provider
       and the format is validated internally.
-  errors:
-    type: array
-    maxItems: 100
-    description: |
-      The last 100 errors a provider faced when trying to provision
-      this workertype.
-    uniqueItems: false
-    items:
-    - type: object
-      description: A single error
-      properties:
-        reported:
-          type: string
-          format: date-time
-          description: The timestamp of when this error was encountered
-        kind:
-          type: string
-          description: A unique identifier of this error type
-        title:
-          type: string
-          description: A human-readable name for this error
-        description:
-          type: string
-          description: A human-readable explanation of what caused this error and possible fixes
-      additionalProperties: true
   owner:
     type: string
     format: email
     description: |
       An email address to notify when there are provisioning errors for this
       workertype.
+  scheduledForDeletion:
+    type: boolean
+    description: If true, a user has requested that this workertype be deleted
 additionalProperties: false
 required:
   - provider
@@ -78,4 +56,4 @@ required:
   - lastModified
   - config
   - owner
-  - errors
+  - scheduledForDeletion

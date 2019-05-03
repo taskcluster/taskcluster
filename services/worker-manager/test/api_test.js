@@ -10,11 +10,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     await helper.workerManager.ping();
   });
 
-  const workerTypeCompare = (name, input, result) => {
-    const {created, lastModified, errors, ...definition} = result;
+  const workerTypeCompare = (name, input, result, deletion = false) => {
+    const {created, lastModified, scheduledForDeletion, ...definition} = result;
     assert(created);
     assert(lastModified);
-    assert(errors);
+    assert(scheduledForDeletion === deletion);
     assert.deepEqual({name, ...input}, definition);
   };
 
@@ -175,15 +175,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     };
     workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
     await helper.workerManager.deleteWorkerType(name);
-    try {
-      await helper.workerManager.workerType(name);
-    } catch (err) {
-      if (err.code !== 'ResourceNotFound') {
-        throw err;
-      }
-      return;
-    }
-    throw new Error('get of a deleted workertype succeeded');
+    workerTypeCompare(name, input, await helper.workerManager.workerType(name), true);
   });
 
   test('credentials google', async function() {
