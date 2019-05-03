@@ -1,6 +1,5 @@
 defaults:
   app:
-    publishMetaData:              !env:bool PUBLISH_METADATA
     exchangePrefix:               v1/
 
     # Number of seconds before the claim to a run expires
@@ -170,7 +169,6 @@ production:
 # Configuration of tests
 test:
   app:
-    publishMetaData:              false
     # For testing purposes we let claims expire very fast
     claimTimeout:                 1
     artifactContainer:            'artifacts'
@@ -208,7 +206,6 @@ test:
   azureTableAccount:  inMemory
 load-test:
   app:
-    publishMetaData:              false
     publicArtifactBucket:         'test-bucket-for-any-garbage'
     privateArtifactBucket:        'test-bucket-for-any-garbage2'
     artifactContainer:            'artifacts'

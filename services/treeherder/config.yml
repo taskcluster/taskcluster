@@ -1,7 +1,4 @@
 defaults:
-  app:
-    # Publish references and schemas
-    publishMetaData:  !env:bool PUBLISH_METADATA
   pulse:
     namespace: !env PULSE_NAMESPACE
     credentials:

@@ -72,7 +72,6 @@ module "notify_secrets" {
     TRUST_PROXY                        = "true"
     NODE_ENV                           = "production"
     MONITORING_ENABLE                  = "true"
-    PUBLISH_METADATA                   = "false"
     AZURE_ACCOUNT                      = "${azurerm_storage_account.base.name}"
     PULSE_USERNAME                     = "${module.notify_rabbitmq_user.username}"
     PULSE_PASSWORD                     = "${module.notify_rabbitmq_user.password}"

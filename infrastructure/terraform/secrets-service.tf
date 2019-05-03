@@ -29,7 +29,6 @@ module "secrets_secrets" {
     NODE_ENV                 = "production"
     FORCE_SSL                = "false"
     MONITORING_ENABLE        = "true"
-    PUBLISH_METADATA         = "false"
     AZURE_ACCOUNT            = "${azurerm_storage_account.base.name}"
     AZURE_TABLE_NAME         = "Secrets"
     AZURE_CRYPTO_KEY         = "${base64encode(random_string.secrets_azure_crypto_key.result)}"

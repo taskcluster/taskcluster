@@ -8,9 +8,6 @@ defaults:
     indexedTaskTableName: 'IndexedTasks'
     namespaceTableName: 'Namespaces'
 
-    # Publish references and schemas
-    publishMetaData: !env:bool PUBLISH_METADATA
-
     # Name of pulse queue, if a non-exclusive queue is to be used.
     listenerQueueName: null
 

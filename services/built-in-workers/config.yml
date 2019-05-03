@@ -1,7 +1,4 @@
 defaults:
-  app:
-    publishMetaData: !env:bool PUBLISH_METADATA
-
   # Taskcluster credentials
   taskcluster:
     rootUrl: !env TASKCLUSTER_ROOT_URL
@@ -19,9 +16,6 @@ defaults:
     workerGroup: "built-in"
 
 test:
-  app:
-    publishMetaData: false
-
   monitoring:
     level: warning
     enable: false
