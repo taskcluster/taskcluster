@@ -11,8 +11,3 @@ variable "azure_region" {
 variable "aws_region" {
   description = "The AWS region to deploy into (e.g. us-east-1)."
 }
-
-variable "root_url" {
-  type        = "string"
-  description = "Taskcluster rootUrl"
-}
