@@ -6,7 +6,7 @@ const loader = require('taskcluster-lib-loader');
 const SchemaSet = require('taskcluster-lib-validate');
 const monitorManager = require('./monitor');
 const App = require('taskcluster-lib-app');
-const libDocs = require('taskcluster-lib-docs');
+const libReferences = require('taskcluster-lib-references');
 const taskcluster = require('taskcluster-client');
 const config = require('taskcluster-lib-config');
 const {sasCredentials} = require('taskcluster-lib-azure');
@@ -51,6 +51,14 @@ let load = loader({
     }),
   },
 
+  generateReferences: {
+    requires: ['cfg', 'schemaset'],
+    setup: ({cfg, schemaset}) => libReferences.fromService({
+      schemaset,
+      references: [builder.reference(), monitorManager.reference()],
+    }).generateReferences(),
+  },
+
   api: {
     requires: ['cfg', 'Secret', 'schemaset', 'monitor'],
     setup: async ({cfg, Secret, schemaset, monitor}) => builder.build({
@@ -61,31 +69,9 @@ let load = loader({
     }),
   },
 
-  docs: {
-    requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => libDocs({
-      projectName: 'taskcluster-secrets',
-      schemaset,
-      references: [
-        {
-          name: 'api',
-          reference: builder.reference(),
-        }, {
-          name: 'logs',
-          reference: monitorManager.reference(),
-        },
-      ],
-    }),
-  },
-
-  writeDocs: {
-    requires: ['docs'],
-    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
-  },
-
   server: {
-    requires: ['cfg', 'api', 'docs'],
-    setup: ({cfg, api, docs}) => App({
+    requires: ['cfg', 'api'],
+    setup: ({cfg, api}) => App({
       port: Number(process.env.PORT || cfg.server.port),
       env: cfg.server.env,
       forceSSL: cfg.server.forceSSL,

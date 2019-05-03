@@ -164,7 +164,7 @@ Each part is:
 If the `verify` option is set to true during manager setup, this library will verify that at least the required fields have been passed into the logger
 upon invoking it.
 
-When using this feature, pass in `monitorManager.references()` to an instance of taskcluster-lib-docs to publish.
+When using this feature, pass in `monitorManager.references()` to an instance of taskcluster-lib-references to publish.
 
 ### Per-child Levels
 

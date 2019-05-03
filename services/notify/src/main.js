@@ -4,7 +4,7 @@ const App = require('taskcluster-lib-app');
 const loader = require('taskcluster-lib-loader');
 const config = require('taskcluster-lib-config');
 const SchemaSet = require('taskcluster-lib-validate');
-const libDocs = require('taskcluster-lib-docs');
+const libReferences = require('taskcluster-lib-references');
 const taskcluster = require('taskcluster-client');
 const _ = require('lodash');
 const monitorManager = require('./monitor');
@@ -63,29 +63,12 @@ const load = loader({
     }),
   },
 
-  docs: {
-    requires: ['cfg', 'schemaset', 'reference'],
-    setup: async ({cfg, schemaset, reference}) => await libDocs({
-      projectName: 'taskcluster-notify',
+  generateReferences: {
+    requires: ['cfg', 'schemaset'],
+    setup: ({cfg, schemaset}) => libReferences.fromService({
       schemaset,
-      references: [
-        {
-          name: 'api',
-          reference: builder.reference(),
-        }, {
-          name: 'events',
-          reference: reference,
-        }, {
-          name: 'logs',
-          reference: monitorManager.reference(),
-        },
-      ],
-    }),
-  },
-
-  writeDocs: {
-    requires: ['docs'],
-    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
+      references: [builder.reference(), exchanges.reference(), monitorManager.reference()],
+    }).generateReferences(),
   },
 
   pulseClient: {
@@ -197,8 +180,8 @@ const load = loader({
   },
 
   server: {
-    requires: ['cfg', 'api', 'docs'],
-    setup: ({cfg, api, docs}) => App({
+    requires: ['cfg', 'api'],
+    setup: ({cfg, api}) => App({
       ...cfg.server,
       apis: [api],
     }),

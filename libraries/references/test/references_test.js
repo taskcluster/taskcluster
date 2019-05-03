@@ -23,20 +23,6 @@ suite(testing.suiteName(), function() {
   });
 
   test('fromService', function() {
-    // mock APIBuilder from taskcluster-lib-api
-    const builder = {
-      reference() {
-        return {api: true};
-      },
-    };
-
-    // mock Exchanges from taskcluster-lib-pulse
-    const exchanges = {
-      reference() {
-        return {exchanges: true};
-      },
-    };
-
     // mock SchemaSet from taskcluster-lib-validate
     const schemaset = {
       abstractSchemas() {
@@ -48,9 +34,16 @@ suite(testing.suiteName(), function() {
       },
     };
 
-    const references = References.fromService({builder, exchanges, schemaset});
-    assert(references.references.some(r => r.content.api));
-    assert(references.references.some(r => r.content.exchanges));
+    const references = References.fromService({
+      schemaset,
+      references: [
+        {
+          $schema: '/schemas/common/v1/api-reference.json#',
+          serviceName: 'testy',
+          apiVersion: 'v2',
+        },
+      ]});
+    assert(references.references.some(r => r.content.serviceName === 'testy'));
     assert(references.schemas.some(s => s.content.$id === 'somefile.json#'));
   });
 

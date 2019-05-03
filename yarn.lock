@@ -7285,10 +7285,6 @@ tar@^4:
   version "0.0.0"
   uid ""
 
-"taskcluster-lib-docs@link:libraries/docs":
-  version "0.0.0"
-  uid ""
-
 "taskcluster-lib-iterate@link:libraries/iterate":
   version "0.0.0"
   uid ""

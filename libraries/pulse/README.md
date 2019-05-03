@@ -449,13 +449,12 @@ By convention, these are prefixed with `route.`.
 The `exchanges.reference()` method will return a reference document suitable
 for publication under `<rootUrl>/references`.
 
-This is typically passed to [taskcluster-lib-docs](../docs) like this:
+This is typically passed to [taskcluster-lib-references](../references) like this:
 
 ```javascript
-Docs.documenter({
-  references: [
-    {name: 'events', reference: exchanges.reference()},
-  ], ..
+libReferences.fromService({
+  schemaset,
+  references: [exchanges.reference()],
 })
 ```
 

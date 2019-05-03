@@ -1,6 +1,6 @@
 const loader = require('taskcluster-lib-loader');
 const monitorManager = require('./monitor');
-const libDocs = require('taskcluster-lib-docs');
+const libReferences = require('taskcluster-lib-references');
 const taskcluster = require('taskcluster-client');
 const config = require('taskcluster-lib-config');
 const taskqueue = require('./TaskQueue');
@@ -28,20 +28,11 @@ const load = loader({
     }),
   },
 
-  docs: {
+  generateReferences: {
     requires: ['cfg'],
-    setup: ({cfg}) => libDocs({
-      projectName: 'taskcluster-built-in-workers',
-      references: [{
-        name: 'logs',
-        reference: monitorManager.reference(),
-      }],
-    }),
-  },
-
-  writeDocs: {
-    requires: ['docs'],
-    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
+    setup: ({cfg}) => libReferences.fromService({
+      references: [monitorManager.reference()],
+    }).generateReferences(),
   },
 
   succeedTaskQueue: {

@@ -7,7 +7,7 @@ const Scheduler = require('./scheduler');
 const config = require('taskcluster-lib-config');
 const loader = require('taskcluster-lib-loader');
 const App = require('taskcluster-lib-app');
-const libDocs = require('taskcluster-lib-docs');
+const libReferences = require('taskcluster-lib-references');
 const monitorManager = require('./monitor');
 const taskcluster = require('taskcluster-client');
 const {sasCredentials} = require('taskcluster-lib-azure');
@@ -155,34 +155,17 @@ const load = loader({
     },
   },
 
-  docs: {
+  generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => libDocs({
-      projectName: 'taskcluster-hooks',
+    setup: ({cfg, schemaset}) => libReferences.fromService({
       schemaset,
-      references: [
-        {
-          name: 'api',
-          reference: builder.reference(),
-        }, {
-          name: 'events',
-          reference: exchanges.reference(),
-        }, {
-          name: 'logs',
-          reference: monitorManager.reference(),
-        },
-      ],
-    }),
-  },
-
-  writeDocs: {
-    requires: ['docs'],
-    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
+      references: [builder.reference(), exchanges.reference(), monitorManager.reference()],
+    }).generateReferences(),
   },
 
   server: {
-    requires: ['cfg', 'api', 'docs'],
-    setup: ({cfg, api, docs}) => App({
+    requires: ['cfg', 'api'],
+    setup: ({cfg, api}) => App({
       port: cfg.server.port,
       env: cfg.server.env,
       forceSSL: cfg.server.forceSSL,

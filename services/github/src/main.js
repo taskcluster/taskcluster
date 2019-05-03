@@ -8,7 +8,7 @@ const config = require('taskcluster-lib-config');
 const monitorManager = require('./monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const loader = require('taskcluster-lib-loader');
-const libDocs = require('taskcluster-lib-docs');
+const libReferences = require('taskcluster-lib-references');
 const App = require('taskcluster-lib-app');
 const {sasCredentials} = require('taskcluster-lib-azure');
 const githubAuth = require('./github-auth');
@@ -46,22 +46,12 @@ const load = loader({
     setup: () => new Ajv(),
   },
 
-  docs: {
-    requires: ['cfg', 'schemaset', 'reference'],
-    setup: ({cfg, schemaset, reference}) => libDocs({
-      projectName: 'taskcluster-github',
-      schemaset: schemaset,
-      references: [
-        {name: 'api', reference: builder.reference()},
-        {name: 'events', reference: reference},
-        {name: 'logs', reference: monitorManager.reference()},
-      ],
-    }),
-  },
-
-  writeDocs: {
-    requires: ['docs'],
-    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
+  generateReferences: {
+    requires: ['cfg', 'schemaset'],
+    setup: ({cfg, schemaset}) => libReferences.fromService({
+      schemaset,
+      references: [builder.reference(), exchanges.reference(), monitorManager.reference()],
+    }).generateReferences(),
   },
 
   pulseClient: {
@@ -172,8 +162,8 @@ const load = loader({
   },
 
   server: {
-    requires: ['cfg', 'api', 'docs'],
-    setup: ({cfg, api, docs}) => App({
+    requires: ['cfg', 'api'],
+    setup: ({cfg, api}) => App({
       port: cfg.server.port,
       env: cfg.server.env,
       forceSSL: cfg.server.forceSSL,

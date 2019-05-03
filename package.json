@@ -95,7 +95,6 @@
     "taskcluster-lib-app": "link:libraries/app",
     "taskcluster-lib-azure": "link:libraries/azure",
     "taskcluster-lib-config": "link:libraries/config",
-    "taskcluster-lib-docs": "link:libraries/docs",
     "taskcluster-lib-iterate": "link:libraries/iterate",
     "taskcluster-lib-loader": "link:libraries/loader",
     "taskcluster-lib-monitor": "link:libraries/monitor",

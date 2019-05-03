@@ -18,7 +18,7 @@ let loader = require('taskcluster-lib-loader');
 let config = require('taskcluster-lib-config');
 let monitorManager = require('./monitor');
 let SchemaSet = require('taskcluster-lib-validate');
-let libDocs = require('taskcluster-lib-docs');
+let libReferences = require('taskcluster-lib-references');
 let App = require('taskcluster-lib-app');
 let remoteS3 = require('remotely-signed-s3');
 let {sasCredentials} = require('taskcluster-lib-azure');
@@ -66,27 +66,6 @@ let load = loader({
       client: pulseClient,
       schemaset,
     }),
-  },
-
-  docs: {
-    requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => libDocs({
-      projectName: 'taskcluster-queue',
-      schemaset,
-      references: [
-        {name: 'api', reference: builder.reference()},
-        {name: 'logs', reference: monitorManager.reference()},
-        {name: 'events', reference: exchanges.reference({
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.pulse,
-        })},
-      ],
-    }),
-  },
-
-  writeDocs: {
-    requires: ['docs'],
-    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
   },
 
   // Create artifact bucket instances
@@ -418,6 +397,14 @@ let load = loader({
     },
   },
 
+  generateReferences: {
+    requires: ['cfg', 'schemaset'],
+    setup: ({cfg, schemaset}) => libReferences.fromService({
+      schemaset,
+      references: [builder.reference(), exchanges.reference(), monitorManager.reference()],
+    }).generateReferences(),
+  },
+
   api: {
     requires: [
       'cfg', 'publisher', 'schemaset', 'Task', 'Artifact',
@@ -468,8 +455,8 @@ let load = loader({
 
   // Create the server process
   server: {
-    requires: ['cfg', 'api', 'docs'],
-    setup: ({cfg, api, docs}) => App({
+    requires: ['cfg', 'api'],
+    setup: ({cfg, api}) => App({
       port: cfg.server.port,
       env: cfg.server.env,
       forceSSL: cfg.server.forceSSL,
