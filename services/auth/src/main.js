@@ -85,9 +85,6 @@ const load = Loader({
     requires: ['cfg'],
     setup: ({cfg}) => new SchemaSet({
       serviceName: 'auth',
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
-      bucket: cfg.app.buckets.schemas,
     }),
   },
 

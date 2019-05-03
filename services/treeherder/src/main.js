@@ -19,8 +19,6 @@ let load = loader({
     setup: ({cfg}) => {
       return new SchemaSet({
         serviceName: 'treeherder',
-        publish: cfg.app.publishMetaData,
-        aws: cfg.aws,
       });
     },
   },

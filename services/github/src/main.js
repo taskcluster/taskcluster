@@ -33,8 +33,6 @@ const load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => new SchemaSet({
       serviceName: 'github',
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
     }),
   },
 

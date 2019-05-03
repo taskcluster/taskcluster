@@ -52,8 +52,6 @@ let load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => new SchemaSet({
       serviceName: 'index',
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
     }),
   },
 

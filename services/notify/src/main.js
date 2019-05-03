@@ -38,8 +38,6 @@ const load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => new SchemaSet({
       serviceName: 'notify',
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
     }),
   },
 

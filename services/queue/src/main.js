@@ -45,8 +45,6 @@ let load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => new SchemaSet({
       serviceName: 'queue',
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
     }),
   },
 

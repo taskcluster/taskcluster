@@ -44,9 +44,6 @@ let load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => new SchemaSet({
       serviceName: 'worker-manager',
-      publish: cfg.app.publishMetaData,
-      rootUrl: cfg.taskcluster.rootUrl,
-      aws: cfg.aws,
     }),
   },
 

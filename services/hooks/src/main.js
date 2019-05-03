@@ -71,8 +71,6 @@ const load = loader({
     setup: ({cfg}) => {
       return new SchemaSet({
         serviceName: 'hooks',
-        publish: cfg.app.publishMetaData,
-        aws: cfg.aws.validator,
       });
     },
   },

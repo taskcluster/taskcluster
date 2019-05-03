@@ -32,8 +32,6 @@ let load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => new SchemaSet({
       serviceName: 'secrets',
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
     }),
   },
 

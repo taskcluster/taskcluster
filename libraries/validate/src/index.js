@@ -7,7 +7,6 @@ const yaml = require('js-yaml');
 const assert = require('assert');
 const Ajv = require('ajv');
 const libUrls = require('taskcluster-lib-urls');
-const publish = require('./publish');
 const {renderConstants, checkRefs} = require('./util');
 const rootdir = require('app-root-dir');
 
@@ -15,8 +14,6 @@ const ABSTRACT_SCHEMA_ROOT_URL = '';
 
 class SchemaSet {
   constructor(options) {
-    assert(!options.prefix, 'The `prefix` option is no longer allowed');
-    assert(!options.version, 'The `version` option is no longer allowed');
     assert(options.serviceName, 'A `serviceName` must be provided to taskcluster-lib-validate!');
 
     this._schemas = {};
@@ -25,10 +22,6 @@ class SchemaSet {
     this.cfg = _.defaults(options, {
       folder: defaultFolder,
       constants: path.join(options && options.folder || defaultFolder, 'constants.yml'),
-      publish: process.env.NODE_ENV === 'production',
-      bucket: 'schemas.taskcluster.net',
-      preview: process.env.PREVIEW_JSON_SCHEMA_FILES,
-      writeFile: process.env.WRITE_JSON_SCHEMA_FILES,
     });
 
     if (_.isString(this.cfg.constants)) {
@@ -109,8 +102,6 @@ class SchemaSet {
   }
 
   async validator(rootUrl) {
-    await publish({cfg: this.cfg, schemaset: this, rootUrl});
-
     const ajv = Ajv({
       useDefaults: true,
       format: 'full',
