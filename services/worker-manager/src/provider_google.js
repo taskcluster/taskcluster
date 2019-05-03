@@ -96,7 +96,7 @@ class GoogleProvider extends Provider {
       clientId: `worker/google/${this.project}/${dat.instance_id}`,
       scopes: [
         `assume:worker-type:${this.provisionerId}/${workerType.name}`,
-        `assume:worker-id:gcp/${dat.instance_id}`, // Google docs say instance id is globally unique even across projects
+        `assume:worker-id:gcp-${dat.instance_id}`, // Google docs say instance id is globally unique even across projects
       ],
       start: taskcluster.fromNow('-15 minutes'),
       expiry: taskcluster.fromNow('96 hours'),
@@ -387,8 +387,7 @@ class GoogleProvider extends Provider {
                       workerGroup: `${workerType.name}-${workerType.config.region}`,
                       credentialUrl: libUrls.api(this.rootUrl, 'worker-manager', 'v1', `credentials/google/${workerType.name}`),
                       rootUrl: this.rootUrl,
-                      extra: workerType.config.extra,
-                      ed25519SigningKeyLocation: '/home/taskcluster/signing.key', // TODO: from config?
+                      userData: workerType.config.userData,
                     }),
                   },
                 ],
