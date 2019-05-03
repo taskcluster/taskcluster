@@ -2,13 +2,18 @@ $schema: "/schemas/common/metaschema.json#"
 title: Temporary Credentials Response
 description: Response for workers that want Taskcluster credentials
 type: object
-properties: # TODO: Make these more fully formed
+properties:
   accessToken:
     type: string
+    description: |
+      AccessToken used for authenticating requests, you should store this
+      you won't be able to retrive it again!
   clientId:
     type: string
+    description: ClientId of the client
   certificate:
     type: string
+    description: Needed to access taskcluster apis using temporary credentials
 additionalProperties: false
 required:
   - accessToken
