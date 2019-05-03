@@ -1,8 +1,8 @@
-import Debug from 'debug';
+const Debug = require('debug');
 
 const debug = Debug('Subscription');
 
-export default class Subscription {
+module.exports = class Subscription {
   constructor({ subscriptionId, handleMessage, handleError, subscriptions }) {
     this.subscriptionId = subscriptionId;
     this.handleMessage = handleMessage;
@@ -162,4 +162,4 @@ export default class Subscription {
   get garbage() {
     return this.unsubscribed && !this.listening;
   }
-}
+};

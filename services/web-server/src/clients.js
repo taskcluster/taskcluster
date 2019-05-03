@@ -1,4 +1,4 @@
-import {
+const {
   Auth,
   AwsProvisioner,
   EC2Manager,
@@ -10,9 +10,9 @@ import {
   QueueEvents,
   Secrets,
   Notify,
-} from 'taskcluster-client';
+} = require('taskcluster-client');
 
-export default options => ({
+module.exports = options => ({
   auth: new Auth(options),
   awsProvisioner: new AwsProvisioner(options),
   ec2Manager: new EC2Manager(options),

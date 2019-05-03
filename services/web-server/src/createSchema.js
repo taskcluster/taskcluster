@@ -1,3 +1,3 @@
-import { makeExecutableSchema } from 'apollo-server-express';
+const { makeExecutableSchema } = require('apollo-server-express');
 
-export default options => makeExecutableSchema(options);
+module.exports = options => makeExecutableSchema(options);

@@ -1,7 +1,7 @@
-import DataLoader from 'dataloader';
-import sift from 'sift';
+const DataLoader = require('dataloader');
+const sift = require('sift').default;
 
-export default ({ workerManager }) => {
+module.exports = ({ workerManager }) => {
   // const WorkerManagerWorkerTypeSummaries = new DataLoader(queries =>
   //   Promise.all(
   //     queries.map(async (filter) => {

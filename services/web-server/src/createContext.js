@@ -1,7 +1,7 @@
-import clients from './clients';
-import loaders from './loaders';
+const clients = require('./clients');
+const loaders = require('./loaders');
 
-export default ({ pulseEngine, rootUrl, strategies, cfg }) => ({ req, connection }) => {
+module.exports = ({ pulseEngine, rootUrl, strategies, cfg }) => ({ req, connection }) => {
   if (req) {
     const currentClients = clients({
       credentials: req.credentials,

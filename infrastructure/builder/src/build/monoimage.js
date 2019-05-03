@@ -123,33 +123,6 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
   });
 
   hooks.push({
-    name: 'Web-Server',
-    build: async (requirements, utils) => {
-      utils.step({title: 'Run `yarn build` for web-server'});
-      await dockerRun({
-        image: nodeImage,
-        workingDir: '/app/services/web-server',
-        command: ['yarn', 'build'],
-        binds: [
-          `${appDir}:/app`,
-        ],
-        logfile: `${workDir}/yarn-build.log`,
-        utils,
-        baseDir,
-      });
-    },
-    entrypoints: async (requirements, utils, procs) => {
-      // since we ran `yarn build` already, there's no need to run it again
-      // on startup, so remove it from the entrypoint commands
-      Object.keys(procs).forEach(process => {
-        if (process.startsWith('web-server/')) {
-          procs[process] = procs[process].replace('yarn build && ', '');
-        }
-      });
-    },
-  });
-
-  hooks.push({
     name: 'web-ui',
     build: async (requirements, utils, procs) => {
       const cacheDir = path.join(workDir, 'cache');

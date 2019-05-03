@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   Query: {
     currentScopes(parent, { filter }, { loaders }) {
       return loaders.currentScopes.load({ filter });

@@ -1,8 +1,8 @@
-import DataLoader from 'dataloader';
-import sift from 'sift';
-import ConnectionLoader from '../ConnectionLoader';
+const DataLoader = require('dataloader');
+const sift = require('sift').default;
+const ConnectionLoader = require('../ConnectionLoader');
 
-export default ({ queue, awsProvisioner, ec2Manager }) => {
+module.exports = ({ queue, awsProvisioner, ec2Manager }) => {
   const workerType = new DataLoader(queries =>
     Promise.all(
       queries.map(({ provisionerId, workerType }) =>

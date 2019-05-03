@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   LatestTask: {
     async run(parent, args, { loaders }) {
       const status = await loaders.status.load(parent.taskId);

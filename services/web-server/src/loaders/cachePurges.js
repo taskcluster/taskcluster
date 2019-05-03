@@ -1,7 +1,7 @@
-import sift from 'sift';
-import ConnectionLoader from '../ConnectionLoader';
+const sift = require('sift').default;
+const ConnectionLoader = require('../ConnectionLoader');
 
-export default ({ purgeCache }) => {
+module.exports = ({ purgeCache }) => {
   const cachePurges = new ConnectionLoader(async ({ filter, options }) => {
     const raw = await purgeCache.allPurgeRequests(options);
 

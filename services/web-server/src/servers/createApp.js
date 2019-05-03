@@ -1,12 +1,12 @@
-import * as bodyParser from 'body-parser-graphql';
-import compression from 'compression';
-import cors from 'cors';
-import express from 'express';
-import playground from 'graphql-playground-middleware-express';
-import passport from 'passport';
-import credentials from './credentials';
+const bodyParser = require('body-parser-graphql');
+const compression = require('compression');
+const cors = require('cors');
+const express = require('express');
+const playground = require('graphql-playground-middleware-express').default;
+const passport = require('passport');
+const credentials = require('./credentials');
 
-export default async ({ cfg, strategies }) => {
+module.exports = async ({ cfg, strategies }) => {
   const app = express();
 
   app.set('view engine', 'ejs');

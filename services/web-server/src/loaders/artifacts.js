@@ -1,12 +1,12 @@
-import DataLoader from 'dataloader';
-import sift from 'sift';
-import { isNil } from 'ramda';
-import { withRootUrl } from 'taskcluster-lib-urls';
-import ConnectionLoader from '../ConnectionLoader';
-import Artifact from '../entities/Artifact';
-import Artifacts from '../entities/Artifacts';
+const DataLoader = require('dataloader');
+const sift = require('sift').default;
+const { isNil } = require('ramda');
+const { withRootUrl } = require('taskcluster-lib-urls');
+const ConnectionLoader = require('../ConnectionLoader');
+const Artifact = require('../entities/Artifact');
+const Artifacts = require('../entities/Artifacts');
 
-export default ({ queue }, isAuthed, rootUrl) => {
+module.exports = ({ queue }, isAuthed, rootUrl) => {
   const urls = withRootUrl(rootUrl);
   const withUrl = ({ method, taskId, artifact, runId }) => {
     const hasRunId = !isNil(runId);

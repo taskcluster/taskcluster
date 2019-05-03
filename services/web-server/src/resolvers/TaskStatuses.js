@@ -1,6 +1,6 @@
-import sift from 'sift';
+const sift = require('sift').default;
 
-export default {
+module.exports = {
   TaskState: {
     UNSCHEDULED: 'unscheduled',
     PENDING: 'pending',

@@ -1,7 +1,7 @@
-import { createServer } from 'http';
-import assert from 'assert';
-import fetch from '../src/utils/fetch';
-import testing from 'taskcluster-lib-testing';
+const { createServer } = require('http');
+const assert = require('assert');
+const fetch = require('../src/utils/fetch');
+const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), () => {
   let server;

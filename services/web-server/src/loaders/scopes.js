@@ -1,7 +1,7 @@
-import DataLoader from 'dataloader';
-import sift from 'sift';
+const DataLoader = require('dataloader');
+const sift = require('sift').default;
 
-export default ({ auth }) => {
+module.exports = ({ auth }) => {
   const currentScopes = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ filter }) => {

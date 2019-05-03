@@ -1,6 +1,6 @@
-import { formatError } from 'graphql';
+const { formatError } = require('graphql');
 
-export default error => {
+module.exports = error => {
   const data = formatError(error);
 
   if (

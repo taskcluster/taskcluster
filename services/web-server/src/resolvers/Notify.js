@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   NotificationType: {
     EMAIL: 'email',
     PULSE: 'pulse',

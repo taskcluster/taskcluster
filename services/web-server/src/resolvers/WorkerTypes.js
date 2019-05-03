@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   WorkerTypeStability: {
     EXPERIMENTAL: 'experimental',
     STABLE: 'stable',

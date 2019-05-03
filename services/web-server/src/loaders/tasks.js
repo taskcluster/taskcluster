@@ -1,10 +1,10 @@
-import DataLoader from 'dataloader';
-import sift from 'sift';
-import fetch from '../utils/fetch';
-import ConnectionLoader from '../ConnectionLoader';
-import Task from '../entities/Task';
+const DataLoader = require('dataloader');
+const sift = require('sift').default;
+const fetch = require('../utils/fetch');
+const ConnectionLoader = require('../ConnectionLoader');
+const Task = require('../entities/Task');
 
-export default ({ queue, index }) => {
+module.exports = ({ queue, index }) => {
   const task = new DataLoader(taskIds =>
     Promise.all(
       taskIds.map(async taskId => {

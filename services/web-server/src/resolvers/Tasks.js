@@ -1,6 +1,6 @@
-import TaskStatus from '../entities/TaskStatus';
+const TaskStatus = require('../entities/TaskStatus');
 
-export default {
+module.exports = {
   TaskPriority: {
     HIGHEST: 'highest',
     VERY_HIGH: 'very-high',
