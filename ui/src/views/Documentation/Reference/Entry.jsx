@@ -3,7 +3,7 @@ import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { oneOf, object, string } from 'prop-types';
 import { upperCase } from 'change-case';
-import { toString } from 'ramda';
+import { toString, path } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
@@ -85,7 +85,7 @@ const primaryTypographyProps = { variant: 'body1' };
 export default class Entry extends Component {
   static propTypes = {
     /** Entry type. */
-    type: oneOf(['function', 'topic-exchange', 'logs']).isRequired,
+    type: oneOf(['function', 'topic-exchange', 'logs', 'schema']).isRequired,
     /** The reference entry. */
     entry: object.isRequired,
     /** Required when `type` is `topic-exchange`. */
@@ -101,7 +101,9 @@ export default class Entry extends Component {
   state = {
     expanded:
       this.props.entry.name === window.location.hash.slice(1) ||
-      this.props.entry.type === window.location.hash.slice(1),
+      this.props.entry.type === window.location.hash.slice(1) ||
+      encodeURIComponent(path(['content', '$id'], this.props.entry)) ===
+        window.location.hash.slice(1),
   };
 
   getSignatureFromEntry(entry) {
@@ -191,6 +193,29 @@ export default class Entry extends Component {
         <Grid item xs={1}>
           <div>
             <StatusLabel state={upperCase(entry.level)} />
+          </div>
+        </Grid>
+      </Grid>
+    );
+  };
+
+  renderSchemaExpansionPanelSummary = () => {
+    const { entry, classes } = this.props;
+
+    return (
+      <Grid className={classes.gridContainer} container spacing={8}>
+        <Grid item xs={5}>
+          <div>
+            <Typography
+              id={encodeURIComponent(entry.content.$id)}
+              component="h3">
+              {entry.content.title}
+            </Typography>
+          </div>
+        </Grid>
+        <Grid item xs={7}>
+          <div>
+            <Typography>{entry.content.$id}</Typography>
           </div>
         </Grid>
       </Grid>
@@ -498,14 +523,28 @@ export default class Entry extends Component {
     );
   };
 
+  renderSchemaExpansionDetails = () => {
+    const { classes, entry } = this.props;
+    const { expanded } = this.state;
+
+    return (
+      expanded && (
+        <List className={classes.list}>
+          {this.renderSchemaTable(entry.content.$id, entry.content.description)}
+        </List>
+      )
+    );
+  };
+
   handlePanelChange = key => () => {
     const { entry, history } = this.props;
     const { expanded } = this.state;
+    const hash = `#${encodeURIComponent(path(key.split('.'), entry))}`;
 
-    if (window.location.hash === `#${entry[key]}` || expanded) {
+    if (window.location.hash === hash || expanded) {
       history.push(history.location.pathname);
     } else {
-      history.push(`#${entry[key]}`);
+      history.push(hash);
     }
 
     this.setState({
@@ -513,13 +552,25 @@ export default class Entry extends Component {
     });
   };
 
+  getEntryHashKey = type => {
+    switch (type) {
+      case 'schema':
+        return 'content.$id';
+      case 'logs':
+        return 'type';
+      default:
+        return 'name';
+    }
+  };
+
   render() {
     const { classes, type } = this.props;
     const { expanded } = this.state;
+    const isEntrySchema = type === 'schema';
     const isEntryExchange = type === 'topic-exchange';
     const isLogType = type === 'logs';
-    const isFunctionType = !isLogType && !isEntryExchange;
-    const entryHashKey = isLogType ? 'type' : 'name';
+    const isFunctionType = !isLogType && !isEntryExchange && !isEntrySchema;
+    const entryHashKey = this.getEntryHashKey(type);
 
     return (
       <ExpansionPanel
@@ -533,11 +584,13 @@ export default class Entry extends Component {
             }),
           }}
           expandIcon={<ExpandMoreIcon />}>
+          {isEntrySchema && this.renderSchemaExpansionPanelSummary()}
           {isEntryExchange && this.renderExchangeExpansionPanelSummary()}
           {isLogType && this.renderLogsExpansionPanelSummary()}
           {isFunctionType && this.renderFunctionExpansionPanelSummary()}
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>
+          {isEntrySchema && this.renderSchemaExpansionDetails()}
           {isEntryExchange && this.renderExchangeExpansionDetails()}
           {isLogType && this.renderLogsExpansionDetails()}
           {isFunctionType && this.renderFunctionExpansionDetails()}
