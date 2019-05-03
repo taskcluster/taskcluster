@@ -1,7 +1,7 @@
 import React, { PureComponent, Fragment } from 'react';
 import { hot } from 'react-hot-loader';
 import { graphql } from 'react-apollo';
-import { parse } from 'qs';
+import { parse, stringify } from 'qs';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
@@ -23,7 +23,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
         ...(props.history.location.search
           ? {
               prefix: decodeURIComponent(
-                parse(props.history.location.search)['?search']
+                parse(props.history.location.search.slice(1)).search
               ),
             }
           : null),
@@ -41,35 +41,33 @@ import ErrorPanel from '../../../components/ErrorPanel';
 }))
 export default class ViewClients extends PureComponent {
   state = {
-    clientSearch: '',
-    // This needs to be initially undefined in order for defaultValue to work
-    value: undefined,
+    search: '',
   };
 
-  handleClientSearchSubmit = async clientSearch => {
+  handleClientSearchSubmit = async search => {
     const {
       data: { refetch },
     } = this.props;
     const searchUri = this.props.history.location.search
-      ? decodeURIComponent(parse(this.props.history.location.search)['?search'])
+      ? decodeURIComponent(
+          parse(this.props.history.location.search.slice(1)).search
+        )
       : '';
 
-    this.setState({ clientSearch });
+    this.setState({ search });
 
     await refetch({
       clientOptions: {
-        ...(clientSearch ? { prefix: clientSearch } : null),
+        ...(search ? { prefix: search } : null),
       },
       clientsConnection: {
         limit: VIEW_CLIENTS_PAGE_SIZE,
       },
     });
 
-    if (clientSearch !== searchUri) {
+    if (search !== searchUri) {
       this.props.history.push(
-        clientSearch.length > 0
-          ? `?search=${encodeURIComponent(clientSearch)}`
-          : '/auth/clients'
+        search.length > 0 ? `?${stringify({ search })}` : '/auth/clients'
       );
     }
   };
@@ -91,10 +89,10 @@ export default class ViewClients extends PureComponent {
           cursor,
           previousCursor,
         },
-        ...(this.state.clientSearch
+        ...(this.state.search
           ? {
               clientOptions: {
-                prefix: this.state.clientSearch,
+                prefix: this.state.search,
               },
             }
           : null),
@@ -113,17 +111,12 @@ export default class ViewClients extends PureComponent {
     });
   };
 
-  handleClientSearchChange = ({ target: { value } }) => {
-    this.setState({ value });
-  };
-
   render() {
     const {
       classes,
       description,
       data: { loading, error, clients },
     } = this.props;
-    const { value } = this.state;
 
     return (
       <Dashboard
@@ -133,8 +126,6 @@ export default class ViewClients extends PureComponent {
           <Search
             disabled={loading}
             onSubmit={this.handleClientSearchSubmit}
-            onChange={this.handleClientSearchChange}
-            value={value}
             placeholder="Client starts with"
           />
         }>
