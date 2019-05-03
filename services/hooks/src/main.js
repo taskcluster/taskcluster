@@ -91,13 +91,7 @@ const load = loader({
     setup: async ({cfg, schemaset, monitor, pulseClient}) => await exchanges.publisher({
       rootUrl: cfg.taskcluster.rootUrl,
       client: pulseClient,
-      credentials: cfg.pulse,
       schemaset,
-      namespace: 'taskcluster-hooks',
-      publish: cfg.app.publishMetaData,
-      validator: await schemaset.validator(cfg.taskcluster.rootUrl),
-      aws: cfg.aws.validator,
-      monitor: monitor.monitor('publisher'),
     }),
   },
 

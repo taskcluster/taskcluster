@@ -81,8 +81,6 @@ const load = loader({
       rootUrl: cfg.taskcluster.rootUrl,
       schemaset,
       client: pulseClient,
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
     }),
   },
 

@@ -65,8 +65,6 @@ let load = loader({
       rootUrl: cfg.taskcluster.rootUrl,
       client: pulseClient,
       schemaset,
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
     }),
   },
 

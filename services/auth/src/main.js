@@ -129,12 +129,8 @@ const load = Loader({
     setup: async ({cfg, schemaset, pulseClient}) => await exchanges.publisher({
       rootUrl: cfg.taskcluster.rootUrl,
       client: pulseClient,
-      credentials: cfg.pulse,
       schemaset,
       namespace: 'taskcluster-auth',
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
-      referenceBucket: cfg.app.buckets.references,
     }),
   },
 
