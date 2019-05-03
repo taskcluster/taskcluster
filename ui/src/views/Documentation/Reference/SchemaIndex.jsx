@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { filter, map, pipe, sort as rSort } from 'ramda';
 import sort from '../../../utils/sort';
 import Entry from './Entry';
@@ -21,16 +21,14 @@ export default class SchemaIndex extends Component {
     return (
       <div>
         <HeaderWithAnchor>Schema Index</HeaderWithAnchor>
-        <Fragment>
-          {sortedReferences.map(entry => (
-            <Entry
-              key={entry.content.$id}
-              serviceName="unknown"
-              type="schema"
-              entry={entry}
-            />
-          ))}
-        </Fragment>
+        {sortedReferences.map(entry => (
+          <Entry
+            key={entry.content.$id}
+            serviceName="unknown"
+            type="schema"
+            entry={entry}
+          />
+        ))}
       </div>
     );
   }
