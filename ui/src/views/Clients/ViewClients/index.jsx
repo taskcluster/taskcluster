@@ -22,9 +22,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
       clientOptions: {
         ...(props.history.location.search
           ? {
-              prefix: decodeURIComponent(
-                parse(props.history.location.search.slice(1)).search
-              ),
+              prefix: parse(props.history.location.search.slice(1)).search,
             }
           : null),
       },
@@ -40,21 +38,13 @@ import ErrorPanel from '../../../components/ErrorPanel';
   },
 }))
 export default class ViewClients extends PureComponent {
-  state = {
-    search: '',
-  };
-
   handleClientSearchSubmit = async search => {
     const {
       data: { refetch },
     } = this.props;
     const searchUri = this.props.history.location.search
-      ? decodeURIComponent(
-          parse(this.props.history.location.search.slice(1)).search
-        )
+      ? parse(this.props.history.location.search.slice(1)).search
       : '';
-
-    this.setState({ search });
 
     await refetch({
       clientOptions: {
@@ -79,6 +69,7 @@ export default class ViewClients extends PureComponent {
   handlePageChange = ({ cursor, previousCursor }) => {
     const {
       data: { fetchMore },
+      history,
     } = this.props;
 
     return fetchMore({
@@ -89,10 +80,10 @@ export default class ViewClients extends PureComponent {
           cursor,
           previousCursor,
         },
-        ...(this.state.search
+        ...(history.location.search
           ? {
               clientOptions: {
-                prefix: this.state.search,
+                prefix: parse(history.location.search.slice(1)).search,
               },
             }
           : null),
