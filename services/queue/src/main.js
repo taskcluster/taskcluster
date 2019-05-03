@@ -18,7 +18,7 @@ let loader = require('taskcluster-lib-loader');
 let config = require('taskcluster-lib-config');
 let monitorManager = require('./monitor');
 let SchemaSet = require('taskcluster-lib-validate');
-let docs = require('taskcluster-lib-docs');
+let libDocs = require('taskcluster-lib-docs');
 let App = require('taskcluster-lib-app');
 let remoteS3 = require('remotely-signed-s3');
 let {sasCredentials} = require('taskcluster-lib-azure');
@@ -74,13 +74,9 @@ let load = loader({
 
   docs: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => docs.documenter({
-      credentials: cfg.taskcluster.credentials,
-      rootUrl: cfg.taskcluster.rootUrl,
+    setup: ({cfg, schemaset}) => libDocs({
       projectName: 'taskcluster-queue',
-      tier: 'platform',
       schemaset,
-      publish: cfg.app.publishMetaData,
       references: [
         {name: 'api', reference: builder.reference()},
         {name: 'logs', reference: monitorManager.reference()},

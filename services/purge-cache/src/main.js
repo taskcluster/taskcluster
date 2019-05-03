@@ -5,7 +5,7 @@ const monitorManager = require('./monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const {sasCredentials} = require('taskcluster-lib-azure');
 const App = require('taskcluster-lib-app');
-const docs = require('taskcluster-lib-docs');
+const libDocs = require('taskcluster-lib-docs');
 const taskcluster = require('taskcluster-client');
 const builder = require('./api');
 const data = require('./data');
@@ -74,13 +74,9 @@ const load = loader({
 
   docs: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => docs.documenter({
-      credentials: cfg.taskcluster.credentials,
-      rootUrl: cfg.taskcluster.rootUrl,
+    setup: ({cfg, schemaset}) => libDocs({
       projectName: 'taskcluster-purge-cache',
-      tier: 'core',
       schemaset,
-      publish: cfg.app.publishMetaData,
       references: [
         {
           name: 'api',

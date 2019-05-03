@@ -6,7 +6,7 @@ const loader = require('taskcluster-lib-loader');
 const SchemaSet = require('taskcluster-lib-validate');
 const monitorManager = require('./monitor');
 const App = require('taskcluster-lib-app');
-const docs = require('taskcluster-lib-docs');
+const libDocs = require('taskcluster-lib-docs');
 const taskcluster = require('taskcluster-client');
 const config = require('taskcluster-lib-config');
 const {sasCredentials} = require('taskcluster-lib-azure');
@@ -67,13 +67,9 @@ let load = loader({
 
   docs: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => docs.documenter({
-      credentials: cfg.taskcluster.credentials,
-      rootUrl: cfg.taskcluster.rootUrl,
+    setup: ({cfg, schemaset}) => libDocs({
       projectName: 'taskcluster-secrets',
-      tier: 'core',
       schemaset,
-      publish: cfg.app.publishMetaData,
       references: [
         {
           name: 'api',

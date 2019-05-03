@@ -82,7 +82,6 @@
     "remotely-signed-s3": "^4.0.0",
     "request-ip": "^2.0.2",
     "rimraf": "^2.6.2",
-    "s3-upload-stream": "^1.0.7",
     "sentry-api": "^0.1.1",
     "serialize-error": "^4.0.0",
     "sift": "^7.0.0",

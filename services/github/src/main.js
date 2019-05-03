@@ -8,7 +8,7 @@ const config = require('taskcluster-lib-config');
 const monitorManager = require('./monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const loader = require('taskcluster-lib-loader');
-const docs = require('taskcluster-lib-docs');
+const libDocs = require('taskcluster-lib-docs');
 const App = require('taskcluster-lib-app');
 const {sasCredentials} = require('taskcluster-lib-azure');
 const githubAuth = require('./github-auth');
@@ -50,13 +50,9 @@ const load = loader({
 
   docs: {
     requires: ['cfg', 'schemaset', 'reference'],
-    setup: ({cfg, schemaset, reference}) => docs.documenter({
-      credentials: cfg.taskcluster.credentials,
-      rootUrl: cfg.taskcluster.rootUrl,
+    setup: ({cfg, schemaset, reference}) => libDocs({
       projectName: 'taskcluster-github',
-      tier: 'integrations',
       schemaset: schemaset,
-      publish: cfg.app.publishMetaData,
       references: [
         {name: 'api', reference: builder.reference()},
         {name: 'events', reference: reference},

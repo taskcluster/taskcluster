@@ -2,7 +2,7 @@ const taskcluster = require('taskcluster-client');
 const Handler = require('./handler');
 const exchanges = require('./exchanges');
 const loader = require('taskcluster-lib-loader');
-const docs = require('taskcluster-lib-docs');
+const libDocs = require('taskcluster-lib-docs');
 const config = require('taskcluster-lib-config');
 const monitorManager = require('./monitor');
 const SchemaSet = require('taskcluster-lib-validate');
@@ -63,13 +63,9 @@ let load = loader({
 
   docs: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => docs.documenter({
-      credentials: cfg.taskcluster.credentials,
-      rootUrl: cfg.taskcluster.rootUrl,
+    setup: ({cfg, schemaset}) => libDocs({
       projectName: 'taskcluster-treeherder',
-      tier: 'integrations',
       schemaset,
-      publish: cfg.app.publishMetaData,
       references: [
         {
           name: 'events',

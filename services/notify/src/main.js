@@ -4,7 +4,7 @@ const App = require('taskcluster-lib-app');
 const loader = require('taskcluster-lib-loader');
 const config = require('taskcluster-lib-config');
 const SchemaSet = require('taskcluster-lib-validate');
-const docs = require('taskcluster-lib-docs');
+const libDocs = require('taskcluster-lib-docs');
 const taskcluster = require('taskcluster-client');
 const _ = require('lodash');
 const monitorManager = require('./monitor');
@@ -67,12 +67,8 @@ const load = loader({
 
   docs: {
     requires: ['cfg', 'schemaset', 'reference'],
-    setup: async ({cfg, schemaset, reference}) => await docs.documenter({
-      credentials: cfg.taskcluster.credentials,
-      rootUrl: cfg.taskcluster.rootUrl,
+    setup: async ({cfg, schemaset, reference}) => await libDocs({
       projectName: 'taskcluster-notify',
-      tier: 'core',
-      publish: cfg.app.publishMetaData,
       schemaset,
       references: [
         {

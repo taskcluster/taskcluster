@@ -1,6 +1,6 @@
 const loader = require('taskcluster-lib-loader');
 const monitorManager = require('./monitor');
-const docs = require('taskcluster-lib-docs');
+const libDocs = require('taskcluster-lib-docs');
 const taskcluster = require('taskcluster-client');
 const config = require('taskcluster-lib-config');
 const taskqueue = require('./TaskQueue');
@@ -30,11 +30,8 @@ const load = loader({
 
   docs: {
     requires: ['cfg'],
-    setup: ({cfg}) => docs.documenter({
-      credentials: cfg.taskcluster.credentials,
+    setup: ({cfg}) => libDocs({
       projectName: 'taskcluster-built-in-workers',
-      tier: 'core',
-      publish: cfg.app.publishMetaData,
       references: [{
         name: 'logs',
         reference: monitorManager.reference(),

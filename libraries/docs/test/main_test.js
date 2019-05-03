@@ -1,20 +1,16 @@
 const assert = require('assert');
-const {documenter} = require('../');
+const documenter = require('../');
 const fs = require('fs');
 const tar = require('tar-stream');
 const zlib = require('zlib');
 const path = require('path');
 const SchemaSet = require('taskcluster-lib-validate');
-const config = require('taskcluster-lib-config');
 const APIBuilder = require('taskcluster-lib-api');
 const {Exchanges} = require('taskcluster-lib-pulse');
-const MockS3UploadStream = require('./mockS3UploadStream');
 const tmp = require('tmp');
 const testing = require('taskcluster-lib-testing');
 
 function assertInTarball(shoulds, tarball) {
-  shoulds.push('metadata.json');
-  shoulds.push('README.md');
   let contains = [];
   let extractor = tar.extract();
   extractor.on('entry', (header, stream, callback) => {
@@ -43,8 +39,6 @@ suite(testing.suiteName(), () => {
   let schemaset = null;
   let exchanges = null;
   let references = null;
-  let cfg = config({});
-  let credentials = cfg.taskcluster.credentials;
   let tier = 'core';
 
   suiteSetup(async () => {
@@ -81,20 +75,7 @@ suite(testing.suiteName(), () => {
     assert.ok(await doc._tarballStream());
   });
 
-  test('tarball contains docs and metadata', async function() {
-    let doc = await documenter({
-      docsFolder: './test/docs',
-      tier,
-      projectName: 'docs-testing',
-    });
-    let shoulds = [
-      'docs/example.md',
-      'docs/nested/nested-example.md',
-    ];
-    return assertInTarball(shoulds, await doc._tarballStream());
-  });
-
-  test('tarball contains schemas and metadata', async function() {
+  test('tarball contains schemas', async function() {
     let doc = await documenter({
       schemaset,
       tier,
@@ -103,13 +84,11 @@ suite(testing.suiteName(), () => {
     let shoulds = [
       'schemas/foo.json',
       'schemas/bar.json',
-      'docs/documenting-non-services.md',
-      'docs/format.md',
     ];
     return assertInTarball(shoulds, await doc._tarballStream());
   });
 
-  test('tarball contains references and metadata', async function() {
+  test('tarball contains references', async function() {
     let doc = await documenter({
       references,
       tier,
@@ -118,20 +97,6 @@ suite(testing.suiteName(), () => {
     let shoulds = [
       'references/api.json',
       'references/events.json',
-      'docs/documenting-non-services.md',
-      'docs/format.md',
-    ];
-    return assertInTarball(shoulds, await doc._tarballStream());
-  });
-
-  test('tarball contains only metadata', async function() {
-    let doc = await documenter({
-      tier,
-      projectName: 'docs-testing',
-    });
-    let shoulds = [
-      'docs/documenting-non-services.md',
-      'docs/format.md',
     ];
     return assertInTarball(shoulds, await doc._tarballStream());
   });
@@ -156,8 +121,8 @@ suite(testing.suiteName(), () => {
   test('write() writes a directory', async function() {
     await withWrittenDocs(docsDir => {
       const shoulds = [
-        'docs/example.md',
-        'docs/nested/nested-example.md',
+        'schemas/foo.json',
+        'schemas/bar.json',
       ];
       shoulds.forEach(name =>
         assert(fs.existsSync(path.join(docsDir, name)), `${name} should exist`));
@@ -169,40 +134,5 @@ suite(testing.suiteName(), () => {
       const schema = JSON.parse(fs.readFileSync(path.join(docsDir, 'schemas', 'bar.json')));
       assert.equal(schema.$id, '/schemas/whatever/bar.json#');
     });
-  });
-
-  const publishTest = async function(mock) {
-    const options = {
-      projectName: 'docs-testing',
-      schemaset,
-      tier,
-      docsFolder: './test/docs/',
-      references,
-      bucket: cfg.bucket,
-      publish: true,
-    };
-    if (mock) {
-      options.aws = {accessKeyId: 'fake', secretAccessKey: 'fake'};
-      options.S3UploadStream = MockS3UploadStream;
-    } else {
-      if (!credentials.clientId) {
-        this.skip();
-      }
-      options.credentials = credentials;
-      options.rootUrl = 'https://taskcluster.net';
-    }
-
-    await documenter(options);
-
-    if (mock) {
-      assert.deepEqual(MockS3UploadStream.uploads, [`${cfg.bucket}/docs-testing/latest.tar.gz`]);
-    }
-  };
-
-  test('test publish tarball (real)', function() {
-    return publishTest.call(this, false);
-  });
-  test('test publish tarball (mock)', function() {
-    return publishTest.call(this, true);
   });
 });

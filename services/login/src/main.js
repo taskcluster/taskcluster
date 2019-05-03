@@ -4,7 +4,7 @@ const scanner = require('./scanner');
 const App = require('taskcluster-lib-app');
 const SchemaSet = require('taskcluster-lib-validate');
 const monitorManager = require('./monitor');
-const docs = require('taskcluster-lib-docs');
+const libDocs = require('taskcluster-lib-docs');
 const builder = require('./api');
 
 let load = loader({
@@ -47,13 +47,9 @@ let load = loader({
 
   docs: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => docs.documenter({
-      credentials: cfg.app.credentials,
-      rootUrl: cfg.taskcluster.rootUrl,
+    setup: ({cfg, schemaset}) => libDocs({
       projectName: 'taskcluster-login',
-      tier: 'integrations',
       schemaset,
-      publish: cfg.app.publishMetaData,
       references: [
         {
           name: 'api',

@@ -1,5 +1,5 @@
 const Loader = require('taskcluster-lib-loader');
-const Docs = require('taskcluster-lib-docs');
+const libDocs = require('taskcluster-lib-docs');
 const SchemaSet = require('taskcluster-lib-validate');
 const monitorManager = require('./monitor');
 const App = require('taskcluster-lib-app');
@@ -93,14 +93,9 @@ const load = Loader({
 
   docs: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => Docs.documenter({
-      aws: cfg.aws,
-      rootUrl: cfg.taskcluster.rootUrl,
+    setup: ({cfg, schemaset}) => libDocs({
       projectName: 'taskcluster-auth',
-      tier: 'platform',
       schemaset,
-      bucket: cfg.app.buckets.docs,
-      publish: cfg.app.publishMetaData,
       references: [
         {
           name: 'api',

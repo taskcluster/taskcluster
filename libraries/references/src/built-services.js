@@ -69,12 +69,6 @@ const load = ({directory}) => {
       throw new Error(`${filename} is not a directory`);
     }
 
-    // load the metadata and check the version
-    const metadata = JSON.parse(fs.readFileSync(path.join(filename, 'metadata.json')));
-    if (metadata.version !== 1) {
-      throw new Error(`${dentry}: unrecognized metadata version`);
-    }
-
     loadReferences(filename, references);
     loadSchemas(filename, schemas);
   });
