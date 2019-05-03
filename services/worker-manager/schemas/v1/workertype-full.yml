@@ -5,6 +5,7 @@ description: |
 type:               object
 properties:
   name:
+    title: WorkerType Name
     type:           string
     minLength:      {$const: identifier-min-length}
     maxLength:      {$const: identifier-max-length}
@@ -12,6 +13,7 @@ properties:
     description: |
       The name of this workertype.
   provider:
+    title: Provider
     type:           string
     minLength:      {$const: identifier-min-length}
     maxLength:      {$const: identifier-max-length}
@@ -19,33 +21,41 @@ properties:
     description: |
       The provider responsible for managing this workertype.
   description:
+    title: Description
     type:           string
     maxLength:      10240
     description: |
       A description of this workerType.
   created:
+    title: Created
     description: |
       Date and time when this workerType was created
     type:                   string
     format:                 date-time
   lastModified:
+    title: Last Modified
     description: |
       Date and time when this workerType was last updated
     type:                   string
     format:                 date-time
   config:
-    type: object
-    additionalProperties: true
-    description: |
-      A workertype configuration. It will be different based on the provider
-      and the format is validated internally.
+    # Any of these can apply when submitting or updating the workertype at
+    # the api layer. Inside the handler, it will assert that these fields match
+    # correctly to the implementation the provider has been configured to use.
+    # This is anyOf rather than oneOf because implementations can have identical config!
+    anyOf:
+      - {$ref: config-google.json#}
+      - {$ref: config-static.json#}
+      - {$ref: config-testing.json#}
   owner:
+    title: Owner Email
     type: string
     format: email
     description: |
       An email address to notify when there are provisioning errors for this
       workertype.
   scheduledForDeletion:
+    title: Scheduled For Deletion
     type: boolean
     description: If true, a user has requested that this workertype be deleted
 additionalProperties: false

@@ -150,9 +150,10 @@ let load = loader({
   },
 
   providers: {
-    requires: ['cfg', 'monitor', 'notify', 'estimator', 'Worker'],
-    setup: ({cfg, monitor, notify, estimator, Worker}) => {
+    requires: ['cfg', 'monitor', 'notify', 'estimator', 'Worker', 'schemaset'],
+    setup: async ({cfg, monitor, notify, estimator, Worker, schemaset}) => {
       const _providers = {};
+      const validator = await schemaset.validator(cfg.taskcluster.rootUrl);
       Object.entries(cfg.providers).forEach(([name, meta]) => {
         let Prov;
         switch(meta.implementation) {
@@ -170,6 +171,7 @@ let load = loader({
           taskclusterCredentials: cfg.taskcluster.credentials,
           estimator,
           Worker,
+          validator,
           ...meta,
         });
       });

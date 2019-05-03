@@ -25,6 +25,7 @@ class GoogleProvider extends Provider {
   }) {
     super({name, taskclusterCredentials, monitor, notify, provisionerId, rootUrl, estimator, Worker});
     this.cache = new TimedCache();
+    this.configSchema = 'config-google';
 
     this.instancePermissions = instancePermissions;
     this.project = project;
@@ -204,32 +205,6 @@ class GoogleProvider extends Provider {
         policy,
       },
     });
-  }
-
-  async ensureImage({workerType}) {
-    try {
-      await this.compute.images.get({
-        project: this.project,
-        image: workerType.config.image,
-      });
-    } catch (err) {
-      if (err.code !== 404) {
-        throw err;
-      }
-      await workerType.reportError({
-        kind: 'unknown-image',
-        title: 'Unknown Image',
-        description: 'Image does not exist in project. Possibly the image was generated in a different project?',
-        extra: {
-          image: workerType.config.image,
-          project: this.project,
-        },
-        notify: this.notify,
-        owner: workerType.owner,
-      });
-      return false;
-    }
-    return true;
   }
 
   async configureServiceAccount({workerType}) {

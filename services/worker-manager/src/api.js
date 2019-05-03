@@ -45,6 +45,14 @@ builder.declare({
     });
   }
 
+  // This has been validated at the api level to ensure that it
+  // is valid config for at least one of our providers but
+  // we check here to see that the config matches the config for the configured provider
+  const error = provider.validate(input.config);
+  if (error) {
+    return res.reportError('InputValidationError', error);
+  }
+
   const now = new Date();
   let workerType;
 
@@ -53,7 +61,7 @@ builder.declare({
       name,
       provider: providerName,
       description: input.description,
-      config: input.config, // TODO: validate this
+      config: input.config,
       created: now,
       lastModified: now,
       owner: input.owner,
@@ -109,6 +117,11 @@ builder.declare({
     });
   }
 
+  const error = provider.validate(input.config);
+  if (error) {
+    return res.reportError('InputValidationError', error);
+  }
+
   const workerType = await this.WorkerType.load({
     name,
   }, true);
@@ -117,7 +130,7 @@ builder.declare({
   }
 
   await workerType.modify(wt => {
-    wt.config = input.config; // TODO: validate
+    wt.config = input.config;
     wt.description = input.description;
     wt.provider = providerName;
     wt.owner = input.owner;

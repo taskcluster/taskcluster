@@ -1,3 +1,6 @@
+const assert = require('assert');
+const libUrls = require('taskcluster-lib-urls');
+
 class Provider {
 
   /**
@@ -6,9 +9,10 @@ class Provider {
    * a cloud provider for terminating/listing instances. Any provisioning
    * logic should be started in `initiate` below.
    */
-  constructor({name, monitor, notify, provisionerId, rootUrl, taskclusterCredentials, estimator, Worker}) {
+  constructor({name, monitor, notify, provisionerId, rootUrl, taskclusterCredentials, estimator, Worker, validator}) {
     this.name = name;
     this.monitor = monitor;
+    this.validator = validator;
     this.notify = notify;
     this.provisionerId = provisionerId;
     this.rootUrl = rootUrl;
@@ -18,35 +22,13 @@ class Provider {
   }
 
   /**
-   * Given a list of workerTypes and states, list the applicable workers.  The
-   * return value must be a list of Worker objects.  The workerTypes value must
-   * be a list of strings.  If the workerTypes value is not specified, all
-   * workerTypes should be included.  The states value must be a list of states
-   * strings.  These are in Provider.states.  These values are not extensible.
-   * All providers must group their internal states to one of the states in
-   * Provider.states.  If any state is not in Provider.states, an error must be
-   * thrown.
+   * Given a workertype configuration, this will ensure that it matches the
+   * configuration schema for the implementation of a provider.
+   * Returns null if everything is fine and an error message if not.
    */
-  async listWorkers({states, workerTypes}) {
-    throw new Error('Method Unimplemented!');
-  }
-
-  /**
-   * Given a worker id, check if it is managed by this provider and if so,
-   * determine its state.  Must return the correct Provider.state string if
-   * managed or undefined if not
-   */
-  async queryWorkerState({workerId}) {
-    throw new Error('Method Unimplemented!');
-  }
-
-  /**
-   * Given a Worker instance, return provider specific information which
-   * might be useful to a user interface.  For example, an EC2 provider
-   * might wish to return {region: 'us-east-1'}
-   */
-  workerInfo({worker}) {
-    throw new Error('Method Unimplemented!');
+  validate(config) {
+    assert(this.configSchema); // This must be set up by a provider impl
+    return this.validator(config, libUrls.schema(this.rootUrl, 'worker-manager', `v1/${this.configSchema}.yml`));
   }
 
   /**

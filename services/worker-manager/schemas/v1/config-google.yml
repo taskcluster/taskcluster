@@ -1,0 +1,81 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Google Provider Config
+description: |
+  'The config section of a workertype is using a provider with implementation google must match this.
+  Much of these fields are documented [here](https://cloud.google.com/compute/docs/reference/rest/v1/instanceTemplates)'
+type: object
+properties:
+  minCapacity:
+    title: Minimum Capacity
+    type: integer
+    minimum: 0
+    description: |
+      The minimum amount of capacity that worker-manager should make
+      available at any given time.
+  maxCapacity:
+    title: Maximum Capacity
+    type: integer
+    minimum: 0
+    description: |
+      The maximum amount of capacity that worker-manager should make
+      available at any given time.
+  capacityPerInstance:
+    title: Capacity Per Instance
+    type: integer
+    minimum: 1
+    description: The number of tasks a single worker of this type can run at any given time.
+  machineType:
+    title: Machine Type
+    type: string
+    description: |
+      'The google machine type to use to run this instance. This refers to
+      [these types](https://cloud.google.com/compute/docs/machine-types)'
+  region:
+    title: Region
+    type: string
+    description: 'The google cloud region to run these instances in. Google documents
+    these [here](https://cloud.google.com/compute/docs/regions-zones/)'
+  userData:
+    title: User Data
+    type: object
+    additionalProperties: true
+    description: |
+      Arbitrary configuration that Worker Manager will make available to the worker
+      on start up via instance metadata.
+  scheduling:
+    title: Scheduling
+    type: object
+    description: 'Extra documentation [here](https://cloud.google.com/compute/docs/instances/setting-instance-scheduling-options)'
+    additionalProperties: true
+  networkInterfaces:
+    title: Network Interfaces
+    type: array
+    description: |
+      Configure the networking available to the instance. Permitted fields documented in
+      the full instance template docs above.
+    items:
+      type: object
+      additionalProperties: true
+  disks:
+    title: Disks
+    type: array
+    description: |
+      Configure the networking available to the instance. Permitted fields documented in
+      the full instance template docs above. It is likely that you will want to have at least
+      a single `PERSISTENT` disk where the source image is one that contains a taskcluster worker
+      configured to run on boot and talk to worker-manager for credentials.
+    items:
+      type: object
+      additionalProperties: true
+additionalProperties: false
+required:
+  - image
+  - minCapacity
+  - maxCapacity
+  - capacityPerInstance
+  - machineType
+  - region
+  - userData
+  - scheduling
+  - networkInterfaces
+  - disks
