@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const slugid = require('slugid');
 const yaml = require('js-yaml');
 const Entity = require('azure-entities');
@@ -49,6 +50,20 @@ WorkerType.prototype.serializable = function() {
     scheduledForDeletion: this.scheduledForDeletion,
     owner: this.owner,
   };
+};
+
+WorkerType.prototype.compare = function(other) {
+  const fields = [
+    'name',
+    'provider',
+    'description',
+    'created',
+    'lastModified',
+    'config',
+    'scheduledForDeletion',
+    'owner',
+  ];
+  return _.isEqual(_.pick(other, fields), _.pick(this, fields));
 };
 
 WorkerType.prototype.reportError = async ({kind, title, description, extra, notify, owner}) => {

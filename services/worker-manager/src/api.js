@@ -56,31 +56,27 @@ builder.declare({
   const now = new Date();
   let workerType;
 
+  const definition = {
+    name,
+    provider: providerName,
+    description: input.description,
+    config: input.config,
+    created: now,
+    lastModified: now,
+    owner: input.owner,
+    providerData: {},
+    scheduledForDeletion: false,
+  };
+
   try {
-    workerType = await this.WorkerType.create({
-      name,
-      provider: providerName,
-      description: input.description,
-      config: input.config,
-      created: now,
-      lastModified: now,
-      owner: input.owner,
-      providerData: {},
-      scheduledForDeletion: false,
-    });
+    workerType = await this.WorkerType.create(definition);
   } catch (err) {
     if (err.code !== 'EntityAlreadyExists') {
       throw err;
     }
     workerType = await this.WorkerType.load({name});
 
-    // TODO: Do this whole thing with deep compare and include config!
-    if (workerType.provider !== providerName ||
-      workerType.description !== input.description ||
-      workerType.created.getTime() !== now.getTime() ||
-      workerType.lastModified.getTime() !== now.getTime() ||
-      workerType.owner !== input.owner
-    ) {
+    if (!workerType.compare(definition)) {
       return res.reportError('RequestConflict', 'WorkerType already exists', {});
     }
   }
