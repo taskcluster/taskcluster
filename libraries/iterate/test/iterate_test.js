@@ -1,7 +1,7 @@
 const subject = require('../');
 const assume = require('assume');
 const debug = require('debug')('iterate-test');
-const MonitorManager = require('taskcluster-lib-monitor');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 const testing = require('taskcluster-lib-testing');
 
 const possibleEvents = [
@@ -48,17 +48,20 @@ class IterateEvents {
 }
 
 suite(testing.suiteName(), () => {
-  let manager;
   let monitor;
 
   suiteSetup(async () => {
-    manager = new MonitorManager({serviceName: 'iterate'});
-    manager.setup({mock: true});
-    monitor = manager.monitor();
+    monitor = defaultMonitorManager.configure({
+      serviceName: 'lib-iterate',
+    }).setup({
+      fake: true,
+      debug: true,
+      verify: true,
+    });
   });
 
   suiteTeardown(() => {
-    manager.terminate();
+    defaultMonitorManager.reset();
   });
 
   const runWithFakeTime = fn => {
@@ -95,8 +98,8 @@ suite(testing.suiteName(), () => {
     assume(i.keepGoing).is.ok();
     await i.stop();
     assume(i.keepGoing).is.not.ok();
-    assume(manager.messages.length).equals(5);
-    manager.messages.forEach(message => {
+    assume(defaultMonitorManager.messages.length).equals(5);
+    defaultMonitorManager.messages.forEach(message => {
       assume(message.Fields.status).equals('success');
     });
   }));

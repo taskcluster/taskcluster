@@ -2,7 +2,7 @@ const assert = require('assert');
 const path = require('path');
 const aws = require('aws-sdk');
 const taskcluster = require('taskcluster-client');
-const {stickyLoader, Secrets, fakeauth, withEntity, withPulse} = require('taskcluster-lib-testing');
+const {stickyLoader, Secrets, fakeauth, withEntity, withPulse, withMonitor} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const load = require('../src/main');
 const RateLimit = require('../src/ratelimit');
@@ -23,6 +23,8 @@ suiteSetup(async function() {
   exports.load.inject('profile', 'test');
   exports.load.inject('process', 'test');
 });
+
+withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({

@@ -1,9 +1,10 @@
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
+const monitorManager = require('../src/monitor');
+const {LEVELS} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function(mock, skipping) {
-  helper.withMonitor(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withFakeNotify(mock, skipping);
   helper.withFakeQueue(mock, skipping);
@@ -19,15 +20,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
 
       await helper.initiateProvisioner();
       await testing.poll(async () => {
-        const error = helper.monitor.messages.find(({Type}) => Type === 'monitor.error');
+        const error = monitorManager.messages.find(({Type}) => Type === 'monitor.error');
         if (error) {
           throw new Error(JSON.stringify(error, null, 2));
         }
         await Promise.all(workerTypes.map(async wt => {
-          assert.deepEqual(helper.monitor.messages.find(msg => msg.Type === 'workertype-provisioned' && msg.Fields.workerType === wt.name), {
-            Logger: 'taskcluster.worker-manager.root.provisioner',
+          assert.deepEqual(monitorManager.messages.find(msg => msg.Type === 'workertype-provisioned' && msg.Fields.workerType === wt.name), {
+            Logger: 'taskcluster.worker-manager.provisioner',
             Type: 'workertype-provisioned',
             Fields: {workerType: wt.name, provider: wt.input.provider, v: 1},
+            Severity: LEVELS.info,
           });
         }));
       }, 10);
@@ -96,5 +98,4 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       },
     },
   ]));
-
 });

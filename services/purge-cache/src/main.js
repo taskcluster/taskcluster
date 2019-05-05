@@ -36,7 +36,7 @@ const load = loader({
     requires: ['cfg', 'monitor'],
     setup: async ({cfg, monitor}) => data.CachePurge.setup({
       tableName: cfg.app.cachePurgeTableName,
-      monitor: monitor.monitor('table.purgecaches'),
+      monitor: monitor.childMonitor('table.purgecaches'),
       credentials: sasCredentials({
         tableName: cfg.app.cachePurgeTableName,
         accountId: cfg.azure.accountId,
@@ -49,7 +49,7 @@ const load = loader({
   'expire-cache-purges': {
     requires: ['cfg', 'CachePurge', 'monitor'],
     setup: ({cfg, CachePurge, monitor}) => {
-      return monitor.monitor().oneShot('expire-purge-caches', async () => {
+      return monitor.oneShot('expire-purge-caches', async () => {
         const now = taskcluster.fromNow(cfg.app.cachePurgeExpirationDelay);
         debug('Expiring cache-purges at: %s, from before %s', new Date(), now);
         const count = await CachePurge.expire(now);
@@ -72,7 +72,7 @@ const load = loader({
       context: {cfg, CachePurge, cachePurgeCache: {}},
       rootUrl: cfg.taskcluster.rootUrl,
       schemaset,
-      monitor: monitor.monitor('api'),
+      monitor: monitor.childMonitor('api'),
     }),
   },
 

@@ -8,4 +8,5 @@ module.exports = {
   withEntity: require('./with-entity'),
   suiteName: require('./suite-name'),
   withPulse: require('./with-pulse'),
+  withMonitor: require('./with-monitor'),
 };

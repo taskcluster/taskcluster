@@ -4,7 +4,7 @@ const builder = require('../src/api');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
 const libUrls = require('taskcluster-lib-urls');
-const {fakeauth, stickyLoader, Secrets, withEntity, withPulse} = require('taskcluster-lib-testing');
+const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor} = require('taskcluster-lib-testing');
 
 const helper = module.exports;
 
@@ -14,6 +14,8 @@ suiteSetup(async function() {
   exports.load.inject('profile', 'test');
   exports.load.inject('process', 'test');
 });
+
+withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({

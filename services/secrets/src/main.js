@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 const Debug = require('debug');
 const builder = require('../src/api');
 const data = require('../src/data');
@@ -47,7 +46,7 @@ let load = loader({
       }),
       cryptoKey: cfg.azure.cryptoKey,
       signingKey: cfg.azure.signingKey,
-      monitor: monitor.monitor('table.secrets'),
+      monitor: monitor.childMonitor('table.secrets'),
     }),
   },
 
@@ -64,7 +63,7 @@ let load = loader({
     setup: async ({cfg, Secret, schemaset, monitor}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {cfg, Secret},
-      monitor: monitor.monitor('api'),
+      monitor: monitor.childMonitor('api'),
       schemaset,
     }),
   },
@@ -83,7 +82,7 @@ let load = loader({
   expire: {
     requires: ['cfg', 'Secret', 'monitor'],
     setup: ({cfg, Secret, monitor}) => {
-      return monitor.monitor().oneShot('expire', async () => {
+      return monitor.oneShot('expire', async () => {
         const delay = cfg.app.secretExpirationDelay;
         const now = taskcluster.fromNow(delay);
 

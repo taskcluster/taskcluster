@@ -25,6 +25,7 @@ let load = loader({
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => data.IndexedTask.setup({
       tableName: cfg.app.indexedTaskTableName,
+      monitor: monitor.childMonitor('table.indexedtask'),
       credentials: sasCredentials({
         accountId: cfg.azure.accountId,
         tableName: cfg.app.indexedTaskTableName,
@@ -38,6 +39,7 @@ let load = loader({
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => data.Namespace.setup({
       tableName: cfg.app.namespaceTableName,
+      monitor: monitor.childMonitor('table.namespace'),
       credentials: sasCredentials({
         accountId: cfg.azure.accountId,
         tableName: cfg.app.namespaceTableName,
@@ -97,7 +99,7 @@ let load = loader({
       },
       rootUrl: cfg.taskcluster.rootUrl,
       schemaset,
-      monitor: monitor.monitor('api'),
+      monitor: monitor.childMonitor('api'),
     }),
   },
 
@@ -117,7 +119,7 @@ let load = loader({
     setup: ({cfg, monitor}) => {
       return new Client({
         namespace: cfg.pulse.namespace,
-        monitor: monitor.monitor('pulse-client'),
+        monitor: monitor.childMonitor('pulse-client'),
         credentials: pulseCredentials(cfg.pulse),
       });
     },
@@ -134,7 +136,7 @@ let load = loader({
         credentials: cfg.pulse,
         queueName: cfg.app.listenerQueueName,
         routePrefix: cfg.app.routePrefix,
-        monitor: monitor.monitor('handlers'),
+        monitor: monitor.childMonitor('handlers'),
         pulseClient: pulseClient,
       });
 
@@ -148,7 +150,7 @@ let load = loader({
   expire: {
     requires: ['cfg', 'monitor', 'IndexedTask', 'Namespace'],
     setup: ({cfg, monitor, IndexedTask, Namespace}) => {
-      return monitor.monitor().oneShot('expire', async () => {
+      return monitor.oneShot('expire', async () => {
         const now = taskcluster.fromNow(cfg.app.expirationDelay);
 
         debug('Expiring namespaces');

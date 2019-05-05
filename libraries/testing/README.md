@@ -346,6 +346,19 @@ The message will be routed to consumers with matching bindings.
 
 A consumer for which bindings are changed at runtime, using amqplib functions `bindQueue` and `unbindQueue`, can be faked by calling `consumer.setFakeBindings(bindings)`.
 
+withMonitor
+-----------
+
+All services should call `testing.withMonitor(helper)` to set up the [`taskcluster-lib-monitor`](../monitor) loader component for testing.
+Call this method at the module level, such as within `helper.js`, not as a part of each test suite.
+
+The function does the following:
+ * Set up the default MonitorManager instance to log via the `debug` module in a human-readable fashion, and to record messages (`mock=True`).
+ * Fail if there are any messages at the ERROR level or higher at the completion of each test case.  Tests that generate errors should check for and remove them.
+ * Reset the list of stored messages after each test.
+
+Tests should import the MonitorManager instance from `../src/monitor.js` to get access to the messages and modify the message list
+
 Time
 ----
 

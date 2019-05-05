@@ -38,8 +38,6 @@ defaults:
 
   monitoring:
     level: !env LEVEL
-    enable: !env:bool MONITORING_ENABLE
-    pretty: !env:bool PRETTY_LOGGING
 
   server:
     port: !env:number PORT
@@ -125,10 +123,6 @@ test:
 
   azure:
     accountId: 'jungle'
-
-  monitoring:
-    level: warning
-    enable: false
 
   server:
     port: 60415

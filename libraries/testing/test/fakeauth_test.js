@@ -3,13 +3,26 @@ const hawk = require('hawk');
 const request = require('superagent');
 const SchemaSet = require('taskcluster-lib-validate');
 const APIBuilder = require('taskcluster-lib-api');
-const MonitorManager = require('taskcluster-lib-monitor');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 const App = require('taskcluster-lib-app');
 const assert = require('assert');
 const taskcluster = require('taskcluster-client');
 const path = require('path');
 const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
+
+defaultMonitorManager.configure({
+  serviceName: 'whatever',
+});
+
+let monitor;
+suiteSetup(function() {
+  monitor = defaultMonitorManager.setup({
+    fake: true,
+    verify: true,
+    debug: true,
+  });
+});
 
 const builder = new APIBuilder({
   title: 'Test Server',
@@ -49,16 +62,11 @@ suite(testing.suiteName(), function() {
       folder: path.join(__dirname, 'schemas'),
     });
 
-    const monitorManager = new MonitorManager({
-      serviceName: 'whatever',
-    });
-    monitorManager.setup({enable: false});
-
     // Create router for the API
     const api = await builder.build({
       schemaset,
       rootUrl,
-      monitor: monitorManager.monitor('api'),
+      monitor,
     });
 
     // Create application

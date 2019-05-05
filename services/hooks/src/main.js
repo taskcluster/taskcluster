@@ -36,7 +36,7 @@ const load = loader({
     setup: ({cfg, process, monitor}) => {
       return data.Hook.setup({
         tableName: cfg.app.hookTableName,
-        monitor: monitor.monitor('table.hooks'),
+        monitor: monitor.childMonitor('table.hooks'),
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
           tableName: cfg.app.hookTableName,
@@ -54,7 +54,7 @@ const load = loader({
     setup: ({cfg, monitor}) => {
       return data.LastFire.setup({
         tableName: cfg.app.lastFireTableName,
-        monitor: monitor.monitor('table.lastFireTable'),
+        monitor: monitor.childMonitor('table.lastFireTable'),
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
           tableName: cfg.app.lastFireTableName,
@@ -80,7 +80,7 @@ const load = loader({
     setup: ({cfg, monitor}) => {
       return new libPulse.Client({
         namespace: 'taskcluster-hooks',
-        monitor: monitor.monitor('pulse-client'),
+        monitor: monitor.childMonitor('pulse-client'),
         credentials: libPulse.pulseCredentials(cfg.pulse),
       });
     },
@@ -92,6 +92,7 @@ const load = loader({
       rootUrl: cfg.taskcluster.rootUrl,
       client: pulseClient,
       schemaset,
+      monitor: monitor.childMonitor('publisher'),
     }),
   },
 
@@ -100,7 +101,7 @@ const load = loader({
     setup: ({cfg, LastFire, monitor}) => new taskcreator.TaskCreator({
       ...cfg.taskcluster,
       LastFire,
-      monitor: monitor.monitor('taskcreator'),
+      monitor: monitor.childMonitor('taskcreator'),
     }),
   },
 
@@ -119,7 +120,7 @@ const load = loader({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {Hook, LastFire, taskcreator, publisher, denylist: cfg.pulse.denylist},
       schemaset,
-      monitor: monitor.monitor('api'),
+      monitor: monitor.childMonitor('api'),
     }),
   },
 
@@ -128,7 +129,7 @@ const load = loader({
     setup: ({cfg, process, monitor}) => {
       return data.Queues.setup({
         tableName: cfg.app.queuesTableName,
-        monitor: monitor.monitor('table.queues'),
+        monitor: monitor.childMonitor('table.queues'),
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
           tableName: cfg.app.queuesTableName,
@@ -148,7 +149,7 @@ const load = loader({
         Queues,
         taskcreator,
         client: pulseClient,
-        monitor: monitor.monitor('listeners'),
+        monitor: monitor.childMonitor('listeners'),
       });
       await listeners.setup();
       return listeners;
@@ -181,7 +182,7 @@ const load = loader({
         Hook,
         taskcreator,
         notify,
-        monitor: monitor.monitor('scheduler'),
+        monitor: monitor.childMonitor('scheduler'),
         pollingDelay: cfg.app.scheduler.pollingDelay,
       });
     },
@@ -195,7 +196,7 @@ const load = loader({
   expires: {
     requires: ['cfg', 'Hook', 'LastFire', 'monitor'],
     setup: ({cfg, Hook, LastFire, monitor}) => {
-      return monitor.monitor().oneShot('expire LastFires', async () => {
+      return monitor.oneShot('expire LastFires', async () => {
         const expirationTime = taskcluster.fromNow(cfg.app.lastFiresExpirationDelay);
         debug('Expiring lastFires rows');
         const count = await LastFire.expires(Hook, expirationTime);

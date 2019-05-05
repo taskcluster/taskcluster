@@ -12,7 +12,6 @@ module "worker_manager_secrets" {
     TASKCLUSTER_CLIENT_ID    = "static/taskcluster/worker-manager"
     TASKCLUSTER_ACCESS_TOKEN = "${random_string.worker_manager_access_token.result}"
     NODE_ENV                 = "production"
-    MONITORING_ENABLE        = "true"
     AZURE_ACCOUNT            = "${azurerm_storage_account.base.name}"
     FORCE_SSL                = "false"
     TRUST_PROXY              = "true"

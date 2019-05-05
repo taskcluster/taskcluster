@@ -6,7 +6,7 @@ const helper = require('./helper');
 const _ = require('lodash');
 const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
-const MonitorManager = require('taskcluster-lib-monitor');
+const {LEVELS} = require('taskcluster-lib-monitor');
 
 suite(testing.suiteName(), function() {
   // Create test api
@@ -16,21 +16,10 @@ suite(testing.suiteName(), function() {
     serviceName: 'test',
     apiVersion: 'v1',
   });
-  const monitorManager = new MonitorManager({
-    serviceName: 'foo',
-  });
-  monitorManager.setup({
-    mock: true,
-  });
-  const monitor = monitorManager.monitor();
-
-  teardown(function() {
-    monitorManager.reset();
-  });
 
   // Create a mock authentication server
   setup(async () => {
-    await helper.setupServer({builder, monitor});
+    await helper.setupServer({builder});
   });
   teardown(helper.teardownServer);
 
@@ -97,13 +86,14 @@ suite(testing.suiteName(), function() {
     });
     await request.get(url).set('Authorization', header);
 
-    assert.equal(monitorManager.messages.length, 1);
-    assert(monitorManager.messages[0].Fields.duration > 0); // it exists..
-    delete monitorManager.messages[0].Fields.duration;
-    assert(new Date(monitorManager.messages[0].Fields.expires) > new Date());
-    delete monitorManager.messages[0].Fields.expires;
-    assert.deepEqual(monitorManager.messages[0], {
+    assert.equal(helper.monitorManager.messages.length, 1);
+    assert(helper.monitorManager.messages[0].Fields.duration > 0); // it exists..
+    delete helper.monitorManager.messages[0].Fields.duration;
+    assert(new Date(helper.monitorManager.messages[0].Fields.expires) > new Date());
+    delete helper.monitorManager.messages[0].Fields.expires;
+    assert.deepEqual(helper.monitorManager.messages[0], {
       Type: 'monitor.apiMethod',
+      Severity: LEVELS.notice,
       Fields: {
         name: 'requireSomeScopes',
         apiVersion: 'v1',
@@ -118,7 +108,7 @@ suite(testing.suiteName(), function() {
         statusCode: 200,
         v: 1,
       },
-      Logger: 'taskcluster.foo.root',
+      Logger: 'taskcluster.lib-api',
     });
   });
 
@@ -129,11 +119,12 @@ suite(testing.suiteName(), function() {
     });
     await request.get(url).set('Authorization', header);
 
-    assert.equal(monitorManager.messages.length, 1);
-    delete monitorManager.messages[0].Fields.duration;
-    delete monitorManager.messages[0].Fields.expires;
-    assert.deepEqual(monitorManager.messages[0], {
+    assert.equal(helper.monitorManager.messages.length, 1);
+    delete helper.monitorManager.messages[0].Fields.duration;
+    delete helper.monitorManager.messages[0].Fields.expires;
+    assert.deepEqual(helper.monitorManager.messages[0], {
       Type: 'monitor.apiMethod',
+      Severity: LEVELS.notice,
       Fields: {
         name: 'requireNoScopes',
         apiVersion: 'v1',
@@ -147,7 +138,7 @@ suite(testing.suiteName(), function() {
         statusCode: 200,
         v: 1,
       },
-      Logger: 'taskcluster.foo.root',
+      Logger: 'taskcluster.lib-api',
     });
   });
 
@@ -158,11 +149,12 @@ suite(testing.suiteName(), function() {
     });
     await request.get(url).set('Authorization', header);
 
-    assert.equal(monitorManager.messages.length, 1);
-    delete monitorManager.messages[0].Fields.duration;
-    delete monitorManager.messages[0].Fields.expires;
-    assert.deepEqual(monitorManager.messages[0], {
+    assert.equal(helper.monitorManager.messages.length, 1);
+    delete helper.monitorManager.messages[0].Fields.duration;
+    delete helper.monitorManager.messages[0].Fields.expires;
+    assert.deepEqual(helper.monitorManager.messages[0], {
       Type: 'monitor.apiMethod',
+      Severity: LEVELS.notice,
       Fields: {
         name: 'sometimesRequireNoScopes',
         apiVersion: 'v1',
@@ -176,7 +168,7 @@ suite(testing.suiteName(), function() {
         statusCode: 200,
         v: 1,
       },
-      Logger: 'taskcluster.foo.root',
+      Logger: 'taskcluster.lib-api',
     });
   });
 
@@ -187,11 +179,12 @@ suite(testing.suiteName(), function() {
     });
     await request.get(url).set('Authorization', header);
 
-    assert.equal(monitorManager.messages.length, 1);
-    delete monitorManager.messages[0].Fields.duration;
-    delete monitorManager.messages[0].Fields.expires;
-    assert.deepEqual(monitorManager.messages[0], {
+    assert.equal(helper.monitorManager.messages.length, 1);
+    delete helper.monitorManager.messages[0].Fields.duration;
+    delete helper.monitorManager.messages[0].Fields.expires;
+    assert.deepEqual(helper.monitorManager.messages[0], {
       Type: 'monitor.apiMethod',
+      Severity: LEVELS.notice,
       Fields: {
         name: 'sometimesRequireNoScopes',
         apiVersion: 'v1',
@@ -205,7 +198,7 @@ suite(testing.suiteName(), function() {
         statusCode: 200,
         v: 1,
       },
-      Logger: 'taskcluster.foo.root',
+      Logger: 'taskcluster.lib-api',
     });
   });
 
@@ -222,11 +215,12 @@ suite(testing.suiteName(), function() {
       }
     }
 
-    assert.equal(monitorManager.messages.length, 1);
-    delete monitorManager.messages[0].Fields.duration;
-    delete monitorManager.messages[0].Fields.expires;
-    assert.deepEqual(monitorManager.messages[0], {
+    assert.equal(helper.monitorManager.messages.length, 1);
+    delete helper.monitorManager.messages[0].Fields.duration;
+    delete helper.monitorManager.messages[0].Fields.expires;
+    assert.deepEqual(helper.monitorManager.messages[0], {
       Type: 'monitor.apiMethod',
+      Severity: LEVELS.notice,
       Fields: {
         name: 'requireExtraScopes',
         apiVersion: 'v1',
@@ -240,7 +234,7 @@ suite(testing.suiteName(), function() {
         statusCode: 403,
         v: 1,
       },
-      Logger: 'taskcluster.foo.root',
+      Logger: 'taskcluster.lib-api',
     });
   });
 });

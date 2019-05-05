@@ -1,10 +1,10 @@
-const MonitorManager = require('taskcluster-lib-monitor');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
-const manager = new MonitorManager({
+const monitorManager = defaultMonitorManager.configure({
   serviceName: 'web-server',
 });
 
-manager.register({
+monitorManager.register({
   name: 'createCredentials',
   title: 'Credentials Created',
   type: 'create-credentials',
@@ -18,4 +18,4 @@ manager.register({
   },
 });
 
-module.exports = manager;
+module.exports = monitorManager;

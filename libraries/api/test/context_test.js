@@ -37,7 +37,7 @@ suite(testing.suiteName(), function() {
     });
     const api = await builder.build({
       rootUrl,
-      monitor: helper.monitor(),
+      monitor: helper.monitor,
       schemaset,
       context: {
         myProp: value,
@@ -82,7 +82,7 @@ suite(testing.suiteName(), function() {
     try {
       await builder.build({
         rootUrl,
-        monitor: helper.monitor(),
+        monitor: helper.monitor,
         schemaset,
         context: {
           prop1: 'value1',
@@ -113,7 +113,7 @@ suite(testing.suiteName(), function() {
     });
     await builder.build({
       rootUrl,
-      monitor: helper.monitor(),
+      monitor: helper.monitor,
       schemaset,
       context: {
         prop1: 'value1',
@@ -139,7 +139,7 @@ suite(testing.suiteName(), function() {
     try {
       await builder.build({
         rootUrl,
-        monitor: helper.monitor(),
+        monitor: helper.monitor,
         schemaset,
         context: {
           prop3: 'value3',

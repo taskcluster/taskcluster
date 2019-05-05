@@ -3,7 +3,6 @@ const {Connection} = require('../src/client');
 const amqplib = require('amqplib');
 const assume = require('assume');
 const debugModule = require('debug');
-const MonitorManager = require('taskcluster-lib-monitor');
 const slugid = require('slugid');
 const helper = require('./helper');
 const {suiteName} = require('taskcluster-lib-testing');
@@ -21,23 +20,10 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
   const routingKey = 'greetings';
   const message = Buffer.from('Hello');
   const debug = debugModule('test');
-
-  let monitorManager = null;
-  let monitor;
+  const monitor = helper.monitor;
 
   setup(async function() {
     connectionString = helper.secrets.get('pulse').connectionString;
-    monitorManager = new MonitorManager({
-      serviceName: 'lib-pulse-test',
-    });
-    monitorManager.setup({
-      mock: true,
-    });
-    monitor = monitorManager.monitor('tests');
-  });
-
-  teardown(() => {
-    monitorManager.terminate();
   });
 
   // publish a message to the exchange using just amqplib, declaring the

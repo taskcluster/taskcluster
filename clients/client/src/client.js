@@ -138,7 +138,6 @@ let makeRequest = function(client, method, url, payload, query) {
  *   // Note, that your clientId must have a superset of the these scopes.
  *   authorizedScopes:  ['scope1', 'scope2', ...]
  *   retries:         5,                             // Maximum number of retries
- *   monitor:         await Monitor()                // From taskcluster-lib-monitor
  *   rootUrl:         'https://taskcluster.net/api/' // prefix for all api calls
  * }
  *
@@ -180,8 +179,8 @@ exports.createClient = function(reference, name) {
 
     this._options.rootUrl = this._options.rootUrl.replace(/\/$/, '');
 
-    if (this._options.stats) {
-      throw new Error('options.stats is now deprecated! Use options.monitor instead.');
+    if (this._options.stats || this._options.monitor) {
+      throw new Error('monitoring client calls is no longer supported');
     }
 
     if (this._options.randomizationFactor < 0 ||
@@ -317,12 +316,6 @@ exports.createClient = function(reference, name) {
       let attempts = 0;
       let that = this;
 
-      let start;
-      let monitor = this._options.monitor;
-      if (monitor) {
-        start = process.hrtime();
-      }
-
       // Retry the request, after a delay depending on number of retries
       const retryRequest = function() {
         // Send request
@@ -339,11 +332,6 @@ exports.createClient = function(reference, name) {
             // If request was successful, accept the result
             debug('Success calling: %s, (%s retries)',
               entry.name, attempts - 1);
-            if (monitor) {
-              let d = process.hrtime(start);
-              monitor.measure([entry.name, 'success'], d[0] * 1000 + d[1] / 1000000);
-              monitor.count([entry.name, 'success']);
-            }
             if (!_.includes(res.headers['content-type'], 'application/json') || !res.body) {
               debug('Empty response from server: call: %s, method: %s', entry.name, entry.method);
               return undefined;
@@ -375,16 +363,6 @@ exports.createClient = function(reference, name) {
               err.body = res.body;
               err.code = res.body.code || 'UnknownError';
               err.statusCode = res.status;
-              if (monitor) {
-                let d = process.hrtime(start);
-
-                let state = 'client-error';
-                if (res.statusCode >= 500) {
-                  state = 'server-error';
-                }
-                monitor.measure([entry.name, state], d[0] * 1000 + d[1] / 1000000);
-                monitor.count([entry.name, state]);
-              }
               throw err;
             }
 
@@ -396,11 +374,6 @@ exports.createClient = function(reference, name) {
             }
             debug('Request error calling %s NOT retrying!, err: %s, JSON: %s',
               entry.name, err, err);
-            if (monitor) {
-              let d = process.hrtime(start);
-              monitor.measure([entry.name, 'connection-error'], d[0] * 1000 + d[1] / 1000000);
-              monitor.count([entry.name, 'connection-error']);
-            }
             throw err;
           });
         };

@@ -1,7 +1,9 @@
 const assert = require('assert');
-const MonitorManager = require('taskcluster-lib-monitor');
 const PulseIterator = require('../src/PulseEngine/PulseIterator');
 const testing = require('taskcluster-lib-testing');
+
+// load for side-effects
+require('./helper');
 
 class FakePulseEngine {
   subscribe(subscriptions, handleMessage, handleError) {
@@ -19,14 +21,6 @@ class FakePulseEngine {
 }
 
 suite(testing.suiteName(), function() {
-  const manager = new MonitorManager({
-    serviceName: 'web-server',
-  });
-  manager.setup({
-    mock: true,
-    processName: 'tests',
-  });
-
   // pause for "a beat" to let async things filter out; `for await` in particular
   // does not activate immediately
   const beat = () => new Promise(resolve => setTimeout(resolve, 1));

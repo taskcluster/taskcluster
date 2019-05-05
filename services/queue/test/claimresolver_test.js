@@ -4,6 +4,8 @@ const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
+const monitorManager = require('../src/monitor');
+const {LEVELS} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withAmazonIPRanges(mock, skipping);
@@ -47,7 +49,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     helper.assertPulseMessage('task-defined');
     helper.assertPulseMessage('task-pending');
 
-    helper.monitor.reset(); // clear the first task-pending message
+    monitorManager.reset(); // clear the first task-pending message
 
     debug('### Claim task');
     let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
@@ -60,10 +62,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     await testing.poll(
       async () => {
-        assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-pending'), {
-          Logger: 'taskcluster.queue.root.claim-resolver',
+        assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-pending'), {
+          Logger: 'taskcluster.queue.claim-resolver',
           Type: 'task-pending',
           Fields: {taskId, runId: 1, v: 1},
+          Severity: LEVELS.notice,
         });
       },
       100, 250);
@@ -82,7 +85,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     helper.assertPulseMessage('task-defined');
     helper.assertPulseMessage('task-pending');
 
-    helper.monitor.reset(); // clear the first task-pending message
+    monitorManager.reset(); // clear the first task-pending message
 
     debug('### Claim task');
     let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
@@ -95,10 +98,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     await testing.poll(
       async () => {
-        assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-exception'), {
-          Logger: 'taskcluster.queue.root.claim-resolver',
+        assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-exception'), {
+          Logger: 'taskcluster.queue.claim-resolver',
           Type: 'task-exception',
           Fields: {taskId, runId: 0, v: 1},
+          Severity: LEVELS.notice,
         });
       },
       100, 250);

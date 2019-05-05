@@ -53,7 +53,7 @@ const load = Loader({
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => new ScopeResolver({
       maxLastUsedDelay: cfg.app.maxLastUsedDelay,
-      monitor: monitor.monitor('scope-resolver'),
+      monitor: monitor.childMonitor('scope-resolver'),
     }),
   },
 
@@ -65,7 +65,7 @@ const load = Loader({
         credentials: cfg.azure || {},
         signingKey: cfg.azure.signingKey,
         cryptoKey: cfg.azure.cryptoKey,
-        monitor: monitor.monitor('table.clients'),
+        monitor: monitor.childMonitor('table.clients'),
       }),
   },
 
@@ -101,7 +101,7 @@ const load = Loader({
     setup: ({cfg, monitor}) => {
       return new libPulse.Client({
         namespace: 'taskcluster-auth',
-        monitor: monitor.monitor('pulse-client'),
+        monitor: monitor.childMonitor('pulse-client'),
         credentials: libPulse.pulseCredentials(cfg.pulse),
       });
     },
@@ -142,7 +142,7 @@ const load = Loader({
       let signatureValidator = signaturevalidator.createSignatureValidator({
         expandScopes: (scopes) => resolver.resolve(scopes),
         clientLoader: (clientId) => resolver.loadClient(clientId),
-        monitor: monitor.monitor('signature-validator'),
+        monitor: monitor.childMonitor('signature-validator'),
       });
 
       return builder.build({
@@ -160,7 +160,7 @@ const load = Loader({
         },
         schemaset,
         signatureValidator,
-        monitor: monitor.monitor('api'),
+        monitor: monitor.childMonitor('api'),
       });
     },
   },
@@ -182,7 +182,7 @@ const load = Loader({
   'expire-sentry': {
     requires: ['cfg', 'sentryManager', 'monitor'],
     setup: async ({cfg, sentryManager, monitor}) => {
-      return monitor.monitor().oneShot('expire-sentry', async () => {
+      return monitor.oneShot('expire-sentry', async () => {
         const now = taskcluster.fromNow(cfg.app.sentryExpirationDelay);
         debug('Expiring sentry keys');
         await sentryManager.purgeExpiredKeys(now);
@@ -194,7 +194,7 @@ const load = Loader({
   'purge-expired-clients': {
     requires: ['cfg', 'Client', 'monitor'],
     setup: ({cfg, Client, monitor}) => {
-      return monitor.monitor().oneShot('purge-expired-clients', async () => {
+      return monitor.oneShot('purge-expired-clients', async () => {
         const now = taskcluster.fromNow(cfg.app.clientExpirationDelay);
         debug('Purging expired clients');
         await Client.purgeExpired(now);

@@ -9,7 +9,7 @@ const azure = require('fast-azure-storage');
 const uuid = require('uuid');
 const Builder = require('taskcluster-lib-api');
 const SchemaSet = require('taskcluster-lib-validate');
-const {stickyLoader, Secrets, withEntity, withPulse} = require('taskcluster-lib-testing');
+const {stickyLoader, Secrets, withEntity, withPulse, withMonitor} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
 
@@ -19,6 +19,8 @@ suiteSetup(async function() {
 });
 
 exports.rootUrl = `http://localhost:60552`;
+
+withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({
@@ -274,7 +276,7 @@ exports.withServers = (mock, skipping) => {
 
     const testServiceName = 'authtest';
     const testServiceApi = await testServiceBuilder.build({
-      monitor: (await exports.load('monitor')).monitor(),
+      monitor: (await exports.load('monitor')),
       rootUrl: exports.rootUrl,
       schemaset: new SchemaSet({
         serviceName: testServiceName,

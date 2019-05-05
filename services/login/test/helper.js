@@ -1,10 +1,12 @@
 const taskcluster = require('taskcluster-client');
-const {fakeauth, stickyLoader} = require('taskcluster-lib-testing');
+const {fakeauth, stickyLoader, withMonitor} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const load = require('../src/main');
 
 const helper = module.exports = {};
 helper.load = stickyLoader(load);
+
+withMonitor(helper);
 
 // Call this in suites or tests that make API calls, etc; it will set up
 // what's required to respond to those calls.

@@ -1,7 +1,7 @@
 const data = require('../src/data');
 const taskcluster = require('taskcluster-client');
 const taskcreator = require('../src/taskcreator');
-const {stickyLoader, fakeauth, Secrets, withEntity, withPulse} = require('taskcluster-lib-testing');
+const {stickyLoader, fakeauth, Secrets, withEntity, withPulse, withMonitor} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const load = require('../src/main');
 const libUrls = require('taskcluster-lib-urls');
@@ -13,6 +13,8 @@ helper.rootUrl = 'http://localhost:60401';
 helper.load = stickyLoader(load);
 helper.load.inject('profile', 'test');
 helper.load.inject('process', 'test');
+
+withMonitor(helper);
 
 helper.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/taskcluster-hooks',

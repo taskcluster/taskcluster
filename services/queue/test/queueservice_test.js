@@ -19,7 +19,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     }
 
     const cfg = await helper.load('cfg');
-    const monitorManager = await helper.load('monitor');
 
     if (mock) {
       queueService = new QueueService({
@@ -30,7 +29,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         deadlineQueue: cfg.app.deadlineQueue,
         pendingPollTimeout: 30 * 1000,
         deadlineDelay: 10,
-        monitor: monitorManager.monitor(),
+        monitor: await helper.load('monitor'),
       });
     } else {
       queueService = new QueueService({
@@ -42,7 +41,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         deadlineQueue: cfg.app.deadlineQueue,
         pendingPollTimeout: 30 * 1000,
         deadlineDelay: 1000,
-        monitor: monitorManager.monitor(),
+        monitor: await helper.load('monitor'),
       });
     }
   });

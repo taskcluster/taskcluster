@@ -1,7 +1,7 @@
-const MonitorManager = require('taskcluster-lib-monitor');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
-const manager = new MonitorManager({
+const monitorManager = defaultMonitorManager.configure({
   serviceName: 'purge-cache',
 });
 
-module.exports = manager;
+module.exports = monitorManager;

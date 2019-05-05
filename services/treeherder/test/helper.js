@@ -3,8 +3,7 @@ const assert = require('assert');
 const Handler = require('../src/handler');
 const load = require('../src/main');
 const libUrls = require('taskcluster-lib-urls');
-const MonitorManager = require('taskcluster-lib-monitor');
-const {stickyLoader, withPulse} = require('taskcluster-lib-testing');
+const {stickyLoader, withPulse, withMonitor} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
 
@@ -12,6 +11,8 @@ suiteSetup(async function() {
   exports.load.inject('profile', 'test');
   exports.load.inject('process', 'test');
 });
+
+withMonitor(exports);
 
 /**
  * Set up the sticky loader.  Since this service does not have secrets,
@@ -44,8 +45,6 @@ exports.withPulse = (mock, skipping) => {
  *  - listArtifacts(taskId, runId) returns
  *    helper.handler.fakeArtifacts[`${taskId}/${runId}`]
  *
- * helper.monitor is the (mock) monitor used by the handler
- *
  * helper.handler.publishedMessages contains {pushInfo, job} for each call to
  * publishJobMessage.
  */
@@ -54,15 +53,6 @@ exports.withHandler = () => {
     const cfg = await exports.load('cfg');
     const validator = await exports.load('validator');
     const pulseClient = await exports.load('pulseClient');
-
-    exports.monitorManager = new MonitorManager({
-      serviceName: 'foo',
-    });
-    exports.monitorManager.setup({
-      mock: true,
-      enable: true,
-    });
-    exports.monitor = exports.monitorManager.monitor();
 
     exports.handler = new Handler({
       cfg,
@@ -89,7 +79,7 @@ exports.withHandler = () => {
       queueEvents: new taskcluster.QueueEvents({
         rootUrl: cfg.taskcluster.rootUrl,
       }),
-      monitor: exports.monitor,
+      monitor: await exports.load('monitor'),
     });
 
     exports.handler.publishJobMessage = async (pushInfo, job) => {
@@ -101,9 +91,4 @@ exports.withHandler = () => {
     exports.handler.fakeArtifacts = {};
     exports.handler.publishedMessages = [];
   });
-
-  teardown(() => {
-    exports.monitorManager.reset();
-  });
-
 };

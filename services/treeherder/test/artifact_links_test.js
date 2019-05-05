@@ -2,22 +2,17 @@ const assert = require('assert');
 const artifactLinkTransform = require('../src/transform/artifact_links');
 const helper = require('./helper');
 const taskcluster = require('taskcluster-client');
-const MonitorManager = require('taskcluster-lib-monitor');
 const testing = require('taskcluster-lib-testing');
-
-let monitor, queue, fakeArtifacts;
+const monitorManager = require('../src/monitor');
+const {LEVELS} = require('taskcluster-lib-monitor');
 
 suite(testing.suiteName(), () => {
   helper.withLoader();
 
-  suiteSetup(async () => {
-    const monitorManager = new MonitorManager({
-      serviceName: 'foo',
-    });
-    monitorManager.setup({
-      mock: true,
-    });
-    monitor = monitorManager.monitor();
+  let monitor, queue, fakeArtifacts;
+
+  suiteSetup(async function() {
+    monitor = await helper.load('monitor');
   });
 
   setup(async function() {
@@ -129,5 +124,9 @@ suite(testing.suiteName(), () => {
 
     job = await artifactLinkTransform(queue, monitor, '123', 0, job);
     assert.deepEqual(links, job.jobInfo.links);
+
+    assert(monitorManager.messages.some(({Severity, Fields}) =>
+      Severity === LEVELS.err && Fields.message.match(/bad things/)));
+    monitorManager.reset();
   });
 });

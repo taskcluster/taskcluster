@@ -2,7 +2,6 @@ const taskcluster = require('../');
 const assert = require('assert');
 const path = require('path');
 const nock = require('nock');
-const MonitorManager = require('taskcluster-lib-monitor');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
@@ -409,50 +408,6 @@ suite(testing.suiteName(), function() {
           .post('/v1/post-param-query/test', {hello: 'world'})
           .reply(200, {});
         await client.postParamQuery('test', {hello: 'world'}, {});
-      });
-
-      test('Report stats', async () => {
-        let monitorManager = new MonitorManager({
-          serviceName: 'tc-client',
-        });
-        monitorManager.setup({
-          mock: true,
-        });
-        let client = new Fake({
-          credentials: {
-            clientId: 'tester',
-            accessToken: 'secret',
-          },
-          monitor: monitorManager.monitor(),
-          rootUrl,
-        });
-        // Inspect the credentials
-        nock(urlPrefix).get('/v1/get-test')
-          .reply(200, {});
-        await client.get();
-        assert(monitorManager.messages.length > 0);
-      });
-
-      test('Report stats (unauthorized)', async () => {
-        let monitorManager = new MonitorManager({
-          serviceName: 'tc-client',
-        });
-        monitorManager.setup({
-          mock: true,
-        });
-        let client = new Fake({
-          credentials: {
-            clientId: 'tester',
-            accessToken: 'wrong',
-          },
-          monitor: monitorManager.monitor(),
-          rootUrl,
-        });
-        // Inspect the credentials
-        nock(urlPrefix).get('/v1/get-test')
-          .reply(401, authFailedError);
-        await expectError(client.get(), 'AuthorizationFailed');
-        assert(monitorManager.messages.length > 0);
       });
 
       let assertBewitUrl = function(url, expected) {

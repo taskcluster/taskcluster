@@ -7,8 +7,6 @@ defaults:
     cacheTime:                   10
 
   monitoring:
-    enable: !env:bool MONITORING_ENABLE
-    pretty: !env:bool PRETTY_LOGGING
     level: !env LEVEL
 
   server:
@@ -50,10 +48,6 @@ production:
 test:
   app:
     cachePurgeExpirationDelay:   '7 days'
-
-  monitoring:
-    level: warning
-    enable: false
 
   azure:
     accountId:                    'jungle'

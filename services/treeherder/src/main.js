@@ -42,7 +42,7 @@ let load = loader({
     setup: ({cfg, monitor}) => {
       return new Client({
         namespace: cfg.pulse.namespace,
-        monitor: monitor.monitor('pulse-client'),
+        monitor: monitor.childMonitor('pulse-client'),
         credentials: pulseCredentials(cfg.pulse.credentials),
       });
     },
@@ -84,7 +84,7 @@ let load = loader({
         prefix,
         publisher,
         validator,
-        monitor: monitor.monitor('handler'),
+        monitor: monitor.childMonitor('handler'),
       });
       await handler.start();
     },

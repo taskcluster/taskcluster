@@ -53,7 +53,7 @@ let load = loader({
     setup: ({cfg, monitor}) => {
       return new pulse.Client({
         namespace: cfg.pulse.namespace,
-        monitor: monitor.monitor('pulse-client'),
+        monitor: monitor.childMonitor('pulse-client'),
         credentials: pulse.pulseCredentials(cfg.pulse),
       });
     },
@@ -76,7 +76,7 @@ let load = loader({
         bucket: cfg.app.publicArtifactBucket,
         credentials: cfg.aws,
         bucketCDN: cfg.app.publicArtifactBucketCDN,
-        monitor: monitor.monitor('public-bucket'),
+        monitor: monitor.childMonitor('public-bucket'),
       });
       await bucket.setupCORS();
       return bucket;
@@ -88,7 +88,7 @@ let load = loader({
       let bucket = new Bucket({
         bucket: cfg.app.privateArtifactBucket,
         credentials: cfg.aws,
-        monitor: monitor.monitor('private-bucket'),
+        monitor: monitor.childMonitor('private-bucket'),
       });
       await bucket.setupCORS();
       return bucket;
@@ -132,10 +132,10 @@ let load = loader({
           blobStore,
           publicBucket: publicArtifactBucket,
           privateBucket: privateArtifactBucket,
-          monitor: monitor.monitor('data.Artifact'),
+          monitor: monitor.childMonitor('data.Artifact'),
           s3Controller: s3Controller,
         },
-        monitor: monitor.monitor('table.artifacts'),
+        monitor: monitor.childMonitor('table.artifacts'),
       });
     },
   },
@@ -154,7 +154,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        monitor: monitor.monitor('table.tasks'),
+        monitor: monitor.childMonitor('table.tasks'),
       });
     },
   },
@@ -173,7 +173,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        monitor: monitor.monitor('table.taskgroups'),
+        monitor: monitor.childMonitor('table.taskgroups'),
       });
     },
   },
@@ -192,7 +192,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        monitor: monitor.monitor('table.taskgroupmembers'),
+        monitor: monitor.childMonitor('table.taskgroupmembers'),
       });
     },
   },
@@ -213,7 +213,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        monitor: monitor.monitor('table.taskgroupactivesets'),
+        monitor: monitor.childMonitor('table.taskgroupactivesets'),
       });
     },
   },
@@ -232,7 +232,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        monitor: monitor.monitor('table.taskrequirements'),
+        monitor: monitor.childMonitor('table.taskrequirements'),
       });
     },
   },
@@ -251,7 +251,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        monitor: monitor.monitor('table.taskdependencies'),
+        monitor: monitor.childMonitor('table.taskdependencies'),
       });
     },
   },
@@ -270,7 +270,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        monitor: monitor.monitor('table.provisioner'),
+        monitor: monitor.childMonitor('table.provisioner'),
       });
       await Provisioner.ensureTable();
       return Provisioner;
@@ -291,7 +291,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        monitor: monitor.monitor('table.workerType'),
+        monitor: monitor.childMonitor('table.workerType'),
       });
       await WorkerType.ensureTable();
       return WorkerType;
@@ -312,7 +312,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        monitor: monitor.monitor('table.worker'),
+        monitor: monitor.childMonitor('table.worker'),
       });
       await Worker.ensureTable();
       return Worker;
@@ -329,7 +329,7 @@ let load = loader({
       resolvedQueue: cfg.app.resolvedQueue,
       deadlineQueue: cfg.app.deadlineQueue,
       deadlineDelay: cfg.app.deadlineDelay,
-      monitor: monitor.monitor('queue-service'),
+      monitor: monitor.childMonitor('queue-service'),
     }),
   },
 
@@ -340,7 +340,7 @@ let load = loader({
       publisher,
       Task,
       queueService,
-      monitor: monitor.monitor('work-claimer'),
+      monitor: monitor.childMonitor('work-claimer'),
       claimTimeout: cfg.app.claimTimeout,
       credentials: cfg.taskcluster.credentials,
     }),
@@ -361,7 +361,7 @@ let load = loader({
       'TaskRequirement', 'TaskGroupActiveSet', 'monitor',
     ],
     setup: ({monitor, ...ctx}) => new DependencyTracker({
-      monitor: monitor.monitor('dependency-tracker'),
+      monitor: monitor.childMonitor('dependency-tracker'),
       ...ctx}
     ),
   },
@@ -438,7 +438,7 @@ let load = loader({
         useCloudMirror: !!ctx.cfg.app.useCloudMirror,
         cloudMirrorHost: ctx.cfg.app.cloudMirrorHost,
         artifactRegion: ctx.cfg.aws.region,
-        monitor: ctx.monitor.monitor('api-context'),
+        monitor: ctx.monitor.childMonitor('api-context'),
         workClaimer: ctx.workClaimer,
         workerInfo: ctx.workerInfo,
         s3Controller: ctx.s3Controller,
@@ -449,7 +449,7 @@ let load = loader({
       },
       rootUrl: ctx.cfg.taskcluster.rootUrl,
       schemaset: ctx.schemaset,
-      monitor: ctx.monitor.monitor('api'),
+      monitor: ctx.monitor.childMonitor('api'),
     }),
   },
 
@@ -484,7 +484,7 @@ let load = loader({
         Task, queueService, publisher, dependencyTracker,
         pollingDelay: cfg.app.claimResolver.pollingDelay,
         parallelism: cfg.app.claimResolver.parallelism,
-        monitor: monitor.monitor('claim-resolver'),
+        monitor: monitor.childMonitor('claim-resolver'),
       });
       await resolver.start();
       return resolver;
@@ -504,7 +504,7 @@ let load = loader({
         Task, queueService, publisher, dependencyTracker,
         pollingDelay: cfg.app.deadlineResolver.pollingDelay,
         parallelism: cfg.app.deadlineResolver.parallelism,
-        monitor: monitor.monitor('deadline-resolver'),
+        monitor: monitor.childMonitor('deadline-resolver'),
       });
       await resolver.start();
       return resolver;
@@ -519,7 +519,7 @@ let load = loader({
         queueService, dependencyTracker,
         pollingDelay: cfg.app.dependencyResolver.pollingDelay,
         parallelism: cfg.app.dependencyResolver.parallelism,
-        monitor: monitor.monitor('dependency-resolver'),
+        monitor: monitor.childMonitor('dependency-resolver'),
       });
       await resolver.start();
       return resolver;
@@ -530,7 +530,7 @@ let load = loader({
   'expire-artifacts': {
     requires: ['cfg', 'Artifact', 'monitor'],
     setup: ({cfg, Artifact, monitor}) => {
-      return monitor.monitor().oneShot('expire-artifacts', async () => {
+      return monitor.oneShot('expire-artifacts', async () => {
         const now = taskcluster.fromNow(cfg.app.artifactExpirationDelay);
         debug('Expiring artifacts at: %s, from before %s', new Date(), now);
         const count = await Artifact.expire(now);
@@ -543,7 +543,7 @@ let load = loader({
   'expire-queues': {
     requires: ['cfg', 'queueService', 'monitor'],
     setup: ({cfg, queueService, monitor}) => {
-      return monitor.monitor().oneShot('expire-queues', async () => {
+      return monitor.oneShot('expire-queues', async () => {
         debug('Expiring queues at: %s', new Date());
         const count = await queueService.deleteUnusedWorkerQueues();
         debug('Expired %s queues', count);
@@ -555,7 +555,7 @@ let load = loader({
   'expire-tasks': {
     requires: ['cfg', 'Task', 'monitor'],
     setup: ({cfg, Task, monitor}) => {
-      return monitor.monitor().oneShot('expire-tasks', async () => {
+      return monitor.oneShot('expire-tasks', async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring tasks at: %s, from before %s', new Date(), now);
         const count = await Task.expire(now);
@@ -568,7 +568,7 @@ let load = loader({
   'expire-task-groups': {
     requires: ['cfg', 'TaskGroup', 'monitor'],
     setup: ({cfg, TaskGroup, monitor}) => {
-      return monitor.monitor().oneShot('expire-task-groups', async () => {
+      return monitor.oneShot('expire-task-groups', async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring task-groups at: %s, from before %s', new Date(), now);
         const count = await TaskGroup.expire(now);
@@ -581,7 +581,7 @@ let load = loader({
   'expire-task-group-members': {
     requires: ['cfg', 'TaskGroupMember', 'monitor'],
     setup: ({cfg, TaskGroupMember, monitor}) => {
-      return monitor.monitor().oneShot('expire-task-group-members', async () => {
+      return monitor.oneShot('expire-task-group-members', async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring task-group members at: %s, from before %s',
           new Date(), now);
@@ -595,7 +595,7 @@ let load = loader({
   'expire-task-group-sizes': {
     requires: ['cfg', 'TaskGroupActiveSet', 'monitor'],
     setup: ({cfg, TaskGroupActiveSet, monitor}) => {
-      return monitor.monitor().oneShot('expire-task-group-sizes', async () => {
+      return monitor.oneShot('expire-task-group-sizes', async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring task-group sizes at: %s, from before %s',
           new Date(), now);
@@ -609,7 +609,7 @@ let load = loader({
   'expire-task-dependency': {
     requires: ['cfg', 'TaskDependency', 'monitor'],
     setup: ({cfg, TaskDependency, monitor}) => {
-      return monitor.monitor().oneShot('expire-task-dependency', async () => {
+      return monitor.oneShot('expire-task-dependency', async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring task-dependency at: %s, from before %s', new Date(), now);
         const count = await TaskDependency.expire(now);
@@ -622,7 +622,7 @@ let load = loader({
   'expire-task-requirement': {
     requires: ['cfg', 'TaskRequirement', 'monitor'],
     setup: ({cfg, TaskRequirement, monitor}) => {
-      return monitor.monitor().oneShot('expire-task-dependency', async () => {
+      return monitor.oneShot('expire-task-dependency', async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring task-requirement at: %s, from before %s', new Date(), now);
         const count = await TaskRequirement.expire(now);
@@ -635,7 +635,7 @@ let load = loader({
   'expire-worker-info': {
     requires: ['cfg', 'workerInfo', 'monitor'],
     setup: ({cfg, workerInfo, monitor}) => {
-      return monitor.monitor().oneShot('expire-worker-info', async () => {
+      return monitor.oneShot('expire-worker-info', async () => {
         const now = taskcluster.fromNow(cfg.app.workerInfoExpirationDelay);
         debug('Expiring worker-info at: %s, from before %s', new Date(), now);
         const count = await workerInfo.expire(now);

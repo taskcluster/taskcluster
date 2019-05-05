@@ -6,6 +6,8 @@ const taskcluster = require('taskcluster-client');
 const assume = require('assume');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
+const monitorManager = require('../src/monitor');
+const {LEVELS} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withAmazonIPRanges(mock, skipping);
@@ -62,10 +64,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     helper.assertPulseMessage('task-completed', m => m.payload.status.runs[0].state === 'completed');
     helper.clearPulseMessages();
 
-    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-completed'), {
-      Logger: 'taskcluster.queue.root.api',
+    assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-completed'), {
+      Logger: 'taskcluster.queue.api',
       Type: 'task-completed',
       Fields: {taskId, runId: 0, v: 1},
+      Severity: LEVELS.notice,
     });
 
     debug('### Reporting task completed (again)');
@@ -104,10 +107,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     helper.assertPulseMessage('task-failed', m => m.payload.status.runs[0].state === 'failed');
     helper.clearPulseMessages();
 
-    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-failed'), {
-      Logger: 'taskcluster.queue.root.api',
+    assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-failed'), {
+      Logger: 'taskcluster.queue.api',
       Type: 'task-failed',
       Fields: {taskId, runId: 0, v: 1},
+      Severity: LEVELS.notice,
     });
 
     debug('### Reporting task failed (again)');
@@ -148,10 +152,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       m.payload.status.runs[0].reasonResolved === 'malformed-payload'));
     helper.clearPulseMessages();
 
-    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-exception'), {
-      Logger: 'taskcluster.queue.root.api',
+    assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-exception'), {
+      Logger: 'taskcluster.queue.api',
       Type: 'task-exception',
       Fields: {taskId, runId: 0, v: 1},
+      Severity: LEVELS.notice,
     });
 
     debug('### Reporting task exception (again)');

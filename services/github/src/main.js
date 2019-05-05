@@ -59,7 +59,7 @@ const load = loader({
     setup: ({cfg, monitor}) => {
       return new Client({
         namespace: cfg.pulse.namespace,
-        monitor: monitor.monitor('pulse-client'),
+        monitor: monitor.childMonitor('pulse-client'),
         credentials: pulseCredentials(cfg.pulse),
       });
     },
@@ -94,7 +94,7 @@ const load = loader({
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
       }),
-      monitor: monitor.monitor('table.builds'),
+      monitor: monitor.childMonitor('table.builds'),
     }),
   },
 
@@ -108,7 +108,7 @@ const load = loader({
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
       }),
-      monitor: monitor.monitor('table.ownersdirectory'),
+      monitor: monitor.childMonitor('table.ownersdirectory'),
     }),
   },
 
@@ -122,7 +122,7 @@ const load = loader({
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
       }),
-      monitor: monitor.monitor('table.checkruns'),
+      monitor: monitor.childMonitor('table.checkruns'),
     }),
   },
 
@@ -136,7 +136,7 @@ const load = loader({
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
       }),
-      monitor: monitor.monitor('table.checkstotasks'),
+      monitor: monitor.childMonitor('table.checkstotasks'),
     }),
   },
 
@@ -154,9 +154,9 @@ const load = loader({
         Builds,
         OwnersDirectory,
         ajv,
-        monitor: monitor.monitor('api-context'),
+        monitor: monitor.childMonitor('api-context'),
       },
-      monitor: monitor.monitor('api'),
+      monitor: monitor.childMonitor('api'),
       schemaset,
     }),
   },
@@ -175,7 +175,7 @@ const load = loader({
   syncInstallations: {
     requires: ['github', 'OwnersDirectory', 'monitor'],
     setup: ({github, OwnersDirectory, monitor}) => {
-      return monitor.monitor().oneShot('syncInstallations', async () => {
+      return monitor.oneShot('syncInstallations', async () => {
         const gh = await github.getAppGithub();
         const installations = (await gh.apps.getInstallations({})).data;
         await Promise.all(installations.map(inst => {
@@ -218,7 +218,7 @@ const load = loader({
       new Handlers({
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.pulse,
-        monitor: monitor.monitor('handlers'),
+        monitor: monitor.childMonitor('handlers'),
         intree,
         reference,
         jobQueueName: cfg.app.jobQueue,

@@ -8,7 +8,7 @@ const temporary = require('temporary');
 const mockAwsS3 = require('mock-aws-s3');
 const nock = require('nock');
 const FakeBlobStore = require('./fake_blob_store');
-const {fakeauth, stickyLoader, Secrets, withEntity, withPulse} = require('taskcluster-lib-testing');
+const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor} = require('taskcluster-lib-testing');
 
 const helper = module.exports;
 
@@ -18,6 +18,8 @@ suiteSetup(async function() {
   exports.load.inject('profile', 'test');
   exports.load.inject('process', 'test');
 });
+
+withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({
@@ -54,12 +56,6 @@ exports.secrets = new Secrets({
 });
 
 helper.rootUrl = 'http://localhost:60401';
-
-// flush the mock log messages for each test case
-setup(async function() {
-  helper.monitor = await helper.load('monitor');
-  helper.monitor.reset();
-});
 
 /**
  * Set up to use mock-aws-s3 for S3 operations when mocking.
