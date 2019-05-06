@@ -264,9 +264,8 @@ class VersionOne extends TcYaml {
 
       // process tasks and set up topological sorting
       config.tasks.forEach(task => {
-        task.routes = task.routes || [];
         task.routes = Array.from(new Set([
-          ...task.routes,
+          ...(task.routes ? task.routes : []),
           config.reporting ? cfg.app.checkTaskRoute : cfg.app.statusTaskRoute,
         ]));
 
@@ -280,7 +279,7 @@ class VersionOne extends TcYaml {
         const {taskId, ...taskWithoutTaskId} = task;
 
         tsort.add(taskId, taskWithoutTaskId.dependencies || []);
-        taskMap[taskId] =  {
+        taskMap[taskId] = {
           taskId,
           task: {
             ...taskWithoutTaskId,
@@ -295,6 +294,5 @@ class VersionOne extends TcYaml {
     return this.createScopes(config, payload);
   }
 }
-
 
 module.exports = TcYaml;

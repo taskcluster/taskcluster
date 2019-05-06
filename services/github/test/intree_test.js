@@ -6,7 +6,7 @@ const libUrls = require('taskcluster-lib-urls');
 const yaml = require('js-yaml');
 const testing = require('taskcluster-lib-testing');
 
-suite.only(testing.suiteName(), function() {
+suite(testing.suiteName(), function() {
   let intree;
 
   suiteSetup(async function() {
@@ -452,5 +452,4 @@ suite.only(testing.suiteName(), function() {
       'tasks[3].taskId': 'docker_push',
     }
   );
-  
 });
