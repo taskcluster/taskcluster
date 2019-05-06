@@ -1,6 +1,7 @@
 import React, { PureComponent, Fragment } from 'react';
 import { hot } from 'react-hot-loader';
 import { graphql } from 'react-apollo';
+import { parse, stringify } from 'qs';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
@@ -12,16 +13,18 @@ import Button from '../../../components/Button';
 import ClientsTable from '../../../components/ClientsTable';
 import { VIEW_CLIENTS_PAGE_SIZE } from '../../../utils/constants';
 import clientsQuery from './clients.graphql';
-import { withAuth } from '../../../utils/Auth';
 import ErrorPanel from '../../../components/ErrorPanel';
 
 @hot(module)
-@withAuth
 @graphql(clientsQuery, {
   options: props => ({
     variables: {
       clientOptions: {
-        ...(props.user ? { prefix: props.user.credentials.clientId } : null),
+        ...(props.history.location.search
+          ? {
+              prefix: parse(props.history.location.search.slice(1)).search,
+            }
+          : null),
       },
       clientsConnection: {
         limit: VIEW_CLIENTS_PAGE_SIZE,
@@ -35,52 +38,28 @@ import ErrorPanel from '../../../components/ErrorPanel';
   },
 }))
 export default class ViewClients extends PureComponent {
-  state = {
-    clientSearch: '',
-    // eslint-disable-next-line react/no-unused-state
-    previousClientId: '',
-    // This needs to be initially null in order for the defaultValue to work
-    value: null,
-  };
-
-  static getDerivedStateFromProps(props, state) {
-    // Any time the current user changes,
-    // Reset state to reflect new user / log out and default clientSearch query
-    if (
-      props.user &&
-      props.user.credentials.clientId !== state.previousClientId
-    ) {
-      return {
-        clientSearch: props.user.credentials.clientId,
-        previousClientId: props.user.credentials.clientId,
-      };
-    }
-
-    if (!props.user && state.previousClientId !== '') {
-      return {
-        clientSearch: '',
-        previousClientId: '',
-      };
-    }
-
-    return null;
-  }
-
-  handleClientSearchSubmit = clientSearch => {
+  handleClientSearchSubmit = async search => {
     const {
       data: { refetch },
     } = this.props;
+    const searchUri = this.props.history.location.search
+      ? parse(this.props.history.location.search.slice(1)).search
+      : '';
 
-    this.setState({ clientSearch });
-
-    refetch({
+    await refetch({
       clientOptions: {
-        ...(clientSearch ? { prefix: clientSearch } : null),
+        ...(search ? { prefix: search } : null),
       },
       clientsConnection: {
         limit: VIEW_CLIENTS_PAGE_SIZE,
       },
     });
+
+    if (search !== searchUri) {
+      this.props.history.push(
+        search.length > 0 ? `?${stringify({ search })}` : '/auth/clients'
+      );
+    }
   };
 
   handleCreate = () => {
@@ -90,6 +69,7 @@ export default class ViewClients extends PureComponent {
   handlePageChange = ({ cursor, previousCursor }) => {
     const {
       data: { fetchMore },
+      history,
     } = this.props;
 
     return fetchMore({
@@ -100,10 +80,10 @@ export default class ViewClients extends PureComponent {
           cursor,
           previousCursor,
         },
-        ...(this.state.clientSearch
+        ...(history.location.search
           ? {
               clientOptions: {
-                prefix: this.state.clientSearch,
+                prefix: parse(history.location.search.slice(1)).search,
               },
             }
           : null),
@@ -122,20 +102,12 @@ export default class ViewClients extends PureComponent {
     });
   };
 
-  handleClientSearchChange = ({ target: { value } }) => {
-    this.setState({ value });
-  };
-
   render() {
     const {
       classes,
       description,
       data: { loading, error, clients },
     } = this.props;
-    const { value } = this.state;
-    const searchDefaultValue = this.props.user
-      ? this.props.user.credentials.clientId
-      : null;
 
     return (
       <Dashboard
@@ -145,9 +117,6 @@ export default class ViewClients extends PureComponent {
           <Search
             disabled={loading}
             onSubmit={this.handleClientSearchSubmit}
-            onChange={this.handleClientSearchChange}
-            defaultValue={searchDefaultValue}
-            value={value}
             placeholder="Client starts with"
           />
         }>
