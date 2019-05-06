@@ -17,6 +17,7 @@ class FakeGithub {
 
     const throwError = code => {
       let err = new Error();
+      err.status = code;
       err.code = code;
       throw err;
     };
