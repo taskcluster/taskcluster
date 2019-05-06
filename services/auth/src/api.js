@@ -123,8 +123,11 @@ const builder = new APIBuilder({
     // The websocktunnel config (with property `secret`)
     'websocktunnel',
 
-    // The serviceAccount used by the service
-    'serviceAccount',
+    // The google API authencation object used by the service
+    'googleAuth',
+
+    // The GCP credentials in use,
+    'gcpCredentials',
   ],
 });
 

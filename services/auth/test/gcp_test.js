@@ -19,16 +19,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp'], function(mock, ski
   const accountId = slugid.nice().replace(/_/g, '').toLowerCase();
 
   suiteSetup('GCP credentials', async () => {
-    auth = await new Promise((accept, reject) => google.auth.getApplicationDefault(
-      (err, authClient) => err ? reject(err) : accept(authClient)
-    ));
+    const credentials = helper.secrets.get('gcp').credentials;
+    const projectId = credentials.project_id;
 
-    const projectId = auth.projectId;
+    auth = google.auth.fromJSON(credentials);
 
-    auth = auth.createScoped([
+    auth.scopes = [
       'https://www.googleapis.com/auth/cloud-platform',
       'https://www.googleapis.com/auth/iam',
-    ]);
+    ];
 
     iam = google.iam('v1');
 
@@ -52,7 +51,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp'], function(mock, ski
 
   test('gcpCredentials invalid account', async () => {
     try {
-      await helper.apiClient.gcpCredentials('-', 'invalidserviceaccount@mozilla.com');
+      await helper.apiClient.gcpCredentials('invalidserviceaccount@mozilla.com');
       assert.fail('The call should fail');
     } catch (e) {
       assert.equal(e.statusCode, 404);
@@ -60,10 +59,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp'], function(mock, ski
   });
 
   test('gcpCredentials successful', async () => {
-    await helper.apiClient.gcpCredentials('-', account.email);
+    await helper.apiClient.gcpCredentials(account.email);
   });
 
   test('gcpCredentials after setting policy', async () => {
-    await helper.apiClient.gcpCredentials('-', account.email);
+    await helper.apiClient.gcpCredentials(account.email);
   });
 });

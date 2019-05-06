@@ -56,7 +56,7 @@ exports.secrets = new Secrets({
       {env: 'SENTRY_HOSTNAME', cfg: 'sentry.hostname'},
     ],
     gcp: [
-      {env: 'GCP_CREDENTIALS', cfg: 'gcp.credentials', mock: mockGcpCredentials},
+      {env: 'GCP_CREDENTIALS', cfg: 'gcp.credentials', name: 'credentials', mock: mockGcpCredentials},
     ],
   },
   load: exports.load,

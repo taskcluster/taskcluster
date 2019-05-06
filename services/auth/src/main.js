@@ -16,8 +16,7 @@ const taskcluster = require('taskcluster-client');
 const SentryClient = require('sentry-api').Client;
 const SentryManager = require('./sentrymanager');
 const libPulse = require('taskcluster-lib-pulse');
-const fs = require('fs');
-const util = require('util');
+const {google} = require('googleapis');
 
 // Create component loader
 const load = Loader({
@@ -151,11 +150,11 @@ const load = Loader({
   api: {
     requires: [
       'cfg', 'Client', 'Roles', 'schemaset', 'publisher', 'resolver',
-      'sentryManager', 'monitor', 'pulseClient', 'serviceAccount', 'googleAuth',
+      'sentryManager', 'monitor', 'pulseClient', 'googleAuth',
     ],
     setup: async ({
       cfg, Client, Roles, schemaset, publisher, resolver, sentryManager,
-      monitor, pulseClient, serviceAccount,
+      monitor, pulseClient, googleAuth,
     }) => {
       // Set up the Azure tables
       await Client.ensureTable();
@@ -189,7 +188,8 @@ const load = Loader({
           sentryManager,
           statsum: cfg.app.statsum,
           websocktunnel: cfg.app.websocktunnel,
-          serviceAccount,
+          googleAuth,
+          gcpCredentials: cfg.gcp.credentials,
         },
         schemaset,
         signatureValidator,
@@ -215,16 +215,17 @@ const load = Loader({
     }),
   },
 
-  serviceAccount: {
-    requires: ['cfg'],
-    setup: ({cfg}) => cfg.gcp.credentials.client_email,
-  },
-
   googleAuth: {
     requires: ['cfg'],
-    setup: async ({cfg}) => {
-      const writeFile = util.promisify(fs.writeFile);
-      await writeFile(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(cfg.gcp.credentials));
+    setup: ({cfg}) => {
+      const auth = google.auth.fromJSON(cfg.gcp.credentials);
+
+      auth.scopes = [
+        'https://www.googleapis.com/auth/cloud-platform',
+        'https://www.googleapis.com/auth/iam',
+      ];
+
+      return auth;
     },
   },
 

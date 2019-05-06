@@ -3,15 +3,14 @@ const {google} = require('googleapis');
 
 builder.declare({
   method: 'get',
-  route: '/gcp/credentials/:projectId/:serviceAccount',
+  route: '/gcp/credentials/:serviceAccount',
   name: 'gcpCredentials',
-  input: undefined,
   output: 'gcp-credentials-response.yml',
   stability: 'stable',
-  scopes: 'auth:gcp:access-token:serviceAccount/<serviceAccount>',
+  scopes: 'auth:gcp:access-token:<projectId>/<serviceAccount>',
   title: 'Get Temporary Read/Write GCP Credentials',
   description: [
-    'Get temporary GCP credentials for the given projectId and serviceAccount.',
+    'Get temporary GCP credentials for the given serviceAccount.',
     'You can use the tag "-" to refer for the same projectId as the running auth',
     'service.',
     '',
@@ -23,21 +22,18 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const serviceAccount = req.params.serviceAccount;
-  const projectId = req.params.projectId;
+  const projectId = '-';
 
   // Check that the client is authorized to get a token for the given account
-  await req.authorize({serviceAccount});
+  await req.authorize({
+    projectId: this.gcpCredentials.project_id,
+    serviceAccount,
+  });
 
-  let auth = await new Promise((accept, reject) => google.auth.getApplicationDefault(
-    (err, authClient) => err ? reject(err) : accept(authClient)
-  ));
-
-  auth = auth.createScoped([
-    'https://www.googleapis.com/auth/cloud-platform',
-    'https://www.googleapis.com/auth/iam',
-  ]);
-
-  const iam = google.iam('v1');
+  const iam = google.iam({
+    version: 'v1',
+    auth: this.googleAuth,
+  });
 
   // to understand the {get/set}IamPolicy calls, look at
   // https://cloud.google.com/iam/docs/creating-short-lived-service-account-credentials
@@ -45,7 +41,6 @@ builder.declare({
   try {
     response = await iam.projects.serviceAccounts.getIamPolicy({
       resource_: `projects/${projectId}/serviceAccounts/${serviceAccount}`,
-      auth,
     });
   } catch (e) {
     return res.reportError(
@@ -70,22 +65,24 @@ builder.declare({
     data.bindings.push(binding);
   }
 
-  if (!binding.members.includes(`serviceAccount:${this.serviceAccount}`)) {
-    binding.members.push(`serviceAccount:${this.serviceAccount}`);
+  const myServiceAccount = this.gcpCredentials.client_email;
+  if (!binding.members.includes(`serviceAccount:${myServiceAccount}`)) {
+    binding.members.push(`serviceAccount:${myServiceAccount}`);
     await iam.projects.serviceAccounts.setIamPolicy({
       resource_: `projects/${projectId}/serviceAccounts/${serviceAccount}`,
       resource: {
         policy: data,
         updateMask: 'bindings',
       },
-      auth,
     });
   }
 
-  const iamcredentials = google.iamcredentials('v1');
+  const iamcredentials = google.iamcredentials({
+    version: 'v1',
+    auth: this.googleAuth,
+  });
   response = await iamcredentials.projects.serviceAccounts.generateAccessToken({
     name: `projects/${projectId}/serviceAccounts/${serviceAccount}`,
-    auth,
     scope: [
       'https://www.googleapis.com/auth/cloud-platform',
     ],
