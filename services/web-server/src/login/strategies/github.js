@@ -8,6 +8,8 @@ const identityFromClientId = require('../../utils/identityFromClientId');
 const { encode, decode } = require('../../utils/codec');
 const login = require('../../utils/login');
 const WebServerError = require('../../utils/WebServerError');
+const tryCatch = require('../../utils/tryCatch');
+const GithubClient = require('../clients/GithubClient');
 
 const debug = Debug('strategies.github');
 
@@ -27,7 +29,7 @@ module.exports = class Github {
   async getUser({ userId }) {
     const user = new User();
 
-    user.identity = `${this.identityProviderId}/${encode(userId)}`;
+    user.identity = `${this.identityProviderId}/${userId}`;
 
     if (!user.identity) {
       debug('No recognized identity providers');
@@ -45,6 +47,24 @@ module.exports = class Github {
     const userId = decode(encodedUserId);
 
     return this.getUser({ userId });
+  }
+
+  async userFromToken(accessToken) {
+    const githubClient = new GithubClient();
+    const [githubErr, githubUser] = await tryCatch(githubClient.userFromToken(accessToken));
+
+    if (githubErr) {
+      debug(`error retrieving user data from Github: ${githubErr}\n${githubErr.stack}`);
+    }
+
+    const [err, user] = await tryCatch(this.getUser({ userId: githubUser.id }));
+
+    if (err) {
+      debug(`error retrieving user profile from the username: ${err}\n${err.stack}`);
+      return;
+    }
+
+    return user;
   }
 
   userFromClientId(clientId) {
