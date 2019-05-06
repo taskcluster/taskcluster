@@ -434,4 +434,22 @@ suite(testing.suiteName(), function() {
       'tasks[0].task.metadata.source': 'http://mrrrgn.com',
       scopes: ['assume:repo:github.com/testorg/testrepo:tag:v1.0.2'],
     });
+
+  buildConfigTest(
+    'Tasks must end up topologically sorted, v1',
+    configPath + 'taskcluster.dependencies.v1.yml',
+    {
+      payload: buildMessage({
+        details: {'event.type': 'tag', 'event.head.tag': 'v1.0.2'},
+        body: require('./data/webhooks/webhook.tag_push.json').body,
+        tasks_for: 'github-push',
+      }),
+    },
+    {
+      'tasks[0].taskId': 'py36',
+      'tasks[1].taskId': 'py37',
+      'tasks[2].taskId': 'docker_build',
+      'tasks[3].taskId': 'docker_push',
+    }
+  );
 });

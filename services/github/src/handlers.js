@@ -216,7 +216,9 @@ class Handlers {
       authorizedScopes: scopes,
       credentials: this.context.cfg.taskcluster.credentials,
     });
-    await Promise.all(tasks.map(t => scopedQueueClient.createTask(t.taskId, t.task)));
+    for (const t of tasks) {
+      await scopedQueueClient.createTask(t.taskId, t.task);
+    }
   }
 
   // Send an exception to Github in the form of a comment.

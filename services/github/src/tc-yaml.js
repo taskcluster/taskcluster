@@ -3,6 +3,7 @@ const _ = require('lodash');
 const slugid = require('slugid');
 const jsone = require('json-e');
 const tc = require('taskcluster-client');
+const TopoSort = require('topo-sort');
 
 // Assert that only scope-valid characters are in branches
 const branchTest = /^[\x20-\x7e]*$/;
@@ -240,6 +241,7 @@ class VersionOne extends TcYaml {
       // of course, this can be overriden by users specifying these values.
       let defaultTaskId;
       let defaultTaskGroupId;
+
       if (config.tasks.length === 1) {
         let soleTask = config.tasks[0];
         if (soleTask.taskId && soleTask.taskGroupId) {
@@ -257,10 +259,13 @@ class VersionOne extends TcYaml {
         defaultTaskGroupId = slugid.nice();
       }
 
-      config.tasks = config.tasks.map(task => {
-        task.routes = task.routes || [];
+      const taskMap = {};
+      let tsort = new TopoSort();
+
+      // process tasks and set up topological sorting
+      config.tasks.forEach(task => {
         task.routes = Array.from(new Set([
-          ...task.routes,
+          ...(task.routes ? task.routes : []),
           config.reporting ? cfg.app.checkTaskRoute : cfg.app.statusTaskRoute,
         ]));
 
@@ -272,7 +277,9 @@ class VersionOne extends TcYaml {
         defaultTaskId = slugid.nice(); // invent a new taskId for the next task
 
         const {taskId, ...taskWithoutTaskId} = task;
-        return {
+
+        tsort.add(taskId, taskWithoutTaskId.dependencies || []);
+        taskMap[taskId] = {
           taskId,
           task: {
             ...taskWithoutTaskId,
@@ -280,6 +287,9 @@ class VersionOne extends TcYaml {
           },
         };
       });
+
+      config.tasks = tsort.sort().reverse().map(id => taskMap[id]);
+
     }
     return this.createScopes(config, payload);
   }
