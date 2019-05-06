@@ -18,11 +18,11 @@ import {isEmpty, map, pipe, sort as rSort} from 'ramda';
 import sort from '../../utils/sort';
 import {withRouter} from 'react-router-dom';
 import { workerManagerWorkers } from '../../utils/prop-types';
-import { WorkerManagerWorkersquery } from './WorkerManagerWorkers.graphql';
+import { WorkerManagerWorkersQuery } from './WorkerManagerWorkers.graphql';
 import { graphql } from 'graphql';
 
 @withRouter
-@graphql(WorkerManagerWorkersquery)
+@graphql(WorkerManagerWorkersQuery)
 export default class WorkerManagerWorkersTable extends Component {
   static propTypes = {
     workers: workerManagerWorkers.isRequired,
@@ -64,146 +64,146 @@ export default class WorkerManagerWorkersTable extends Component {
     const {
       match: { path },
     } = this.props;
-    const { workerId, workerGroup, latestTask, firstClaim, quarantineUntil, recentErrors } = worker;
+    const { workerId, workerGroup, latestTask, workerAge, quarantineUntil, recentErrors } = worker;
     const iconSize = 16;
 
     return (
-          <TableRow key={workerId}>
+      <TableRow key={workerId}>
 
-            <TableCell>{workerGroup}</TableCell>
+        <TableCell>{workerGroup}</TableCell>
 
+        <TableCell>
+          <TableCellListItem
+            button
+            component={Link}
+            to={`${path}/worker-types/${workerType}/workers/${workerGroup}/${workerId}`}>
+            <ListItemText
+              disableTypography
+              primary={<Typography>{workerId}</Typography>}
+            />
+            <LinkIcon size={iconSize} />
+          </TableCellListItem>
+        </TableCell>
+
+        <CopyToClipboard title={`${workerAge} (Copy)`} text={workerAge}>
+          <TableCell>
+            <TableCellListItem button>
+              <ListItemText
+                disableTypography
+                primary={
+                  <Typography>
+                    <DateDistance from={workerAge} />
+                  </Typography>
+                }
+              />
+              <ContentCopyIcon size={iconSize} />
+            </TableCellListItem>
+          </TableCell>
+        </CopyToClipboard>
+
+        <TableCell>
+          {latestTask ? (
+            <TableCellListItem
+              button
+              component={Link}
+              to={`/tasks/${latestTask.run.taskId}/runs/${
+                latestTask.run.runId
+              }`}>
+              <ListItemText
+                disableTypography
+                primary={<Typography>{latestTask.run.taskId}</Typography>}
+              />
+              <LinkIcon size={iconSize} />
+            </TableCellListItem>
+          ) : (
+            <Typography>n/a</Typography>
+          )}
+        </TableCell>
+
+        {latestTask ? (
+          <CopyToClipboard
+            title={`${latestTask.run.started} (Copy)`}
+            text={latestTask.run.started}>
             <TableCell>
-              <TableCellListItem
-                button
-                component={Link}
-                to={`${path}/worker-types/${workerType}/workers/${workerGroup}/${workerId}`}>
+              <TableCellListItem button>
                 <ListItemText
                   disableTypography
-                  primary={<Typography>{workerId}</Typography>}
+                  primary={
+                    <Typography>
+                      <DateDistance from={latestTask.run.started} />
+                    </Typography>
+                  }
                 />
-                <LinkIcon size={iconSize} />
+                <ContentCopyIcon size={iconSize} />
               </TableCellListItem>
             </TableCell>
+          </CopyToClipboard>
+        ) : (
+          <TableCell>
+            <Typography>n/a</Typography>
+          </TableCell>
+        )}
 
-            <CopyToClipboard title={`${firstClaim} (Copy)`} text={firstClaim}>
-              <TableCell>
-                <TableCellListItem button>
-                  <ListItemText
-                    disableTypography
-                    primary={
-                      <Typography>
-                        <DateDistance from={firstClaim} />
-                      </Typography>
-                    }
-                  />
-                  <ContentCopyIcon size={iconSize} />
-                </TableCellListItem>
-              </TableCell>
-            </CopyToClipboard>
-
+        {latestTask ? (
+          <CopyToClipboard
+            title={`${latestTask.run.resolved} (Copy)`}
+            text={latestTask.run.resolved}>
             <TableCell>
-              {latestTask ? (
-                <TableCellListItem
-                  button
-                  component={Link}
-                  to={`/tasks/${latestTask.run.taskId}/runs/${
-                    latestTask.run.runId
-                  }`}>
-                  <ListItemText
-                    disableTypography
-                    primary={<Typography>{latestTask.run.taskId}</Typography>}
-                  />
-                  <LinkIcon size={iconSize} />
-                </TableCellListItem>
-              ) : (
-                <Typography>n/a</Typography>
-              )}
-            </TableCell>
-
-            {latestTask ? (
-              <CopyToClipboard
-                title={`${latestTask.run.started} (Copy)`}
-                text={latestTask.run.started}>
-                <TableCell>
-                  <TableCellListItem button>
-                    <ListItemText
-                      disableTypography
-                      primary={
-                        <Typography>
-                          <DateDistance from={latestTask.run.started} />
-                        </Typography>
-                      }
-                    />
-                    <ContentCopyIcon size={iconSize} />
-                  </TableCellListItem>
-                </TableCell>
-              </CopyToClipboard>
-            ) : (
-              <TableCell>
-                <Typography>n/a</Typography>
-              </TableCell>
-            )}
-
-            {latestTask ? (
-              <CopyToClipboard
-                title={`${latestTask.run.resolved} (Copy)`}
-                text={latestTask.run.resolved}>
-                <TableCell>
-                  <TableCellListItem button>
-                    <ListItemText
-                      disableTypography
-                      primary={
-                        <Typography>
-                          <DateDistance from={latestTask.run.resolved} />
-                        </Typography>
-                      }
-                    />
-                    <ContentCopyIcon size={iconSize} />
-                  </TableCellListItem>
-                </TableCell>
-              </CopyToClipboard>
-            ) : (
-              <TableCell>
-                <Typography>n/a</Typography>
-              </TableCell>
-            )}
-
-            <TableCell>
-              <TableCellListItem
-                button
-                component={Link}
-                to={`${path}/worker-types/${workerType}/workers/${workerGroup}/${workerId}/recent-errors`}>
+              <TableCellListItem button>
                 <ListItemText
                   disableTypography
-                  primary={<Typography>{"Click to see errors"}</Typography>}
+                  primary={
+                    <Typography>
+                      <DateDistance from={latestTask.run.resolved} />
+                    </Typography>
+                  }
                 />
-                <AlertIcon size={iconSize} />
+                <ContentCopyIcon size={iconSize} />
               </TableCellListItem>
             </TableCell>
+          </CopyToClipboard>
+        ) : (
+          <TableCell>
+            <Typography>n/a</Typography>
+          </TableCell>
+        )}
 
-            <TableCell>
-              <TableCellListItem
-                button
-                component={Link}
-                to={`${path}/worker-types/${workerType}/workers/${workerGroup}/${workerId}/resources`}>
-                <ListItemText
-                  disableTypography
-                  primary={<Typography>{`${recentErrors}`}</Typography>}
-                />
-                <LinkIcon size={iconSize} />
-              </TableCellListItem>
-            </TableCell>
+        <TableCell>
+          <TableCellListItem
+            button
+            component={Link}
+            to={`${path}/worker-types/${workerType}/workers/${workerGroup}/${workerId}/recent-errors`}>
+            <ListItemText
+              disableTypography
+              primary={<Typography>{"Click to see errors"}</Typography>}
+            />
+            <AlertIcon size={iconSize} />
+          </TableCellListItem>
+        </TableCell>
 
-            <TableCell>
-              {quarantineUntil ? (
-                formatDistanceStrict(new Date(), quarantineUntil, {
-                  unit: 'd',
-                })
-              ) : (
-                <Typography>n/a</Typography>
-              )}
-            </TableCell>
-          </TableRow>
+        <TableCell>
+          <TableCellListItem
+            button
+            component={Link}
+            to={`${path}/worker-types/${workerType}/workers/${workerGroup}/${workerId}/resources`}>
+            <ListItemText
+              disableTypography
+              primary={<Typography>{`${recentErrors}`}</Typography>}
+            />
+            <LinkIcon size={iconSize} />
+          </TableCellListItem>
+        </TableCell>
+
+        <TableCell>
+          {quarantineUntil ? (
+            formatDistanceStrict(new Date(), quarantineUntil, {
+              unit: 'd',
+            })
+          ) : (
+            <Typography>n/a</Typography>
+          )}
+        </TableCell>
+      </TableRow>
         )}
 
   render() {
