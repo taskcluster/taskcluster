@@ -76,8 +76,8 @@ builder.declare({
   if (!binding.members.includes(`serviceAccount:${myServiceAccount}`)) {
     binding.members.push(`serviceAccount:${myServiceAccount}`);
     await iam.projects.serviceAccounts.setIamPolicy({
-      resource_: `projects/${projectId}/serviceAccounts/${serviceAccount}`,
-      resource: {
+      resource: `projects/${projectId}/serviceAccounts/${serviceAccount}`,
+      requestBody: {
         policy: data,
         updateMask: 'bindings',
       },
@@ -88,6 +88,7 @@ builder.declare({
     version: 'v1',
     auth: this.googleAuth,
   });
+
   response = await iamcredentials.projects.serviceAccounts.generateAccessToken({
     name: `projects/${projectId}/serviceAccounts/${serviceAccount}`,
     scope: [
