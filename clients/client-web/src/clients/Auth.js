@@ -38,7 +38,7 @@ export default class Auth extends Client {
     this.sentryDSN.entry = {"args":["project"],"method":"get","name":"sentryDSN","output":true,"query":[],"route":"/sentry/<project>/dsn","scopes":"auth:sentry:<project>","stability":"stable","type":"function"}; // eslint-disable-line
     this.statsumToken.entry = {"args":["project"],"method":"get","name":"statsumToken","output":true,"query":[],"route":"/statsum/<project>/token","scopes":"auth:statsum:<project>","stability":"stable","type":"function"}; // eslint-disable-line
     this.websocktunnelToken.entry = {"args":["wstAudience","wstClient"],"method":"get","name":"websocktunnelToken","output":true,"query":[],"route":"/websocktunnel/<wstAudience>/<wstClient>","scopes":"auth:websocktunnel-token:<wstAudience>/<wstClient>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.gcpCredentials.entry = {"args":["projectId","serviceAccount"],"method":"get","name":"gcpCredentials","output":true,"query":[],"route":"/gcp/credentials/<projectId>/<serviceAccount>","scopes":"auth:gcp:access-token:serviceAccount/<serviceAccount>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.gcpCredentials.entry = {"args":["serviceAccount"],"method":"get","name":"gcpCredentials","output":true,"query":[],"route":"/gcp/credentials/<serviceAccount>","scopes":"auth:gcp:access-token:<projectId>/<serviceAccount>","stability":"stable","type":"function"}; // eslint-disable-line
     this.authenticateHawk.entry = {"args":[],"input":true,"method":"post","name":"authenticateHawk","output":true,"query":[],"route":"/authenticate-hawk","stability":"stable","type":"function"}; // eslint-disable-line
     this.testAuthenticate.entry = {"args":[],"input":true,"method":"post","name":"testAuthenticate","output":true,"query":[],"route":"/test-authenticate","stability":"stable","type":"function"}; // eslint-disable-line
     this.testAuthenticateGet.entry = {"args":[],"method":"get","name":"testAuthenticateGet","output":true,"query":[],"route":"/test-authenticate-get/","stability":"stable","type":"function"}; // eslint-disable-line
@@ -398,7 +398,7 @@ export default class Auth extends Client {
     return this.request(this.websocktunnelToken.entry, args);
   }
   /* eslint-disable max-len */
-  // Get temporary GCP credentials for the given projectId and serviceAccount.
+  // Get temporary GCP credentials for the given serviceAccount.
   // You can use the tag "-" to refer for the same projectId as the running auth
   // service.
   // The call adds the necessary policy if the serviceAccount doesn't have it.
