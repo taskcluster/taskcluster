@@ -2,9 +2,9 @@
 
 This service will respond to Taskcluster task events (e.g. task completed, task failed, etc) and compose a Treeherder job pulse message to report task status to Treeherder.
 
-# Task Configuration
+## Task Configuration
 
-## Task Route
+### Task Route
 
 For a task to be reported to treeherder, it must have the custom route in the form of:
 `<treeherder destination>.v2.<project>.<revision>.<push/pullrequest ID>`
@@ -18,7 +18,7 @@ as a github source. The `owner` field is unused. The `repository` field is the r
 as it is known to Treeherder, which does not necessarily match the name on GitHub.
 For example a `project` of `_/servo-auto` maps to https://treeherder.mozilla.org/#/jobs?repo=servo-auto.
 
-## Treeherder job configuration
+### Treeherder job configuration
 
 All jobs that are reported to Treeherder must have some basic information about the job
 itself, such as job symbol, job name, platform, etc.
@@ -26,7 +26,7 @@ itself, such as job symbol, job name, platform, etc.
 This configuration needs to be declared in the task definition under `task.extra.treeherder`
 and is validated against a [published schema](treeherder/task-treeherder-config).
 
-## Example  Task
+### Example  Task
 
 ```js
 {
@@ -54,14 +54,14 @@ and is validated against a [published schema](treeherder/task-treeherder-config)
 ```
 
 
-# Job Pulse Messages
+## Job Pulse Messages
 
 Pulse messages are published to the exchange `exchange/taskcluster-treeherder/v1/jobs`.
 
 Consumers, such as Treeherder, can subscribe to this exchange and receive job messages
 as events occur.
 
-## Routing Key
+### Routing Key
 
 Routing keys for these job messages are in the form of `<destination>.<project>.<reserved>`.
 
@@ -78,7 +78,7 @@ when binding to the exchange.  Optionally, consumers could also narrow down the
 messages that are concerned about, such as only a particular destination
 (`<destination>.#`) or a project (`*.<project>`).
 
-## Schema
+### Schema
 
 All jobs messages must validate against a [published schema](treeherder/exchanges#jobs).
 Any jobs that do not match this schema will be reported in the application logs and

@@ -20,13 +20,13 @@ tasks:
 
 The core of Taskcluster-Github's operation is this: when an event occurs on Github, such as a push or a pull request, it loads `.taskcluster.yml` from the commit specified in the event, renders it with JSON-e, and then calls `Queue.createTask` for each of the specified tasks.
 
-# Policies
+## Policies
 
 The `policy` property defines policies for what is allowed on the repository. Policies are always read from the default branch (generally `master`) of the repository. This prevents a malicious contributor from changing the policy applied to a pull request in the pull request itself.
 
 Policies are not rendered as a part of a task.
 
-## Pull Requests
+### Pull Requests
 
 Most projects prefer to run tasks for each pull request, so that the review process can take into account the task results. But if your project requires some secret data or uses some expensive service to test a pull request, then you probably do not want to run tasks for pull requests written by arbitrary contributors, but would still like to run tasks for PRs by project collaborators.
 
@@ -47,7 +47,7 @@ policy:
 tasks: ...
 ```
 
-# JSON-e Rendering
+## JSON-e Rendering
 
 The `tasks` property in the YAML file is rendered using [JSON-e](https://github.com/taskcluster/json-e). You can view it as a *template*. The following *context* variables are provided:
 
@@ -65,7 +65,7 @@ The `tasks` property in the YAML file is rendered using [JSON-e](https://github.
 
 Although the Github documentation does not make it clear, each ref that is updated in a `git push` operation triggers a distinct event.
 
-## Result
+### Result
 
 After rendering, the resulting data structure should have a `tasks` property containing a list of task definitions. Each task definition should match the [task
 schema](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/task-schema) as it will be passed nearly unchanged to `Queue.createTask`, The exception is that the provided task definition must contain a `taskId` field, which the service will remove and pass to `Queue.createTask` directly.
@@ -100,9 +100,9 @@ produces multiple tasks, then the same default `taskGroupId` will apply to all
 tasks, with each task getting a unique `taskId` distinct from the
 `taskGroupId`.
 
-## Task Definition and Examples
+### Task Definition and Examples
 
-### Github Events
+#### Github Events
 
 You can put a task definition inside an `$if` - `then` statement or a `$match` statement so that it will only run for specific Github events:
 
@@ -126,7 +126,7 @@ tasks:
 
 NOTE: A well-designed template should produce `tasks: []` for any unrecognized `tasks_for` values; this allows later expansion of this service to handle more events.
 
-### Custom routes for notifications and other things
+#### Custom routes for notifications and other things
 
 You can add customize notifications or other functionality through custom routes in your task.
 Routes have to be an array of unique strings. You can have up to 63 custom routes (overall, there can be 64. 1 is reserved).
@@ -143,7 +143,7 @@ tasks:
 
 More on routes you can read [here](https://docs.taskcluster.net/docs/reference/core/notify/) and [here](https://docs.taskcluster.net/docs/reference/platform/queue/task-schema)
 
-### Branch Filtering
+#### Branch Filtering
 
 You can also add a branch clause to your `$if` - `then` statement so that the task will only run for events on certain branches. For example, the task defined below will only run for pushes to the master branch:
 
@@ -163,7 +163,7 @@ Other event types do not have `event.ref`, which would lead to a template error 
 
 NOTE: Once JSON-e supports [short-circuit boolean operators](https://github.com/taskcluster/json-e/issues/244), these conditionals can be collapsed into one.
 
-### Tags
+#### Tags
 
 Tag pushes can be identified as follows:
 
@@ -178,7 +178,7 @@ tasks:
         ...
 ```
 
-### Action Filtering
+#### Action Filtering
 
 Some of the "actions" described by [GitHub's PullRequestEvent](https://developer.github.com/v3/activity/events/types/#pullrequestevent) may not be relevant for the purposes of pull request validation. To only trigger tasks in response to new commits, limit task generation to events with type "opened" or "synchronize":
 
@@ -193,11 +193,11 @@ tasks:
         ...
 ```
 
-### Provisioner ID and Worker Type
+#### Provisioner ID and Worker Type
 
 You need to know which provisioner and which worker type you want to use to run your tasks. If you plan on using AWS provisioner, you can look up or create a worker type [here](https://tools.taskcluster.net/aws-provisioner/).
 
-# Scopes and Roles
+## Scopes and Roles
 
 [Roles](https://docs.taskcluster.net/manual/design/apis/hawk/roles) are, in a nutshell, sets of [scopes](https://docs.taskcluster.net/reference/platform/auth/scopes). Taskcluster-Github uses a very specific role to create tasks for each project.  That role has the form
 * `assume:repo:github.com/<owner>/<repo>:branch:<branch>` for a push event
@@ -209,7 +209,7 @@ In the [role manager](https://tools.taskcluster.net/auth/roles/), you can set up
 
 Careful configuration of these roles and the related tasks can allow powerful behaviors such as binary uploads on push, without allowing pull requests access to those capabilities. There are lots of examples in the role manager for other repositories that have been set up. Look for roles that begin with `repo:github.com/` to see how they work.
 
-# Example
+## Example
 
 ```yaml
 version: 1
@@ -264,8 +264,8 @@ tasks:
         source: ${event.repository.url}
 ```
 
-# Transitioning from v0
-## Pull Request Metadata
+## Transitioning from v0
+### Pull Request Metadata
 
 ```
   v1 reference                           | v0 equivalent                  | Example Value(s)
@@ -316,7 +316,7 @@ tasks:
                                          | "{{ event.head.user.email }}"  |
 ```
 
-## Push Metadata
+### Push Metadata
 
 ```
   v1 reference                           | v0 equivalent                  | Example Value(s)
@@ -355,7 +355,7 @@ tasks:
                                          | "{{ event.head.user.email }}"  |
 ```
 
-## Release Metadata
+### Release Metadata
 
 ```
   v1 reference                           | v0 equivalent                  | Example Value(s)
@@ -382,7 +382,7 @@ tasks:
   event.release.zipball_url              | "{{ event.zip }}"              | https://api.github.com/repos/taskcluster/generic-worker/zipball/v7.2.6
 ```
 
-## Tag Metadata
+### Tag Metadata
 
 ```
   v1 reference                           | v0 equivalent                  | Example Value(s)

@@ -39,11 +39,11 @@ changes. In particular, try to keep hooks simple: check out the source and
 invoke a script. Any more complexity may become difficult to manage in the
 administrative UI.
 
-# Access control management rules
+## Access control management rules
 
 Projects of various size and level of support make use Taskcluster and are managed in very different ways. The general rules below explain the responsibilities of various teams in managing access controls.
 
-## Unmanaged projects (experiments, young products, etc.)
+### Unmanaged projects (experiments, young products, etc.)
 
 Unmanaged projects are self-serve and the developers are responsible for managing their own configuration, secrets, etc. They are often hosted on GitHub and need to be initially created by a member of the Taskcluster team before being handed off to the developers. The following rules apply:
 
@@ -51,7 +51,7 @@ Unmanaged projects are self-serve and the developers are responsible for managin
 * Taskcluster team provides administrative support to bootstrap the project
 * Release engineering is not involved until the project "graduate" and is moved to their purview
 
-## Managed projects (core products, etc.)
+### Managed projects (core products, etc.)
 
 * Taskcluster team manages the taskcluster service. It has permissions to create new projects and delegates permissions to
     - Developers for unmanaged projects
