@@ -53,7 +53,7 @@ export default class Documentation extends Component {
     // Clicking a link from markdown opens a new page.
     // We need to make sure react-router is still used for local routes.
     // Note: The callback will only be triggered for relative links
-    catchLinks(window, href => {
+    catchLinks(document.querySelector('main'), href => {
       history.push(href);
 
       scrollToHash(theme.spacing.double);
