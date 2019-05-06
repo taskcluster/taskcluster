@@ -1,45 +1,11 @@
 query WorkerManagerWorkers($provisionerId: String!, $workerType: String!, $workersConnection: PageConnection, $quarantined: Boolean) {
-  workers(provisionerId: $provisionerId, workerType: $workerType, connection: $workersConnection, isQuarantined: $quarantined) {
-    pageInfo {
-      hasNextPage
-      hasPreviousPage
-      cursor
-      previousCursor
-      nextCursor
-    }
-    edges {
-      node {
-        workerId
-        workerGroup
-        latestTask {
-          run {
-            taskId
-            runId
-            started
-            resolved
-            state
-          }
-        }
-        firstClaim
-        quarantineUntil
-      }
-    }
-  }
-
-  workerType(provisionerId: $provisionerId, workerType: $workerType) {
-    actions {
-      name
-      description
-      title
-      url
-    }
-  }
-
-  provisioners {
-    edges {
-      node {
-        provisionerId
-      }
-    }
+  WorkerManagerWorkers(provisionerId: $provisionerId, workerType: $workerType, connection: $workersConnection, isQuarantined: $quarantined) {
+    workerGroup
+    workerId
+    workerAge
+    recentTask
+    recentStarted
+    recentResolved
+    status
   }
 }

@@ -29,7 +29,7 @@ export default class WorkerManagerViewWorkers extends Component {
   render() {
     const {currentTab, workerSearch} = this.state;
     const {
-      data: { loading, error, WorkerManagerWorkerSummaries },
+      data: { loading, error, WorkerManagerWorkers },
     } = this.props;
 
     return <Dashboard
@@ -56,7 +56,7 @@ export default class WorkerManagerViewWorkers extends Component {
       {!error && !loading && currentTab === 0 && (
         <WorkerManagerWorkersTable
           searchTerm={workerSearch}
-          workerTypes={WorkerManagerWorkerSummaries}
+          workerTypes={WorkerManagerWorkers}
         />
       )}
 
