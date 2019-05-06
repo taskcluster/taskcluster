@@ -56,7 +56,7 @@ export default class WorkerManagerViewWorkers extends Component {
       {!error && !loading && currentTab === 0 && (
         <WorkerManagerWorkersTable
           searchTerm={workerSearch}
-          workerTypes={WorkerManagerWorkers}
+          workers={WorkerManagerWorkers}
         />
       )}
 

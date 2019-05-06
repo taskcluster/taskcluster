@@ -184,9 +184,11 @@ export const workerManagerWorkers = arrayOf(shape({
   workerId: string,
   workerGroup: string,
   latestTask: task,
-  firstClaim: date,
+  workerAge: date,
   quarantineUntil: date,
   recentErrors: number,
+  latestStarted: date,
+  latestResolved: date,
 
   providerId: string,
   workerType: string,
