@@ -8,6 +8,7 @@ const exec = promisify(require('child_process').execFile);
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
+const readdir = promisify(fs.readdir);
 
 const REPO_ROOT = path.join(__dirname, '../../../../');
 exports.REPO_ROOT = REPO_ROOT;
@@ -19,6 +20,13 @@ exports.services = () => glob.sync(
   'services/*/package.json',
   {cwd: REPO_ROOT})
   .map(filename => filename.split('/')[1]);
+
+/**
+ * Asynchronously read files in a directory
+ */
+exports.readdir = async (dirname, opts) => {
+  return await readdir(dirname, opts);
+};
 
 /**
  * Asynchronously read a file (relative to REPO_ROOT) and return its contents as a utf8 string

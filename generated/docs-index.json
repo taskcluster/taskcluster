@@ -1,0 +1,2240 @@
+[
+  {
+    "content": "Documentation",
+    "href": "https://taskcluster-web.netlify.com/docs#documentation",
+    "title": "Documentation",
+    "type": "h1"
+  },
+  {
+    "content": "People",
+    "href": "https://taskcluster-web.netlify.com/docs#people",
+    "title": "Documentation",
+    "type": "h2"
+  },
+  {
+    "content": "Questions?",
+    "href": "https://taskcluster-web.netlify.com/docs#questions",
+    "title": "Documentation",
+    "type": "h2"
+  },
+  {
+    "content": "Taskcluster Manual",
+    "href": "https://taskcluster-web.netlify.com/docs/manual#taskcluster-manual",
+    "title": "Taskcluster Manual",
+    "type": "h1"
+  },
+  {
+    "content": "The Taskcluster Service and Team",
+    "href": "https://taskcluster-web.netlify.com/docs/manual#the-taskcluster-service-and-team",
+    "title": "Taskcluster Manual",
+    "type": "h2"
+  },
+  {
+    "content": "Working with Taskcluster",
+    "href": "https://taskcluster-web.netlify.com/docs/manual#working-with-taskcluster",
+    "title": "Taskcluster Manual",
+    "type": "h2"
+  },
+  {
+    "content": "API Errors",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/errors#api-errors",
+    "title": "API Errors",
+    "type": "h1"
+  },
+  {
+    "content": "API-Specific Errors",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/errors#api-specific-errors",
+    "title": "API Errors",
+    "type": "h2"
+  },
+  {
+    "content": "AuthenticationFailed: 401",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/errors#authenticationfailed-401",
+    "title": "API Errors",
+    "type": "h3"
+  },
+  {
+    "content": "InputError: 400",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/errors#inputerror-400",
+    "title": "API Errors",
+    "type": "h3"
+  },
+  {
+    "content": "InputTooLarge: 413",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/errors#inputtoolarge-413",
+    "title": "API Errors",
+    "type": "h3"
+  },
+  {
+    "content": "InputValidationError: 400",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/errors#inputvalidationerror-400",
+    "title": "API Errors",
+    "type": "h3"
+  },
+  {
+    "content": "InsufficientScopes: 403",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/errors#insufficientscopes-403",
+    "title": "API Errors",
+    "type": "h3"
+  },
+  {
+    "content": "InternalServerError: 500",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/errors#internalservererror-500",
+    "title": "API Errors",
+    "type": "h3"
+  },
+  {
+    "content": "InvalidRequestArguments: 400",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/errors#invalidrequestarguments-400",
+    "title": "API Errors",
+    "type": "h3"
+  },
+  {
+    "content": "MalformedPayload: 400",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/errors#malformedpayload-400",
+    "title": "API Errors",
+    "type": "h3"
+  },
+  {
+    "content": "RequestConflict: 409",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/errors#requestconflict-409",
+    "title": "API Errors",
+    "type": "h3"
+  },
+  {
+    "content": "Resiliency",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/errors#resiliency",
+    "title": "API Errors",
+    "type": "h2"
+  },
+  {
+    "content": "ResourceExpired: 410",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/errors#resourceexpired-410",
+    "title": "API Errors",
+    "type": "h3"
+  },
+  {
+    "content": "ResourceNotFound: 404",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/errors#resourcenotfound-404",
+    "title": "API Errors",
+    "type": "h3"
+  },
+  {
+    "content": "Retries",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/errors#retries",
+    "title": "API Errors",
+    "type": "h2"
+  },
+  {
+    "content": "In Practice",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/hawk/roles#in-practice",
+    "title": "Roles",
+    "type": "h2"
+  },
+  {
+    "content": "Roles",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/hawk/roles#roles",
+    "title": "Roles",
+    "type": "h1"
+  },
+  {
+    "content": "Anonymous Temporary Credentials",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/hawk/temporary-credentials#anonymous-temporary-credentials",
+    "title": "Temporary Credentials",
+    "type": "h2"
+  },
+  {
+    "content": "Certificates",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/hawk/temporary-credentials#certificates",
+    "title": "Temporary Credentials",
+    "type": "h2"
+  },
+  {
+    "content": "Construction of accessToken",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/hawk/temporary-credentials#construction-of-accesstoken",
+    "title": "Temporary Credentials",
+    "type": "h2"
+  },
+  {
+    "content": "Signature Generation",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/hawk/temporary-credentials#signature-generation",
+    "title": "Temporary Credentials",
+    "type": "h2"
+  },
+  {
+    "content": "Temporary Credentials",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/hawk/temporary-credentials#temporary-credentials",
+    "title": "Temporary Credentials",
+    "type": "h1"
+  },
+  {
+    "content": "Background",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/pulse#background",
+    "title": "Pulse",
+    "type": "h2"
+  },
+  {
+    "content": "Pulse",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/pulse#pulse",
+    "title": "Pulse",
+    "type": "h1"
+  },
+  {
+    "content": "Pulse Specficiation, Abbreviated",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/pulse#pulse-specficiation-abbreviated",
+    "title": "Pulse",
+    "type": "h3"
+  },
+  {
+    "content": "Taskcluster Pulse Resources",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/pulse#taskcluster-pulse-resources",
+    "title": "Pulse",
+    "type": "h2"
+  },
+  {
+    "content": "AMQP Exchange References",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/reference-format#amqp-exchange-references",
+    "title": "Reference Formats",
+    "type": "h2"
+  },
+  {
+    "content": "API References",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/reference-format#api-references",
+    "title": "Reference Formats",
+    "type": "h2"
+  },
+  {
+    "content": "Reference Formats",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/reference-format#reference-formats",
+    "title": "Reference Formats",
+    "type": "h1"
+  },
+  {
+    "content": "Reference Manifest",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/reference-format#reference-manifest",
+    "title": "Reference Formats",
+    "type": "h2"
+  },
+  {
+    "content": "Taskcluster-References",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/apis/reference-format#taskcluster-references",
+    "title": "Reference Formats",
+    "type": "h2"
+  },
+  {
+    "content": "Standard Environment Variables",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/env-vars#standard-environment-variables",
+    "title": "Standard Environment Variables",
+    "type": "h1"
+  },
+  {
+    "content": "TASKCLUSTER_ACCESS_TOKEN",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/env-vars#taskcluster_access_token",
+    "title": "Standard Environment Variables",
+    "type": "h2"
+  },
+  {
+    "content": "TASKCLUSTER_CERTIFICATE",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/env-vars#taskcluster_certificate",
+    "title": "Standard Environment Variables",
+    "type": "h2"
+  },
+  {
+    "content": "TASKCLUSTER_CLIENT_ID",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/env-vars#taskcluster_client_id",
+    "title": "Standard Environment Variables",
+    "type": "h2"
+  },
+  {
+    "content": "TASKCLUSTER_PROXY_URL",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/env-vars#taskcluster_proxy_url",
+    "title": "Standard Environment Variables",
+    "type": "h2"
+  },
+  {
+    "content": "TASKCLUSTER_ROOT_URL",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/env-vars#taskcluster_root_url",
+    "title": "Standard Environment Variables",
+    "type": "h2"
+  },
+  {
+    "content": "Artifacts",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/namespaces#artifacts",
+    "title": "Namespaces",
+    "type": "h2"
+  },
+  {
+    "content": "Clients",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/namespaces#clients",
+    "title": "Namespaces",
+    "type": "h2"
+  },
+  {
+    "content": "Docker-Worker Caches",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/namespaces#docker-worker-caches",
+    "title": "Namespaces",
+    "type": "h2"
+  },
+  {
+    "content": "Hooks",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/namespaces#hooks",
+    "title": "Namespaces",
+    "type": "h2"
+  },
+  {
+    "content": "Indexes",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/namespaces#indexes",
+    "title": "Namespaces",
+    "type": "h2"
+  },
+  {
+    "content": "Namespaces",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/namespaces#namespaces",
+    "title": "Namespaces",
+    "type": "h1"
+  },
+  {
+    "content": "Projects",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/namespaces#projects",
+    "title": "Namespaces",
+    "type": "h2"
+  },
+  {
+    "content": "Provisioner IDs",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/namespaces#provisioner-ids",
+    "title": "Namespaces",
+    "type": "h2"
+  },
+  {
+    "content": "Roles",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/namespaces#roles",
+    "title": "Namespaces",
+    "type": "h2"
+  },
+  {
+    "content": "Scheduler IDs",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/namespaces#scheduler-ids",
+    "title": "Namespaces",
+    "type": "h2"
+  },
+  {
+    "content": "Scopes",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/namespaces#scopes",
+    "title": "Namespaces",
+    "type": "h2"
+  },
+  {
+    "content": "Secrets",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/namespaces#secrets",
+    "title": "Namespaces",
+    "type": "h2"
+  },
+  {
+    "content": "Worker IDs",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/namespaces#worker-ids",
+    "title": "Namespaces",
+    "type": "h2"
+  },
+  {
+    "content": "Worker Types",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/design/namespaces#worker-types",
+    "title": "Namespaces",
+    "type": "h2"
+  },
+  {
+    "content": "AWS Provisioner",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/task-execution/provisioning#aws-provisioner",
+    "title": "Provisioning",
+    "type": "h2"
+  },
+  {
+    "content": "Provisioner IDs",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/task-execution/provisioning#provisioner-ids",
+    "title": "Provisioning",
+    "type": "h2"
+  },
+  {
+    "content": "Provisioning",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/task-execution/provisioning#provisioning",
+    "title": "Provisioning",
+    "type": "h1"
+  },
+  {
+    "content": "Bring Your Own Worker",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/task-execution/workers#bring-your-own-worker",
+    "title": "Workers",
+    "type": "h2"
+  },
+  {
+    "content": "Claiming Tasks",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/task-execution/workers#claiming-tasks",
+    "title": "Workers",
+    "type": "h2"
+  },
+  {
+    "content": "Worker Groups and Ids",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/task-execution/workers#worker-groups-and-ids",
+    "title": "Workers",
+    "type": "h2"
+  },
+  {
+    "content": "Worker Scopes",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/task-execution/workers#worker-scopes",
+    "title": "Workers",
+    "type": "h2"
+  },
+  {
+    "content": "Workers",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/task-execution/workers#workers",
+    "title": "Workers",
+    "type": "h1"
+  },
+  {
+    "content": "Artifacts",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/tasks/artifacts#artifacts",
+    "title": "Artifacts",
+    "type": "h1"
+  },
+  {
+    "content": "Log Artifacts",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/tasks/artifacts#log-artifacts",
+    "title": "Artifacts",
+    "type": "h2"
+  },
+  {
+    "content": "Public and Private Artifacts",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/tasks/artifacts#public-and-private-artifacts",
+    "title": "Artifacts",
+    "type": "h2"
+  },
+  {
+    "content": "Cancelling",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/tasks/manipulating#cancelling",
+    "title": "Manipulating Tasks",
+    "type": "h2"
+  },
+  {
+    "content": "Force Scheduling",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/tasks/manipulating#force-scheduling",
+    "title": "Manipulating Tasks",
+    "type": "h2"
+  },
+  {
+    "content": "Manipulating Tasks",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/tasks/manipulating#manipulating-tasks",
+    "title": "Manipulating Tasks",
+    "type": "h1"
+  },
+  {
+    "content": "Choosing a Kind",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/guidelines#choosing-a-kind",
+    "title": "Implementation Guidelines",
+    "type": "h3"
+  },
+  {
+    "content": "Implementation Guidelines",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/guidelines#implementation-guidelines",
+    "title": "Implementation Guidelines",
+    "type": "h1"
+  },
+  {
+    "content": "Action Context",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/spec#action-context",
+    "title": "Action Specification",
+    "type": "h3"
+  },
+  {
+    "content": "Action Input",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/spec#action-input",
+    "title": "Action Specification",
+    "type": "h3"
+  },
+  {
+    "content": "Action Metadata",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/spec#action-metadata",
+    "title": "Action Specification",
+    "type": "h3"
+  },
+  {
+    "content": "Action Specification",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/spec#action-specification",
+    "title": "Action Specification",
+    "type": "h1"
+  },
+  {
+    "content": "actions.json",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/spec#actionsjson",
+    "title": "Action Specification",
+    "type": "h2"
+  },
+  {
+    "content": "Formal Specification",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/spec#formal-specification",
+    "title": "Action Specification",
+    "type": "h2"
+  },
+  {
+    "content": "“hook” kind",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/spec#hook-kind",
+    "title": "Action Specification",
+    "type": "h3"
+  },
+  {
+    "content": "JSON-e Context",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/spec#json-e-context",
+    "title": "Action Specification",
+    "type": "h3"
+  },
+  {
+    "content": "Kinds",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/spec#kinds",
+    "title": "Action Specification",
+    "type": "h2"
+  },
+  {
+    "content": "“task” kind",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/spec#task-kind",
+    "title": "Action Specification",
+    "type": "h3"
+  },
+  {
+    "content": "Variables",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/spec#variables",
+    "title": "Action Specification",
+    "type": "h3"
+  },
+  {
+    "content": "Default Behavior",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/ui#default-behavior",
+    "title": "User Interface Considerations",
+    "type": "h2"
+  },
+  {
+    "content": "“hook” Actions",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/ui#hook-actions",
+    "title": "User Interface Considerations",
+    "type": "h3"
+  },
+  {
+    "content": "Security Concerns",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/ui#security-concerns",
+    "title": "User Interface Considerations",
+    "type": "h2"
+  },
+  {
+    "content": "Skipping Confirmation",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/ui#skipping-confirmation",
+    "title": "User Interface Considerations",
+    "type": "h4"
+  },
+  {
+    "content": "Specialized Behavior",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/ui#specialized-behavior",
+    "title": "User Interface Considerations",
+    "type": "h2"
+  },
+  {
+    "content": "Specialized Input",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/ui#specialized-input",
+    "title": "User Interface Considerations",
+    "type": "h3"
+  },
+  {
+    "content": "Specialized Triggering",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/ui#specialized-triggering",
+    "title": "User Interface Considerations",
+    "type": "h3"
+  },
+  {
+    "content": "“task” Actions",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/ui#task-actions",
+    "title": "User Interface Considerations",
+    "type": "h3"
+  },
+  {
+    "content": "User Interface Considerations",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/actions/ui#user-interface-considerations",
+    "title": "User Interface Considerations",
+    "type": "h1"
+  },
+  {
+    "content": "Access control management rules",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/administration#access-control-management-rules",
+    "title": "Project Administration",
+    "type": "h1"
+  },
+  {
+    "content": "Managed projects (core products, etc.)",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/administration#managed-projects-core-products-etc",
+    "title": "Project Administration",
+    "type": "h2"
+  },
+  {
+    "content": "Project Administration",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/administration#project-administration",
+    "title": "Project Administration",
+    "type": "h1"
+  },
+  {
+    "content": "Unmanaged projects (experiments, young products, etc.)",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/administration#unmanaged-projects-experiments-young-products-etc",
+    "title": "Project Administration",
+    "type": "h2"
+  },
+  {
+    "content": "Creating Artifacts",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/artifacts#creating-artifacts",
+    "title": "Working with Artifacts",
+    "type": "h2"
+  },
+  {
+    "content": "Finding the Latest Build",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/artifacts#finding-the-latest-build",
+    "title": "Working with Artifacts",
+    "type": "h2"
+  },
+  {
+    "content": "Passing Artifacts Between Tasks",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/artifacts#passing-artifacts-between-tasks",
+    "title": "Working with Artifacts",
+    "type": "h2"
+  },
+  {
+    "content": "Working with Artifacts",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/artifacts#working-with-artifacts",
+    "title": "Working with Artifacts",
+    "type": "h1"
+  },
+  {
+    "content": "Caches",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/caching#caches",
+    "title": "Caching on Workers",
+    "type": "h2"
+  },
+  {
+    "content": "Caching on Workers",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/caching#caching-on-workers",
+    "title": "Caching on Workers",
+    "type": "h1"
+  },
+  {
+    "content": "Configuration",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/caching#configuration",
+    "title": "Caching on Workers",
+    "type": "h2"
+  },
+  {
+    "content": "Integrating with Github",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/github#integrating-with-github",
+    "title": "Integrating with Github",
+    "type": "h1"
+  },
+  {
+    "content": "Task Security",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/github#task-security",
+    "title": "Integrating with Github",
+    "type": "h2"
+  },
+  {
+    "content": "Deadlines",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/handling-high-load#deadlines",
+    "title": "Handling High Load",
+    "type": "h2"
+  },
+  {
+    "content": "Handling High Load",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/handling-high-load#handling-high-load",
+    "title": "Handling High Load",
+    "type": "h1"
+  },
+  {
+    "content": "Priorities",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/handling-high-load#priorities",
+    "title": "Handling High Load",
+    "type": "h2"
+  },
+  {
+    "content": "Superseding",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/handling-high-load#superseding",
+    "title": "Handling High Load",
+    "type": "h2"
+  },
+  {
+    "content": "Creating a simple login integration",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/integration/frontend#creating-a-simple-login-integration",
+    "title": "Frontend Applications",
+    "type": "h2"
+  },
+  {
+    "content": "Details",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/integration/frontend#details",
+    "title": "Frontend Applications",
+    "type": "h2"
+  },
+  {
+    "content": "Frontend Applications",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/integration/frontend#frontend-applications",
+    "title": "Frontend Applications",
+    "type": "h1"
+  },
+  {
+    "content": "Acting on Behalf of a User",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/integration/guidelines#acting-on-behalf-of-a-user",
+    "title": "Guidelines",
+    "type": "h2"
+  },
+  {
+    "content": "Careful with Credentials",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/integration/guidelines#careful-with-credentials",
+    "title": "Guidelines",
+    "type": "h2"
+  },
+  {
+    "content": "Certificates",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/integration/guidelines#certificates",
+    "title": "Guidelines",
+    "type": "h2"
+  },
+  {
+    "content": "ClientIds",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/integration/guidelines#clientids",
+    "title": "Guidelines",
+    "type": "h2"
+  },
+  {
+    "content": "Deputy Tools",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/integration/guidelines#deputy-tools",
+    "title": "Guidelines",
+    "type": "h3"
+  },
+  {
+    "content": "Don’t be a Deputy",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/integration/guidelines#dont-be-a-deputy",
+    "title": "Guidelines",
+    "type": "h3"
+  },
+  {
+    "content": "Guidelines",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/integration/guidelines#guidelines",
+    "title": "Guidelines",
+    "type": "h1"
+  },
+  {
+    "content": "Scopes",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/integration/guidelines#scopes",
+    "title": "Guidelines",
+    "type": "h2"
+  },
+  {
+    "content": "Client Libraries",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/integration/libraries#client-libraries",
+    "title": "Client Libraries",
+    "type": "h1"
+  },
+  {
+    "content": "Go (golang) Client Library",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/integration/libraries#go-golang-client-library",
+    "title": "Client Libraries",
+    "type": "h3"
+  },
+  {
+    "content": "Java Client Library",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/integration/libraries#java-client-library",
+    "title": "Client Libraries",
+    "type": "h3"
+  },
+  {
+    "content": "Node.js Client Library",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/integration/libraries#nodejs-client-library",
+    "title": "Client Libraries",
+    "type": "h3"
+  },
+  {
+    "content": "Python Client Library",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/integration/libraries#python-client-library",
+    "title": "Client Libraries",
+    "type": "h3"
+  },
+  {
+    "content": "Taskcluster CLI",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/integration/libraries#taskcluster-cli",
+    "title": "Client Libraries",
+    "type": "h3"
+  },
+  {
+    "content": "IAM Setup",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/s3-uploads#iam-setup",
+    "title": "Uploading to S3",
+    "type": "h2"
+  },
+  {
+    "content": "Secret Setup",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/s3-uploads#secret-setup",
+    "title": "Uploading to S3",
+    "type": "h2"
+  },
+  {
+    "content": "Task Setup",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/s3-uploads#task-setup",
+    "title": "Uploading to S3",
+    "type": "h2"
+  },
+  {
+    "content": "Uploading to S3",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/s3-uploads#uploading-to-s3",
+    "title": "Uploading to S3",
+    "type": "h1"
+  },
+  {
+    "content": "Advice",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/scheduled-tasks#advice",
+    "title": "Running Periodic Tasks",
+    "type": "h2"
+  },
+  {
+    "content": "Running Periodic Tasks",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/scheduled-tasks#running-periodic-tasks",
+    "title": "Running Periodic Tasks",
+    "type": "h1"
+  },
+  {
+    "content": "Using Hooks",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/scheduled-tasks#using-hooks",
+    "title": "Running Periodic Tasks",
+    "type": "h2"
+  },
+  {
+    "content": "Building Task Graphs",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/task-graph#building-task-graphs",
+    "title": "Building Task Graphs",
+    "type": "h1"
+  },
+  {
+    "content": "Conventions",
+    "href": "https://taskcluster-web.netlify.com/docs/manual/using/task-graph#conventions",
+    "title": "Building Task Graphs",
+    "type": "h2"
+  },
+  {
+    "content": "Everyone",
+    "href": "https://taskcluster-web.netlify.com/docs/people#everyone",
+    "title": "People of Taskcluster",
+    "type": "h2"
+  },
+  {
+    "content": "People of Taskcluster",
+    "href": "https://taskcluster-web.netlify.com/docs/people#people-of-taskcluster",
+    "title": "People of Taskcluster",
+    "type": "h1"
+  },
+  {
+    "content": "Staff",
+    "href": "https://taskcluster-web.netlify.com/docs/people#staff",
+    "title": "People of Taskcluster",
+    "type": "h2"
+  },
+  {
+    "content": "Built-In Workers Service",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/built-in-workers#built-in-workers-service",
+    "title": "Built-In Workers Service",
+    "type": "h1"
+  },
+  {
+    "content": "Usage",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/built-in-workers#usage",
+    "title": "Built-In Workers Service",
+    "type": "h2"
+  },
+  {
+    "content": "Common Message Types",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/built-in-workers/logs#common-message-types",
+    "title": null,
+    "type": "h3"
+  },
+  {
+    "content": "Hooks",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks#hooks",
+    "title": "Hooks Service",
+    "type": "h2"
+  },
+  {
+    "content": "Hooks Service",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks#hooks-service",
+    "title": "Hooks Service",
+    "type": "h1"
+  },
+  {
+    "content": "JSON-e",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks#json-e",
+    "title": "Hooks Service",
+    "type": "h3"
+  },
+  {
+    "content": "Pulse Bindings",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks#pulse-bindings",
+    "title": "Hooks Service",
+    "type": "h3"
+  },
+  {
+    "content": "Schedule",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks#schedule",
+    "title": "Hooks Service",
+    "type": "h3"
+  },
+  {
+    "content": "Trigger Payloads and Privilege Escalation",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks#trigger-payloads-and-privilege-escalation",
+    "title": "Hooks Service",
+    "type": "h2"
+  },
+  {
+    "content": "Trigger Schema",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks#trigger-schema",
+    "title": "Hooks Service",
+    "type": "h3"
+  },
+  {
+    "content": "Functions",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks/api#functions",
+    "title": "Hooks API Documentation",
+    "type": "h3"
+  },
+  {
+    "content": "Hooks API Documentation",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks/api#hooks-api-documentation",
+    "title": "Hooks API Documentation",
+    "type": "h1"
+  },
+  {
+    "content": "Exchanges",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks/exchanges#exchanges",
+    "title": "Exchanges to manage hooks",
+    "type": "h3"
+  },
+  {
+    "content": "Exchanges to manage hooks",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks/exchanges#exchanges-to-manage-hooks",
+    "title": "Exchanges to manage hooks",
+    "type": "h1"
+  },
+  {
+    "content": "Firing Hooks",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks/firing-hooks#firing-hooks",
+    "title": "Firing Hooks",
+    "type": "h1"
+  },
+  {
+    "content": "JSON-e Rendering",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks/firing-hooks#json-e-rendering",
+    "title": "Firing Hooks",
+    "type": "h2"
+  },
+  {
+    "content": "Pulse Messages",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks/firing-hooks#pulse-messages",
+    "title": "Firing Hooks",
+    "type": "h3"
+  },
+  {
+    "content": "Scheduled Tasks",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks/firing-hooks#scheduled-tasks",
+    "title": "Firing Hooks",
+    "type": "h3"
+  },
+  {
+    "content": "Task Times",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks/firing-hooks#task-times",
+    "title": "Firing Hooks",
+    "type": "h2"
+  },
+  {
+    "content": "TriggerHook",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks/firing-hooks#triggerhook",
+    "title": "Firing Hooks",
+    "type": "h3"
+  },
+  {
+    "content": "Webhooks",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks/firing-hooks#webhooks",
+    "title": "Firing Hooks",
+    "type": "h3"
+  },
+  {
+    "content": "Common Message Types",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/hooks/logs#common-message-types",
+    "title": null,
+    "type": "h3"
+  },
+  {
+    "content": "Entry Expiration",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/index#entry-expiration",
+    "title": "Index Service",
+    "type": "h2"
+  },
+  {
+    "content": "Index Hierarchy",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/index#index-hierarchy",
+    "title": "Index Service",
+    "type": "h2"
+  },
+  {
+    "content": "Index Service",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/index#index-service",
+    "title": "Index Service",
+    "type": "h1"
+  },
+  {
+    "content": "Indexed Data",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/index#indexed-data",
+    "title": "Index Service",
+    "type": "h2"
+  },
+  {
+    "content": "Indexing Routes",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/index#indexing-routes",
+    "title": "Index Service",
+    "type": "h2"
+  },
+  {
+    "content": "Task Rank",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/index#task-rank",
+    "title": "Index Service",
+    "type": "h2"
+  },
+  {
+    "content": "Valid Characters",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/index#valid-characters",
+    "title": "Index Service",
+    "type": "h2"
+  },
+  {
+    "content": "Functions",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/index/api#functions",
+    "title": "Task Index API Documentation",
+    "type": "h3"
+  },
+  {
+    "content": "Task Index API Documentation",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/index/api#task-index-api-documentation",
+    "title": "Task Index API Documentation",
+    "type": "h1"
+  },
+  {
+    "content": "Common Message Types",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/index/logs#common-message-types",
+    "title": null,
+    "type": "h3"
+  },
+  {
+    "content": "Notify Service",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/notify#notify-service",
+    "title": "Notify Service",
+    "type": "h1"
+  },
+  {
+    "content": "Functions",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/notify/api#functions",
+    "title": "Notification Service",
+    "type": "h3"
+  },
+  {
+    "content": "Notification Service",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/notify/api#notification-service",
+    "title": "Notification Service",
+    "type": "h1"
+  },
+  {
+    "content": "Exchanges",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/notify/exchanges#exchanges",
+    "title": "Notify AMQP Exchanges",
+    "type": "h3"
+  },
+  {
+    "content": "Notify AMQP Exchanges",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/notify/exchanges#notify-amqp-exchanges",
+    "title": "Notify AMQP Exchanges",
+    "type": "h1"
+  },
+  {
+    "content": "Common Message Types",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/notify/logs#common-message-types",
+    "title": null,
+    "type": "h3"
+  },
+  {
+    "content": "Service Message Types",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/notify/logs#service-message-types",
+    "title": null,
+    "type": "h3"
+  },
+  {
+    "content": "Enable Notifications",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/notify/usage#enable-notifications",
+    "title": "Enable Notifications",
+    "type": "h1"
+  },
+  {
+    "content": "Example",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/notify/usage#example",
+    "title": "Enable Notifications",
+    "type": "h3"
+  },
+  {
+    "content": "Filters",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/notify/usage#filters",
+    "title": "Enable Notifications",
+    "type": "h3"
+  },
+  {
+    "content": "Notification Types",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/notify/usage#notification-types",
+    "title": "Enable Notifications",
+    "type": "h3"
+  },
+  {
+    "content": "Route Syntax",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/notify/usage#route-syntax",
+    "title": "Enable Notifications",
+    "type": "h3"
+  },
+  {
+    "content": "Scopes",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/notify/usage#scopes",
+    "title": "Enable Notifications",
+    "type": "h3"
+  },
+  {
+    "content": "Setting Custom Messages",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/notify/usage#setting-custom-messages",
+    "title": "Enable Notifications",
+    "type": "h3"
+  },
+  {
+    "content": "Purge-Cache Service",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/purge-cache#purge-cache-service",
+    "title": "Purge-Cache Service",
+    "type": "h1"
+  },
+  {
+    "content": "Functions",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/purge-cache/api#functions",
+    "title": "Purge Cache API",
+    "type": "h3"
+  },
+  {
+    "content": "Purge Cache API",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/purge-cache/api#purge-cache-api",
+    "title": "Purge Cache API",
+    "type": "h1"
+  },
+  {
+    "content": "Common Message Types",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/purge-cache/logs#common-message-types",
+    "title": null,
+    "type": "h3"
+  },
+  {
+    "content": "Secrets Service",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/secrets#secrets-service",
+    "title": "Secrets Service",
+    "type": "h1"
+  },
+  {
+    "content": "Functions",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/secrets/api#functions",
+    "title": "Taskcluster Secrets API Documentation",
+    "type": "h3"
+  },
+  {
+    "content": "Taskcluster Secrets API Documentation",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/secrets/api#taskcluster-secrets-api-documentation",
+    "title": "Taskcluster Secrets API Documentation",
+    "type": "h1"
+  },
+  {
+    "content": "Common Message Types",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/secrets/logs#common-message-types",
+    "title": null,
+    "type": "h3"
+  },
+  {
+    "content": "Worker Manager",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/worker-manager#worker-manager",
+    "title": "Worker Manager",
+    "type": "h1"
+  },
+  {
+    "content": "Functions",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/worker-manager/api#functions",
+    "title": "Taskcluster Worker Manager",
+    "type": "h3"
+  },
+  {
+    "content": "Taskcluster Worker Manager",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/worker-manager/api#taskcluster-worker-manager",
+    "title": "Taskcluster Worker Manager",
+    "type": "h1"
+  },
+  {
+    "content": "Common Message Types",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/worker-manager/logs#common-message-types",
+    "title": null,
+    "type": "h3"
+  },
+  {
+    "content": "Service Message Types",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/core/worker-manager/logs#service-message-types",
+    "title": null,
+    "type": "h3"
+  },
+  {
+    "content": "External Integrations",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/guide#external-integrations",
+    "title": "Guide to The Microservices",
+    "type": "h3"
+  },
+  {
+    "content": "External Services",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/guide#external-services",
+    "title": "Guide to The Microservices",
+    "type": "h2"
+  },
+  {
+    "content": "Guide to The Microservices",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/guide#guide-to-the-microservices",
+    "title": "Guide to The Microservices",
+    "type": "h1"
+  },
+  {
+    "content": "Platform vs. Core",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/guide#platform-vs-core",
+    "title": "Guide to The Microservices",
+    "type": "h2"
+  },
+  {
+    "content": "Taskcluster Core",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/guide#taskcluster-core",
+    "title": "Guide to The Microservices",
+    "type": "h2"
+  },
+  {
+    "content": "Taskcluster Platform",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/guide#taskcluster-platform",
+    "title": "Guide to The Microservices",
+    "type": "h2"
+  },
+  {
+    "content": "Team Operations",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/guide#team-operations",
+    "title": "Guide to The Microservices",
+    "type": "h3"
+  },
+  {
+    "content": "Tools Interface",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/guide#tools-interface",
+    "title": "Guide to The Microservices",
+    "type": "h3"
+  },
+  {
+    "content": "Utility Services",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/guide#utility-services",
+    "title": "Guide to The Microservices",
+    "type": "h3"
+  },
+  {
+    "content": "Workers",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/guide#workers",
+    "title": "Guide to The Microservices",
+    "type": "h3"
+  },
+  {
+    "content": "Adding status badges to your project’s README:",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github#adding-status-badges-to-your-projects-readme",
+    "title": "Github Service",
+    "type": "h3"
+  },
+  {
+    "content": "Github Service",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github#github-service",
+    "title": "Github Service",
+    "type": "h1"
+  },
+  {
+    "content": "Functions",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/api#functions",
+    "title": "Taskcluster GitHub API Documentation",
+    "type": "h3"
+  },
+  {
+    "content": "Taskcluster GitHub API Documentation",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/api#taskcluster-git-hub-api-documentation",
+    "title": "Taskcluster GitHub API Documentation",
+    "type": "h1"
+  },
+  {
+    "content": "Exchanges",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/exchanges#exchanges",
+    "title": "Taskcluster-Github Exchanges",
+    "type": "h3"
+  },
+  {
+    "content": "Taskcluster-Github Exchanges",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/exchanges#taskcluster-github-exchanges",
+    "title": "Taskcluster-Github Exchanges",
+    "type": "h1"
+  },
+  {
+    "content": "Common Message Types",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/logs#common-message-types",
+    "title": null,
+    "type": "h3"
+  },
+  {
+    "content": "Branch Filtering",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v0#branch-filtering",
+    "title": "Taskcluster Yml Version 0",
+    "type": "h3"
+  },
+  {
+    "content": "Configuration in extra.github",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v0#configuration-in-extragithub",
+    "title": "Taskcluster Yml Version 0",
+    "type": "h1"
+  },
+  {
+    "content": "Deadlines and the fromNow function",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v0#deadlines-and-the-fromnow-function",
+    "title": "Taskcluster Yml Version 0",
+    "type": "h2"
+  },
+  {
+    "content": "Environment Variables",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v0#environment-variables",
+    "title": "Taskcluster Yml Version 0",
+    "type": "h2"
+  },
+  {
+    "content": "Github Events",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v0#github-events",
+    "title": "Taskcluster Yml Version 0",
+    "type": "h2"
+  },
+  {
+    "content": "Pull Request Metadata",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v0#pull-request-metadata",
+    "title": "Taskcluster Yml Version 0",
+    "type": "h2"
+  },
+  {
+    "content": "Push Metadata",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v0#push-metadata",
+    "title": "Taskcluster Yml Version 0",
+    "type": "h2"
+  },
+  {
+    "content": "Release Metadata",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v0#release-metadata",
+    "title": "Taskcluster Yml Version 0",
+    "type": "h2"
+  },
+  {
+    "content": "Roles",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v0#roles",
+    "title": "Taskcluster Yml Version 0",
+    "type": "h3"
+  },
+  {
+    "content": "Tag Metadata",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v0#tag-metadata",
+    "title": "Taskcluster Yml Version 0",
+    "type": "h2"
+  },
+  {
+    "content": "Taskcluster Yml Version 0",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v0#taskcluster-yml-version-0",
+    "title": "Taskcluster Yml Version 0",
+    "type": "h1"
+  },
+  {
+    "content": "Token Substitution and Environment Variables",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v0#token-substitution-and-environment-variables",
+    "title": "Taskcluster Yml Version 0",
+    "type": "h1"
+  },
+  {
+    "content": "Who Can Trigger Jobs?",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v0#who-can-trigger-jobs",
+    "title": "Taskcluster Yml Version 0",
+    "type": "h2"
+  },
+  {
+    "content": "Action Filtering",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#action-filtering",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h3"
+  },
+  {
+    "content": "Branch Filtering",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#branch-filtering",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h3"
+  },
+  {
+    "content": "Custom routes for notifications and other things",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#custom-routes-for-notifications-and-other-things",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h3"
+  },
+  {
+    "content": "Example",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#example",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h1"
+  },
+  {
+    "content": "Github Events",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#github-events",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h3"
+  },
+  {
+    "content": "JSON-e Rendering",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#json-e-rendering",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h1"
+  },
+  {
+    "content": "Policies",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#policies",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h1"
+  },
+  {
+    "content": "Provisioner ID and Worker Type",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#provisioner-id-and-worker-type",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h3"
+  },
+  {
+    "content": "Pull Request Metadata",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#pull-request-metadata",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h2"
+  },
+  {
+    "content": "Pull Requests",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#pull-requests",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h2"
+  },
+  {
+    "content": "Push Metadata",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#push-metadata",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h2"
+  },
+  {
+    "content": "Release Metadata",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#release-metadata",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h2"
+  },
+  {
+    "content": "Result",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#result",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h2"
+  },
+  {
+    "content": "Scopes and Roles",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#scopes-and-roles",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h1"
+  },
+  {
+    "content": "Tag Metadata",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#tag-metadata",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h2"
+  },
+  {
+    "content": "Tags",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#tags",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h3"
+  },
+  {
+    "content": "Task Definition and Examples",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#task-definition-and-examples",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h2"
+  },
+  {
+    "content": "Taskcluster Yml Version 1",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#taskcluster-yml-version-1",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h1"
+  },
+  {
+    "content": "Transitioning from v0",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/github/taskcluster-yml-v1#transitioning-from-v0",
+    "title": "Taskcluster Yml Version 1",
+    "type": "h1"
+  },
+  {
+    "content": "Login Service",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/login#login-service",
+    "title": "Login Service",
+    "type": "h1"
+  },
+  {
+    "content": "Functions",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/login/api#functions",
+    "title": "Login API",
+    "type": "h3"
+  },
+  {
+    "content": "Login API",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/login/api#login-api",
+    "title": "Login API",
+    "type": "h1"
+  },
+  {
+    "content": "Auth0 Set-Up",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/login/getting-user-creds#auth0-set-up",
+    "title": "Getting User Credentials",
+    "type": "h3"
+  },
+  {
+    "content": "Getting Taskcluster Credentials",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/login/getting-user-creds#getting-taskcluster-credentials",
+    "title": "Getting User Credentials",
+    "type": "h3"
+  },
+  {
+    "content": "Getting User Credentials",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/login/getting-user-creds#getting-user-credentials",
+    "title": "Getting User Credentials",
+    "type": "h1"
+  },
+  {
+    "content": "Overview",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/login/getting-user-creds#overview",
+    "title": "Getting User Credentials",
+    "type": "h2"
+  },
+  {
+    "content": "Renewing Authentication",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/login/getting-user-creds#renewing-authentication",
+    "title": "Getting User Credentials",
+    "type": "h4"
+  },
+  {
+    "content": "Sign-In Flow",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/login/getting-user-creds#sign-in-flow",
+    "title": "Getting User Credentials",
+    "type": "h4"
+  },
+  {
+    "content": "Tutorial",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/login/getting-user-creds#tutorial",
+    "title": "Getting User Credentials",
+    "type": "h2"
+  },
+  {
+    "content": "Common Message Types",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/login/logs#common-message-types",
+    "title": null,
+    "type": "h3"
+  },
+  {
+    "content": "login-identity:..",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/login/mozilla-auth0#login-identity",
+    "title": "Mozilla-Auth0",
+    "type": "h2"
+  },
+  {
+    "content": "Mozilla-Auth0",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/login/mozilla-auth0#mozilla-auth0",
+    "title": "Mozilla-Auth0",
+    "type": "h1"
+  },
+  {
+    "content": "mozilla-group:..",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/login/mozilla-auth0#mozilla-group",
+    "title": "Mozilla-Auth0",
+    "type": "h2"
+  },
+  {
+    "content": "mozillians-group:..",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/login/mozilla-auth0#mozillians-group",
+    "title": "Mozilla-Auth0",
+    "type": "h2"
+  },
+  {
+    "content": "Example Task",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/treeherder#example--task",
+    "title": "Treeherder Service",
+    "type": "h2"
+  },
+  {
+    "content": "Job Pulse Messages",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/treeherder#job-pulse-messages",
+    "title": "Treeherder Service",
+    "type": "h1"
+  },
+  {
+    "content": "Routing Key",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/treeherder#routing-key",
+    "title": "Treeherder Service",
+    "type": "h2"
+  },
+  {
+    "content": "Schema",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/treeherder#schema",
+    "title": "Treeherder Service",
+    "type": "h2"
+  },
+  {
+    "content": "Task Configuration",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/treeherder#task-configuration",
+    "title": "Treeherder Service",
+    "type": "h1"
+  },
+  {
+    "content": "Task Route",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/treeherder#task-route",
+    "title": "Treeherder Service",
+    "type": "h2"
+  },
+  {
+    "content": "Treeherder job configuration",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/treeherder#treeherder-job-configuration",
+    "title": "Treeherder Service",
+    "type": "h2"
+  },
+  {
+    "content": "Treeherder Service",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/treeherder#treeherder-service",
+    "title": "Treeherder Service",
+    "type": "h1"
+  },
+  {
+    "content": "Exchanges",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/treeherder/exchanges#exchanges",
+    "title": "Taskcluster-treeherder Pulse Exchange",
+    "type": "h3"
+  },
+  {
+    "content": "Taskcluster-treeherder Pulse Exchange",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/treeherder/exchanges#taskcluster-treeherder-pulse-exchange",
+    "title": "Taskcluster-treeherder Pulse Exchange",
+    "type": "h1"
+  },
+  {
+    "content": "Common Message Types",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/treeherder/logs#common-message-types",
+    "title": null,
+    "type": "h3"
+  },
+  {
+    "content": "Schema for task.extra.treeherder",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/integrations/treeherder/task-treeherder-config#schema-for-taskextratreeherder",
+    "title": "Schema for task.extra.treeherder",
+    "type": "h1"
+  },
+  {
+    "content": "Auth Service",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/auth#auth-service",
+    "title": "Auth Service",
+    "type": "h1"
+  },
+  {
+    "content": "Authentication API",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/auth/api#authentication-api",
+    "title": "Authentication API",
+    "type": "h1"
+  },
+  {
+    "content": "Functions",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/auth/api#functions",
+    "title": "Authentication API",
+    "type": "h3"
+  },
+  {
+    "content": "Auth Pulse Exchanges",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/auth/exchanges#auth-pulse-exchanges",
+    "title": "Auth Pulse Exchanges",
+    "type": "h1"
+  },
+  {
+    "content": "Exchanges",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/auth/exchanges#exchanges",
+    "title": "Auth Pulse Exchanges",
+    "type": "h3"
+  },
+  {
+    "content": "Common Message Types",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/auth/logs#common-message-types",
+    "title": null,
+    "type": "h3"
+  },
+  {
+    "content": "Example",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/auth/roles#example",
+    "title": "Roles and Role Expansion",
+    "type": "h2"
+  },
+  {
+    "content": "Limits",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/auth/roles#limits",
+    "title": "Roles and Role Expansion",
+    "type": "h3"
+  },
+  {
+    "content": "Parameterized Roles",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/auth/roles#parameterized-roles",
+    "title": "Roles and Role Expansion",
+    "type": "h2"
+  },
+  {
+    "content": "Roles and Role Expansion",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/auth/roles#roles-and-role-expansion",
+    "title": "Roles and Role Expansion",
+    "type": "h1"
+  },
+  {
+    "content": "Stars in Parameters",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/auth/roles#stars-in-parameters",
+    "title": "Roles and Role Expansion",
+    "type": "h3"
+  },
+  {
+    "content": "Stars in Roles",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/auth/roles#stars-in-roles",
+    "title": "Roles and Role Expansion",
+    "type": "h2"
+  },
+  {
+    "content": "Double-Stars",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/auth/scopes#double-stars",
+    "title": "Scopes and Satisfaction",
+    "type": "h3"
+  },
+  {
+    "content": "Satisfaction",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/auth/scopes#satisfaction",
+    "title": "Scopes and Satisfaction",
+    "type": "h2"
+  },
+  {
+    "content": "Scopes and Satisfaction",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/auth/scopes#scopes-and-satisfaction",
+    "title": "Scopes and Satisfaction",
+    "type": "h1"
+  },
+  {
+    "content": "Stars in Scopes",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/auth/scopes#stars-in-scopes",
+    "title": "Scopes and Satisfaction",
+    "type": "h2"
+  },
+  {
+    "content": "AWS Access Policies Required",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue#aws-access-policies-required",
+    "title": "Queue Service",
+    "type": "h3"
+  },
+  {
+    "content": "Deployment",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue#deployment",
+    "title": "Queue Service",
+    "type": "h2"
+  },
+  {
+    "content": "Queue Service",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue#queue-service",
+    "title": "Queue Service",
+    "type": "h1"
+  },
+  {
+    "content": "Usage",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue#usage",
+    "title": "Queue Service",
+    "type": "h2"
+  },
+  {
+    "content": "Actions",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/actions#actions",
+    "title": "Actions",
+    "type": "h1"
+  },
+  {
+    "content": "Context",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/actions#context",
+    "title": "Actions",
+    "type": "h3"
+  },
+  {
+    "content": "Defining Actions",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/actions#defining-actions",
+    "title": "Actions",
+    "type": "h2"
+  },
+  {
+    "content": "Triggering Actions in a User Interface",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/actions#triggering-actions-in-a-user-interface",
+    "title": "Actions",
+    "type": "h2"
+  },
+  {
+    "content": "Triggering Actions in Automation",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/actions#triggering-actions-in-automation",
+    "title": "Actions",
+    "type": "h2"
+  },
+  {
+    "content": "Functions",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/api#functions",
+    "title": "Queue API Documentation",
+    "type": "h3"
+  },
+  {
+    "content": "Queue API Documentation",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/api#queue-api-documentation",
+    "title": "Queue API Documentation",
+    "type": "h1"
+  },
+  {
+    "content": "Exchanges",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/exchanges#exchanges",
+    "title": "Queue AMQP Exchanges",
+    "type": "h3"
+  },
+  {
+    "content": "Queue AMQP Exchanges",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/exchanges#queue-amqp-exchanges",
+    "title": "Queue AMQP Exchanges",
+    "type": "h1"
+  },
+  {
+    "content": "Common Message Types",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/logs#common-message-types",
+    "title": null,
+    "type": "h3"
+  },
+  {
+    "content": "Service Message Types",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/logs#service-message-types",
+    "title": null,
+    "type": "h3"
+  },
+  {
+    "content": "Convention",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/superseding#convention",
+    "title": "Superseding",
+    "type": "h2"
+  },
+  {
+    "content": "Superseding",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/superseding#superseding",
+    "title": "Superseding",
+    "type": "h1"
+  },
+  {
+    "content": "Completed/Failed Tasks",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/task-life-cycle#completedfailed-tasks",
+    "title": "Task Life-Cycle",
+    "type": "h2"
+  },
+  {
+    "content": "Pending Tasks",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/task-life-cycle#pending-tasks",
+    "title": "Task Life-Cycle",
+    "type": "h2"
+  },
+  {
+    "content": "Running Tasks",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/task-life-cycle#running-tasks",
+    "title": "Task Life-Cycle",
+    "type": "h2"
+  },
+  {
+    "content": "Task Exceptions",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/task-life-cycle#task-exceptions",
+    "title": "Task Life-Cycle",
+    "type": "h2"
+  },
+  {
+    "content": "Task Expiration",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/task-life-cycle#task-expiration",
+    "title": "Task Life-Cycle",
+    "type": "h2"
+  },
+  {
+    "content": "Task Life-Cycle",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/task-life-cycle#task-life-cycle",
+    "title": "Task Life-Cycle",
+    "type": "h1"
+  },
+  {
+    "content": "Unscheduled Tasks",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/task-life-cycle#unscheduled-tasks",
+    "title": "Task Life-Cycle",
+    "type": "h2"
+  },
+  {
+    "content": "Task Definition",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/task-schema#task-definition",
+    "title": "Task Definition",
+    "type": "h1"
+  },
+  {
+    "content": "Provisioners",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/worker-hierarchy#provisioners",
+    "title": "Worker Hierarchy",
+    "type": "h2"
+  },
+  {
+    "content": "Worker Hierarchy",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/worker-hierarchy#worker-hierarchy",
+    "title": "Worker Hierarchy",
+    "type": "h1"
+  },
+  {
+    "content": "Worker Types",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/worker-hierarchy#worker-types",
+    "title": "Worker Hierarchy",
+    "type": "h2"
+  },
+  {
+    "content": "Workers",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/worker-hierarchy#workers",
+    "title": "Worker Hierarchy",
+    "type": "h2"
+  },
+  {
+    "content": "Claiming Pending Tasks",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/worker-interaction#claiming-pending-tasks",
+    "title": "Queue-Worker Interaction",
+    "type": "h2"
+  },
+  {
+    "content": "Dealing with Invalid Payloads",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/worker-interaction#dealing-with-invalid-payloads",
+    "title": "Queue-Worker Interaction",
+    "type": "h2"
+  },
+  {
+    "content": "Intermittent Tasks",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/worker-interaction#intermittent-tasks",
+    "title": "Queue-Worker Interaction",
+    "type": "h2"
+  },
+  {
+    "content": "Queue-Worker Interaction",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/worker-interaction#queue-worker-interaction",
+    "title": "Queue-Worker Interaction",
+    "type": "h1"
+  },
+  {
+    "content": "Reclaiming Tasks",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/worker-interaction#reclaiming-tasks",
+    "title": "Queue-Worker Interaction",
+    "type": "h2"
+  },
+  {
+    "content": "Reporting Task Result",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/worker-interaction#reporting-task-result",
+    "title": "Queue-Worker Interaction",
+    "type": "h2"
+  },
+  {
+    "content": "Responding to Internal Errors",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/worker-interaction#responding-to-internal-errors",
+    "title": "Queue-Worker Interaction",
+    "type": "h2"
+  },
+  {
+    "content": "Terminating the Worker Early",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/worker-interaction#terminating-the-worker-early",
+    "title": "Queue-Worker Interaction",
+    "type": "h2"
+  },
+  {
+    "content": "Uploading Artifacts",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/platform/queue/worker-interaction#uploading-artifacts",
+    "title": "Queue-Worker Interaction",
+    "type": "h2"
+  },
+  {
+    "content": "Schema Index",
+    "href": "https://taskcluster-web.netlify.com/docs/reference/schema#schema-index",
+    "title": "Schema Index",
+    "type": "h1"
+  },
+  {
+    "content": "Resources for Further Exploration",
+    "href": "https://taskcluster-web.netlify.com/docs/resources#resources-for-further-exploration",
+    "title": "Resources for Further Exploration",
+    "type": "h1"
+  },
+  {
+    "content": "Videos",
+    "href": "https://taskcluster-web.netlify.com/docs/resources#span-classglyphicon-glyphicon-blackboard-aria-hiddentruespan-videos",
+    "title": "Resources for Further Exploration",
+    "type": "h3"
+  },
+  {
+    "content": "Bugzilla",
+    "href": "https://taskcluster-web.netlify.com/docs/resources#span-classglyphicon-glyphicon-bug-aria-hiddentruespan-bugzilla",
+    "title": "Resources for Further Exploration",
+    "type": "h3"
+  },
+  {
+    "content": "Codetribute",
+    "href": "https://taskcluster-web.netlify.com/docs/resources#span-classglyphicon-glyphicon-classic-hammer-aria-hiddentruespan-codetribute",
+    "title": "Resources for Further Exploration",
+    "type": "h3"
+  },
+  {
+    "content": "GitHub",
+    "href": "https://taskcluster-web.netlify.com/docs/resources#span-classglyphicon-glyphicon-random-aria-hiddentruespan-github",
+    "title": "Resources for Further Exploration",
+    "type": "h3"
+  },
+  {
+    "content": "Next Steps",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial#next-steps",
+    "title": "Welcome to Taskcluster!",
+    "type": "h2"
+  },
+  {
+    "content": "Patches Welcome!",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial#patches-welcome",
+    "title": "Welcome to Taskcluster!",
+    "type": "h2"
+  },
+  {
+    "content": "Welcome to Taskcluster!",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial#welcome-to-taskcluster",
+    "title": "Welcome to Taskcluster!",
+    "type": "h1"
+  },
+  {
+    "content": "Next Steps",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/apis#next-steps",
+    "title": null,
+    "type": "h2"
+  },
+  {
+    "content": "Alternative Process",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/authenticate#alternative-process",
+    "title": "Authenticating to Taskcluster",
+    "type": "h2"
+  },
+  {
+    "content": "Authenticating to Taskcluster",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/authenticate#authenticating-to-taskcluster",
+    "title": "Authenticating to Taskcluster",
+    "type": "h1"
+  },
+  {
+    "content": "Next Steps",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/authenticate#next-steps",
+    "title": "Authenticating to Taskcluster",
+    "type": "h2"
+  },
+  {
+    "content": "Constructing a Task Definition",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/create-task-via-api#constructing-a-task-definition",
+    "title": "Creating a Task via API",
+    "type": "h2"
+  },
+  {
+    "content": "Constructing a task payload for docker-worker",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/create-task-via-api#constructing-a-task-payload-for-docker-worker",
+    "title": "Creating a Task via API",
+    "type": "h2"
+  },
+  {
+    "content": "Creating a Task",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/create-task-via-api#creating-a-task",
+    "title": "Creating a Task via API",
+    "type": "h2"
+  },
+  {
+    "content": "Creating a Task via API",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/create-task-via-api#creating-a-task-via-api",
+    "title": "Creating a Task via API",
+    "type": "h1"
+  },
+  {
+    "content": "Next Steps",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/create-task-via-api#next-steps",
+    "title": "Creating a Task via API",
+    "type": "h2"
+  },
+  {
+    "content": "Debugging a Task",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/debug-task#debugging-a-task",
+    "title": "Debugging a Task",
+    "type": "h1"
+  },
+  {
+    "content": "Debugging locally",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/debug-task#debugging-locally",
+    "title": "Debugging a Task",
+    "type": "h2"
+  },
+  {
+    "content": "Debugging with Taskcluster",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/debug-task#debugging-with-taskcluster",
+    "title": "Debugging a Task",
+    "type": "h2"
+  },
+  {
+    "content": "Using the Shell",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/debug-task#using-the-shell",
+    "title": "Debugging a Task",
+    "type": "h2"
+  },
+  {
+    "content": "Next Steps",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/download-task-artifacts#next-steps",
+    "title": null,
+    "type": "h2"
+  },
+  {
+    "content": "Finding Tasks",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/finding-tasks#finding-tasks",
+    "title": "Finding Tasks",
+    "type": "h1"
+  },
+  {
+    "content": "Gecko Hacker?",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/finding-tasks#gecko-hacker",
+    "title": "Finding Tasks",
+    "type": "h2"
+  },
+  {
+    "content": "Next Steps",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/gecko-decision-task#next-steps",
+    "title": null,
+    "type": "h2"
+  },
+  {
+    "content": "Docker Image Generation",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/gecko-docker-images#docker-image-generation",
+    "title": "Docker Image Generation",
+    "type": "h1"
+  },
+  {
+    "content": "Modifying Docker Images",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/gecko-docker-images#modifying-docker-images",
+    "title": "Docker Image Generation",
+    "type": "h2"
+  },
+  {
+    "content": "Next Steps",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/gecko-docker-images#next-steps",
+    "title": "Docker Image Generation",
+    "type": "h2"
+  },
+  {
+    "content": "Adding a New Job",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/gecko-new-job#adding-a-new-job",
+    "title": "Adding a New Job",
+    "type": "h1"
+  },
+  {
+    "content": "New Worker Type",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/gecko-new-job#new-worker-type",
+    "title": "Adding a New Job",
+    "type": "h2"
+  },
+  {
+    "content": "TreeHerder Reporting",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/gecko-new-job#treeherder-reporting",
+    "title": "Adding a New Job",
+    "type": "h2"
+  },
+  {
+    "content": "Gecko Task Graph Creation",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/gecko-task-graph#gecko-task-graph-creation",
+    "title": "Gecko Task Graph Creation",
+    "type": "h1"
+  },
+  {
+    "content": "Next Steps",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/gecko-task-graph#next-steps",
+    "title": "Gecko Task Graph Creation",
+    "type": "h2"
+  },
+  {
+    "content": "Try Pushes",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/gecko-task-graph#try-pushes",
+    "title": "Gecko Task Graph Creation",
+    "type": "h2"
+  },
+  {
+    "content": "Next Steps",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/gecko-tasks#next-steps",
+    "title": null,
+    "type": "h2"
+  },
+  {
+    "content": "Next Steps",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/hack-tc#next-steps",
+    "title": null,
+    "type": "h2"
+  },
+  {
+    "content": "Hello, World",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/hello-world#hello-world",
+    "title": "Hello, World",
+    "type": "h1"
+  },
+  {
+    "content": "Next Steps",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/hello-world#next-steps",
+    "title": "Hello, World",
+    "type": "h2"
+  },
+  {
+    "content": "See Also",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/hello-world#see-also",
+    "title": "Hello, World",
+    "type": "h3"
+  },
+  {
+    "content": "Signing In",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/hello-world#signing-in",
+    "title": "Hello, World",
+    "type": "h2"
+  },
+  {
+    "content": "Next Steps",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/monitor-task-status#next-steps",
+    "title": null,
+    "type": "h2"
+  },
+  {
+    "content": "Is it Mozilla-specific?",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/what-is-tc#is-it-mozilla-specific",
+    "title": "What is Taskcluster?",
+    "type": "h2"
+  },
+  {
+    "content": "Next Steps",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/what-is-tc#next-steps",
+    "title": "What is Taskcluster?",
+    "type": "h2"
+  },
+  {
+    "content": "What is Taskcluster?",
+    "href": "https://taskcluster-web.netlify.com/docs/tutorial/what-is-tc#what-is-taskcluster",
+    "title": "What is Taskcluster?",
+    "type": "h1"
+  }
+]
