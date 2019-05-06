@@ -68,7 +68,7 @@ Although the Github documentation does not make it clear, each ref that is updat
 ## Result
 
 After rendering, the resulting data structure should have a `tasks` property containing a list of task definitions. Each task definition should match the [task
-schema](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/task-schema) as it will be passed nearly unchanged to `Queue.createTask`, The exception is that the provided task definition must contain a `taskId` field, which the service will remove and pass to `Queue.createTask` directly.
+schema](/docs/reference/platform/queue/task-schema) as it will be passed nearly unchanged to `Queue.createTask`, The exception is that the provided task definition must contain a `taskId` field, which the service will remove and pass to `Queue.createTask` directly.
 
 The result looks like this:
 
@@ -141,7 +141,7 @@ tasks:
         - 'notify.email.<you@you.com>.on-any'
 ```
 
-More on routes you can read [here](https://docs.taskcluster.net/docs/reference/core/notify/) and [here](https://docs.taskcluster.net/docs/reference/platform/queue/task-schema)
+More on routes you can read [here](/docs/reference/core/notify/) and [here](/docs/reference/platform/queue/task-schema)
 
 ### Branch Filtering
 
@@ -199,7 +199,7 @@ You need to know which provisioner and which worker type you want to use to run 
 
 # Scopes and Roles
 
-[Roles](https://docs.taskcluster.net/manual/design/apis/hawk/roles) are, in a nutshell, sets of [scopes](https://docs.taskcluster.net/reference/platform/auth/scopes). Taskcluster-Github uses a very specific role to create tasks for each project.  That role has the form
+[Roles](/docs/manual/design/apis/hawk/roles) are, in a nutshell, sets of [scopes](/docs/reference/platform/auth/scopes). Taskcluster-Github uses a very specific role to create tasks for each project.  That role has the form
 * `assume:repo:github.com/<owner>/<repo>:branch:<branch>` for a push event
 * `assume:repo:github.com/<owner>/<repo>:pull-request` for a pull request
 * `assume:repo:github.com/<owner>/<repo>:release` for a release event
