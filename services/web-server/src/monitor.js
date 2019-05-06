@@ -10,10 +10,9 @@ manager.register({
   type: 'create-credentials',
   version: 1,
   level: 'info',
-  description: 'A user has been issued Taskcluster credentials',
+  description: 'A client has been issued Taskcluster credentials',
   fields: {
-    credentials: 'Taskcluster credentials.',
-    expires: 'Date time when the credentials expires.',
+    clientId: 'The client name.',
   },
 });
 

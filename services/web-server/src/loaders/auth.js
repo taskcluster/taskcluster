@@ -32,8 +32,7 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => 
         expires.setSeconds(expires.getSeconds() - 30);
 
         monitor.log.createCredentials({
-          credentials: userCredentials,
-          expires,
+          clientId: userCredentials.clientId,
         });
 
         return {
