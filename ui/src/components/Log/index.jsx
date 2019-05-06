@@ -24,7 +24,7 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
       fontSize: 13,
       paddingTop: 4,
       paddingBottom: theme.spacing.unit,
-      color: theme.palette.text.secondary,
+      color: theme.palette.text.primary,
       '-webkit-font-smoothing': 'auto',
     },
   },
