@@ -189,7 +189,7 @@ const load = Loader({
           statsum: cfg.app.statsum,
           websocktunnel: cfg.app.websocktunnel,
           googleAuth,
-          gcpCredentials: cfg.gcp.credentials || {},
+          gcpCredentials: cfg.gcp.credentials || null,
         },
         schemaset,
         signatureValidator,
@@ -233,7 +233,7 @@ const load = Loader({
         return auth;
       }
 
-      return {};
+      return null;
     },
   },
 
