@@ -218,14 +218,22 @@ const load = Loader({
   googleAuth: {
     requires: ['cfg'],
     setup: ({cfg}) => {
-      const auth = google.auth.fromJSON(cfg.gcp.credentials);
+      const credentials = cfg.gcp.credentials;
 
-      auth.scopes = [
-        'https://www.googleapis.com/auth/cloud-platform',
-        'https://www.googleapis.com/auth/iam',
-      ];
+      // In case credentials aren't available, we guard
+      // against it so mock tests don't fail
+      if (credentials) {
+        const auth = google.auth.fromJSON(credentials);
 
-      return auth;
+        auth.scopes = [
+          'https://www.googleapis.com/auth/cloud-platform',
+          'https://www.googleapis.com/auth/iam',
+        ];
+
+        return auth;
+      }
+
+      return null;
     },
   },
 

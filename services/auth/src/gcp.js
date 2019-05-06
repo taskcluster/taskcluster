@@ -24,6 +24,13 @@ builder.declare({
   const serviceAccount = req.params.serviceAccount;
   const projectId = '-';
 
+  if (!this.googleAuth) {
+    return res.reportError(
+      'InternalServerError',
+      'The credentials for Google Cloud aren\'t available',
+    );
+  }
+
   // Check that the client is authorized to get a token for the given account
   await req.authorize({
     projectId: this.gcpCredentials.project_id,
