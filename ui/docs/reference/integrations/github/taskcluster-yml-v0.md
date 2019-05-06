@@ -16,9 +16,9 @@ pushes, pull requests, or releases.
 If you already use a `version 0` file, we strongly recommend you switch to `version 1`. We will support the old version for a while though.
 
 
-# Configuration in `extra.github`
+## Configuration in `extra.github`
 
-## Environment Variables
+### Environment Variables
 
 If you wish to include the environment variables detailed below, set `task.extra.github.env`:
 
@@ -31,7 +31,7 @@ tasks:
        env: true
 ```
 
-## Github Events
+### Github Events
 
 You can modify a task definition so that it will only run for specific Github
 events, by setting `task.extra.github.events` to a list of event names:
@@ -63,7 +63,7 @@ The available events are:
 
 In almost all cases, you'll only want `[push, pull_request.opened, pull_request.synchronize]`.
 
-### Branch Filtering
+#### Branch Filtering
 
 You can also modify a task definition so that it will only run for events on certain branches. For example, the task defined below will only run for pushes to the master branch:
 
@@ -96,7 +96,7 @@ tasks:
 You may not specify both an `excludeBranches` and `branches` at the same time.
 
 
-### Roles
+#### Roles
 
 Pushes, pull requests, and releases all are given access to [scopes](/docs/manual/design/apis/hawk/scopes) via [roles](/docs/manual/design/apis/hawk/roles) in Taskcluster. Following are the roles assigned to each type of event:
 
@@ -107,7 +107,7 @@ Pushes, pull requests, and releases all are given access to [scopes](/docs/manua
 
 In the [role manager](https://tools.taskcluster.net/auth/roles/), you can set up roles however you like. To give permissions to every event in your repository, you can make a role `repo:github.com/<organization>/<repository>:*` or you can give fine-grained permissions to only releases or specific branches, etc. [Read more](/manual/design/apis/hawk/scopes) about how scopes and roles work to see what you can do. There are lots of examples in the roles inspector for other repositories that have been set up. Look for roles that begin with `repo:github.com/` to see how they work.
 
-## Who Can Trigger Jobs?
+### Who Can Trigger Jobs?
 
 Taskcluster-Github will always build pushes and releases.  For pull requests, two policies are available:
 
@@ -125,7 +125,7 @@ allowPullRequests: public
 ```
 
 
-# Token Substitution and Environment Variables
+## Token Substitution and Environment Variables
 
 The following tables list curly brace tokens (`{{ tokenName }}`) that can be
 included in your `.taskcluster.yml` file which will be substituted at task
@@ -139,14 +139,13 @@ to set `extra.github.env`. These environment variables are also listed in the
 tables below, where they occur. Currently not all token substitutions are
 available as environment variables (notably, the release metadata).
 
-## Deadlines and the fromNow function
+### Deadlines and the fromNow function
 
 A function `{{ $fromNow }}` is included in the syntax so that users may specify
 consistent timeouts and deadlines. The function will accept parameters like:
 `'1 day'`, `'3 hours'`, `'1 hour'`, etc.
 
 ```
----
 version: 0
 tasks:
   - payload:
@@ -160,7 +159,7 @@ tasks:
 There is also a ``{{ timestamp }}`` token which corresponds to UNIX epoch in
 milliseconds.
 
-## Pull Request Metadata
+### Pull Request Metadata
 
 ```
   Environment Variable   | Token Placeholder              | Example Value(s)
@@ -194,7 +193,7 @@ milliseconds.
   GITHUB_HEAD_USER_EMAIL | "{{ event.head.user.email }}"  | mary.scott@buccleuch.co.uk
 ```
 
-## Push Metadata
+### Push Metadata
 
 ```
   Environment Variable   | Token Placeholder              | Example Value
@@ -218,7 +217,7 @@ milliseconds.
   GITHUB_HEAD_USER_EMAIL | "{{ event.head.user.email }}"  | mary.scott@buccleuch.co.uk
 ```
 
-## Release Metadata
+### Release Metadata
 
 ```
   Environment Variable   | Token Placeholder              | Example Value
@@ -239,7 +238,7 @@ milliseconds.
                          | "{{ event.zip }}"              | https://api.github.com/repos/taskcluster/generic-worker/zipball/v7.2.6
 ```
 
-## Tag Metadata
+### Tag Metadata
 
 ```
   Environment Variable   | Token Placeholder              | Example Value
