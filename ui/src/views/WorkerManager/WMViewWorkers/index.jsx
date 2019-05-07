@@ -1,12 +1,12 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
+import { graphql } from 'react-apollo';
+import Spinner from '@mozilla-frontend-infra/components/Spinner';
+import Tab from '@material-ui/core/Tab/Tab';
+import Tabs from '@material-ui/core/Tabs/Tabs';
 import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';
-import Tabs from '@material-ui/core/Tabs/Tabs';
-import Tab from '@material-ui/core/Tab/Tab';
-import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import WorkerManagerWorkersTable from '../../../components/WMWorkersTable';
-import {graphql} from 'react-apollo';
 import workersQuery from './WMWorkers.graphql';
 import Search from '../../../components/Search';
 
@@ -27,39 +27,39 @@ export default class WorkerManagerViewWorkers extends Component {
   };
 
   render() {
-    const {currentTab, workerSearch} = this.state;
+    const { currentTab, workerSearch } = this.state;
     const {
-      data: { loading, error, WorkerManagerWorkers },
+      data: { loading, error, WorkerManagerWorkers, classes },
     } = this.props;
 
-    return <Dashboard
-      title={`${workerType} - Workers`}
-      search={
-        <Search
-          disabled={loading}
-          onSubmit={this.handleWorkerSearchSubmit}
-          placeholder="Worker name contains"
-        />
-      }
-    >
-      <ErrorPanel error={error} />
-      <ErrorPanel error={this.state.error} />
+    return (
+      <Dashboard
+        title="Workers"
+        search={
+          <Search
+            disabled={loading}
+            onSubmit={this.handleWorkerSearchSubmit}
+            placeholder="Worker name contains"
+          />
+        }>
+        <ErrorPanel error={error} />
+        <ErrorPanel error={this.state.error} />
 
-      <Tabs fullWidth value={currentTab} onChange={this.handleTabChange}>
-        <Tab label="Failures and Exceptions" />
-        <Tab label="Pending" />
-        <Tab label="Running" />
-      </Tabs>
+        <Tabs fullWidth value={currentTab} onChange={this.handleTabChange}>
+          <Tab label="Failures and Exceptions" />
+          <Tab label="Pending" />
+          <Tab label="Running" />
+        </Tabs>
 
-      {loading && <Spinner className={classes.spinner} loading />}
+        {loading && <Spinner className={classes.spinner} loading />}
 
-      {!error && !loading && currentTab === 0 && (
-        <WorkerManagerWorkersTable
-          searchTerm={workerSearch}
-          workers={WorkerManagerWorkers}
-        />
-      )}
-
-    </Dashboard>;
+        {!error && !loading && currentTab === 0 && (
+          <WorkerManagerWorkersTable
+            searchTerm={workerSearch}
+            workers={WorkerManagerWorkers}
+          />
+        )}
+      </Dashboard>
+    );
   }
 }

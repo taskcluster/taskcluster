@@ -180,20 +180,22 @@ export const workers = shape({
   edges: arrayOf(worker),
 });
 
-export const workerManagerWorkers = arrayOf(shape({
-  workerId: string,
-  workerGroup: string,
-  latestTask: task,
-  workerAge: date,
-  quarantineUntil: date,
-  recentErrors: number,
-  latestStarted: date,
-  latestResolved: date,
+export const workerManagerWorkers = arrayOf(
+  shape({
+    workerId: string,
+    workerGroup: string,
+    latestTask: task,
+    workerAge: date,
+    quarantineUntil: date,
+    recentErrors: number,
+    latestStarted: date,
+    latestResolved: date,
 
-  providerId: string,
-  workerType: string,
-  recentTasks: arrayOf(task),
-}));
+    providerId: string,
+    workerType: string,
+    recentTasks: arrayOf(task),
+  })
+);
 
 export const workerType = shape({
   provisionerId: string,

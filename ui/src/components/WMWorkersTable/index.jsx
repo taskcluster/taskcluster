@@ -1,28 +1,25 @@
 import React, { Component } from 'react';
-import DataTable from '../DataTable';
+import { withRouter } from 'react-router-dom';
+import { isEmpty, map, pipe, sort as rSort } from 'ramda';
+import { camelCase } from 'change-case';
+import memoize from 'fast-memoize';
+import { formatDistanceStrict } from 'date-fns';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
+import AlertIcon from 'mdi-react/AlertIcon';
+import LinkIcon from 'mdi-react/LinkIcon';
 import TableRow from '@material-ui/core/TableRow/TableRow';
 import TableCell from '@material-ui/core/TableCell/TableCell';
-import TableCellListItem from '../TableCellListItem';
-import Link from '../../utils/Link';
 import ListItemText from '@material-ui/core/ListItemText/ListItemText';
 import Typography from '@material-ui/core/Typography/Typography';
-import LinkIcon from 'mdi-react/LinkIcon';
-import AlertIcon from 'mdi-react/AlertIcon';
-import {CopyToClipboard} from 'react-copy-to-clipboard';
+import DataTable from '../DataTable';
+import TableCellListItem from '../TableCellListItem';
+import Link from '../../utils/Link';
 import DateDistance from '../DateDistance';
-import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
-import {formatDistanceStrict} from "date-fns";
-import memoize from 'fast-memoize';
-import {camelCase} from 'change-case';
-import {isEmpty, map, pipe, sort as rSort} from 'ramda';
 import sort from '../../utils/sort';
-import {withRouter} from 'react-router-dom';
 import { workerManagerWorkers } from '../../utils/prop-types';
-import { WMWorkersQuery } from '../../WMWorkers.graphql';
-import { graphql } from 'graphql';
 
 @withRouter
-@graphql(WMWorkersQuery)
 export default class WorkerManagerWorkersTable extends Component {
   static propTypes = {
     workers: workerManagerWorkers.isRequired,
@@ -32,9 +29,7 @@ export default class WorkerManagerWorkersTable extends Component {
     (workers, sortBy, sortDirection, searchTerm) => {
       const sortByProperty = camelCase(sortBy);
       const filteredWorkers = searchTerm
-        ? workers.filter(({ w }) =>
-            w.includes(searchTerm)
-          )
+        ? workers.filter(({ w }) => w.includes(searchTerm))
         : workers;
 
       return isEmpty(filteredWorkers)
@@ -46,7 +41,7 @@ export default class WorkerManagerWorkersTable extends Component {
               sortDirection === 'desc' ? a[sortByProperty] : b[sortByProperty];
 
             return sort(firstElement, secondElement);
-           });
+          });
     },
     {
       serializer: ([workers, sortBy, sortDirection, searchTerm]) => {
@@ -64,12 +59,19 @@ export default class WorkerManagerWorkersTable extends Component {
     const {
       match: { path },
     } = this.props;
-    const { workerId, workerGroup, latestTask, workerAge, quarantineUntil, recentErrors } = worker;
+    const {
+      workerId,
+      workerGroup,
+      latestTask,
+      workerAge,
+      quarantineUntil,
+      recentErrors,
+      workerType,
+    } = worker;
     const iconSize = 16;
 
     return (
       <TableRow key={workerId}>
-
         <TableCell>{workerGroup}</TableCell>
 
         <TableCell>
@@ -175,7 +177,7 @@ export default class WorkerManagerWorkersTable extends Component {
             to={`${path}/worker-types/${workerType}/workers/${workerGroup}/${workerId}/recent-errors`}>
             <ListItemText
               disableTypography
-              primary={<Typography>{"Click to see errors"}</Typography>}
+              primary={<Typography>Click to see errors</Typography>}
             />
             <AlertIcon size={iconSize} />
           </TableCellListItem>
@@ -204,7 +206,8 @@ export default class WorkerManagerWorkersTable extends Component {
           )}
         </TableCell>
       </TableRow>
-        )}
+    );
+  }
 
   render() {
     const { workers, searchTerm } = this.props;
