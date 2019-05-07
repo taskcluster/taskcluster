@@ -5,9 +5,9 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import Tabs from '@material-ui/core/Tabs/Tabs';
 import Tab from '@material-ui/core/Tab/Tab';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
-import WorkerManagerWorkersTable from '../../../components/WorkerManagerWorkersTable';
+import WorkerManagerWorkersTable from '../../../components/WMWorkersTable';
 import {graphql} from 'react-apollo';
-import workersQuery from 'WorkerManagerWorkers.graphql';
+import workersQuery from './WMWorkers.graphql';
 import Search from '../../../components/Search';
 
 @hot(module)

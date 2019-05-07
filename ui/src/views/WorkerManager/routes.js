@@ -1,10 +1,10 @@
 import lazy from '../../utils/lazy';
 
 const WorkerManagerViewWorkerTypes = lazy(() =>
-  import(/* webpackChunkName: 'WorkerManager.WorkerManagerViewWorkerTypes' */ './WorkerManagerViewWorkerTypes')
+  import(/* webpackChunkName: 'WorkerManager.WMViewWorkerTypes' */ './WMViewWorkerTypes')
 );
 const WorkerManagerViewWorkers = lazy(() =>
-  import(/* webpackChunkName: 'WorkerManager.WorkerManagerViewWorkerType' */ './WorkerManagerViewWorkers')
+  import(/* webpackChunkName: 'WorkerManager.WMViewWorkerType' */ './WMViewWorkers')
 );
 
 export default path => [
