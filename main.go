@@ -915,7 +915,7 @@ func (task *TaskRun) logHeader() {
 	if err != nil {
 		panic(err)
 	}
-	task.Info("Worker Type (" + config.WorkerType + ") settings:")
+	task.Infof("Worker Type (%v/%v) settings:", config.ProvisionerID, config.WorkerType)
 	task.Info("  " + string(jsonBytes))
 	task.Info("Task ID: " + task.TaskID)
 	task.Info("=== Task Starting ===")
