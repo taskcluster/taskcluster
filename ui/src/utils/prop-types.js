@@ -157,7 +157,7 @@ export const task = shape({
 
 Object.assign(task, { taskGroup: task });
 
-const task = shape({
+const taskRun = shape({
   taskId: string,
   runId: number,
   run,
@@ -168,7 +168,7 @@ export const worker = shape({
   workerType: string,
   workerGroup: string,
   workerId: string,
-  recentTasks: arrayOf(task),
+  recentTasks: arrayOf(taskRun),
   expires: date,
   quarantineUntil: date,
   latestTasks: arrayOf(task),
