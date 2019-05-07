@@ -85,7 +85,9 @@ func purgeOldTasks() error {
 		log.Printf("WARNING: Not purging previous task directories/users since config setting cleanUpTaskDirs is false")
 		return nil
 	}
-	return deleteTaskDirs()
+	// Use filepath.Base(taskContext.TaskDir) rather than taskContext.User.Name
+	// since taskContext.User is nil if running tasks as current user.
+	return deleteTaskDirs(config.TasksDir, filepath.Base(taskContext.TaskDir))
 }
 
 func install(arguments map[string]interface{}) (err error) {
@@ -173,27 +175,6 @@ func defaultTasksDir() string {
 	// assume all user home directories are all in same folder, i.e. the parent
 	// folder of the current user's home folder
 	return filepath.Dir(os.Getenv("HOME"))
-}
-
-func deleteTaskDirs() error {
-	currentTaskDir := taskContext.TaskDir
-	taskDirs, err := taskDirsIn(config.TasksDir)
-	if err != nil {
-		return err
-	}
-	for _, taskDir := range taskDirs {
-		// this string comparison works because both taskDir and currentTaskDir
-		// are constructed from filepath.Join(config.TasksDir, taskDir) - but
-		// if this becomes a problem, we can call os.Stat against both files
-		// and use os.SameFile to check if they are the same file (directory).
-		if taskDir != currentTaskDir {
-			err = deleteDir(taskDir)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
 }
 
 func GrantSIDFullControlOfInteractiveWindowsStationAndDesktop(sid string) (err error) {
