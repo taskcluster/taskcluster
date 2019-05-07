@@ -1,6 +1,5 @@
 defaults:
   app:
-    workerTypeTableName: WorkerTypes
     workerTableName: WMWorkers
     workerTypeTableName: WMWorkerTypes
     workerTypeErrorTableName: WMWorkerTypeErrors
@@ -21,7 +20,14 @@ defaults:
     env: !env NODE_ENV
     forceSSL: !env:bool FORCE_SSL
     trustProxy: !env:bool TRUST_PROXY
+  pulse:
+    hostname: !env PULSE_HOSTNAME
+    username: !env PULSE_USERNAME
+    password: !env PULSE_PASSWORD
+    vhost: !env PULSE_VHOST
+    namespace: !env PULSE_NAMESPACE
   providers: !env:json PROVIDERS
+
 
 test:
   server:

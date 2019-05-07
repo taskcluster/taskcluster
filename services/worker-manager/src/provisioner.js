@@ -1,15 +1,25 @@
+const taskcluster = require('taskcluster-client');
 const Iterate = require('taskcluster-lib-iterate');
+const {consume} = require('taskcluster-lib-pulse');
 
 /**
  * Run all provisioning logic
  */
 class Provisioner {
-  constructor({provisionerId, providers, iterateConf, WorkerType, monitor, notify}) {
+  constructor({provisionerId, providers, iterateConf, WorkerType, monitor, notify, pulseClient, reference, rootUrl}) {
     this.provisionerId = provisionerId;
     this.providers = providers;
     this.WorkerType = WorkerType;
     this.monitor = monitor;
     this.notify = notify;
+    this.pulseClient = pulseClient;
+    const WorkerManagerEvents = taskcluster.createClient(reference);
+    const workerManagerEvents = new WorkerManagerEvents({rootUrl});
+    this.bindings = [
+      workerManagerEvents.workerTypeCreated(),
+      workerManagerEvents.workerTypeUpdated(),
+      workerManagerEvents.workerTypeDeleted(),
+    ];
 
     this.iterate = new Iterate({
       handler: async (watchdog) => {
@@ -34,14 +44,55 @@ class Provisioner {
   async initiate() {
     await Promise.all(Object.values(this.providers).map(x => x.initiate()));
     await this.iterate.start();
+
+    this.pq = await consume({
+      client: this.pulseClient,
+      bindings: this.bindings,
+      queueName: 'workerTypeUpdates',
+    },
+    this.monitor.timedHandler('notification', this.onMessage.bind(this)),
+    );
   }
 
   /**
    * Terminate the Provisioner
    */
   async terminate() {
+    if (this.pq) {
+      await this.pq.stop();
+      this.pq = null;
+    }
     await this.iterate.stop();
     await Promise.all(Object.values(this.providers).map(x => x.terminate()));
+  }
+
+  async onMessage({exchange, payload}) {
+    const {name, provider: providerName, previousProvider} = payload;
+    const workerType = await this.WorkerType.load({name});
+    const provider = this.providers[providerName]; // Always have a provider
+    switch (exchange.split('/').pop()) {
+      case 'workertype-created': {
+        await provider.createResources({workerType});
+        break;
+      }
+      case 'workertype-updated': {
+        if (providerName === previousProvider) {
+          await provider.updateResources({workerType});
+        } else {
+          await Promise.all([
+            provider.createResources({workerType}),
+            this.providers[previousProvider].removeResources({workerType}),
+          ]);
+        }
+        break;
+      }
+      case 'workertype-deleted': {
+        await provider.removeResources({workerType});
+        await workerType.remove(); // This is now gone for real
+        break;
+      }
+      default: throw new Error(`Unknown exchange: ${exchange}`);
+    }
   }
 
   /**

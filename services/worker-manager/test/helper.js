@@ -1,6 +1,6 @@
 const libUrls = require('taskcluster-lib-urls');
 const taskcluster = require('taskcluster-client');
-const {stickyLoader, Secrets, withEntity, fakeauth, withMonitor} = require('taskcluster-lib-testing');
+const {stickyLoader, Secrets, withEntity, fakeauth, withMonitor, withPulse} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const data = require('../src/data');
 const load = require('../src/main');
@@ -33,6 +33,10 @@ exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'Worker', data.Worker);
   withEntity(mock, skipping, exports, 'WorkerType', data.WorkerType);
   withEntity(mock, skipping, exports, 'WorkerTypeError', data.WorkerTypeError);
+};
+
+exports.withPulse = (mock, skipping) => {
+  withPulse({helper: exports, skipping, namespace: 'taskcluster-worker-manager'});
 };
 
 exports.withProvisioner = (mock, skipping) => {

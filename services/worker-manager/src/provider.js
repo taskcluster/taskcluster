@@ -55,6 +55,28 @@ class Provider {
   }
 
   /**
+   * Called when a new workertype is added to this provider to allow the provider
+   * to do whatever setup is necessary
+   */
+  async createResources({workerType}) {
+  }
+
+  /**
+   * Called whenever a workertype currently assigned to this provider is changed.
+   * If a currently existing workertype is moved to a different provider, the old provider
+   * will actually be asked to remove resources and the new one to create. This will not
+   * be called in that case.
+   */
+  async updateResources({workerType}) {
+  }
+
+  /**
+   * Called when a workertype is removed and this provider was providing for it.
+   */
+  async removeResources({workerType}) {
+  }
+
+  /**
    * Any code which is required to be run by this Provider must only be
    * initiated by this method.  If there's any taskcluster-lib-iterate loops to
    * run, this is where they should be initiated.  Once the returned promise is
@@ -68,35 +90,6 @@ class Provider {
    */
   async terminate() {
   }
-
-  /**
-   * Terminate all workers managed by this provider.  This method must not
-   * return until the request to terminate all workers is completed.  It does
-   * not need to wait until all workers actually terminate.
-   */
-  async terminateAllWorkers() {
-    throw new Error('Method Unimplemented!');
-  }
-
-  /**
-   * Terminate all workers of a specific worker type.  This method must not
-   * return until the request to terminate workers is completed.  It does not
-   * need to wait until all workers actually terminate.
-   */
-  async terminateWorkerType({workerType}) {
-    throw new Error('Method Unimplemented!');
-  }
-
-  /**
-   * Terminate specific workers.  This method must take either a list of worker
-   * ids or Worker instances and terminate all those which are provided.  This
-   * method must not return until the request to terminate workers is
-   * completed.  It does not need to wait until all workers actually terminate.
-   */
-  async terminateWorkers({workers}) {
-    throw new Error('Method Unimplemented!');
-  }
-
 }
 
 module.exports = {

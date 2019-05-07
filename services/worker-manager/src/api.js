@@ -3,13 +3,14 @@ const APIBuilder = require('taskcluster-lib-api');
 let builder = new APIBuilder({
   title: 'Taskcluster Worker Manager',
   description: [
-    'This service manages workers, including provisioning',
+    'This service manages workers, including provisioning for dynamic workertypes.',
   ].join('\n'),
   serviceName: 'worker-manager',
   apiVersion: 'v1',
   context: [
     'WorkerType',
     'providers',
+    'publisher',
   ],
 });
 
@@ -80,6 +81,7 @@ builder.declare({
       return res.reportError('RequestConflict', 'WorkerType already exists', {});
     }
   }
+  await this.publisher.workerTypeCreated({name, provider: providerName});
   res.reply(workerType.serializable());
 });
 
@@ -125,6 +127,8 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'WorkerType does not exist', {});
   }
 
+  const previousProvider = workerType.provider;
+
   await workerType.modify(wt => {
     wt.config = input.config;
     wt.description = input.description;
@@ -133,6 +137,7 @@ builder.declare({
     wt.lastModified = new Date();
   });
 
+  await this.publisher.workerTypeUpdated({name, provider: providerName, previousProvider});
   res.reply(workerType.serializable());
 });
 
@@ -182,6 +187,7 @@ builder.declare({
     wt.scheduledForDeletion = true;
   });
 
+  await this.publisher.workerTypeDeleted({name, provider: workerType.provider});
   return res.reply();
 });
 

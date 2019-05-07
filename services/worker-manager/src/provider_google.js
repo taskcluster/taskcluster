@@ -58,6 +58,47 @@ class GoogleProvider extends Provider {
     this.oauth2 = new google.auth.OAuth2();
   }
 
+  async createResources({workerType}) {
+    const accountName = `tcw-${workerType.name}`;
+    const accountEmail = `${accountName}@${this.project}.iam.gserviceaccount.com`;
+
+    // First create a service account for this workertype
+    const account = await this.iam.projects.serviceAccounts.create({
+      name: `projects/${this.project}`,
+      accountId: accountName,
+      requestBody: {
+        serviceAccount: {
+          displayName: `Taskcluster Worker Group: ${workerType.name}`,
+          description: workerType.description,
+        },
+      },
+    });
+
+    // Now we grant ourlves the ability to create workertypes with this user
+    await this.iam.projects.serviceAccounts.setIamPolicy({
+      resource: `projects/${this.project}/serviceAccounts/${accountEmail}`,
+      requestBody: {
+        policy: {
+          bindings: [{
+            role: 'roles/iam.serviceAccountUser',
+            members: [`serviceAccount:${this.ownClientEmail}`],
+          }],
+        },
+      },
+    });
+
+    // Remember everything we've made
+    await workerType.modify(wt => {
+      wt.providerData.serviceAccountId = account.data.uniqueId;
+    });
+  }
+
+  async updateResources({workerType}) {
+  }
+
+  async removeResources({workerType}) {
+  }
+
   /**
    * Given a workerType and instance identity token from google, we return
    * taskcluster credentials for a worker to use if it is valid.
@@ -237,31 +278,6 @@ class GoogleProvider extends Provider {
       },
 
       set: async () => {
-        const account = await this.iam.projects.serviceAccounts.create({
-          name: `projects/${this.project}`,
-          accountId: accountName,
-          requestBody: {
-            serviceAccount: {
-              displayName: `Taskcluster Worker Group: ${workerType.name}`,
-              description: workerType.description,
-            },
-          },
-        });
-        await workerType.modify(wt => {
-          wt.providerData.serviceAccountId = account.data.uniqueId;
-        });
-        // Now we grant ourlves the ability to create workertypes with this user
-        await this.iam.projects.serviceAccounts.setIamPolicy({
-          resource: `projects/${this.project}/serviceAccounts/${accountEmail}`,
-          requestBody: {
-            policy: {
-              bindings: [{
-                role: 'roles/iam.serviceAccountUser',
-                members: [`serviceAccount:${this.ownClientEmail}`],
-              }],
-            },
-          },
-        });
         return account;
       },
     });

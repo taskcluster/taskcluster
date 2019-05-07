@@ -6,11 +6,12 @@ const monitorManager = require('./monitor');
 const config = require('taskcluster-lib-config');
 const SchemaSet = require('taskcluster-lib-validate');
 const libReferences = require('taskcluster-lib-references');
+const exchanges = require('./exchanges');
 const data = require('./data');
 const builder = require('./api');
 const {Estimator} = require('./estimator');
 const {sasCredentials} = require('taskcluster-lib-azure');
-
+const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 const {Provisioner} = require('./provisioner');
 
 let load = loader({
@@ -38,7 +39,7 @@ let load = loader({
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
       }),
-      monitor: monitor.monitor('table.workers'),
+      monitor: monitor.childMonitor('table.workers'),
     }),
   },
 
@@ -66,14 +67,14 @@ let load = loader({
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
       }),
-      monitor: monitor.monitor('table.workerTypeErrors'),
+      monitor: monitor.childMonitor('table.workerTypeErrors'),
     }),
   },
 
   expireWorkers: {
     requires: ['cfg', 'Worker', 'monitor'],
     setup: ({cfg, Worker, monitor}) => {
-      return monitor.monitor().oneShot('expire workers', async () => {
+      return monitor.childMonitor().oneShot('expire workers', async () => {
         const threshold = taskcluster.fromNow(cfg.app.workersExpirationDelay);
         debug('Expiring workers');
         const count = await Worker.expire(threshold);
@@ -85,7 +86,7 @@ let load = loader({
   expireErrors: {
     requires: ['cfg', 'WorkerTypeError', 'monitor'],
     setup: ({cfg, WorkerTypeError, monitor}) => {
-      return monitor.monitor().oneShot('expire workerTypeErrors', async () => {
+      return monitor.childMonitor().oneShot('expire workerTypeErrors', async () => {
         const threshold = taskcluster.fromNow(cfg.app.errorsExpirationDelay);
         debug('Expiring workerTypeErrors');
         const count = await WorkerTypeError.expire(threshold);
@@ -101,6 +102,11 @@ let load = loader({
     }),
   },
 
+  reference: {
+    requires: [],
+    setup: () => exchanges.reference(),
+  },
+
   generateReferences: {
     requires: ['cfg', 'schemaset'],
     setup: ({cfg, schemaset}) => libReferences.fromService({
@@ -109,13 +115,35 @@ let load = loader({
     }).generateReferences(),
   },
 
+  pulseClient: {
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => {
+      return new Client({
+        namespace: cfg.pulse.namespace,
+        monitor: monitor.childMonitor('pulse-client'),
+        credentials: pulseCredentials(cfg.pulse),
+      });
+    },
+  },
+
+  publisher: {
+    requires: ['cfg', 'schemaset', 'pulseClient'],
+    setup: async ({cfg, pulseClient, schemaset}) => await exchanges.publisher({
+      rootUrl: cfg.taskcluster.rootUrl,
+      schemaset,
+      client: pulseClient,
+      publish: false,
+    }),
+  },
+
   api: {
-    requires: ['cfg', 'schemaset', 'monitor', 'WorkerType', 'providers'],
-    setup: async ({cfg, schemaset, monitor, WorkerType, providers}) => builder.build({
+    requires: ['cfg', 'schemaset', 'monitor', 'WorkerType', 'providers', 'publisher'],
+    setup: async ({cfg, schemaset, monitor, WorkerType, providers, publisher}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {
         WorkerType,
         providers,
+        publisher,
       },
       monitor: monitor.childMonitor('api'),
       schemaset,
@@ -145,7 +173,7 @@ let load = loader({
     setup: ({cfg, queue, monitor}) => new Estimator({
       provisionerId: cfg.app.provisionerId,
       queue,
-      monitor: monitor.monitor('estimator'),
+      monitor: monitor.childMonitor('estimator'),
     }),
   },
 
@@ -180,19 +208,23 @@ let load = loader({
   },
 
   provisioner: {
-    requires: ['cfg', 'monitor', 'WorkerType', 'providers', 'notify'],
-    setup: async ({cfg, monitor, WorkerType, providers, notify}) => {
+    requires: ['cfg', 'monitor', 'WorkerType', 'providers', 'notify', 'pulseClient', 'reference'],
+    setup: async ({cfg, monitor, WorkerType, providers, notify, pulseClient, reference}) => {
       const provisioner = new Provisioner({
         monitor: monitor.childMonitor('provisioner'),
         provisionerId: cfg.app.provisionerId,
         WorkerType,
         providers,
         notify,
+        pulseClient,
+        reference,
+        rootUrl: cfg.taskcluster.rootUrl,
       });
       await provisioner.initiate();
       return provisioner;
     },
   },
+
 }, {
   profile: process.env.NODE_ENV,
   process: process.argv[2],
