@@ -33,6 +33,8 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => 
 
         monitor.log.createCredentials({
           clientId: userCredentials.clientId,
+          expires,
+          userIdentity: user.identity,
         });
 
         return {
