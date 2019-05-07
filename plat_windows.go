@@ -452,14 +452,9 @@ func purgeOldTasks() error {
 		log.Printf("WARNING: Not purging previous task directories/users since config setting cleanUpTaskDirs is false")
 		return nil
 	}
-	err := deleteTaskDirs(win32.ProfilesDirectory(), taskContext.User.Name, AutoLogonCredentials().Name)
+	err := deleteTaskDirs()
 	if err != nil {
-		log.Printf("Could not delete task directory %v:\n%v", win32.ProfilesDirectory(), err)
-		return err
-	}
-	err = deleteTaskDirs(config.TasksDir, taskContext.User.Name, AutoLogonCredentials().Name)
-	if err != nil {
-		log.Printf("Could not delete old task directory %v:\n%v", config.TasksDir, err)
+		log.Printf("Could not delete old task directories:\n%v", err)
 		return err
 	}
 	// note if this fails, we carry on without throwing an error
@@ -798,6 +793,14 @@ func AutoLogonCredentials() (user runtime.OSUser) {
 	return
 }
 
+func deleteTaskDirs() error {
+	err := removeTaskDirs(win32.ProfilesDirectory())
+	if err != nil {
+		return err
+	}
+	return removeTaskDirs(config.TasksDir)
+}
+
 func (pd *PlatformData) RefreshLoginSession() {
 	err := pd.LoginInfo.Release()
 	if err != nil {
@@ -931,4 +934,23 @@ func GrantSIDFullControlOfInteractiveWindowsStationAndDesktop(sid string) (err e
 
 func rebootBetweenTasks() bool {
 	return true
+}
+
+func removeTaskDirs(parentDir string) error {
+	currentTaskUser := taskContext.User.Name
+	nextTaskUser := AutoLogonCredentials().Name
+	taskDirs, err := taskDirsIn(parentDir)
+	if err != nil {
+		return err
+	}
+	for _, taskDir := range taskDirs {
+		name := filepath.Base(taskDir)
+		if name != currentTaskUser && name != nextTaskUser {
+			err = deleteDir(taskDir)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }

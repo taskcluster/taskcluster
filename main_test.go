@@ -10,6 +10,9 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/taskcluster/generic-worker/gwconfig"
+	"github.com/taskcluster/generic-worker/runtime"
 )
 
 // Test failure should resolve as "failed"
@@ -194,7 +197,18 @@ func TestRemoveTaskDirs(t *testing.T) {
 			t.Fatalf("Could not write %v file: %v", file, err)
 		}
 	}
-	err = deleteTaskDirs(d, "task_1234561234")
+	config = &gwconfig.Config{
+		PublicConfig: gwconfig.PublicConfig{
+			TasksDir: d,
+		},
+	}
+	taskContext = &TaskContext{
+		TaskDir: filepath.Join(d, "task_1234561234"),
+		User: &runtime.OSUser{
+			Name: "task_1234561234",
+		},
+	}
+	err = deleteTaskDirs()
 	if err != nil {
 		t.Fatalf("Could not remove task directories: %v", err)
 	}
