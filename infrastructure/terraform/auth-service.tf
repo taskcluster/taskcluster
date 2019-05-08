@@ -1,3 +1,10 @@
+module "auth_rabbitmq_user" {
+  source         = "modules/rabbitmq-user"
+  prefix         = "${var.prefix}"
+  project_name   = "taskcluster-auth"
+  rabbitmq_vhost = "${var.rabbitmq_vhost}"
+}
+
 module "auth_user" {
   source = "modules/taskcluster-service-iam-user"
   name   = "taskcluster-auth"
