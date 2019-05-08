@@ -6,6 +6,11 @@ provider "random" {
   version = "~> 1.2.0"
 }
 
+provider "rabbitmq" {
+  version  = "~> 1.0"
+  endpoint = "https://${var.rabbitmq_hostname}"
+}
+
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
@@ -142,4 +147,8 @@ resource "azurerm_storage_account" "base" {
     environment = "staging"
     managed_by  = "terraform"
   }
+}
+
+resource "rabbitmq_vhost" "vhost" {
+  name = "${var.rabbitmq_vhost}"
 }

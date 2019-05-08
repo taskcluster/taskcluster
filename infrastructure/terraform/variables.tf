@@ -11,3 +11,13 @@ variable "azure_region" {
 variable "aws_region" {
   description = "The AWS region to deploy into (e.g. us-east-1)."
 }
+
+variable "rabbitmq_hostname" {
+  type        = "string"
+  description = "rabbitmq hostname"
+}
+
+variable "rabbitmq_vhost" {
+  type        = "string"
+  description = "rabbitmq vhost name"
+}

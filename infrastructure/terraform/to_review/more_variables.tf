@@ -54,16 +54,6 @@ variable "notify_ses_arn" {
   description = "arn of an ses address. This must be manually set up in aws."
 }
 
-variable "rabbitmq_hostname" {
-  type        = "string"
-  description = "rabbitmq hostname"
-}
-
-variable "rabbitmq_vhost" {
-  type        = "string"
-  description = "rabbitmq vhost name"
-}
-
 variable "root_url" {
   type        = "string"
   description = "Taskcluster rootUrl"
