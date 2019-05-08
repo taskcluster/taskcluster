@@ -2,7 +2,8 @@
 set -u
 
 # quick way to track this somwhere for now
-# likely port to python and boto later
+# likely port to python later
+# maybe have it write directly to sops?
 
 SERVER_ADDRESS=$1
 SERVER_USERNAME=$2
