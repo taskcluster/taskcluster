@@ -36,7 +36,7 @@ export default class SidebarListGroup extends Component {
   };
 
   render() {
-    const { classes, children, icon, title, to } = this.props;
+    const { classes, children, icon, title, to, ...props } = this.props;
     const { open } = this.state;
 
     return (
@@ -45,7 +45,8 @@ export default class SidebarListGroup extends Component {
           to={to}
           onClick={this.handleClick}
           icon={icon}
-          rightIcon={open ? <ChevronUpIcon /> : <ChevronDownIcon />}>
+          rightIcon={open ? <ChevronUpIcon /> : <ChevronDownIcon />}
+          {...props}>
           {title}
         </SidebarListItem>
         <Collapse in={open} timeout="auto">

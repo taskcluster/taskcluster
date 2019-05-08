@@ -40,6 +40,7 @@ export default class SidebarList extends Component {
         </SidebarListItem>
 
         <SidebarListGroup
+          skipPrefetch
           to="/auth"
           title="Authorization"
           icon={<AccountKeyIcon />}>
