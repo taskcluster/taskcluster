@@ -1,5 +1,5 @@
 import React from 'react';
-import { func, string } from 'prop-types';
+import { element, string } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import Typography from '@material-ui/core/Typography';
@@ -51,7 +51,7 @@ ExploreCard.propTypes = {
   /** A short description of the card. */
   description: string.isRequired,
   /** An icon to use beside the title. */
-  icon: func.isRequired,
+  icon: element.isRequired,
   /** A path to follow when the action button is clicked. */
   to: string.isRequired,
 };
