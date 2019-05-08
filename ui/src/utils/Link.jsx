@@ -10,7 +10,6 @@ import matchRoutes from './matchRoutes';
  * with pre-fetching capabilities.
  */
 export default function Link({ viewName, nav, to, ...props }) {
-  let shouldReload = false;
   const path = typeof to === 'string' ? to : to.pathname;
   const isPathAbsolute = isAbsolute(path);
   const Component = nav ? NavLink : RouterLink;
@@ -23,13 +22,8 @@ export default function Link({ viewName, nav, to, ...props }) {
 
     if (!isPathAbsolute) {
       const matchingRoutes = matchRoutes(path, routes);
-      const components = matchingRoutes.map(({ component }) =>
-        component.preload()
-      );
 
-      Promise.all(components).catch(() => {
-        shouldReload = true;
-      });
+      matchingRoutes.forEach(({ component }) => component.preload());
     }
 
     setPrefetchFlag(true);
@@ -55,19 +49,6 @@ export default function Link({ viewName, nav, to, ...props }) {
     }
   }
 
-  async function handleClick(ev, path) {
-    if (ev.altKey || ev.metaKey || ev.ctrlKey || ev.shiftKey) {
-      return;
-    }
-
-    // The user might try to navigate to a file that
-    // no longer exists (e.g., when a filename chunk is updated when deploying)
-    if (shouldReload) {
-      ev.preventDefault();
-      window.location = path;
-    }
-  }
-
   return isPathAbsolute ? (
     /* eslint-disable jsx-a11y/anchor-has-content */
     <a href={to} {...props} target="_blank" rel="noopener noreferrer" />
@@ -77,7 +58,6 @@ export default function Link({ viewName, nav, to, ...props }) {
       to={to}
       onFocus={handleFocus}
       onMouseOver={handleMouseOver}
-      onClick={ev => handleClick(ev, to)}
     />
   );
 }
