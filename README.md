@@ -26,7 +26,7 @@ If you prefer not to use a prepackaged binary, or want to have the latest unrele
 * Run `go get github.com/taskcluster/livelog`
 * Run `go get github.com/taskcluster/taskcluster-proxy`
 
-Note that the build process requires custom tooling, and your `go get` may mention errors.
+Run `go get -tags nativeEngine github.com/taskcluster/generic-worker` (all platforms) and/or `go get -tags dockerEngine github.com/taskcluster/generic-worker` (linux only). This should also build binaries for your platform.
 
 Run `./build.sh` to check go version, generate code, build binaries, compile (but not run) tests, perform linting, and ensure there are no ineffective assignments in go code.
 
