@@ -7,12 +7,10 @@ builder.declare({
   name: 'gcpCredentials',
   output: 'gcp-credentials-response.yml',
   stability: 'stable',
-  scopes: 'auth:gcp:access-token:<projectId>/<serviceAccount>',
+  scopes: 'auth:gcp:access-token:<serviceAccount>',
   title: 'Get Temporary Read/Write GCP Credentials',
   description: [
     'Get temporary GCP credentials for the given serviceAccount.',
-    'You can use the tag "-" to refer for the same projectId as the running auth',
-    'service.',
     '',
     'The call adds the necessary policy if the serviceAccount doesn\'t have it.',
     'The credentials are set to expire after an hour, but this behavior is',
@@ -30,12 +28,6 @@ builder.declare({
       'The credentials for Google Cloud aren\'t available',
     );
   }
-
-  // Check that the client is authorized to get a token for the given account
-  await req.authorize({
-    projectId: this.gcpCredentials.project_id,
-    serviceAccount,
-  });
 
   const iam = google.iam({
     version: 'v1',

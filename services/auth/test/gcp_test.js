@@ -37,6 +37,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp'], function(mock, ski
       resource: {
         accountId,
         serviceAccount: {
+          // This is a testing account and will be deleted by
+          // the end of the tests. If the test crashes, these
+          // accounts maybe left in IAM. Any account starting
+          // with taskcluster-auth-test- can be safely removed.
           displayName: `taskcluster-auth-test-${accountId}`,
         },
       },
