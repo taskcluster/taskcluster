@@ -36,6 +36,9 @@ builder.declare({
 
   // to understand the {get/set}IamPolicy calls, look at
   // https://cloud.google.com/iam/docs/creating-short-lived-service-account-credentials
+  //
+  // Notice that might happen that between the getIamPolicy and setIamPolicy calls,
+  // a third party might change the etag, making the call to setIamPolicy fail.
   let response;
   try {
     response = await iam.projects.serviceAccounts.getIamPolicy({
