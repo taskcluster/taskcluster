@@ -28,7 +28,7 @@ If you prefer not to use a prepackaged binary, or want to have the latest unrele
 
 Note that the build process requires custom tooling, and your `go get` may mention errors.
 
-Run `./build.sh` to build binaries, ensure dependencies are vendored, and generate code.
+Run `./build.sh` to check go version, generate code, build binaries, compile (but not run) tests, perform linting, and ensure there are no ineffective assignments in go code.
 
 `./build.sh` takes optional arguments, `-a` to build all platforms, and `-t` to run tests. By default tests are not run and only the current platform is built.
 
