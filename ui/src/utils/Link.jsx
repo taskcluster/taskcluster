@@ -9,7 +9,8 @@ import matchRoutes from './matchRoutes';
  * A react hook which augments `react-router-dom`'s `Link` component
  * with pre-fetching capabilities.
  */
-export default function Link({ viewName, nav, to, ...props }) {
+export default function Link({ nav, to, skipPrefetch, ...props }) {
+  let shouldReload = false;
   const path = typeof to === 'string' ? to : to.pathname;
   const isPathAbsolute = isAbsolute(path);
   const Component = nav ? NavLink : RouterLink;
@@ -22,8 +23,13 @@ export default function Link({ viewName, nav, to, ...props }) {
 
     if (!isPathAbsolute) {
       const matchingRoutes = matchRoutes(path, routes);
+      const components = matchingRoutes.map(({ component }) =>
+        component.preload()
+      );
 
-      matchingRoutes.forEach(({ component }) => component.preload());
+      Promise.all(components).catch(() => {
+        shouldReload = true;
+      });
     }
 
     setPrefetchFlag(true);
@@ -49,15 +55,35 @@ export default function Link({ viewName, nav, to, ...props }) {
     }
   }
 
-  return isPathAbsolute ? (
+  async function handleClick(ev) {
+    if (ev.altKey || ev.metaKey || ev.ctrlKey || ev.shiftKey) {
+      return;
+    }
+
+    // The user might try to navigate to a file that
+    // no longer exists (e.g., when a filename chunk is updated when deploying)
+    if (shouldReload) {
+      ev.preventDefault();
+      window.location = to;
+    }
+  }
+
+  if (isPathAbsolute) {
     /* eslint-disable jsx-a11y/anchor-has-content */
-    <a href={to} {...props} target="_blank" rel="noopener noreferrer" />
-  ) : (
+    return <a href={to} {...props} target="_blank" rel="noopener noreferrer" />;
+  }
+
+  if (skipPrefetch) {
+    return <Component to={to} {...props} />;
+  }
+
+  return (
     <Component
-      {...props}
       to={to}
+      {...props}
       onFocus={handleFocus}
       onMouseOver={handleMouseOver}
+      onClick={handleClick}
     />
   );
 }
@@ -68,8 +94,14 @@ Link.propTypes = {
    * as the main link component.
    */
   nav: bool,
+  /**
+   * If true, the component will not make use of pre-fetching.
+   * Instead, it will fallback to using the raw router.
+   */
+  skipPrefetch: bool,
 };
 
 Link.defaultProps = {
   nav: false,
+  skipPrefetch: false,
 };
