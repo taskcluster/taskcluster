@@ -1,10 +1,10 @@
-const MonitorManager = require('taskcluster-lib-monitor');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
-const manager = new MonitorManager({
+const monitorManager = defaultMonitorManager.configure({
   serviceName: 'notify',
 });
 
-manager.register({
+monitorManager.register({
   name: 'email',
   title: 'Email Sent',
   type: 'email',
@@ -16,7 +16,7 @@ manager.register({
   },
 });
 
-manager.register({
+monitorManager.register({
   name: 'pulse',
   title: 'Pulse Event Published',
   type: 'pulse',
@@ -28,7 +28,7 @@ manager.register({
   },
 });
 
-manager.register({
+monitorManager.register({
   name: 'irc',
   title: 'IRC Message Sent',
   type: 'irc',
@@ -40,4 +40,4 @@ manager.register({
   },
 });
 
-module.exports = manager;
+module.exports = monitorManager;

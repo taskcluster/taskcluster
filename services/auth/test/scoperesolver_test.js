@@ -2,24 +2,17 @@ const helper = require('./helper');
 const ScopeResolver = require('../src/scoperesolver');
 const exchanges = require('../src/exchanges');
 const {scopeCompare} = require('taskcluster-lib-scopes');
-const monitorManager = require('../src/monitor');
 const assert = require('assert');
 const _ = require('lodash');
 const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), () => {
-  let monitor, scopeResolver;
+  let scopeResolver;
 
-  setup(() => {
-    monitorManager.setup({
-      mock: true,
-    });
-    monitor = monitorManager.monitor();
-  });
-
-  teardown(() => {
-    monitorManager.terminate();
+  setup(async function() {
+    let monitor = await helper.load('monitor');
+    scopeResolver = new ScopeResolver({monitor, disableCache: true});
   });
 
   helper.secrets.mockSuite('setup and listening', ['app', 'azure'], function(mock, skipping) {
@@ -30,8 +23,6 @@ suite(testing.suiteName(), () => {
 
     setup('mock scoperesolver reloading', async function() {
       reloads = [];
-
-      scopeResolver = new ScopeResolver({monitor, disableCache: true});
 
       scopeResolver.reload = () => reloads.push('all');
       scopeResolver.reloadClient = (clientId) => reloads.push(clientId);
@@ -49,7 +40,7 @@ suite(testing.suiteName(), () => {
       reloads = [];
     });
 
-    teardown('stop scoperesovler consumers', async function() {
+    teardown(async function() {
       await scopeResolver.stop();
     });
 

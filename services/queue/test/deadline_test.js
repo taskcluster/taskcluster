@@ -5,6 +5,8 @@ const taskcluster = require('taskcluster-client');
 const assume = require('assume');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
+const monitorManager = require('../src/monitor');
+const {LEVELS} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withPollingServices(mock, skipping);
@@ -56,14 +58,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
         m.payload.status.runs[0].reasonCreated === 'exception' &&
         m.payload.status.runs[0].reasonResolved === 'deadline-exceeded'));
 
-      assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-exception'), {
+      assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-exception'), {
         Type: 'task-exception',
-        Logger: 'taskcluster.queue.root.deadline-resolver',
+        Logger: 'taskcluster.queue.deadline-resolver',
         Fields: {
           v: 1,
           taskId,
           runId: 0,
         },
+        Severity: LEVELS.notice,
       });
     }, 100, 250);
 

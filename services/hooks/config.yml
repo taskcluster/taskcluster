@@ -23,8 +23,6 @@ defaults:
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
   monitoring:
     level:                      !env LEVEL
-    enable:                     !env:bool MONITORING_ENABLE
-    pretty:                     !env:bool PRETTY_LOGGING
   server:
     port:             !env:number PORT
     env:              !env NODE_ENV
@@ -76,9 +74,6 @@ test:
     accountId:        'jungle'
     signingKey:       'not a secret'
     cryptoKey:        'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
-  monitoring:
-    level: warning
-    enable: false
   server:
     port:             60401
     env:              development

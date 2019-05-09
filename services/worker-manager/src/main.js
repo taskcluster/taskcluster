@@ -36,7 +36,7 @@ let load = loader({
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
       }),
-      monitor: monitor.monitor('table.workerTypes'),
+      monitor: monitor.childMonitor('table.workerTypes'),
     }),
   },
 
@@ -63,7 +63,7 @@ let load = loader({
         WorkerType,
         providers,
       },
-      monitor: monitor.monitor('api'),
+      monitor: monitor.childMonitor('api'),
       schemaset,
     }),
   },
@@ -101,7 +101,7 @@ let load = loader({
         _providers[name] = new Prov({
           name,
           notify,
-          monitor: monitor.monitor(name),
+          monitor: monitor.childMonitor(name),
           ...meta,
         });
       });
@@ -114,7 +114,7 @@ let load = loader({
     setup: async ({cfg, queue, monitor, WorkerType, providers, notify}) => {
       const provisioner = new Provisioner({
         queue,
-        monitor: monitor.monitor('provisioner'),
+        monitor: monitor.childMonitor('provisioner'),
         provisionerId: cfg.app.provisionerId,
         WorkerType,
         providers,

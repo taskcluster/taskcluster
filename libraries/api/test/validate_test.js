@@ -5,11 +5,17 @@ const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');
 const path = require('path');
 const SchemaSet = require('taskcluster-lib-validate');
-const MonitorManager = require('taskcluster-lib-monitor');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
   const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);
+
+  setup(async () => {
+    helper.setupServer({builder});
+  });
+  teardown(() => {
+    helper.teardownServer();
+  });
 
   // Create test api
   const builder = new APIBuilder({
@@ -115,22 +121,6 @@ suite(testing.suiteName(), function() {
     res.reply();
   });
 
-  // Create a mock authentication server
-  let monitorManager;
-  setup(async () => {
-    monitorManager = new MonitorManager({
-      serviceName: 'tc-lib-api-test',
-    });
-    monitorManager.setup({
-      mock: true,
-    });
-    helper.setupServer({builder, monitor: monitorManager.monitor()});
-  });
-  teardown(() => {
-    monitorManager.terminate();
-    helper.teardownServer();
-  });
-
   // Test valid input
   test('input (valid)', function() {
     const url = u('/test-input');
@@ -176,8 +166,8 @@ suite(testing.suiteName(), function() {
         assert.equal(err.status, 500);
         // the HTTP error should not contain details
         assert(!err.toString().match(/data.value should be/));
-        assert.equal(monitorManager.messages.length, 2);
-        assert(monitorManager.messages[0].Fields.message.match(/data.value should be <= 10/));
+        assert.equal(helper.monitorManager.messages.length, 2);
+        assert(helper.monitorManager.messages[0].Fields.message.match(/data.value should be <= 10/));
       });
   });
 
@@ -259,8 +249,8 @@ suite(testing.suiteName(), function() {
         assert.equal(err.status, 500);
         // the HTTP error should not contain details
         assert(!err.toString().match(/data should be object/));
-        assert.equal(monitorManager.messages.length, 2);
-        assert(monitorManager.messages[0].Fields.message.match(/data should be object/));
+        assert.equal(helper.monitorManager.messages.length, 2);
+        assert(helper.monitorManager.messages[0].Fields.message.match(/data should be object/));
       });
   });
 
@@ -286,7 +276,7 @@ suite(testing.suiteName(), function() {
       folder: path.join(__dirname, 'schemas'),
     });
 
-    const api = await builder.build({rootUrl: libUrls.testRootUrl(), schemaset, monitor: helper.monitor()});
+    const api = await builder.build({rootUrl: libUrls.testRootUrl(), schemaset, monitor: helper.monitor});
     try {
       api.router();
     } catch (err) {

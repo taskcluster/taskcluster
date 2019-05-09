@@ -1,13 +1,11 @@
 const assert = require('assert');
-const MonitorManager = require('../src');
+const MonitorManager = require('../src/monitormanager.js');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
 
   test('can add custom message types', function() {
-    const manager = new MonitorManager({
-      serviceName: 'taskcluster-testing-service',
-    });
+    const manager = new MonitorManager();
     manager.register({
       name: 'auditLog',
       title: 'whatever',
@@ -20,17 +18,21 @@ suite(testing.suiteName(), function() {
         bar: 'A bar field. This will be a string',
       },
     });
-    manager.setup({
-      level: 'debug',
-      mock: true,
+    manager.configure({
+      serviceName: 'taskcluster-testing-service',
     });
-    const monitor = manager.monitor();
+    const monitor = manager.setup({
+      level: 'debug',
+      fake: true,
+      debug: true,
+    });
     monitor.log.auditLog({foo: {}, bar: 'hi'});
     assert.equal(manager.messages.length, 1);
   });
 
   test('can verify custom types', function() {
-    const manager = new MonitorManager({
+    const manager = new MonitorManager();
+    manager.configure({
       serviceName: 'taskcluster-testing-service',
     });
     manager.register({
@@ -45,18 +47,19 @@ suite(testing.suiteName(), function() {
         bar: 'A bar field. This will be a string',
       },
     });
-    manager.setup({
+    const monitor = manager.setup({
       level: 'debug',
-      mock: true,
+      fake: true,
+      debug: true,
       verify: true,
     });
-    const monitor = manager.monitor();
     monitor.log.auditLog({foo: {}, bar: 'hi'});
     assert.throws(() => monitor.log.auditLog({foo: null}), /"auditLog" must include field "bar"/);
   });
 
   test('can publish types', function() {
-    const manager = new MonitorManager({
+    const manager = new MonitorManager();
+    manager.configure({
       serviceName: 'taskcluster-testing-service',
     });
     manager.register({
@@ -72,11 +75,10 @@ suite(testing.suiteName(), function() {
       },
     });
     assert.equal(manager.reference().serviceName, 'taskcluster-testing-service');
-    assert.deepEqual(manager.reference().types[0].type, 'monitor.timer');
-    assert.deepEqual(manager.reference().types[0].name, 'basicTimer');
-    assert.deepEqual(manager.reference().types[0].title, 'Basic Timer');
+    assert.deepEqual(manager.reference().types[0].type, 'audit');
+    assert.deepEqual(manager.reference().types[0].name, 'auditLog');
+    assert.deepEqual(manager.reference().types[0].title, 'whatever');
     assert.deepEqual(manager.reference().types[0].level, 'info');
     assert.deepEqual(manager.reference().types[0].version, 1);
-    assert.deepEqual(manager.reference().types[manager.reference().types.length-1].type, 'audit');
   });
 });

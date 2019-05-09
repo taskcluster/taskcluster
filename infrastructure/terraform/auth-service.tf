@@ -191,7 +191,6 @@ module "auth_secrets" {
     FORCE_SSL            = "false"
     TRUST_PROXY          = "true"
     LOCK_ROLES           = "false"
-    MONITORING_ENABLE    = "true"
     NODE_ENV             = "production"
     OWNER_EMAIL          = "bstack@mozilla.com"
     PROFILE              = "production"

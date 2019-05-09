@@ -26,8 +26,6 @@ defaults:
     region:           us-west-2
     apiVersion:       2014-01-01
   monitoring:
-    enable: !env:bool MONITORING_ENABLE
-    pretty: !env:bool PRETTY_LOGGING
     level: !env LEVEL
 
   server:
@@ -52,8 +50,6 @@ test:
       credentials:
         clientId:     'dummy'
         accessToken:  'lol no secret here'
-  monitoring:
-    enable: false
   server:
     port: 60174
     env: development
@@ -70,9 +66,6 @@ ngrok:
     credentials:
       clientId:     !env TASKCLUSTER_CLIENT_ID
       accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
-  monitoring:
-    level: warning
-    enable: false
   server:
     port: 60174
     forceSSL:   true

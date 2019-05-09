@@ -1,6 +1,6 @@
-const MonitorManager = require('taskcluster-lib-monitor');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
-const manager = new MonitorManager({
+const monitorManager = defaultMonitorManager.configure({
   serviceName: 'queue',
 });
 
@@ -10,7 +10,7 @@ const manager = new MonitorManager({
  * to make individual log entries for each task.
  */
 
-manager.register({
+monitorManager.register({
   name: 'azureQueuePoll',
   title: 'Azure Queue Poll',
   type: 'azure-queue-poll',
@@ -24,7 +24,7 @@ manager.register({
   },
 });
 
-manager.register({
+monitorManager.register({
   name: 'taskDefined',
   title: 'Task Defined',
   type: 'task-defined',
@@ -38,7 +38,7 @@ manager.register({
   },
 });
 
-manager.register({
+monitorManager.register({
   name: 'taskPending',
   title: 'Task Pending',
   type: 'task-pending',
@@ -53,7 +53,7 @@ manager.register({
   },
 });
 
-manager.register({
+monitorManager.register({
   name: 'taskRunning',
   title: 'Task Running',
   type: 'task-running',
@@ -67,7 +67,7 @@ manager.register({
   },
 });
 
-manager.register({
+monitorManager.register({
   name: 'taskCompleted',
   title: 'Task Completed',
   type: 'task-completed',
@@ -82,7 +82,7 @@ manager.register({
   },
 });
 
-manager.register({
+monitorManager.register({
   name: 'taskFailed',
   title: 'Task Failed',
   type: 'task-failed',
@@ -97,7 +97,7 @@ manager.register({
   },
 });
 
-manager.register({
+monitorManager.register({
   name: 'taskException',
   title: 'Task Exception',
   type: 'task-exception',
@@ -112,7 +112,7 @@ manager.register({
   },
 });
 
-manager.register({
+monitorManager.register({
   name: 'taskClaimed',
   title: 'Task Claimed',
   type: 'task-claimed',
@@ -131,7 +131,7 @@ manager.register({
   },
 });
 
-manager.register({
+monitorManager.register({
   name: 'taskReclaimed',
   title: 'Task Reclaimed',
   type: 'task-reclaimed',
@@ -148,7 +148,7 @@ manager.register({
   },
 });
 
-manager.register({
+monitorManager.register({
   name: 'hintPoller',
   title: 'Hint Poller Report',
   type: 'hint-poller',
@@ -162,4 +162,4 @@ manager.register({
   },
 });
 
-module.exports = manager;
+module.exports = monitorManager;

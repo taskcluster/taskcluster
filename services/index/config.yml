@@ -20,10 +20,7 @@ defaults:
     accountId: !env AZURE_ACCOUNT
 
   monitoring:
-    enable: !env:bool MONITORING_ENABLE
-    pretty: !env:bool PRETTY_LOGGING
     level: !env LEVEL
-
 
   # Server configuration
   server:
@@ -96,9 +93,6 @@ test:
     namespaceTableName: 'DummyTestNamespaces'
     listenerQueueName: 'test-queue'
 
-  monitoring:
-    level: warning
-    enable: false
   server:
     port: 60020
 

@@ -6,6 +6,8 @@ const taskcluster = require('taskcluster-client');
 const testing = require('taskcluster-lib-testing');
 const assume = require('assume');
 const helper = require('./helper');
+const monitorManager = require('../src/monitor');
+const {LEVELS} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withAmazonIPRanges(mock, skipping);
@@ -48,31 +50,34 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     let r1 = await helper.queue.createTask(taskIdA, taskA);
     helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdA);
     helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdA);
-    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-defined'), {
-      Logger: 'taskcluster.queue.root.api',
+    assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-defined'), {
+      Logger: 'taskcluster.queue.api',
       Type: 'task-defined',
       Fields: {taskId: taskIdA, v: 1},
+      Severity: LEVELS.notice,
     });
-    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-pending'), {
-      Logger: 'taskcluster.queue.root.api',
+    assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-pending'), {
+      Logger: 'taskcluster.queue.api',
       Type: 'task-pending',
       Fields: {taskId: taskIdA, runId: 0, v: 1},
+      Severity: LEVELS.notice,
     });
     helper.clearPulseMessages();
-    helper.monitor.reset();
+    monitorManager.reset();
 
     let r2 = await helper.queue.createTask(taskIdB, taskB);
     helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdB);
     assume(r1.status.state).equals('pending');
     assume(r2.status.state).equals('unscheduled');
-    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-defined'), {
-      Logger: 'taskcluster.queue.root.api',
+    assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-defined'), {
+      Logger: 'taskcluster.queue.api',
       Type: 'task-defined',
       Fields: {taskId: taskIdB, v: 1},
+      Severity: LEVELS.notice,
     });
-    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-pending'), undefined);
+    assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-pending'), undefined);
     helper.clearPulseMessages();
-    helper.monitor.reset();
+    monitorManager.reset();
 
     debug('### listTaskDependents');
     {
@@ -92,37 +97,40 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     });
 
     helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdA);
-    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-running'), {
-      Logger: 'taskcluster.queue.root.work-claimer',
+    assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-running'), {
+      Logger: 'taskcluster.queue.work-claimer',
       Type: 'task-running',
       Fields: {taskId: taskIdA, runId: 0, v: 1},
+      Severity: LEVELS.notice,
     });
     helper.clearPulseMessages();
-    helper.monitor.reset();
+    monitorManager.reset();
 
     await helper.queue.reportCompleted(taskIdA, 0);
     helper.assertPulseMessage('task-completed', m => m.payload.status.taskId === taskIdA);
-    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-completed'), {
-      Logger: 'taskcluster.queue.root.api',
+    assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-completed'), {
+      Logger: 'taskcluster.queue.api',
       Type: 'task-completed',
       Fields: {taskId: taskIdA, runId: 0, v: 1},
+      Severity: LEVELS.notice,
     });
     helper.clearPulseMessages();
-    helper.monitor.reset();
+    monitorManager.reset();
 
     // task B should become pending on next poll
     await testing.poll(
       async () => {
         helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdB);
-        assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-pending'), {
-          Logger: 'taskcluster.queue.root.dependency-tracker',
+        assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-pending'), {
+          Logger: 'taskcluster.queue.dependency-tracker',
           Type: 'task-pending',
           Fields: {taskId: taskIdB, runId: 0, v: 1},
+          Severity: LEVELS.notice,
         });
       },
       10, 250);
     helper.clearPulseMessages();
-    helper.monitor.reset();
+    monitorManager.reset();
 
     debug('### Claim and resolve taskB');
     await helper.queue.claimTask(taskIdB, 0, {

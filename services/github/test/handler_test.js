@@ -4,6 +4,8 @@ const assert = require('assert');
 const sinon = require('sinon');
 const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
+const monitorManager = require('../src/monitor');
+const {LEVELS} = require('taskcluster-lib-monitor');
 
 /**
  * This tests the event handlers, faking out all of the services they
@@ -553,7 +555,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       await assertStatusCreate('completed');
     });
 
-    test('Undefined state/reasonResolved in the task exchange message -> neutral status', async function() {
+    test('Undefined state/reasonResolved in the task exchange message -> neutral status, log error', async function() {
       await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
@@ -564,6 +566,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         state: 'completed',
       });
       await assertStatusCreate('neutral');
+
+      assert(monitorManager.messages.some(({Type, Severity}) => Type === 'monitor.error' && Severity === LEVELS.err));
+      monitorManager.reset();
     });
   });
 

@@ -7,15 +7,8 @@ defaults:
       accessToken: !env TASKCLUSTER_ACCESS_TOKEN
 
   monitoring:
-    enable: !env:bool MONITORING_ENABLE
     level: !env LEVEL
-    pretty: !env:bool PRETTY_LOGGING
 
   worker:
     provisionerId: "built-in"
     workerGroup: "built-in"
-
-test:
-  monitoring:
-    level: warning
-    enable: false

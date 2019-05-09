@@ -38,7 +38,7 @@ suite(testing.suiteName(), function() {
     // Create API
     const api = await builder.build({
       rootUrl,
-      monitor: helper.monitor(),
+      monitor: helper.monitor,
       schemaset: new SchemaSet({
         serviceName: 'test',
         folder: path.join(__dirname, 'schemas'),

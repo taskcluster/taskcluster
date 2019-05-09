@@ -1,10 +1,10 @@
 const taskcluster = require('../');
 const assert = require('assert');
 const SchemaSet = require('taskcluster-lib-validate');
-const MonitorManager = require('taskcluster-lib-monitor');
 const APIBuilder = require('taskcluster-lib-api');
 const testing = require('taskcluster-lib-testing');
 const App = require('taskcluster-lib-app');
+const {monitorManager, monitor} = require('./monitor');
 
 const rootUrl = `http://localhost:60526`;
 
@@ -95,7 +95,6 @@ suite(testing.suiteName(), function() {
   // Reference for test api server
   let _apiServer = null;
 
-  let monitorManager = null;
   let Server = null;
   let server = null;
 
@@ -104,13 +103,6 @@ suite(testing.suiteName(), function() {
     testing.fakeauth.start({
       'test-client': ['auth:credentials', 'test:internal-error'],
     }, {rootUrl});
-
-    monitorManager = new MonitorManager({
-      serviceName: 'tc-client',
-    });
-    monitorManager.setup({
-      mock: true,
-    });
 
     // Create server for api
     const schemaset = new SchemaSet({
@@ -121,7 +113,7 @@ suite(testing.suiteName(), function() {
     const api = await builder.build({
       rootUrl,
       schemaset,
-      monitor: monitorManager.monitor('api'),
+      monitor,
     });
 
     Server = taskcluster.createClient(builder.reference());
@@ -131,7 +123,6 @@ suite(testing.suiteName(), function() {
         accessToken: 'test-token',
       },
       rootUrl,
-      monitor: monitorManager.monitor(),
     });
 
     // Create application
@@ -184,12 +175,6 @@ suite(testing.suiteName(), function() {
   });
 
   test('Can succeed after 3 attempts (record stats)', async function() {
-    let mb = new MonitorManager({
-      serviceName: 'tc-client',
-    });
-    mb.setup({
-      mock: true,
-    });
     getOccasionalInternalErrorCount = 0;
     let server2 = new Server({
       credentials: {
@@ -197,11 +182,10 @@ suite(testing.suiteName(), function() {
         accessToken: 'test-token',
       },
       rootUrl: 'http://localhost:60526',
-      monitor: mb.monitor(),
     });
     return server2.getOccasionalInternalError().then(function() {
       assert(getOccasionalInternalErrorCount === 4, 'expected 4 attempts');
-      assert(mb.messages.length > 0);
+      assert(monitorManager.messages.length > 0);
     });
   });
 

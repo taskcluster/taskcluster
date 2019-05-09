@@ -2,7 +2,6 @@ const {Client, consume, connectionStringCredentials} = require('../src');
 const amqplib = require('amqplib');
 const assume = require('assume');
 const debugModule = require('debug');
-const MonitorManager = require('taskcluster-lib-monitor');
 const assert = require('assert');
 const helper = require('./helper');
 const {suiteName} = require('taskcluster-lib-testing');
@@ -12,22 +11,10 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
     return; // Only test with real creds
   }
   let connectionString;
-  let monitorManager = null;
-  let monitor;
+  const monitor = helper.monitor;
 
   setup(async function() {
     connectionString = helper.secrets.get('pulse').connectionString;
-    monitorManager = new MonitorManager({
-      serviceName: 'lib-pulse-test',
-    });
-    monitorManager.setup({
-      mock: true,
-    });
-    monitor = monitorManager.monitor('tests');
-  });
-
-  teardown(() => {
-    monitorManager.terminate();
   });
 
   suite('PulseConsumer', function() {

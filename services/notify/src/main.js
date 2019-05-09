@@ -59,7 +59,7 @@ const load = loader({
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
       }),
-      monitor: monitor.monitor('table.denylist'),
+      monitor: monitor.childMonitor('table.denylist'),
     }),
   },
 
@@ -76,7 +76,7 @@ const load = loader({
     setup: ({cfg, monitor}) => {
       return new Client({
         namespace: cfg.pulse.namespace,
-        monitor: monitor.monitor('pulse-client'),
+        monitor: monitor.childMonitor('pulse-client'),
         credentials: pulseCredentials(cfg.pulse),
       });
     },
@@ -133,7 +133,7 @@ const load = loader({
       rateLimit,
       ses,
       sourceEmail: cfg.app.sourceEmail,
-      monitor: monitor.monitor('notifier'),
+      monitor: monitor.childMonitor('notifier'),
     }),
   },
 
@@ -141,7 +141,7 @@ const load = loader({
     requires: ['cfg', 'pulseClient', 'monitor', 'reference'],
     setup: async ({cfg, pulseClient, monitor, reference}) => {
       let client = new IRC(_.merge(cfg.irc, {
-        monitor: monitor.monitor('irc'),
+        monitor: monitor.childMonitor('irc'),
         pulseClient,
         reference,
         rootUrl: cfg.taskcluster.rootUrl,
@@ -157,7 +157,7 @@ const load = loader({
       let handler = new Handler({
         rootUrl: cfg.taskcluster.rootUrl,
         notifier,
-        monitor: monitor.monitor('handler'),
+        monitor: monitor.childMonitor('handler'),
         routePrefix: cfg.app.routePrefix,
         ignoreTaskReasonResolved: cfg.app.ignoreTaskReasonResolved,
         queue,
@@ -174,7 +174,7 @@ const load = loader({
     setup: ({cfg, monitor, schemaset, notifier, DenylistedNotification, denier}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {notifier, DenylistedNotification, denier},
-      monitor: monitor.monitor('api'),
+      monitor: monitor.childMonitor('api'),
       schemaset,
     }),
   },

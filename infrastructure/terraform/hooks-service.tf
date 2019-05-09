@@ -29,7 +29,6 @@ module "hooks_secrets" {
     FORCE_SSL                = "false"
     TRUST_PROXY              = "true"
     NODE_ENV                 = "production"
-    MONITORING_ENABLE        = "true"
     AZURE_ACCOUNT            = "${azurerm_storage_account.base.name}"
     PULSE_USERNAME           = "${module.hooks_rabbitmq_user.username}"
     PULSE_PASSWORD           = "${module.hooks_rabbitmq_user.password}"

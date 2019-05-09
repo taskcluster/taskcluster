@@ -3,8 +3,6 @@ defaults:
     workerTypeTableName: WorkerTypes
     provisionerId: worker-manager
   monitoring:
-    enable: !env:bool MONITORING_ENABLE
-    pretty: !env:bool PRETTY_LOGGING
     level: !env LEVEL
   taskcluster:
     rootUrl: !env TASKCLUSTER_ROOT_URL
@@ -21,11 +19,6 @@ defaults:
   providers: !env:json PROVIDERS
 
 test:
-  monitoring:
-    level: debug
-    pretty: false
-    enable: true
-    mock: true
   server:
     port: 60409
     env: 'development'

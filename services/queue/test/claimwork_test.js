@@ -5,6 +5,8 @@ const taskcluster = require('taskcluster-client');
 const assume = require('assume');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
+const monitorManager = require('../src/monitor');
+const {LEVELS} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withAmazonIPRanges(mock, skipping);
@@ -86,8 +88,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
   test('claimWork, reportCompleted', async () => {
     let taskId = slugid.v4();
 
-    await require('taskcluster-lib-testing').sleep(10000);
-
     debug('### Creating task');
     await helper.queue.createTask(taskId, makeTask('normal', workerType));
     helper.assertPulseMessage('task-defined');
@@ -114,9 +114,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     assume(takenUntil.getTime()).is.greaterThan(before.getTime() - 1);
 
     // check that the task was logged
-    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-claimed'), {
+    assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-claimed'), {
       Type: 'task-claimed',
-      Logger: 'taskcluster.queue.root.api',
+      Logger: 'taskcluster.queue.api',
       Fields: {
         provisionerId: "no-provisioner-extended-extended",
         v: 1,
@@ -126,6 +126,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
         taskId,
         runId: 0,
       },
+      Severity: LEVELS.notice,
     });
 
     // Check that task definition is included..
@@ -191,9 +192,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     assume(takenUntil2.getTime()).is.greaterThan(takenUntil.getTime() - 1);
 
     // check that the task was logged
-    assert.deepEqual(helper.monitor.messages.find(({Type}) => Type === 'task-reclaimed'), {
+    assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-reclaimed'), {
       Type: 'task-reclaimed',
-      Logger: 'taskcluster.queue.root.api',
+      Logger: 'taskcluster.queue.api',
       Fields: {
         workerGroup: 'my-worker-group-extended-extended',
         workerId: 'my-worker-extended-extended',
@@ -201,6 +202,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
         runId: 0,
         v: 1,
       },
+      Severity: LEVELS.notice,
     });
 
     debug('### reportCompleted');

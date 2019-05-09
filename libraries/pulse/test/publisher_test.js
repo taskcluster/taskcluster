@@ -3,7 +3,6 @@ const path = require('path');
 const amqplib = require('amqplib');
 const assume = require('assume');
 const assert = require('assert');
-const MonitorManager = require('taskcluster-lib-monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const libUrls = require('taskcluster-lib-urls');
 const helper = require('./helper');
@@ -58,22 +57,10 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
     CCBuilder: msg => [],
   };
 
-  let monitorManager = null;
-  let monitor;
+  const monitor = helper.monitor;
 
   setup(async function() {
     connectionString = helper.secrets.get('pulse').connectionString;
-    monitorManager = new MonitorManager({
-      serviceName: 'lib-pulse-test',
-    });
-    monitorManager.setup({
-      mock: true,
-    });
-    monitor = monitorManager.monitor('tests');
-  });
-
-  teardown(() => {
-    monitorManager.terminate();
   });
 
   suite('Exchanges', function() {

@@ -1,17 +1,48 @@
 const assert = require('assert');
 const serializeError = require('serialize-error');
+const {Logger} = require('./logger');
 const TimeKeeper = require('./timekeeper');
 
 class Monitor {
-  constructor({logger, mock, enable, verify = false, types = {}}) {
-    this._log = logger;
+  constructor({
+    manager,
+    name,
+    metadata,
+    verify,
+    fake,
+    patchGlobal,
+    bailOnUnhandledRejection,
+    resourceInterval,
+    processName,
+  }) {
+    this.manager = manager;
+    this.name = name;
+    this.metadata = metadata;
     this.verify = verify;
-    this.mock = mock;
-    this.enable = enable;
+    this.fake = fake;
+    this.bailOnUnhandledRejection = bailOnUnhandledRejection;
+
     this.log = {};
-    Object.entries(types).forEach(([name, meta]) => {
-      this.register({name, ...meta});
+    Object.entries(this.manager.types).forEach(([name, meta]) => {
+      this._register({name, ...meta});
     });
+
+    this._log = new Logger({
+      name: ['taskcluster', this.manager.serviceName, ...this.name].join('.'),
+      service: this.serviceName,
+      level: this.manager.levels[name.join('.')] || this.manager.levels['root'],
+      destination: this.manager.destination,
+      metadata,
+      gitVersion: this.manager.gitVersion,
+    });
+
+    if (patchGlobal) {
+      this._patchGlobal();
+    }
+
+    if (processName) {
+      this._resources(processName, resourceInterval);
+    }
   }
 
   debug(...args) {
@@ -47,23 +78,22 @@ class Monitor {
   }
 
   /*
-   * Register a new logging type
+   * Get a prefixed child monitor
    */
-  register({name, type, version, level, fields}) {
-    assert(!this[name], `Cannot override "${name}" as custom message type.`);
-    const requiredFields = Object.keys(fields);
-    this.log[name] = (fields, overrides={}) => {
-      if (this.verify) {
-        assert(level !== 'any' || overrides.level !== undefined, 'Must provide `overrides.level` if registered level is `any`.');
-        const providedFields = Object.keys(fields);
-        assert(!providedFields.includes('v'), '"v" is a reserved field for logging messages.');
-        requiredFields.forEach(f => assert(providedFields.includes(f), `Log message "${name}" must include field "${f}".`));
-      }
-      if (level === 'any') {
-        level = overrides.level;
-      }
-      this._log[level](type, {v: version, ...fields});
-    };
+  childMonitor(name, metadata = {}) {
+    return new Monitor({
+      manager: this.manager,
+      name: this.name.concat([name]),
+      metadata: {...this.metadata, ...metadata},
+      verify: this.verify,
+      fake: this.fake,
+
+      // none of the global stuff happens on non-root monitors..
+      patchGlobal: false,
+      bailOnUnhandledRejection: false,
+      resourceInterval: 0,
+      processName: false,
+    });
   }
 
   /*
@@ -162,39 +192,9 @@ class Monitor {
         exitStatus = 1;
       }
     } finally {
-      if (this.enable && (!this.mock || this.mock.allowExit)) {
+      if (!this.fake || this.fake.allowExit) {
         process.exit(exitStatus);
       }
-    }
-  }
-
-  /**
-   * Given a process name, this will report basic
-   * OS-level usage statistics like CPU and Memory
-   * on a minute-by-minute basis.
-   *
-   * Returns a function that can be used to stop monitoring.
-   */
-  resources(procName, interval = 60) {
-    if (this._resourceInterval) {
-      clearInterval(this._resourceInterval);
-    }
-    let lastCpuUsage = null;
-    let lastMemoryUsage = null;
-
-    this._resourceInterval = setInterval(() => {
-      lastCpuUsage = process.cpuUsage(lastCpuUsage);
-      lastMemoryUsage = process.memoryUsage(lastMemoryUsage);
-      this.log.resourceMetrics({lastCpuUsage, lastMemoryUsage});
-    }, interval * 1000);
-
-    return () => this.stopResourceMonitoring();
-  }
-
-  stopResourceMonitoring() {
-    if (this._resourceInterval) {
-      clearInterval(this._resourceInterval);
-      this._resourceInterval = null;
     }
   }
 
@@ -246,6 +246,76 @@ class Monitor {
       level = 'err';
     }
     this.log.errorReport(Object.assign({}, serializeError(err), extra), {level});
+  }
+
+  /**
+   * Shut down this monitor (stop monitoring resources, in particular)
+   */
+  terminate() {
+    if (this._resourceInterval) {
+      clearInterval(this._resourceInterval);
+      this._resourceInterval = null;
+    }
+
+    if (this.patchGlobal) {
+      process.removeListener('uncaughtException', this._uncaughtExceptionHandler);
+      process.removeListener('unhandledRejection', this._unhandledRejectionHandler);
+    }
+  }
+
+  _register({name, type, version, level, fields}) {
+    assert(!this[name], `Cannot override "${name}" as custom message type.`);
+    const requiredFields = Object.keys(fields);
+    this.log[name] = (fields, overrides={}) => {
+      if (this.verify) {
+        assert(level !== 'any' || overrides.level !== undefined, 'Must provide `overrides.level` if registered level is `any`.');
+        const providedFields = Object.keys(fields);
+        assert(!providedFields.includes('v'), '"v" is a reserved field for logging messages.');
+        requiredFields.forEach(f => assert(providedFields.includes(f), `Log message "${name}" must include field "${f}".`));
+      }
+      let lv = level === 'any' ? overrides.level : level;
+      this._log[lv](type, {v: version, ...fields});
+    };
+  }
+
+  _patchGlobal() {
+    this.patchGlobal = true;
+
+    this._uncaughtExceptionHandler = this._uncaughtExceptionHandler.bind(this);
+    process.on('uncaughtException', this._uncaughtExceptionHandler);
+
+    this._unhandledRejectionHandler = this._unhandledRejectionHandler.bind(this);
+    process.on('unhandledRejection', this._unhandledRejectionHandler);
+  }
+
+  _uncaughtExceptionHandler(err) {
+    this.reportError(err);
+    process.exit(1);
+  }
+
+  _unhandledRejectionHandler(reason, p) {
+    this.reportError(reason);
+    if (!this.bailOnUnhandledRejection) {
+      return;
+    }
+    process.exit(1);
+  }
+
+  /**
+   * Given a process name, this will report basic
+   * OS-level usage statistics like CPU and Memory
+   * on a minute-by-minute basis.
+   */
+  _resources(procName, interval) {
+    if (this._resourceInterval) {
+      clearInterval(this._resourceInterval);
+    }
+
+    this._resourceInterval = setInterval(() => {
+      const lastCpuUsage = process.cpuUsage();
+      const lastMemoryUsage = process.memoryUsage();
+      this.log.resourceMetrics({lastCpuUsage, lastMemoryUsage});
+    }, interval * 1000);
   }
 }
 

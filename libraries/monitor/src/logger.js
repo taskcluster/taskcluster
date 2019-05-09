@@ -1,6 +1,5 @@
 const os = require('os');
 const assert = require('assert');
-const chalk = require('chalk');
 const stringify = require('fast-json-stable-stringify');
 
 const LEVELS = {
@@ -23,17 +22,6 @@ const LEVELS_REVERSE = [
   'NOTICE',
   'INFO',
   'DEBUG',
-];
-
-const LEVELS_REVERSE_COLOR = [
-  chalk.red.bold('EMERGENCY'),
-  chalk.red.bold('ALERT'),
-  chalk.red.bold('CRITICAL'),
-  chalk.red('ERROR'),
-  chalk.yellow('WARNING'),
-  chalk.blue('NOTICE'),
-  chalk.green('INFO'),
-  chalk.magenta('DEBUG'),
 ];
 
 const ELIDED = new Set([
@@ -75,13 +63,12 @@ const elideSecrets = fields => {
  * later if we want.
  */
 class Logger {
-  constructor({name, service, level, pretty=false, destination=process.stdout, metadata=null, gitVersion=undefined}) {
+  constructor({name, service, level, destination=process.stdout, metadata=null, gitVersion=undefined}) {
     assert(name, 'Must specify Logger name.');
 
     this.name = name;
     this.service = service;
     this.destination = destination;
-    this.pretty = pretty;
     this.metadata = Object.keys(metadata).length > 0 ? metadata : null;
     this.pid = process.pid;
     this.hostname = os.hostname();
@@ -142,30 +129,22 @@ class Logger {
       message = message.toString().split('\n', 1)[0];
     }
 
-    if (this.pretty) {
-      message = message ? message.toString().replace(/\n/g, '\\n') : '';
-      const extra = Object.keys(fields).reduce((s, f) =>
-        s + `\n\t${f}: ${fields[f].toString().replace(/\n/g, '\\n')}`, '');
-      const line = chalk`${(new Date()).toJSON()} ${LEVELS_REVERSE_COLOR[level]} (${type}): {blue ${message}}{gray ${extra}}\n`;
-      this.destination.write(line);
-    } else {
-      this.destination.write(stringify({
-        Timestamp: Date.now() * 1000000,
-        Type: type,
-        Logger: this.name,
-        Hostname: this.hostname,
-        EnvVersion: '2.0',
-        Severity: level,
-        Pid: this.pid,
-        Fields: fields,
-        message, // will be omitted if undefined
-        severity: LEVELS_REVERSE[level], // for stackdriver
-        serviceContext: { // for stackdriver
-          service: this.service,
-          version: this.gitVersion,
-        },
-      }) + '\n');
-    }
+    this.destination.write(stringify({
+      Timestamp: Date.now() * 1000000,
+      Type: type,
+      Logger: this.name,
+      Hostname: this.hostname,
+      EnvVersion: '2.0',
+      Severity: level,
+      Pid: this.pid,
+      Fields: fields,
+      message, // will be omitted if undefined
+      severity: LEVELS_REVERSE[level], // for stackdriver
+      serviceContext: { // for stackdriver
+        service: this.service,
+        version: this.gitVersion,
+      },
+    }) + '\n');
   }
 
   emerg(type, fields) {

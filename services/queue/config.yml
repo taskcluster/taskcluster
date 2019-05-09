@@ -108,8 +108,6 @@ defaults:
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
 
   monitoring:
-    enable: !env:bool MONITORING_ENABLE
-    pretty: !env:bool PRETTY_LOGGING
     level: !env LEVEL
 
   server:
@@ -195,10 +193,6 @@ test:
       parallelism:                1
     publicArtifactBucketProxies:
       'us-east-1':    'proxy-for-us-east-1'
-  monitoring:
-    level: debug
-    enable: true
-    mock: true
   server:
     port:             60401
     env:              development
@@ -226,9 +220,6 @@ load-test:
       'us-east-1':    'proxy-for-us-east-1'
     azureReportChance:            0.0
     azureReportThreshold:         1000000
-  monitoring:
-    level: warning
-    enable: false
   server:
     env:              development
     forceSSL:         true

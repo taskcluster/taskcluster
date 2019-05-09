@@ -1,6 +1,6 @@
 const testing = require('taskcluster-lib-testing');
 const SchemaSet = require('taskcluster-lib-validate');
-const MonitorManager = require('taskcluster-lib-monitor');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 const assert = require('assert');
 const path = require('path');
 const express = require('express');
@@ -10,11 +10,26 @@ let runningServer = null;
 const rootUrl = 'http://localhost:23525';
 exports.rootUrl = rootUrl;
 
+suiteSetup('set up monitorManager', async function() {
+  exports.monitorManager = defaultMonitorManager.configure({
+    serviceName: 'lib-api',
+  });
+  exports.monitor = exports.monitorManager.setup({
+    fake: true,
+    debug: true,
+    verify: true,
+    level: 'debug',
+  });
+});
+
+teardown(function() {
+  exports.monitorManager.reset();
+});
+
 /**
- * Set up a testing server on port 23525 serving the given API.  If monitor is
- * specified, it is added to the router.
+ * Set up a testing server on port 23525 serving the given API.
  */
-exports.setupServer = async ({builder, monitor, context}) => {
+exports.setupServer = async ({builder, context}) => {
   testing.fakeauth.start({
     'client-with-aa-bb-dd': ['aa', 'bb', 'dd'],
   }, {rootUrl});
@@ -25,14 +40,10 @@ exports.setupServer = async ({builder, monitor, context}) => {
     folder: path.join(__dirname, 'schemas'),
   });
 
-  if (!monitor) {
-    monitor = exports.monitor();
-  }
-
   const api = await builder.build({
     rootUrl,
     schemaset,
-    monitor,
+    monitor: exports.monitor,
     context,
   });
 
@@ -48,16 +59,6 @@ exports.setupServer = async ({builder, monitor, context}) => {
     });
     server.once('error', reject);
   });
-};
-
-exports.monitor = () => {
-  const monitorManager = new MonitorManager({
-    serviceName: 'foo',
-  });
-  monitorManager.setup({
-    mock: true,
-  });
-  return monitorManager.monitor();
 };
 
 exports.teardownServer = async () => {

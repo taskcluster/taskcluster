@@ -1,10 +1,10 @@
-const MonitorManager = require('taskcluster-lib-monitor');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
-const manager = new MonitorManager({
+const monitorManager = defaultMonitorManager.configure({
   serviceName: 'worker-manager',
 });
 
-manager.register({
+monitorManager.register({
   name: 'workertypeProvisioned',
   title: 'Workertype Provisioned',
   type: 'workertype-provisioned',
@@ -17,4 +17,4 @@ manager.register({
   },
 });
 
-module.exports = manager;
+module.exports = monitorManager;

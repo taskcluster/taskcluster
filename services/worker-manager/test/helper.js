@@ -1,6 +1,6 @@
 const libUrls = require('taskcluster-lib-urls');
 const taskcluster = require('taskcluster-client');
-const {stickyLoader, Secrets, withEntity, fakeauth} = require('taskcluster-lib-testing');
+const {stickyLoader, Secrets, withEntity, fakeauth, withMonitor} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const data = require('../src/data');
 const load = require('../src/main');
@@ -10,6 +10,8 @@ exports.rootUrl = 'http://localhost:60409';
 exports.load = stickyLoader(load);
 exports.load.inject('profile', 'test');
 exports.load.inject('process', 'test');
+
+withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({
@@ -94,23 +96,6 @@ exports.withFakeNotify = (mock, skipping) => {
 
     exports.notify = stubbedNotify();
     exports.load.inject('notify', exports.notify);
-  });
-};
-
-exports.withMonitor = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-    exports.monitor = await exports.load('monitor');
-    exports.load.inject('monitor', exports.monitor);
-  });
-
-  // flush the mock log messages for each test case
-  setup(function() {
-    if (exports.monitor) {
-      exports.monitor.reset();
-    }
   });
 };
 

@@ -14,7 +14,6 @@ module "purge_cache_secrets" {
     FORCE_SSL                = "false"
     TRUST_PROXY              = "true"
     NODE_ENV                 = "production"
-    MONITORING_ENABLE        = "true"
     AZURE_ACCOUNT            = "${azurerm_storage_account.base.name}"
   }
 }

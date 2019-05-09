@@ -57,7 +57,7 @@ let load = loader({
       schemaset,
       context: {cfg, handlers},
       rootUrl: cfg.taskcluster.rootUrl,
-      monitor: monitor.monitor('api'),
+      monitor: monitor.childMonitor('api'),
     }),
   },
 
@@ -75,7 +75,7 @@ let load = loader({
   scanner: {
     requires: ['cfg', 'handlers', 'monitor'],
     setup: ({cfg, handlers, monitor}) => {
-      return monitor.monitor().oneShot('scanner', () => scanner(cfg, handlers));
+      return monitor.oneShot('scanner', () => scanner(cfg, handlers));
     },
   },
 }, {
