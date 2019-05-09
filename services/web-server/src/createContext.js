@@ -1,7 +1,7 @@
 const clients = require('./clients');
 const loaders = require('./loaders');
 
-module.exports = ({ pulseEngine, rootUrl, strategies, cfg }) => ({ req, connection }) => {
+module.exports = ({ pulseEngine, rootUrl, strategies, cfg, monitor }) => ({ req, connection }) => {
   if (req) {
     const currentClients = clients({
       credentials: req.credentials,
@@ -11,6 +11,7 @@ module.exports = ({ pulseEngine, rootUrl, strategies, cfg }) => ({ req, connecti
       currentClients,
       Boolean(req.credentials),
       rootUrl,
+      monitor,
       strategies,
       req,
       cfg,
@@ -28,7 +29,8 @@ module.exports = ({ pulseEngine, rootUrl, strategies, cfg }) => ({ req, connecti
     const currentLoaders = loaders(
       currentClients,
       false,
-      rootUrl
+      rootUrl,
+      monitor
     );
     // if connection is set, this is for a subscription
     return {
