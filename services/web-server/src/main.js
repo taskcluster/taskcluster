@@ -52,7 +52,7 @@ const load = loader(
         }
 
         return new Client({
-          monitor: monitor.monitor('pulse-client'),
+          monitor: monitor.childMonitor('pulse-client'),
           namespace: cfg.pulse.namespace,
           credentials: pulseCredentials(cfg.pulse),
         });
@@ -64,7 +64,7 @@ const load = loader(
       setup: ({ pulseClient, monitor }) =>
         new PulseEngine({
           pulseClient,
-          monitor: monitor.monitor('pulse-engine'),
+          monitor: monitor.childMonitor('pulse-engine'),
         }),
     },
 
@@ -89,7 +89,7 @@ const load = loader(
           rootUrl: cfg.taskcluster.rootUrl,
           strategies,
           cfg,
-          monitor: monitor.monitor('context'),
+          monitor: monitor.childMonitor('context'),
         }),
     },
 
@@ -147,7 +147,7 @@ const load = loader(
     scanner: {
       requires: ['cfg', 'strategies', 'monitor'],
       setup: async ({ cfg, strategies, monitor }) => {
-        return monitor.monitor().oneShot('scanner', () => scanner(cfg, strategies));
+        return monitor.oneShot('scanner', () => scanner(cfg, strategies));
       },
     },
 
