@@ -93,7 +93,6 @@ export default class CreateTask extends Component {
     error: null,
     invalid: null,
     createdTaskError: null,
-    interactive: false,
     loading: false,
     recentTaskDefinitions: [],
   };
@@ -109,7 +108,6 @@ export default class CreateTask extends Component {
     try {
       this.setState({
         recentTaskDefinitions,
-        interactive: this.props.interactive,
         task: this.parameterizeTask(task),
         error: null,
       });
@@ -175,8 +173,6 @@ export default class CreateTask extends Component {
   };
 
   handleInteractiveChange = ({ target: { checked } }) => {
-    this.setState({ interactive: checked });
-
     this.props.history.replace(
       checked ? '/tasks/create/interactive' : '/tasks/create'
     );
@@ -241,13 +237,12 @@ export default class CreateTask extends Component {
   }
 
   render() {
-    const { description, classes } = this.props;
+    const { interactive, description, classes } = this.props;
     const {
       task,
       error,
       createdTaskError,
       invalid,
-      interactive,
       createdTaskId,
       loading,
       recentTaskDefinitions,
