@@ -55,18 +55,27 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp'], function(mock, ski
 
   test('gcpCredentials invalid account', async () => {
     try {
-      await helper.apiClient.gcpCredentials('invalidserviceaccount@mozilla.com');
+      await helper.apiClient.gcpCredentials('-', 'invalidserviceaccount@mozilla.com');
       assert.fail('The call should fail');
     } catch (e) {
       assert.equal(e.statusCode, 404);
     }
   });
 
+  test('gcpCredentials invalid projectId', async () => {
+    try {
+      await helper.apiClient.gcpCredentials('invalidprojectid', account.email);
+      assert.fail('The call should fail');
+    } catch (e) {
+      assert.equal(e.statusCode, 400);
+    }
+  });
+
   test('gcpCredentials successful', async () => {
-    await helper.apiClient.gcpCredentials(account.email);
+    await helper.apiClient.gcpCredentials('-', account.email);
   });
 
   test('gcpCredentials after setting policy', async () => {
-    await helper.apiClient.gcpCredentials(account.email);
+    await helper.apiClient.gcpCredentials('-', account.email);
   });
 });

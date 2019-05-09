@@ -3,14 +3,16 @@ const {google} = require('googleapis');
 
 builder.declare({
   method: 'get',
-  route: '/gcp/credentials/:serviceAccount',
+  route: '/gcp/credentials/:projectId/:serviceAccount',
   name: 'gcpCredentials',
   output: 'gcp-credentials-response.yml',
   stability: 'stable',
-  scopes: 'auth:gcp:access-token:<serviceAccount>',
+  scopes: 'auth:gcp:access-token:<projectId>/<serviceAccount>',
   title: 'Get Temporary Read/Write GCP Credentials',
   description: [
     'Get temporary GCP credentials for the given serviceAccount.',
+    'projectId must always be the string "-", which means "use the same',
+    'projectId as the account the service is running at.',
     '',
     'The call adds the necessary policy if the serviceAccount doesn\'t have it.',
     'The credentials are set to expire after an hour, but this behavior is',
@@ -20,7 +22,14 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const serviceAccount = req.params.serviceAccount;
-  const projectId = '-';
+  const projectId = req.params.projectId;
+
+  if (projectId !== '-') {
+    return res.reportError(
+      'InvalidRequestArguments',
+      'projectId must always be "-"',
+    );
+  }
 
   if (!this.googleAuth) {
     return res.reportError(
