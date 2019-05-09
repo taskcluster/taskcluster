@@ -1,22 +1,22 @@
-import assert from 'assert';
-import depthLimit from 'graphql-depth-limit';
-import { createComplexityLimitRule } from 'graphql-validation-complexity';
-import loader from 'taskcluster-lib-loader';
-import libReferences from 'taskcluster-lib-references';
-import config from 'taskcluster-lib-config';
-import { createServer } from 'http';
-import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
-import { ApolloServer } from 'apollo-server-express';
-import monitorManager from './monitor';
-import createApp from './servers/createApp';
-import formatError from './servers/formatError';
-import createContext from './createContext';
-import createSchema from './createSchema';
-import createSubscriptionServer from './servers/createSubscriptionServer';
-import resolvers from './resolvers';
-import typeDefs from './graphql';
-import PulseEngine from './PulseEngine';
-import scanner from './login/scanner';
+const assert = require('assert');
+const depthLimit = require('graphql-depth-limit');
+const { createComplexityLimitRule } = require('graphql-validation-complexity');
+const loader = require('taskcluster-lib-loader');
+const config = require('taskcluster-lib-config');
+const libReferences = require('taskcluster-lib-references');
+const { createServer } = require('http');
+const { Client, pulseCredentials } = require('taskcluster-lib-pulse');
+const { ApolloServer } = require('apollo-server-express');
+const monitorManager = require('./monitor');
+const createApp = require('./servers/createApp');
+const formatError = require('./servers/formatError');
+const createContext = require('./createContext');
+const createSchema = require('./createSchema');
+const createSubscriptionServer = require('./servers/createSubscriptionServer');
+const resolvers = require('./resolvers');
+const typeDefs = require('./graphql');
+const PulseEngine = require('./PulseEngine');
+const scanner = require('./login/scanner');
 
 const load = loader(
   {
