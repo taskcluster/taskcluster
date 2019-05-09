@@ -1,8 +1,6 @@
 const assert = require('assert');
 const libUrls = require('taskcluster-lib-urls');
 const debug = require('debug')('taskcluster-lib-pulse.publisher');
-const url = require('url');
-const AWS = require('aws-sdk');
 
 class Exchanges {
   constructor(options) {
@@ -39,7 +37,7 @@ class Exchanges {
     };
   }
 
-  async publisher({rootUrl, schemaset, client, sendDeadline, publish, aws}) {
+  async publisher({rootUrl, schemaset, client, sendDeadline}) {
     let publisher;
     if (process.env.NODE_ENV !== 'production') {
       this.exchangePrefix = `exchange/${client.namespace}/${this.apiVersion}/`;
@@ -49,17 +47,6 @@ class Exchanges {
       publisher = client.makeFakePublisher({rootUrl, schemaset, client, exchanges: this, PulsePublisher});
     } else {
       publisher = new PulsePublisher({rootUrl, schemaset, client, sendDeadline, exchanges: this});
-    }
-    if (publish) {
-      assert.equal(rootUrl, 'https://taskcluster.net',
-        'only taskcluster.net publishes references to S3');
-      assert(aws, 'aws is required to publish references to S3');
-
-      // get the reference with an absoute $schema
-      const reference = this.reference();
-      reference.$schema = reference.$schema.replace(/\/schemas/, 'https://schemas.taskcluster.net');
-
-      await publisher.publishReference(aws, reference);
     }
     await publisher._start();
     return publisher;
@@ -414,22 +401,5 @@ class PulsePublisher {
       }
       return word;
     }).join('.');
-  }
-
-  /**
-   * Publish the reference to S3; this is only used in the taskcluster.net deployment
-   */
-  async publishReference(aws, reference) {
-    const {serviceName, apiVersion} = this.exchanges;
-    const refUrl = libUrls.exchangeReference('https://taskcluster.net', serviceName, apiVersion);
-    const {hostname, path} = url.parse(refUrl);
-
-    const s3 = new AWS.S3(aws);
-    await s3.putObject({
-      Bucket: hostname,
-      Key: path.slice(1), // omit leading `/`
-      Body: JSON.stringify(reference, undefined, 2),
-      ContentType: 'application/json',
-    }).promise();
   }
 }

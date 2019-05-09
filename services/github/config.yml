@@ -12,7 +12,6 @@ defaults:
     checksToTasksTableName: 'TaskclusterChecksToTasks'
     checkTaskRoute: 'checks'
     statusTaskRoute: 'statuses'
-    publishMetaData: !env:bool PUBLISH_METADATA
     statusContext: 'Taskcluster'
     botName: !env BOT_USERNAME
 

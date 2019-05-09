@@ -25,7 +25,6 @@
     "PUBLIC_URL": {
       "required": true
     },
-    "PUBLISH_METADATA": "false",
     "SENTRY_DSN": {
       "required": true
     },

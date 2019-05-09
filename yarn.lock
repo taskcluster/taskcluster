@@ -6539,11 +6539,6 @@ rxjs@^6.3.3, rxjs@^6.4.0:
   dependencies:
     tslib "^1.9.0"
 
-s3-upload-stream@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/s3-upload-stream/-/s3-upload-stream-1.0.7.tgz#e3f80253141c569f105a62aa50ca9b45760e481d"
-  integrity sha1-4/gCUxQcVp8QWmKqUMqbRXYOSB0=
-
 safe-buffer@5.1.2, safe-buffer@^5.0.1, safe-buffer@^5.1.1, safe-buffer@^5.1.2, safe-buffer@~5.1.0, safe-buffer@~5.1.1, safe-buffer@~5.1.2:
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.1.2.tgz#991ec69d296e0313747d59bdfd2b745c35f8828d"
@@ -7287,10 +7282,6 @@ tar@^4:
   uid ""
 
 "taskcluster-lib-config@link:libraries/config":
-  version "0.0.0"
-  uid ""
-
-"taskcluster-lib-docs@link:libraries/docs":
   version "0.0.0"
   uid ""
 

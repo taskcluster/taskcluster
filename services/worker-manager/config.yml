@@ -1,6 +1,5 @@
 defaults:
   app:
-    publishMetaData: !env:bool PUBLISH_METADATA
     workerTypeTableName: WorkerTypes
     provisionerId: worker-manager
   monitoring:

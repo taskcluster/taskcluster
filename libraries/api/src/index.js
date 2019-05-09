@@ -153,7 +153,7 @@ class APIBuilder {
   }
 
   /**
-   * Build an API, optionally publishing to S3.
+   * Build an API.
    */
   async build(options) {
     options.builder = this;
@@ -163,9 +163,6 @@ class APIBuilder {
       options.validator = await options.schemaset.validator(options.rootUrl);
     }
     const service = new API(options);
-    if (options.publish) {
-      await service.publish();
-    }
     return service;
   }
 

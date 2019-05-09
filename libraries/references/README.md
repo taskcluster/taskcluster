@@ -116,8 +116,9 @@ references = References.fromUriStructured({directory: '/app', rootUrl});
 // Build from a serializable data structure; omit rootUrl if data is abstract
 references = References.fromSerializable({serializable, rootUrl});
 
-// Build from "live" components of a Taskcluster service; see "Testing Services" below
-references = References.fromService({exchanges, builder, schemaset});
+// Build from "live" components of a Taskcluster service; pass the schemaset
+// and the service's reference documents.
+references = References.fromService({schemaset, references});
 ```
 
 To validate the references, call `references.validate()`.
@@ -189,7 +190,12 @@ const References = require('taskcluster-lib-references');
 suite('references_test.js', function() {
   test('references validate', async function() {
     const schemaset = await helper.load('schemaset');
-    const references = References.fromService({schemaset, builder, exchanges});
+    const references = References.fromService({
+      schemaset,
+      references: [
+        builder.reference(),
+        exchanges.reference(),
+      ]});
     references.validate();
   });
 });

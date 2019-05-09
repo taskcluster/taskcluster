@@ -16,20 +16,6 @@ suite(testing.suiteName(), function() {
       /some.data is not a directory/);
   });
 
-  test('fails on dirs without metadata.json', function() {
-    mockFs({'/test/input/svc': {}});
-    assert.throws(
-      () => load({directory: '/test/input'}),
-      /no such file or directory.*metadata.json/);
-  });
-
-  test('fails on metadata.json with unknown version', function() {
-    mockFs({'/test/input/svc/metadata.json': '{"version": 17}'});
-    assert.throws(
-      () => load({directory: '/test/input'}),
-      /unrecognized metadata version/);
-  });
-
   const setupFs = () => {
     mockFs({
       '/test/input/svc1/metadata.json': '{"version": 1}',

@@ -1,8 +1,7 @@
 # Validate Library
 
 A single purpose library to wrap up all of the logic for ensuring that
-content matches established schemas. This is a replacement for
-[taskcluster/schema-validator-publisher](https://github.com/taskcluster/schema-validator-publisher/blob/master/package.json).
+content matches established schemas.
 
 ## Requirements
 
@@ -116,10 +115,6 @@ type: integer
 minValue: {$const: smallest}
 ```
 
-### Publishing
-
-This library will automatically publish schemas to s3 in production, for backward-compatibility with the `taskcluster.net` deployment.
-
 ## Options and Defaults
 
 This section explores some of the options a bit further. In general, your schemas should be
@@ -129,7 +124,7 @@ that directory called `constants.yaml`. You may override these if desired.
 Here are the options along with their default values:
 
 ```js
-    // The name of this service, e.g. auth, queue, index
+    // The name of this service, e.g. auth, queue, index (required)
     serviceName: null
 
     // These constants can be subsituted into all of your schemas
@@ -138,38 +133,7 @@ Here are the options along with their default values:
 
     // This folder should contain all of your schemas defined in either json or yaml.
     folder: '<root of app>/schemas'
-
-    // -- publishing
-    // NOTE: this only applies to `taskcluster.net`; other instances do this as part of the
-    // cluster build process.
-
-    // Whether or not to push your generated schemas out to the world at large.
-    publish: process.env.NODE_ENV == 'production'
-
-    // Which s3 bucket to push schemas to. The default should be correct.
-    bucket: 'schemas.taskcluster.net'
-
-    // Credentials to upload to s3 if publishing. Unimportant otherwise.
-    aws: null
-
-    // -- debugging and testing
-
-    // Whether or not to write your generated schemas to local files.
-    writeFile: false
-
-    // Whether or not to write your generated schemas to the console.
-    preview: false
-
-    // This is probably only used for testing. It allows using different libraries for s3.
-    s3Provider: require('aws-sdk').S3
 ```
-
-### Debugging Options
-
-Set option `writeFile`, or `$WRITE_JSON_SCHEMA_FILES`, to write the fully
-rendered schema files out to `rendered_schemas/` in the current directory.
-Similarly, set option `preview`, or `$PREVIEW_JSON_SCHEMA_FILES`, to write the
-fully rendered schema files out to the console.
 
 ## Testing
 

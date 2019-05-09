@@ -15,7 +15,6 @@ module "purge_cache_secrets" {
     TRUST_PROXY              = "true"
     NODE_ENV                 = "production"
     MONITORING_ENABLE        = "true"
-    PUBLISH_METADATA         = "false"
     AZURE_ACCOUNT            = "${azurerm_storage_account.base.name}"
   }
 }
@@ -46,4 +45,3 @@ module "purge_cache_expire_artifacts" {
   secret_keys      = "${module.purge_cache_secrets.env_var_keys}"
   docker_image     = "${local.taskcluster_image_monoimage}"
 }
-

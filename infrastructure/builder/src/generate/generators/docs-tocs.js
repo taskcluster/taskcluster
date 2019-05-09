@@ -149,7 +149,7 @@ function makeToc({ files, rootPath }) {
 
 exports.tasks = [{
   title: 'Docs TOCs',
-  requires: ['target-references'],
+  requires: [],
   provides: ['docs-toc'],
   run: async (requirements, utils) => {
     const files = await mdParseDir(DOCS_DIR, { dirnames: true });

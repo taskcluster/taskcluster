@@ -5,7 +5,6 @@ defaults:
     hookTableName:     !env HOOK_TABLE_NAME
     lastFireTableName: !env LASTFIRE_TABLE_NAME
     queuesTableName:  !env QUEUE_TABLE_NAME
-    publishMetaData:  !env:bool PUBLISH_METADATA
     lastFiresExpirationDelay: '- 1 day'
     scheduler:
       pollingDelay:   60000
@@ -71,7 +70,6 @@ test:
     hookTableName:    HooksTestTable2
     lastFireTableName: LastFireTestTable
     queuesTableName:  QueueTestTable
-    publishMetaData:  false
     scheduler:
       pollingDelay:   5000
   azure:

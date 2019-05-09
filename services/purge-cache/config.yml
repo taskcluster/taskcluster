@@ -6,9 +6,6 @@ defaults:
     cachePurgeExpirationDelay:   '- 1 hour'
     cacheTime:                   10
 
-    # Publish references and schemas
-    publishMetaData:          !env:bool PUBLISH_METADATA
-
   monitoring:
     enable: !env:bool MONITORING_ENABLE
     pretty: !env:bool PRETTY_LOGGING

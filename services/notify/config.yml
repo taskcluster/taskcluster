@@ -2,7 +2,6 @@ defaults:
   app:
     sourceEmail:                  !env EMAIL_SOURCE_ADDRESS
     routePrefix:                  notify
-    publishMetaData:              !env:bool PUBLISH_METADATA
     # Rate limits for email: maximum average rate of count/time
     # 50 per 10 minute is a reasonable default: someone with an exploding
     # taskgraph will get 50 messages, and will be able to get another 50
@@ -78,7 +77,6 @@ test:
     sqsQueueName: taskcluster-notify-test-irc
     routePrefix: test-notify
     denylistedNotificationTableName: TestDenylistedNotification
-    publishMetaData: false
     emailBlacklist: []
   azure:
     accountId:        'jungle'

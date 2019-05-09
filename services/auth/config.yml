@@ -8,9 +8,6 @@ defaults:
     # Azure blob container for the role table
     rolesContainerName:       !env ROLES_CONTAINER_NAME
 
-    # Publish references and schemas
-    publishMetaData:          !env:bool PUBLISH_METADATA
-
     # Name of component in statistics
     statsComponent:           auth
 
@@ -126,7 +123,6 @@ production:
     development:              false
 test:
   app:
-    publishMetaData:          false
     statsComponent:           auth-tests
     clientTableName:          Clients
     # hardcoded into helper.js

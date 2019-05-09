@@ -195,7 +195,6 @@ module "auth_secrets" {
     NODE_ENV             = "production"
     OWNER_EMAIL          = "bstack@mozilla.com"
     PROFILE              = "production"
-    PUBLISH_METADATA     = "false"
     SENTRY_API_KEY       = "TODO SENTRY 4"
     SENTRY_DSN           = "TODO"
     SENTRY_AUTH_TOKEN    = "TODO"

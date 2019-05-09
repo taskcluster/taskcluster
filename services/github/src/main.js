@@ -8,7 +8,7 @@ const config = require('taskcluster-lib-config');
 const monitorManager = require('./monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const loader = require('taskcluster-lib-loader');
-const docs = require('taskcluster-lib-docs');
+const libReferences = require('taskcluster-lib-references');
 const App = require('taskcluster-lib-app');
 const {sasCredentials} = require('taskcluster-lib-azure');
 const githubAuth = require('./github-auth');
@@ -33,8 +33,6 @@ const load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => new SchemaSet({
       serviceName: 'github',
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
     }),
   },
 
@@ -48,26 +46,12 @@ const load = loader({
     setup: () => new Ajv(),
   },
 
-  docs: {
-    requires: ['cfg', 'schemaset', 'reference'],
-    setup: ({cfg, schemaset, reference}) => docs.documenter({
-      credentials: cfg.taskcluster.credentials,
-      rootUrl: cfg.taskcluster.rootUrl,
-      projectName: 'taskcluster-github',
-      tier: 'integrations',
-      schemaset: schemaset,
-      publish: cfg.app.publishMetaData,
-      references: [
-        {name: 'api', reference: builder.reference()},
-        {name: 'events', reference: reference},
-        {name: 'logs', reference: monitorManager.reference()},
-      ],
-    }),
-  },
-
-  writeDocs: {
-    requires: ['docs'],
-    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
+  generateReferences: {
+    requires: ['cfg', 'schemaset'],
+    setup: ({cfg, schemaset}) => libReferences.fromService({
+      schemaset,
+      references: [builder.reference(), exchanges.reference(), monitorManager.reference()],
+    }).generateReferences(),
   },
 
   pulseClient: {
@@ -87,8 +71,6 @@ const load = loader({
       rootUrl: cfg.taskcluster.rootUrl,
       schemaset,
       client: pulseClient,
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
     }),
   },
 
@@ -174,16 +156,14 @@ const load = loader({
         ajv,
         monitor: monitor.monitor('api-context'),
       },
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
       monitor: monitor.monitor('api'),
       schemaset,
     }),
   },
 
   server: {
-    requires: ['cfg', 'api', 'docs'],
-    setup: ({cfg, api, docs}) => App({
+    requires: ['cfg', 'api'],
+    setup: ({cfg, api}) => App({
       port: cfg.server.port,
       env: cfg.server.env,
       forceSSL: cfg.server.forceSSL,

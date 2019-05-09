@@ -1,7 +1,6 @@
 const express = require('express');
 const url = require('url');
 const Debug = require('debug');
-const aws = require('aws-sdk');
 const assert = require('assert');
 const _ = require('lodash');
 const libUrls = require('taskcluster-lib-urls');
@@ -62,32 +61,6 @@ class API {
     this.entries = this.builder.entries.map(_.clone);
 
     this.options = options;
-  }
-
-  /**
-   * Publish this schema to an S3 bucket.
-   *
-   * This is only used for the `taskcluster.net` deployment.
-   */
-  async publish() {
-    // Check that required options are provided
-    assert(this.options.referenceBucket, '`referenceBucket` is required in order to publish');
-    assert(this.options.aws, '`aws` is required in order to publish');
-
-    // Create S3 object
-    const s3 = new aws.S3(this.options.aws);
-
-    // Get the reference and make it absolute
-    const reference = this.builder.reference();
-    reference.$schema = reference.$schema.replace(/\/schemas/, 'https://schemas.taskcluster.net');
-
-    // Upload object
-    await s3.putObject({
-      Bucket: this.options.referenceBucket,
-      Key: `${this.builder.serviceName}/${this.builder.apiVersion}/api.json`,
-      Body: JSON.stringify(reference, undefined, 2),
-      ContentType: 'application/json',
-    }).promise();
   }
 
   /**

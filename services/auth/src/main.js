@@ -1,6 +1,6 @@
 const Loader = require('taskcluster-lib-loader');
-const Docs = require('taskcluster-lib-docs');
 const SchemaSet = require('taskcluster-lib-validate');
+const libReferences = require('taskcluster-lib-references');
 const monitorManager = require('./monitor');
 const App = require('taskcluster-lib-app');
 const Config = require('taskcluster-lib-config');
@@ -85,40 +85,15 @@ const load = Loader({
     requires: ['cfg'],
     setup: ({cfg}) => new SchemaSet({
       serviceName: 'auth',
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
-      bucket: cfg.app.buckets.schemas,
     }),
   },
 
-  docs: {
+  generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => Docs.documenter({
-      aws: cfg.aws,
-      rootUrl: cfg.taskcluster.rootUrl,
-      projectName: 'taskcluster-auth',
-      tier: 'platform',
+    setup: ({cfg, schemaset}) => libReferences.fromService({
       schemaset,
-      bucket: cfg.app.buckets.docs,
-      publish: cfg.app.publishMetaData,
-      references: [
-        {
-          name: 'api',
-          reference: builder.reference(),
-        }, {
-          name: 'events',
-          reference: exchanges.reference(),
-        }, {
-          name: 'logs',
-          reference: monitorManager.reference(),
-        },
-      ],
-    }),
-  },
-
-  writeDocs: {
-    requires: ['docs'],
-    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
+      references: [builder.reference(), exchanges.reference(), monitorManager.reference()],
+    }).generateReferences(),
   },
 
   pulseClient: {
@@ -137,12 +112,8 @@ const load = Loader({
     setup: async ({cfg, schemaset, pulseClient}) => await exchanges.publisher({
       rootUrl: cfg.taskcluster.rootUrl,
       client: pulseClient,
-      credentials: cfg.pulse,
       schemaset,
       namespace: 'taskcluster-auth',
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
-      referenceBucket: cfg.app.buckets.references,
     }),
   },
 
@@ -189,9 +160,6 @@ const load = Loader({
         },
         schemaset,
         signatureValidator,
-        publish: cfg.app.publishMetaData,
-        aws: cfg.aws,
-        referenceBucket: cfg.app.buckets.references,
         monitor: monitor.monitor('api'),
       });
     },
@@ -204,8 +172,8 @@ const load = Loader({
   },
 
   server: {
-    requires: ['cfg', 'apis', 'docs'],
-    setup: async ({cfg, apis, docs}) => App({
+    requires: ['cfg', 'apis'],
+    setup: async ({cfg, apis}) => App({
       apis,
       ...cfg.server,
     }),

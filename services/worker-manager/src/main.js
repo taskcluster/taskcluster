@@ -4,7 +4,7 @@ const App = require('taskcluster-lib-app');
 const monitorManager = require('./monitor');
 const config = require('taskcluster-lib-config');
 const SchemaSet = require('taskcluster-lib-validate');
-const docs = require('taskcluster-lib-docs');
+const libReferences = require('taskcluster-lib-references');
 const data = require('./data');
 const builder = require('./api');
 const {sasCredentials} = require('taskcluster-lib-azure');
@@ -44,10 +44,15 @@ let load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => new SchemaSet({
       serviceName: 'worker-manager',
-      publish: cfg.app.publishMetaData,
-      rootUrl: cfg.taskcluster.rootUrl,
-      aws: cfg.aws,
     }),
+  },
+
+  generateReferences: {
+    requires: ['cfg', 'schemaset'],
+    setup: ({cfg, schemaset}) => libReferences.fromService({
+      schemaset,
+      references: [builder.reference(), monitorManager.reference()],
+    }).generateReferences(),
   },
 
   api: {
@@ -58,37 +63,9 @@ let load = loader({
         WorkerType,
         providers,
       },
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
       monitor: monitor.monitor('api'),
       schemaset,
     }),
-  },
-
-  docs: {
-    requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => docs.documenter({
-      credentials: cfg.taskcluster.credentials,
-      rootUrl: cfg.taskcluster.rootUrl,
-      projectName: 'taskcluster-worker-manager',
-      tier: 'core',
-      schemaset,
-      publish: cfg.app.publishMetaData,
-      references: [
-        {
-          name: 'api',
-          reference: builder.reference(),
-        }, {
-          name: 'logs',
-          reference: monitorManager.reference(),
-        },
-      ],
-    }),
-  },
-
-  writeDocs: {
-    requires: ['docs'],
-    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
   },
 
   server: {

@@ -2,7 +2,7 @@ const taskcluster = require('taskcluster-client');
 const Handler = require('./handler');
 const exchanges = require('./exchanges');
 const loader = require('taskcluster-lib-loader');
-const docs = require('taskcluster-lib-docs');
+const libReferences = require('taskcluster-lib-references');
 const config = require('taskcluster-lib-config');
 const monitorManager = require('./monitor');
 const SchemaSet = require('taskcluster-lib-validate');
@@ -19,8 +19,6 @@ let load = loader({
     setup: ({cfg}) => {
       return new SchemaSet({
         serviceName: 'treeherder',
-        publish: cfg.app.publishMetaData,
-        aws: cfg.aws,
       });
     },
   },
@@ -56,43 +54,20 @@ let load = loader({
       rootUrl: cfg.taskcluster.rootUrl,
       client: pulseClient,
       schemaset,
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
     }),
   },
 
-  docs: {
+  generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => docs.documenter({
-      credentials: cfg.taskcluster.credentials,
-      rootUrl: cfg.taskcluster.rootUrl,
-      projectName: 'taskcluster-treeherder',
-      tier: 'integrations',
+    setup: ({cfg, schemaset}) => libReferences.fromService({
       schemaset,
-      publish: cfg.app.publishMetaData,
-      references: [
-        {
-          name: 'events',
-          reference: exchanges.reference({
-            rootUrl: cfg.taskcluster.rootUrl,
-            credentials: cfg.pulse.credentials,
-          }),
-        }, {
-          name: 'logs',
-          reference: monitorManager.reference(),
-        },
-      ],
-    }),
-  },
-
-  writeDocs: {
-    requires: ['docs'],
-    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
+      references: [exchanges.reference(), monitorManager.reference()],
+    }).generateReferences(),
   },
 
   server: {
-    requires: ['cfg', 'publisher', 'schemaset', 'monitor', 'docs', 'validator', 'pulseClient'],
-    setup: async ({cfg, publisher, schemaset, monitor, docs, validator, pulseClient}) => {
+    requires: ['cfg', 'publisher', 'schemaset', 'monitor', 'validator', 'pulseClient'],
+    setup: async ({cfg, publisher, schemaset, monitor, validator, pulseClient}) => {
       const queueEvents = new taskcluster.QueueEvents({
         rootUrl: cfg.taskcluster.rootUrl,
       });

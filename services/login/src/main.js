@@ -4,7 +4,7 @@ const scanner = require('./scanner');
 const App = require('taskcluster-lib-app');
 const SchemaSet = require('taskcluster-lib-validate');
 const monitorManager = require('./monitor');
-const docs = require('taskcluster-lib-docs');
+const libReferences = require('taskcluster-lib-references');
 const builder = require('./api');
 
 let load = loader({
@@ -40,35 +40,15 @@ let load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => new SchemaSet({
       serviceName: 'login',
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
     }),
   },
 
-  docs: {
+  generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => docs.documenter({
-      credentials: cfg.app.credentials,
-      rootUrl: cfg.taskcluster.rootUrl,
-      projectName: 'taskcluster-login',
-      tier: 'integrations',
+    setup: ({cfg, schemaset}) => libReferences.fromService({
       schemaset,
-      publish: cfg.app.publishMetaData,
-      references: [
-        {
-          name: 'api',
-          reference: builder.reference(),
-        }, {
-          name: 'logs',
-          reference: monitorManager.reference(),
-        },
-      ],
-    }),
-  },
-
-  writeDocs: {
-    requires: ['docs'],
-    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
+      references: [builder.reference(), monitorManager.reference()],
+    }).generateReferences(),
   },
 
   api: {
@@ -77,15 +57,13 @@ let load = loader({
       schemaset,
       context: {cfg, handlers},
       rootUrl: cfg.taskcluster.rootUrl,
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
       monitor: monitor.monitor('api'),
     }),
   },
 
   server: {
-    requires: ['cfg', 'api', 'docs'],
-    setup: ({cfg, api, docs}) => App({
+    requires: ['cfg', 'api'],
+    setup: ({cfg, api}) => App({
       port: cfg.server.port,
       env: cfg.server.env,
       forceSSL: cfg.server.forceSSL,

@@ -7,7 +7,7 @@ const Scheduler = require('./scheduler');
 const config = require('taskcluster-lib-config');
 const loader = require('taskcluster-lib-loader');
 const App = require('taskcluster-lib-app');
-const docs = require('taskcluster-lib-docs');
+const libReferences = require('taskcluster-lib-references');
 const monitorManager = require('./monitor');
 const taskcluster = require('taskcluster-client');
 const {sasCredentials} = require('taskcluster-lib-azure');
@@ -71,8 +71,6 @@ const load = loader({
     setup: ({cfg}) => {
       return new SchemaSet({
         serviceName: 'hooks',
-        publish: cfg.app.publishMetaData,
-        aws: cfg.aws.validator,
       });
     },
   },
@@ -93,13 +91,7 @@ const load = loader({
     setup: async ({cfg, schemaset, monitor, pulseClient}) => await exchanges.publisher({
       rootUrl: cfg.taskcluster.rootUrl,
       client: pulseClient,
-      credentials: cfg.pulse,
       schemaset,
-      namespace: 'taskcluster-hooks',
-      publish: cfg.app.publishMetaData,
-      validator: await schemaset.validator(cfg.taskcluster.rootUrl),
-      aws: cfg.aws.validator,
-      monitor: monitor.monitor('publisher'),
     }),
   },
 
@@ -127,8 +119,6 @@ const load = loader({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {Hook, LastFire, taskcreator, publisher, denylist: cfg.pulse.denylist},
       schemaset,
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws.validator,
       monitor: monitor.monitor('api'),
     }),
   },
@@ -165,38 +155,17 @@ const load = loader({
     },
   },
 
-  docs: {
+  generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => docs.documenter({
-      credentials: cfg.taskcluster.credentials,
-      rootUrl: cfg.taskcluster.rootUrl,
-      projectName: 'taskcluster-hooks',
-      tier: 'core',
+    setup: ({cfg, schemaset}) => libReferences.fromService({
       schemaset,
-      publish: cfg.app.publishMetaData,
-      references: [
-        {
-          name: 'api',
-          reference: builder.reference(),
-        }, {
-          name: 'events',
-          reference: exchanges.reference(),
-        }, {
-          name: 'logs',
-          reference: monitorManager.reference(),
-        },
-      ],
-    }),
-  },
-
-  writeDocs: {
-    requires: ['docs'],
-    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
+      references: [builder.reference(), exchanges.reference(), monitorManager.reference()],
+    }).generateReferences(),
   },
 
   server: {
-    requires: ['cfg', 'api', 'docs'],
-    setup: ({cfg, api, docs}) => App({
+    requires: ['cfg', 'api'],
+    setup: ({cfg, api}) => App({
       port: cfg.server.port,
       env: cfg.server.env,
       forceSSL: cfg.server.forceSSL,
