@@ -22,6 +22,21 @@ class Provider {
   }
 
   /**
+   * Any code which is required to be run by this Provider must only be
+   * initiated by this method.  If there's any taskcluster-lib-iterate loops to
+   * run, this is where they should be initiated.  Once the returned promise is
+   * resolve, the Provider must be fully working.
+   */
+  async initiate() {
+  }
+
+  /**
+   * Terminate any code which was started by .initiate();
+   */
+  async terminate() {
+  }
+
+  /**
    * Given a workertype configuration, this will ensure that it matches the
    * configuration schema for the implementation of a provider.
    * Returns null if everything is fine and an error message if not.
@@ -44,6 +59,12 @@ class Provider {
    * static provider!
    */
   async provision({workerType}) {
+  }
+
+  // This is the oposite of provision. Given a workertype, tear down whatever
+  // resources this provider has created for it. Once complete, remove yourself
+  // from the workertype's list of previous providers.
+  async deprovision({workerType}) {
   }
 
   /**
@@ -74,21 +95,6 @@ class Provider {
    * Called when a workertype is removed and this provider was providing for it.
    */
   async removeResources({workerType}) {
-  }
-
-  /**
-   * Any code which is required to be run by this Provider must only be
-   * initiated by this method.  If there's any taskcluster-lib-iterate loops to
-   * run, this is where they should be initiated.  Once the returned promise is
-   * resolve, the Provider must be fully working.
-   */
-  async initiate() {
-  }
-
-  /**
-   * Terminate any code which was started by .initiate();
-   */
-  async terminate() {
   }
 }
 

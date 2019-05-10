@@ -11,9 +11,11 @@ properties:
   description: {$ref: "workertype-full.json#/properties/description"}
   config: {$ref: "workertype-full.json#/properties/config"}
   owner: {$ref: "workertype-full.json#/properties/owner"}
+  wantsEmail: {$ref: "workertype-full.json#/properties/wantsEmail"}
 additionalProperties: false
 required:
   - provider
   - description
   - config
   - owner
+  - wantsEmail

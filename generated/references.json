@@ -3,7 +3,7 @@
     "content": {
       "$id": "/schemas/worker-manager/v1/workertype-list.json#",
       "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "description": "A list of worker types",
       "properties": {
         "continuationToken": {
@@ -11,7 +11,7 @@
           "title": "Continuation Token",
           "type": "string"
         },
-        "workertypes": {
+        "workerTypes": {
           "description": "List of all workertypes",
           "items": {
             "$ref": "workertype-full.json#"
@@ -22,7 +22,7 @@
         }
       },
       "required": [
-        "data"
+        "workerTypes"
       ],
       "title": "WorkerType List",
       "type": "object"
@@ -37,67 +37,48 @@
       "description": "A complete workerType definition.\n",
       "properties": {
         "config": {
-          "additionalProperties": true,
-          "description": "A workertype configuration. It will be different based on the provider\nand the format is validated internally.\n",
-          "type": "object"
+          "anyOf": [
+            {
+              "$ref": "config-google.json#"
+            },
+            {
+              "$ref": "config-static.json#"
+            },
+            {
+              "$ref": "config-testing.json#"
+            }
+          ]
         },
         "created": {
           "description": "Date and time when this workerType was created\n",
           "format": "date-time",
+          "title": "Created",
           "type": "string"
         },
         "description": {
           "description": "A description of this workerType.\n",
           "maxLength": 10240,
+          "title": "Description",
           "type": "string"
-        },
-        "errors": {
-          "description": "The last 100 errors a provider faced when trying to provision\nthis workertype.\n",
-          "items": [
-            {
-              "additionalProperties": true,
-              "description": "A single error",
-              "properties": {
-                "description": {
-                  "description": "A human-readable explanation of what caused this error and possible fixes",
-                  "type": "string"
-                },
-                "kind": {
-                  "description": "A unique identifier of this error type",
-                  "type": "string"
-                },
-                "reported": {
-                  "description": "The timestamp of when this error was encountered",
-                  "format": "date-time",
-                  "type": "string"
-                },
-                "title": {
-                  "description": "A human-readable name for this error",
-                  "type": "string"
-                }
-              },
-              "type": "object"
-            }
-          ],
-          "maxItems": 100,
-          "type": "array",
-          "uniqueItems": false
         },
         "lastModified": {
           "description": "Date and time when this workerType was last updated\n",
           "format": "date-time",
+          "title": "Last Modified",
           "type": "string"
         },
         "name": {
           "description": "The name of this workertype.\n",
           "maxLength": 38,
           "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "pattern": "[a-z]([-a-z0-9]*[a-z0-9])?",
+          "title": "WorkerType Name",
           "type": "string"
         },
         "owner": {
           "description": "An email address to notify when there are provisioning errors for this\nworkertype.\n",
           "format": "email",
+          "title": "Owner Email",
           "type": "string"
         },
         "provider": {
@@ -105,7 +86,18 @@
           "maxLength": 38,
           "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_]*)$",
+          "title": "Provider",
           "type": "string"
+        },
+        "scheduledForDeletion": {
+          "description": "If true, a user has requested that this workertype be deleted",
+          "title": "Scheduled For Deletion",
+          "type": "boolean"
+        },
+        "wantsEmail": {
+          "description": "If true, the owner should be emailed on provisioning errors",
+          "title": "Wants Email",
+          "type": "boolean"
         }
       },
       "required": [
@@ -115,7 +107,8 @@
         "lastModified",
         "config",
         "owner",
-        "errors"
+        "scheduledForDeletion",
+        "wantsEmail"
       ],
       "title": "WorkerType Full",
       "type": "object"
@@ -130,12 +123,15 @@
       "description": "Response for workers that want Taskcluster credentials",
       "properties": {
         "accessToken": {
+          "description": "AccessToken used for authenticating requests, you should store this\nyou won't be able to retrive it again!\n",
           "type": "string"
         },
         "certificate": {
+          "description": "Needed to access taskcluster apis using temporary credentials",
           "type": "string"
         },
         "clientId": {
+          "description": "ClientId of the client",
           "type": "string"
         }
       },
@@ -151,12 +147,45 @@
   },
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/pulse-workertype-message.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "The message that is emitted when workertypes are created/changed/deleted.",
+      "properties": {
+        "name": {
+          "$ref": "workertype-full.json#/properties/provider"
+        },
+        "previousProvider": {
+          "description": "If this is defined, it was the provider that handled this workertype in the \nconfiguration before the current one. This will be used by providers to clean\nup any resources created for this workerType when they are no longer responsible\nfor it.\n",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "title": "Previous Provider",
+          "type": "string"
+        },
+        "provider": {
+          "$ref": "workertype-full.json#/properties/provider"
+        }
+      },
+      "required": [
+        "name",
+        "provider"
+      ],
+      "title": "WorkerType Pulse Message",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/pulse-workertype-message.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/credentials-google-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
       "description": "Called by workers to get Taskcluster credentials",
       "properties": {
         "token": {
+          "description": "A JWT token as defined in [this google documentation](https://cloud.google.com/compute/docs/instances/verifying-instance-identity)",
+          "title": "Token",
           "type": "string"
         }
       },
@@ -186,18 +215,133 @@
         },
         "provider": {
           "$ref": "workertype-full.json#/properties/provider"
+        },
+        "wantsEmail": {
+          "$ref": "workertype-full.json#/properties/wantsEmail"
         }
       },
       "required": [
         "provider",
         "description",
         "config",
-        "owner"
+        "owner",
+        "wantsEmail"
       ],
       "title": "WorkerType Definition",
       "type": "object"
     },
     "filename": "schemas/worker-manager/v1/create-workertype-request.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/config-testing.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "A provider used for testing",
+      "title": "Testing Provider Config",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/config-testing.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/config-static.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "A configuration for static workertypes",
+      "title": "Static Provider Config",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/config-static.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/config-google.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "'The config section of a workertype is using a provider with implementation google must match this.\nMuch of these fields are documented [here](https://cloud.google.com/compute/docs/reference/rest/v1/instanceTemplates)'\n",
+      "properties": {
+        "capacityPerInstance": {
+          "description": "The number of tasks a single worker of this type can run at any given time.",
+          "minimum": 1,
+          "title": "Capacity Per Instance",
+          "type": "integer"
+        },
+        "disks": {
+          "description": "Configure the networking available to the instance. Permitted fields documented in\nthe full instance template docs above. It is likely that you will want to have at least\na single `PERSISTENT` disk where the source image is one that contains a taskcluster worker\nconfigured to run on boot and talk to worker-manager for credentials.\n",
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Disks",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "machineType": {
+          "description": "'The google machine type to use to run this instance. This refers to\n[these types](https://cloud.google.com/compute/docs/machine-types)'\n",
+          "title": "Machine Type",
+          "type": "string"
+        },
+        "maxCapacity": {
+          "description": "The maximum amount of capacity that worker-manager should make\navailable at any given time.\n",
+          "minimum": 0,
+          "title": "Maximum Capacity",
+          "type": "integer"
+        },
+        "minCapacity": {
+          "description": "The minimum amount of capacity that worker-manager should make\navailable at any given time.\n",
+          "minimum": 0,
+          "title": "Minimum Capacity",
+          "type": "integer"
+        },
+        "networkInterfaces": {
+          "description": "Configure the networking available to the instance. Permitted fields documented in\nthe full instance template docs above.\n",
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Network Interfaces",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "regions": {
+          "description": "The google cloud regions to run these instances in. Google documents these [here](https://cloud.google.com/compute/docs/regions-zones/)",
+          "items": {
+            "type": "string"
+          },
+          "title": "Regions",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "scheduling": {
+          "additionalProperties": true,
+          "description": "Extra documentation [here](https://cloud.google.com/compute/docs/instances/setting-instance-scheduling-options)",
+          "title": "Scheduling",
+          "type": "object"
+        },
+        "userData": {
+          "additionalProperties": true,
+          "description": "Arbitrary configuration that Worker Manager will make available to the worker\non start up via instance metadata.\n",
+          "title": "User Data",
+          "type": "object"
+        }
+      },
+      "required": [
+        "image",
+        "minCapacity",
+        "maxCapacity",
+        "capacityPerInstance",
+        "machineType",
+        "regions",
+        "userData",
+        "scheduling",
+        "networkInterfaces",
+        "disks"
+      ],
+      "title": "Google Provider Config",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/config-google.json"
   },
   {
     "content": {
@@ -7722,6 +7866,34 @@
           "version": 1
         },
         {
+          "description": "The simple estimator has decided that we need some number of instances.",
+          "fields": {
+            "capacityPerInstance": "Amount of capacity a single instance provides",
+            "currentSize": "Number of currently requested instances",
+            "desiredSize": "Number that this estimator thinks we should have",
+            "maxCapacity": "The maximum amount of capacity that should be running",
+            "minCapacity": "The minimum amount of capacity that should be running",
+            "pendingTasks": "The number of tasks the queue reports are pending for this workerType",
+            "workerType": "The name of the workertype."
+          },
+          "level": "notice",
+          "name": "simpleEstimate",
+          "title": "Simple Estimate Provided",
+          "type": "simple-estimate",
+          "version": 1
+        },
+        {
+          "description": "A pulse publisher has been notified by the pulse server\nthat it has been blocked, usually because the server is\nresource-constrained.  If `blocked` is false, then the\nnotification is that the publisher has been unblocked\nafter having previously been blocked.",
+          "fields": {
+            "blocked": "If true, the publisher has been blocked; if false, it has been unblocked."
+          },
+          "level": "warning",
+          "name": "pulsePublisherBlocked",
+          "title": "Pulse server has (un)blocked a publisher",
+          "type": "pulsePublisherBlocked",
+          "version": 1
+        },
+        {
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
@@ -7749,9 +7921,91 @@
   },
   {
     "content": {
+      "$schema": "/schemas/common/exchanges-reference-v0.json#",
+      "apiVersion": "v1",
+      "description": "These exchanges provide notifications when a workerType is created, updatedor deleted. This is so that the listener running in a differentprocess at the other end can direct another listener specified by`provider` and `workerType` to synchronize its bindings. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.",
+      "entries": [
+        {
+          "description": "Whenever the api receives a request to create aworkerType, a message is posted to this exchange anda provider can act upon it.",
+          "exchange": "workertype-created",
+          "name": "workerTypeCreated",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-workertype-message.json#",
+          "title": "WorkerType Created Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever the api receives a request to update aworkerType, a message is posted to this exchange anda provider can act upon it.",
+          "exchange": "workertype-updated",
+          "name": "workerTypeUpdated",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-workertype-message.json#",
+          "title": "WorkerType Updated Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever the api receives a request to delete aworkerType, a message is posted to this exchange anda provider can act upon it.",
+          "exchange": "workertype-deleted",
+          "name": "workerTypeDeleted",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-workertype-message.json#",
+          "title": "WorkerType Deleted Messages",
+          "type": "topic-exchange"
+        }
+      ],
+      "exchangePrefix": "exchange/taskcluster-worker-manager/v1/",
+      "serviceName": "worker-manager",
+      "title": "Worker Manager Exchanges"
+    },
+    "filename": "references/worker-manager/v1/exchanges.json"
+  },
+  {
+    "content": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "This service manages workers, including provisioning",
+      "description": "This service manages workers, including provisioning for dynamic workertypes.",
       "entries": [
         {
           "args": [
@@ -10582,6 +10836,7 @@
         "/references/treeherder/v1/exchanges.json",
         "/references/treeherder/v1/logs.json",
         "/references/worker-manager/v1/api.json",
+        "/references/worker-manager/v1/exchanges.json",
         "/references/worker-manager/v1/logs.json"
       ]
     },

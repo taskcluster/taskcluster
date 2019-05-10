@@ -107,27 +107,15 @@ class Provisioner {
       handler: async workerType => {
         const provider = this.providers[workerType.provider];
 
-        // This should not happen because we assert at workertype
-        // creation/update time that the provider exists and we
-        // don't allow providers that have workertypes to be deleted
-        // but that logic seems iffy enough that an explicit alert
-        // here would be nice
-        if (!provider) {
-          await workerType.reportError({
-            kind: 'unknown-provider',
-            title: 'Unknown Provider',
-            description: 'The selected provider does not exist in Taskcluster.',
-            extra: {
-              provider,
-              available: Object.keys(this.providers),
-            },
-            notify: this.notify,
-            owner: workerType.owner,
-          });
-          return;
+        if (workerType.scheduledForDeletion) {
+          await provider.deprovision({workerType});
+        } else {
+          await provider.provision({workerType});
         }
 
-        await provider.provision({workerType});
+        await Promise.all(workerType.previousProviders.map(async p => {
+          await this.providers[p].deprovision({workerType});
+        }));
 
         this.monitor.log.workertypeProvisioned({
           workerType: workerType.name,

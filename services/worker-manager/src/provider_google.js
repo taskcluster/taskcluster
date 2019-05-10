@@ -1,9 +1,8 @@
-const assert = require('assert');
+const _ = require('lodash');
 const fs = require('fs');
 const taskcluster = require('taskcluster-client');
 const libUrls = require('taskcluster-lib-urls');
 const uuid = require('uuid');
-const {TimedCache} = require('./timedcache');
 const {google} = require('googleapis');
 const {Provider} = require('./provider');
 
@@ -24,11 +23,11 @@ class GoogleProvider extends Provider {
     Worker,
   }) {
     super({name, taskclusterCredentials, monitor, notify, provisionerId, rootUrl, estimator, Worker});
-    this.cache = new TimedCache();
     this.configSchema = 'config-google';
 
     this.instancePermissions = instancePermissions;
     this.project = project;
+    this.zonesByRegion = {};
 
     this.providerVersion = 'v1'; // Bump this if you change this in a backwards-incompatible way
 
@@ -58,25 +57,43 @@ class GoogleProvider extends Provider {
     this.oauth2 = new google.auth.OAuth2();
   }
 
-  async createResources({workerType}) {
-    const accountName = `tcw-${workerType.name}`;
-    const accountEmail = `${accountName}@${this.project}.iam.gserviceaccount.com`;
+  /*
+   * We will first set up a service account and role for each worker to use
+   * since the default service account workers get is not very restricted
+   */
+  async initiate() {
 
-    // First create a service account for this workertype
-    const account = await this.iam.projects.serviceAccounts.create({
-      name: `projects/${this.project}`,
-      accountId: accountName,
-      requestBody: {
-        serviceAccount: {
-          displayName: `Taskcluster Worker Group: ${workerType.name}`,
-          description: workerType.description,
+    const accountId = 'taskcluster-workers';
+    this.workerAccountEmail = `${accountId}@${this.project}.iam.gserviceaccount.com`;
+    const accountRef = `projects/${this.project}/serviceAccounts/${this.workerAccountEmail}`;
+    const roleId = 'taskcluster_workers';
+    const roleName =`projects/${this.project}/roles/${roleId}`;
+
+    // First we set up the service account
+    await this.readModifySet({
+      read: async () => (await this.iam.projects.serviceAccounts.get({
+        name: accountRef,
+      })).data,
+      compare: () => true, // We do not modify this resource
+      modify: () => {}, // Not needed due to no modifications
+      set: async () => await this.iam.projects.serviceAccounts.create({
+        name: `projects/${this.project}`,
+        accountId,
+        requestBody: {
+          serviceAccount: {
+            displayName: 'Taskcluster Workers',
+            description: 'A service account shared by all Taskcluster workers.',
+          },
         },
-      },
+      }),
     });
 
-    // Now we grant ourlves the ability to create workertypes with this user
+    // Next we ensure that worker-manager can create instances with
+    // this service account
+    // If this is not the first time this has been set up, it will
+    // simply overwrite the values in there now. This will undo manual changes.
     await this.iam.projects.serviceAccounts.setIamPolicy({
-      resource: `projects/${this.project}/serviceAccounts/${accountEmail}`,
+      resource: `projects/${this.project}/serviceAccounts/${this.workerAccountEmail}`,
       requestBody: {
         policy: {
           bindings: [{
@@ -87,16 +104,55 @@ class GoogleProvider extends Provider {
       },
     });
 
-    // Remember everything we've made
-    await workerType.modify(wt => {
-      wt.providerData.serviceAccountId = account.data.uniqueId;
+    // Now we create a role or update it with whatever permissions we've configured
+    // for this provider
+    await this.readModifySet({
+      read: async () => (await this.iam.projects.roles.get({
+        name: roleName,
+      })).data,
+      compare: role => _.isEqual(role.includedPermissions, this.instancePermissions),
+      modify: async role => {
+        role.includedPermissions = this.instancePermissions;
+        await this.iam.projects.roles.patch({
+          name: roleName,
+          updateMask: 'includedPermissions',
+          requestBody: role,
+        });
+      },
+      set: async () => this.iam.projects.roles.create({
+        parent: `projects/${this.project}`,
+        requestBody: {
+          roleId,
+          role: {
+            title: 'Taskcluster Workers',
+            description: 'Role shared by all Taskcluster workers.',
+            includedPermissions: this.instancePermissions,
+          },
+        },
+      }),
     });
-  }
 
-  async updateResources({workerType}) {
-  }
-
-  async removeResources({workerType}) {
+    // Assign the role to the serviceAccount and we're good to go!
+    const binding = {
+      role: roleId,
+      members: [`serviceAccount:${this.workerAccountEmail}`],
+    };
+    await this.readModifySet({
+      read: async () => (await this.crm.projects.getIamPolicy({
+        resource: this.project,
+        requestBody: {},
+      })).data,
+      compare: policy => policy.bindings.some(b => _.isEqual(b, binding)),
+      modify: async policy => {
+        policy.bindings.push(binding);
+        await this.crm.projects.setIamPolicy({
+          resource: this.project,
+          requestBody: {
+            policy,
+          },
+        });
+      },
+    });
   }
 
   /**
@@ -111,7 +167,7 @@ class GoogleProvider extends Provider {
     // This will throw an error if the token is invalid at all
     let {payload} = await this.oauth2.verifyIdToken({
       idToken: token,
-      audience: workerType.name,
+      audience: this.rootUrl,
     });
     const dat = payload.google.compute_engine;
 
@@ -140,6 +196,7 @@ class GoogleProvider extends Provider {
     // Workers that fail to get creds after this should terminate themselves
     await this.Worker.create({
       workerType: workerType.name,
+      provider: this.name,
       workerId,
       credentialed: new Date(),
     });
@@ -156,349 +213,68 @@ class GoogleProvider extends Provider {
     });
   }
 
-  async prepare() {
-    this.seen = {};
-  }
-
   async provision({workerType}) {
-    const {email: accountEmail} = await this.configureServiceAccount({workerType});
-    const {name: roleId} = await this.configureRole({workerType});
-
-    // The account policies are global to a project so we'll update them
-    // in cleanup to avoid lots of contention and this will also allow us to
-    // know which types need removed!
-    this.seen[roleId] = accountEmail;
-
-    if (!await this.ensureImage({workerType})) {
-      return;
+    const regions = workerType.config.regions;
+    const region = regions[Math.floor(Math.random() * regions.length)];
+    if (!this.zonesByRegion[region]) {
+      this.zonesByRegion[region] = (await this.compute.regions.get({
+        project: this.project,
+        region,
+      })).data.zones;
     }
+    const zones = this.zonesByRegion[region];
+    const zone = zones[Math.floor(Math.random() * zones.length)].split('/').slice(-1)[0];
 
-    const template = await this.setupTemplate({workerType, accountEmail});
-    if (!template) {
-      return; // The template is in the process of being created. Once it is complete we will continue
-    }
+    // TODO: Use p-queue for all operations against google
 
-    const currentSize = workerType.providerData.targetSize !== undefined ? workerType.providerData.targetSize : 0;
-
-    const targetSize = await this.estimator.simple({
-      name: workerType.name,
-      ...workerType.config,
-      currentSize,
+    const res = await this.compute.instances.insert({
+      project: this.project,
+      zone,
+      requestId: uuid.v4(), // This is just for idempotency
+      requestBody: {
+        name: workerType.name,
+        description: workerType.description,
+        machineType: workerType.config.machineType,
+        scheduling: workerType.config.scheduling,
+        networkInterfaces: workerType.config.networkInterfaces,
+        disks: workerType.config.disks,
+        serviceAccounts: [{
+          email: this.workerAccountEmail,
+          scopes: [
+            /*
+             * This looks scary but is ok. According to
+             * https://cloud.google.com/compute/docs/access/service-accounts#accesscopesiam
+             *
+             * "A best practice is to set the full cloud-platform
+             * access scope on the instance, then securely limit
+             * the service account's API access with IAM roles."
+             *
+             * Which is what we do.
+             */
+            'https://www.googleapis.com/auth/cloud-platform',
+          ],
+        }],
+        metadata: {
+          items: [
+            {
+              key: 'taskcluster',
+              value: JSON.stringify({
+                provisionerId: this.provisionerId,
+                workerType: workerType.name,
+                workerGroup: `${workerType.name}-google`,
+                credentialUrl: libUrls.api(this.rootUrl, 'worker-manager', 'v1', `credentials/google/${workerType.name}`),
+                rootUrl: this.rootUrl,
+                userData: workerType.config.userData,
+              }),
+            },
+          ],
+        },
+      },
     });
 
-    await workerType.modify(wt => {
-      wt.providerData.targetSize = targetSize;
-    });
-
-    await this.setupInstanceGroup({workerType, template, targetSize});
+    console.log(res);
 
     await this.handleOperations({workerType});
-  }
-
-  /*
-   * Given the list of seen workertypes from this loop,
-   * go update the policies for this project so that existing
-   * service accounts get proper role assignments and removing
-   * deleted workertypes. This will also remove the role and service
-   * account per deleted workertype.
-   */
-  async cleanup() {
-    const policy = (await this.crm.projects.getIamPolicy({
-      resource: this.project,
-      requestBody: {},
-    })).data;
-
-    // TODO: document and test that taskcluster.workertype is a required role prefix
-    const existing = policy.bindings
-      .map(p => p.role)
-      .filter(r => r.startsWith(`projects/${this.project}/roles/taskcluster.workertype`));
-    const toDelete = existing.filter(r => !this.seen[r]);
-    const toAdd = Object.keys(this.seen).filter(r => !existing.includes(r));
-
-    // In this case, nothing has changed, let's move on
-    if (!toAdd.length && !toDelete.length) {
-      return;
-    }
-
-    // Do all of this cleanup first so that if anything fails
-    // the workertype will still be listed in the account policies next time around
-    // to finish cleanup.
-    for (const workerType of toDelete) {
-      // First delete instancegroup
-      // second the templates
-      // next the role
-      // then the serviceaccount
-      console.log(workerType);
-    }
-
-    for (const role of toAdd) {
-      policy.bindings.push({
-        role,
-        members: [`serviceAccount:${this.seen[role]}`],
-      });
-    }
-
-    // TODO: Handle etag conflict with retries or document that
-    // this can fail and will be re-attempted on the next iteration
-    await this.crm.projects.setIamPolicy({
-      resource: this.project,
-      requestBody: {
-        policy,
-      },
-    });
-  }
-
-  async configureServiceAccount({workerType}) {
-    const accountName = `tcw-${workerType.name}`;
-    const accountEmail = `${accountName}@${this.project}.iam.gserviceaccount.com`;
-    const fullName = `projects/${this.project}/serviceAccounts/${accountEmail}`;
-    return await this.readModifySet({
-      workerType,
-      key: 'service-account',
-
-      read: async () => this.iam.projects.serviceAccounts.get({
-        name: fullName,
-      }),
-
-      compare: current => current.description === workerType.description,
-
-      modify: async current => {
-        const updated = {
-          ...current,
-          description: workerType.description,
-        };
-        await this.iam.projects.serviceAccounts.patch({
-          name: fullName,
-          requestBody: {
-            serviceAccount: updated,
-            updateMask: 'description',
-          },
-        });
-        return updated;
-      },
-
-      set: async () => {
-        return account;
-      },
-    });
-  }
-
-  async configureRole({workerType}) {
-    const roleId = `taskcluster.workertype.${workerType.name.replace(/-/g, '_')}`;
-    const roleName =`projects/${this.project}/roles/${roleId}`;
-    return await this.readModifySet({
-      workerType,
-      key: 'role',
-
-      read: async () => this.iam.projects.roles.get({
-        name: roleName,
-      }),
-
-      compare: current => {
-        try {
-          assert.deepEqual({
-            includedPermissions: current.includedPermissions,
-            description: current.description,
-          }, {
-            includedPermissions: this.instancePermissions,
-            description: workerType.description,
-          });
-        } catch (err) {
-          return false;
-        }
-        return true;
-      },
-
-      modify: async current => {
-        const updated = {
-          ...current,
-          description: workerType.description,
-          includedPermissions: this.instancePermissions,
-        };
-        await this.iam.projects.roles.patch({
-          name: roleName,
-          updateMask: 'description,includedPermissions',
-          requestBody: updated,
-        });
-        return updated;
-      },
-
-      set: async () => this.iam.projects.roles.create({
-        parent: `projects/${this.project}`,
-        requestBody: {
-          roleId,
-          role: {
-            title: `Taskcluster ${workerType.name} Worker Role`,
-            description: workerType.description,
-            includedPermissions: this.instancePermissions,
-          },
-        },
-      }),
-    });
-  }
-
-  async setupTemplate({workerType, accountEmail}) {
-    // TODO: assert that workertype name matches [a-z]([-a-z0-9]*[a-z0-9])? for this provider
-    const templateName = `${workerType.name}-${this.providerVersion}-${workerType.lastModified.getTime()}`;
-    return await this.readModifySet({
-      workerType,
-      key: 'template',
-
-      read: async () => this.compute.instanceTemplates.get({
-        project: this.project,
-        instanceTemplate: templateName,
-      }),
-
-      // These are immutable so if a value exists it is correct (also no need for modify here)
-      compare: current => current.name === templateName,
-
-      set: async () => {
-        const operation = await this.compute.instanceTemplates.insert({
-          project: this.project,
-          requestId: uuid(),
-          requestBody: {
-            name: templateName,
-            description: workerType.description,
-            properties: {
-              description: workerType.description,
-              serviceAccounts: [{
-                email: accountEmail,
-                scopes: [
-                  /*
-                   * This looks scary but is ok. According to
-                   * https://cloud.google.com/compute/docs/access/service-accounts#accesscopesiam
-                   *
-                   * "A best practice is to set the full cloud-platform
-                   * access scope on the instance, then securely limit
-                   * the service account's API access with IAM roles."
-                   *
-                   * Which is what we do.
-                   */
-                  'https://www.googleapis.com/auth/cloud-platform',
-                ],
-              }],
-              machineType: workerType.config.machineType,
-              metadata: {
-                items: [
-                  {
-                    key: 'config',
-                    value: JSON.stringify({
-                      provisionerId: this.provisionerId,
-                      workerType: workerType.name,
-                      workerGroup: `${workerType.name}-${workerType.config.region}`,
-                      credentialUrl: libUrls.api(this.rootUrl, 'worker-manager', 'v1', `credentials/google/${workerType.name}`),
-                      rootUrl: this.rootUrl,
-                      userData: workerType.config.userData,
-                    }),
-                  },
-                ],
-              },
-              scheduling: workerType.config.scheduling,
-              networkInterfaces: workerType.config.networkInterfaces,
-              disks: workerType.config.disks,
-              // We can add things like guestaccelerators and minCpuPlatform here if we want as well
-            },
-          },
-        });
-        // TODO: abstract this opertaion logic into a function and probably clean up all of the .data
-        // differences in each of the get/set/etc. This all could do with a pass of abstraction I think.
-        await workerType.modify(wt => {
-          if (wt.providerData.trackedOperations) {
-            wt.providerData.trackedOperations.push(operation.data);
-          } else {
-            wt.providerData.trackedOperations = [operation.data];
-          }
-        });
-        // Do not cache this result, it is not a template but an operation
-        // On the first iteration after the operation is completed,
-        // the `read` above will pick up the created template.
-        return {data: undefined};
-      },
-    });
-  }
-
-  // TODO: Make sure to set remaining knobs of groups
-  // TODO: Who knows if modify actually makes sense here
-  async setupInstanceGroup({workerType, template, targetSize}) {
-    const templateId = template.selfLink;
-    const resourceId = workerType.name;
-    return await this.readModifySet({
-      workerType,
-      key: 'group',
-
-      read: async () => this.compute.regionInstanceGroupManagers.get({
-        project: this.project,
-        region: workerType.config.region,
-        instanceGroupManager: resourceId,
-      }),
-
-      compare: current => {
-        if (current.region.endsWith(workerType.config.region)) {
-          return false;
-        }
-        try {
-          assert.deepEqual({
-            description: current.description,
-            instanceTemplate: current.instanceTemplate,
-            baseInstanceName: current.baseInstanceName,
-            targetSize: current.targetSize,
-          }, {
-            description: workerType.description,
-            instanceTemplate: templateId,
-            baseInstancename: workerType.name,
-            targetSize,
-          }, {
-          });
-        } catch (err) {
-          return false;
-        }
-        return true;
-      },
-
-      modify: async current => {
-        const operation = await this.compute.regionInstanceGroupManagers.patch({
-          project: this.project,
-          region: workerType.config.region,
-          instanceGroupManager: resourceId,
-          requestBody: {
-            description: workerType.description,
-            instanceTemplate: templateId,
-            baseInstancename: workerType.name,
-            targetSize,
-          },
-        });
-        await workerType.modify(wt => {
-          if (wt.providerData.trackedOperations) {
-            wt.providerData.trackedOperations.push(operation.data);
-          } else {
-            wt.providerData.trackedOperations = [operation.data];
-          }
-        });
-        return undefined; // This is an operation, do not cache
-      },
-
-      set: async () => {
-        const operation = await this.compute.regionInstanceGroupManagers.insert({
-          project: this.project,
-          region: workerType.config.region,
-          requestBody: {
-            name: resourceId,
-            description: workerType.description,
-            instanceTemplate: templateId,
-            baseInstancename: workerType.name,
-            targetSize,
-          },
-        });
-        await workerType.modify(wt => {
-          if (wt.providerData.trackedOperations) {
-            wt.providerData.trackedOperations.push(operation.data);
-          } else {
-            wt.providerData.trackedOperations = [operation.data];
-          }
-        });
-        return {data: undefined}; // This is an operation, do not cache
-      },
-    });
   }
 
   /**
@@ -559,7 +335,6 @@ class GoogleProvider extends Provider {
               code: err.code,
             },
             notify: this.notify,
-            owner: workerType.owner,
           });
         }
       }
@@ -577,47 +352,47 @@ class GoogleProvider extends Provider {
    * Example: https://cloud.google.com/iam/docs/creating-custom-roles#read-modify-write
    */
   async readModifySet({
-    workerType,
-    key,
     compare,
     read,
     modify,
     set,
+    tries = 0,
   }) {
     let resource;
-
-    key = `${workerType.name}.last-seen.${key}`;
-    const lastSeen = this.cache.get(key);
-
-    // If this is unchanged from last time, just
-    // return it.
-    if (lastSeen && compare(lastSeen)) {
-      return lastSeen;
-    }
-
     try {
       // First try to get the resource
-      let res = await read();
-      resource = res.data;
-
-      // If the value in google is different
-      // from the one we want it to be, we try to update it
-      if (!compare(resource)) {
-        res = await modify(resource);
-        resource = res;
-      }
+      resource = await read();
     } catch (err) {
       if (err.code !== 404) {
         throw err;
       }
-      // If the resource was never there in the first place, create it
-      const res = await set();
-      resource = res.data;
     }
-    this.cache.set(key, resource);
-    return resource;
-  }
 
+    try {
+      if (resource) {
+        // If the value in google is different
+        // from the one we want it to be, we try to update it
+        if (!compare(resource)) {
+          await modify(resource);
+        }
+      } else {
+        // If the resource was never there in the first place, create it
+        await set();
+      }
+    } catch (err) {
+      if (err.code !== 409 && tries < 5) {
+        throw err;
+      }
+      await new Promise(accept => setTimeout(accept, Math.pow(2, tries) * 100));
+      await this.readModifySet({
+        compare,
+        read,
+        modify,
+        set,
+        tries: tries++,
+      });
+    }
+  }
 }
 
 module.exports = {

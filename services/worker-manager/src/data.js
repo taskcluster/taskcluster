@@ -11,8 +11,13 @@ const WorkerType = Entity.configure({
     // A unique name for this workertype. This maps to a workertype name in tc-queue.
     name: Entity.types.String,
 
-    // Each workertype must choose a single "provider" that will do any provisioning on its behalf
+    // Each workertype must choose a single active provider that will do any provisioning on its behalf
     provider: Entity.types.String,
+
+    // If a workertype was previously assigned to another provider and no longer is, it will
+    // be added to this field. The provider can then remove any resources created for this
+    // workertype and then remove itself from this field when done
+    previousProviders: Entity.types.JSON,
 
     // A useful human-readable description of what this workertype is for
     description: Entity.types.String,
@@ -31,8 +36,11 @@ const WorkerType = Entity.configure({
     // provide some sort of schema for this.
     config: Entity.types.JSON,
 
-    // An email address that gets a notification when there is an error provisioning
+    // An email address for sending notifications to
     owner: Entity.types.String,
+
+    // If true, an email will be sent to the owner for certain conditions such as provisioning errors
+    wantsEmail: Entity.types.Boolean,
 
     // Providers can use this to remember values between provisioning runs
     providerData: Entity.types.JSON,
@@ -49,6 +57,7 @@ WorkerType.prototype.serializable = function() {
     config: this.config,
     scheduledForDeletion: this.scheduledForDeletion,
     owner: this.owner,
+    wantsEmail: this.wantsEmail,
   };
 };
 
@@ -62,11 +71,12 @@ WorkerType.prototype.compare = function(other) {
     'config',
     'scheduledForDeletion',
     'owner',
+    'wantsEmail',
   ];
   return _.isEqual(_.pick(other, fields), _.pick(this, fields));
 };
 
-WorkerType.prototype.reportError = async ({kind, title, description, extra, notify, owner}) => {
+WorkerType.prototype.reportError = async ({kind, title, description, extra, notify}) => {
   await WorkerTypeError.create({
     workerType: this.name,
     errorId: slugid.v4(),
@@ -76,23 +86,25 @@ WorkerType.prototype.reportError = async ({kind, title, description, extra, noti
     description,
     extra,
   });
-  await notify.email({
-    address: owner,
-    subject: `Taskcluster Worker Manager Error: ${title}`,
-    content: `
-Worker Manager has encountered an error while trying to provision the workertype ${this.name}:
+  if (this.wantsEmail) {
+    await notify.email({
+      address: this.owner,
+      subject: `Taskcluster Worker Manager Error: ${title}`,
+      content: `
+  Worker Manager has encountered an error while trying to provision the workertype ${this.name}:
 
-\`\`\`
-${description}
-\`\`\`
+  \`\`\`
+  ${description}
+  \`\`\`
 
-It includes the extra information:
+  It includes the extra information:
 
-\`\`\`json
-${yaml.safeDump(extra)}
-\`\`\`
-    `.trim(),
-  });
+  \`\`\`json
+  ${yaml.safeDump(extra)}
+  \`\`\`
+      `.trim(),
+    });
+  }
 };
 
 const WorkerTypeError = Entity.configure({
@@ -156,6 +168,9 @@ const Worker = Entity.configure({
 
     // The id of this worker
     workerId: Entity.types.String,
+
+    // The provider responsible for this worker
+    provider: Entity.types.String,
 
     // The time that this worker requested credentials
     credentialed: Entity.types.Date,

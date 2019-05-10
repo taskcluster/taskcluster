@@ -2,5 +2,4 @@ $schema: "/schemas/common/metaschema.json#"
 title: Testing Provider Config
 description: A provider used for testing
 type: object
-properties:
 additionalProperties: false

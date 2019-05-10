@@ -7,9 +7,10 @@ properties:
   name:
     title: WorkerType Name
     type:           string
+    # Limit this more than usual to increase chances it works on various clouds unchanged
+    pattern:        '[a-z]([-a-z0-9]*[a-z0-9])?'
     minLength:      {$const: identifier-min-length}
     maxLength:      {$const: identifier-max-length}
-    pattern:        {$const: identifier-pattern}
     description: |
       The name of this workertype.
   provider:
@@ -58,6 +59,10 @@ properties:
     title: Scheduled For Deletion
     type: boolean
     description: If true, a user has requested that this workertype be deleted
+  wantsEmail:
+    title: Wants Email
+    type: boolean
+    description: If true, the owner should be emailed on provisioning errors
 additionalProperties: false
 required:
   - provider
@@ -67,3 +72,4 @@ required:
   - config
   - owner
   - scheduledForDeletion
+  - wantsEmail

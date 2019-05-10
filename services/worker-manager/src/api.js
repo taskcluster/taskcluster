@@ -60,11 +60,13 @@ builder.declare({
   const definition = {
     name,
     provider: providerName,
+    previousProviders: [],
     description: input.description,
     config: input.config,
     created: now,
     lastModified: now,
     owner: input.owner,
+    wantsEmail: input.wantsEmail,
     providerData: {},
     scheduledForDeletion: false,
   };
@@ -134,7 +136,12 @@ builder.declare({
     wt.description = input.description;
     wt.provider = providerName;
     wt.owner = input.owner;
+    wt.wantsEmail = input.wantsEmail;
     wt.lastModified = new Date();
+
+    if (previousProvider !== providerName && !wt.previousProviders.includes(previousProvider)) {
+      wt.previousProviders.push(previousProvider);
+    }
   });
 
   await this.publisher.workerTypeUpdated({name, provider: providerName, previousProvider});

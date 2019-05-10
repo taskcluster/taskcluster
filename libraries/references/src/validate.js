@@ -42,7 +42,11 @@ const forAllRefs = (content, cb) => {
       }
     }
   };
-  recurse(content, 'schema');
+  try {
+    recurse(content, 'schema');
+  } catch (err) {
+    throw new Error(`In ${content.$id}: ${err}`);
+  }
 };
 
 exports.validate = (references) => {

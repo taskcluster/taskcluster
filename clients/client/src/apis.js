@@ -3719,7 +3719,7 @@ module.exports = {
     "reference": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "This service manages workers, including provisioning",
+      "description": "This service manages workers, including provisioning for dynamic workertypes.",
       "entries": [
         {
           "args": [
@@ -3843,6 +3843,87 @@ module.exports = {
       ],
       "serviceName": "worker-manager",
       "title": "Taskcluster Worker Manager"
+    }
+  },
+  "WorkerManagerEvents": {
+    "reference": {
+      "$schema": "/schemas/common/exchanges-reference-v0.json#",
+      "apiVersion": "v1",
+      "description": "These exchanges provide notifications when a workerType is created, updatedor deleted. This is so that the listener running in a differentprocess at the other end can direct another listener specified by`provider` and `workerType` to synchronize its bindings. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.",
+      "entries": [
+        {
+          "description": "Whenever the api receives a request to create aworkerType, a message is posted to this exchange anda provider can act upon it.",
+          "exchange": "workertype-created",
+          "name": "workerTypeCreated",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-workertype-message.json#",
+          "title": "WorkerType Created Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever the api receives a request to update aworkerType, a message is posted to this exchange anda provider can act upon it.",
+          "exchange": "workertype-updated",
+          "name": "workerTypeUpdated",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-workertype-message.json#",
+          "title": "WorkerType Updated Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever the api receives a request to delete aworkerType, a message is posted to this exchange anda provider can act upon it.",
+          "exchange": "workertype-deleted",
+          "name": "workerTypeDeleted",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-workertype-message.json#",
+          "title": "WorkerType Deleted Messages",
+          "type": "topic-exchange"
+        }
+      ],
+      "exchangePrefix": "exchange/taskcluster-worker-manager/v1/",
+      "serviceName": "worker-manager",
+      "title": "Worker Manager Exchanges"
     }
   }
 };

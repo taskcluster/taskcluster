@@ -30,11 +30,14 @@ properties:
     description: |
       'The google machine type to use to run this instance. This refers to
       [these types](https://cloud.google.com/compute/docs/machine-types)'
-  region:
-    title: Region
-    type: string
-    description: 'The google cloud region to run these instances in. Google documents
+  regions:
+    title: Regions
+    type: array
+    description: 'The google cloud regions to run these instances in. Google documents
     these [here](https://cloud.google.com/compute/docs/regions-zones/)'
+    uniqueItems: true
+    items:
+      type: string
   userData:
     title: User Data
     type: object
@@ -53,6 +56,7 @@ properties:
     description: |
       Configure the networking available to the instance. Permitted fields documented in
       the full instance template docs above.
+    uniqueItems: false
     items:
       type: object
       additionalProperties: true
@@ -64,6 +68,7 @@ properties:
       the full instance template docs above. It is likely that you will want to have at least
       a single `PERSISTENT` disk where the source image is one that contains a taskcluster worker
       configured to run on boot and talk to worker-manager for credentials.
+    uniqueItems: false
     items:
       type: object
       additionalProperties: true
@@ -74,7 +79,7 @@ required:
   - maxCapacity
   - capacityPerInstance
   - machineType
-  - region
+  - regions
   - userData
   - scheduling
   - networkInterfaces
