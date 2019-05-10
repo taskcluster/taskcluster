@@ -1,6 +1,7 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
+import { withRouter } from 'react-router-dom';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Tab from '@material-ui/core/Tab/Tab';
 import Tabs from '@material-ui/core/Tabs/Tabs';
@@ -11,8 +12,16 @@ import workersQuery from './WMWorkers.graphql';
 import Search from '../../../components/Search';
 
 @hot(module)
-@graphql(workersQuery)
-export default class WorkerManagerViewWorkers extends Component {
+@withRouter
+@graphql(workersQuery, {
+  options: props => ({
+    variables: {
+      workerType: props.match.params.workerType,
+      provider: props.match.params.provider,
+    },
+  }),
+})
+export default class WMViewWorkers extends Component {
   state = {
     currentTab: 0,
     workerSearch: '',
@@ -29,7 +38,7 @@ export default class WorkerManagerViewWorkers extends Component {
   render() {
     const { currentTab, workerSearch } = this.state;
     const {
-      data: { loading, error, WorkerManagerWorkers, classes },
+      data: { loading, error, WorkerManagerWorkers },
     } = this.props;
 
     return (
@@ -51,7 +60,7 @@ export default class WorkerManagerViewWorkers extends Component {
           <Tab label="Running" />
         </Tabs>
 
-        {loading && <Spinner className={classes.spinner} loading />}
+        {loading && <Spinner loading />}
 
         {!error && !loading && currentTab === 0 && (
           <WorkerManagerWorkersTable

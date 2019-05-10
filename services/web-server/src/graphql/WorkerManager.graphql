@@ -20,16 +20,15 @@ type WorkerManagerWorker {
     workerId: String!
     workerGroup: String!
     workerAge: DateTime
-    latestTask: TaskRun
-    latestStarted: DateTime
-    latestResolved: DateTime
+
+    latestTaskRun: TaskRun
+
     quarantineUntil: DateTime
 
     recentErrors: Int
 
     providerId: String!
     workerType: String!
-    recentTasks: [TaskRun]
 }
 
 extend type Query {
@@ -37,5 +36,5 @@ extend type Query {
 }
 
 extend type Query {
-    WorkerManagerWorkers(provisionerId: String!, workerType: String!, isQuarantined: Boolean): [WorkerManagerWorker]
+    WorkerManagerWorkers(workerType: String, provider: String, isQuarantined: Boolean): [WorkerManagerWorker]
 }

@@ -1,17 +1,23 @@
-query WorkerManagerWorkers($provisionerId: String!, $workerType: String!, $workersConnection: PageConnection, $quarantined: Boolean) {
-  WorkerManagerWorkers(provisionerId: $provisionerId, workerType: $workerType, isQuarantined: $quarantined) {
+query WorkerManagerWorkers($workerType: String, $provider: String, $quarantined: Boolean) {
+  WorkerManagerWorkers(workerType: $workerType, provider: $provider, isQuarantined: $quarantined) {
     workerId
     workerGroup
     workerAge
-    latestTask
-    latestStarted
-    latestResolved
+
+    latestTaskRun {
+      taskId
+      runId
+      state
+      reasonResolved
+      scheduled
+      started
+      resolved
+    }
     quarantineUntil
 
     recentErrors
 
     providerId
     workerType
-    recentTasks
   }
 }

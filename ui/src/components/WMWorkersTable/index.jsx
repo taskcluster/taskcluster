@@ -17,12 +17,18 @@ import TableCellListItem from '../TableCellListItem';
 import Link from '../../utils/Link';
 import DateDistance from '../DateDistance';
 import sort from '../../utils/sort';
-import { workerManagerWorkers } from '../../utils/prop-types';
+import { WMWorkers } from '../../utils/prop-types';
 
 @withRouter
 export default class WorkerManagerWorkersTable extends Component {
   static propTypes = {
-    workers: workerManagerWorkers.isRequired,
+    searchTerm: String,
+    workers: WMWorkers.isRequired,
+  };
+
+  state = {
+    sortBy: null,
+    sortDirection: null,
   };
 
   sortWorkers = memoize(
@@ -55,7 +61,14 @@ export default class WorkerManagerWorkersTable extends Component {
     }
   );
 
-  renderTableRow(worker) {
+  handleHeaderClick = sortBy => {
+    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
+    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
+
+    this.setState({ sortBy, sortDirection });
+  };
+
+  renderTableRow = worker => {
     const {
       match: { path },
     } = this.props;
