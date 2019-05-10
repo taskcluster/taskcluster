@@ -151,8 +151,8 @@ module.exports = {
             .loader('json-loader');
 
       neutrino.config.module
-        .rule('git-version')
-          .test(/\.git-version$/)
+        .rule('taskcluster-version')
+          .test(/taskcluster-version$/)
           .use('raw-loader')
             .loader('raw-loader');
 

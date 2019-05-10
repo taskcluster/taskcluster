@@ -61,12 +61,12 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
    */
   const hooks = [];
   hooks.push({
-    name: 'Set .git-version',
+    name: 'Set taskcluster-version',
     requires: ['monorepo-exact-source'],
     build: async (requirements, utils) => {
       // let the services learn their git version
       const revision = requirements['monorepo-exact-source'].split('#')[1];
-      fs.writeFileSync(path.join(appDir, '.git-version'), revision);
+      fs.writeFileSync(path.join(appDir, 'taskcluster-version'), revision);
     },
   });
 

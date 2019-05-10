@@ -200,18 +200,21 @@ export default class Dashboard extends Component {
     deploymentVersion: null,
   };
 
-  async componentDidMount() {
-    const { default: deploymentVersion } = await this.getDeploymentVersion();
+  componentDidMount() {
+    const deploymentVersion = this.getDeploymentVersion();
 
     this.setState({ deploymentVersion });
   }
 
   getDeploymentVersion() {
-    try {
-      return import(`../../../../.git-version`);
-    } catch (err) {
-      // ignore
-    }
+    const importer = require.context(
+      '../../../..',
+      false,
+      /taskcluster-version/
+    );
+    const file = importer.keys()[0];
+
+    return file ? importer(file).default : null;
   }
 
   handleDrawerToggle = () => {
