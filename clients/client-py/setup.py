@@ -81,6 +81,9 @@ if __name__ == '__main__':
         install_requires=install_requires,
         test_suite="nose.collector",
         tests_require=tests_require,
+        extras_require={
+            'test': tests_require,
+        },
         cmdclass={'test': Tox},
         zip_safe=False,
         classifiers=['Programming Language :: Python :: 2.7',
