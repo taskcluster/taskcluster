@@ -245,7 +245,13 @@ class Monitor {
       extra = level;
       level = 'err';
     }
-    this.log.errorReport(Object.assign({}, serializeError(err), extra), {level});
+    const serialized = serializeError(err);
+
+    // stackdriver doesn't like multiline prefixes to its stacks, so
+    // pre-process this down to "<FIRST LINE>\n  at ..."
+    serialized.stack = serialized.stack
+      .replace(/^([^\n]*)(?:\n[^\n]*)*?((?:\n {4}at[^\n]+)+)$/s, '$1$2');
+    this.log.errorReport({...serialized, ...extra}, {level});
   }
 
   /**

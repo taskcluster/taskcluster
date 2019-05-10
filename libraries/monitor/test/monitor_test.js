@@ -304,7 +304,21 @@ suite(testing.suiteName(), function() {
       assert.equal(monitorManager.messages[0].severity, 'ERROR');
       assert.equal(monitorManager.messages[0].Fields.name, 'Error');
       assert.equal(monitorManager.messages[0].Fields.message, 'oh no');
+      assert.equal(monitorManager.messages[0].message, 'Error: oh no');
       assert(monitorManager.messages[0].Fields.stack);
+    });
+
+    test('should record first line of multiline errors', function() {
+      monitor.reportError(new Error('uhoh\nsomething went wrong\n..again'));
+      assert.equal(monitorManager.messages.length, 1);
+      // only the first line in the stack..
+      assert(monitorManager.messages[0].Fields.stack
+        .startsWith('Error: uhoh\n    at '));
+      // and only the first line in the top-level message
+      assert.equal(monitorManager.messages[0].message, 'Error: uhoh');
+      // but Fields.message has the whole thing..
+      assert.equal(monitorManager.messages[0].Fields.message,
+        'uhoh\nsomething went wrong\n..again');
     });
 
     test('should record errors with extra', function() {
