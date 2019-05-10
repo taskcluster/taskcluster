@@ -3,7 +3,8 @@
   "clean_urls": true,
   "https_only": true,
   "routes": {
-    "/**": "docs.html"
+    "/docs/**": "docs.html",
+    "/**": "index.html"
   },
   "redirects": {
     "/robots.txt": {
@@ -13,6 +14,11 @@
     "/sitemap.xml": {
       "url": "/sitemap.xml",
       "status": 404
+    }
+  },
+  "proxies": {
+    "/login/": {
+      "origin": "https://taskcluster-web-server.herokuapp.com/login/"
     }
   },
   "headers": {
