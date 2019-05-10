@@ -220,7 +220,7 @@ export default class WorkerManagerWorkersTable extends Component {
         </TableCell>
       </TableRow>
     );
-  }
+  };
 
   render() {
     const { workers, searchTerm } = this.props;
