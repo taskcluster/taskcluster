@@ -73,7 +73,6 @@ exports.tasks.push({
     // sort the serializable output by filename to ensure consistency
     const serializable = references.makeSerializable();
     serializable.sort((a, b) => {
-      console.log(a.filename, b.filename);
       if (a.filename < b.filename) {
         return 1;
       } else if (a.filename > b.filename) {
