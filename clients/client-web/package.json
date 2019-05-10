@@ -17,6 +17,9 @@
     "test": "karma start --single-run"
   },
   "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/plugin-proposal-class-properties": "^7.4.4",
+    "@babel/preset-env": "^7.4.4",
     "@neutrinojs/karma": "9.0.0-rc.0",
     "@neutrinojs/library": "9.0.0-rc.0",
     "babel-plugin-transform-class-properties": "^6.24.1",

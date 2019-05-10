@@ -110,8 +110,6 @@
     "walk": "^2.3.9"
   },
   "devDependencies": {
-    "@babel/core": "^7.2.2",
-    "@babel/plugin-proposal-class-properties": "^7.4.4",
     "assume": "^2.1.0",
     "aws-sdk-mock": "^4.3.0",
     "capture-console": "^1.0.1",
