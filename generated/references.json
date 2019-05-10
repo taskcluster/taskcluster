@@ -7940,6 +7940,17 @@
           "title": "Error in Logging",
           "type": "monitor.loggingError",
           "version": 1
+        },
+        {
+          "description": "A pulse publisher has been notified by the pulse server\nthat it has been blocked, usually because the server is\nresource-constrained.  If `blocked` is false, then the\nnotification is that the publisher has been unblocked\nafter having previously been blocked.",
+          "fields": {
+            "blocked": "If true, the publisher has been blocked; if false, it has been unblocked."
+          },
+          "level": "warning",
+          "name": "pulsePublisherBlocked",
+          "title": "Pulse server has (un)blocked a publisher",
+          "type": "pulsePublisherBlocked",
+          "version": 1
         }
       ]
     },
@@ -8370,6 +8381,17 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
+          "version": 1
+        },
+        {
+          "description": "A pulse publisher has been notified by the pulse server\nthat it has been blocked, usually because the server is\nresource-constrained.  If `blocked` is false, then the\nnotification is that the publisher has been unblocked\nafter having previously been blocked.",
+          "fields": {
+            "blocked": "If true, the publisher has been blocked; if false, it has been unblocked."
+          },
+          "level": "warning",
+          "name": "pulsePublisherBlocked",
+          "title": "Pulse server has (un)blocked a publisher",
+          "type": "pulsePublisherBlocked",
           "version": 1
         },
         {
@@ -10218,6 +10240,17 @@
           "version": 1
         },
         {
+          "description": "A pulse publisher has been notified by the pulse server\nthat it has been blocked, usually because the server is\nresource-constrained.  If `blocked` is false, then the\nnotification is that the publisher has been unblocked\nafter having previously been blocked.",
+          "fields": {
+            "blocked": "If true, the publisher has been blocked; if false, it has been unblocked."
+          },
+          "level": "warning",
+          "name": "pulsePublisherBlocked",
+          "title": "Pulse server has (un)blocked a publisher",
+          "type": "pulsePublisherBlocked",
+          "version": 1
+        },
+        {
           "description": "Email has been sent.",
           "fields": {
             "address": "The requested recepient of the email."
@@ -10809,6 +10842,17 @@
           "version": 1
         },
         {
+          "description": "A pulse publisher has been notified by the pulse server\nthat it has been blocked, usually because the server is\nresource-constrained.  If `blocked` is false, then the\nnotification is that the publisher has been unblocked\nafter having previously been blocked.",
+          "fields": {
+            "blocked": "If true, the publisher has been blocked; if false, it has been unblocked."
+          },
+          "level": "warning",
+          "name": "pulsePublisherBlocked",
+          "title": "Pulse server has (un)blocked a publisher",
+          "type": "pulsePublisherBlocked",
+          "version": 1
+        },
+        {
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
@@ -11089,6 +11133,17 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
+          "version": 1
+        },
+        {
+          "description": "A pulse publisher has been notified by the pulse server\nthat it has been blocked, usually because the server is\nresource-constrained.  If `blocked` is false, then the\nnotification is that the publisher has been unblocked\nafter having previously been blocked.",
+          "fields": {
+            "blocked": "If true, the publisher has been blocked; if false, it has been unblocked."
+          },
+          "level": "warning",
+          "name": "pulsePublisherBlocked",
+          "title": "Pulse server has (un)blocked a publisher",
+          "type": "pulsePublisherBlocked",
           "version": 1
         }
       ]
@@ -11535,6 +11590,17 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
+          "version": 1
+        },
+        {
+          "description": "A pulse publisher has been notified by the pulse server\nthat it has been blocked, usually because the server is\nresource-constrained.  If `blocked` is false, then the\nnotification is that the publisher has been unblocked\nafter having previously been blocked.",
+          "fields": {
+            "blocked": "If true, the publisher has been blocked; if false, it has been unblocked."
+          },
+          "level": "warning",
+          "name": "pulsePublisherBlocked",
+          "title": "Pulse server has (un)blocked a publisher",
+          "type": "pulsePublisherBlocked",
           "version": 1
         }
       ]
@@ -12091,6 +12157,17 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
+          "version": 1
+        },
+        {
+          "description": "A pulse publisher has been notified by the pulse server\nthat it has been blocked, usually because the server is\nresource-constrained.  If `blocked` is false, then the\nnotification is that the publisher has been unblocked\nafter having previously been blocked.",
+          "fields": {
+            "blocked": "If true, the publisher has been blocked; if false, it has been unblocked."
+          },
+          "level": "warning",
+          "name": "pulsePublisherBlocked",
+          "title": "Pulse server has (un)blocked a publisher",
+          "type": "pulsePublisherBlocked",
           "version": 1
         }
       ]

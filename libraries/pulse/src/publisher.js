@@ -1,6 +1,23 @@
 const assert = require('assert');
 const libUrls = require('taskcluster-lib-urls');
 const debug = require('debug')('taskcluster-lib-pulse.publisher');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
+
+defaultMonitorManager.register({
+  name: 'pulsePublisherBlocked',
+  title: 'Pulse server has (un)blocked a publisher',
+  type: 'pulsePublisherBlocked',
+  level: 'warning',
+  version: 1,
+  description: `A pulse publisher has been notified by the pulse server
+                that it has been blocked, usually because the server is
+                resource-constrained.  If \`blocked\` is false, then the
+                notification is that the publisher has been unblocked
+                after having previously been blocked.`,
+  fields: {
+    blocked: 'If true, the publisher has been blocked; if false, it has been unblocked.',
+  },
+});
 
 class Exchanges {
   constructor(options) {
@@ -221,11 +238,11 @@ class PulsePublisher {
       debug('using new channel');
       this._setChannel(channel);
       connection.on('blocked', () => {
-        this.client.monitor.warning('AMQP connection entered blocking state');
+        this.client.monitor.log.pulsePublisherBlocked({blocked: true});
         this.blocked = true;
       });
       connection.on('unblocked', () => {
-        this.client.monitor.warning('AMQP connection no longer blocking');
+        this.client.monitor.log.pulsePublisherBlocked({blocked: false});
         this.blocked = false;
       });
       this.blocked = false;
