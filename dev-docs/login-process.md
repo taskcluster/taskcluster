@@ -44,7 +44,7 @@ In order to enable a specific strategy, changes to both
 ### Data Flow
 
 1. The front-end application initiates the login process by sending a request
-to `/login/<strategy>`. Since `taskcluster-ui` is a single page application,
+to `/login/<strategy>` in a new browser window. Since `taskcluster-ui` is a single page application,
 there should be a proxy directing requests starting with `/login` to the
 server in order not to have the request be misinterpreted as a client-side
 route change.
@@ -85,7 +85,7 @@ Authenticating with a login strategy returns back an access token to the caller.
 To get Taskcluster credentials, the caller must make a request to
 the graphQL `getCredentials` endpoint, including the `accessToken` and `provider`.
 The `accessToken` will be verified against the `provider`.
-The response will contain Taskcluster credentials corresponding to a permanent client.
+The response will contain Taskcluster credentials corresponding to a temporary client.
 
 ## 3. Calling Taskcluster APIs
 
