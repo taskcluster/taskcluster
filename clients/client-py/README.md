@@ -1,5 +1,4 @@
-Taskcluster Client Library in Python
-======================================
+# Taskcluster Client for Python
 
 [![Build Status](https://travis-ci.org/taskcluster/taskcluster-client.py.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-client.py)
 
