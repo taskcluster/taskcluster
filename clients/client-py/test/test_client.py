@@ -768,7 +768,7 @@ class TestAuthentication(base.TCTest):
                 'accessToken': 'no-secret',
             }
         })
-        # TODO: this should be TaskclsuterAuthFailure; most likely the client
+        # TODO: this should be TaskclusterAuthFailure; most likely the client
         # is expecting AuthorizationFailure instead of AuthenticationFailure
         with self.assertRaises(exc.TaskclusterRestFailure):
             client.testAuthenticate({
