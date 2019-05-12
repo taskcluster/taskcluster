@@ -203,6 +203,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     throw new Error('delete of non-existent workertype succeeded');
   });
 
+  test('create (google) workertype', async function() {
+    const name = 'ee';
+    const input = {
+      provider: 'google',
+      description: 'bar',
+      config: {
+        minCapacity: 1,
+        maxCapacity: 1,
+        capacityPerInstance: 1,
+        machineType: 'n1-standard-2',
+        regions: ['us-east1'],
+        userData: {},
+        scheduling: {},
+        networkInterfaces: [],
+        disks: [],
+      },
+      owner: 'example@example.com',
+      wantsEmail: false,
+    };
+    workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
+  });
+
   //test('credentials google', async function() {
   //  const name = 'ee';
   //  const input = {

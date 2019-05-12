@@ -2,6 +2,11 @@
 
 The worker manager service manages workers, including interacting with cloud services to create new workers on demand.
 
+It currently includes providers for:
+
+* Static Workers
+* Google Cloud
+
 ## Development
 
 No special configuration is required for development.

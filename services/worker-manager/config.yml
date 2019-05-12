@@ -42,3 +42,5 @@ test:
       implementation: testing
     static:
       implementation: static
+    google:
+      implementation: google

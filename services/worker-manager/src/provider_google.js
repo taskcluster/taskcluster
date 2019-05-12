@@ -20,19 +20,26 @@ class GoogleProvider extends Provider {
     instancePermissions,
     creds,
     credsFile,
+    validator,
     Worker,
   }) {
-    super({name, taskclusterCredentials, monitor, notify, provisionerId, rootUrl, estimator, Worker});
+    super({name, taskclusterCredentials, monitor, notify, provisionerId, rootUrl, estimator, Worker, validator});
     this.configSchema = 'config-google';
 
     this.instancePermissions = instancePermissions;
     this.project = project;
     this.zonesByRegion = {};
 
-    this.providerVersion = 'v1'; // Bump this if you change this in a backwards-incompatible way
-
     if (!creds && credsFile) {
       creds = JSON.parse(fs.readFileSync(credsFile));
+    }
+    try {
+      creds = JSON.parse(creds);
+    } catch (err) {
+      if (err.name !== 'SyntaxError') {
+        throw err;
+      }
+      creds = JSON.parse(Buffer.from(creds, 'base64'));
     }
     this.ownClientEmail = creds.client_email;
     const client = google.auth.fromJSON(creds);
@@ -62,7 +69,6 @@ class GoogleProvider extends Provider {
    * since the default service account workers get is not very restricted
    */
   async initiate() {
-
     const accountId = 'taskcluster-workers';
     this.workerAccountEmail = `${accountId}@${this.project}.iam.gserviceaccount.com`;
     const accountRef = `projects/${this.project}/serviceAccounts/${this.workerAccountEmail}`;
@@ -134,7 +140,7 @@ class GoogleProvider extends Provider {
 
     // Assign the role to the serviceAccount and we're good to go!
     const binding = {
-      role: roleId,
+      role: `projects/${this.project}/roles/${roleId}`,
       members: [`serviceAccount:${this.workerAccountEmail}`],
     };
     await this.readModifySet({

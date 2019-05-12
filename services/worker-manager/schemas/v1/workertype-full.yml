@@ -40,14 +40,10 @@ properties:
     type:                   string
     format:                 date-time
   config:
-    # Any of these can apply when submitting or updating the workertype at
-    # the api layer. Inside the handler, it will assert that these fields match
+    # Inside the handler, it will assert that these fields match
     # correctly to the implementation the provider has been configured to use.
-    # This is anyOf rather than oneOf because implementations can have identical config!
-    anyOf:
-      - {$ref: config-google.json#}
-      - {$ref: config-static.json#}
-      - {$ref: config-testing.json#}
+    type: object
+    additionalProperties: true
   owner:
     title: Owner Email
     type: string

@@ -37,17 +37,8 @@
       "description": "A complete workerType definition.\n",
       "properties": {
         "config": {
-          "anyOf": [
-            {
-              "$ref": "config-google.json#"
-            },
-            {
-              "$ref": "config-static.json#"
-            },
-            {
-              "$ref": "config-testing.json#"
-            }
-          ]
+          "additionalProperties": true,
+          "type": "object"
         },
         "created": {
           "description": "Date and time when this workerType was created\n",
@@ -327,7 +318,6 @@
         }
       },
       "required": [
-        "image",
         "minCapacity",
         "maxCapacity",
         "capacityPerInstance",

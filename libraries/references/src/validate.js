@@ -22,6 +22,11 @@ const UNREFERENCED_SCHEMAS = [
   // schemas for an unpublished, deprecated API methods
   {service: 'index', schema: 'v1/list-namespaces-request.json#'},
   {service: 'queue', schema: 'v1/poll-task-urls-response.json#'},
+
+  // schemas for dynamic configs in worker-manager TODO: What to do about these?
+  {service: 'worker-manager', schema: 'v1/config-google.json#'},
+  {service: 'worker-manager', schema: 'v1/config-static.json#'},
+  {service: 'worker-manager', schema: 'v1/config-testing.json#'},
 ];
 
 /**

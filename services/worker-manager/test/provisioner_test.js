@@ -143,7 +143,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       assert.deepEqual(monitorManager.messages.find(msg => msg.Type === 'create-resource'), {
         Logger: 'taskcluster.worker-manager.testing1',
         Type: 'create-resource',
-        Severity: 5,
+        Severity: LEVELS.notice,
         Fields: {workerType: 'foo'},
       });
     });
@@ -162,7 +162,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       assert.deepEqual(monitorManager.messages.find(msg => msg.Type === 'update-resource'), {
         Logger: 'taskcluster.worker-manager.testing1',
         Type: 'update-resource',
-        Severity: 5,
+        Severity: LEVELS.notice,
         Fields: {workerType: 'foo'},
       });
     });
@@ -184,13 +184,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       assert.deepEqual(monitorManager.messages.find(msg => msg.Type === 'remove-resource'), {
         Logger: 'taskcluster.worker-manager.testing1',
         Type: 'remove-resource',
-        Severity: 5,
+        Severity: LEVELS.notice,
         Fields: {workerType: 'foo'},
       });
       assert.deepEqual(monitorManager.messages.find(msg => msg.Type === 'create-resource'), {
         Logger: 'taskcluster.worker-manager.testing2',
         Type: 'create-resource',
-        Severity: 5,
+        Severity: LEVELS.notice,
         Fields: {workerType: 'foo'},
       });
     });
@@ -208,7 +208,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       assert.deepEqual(monitorManager.messages.find(msg => msg.Type === 'remove-resource'), {
         Logger: 'taskcluster.worker-manager.testing1',
         Type: 'remove-resource',
-        Severity: 5,
+        Severity: LEVELS.notice,
         Fields: {workerType: 'foo'},
       });
     });
