@@ -17,6 +17,7 @@ import Switch from '@material-ui/core/Switch';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid';
+import Tooltip from '@material-ui/core/Tooltip';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import FlashIcon from 'mdi-react/FlashIcon';
@@ -91,6 +92,10 @@ const initialHook = {
       fill: theme.palette.text.primary,
     },
   },
+  plusIcon: {
+    marginTop: 80,
+    marginRight: 0,
+  },
   listItemButton: {
     ...theme.mixins.listItemButton,
   },
@@ -114,6 +119,18 @@ const initialHook = {
   },
   subheader: {
     fontSize: theme.typography.pxToRem(16),
+  },
+  bindingListItem: {
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
+  inputWrapper: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  inputList: {
+    flex: 1,
   },
   errorPanel: {
     maxHeight: '88vh',
@@ -183,6 +200,9 @@ export default class HookForm extends Component {
     hookLastFires: null,
     // eslint-disable-next-line react/no-unused-state
     previousHook: null,
+    pattern: '#',
+    pulseExchange: '',
+    bindings: [],
     taskInput: '',
     triggerSchemaInput: '',
     triggerContextInput: '',
@@ -446,6 +466,36 @@ export default class HookForm extends Component {
     });
   };
 
+  handleInputChange = ({ target: { name, value } }) => {
+    this.setState({ [name]: value });
+  };
+
+  handleAddBinding = () => {
+    const { pulseExchange, pattern } = this.state;
+    const bindings = this.state.bindings.concat([
+      {
+        exchange: pulseExchange,
+        pattern,
+      },
+    ]);
+
+    this.setState({
+      pulseExchange: '',
+      pattern: '#',
+      bindings,
+    });
+  };
+
+  handleDeleteBinding = ({ exchange, pattern }) => {
+    const bindings = this.state.bindings.filter(
+      binding => binding.exchange !== exchange || binding.pattern !== pattern
+    );
+
+    this.setState({
+      bindings,
+    });
+  };
+
   render() {
     const {
       actionLoading,
@@ -458,6 +508,8 @@ export default class HookForm extends Component {
       onDialogOpen,
     } = this.props;
     const {
+      pattern,
+      pulseExchange,
       scheduleTextField,
       taskInput,
       triggerSchemaInput,
@@ -467,6 +519,7 @@ export default class HookForm extends Component {
       validation,
       drawerOpen,
       drawerData,
+      bindings,
     } = this.state;
     const isHookDirty = !equals(hook, this.props.hook);
 
@@ -594,6 +647,76 @@ export default class HookForm extends Component {
               </ListItem>
             </Fragment>
           )}
+          <div className={classes.inputWrapper}>
+            <List
+              className={classes.inputList}
+              subheader={
+                <ListSubheader className={classes.subheader}>
+                  Bindings
+                </ListSubheader>
+              }>
+              <ListItem>
+                <ListItemText
+                  primary={
+                    <TextField
+                      required
+                      label="Pulse Exchange"
+                      name="pulseExchange"
+                      placeholder="exchange/<username>/some-exchange-name"
+                      onChange={this.handleInputChange}
+                      fullWidth
+                      value={pulseExchange}
+                    />
+                  }
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary={
+                    <TextField
+                      required
+                      label="Routing Key Pattern"
+                      placeholder="#.some-interesting-key.#"
+                      name="pattern"
+                      onChange={this.handleInputChange}
+                      fullWidth
+                      value={pattern}
+                    />
+                  }
+                />
+              </ListItem>
+            </List>
+            <Tooltip title="Add Binding">
+              <IconButton
+                className={classNames(classes.iconButton, classes.plusIcon)}
+                onClick={this.handleAddBinding}>
+                <PlusIcon />
+              </IconButton>
+            </Tooltip>
+          </div>
+          <List>
+            {bindings.map(binding => (
+              <ListItem
+                className={classes.bindingListItem}
+                key={`${binding.exchange}-${binding.routingKeyPattern}`}>
+                <ListItemText
+                  disableTypography
+                  primary={
+                    <Typography variant="body2">
+                      <code>{binding.exchange}</code> with{' '}
+                      <code>{binding.pattern}</code>
+                    </Typography>
+                  }
+                />
+                <IconButton
+                  className={classes.iconButton}
+                  name={binding}
+                  onClick={() => this.handleDeleteBinding(binding)}>
+                  <DeleteIcon />
+                </IconButton>
+              </ListItem>
+            ))}
+          </List>
           <List>
             <ListItem>
               <ListItemText
