@@ -79,7 +79,7 @@ export default class WorkerManagerWorkersTable extends Component {
     const {
       workerId,
       workerGroup,
-      latestTask,
+      latestTaskRun,
       workerAge,
       quarantineUntil,
       recentErrors,
@@ -92,10 +92,7 @@ export default class WorkerManagerWorkersTable extends Component {
         <TableCell>{workerGroup}</TableCell>
 
         <TableCell>
-          <TableCellListItem
-            button
-            component={Link}
-            to={`${path}/worker-types/${workerType}/workers/${workerGroup}/${workerId}`}>
+          <TableCellListItem button component={Link} to={`${path}/tasks`}>
             <ListItemText
               disableTypography
               primary={<Typography>{workerId}</Typography>}
@@ -121,16 +118,14 @@ export default class WorkerManagerWorkersTable extends Component {
         </CopyToClipboard>
 
         <TableCell>
-          {latestTask ? (
+          {latestTaskRun ? (
             <TableCellListItem
               button
               component={Link}
-              to={`/tasks/${latestTask.run.taskId}/runs/${
-                latestTask.run.runId
-              }`}>
+              to={`/tasks/${latestTaskRun.taskId}/runs/${latestTaskRun.runId}`}>
               <ListItemText
                 disableTypography
-                primary={<Typography>{latestTask.run.taskId}</Typography>}
+                primary={<Typography>{latestTaskRun.taskId}</Typography>}
               />
               <LinkIcon size={iconSize} />
             </TableCellListItem>
@@ -139,17 +134,17 @@ export default class WorkerManagerWorkersTable extends Component {
           )}
         </TableCell>
 
-        {latestTask ? (
+        {latestTaskRun ? (
           <CopyToClipboard
-            title={`${latestTask.run.started} (Copy)`}
-            text={latestTask.run.started}>
+            title={`${latestTaskRun.started} (Copy)`}
+            text={latestTaskRun.started}>
             <TableCell>
               <TableCellListItem button>
                 <ListItemText
                   disableTypography
                   primary={
                     <Typography>
-                      <DateDistance from={latestTask.run.started} />
+                      <DateDistance from={latestTaskRun.started} />
                     </Typography>
                   }
                 />
@@ -163,17 +158,17 @@ export default class WorkerManagerWorkersTable extends Component {
           </TableCell>
         )}
 
-        {latestTask ? (
+        {latestTaskRun ? (
           <CopyToClipboard
-            title={`${latestTask.run.resolved} (Copy)`}
-            text={latestTask.run.resolved}>
+            title={`${latestTaskRun.resolved} (Copy)`}
+            text={latestTaskRun.resolved}>
             <TableCell>
               <TableCellListItem button>
                 <ListItemText
                   disableTypography
                   primary={
                     <Typography>
-                      <DateDistance from={latestTask.run.resolved} />
+                      <DateDistance from={latestTaskRun.resolved} />
                     </Typography>
                   }
                 />
@@ -188,10 +183,7 @@ export default class WorkerManagerWorkersTable extends Component {
         )}
 
         <TableCell>
-          <TableCellListItem
-            button
-            component={Link}
-            to={`${path}/worker-types/${workerType}/workers/${workerGroup}/${workerId}/recent-errors`}>
+          <TableCellListItem button component={Link} to={`${path}/errors`}>
             <ListItemText
               disableTypography
               primary={<Typography>Click to see errors</Typography>}
