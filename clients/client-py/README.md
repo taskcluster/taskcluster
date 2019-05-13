@@ -295,10 +295,10 @@ taskcluster.fromNow("1 year", dateObj=dateObject1);
 ### Methods in `taskcluster.Auth`
 ```python
 import asyncio # Only for async 
-// Create Auth client instance
 import taskcluster
 import taskcluster.aio
 
+# Create Auth client instance
 auth = taskcluster.Auth(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
@@ -319,7 +319,7 @@ This endpoint is used to check that the service is up.
 
 ```python
 # Sync calls
-auth.ping() # -> None`
+auth.ping() # -> None
 # Async call
 await asyncAuth.ping() # -> None
 ```
@@ -340,7 +340,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.listClients() # -> result`
+auth.listClients() # -> result
 # Async call
 await asyncAuth.listClients() # -> result
 ```
@@ -358,7 +358,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.client(clientId) # -> result`
+auth.client(clientId) # -> result
 auth.client(clientId='value') # -> result
 # Async call
 await asyncAuth.client(clientId) # -> result
@@ -391,7 +391,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.createClient(clientId, payload) # -> result`
+auth.createClient(clientId, payload) # -> result
 auth.createClient(payload, clientId='value') # -> result
 # Async call
 await asyncAuth.createClient(clientId, payload) # -> result
@@ -416,7 +416,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.resetAccessToken(clientId) # -> result`
+auth.resetAccessToken(clientId) # -> result
 auth.resetAccessToken(clientId='value') # -> result
 # Async call
 await asyncAuth.resetAccessToken(clientId) # -> result
@@ -442,7 +442,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.updateClient(clientId, payload) # -> result`
+auth.updateClient(clientId, payload) # -> result
 auth.updateClient(payload, clientId='value') # -> result
 # Async call
 await asyncAuth.updateClient(clientId, payload) # -> result
@@ -466,7 +466,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.enableClient(clientId) # -> result`
+auth.enableClient(clientId) # -> result
 auth.enableClient(clientId='value') # -> result
 # Async call
 await asyncAuth.enableClient(clientId) # -> result
@@ -489,7 +489,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.disableClient(clientId) # -> result`
+auth.disableClient(clientId) # -> result
 auth.disableClient(clientId='value') # -> result
 # Async call
 await asyncAuth.disableClient(clientId) # -> result
@@ -508,7 +508,7 @@ Takes the following arguments:
 
 ```python
 # Sync calls
-auth.deleteClient(clientId) # -> None`
+auth.deleteClient(clientId) # -> None
 auth.deleteClient(clientId='value') # -> None
 # Async call
 await asyncAuth.deleteClient(clientId) # -> None
@@ -524,7 +524,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.listRoles() # -> result`
+auth.listRoles() # -> result
 # Async call
 await asyncAuth.listRoles() # -> result
 ```
@@ -539,7 +539,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.listRoleIds() # -> result`
+auth.listRoleIds() # -> result
 # Async call
 await asyncAuth.listRoleIds() # -> result
 ```
@@ -554,7 +554,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.listRoles2() # -> result`
+auth.listRoles2() # -> result
 # Async call
 await asyncAuth.listRoles2() # -> result
 ```
@@ -573,7 +573,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.role(roleId) # -> result`
+auth.role(roleId) # -> result
 auth.role(roleId='value') # -> result
 # Async call
 await asyncAuth.role(roleId) # -> result
@@ -603,7 +603,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.createRole(roleId, payload) # -> result`
+auth.createRole(roleId, payload) # -> result
 auth.createRole(payload, roleId='value') # -> result
 # Async call
 await asyncAuth.createRole(roleId, payload) # -> result
@@ -631,7 +631,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.updateRole(roleId, payload) # -> result`
+auth.updateRole(roleId, payload) # -> result
 auth.updateRole(payload, roleId='value') # -> result
 # Async call
 await asyncAuth.updateRole(roleId, payload) # -> result
@@ -650,7 +650,7 @@ Takes the following arguments:
 
 ```python
 # Sync calls
-auth.deleteRole(roleId) # -> None`
+auth.deleteRole(roleId) # -> None
 auth.deleteRole(roleId='value') # -> None
 # Async call
 await asyncAuth.deleteRole(roleId) # -> None
@@ -671,7 +671,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.expandScopesGet(payload) # -> result`
+auth.expandScopesGet(payload) # -> result
 # Async call
 await asyncAuth.expandScopesGet(payload) # -> result
 ```
@@ -687,7 +687,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.expandScopes(payload) # -> result`
+auth.expandScopes(payload) # -> result
 # Async call
 await asyncAuth.expandScopes(payload) # -> result
 ```
@@ -702,7 +702,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.currentScopes() # -> result`
+auth.currentScopes() # -> result
 # Async call
 await asyncAuth.currentScopes() # -> result
 ```
@@ -786,7 +786,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.awsS3Credentials(level, bucket, prefix) # -> result`
+auth.awsS3Credentials(level, bucket, prefix) # -> result
 auth.awsS3Credentials(level='value', bucket='value', prefix='value') # -> result
 # Async call
 await asyncAuth.awsS3Credentials(level, bucket, prefix) # -> result
@@ -801,7 +801,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.azureAccounts() # -> result`
+auth.azureAccounts() # -> result
 # Async call
 await asyncAuth.azureAccounts() # -> result
 ```
@@ -819,7 +819,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.azureTables(account) # -> result`
+auth.azureTables(account) # -> result
 auth.azureTables(account='value') # -> result
 # Async call
 await asyncAuth.azureTables(account) # -> result
@@ -846,7 +846,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.azureTableSAS(account, table, level) # -> result`
+auth.azureTableSAS(account, table, level) # -> result
 auth.azureTableSAS(account='value', table='value', level='value') # -> result
 # Async call
 await asyncAuth.azureTableSAS(account, table, level) # -> result
@@ -866,7 +866,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.azureContainers(account) # -> result`
+auth.azureContainers(account) # -> result
 auth.azureContainers(account='value') # -> result
 # Async call
 await asyncAuth.azureContainers(account) # -> result
@@ -893,7 +893,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.azureContainerSAS(account, container, level) # -> result`
+auth.azureContainerSAS(account, container, level) # -> result
 auth.azureContainerSAS(account='value', container='value', level='value') # -> result
 # Async call
 await asyncAuth.azureContainerSAS(account, container, level) # -> result
@@ -919,7 +919,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.sentryDSN(project) # -> result`
+auth.sentryDSN(project) # -> result
 auth.sentryDSN(project='value') # -> result
 # Async call
 await asyncAuth.sentryDSN(project) # -> result
@@ -941,7 +941,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.statsumToken(project) # -> result`
+auth.statsumToken(project) # -> result
 auth.statsumToken(project='value') # -> result
 # Async call
 await asyncAuth.statsumToken(project) # -> result
@@ -971,7 +971,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.websocktunnelToken(wstAudience, wstClient) # -> result`
+auth.websocktunnelToken(wstAudience, wstClient) # -> result
 auth.websocktunnelToken(wstAudience='value', wstClient='value') # -> result
 # Async call
 await asyncAuth.websocktunnelToken(wstAudience, wstClient) # -> result
@@ -993,7 +993,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.authenticateHawk(payload) # -> result`
+auth.authenticateHawk(payload) # -> result
 # Async call
 await asyncAuth.authenticateHawk(payload) # -> result
 ```
@@ -1018,7 +1018,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.testAuthenticate(payload) # -> result`
+auth.testAuthenticate(payload) # -> result
 # Async call
 await asyncAuth.testAuthenticate(payload) # -> result
 ```
@@ -1045,7 +1045,7 @@ Has required output schema
 
 ```python
 # Sync calls
-auth.testAuthenticateGet() # -> result`
+auth.testAuthenticateGet() # -> result
 # Async call
 await asyncAuth.testAuthenticateGet() # -> result
 ```
@@ -1055,8 +1055,9 @@ await asyncAuth.testAuthenticateGet() # -> result
 
 ### Exchanges in `taskcluster.AuthEvents`
 ```python
-// Create AuthEvents client instance
 import taskcluster
+
+# Create AuthEvents client instance
 authEvents = taskcluster.AuthEvents(options)
 ```
 The auth service is responsible for storing credentials, managing
@@ -1097,10 +1098,10 @@ welcome to use these for other purposes, monitoring changes for example.
 ### Methods in `taskcluster.AwsProvisioner`
 ```python
 import asyncio # Only for async 
-// Create AwsProvisioner client instance
 import taskcluster
 import taskcluster.aio
 
+# Create AwsProvisioner client instance
 awsProvisioner = taskcluster.AwsProvisioner(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
@@ -1146,7 +1147,7 @@ Has required output schema
 
 ```python
 # Sync calls
-awsProvisioner.listWorkerTypeSummaries() # -> result`
+awsProvisioner.listWorkerTypeSummaries() # -> result
 # Async call
 await asyncAwsProvisioner.listWorkerTypeSummaries() # -> result
 ```
@@ -1188,7 +1189,7 @@ Has required output schema
 
 ```python
 # Sync calls
-awsProvisioner.createWorkerType(workerType, payload) # -> result`
+awsProvisioner.createWorkerType(workerType, payload) # -> result
 awsProvisioner.createWorkerType(payload, workerType='value') # -> result
 # Async call
 await asyncAwsProvisioner.createWorkerType(workerType, payload) # -> result
@@ -1220,7 +1221,7 @@ Has required output schema
 
 ```python
 # Sync calls
-awsProvisioner.updateWorkerType(workerType, payload) # -> result`
+awsProvisioner.updateWorkerType(workerType, payload) # -> result
 awsProvisioner.updateWorkerType(payload, workerType='value') # -> result
 # Async call
 await asyncAwsProvisioner.updateWorkerType(workerType, payload) # -> result
@@ -1244,7 +1245,7 @@ Has required output schema
 
 ```python
 # Sync calls
-awsProvisioner.workerTypeLastModified(workerType) # -> result`
+awsProvisioner.workerTypeLastModified(workerType) # -> result
 awsProvisioner.workerTypeLastModified(workerType='value') # -> result
 # Async call
 await asyncAwsProvisioner.workerTypeLastModified(workerType) # -> result
@@ -1268,7 +1269,7 @@ Has required output schema
 
 ```python
 # Sync calls
-awsProvisioner.workerType(workerType) # -> result`
+awsProvisioner.workerType(workerType) # -> result
 awsProvisioner.workerType(workerType='value') # -> result
 # Async call
 await asyncAwsProvisioner.workerType(workerType) # -> result
@@ -1295,7 +1296,7 @@ Takes the following arguments:
 
 ```python
 # Sync calls
-awsProvisioner.removeWorkerType(workerType) # -> None`
+awsProvisioner.removeWorkerType(workerType) # -> None
 awsProvisioner.removeWorkerType(workerType='value') # -> None
 # Async call
 await asyncAwsProvisioner.removeWorkerType(workerType) # -> None
@@ -1313,7 +1314,7 @@ Has required output schema
 
 ```python
 # Sync calls
-awsProvisioner.listWorkerTypes() # -> result`
+awsProvisioner.listWorkerTypes() # -> result
 # Async call
 await asyncAwsProvisioner.listWorkerTypes() # -> result
 ```
@@ -1336,7 +1337,7 @@ Has required input schema
 
 ```python
 # Sync calls
-awsProvisioner.createSecret(token, payload) # -> None`
+awsProvisioner.createSecret(token, payload) # -> None
 awsProvisioner.createSecret(payload, token='value') # -> None
 # Async call
 await asyncAwsProvisioner.createSecret(token, payload) # -> None
@@ -1362,7 +1363,7 @@ Has required output schema
 
 ```python
 # Sync calls
-awsProvisioner.getSecret(token) # -> result`
+awsProvisioner.getSecret(token) # -> result
 awsProvisioner.getSecret(token='value') # -> result
 # Async call
 await asyncAwsProvisioner.getSecret(token) # -> result
@@ -1385,7 +1386,7 @@ Takes the following arguments:
 
 ```python
 # Sync calls
-awsProvisioner.instanceStarted(instanceId, token) # -> None`
+awsProvisioner.instanceStarted(instanceId, token) # -> None
 awsProvisioner.instanceStarted(instanceId='value', token='value') # -> None
 # Async call
 await asyncAwsProvisioner.instanceStarted(instanceId, token) # -> None
@@ -1408,7 +1409,7 @@ Takes the following arguments:
 
 ```python
 # Sync calls
-awsProvisioner.removeSecret(token) # -> None`
+awsProvisioner.removeSecret(token) # -> None
 awsProvisioner.removeSecret(token='value') # -> None
 # Async call
 await asyncAwsProvisioner.removeSecret(token) # -> None
@@ -1432,7 +1433,7 @@ Has required output schema
 
 ```python
 # Sync calls
-awsProvisioner.getLaunchSpecs(workerType) # -> result`
+awsProvisioner.getLaunchSpecs(workerType) # -> result
 awsProvisioner.getLaunchSpecs(workerType='value') # -> result
 # Async call
 await asyncAwsProvisioner.getLaunchSpecs(workerType) # -> result
@@ -1453,7 +1454,7 @@ Takes the following arguments:
 
 ```python
 # Sync calls
-awsProvisioner.state(workerType) # -> None`
+awsProvisioner.state(workerType) # -> None
 awsProvisioner.state(workerType='value') # -> None
 # Async call
 await asyncAwsProvisioner.state(workerType) # -> None
@@ -1474,7 +1475,7 @@ Has required output schema
 
 ```python
 # Sync calls
-awsProvisioner.backendStatus() # -> result`
+awsProvisioner.backendStatus() # -> result
 # Async call
 await asyncAwsProvisioner.backendStatus() # -> result
 ```
@@ -1486,7 +1487,7 @@ This endpoint is used to check that the service is up.
 
 ```python
 # Sync calls
-awsProvisioner.ping() # -> None`
+awsProvisioner.ping() # -> None
 # Async call
 await asyncAwsProvisioner.ping() # -> None
 ```
@@ -1497,10 +1498,10 @@ await asyncAwsProvisioner.ping() # -> None
 ### Methods in `taskcluster.EC2Manager`
 ```python
 import asyncio # Only for async 
-// Create EC2Manager client instance
 import taskcluster
 import taskcluster.aio
 
+# Create EC2Manager client instance
 eC2Manager = taskcluster.EC2Manager(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
@@ -1515,7 +1516,7 @@ This endpoint is used to check that the service is up.
 
 ```python
 # Sync calls
-eC2Manager.ping() # -> None`
+eC2Manager.ping() # -> None
 # Async call
 await asyncEC2Manager.ping() # -> None
 ```
@@ -1528,7 +1529,7 @@ Has required output schema
 
 ```python
 # Sync calls
-eC2Manager.listWorkerTypes() # -> result`
+eC2Manager.listWorkerTypes() # -> result
 # Async call
 await asyncEC2Manager.listWorkerTypes() # -> result
 ```
@@ -1546,7 +1547,7 @@ Has required input schema
 
 ```python
 # Sync calls
-eC2Manager.runInstance(workerType, payload) # -> None`
+eC2Manager.runInstance(workerType, payload) # -> None
 eC2Manager.runInstance(payload, workerType='value') # -> None
 # Async call
 await asyncEC2Manager.runInstance(workerType, payload) # -> None
@@ -1564,7 +1565,7 @@ Takes the following arguments:
 
 ```python
 # Sync calls
-eC2Manager.terminateWorkerType(workerType) # -> None`
+eC2Manager.terminateWorkerType(workerType) # -> None
 eC2Manager.terminateWorkerType(workerType='value') # -> None
 # Async call
 await asyncEC2Manager.terminateWorkerType(workerType) # -> None
@@ -1584,7 +1585,7 @@ Has required output schema
 
 ```python
 # Sync calls
-eC2Manager.workerTypeStats(workerType) # -> result`
+eC2Manager.workerTypeStats(workerType) # -> result
 eC2Manager.workerTypeStats(workerType='value') # -> result
 # Async call
 await asyncEC2Manager.workerTypeStats(workerType) # -> result
@@ -1604,7 +1605,7 @@ Has required output schema
 
 ```python
 # Sync calls
-eC2Manager.workerTypeHealth(workerType) # -> result`
+eC2Manager.workerTypeHealth(workerType) # -> result
 eC2Manager.workerTypeHealth(workerType='value') # -> result
 # Async call
 await asyncEC2Manager.workerTypeHealth(workerType) # -> result
@@ -1624,7 +1625,7 @@ Has required output schema
 
 ```python
 # Sync calls
-eC2Manager.workerTypeErrors(workerType) # -> result`
+eC2Manager.workerTypeErrors(workerType) # -> result
 eC2Manager.workerTypeErrors(workerType='value') # -> result
 # Async call
 await asyncEC2Manager.workerTypeErrors(workerType) # -> result
@@ -1644,7 +1645,7 @@ Has required output schema
 
 ```python
 # Sync calls
-eC2Manager.workerTypeState(workerType) # -> result`
+eC2Manager.workerTypeState(workerType) # -> result
 eC2Manager.workerTypeState(workerType='value') # -> result
 # Async call
 await asyncEC2Manager.workerTypeState(workerType) # -> result
@@ -1664,7 +1665,7 @@ Has required input schema
 
 ```python
 # Sync calls
-eC2Manager.ensureKeyPair(name, payload) # -> None`
+eC2Manager.ensureKeyPair(name, payload) # -> None
 eC2Manager.ensureKeyPair(payload, name='value') # -> None
 # Async call
 await asyncEC2Manager.ensureKeyPair(name, payload) # -> None
@@ -1682,7 +1683,7 @@ Takes the following arguments:
 
 ```python
 # Sync calls
-eC2Manager.removeKeyPair(name) # -> None`
+eC2Manager.removeKeyPair(name) # -> None
 eC2Manager.removeKeyPair(name='value') # -> None
 # Async call
 await asyncEC2Manager.removeKeyPair(name) # -> None
@@ -1701,7 +1702,7 @@ Takes the following arguments:
 
 ```python
 # Sync calls
-eC2Manager.terminateInstance(region, instanceId) # -> None`
+eC2Manager.terminateInstance(region, instanceId) # -> None
 eC2Manager.terminateInstance(region='value', instanceId='value') # -> None
 # Async call
 await asyncEC2Manager.terminateInstance(region, instanceId) # -> None
@@ -1716,7 +1717,7 @@ Has required output schema
 
 ```python
 # Sync calls
-eC2Manager.getPrices() # -> result`
+eC2Manager.getPrices() # -> result
 # Async call
 await asyncEC2Manager.getPrices() # -> result
 ```
@@ -1731,7 +1732,7 @@ Has required output schema
 
 ```python
 # Sync calls
-eC2Manager.getSpecificPrices(payload) # -> result`
+eC2Manager.getSpecificPrices(payload) # -> result
 # Async call
 await asyncEC2Manager.getSpecificPrices(payload) # -> result
 ```
@@ -1744,7 +1745,7 @@ Has required output schema
 
 ```python
 # Sync calls
-eC2Manager.getHealth() # -> result`
+eC2Manager.getHealth() # -> result
 # Async call
 await asyncEC2Manager.getHealth() # -> result
 ```
@@ -1757,7 +1758,7 @@ Has required output schema
 
 ```python
 # Sync calls
-eC2Manager.getRecentErrors() # -> result`
+eC2Manager.getRecentErrors() # -> result
 # Async call
 await asyncEC2Manager.getRecentErrors() # -> result
 ```
@@ -1768,7 +1769,7 @@ This method is only for debugging the ec2-manager
 
 ```python
 # Sync calls
-eC2Manager.regions() # -> None`
+eC2Manager.regions() # -> None
 # Async call
 await asyncEC2Manager.regions() # -> None
 ```
@@ -1784,7 +1785,7 @@ region: string
 
 ```python
 # Sync calls
-eC2Manager.amiUsage() # -> None`
+eC2Manager.amiUsage() # -> None
 # Async call
 await asyncEC2Manager.amiUsage() # -> None
 ```
@@ -1804,7 +1805,7 @@ region: string,
 
 ```python
 # Sync calls
-eC2Manager.ebsUsage() # -> None`
+eC2Manager.ebsUsage() # -> None
 # Async call
 await asyncEC2Manager.ebsUsage() # -> None
 ```
@@ -1815,7 +1816,7 @@ This method is only for debugging the ec2-manager
 
 ```python
 # Sync calls
-eC2Manager.dbpoolStats() # -> None`
+eC2Manager.dbpoolStats() # -> None
 # Async call
 await asyncEC2Manager.dbpoolStats() # -> None
 ```
@@ -1826,7 +1827,7 @@ This method is only for debugging the ec2-manager
 
 ```python
 # Sync calls
-eC2Manager.allState() # -> None`
+eC2Manager.allState() # -> None
 # Async call
 await asyncEC2Manager.allState() # -> None
 ```
@@ -1837,7 +1838,7 @@ This method is only for debugging the ec2-manager
 
 ```python
 # Sync calls
-eC2Manager.sqsStats() # -> None`
+eC2Manager.sqsStats() # -> None
 # Async call
 await asyncEC2Manager.sqsStats() # -> None
 ```
@@ -1848,7 +1849,7 @@ This method is only for debugging the ec2-manager
 
 ```python
 # Sync calls
-eC2Manager.purgeQueues() # -> None`
+eC2Manager.purgeQueues() # -> None
 # Async call
 await asyncEC2Manager.purgeQueues() # -> None
 ```
@@ -1859,10 +1860,10 @@ await asyncEC2Manager.purgeQueues() # -> None
 ### Methods in `taskcluster.Github`
 ```python
 import asyncio # Only for async 
-// Create Github client instance
 import taskcluster
 import taskcluster.aio
 
+# Create Github client instance
 github = taskcluster.Github(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
@@ -1884,7 +1885,7 @@ This endpoint is used to check that the service is up.
 
 ```python
 # Sync calls
-github.ping() # -> None`
+github.ping() # -> None
 # Async call
 await asyncGithub.ping() # -> None
 ```
@@ -1896,7 +1897,7 @@ release or pull request.
 
 ```python
 # Sync calls
-github.githubWebHookConsumer() # -> None`
+github.githubWebHookConsumer() # -> None
 # Async call
 await asyncGithub.githubWebHookConsumer() # -> None
 ```
@@ -1911,7 +1912,7 @@ Has required output schema
 
 ```python
 # Sync calls
-github.builds() # -> result`
+github.builds() # -> result
 # Async call
 await asyncGithub.builds() # -> result
 ```
@@ -1930,7 +1931,7 @@ Takes the following arguments:
 
 ```python
 # Sync calls
-github.badge(owner, repo, branch) # -> None`
+github.badge(owner, repo, branch) # -> None
 github.badge(owner='value', repo='value', branch='value') # -> None
 # Async call
 await asyncGithub.badge(owner, repo, branch) # -> None
@@ -1952,7 +1953,7 @@ Has required output schema
 
 ```python
 # Sync calls
-github.repository(owner, repo) # -> result`
+github.repository(owner, repo) # -> result
 github.repository(owner='value', repo='value') # -> result
 # Async call
 await asyncGithub.repository(owner, repo) # -> result
@@ -1976,7 +1977,7 @@ Takes the following arguments:
 
 ```python
 # Sync calls
-github.latest(owner, repo, branch) # -> None`
+github.latest(owner, repo, branch) # -> None
 github.latest(owner='value', repo='value', branch='value') # -> None
 # Async call
 await asyncGithub.latest(owner, repo, branch) # -> None
@@ -2001,7 +2002,7 @@ Has required input schema
 
 ```python
 # Sync calls
-github.createStatus(owner, repo, sha, payload) # -> None`
+github.createStatus(owner, repo, sha, payload) # -> None
 github.createStatus(payload, owner='value', repo='value', sha='value') # -> None
 # Async call
 await asyncGithub.createStatus(owner, repo, sha, payload) # -> None
@@ -2023,7 +2024,7 @@ Has required input schema
 
 ```python
 # Sync calls
-github.createComment(owner, repo, number, payload) # -> None`
+github.createComment(owner, repo, number, payload) # -> None
 github.createComment(payload, owner='value', repo='value', number='value') # -> None
 # Async call
 await asyncGithub.createComment(owner, repo, number, payload) # -> None
@@ -2035,8 +2036,9 @@ await asyncGithub.createComment(payload, owner='value', repo='value', number='va
 
 ### Exchanges in `taskcluster.GithubEvents`
 ```python
-// Create GithubEvents client instance
 import taskcluster
+
+# Create GithubEvents client instance
 githubEvents = taskcluster.GithubEvents(options)
 ```
 The github service publishes a pulse
@@ -2076,10 +2078,10 @@ github service
 ### Methods in `taskcluster.Hooks`
 ```python
 import asyncio # Only for async 
-// Create Hooks client instance
 import taskcluster
 import taskcluster.aio
 
+# Create Hooks client instance
 hooks = taskcluster.Hooks(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
@@ -2095,7 +2097,7 @@ This endpoint is used to check that the service is up.
 
 ```python
 # Sync calls
-hooks.ping() # -> None`
+hooks.ping() # -> None
 # Async call
 await asyncHooks.ping() # -> None
 ```
@@ -2108,7 +2110,7 @@ Has required output schema
 
 ```python
 # Sync calls
-hooks.listHookGroups() # -> result`
+hooks.listHookGroups() # -> result
 # Async call
 await asyncHooks.listHookGroups() # -> result
 ```
@@ -2127,7 +2129,7 @@ Has required output schema
 
 ```python
 # Sync calls
-hooks.listHooks(hookGroupId) # -> result`
+hooks.listHooks(hookGroupId) # -> result
 hooks.listHooks(hookGroupId='value') # -> result
 # Async call
 await asyncHooks.listHooks(hookGroupId) # -> result
@@ -2149,7 +2151,7 @@ Has required output schema
 
 ```python
 # Sync calls
-hooks.hook(hookGroupId, hookId) # -> result`
+hooks.hook(hookGroupId, hookId) # -> result
 hooks.hook(hookGroupId='value', hookId='value') # -> result
 # Async call
 await asyncHooks.hook(hookGroupId, hookId) # -> result
@@ -2173,7 +2175,7 @@ Has required output schema
 
 ```python
 # Sync calls
-hooks.getHookStatus(hookGroupId, hookId) # -> result`
+hooks.getHookStatus(hookGroupId, hookId) # -> result
 hooks.getHookStatus(hookGroupId='value', hookId='value') # -> result
 # Async call
 await asyncHooks.getHookStatus(hookGroupId, hookId) # -> result
@@ -2200,7 +2202,7 @@ Has required output schema
 
 ```python
 # Sync calls
-hooks.createHook(hookGroupId, hookId, payload) # -> result`
+hooks.createHook(hookGroupId, hookId, payload) # -> result
 hooks.createHook(payload, hookGroupId='value', hookId='value') # -> result
 # Async call
 await asyncHooks.createHook(hookGroupId, hookId, payload) # -> result
@@ -2224,7 +2226,7 @@ Has required output schema
 
 ```python
 # Sync calls
-hooks.updateHook(hookGroupId, hookId, payload) # -> result`
+hooks.updateHook(hookGroupId, hookId, payload) # -> result
 hooks.updateHook(payload, hookGroupId='value', hookId='value') # -> result
 # Async call
 await asyncHooks.updateHook(hookGroupId, hookId, payload) # -> result
@@ -2243,7 +2245,7 @@ Takes the following arguments:
 
 ```python
 # Sync calls
-hooks.removeHook(hookGroupId, hookId) # -> None`
+hooks.removeHook(hookGroupId, hookId) # -> None
 hooks.removeHook(hookGroupId='value', hookId='value') # -> None
 # Async call
 await asyncHooks.removeHook(hookGroupId, hookId) # -> None
@@ -2270,7 +2272,7 @@ Has required output schema
 
 ```python
 # Sync calls
-hooks.triggerHook(hookGroupId, hookId, payload) # -> result`
+hooks.triggerHook(hookGroupId, hookId, payload) # -> result
 hooks.triggerHook(payload, hookGroupId='value', hookId='value') # -> result
 # Async call
 await asyncHooks.triggerHook(hookGroupId, hookId, payload) # -> result
@@ -2292,7 +2294,7 @@ Has required output schema
 
 ```python
 # Sync calls
-hooks.getTriggerToken(hookGroupId, hookId) # -> result`
+hooks.getTriggerToken(hookGroupId, hookId) # -> result
 hooks.getTriggerToken(hookGroupId='value', hookId='value') # -> result
 # Async call
 await asyncHooks.getTriggerToken(hookGroupId, hookId) # -> result
@@ -2314,7 +2316,7 @@ Has required output schema
 
 ```python
 # Sync calls
-hooks.resetTriggerToken(hookGroupId, hookId) # -> result`
+hooks.resetTriggerToken(hookGroupId, hookId) # -> result
 hooks.resetTriggerToken(hookGroupId='value', hookId='value') # -> result
 # Async call
 await asyncHooks.resetTriggerToken(hookGroupId, hookId) # -> result
@@ -2342,7 +2344,7 @@ Has required output schema
 
 ```python
 # Sync calls
-hooks.triggerHookWithToken(hookGroupId, hookId, token, payload) # -> result`
+hooks.triggerHookWithToken(hookGroupId, hookId, token, payload) # -> result
 hooks.triggerHookWithToken(payload, hookGroupId='value', hookId='value', token='value') # -> result
 # Async call
 await asyncHooks.triggerHookWithToken(hookGroupId, hookId, token, payload) # -> result
@@ -2364,7 +2366,7 @@ Has required output schema
 
 ```python
 # Sync calls
-hooks.listLastFires(hookGroupId, hookId) # -> result`
+hooks.listLastFires(hookGroupId, hookId) # -> result
 hooks.listLastFires(hookGroupId='value', hookId='value') # -> result
 # Async call
 await asyncHooks.listLastFires(hookGroupId, hookId) # -> result
@@ -2376,8 +2378,9 @@ await asyncHooks.listLastFires(hookGroupId='value', hookId='value') # -> result
 
 ### Exchanges in `taskcluster.HooksEvents`
 ```python
-// Create HooksEvents client instance
 import taskcluster
+
+# Create HooksEvents client instance
 hooksEvents = taskcluster.HooksEvents(options)
 ```
 The hooks service is responsible for creating tasks at specific times orin .  response to webhooks and API calls.Using this exchange allows us tomake hooks which repsond to particular pulse messagesThese exchanges provide notifications when a hook is created, updatedor deleted. This is so that the listener running in a different hooks process at the other end can direct another listener specified by`hookGroupId` and `hookId` to synchronize its bindings. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.
@@ -2399,10 +2402,10 @@ The hooks service is responsible for creating tasks at specific times orin .  re
 ### Methods in `taskcluster.Index`
 ```python
 import asyncio # Only for async 
-// Create Index client instance
 import taskcluster
 import taskcluster.aio
 
+# Create Index client instance
 index = taskcluster.Index(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
@@ -2421,7 +2424,7 @@ This endpoint is used to check that the service is up.
 
 ```python
 # Sync calls
-index.ping() # -> None`
+index.ping() # -> None
 # Async call
 await asyncIndex.ping() # -> None
 ```
@@ -2440,7 +2443,7 @@ Has required output schema
 
 ```python
 # Sync calls
-index.findTask(indexPath) # -> result`
+index.findTask(indexPath) # -> result
 index.findTask(indexPath='value') # -> result
 # Async call
 await asyncIndex.findTask(indexPath) # -> result
@@ -2466,7 +2469,7 @@ Has required output schema
 
 ```python
 # Sync calls
-index.listNamespaces(namespace) # -> result`
+index.listNamespaces(namespace) # -> result
 index.listNamespaces(namespace='value') # -> result
 # Async call
 await asyncIndex.listNamespaces(namespace) # -> result
@@ -2495,7 +2498,7 @@ Has required output schema
 
 ```python
 # Sync calls
-index.listTasks(namespace) # -> result`
+index.listTasks(namespace) # -> result
 index.listTasks(namespace='value') # -> result
 # Async call
 await asyncIndex.listTasks(namespace) # -> result
@@ -2521,7 +2524,7 @@ Has required output schema
 
 ```python
 # Sync calls
-index.insertTask(namespace, payload) # -> result`
+index.insertTask(namespace, payload) # -> result
 index.insertTask(payload, namespace='value') # -> result
 # Async call
 await asyncIndex.insertTask(namespace, payload) # -> result
@@ -2553,7 +2556,7 @@ Takes the following arguments:
 
 ```python
 # Sync calls
-index.findArtifactFromTask(indexPath, name) # -> None`
+index.findArtifactFromTask(indexPath, name) # -> None
 index.findArtifactFromTask(indexPath='value', name='value') # -> None
 # Async call
 await asyncIndex.findArtifactFromTask(indexPath, name) # -> None
@@ -2566,10 +2569,10 @@ await asyncIndex.findArtifactFromTask(indexPath='value', name='value') # -> None
 ### Methods in `taskcluster.Login`
 ```python
 import asyncio # Only for async 
-// Create Login client instance
 import taskcluster
 import taskcluster.aio
 
+# Create Login client instance
 login = taskcluster.Login(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
@@ -2585,7 +2588,7 @@ This endpoint is used to check that the service is up.
 
 ```python
 # Sync calls
-login.ping() # -> None`
+login.ping() # -> None
 # Async call
 await asyncLogin.ping() # -> None
 ```
@@ -2623,7 +2626,7 @@ Has required output schema
 
 ```python
 # Sync calls
-login.oidcCredentials(provider) # -> result`
+login.oidcCredentials(provider) # -> result
 login.oidcCredentials(provider='value') # -> result
 # Async call
 await asyncLogin.oidcCredentials(provider) # -> result
@@ -2636,10 +2639,10 @@ await asyncLogin.oidcCredentials(provider='value') # -> result
 ### Methods in `taskcluster.Notify`
 ```python
 import asyncio # Only for async 
-// Create Notify client instance
 import taskcluster
 import taskcluster.aio
 
+# Create Notify client instance
 notify = taskcluster.Notify(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
@@ -2655,7 +2658,7 @@ This endpoint is used to check that the service is up.
 
 ```python
 # Sync calls
-notify.ping() # -> None`
+notify.ping() # -> None
 # Async call
 await asyncNotify.ping() # -> None
 ```
@@ -2671,7 +2674,7 @@ Has required input schema
 
 ```python
 # Sync calls
-notify.email(payload) # -> None`
+notify.email(payload) # -> None
 # Async call
 await asyncNotify.email(payload) # -> None
 ```
@@ -2684,7 +2687,7 @@ Has required input schema
 
 ```python
 # Sync calls
-notify.pulse(payload) # -> None`
+notify.pulse(payload) # -> None
 # Async call
 await asyncNotify.pulse(payload) # -> None
 ```
@@ -2707,7 +2710,7 @@ Has required input schema
 
 ```python
 # Sync calls
-notify.irc(payload) # -> None`
+notify.irc(payload) # -> None
 # Async call
 await asyncNotify.irc(payload) # -> None
 ```
@@ -2723,7 +2726,7 @@ Has required input schema
 
 ```python
 # Sync calls
-notify.addDenylistAddress(payload) # -> None`
+notify.addDenylistAddress(payload) # -> None
 # Async call
 await asyncNotify.addDenylistAddress(payload) # -> None
 ```
@@ -2736,7 +2739,7 @@ Has required input schema
 
 ```python
 # Sync calls
-notify.deleteDenylistAddress(payload) # -> None`
+notify.deleteDenylistAddress(payload) # -> None
 # Async call
 await asyncNotify.deleteDenylistAddress(payload) # -> None
 ```
@@ -2759,7 +2762,7 @@ Has required output schema
 
 ```python
 # Sync calls
-notify.listDenylist() # -> result`
+notify.listDenylist() # -> result
 # Async call
 await asyncNotify.listDenylist() # -> result
 ```
@@ -2769,8 +2772,9 @@ await asyncNotify.listDenylist() # -> result
 
 ### Exchanges in `taskcluster.NotifyEvents`
 ```python
-// Create NotifyEvents client instance
 import taskcluster
+
+# Create NotifyEvents client instance
 notifyEvents = taskcluster.NotifyEvents(options)
 ```
 This pretty much only contains the simple free-form
@@ -2792,10 +2796,10 @@ by anybody with the proper scopes.
 ### Methods in `taskcluster.PurgeCache`
 ```python
 import asyncio # Only for async 
-// Create PurgeCache client instance
 import taskcluster
 import taskcluster.aio
 
+# Create PurgeCache client instance
 purgeCache = taskcluster.PurgeCache(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
@@ -2814,7 +2818,7 @@ This endpoint is used to check that the service is up.
 
 ```python
 # Sync calls
-purgeCache.ping() # -> None`
+purgeCache.ping() # -> None
 # Async call
 await asyncPurgeCache.ping() # -> None
 ```
@@ -2837,7 +2841,7 @@ Has required input schema
 
 ```python
 # Sync calls
-purgeCache.purgeCache(provisionerId, workerType, payload) # -> None`
+purgeCache.purgeCache(provisionerId, workerType, payload) # -> None
 purgeCache.purgeCache(payload, provisionerId='value', workerType='value') # -> None
 # Async call
 await asyncPurgeCache.purgeCache(provisionerId, workerType, payload) # -> None
@@ -2858,7 +2862,7 @@ Has required output schema
 
 ```python
 # Sync calls
-purgeCache.allPurgeRequests() # -> result`
+purgeCache.allPurgeRequests() # -> result
 # Async call
 await asyncPurgeCache.allPurgeRequests() # -> result
 ```
@@ -2880,7 +2884,7 @@ Has required output schema
 
 ```python
 # Sync calls
-purgeCache.purgeRequests(provisionerId, workerType) # -> result`
+purgeCache.purgeRequests(provisionerId, workerType) # -> result
 purgeCache.purgeRequests(provisionerId='value', workerType='value') # -> result
 # Async call
 await asyncPurgeCache.purgeRequests(provisionerId, workerType) # -> result
@@ -2893,10 +2897,10 @@ await asyncPurgeCache.purgeRequests(provisionerId='value', workerType='value') #
 ### Methods in `taskcluster.Queue`
 ```python
 import asyncio # Only for async 
-// Create Queue client instance
 import taskcluster
 import taskcluster.aio
 
+# Create Queue client instance
 queue = taskcluster.Queue(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
@@ -2919,7 +2923,7 @@ This endpoint is used to check that the service is up.
 
 ```python
 # Sync calls
-queue.ping() # -> None`
+queue.ping() # -> None
 # Async call
 await asyncQueue.ping() # -> None
 ```
@@ -2939,7 +2943,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.task(taskId) # -> result`
+queue.task(taskId) # -> result
 queue.task(taskId='value') # -> result
 # Async call
 await asyncQueue.task(taskId) # -> result
@@ -2959,7 +2963,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.status(taskId) # -> result`
+queue.status(taskId) # -> result
 queue.status(taskId='value') # -> result
 # Async call
 await asyncQueue.status(taskId) # -> result
@@ -2994,7 +2998,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.listTaskGroup(taskGroupId) # -> result`
+queue.listTaskGroup(taskGroupId) # -> result
 queue.listTaskGroup(taskGroupId='value') # -> result
 # Async call
 await asyncQueue.listTaskGroup(taskGroupId) # -> result
@@ -3029,7 +3033,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.listDependentTasks(taskId) # -> result`
+queue.listDependentTasks(taskId) # -> result
 queue.listDependentTasks(taskId='value') # -> result
 # Async call
 await asyncQueue.listDependentTasks(taskId) # -> result
@@ -3080,7 +3084,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.createTask(taskId, payload) # -> result`
+queue.createTask(taskId, payload) # -> result
 queue.createTask(payload, taskId='value') # -> result
 # Async call
 await asyncQueue.createTask(taskId, payload) # -> result
@@ -3103,7 +3107,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.defineTask(taskId, payload) # -> result`
+queue.defineTask(taskId, payload) # -> result
 queue.defineTask(payload, taskId='value') # -> result
 # Async call
 await asyncQueue.defineTask(taskId, payload) # -> result
@@ -3136,7 +3140,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.scheduleTask(taskId) # -> result`
+queue.scheduleTask(taskId) # -> result
 queue.scheduleTask(taskId='value') # -> result
 # Async call
 await asyncQueue.scheduleTask(taskId) # -> result
@@ -3170,7 +3174,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.rerunTask(taskId) # -> result`
+queue.rerunTask(taskId) # -> result
 queue.rerunTask(taskId='value') # -> result
 # Async call
 await asyncQueue.rerunTask(taskId) # -> result
@@ -3201,7 +3205,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.cancelTask(taskId) # -> result`
+queue.cancelTask(taskId) # -> result
 queue.cancelTask(taskId='value') # -> result
 # Async call
 await asyncQueue.cancelTask(taskId) # -> result
@@ -3231,7 +3235,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.claimWork(provisionerId, workerType, payload) # -> result`
+queue.claimWork(provisionerId, workerType, payload) # -> result
 queue.claimWork(payload, provisionerId='value', workerType='value') # -> result
 # Async call
 await asyncQueue.claimWork(provisionerId, workerType, payload) # -> result
@@ -3254,7 +3258,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.claimTask(taskId, runId, payload) # -> result`
+queue.claimTask(taskId, runId, payload) # -> result
 queue.claimTask(payload, taskId='value', runId='value') # -> result
 # Async call
 await asyncQueue.claimTask(taskId, runId, payload) # -> result
@@ -3295,7 +3299,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.reclaimTask(taskId, runId) # -> result`
+queue.reclaimTask(taskId, runId) # -> result
 queue.reclaimTask(taskId='value', runId='value') # -> result
 # Async call
 await asyncQueue.reclaimTask(taskId, runId) # -> result
@@ -3316,7 +3320,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.reportCompleted(taskId, runId) # -> result`
+queue.reportCompleted(taskId, runId) # -> result
 queue.reportCompleted(taskId='value', runId='value') # -> result
 # Async call
 await asyncQueue.reportCompleted(taskId, runId) # -> result
@@ -3343,7 +3347,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.reportFailed(taskId, runId) # -> result`
+queue.reportFailed(taskId, runId) # -> result
 queue.reportFailed(taskId='value', runId='value') # -> result
 # Async call
 await asyncQueue.reportFailed(taskId, runId) # -> result
@@ -3378,7 +3382,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.reportException(taskId, runId, payload) # -> result`
+queue.reportException(taskId, runId, payload) # -> result
 queue.reportException(payload, taskId='value', runId='value') # -> result
 # Async call
 await asyncQueue.reportException(taskId, runId, payload) # -> result
@@ -3470,7 +3474,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.createArtifact(taskId, runId, name, payload) # -> result`
+queue.createArtifact(taskId, runId, name, payload) # -> result
 queue.createArtifact(payload, taskId='value', runId='value', name='value') # -> result
 # Async call
 await asyncQueue.createArtifact(taskId, runId, name, payload) # -> result
@@ -3500,7 +3504,7 @@ Has required input schema
 
 ```python
 # Sync calls
-queue.completeArtifact(taskId, runId, name, payload) # -> None`
+queue.completeArtifact(taskId, runId, name, payload) # -> None
 queue.completeArtifact(payload, taskId='value', runId='value', name='value') # -> None
 # Async call
 await asyncQueue.completeArtifact(taskId, runId, name, payload) # -> None
@@ -3597,7 +3601,7 @@ Takes the following arguments:
 
 ```python
 # Sync calls
-queue.getArtifact(taskId, runId, name) # -> None`
+queue.getArtifact(taskId, runId, name) # -> None
 queue.getArtifact(taskId='value', runId='value', name='value') # -> None
 # Async call
 await asyncQueue.getArtifact(taskId, runId, name) # -> None
@@ -3630,7 +3634,7 @@ Takes the following arguments:
 
 ```python
 # Sync calls
-queue.getLatestArtifact(taskId, name) # -> None`
+queue.getLatestArtifact(taskId, name) # -> None
 queue.getLatestArtifact(taskId='value', name='value') # -> None
 # Async call
 await asyncQueue.getLatestArtifact(taskId, name) # -> None
@@ -3659,7 +3663,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.listArtifacts(taskId, runId) # -> result`
+queue.listArtifacts(taskId, runId) # -> result
 queue.listArtifacts(taskId='value', runId='value') # -> result
 # Async call
 await asyncQueue.listArtifacts(taskId, runId) # -> result
@@ -3688,7 +3692,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.listLatestArtifacts(taskId) # -> result`
+queue.listLatestArtifacts(taskId) # -> result
 queue.listLatestArtifacts(taskId='value') # -> result
 # Async call
 await asyncQueue.listLatestArtifacts(taskId) # -> result
@@ -3712,7 +3716,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.listProvisioners() # -> result`
+queue.listProvisioners() # -> result
 # Async call
 await asyncQueue.listProvisioners() # -> result
 ```
@@ -3734,7 +3738,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.getProvisioner(provisionerId) # -> result`
+queue.getProvisioner(provisionerId) # -> result
 queue.getProvisioner(provisionerId='value') # -> result
 # Async call
 await asyncQueue.getProvisioner(provisionerId) # -> result
@@ -3765,7 +3769,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.declareProvisioner(provisionerId, payload) # -> result`
+queue.declareProvisioner(provisionerId, payload) # -> result
 queue.declareProvisioner(payload, provisionerId='value') # -> result
 # Async call
 await asyncQueue.declareProvisioner(provisionerId, payload) # -> result
@@ -3792,7 +3796,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.pendingTasks(provisionerId, workerType) # -> result`
+queue.pendingTasks(provisionerId, workerType) # -> result
 queue.pendingTasks(provisionerId='value', workerType='value') # -> result
 # Async call
 await asyncQueue.pendingTasks(provisionerId, workerType) # -> result
@@ -3817,7 +3821,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.listWorkerTypes(provisionerId) # -> result`
+queue.listWorkerTypes(provisionerId) # -> result
 queue.listWorkerTypes(provisionerId='value') # -> result
 # Async call
 await asyncQueue.listWorkerTypes(provisionerId) # -> result
@@ -3838,7 +3842,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.getWorkerType(provisionerId, workerType) # -> result`
+queue.getWorkerType(provisionerId, workerType) # -> result
 queue.getWorkerType(provisionerId='value', workerType='value') # -> result
 # Async call
 await asyncQueue.getWorkerType(provisionerId, workerType) # -> result
@@ -3866,7 +3870,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.declareWorkerType(provisionerId, workerType, payload) # -> result`
+queue.declareWorkerType(provisionerId, workerType, payload) # -> result
 queue.declareWorkerType(payload, provisionerId='value', workerType='value') # -> result
 # Async call
 await asyncQueue.declareWorkerType(provisionerId, workerType, payload) # -> result
@@ -3896,7 +3900,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.listWorkers(provisionerId, workerType) # -> result`
+queue.listWorkers(provisionerId, workerType) # -> result
 queue.listWorkers(provisionerId='value', workerType='value') # -> result
 # Async call
 await asyncQueue.listWorkers(provisionerId, workerType) # -> result
@@ -3919,7 +3923,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.getWorker(provisionerId, workerType, workerGroup, workerId) # -> result`
+queue.getWorker(provisionerId, workerType, workerGroup, workerId) # -> result
 queue.getWorker(provisionerId='value', workerType='value', workerGroup='value', workerId='value') # -> result
 # Async call
 await asyncQueue.getWorker(provisionerId, workerType, workerGroup, workerId) # -> result
@@ -3944,7 +3948,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.quarantineWorker(provisionerId, workerType, workerGroup, workerId, payload) # -> result`
+queue.quarantineWorker(provisionerId, workerType, workerGroup, workerId, payload) # -> result
 queue.quarantineWorker(payload, provisionerId='value', workerType='value', workerGroup='value', workerId='value') # -> result
 # Async call
 await asyncQueue.quarantineWorker(provisionerId, workerType, workerGroup, workerId, payload) # -> result
@@ -3972,7 +3976,7 @@ Has required output schema
 
 ```python
 # Sync calls
-queue.declareWorker(provisionerId, workerType, workerGroup, workerId, payload) # -> result`
+queue.declareWorker(provisionerId, workerType, workerGroup, workerId, payload) # -> result
 queue.declareWorker(payload, provisionerId='value', workerType='value', workerGroup='value', workerId='value') # -> result
 # Async call
 await asyncQueue.declareWorker(provisionerId, workerType, workerGroup, workerId, payload) # -> result
@@ -3984,8 +3988,9 @@ await asyncQueue.declareWorker(payload, provisionerId='value', workerType='value
 
 ### Exchanges in `taskcluster.QueueEvents`
 ```python
-// Create QueueEvents client instance
 import taskcluster
+
+# Create QueueEvents client instance
 queueEvents = taskcluster.QueueEvents(options)
 ```
 The queue service is responsible for accepting tasks and track their state
@@ -4139,10 +4144,10 @@ if this corner case is of concern to you.
 ### Methods in `taskcluster.Secrets`
 ```python
 import asyncio # Only for async 
-// Create Secrets client instance
 import taskcluster
 import taskcluster.aio
 
+# Create Secrets client instance
 secrets = taskcluster.Secrets(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
@@ -4163,7 +4168,7 @@ This endpoint is used to check that the service is up.
 
 ```python
 # Sync calls
-secrets.ping() # -> None`
+secrets.ping() # -> None
 # Async call
 await asyncSecrets.ping() # -> None
 ```
@@ -4182,7 +4187,7 @@ Has required input schema
 
 ```python
 # Sync calls
-secrets.set(name, payload) # -> None`
+secrets.set(name, payload) # -> None
 secrets.set(payload, name='value') # -> None
 # Async call
 await asyncSecrets.set(name, payload) # -> None
@@ -4200,7 +4205,7 @@ Takes the following arguments:
 
 ```python
 # Sync calls
-secrets.remove(name) # -> None`
+secrets.remove(name) # -> None
 secrets.remove(name='value') # -> None
 # Async call
 await asyncSecrets.remove(name) # -> None
@@ -4223,7 +4228,7 @@ Has required output schema
 
 ```python
 # Sync calls
-secrets.get(name) # -> result`
+secrets.get(name) # -> result
 secrets.get(name='value') # -> result
 # Async call
 await asyncSecrets.get(name) # -> result
@@ -4248,7 +4253,7 @@ Has required output schema
 
 ```python
 # Sync calls
-secrets.list() # -> result`
+secrets.list() # -> result
 # Async call
 await asyncSecrets.list() # -> result
 ```
@@ -4258,8 +4263,9 @@ await asyncSecrets.list() # -> result
 
 ### Exchanges in `taskcluster.TreeherderEvents`
 ```python
-// Create TreeherderEvents client instance
 import taskcluster
+
+# Create TreeherderEvents client instance
 treeherderEvents = taskcluster.TreeherderEvents(options)
 ```
 The taskcluster-treeherder service is responsible for processing
@@ -4281,10 +4287,10 @@ a local development environment, or a custom dashboard.
 ### Methods in `taskcluster.WorkerManager`
 ```python
 import asyncio # Only for async 
-// Create WorkerManager client instance
 import taskcluster
 import taskcluster.aio
 
+# Create WorkerManager client instance
 workerManager = taskcluster.WorkerManager(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
@@ -4299,7 +4305,7 @@ This endpoint is used to check that the service is up.
 
 ```python
 # Sync calls
-workerManager.ping() # -> None`
+workerManager.ping() # -> None
 # Async call
 await asyncWorkerManager.ping() # -> None
 ```
@@ -4319,7 +4325,7 @@ Has required output schema
 
 ```python
 # Sync calls
-workerManager.createWorkerType(name, payload) # -> result`
+workerManager.createWorkerType(name, payload) # -> result
 workerManager.createWorkerType(payload, name='value') # -> result
 # Async call
 await asyncWorkerManager.createWorkerType(name, payload) # -> result
@@ -4341,7 +4347,7 @@ Has required output schema
 
 ```python
 # Sync calls
-workerManager.updateWorkerType(name, payload) # -> result`
+workerManager.updateWorkerType(name, payload) # -> result
 workerManager.updateWorkerType(payload, name='value') # -> result
 # Async call
 await asyncWorkerManager.updateWorkerType(name, payload) # -> result
@@ -4361,7 +4367,7 @@ Has required output schema
 
 ```python
 # Sync calls
-workerManager.workerType(name) # -> result`
+workerManager.workerType(name) # -> result
 workerManager.workerType(name='value') # -> result
 # Async call
 await asyncWorkerManager.workerType(name) # -> result
@@ -4379,7 +4385,7 @@ Takes the following arguments:
 
 ```python
 # Sync calls
-workerManager.deleteWorkerType(name) # -> None`
+workerManager.deleteWorkerType(name) # -> None
 workerManager.deleteWorkerType(name='value') # -> None
 # Async call
 await asyncWorkerManager.deleteWorkerType(name) # -> None
@@ -4394,7 +4400,7 @@ Has required output schema
 
 ```python
 # Sync calls
-workerManager.listWorkerTypes() # -> result`
+workerManager.listWorkerTypes() # -> result
 # Async call
 await asyncWorkerManager.listWorkerTypes() # -> result
 ```

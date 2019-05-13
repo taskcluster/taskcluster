@@ -249,10 +249,10 @@ const modifyReadme = async (apis, content) => {
       lines.push(`### Methods in \`taskcluster.${name}\``);
       lines.push('```python');
       lines.push(`import asyncio # Only for async `);
-      lines.push(`// Create ${name} client instance`);
       lines.push(`import taskcluster`);
       lines.push(`import taskcluster.aio`);
       lines.push('');
+      lines.push(`# Create ${name} client instance`);
       lines.push(`${instName} = taskcluster.${name}(options)`);
       lines.push('# Below only for async instances, assume already in coroutine');
       lines.push('loop = asyncio.get_event_loop()');
@@ -304,7 +304,7 @@ const modifyReadme = async (apis, content) => {
 
       lines.push('```python');
       lines.push('# Sync calls');
-      lines.push(`${instName}.${methodName}(${inArgs}) # -> ${outStr}\``);
+      lines.push(`${instName}.${methodName}(${inArgs}) # -> ${outStr}`);
       if (args.length > 0) {
         lines.push(`${instName}.${methodName}(${inKwargs}) # -> ${outStr}`);
       }
@@ -321,8 +321,9 @@ const modifyReadme = async (apis, content) => {
       lines.push('');
       lines.push(`### Exchanges in \`taskcluster.${name}\``);
       lines.push('```python');
-      lines.push(`// Create ${name} client instance`);
       lines.push('import taskcluster');
+      lines.push('');
+      lines.push(`# Create ${name} client instance`);
       lines.push(`${instName} = taskcluster.${name}(options)`);
       lines.push('```');
 
