@@ -1,23 +1,26 @@
 {
   "Auth": {
     "reference": {
-      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
+      "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "Authentication related API end-points for Taskcluster and related\nservices. These API end-points are of interest if you wish to:\n  * Authorize a request signed with Taskcluster credentials,\n  * Manage clients and roles,\n  * Inspect or audit clients and roles,\n  * Gain access to various services guarded by this API.\n\nNote that in this service \"authentication\" refers to validating the\ncorrectness of the supplied credentials (that the caller posesses the\nappropriate access token). This service does not provide any kind of user\nauthentication (identifying a particular person).\n\n### Clients\nThe authentication service manages _clients_, at a high-level each client\nconsists of a `clientId`, an `accessToken`, scopes, and some metadata.\nThe `clientId` and `accessToken` can be used for authentication when\ncalling Taskcluster APIs.\n\nThe client's scopes control the client's access to Taskcluster resources.\nThe scopes are *expanded* by substituting roles, as defined below.\n\n### Roles\nA _role_ consists of a `roleId`, a set of scopes and a description.\nEach role constitutes a simple _expansion rule_ that says if you have\nthe scope: `assume:<roleId>` you get the set of scopes the role has.\nThink of the `assume:<roleId>` as a scope that allows a client to assume\na role.\n\nAs in scopes the `*` kleene star also have special meaning if it is\nlocated at the end of a `roleId`. If you have a role with the following\n`roleId`: `my-prefix*`, then any client which has a scope staring with\n`assume:my-prefix` will be allowed to assume the role.\n\n### Guarded Services\nThe authentication service also has API end-points for delegating access\nto some guarded service such as AWS S3, or Azure Table Storage.\nGenerally, we add API end-points to this server when we wish to use\nTaskcluster credentials to grant access to a third-party service used\nby many Taskcluster components.",
+      "description": "Authentication related API end-points for Taskcluster and related\nservices. These API end-points are of interest if you wish to:\n  * Authorize a request signed with Taskcluster credentials,\n  * Manage clients and roles,\n  * Inspect or audit clients and roles,\n  * Gain access to various services guarded by this API.\n",
       "entries": [
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
-          "query": [],
+          "query": [
+          ],
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Get a list of all clients.  With `prefix`, only clients for which\nit is a prefix of the clientId are returned.\n\nBy default this end-point will try to return up to 1000 clients in one\nrequest. But it **may return less, even none**.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listClients` with the last `continuationToken` until you\nget a result without a `continuationToken`.",
           "method": "get",
           "name": "listClients",
@@ -40,7 +43,8 @@
           "method": "get",
           "name": "client",
           "output": "v1/get-client-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/clients/<clientId>",
           "stability": "stable",
           "title": "Get Client",
@@ -55,7 +59,8 @@
           "method": "put",
           "name": "createClient",
           "output": "v1/create-client-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/clients/<clientId>",
           "scopes": {
             "AllOf": [
@@ -79,7 +84,8 @@
           "method": "post",
           "name": "resetAccessToken",
           "output": "v1/create-client-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/clients/<clientId>/reset",
           "scopes": "auth:reset-access-token:<clientId>",
           "stability": "stable",
@@ -95,7 +101,8 @@
           "method": "post",
           "name": "updateClient",
           "output": "v1/get-client-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/clients/<clientId>",
           "scopes": {
             "AllOf": [
@@ -119,7 +126,8 @@
           "method": "post",
           "name": "enableClient",
           "output": "v1/get-client-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/clients/<clientId>/enable",
           "scopes": "auth:enable-client:<clientId>",
           "stability": "stable",
@@ -134,7 +142,8 @@
           "method": "post",
           "name": "disableClient",
           "output": "v1/get-client-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/clients/<clientId>/disable",
           "scopes": "auth:disable-client:<clientId>",
           "stability": "stable",
@@ -148,7 +157,8 @@
           "description": "Delete a client, please note that any roles related to this client must\nbe deleted independently.",
           "method": "delete",
           "name": "deleteClient",
-          "query": [],
+          "query": [
+          ],
           "route": "/clients/<clientId>",
           "scopes": "auth:delete-client:<clientId>",
           "stability": "stable",
@@ -156,19 +166,22 @@
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Get a list of all roles, each role object also includes the list of\nscopes it expands to.",
           "method": "get",
           "name": "listRoles",
           "output": "v1/list-roles-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/roles/",
           "stability": "stable",
           "title": "List Roles",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "If no limit is given, the roleIds of all roles are returned. Since this\nlist may become long, callers can use the `limit` and `continuationToken`\nquery arguments to page through the responses.",
           "method": "get",
           "name": "listRoleIds",
@@ -183,7 +196,8 @@
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "If no limit is given, all roles are returned. Since this\nlist may become long, callers can use the `limit` and `continuationToken`\nquery arguments to page through the responses.",
           "method": "get",
           "name": "listRoles2",
@@ -205,7 +219,8 @@
           "method": "get",
           "name": "role",
           "output": "v1/get-role-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/roles/<roleId>",
           "stability": "stable",
           "title": "Get Role",
@@ -220,7 +235,8 @@
           "method": "put",
           "name": "createRole",
           "output": "v1/get-role-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/roles/<roleId>",
           "scopes": {
             "AllOf": [
@@ -245,7 +261,8 @@
           "method": "post",
           "name": "updateRole",
           "output": "v1/get-role-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/roles/<roleId>",
           "scopes": {
             "AllOf": [
@@ -268,7 +285,8 @@
           "description": "Delete a role. This operation will succeed regardless of whether or not\nthe role exists.",
           "method": "delete",
           "name": "deleteRole",
-          "query": [],
+          "query": [
+          ],
           "route": "/roles/<roleId>",
           "scopes": "auth:delete-role:<roleId>",
           "stability": "stable",
@@ -276,38 +294,44 @@
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Return an expanded copy of the given scopeset, with scopes implied by any\nroles included.\n\nThis call uses the GET method with an HTTP body.  It remains only for\nbackward compatibility.",
           "input": "v1/scopeset.json#",
           "method": "get",
           "name": "expandScopesGet",
           "output": "v1/scopeset.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/scopes/expand",
           "stability": "deprecated",
           "title": "Expand Scopes",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Return an expanded copy of the given scopeset, with scopes implied by any\nroles included.",
           "input": "v1/scopeset.json#",
           "method": "post",
           "name": "expandScopes",
           "output": "v1/scopeset.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/scopes/expand",
           "stability": "stable",
           "title": "Expand Scopes",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Return the expanded scopes available in the request, taking into account all sources\nof scopes and scope restrictions (temporary credentials, assumeScopes, client scopes,\nand roles).",
           "method": "get",
           "name": "currentScopes",
           "output": "v1/scopeset.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/scopes/current",
           "stability": "stable",
           "title": "Get Current Scopes",
@@ -342,12 +366,14 @@
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Retrieve a list of all Azure accounts managed by Taskcluster Auth.",
           "method": "get",
           "name": "azureAccounts",
           "output": "v1/azure-account-list-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/azure/accounts",
           "scopes": "auth:azure-table:list-accounts",
           "stability": "stable",
@@ -381,7 +407,8 @@
           "method": "get",
           "name": "azureTableSAS",
           "output": "v1/azure-table-access-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/azure/<account>/table/<table>/<level>",
           "scopes": {
             "else": "auth:azure-table:read-write:<account>/<table>",
@@ -424,7 +451,8 @@
           "method": "get",
           "name": "azureContainerSAS",
           "output": "v1/azure-container-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/azure/<account>/containers/<container>/<level>",
           "scopes": {
             "else": "auth:azure-container:read-write:<account>/<container>",
@@ -448,7 +476,8 @@
           "method": "get",
           "name": "sentryDSN",
           "output": "v1/sentry-dsn-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/sentry/<project>/dsn",
           "scopes": "auth:sentry:<project>",
           "stability": "stable",
@@ -463,7 +492,8 @@
           "method": "get",
           "name": "statsumToken",
           "output": "v1/statsum-token-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/statsum/<project>/token",
           "scopes": "auth:statsum:<project>",
           "stability": "stable",
@@ -479,7 +509,8 @@
           "method": "get",
           "name": "websocktunnelToken",
           "output": "v1/websocktunnel-token-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/websocktunnel/<wstAudience>/<wstClient>",
           "scopes": "auth:websocktunnel-token:<wstAudience>/<wstClient>",
           "stability": "stable",
@@ -487,38 +518,44 @@
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Validate the request signature given on input and return list of scopes\nthat the authenticating client has.\n\nThis method is used by other services that wish rely on Taskcluster\ncredentials for authentication. This way we can use Hawk without having\nthe secret credentials leave this service.",
           "input": "v1/authenticate-hawk-request.json#",
           "method": "post",
           "name": "authenticateHawk",
           "output": "v1/authenticate-hawk-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/authenticate-hawk",
           "stability": "stable",
           "title": "Authenticate Hawk Request",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Utility method to test client implementations of Taskcluster\nauthentication.\n\nRather than using real credentials, this endpoint accepts requests with\nclientId `tester` and accessToken `no-secret`. That client's scopes are\nbased on `clientScopes` in the request body.\n\nThe request is validated, with any certificate, authorizedScopes, etc.\napplied, and the resulting scopes are checked against `requiredScopes`\nfrom the request body. On success, the response contains the clientId\nand scopes as seen by the API method.",
           "input": "v1/test-authenticate-request.json#",
           "method": "post",
           "name": "testAuthenticate",
           "output": "v1/test-authenticate-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/test-authenticate",
           "stability": "stable",
           "title": "Test Authentication",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Utility method similar to `testAuthenticate`, but with the GET method,\nso it can be used with signed URLs (bewits).\n\nRather than using real credentials, this endpoint accepts requests with\nclientId `tester` and accessToken `no-secret`. That client's scopes are\n`['test:*', 'auth:create-client:test:*']`.  The call fails if the \n`test:authenticate-get` scope is not available.\n\nThe request is validated, with any certificate, authorizedScopes, etc.\napplied, and the resulting scopes are checked, just like any API call.\nOn success, the response contains the clientId and scopes as seen by\nthe API method.\n\nThis method may later be extended to allow specification of client and\nrequired scopes via query arguments.",
           "method": "get",
           "name": "testAuthenticateGet",
           "output": "v1/test-authenticate-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/test-authenticate-get/",
           "stability": "stable",
           "title": "Test Authentication (GET)",
@@ -527,12 +564,11 @@
       ],
       "serviceName": "auth",
       "title": "Authentication API"
-    },
-    "referenceUrl": "https://references.taskcluster.net/auth/v1/api.json"
+    }
   },
   "AuthEvents": {
     "reference": {
-      "$schema": "https://schemas.taskcluster.net/common/exchanges-reference-v0.json#",
+      "$schema": "/schemas/common/exchanges-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The auth service is responsible for storing credentials, managing\nassignment of scopes, and validation of request signatures from other\nservices.\n\nThese exchanges provides notifications when credentials or roles are\nupdated. This is mostly so that multiple instances of the auth service\ncan purge their caches and synchronize state. But you are of course\nwelcome to use these for other purposes, monitoring changes for example.",
       "entries": [
@@ -636,23 +672,23 @@
       "exchangePrefix": "exchange/taskcluster-auth/v1/",
       "serviceName": "auth",
       "title": "Auth Pulse Exchanges"
-    },
-    "referenceUrl": "https://references.taskcluster.net/auth/v1/exchanges.json"
+    }
   },
   "AwsProvisioner": {
     "reference": {
-      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "baseUrl": "https://aws-provisioner.taskcluster.net/v1",
       "description": "The AWS Provisioner is responsible for provisioning instances on EC2 for use in\nTaskcluster.  The provisioner maintains a set of worker configurations which\ncan be managed with an API that is typically available at\naws-provisioner.taskcluster.net/v1.  This API can also perform basic instance\nmanagement tasks in addition to maintaining the internal state of worker type\nconfiguration information.\n\nThe Provisioner runs at a configurable interval.  Each iteration of the\nprovisioner fetches a current copy the state that the AWS EC2 api reports.  In\neach iteration, we ask the Queue how many tasks are pending for that worker\ntype.  Based on the number of tasks pending and the scaling ratio, we may\nsubmit requests for new instances.  We use pricing information, capacity and\nutility factor information to decide which instance type in which region would\nbe the optimal configuration.\n\nEach EC2 instance type will declare a capacity and utility factor.  Capacity is\nthe number of tasks that a given machine is capable of running concurrently.\nUtility factor is a relative measure of performance between two instance types.\nWe multiply the utility factor by the spot price to compare instance types and\nregions when making the bidding choices.\n\nWhen a new EC2 instance is instantiated, its user data contains a token in\n`securityToken` that can be used with the `getSecret` method to retrieve\nthe worker's credentials and any needed passwords or other restricted\ninformation.  The worker is responsible for deleting the secret after\nretrieving it, to prevent dissemination of the secret to other proceses\nwhich can read the instance user data.\n",
       "entries": [
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Return a list of worker types, including some summary information about\ncurrent capacity for each.  While this list includes all defined worker types,\nthere may be running EC2 instances for deleted worker types that are not\nincluded here.  The list is unordered.",
           "method": "get",
           "name": "listWorkerTypeSummaries",
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#",
-          "query": [],
+          "output": "v1/list-worker-types-summaries-response.json#",
+          "query": [
+          ],
           "route": "/list-worker-type-summaries",
           "stability": "stable",
           "title": "List worker types with details",
@@ -663,11 +699,12 @@
             "workerType"
           ],
           "description": "Create a worker type.  A worker type contains all the configuration\nneeded for the provisioner to manage the instances.  Each worker type\nknows which regions and which instance types are allowed for that\nworker type.  Remember that Capacity is the number of concurrent tasks\nthat can be run on a given EC2 resource and that Utility is the relative\nperformance rate between different instance types.  There is no way to\nconfigure different regions to have different sets of instance types\nso ensure that all instance types are available in all regions.\nThis function is idempotent.\n\nOnce a worker type is in the provisioner, a back ground process will\nbegin creating instances for it based on its capacity bounds and its\npending task count from the Queue.  It is the worker's responsibility\nto shut itself down.  The provisioner has a limit (currently 96hours)\nfor all instances to prevent zombie instances from running indefinitely.\n\nThe provisioner will ensure that all instances created are tagged with\naws resource tags containing the provisioner id and the worker type.\n\nIf provided, the secrets in the global, region and instance type sections\nare available using the secrets api.  If specified, the scopes provided\nwill be used to generate a set of temporary credentials available with\nthe other secrets.",
-          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#",
+          "input": "v1/create-worker-type-request.json#",
           "method": "put",
           "name": "createWorkerType",
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#",
-          "query": [],
+          "output": "v1/get-worker-type-response.json#",
+          "query": [
+          ],
           "route": "/worker-type/<workerType>",
           "scopes": "aws-provisioner:manage-worker-type:<workerType>",
           "stability": "stable",
@@ -679,11 +716,12 @@
             "workerType"
           ],
           "description": "Provide a new copy of a worker type to replace the existing one.\nThis will overwrite the existing worker type definition if there\nis already a worker type of that name.  This method will return a\n200 response along with a copy of the worker type definition created\nNote that if you are using the result of a GET on the worker-type\nend point that you will need to delete the lastModified and workerType\nkeys from the object returned, since those fields are not allowed\nthe request body for this method\n\nOtherwise, all input requirements and actions are the same as the\ncreate method.",
-          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#",
+          "input": "v1/create-worker-type-request.json#",
           "method": "post",
           "name": "updateWorkerType",
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#",
-          "query": [],
+          "output": "v1/get-worker-type-response.json#",
+          "query": [
+          ],
           "route": "/worker-type/<workerType>/update",
           "scopes": "aws-provisioner:manage-worker-type:<workerType>",
           "stability": "stable",
@@ -697,8 +735,9 @@
           "description": "This method is provided to allow workers to see when they were\nlast modified.  The value provided through UserData can be\ncompared against this value to see if changes have been made\nIf the worker type definition has not been changed, the date\nshould be identical as it is the same stored value.",
           "method": "get",
           "name": "workerTypeLastModified",
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-last-modified.json#",
-          "query": [],
+          "output": "v1/get-worker-type-last-modified.json#",
+          "query": [
+          ],
           "route": "/worker-type-last-modified/<workerType>",
           "stability": "stable",
           "title": "Get Worker Type Last Modified Time",
@@ -711,8 +750,9 @@
           "description": "Retrieve a copy of the requested worker type definition.\nThis copy contains a lastModified field as well as the worker\ntype name.  As such, it will require manipulation to be able to\nuse the results of this method to submit date to the update\nmethod.",
           "method": "get",
           "name": "workerType",
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#",
-          "query": [],
+          "output": "v1/get-worker-type-response.json#",
+          "query": [
+          ],
           "route": "/worker-type/<workerType>",
           "scopes": {
             "AnyOf": [
@@ -731,7 +771,8 @@
           "description": "Delete a worker type definition.  This method will only delete\nthe worker type definition from the storage table.  The actual\ndeletion will be handled by a background worker.  As soon as this\nmethod is called for a worker type, the background worker will\nimmediately submit requests to cancel all spot requests for this\nworker type as well as killing all instances regardless of their\nstate.  If you want to gracefully remove a worker type, you must\neither ensure that no tasks are created with that worker type name\nor you could theoretically set maxCapacity to 0, though, this is\nnot a supported or tested action",
           "method": "delete",
           "name": "removeWorkerType",
-          "query": [],
+          "query": [
+          ],
           "route": "/worker-type/<workerType>",
           "scopes": "aws-provisioner:manage-worker-type:<workerType>",
           "stability": "stable",
@@ -739,12 +780,14 @@
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Return a list of string worker type names.  These are the names\nof all managed worker types known to the provisioner.  This does\nnot include worker types which are left overs from a deleted worker\ntype definition but are still running in AWS.",
           "method": "get",
           "name": "listWorkerTypes",
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#",
-          "query": [],
+          "output": "v1/list-worker-types-response.json#",
+          "query": [
+          ],
           "route": "/list-worker-types",
           "stability": "stable",
           "title": "List Worker Types",
@@ -755,10 +798,11 @@
             "token"
           ],
           "description": "Insert a secret into the secret storage.  The supplied secrets will\nbe provided verbatime via `getSecret`, while the supplied scopes will\nbe converted into credentials by `getSecret`.\n\nThis method is not ordinarily used in production; instead, the provisioner\ncreates a new secret directly for each spot bid.",
-          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#",
+          "input": "v1/create-secret-request.json#",
           "method": "put",
           "name": "createSecret",
-          "query": [],
+          "query": [
+          ],
           "route": "/secret/<token>",
           "scopes": "aws-provisioner:create-secret:<workerType>",
           "stability": "stable",
@@ -772,8 +816,9 @@
           "description": "Retrieve a secret from storage.  The result contains any passwords or\nother restricted information verbatim as well as a temporary credential\nbased on the scopes specified when the secret was created.\n\nIt is important that this secret is deleted by the consumer (`removeSecret`),\nor else the secrets will be visible to any process which can access the\nuser data associated with the instance.",
           "method": "get",
           "name": "getSecret",
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#",
-          "query": [],
+          "output": "v1/get-secret-response.json#",
+          "query": [
+          ],
           "route": "/secret/<token>",
           "stability": "stable",
           "title": "Get a Secret",
@@ -787,7 +832,8 @@
           "description": "An instance will report in by giving its instance id as well\nas its security token.  The token is given and checked to ensure\nthat it matches a real token that exists to ensure that random\nmachines do not check in.  We could generate a different token\nbut that seems like overkill",
           "method": "get",
           "name": "instanceStarted",
-          "query": [],
+          "query": [
+          ],
           "route": "/instance-started/<instanceId>/<token>",
           "stability": "stable",
           "title": "Report an instance starting",
@@ -800,7 +846,8 @@
           "description": "Remove a secret.  After this call, a call to `getSecret` with the given\ntoken will return no information.\n\nIt is very important that the consumer of a \nsecret delete the secret from storage before handing over control\nto untrusted processes to prevent credential and/or secret leakage.",
           "method": "delete",
           "name": "removeSecret",
-          "query": [],
+          "query": [
+          ],
           "route": "/secret/<token>",
           "stability": "stable",
           "title": "Remove a Secret",
@@ -813,8 +860,9 @@
           "description": "This method returns a preview of all possible launch specifications\nthat this worker type definition could submit to EC2.  It is used to\ntest worker types, nothing more\n\n**This API end-point is experimental and may be subject to change without warning.**",
           "method": "get",
           "name": "getLaunchSpecs",
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#",
-          "query": [],
+          "output": "v1/get-launch-specs-response.json#",
+          "query": [
+          ],
           "route": "/worker-type/<workerType>/launch-specifications",
           "scopes": {
             "AnyOf": [
@@ -833,30 +881,35 @@
           "description": "Return the state of a given workertype as stored by the provisioner. \nThis state is stored as three lists: 1 for running instances, 1 for\npending requests.  The `summary` property contains an updated summary\nsimilar to that returned from `listWorkerTypeSummaries`.",
           "method": "get",
           "name": "state",
-          "query": [],
+          "query": [
+          ],
           "route": "/state/<workerType>",
           "stability": "stable",
           "title": "Get AWS State for a worker type",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "This endpoint is used to show when the last time the provisioner\nhas checked in.  A check in is done through the deadman's snitch\napi.  It is done at the conclusion of a provisioning iteration\nand used to tell if the background provisioning process is still\nrunning.\n\n**Warning** this api end-point is **not stable**.",
           "method": "get",
           "name": "backendStatus",
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#",
-          "query": [],
+          "output": "v1/backend-status-response.json#",
+          "query": [
+          ],
           "route": "/backend-status",
           "stability": "experimental",
           "title": "Backend Status",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
-          "query": [],
+          "query": [
+          ],
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
@@ -864,134 +917,37 @@
         }
       ],
       "serviceName": "aws-provisioner",
-      "title": "AWS Provisioner API Documentation",
-      "version": 0
-    },
-    "referenceUrl": "https://references.taskcluster.net/aws-provisioner/v1/api.json"
-  },
-  "AwsProvisionerEvents": {
-    "reference": {
-      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#",
-      "description": "Exchanges from the provisioner... more docs later",
-      "entries": [
-        {
-          "description": "When a new `workerType` is created a message will be published to this\nexchange.",
-          "exchange": "worker-type-created",
-          "name": "workerTypeCreated",
-          "routingKey": [
-            {
-              "constant": "primary",
-              "multipleWords": false,
-              "name": "routingKeyKind",
-              "required": true,
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
-            },
-            {
-              "multipleWords": false,
-              "name": "workerType",
-              "required": true,
-              "summary": "WorkerType that this message concerns."
-            },
-            {
-              "multipleWords": true,
-              "name": "reserved",
-              "required": false,
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
-            }
-          ],
-          "schema": "http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#",
-          "title": "WorkerType Created Message",
-          "type": "topic-exchange"
-        },
-        {
-          "description": "When a `workerType` is updated a message will be published to this\nexchange.",
-          "exchange": "worker-type-updated",
-          "name": "workerTypeUpdated",
-          "routingKey": [
-            {
-              "constant": "primary",
-              "multipleWords": false,
-              "name": "routingKeyKind",
-              "required": true,
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
-            },
-            {
-              "multipleWords": false,
-              "name": "workerType",
-              "required": true,
-              "summary": "WorkerType that this message concerns."
-            },
-            {
-              "multipleWords": true,
-              "name": "reserved",
-              "required": false,
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
-            }
-          ],
-          "schema": "http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#",
-          "title": "WorkerType Updated Message",
-          "type": "topic-exchange"
-        },
-        {
-          "description": "When a `workerType` is removed a message will be published to this\nexchange.",
-          "exchange": "worker-type-removed",
-          "name": "workerTypeRemoved",
-          "routingKey": [
-            {
-              "constant": "primary",
-              "multipleWords": false,
-              "name": "routingKeyKind",
-              "required": true,
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
-            },
-            {
-              "multipleWords": false,
-              "name": "workerType",
-              "required": true,
-              "summary": "WorkerType that this message concerns."
-            },
-            {
-              "multipleWords": true,
-              "name": "reserved",
-              "required": false,
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
-            }
-          ],
-          "schema": "http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#",
-          "title": "WorkerType Removed Message",
-          "type": "topic-exchange"
-        }
-      ],
-      "exchangePrefix": "exchange/taskcluster-aws-provisioner/v1/",
-      "title": "AWS Provisioner Pulse Exchanges",
-      "version": 0
-    },
-    "referenceUrl": "https://references.taskcluster.net/aws-provisioner/v1/exchanges.json"
+      "title": "AWS Provisioner API Documentation"
+    }
   },
   "EC2Manager": {
     "reference": {
-      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
+      "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
       "description": "A taskcluster service which manages EC2 instances.  This service does not understand any taskcluster concepts intrinsicaly other than using the name `workerType` to refer to a group of associated instances.  Unless you are working on building a provisioner for AWS, you almost certainly do not want to use this service",
       "entries": [
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
-          "query": [],
+          "query": [
+          ],
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "This method is only for debugging the ec2-manager",
           "method": "get",
           "name": "listWorkerTypes",
           "output": "v1/list-worker-types.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/worker-types",
           "stability": "experimental",
           "title": "See the list of worker types which are known to be managed",
@@ -1005,7 +961,8 @@
           "input": "v1/run-instance-request.json#",
           "method": "put",
           "name": "runInstance",
-          "query": [],
+          "query": [
+          ],
           "route": "/worker-types/<workerType>/instance",
           "scopes": "ec2-manager:manage-resources:<workerType>",
           "stability": "experimental",
@@ -1019,7 +976,8 @@
           "description": "Terminate all instances for this worker type",
           "method": "delete",
           "name": "terminateWorkerType",
-          "query": [],
+          "query": [
+          ],
           "route": "/worker-types/<workerType>/resources",
           "scopes": "ec2-manager:manage-resources:<workerType>",
           "stability": "experimental",
@@ -1034,7 +992,8 @@
           "method": "get",
           "name": "workerTypeStats",
           "output": "v1/worker-type-resources.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/worker-types/<workerType>/stats",
           "stability": "experimental",
           "title": "Look up the resource stats for a workerType",
@@ -1048,7 +1007,8 @@
           "method": "get",
           "name": "workerTypeHealth",
           "output": "v1/health.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/worker-types/<workerType>/health",
           "stability": "experimental",
           "title": "Look up the resource health for a workerType",
@@ -1062,7 +1022,8 @@
           "method": "get",
           "name": "workerTypeErrors",
           "output": "v1/errors.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/worker-types/<workerType>/errors",
           "stability": "experimental",
           "title": "Look up the most recent errors of a workerType",
@@ -1076,7 +1037,8 @@
           "method": "get",
           "name": "workerTypeState",
           "output": "v1/worker-type-state.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/worker-types/<workerType>/state",
           "stability": "experimental",
           "title": "Look up the resource state for a workerType",
@@ -1090,7 +1052,8 @@
           "input": "v1/create-key-pair.json#",
           "method": "get",
           "name": "ensureKeyPair",
-          "query": [],
+          "query": [
+          ],
           "route": "/key-pairs/<name>",
           "scopes": "ec2-manager:manage-key-pairs:<name>",
           "stability": "experimental",
@@ -1104,7 +1067,8 @@
           "description": "Ensure that a keypair of a given name does not exist.",
           "method": "delete",
           "name": "removeKeyPair",
-          "query": [],
+          "query": [
+          ],
           "route": "/key-pairs/<name>",
           "scopes": "ec2-manager:manage-key-pairs:<name>",
           "stability": "experimental",
@@ -1119,7 +1083,8 @@
           "description": "Terminate an instance in a specified region",
           "method": "delete",
           "name": "terminateInstance",
-          "query": [],
+          "query": [
+          ],
           "route": "/region/<region>/instance/<instanceId>",
           "scopes": {
             "AnyOf": [
@@ -1135,60 +1100,70 @@
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Return a list of possible prices for EC2",
           "method": "get",
           "name": "getPrices",
           "output": "v1/prices.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/prices",
           "stability": "experimental",
           "title": "Request prices for EC2",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Return a list of possible prices for EC2",
           "input": "v1/prices-request.json#",
           "method": "post",
           "name": "getSpecificPrices",
           "output": "v1/prices.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/prices",
           "stability": "experimental",
           "title": "Request prices for EC2",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Give some basic stats on the health of our EC2 account",
           "method": "get",
           "name": "getHealth",
           "output": "v1/health.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/health",
           "stability": "experimental",
           "title": "Get EC2 account health metrics",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Return a list of recent errors encountered",
           "method": "get",
           "name": "getRecentErrors",
           "output": "v1/errors.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/errors",
           "stability": "experimental",
           "title": "Look up the most recent errors in the provisioner across all worker types",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "This method is only for debugging the ec2-manager",
           "method": "get",
           "name": "regions",
-          "query": [],
+          "query": [
+          ],
           "route": "/internal/regions",
           "scopes": "ec2-manager:internals",
           "stability": "experimental",
@@ -1196,11 +1171,13 @@
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "List AMIs and their usage by returning a list of objects in the form:\n{\nregion: string\n  volumetype: string\n  lastused: timestamp\n}",
           "method": "get",
           "name": "amiUsage",
-          "query": [],
+          "query": [
+          ],
           "route": "/internal/ami-usage",
           "scopes": "ec2-manager:internals",
           "stability": "experimental",
@@ -1208,11 +1185,13 @@
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Lists current EBS volume usage by returning a list of objects\nthat are uniquely defined by {region, volumetype, state} in the form:\n{\nregion: string,\n  volumetype: string,\n  state: string,\n  totalcount: integer,\n  totalgb: integer,\n  touched: timestamp (last time that information was updated),\n}",
           "method": "get",
           "name": "ebsUsage",
-          "query": [],
+          "query": [
+          ],
           "route": "/internal/ebs-usage",
           "scopes": "ec2-manager:internals",
           "stability": "experimental",
@@ -1220,11 +1199,13 @@
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "This method is only for debugging the ec2-manager",
           "method": "get",
           "name": "dbpoolStats",
-          "query": [],
+          "query": [
+          ],
           "route": "/internal/db-pool-stats",
           "scopes": "ec2-manager:internals",
           "stability": "experimental",
@@ -1232,11 +1213,13 @@
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "This method is only for debugging the ec2-manager",
           "method": "get",
           "name": "allState",
-          "query": [],
+          "query": [
+          ],
           "route": "/internal/all-state",
           "scopes": "ec2-manager:internals",
           "stability": "experimental",
@@ -1244,11 +1227,13 @@
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "This method is only for debugging the ec2-manager",
           "method": "get",
           "name": "sqsStats",
-          "query": [],
+          "query": [
+          ],
           "route": "/internal/sqs-stats",
           "scopes": "ec2-manager:internals",
           "stability": "experimental",
@@ -1256,11 +1241,13 @@
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "This method is only for debugging the ec2-manager",
           "method": "get",
           "name": "purgeQueues",
-          "query": [],
+          "query": [
+          ],
           "route": "/internal/purge-queues",
           "scopes": "ec2-manager:internals",
           "stability": "experimental",
@@ -1269,41 +1256,44 @@
         }
       ],
       "serviceName": "ec2-manager",
-      "title": "EC2 Instance Manager",
-      "version": 0
-    },
-    "referenceUrl": "https://references.taskcluster.net/ec2-manager/v1/api.json"
+      "title": "EC2 Instance Manager"
+    }
   },
   "Github": {
     "reference": {
-      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
+      "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The github service is responsible for creating tasks in reposnse\nto GitHub events, and posting results to the GitHub UI.\n\nThis document describes the API end-point for consuming GitHub\nweb hooks, as well as some useful consumer APIs.\n\nWhen Github forbids an action, this service returns an HTTP 403\nwith code ForbiddenByGithub.",
       "entries": [
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
-          "query": [],
+          "query": [
+          ],
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Capture a GitHub event and publish it via pulse, if it's a push,\nrelease or pull request.",
           "method": "post",
           "name": "githubWebHookConsumer",
-          "query": [],
+          "query": [
+          ],
           "route": "/github",
           "stability": "experimental",
           "title": "Consume GitHub WebHook",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "A paginated list of builds that have been run in\nTaskcluster. Can be filtered on various git-specific\nfields.",
           "method": "get",
           "name": "builds",
@@ -1329,7 +1319,8 @@
           "description": "Checks the status of the latest build of a given branch\nand returns corresponding badge svg.",
           "method": "get",
           "name": "badge",
-          "query": [],
+          "query": [
+          ],
           "route": "/repository/<owner>/<repo>/<branch>/badge.svg",
           "stability": "experimental",
           "title": "Latest Build Status Badge",
@@ -1344,7 +1335,8 @@
           "method": "get",
           "name": "repository",
           "output": "v1/repository.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/repository/<owner>/<repo>",
           "stability": "experimental",
           "title": "Get Repository Info",
@@ -1359,7 +1351,8 @@
           "description": "For a given branch of a repository, this will always point\nto a status page for the most recent task triggered by that\nbranch.\n\nNote: This is a redirect rather than a direct link.",
           "method": "get",
           "name": "latest",
-          "query": [],
+          "query": [
+          ],
           "route": "/repository/<owner>/<repo>/<branch>/latest",
           "stability": "experimental",
           "title": "Latest Status for Branch",
@@ -1375,7 +1368,8 @@
           "input": "v1/create-status.json#",
           "method": "post",
           "name": "createStatus",
-          "query": [],
+          "query": [
+          ],
           "route": "/repository/<owner>/<repo>/statuses/<sha>",
           "scopes": "github:create-status:<owner>/<repo>",
           "stability": "experimental",
@@ -1392,7 +1386,8 @@
           "input": "v1/create-comment.json#",
           "method": "post",
           "name": "createComment",
-          "query": [],
+          "query": [
+          ],
           "route": "/repository/<owner>/<repo>/issues/<number>/comments",
           "scopes": "github:create-comment:<owner>/<repo>",
           "stability": "experimental",
@@ -1402,12 +1397,11 @@
       ],
       "serviceName": "github",
       "title": "Taskcluster GitHub API Documentation"
-    },
-    "referenceUrl": "https://references.taskcluster.net/github/v1/api.json"
+    }
   },
   "GithubEvents": {
     "reference": {
-      "$schema": "https://schemas.taskcluster.net/common/exchanges-reference-v0.json#",
+      "$schema": "/schemas/common/exchanges-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The github service publishes a pulse\nmessage for supported github events, translating Github webhook\nevents into pulse messages.\n\nThis document describes the exchange offered by the taskcluster\ngithub service",
       "entries": [
@@ -1537,33 +1531,36 @@
       "exchangePrefix": "exchange/taskcluster-github/v1/",
       "serviceName": "github",
       "title": "Taskcluster-Github Exchanges"
-    },
-    "referenceUrl": "https://references.taskcluster.net/github/v1/exchanges.json"
+    }
   },
   "Hooks": {
     "reference": {
-      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
+      "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.  The new task has a `taskGroupId` equal to its\n`taskId`, as is the convention for decision tasks.\n\nHooks can have a \"schedule\" indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `['0 0 1 * * *']` -- daily at 1:00 UTC\n * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon\n\nThe task definition is used as a JSON-e template, with a context depending on how it is fired.  See\n[/docs/reference/core/taskcluster-hooks/docs/firing-hooks](firing-hooks)\nfor more information.",
+      "description": "The hooks service provides a mechanism for creating tasks in response to events.\n",
       "entries": [
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
-          "query": [],
+          "query": [
+          ],
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "This endpoint will return a list of all hook groups with at least one hook.",
           "method": "get",
           "name": "listHookGroups",
           "output": "v1/list-hook-groups-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/hooks",
           "stability": "stable",
           "title": "List hook groups",
@@ -1577,7 +1574,8 @@
           "method": "get",
           "name": "listHooks",
           "output": "v1/list-hooks-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/hooks/<hookGroupId>",
           "stability": "stable",
           "title": "List hooks in a given group",
@@ -1592,7 +1590,8 @@
           "method": "get",
           "name": "hook",
           "output": "v1/hook-definition.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/hooks/<hookGroupId>/<hookId>",
           "stability": "stable",
           "title": "Get hook definition",
@@ -1607,7 +1606,8 @@
           "method": "get",
           "name": "getHookStatus",
           "output": "v1/hook-status.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/hooks/<hookGroupId>/<hookId>/status",
           "stability": "deprecated",
           "title": "Get hook status",
@@ -1623,7 +1623,8 @@
           "method": "put",
           "name": "createHook",
           "output": "v1/hook-definition.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/hooks/<hookGroupId>/<hookId>",
           "scopes": {
             "AllOf": [
@@ -1645,7 +1646,8 @@
           "method": "post",
           "name": "updateHook",
           "output": "v1/hook-definition.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/hooks/<hookGroupId>/<hookId>",
           "scopes": {
             "AllOf": [
@@ -1665,7 +1667,8 @@
           "description": "This endpoint will remove a hook definition.",
           "method": "delete",
           "name": "removeHook",
-          "query": [],
+          "query": [
+          ],
           "route": "/hooks/<hookGroupId>/<hookId>",
           "scopes": "hooks:modify-hook:<hookGroupId>/<hookId>",
           "stability": "stable",
@@ -1682,7 +1685,8 @@
           "method": "post",
           "name": "triggerHook",
           "output": "v1/trigger-hook-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/hooks/<hookGroupId>/<hookId>/trigger",
           "scopes": "hooks:trigger-hook:<hookGroupId>/<hookId>",
           "stability": "stable",
@@ -1698,7 +1702,8 @@
           "method": "get",
           "name": "getTriggerToken",
           "output": "v1/trigger-token-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/hooks/<hookGroupId>/<hookId>/token",
           "scopes": "hooks:get-trigger-token:<hookGroupId>/<hookId>",
           "stability": "stable",
@@ -1714,7 +1719,8 @@
           "method": "post",
           "name": "resetTriggerToken",
           "output": "v1/trigger-token-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/hooks/<hookGroupId>/<hookId>/token",
           "scopes": "hooks:reset-trigger-token:<hookGroupId>/<hookId>",
           "stability": "stable",
@@ -1732,7 +1738,8 @@
           "method": "post",
           "name": "triggerHookWithToken",
           "output": "v1/trigger-hook-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/hooks/<hookGroupId>/<hookId>/trigger/<token>",
           "stability": "stable",
           "title": "Trigger a hook with a token",
@@ -1747,7 +1754,8 @@
           "method": "get",
           "name": "listLastFires",
           "output": "v1/list-lastFires-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/hooks/<hookGroupId>/<hookId>/last-fires",
           "stability": "experimental",
           "title": "Get information about recent hook fires",
@@ -1756,21 +1764,82 @@
       ],
       "serviceName": "hooks",
       "title": "Hooks API Documentation"
-    },
-    "referenceUrl": "https://references.taskcluster.net/hooks/v1/api.json"
+    }
+  },
+  "HooksEvents": {
+    "reference": {
+      "$schema": "/schemas/common/exchanges-reference-v0.json#",
+      "apiVersion": "v1",
+      "description": "The hooks service is responsible for creating tasks at specific times orin .  response to webhooks and API calls.Using this exchange allows us tomake hooks which repsond to particular pulse messagesThese exchanges provide notifications when a hook is created, updatedor deleted. This is so that the listener running in a different hooks process at the other end can direct another listener specified by`hookGroupId` and `hookId` to synchronize its bindings. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.",
+      "entries": [
+        {
+          "description": "Whenever the api receives a request to create apulse based hook, a message is posted to this exchange andthe receiver creates a listener with the bindings, to create a task",
+          "exchange": "hook-created",
+          "name": "hookCreated",
+          "routingKey": [
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-hook-changed-message.json#",
+          "title": "Hook Created Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever the api receives a request to update apulse based hook, a message is posted to this exchange andthe receiver updates the listener associated with that hook.",
+          "exchange": "hook-updated",
+          "name": "hookUpdated",
+          "routingKey": [
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-hook-changed-message.json#",
+          "title": "Hook Updated Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever the api receives a request to delete apulse based hook, a message is posted to this exchange andthe receiver deletes the listener associated with that hook.",
+          "exchange": "hook-deleted",
+          "name": "hookDeleted",
+          "routingKey": [
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-hook-changed-message.json#",
+          "title": "Hook Deleted Messages",
+          "type": "topic-exchange"
+        }
+      ],
+      "exchangePrefix": "exchange/taskcluster-hooks/v1/",
+      "serviceName": "hooks",
+      "title": "Exchanges to manage hooks"
+    }
   },
   "Index": {
     "reference": {
-      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
+      "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The task index is responsible for indexing tasks. The service ensures that\ntasks can be located by recency and/or arbitrary strings. Common\nuse-cases include:\n\n * Locate tasks by git or mercurial `<revision>`, or\n * Locate latest task from given `<branch>`, such as a release.\n\n**Index hierarchy**, tasks are indexed in a dot (`.`) separated hierarchy\ncalled a namespace. For example a task could be indexed with the index path\n`some-app.<revision>.linux-64.release-build`. In this case the following\nnamespaces is created.\n\n 1. `some-app`,\n 1. `some-app.<revision>`, and,\n 2. `some-app.<revision>.linux-64`\n\nInside the namespace `some-app.<revision>` you can find the namespace\n`some-app.<revision>.linux-64` inside which you can find the indexed task\n`some-app.<revision>.linux-64.release-build`. This is an example of indexing\nbuilds for a given platform and revision.\n\n**Task Rank**, when a task is indexed, it is assigned a `rank` (defaults\nto `0`). If another task is already indexed in the same namespace with\nlower or equal `rank`, the index for that task will be overwritten. For example\nconsider index path `mozilla-central.linux-64.release-build`. In\nthis case one might choose to use a UNIX timestamp or mercurial revision\nnumber as `rank`. This way the latest completed linux 64 bit release\nbuild is always available at `mozilla-central.linux-64.release-build`.\n\nNote that this does mean index paths are not immutable: the same path may\npoint to a different task now than it did a moment ago.\n\n**Indexed Data**, when a task is retrieved from the index the result includes\na `taskId` and an additional user-defined JSON blob that was indexed with\nthe task.\n\n**Entry Expiration**, all indexed entries must have an expiration date.\nTypically this defaults to one year, if not specified. If you are\nindexing tasks to make it easy to find artifacts, consider using the\nartifact's expiration date.\n\n**Valid Characters**, all keys in a namespace `<key1>.<key2>` must be\nin the form `/[a-zA-Z0-9_!~*'()%-]+/`. Observe that this is URL-safe and\nthat if you strictly want to put another character you can URL encode it.\n\n**Indexing Routes**, tasks can be indexed using the API below, but the\nmost common way to index tasks is adding a custom route to `task.routes` of the\nform `index.<namespace>`. In order to add this route to a task you'll\nneed the scope `queue:route:index.<namespace>`. When a task has\nthis route, it will be indexed when the task is **completed successfully**.\nThe task will be indexed with `rank`, `data` and `expires` as specified\nin `task.extra.index`. See the example below:\n\n```js\n{\n  payload:  { /* ... */ },\n  routes: [\n    // index.<namespace> prefixed routes, tasks CC'ed such a route will\n    // be indexed under the given <namespace>\n    \"index.mozilla-central.linux-64.release-build\",\n    \"index.<revision>.linux-64.release-build\"\n  ],\n  extra: {\n    // Optional details for indexing service\n    index: {\n      // Ordering, this taskId will overwrite any thing that has\n      // rank <= 4000 (defaults to zero)\n      rank:       4000,\n\n      // Specify when the entries expire (Defaults to 1 year)\n      expires:          new Date().toJSON(),\n\n      // A little informal data to store along with taskId\n      // (less 16 kb when encoded as JSON)\n      data: {\n        hgRevision:   \"...\",\n        commitMessae: \"...\",\n        whatever...\n      }\n    },\n    // Extra properties for other services...\n  }\n  // Other task properties...\n}\n```\n\n**Remark**, when indexing tasks using custom routes, it's also possible\nto listen for messages about these tasks. For\nexample one could bind to `route.index.some-app.*.release-build`,\nand pick up all messages about release builds. Hence, it is a\ngood idea to document task index hierarchies, as these make up extension\npoints in their own.",
+      "description": "The index service is responsible for indexing tasks. The service ensures that\ntasks can be located by user-defined names.\n\nAs described in the service documentation, tasks are typically indexed via Pulse\nmessages, so the most common use of API methods is to read from the index.",
       "entries": [
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
-          "query": [],
+          "query": [
+          ],
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
@@ -1784,7 +1853,8 @@
           "method": "get",
           "name": "findTask",
           "output": "v1/indexed-task-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<indexPath>",
           "stability": "stable",
           "title": "Find Indexed Task",
@@ -1833,7 +1903,8 @@
           "method": "put",
           "name": "insertTask",
           "output": "v1/indexed-task-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<namespace>",
           "scopes": "index:insert-task:<namespace>",
           "stability": "stable",
@@ -1848,7 +1919,8 @@
           "description": "Find a task by index path and redirect to the artifact on the most recent\nrun with the given `name`.\n\nNote that multiple calls to this endpoint may return artifacts from differen tasks\nif a new task is inserted into the index between calls. Avoid using this method as\na stable link to multiple, connected files if the index path does not contain a\nunique identifier.  For example, the following two links may return unrelated files:\n* https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/installer.exe`\n* https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`\n\nThis problem be remedied by including the revision in the index path or by bundling both\ninstaller and debug symbols into a single artifact.\n\nIf no task exists for the given index path, this API end-point responds with 404.",
           "method": "get",
           "name": "findArtifactFromTask",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<indexPath>/artifacts/<name>",
           "scopes": {
             "if": "private",
@@ -1861,21 +1933,22 @@
       ],
       "serviceName": "index",
       "title": "Task Index API Documentation"
-    },
-    "referenceUrl": "https://references.taskcluster.net/index/v1/api.json"
+    }
   },
   "Login": {
     "reference": {
-      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
+      "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The Login service serves as the interface between external authentication\nsystems and Taskcluster credentials.",
       "entries": [
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
-          "query": [],
+          "query": [
+          ],
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
@@ -1889,7 +1962,8 @@
           "method": "get",
           "name": "oidcCredentials",
           "output": "v1/oidc-credentials-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/oidc-credentials/<provider>",
           "stability": "experimental",
           "title": "Get Taskcluster credentials given a suitable `access_token`",
@@ -1898,33 +1972,36 @@
       ],
       "serviceName": "login",
       "title": "Login API"
-    },
-    "referenceUrl": "https://references.taskcluster.net/login/v1/api.json"
+    }
   },
   "Notify": {
     "reference": {
-      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
+      "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The notification service listens for tasks with associated notifications\nand handles requests to send emails and post pulse messages.",
       "entries": [
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
-          "query": [],
+          "query": [
+          ],
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Send an email to `address`. The content is markdown and will be rendered\nto HTML, but both the HTML and raw markdown text will be sent in the\nemail. If a link is included, it will be rendered to a nice button in the\nHTML version of the email",
           "input": "v1/email-request.json#",
           "method": "post",
           "name": "email",
-          "query": [],
+          "query": [
+          ],
           "route": "/email",
           "scopes": "notify:email:<address>",
           "stability": "experimental",
@@ -1932,12 +2009,14 @@
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Publish a message on pulse with the given `routingKey`.",
           "input": "v1/pulse-request.json#",
           "method": "post",
           "name": "pulse",
-          "query": [],
+          "query": [
+          ],
           "route": "/pulse",
           "scopes": "notify:pulse:<routingKey>",
           "stability": "experimental",
@@ -1945,12 +2024,14 @@
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Post a message on IRC to a specific channel or user, or a specific user\non a specific channel.\n\nSuccess of this API method does not imply the message was successfully\nposted. This API method merely inserts the IRC message into a queue\nthat will be processed by a background process.\nThis allows us to re-send the message in face of connection issues.\n\nHowever, if the user isn't online the message will be dropped without\nerror. We maybe improve this behavior in the future. For now just keep\nin mind that IRC is a best-effort service.",
           "input": "v1/irc-request.json#",
           "method": "post",
           "name": "irc",
-          "query": [],
+          "query": [
+          ],
           "route": "/irc",
           "scopes": {
             "else": "notify:irc-user:<user>",
@@ -1962,42 +2043,48 @@
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Add the given address to the notification denylist. The address\ncan be of either of the three supported address type namely pulse, email\nor IRC(user or channel). Addresses in the denylist will be ignored\nby the notification service.",
           "input": "v1/notification-address.json#",
           "method": "post",
           "name": "addDenylistAddress",
-          "query": [],
+          "query": [
+          ],
           "route": "/denylist/add",
-          "scopes": "notify:manage-denylist:<notificationType>/<notificationAddress>",
+          "scopes": "notify:manage-denylist",
           "stability": "experimental",
           "title": "Denylist Given Address",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Delete the specified address from the notification denylist.",
           "input": "v1/notification-address.json#",
           "method": "delete",
           "name": "deleteDenylistAddress",
-          "query": [],
+          "query": [
+          ],
           "route": "/denylist/delete",
-          "scopes": "notify:manage-denylist:<notificationType>/<notificationAddress>",
+          "scopes": "notify:manage-denylist",
           "stability": "experimental",
           "title": "Delete Denylisted Address",
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Lists all the denylisted addresses.\n\nBy default this end-point will try to return up to 1000 addresses in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `list` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
           "method": "get",
-          "name": "list",
+          "name": "listDenylist",
           "output": "v1/notification-address-list.json#",
           "query": [
             "continuationToken",
             "limit"
           ],
           "route": "/denylist/list",
+          "scopes": "notify:manage-denylist",
           "stability": "experimental",
           "title": "List Denylisted Notifications",
           "type": "function"
@@ -2005,21 +2092,80 @@
       ],
       "serviceName": "notify",
       "title": "Notification Service"
-    },
-    "referenceUrl": "https://references.taskcluster.net/notify/v1/api.json"
+    }
+  },
+  "NotifyEvents": {
+    "reference": {
+      "$schema": "/schemas/common/exchanges-reference-v0.json#",
+      "apiVersion": "v1",
+      "description": "This pretty much only contains the simple free-form\nmessage that can be published from this service from a request\nby anybody with the proper scopes.",
+      "entries": [
+        {
+          "description": "An arbitrary message that a taskcluster user\ncan trigger if they like.\n\nThe standard one that is published by us watching\nfor the completion of tasks is just the task status\ndata that we pull from the queue `status()` endpoint\nwhen we notice a task is complete.",
+          "exchange": "notification",
+          "name": "notify",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/notification-message.json#",
+          "title": "Notification Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "A message which is to be sent to an irc channel or\nuser is published to this exchange",
+          "exchange": "irc-request",
+          "name": "ircRequest",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/irc-request.json#",
+          "title": "Request for irc notification",
+          "type": "topic-exchange"
+        }
+      ],
+      "exchangePrefix": "exchange/taskcluster-notify/v1/",
+      "serviceName": "notify",
+      "title": "Notify AMQP Exchanges"
+    }
   },
   "PurgeCache": {
     "reference": {
-      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
+      "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The purge-cache service is responsible for publishing a pulse\nmessage for workers, so they can purge cache upon request.\n\nThis document describes the API end-point for publishing the pulse\nmessage. This is mainly intended to be used by tools.",
+      "description": "The purge-cache service is responsible for tracking cache-purge requests.\n\nUser create purge requests for specific caches on specific workers, and\nthese requests are timestamped.  Workers consult the service before\nstarting a new task, and purge any caches older than the timestamp.",
       "entries": [
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
-          "query": [],
+          "query": [
+          ],
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
@@ -2030,11 +2176,12 @@
             "provisionerId",
             "workerType"
           ],
-          "description": "Publish a purge-cache message to purge caches named `cacheName` with\n`provisionerId` and `workerType` in the routing-key. Workers should\nbe listening for this message and purge caches when they see it.",
+          "description": "Publish a request to purge caches named `cacheName` with\non `provisionerId`/`workerType` workers.\n\nIf such a request already exists, its `before` timestamp is updated to\nthe current time.",
           "input": "v1/purge-cache-request.json#",
           "method": "post",
           "name": "purgeCache",
-          "query": [],
+          "query": [
+          ],
           "route": "/purge-cache/<provisionerId>/<workerType>",
           "scopes": "purge-cache:<provisionerId>/<workerType>:<cacheName>",
           "stability": "stable",
@@ -2042,8 +2189,9 @@
           "type": "function"
         },
         {
-          "args": [],
-          "description": "This is useful mostly for administors to view\nthe set of open purge requests. It should not\nbe used by workers. They should use the purgeRequests\nendpoint that is specific to their workerType and\nprovisionerId.",
+          "args": [
+          ],
+          "description": "View all active purge requests.\n\nThis is useful mostly for administors to view\nthe set of open purge requests. It should not\nbe used by workers. They should use the purgeRequests\nendpoint that is specific to their workerType and\nprovisionerId.",
           "method": "get",
           "name": "allPurgeRequests",
           "output": "v1/all-purge-cache-request-list.json#",
@@ -2061,7 +2209,7 @@
             "provisionerId",
             "workerType"
           ],
-          "description": "List of caches that need to be purged if they are from before\na certain time. This is safe to be used in automation from\nworkers.",
+          "description": "List the caches for this `provisionerId`/`workerType` that should to be\npurged if they are from before the time given in the response.\n\nThis is intended to be used by workers to determine which caches to purge.",
           "method": "get",
           "name": "purgeRequests",
           "output": "v1/purge-cache-request-list.json#",
@@ -2076,21 +2224,22 @@
       ],
       "serviceName": "purge-cache",
       "title": "Purge Cache API"
-    },
-    "referenceUrl": "https://references.taskcluster.net/purge-cache/v1/api.json"
+    }
   },
   "Queue": {
     "reference": {
-      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
+      "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The queue service is responsible for accepting tasks and track their state\nas they are executed by workers. In order ensure they are eventually\nresolved.\n\nThis document describes the API end-points offered by the queue. These \nend-points targets the following audience:\n * Schedulers, who create tasks to be executed,\n * Workers, who execute tasks, and\n * Tools, that wants to inspect the state of a task.",
       "entries": [
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
-          "query": [],
+          "query": [
+          ],
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
@@ -2104,7 +2253,8 @@
           "method": "get",
           "name": "task",
           "output": "v1/task.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<taskId>",
           "stability": "stable",
           "title": "Get Task Definition",
@@ -2118,7 +2268,8 @@
           "method": "get",
           "name": "status",
           "output": "v1/task-status-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<taskId>/status",
           "stability": "stable",
           "title": "Get task status",
@@ -2167,7 +2318,8 @@
           "method": "put",
           "name": "createTask",
           "output": "v1/task-status-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<taskId>",
           "scopes": {
             "AllOf": [
@@ -2229,7 +2381,8 @@
           "method": "post",
           "name": "defineTask",
           "output": "v1/task-status-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<taskId>/define",
           "scopes": {
             "AllOf": [
@@ -2290,7 +2443,8 @@
           "method": "post",
           "name": "scheduleTask",
           "output": "v1/task-status-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<taskId>/schedule",
           "scopes": {
             "AnyOf": [
@@ -2315,7 +2469,8 @@
           "method": "post",
           "name": "rerunTask",
           "output": "v1/task-status-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<taskId>/rerun",
           "scopes": {
             "AnyOf": [
@@ -2340,7 +2495,8 @@
           "method": "post",
           "name": "cancelTask",
           "output": "v1/task-status-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<taskId>/cancel",
           "scopes": {
             "AnyOf": [
@@ -2367,7 +2523,8 @@
           "method": "post",
           "name": "claimWork",
           "output": "v1/claim-work-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/claim-work/<provisionerId>/<workerType>",
           "scopes": {
             "AllOf": [
@@ -2389,7 +2546,8 @@
           "method": "post",
           "name": "claimTask",
           "output": "v1/task-claim-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<taskId>/runs/<runId>/claim",
           "scopes": {
             "AnyOf": [
@@ -2421,7 +2579,8 @@
           "method": "post",
           "name": "reclaimTask",
           "output": "v1/task-reclaim-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<taskId>/runs/<runId>/reclaim",
           "scopes": {
             "AnyOf": [
@@ -2447,7 +2606,8 @@
           "method": "post",
           "name": "reportCompleted",
           "output": "v1/task-status-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<taskId>/runs/<runId>/completed",
           "scopes": {
             "AnyOf": [
@@ -2473,7 +2633,8 @@
           "method": "post",
           "name": "reportFailed",
           "output": "v1/task-status-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<taskId>/runs/<runId>/failed",
           "scopes": {
             "AnyOf": [
@@ -2500,7 +2661,8 @@
           "method": "post",
           "name": "reportException",
           "output": "v1/task-status-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<taskId>/runs/<runId>/exception",
           "scopes": {
             "AnyOf": [
@@ -2528,7 +2690,8 @@
           "method": "post",
           "name": "createArtifact",
           "output": "v1/post-artifact-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
           "scopes": {
             "AnyOf": [
@@ -2555,7 +2718,8 @@
           "input": "v1/put-artifact-request.json#",
           "method": "put",
           "name": "completeArtifact",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
           "scopes": {
             "AnyOf": [
@@ -2581,7 +2745,8 @@
           "description": "Get artifact by `<name>` from a specific run.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with an HTTP client that can handle responses correctly.\n\n**Downloading artifacts**\nThere are some special considerations for those http clients which download\nartifacts.  This api endpoint is designed to be compatible with an HTTP 1.1\ncompliant client, but has extra features to ensure the download is valid.\nIt is strongly recommend that consumers use either taskcluster-lib-artifact (JS),\ntaskcluster-lib-artifact-go (Go) or the CLI written in Go to interact with\nartifacts.\n\nIn order to download an artifact the following must be done:\n\n1. Obtain queue url.  Building a signed url with a taskcluster client is\nrecommended\n1. Make a GET request which does not follow redirects\n1. In all cases, if specified, the\nx-taskcluster-location-{content,transfer}-{sha256,length} values must be\nvalidated to be equal to the Content-Length and Sha256 checksum of the\nfinal artifact downloaded. as well as any intermediate redirects\n1. If this response is a 500-series error, retry using an exponential\nbackoff.  No more than 5 retries should be attempted\n1. If this response is a 400-series error, treat it appropriately for\nyour context.  This might be an error in responding to this request or\nan Error storage type body.  This request should not be retried.\n1. If this response is a 200-series response, the response body is the artifact.\nIf the x-taskcluster-location-{content,transfer}-{sha256,length} and\nx-taskcluster-location-content-encoding are specified, they should match\nthis response body\n1. If the response type is a 300-series redirect, the artifact will be at the\nlocation specified by the `Location` header.  There are multiple artifact storage\ntypes which use a 300-series redirect.\n1. For all redirects followed, the user must verify that the content-sha256, content-length,\ntransfer-sha256, transfer-length and content-encoding match every further request.  The final\nartifact must also be validated against the values specified in the original queue response\n1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`\nmust not occur\n1. A request which has x-taskcluster-artifact-storage-type value of `blob` and does not\nhave x-taskcluster-location-content-sha256 or x-taskcluster-location-content-length\nmust be treated as an error\n\n**Headers**\nThe following important headers are set on the response to this method:\n\n* location: the url of the artifact if a redirect is to be performed\n* x-taskcluster-artifact-storage-type: the storage type.  Example: blob, s3, error\n\nThe following important headers are set on responses to this method for Blob artifacts\n\n* x-taskcluster-location-content-sha256: the SHA256 of the artifact\n*after* any content-encoding is undone.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})\n* x-taskcluster-location-content-length: the number of bytes *after* any content-encoding\nis undone\n* x-taskcluster-location-transfer-sha256: the SHA256 of the artifact\n*before* any content-encoding is undone.  This is the SHA256 of what is sent over\nthe wire.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})\n* x-taskcluster-location-transfer-length: the number of bytes *after* any content-encoding\nis undone\n* x-taskcluster-location-content-encoding: the content-encoding used.  It will either\nbe `gzip` or `identity` right now.  This is hardcoded to a value set when the artifact\nwas created and no content-negotiation occurs\n* x-taskcluster-location-content-type: the content-type of the artifact\n\n**Caching**, artifacts may be cached in data centers closer to the\nworkers in-order to reduce bandwidth costs. This can lead to longer\nresponse times. Caching can be skipped by setting the header\n`x-taskcluster-skip-cache: true`, this should only be used for resources\nwhere request volume is known to be low, and caching not useful.\n(This feature may be disabled in the future, use is sparingly!)",
           "method": "get",
           "name": "getArtifact",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
           "scopes": {
             "if": "private",
@@ -2603,7 +2768,8 @@
           "description": "Get artifact by `<name>` from the last run of a task.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just us the most convenient API end-point.",
           "method": "get",
           "name": "getLatestArtifact",
-          "query": [],
+          "query": [
+          ],
           "route": "/task/<taskId>/artifacts/<name>",
           "scopes": {
             "if": "private",
@@ -2653,7 +2819,8 @@
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Get all active provisioners.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 provisioners in a single\npage. You may limit this with the query-string parameter `limit`.",
           "method": "get",
           "name": "listProvisioners",
@@ -2675,7 +2842,8 @@
           "method": "get",
           "name": "getProvisioner",
           "output": "v1/provisioner-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/provisioners/<provisionerId>",
           "stability": "experimental",
           "title": "Get an active provisioner",
@@ -2690,7 +2858,8 @@
           "method": "put",
           "name": "declareProvisioner",
           "output": "v1/provisioner-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/provisioners/<provisionerId>",
           "scopes": {
             "AllOf": [
@@ -2714,7 +2883,8 @@
           "method": "get",
           "name": "pendingTasks",
           "output": "v1/pending-tasks-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/pending/<provisionerId>/<workerType>",
           "stability": "stable",
           "title": "Get Number of Pending Tasks",
@@ -2746,7 +2916,8 @@
           "method": "get",
           "name": "getWorkerType",
           "output": "v1/workertype-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>",
           "stability": "experimental",
           "title": "Get a worker-type",
@@ -2762,7 +2933,8 @@
           "method": "put",
           "name": "declareWorkerType",
           "output": "v1/workertype-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>",
           "scopes": {
             "AllOf": [
@@ -2807,7 +2979,8 @@
           "method": "get",
           "name": "getWorker",
           "output": "v1/worker-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>",
           "stability": "experimental",
           "title": "Get a worker-type",
@@ -2825,7 +2998,8 @@
           "method": "put",
           "name": "quarantineWorker",
           "output": "v1/worker-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>",
           "scopes": {
             "AllOf": [
@@ -2848,7 +3022,8 @@
           "method": "put",
           "name": "declareWorker",
           "output": "v1/worker-response.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>",
           "scopes": {
             "AllOf": [
@@ -2866,12 +3041,11 @@
       ],
       "serviceName": "queue",
       "title": "Queue API Documentation"
-    },
-    "referenceUrl": "https://references.taskcluster.net/queue/v1/api.json"
+    }
   },
   "QueueEvents": {
     "reference": {
-      "$schema": "https://schemas.taskcluster.net/common/exchanges-reference-v0.json#",
+      "$schema": "/schemas/common/exchanges-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The queue service is responsible for accepting tasks and track their state\nas they are executed by workers. In order ensure they are eventually\nresolved.\n\nThis document describes AMQP exchanges offered by the queue, which allows\nthird-party listeners to monitor tasks as they progress to resolution.\nThese exchanges targets the following audience:\n * Schedulers, who takes action after tasks are completed,\n * Workers, who wants to listen for new or canceled tasks (optional),\n * Tools, that wants to update their view as task progress.\n\nYou'll notice that all the exchanges in the document shares the same\nrouting key pattern. This makes it very easy to bind to all messages\nabout a certain kind tasks.\n\n**Task specific routes**, a task can define a task specific route using\nthe `task.routes` property. See task creation documentation for details\non permissions required to provide task specific routes. If a task has\nthe entry `'notify.by-email'` in as task specific route defined in\n`task.routes` all messages about this task will be CC'ed with the\nrouting-key `'route.notify.by-email'`.\n\nThese routes will always be prefixed `route.`, so that cannot interfere\nwith the _primary_ routing key as documented here. Notice that the\n_primary_ routing key is always prefixed `primary.`. This is ensured\nin the routing key reference, so API clients will do this automatically.\n\nPlease, note that the way RabbitMQ works, the message will only arrive\nin your queue once, even though you may have bound to the exchange with\nmultiple routing key patterns that matches more of the CC'ed routing\nrouting keys.\n\n**Delivery guarantees**, most operations on the queue are idempotent,\nwhich means that if repeated with the same arguments then the requests\nwill ensure completion of the operation and return the same response.\nThis is useful if the server crashes or the TCP connection breaks, but\nwhen re-executing an idempotent operation, the queue will also resend\nany related AMQP messages. Hence, messages may be repeated.\n\nThis shouldn't be much of a problem, as the best you can achieve using\nconfirm messages with AMQP is at-least-once delivery semantics. Hence,\nthis only prevents you from obtaining at-most-once delivery semantics.\n\n**Remark**, some message generated by timeouts maybe dropped if the\nserver crashes at wrong time. Ideally, we'll address this in the\nfuture. For now we suggest you ignore this corner case, and notify us\nif this corner case is of concern to you.",
       "entries": [
@@ -3302,7 +3476,7 @@
           "type": "topic-exchange"
         },
         {
-          "description": "Whenever Taskcluster fails to run a message is posted to this exchange.\nThis happens if the task isn't completed before its `deadl\u00ecne`,\nall retries failed (i.e. workers stopped responding), the task was\ncanceled by another entity, or the task carried a malformed payload.\n\nThe specific _reason_ is evident from that task status structure, refer\nto the `reasonResolved` property for the last run.",
+          "description": "Whenever Taskcluster fails to run a message is posted to this exchange.\nThis happens if the task isn't completed before its `deadlìne`,\nall retries failed (i.e. workers stopped responding), the task was\ncanceled by another entity, or the task carried a malformed payload.\n\nThe specific _reason_ is evident from that task status structure, refer\nto the `reasonResolved` property for the last run.",
           "exchange": "task-exception",
           "name": "taskException",
           "routingKey": [
@@ -3411,21 +3585,22 @@
       "exchangePrefix": "exchange/taskcluster-queue/v1/",
       "serviceName": "queue",
       "title": "Queue AMQP Exchanges"
-    },
-    "referenceUrl": "https://references.taskcluster.net/queue/v1/exchanges.json"
+    }
   },
   "Secrets": {
     "reference": {
-      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
+      "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The secrets service provides a simple key/value store for small bits of secret\ndata.  Access is limited by scopes, so values can be considered secret from\nthose who do not have the relevant scopes.\n\nSecrets also have an expiration date, and once a secret has expired it can no\nlonger be read.  This is useful for short-term secrets such as a temporary\nservice credential or a one-time signing key.",
       "entries": [
         {
-          "args": [],
+          "args": [
+          ],
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
-          "query": [],
+          "query": [
+          ],
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
@@ -3439,7 +3614,8 @@
           "input": "v1/secret.json#",
           "method": "put",
           "name": "set",
-          "query": [],
+          "query": [
+          ],
           "route": "/secret/<name>",
           "scopes": "secrets:set:<name>",
           "stability": "stable",
@@ -3453,7 +3629,8 @@
           "description": "Delete the secret associated with some key.",
           "method": "delete",
           "name": "remove",
-          "query": [],
+          "query": [
+          ],
           "route": "/secret/<name>",
           "scopes": "secrets:set:<name>",
           "stability": "stable",
@@ -3468,7 +3645,8 @@
           "method": "get",
           "name": "get",
           "output": "v1/secret.json#",
-          "query": [],
+          "query": [
+          ],
           "route": "/secret/<name>",
           "scopes": "secrets:get:<name>",
           "stability": "stable",
@@ -3476,7 +3654,8 @@
           "type": "function"
         },
         {
-          "args": [],
+          "args": [
+          ],
           "description": "List the names of all secrets.\n\nBy default this end-point will try to return up to 1000 secret names in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listTaskGroup` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
           "method": "get",
           "name": "list",
@@ -3493,12 +3672,11 @@
       ],
       "serviceName": "secrets",
       "title": "Taskcluster Secrets API Documentation"
-    },
-    "referenceUrl": "https://references.taskcluster.net/secrets/v1/api.json"
+    }
   },
   "TreeherderEvents": {
     "reference": {
-      "$schema": "https://schemas.taskcluster.net/common/exchanges-reference-v0.json#",
+      "$schema": "/schemas/common/exchanges-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The taskcluster-treeherder service is responsible for processing\ntask events published by Taskcluster Queue and producing job messages\nthat are consumable by Treeherder.\n\nThis exchange provides that job messages to be consumed by any queue that\nattached to the exchange.  This could be a production Treeheder instance,\na local development environment, or a custom dashboard.",
       "entries": [
@@ -3534,7 +3712,120 @@
       "exchangePrefix": "exchange/taskcluster-treeherder/v1/",
       "serviceName": "treeherder",
       "title": "Taskcluster-treeherder Pulse Exchange"
-    },
-    "referenceUrl": "https://references.taskcluster.net/treeherder/v1/exchanges.json"
+    }
+  },
+  "WorkerManager": {
+    "reference": {
+      "$schema": "/schemas/common/api-reference-v0.json#",
+      "apiVersion": "v1",
+      "description": "This service manages workers, including provisioning",
+      "entries": [
+        {
+          "args": [
+          ],
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "ping",
+          "query": [
+          ],
+          "route": "/ping",
+          "stability": "stable",
+          "title": "Ping Server",
+          "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "description": "Create a new workertype. If the workertype already exists, this will throw an error.",
+          "input": "v1/create-workertype-request.json#",
+          "method": "put",
+          "name": "createWorkerType",
+          "output": "v1/workertype-full.json#",
+          "query": [
+          ],
+          "route": "/workertype/<name>",
+          "scopes": {
+            "AllOf": [
+              "worker-manager:create-worker-type:<name>",
+              "worker-manager:provider:<provider>"
+            ]
+          },
+          "stability": "experimental",
+          "title": "Create WorkerType",
+          "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "description": "Given an existing workertype definition, this will modify it and return the new definition.",
+          "input": "v1/create-workertype-request.json#",
+          "method": "post",
+          "name": "updateWorkerType",
+          "output": "v1/workertype-full.json#",
+          "query": [
+          ],
+          "route": "/workertype/<name>",
+          "scopes": {
+            "AllOf": [
+              "worker-manager:update-worker-type:<name>",
+              "worker-manager:provider:<provider>"
+            ]
+          },
+          "stability": "experimental",
+          "title": "Update WorkerType",
+          "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "description": "Given an existing workertype defition, this will fetch it.",
+          "method": "get",
+          "name": "workerType",
+          "output": "v1/workertype-full.json#",
+          "query": [
+          ],
+          "route": "/workertype/<name>",
+          "stability": "experimental",
+          "title": "Get WorkerType",
+          "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "description": "Delete an existing workertype definition.",
+          "method": "delete",
+          "name": "deleteWorkerType",
+          "query": [
+          ],
+          "route": "/workertype/<name>",
+          "scopes": "worker-manager:delete-worker-type:<name>",
+          "stability": "experimental",
+          "title": "Delete WorkerType",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Get the list of all the existing workertypes",
+          "method": "get",
+          "name": "listWorkerTypes",
+          "output": "v1/workertype-list.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/workertypes",
+          "stability": "experimental",
+          "title": "List All WorkerTypes",
+          "type": "function"
+        }
+      ],
+      "serviceName": "worker-manager",
+      "title": "Taskcluster Worker Manager"
+    }
   }
 }

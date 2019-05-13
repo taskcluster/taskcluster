@@ -150,6 +150,7 @@ class QueueEvents(AsyncBaseClient):
                     'name': 'reserved',
                 },
             ],
+            'schema': 'v1/task-defined-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -234,6 +235,7 @@ class QueueEvents(AsyncBaseClient):
                     'name': 'reserved',
                 },
             ],
+            'schema': 'v1/task-pending-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -313,6 +315,7 @@ class QueueEvents(AsyncBaseClient):
                     'name': 'reserved',
                 },
             ],
+            'schema': 'v1/task-running-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -408,6 +411,7 @@ class QueueEvents(AsyncBaseClient):
                     'name': 'reserved',
                 },
             ],
+            'schema': 'v1/artifact-created-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -490,6 +494,7 @@ class QueueEvents(AsyncBaseClient):
                     'name': 'reserved',
                 },
             ],
+            'schema': 'v1/task-completed-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -570,6 +575,7 @@ class QueueEvents(AsyncBaseClient):
                     'name': 'reserved',
                 },
             ],
+            'schema': 'v1/task-failed-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -654,6 +660,7 @@ class QueueEvents(AsyncBaseClient):
                     'name': 'reserved',
                 },
             ],
+            'schema': 'v1/task-exception-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -700,6 +707,7 @@ class QueueEvents(AsyncBaseClient):
                     'name': 'reserved',
                 },
             ],
+            'schema': 'v1/task-group-resolved.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 

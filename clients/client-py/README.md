@@ -312,38 +312,6 @@ services. These API end-points are of interest if you wish to:
   * Inspect or audit clients and roles,
   * Gain access to various services guarded by this API.
 
-Note that in this service "authentication" refers to validating the
-correctness of the supplied credentials (that the caller posesses the
-appropriate access token). This service does not provide any kind of user
-authentication (identifying a particular person).
-
-### Clients
-The authentication service manages _clients_, at a high-level each client
-consists of a `clientId`, an `accessToken`, scopes, and some metadata.
-The `clientId` and `accessToken` can be used for authentication when
-calling Taskcluster APIs.
-
-The client's scopes control the client's access to Taskcluster resources.
-The scopes are *expanded* by substituting roles, as defined below.
-
-### Roles
-A _role_ consists of a `roleId`, a set of scopes and a description.
-Each role constitutes a simple _expansion rule_ that says if you have
-the scope: `assume:<roleId>` you get the set of scopes the role has.
-Think of the `assume:<roleId>` as a scope that allows a client to assume
-a role.
-
-As in scopes the `*` kleene star also have special meaning if it is
-located at the end of a `roleId`. If you have a role with the following
-`roleId`: `my-prefix*`, then any client which has a scope staring with
-`assume:my-prefix` will be allowed to assume the role.
-
-### Guarded Services
-The authentication service also has API end-points for delegating access
-to some guarded service such as AWS S3, or Azure Table Storage.
-Generally, we add API end-points to this server when we wish to use
-Taskcluster credentials to grant access to a third-party service used
-by many Taskcluster components.
 #### Ping Server
 Respond without doing anything.
 This endpoint is used to check that the service is up.
@@ -368,7 +336,7 @@ keep calling `listClients` with the last `continuationToken` until you
 get a result without a `continuationToken`.
 
 
-Required [output schema](v1/list-clients-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -386,7 +354,7 @@ Takes the following arguments:
 
   * `clientId`
 
-Required [output schema](v1/get-client-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -417,9 +385,9 @@ Takes the following arguments:
 
   * `clientId`
 
-Required [input schema](v1/create-client-request.json#)
+Has required input schema
 
-Required [output schema](v1/create-client-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -444,7 +412,7 @@ Takes the following arguments:
 
   * `clientId`
 
-Required [output schema](v1/create-client-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -468,9 +436,9 @@ Takes the following arguments:
 
   * `clientId`
 
-Required [input schema](v1/create-client-request.json#)
+Has required input schema
 
-Required [output schema](v1/get-client-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -494,7 +462,7 @@ Takes the following arguments:
 
   * `clientId`
 
-Required [output schema](v1/get-client-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -517,7 +485,7 @@ Takes the following arguments:
 
   * `clientId`
 
-Required [output schema](v1/get-client-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -552,7 +520,7 @@ Get a list of all roles, each role object also includes the list of
 scopes it expands to.
 
 
-Required [output schema](v1/list-roles-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -567,7 +535,7 @@ list may become long, callers can use the `limit` and `continuationToken`
 query arguments to page through the responses.
 
 
-Required [output schema](v1/list-role-ids-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -582,7 +550,7 @@ list may become long, callers can use the `limit` and `continuationToken`
 query arguments to page through the responses.
 
 
-Required [output schema](v1/list-roles2-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -601,7 +569,7 @@ Takes the following arguments:
 
   * `roleId`
 
-Required [output schema](v1/get-role-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -629,9 +597,9 @@ Takes the following arguments:
 
   * `roleId`
 
-Required [input schema](v1/create-role-request.json#)
+Has required input schema
 
-Required [output schema](v1/get-role-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -657,9 +625,9 @@ Takes the following arguments:
 
   * `roleId`
 
-Required [input schema](v1/create-role-request.json#)
+Has required input schema
 
-Required [output schema](v1/get-role-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -697,9 +665,9 @@ This call uses the GET method with an HTTP body.  It remains only for
 backward compatibility.
 
 
-Required [input schema](v1/scopeset.json#)
+Has required input schema
 
-Required [output schema](v1/scopeset.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -713,9 +681,9 @@ Return an expanded copy of the given scopeset, with scopes implied by any
 roles included.
 
 
-Required [input schema](v1/scopeset.json#)
+Has required input schema
 
-Required [output schema](v1/scopeset.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -730,7 +698,7 @@ of scopes and scope restrictions (temporary credentials, assumeScopes, client sc
 and roles).
 
 
-Required [output schema](v1/scopeset.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -814,7 +782,7 @@ Takes the following arguments:
   * `bucket`
   * `prefix`
 
-Required [output schema](v1/aws-s3-credentials-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -829,7 +797,7 @@ await asyncAuth.awsS3Credentials(level='value', bucket='value', prefix='value') 
 Retrieve a list of all Azure accounts managed by Taskcluster Auth.
 
 
-Required [output schema](v1/azure-account-list-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -847,7 +815,7 @@ Takes the following arguments:
 
   * `account`
 
-Required [output schema](v1/azure-table-list-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -874,7 +842,7 @@ Takes the following arguments:
   * `table`
   * `level`
 
-Required [output schema](v1/azure-table-access-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -894,7 +862,7 @@ Takes the following arguments:
 
   * `account`
 
-Required [output schema](v1/azure-container-list-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -921,7 +889,7 @@ Takes the following arguments:
   * `container`
   * `level`
 
-Required [output schema](v1/azure-container-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -947,7 +915,7 @@ Takes the following arguments:
 
   * `project`
 
-Required [output schema](v1/sentry-dsn-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -969,7 +937,7 @@ Takes the following arguments:
 
   * `project`
 
-Required [output schema](v1/statsum-token-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -999,7 +967,7 @@ Takes the following arguments:
   * `wstAudience`
   * `wstClient`
 
-Required [output schema](v1/websocktunnel-token-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1019,9 +987,9 @@ credentials for authentication. This way we can use Hawk without having
 the secret credentials leave this service.
 
 
-Required [input schema](v1/authenticate-hawk-request.json#)
+Has required input schema
 
-Required [output schema](v1/authenticate-hawk-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1044,9 +1012,9 @@ from the request body. On success, the response contains the clientId
 and scopes as seen by the API method.
 
 
-Required [input schema](v1/test-authenticate-request.json#)
+Has required input schema
 
-Required [output schema](v1/test-authenticate-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1073,7 +1041,7 @@ This method may later be extended to allow specification of client and
 required scopes via query arguments.
 
 
-Required [output schema](v1/test-authenticate-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1174,7 +1142,7 @@ there may be running EC2 instances for deleted worker types that are not
 included here.  The list is unordered.
 
 
-Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1214,9 +1182,9 @@ Takes the following arguments:
 
   * `workerType`
 
-Required [input schema](http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#)
+Has required input schema
 
-Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1246,9 +1214,9 @@ Takes the following arguments:
 
   * `workerType`
 
-Required [input schema](http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#)
+Has required input schema
 
-Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1272,7 +1240,7 @@ Takes the following arguments:
 
   * `workerType`
 
-Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-last-modified.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1296,7 +1264,7 @@ Takes the following arguments:
 
   * `workerType`
 
-Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1341,7 +1309,7 @@ not include worker types which are left overs from a deleted worker
 type definition but are still running in AWS.
 
 
-Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1364,7 +1332,7 @@ Takes the following arguments:
 
   * `token`
 
-Required [input schema](http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#)
+Has required input schema
 
 ```python
 # Sync calls
@@ -1390,7 +1358,7 @@ Takes the following arguments:
 
   * `token`
 
-Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1460,7 +1428,7 @@ Takes the following arguments:
 
   * `workerType`
 
-Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1502,7 +1470,7 @@ running.
 **Warning** this api end-point is **not stable**.
 
 
-Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1522,34 +1490,6 @@ awsProvisioner.ping() # -> None`
 # Async call
 await asyncAwsProvisioner.ping() # -> None
 ```
-
-
-
-
-### Exchanges in `taskcluster.AwsProvisionerEvents`
-```python
-// Create AwsProvisionerEvents client instance
-import taskcluster
-awsProvisionerEvents = taskcluster.AwsProvisionerEvents(options)
-```
-Exchanges from the provisioner... more docs later
-#### WorkerType Created Message
- * `awsProvisionerEvents.workerTypeCreated(routingKeyPattern) -> routingKey`
-   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * `workerType` is required  Description: WorkerType that this message concerns.
-   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-
-#### WorkerType Updated Message
- * `awsProvisionerEvents.workerTypeUpdated(routingKeyPattern) -> routingKey`
-   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * `workerType` is required  Description: WorkerType that this message concerns.
-   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-
-#### WorkerType Removed Message
- * `awsProvisionerEvents.workerTypeRemoved(routingKeyPattern) -> routingKey`
-   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * `workerType` is required  Description: WorkerType that this message concerns.
-   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 
 
@@ -1584,7 +1524,7 @@ await asyncEC2Manager.ping() # -> None
 This method is only for debugging the ec2-manager
 
 
-Required [output schema](v1/list-worker-types.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1602,7 +1542,7 @@ Takes the following arguments:
 
   * `workerType`
 
-Required [input schema](v1/run-instance-request.json#)
+Has required input schema
 
 ```python
 # Sync calls
@@ -1640,7 +1580,7 @@ Takes the following arguments:
 
   * `workerType`
 
-Required [output schema](v1/worker-type-resources.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1660,7 +1600,7 @@ Takes the following arguments:
 
   * `workerType`
 
-Required [output schema](v1/health.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1680,7 +1620,7 @@ Takes the following arguments:
 
   * `workerType`
 
-Required [output schema](v1/errors.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1700,7 +1640,7 @@ Takes the following arguments:
 
   * `workerType`
 
-Required [output schema](v1/worker-type-state.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1720,7 +1660,7 @@ Takes the following arguments:
 
   * `name`
 
-Required [input schema](v1/create-key-pair.json#)
+Has required input schema
 
 ```python
 # Sync calls
@@ -1772,7 +1712,7 @@ await asyncEC2Manager.terminateInstance(region='value', instanceId='value') # ->
 Return a list of possible prices for EC2
 
 
-Required [output schema](v1/prices.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1785,9 +1725,9 @@ await asyncEC2Manager.getPrices() # -> result
 Return a list of possible prices for EC2
 
 
-Required [input schema](v1/prices-request.json#)
+Has required input schema
 
-Required [output schema](v1/prices.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1800,7 +1740,7 @@ await asyncEC2Manager.getSpecificPrices(payload) # -> result
 Give some basic stats on the health of our EC2 account
 
 
-Required [output schema](v1/health.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1813,7 +1753,7 @@ await asyncEC2Manager.getHealth() # -> result
 Return a list of recent errors encountered
 
 
-Required [output schema](v1/errors.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -1967,7 +1907,7 @@ Taskcluster. Can be filtered on various git-specific
 fields.
 
 
-Required [output schema](v1/build-list.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2008,7 +1948,7 @@ Takes the following arguments:
   * `owner`
   * `repo`
 
-Required [output schema](v1/repository.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2057,7 +1997,7 @@ Takes the following arguments:
   * `repo`
   * `sha`
 
-Required [input schema](v1/create-status.json#)
+Has required input schema
 
 ```python
 # Sync calls
@@ -2079,7 +2019,7 @@ Takes the following arguments:
   * `repo`
   * `number`
 
-Required [input schema](v1/create-comment.json#)
+Has required input schema
 
 ```python
 # Sync calls
@@ -2146,25 +2086,8 @@ loop = asyncio.get_event_loop()
 session = taskcluster.aio.createSession(loop=loop)
 asyncHooks = taskcluster.aio.Hooks(options, session=session)
 ```
-Hooks are a mechanism for creating tasks in response to events.
+The hooks service provides a mechanism for creating tasks in response to events.
 
-Hooks are identified with a `hookGroupId` and a `hookId`.
-
-When an event occurs, the resulting task is automatically created.  The
-task is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,
-which must have scopes to make the createTask call, including satisfying all
-scopes in `task.scopes`.  The new task has a `taskGroupId` equal to its
-`taskId`, as is the convention for decision tasks.
-
-Hooks can have a "schedule" indicating specific times that new tasks should
-be created.  Each schedule is in a simple cron format, per 
-https://www.npmjs.com/package/cron-parser.  For example:
- * `['0 0 1 * * *']` -- daily at 1:00 UTC
- * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
-
-The task definition is used as a JSON-e template, with a context depending on how it is fired.  See
-[/docs/reference/core/taskcluster-hooks/docs/firing-hooks](firing-hooks)
-for more information.
 #### Ping Server
 Respond without doing anything.
 This endpoint is used to check that the service is up.
@@ -2181,7 +2104,7 @@ await asyncHooks.ping() # -> None
 This endpoint will return a list of all hook groups with at least one hook.
 
 
-Required [output schema](v1/list-hook-groups-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2200,7 +2123,7 @@ Takes the following arguments:
 
   * `hookGroupId`
 
-Required [output schema](v1/list-hooks-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2222,7 +2145,7 @@ Takes the following arguments:
   * `hookGroupId`
   * `hookId`
 
-Required [output schema](v1/hook-definition.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2246,7 +2169,7 @@ Takes the following arguments:
   * `hookGroupId`
   * `hookId`
 
-Required [output schema](v1/hook-status.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2271,9 +2194,9 @@ Takes the following arguments:
   * `hookGroupId`
   * `hookId`
 
-Required [input schema](v1/create-hook-request.json#)
+Has required input schema
 
-Required [output schema](v1/hook-definition.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2295,9 +2218,9 @@ Takes the following arguments:
   * `hookGroupId`
   * `hookId`
 
-Required [input schema](v1/create-hook-request.json#)
+Has required input schema
 
-Required [output schema](v1/hook-definition.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2341,9 +2264,9 @@ Takes the following arguments:
   * `hookGroupId`
   * `hookId`
 
-Required [input schema](v1/trigger-hook.json#)
+Has required input schema
 
-Required [output schema](v1/trigger-hook-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2365,7 +2288,7 @@ Takes the following arguments:
   * `hookGroupId`
   * `hookId`
 
-Required [output schema](v1/trigger-token-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2387,7 +2310,7 @@ Takes the following arguments:
   * `hookGroupId`
   * `hookId`
 
-Required [output schema](v1/trigger-token-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2413,9 +2336,9 @@ Takes the following arguments:
   * `hookId`
   * `token`
 
-Required [input schema](v1/trigger-hook.json#)
+Has required input schema
 
-Required [output schema](v1/trigger-hook-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2437,7 +2360,7 @@ Takes the following arguments:
   * `hookGroupId`
   * `hookId`
 
-Required [output schema](v1/list-lastFires-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2447,6 +2370,28 @@ hooks.listLastFires(hookGroupId='value', hookId='value') # -> result
 await asyncHooks.listLastFires(hookGroupId, hookId) # -> result
 await asyncHooks.listLastFires(hookGroupId='value', hookId='value') # -> result
 ```
+
+
+
+
+### Exchanges in `taskcluster.HooksEvents`
+```python
+// Create HooksEvents client instance
+import taskcluster
+hooksEvents = taskcluster.HooksEvents(options)
+```
+The hooks service is responsible for creating tasks at specific times orin .  response to webhooks and API calls.Using this exchange allows us tomake hooks which repsond to particular pulse messagesThese exchanges provide notifications when a hook is created, updatedor deleted. This is so that the listener running in a different hooks process at the other end can direct another listener specified by`hookGroupId` and `hookId` to synchronize its bindings. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.
+#### Hook Created Messages
+ * `hooksEvents.hookCreated(routingKeyPattern) -> routingKey`
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
+#### Hook Updated Messages
+ * `hooksEvents.hookUpdated(routingKeyPattern) -> routingKey`
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
+#### Hook Deleted Messages
+ * `hooksEvents.hookDeleted(routingKeyPattern) -> routingKey`
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 
 
@@ -2464,98 +2409,11 @@ loop = asyncio.get_event_loop()
 session = taskcluster.aio.createSession(loop=loop)
 asyncIndex = taskcluster.aio.Index(options, session=session)
 ```
-The task index is responsible for indexing tasks. The service ensures that
-tasks can be located by recency and/or arbitrary strings. Common
-use-cases include:
+The index service is responsible for indexing tasks. The service ensures that
+tasks can be located by user-defined names.
 
- * Locate tasks by git or mercurial `<revision>`, or
- * Locate latest task from given `<branch>`, such as a release.
-
-**Index hierarchy**, tasks are indexed in a dot (`.`) separated hierarchy
-called a namespace. For example a task could be indexed with the index path
-`some-app.<revision>.linux-64.release-build`. In this case the following
-namespaces is created.
-
- 1. `some-app`,
- 1. `some-app.<revision>`, and,
- 2. `some-app.<revision>.linux-64`
-
-Inside the namespace `some-app.<revision>` you can find the namespace
-`some-app.<revision>.linux-64` inside which you can find the indexed task
-`some-app.<revision>.linux-64.release-build`. This is an example of indexing
-builds for a given platform and revision.
-
-**Task Rank**, when a task is indexed, it is assigned a `rank` (defaults
-to `0`). If another task is already indexed in the same namespace with
-lower or equal `rank`, the index for that task will be overwritten. For example
-consider index path `mozilla-central.linux-64.release-build`. In
-this case one might choose to use a UNIX timestamp or mercurial revision
-number as `rank`. This way the latest completed linux 64 bit release
-build is always available at `mozilla-central.linux-64.release-build`.
-
-Note that this does mean index paths are not immutable: the same path may
-point to a different task now than it did a moment ago.
-
-**Indexed Data**, when a task is retrieved from the index the result includes
-a `taskId` and an additional user-defined JSON blob that was indexed with
-the task.
-
-**Entry Expiration**, all indexed entries must have an expiration date.
-Typically this defaults to one year, if not specified. If you are
-indexing tasks to make it easy to find artifacts, consider using the
-artifact's expiration date.
-
-**Valid Characters**, all keys in a namespace `<key1>.<key2>` must be
-in the form `/[a-zA-Z0-9_!~*'()%-]+/`. Observe that this is URL-safe and
-that if you strictly want to put another character you can URL encode it.
-
-**Indexing Routes**, tasks can be indexed using the API below, but the
-most common way to index tasks is adding a custom route to `task.routes` of the
-form `index.<namespace>`. In order to add this route to a task you'll
-need the scope `queue:route:index.<namespace>`. When a task has
-this route, it will be indexed when the task is **completed successfully**.
-The task will be indexed with `rank`, `data` and `expires` as specified
-in `task.extra.index`. See the example below:
-
-```js
-{
-  payload:  { /* ... */ },
-  routes: [
-    // index.<namespace> prefixed routes, tasks CC'ed such a route will
-    // be indexed under the given <namespace>
-    "index.mozilla-central.linux-64.release-build",
-    "index.<revision>.linux-64.release-build"
-  ],
-  extra: {
-    // Optional details for indexing service
-    index: {
-      // Ordering, this taskId will overwrite any thing that has
-      // rank <= 4000 (defaults to zero)
-      rank:       4000,
-
-      // Specify when the entries expire (Defaults to 1 year)
-      expires:          new Date().toJSON(),
-
-      // A little informal data to store along with taskId
-      // (less 16 kb when encoded as JSON)
-      data: {
-        hgRevision:   "...",
-        commitMessae: "...",
-        whatever...
-      }
-    },
-    // Extra properties for other services...
-  }
-  // Other task properties...
-}
-```
-
-**Remark**, when indexing tasks using custom routes, it's also possible
-to listen for messages about these tasks. For
-example one could bind to `route.index.some-app.*.release-build`,
-and pick up all messages about release builds. Hence, it is a
-good idea to document task index hierarchies, as these make up extension
-points in their own.
+As described in the service documentation, tasks are typically indexed via Pulse
+messages, so the most common use of API methods is to read from the index.
 #### Ping Server
 Respond without doing anything.
 This endpoint is used to check that the service is up.
@@ -2578,7 +2436,7 @@ Takes the following arguments:
 
   * `indexPath`
 
-Required [output schema](v1/indexed-task-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2604,7 +2462,7 @@ Takes the following arguments:
 
   * `namespace`
 
-Required [output schema](v1/list-namespaces-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2633,7 +2491,7 @@ Takes the following arguments:
 
   * `namespace`
 
-Required [output schema](v1/list-tasks-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2657,9 +2515,9 @@ Takes the following arguments:
 
   * `namespace`
 
-Required [input schema](v1/insert-task-request.json#)
+Has required input schema
 
-Required [output schema](v1/indexed-task-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2761,7 +2619,7 @@ Takes the following arguments:
 
   * `provider`
 
-Required [output schema](v1/oidc-credentials-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2809,7 +2667,7 @@ email. If a link is included, it will be rendered to a nice button in the
 HTML version of the email
 
 
-Required [input schema](v1/email-request.json#)
+Has required input schema
 
 ```python
 # Sync calls
@@ -2822,7 +2680,7 @@ await asyncNotify.email(payload) # -> None
 Publish a message on pulse with the given `routingKey`.
 
 
-Required [input schema](v1/pulse-request.json#)
+Has required input schema
 
 ```python
 # Sync calls
@@ -2845,7 +2703,7 @@ error. We maybe improve this behavior in the future. For now just keep
 in mind that IRC is a best-effort service.
 
 
-Required [input schema](v1/irc-request.json#)
+Has required input schema
 
 ```python
 # Sync calls
@@ -2861,7 +2719,7 @@ or IRC(user or channel). Addresses in the denylist will be ignored
 by the notification service.
 
 
-Required [input schema](v1/notification-address.json#)
+Has required input schema
 
 ```python
 # Sync calls
@@ -2874,7 +2732,7 @@ await asyncNotify.addDenylistAddress(payload) # -> None
 Delete the specified address from the notification denylist.
 
 
-Required [input schema](v1/notification-address.json#)
+Has required input schema
 
 ```python
 # Sync calls
@@ -2897,14 +2755,36 @@ If you are not interested in listing all the members at once, you may
 use the query-string option `limit` to return fewer.
 
 
-Required [output schema](v1/notification-address-list.json#)
+Has required output schema
 
 ```python
 # Sync calls
-notify.list() # -> result`
+notify.listDenylist() # -> result`
 # Async call
-await asyncNotify.list() # -> result
+await asyncNotify.listDenylist() # -> result
 ```
+
+
+
+
+### Exchanges in `taskcluster.NotifyEvents`
+```python
+// Create NotifyEvents client instance
+import taskcluster
+notifyEvents = taskcluster.NotifyEvents(options)
+```
+This pretty much only contains the simple free-form
+message that can be published from this service from a request
+by anybody with the proper scopes.
+#### Notification Messages
+ * `notifyEvents.notify(routingKeyPattern) -> routingKey`
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
+#### Request for irc notification
+ * `notifyEvents.ircRequest(routingKeyPattern) -> routingKey`
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 
 
@@ -2922,11 +2802,11 @@ loop = asyncio.get_event_loop()
 session = taskcluster.aio.createSession(loop=loop)
 asyncPurgeCache = taskcluster.aio.PurgeCache(options, session=session)
 ```
-The purge-cache service is responsible for publishing a pulse
-message for workers, so they can purge cache upon request.
+The purge-cache service is responsible for tracking cache-purge requests.
 
-This document describes the API end-point for publishing the pulse
-message. This is mainly intended to be used by tools.
+User create purge requests for specific caches on specific workers, and
+these requests are timestamped.  Workers consult the service before
+starting a new task, and purge any caches older than the timestamp.
 #### Ping Server
 Respond without doing anything.
 This endpoint is used to check that the service is up.
@@ -2940,9 +2820,11 @@ await asyncPurgeCache.ping() # -> None
 ```
 
 #### Purge Worker Cache
-Publish a purge-cache message to purge caches named `cacheName` with
-`provisionerId` and `workerType` in the routing-key. Workers should
-be listening for this message and purge caches when they see it.
+Publish a request to purge caches named `cacheName` with
+on `provisionerId`/`workerType` workers.
+
+If such a request already exists, its `before` timestamp is updated to
+the current time.
 
 
 
@@ -2951,7 +2833,7 @@ Takes the following arguments:
   * `provisionerId`
   * `workerType`
 
-Required [input schema](v1/purge-cache-request.json#)
+Has required input schema
 
 ```python
 # Sync calls
@@ -2963,6 +2845,8 @@ await asyncPurgeCache.purgeCache(payload, provisionerId='value', workerType='val
 ```
 
 #### All Open Purge Requests
+View all active purge requests.
+
 This is useful mostly for administors to view
 the set of open purge requests. It should not
 be used by workers. They should use the purgeRequests
@@ -2970,7 +2854,7 @@ endpoint that is specific to their workerType and
 provisionerId.
 
 
-Required [output schema](v1/all-purge-cache-request-list.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -2980,9 +2864,10 @@ await asyncPurgeCache.allPurgeRequests() # -> result
 ```
 
 #### Open Purge Requests for a provisionerId/workerType pair
-List of caches that need to be purged if they are from before
-a certain time. This is safe to be used in automation from
-workers.
+List the caches for this `provisionerId`/`workerType` that should to be
+purged if they are from before the time given in the response.
+
+This is intended to be used by workers to determine which caches to purge.
 
 
 
@@ -2991,7 +2876,7 @@ Takes the following arguments:
   * `provisionerId`
   * `workerType`
 
-Required [output schema](v1/purge-cache-request-list.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3050,7 +2935,7 @@ Takes the following arguments:
 
   * `taskId`
 
-Required [output schema](v1/task.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3070,7 +2955,7 @@ Takes the following arguments:
 
   * `taskId`
 
-Required [output schema](v1/task-status-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3105,7 +2990,7 @@ Takes the following arguments:
 
   * `taskGroupId`
 
-Required [output schema](v1/list-task-group-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3140,7 +3025,7 @@ Takes the following arguments:
 
   * `taskId`
 
-Required [output schema](v1/list-dependent-tasks-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3189,9 +3074,9 @@ Takes the following arguments:
 
   * `taskId`
 
-Required [input schema](v1/create-task-request.json#)
+Has required input schema
 
-Required [output schema](v1/task-status-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3212,9 +3097,9 @@ Takes the following arguments:
 
   * `taskId`
 
-Required [input schema](v1/create-task-request.json#)
+Has required input schema
 
-Required [output schema](v1/task-status-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3247,7 +3132,7 @@ Takes the following arguments:
 
   * `taskId`
 
-Required [output schema](v1/task-status-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3281,7 +3166,7 @@ Takes the following arguments:
 
   * `taskId`
 
-Required [output schema](v1/task-status-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3312,7 +3197,7 @@ Takes the following arguments:
 
   * `taskId`
 
-Required [output schema](v1/task-status-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3340,9 +3225,9 @@ Takes the following arguments:
   * `provisionerId`
   * `workerType`
 
-Required [input schema](v1/claim-work-request.json#)
+Has required input schema
 
-Required [output schema](v1/claim-work-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3363,9 +3248,9 @@ Takes the following arguments:
   * `taskId`
   * `runId`
 
-Required [input schema](v1/task-claim-request.json#)
+Has required input schema
 
-Required [output schema](v1/task-claim-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3406,7 +3291,7 @@ Takes the following arguments:
   * `taskId`
   * `runId`
 
-Required [output schema](v1/task-reclaim-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3427,7 +3312,7 @@ Takes the following arguments:
   * `taskId`
   * `runId`
 
-Required [output schema](v1/task-status-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3454,7 +3339,7 @@ Takes the following arguments:
   * `taskId`
   * `runId`
 
-Required [output schema](v1/task-status-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3487,9 +3372,9 @@ Takes the following arguments:
   * `taskId`
   * `runId`
 
-Required [input schema](v1/task-exception-request.json#)
+Has required input schema
 
-Required [output schema](v1/task-status-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3579,9 +3464,9 @@ Takes the following arguments:
   * `runId`
   * `name`
 
-Required [input schema](v1/post-artifact-request.json#)
+Has required input schema
 
-Required [output schema](v1/post-artifact-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3611,7 +3496,7 @@ Takes the following arguments:
   * `runId`
   * `name`
 
-Required [input schema](v1/put-artifact-request.json#)
+Has required input schema
 
 ```python
 # Sync calls
@@ -3770,7 +3655,7 @@ Takes the following arguments:
   * `taskId`
   * `runId`
 
-Required [output schema](v1/list-artifacts-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3799,7 +3684,7 @@ Takes the following arguments:
 
   * `taskId`
 
-Required [output schema](v1/list-artifacts-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3823,7 +3708,7 @@ option. By default this end-point will list up to 1000 provisioners in a single
 page. You may limit this with the query-string parameter `limit`.
 
 
-Required [output schema](v1/list-provisioners-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3845,7 +3730,7 @@ Takes the following arguments:
 
   * `provisionerId`
 
-Required [output schema](v1/provisioner-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3874,9 +3759,9 @@ Takes the following arguments:
 
   * `provisionerId`
 
-Required [input schema](v1/update-provisioner-request.json#)
+Has required input schema
 
-Required [output schema](v1/provisioner-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3903,7 +3788,7 @@ Takes the following arguments:
   * `provisionerId`
   * `workerType`
 
-Required [output schema](v1/pending-tasks-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3928,7 +3813,7 @@ Takes the following arguments:
 
   * `provisionerId`
 
-Required [output schema](v1/list-workertypes-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3949,7 +3834,7 @@ Takes the following arguments:
   * `provisionerId`
   * `workerType`
 
-Required [output schema](v1/workertype-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -3975,9 +3860,9 @@ Takes the following arguments:
   * `provisionerId`
   * `workerType`
 
-Required [input schema](v1/update-workertype-request.json#)
+Has required input schema
 
-Required [output schema](v1/workertype-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -4007,7 +3892,7 @@ Takes the following arguments:
   * `provisionerId`
   * `workerType`
 
-Required [output schema](v1/list-workers-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -4030,7 +3915,7 @@ Takes the following arguments:
   * `workerGroup`
   * `workerId`
 
-Required [output schema](v1/worker-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -4053,9 +3938,9 @@ Takes the following arguments:
   * `workerGroup`
   * `workerId`
 
-Required [input schema](v1/quarantine-worker-request.json#)
+Has required input schema
 
-Required [output schema](v1/worker-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -4081,9 +3966,9 @@ Takes the following arguments:
   * `workerGroup`
   * `workerId`
 
-Required [input schema](v1/update-worker-request.json#)
+Has required input schema
 
-Required [output schema](v1/worker-response.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -4293,7 +4178,7 @@ Takes the following arguments:
 
   * `name`
 
-Required [input schema](v1/secret.json#)
+Has required input schema
 
 ```python
 # Sync calls
@@ -4334,7 +4219,7 @@ Takes the following arguments:
 
   * `name`
 
-Required [output schema](v1/secret.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -4359,7 +4244,7 @@ If you are not interested in listing all the members at once, you may
 use the query-string option `limit` to return fewer.
 
 
-Required [output schema](v1/secret-list.json#)
+Has required output schema
 
 ```python
 # Sync calls
@@ -4389,6 +4274,130 @@ a local development environment, or a custom dashboard.
    * `destination` is required  Description: destination
    * `project` is required  Description: project
    * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
+
+
+
+### Methods in `taskcluster.WorkerManager`
+```python
+import asyncio # Only for async 
+// Create WorkerManager client instance
+import taskcluster
+import taskcluster.aio
+
+workerManager = taskcluster.WorkerManager(options)
+# Below only for async instances, assume already in coroutine
+loop = asyncio.get_event_loop()
+session = taskcluster.aio.createSession(loop=loop)
+asyncWorkerManager = taskcluster.aio.WorkerManager(options, session=session)
+```
+This service manages workers, including provisioning
+#### Ping Server
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+workerManager.ping() # -> None`
+# Async call
+await asyncWorkerManager.ping() # -> None
+```
+
+#### Create WorkerType
+Create a new workertype. If the workertype already exists, this will throw an error.
+
+
+
+Takes the following arguments:
+
+  * `name`
+
+Has required input schema
+
+Has required output schema
+
+```python
+# Sync calls
+workerManager.createWorkerType(name, payload) # -> result`
+workerManager.createWorkerType(payload, name='value') # -> result
+# Async call
+await asyncWorkerManager.createWorkerType(name, payload) # -> result
+await asyncWorkerManager.createWorkerType(payload, name='value') # -> result
+```
+
+#### Update WorkerType
+Given an existing workertype definition, this will modify it and return the new definition.
+
+
+
+Takes the following arguments:
+
+  * `name`
+
+Has required input schema
+
+Has required output schema
+
+```python
+# Sync calls
+workerManager.updateWorkerType(name, payload) # -> result`
+workerManager.updateWorkerType(payload, name='value') # -> result
+# Async call
+await asyncWorkerManager.updateWorkerType(name, payload) # -> result
+await asyncWorkerManager.updateWorkerType(payload, name='value') # -> result
+```
+
+#### Get WorkerType
+Given an existing workertype defition, this will fetch it.
+
+
+
+Takes the following arguments:
+
+  * `name`
+
+Has required output schema
+
+```python
+# Sync calls
+workerManager.workerType(name) # -> result`
+workerManager.workerType(name='value') # -> result
+# Async call
+await asyncWorkerManager.workerType(name) # -> result
+await asyncWorkerManager.workerType(name='value') # -> result
+```
+
+#### Delete WorkerType
+Delete an existing workertype definition.
+
+
+
+Takes the following arguments:
+
+  * `name`
+
+```python
+# Sync calls
+workerManager.deleteWorkerType(name) # -> None`
+workerManager.deleteWorkerType(name='value') # -> None
+# Async call
+await asyncWorkerManager.deleteWorkerType(name) # -> None
+await asyncWorkerManager.deleteWorkerType(name='value') # -> None
+```
+
+#### List All WorkerTypes
+Get the list of all the existing workertypes
+
+
+Has required output schema
+
+```python
+# Sync calls
+workerManager.listWorkerTypes() # -> result`
+# Async call
+await asyncWorkerManager.listWorkerTypes() # -> result
+```
 
 
 

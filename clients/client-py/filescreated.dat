@@ -4,8 +4,6 @@ taskcluster/authevents.py
 taskcluster/aio/authevents.py
 taskcluster/awsprovisioner.py
 taskcluster/aio/awsprovisioner.py
-taskcluster/awsprovisionerevents.py
-taskcluster/aio/awsprovisionerevents.py
 taskcluster/ec2manager.py
 taskcluster/aio/ec2manager.py
 taskcluster/github.py
@@ -14,12 +12,16 @@ taskcluster/githubevents.py
 taskcluster/aio/githubevents.py
 taskcluster/hooks.py
 taskcluster/aio/hooks.py
+taskcluster/hooksevents.py
+taskcluster/aio/hooksevents.py
 taskcluster/index.py
 taskcluster/aio/index.py
 taskcluster/login.py
 taskcluster/aio/login.py
 taskcluster/notify.py
 taskcluster/aio/notify.py
+taskcluster/notifyevents.py
+taskcluster/aio/notifyevents.py
 taskcluster/purgecache.py
 taskcluster/aio/purgecache.py
 taskcluster/queue.py
@@ -30,5 +32,7 @@ taskcluster/secrets.py
 taskcluster/aio/secrets.py
 taskcluster/treeherderevents.py
 taskcluster/aio/treeherderevents.py
+taskcluster/workermanager.py
+taskcluster/aio/workermanager.py
 taskcluster/_client_importer.py
 taskcluster/aio/_client_importer.py

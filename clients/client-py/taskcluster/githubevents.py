@@ -68,6 +68,7 @@ class GithubEvents(BaseClient):
                     'name': 'action',
                 },
             ],
+            'schema': 'v1/github-pull-request-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -106,6 +107,7 @@ class GithubEvents(BaseClient):
                     'name': 'repository',
                 },
             ],
+            'schema': 'v1/github-push-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -144,6 +146,7 @@ class GithubEvents(BaseClient):
                     'name': 'repository',
                 },
             ],
+            'schema': 'v1/github-release-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -185,6 +188,7 @@ class GithubEvents(BaseClient):
                     'name': 'repository',
                 },
             ],
+            'schema': 'v1/task-group-creation-requested.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 

@@ -49,6 +49,7 @@ class AuthEvents(BaseClient):
                     'name': 'reserved',
                 },
             ],
+            'schema': 'v1/client-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -72,6 +73,7 @@ class AuthEvents(BaseClient):
                     'name': 'reserved',
                 },
             ],
+            'schema': 'v1/client-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -95,6 +97,7 @@ class AuthEvents(BaseClient):
                     'name': 'reserved',
                 },
             ],
+            'schema': 'v1/client-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -118,6 +121,7 @@ class AuthEvents(BaseClient):
                     'name': 'reserved',
                 },
             ],
+            'schema': 'v1/role-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -141,6 +145,7 @@ class AuthEvents(BaseClient):
                     'name': 'reserved',
                 },
             ],
+            'schema': 'v1/role-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -164,6 +169,7 @@ class AuthEvents(BaseClient):
                     'name': 'reserved',
                 },
             ],
+            'schema': 'v1/role-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 

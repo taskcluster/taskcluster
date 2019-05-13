@@ -61,6 +61,7 @@ class TreeherderEvents(BaseClient):
                     'name': 'reserved',
                 },
             ],
+            'schema': 'v1/pulse-job.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 

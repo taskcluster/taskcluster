@@ -105,7 +105,7 @@ class Notify(BaseClient):
 
         return self._makeApiCall(self.funcinfo["deleteDenylistAddress"], *args, **kwargs)
 
-    def list(self, *args, **kwargs):
+    def listDenylist(self, *args, **kwargs):
         """
         List Denylisted Notifications
 
@@ -124,11 +124,12 @@ class Notify(BaseClient):
         This method is ``experimental``
         """
 
-        return self._makeApiCall(self.funcinfo["list"], *args, **kwargs)
+        return self._makeApiCall(self.funcinfo["listDenylist"], *args, **kwargs)
 
     funcinfo = {
         "addDenylistAddress": {
             'args': [],
+            'input': 'v1/notification-address.json#',
             'method': 'post',
             'name': 'addDenylistAddress',
             'route': '/denylist/add',
@@ -136,6 +137,7 @@ class Notify(BaseClient):
         },
         "deleteDenylistAddress": {
             'args': [],
+            'input': 'v1/notification-address.json#',
             'method': 'delete',
             'name': 'deleteDenylistAddress',
             'route': '/denylist/delete',
@@ -143,6 +145,7 @@ class Notify(BaseClient):
         },
         "email": {
             'args': [],
+            'input': 'v1/email-request.json#',
             'method': 'post',
             'name': 'email',
             'route': '/email',
@@ -150,15 +153,17 @@ class Notify(BaseClient):
         },
         "irc": {
             'args': [],
+            'input': 'v1/irc-request.json#',
             'method': 'post',
             'name': 'irc',
             'route': '/irc',
             'stability': 'experimental',
         },
-        "list": {
+        "listDenylist": {
             'args': [],
             'method': 'get',
-            'name': 'list',
+            'name': 'listDenylist',
+            'output': 'v1/notification-address-list.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/denylist/list',
             'stability': 'experimental',
@@ -172,6 +177,7 @@ class Notify(BaseClient):
         },
         "pulse": {
             'args': [],
+            'input': 'v1/pulse-request.json#',
             'method': 'post',
             'name': 'pulse',
             'route': '/pulse',

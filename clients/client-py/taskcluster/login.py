@@ -70,6 +70,7 @@ class Login(BaseClient):
             'args': ['provider'],
             'method': 'get',
             'name': 'oidcCredentials',
+            'output': 'v1/oidc-credentials-response.json#',
             'route': '/oidc-credentials/<provider>',
             'stability': 'experimental',
         },

@@ -102,6 +102,7 @@ class Secrets(AsyncBaseClient):
             'args': ['name'],
             'method': 'get',
             'name': 'get',
+            'output': 'v1/secret.json#',
             'route': '/secret/<name>',
             'stability': 'stable',
         },
@@ -109,6 +110,7 @@ class Secrets(AsyncBaseClient):
             'args': [],
             'method': 'get',
             'name': 'list',
+            'output': 'v1/secret-list.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/secrets',
             'stability': 'stable',
@@ -129,6 +131,7 @@ class Secrets(AsyncBaseClient):
         },
         "set": {
             'args': ['name'],
+            'input': 'v1/secret.json#',
             'method': 'put',
             'name': 'set',
             'route': '/secret/<name>',

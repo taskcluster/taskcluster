@@ -13,25 +13,8 @@ _defaultConfig = config
 
 class Hooks(BaseClient):
     """
-    Hooks are a mechanism for creating tasks in response to events.
+    The hooks service provides a mechanism for creating tasks in response to events.
 
-    Hooks are identified with a `hookGroupId` and a `hookId`.
-
-    When an event occurs, the resulting task is automatically created.  The
-    task is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,
-    which must have scopes to make the createTask call, including satisfying all
-    scopes in `task.scopes`.  The new task has a `taskGroupId` equal to its
-    `taskId`, as is the convention for decision tasks.
-
-    Hooks can have a "schedule" indicating specific times that new tasks should
-    be created.  Each schedule is in a simple cron format, per
-    https://www.npmjs.com/package/cron-parser.  For example:
-     * `['0 0 1 * * *']` -- daily at 1:00 UTC
-     * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
-
-    The task definition is used as a JSON-e template, with a context depending on how it is fired.  See
-    [/docs/reference/core/taskcluster-hooks/docs/firing-hooks](firing-hooks)
-    for more information.
     """
 
     classOptions = {
@@ -207,8 +190,10 @@ class Hooks(BaseClient):
     funcinfo = {
         "createHook": {
             'args': ['hookGroupId', 'hookId'],
+            'input': 'v1/create-hook-request.json#',
             'method': 'put',
             'name': 'createHook',
+            'output': 'v1/hook-definition.json#',
             'route': '/hooks/<hookGroupId>/<hookId>',
             'stability': 'stable',
         },
@@ -216,6 +201,7 @@ class Hooks(BaseClient):
             'args': ['hookGroupId', 'hookId'],
             'method': 'get',
             'name': 'getHookStatus',
+            'output': 'v1/hook-status.json#',
             'route': '/hooks/<hookGroupId>/<hookId>/status',
             'stability': 'deprecated',
         },
@@ -223,6 +209,7 @@ class Hooks(BaseClient):
             'args': ['hookGroupId', 'hookId'],
             'method': 'get',
             'name': 'getTriggerToken',
+            'output': 'v1/trigger-token-response.json#',
             'route': '/hooks/<hookGroupId>/<hookId>/token',
             'stability': 'stable',
         },
@@ -230,6 +217,7 @@ class Hooks(BaseClient):
             'args': ['hookGroupId', 'hookId'],
             'method': 'get',
             'name': 'hook',
+            'output': 'v1/hook-definition.json#',
             'route': '/hooks/<hookGroupId>/<hookId>',
             'stability': 'stable',
         },
@@ -237,6 +225,7 @@ class Hooks(BaseClient):
             'args': [],
             'method': 'get',
             'name': 'listHookGroups',
+            'output': 'v1/list-hook-groups-response.json#',
             'route': '/hooks',
             'stability': 'stable',
         },
@@ -244,6 +233,7 @@ class Hooks(BaseClient):
             'args': ['hookGroupId'],
             'method': 'get',
             'name': 'listHooks',
+            'output': 'v1/list-hooks-response.json#',
             'route': '/hooks/<hookGroupId>',
             'stability': 'stable',
         },
@@ -251,6 +241,7 @@ class Hooks(BaseClient):
             'args': ['hookGroupId', 'hookId'],
             'method': 'get',
             'name': 'listLastFires',
+            'output': 'v1/list-lastFires-response.json#',
             'route': '/hooks/<hookGroupId>/<hookId>/last-fires',
             'stability': 'experimental',
         },
@@ -272,27 +263,34 @@ class Hooks(BaseClient):
             'args': ['hookGroupId', 'hookId'],
             'method': 'post',
             'name': 'resetTriggerToken',
+            'output': 'v1/trigger-token-response.json#',
             'route': '/hooks/<hookGroupId>/<hookId>/token',
             'stability': 'stable',
         },
         "triggerHook": {
             'args': ['hookGroupId', 'hookId'],
+            'input': 'v1/trigger-hook.json#',
             'method': 'post',
             'name': 'triggerHook',
+            'output': 'v1/trigger-hook-response.json#',
             'route': '/hooks/<hookGroupId>/<hookId>/trigger',
             'stability': 'stable',
         },
         "triggerHookWithToken": {
             'args': ['hookGroupId', 'hookId', 'token'],
+            'input': 'v1/trigger-hook.json#',
             'method': 'post',
             'name': 'triggerHookWithToken',
+            'output': 'v1/trigger-hook-response.json#',
             'route': '/hooks/<hookGroupId>/<hookId>/trigger/<token>',
             'stability': 'stable',
         },
         "updateHook": {
             'args': ['hookGroupId', 'hookId'],
+            'input': 'v1/create-hook-request.json#',
             'method': 'post',
             'name': 'updateHook',
+            'output': 'v1/hook-definition.json#',
             'route': '/hooks/<hookGroupId>/<hookId>',
             'stability': 'stable',
         },
