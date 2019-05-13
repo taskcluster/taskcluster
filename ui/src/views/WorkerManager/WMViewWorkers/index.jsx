@@ -43,7 +43,7 @@ export default class WMViewWorkers extends Component {
 
     return (
       <Dashboard
-        title="Workers"
+        title={`Workers for ${this.props.match.params.workerType || this.props.match.params.provider}`}
         search={
           <Search
             disabled={loading}
