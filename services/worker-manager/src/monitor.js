@@ -30,7 +30,7 @@ monitorManager.register({
     minCapacity: 'The minimum amount of capacity that should be running',
     maxCapacity: 'The maximum amount of capacity that should be running',
     capacityPerInstance: 'Amount of capacity a single instance provides',
-    currentSize: 'Number of currently requested instances',
+    running: 'Number of currently requested and running instances',
     desiredSize: 'Number that this estimator thinks we should have',
   },
 });

@@ -246,86 +246,100 @@ class GoogleProvider extends Provider {
 
     // TODO: Use p-queue for all operations against google
 
-    // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
-    // The lost entropy from downcasing, etc should be ok due to the fact that
-    // only running instances need not be identical.
-    const instanceName = `${workerType.name}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
+    const {running} = await this.reconcileInstances({workerType});
 
-    let op;
-
-    try {
-      const res = await this.compute.instances.insert({
-        project: this.project,
-        zone,
-        requestId: uuid.v4(), // This is just for idempotency
-        requestBody: {
-          name: instanceName,
-          labels: {
-            workertype: workerType.name,
-          },
-          description: workerType.description,
-          machineType: `zones/${zone}/machineTypes/${workerType.config.machineType}`,
-          scheduling: workerType.config.scheduling,
-          networkInterfaces: workerType.config.networkInterfaces,
-          disks: workerType.config.disks,
-          serviceAccounts: [{
-            email: this.workerAccountEmail,
-            scopes: [
-              /*
-               * This looks scary but is ok. According to
-               * https://cloud.google.com/compute/docs/access/service-accounts#accesscopesiam
-               *
-               * "A best practice is to set the full cloud-platform
-               * access scope on the instance, then securely limit
-               * the service account's API access with IAM roles."
-               *
-               * Which is what we do.
-               */
-              'https://www.googleapis.com/auth/cloud-platform',
-            ],
-          }],
-          metadata: {
-            items: [
-              {
-                key: 'taskcluster',
-                value: JSON.stringify({
-                  provisionerId: this.provisionerId,
-                  workerType: workerType.name,
-                  workerGroup: `${workerType.name}-google`,
-                  credentialUrl: libUrls.api(this.rootUrl, 'worker-manager', 'v1', `credentials/google/${workerType.name}`),
-                  rootUrl: this.rootUrl,
-                  userData: workerType.config.userData,
-                }),
-              },
-            ],
-          },
-        },
-      });
-      op = res.data;
-    } catch (err) {
-      for (const error of err.errors) {
-        await workerType.reportError({
-          kind: 'creation-error',
-          title: 'Instance Creation Error',
-          description: error.message, // TODO: Make sure we clear exposing this with security folks
-          notify: this.notify,
-        });
-      }
-    }
-
-    await this.Worker.create({
-      workerType: workerType.name,
-      provider: this.name,
-      workerId: `gcp-${op.targetId}`,
-      created: new Date(),
-      credentialed: null,
+    const toSpawn = this.estimators.simple({
+      name: workerType.name,
+      ...workerType.config,
+      running,
     });
 
-    await workerType.modify(wt => {
-      wt.providerData[this.name].trackedOperations.push({
+    const operations = [];
+
+    for (let i = 0; i < toSpawn; i++) {
+
+      // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
+      // The lost entropy from downcasing, etc should be ok due to the fact that
+      // only running instances need not be identical.
+      const instanceName = `${workerType.name}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
+
+      let op;
+
+      try {
+        const res = await this.compute.instances.insert({
+          project: this.project,
+          zone,
+          requestId: uuid.v4(), // This is just for idempotency
+          requestBody: {
+            name: instanceName,
+            labels: {
+              workertype: workerType.name,
+            },
+            description: workerType.description,
+            machineType: `zones/${zone}/machineTypes/${workerType.config.machineType}`,
+            scheduling: workerType.config.scheduling,
+            networkInterfaces: workerType.config.networkInterfaces,
+            disks: workerType.config.disks,
+            serviceAccounts: [{
+              email: this.workerAccountEmail,
+              scopes: [
+                /*
+                 * This looks scary but is ok. According to
+                 * https://cloud.google.com/compute/docs/access/service-accounts#accesscopesiam
+                 *
+                 * "A best practice is to set the full cloud-platform
+                 * access scope on the instance, then securely limit
+                 * the service account's API access with IAM roles."
+                 *
+                 * Which is what we do.
+                 */
+                'https://www.googleapis.com/auth/cloud-platform',
+              ],
+            }],
+            metadata: {
+              items: [
+                {
+                  key: 'taskcluster',
+                  value: JSON.stringify({
+                    provisionerId: this.provisionerId,
+                    workerType: workerType.name,
+                    workerGroup: `${workerType.name}-google`,
+                    credentialUrl: libUrls.api(this.rootUrl, 'worker-manager', 'v1', `credentials/google/${workerType.name}`),
+                    rootUrl: this.rootUrl,
+                    userData: workerType.config.userData,
+                  }),
+                },
+              ],
+            },
+          },
+        });
+        op = res.data;
+      } catch (err) {
+        for (const error of err.errors) {
+          await workerType.reportError({
+            kind: 'creation-error',
+            title: 'Instance Creation Error',
+            description: error.message, // TODO: Make sure we clear exposing this with security folks
+            notify: this.notify,
+          });
+        }
+      }
+
+      await this.Worker.create({
+        workerType: workerType.name,
+        provider: this.name,
+        workerId: `gcp-${op.targetId}`,
+        created: new Date(),
+        credentialed: null,
+      });
+      operations.push({
         region: op.region,
         name: op.name,
       });
+    }
+
+    await workerType.modify(wt => {
+      wt.providerData[this.name].trackedOperations = wt.providerData[this.name].trackedOperations.push(operations);
     });
 
     await this.handleOperations({workerType});

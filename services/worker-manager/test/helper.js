@@ -30,9 +30,9 @@ exports.secrets = new Secrets({
 });
 
 exports.withEntities = (mock, skipping) => {
+  withEntity(mock, skipping, exports, 'WorkerTypeError', data.WorkerTypeError);
   withEntity(mock, skipping, exports, 'Worker', data.Worker);
   withEntity(mock, skipping, exports, 'WorkerType', data.WorkerType);
-  withEntity(mock, skipping, exports, 'WorkerTypeError', data.WorkerTypeError);
 };
 
 exports.withPulse = (mock, skipping) => {
