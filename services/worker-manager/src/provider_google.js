@@ -1,3 +1,4 @@
+const slugid = require('slugid');
 const _ = require('lodash');
 const fs = require('fs');
 const taskcluster = require('taskcluster-client');
@@ -188,23 +189,31 @@ class GoogleProvider extends Provider {
     // Now check to make sure that the serviceAccount that the worker has is the
     // serviceAccount that we have configured that worker to use. Nobody else in the project
     // should have permissions to create instances with this serviceAccount.
-    if (payload.sub !== workerType.providerData.serviceAccountId) {
+    if (payload.sub !== this.workerAccountEmail) {
       const error = new Error('Attempt to claim workertype creds from non-workertype instance');
       error.requestingAccountId = payload.sub;
-      error.correctAccountId = workerType.providerData.serviceAccountId;
+      error.correctAccountId = this.workerAccountEmail;
       throw error;
     }
 
     // Google docs say instance id is globally unique even across projects
     const workerId = `gcp-${dat.instance_id}`;
 
-    // This will throw an error if the workertype already checked in.
-    // Workers that fail to get creds after this should terminate themselves
-    await this.Worker.create({
+    const worker = await this.Worker.load({
       workerType: workerType.name,
-      provider: this.name,
       workerId,
-      credentialed: new Date(),
+    }, true);
+
+    // There will be no worker if either the workerId is not one we've made or if it is actually
+    // from a different workerType since the load will not find it in that case
+    if (!worker) {
+      const error = new Error('Attempt to claim credentials from a non-existent worker');
+      error.requestingId = workerId;
+      throw error;
+    }
+
+    await worker.modify(w => {
+      w.credentialed = true;
     });
 
     return taskcluster.createTemporaryCredentials({
@@ -233,52 +242,81 @@ class GoogleProvider extends Provider {
 
     // TODO: Use p-queue for all operations against google
 
-    const res = await this.compute.instances.insert({
-      project: this.project,
-      zone,
-      requestId: uuid.v4(), // This is just for idempotency
-      requestBody: {
-        name: workerType.name,
-        description: workerType.description,
-        machineType: workerType.config.machineType,
-        scheduling: workerType.config.scheduling,
-        networkInterfaces: workerType.config.networkInterfaces,
-        disks: workerType.config.disks,
-        serviceAccounts: [{
-          email: this.workerAccountEmail,
-          scopes: [
-            /*
-             * This looks scary but is ok. According to
-             * https://cloud.google.com/compute/docs/access/service-accounts#accesscopesiam
-             *
-             * "A best practice is to set the full cloud-platform
-             * access scope on the instance, then securely limit
-             * the service account's API access with IAM roles."
-             *
-             * Which is what we do.
-             */
-            'https://www.googleapis.com/auth/cloud-platform',
-          ],
-        }],
-        metadata: {
-          items: [
-            {
-              key: 'taskcluster',
-              value: JSON.stringify({
-                provisionerId: this.provisionerId,
-                workerType: workerType.name,
-                workerGroup: `${workerType.name}-google`,
-                credentialUrl: libUrls.api(this.rootUrl, 'worker-manager', 'v1', `credentials/google/${workerType.name}`),
-                rootUrl: this.rootUrl,
-                userData: workerType.config.userData,
-              }),
-            },
-          ],
+    let op;
+
+    try {
+      op = await this.compute.instances.insert({
+        project: this.project,
+        zone,
+        requestId: uuid.v4(), // This is just for idempotency
+        requestBody: {
+          name: `${workerType.name}-${slugid.nice()}`,
+          labels: {
+            workerType: workerType.name,
+          },
+          description: workerType.description,
+          machineType: `zones/${zone}/machineTypes/${workerType.config.machineType}`,
+          scheduling: workerType.config.scheduling,
+          networkInterfaces: workerType.config.networkInterfaces,
+          disks: workerType.config.disks,
+          serviceAccounts: [{
+            email: this.workerAccountEmail,
+            scopes: [
+              /*
+               * This looks scary but is ok. According to
+               * https://cloud.google.com/compute/docs/access/service-accounts#accesscopesiam
+               *
+               * "A best practice is to set the full cloud-platform
+               * access scope on the instance, then securely limit
+               * the service account's API access with IAM roles."
+               *
+               * Which is what we do.
+               */
+              'https://www.googleapis.com/auth/cloud-platform',
+            ],
+          }],
+          metadata: {
+            items: [
+              {
+                key: 'taskcluster',
+                value: JSON.stringify({
+                  provisionerId: this.provisionerId,
+                  workerType: workerType.name,
+                  workerGroup: `${workerType.name}-google`,
+                  credentialUrl: libUrls.api(this.rootUrl, 'worker-manager', 'v1', `credentials/google/${workerType.name}`),
+                  rootUrl: this.rootUrl,
+                  userData: workerType.config.userData,
+                }),
+              },
+            ],
+          },
         },
-      },
+      });
+    } catch (err) {
+      for (const error of err.errors) {
+        await workerType.reportError({
+          kind: 'creation-error',
+          title: 'Instance Creation Error',
+          description: error.message, // TODO: Make sure we clear exposing this with security folks
+          notify: this.notify,
+        });
+      }
+    }
+
+    await this.Worker.create({
+      workerType: workerType.name,
+      provider: this.name,
+      workerId: `gcp-${op.targetId}`,
+      created: new Date(),
+      credentialed: null,
     });
 
-    console.log(res);
+    await workerType.modify(wt => {
+      wt.providerData[this.name].trackedOperations.push({
+        region: op.region,
+        name: op.name,
+      });
+    });
 
     await this.handleOperations({workerType});
   }
@@ -295,61 +333,67 @@ class GoogleProvider extends Provider {
     }
     const ongoing = [];
     for (const op of workerType.providerData.trackedOperations) {
-      let operation;
-      let getOp;
-      let deleteOp;
-      if (op.region) {
-        const args = {
-          project: this.project,
-          region: op.region.split('/').slice(-1)[0],
-          operation: op.name,
-        };
-        getOp = async () => this.compute.regionOperations.get(args);
-        deleteOp = async () => this.compute.regionOperations.delete(args);
-      } else {
-        const args = {
-          project: this.project,
-          operation: op.name,
-        };
-        getOp = async () => this.compute.globalOperations.get(args);
-        deleteOp = async () => this.compute.globalOperations.delete(args);
+      const res = this.handleOperation({op, workerType});
+      if (res) {
+        ongoing.push(res);
       }
-
-      try {
-        operation = (await getOp()).data;
-      } catch (err) {
-        if (err.code !== 404) {
-          throw err;
-        }
-        // If the operation is no longer existing, nothing for us to do
-        continue;
-      }
-
-      // Let's check back in on the next provisioning iteration if unfinished
-      if (operation.status !== 'DONE') {
-        ongoing.push(operation);
-        continue;
-      }
-
-      if (operation.error) {
-        for (const err of operation.error.errors) { // Each operation can have multiple errors
-          await workerType.reportError({
-            type: 'operation-error',
-            title: 'Operation Error',
-            description: err.message, // TODO: Make sure we clear exposing this with security folks
-            extra: {
-              code: err.code,
-            },
-            notify: this.notify,
-          });
-        }
-      }
-      await deleteOp();
     }
 
     await workerType.modify(wt => {
       wt.providerData.trackedOperations = ongoing;
     });
+  }
+
+  async handleOperation({op, workerType}) {
+    let operation;
+    let getOp;
+    let deleteOp;
+    if (op.region) {
+      const args = {
+        project: this.project,
+        region: op.region.split('/').slice(-1)[0],
+        operation: op.name,
+      };
+      getOp = async () => this.compute.regionOperations.get(args);
+      deleteOp = async () => this.compute.regionOperations.delete(args);
+    } else {
+      const args = {
+        project: this.project,
+        operation: op.name,
+      };
+      getOp = async () => this.compute.globalOperations.get(args);
+      deleteOp = async () => this.compute.globalOperations.delete(args);
+    }
+
+    try {
+      operation = (await getOp()).data;
+    } catch (err) {
+      if (err.code !== 404) {
+        throw err;
+      }
+      // If the operation is no longer existing, nothing for us to do
+      return null;
+    }
+
+    // Let's check back in on the next provisioning iteration if unfinished
+    if (operation.status !== 'DONE') {
+      return operation;
+    }
+
+    if (operation.error) {
+      for (const err of operation.error.errors) { // Each operation can have multiple errors
+        await workerType.reportError({
+          kind: 'operation-error',
+          title: 'Operation Error',
+          description: err.message, // TODO: Make sure we clear exposing this with security folks
+          extra: {
+            code: err.code,
+          },
+          notify: this.notify,
+        });
+      }
+    }
+    await deleteOp();
   }
 
   /*
