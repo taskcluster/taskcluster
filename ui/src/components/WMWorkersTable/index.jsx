@@ -17,13 +17,14 @@ import TableCellListItem from '../TableCellListItem';
 import Link from '../../utils/Link';
 import DateDistance from '../DateDistance';
 import sort from '../../utils/sort';
-import { WMWorkers } from '../../utils/prop-types';
+import { WMWorker } from '../../utils/prop-types';
+import {arrayOf} from 'prop-types';
 
 @withRouter
 export default class WorkerManagerWorkersTable extends Component {
   static propTypes = {
     searchTerm: String,
-    workers: WMWorkers.isRequired,
+    workers: arrayOf(WMWorker).isRequired,
   };
 
   static defaultProps = {
