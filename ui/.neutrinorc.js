@@ -66,7 +66,7 @@ module.exports = {
         GA_TRACKING_ID: '',
         SENTRY_DSN: '',
         DOCS_ONLY: false,
-        SHOW_WORKER_MANAGER: false,
+        SHOW_WORKER_MANAGER: true,
       },
     }],
     (neutrino) => {
