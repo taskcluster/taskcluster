@@ -76,7 +76,34 @@ WorkerType.prototype.compare = function(other) {
   return _.isEqual(_.pick(other, fields), _.pick(this, fields));
 };
 
-WorkerType.prototype.reportError = async ({kind, title, description, extra, notify}) => {
+WorkerType.prototype.reportError = async function({kind, title, description, extra={}, notify}) {
+  if (this.wantsEmail) {
+    let extraInfo = '';
+    if (Object.keys(extra).length) {
+      extraInfo = `
+        It includes the extra information:
+
+        \`\`\`json
+        ${yaml.safeDump(extra)}
+        \`\`\`
+      `.trim();
+    }
+    await notify.email({
+      address: this.owner,
+      subject: `Taskcluster Worker Manager Error: ${title}`,
+      content: `
+  Worker Manager has encountered an error while trying to provision the workertype ${this.name}:
+
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  ${description}
+
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  ${extraInfo}
+      `.trim(),
+    });
+  }
   await WorkerTypeError.create({
     workerType: this.name,
     errorId: slugid.v4(),
@@ -86,25 +113,6 @@ WorkerType.prototype.reportError = async ({kind, title, description, extra, noti
     description,
     extra,
   });
-  if (this.wantsEmail) {
-    await notify.email({
-      address: this.owner,
-      subject: `Taskcluster Worker Manager Error: ${title}`,
-      content: `
-  Worker Manager has encountered an error while trying to provision the workertype ${this.name}:
-
-  \`\`\`
-  ${description}
-  \`\`\`
-
-  It includes the extra information:
-
-  \`\`\`json
-  ${yaml.safeDump(extra)}
-  \`\`\`
-      `.trim(),
-    });
-  }
 };
 
 const WorkerTypeError = Entity.configure({
@@ -172,14 +180,17 @@ const Worker = Entity.configure({
     // The provider responsible for this worker
     provider: Entity.types.String,
 
-    // The time that this worker requested credentials
-    credentialed: Entity.types.Date,
+    // The time that this worker was created
+    created: Entity.types.Date,
+
+    // If this worker has requested credentials
+    credentialed: Entity.types.Boolean,
   },
 });
 
 Worker.expire = async (threshold) => {
   await this.scan({
-    credentialed: Entity.op.lessThan(threshold),
+    created: Entity.op.lessThan(threshold),
   }, {
     limit: 500,
     handler: async item => {

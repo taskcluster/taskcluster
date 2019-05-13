@@ -44,8 +44,8 @@ let load = loader({
   },
 
   WorkerType: {
-    requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) => data.WorkerType.setup({
+    requires: ['cfg', 'monitor', 'WorkerTypeError'],
+    setup: ({cfg, monitor, WorkerTypeError}) => data.WorkerType.setup({
       tableName: cfg.app.workerTypeTableName,
       credentials: sasCredentials({
         accountId: cfg.azure.accountId,
