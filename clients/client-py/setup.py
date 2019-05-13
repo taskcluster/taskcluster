@@ -69,11 +69,16 @@ elif sys.version_info[:2] >= (3, 5):
         'async_timeout>=2.0.0',
     ])
 
+with open('README.md') as f:
+    long_description = f.read()
+
 if __name__ == '__main__':
     setup(
         name='taskcluster',
         version=VERSION,
         description='Python client for Taskcluster',
+        long_description=long_description,
+        long_description_content_type="text/markdown",
         author='Mozilla Taskcluster and Release Engineering',
         author_email='release+python@mozilla.com',
         url='https://github.com/taskcluster/taskcluster-client.py',
