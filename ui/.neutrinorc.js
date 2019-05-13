@@ -150,6 +150,12 @@ module.exports = {
           .use('json-loader')
             .loader('json-loader');
 
+      neutrino.config.module
+        .rule('taskcluster-version')
+          .test(/taskcluster-version$/)
+          .use('raw-loader')
+            .loader('raw-loader');
+
     },
     (neutrino) => {
       neutrino.config.resolve

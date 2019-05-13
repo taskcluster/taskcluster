@@ -34,11 +34,11 @@ class MonitorManager {
     assert(serviceName, 'Must provide a serviceName to MonitorManager.configure');
     this.serviceName = serviceName;
 
-    // read gitVersionFile, if gitVersion is not set
-    if (this.gitVersion === undefined) {
-      const gitVersionFile = path.resolve(rootdir.get(), '../../.git-version');
+    // read taskclusterVersionFile, if taskclusterVersion is not set
+    if (this.taskclusterVersion === undefined) {
+      const taskclusterVersionFile = path.resolve(rootdir.get(), '../../taskcluster-version');
       try {
-        this.gitVersion = fs.readFileSync(gitVersionFile).toString().trim();
+        this.taskclusterVersion = fs.readFileSync(taskclusterVersionFile).toString().trim();
       } catch (err) {
         // Do nothing, will just be undefined
       }

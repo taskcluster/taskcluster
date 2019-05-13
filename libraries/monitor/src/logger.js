@@ -63,7 +63,7 @@ const elideSecrets = fields => {
  * later if we want.
  */
 class Logger {
-  constructor({name, service, level, destination=process.stdout, metadata=null, gitVersion=undefined}) {
+  constructor({name, service, level, destination=process.stdout, metadata=null, taskclusterVersion=undefined}) {
     assert(name, 'Must specify Logger name.');
 
     this.name = name;
@@ -72,7 +72,7 @@ class Logger {
     this.metadata = Object.keys(metadata).length > 0 ? metadata : null;
     this.pid = process.pid;
     this.hostname = os.hostname();
-    this.gitVersion = gitVersion;
+    this.taskclusterVersion = taskclusterVersion;
 
     level = level.trim().toLowerCase();
     assert(LEVELS[level] !== undefined, `Error levels must correspond to syslog severity levels. ${level} is invalid.`);
@@ -142,7 +142,7 @@ class Logger {
       severity: LEVELS_REVERSE[level], // for stackdriver
       serviceContext: { // for stackdriver
         service: this.service,
-        version: this.gitVersion,
+        version: this.taskclusterVersion,
       },
     }) + '\n');
   }

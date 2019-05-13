@@ -134,6 +134,15 @@ import SkipNavigation from '../SkipNavigation';
       top: theme.spacing.unit,
       right: theme.spacing.unit,
     },
+    deploymentVersion: {
+      padding: theme.spacing.unit,
+    },
+    nav: {
+      display: 'flex',
+      flexDirection: 'column',
+      flex: 1,
+      justifyContent: 'space-between',
+    },
   }),
   { withTheme: true }
 )
@@ -188,7 +197,25 @@ export default class Dashboard extends Component {
     navOpen: false,
     showHelpView: false,
     error: null,
+    deploymentVersion: null,
   };
+
+  componentDidMount() {
+    const deploymentVersion = this.getDeploymentVersion();
+
+    this.setState({ deploymentVersion });
+  }
+
+  getDeploymentVersion() {
+    const importer = require.context(
+      '../../../..',
+      false,
+      /taskcluster-version/
+    );
+    const file = importer.keys()[0];
+
+    return file ? importer(file).default : null;
+  }
 
   handleDrawerToggle = () => {
     this.setState({ navOpen: !this.state.navOpen });
@@ -215,36 +242,46 @@ export default class Dashboard extends Component {
       staticContext: _,
       ...props
     } = this.props;
-    const { error, navOpen, showHelpView } = this.state;
+    const { error, navOpen, showHelpView, deploymentVersion } = this.state;
     const drawer = (
-      <nav>
-        <div
-          {...!process.env.DOCS_ONLY && {
-            component: Link,
-            to: '/',
-          }}
-          className={classes.toolbar}>
-          <img
-            className={classes.logoStyle}
-            height={30}
-            alt="logo"
-            src={Logo}
-          />
-          <Typography
+      <nav className={classes.nav}>
+        <div>
+          <div
             {...!process.env.DOCS_ONLY && {
               component: Link,
               to: '/',
             }}
-            variant="h6"
-            noWrap
-            className={classes.title}>
-            {process.env.APPLICATION_NAME}
-          </Typography>
+            className={classes.toolbar}>
+            <img
+              className={classes.logoStyle}
+              height={30}
+              alt="logo"
+              src={Logo}
+            />
+            <Typography
+              {...!process.env.DOCS_ONLY && {
+                component: Link,
+                to: '/',
+              }}
+              variant="h6"
+              noWrap
+              className={classes.title}>
+              {process.env.APPLICATION_NAME}
+            </Typography>
+          </div>
+          <Divider />
+          <UserMenu />
+          <Divider />
+          {docs ? <DocsSidebarList /> : <SidebarList />}
         </div>
-        <Divider />
-        <UserMenu />
-        <Divider />
-        {docs ? <DocsSidebarList /> : <SidebarList />}
+        {deploymentVersion && (
+          <Typography
+            className={classes.deploymentVersion}
+            variant="caption"
+            noWrap>
+            {deploymentVersion}
+          </Typography>
+        )}
       </nav>
     );
     const isDocs = history.location.pathname.startsWith(DOCS_PATH_PREFIX);

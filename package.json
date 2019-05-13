@@ -161,7 +161,7 @@
     "test:cleanup": "yarn workspace taskcluster-auth test:cleanup",
     "build": "node infrastructure/builder/src/main.js build",
     "generate": "node infrastructure/builder/src/main.js generate",
-    "heroku-prebuild": "echo $SOURCE_VERSION > .git-version",
+    "heroku-prebuild": "echo $SOURCE_VERSION > taskcluster-version",
     "heroku-postbuild": "if [ $PROCFILE = \"ui/Procfile\" ]; then cd ui && yarn install --frozen-lockfile && yarn build; fi"
   },
   "renovate": {
