@@ -4,9 +4,6 @@ from setuptools import setup
 from setuptools.command.test import test as TestCommand
 import sys
 
-# The VERSION variable is automagically changed
-# by release.sh.  Make sure you understand how
-# that script works if you want to change this
 VERSION = '7.0.1'
 
 tests_require = [
