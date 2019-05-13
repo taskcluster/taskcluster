@@ -20,10 +20,9 @@ type WorkerManagerWorker {
     workerId: String!
     workerGroup: String!
     workerAge: DateTime
+    quarantineUntil: DateTime
 
     latestTaskRun: TaskRun
-
-    quarantineUntil: DateTime
 
     recentErrors: Int
 
