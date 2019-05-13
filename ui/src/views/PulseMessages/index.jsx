@@ -165,10 +165,6 @@ export default class PulseMessages extends Component {
     this.props.history.replace(`/pulse-messages?${stringify({ bindings })}`);
   };
 
-  handleInputChange = ({ target: { name, value } }) => {
-    this.setState({ [name]: value });
-  };
-
   handleStartListening = () => {
     this.setState({ listening: true, error: null });
 
