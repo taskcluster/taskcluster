@@ -50,7 +50,7 @@ exports.tasks = [{
           exchangePrefix: reference.exchangePrefix,
           methods: reference.entries
             .filter(({type}) => type === 'function')
-            .map(entry => {
+            .map(({...entry}) => {
               if (entry.input) {
                 entry.input = true;
               }
@@ -63,7 +63,8 @@ exports.tasks = [{
             }),
           topics: reference.entries
             .filter(({type}) => type === 'topic-exchange')
-            .map(entry => Object.assign(entry, {
+            .map(entry => ({
+              ...entry,
               routingKey: entry.routingKey.map(route => omit(route, ['summary'])),
             })),
         }),

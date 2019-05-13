@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "Releasing from the monorepo is not yet automated"
+exit 1
+
 # This script is used to generate releases of the python taskcluster client in
 # a uniform way.  It should be the only way that releases are created.  There
 # are two phases, the first is checking that the code is in a clean and working
