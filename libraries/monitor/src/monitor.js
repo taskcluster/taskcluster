@@ -33,7 +33,7 @@ class Monitor {
       level: this.manager.levels[name.join('.')] || this.manager.levels['root'],
       destination: this.manager.destination,
       metadata,
-      gitVersion: this.manager.gitVersion,
+      taskclusterVersion: this.manager.taskclusterVersion,
     });
 
     if (patchGlobal) {
