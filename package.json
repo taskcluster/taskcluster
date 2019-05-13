@@ -118,7 +118,7 @@
     "cliff": "^0.1.10",
     "commander": "^2.19.0",
     "console-taskgraph": "^1.5.0",
-    "depcheck": "^0.7.0",
+    "depcheck": "^0.8.0",
     "dockerode": "^2.5.8",
     "dot": "^1.1.2",
     "error-stack-parser": "^2.0.2",
