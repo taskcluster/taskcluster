@@ -228,6 +228,10 @@ class GoogleProvider extends Provider {
     });
   }
 
+  async deprovision({workerType}) {
+    // TODO
+  }
+
   async provision({workerType}) {
     const regions = workerType.config.regions;
     const region = regions[Math.floor(Math.random() * regions.length)];

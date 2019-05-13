@@ -3,6 +3,13 @@ resource "random_string" "worker_manager_access_token" {
   override_special = "_-"
 }
 
+module "worker_manager_rabbitmq_user" {
+  source         = "modules/rabbitmq-user"
+  prefix         = "${var.prefix}"
+  project_name   = "taskcluster-worker-manager"
+  rabbitmq_vhost = "${var.rabbitmq_vhost}"
+}
+
 module "worker_manager_secrets" {
   source            = "modules/service-secrets"
   project_name      = "taskcluster-worker-manager"
@@ -12,9 +19,14 @@ module "worker_manager_secrets" {
     TASKCLUSTER_CLIENT_ID    = "static/taskcluster/worker-manager"
     TASKCLUSTER_ACCESS_TOKEN = "${random_string.worker_manager_access_token.result}"
     NODE_ENV                 = "production"
+    PULSE_USERNAME           = "${module.worker_manager_rabbitmq_user.username}"
+    PULSE_PASSWORD           = "${module.worker_manager_rabbitmq_user.password}"
+    PULSE_HOSTNAME           = "${var.rabbitmq_hostname}"
+    PULSE_VHOST              = "${var.rabbitmq_vhost}"
     AZURE_ACCOUNT            = "${azurerm_storage_account.base.name}"
     FORCE_SSL                = "false"
     TRUST_PROXY              = "true"
+    PROVIDERS                = "${var.worker_manager_providers}"
   }
 }
 

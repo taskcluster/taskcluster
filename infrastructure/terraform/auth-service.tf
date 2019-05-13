@@ -86,7 +86,13 @@ locals {
       accessToken = "${random_string.worker_manager_access_token.result}"
       description = "..."
 
-      scopes = []
+      scopes = [
+        "auth:create-client:worker/*",
+        "assume:worker-type:worker-manager/*",
+        "assume:worker-id:*",
+        "auth:azure-table:read-write:${azurerm_storage_account.base.name}/WM*",
+        "notify:email:*",
+      ]
     },
     {
       clientId    = "static/taskcluster/github"
