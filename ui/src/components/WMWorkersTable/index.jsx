@@ -26,6 +26,10 @@ export default class WorkerManagerWorkersTable extends Component {
     workers: WMWorkers.isRequired,
   };
 
+  static defaultProps = {
+    searchTerm: '',
+  };
+
   state = {
     sortBy: null,
     sortDirection: null,
