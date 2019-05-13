@@ -5,6 +5,7 @@ import { camelCase } from 'change-case';
 import memoize from 'fast-memoize';
 import { formatDistanceStrict } from 'date-fns';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { arrayOf } from 'prop-types';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import AlertIcon from 'mdi-react/AlertIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
@@ -18,7 +19,6 @@ import Link from '../../utils/Link';
 import DateDistance from '../DateDistance';
 import sort from '../../utils/sort';
 import { WMWorker } from '../../utils/prop-types';
-import {arrayOf} from 'prop-types';
 
 @withRouter
 export default class WorkerManagerWorkersTable extends Component {
