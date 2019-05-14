@@ -3,9 +3,9 @@ import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../components/Dashboard';
-import workerTypesQuery from './WorkerManagerWorkerTypes.graphql';
+import workerTypesQuery from './WMWorkerTypes.graphql';
 import ErrorPanel from '../../../components/ErrorPanel';
-import WorkerManagerWorkerTypesTable from '../../../components/WorkerManagerWorkerTypesTable';
+import WorkerManagerWorkerTypesTable from '../../../components/WMWorkerTypesTable';
 import Search from '../../../components/Search';
 
 @hot(module)

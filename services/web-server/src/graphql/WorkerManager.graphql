@@ -16,6 +16,24 @@ type WorkerManagerWorkerTypeSummary {
     provider: String!
 }
 
+type WorkerManagerWorker {
+    workerId: String!
+    workerGroup: String!
+    workerAge: DateTime
+    quarantineUntil: DateTime
+
+    latestTaskRun: TaskRun
+
+    recentErrors: Int
+
+    providerId: String!
+    workerType: String!
+}
+
 extend type Query {
     WorkerManagerWorkerTypeSummaries(filter: JSON): [WorkerManagerWorkerTypeSummary]
+}
+
+extend type Query {
+    WorkerManagerWorkers(workerType: String, provider: String, isQuarantined: Boolean): [WorkerManagerWorker]
 }
