@@ -18,8 +18,8 @@ exports.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/taskcluster-worker-manager',
   secrets: {
     taskcluster: [
-      {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId'},
-      {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
+      {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId', mock: 'testing'},
+      {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken', mock: 'testing'},
       {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl', mock: libUrls.testRootUrl()},
     ],
     azure: [
@@ -116,6 +116,7 @@ exports.withServer = (mock, skipping) => {
     await exports.load('cfg');
 
     exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
+
     fakeauth.start({
       'test-client': ['*'],
     }, {rootUrl: exports.rootUrl});
@@ -158,11 +159,17 @@ const stubbedQueue = () => {
       accessToken: 'none',
     },
     fake: {
-      pendingTasks: async (provisionerId, workerType) => ({
-        pendingTasks: provisioners[provisionerId][workerType],
-        provisionerId,
-        workerType,
-      }),
+      pendingTasks: async (provisionerId, workerType) => {
+        let pendingTasks = 0;
+        if (provisioners[provisionerId] && provisioners[provisionerId][workerType]) {
+          pendingTasks = provisioners[provisionerId][workerType];
+        }
+        return {
+          pendingTasks,
+          provisionerId,
+          workerType,
+        };
+      },
     },
   });
 

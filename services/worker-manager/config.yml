@@ -43,3 +43,4 @@ test:
       implementation: static
     google:
       implementation: google
+      fake: true

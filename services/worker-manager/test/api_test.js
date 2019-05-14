@@ -1,3 +1,4 @@
+const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
@@ -203,37 +204,87 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     throw new Error('delete of non-existent workertype succeeded');
   });
 
+  const googleInput = {
+    provider: 'google',
+    description: 'bar',
+    config: {
+      minCapacity: 1,
+      maxCapacity: 1,
+      capacityPerInstance: 1,
+      machineType: 'n1-standard-2',
+      regions: ['us-east1'],
+      userData: {},
+      scheduling: {},
+      networkInterfaces: [],
+      disks: [],
+    },
+    owner: 'example@example.com',
+    wantsEmail: false,
+  };
+
   test('create (google) workertype', async function() {
     const name = 'ee';
-    const input = {
-      provider: 'google',
-      description: 'bar',
-      config: {
-        minCapacity: 1,
-        maxCapacity: 1,
-        capacityPerInstance: 1,
-        machineType: 'n1-standard-2',
-        regions: ['us-east1'],
-        userData: {},
-        scheduling: {},
-        networkInterfaces: [],
-        disks: [],
-      },
-      owner: 'example@example.com',
-      wantsEmail: false,
-    };
-    workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
+    workerTypeCompare(name, googleInput, await helper.workerManager.createWorkerType(name, googleInput));
   });
 
-  //test('credentials google', async function() {
-  //  const name = 'ee';
-  //  const input = {
-  //    provider: 'testing1',
-  //    description: 'bar',
-  //    config: {},
-  //    owner: 'example@example.com',
-  //  };
-  //  workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
-  //  await helper.workerManager.credentialsGoogle(name, {token: 'abc'});
-  //});
+  test('credentials google', async function() {
+    const name = 'ee';
+    await helper.Worker.create({
+      workerType: name,
+      workerId: 'gcp-abc123', // TODO: Don't just copy-paste this from fake-google
+      provider: 'google',
+      created: new Date(),
+      expires: taskcluster.fromNow('1 hour'),
+      state: helper.Worker.states.REQUESTED,
+      providerData: {},
+    });
+    workerTypeCompare(name, googleInput, await helper.workerManager.createWorkerType(name, googleInput));
+    await helper.workerManager.credentialsGoogle(name, {token: 'abc'});
+  });
+
+  test('credentials google (but wrong worker)', async function() {
+    const name = 'ee';
+    await helper.Worker.create({
+      workerType: name,
+      workerId: 'gcp-wrong',
+      provider: 'google',
+      created: new Date(),
+      expires: taskcluster.fromNow('1 hour'),
+      state: helper.Worker.states.REQUESTED,
+      providerData: {},
+    });
+    workerTypeCompare(name, googleInput, await helper.workerManager.createWorkerType(name, googleInput));
+    try {
+      await helper.workerManager.credentialsGoogle(name, {token: 'abc'});
+    } catch (err) {
+      if (err.code !== 'InputError') {
+        throw err;
+      }
+      return;
+    }
+    throw new Error('allowed fetch of credentials from wrong worker!');
+  });
+
+  test('credentials google (but wrong worker)', async function() {
+    const name = 'ee';
+    await helper.Worker.create({
+      workerType: 'wrong',
+      workerId: 'gcp-abc123', // TODO: Don't just copy-paste this from fake-google
+      provider: 'google',
+      created: new Date(),
+      expires: taskcluster.fromNow('1 hour'),
+      state: helper.Worker.states.REQUESTED,
+      providerData: {},
+    });
+    workerTypeCompare(name, googleInput, await helper.workerManager.createWorkerType(name, googleInput));
+    try {
+      await helper.workerManager.credentialsGoogle(name, {token: 'abc'});
+    } catch (err) {
+      if (err.code !== 'InputError') {
+        throw err;
+      }
+      return;
+    }
+    throw new Error('allowed fetch of credentials from wrong workertype!');
+  });
 });

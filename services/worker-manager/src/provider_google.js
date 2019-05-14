@@ -5,6 +5,7 @@ const taskcluster = require('taskcluster-client');
 const libUrls = require('taskcluster-lib-urls');
 const uuid = require('uuid');
 const {google} = require('googleapis');
+const {FakeGoogle} = require('./fake-google');
 const {Provider} = require('./provider');
 
 class GoogleProvider extends Provider {
@@ -24,6 +25,7 @@ class GoogleProvider extends Provider {
     validator,
     Worker,
     WorkerType,
+    fake = false,
   }) {
     super({
       name,
@@ -38,10 +40,22 @@ class GoogleProvider extends Provider {
       WorkerType,
     });
     this.configSchema = 'config-google';
+    this.fake = fake;
 
     this.instancePermissions = instancePermissions;
     this.project = project;
     this.zonesByRegion = {};
+
+    // TODO: Make fakes be injected
+    if (fake) {
+      this.ownClientEmail = 'whatever@example.com';
+      const fakeGoogle = new FakeGoogle();
+      this.compute = fakeGoogle.compute();
+      this.iam = fakeGoogle.iam();
+      this.crm = fakeGoogle.cloudresourcemanager();
+      this.oauth2 = new fakeGoogle.OAuth2({project});
+      return;
+    }
 
     if (!creds && credsFile) {
       creds = JSON.parse(fs.readFileSync(credsFile));
@@ -153,6 +167,7 @@ class GoogleProvider extends Provider {
     });
 
     // Assign the role to the serviceAccount and we're good to go!
+    // Projects always have these policies so no need for set()
     const binding = {
       role: `projects/${this.project}/roles/${roleId}`,
       members: [`serviceAccount:${this.workerAccountEmail}`],
@@ -384,25 +399,19 @@ class GoogleProvider extends Provider {
    * the operation when it actually suceeded.
    */
   async handleOperations({workerType}) {
-    console.log('hi');
     if (!workerType.providerData[this.name].trackedOperations.length) {
       return;
     }
     const ongoing = [];
     for (const op of workerType.providerData[this.name].trackedOperations) {
-      console.log(op);
-      if (this.handleOperation({op, workerType})) {
-        console.log('hi 2');
+      if (await this.handleOperation({op, workerType})) {
         ongoing.push(op);
       }
     }
 
-    console.log('hi 3');
     await workerType.modify(wt => {
-      console.log('hi 4');
       wt.providerData[this.name].trackedOperations = ongoing;
     });
-    console.log('done');
   }
 
   async handleOperation({op, workerType}) {
