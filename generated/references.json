@@ -7859,11 +7859,11 @@
           "description": "The simple estimator has decided that we need some number of instances.",
           "fields": {
             "capacityPerInstance": "Amount of capacity a single instance provides",
-            "currentSize": "Number of currently requested instances",
             "desiredSize": "Number that this estimator thinks we should have",
             "maxCapacity": "The maximum amount of capacity that should be running",
             "minCapacity": "The minimum amount of capacity that should be running",
             "pendingTasks": "The number of tasks the queue reports are pending for this workerType",
+            "running": "Number of currently requested and running instances",
             "workerType": "The name of the workertype."
           },
           "level": "notice",

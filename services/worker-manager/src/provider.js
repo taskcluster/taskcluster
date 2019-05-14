@@ -9,7 +9,18 @@ class Provider {
    * a cloud provider for terminating/listing instances. Any provisioning
    * logic should be started in `initiate` below.
    */
-  constructor({name, monitor, notify, provisionerId, rootUrl, taskclusterCredentials, estimator, Worker, validator}) {
+  constructor({
+    name,
+    monitor,
+    notify,
+    provisionerId,
+    rootUrl,
+    taskclusterCredentials,
+    estimator,
+    Worker,
+    validator,
+    WorkerType,
+  }) {
     this.name = name;
     this.monitor = monitor;
     this.validator = validator;
@@ -19,13 +30,22 @@ class Provider {
     this.taskclusterCredentials = taskclusterCredentials;
     this.estimator = estimator;
     this.Worker = Worker;
+    this.WorkerType = WorkerType;
   }
 
   /**
-   * Any code which is required to be run by this Provider must only be
-   * initiated by this method.  If there's any taskcluster-lib-iterate loops to
-   * run, this is where they should be initiated.  Once the returned promise is
-   * resolve, the Provider must be fully working.
+   * Once the returned promise is
+   * resolve, the Provider must be fully working. This is called for a provider
+   * whether it is being used to provision or not.
+   */
+  async setup() {
+  }
+
+  /**
+   * This is only called for providers that are being used in background jobs such
+   * as provisioning and scanning workers.
+   * If there's any taskcluster-lib-iterate loops to
+   * run, this is where they should be initiated.
    */
   async initiate() {
   }
@@ -73,6 +93,25 @@ class Provider {
    * You may want to use this time to remove outdated workertypes for instance.
    */
   async cleanup() {
+  }
+
+  /*
+   * Called before an iteration of the worker scanner
+   */
+  async scanPrepare() {
+  }
+
+  /*
+   * Called for every worker on a schedule so that we can update the state of
+   * the worker locally
+   */
+  async checkWorker({Worker}) {
+  }
+
+  /*
+   * Called after an iteration of the worker scanner
+   */
+  async scanCleanup() {
   }
 
   /**

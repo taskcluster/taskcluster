@@ -56,3 +56,17 @@ module "worker_manager_provisioner" {
   secret_keys       = "${module.worker_manager_secrets.env_var_keys}"
   docker_image      = "${local.taskcluster_image_monoimage}"
 }
+
+module "worker_manager_worker_scanner" {
+  source            = "modules/deployment"
+  project_name      = "taskcluster-worker-manager"
+  service_name      = "worker-manager"
+  proc_name         = "workerscanner"
+  background_job    = true
+  disabled_services = "${var.disabled_services}"
+  secret_name       = "${module.worker_manager_secrets.secret_name}"
+  secrets_hash      = "${module.worker_manager_secrets.secrets_hash}"
+  root_url          = "${var.root_url}"
+  secret_keys       = "${module.worker_manager_secrets.env_var_keys}"
+  docker_image      = "${local.taskcluster_image_monoimage}"
+}

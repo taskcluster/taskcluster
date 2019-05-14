@@ -23,8 +23,20 @@ class GoogleProvider extends Provider {
     credsFile,
     validator,
     Worker,
+    WorkerType,
   }) {
-    super({name, taskclusterCredentials, monitor, notify, provisionerId, rootUrl, estimator, Worker, validator});
+    super({
+      name,
+      taskclusterCredentials,
+      monitor,
+      notify,
+      provisionerId,
+      rootUrl,
+      estimator,
+      Worker,
+      validator,
+      WorkerType,
+    });
     this.configSchema = 'config-google';
 
     this.instancePermissions = instancePermissions;
@@ -69,7 +81,7 @@ class GoogleProvider extends Provider {
    * We will first set up a service account and role for each worker to use
    * since the default service account workers get is not very restricted
    */
-  async initiate() {
+  async setup() {
     const accountId = 'taskcluster-workers';
     this.workerAccountEmail = `${accountId}@${this.project}.iam.gserviceaccount.com`;
     const accountRef = `projects/${this.project}/serviceAccounts/${this.workerAccountEmail}`;
@@ -77,7 +89,7 @@ class GoogleProvider extends Provider {
     const roleName =`projects/${this.project}/roles/${roleId}`;
 
     // First we set up the service account
-    await this.readModifySet({
+    const serviceAccount = await this.readModifySet({
       read: async () => (await this.iam.projects.serviceAccounts.get({
         name: accountRef,
       })).data,
@@ -94,6 +106,7 @@ class GoogleProvider extends Provider {
         },
       }),
     });
+    this.workerAccountId = serviceAccount.uniqueId;
 
     // Next we ensure that worker-manager can create instances with
     // this service account
@@ -189,10 +202,10 @@ class GoogleProvider extends Provider {
     // Now check to make sure that the serviceAccount that the worker has is the
     // serviceAccount that we have configured that worker to use. Nobody else in the project
     // should have permissions to create instances with this serviceAccount.
-    if (payload.sub !== this.workerAccountEmail) {
+    if (payload.sub !== this.workerAccountId) {
       const error = new Error('Attempt to claim workertype creds from non-workertype instance');
+      error.correctId = this.workerAccountId;
       error.requestingAccountId = payload.sub;
-      error.correctAccountId = this.workerAccountEmail;
       throw error;
     }
 
@@ -213,7 +226,7 @@ class GoogleProvider extends Provider {
     }
 
     await worker.modify(w => {
-      w.credentialed = true;
+      w.state = this.Worker.states.RUNNING;
     });
 
     return taskcluster.createTemporaryCredentials({
@@ -221,6 +234,7 @@ class GoogleProvider extends Provider {
       scopes: [
         `assume:worker-type:${this.provisionerId}/${workerType.name}`,
         `assume:worker-id:${workerId}`,
+        `secrets:get:worker-type:${this.provisionerId}/${workerType.name}`,
       ],
       start: taskcluster.fromNow('-15 minutes'),
       expiry: taskcluster.fromNow('96 hours'),
@@ -230,33 +244,40 @@ class GoogleProvider extends Provider {
 
   async deprovision({workerType}) {
     // TODO
+    // Nothing to do other than remove providerData stuff and remove self from previousProviders
   }
 
   async provision({workerType}) {
-    const regions = workerType.config.regions;
-    const region = regions[Math.floor(Math.random() * regions.length)];
-    if (!this.zonesByRegion[region]) {
-      this.zonesByRegion[region] = (await this.compute.regions.get({
-        project: this.project,
-        region,
-      })).data.zones;
+    if (!workerType.providerData[this.name]) {
+      await workerType.modify(wt => {
+        wt.providerData[this.name] = {
+          running: 0,
+          trackedOperations: [],
+        };
+      });
     }
-    const zones = this.zonesByRegion[region];
-    const zone = zones[Math.floor(Math.random() * zones.length)].split('/').slice(-1)[0];
+    const regions = workerType.config.regions;
 
     // TODO: Use p-queue for all operations against google
 
-    const {running} = await this.reconcileInstances({workerType});
-
-    const toSpawn = this.estimators.simple({
+    const toSpawn = await this.estimator.simple({
       name: workerType.name,
       ...workerType.config,
-      running,
+      running: workerType.providerData[this.name].running,
     });
 
     const operations = [];
 
     for (let i = 0; i < toSpawn; i++) {
+      const region = regions[Math.floor(Math.random() * regions.length)];
+      if (!this.zonesByRegion[region]) {
+        this.zonesByRegion[region] = (await this.compute.regions.get({
+          project: this.project,
+          region,
+        })).data.zones;
+      }
+      const zones = this.zonesByRegion[region];
+      const zone = zones[Math.floor(Math.random() * zones.length)].split('/').slice(-1)[0];
 
       // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
       // The lost entropy from downcasing, etc should be ok due to the fact that
@@ -315,6 +336,9 @@ class GoogleProvider extends Provider {
         });
         op = res.data;
       } catch (err) {
+        if (!err.errors) {
+          throw err;
+        }
         for (const error of err.errors) {
           await workerType.reportError({
             kind: 'creation-error',
@@ -323,6 +347,7 @@ class GoogleProvider extends Provider {
             notify: this.notify,
           });
         }
+        return;
       }
 
       await this.Worker.create({
@@ -330,17 +355,24 @@ class GoogleProvider extends Provider {
         provider: this.name,
         workerId: `gcp-${op.targetId}`,
         created: new Date(),
-        credentialed: null,
+        expires: taskcluster.fromNow('1 week'),
+        state: this.Worker.states.REQUESTED,
+        providerData: {
+          project: this.project,
+          zone,
+        },
       });
       operations.push({
-        region: op.region,
         name: op.name,
+        zone: op.zone,
       });
     }
 
-    await workerType.modify(wt => {
-      wt.providerData[this.name].trackedOperations = wt.providerData[this.name].trackedOperations.push(operations);
-    });
+    if (operations.length) {
+      await workerType.modify(wt => {
+        wt.providerData[this.name].trackedOperations = wt.providerData[this.name].trackedOperations.concat(operations);
+      });
+    }
 
     await this.handleOperations({workerType});
   }
@@ -352,56 +384,66 @@ class GoogleProvider extends Provider {
    * the operation when it actually suceeded.
    */
   async handleOperations({workerType}) {
-    if (!workerType.providerData.trackedOperations) {
+    console.log('hi');
+    if (!workerType.providerData[this.name].trackedOperations.length) {
       return;
     }
     const ongoing = [];
-    for (const op of workerType.providerData.trackedOperations) {
-      const res = this.handleOperation({op, workerType});
-      if (res) {
-        ongoing.push(res);
+    for (const op of workerType.providerData[this.name].trackedOperations) {
+      console.log(op);
+      if (this.handleOperation({op, workerType})) {
+        console.log('hi 2');
+        ongoing.push(op);
       }
     }
 
+    console.log('hi 3');
     await workerType.modify(wt => {
-      wt.providerData.trackedOperations = ongoing;
+      console.log('hi 4');
+      wt.providerData[this.name].trackedOperations = ongoing;
     });
+    console.log('done');
   }
 
   async handleOperation({op, workerType}) {
     let operation;
-    let getOp;
-    let deleteOp;
+    let args;
+    let obj;
     if (op.region) {
-      const args = {
+      args = {
         project: this.project,
         region: op.region.split('/').slice(-1)[0],
         operation: op.name,
       };
-      getOp = async () => this.compute.regionOperations.get(args);
-      deleteOp = async () => this.compute.regionOperations.delete(args);
+      obj = this.compute.regionOperations;
+    } else if (op.zone) {
+      args = {
+        project: this.project,
+        zone: op.zone.split('/').slice(-1)[0],
+        operation: op.name,
+      };
+      obj = this.compute.zoneOperations;
     } else {
-      const args = {
+      args = {
         project: this.project,
         operation: op.name,
       };
-      getOp = async () => this.compute.globalOperations.get(args);
-      deleteOp = async () => this.compute.globalOperations.delete(args);
+      obj = this.compute.globalOperations;
     }
 
     try {
-      operation = (await getOp()).data;
+      operation = (await obj.get(args)).data;
     } catch (err) {
       if (err.code !== 404) {
         throw err;
       }
       // If the operation is no longer existing, nothing for us to do
-      return null;
+      return false;
     }
 
     // Let's check back in on the next provisioning iteration if unfinished
     if (operation.status !== 'DONE') {
-      return operation;
+      return true;
     }
 
     if (operation.error) {
@@ -417,7 +459,72 @@ class GoogleProvider extends Provider {
         });
       }
     }
-    await deleteOp();
+    await obj.delete(args);
+    return false;
+  }
+
+  /*
+   * Called before an iteration of the worker scanner
+   */
+  async scanPrepare() {
+    this.seen = {};
+  }
+
+  /*
+   * Called for every worker on a schedule so that we can update the state of
+   * the worker locally
+   */
+  async checkWorker({worker}) {
+    const states = this.Worker.states;
+    this.seen[worker.workerType] = this.seen[worker.workerType] || 0;
+    let res;
+    try {
+      res = await this.compute.instances.get({
+        project: worker.providerData.project,
+        zone: worker.providerData.zone,
+        instance: worker.workerId.replace('gcp-', ''),
+      });
+    } catch (err) {
+      if (err.code !== 404) {
+        throw err;
+      }
+      await worker.modify(function(w) {
+        w.state = states.STOPPED;
+      });
+      return;
+    }
+    const {status} = res.data;
+    if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
+      this.seen[worker.workerType] + 1;
+    } else if (['TERMINATED', 'STOPPED'].includes(status)) {
+      await this.compute.instances.delete({
+        project: worker.providerData.project,
+        zone: worker.providerData.zone,
+        instance: worker.workerId.replace('gcp-', ''),
+      });
+      await worker.modify(function(w) {
+        w.state = states.STOPPED;
+      });
+    }
+  }
+
+  /*
+   * Called after an iteration of the worker scanner
+   */
+  async scanCleanup() {
+    await Promise.all(Object.entries(this.seen).map(async ([name, seen]) => {
+      const workerType = await this.WorkerType.load({
+        name,
+      }, true);
+
+      if (!workerType) {
+        return; // In this case, the workertype has been deleted so we can just move on
+      }
+
+      await workerType.modify(wt => {
+        wt.providerData[this.name].running = seen;
+      });
+    }));
   }
 
   /*
@@ -447,18 +554,19 @@ class GoogleProvider extends Provider {
         // If the value in google is different
         // from the one we want it to be, we try to update it
         if (!compare(resource)) {
-          await modify(resource);
+          resource = await modify(resource);
         }
+        return resource;
       } else {
         // If the resource was never there in the first place, create it
-        await set();
+        return await set();
       }
     } catch (err) {
       if (err.code !== 409 && tries < 5) {
         throw err;
       }
       await new Promise(accept => setTimeout(accept, Math.pow(2, tries) * 100));
-      await this.readModifySet({
+      return await this.readModifySet({
         compare,
         read,
         modify,

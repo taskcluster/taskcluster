@@ -4,6 +4,9 @@ web:
 provisioner:
   type: background
   command: node src/main.js provisioner
+workerscanner:
+  type: background
+  command: node src/main.js workerScanner
 expire-workers:
   type: cron
   schedule: '0 0 * * *'

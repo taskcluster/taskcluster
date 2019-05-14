@@ -3,7 +3,6 @@ defaults:
     workerTableName: WMWorkers
     workerTypeTableName: WMWorkerTypes
     workerTypeErrorTableName: WMWorkerTypeErrors
-    workersExpirationTime: '-7 days' # Anything older than a week goes away
     errorsExpirationTime: '-4 days' # Anything older than a few days goes away
     provisionerId: worker-manager
   monitoring:

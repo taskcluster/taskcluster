@@ -22,13 +22,13 @@ class Provisioner {
     ];
 
     this.iterate = new Iterate({
-      handler: async (watchdog) => {
-        await this.provision(watchdog);
+      handler: async () => {
+        await this.provision();
       },
       monitor,
       maxFailures: 10,
-      watchdogTime: 20000, // Each provider gets 20 seconds to provision instances per workertype
-      waitTime: 10000,
+      watchdogTime: 0,
+      waitTime: 60000,
       maxIterationTime: 300000, // We really should be making it through the list at least once every 5 minutes
       ...iterateConf,
     });
@@ -98,7 +98,7 @@ class Provisioner {
   /**
    * Run a single provisioning iteration
    */
-  async provision(watchdog) {
+  async provision() {
     // Any once-per-loop work a provider may want to do
     await Promise.all(Object.values(this.providers).map(x => x.prepare()));
 
@@ -121,7 +121,6 @@ class Provisioner {
           workerType: workerType.name,
           provider: workerType.provider,
         });
-        watchdog.touch();
       },
     });
 

@@ -2,6 +2,7 @@
 
 web: cd services/worker-manager && node src/main.js server
 provisioner: cd services/worker-manager && node src/main.js provisioner
+workerscanner: cd services/worker-manager && node src/main.js workerScanner
 expire-workers: cd services/worker-manager && node src/main.js expireWorkers
 expire-errors: cd services/worker-manager && node src/main.js expireErrors
 write-docs: cd services/worker-manager && node src/main.js writeDocs

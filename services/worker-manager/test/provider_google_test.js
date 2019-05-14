@@ -1,6 +1,5 @@
 const helper = require('./helper');
 const {GoogleProvider} = require('../src/provider_google');
-const monitorManager = require('../src/monitor');
 const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function(mock, skipping) {

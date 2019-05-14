@@ -183,14 +183,33 @@ const Worker = Entity.configure({
     // The time that this worker was created
     created: Entity.types.Date,
 
-    // If this worker has requested credentials
-    credentialed: Entity.types.Boolean,
+    // The time that this worker is no longer needed and
+    // should be deleted
+    expires: Entity.types.Date,
+
+    // A string specifying the state this worker is in
+    // so far as worker-manager knows. This can be any
+    // of the fields defined in the enum below.
+    state: Entity.types.String,
+
+    // Anything a provider may want to remember about this worker
+    providerData: Entity.types.JSON,
   },
 });
 
-Worker.expire = async (threshold) => {
+// This is made available to make it slightly less likely that people
+// typo worker states. We can change this if there are new requirements
+// from providers we make in the future. Will need to make sure that the
+// ui handles unknown states gracefully or is updated first.
+Worker.states = {
+  REQUESTED: 'requested',
+  RUNNING: 'running',
+  STOPPED: 'stopped',
+};
+
+Worker.expire = async () => {
   await this.scan({
-    created: Entity.op.lessThan(threshold),
+    expires: Entity.op.lessThan(new Date()),
   }, {
     limit: 500,
     handler: async item => {
