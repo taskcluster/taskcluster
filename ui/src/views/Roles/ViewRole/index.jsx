@@ -15,6 +15,7 @@ import deleteRoleQuery from './deleteRole.graphql';
 @graphql(roleQuery, {
   skip: ({ match: { params } }) => !params.roleId,
   options: ({ match: { params } }) => ({
+    fetchPolicy: 'network-only',
     variables: {
       roleId: decodeURIComponent(params.roleId),
     },
