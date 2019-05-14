@@ -13,7 +13,7 @@ suite(testing.suiteName(), () => {
             audience: 'login-test.taskcluster.net',
             clientId: 'abcd',
             clientSecret: 'efgh',
-            scope: 'taskcluster'
+            scope: 'taskcluster',
           },
         },
       },
@@ -63,7 +63,7 @@ suite(testing.suiteName(), () => {
             return null;
         }
       },
-    }
+    };
   };
 
   suite('userFromClientId - simple LDAP profile', () => {
