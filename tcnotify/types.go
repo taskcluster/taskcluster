@@ -100,7 +100,7 @@ type (
 	// See https://taskcluster-staging.net/schemas/notify/v1/pulse-request.json#
 	PostPulseMessageRequest struct {
 
-		// IRC message to send as plain text.
+		// Pulse message to send as plain text.
 		//
 		// Additional properties allowed
 		//

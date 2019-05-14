@@ -4,9 +4,32 @@ package tcnotifyevents
 
 import (
 	"encoding/json"
+	"errors"
 )
 
 type (
+	// Request to post a message on IRC.
+	//
+	// See https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[0]
+	ChannelMessage struct {
+
+		// Channel to post the message in.
+		//
+		// Syntax:     ^[#&][^ ,\u0007]{1,199}$
+		// Min length: 1
+		//
+		// See https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[0]/properties/channel
+		Channel string `json:"channel"`
+
+		// IRC message to send as plain text.
+		//
+		// Min length: 1
+		// Max length: 510
+		//
+		// See https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions/message
+		Message string `json:"message"`
+	}
+
 	// This can be pretty much anything you want it to be.
 	//
 	// See https://taskcluster-staging.net/schemas/notify/v1/notification-message.json#
@@ -27,4 +50,52 @@ type (
 		// See https://taskcluster-staging.net/schemas/notify/v1/notification-message.json#/properties/version
 		Version int64 `json:"version,omitempty"`
 	}
+
+	// Request to post a message on IRC.
+	//
+	// One of:
+	//   * ChannelMessage
+	//   * PrivateMessage
+	//
+	// See https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#
+	PostIRCMessageRequest json.RawMessage
+
+	// Request to post a message on IRC.
+	//
+	// See https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[1]
+	PrivateMessage struct {
+
+		// IRC message to send as plain text.
+		//
+		// Min length: 1
+		// Max length: 510
+		//
+		// See https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions/message
+		Message string `json:"message"`
+
+		// User to post the message to.
+		//
+		// Syntax:     ^[A-Za-z\[\]\\~_\^{|}][A-Za-z0-9\-\[\]\\~_\^{|}]{0,254}$
+		// Min length: 1
+		// Max length: 255
+		//
+		// See https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[1]/properties/user
+		User string `json:"user"`
+	}
 )
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// PostIRCMessageRequest is of type json.RawMessage...
+func (this *PostIRCMessageRequest) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *PostIRCMessageRequest) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("PostIRCMessageRequest: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}

@@ -1,4 +1,4 @@
-Generated: 1556551398
+Generated: 1557858151
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -9679,7 +9679,7 @@ properties:
       SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/pulse-request.json#/properties/message
       TYPE_NAME: ""
       description: |
-        IRC message to send as plain text.
+        Pulse message to send as plain text.
       type: object
     routingKey:
       IS_REQUIRED: true
@@ -9736,6 +9736,356 @@ when we notice a task is complete.'
         Element Required  = 'false'
     Entry Schema      = 'v1/notification-message.json#'
     Entry SchemaURL   = 'https://taskcluster-staging.net/schemas/notify/v1/notification-message.json#'
+Entry 1     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'irc-request'
+    Entry Name        = 'ircRequest'
+    Entry Title       = 'Request for irc notification'
+    Entry Description = 'A message which is to be sent to an irc channel or
+user is published to this exchange'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'v1/irc-request.json#'
+    Entry SchemaURL   = 'https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#'
+
+
+https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#
+===================================================================
+$id: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#
+$schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#
+TYPE_NAME: PostIRCMessageRequest
+definitions:
+  MemberNames:
+    message: Message
+  Properties:
+    message:
+      IS_REQUIRED: false
+      PROPERTY_NAME: message
+      SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions/message
+      TYPE_NAME: ""
+      description: |
+        IRC message to send as plain text.
+      maxLength: 510
+      minLength: 1
+      title: IRC Message Text
+      type: string
+  SortedPropertyNames:
+  - message
+  SourceURL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions
+description: |
+  Request to post a message on IRC.
+oneOf:
+  Items:
+  - $schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
+    IS_REQUIRED: false
+    PROPERTY_NAME: ""
+    SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[0]
+    TYPE_NAME: ChannelMessage
+    additionalProperties:
+      Boolean: false
+      Properties: null
+    definitions:
+      MemberNames:
+        message: Message
+      Properties:
+        message:
+          IS_REQUIRED: false
+          PROPERTY_NAME: message
+          SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions/message
+          TYPE_NAME: ""
+          description: |
+            IRC message to send as plain text.
+          maxLength: 510
+          minLength: 1
+          title: IRC Message Text
+          type: string
+      SortedPropertyNames:
+      - message
+      SourceURL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions
+    description: |
+      Request to post a message on IRC.
+    properties:
+      MemberNames:
+        channel: Channel
+        message: Message
+      Properties:
+        channel:
+          IS_REQUIRED: true
+          PROPERTY_NAME: channel
+          SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[0]/properties/channel
+          TYPE_NAME: ""
+          description: |
+            Channel to post the message in.
+          minLength: 1
+          pattern: ^[#&][^ ,\u0007]{1,199}$
+          title: Channel Name
+          type: string
+        message:
+          $ref: '#/definitions/message'
+          IS_REQUIRED: true
+          PROPERTY_NAME: message
+          REF_SCHEMA_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions/message
+          REF_SUBSCHEMA:
+            IS_REQUIRED: false
+            PROPERTY_NAME: message
+            SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions/message
+            TYPE_NAME: ""
+            description: |
+              IRC message to send as plain text.
+            maxLength: 510
+            minLength: 1
+            title: IRC Message Text
+            type: string
+          SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[0]/properties/message
+          TYPE_NAME: ""
+      SortedPropertyNames:
+      - channel
+      - message
+      SourceURL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[0]/properties
+    required:
+    - channel
+    - message
+    title: Channel Message
+    type: object
+  - $schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
+    IS_REQUIRED: false
+    PROPERTY_NAME: ""
+    SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[1]
+    TYPE_NAME: PrivateMessage
+    additionalProperties:
+      Boolean: false
+      Properties: null
+    definitions:
+      MemberNames:
+        message: Message
+      Properties:
+        message:
+          IS_REQUIRED: false
+          PROPERTY_NAME: message
+          SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions/message
+          TYPE_NAME: ""
+          description: |
+            IRC message to send as plain text.
+          maxLength: 510
+          minLength: 1
+          title: IRC Message Text
+          type: string
+      SortedPropertyNames:
+      - message
+      SourceURL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions
+    description: |
+      Request to post a message on IRC.
+    properties:
+      MemberNames:
+        message: Message
+        user: User
+      Properties:
+        message:
+          $ref: '#/definitions/message'
+          IS_REQUIRED: true
+          PROPERTY_NAME: message
+          REF_SCHEMA_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions/message
+          REF_SUBSCHEMA:
+            IS_REQUIRED: false
+            PROPERTY_NAME: message
+            SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions/message
+            TYPE_NAME: ""
+            description: |
+              IRC message to send as plain text.
+            maxLength: 510
+            minLength: 1
+            title: IRC Message Text
+            type: string
+          SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[1]/properties/message
+          TYPE_NAME: ""
+        user:
+          IS_REQUIRED: true
+          PROPERTY_NAME: user
+          SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[1]/properties/user
+          TYPE_NAME: ""
+          description: |
+            User to post the message to.
+          maxLength: 255
+          minLength: 1
+          pattern: ^[A-Za-z\[\]\\~_\^{|}][A-Za-z0-9\-\[\]\\~_\^{|}]{0,254}$
+          title: IRC Handle
+          type: string
+      SortedPropertyNames:
+      - message
+      - user
+      SourceURL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[1]/properties
+    required:
+    - user
+    - message
+    title: Private Message
+    type: object
+  SourceURL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf
+title: Post IRC Message Request
+type: object
+
+
+https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[0]
+============================================================================
+$schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[0]
+TYPE_NAME: ChannelMessage
+additionalProperties:
+  Boolean: false
+  Properties: null
+definitions:
+  MemberNames:
+    message: Message
+  Properties:
+    message:
+      IS_REQUIRED: false
+      PROPERTY_NAME: message
+      SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions/message
+      TYPE_NAME: ""
+      description: |
+        IRC message to send as plain text.
+      maxLength: 510
+      minLength: 1
+      title: IRC Message Text
+      type: string
+  SortedPropertyNames:
+  - message
+  SourceURL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions
+description: |
+  Request to post a message on IRC.
+properties:
+  MemberNames:
+    channel: Channel
+    message: Message
+  Properties:
+    channel:
+      IS_REQUIRED: true
+      PROPERTY_NAME: channel
+      SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[0]/properties/channel
+      TYPE_NAME: ""
+      description: |
+        Channel to post the message in.
+      minLength: 1
+      pattern: ^[#&][^ ,\u0007]{1,199}$
+      title: Channel Name
+      type: string
+    message:
+      $ref: '#/definitions/message'
+      IS_REQUIRED: true
+      PROPERTY_NAME: message
+      REF_SCHEMA_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions/message
+      REF_SUBSCHEMA:
+        IS_REQUIRED: false
+        PROPERTY_NAME: message
+        SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions/message
+        TYPE_NAME: ""
+        description: |
+          IRC message to send as plain text.
+        maxLength: 510
+        minLength: 1
+        title: IRC Message Text
+        type: string
+      SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[0]/properties/message
+      TYPE_NAME: ""
+  SortedPropertyNames:
+  - channel
+  - message
+  SourceURL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[0]/properties
+required:
+- channel
+- message
+title: Channel Message
+type: object
+
+
+https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[1]
+============================================================================
+$schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[1]
+TYPE_NAME: PrivateMessage
+additionalProperties:
+  Boolean: false
+  Properties: null
+definitions:
+  MemberNames:
+    message: Message
+  Properties:
+    message:
+      IS_REQUIRED: false
+      PROPERTY_NAME: message
+      SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions/message
+      TYPE_NAME: ""
+      description: |
+        IRC message to send as plain text.
+      maxLength: 510
+      minLength: 1
+      title: IRC Message Text
+      type: string
+  SortedPropertyNames:
+  - message
+  SourceURL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions
+description: |
+  Request to post a message on IRC.
+properties:
+  MemberNames:
+    message: Message
+    user: User
+  Properties:
+    message:
+      $ref: '#/definitions/message'
+      IS_REQUIRED: true
+      PROPERTY_NAME: message
+      REF_SCHEMA_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions/message
+      REF_SUBSCHEMA:
+        IS_REQUIRED: false
+        PROPERTY_NAME: message
+        SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions/message
+        TYPE_NAME: ""
+        description: |
+          IRC message to send as plain text.
+        maxLength: 510
+        minLength: 1
+        title: IRC Message Text
+        type: string
+      SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[1]/properties/message
+      TYPE_NAME: ""
+    user:
+      IS_REQUIRED: true
+      PROPERTY_NAME: user
+      SOURCE_URL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[1]/properties/user
+      TYPE_NAME: ""
+      description: |
+        User to post the message to.
+      maxLength: 255
+      minLength: 1
+      pattern: ^[A-Za-z\[\]\\~_\^{|}][A-Za-z0-9\-\[\]\\~_\^{|}]{0,254}$
+      title: IRC Handle
+      type: string
+  SortedPropertyNames:
+  - message
+  - user
+  SourceURL: https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[1]/properties
+required:
+- user
+- message
+title: Private Message
+type: object
 
 
 https://taskcluster-staging.net/schemas/notify/v1/notification-message.json#
