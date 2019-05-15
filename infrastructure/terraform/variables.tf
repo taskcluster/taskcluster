@@ -118,3 +118,8 @@ variable "ui_login_strategy_names" {
   type        = "string"
   description = "space-separated keys from ui_login_strategies; terraform can't figure this out on its own"
 }
+
+variable "worker_manager_providers" {
+  type        = "string"
+  description = "json blob of worker-manager providers with their configuration."
+}

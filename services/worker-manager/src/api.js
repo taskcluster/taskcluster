@@ -3,13 +3,14 @@ const APIBuilder = require('taskcluster-lib-api');
 let builder = new APIBuilder({
   title: 'Taskcluster Worker Manager',
   description: [
-    'This service manages workers, including provisioning',
+    'This service manages workers, including provisioning for dynamic workertypes.',
   ].join('\n'),
   serviceName: 'worker-manager',
   apiVersion: 'v1',
   context: [
     'WorkerType',
     'providers',
+    'publisher',
   ],
 });
 
@@ -45,37 +46,44 @@ builder.declare({
     });
   }
 
+  // This has been validated at the api level to ensure that it
+  // is valid config for at least one of our providers but
+  // we check here to see that the config matches the config for the configured provider
+  const error = provider.validate(input.config);
+  if (error) {
+    return res.reportError('InputValidationError', error);
+  }
+
   const now = new Date();
   let workerType;
 
+  const definition = {
+    name,
+    provider: providerName,
+    previousProviders: [],
+    description: input.description,
+    config: input.config,
+    created: now,
+    lastModified: now,
+    owner: input.owner,
+    wantsEmail: input.wantsEmail,
+    providerData: {},
+    scheduledForDeletion: false,
+  };
+
   try {
-    workerType = await this.WorkerType.create({
-      name,
-      provider: providerName,
-      description: input.description,
-      config: input.config, // TODO: validate this
-      created: now,
-      lastModified: now,
-      errors: [],
-      owner: input.owner,
-      providerData: {},
-    });
+    workerType = await this.WorkerType.create(definition);
   } catch (err) {
     if (err.code !== 'EntityAlreadyExists') {
       throw err;
     }
     workerType = await this.WorkerType.load({name});
 
-    // TODO: Do this whole thing with deep compare and include config!
-    if (workerType.provider !== providerName ||
-      workerType.description !== input.description ||
-      workerType.created.getTime() !== now.getTime() ||
-      workerType.lastModified.getTime() !== now.getTime() ||
-      workerType.owner !== input.owner
-    ) {
+    if (!workerType.compare(definition)) {
       return res.reportError('RequestConflict', 'WorkerType already exists', {});
     }
   }
+  await this.publisher.workerTypeCreated({name, provider: providerName});
   res.reply(workerType.serializable());
 });
 
@@ -109,6 +117,11 @@ builder.declare({
     });
   }
 
+  const error = provider.validate(input.config);
+  if (error) {
+    return res.reportError('InputValidationError', error);
+  }
+
   const workerType = await this.WorkerType.load({
     name,
   }, true);
@@ -116,14 +129,22 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'WorkerType does not exist', {});
   }
 
+  const previousProvider = workerType.provider;
+
   await workerType.modify(wt => {
-    wt.config = input.config; // TODO: validate
+    wt.config = input.config;
     wt.description = input.description;
     wt.provider = providerName;
     wt.owner = input.owner;
-    wt.lastModifed = new Date().toJSON();
+    wt.wantsEmail = input.wantsEmail;
+    wt.lastModified = new Date();
+
+    if (previousProvider !== providerName && !wt.previousProviders.includes(previousProvider)) {
+      wt.previousProviders.push(previousProvider);
+    }
   });
 
+  await this.publisher.workerTypeUpdated({name, provider: providerName, previousProvider});
   res.reply(workerType.serializable());
 });
 
@@ -162,7 +183,18 @@ builder.declare({
 }, async function(req, res) {
   const {name} = req.params;
 
-  await this.WorkerType.remove({name}, true);
+  const workerType = await this.WorkerType.load({
+    name,
+  }, true);
+  if (!workerType) {
+    return res.reportError('ResourceNotFound', 'WorkerType does not exist', {});
+  }
+
+  await workerType.modify(wt => {
+    wt.scheduledForDeletion = true;
+  });
+
+  await this.publisher.workerTypeDeleted({name, provider: workerType.provider});
   return res.reply();
 });
 
@@ -195,3 +227,38 @@ builder.declare({
   }
   return res.reply(data);
 });
+
+/*
+ * ************** BELOW HERE LIVE PROVIDER ENDPOINTS **************
+ */
+
+builder.declare({
+  method: 'post',
+  route: '/credentials/google/:name',
+  name: 'credentialsGoogle',
+  title: 'Google Credentials',
+  stability: APIBuilder.stability.experimental,
+  input: 'credentials-google-request.yml',
+  output: 'temp-creds-response.yml',
+  description: [
+    'Get Taskcluster credentials for a worker given an Instance Identity Token',
+  ].join('\n'),
+}, async function(req, res) {
+  const {name} = req.params;
+
+  try {
+    const workerType = await this.WorkerType.load({name});
+    return res.reply(await this.providers[workerType.provider].verifyIdToken({
+      token: req.body.token,
+      workerType,
+    }));
+  } catch (err) {
+    // We will internally record what went wrong and report back something generic
+    this.monitor.reportError(err, 'warning');
+    return res.reportError('InputError', 'Invalid Token', {});
+  }
+});
+
+/*
+ * ************** THIS SECTION FOR PROVIDER ENDPOINTS **************
+ */

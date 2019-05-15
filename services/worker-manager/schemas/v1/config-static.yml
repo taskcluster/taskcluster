@@ -1,0 +1,5 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Static Provider Config
+description: A configuration for static workertypes
+type: object
+additionalProperties: false

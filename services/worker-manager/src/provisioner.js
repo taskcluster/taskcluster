@@ -1,25 +1,34 @@
+const taskcluster = require('taskcluster-client');
 const Iterate = require('taskcluster-lib-iterate');
+const {consume} = require('taskcluster-lib-pulse');
 
 /**
  * Run all provisioning logic
  */
 class Provisioner {
-  constructor({queue, provisionerId, providers, iterateConf, WorkerType, monitor, notify}) {
-    this.queue = queue;
+  constructor({provisionerId, providers, iterateConf, WorkerType, monitor, notify, pulseClient, reference, rootUrl}) {
     this.provisionerId = provisionerId;
     this.providers = providers;
     this.WorkerType = WorkerType;
     this.monitor = monitor;
     this.notify = notify;
+    this.pulseClient = pulseClient;
+    const WorkerManagerEvents = taskcluster.createClient(reference);
+    const workerManagerEvents = new WorkerManagerEvents({rootUrl});
+    this.bindings = [
+      workerManagerEvents.workerTypeCreated(),
+      workerManagerEvents.workerTypeUpdated(),
+      workerManagerEvents.workerTypeDeleted(),
+    ];
 
     this.iterate = new Iterate({
-      handler: async (watchdog) => {
-        await this.provision(watchdog);
+      handler: async () => {
+        await this.provision();
       },
       monitor,
       maxFailures: 10,
-      watchdogTime: 10000, // Each provider gets 10 seconds to provision instances per workertype
-      waitTime: 10000,
+      watchdogTime: 0,
+      waitTime: 60000,
       maxIterationTime: 300000, // We really should be making it through the list at least once every 5 minutes
       ...iterateConf,
     });
@@ -35,20 +44,61 @@ class Provisioner {
   async initiate() {
     await Promise.all(Object.values(this.providers).map(x => x.initiate()));
     await this.iterate.start();
+
+    this.pq = await consume({
+      client: this.pulseClient,
+      bindings: this.bindings,
+      queueName: 'workerTypeUpdates',
+    },
+    this.monitor.timedHandler('notification', this.onMessage.bind(this)),
+    );
   }
 
   /**
    * Terminate the Provisioner
    */
   async terminate() {
+    if (this.pq) {
+      await this.pq.stop();
+      this.pq = null;
+    }
     await this.iterate.stop();
     await Promise.all(Object.values(this.providers).map(x => x.terminate()));
+  }
+
+  async onMessage({exchange, payload}) {
+    const {name, provider: providerName, previousProvider} = payload;
+    const workerType = await this.WorkerType.load({name});
+    const provider = this.providers[providerName]; // Always have a provider
+    switch (exchange.split('/').pop()) {
+      case 'workertype-created': {
+        await provider.createResources({workerType});
+        break;
+      }
+      case 'workertype-updated': {
+        if (providerName === previousProvider) {
+          await provider.updateResources({workerType});
+        } else {
+          await Promise.all([
+            provider.createResources({workerType}),
+            this.providers[previousProvider].removeResources({workerType}),
+          ]);
+        }
+        break;
+      }
+      case 'workertype-deleted': {
+        await provider.removeResources({workerType});
+        await workerType.remove(); // This is now gone for real
+        break;
+      }
+      default: throw new Error(`Unknown exchange: ${exchange}`);
+    }
   }
 
   /**
    * Run a single provisioning iteration
    */
-  async provision(watchdog) {
+  async provision() {
     // Any once-per-loop work a provider may want to do
     await Promise.all(Object.values(this.providers).map(x => x.prepare()));
 
@@ -57,33 +107,20 @@ class Provisioner {
       handler: async workerType => {
         const provider = this.providers[workerType.provider];
 
-        // This should not happen because we assert at workertype
-        // creation/update time that the provider exists and we
-        // don't allow providers that have workertypes to be deleted
-        // but that logic seems iffy enough that an explicit alert
-        // here would be nice
-        if (!provider) {
-          await workerType.reportError({
-            kind: 'unknown-provider',
-            title: 'Unknown Provider',
-            description: 'The selected provider does not exist in Taskcluster.',
-            extra: {
-              provider,
-              available: Object.keys(this.providers),
-            },
-            notify: this.notify,
-            owner: workerType.owner,
-          });
-          return;
+        if (workerType.scheduledForDeletion) {
+          await provider.deprovision({workerType});
+        } else {
+          await provider.provision({workerType});
         }
 
-        provider.provision({workerType});
+        await Promise.all(workerType.previousProviders.map(async p => {
+          await this.providers[p].deprovision({workerType});
+        }));
 
         this.monitor.log.workertypeProvisioned({
           workerType: workerType.name,
           provider: workerType.provider,
         });
-        watchdog.touch();
       },
     });
 

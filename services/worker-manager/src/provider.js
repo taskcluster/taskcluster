@@ -1,3 +1,6 @@
+const assert = require('assert');
+const libUrls = require('taskcluster-lib-urls');
+
 class Provider {
 
   /**
@@ -6,42 +9,61 @@ class Provider {
    * a cloud provider for terminating/listing instances. Any provisioning
    * logic should be started in `initiate` below.
    */
-  constructor({id, monitor, notify}) {
-    this.id = id;
+  constructor({
+    name,
+    monitor,
+    notify,
+    provisionerId,
+    rootUrl,
+    taskclusterCredentials,
+    estimator,
+    Worker,
+    validator,
+    WorkerType,
+  }) {
+    this.name = name;
     this.monitor = monitor;
+    this.validator = validator;
     this.notify = notify;
+    this.provisionerId = provisionerId;
+    this.rootUrl = rootUrl;
+    this.taskclusterCredentials = taskclusterCredentials;
+    this.estimator = estimator;
+    this.Worker = Worker;
+    this.WorkerType = WorkerType;
   }
 
   /**
-   * Given a list of workerTypes and states, list the applicable workers.  The
-   * return value must be a list of Worker objects.  The workerTypes value must
-   * be a list of strings.  If the workerTypes value is not specified, all
-   * workerTypes should be included.  The states value must be a list of states
-   * strings.  These are in Provider.states.  These values are not extensible.
-   * All providers must group their internal states to one of the states in
-   * Provider.states.  If any state is not in Provider.states, an error must be
-   * thrown.
+   * Once the returned promise is
+   * resolve, the Provider must be fully working. This is called for a provider
+   * whether it is being used to provision or not.
    */
-  async listWorkers({states, workerTypes}) {
-    throw new Error('Method Unimplemented!');
+  async setup() {
   }
 
   /**
-   * Given a worker id, check if it is managed by this provider and if so,
-   * determine its state.  Must return the correct Provider.state string if
-   * managed or undefined if not
+   * This is only called for providers that are being used in background jobs such
+   * as provisioning and scanning workers.
+   * If there's any taskcluster-lib-iterate loops to
+   * run, this is where they should be initiated.
    */
-  async queryWorkerState({workerId}) {
-    throw new Error('Method Unimplemented!');
+  async initiate() {
   }
 
   /**
-   * Given a Worker instance, return provider specific information which
-   * might be useful to a user interface.  For example, an EC2 provider
-   * might wish to return {region: 'us-east-1'}
+   * Terminate any code which was started by .initiate();
    */
-  workerInfo({worker}) {
-    throw new Error('Method Unimplemented!');
+  async terminate() {
+  }
+
+  /**
+   * Given a workertype configuration, this will ensure that it matches the
+   * configuration schema for the implementation of a provider.
+   * Returns null if everything is fine and an error message if not.
+   */
+  validate(config) {
+    assert(this.configSchema); // This must be set up by a provider impl
+    return this.validator(config, libUrls.schema(this.rootUrl, 'worker-manager', `v1/${this.configSchema}.yml`));
   }
 
   /**
@@ -59,6 +81,12 @@ class Provider {
   async provision({workerType}) {
   }
 
+  // This is the oposite of provision. Given a workertype, tear down whatever
+  // resources this provider has created for it. Once complete, remove yourself
+  // from the workertype's list of previous providers.
+  async deprovision({workerType}) {
+  }
+
   /**
    * Anything a provider may want to do every provisioning loop but not tied
    * to any one workertype. Called _after_ all provision() calls are complete.
@@ -67,49 +95,46 @@ class Provider {
   async cleanup() {
   }
 
-  /**
-   * Any code which is required to be run by this Provider must only be
-   * initiated by this method.  If there's any taskcluster-lib-iterate loops to
-   * run, this is where they should be initiated.  Once the returned promise is
-   * resolve, the Provider must be fully working.
+  /*
+   * Called before an iteration of the worker scanner
    */
-  async initiate() {
+  async scanPrepare() {
+  }
+
+  /*
+   * Called for every worker on a schedule so that we can update the state of
+   * the worker locally
+   */
+  async checkWorker({Worker}) {
+  }
+
+  /*
+   * Called after an iteration of the worker scanner
+   */
+  async scanCleanup() {
   }
 
   /**
-   * Terminate any code which was started by .initiate();
+   * Called when a new workertype is added to this provider to allow the provider
+   * to do whatever setup is necessary
    */
-  async terminate() {
+  async createResources({workerType}) {
   }
 
   /**
-   * Terminate all workers managed by this provider.  This method must not
-   * return until the request to terminate all workers is completed.  It does
-   * not need to wait until all workers actually terminate.
+   * Called whenever a workertype currently assigned to this provider is changed.
+   * If a currently existing workertype is moved to a different provider, the old provider
+   * will actually be asked to remove resources and the new one to create. This will not
+   * be called in that case.
    */
-  async terminateAllWorkers() {
-    throw new Error('Method Unimplemented!');
+  async updateResources({workerType}) {
   }
 
   /**
-   * Terminate all workers of a specific worker type.  This method must not
-   * return until the request to terminate workers is completed.  It does not
-   * need to wait until all workers actually terminate.
+   * Called when a workertype is removed and this provider was providing for it.
    */
-  async terminateWorkerType({workerType}) {
-    throw new Error('Method Unimplemented!');
+  async removeResources({workerType}) {
   }
-
-  /**
-   * Terminate specific workers.  This method must take either a list of worker
-   * ids or Worker instances and terminate all those which are provided.  This
-   * method must not return until the request to terminate workers is
-   * completed.  It does not need to wait until all workers actually terminate.
-   */
-  async terminateWorkers({workers}) {
-    throw new Error('Method Unimplemented!');
-  }
-
 }
 
 module.exports = {

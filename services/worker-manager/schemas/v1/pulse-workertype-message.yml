@@ -1,0 +1,22 @@
+$schema: "/schemas/common/metaschema.json#"
+title: WorkerType Pulse Message
+description: The message that is emitted when workertypes are created/changed/deleted.
+type: object
+properties:
+  name: {$ref: "workertype-full.json#/properties/provider"}
+  provider: {$ref: "workertype-full.json#/properties/provider"}
+  previousProvider:
+    title: Previous Provider
+    type: string
+    minLength: {$const: identifier-min-length}
+    maxLength: {$const: identifier-max-length}
+    pattern: {$const: identifier-pattern}
+    description: |
+      If this is defined, it was the provider that handled this workertype in the 
+      configuration before the current one. This will be used by providers to clean
+      up any resources created for this workerType when they are no longer responsible
+      for it.
+additionalProperties: false
+required:
+  - name
+  - provider

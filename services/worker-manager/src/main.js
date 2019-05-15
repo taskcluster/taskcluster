@@ -1,3 +1,4 @@
+const debug = require('debug');
 const loader = require('taskcluster-lib-loader');
 const taskcluster = require('taskcluster-client');
 const App = require('taskcluster-lib-app');
@@ -5,11 +6,14 @@ const monitorManager = require('./monitor');
 const config = require('taskcluster-lib-config');
 const SchemaSet = require('taskcluster-lib-validate');
 const libReferences = require('taskcluster-lib-references');
+const exchanges = require('./exchanges');
 const data = require('./data');
 const builder = require('./api');
+const {Estimator} = require('./estimator');
 const {sasCredentials} = require('taskcluster-lib-azure');
-
+const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 const {Provisioner} = require('./provisioner');
+const {WorkerScanner} = require('./worker-scanner');
 
 let load = loader({
   cfg: {
@@ -26,9 +30,23 @@ let load = loader({
     }),
   },
 
-  WorkerType: {
+  Worker: {
     requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) => data.WorkerType.setup({
+    setup: ({cfg, monitor}) => data.Worker.setup({
+      tableName: cfg.app.workerTableName,
+      credentials: sasCredentials({
+        accountId: cfg.azure.accountId,
+        tableName: cfg.app.workerTableName,
+        rootUrl: cfg.taskcluster.rootUrl,
+        credentials: cfg.taskcluster.credentials,
+      }),
+      monitor: monitor.childMonitor('table.workers'),
+    }),
+  },
+
+  WorkerType: {
+    requires: ['cfg', 'monitor', 'WorkerTypeError'],
+    setup: ({cfg, monitor, WorkerTypeError}) => data.WorkerType.setup({
       tableName: cfg.app.workerTypeTableName,
       credentials: sasCredentials({
         accountId: cfg.azure.accountId,
@@ -40,6 +58,43 @@ let load = loader({
     }),
   },
 
+  WorkerTypeError: {
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => data.WorkerTypeError.setup({
+      tableName: cfg.app.workerTypeErrorTableName,
+      credentials: sasCredentials({
+        accountId: cfg.azure.accountId,
+        tableName: cfg.app.workerTypeErrorTableName,
+        rootUrl: cfg.taskcluster.rootUrl,
+        credentials: cfg.taskcluster.credentials,
+      }),
+      monitor: monitor.childMonitor('table.workerTypeErrors'),
+    }),
+  },
+
+  expireWorkers: {
+    requires: ['cfg', 'Worker', 'monitor'],
+    setup: ({cfg, Worker, monitor}) => {
+      return monitor.childMonitor().oneShot('expire workers', async () => {
+        debug('Expiring workers');
+        const count = await Worker.expire();
+        debug(`Expired ${count} rows`);
+      });
+    },
+  },
+
+  expireErrors: {
+    requires: ['cfg', 'WorkerTypeError', 'monitor'],
+    setup: ({cfg, WorkerTypeError, monitor}) => {
+      return monitor.childMonitor().oneShot('expire workerTypeErrors', async () => {
+        const threshold = taskcluster.fromNow(cfg.app.errorsExpirationDelay);
+        debug('Expiring workerTypeErrors');
+        const count = await WorkerTypeError.expire(threshold);
+        debug(`Expired ${count} rows`);
+      });
+    },
+  },
+
   schemaset: {
     requires: ['cfg'],
     setup: ({cfg}) => new SchemaSet({
@@ -47,21 +102,48 @@ let load = loader({
     }),
   },
 
+  reference: {
+    requires: [],
+    setup: () => exchanges.reference(),
+  },
+
   generateReferences: {
     requires: ['cfg', 'schemaset'],
     setup: ({cfg, schemaset}) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), monitorManager.reference()],
+      references: [builder.reference(), exchanges.reference(), monitorManager.reference()],
     }).generateReferences(),
   },
 
+  pulseClient: {
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => {
+      return new Client({
+        namespace: 'taskcluster-worker-manager',
+        monitor: monitor.childMonitor('pulse-client'),
+        credentials: pulseCredentials(cfg.pulse),
+      });
+    },
+  },
+
+  publisher: {
+    requires: ['cfg', 'schemaset', 'pulseClient'],
+    setup: async ({cfg, pulseClient, schemaset}) => await exchanges.publisher({
+      rootUrl: cfg.taskcluster.rootUrl,
+      schemaset,
+      client: pulseClient,
+      publish: false,
+    }),
+  },
+
   api: {
-    requires: ['cfg', 'schemaset', 'monitor', 'WorkerType', 'providers'],
-    setup: async ({cfg, schemaset, monitor, WorkerType, providers}) => builder.build({
+    requires: ['cfg', 'schemaset', 'monitor', 'WorkerType', 'providers', 'publisher'],
+    setup: async ({cfg, schemaset, monitor, WorkerType, providers, publisher}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {
         WorkerType,
         providers,
+        publisher,
       },
       monitor: monitor.childMonitor('api'),
       schemaset,
@@ -86,11 +168,21 @@ let load = loader({
     setup: ({cfg}) => new taskcluster.Notify(cfg.taskcluster),
   },
 
+  estimator: {
+    requires: ['cfg', 'queue', 'monitor'],
+    setup: ({cfg, queue, monitor}) => new Estimator({
+      provisionerId: cfg.app.provisionerId,
+      queue,
+      monitor: monitor.childMonitor('estimator'),
+    }),
+  },
+
   providers: {
-    requires: ['cfg', 'monitor', 'notify'],
-    setup: ({cfg, monitor, notify}) => {
+    requires: ['cfg', 'monitor', 'notify', 'estimator', 'Worker', 'WorkerType', 'schemaset'],
+    setup: async ({cfg, monitor, notify, estimator, Worker, WorkerType, schemaset}) => {
       const _providers = {};
-      Object.entries(cfg.providers).forEach(([name, meta]) => {
+      const validator = await schemaset.validator(cfg.taskcluster.rootUrl);
+      for (const [name, meta] of Object.entries(cfg.providers)) {
         let Prov;
         switch(meta.implementation) {
           case 'testing': Prov = require('./provider_testing').TestingProvider; break;
@@ -102,28 +194,52 @@ let load = loader({
           name,
           notify,
           monitor: monitor.childMonitor(name),
+          provisionerId: cfg.app.provisionerId,
+          rootUrl: cfg.taskcluster.rootUrl,
+          taskclusterCredentials: cfg.taskcluster.credentials,
+          estimator,
+          Worker,
+          WorkerType,
+          validator,
           ...meta,
         });
-      });
+        await _providers[name].setup();
+      }
       return _providers;
     },
   },
 
   provisioner: {
-    requires: ['cfg', 'queue', 'monitor', 'WorkerType', 'providers', 'notify'],
-    setup: async ({cfg, queue, monitor, WorkerType, providers, notify}) => {
+    requires: ['cfg', 'monitor', 'WorkerType', 'providers', 'notify', 'pulseClient', 'reference'],
+    setup: async ({cfg, monitor, WorkerType, providers, notify, pulseClient, reference}) => {
       const provisioner = new Provisioner({
-        queue,
         monitor: monitor.childMonitor('provisioner'),
         provisionerId: cfg.app.provisionerId,
         WorkerType,
         providers,
         notify,
+        pulseClient,
+        reference,
+        rootUrl: cfg.taskcluster.rootUrl,
       });
       await provisioner.initiate();
       return provisioner;
     },
   },
+
+  workerScanner: {
+    requires: ['cfg', 'monitor', 'Worker', 'WorkerType', 'providers'],
+    setup: async ({cfg, monitor, Worker, WorkerType, providers}) => {
+      const workerScanner = new WorkerScanner({
+        Worker,
+        providers,
+        monitor: monitor.childMonitor('worker-scanner'),
+      });
+      await workerScanner.initiate();
+      return workerScanner;
+    },
+  },
+
 }, {
   profile: process.env.NODE_ENV,
   process: process.argv[2],
