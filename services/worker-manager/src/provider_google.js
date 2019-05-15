@@ -245,11 +245,12 @@ class GoogleProvider extends Provider {
     });
 
     return taskcluster.createTemporaryCredentials({
-      clientId: `worker/google/${this.project}/${dat.instance_id}`,
+      clientId: `worker/google/${this.project}/${workerId}`,
       scopes: [
         `assume:worker-type:${this.provisionerId}/${workerType.name}`,
-        `assume:worker-id:${workerId}`,
+        `assume:worker-id:${workerType.name}-google/${workerId}`,
         `secrets:get:worker-type:${this.provisionerId}/${workerType.name}`,
+        `queue:claim-work:${this.provisionerId}/${workerType.name}`,
       ],
       start: taskcluster.fromNow('-15 minutes'),
       expiry: taskcluster.fromNow('96 hours'),
@@ -258,17 +259,21 @@ class GoogleProvider extends Provider {
   }
 
   async deprovision({workerType}) {
-    // TODO
-    // Nothing to do other than remove providerData stuff and remove self from previousProviders
+    await workerType.modify(wt => {
+      wt.previousProviders = wt.previousProviders.filter(p => p !== this.name);
+      delete wt.providerData[this.name];
+    });
   }
 
   async provision({workerType}) {
-    if (!workerType.providerData[this.name]) {
+    // TODO: I worry that providerData.trackedOperations will be larger than a single record
+    // probably need to have providerData as separate table?
+    const providerData = workerType.providerData[this.name];
+    if (!providerData || providerData.running === undefined || !providerData.trackedOperations) {
       await workerType.modify(wt => {
-        wt.providerData[this.name] = {
-          running: 0,
-          trackedOperations: [],
-        };
+        wt.providerData[this.name] = wt.providerData[this.name] || {};
+        wt.providerData[this.name].running = wt.providerData[this.name].running || 0;
+        wt.providerData[this.name].trackedOperations = wt.providerData[this.name].trackOperations || [];
       });
     }
     const regions = workerType.config.regions;
@@ -296,7 +301,8 @@ class GoogleProvider extends Provider {
 
       // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
       // The lost entropy from downcasing, etc should be ok due to the fact that
-      // only running instances need not be identical.
+      // only running instances need not be identical. We do not use this name to identify
+      // workers in taskcluster.
       const instanceName = `${workerType.name}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
 
       let op;
@@ -497,21 +503,21 @@ class GoogleProvider extends Provider {
       if (err.code !== 404) {
         throw err;
       }
-      await worker.modify(function(w) {
+      await worker.modify(w => {
         w.state = states.STOPPED;
       });
       return;
     }
     const {status} = res.data;
     if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
-      this.seen[worker.workerType] + 1;
+      this.seen[worker.workerType] += 1;
     } else if (['TERMINATED', 'STOPPED'].includes(status)) {
       await this.compute.instances.delete({
         project: worker.providerData.project,
         zone: worker.providerData.zone,
         instance: worker.workerId.replace('gcp-', ''),
       });
-      await worker.modify(function(w) {
+      await worker.modify(w => {
         w.state = states.STOPPED;
       });
     }
@@ -531,6 +537,9 @@ class GoogleProvider extends Provider {
       }
 
       await workerType.modify(wt => {
+        if (!wt.providerData[this.name]) {
+          wt.providerData[this.name] = {};
+        }
         wt.providerData[this.name].running = seen;
       });
     }));

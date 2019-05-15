@@ -58,6 +58,11 @@ class FakeGoogle {
     const opStub = sinon.stub();
     opStub.onCall(0).returns({data: {status: 'RUNNING'}});
     opStub.onCall(1).returns({data: {status: 'DONE'}});
+
+    const instanceStub = sinon.stub();
+    instanceStub.onCall(0).returns({data: {status: 'RUNNING'}});
+    instanceStub.onCall(1).returns({data: {status: 'STOPPED'}});
+
     return {
       regions: {
         get: async () => ({
@@ -74,6 +79,8 @@ class FakeGoogle {
             zone: 'whatever/a',
           },
         }),
+        get: async () => instanceStub(),
+        delete: async () => {},
       },
       zoneOperations: {
         get: async () => opStub(),
