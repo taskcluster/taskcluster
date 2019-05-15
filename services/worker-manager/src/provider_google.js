@@ -249,6 +249,7 @@ class GoogleProvider extends Provider {
       scopes: [
         `assume:worker-type:${this.provisionerId}/${workerType.name}`,
         `assume:worker-id:${workerType.name}-google/${workerId}`,
+        `queue:worker-id:${workerType.name}-google/${workerId}`,
         `secrets:get:worker-type:${this.provisionerId}/${workerType.name}`,
         `queue:claim-work:${this.provisionerId}/${workerType.name}`,
       ],
