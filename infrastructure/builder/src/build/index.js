@@ -40,8 +40,8 @@ class Build {
 
     const taskgraph = new TaskGraph(tasks, {
       locks: {
-        // limit ourselves to one docker process per CPU
-        docker: new Lock(os.cpus().length),
+        // limit ourselves to one docker overall
+        docker: new Lock(1),
         // and let's be sane about how many git clones we do..
         git: new Lock(8),
       },
