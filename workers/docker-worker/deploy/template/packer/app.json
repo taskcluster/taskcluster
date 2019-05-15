@@ -1,6 +1,5 @@
 {
   "templateContents": "deploy.tar.gz",
-  "cotSigningKey": "{{cotSigningKey}}",
   "cotEd25519SigningKey": "{{cotEd25519SigningKey}}"
 }
 

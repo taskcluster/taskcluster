@@ -2,11 +2,10 @@
  * The Chain of Trust feature allows tasks to include an artifact that hashes
  * the tasks artifacts and some other pieces of information so that downstream
  * consumers can validate the environment that the task ran in and what was
- * produce. This artifact is then (openpgp) signed.
+ * produce. This artifact is then ed25519 signed.
  */
 const crypto = require('crypto');
 const stream = require('stream');
-const openpgp = require('openpgp');
 const tweetnacl = require('tweetnacl');
 const Debug = require('debug');
 const fs = require('mz/fs');
@@ -25,8 +24,6 @@ class ChainOfTrust {
 
   async created(task) {
     this.hash = crypto.createHash('sha256');
-    let armoredKey = fs.readFileSync(task.runtime.signingKeyLocation, 'ascii');
-    this.key = openpgp.key.readArmored(armoredKey).keys;
     this.ed25519Key = Buffer.from(await new Promise((accept, reject) =>
       fs.readFile(task.runtime.ed25519SigningKeyLocation, 'ascii', (err, data) => err ? reject(err) : accept(data))), 'base64');
 
@@ -104,22 +101,7 @@ class ChainOfTrust {
     let sigBufferStream = new stream.PassThrough();
     sigBufferStream.end(new Buffer(chainOfTrustSig));
 
-    let signedChainOfTrust = await openpgp.sign({
-      data: chainOfTrust,
-      privateKeys: this.key
-    });
-
-    // Initiate a buffer stream to read from when uploading
-    let bufferStream = new stream.PassThrough();
-    bufferStream.end(new Buffer(signedChainOfTrust.data));
-
     try {
-      await uploadToS3(task.queue, task.status.taskId, task.runId,
-        bufferStream, 'public/chainOfTrust.json.asc', expiration, {
-          'content-type': 'text/plain',
-          'content-length': signedChainOfTrust.data.length
-        });
-
       await uploadToS3(task.queue, task.status.taskId, task.runId,
         cotBufferStream, 'public/chain-of-trust.json', expiration, {
           'content-type': 'text/plain',

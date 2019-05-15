@@ -25,20 +25,6 @@
     },
     {
       "type":           "file",
-      "source":         "deploy/bin/gen-signing-key",
-      "destination":    "/tmp/gen-signing-key"
-    },
-    {
-      "type":           "shell",
-      "inline":         ["chmod u+x /tmp/gen-signing-key"]
-    },
-    {
-      "type":           "shell",
-      "inline":         ["/tmp/gen-signing-key"],
-      "only":           ["hvm-builder"]
-    },
-    {
-      "type":           "file",
       "source":         "deploy/bin/gen-ed25519-key.js",
       "destination":    "/tmp/gen-ed25519-key.js"
     },
@@ -59,19 +45,9 @@
     },
     {
       "type":           "file",
-      "source":         "{{user `cotSigningKey`}}",
-      "destination":    "docker-worker-gpg-signing-key.key",
-      "only":           ["hvm-builder-trusted"]
-    },
-    {
-      "type":           "file",
       "source":         "{{user `cotEd25519SigningKey`}}",
       "destination":    "/tmp/docker-worker-ed25519-cot-signing-key.key",
       "only":           ["hvm-builder-trusted"]
-    },
-    {
-      "type":           "shell",
-      "inline":         ["sudo mv docker-worker-gpg-signing-key.key /etc"]
     },
     {
       "type":           "shell",
