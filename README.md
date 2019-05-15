@@ -458,6 +458,8 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+__Please don't use release 14.1.0 on macOS/linux due to [bug 1551164](https://bugzil.la/1551164) which will be fixed in v14.1.1.__
+
 In v14.1.0 since v14.0.2
 ========================
 
