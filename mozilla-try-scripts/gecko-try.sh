@@ -34,7 +34,7 @@ if [ -z "${NEW_GW_VERSION}" ] || [ -z "${NEW_TP_VERSION}" ]; then
 fi
 
 echo "Checking system dependencies..."
-for command in curl jq grep sleep file git hg cat sed rm mktemp python go patch basename tr; do
+for command in curl jq grep sleep file git hg cat sed rm mktemp python2 go patch basename tr; do
   if ! which "${command}" >/dev/null; then
     echo -e "  \xE2\x9D\x8C ${command}"
     echo "${0} requires ${command} to be installed and available in your PATH - please fix and rerun" >&2
@@ -130,7 +130,7 @@ This change does _not_ affect any production workers. Commit made with:
 
     ${0} $(echo ${@})
 
-See https://github.com/taskcluster/generic-worker/blob/$THIS_REV/$THIS_FILE -m \"${DEPLOY}\""
+See https://github.com/taskcluster/generic-worker/blob/$THIS_REV/$THIS_FILE" -m "${DEPLOY}"
 OCC_COMMIT="$(git rev-parse HEAD)"
 git push
 
