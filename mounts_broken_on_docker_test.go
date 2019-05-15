@@ -5,6 +5,7 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -115,7 +116,12 @@ func TestMounts(t *testing.T) {
 	payload := GenericWorkerPayload{
 		Mounts: toMountArray(t, &mounts),
 		// since this checks that SHA values of files as the task user, is also ensures they are readable by task user
-		Command:    checkSHASums(),
+		Command: checkSHASums(),
+		// Don't assume powershell is in the default system PATH, but rather
+		// require that powershell is in the PATH of the test process.
+		Env: map[string]string{
+			"PATH": os.Getenv("PATH"),
+		},
 		MaxRunTime: 180,
 	}
 

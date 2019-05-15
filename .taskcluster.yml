@@ -115,6 +115,11 @@ tasks:
       - generic-worker:cache:generic-worker-checkout
     payload:
       maxRunTime: 3600
+      env:
+        # Python 2 is needed for TestDesktopResizeAndMovePointer
+        # Powershell is needed for TestMounts
+        # System32 is needed for e.g. cmd.exe, icacls.exe, ...
+        PATH: C:\Windows\System32;C:\Windows\System32\WindowsPowerShell\v1.0;C:\mozilla-build\python
       command:
         - set CGO_ENABLED=0
         - set GOPATH=%CD%\gopath1.10.8

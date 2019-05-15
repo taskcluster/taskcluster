@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"testing"
 )
 
@@ -101,6 +102,11 @@ func TestDesktopResizeAndMovePointer(t *testing.T) {
 	payload := GenericWorkerPayload{
 		Command:    commands,
 		MaxRunTime: 90,
+		// Don't assume python 2 is in the default system PATH, but rather
+		// require that python 2 is in the PATH of the test process.
+		Env: map[string]string{
+			"PATH": os.Getenv("PATH"),
+		},
 	}
 	td := testTask(t)
 
