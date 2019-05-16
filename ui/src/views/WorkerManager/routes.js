@@ -6,8 +6,22 @@ const WorkerManagerViewWorkerTypes = lazy(() =>
 const WorkerManagerViewWorkers = lazy(() =>
   import(/* webpackChunkName: 'WorkerManager.WMViewWorkerType' */ './WMViewWorkers')
 );
+const WMWorkerTypeEditor = lazy(() =>
+  import(/* webpackChunkName: 'WorkerManager.WMEditWorkerType' */ './WMEditWorkerType')
+);
 
 export default path => [
+  {
+    component: WMWorkerTypeEditor,
+    isNewWorkerType: true,
+    path: `${path}/create`,
+    description: 'Create a worker type',
+  },
+  {
+    component: WMWorkerTypeEditor,
+    path: `${path}/:workerType/edit`,
+    description: 'Edit the worker type',
+  },
   {
     component: WorkerManagerViewWorkers,
     path: `${path}/worker-types/:workerType`,
