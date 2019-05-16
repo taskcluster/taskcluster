@@ -161,6 +161,7 @@
     "test": "yarn workspaces run test",
     "test:meta": "mocha test/*_test.js",
     "test:cleanup": "yarn workspace taskcluster-auth test:cleanup",
+    "test:coverage": "node test/coverage-report.js",
     "build": "node infrastructure/builder/src/main.js build",
     "generate": "node infrastructure/builder/src/main.js generate",
     "shared-secrets": "node test/shared-secrets.js",

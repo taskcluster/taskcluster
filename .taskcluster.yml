@@ -150,7 +150,7 @@ tasks:
             sleep 2 &&
             CHROME_BIN=firefox DISPLAY=:99 yarn test
       - name: coverage
-        command: echo "I RAN LAST"
+        command: yarn test:coverage
         depends_on_all_packages: true
     in:
       $let:
@@ -196,6 +196,7 @@ tasks:
             created: {$fromNow: ''}
             deadline: {$fromNow: '3 hours'}
             dependencies: {$eval: job.dependencies}
+            requires: all-resolved
             extra:
               notify:
                 email:
