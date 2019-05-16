@@ -149,6 +149,9 @@ tasks:
             { Xvfb :99 -screen 0 640x480x8 -nolisten tcp & } &&
             sleep 2 &&
             CHROME_BIN=firefox DISPLAY=:99 yarn test
+      - name: coverage
+        command: echo "I RAN LAST"
+        depends_on_all_packages: true
     in:
       $let:
         allTasks:
@@ -179,12 +182,20 @@ tasks:
                 $if: entry['cache']
                 then: {$eval: entry.cache}
                 else: {project-taskcluster-test-yarn-cache: /cache}
+              dependencies:
+                $if: entry['depends_on_all_packages']
+                then:
+                  $map: {$eval: packages}
+                  each(package):
+                    {$eval: as_slugid(package.name)}
+                else: []
           each(job):
             taskId: {$eval: as_slugid(job.name)}
             provisionerId: aws-provisioner-v1
             workerType: github-worker
             created: {$fromNow: ''}
             deadline: {$fromNow: '3 hours'}
+            dependencies: {$eval: job.dependencies}
             extra:
               notify:
                 email:
