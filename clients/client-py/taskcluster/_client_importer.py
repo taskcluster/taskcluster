@@ -20,3 +20,4 @@ from .queueevents import QueueEvents  # NOQA
 from .secrets import Secrets  # NOQA
 from .treeherderevents import TreeherderEvents  # NOQA
 from .workermanager import WorkerManager  # NOQA
+from .workermanagerevents import WorkerManagerEvents  # NOQA

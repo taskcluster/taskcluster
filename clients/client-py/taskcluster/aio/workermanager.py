@@ -13,7 +13,7 @@ _defaultConfig = config
 
 class WorkerManager(AsyncBaseClient):
     """
-    This service manages workers, including provisioning
+    This service manages workers, including provisioning for dynamic workertypes.
     """
 
     classOptions = {
@@ -88,6 +88,17 @@ class WorkerManager(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["listWorkerTypes"], *args, **kwargs)
 
+    async def credentialsGoogle(self, *args, **kwargs):
+        """
+        Google Credentials
+
+        Get Taskcluster credentials for a worker given an Instance Identity Token
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["credentialsGoogle"], *args, **kwargs)
+
     funcinfo = {
         "createWorkerType": {
             'args': ['name'],
@@ -96,6 +107,15 @@ class WorkerManager(AsyncBaseClient):
             'name': 'createWorkerType',
             'output': 'v1/workertype-full.json#',
             'route': '/workertype/<name>',
+            'stability': 'experimental',
+        },
+        "credentialsGoogle": {
+            'args': ['name'],
+            'input': 'v1/credentials-google-request.json#',
+            'method': 'post',
+            'name': 'credentialsGoogle',
+            'output': 'v1/temp-creds-response.json#',
+            'route': '/credentials/google/<name>',
             'stability': 'experimental',
         },
         "deleteWorkerType": {

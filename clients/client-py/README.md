@@ -978,6 +978,35 @@ await asyncAuth.websocktunnelToken(wstAudience, wstClient) # -> result
 await asyncAuth.websocktunnelToken(wstAudience='value', wstClient='value') # -> result
 ```
 
+#### Get Temporary Read/Write GCP Credentials
+Get temporary GCP credentials for the given serviceAccount.
+projectId must always be the string "-", which means "use the same
+projectId as the account the service is running at.
+
+The call adds the necessary policy if the serviceAccount doesn't have it.
+The credentials are set to expire after an hour, but this behavior is
+subject to change. Hence, you should always read the `expires` property
+from the response, if you intend to maintain active credentials in your
+application.
+
+
+
+Takes the following arguments:
+
+  * `projectId`
+  * `serviceAccount`
+
+Has required output schema
+
+```python
+# Sync calls
+auth.gcpCredentials(projectId, serviceAccount) # -> result
+auth.gcpCredentials(projectId='value', serviceAccount='value') # -> result
+# Async call
+await asyncAuth.gcpCredentials(projectId, serviceAccount) # -> result
+await asyncAuth.gcpCredentials(projectId='value', serviceAccount='value') # -> result
+```
+
 #### Authenticate Hawk Request
 Validate the request signature given on input and return list of scopes
 that the authenticating client has.
@@ -4297,7 +4326,7 @@ loop = asyncio.get_event_loop()
 session = taskcluster.aio.createSession(loop=loop)
 asyncWorkerManager = taskcluster.aio.WorkerManager(options, session=session)
 ```
-This service manages workers, including provisioning
+This service manages workers, including provisioning for dynamic workertypes.
 #### Ping Server
 Respond without doing anything.
 This endpoint is used to check that the service is up.
@@ -4404,6 +4433,54 @@ workerManager.listWorkerTypes() # -> result
 # Async call
 await asyncWorkerManager.listWorkerTypes() # -> result
 ```
+
+#### Google Credentials
+Get Taskcluster credentials for a worker given an Instance Identity Token
+
+
+
+Takes the following arguments:
+
+  * `name`
+
+Has required input schema
+
+Has required output schema
+
+```python
+# Sync calls
+workerManager.credentialsGoogle(name, payload) # -> result
+workerManager.credentialsGoogle(payload, name='value') # -> result
+# Async call
+await asyncWorkerManager.credentialsGoogle(name, payload) # -> result
+await asyncWorkerManager.credentialsGoogle(payload, name='value') # -> result
+```
+
+
+
+
+### Exchanges in `taskcluster.WorkerManagerEvents`
+```python
+import taskcluster
+
+# Create WorkerManagerEvents client instance
+workerManagerEvents = taskcluster.WorkerManagerEvents(options)
+```
+These exchanges provide notifications when a workerType is created, updatedor deleted. This is so that the listener running in a differentprocess at the other end can direct another listener specified by`provider` and `workerType` to synchronize its bindings. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.
+#### WorkerType Created Messages
+ * `workerManagerEvents.workerTypeCreated(routingKeyPattern) -> routingKey`
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
+#### WorkerType Updated Messages
+ * `workerManagerEvents.workerTypeUpdated(routingKeyPattern) -> routingKey`
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
+#### WorkerType Deleted Messages
+ * `workerManagerEvents.workerTypeDeleted(routingKeyPattern) -> routingKey`
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 
 
