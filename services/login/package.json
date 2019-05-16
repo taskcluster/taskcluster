@@ -7,7 +7,7 @@
   "license": "MPL-2.0",
   "scripts": {
     "coverage": "nyc npm test",
-    "coverage:report": "nyc npm test && nyc report --reporter=text-lcov | coveralls ../..",
+    "coverage:report": "nyc npm test && nyc report --reporter=text-lcov | codecov --pipe -p ../..",
     "lint": "eslint src/*.js src/*/*.js test/*.js",
     "test": "mocha test/*_test.js"
   }

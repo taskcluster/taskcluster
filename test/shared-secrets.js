@@ -22,13 +22,6 @@ const main = async () => {
   const secrets = new taskcluster.Secrets(configs);
   const {secret: results} = await secrets.get('project/taskcluster/testing/shared');
   console.log(Object.entries(results).map(([key, val]) => `export ${key}=${val}`).join('\n'));
-
-  if (process.env.TASK_ID) {
-    const queue = new taskcluster.Queue(configs);
-    const {taskGroupId} = await queue.task(process.env.TASK_ID);
-    console.log(`export TASK_GROUP_ID=${taskGroupId}`);
-    console.log(`export COVERALLS_SERVICE_JOB_ID=${taskGroupId}`);
-  }
 };
 
 main().catch(console.error);
