@@ -491,6 +491,25 @@ class Auth(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["websocktunnelToken"], *args, **kwargs)
 
+    async def gcpCredentials(self, *args, **kwargs):
+        """
+        Get Temporary Read/Write GCP Credentials
+
+        Get temporary GCP credentials for the given serviceAccount.
+        projectId must always be the string "-", which means "use the same
+        projectId as the account the service is running at.
+
+        The call adds the necessary policy if the serviceAccount doesn't have it.
+        The credentials are set to expire after an hour, but this behavior is
+        subject to change. Hence, you should always read the `expires` property
+        from the response, if you intend to maintain active credentials in your
+        application.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["gcpCredentials"], *args, **kwargs)
+
     async def authenticateHawk(self, *args, **kwargs):
         """
         Authenticate Hawk Request
@@ -695,6 +714,14 @@ class Auth(AsyncBaseClient):
             'output': 'v1/scopeset.json#',
             'route': '/scopes/expand',
             'stability': 'deprecated',
+        },
+        "gcpCredentials": {
+            'args': ['projectId', 'serviceAccount'],
+            'method': 'get',
+            'name': 'gcpCredentials',
+            'output': 'v1/gcp-credentials-response.json#',
+            'route': '/gcp/credentials/<projectId>/<serviceAccount>',
+            'stability': 'stable',
         },
         "listClients": {
             'args': [],
