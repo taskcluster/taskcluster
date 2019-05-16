@@ -75,7 +75,7 @@ function add_github {
   "${THIS_SCRIPT_DIR}/lib/tooltool.py" add --visibility internal "${LOCAL_FILE}"
   # Bug 1460178 - sanity check binary downloads of generic-worker before publishing to tooltool...
   if ! file "${LOCAL_FILE}" | grep -F "${FILETYPE}" | grep -F 'for MS Windows'; then
-    echo "Downloaded file doesn't appear to be '${FILETYPE}':" >&2
+    echo "Downloaded file '${LOCAL_FILE}' (from dir '$(pwd)') doesn't appear to be '${FILETYPE}':" >&2
     file "${LOCAL_FILE}" >&2
     exit 69
   fi
@@ -111,7 +111,7 @@ for MANIFEST in *-b.json *-cu.json *-beta.json; do
   cat "${MANIFEST}" > "${MANIFEST}.bak"
   THIS_ARCH="$(cat "${MANIFEST}" | sed -n 's/.*\/generic-worker-nativeEngine-windows-\(.*\)\.exe.*/\1/p' | sort -u)"
   if [ "${THIS_ARCH}" != "386" ] && [ "${THIS_ARCH}" != "amd64" ]; then
-    echo "NOOOOOOO - cannot recognise ARCH '${THIS_ARCH}'" >&2
+    echo "NOOOOOOO - cannot recognise ARCH '${THIS_ARCH}' in manifest '${MANIFEST}' (from dir '$(pwd)')" >&2
     exit 67
   fi
   updateSHA512 "generic-worker-nativeEngine-windows-${THIS_ARCH}.exe" "GenericWorkerDownload"
