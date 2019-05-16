@@ -1,0 +1,8 @@
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ${project_name}-secrets-read
+rules:
+- apiGroups: ['']
+  resources: ['secrets/${project_name}']
+  verbs: ['get', 'watch', 'list']

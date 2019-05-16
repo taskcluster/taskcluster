@@ -13,7 +13,7 @@ spec:
       template:
         spec:
           restartPolicy: OnFailure
-          activeDeadlineSeconds: {$eval: number(deadline_seconds)}
+          activeDeadlineSeconds: {$eval: 'deadline_seconds'}
           volumes:
             $if: 'len(volume_mounts) > 0'
             then:
@@ -30,7 +30,7 @@ spec:
             image: ${docker_image}
             imagePullPolicy: Always
             args:
-              $if: is_monoimage == 'true' # terraform-style "boolean"
+              $if: 'is_monoimage'
               then: ['${service_name}/${job_name}']
               else: ['${job_name}']
             resources:
