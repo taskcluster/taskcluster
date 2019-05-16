@@ -77,7 +77,7 @@ def render_cronjob(project_name, secret_keys, deployment):
     context.update(deployment)
     format_values(context)
     template = yaml.load(open("templates/cron-job.yaml"), Loader=yaml.SafeLoader)
-    suffix = f"cron-{context['job_name']}"
+    suffix = f"cron-{context['job_name'].lower()}"
     write_file(template, context, suffix)
 
 
