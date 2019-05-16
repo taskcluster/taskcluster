@@ -177,7 +177,9 @@ tasks:
               install:
                 $if: entry['install']
                 then: ${entry.install}
-                else: '{ yarn --frozen-lockfile || exit 99; } && eval "$(yarn -s shared-secrets)"'
+                else: >-
+                  { yarn --frozen-lockfile || exit 99; } &&
+                  eval "$(yarn -s shared-secrets)"
               cache:
                 $if: entry['cache']
                 then: {$eval: entry.cache}
@@ -218,6 +220,7 @@ tasks:
                 - DEBUG: ${debug}
                   COVERALLS_SERVICE_NAME: taskcluster
                   COVERALLS_PARALLEL: true
+                  COVERALLS_FLAG_NAME: ${job.name}
                   NO_TEST_SKIP:
                     $if: 'job.name != "taskcluster-lib-testing"'
                     then: true

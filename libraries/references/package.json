@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "coverage": "nyc npm test",
-    "coverage:report": "nyc npm test && nyc report --reporter=text-lcov | coveralls",
+    "coverage:report": "nyc npm test && nyc report --reporter=text-lcov | coveralls ../..",
     "lint": "eslint src/*.js test/*.js",
     "test": "mocha test/*_test.js"
   },
