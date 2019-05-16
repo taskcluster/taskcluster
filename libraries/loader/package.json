@@ -8,6 +8,8 @@
     "test": "test"
   },
   "scripts": {
+    "coverage": "nyc npm test",
+    "coverage:report": "nyc npm test && nyc report --reporter=text-lcov | coveralls",
     "test": "mocha test/*.js",
     "lint": "eslint src/*.js test/*.js"
   },

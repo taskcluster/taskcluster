@@ -5,6 +5,8 @@
   "description": "Collect all of the ways of notifying users into one place for other tc services.",
   "license": "MPL-2.0",
   "scripts": {
+    "coverage": "nyc npm test",
+    "coverage:report": "nyc npm test && nyc report --reporter=text-lcov | coveralls",
     "test": "mocha test/*_test.js",
     "lint": "eslint src/*.js test/*.js"
   }

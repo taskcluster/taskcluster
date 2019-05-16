@@ -6,6 +6,8 @@
   "description": "Azure SAS credential shim for Taskcluster.",
   "license": "MPL-2.0",
   "scripts": {
+    "coverage": "nyc npm test",
+    "coverage:report": "nyc npm test && nyc report --reporter=text-lcov | coveralls",
     "lint": "eslint src/*.js test/*.js",
     "test": "mocha test/*_test.js"
   },

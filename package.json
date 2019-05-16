@@ -118,6 +118,7 @@
     "cliff": "^0.1.10",
     "commander": "^2.19.0",
     "console-taskgraph": "^1.5.0",
+    "coveralls": "^3.0.3",
     "depcheck": "^0.8.0",
     "dockerode": "^2.5.8",
     "dot": "^1.1.2",
@@ -136,6 +137,7 @@
     "mock-fs": "^4.8.0",
     "mockdate": "^2.0.2",
     "nock": "^10.0.6",
+    "nyc": "^14.1.1",
     "qlobber": "^3.1.0",
     "raw-loader": "^2.0.0",
     "recursive-copy": "^2.0.9",
@@ -161,6 +163,7 @@
     "test:cleanup": "yarn workspace taskcluster-auth test:cleanup",
     "build": "node infrastructure/builder/src/main.js build",
     "generate": "node infrastructure/builder/src/main.js generate",
+    "shared-secrets": "node test/shared-secrets.js",
     "heroku-prebuild": "echo $SOURCE_VERSION > taskcluster-version",
     "heroku-postbuild": "if [ $PROCFILE = \"ui/Procfile\" ]; then cd ui && yarn install --frozen-lockfile && yarn build; fi"
   },
