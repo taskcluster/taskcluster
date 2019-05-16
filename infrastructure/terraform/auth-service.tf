@@ -92,6 +92,9 @@ locals {
         "assume:worker-id:*",
         "auth:azure-table:read-write:${azurerm_storage_account.base.name}/WM*",
         "notify:email:*",
+        "secrets:get:worker-type:*",
+        "queue:claim-work:worker-manager/*",
+        "queue:worker-id:*",
       ]
     },
     {
