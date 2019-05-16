@@ -38,6 +38,7 @@ export default class Auth extends Client {
     this.sentryDSN.entry = {"args":["project"],"method":"get","name":"sentryDSN","output":true,"query":[],"route":"/sentry/<project>/dsn","scopes":"auth:sentry:<project>","stability":"stable","type":"function"}; // eslint-disable-line
     this.statsumToken.entry = {"args":["project"],"method":"get","name":"statsumToken","output":true,"query":[],"route":"/statsum/<project>/token","scopes":"auth:statsum:<project>","stability":"stable","type":"function"}; // eslint-disable-line
     this.websocktunnelToken.entry = {"args":["wstAudience","wstClient"],"method":"get","name":"websocktunnelToken","output":true,"query":[],"route":"/websocktunnel/<wstAudience>/<wstClient>","scopes":"auth:websocktunnel-token:<wstAudience>/<wstClient>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.gcpCredentials.entry = {"args":["projectId","serviceAccount"],"method":"get","name":"gcpCredentials","output":true,"query":[],"route":"/gcp/credentials/<projectId>/<serviceAccount>","scopes":"auth:gcp:access-token:<projectId>/<serviceAccount>","stability":"stable","type":"function"}; // eslint-disable-line
     this.authenticateHawk.entry = {"args":[],"input":true,"method":"post","name":"authenticateHawk","output":true,"query":[],"route":"/authenticate-hawk","stability":"stable","type":"function"}; // eslint-disable-line
     this.testAuthenticate.entry = {"args":[],"input":true,"method":"post","name":"testAuthenticate","output":true,"query":[],"route":"/test-authenticate","stability":"stable","type":"function"}; // eslint-disable-line
     this.testAuthenticateGet.entry = {"args":[],"method":"get","name":"testAuthenticateGet","output":true,"query":[],"route":"/test-authenticate-get/","stability":"stable","type":"function"}; // eslint-disable-line
@@ -395,6 +396,21 @@ export default class Auth extends Client {
     this.validate(this.websocktunnelToken.entry, args);
 
     return this.request(this.websocktunnelToken.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Get temporary GCP credentials for the given serviceAccount.
+  // projectId must always be the string "-", which means "use the same
+  // projectId as the account the service is running at.
+  // The call adds the necessary policy if the serviceAccount doesn't have it.
+  // The credentials are set to expire after an hour, but this behavior is
+  // subject to change. Hence, you should always read the `expires` property
+  // from the response, if you intend to maintain active credentials in your
+  // application.
+  /* eslint-enable max-len */
+  gcpCredentials(...args) {
+    this.validate(this.gcpCredentials.entry, args);
+
+    return this.request(this.gcpCredentials.entry, args);
   }
   /* eslint-disable max-len */
   // Validate the request signature given on input and return list of scopes

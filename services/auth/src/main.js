@@ -16,6 +16,7 @@ const taskcluster = require('taskcluster-client');
 const SentryClient = require('sentry-api').Client;
 const SentryManager = require('./sentrymanager');
 const libPulse = require('taskcluster-lib-pulse');
+const {google} = require('googleapis');
 
 // Create component loader
 const load = Loader({
@@ -120,10 +121,11 @@ const load = Loader({
   api: {
     requires: [
       'cfg', 'Client', 'Roles', 'schemaset', 'publisher', 'resolver',
-      'sentryManager', 'monitor', 'pulseClient',
+      'sentryManager', 'monitor', 'pulseClient', 'googleAuth',
     ],
     setup: async ({
-      cfg, Client, Roles, schemaset, publisher, resolver, sentryManager, monitor, pulseClient,
+      cfg, Client, Roles, schemaset, publisher, resolver, sentryManager,
+      monitor, pulseClient, googleAuth,
     }) => {
       // Set up the Azure tables
       await Client.ensureTable();
@@ -157,6 +159,8 @@ const load = Loader({
           sentryManager,
           statsum: cfg.app.statsum,
           websocktunnel: cfg.app.websocktunnel,
+          googleAuth,
+          gcpCredentials: cfg.gcp.credentials || null,
         },
         schemaset,
         signatureValidator,
@@ -177,6 +181,28 @@ const load = Loader({
       apis,
       ...cfg.server,
     }),
+  },
+
+  googleAuth: {
+    requires: ['cfg'],
+    setup: ({cfg}) => {
+      const credentials = cfg.gcp.credentials;
+
+      // In case credentials aren't available, we guard
+      // against it so mock tests don't fail
+      if (credentials) {
+        const auth = google.auth.fromJSON(credentials);
+
+        auth.scopes = [
+          'https://www.googleapis.com/auth/cloud-platform',
+          'https://www.googleapis.com/auth/iam',
+        ];
+
+        return auth;
+      }
+
+      return null;
+    },
   },
 
   'expire-sentry': {

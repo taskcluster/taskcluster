@@ -122,6 +122,12 @@ const builder = new APIBuilder({
 
     // The websocktunnel config (with property `secret`)
     'websocktunnel',
+
+    // The google API authencation object used by the service
+    'googleAuth',
+
+    // The GCP credentials in use,
+    'gcpCredentials',
   ],
 });
 
@@ -953,6 +959,7 @@ require('./azure');
 require('./sentry');
 require('./statsum');
 require('./websocktunnel');
+require('./gcp');
 
 /** Get all client information */
 builder.declare({

@@ -44,6 +44,9 @@ exports.secrets = new Secrets({
       {env: 'SENTRY_AUTH_TOKEN', cfg: 'sentry.authToken'},
       {env: 'SENTRY_HOSTNAME', cfg: 'sentry.hostname'},
     ],
+    gcp: [
+      {env: 'GCP_CREDENTIALS', cfg: 'gcp.credentials', name: 'credentials'},
+    ],
   },
   load: exports.load,
 });

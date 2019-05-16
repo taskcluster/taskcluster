@@ -3,7 +3,7 @@ const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['app'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp'], function(mock, skipping) {
   if (!mock) {
     return; // We don't test this with real credentials for now!
   }
@@ -12,6 +12,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app'], function(mock, skipping) 
   helper.withEntities('mock', skipping);
   helper.withRoles('mock', skipping);
   helper.withServers(mock, skipping);
+  helper.withCfg(mock, skipping);
 
   test('sentryDSN', async () => {
     await helper.apiClient.sentryDSN('playground');

@@ -4,11 +4,12 @@ const taskcluster = require('taskcluster-client');
 const mocha = require('mocha');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure', 'gcp'], function(mock, skipping) {
   helper.withPulse(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withRoles(mock, skipping);
   helper.withServers(mock, skipping);
+  helper.withCfg(mock, skipping);
 
   /**
    * Customized test function, taking an object as follows:

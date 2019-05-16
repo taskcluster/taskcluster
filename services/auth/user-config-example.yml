@@ -14,3 +14,5 @@ test:
   pulse:
     username:           "..."
     password:           "..."
+  gcp:
+    credentials:        "..."
