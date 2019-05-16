@@ -59,6 +59,24 @@ module "auth_rabbitmq_user" {
 locals {
   static_clients = [
     {
+      clientId    = "static/taskcluster/web-server"
+      accessToken = "${random_string.web_server_access_token.result}"
+      description = "..."
+
+      scopes = [
+        "assume:mozilla-group:*",
+        "assume:mozilla-user:*",
+        "assume:mozillians-group:*",
+        "assume:mozillians-user:*",
+        "auth:create-client:mozilla-ldap/*",
+        "auth:delete-client:mozilla-ldap/*",
+        "auth:disable-client:mozilla-ldap/*",
+        "auth:enable-client:mozilla-ldap/*",
+        "auth:reset-access-token:mozilla-ldap/*",
+        "auth:update-client:mozilla-ldap/*",
+      ]
+    },
+    {
       clientId    = "static/taskcluster/secrets"
       accessToken = "${random_string.secrets_access_token.result}"
       description = "..."
