@@ -122,11 +122,18 @@ class Logger {
       fields.meta = this.metadata;
     }
 
-    // include a top-level message for the log entry..
-    let message = fields.stack || fields.message;
-    // .. but only the first line
-    if (message) {
-      message = message.toString().split('\n', 1)[0];
+    // determine a top-level message for the log entry..
+    let message;
+    // if we have a stack, then we need to format it for StackDriver:
+    // exactly one line of message, followed by the "   at" lines of
+    // the stack
+    if (fields.stack) {
+      // capture just the first line of message and the stack frames:
+      message = fields.stack
+        .replace(/^([^\n]*)(?:\n[^\n]*)*?((?:\n {4}at[^\n]+)+)$/s, '$1$2');
+    } else if (fields.message) {
+      // include only the first line of a non-stack-bearing message
+      message = fields.message.toString().split('\n', 1)[0];
     }
 
     this.destination.write(stringify({

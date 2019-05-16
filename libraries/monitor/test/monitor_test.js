@@ -304,19 +304,20 @@ suite(testing.suiteName(), function() {
       assert.equal(monitorManager.messages[0].severity, 'ERROR');
       assert.equal(monitorManager.messages[0].Fields.name, 'Error');
       assert.equal(monitorManager.messages[0].Fields.message, 'oh no');
-      assert.equal(monitorManager.messages[0].message, 'Error: oh no');
-      assert(monitorManager.messages[0].Fields.stack);
+      assert.equal(monitorManager.messages[0].message, monitorManager.messages[0].Fields.stack);
     });
 
     test('should record first line of multiline errors', function() {
       monitor.reportError(new Error('uhoh\nsomething went wrong\n..again'));
       assert.equal(monitorManager.messages.length, 1);
-      // only the first line in the stack..
-      assert(monitorManager.messages[0].Fields.stack
+      // the toplevel message has the first line of the error plus stack
+      // (this format is required by stackdriver)
+      assert(monitorManager.messages[0].message
         .startsWith('Error: uhoh\n    at '));
-      // and only the first line in the top-level message
-      assert.equal(monitorManager.messages[0].message, 'Error: uhoh');
-      // but Fields.message has the whole thing..
+      // Fields.stack has the full multiline stack
+      assert(monitorManager.messages[0].Fields.stack
+        .startsWith('Error: uhoh\nsomething went wrong\n..again\n    at '));
+      // and fields.message has the full message but no stack
       assert.equal(monitorManager.messages[0].Fields.message,
         'uhoh\nsomething went wrong\n..again');
     });
