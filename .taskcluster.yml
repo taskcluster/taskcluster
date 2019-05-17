@@ -166,7 +166,7 @@ tasks:
               command:  # use `command` if given, falling back to basic yarn test
                 $if: entry['command']
                 then: ${entry.command}
-                else: yarn workspace ${entry.name} test
+                else: yarn workspace ${entry.name} coverage:report
               env: # add in any custom env vars that this package needs
                 $if: entry['env']
                 then: {$eval: entry.env}
@@ -174,7 +174,9 @@ tasks:
               install:
                 $if: entry['install']
                 then: ${entry.install}
-                else: "{ yarn --frozen-lockfile || exit 99; }"
+                else: >-
+                  { yarn --frozen-lockfile || exit 99; } &&
+                  eval "$(yarn -s shared-secrets)"
               cache:
                 $if: entry['cache']
                 then: {$eval: entry.cache}

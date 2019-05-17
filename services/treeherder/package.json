@@ -3,6 +3,8 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
+    "coverage": "nyc npm test",
+    "coverage:report": "nyc npm test && nyc report --reporter=text-lcov | codecov --pipe -p ../..",
     "test": "mocha test/*_test.js",
     "lint": "eslint src/*.js test/*.js"
   }

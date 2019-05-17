@@ -4,6 +4,8 @@
   "private": true,
   "main": "node src/server production",
   "scripts": {
+    "coverage": "nyc npm test",
+    "coverage:report": "nyc npm test && nyc report --reporter=text-lcov | codecov --pipe -p ../..",
     "test": "mocha test/*_test.js",
     "test:cleanup": "mocha test/cleanup.js",
     "lint": "eslint src/*.js test/*.js"

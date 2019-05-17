@@ -6,6 +6,8 @@
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
   "scripts": {
+    "coverage": "nyc npm test",
+    "coverage:report": "nyc npm test && nyc report --reporter=text-lcov | codecov --pipe -p ../..",
     "start": "NODE_ENV=development node src/main.js devServer",
     "lint": "eslint --cache --format codeframe --ext mjs,js src test",
     "test": "mocha test/*_test.js"
