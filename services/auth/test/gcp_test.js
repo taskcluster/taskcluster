@@ -1,11 +1,11 @@
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const slugid = require('slugid');
-const {google} = require('googleapis');
+
+const SERVICE_ACCOUNT = "taskcluster-auth-test@linux64-builds.iam.gserviceaccount.com";
 
 helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp'], function(mock, skipping) {
-  if (mock) {
+  if (mock || skipping()) {
     return;
   }
 
@@ -14,51 +14,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp'], function(mock, ski
   helper.withRoles('mock', skipping);
   helper.withServers(mock, skipping);
   helper.withCfg(mock, skipping);
-
-  let auth, account, iam;
-  const accountId = slugid.nice().replace(/_/g, '').toLowerCase();
-
-  suiteSetup('GCP credentials', async () => {
-    if (skipping()) {
-      return;
-    }
-    const credentials = helper.secrets.get('gcp').credentials;
-    const projectId = credentials.project_id;
-
-    auth = google.auth.fromJSON(credentials);
-
-    auth.scopes = [
-      'https://www.googleapis.com/auth/cloud-platform',
-      'https://www.googleapis.com/auth/iam',
-    ];
-
-    iam = google.iam('v1');
-
-    const res = await iam.projects.serviceAccounts.create({
-      auth,
-      name: `projects/${projectId}`,
-      resource: {
-        accountId,
-        serviceAccount: {
-          // This is a testing account and will be deleted by
-          // the end of the tests. If the test crashes, these
-          // accounts maybe left in IAM. Any account starting
-          // with taskcluster-auth-test- can be safely removed.
-          displayName: `taskcluster-auth-test-${accountId}`,
-        },
-      },
-    });
-
-    account = res.data;
-  });
-
-  suiteTeardown(async () => {
-    if (skipping()) {
-      return;
-    }
-
-    await iam.projects.serviceAccounts.delete({name: account.name, auth});
-  });
 
   test('gcpCredentials invalid account', async () => {
     try {
@@ -71,7 +26,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp'], function(mock, ski
 
   test('gcpCredentials invalid projectId', async () => {
     try {
-      await helper.apiClient.gcpCredentials('invalidprojectid', account.email);
+      await helper.apiClient.gcpCredentials('invalidprojectid', SERVICE_ACCOUNT);
       assert.fail('The call should fail');
     } catch (e) {
       assert.equal(e.statusCode, 400);
@@ -79,10 +34,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp'], function(mock, ski
   });
 
   test('gcpCredentials successful', async () => {
-    await helper.apiClient.gcpCredentials('-', account.email);
+    await helper.apiClient.gcpCredentials('-', SERVICE_ACCOUNT);
   });
 
   test('gcpCredentials after setting policy', async () => {
-    await helper.apiClient.gcpCredentials('-', account.email);
+    await helper.apiClient.gcpCredentials('-', SERVICE_ACCOUNT);
   });
 });
