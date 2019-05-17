@@ -461,6 +461,8 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 In v14.1.1 since v14.1.0
 ========================
 
+__Please don't use release v14.1.1 on any platform due to [bug 1552465](https://bugzil.la/1552465) which will be fixed in v14.1.2__
+
 * [Bug 1548829 - generic-worker: log header should mention provisionerId](https://bugzil.la/1548829)
 * [Bug 1551164 - [mounts] Not able to rename dir caches/*** as tasks/task_***/***: rename caches/*** tasks/task_***/***: file exists](https://bugzil.la/1551164)
 
