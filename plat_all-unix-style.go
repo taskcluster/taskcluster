@@ -157,7 +157,7 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 	if err != nil {
 		panic(err)
 	}
-	return
+	return false
 }
 
 func deleteDir(path string) error {

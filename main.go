@@ -464,18 +464,10 @@ func RunWorker() (exitCode ExitCode) {
 	lastReportedNoTasks := time.Now()
 	sigInterrupt := make(chan os.Signal, 1)
 	signal.Notify(sigInterrupt, os.Interrupt)
+	if RotateTaskEnvironment() {
+		return REBOOT_REQUIRED
+	}
 	for {
-
-		reboot := PrepareTaskEnvironment()
-		if reboot {
-			return REBOOT_REQUIRED
-		}
-
-		err = purgeOldTasks()
-		// errors are not fatal
-		if err != nil {
-			log.Printf("WARNING: failed to remove old task directories/users: %v", err)
-		}
 
 		// See https://bugzil.la/1298010 - routinely check if this worker type is
 		// outdated, and shut down if a new deployment is required.
@@ -530,8 +522,11 @@ func RunWorker() (exitCode ExitCode) {
 				}
 				return TASKS_COMPLETE
 			}
-			lastActive = time.Now()
 			if rebootBetweenTasks() {
+				return REBOOT_REQUIRED
+			}
+			lastActive = time.Now()
+			if RotateTaskEnvironment() {
 				return REBOOT_REQUIRED
 			}
 		} else {
@@ -1159,9 +1154,8 @@ func convertNilToEmptyString(val interface{}) string {
 
 func PrepareTaskEnvironment() (reboot bool) {
 	taskDirName := "task_" + strconv.Itoa(int(time.Now().Unix()))
-	reboot = PlatformTaskEnvironmentSetup(taskDirName)
-	if reboot {
-		return
+	if PlatformTaskEnvironmentSetup(taskDirName) {
+		return true
 	}
 	logDir := filepath.Join(taskContext.TaskDir, filepath.Dir(logPath))
 	err := os.MkdirAll(logDir, 0777)
@@ -1169,7 +1163,7 @@ func PrepareTaskEnvironment() (reboot bool) {
 		panic(err)
 	}
 	log.Printf("Created dir: %v", logDir)
-	return
+	return false
 }
 
 func taskDirsIn(parentDir string) ([]string, error) {
@@ -1226,4 +1220,17 @@ outer:
 		}
 	}
 	return nil
+}
+
+// RotateTaskEnvironment creates a new task environment (for the next task),
+// and purges existing used task environments.
+func RotateTaskEnvironment() (reboot bool) {
+	if PrepareTaskEnvironment() {
+		return true
+	}
+	err := purgeOldTasks()
+	// errors are not fatal
+	if err != nil {
+		log.Printf("WARNING: failed to remove old task directories/users: %v", err)
+	}
 }
