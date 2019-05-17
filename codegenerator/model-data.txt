@@ -1,4 +1,4 @@
-Generated: 1557858151
+Generated: 1558117347
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -32109,6 +32109,157 @@ required:
 - project
 - revision
 title: Github Pull Request
+type: object
+
+
+https://taskcluster-staging.net/references/worker-manager/v1/exchanges.json
+===========================================================================
+Version         = 'v1'
+Schema          = 'https://taskcluster-staging.net/schemas/common/exchanges-reference-v0.json#'
+Title           = 'Worker Manager Exchanges'
+Description     = 'These exchanges provide notifications when a workerType is created, updatedor deleted. This is so that the listener running in a differentprocess at the other end can direct another listener specified by`provider` and `workerType` to synchronize its bindings. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.'
+Exchange Prefix = 'exchange/taskcluster-worker-manager/v1/'
+Entry 0     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'workertype-created'
+    Entry Name        = 'workerTypeCreated'
+    Entry Title       = 'WorkerType Created Messages'
+    Entry Description = 'Whenever the api receives a request to create aworkerType, a message is posted to this exchange anda provider can act upon it.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'v1/pulse-workertype-message.json#'
+    Entry SchemaURL   = 'https://taskcluster-staging.net/schemas/worker-manager/v1/pulse-workertype-message.json#'
+Entry 1     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'workertype-updated'
+    Entry Name        = 'workerTypeUpdated'
+    Entry Title       = 'WorkerType Updated Messages'
+    Entry Description = 'Whenever the api receives a request to update aworkerType, a message is posted to this exchange anda provider can act upon it.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'v1/pulse-workertype-message.json#'
+    Entry SchemaURL   = 'https://taskcluster-staging.net/schemas/worker-manager/v1/pulse-workertype-message.json#'
+Entry 2     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'workertype-deleted'
+    Entry Name        = 'workerTypeDeleted'
+    Entry Title       = 'WorkerType Deleted Messages'
+    Entry Description = 'Whenever the api receives a request to delete aworkerType, a message is posted to this exchange anda provider can act upon it.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'v1/pulse-workertype-message.json#'
+    Entry SchemaURL   = 'https://taskcluster-staging.net/schemas/worker-manager/v1/pulse-workertype-message.json#'
+
+
+https://taskcluster-staging.net/schemas/worker-manager/v1/pulse-workertype-message.json#
+========================================================================================
+$id: https://taskcluster-staging.net/schemas/worker-manager/v1/pulse-workertype-message.json#
+$schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: https://taskcluster-staging.net/schemas/worker-manager/v1/pulse-workertype-message.json#
+TYPE_NAME: WorkerTypePulseMessage
+additionalProperties:
+  Boolean: false
+  Properties: null
+description: The message that is emitted when workertypes are created/changed/deleted.
+properties:
+  MemberNames:
+    name: Name
+    previousProvider: PreviousProvider
+    provider: Provider
+  Properties:
+    name:
+      $ref: workertype-full.json#/properties/provider
+      IS_REQUIRED: true
+      PROPERTY_NAME: name
+      REF_SCHEMA_URL: https://taskcluster-staging.net/schemas/worker-manager/v1/workertype-full.json#/properties/provider
+      REF_SUBSCHEMA:
+        IS_REQUIRED: true
+        PROPERTY_NAME: provider
+        SOURCE_URL: https://taskcluster-staging.net/schemas/worker-manager/v1/workertype-full.json#/properties/provider
+        TYPE_NAME: ""
+        description: |
+          The provider responsible for managing this workertype.
+        maxLength: 38
+        minLength: 1
+        pattern: ^([a-zA-Z0-9-_]*)$
+        title: Provider
+        type: string
+      SOURCE_URL: https://taskcluster-staging.net/schemas/worker-manager/v1/pulse-workertype-message.json#/properties/name
+      TYPE_NAME: ""
+    previousProvider:
+      IS_REQUIRED: false
+      PROPERTY_NAME: previousProvider
+      SOURCE_URL: https://taskcluster-staging.net/schemas/worker-manager/v1/pulse-workertype-message.json#/properties/previousProvider
+      TYPE_NAME: ""
+      description: "If this is defined, it was the provider that handled this workertype
+        in the \nconfiguration before the current one. This will be used by providers
+        to clean\nup any resources created for this workerType when they are no longer
+        responsible\nfor it.\n"
+      maxLength: 38
+      minLength: 1
+      pattern: ^([a-zA-Z0-9-_]*)$
+      title: Previous Provider
+      type: string
+    provider:
+      $ref: workertype-full.json#/properties/provider
+      IS_REQUIRED: true
+      PROPERTY_NAME: provider
+      REF_SCHEMA_URL: https://taskcluster-staging.net/schemas/worker-manager/v1/workertype-full.json#/properties/provider
+      REF_SUBSCHEMA:
+        IS_REQUIRED: true
+        PROPERTY_NAME: provider
+        SOURCE_URL: https://taskcluster-staging.net/schemas/worker-manager/v1/workertype-full.json#/properties/provider
+        TYPE_NAME: ""
+        description: |
+          The provider responsible for managing this workertype.
+        maxLength: 38
+        minLength: 1
+        pattern: ^([a-zA-Z0-9-_]*)$
+        title: Provider
+        type: string
+      SOURCE_URL: https://taskcluster-staging.net/schemas/worker-manager/v1/pulse-workertype-message.json#/properties/provider
+      TYPE_NAME: ""
+  SortedPropertyNames:
+  - name
+  - previousProvider
+  - provider
+  SourceURL: https://taskcluster-staging.net/schemas/worker-manager/v1/pulse-workertype-message.json#/properties
+required:
+- name
+- provider
+title: WorkerType Pulse Message
 type: object
 
 
