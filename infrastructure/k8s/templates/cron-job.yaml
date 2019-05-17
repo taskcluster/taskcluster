@@ -4,26 +4,15 @@ metadata:
   name: ${project_name}-${lowercase(job_name)}
 spec:
   schedule: ${schedule}
-  concurrencyPolicy: Allow
-  failedJobsHistoryLimit: 1
-  successfulJobsHistoryLimit: 3
-  suspend: false
   jobTemplate:
     metadata:
-      creationTimestamp: null
       labels:
         application: taskcluster
         taskcluster-service: ${project_name}
     spec:
       template:
-        metadata:
-          creationTimestamp: null
         spec:
-          dnsPolicy: ClusterFirst
           restartPolicy: OnFailure
-          schedulerName: default-scheduler
-          securityContext: {}
-          terminationGracePeriodSeconds: 30
           activeDeadlineSeconds: {$eval: 'deadline_seconds'}
           volumes:
             $if: 'len(volume_mounts) > 0'
@@ -40,8 +29,6 @@ spec:
           - name: ${project_name}-${lowercase(job_name)}
             image: ${docker_image}
             imagePullPolicy: Always
-            terminationMessagePath: /dev/termination-log
-            terminationMessagePolicy: File
             args:
               $if: 'is_monoimage'
               then: ['${service_name}/${job_name}']
@@ -70,4 +57,3 @@ spec:
                       secretKeyRef:
                         name: '${secret_name}'
                         key: '${uppercase(k)}'
-status: {}
