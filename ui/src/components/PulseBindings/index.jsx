@@ -3,6 +3,7 @@ import React, { Component, Fragment } from 'react';
 import { withApollo } from 'react-apollo';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
+import { arrayOf, func, object, string } from 'prop-types';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -43,8 +44,20 @@ import DeleteIcon from 'mdi-react/DeleteIcon';
     paddingTop: 0,
     paddingBottom: 0,
   },
+  subheader: {
+    fontSize: theme.typography.pxToRem(16),
+  },
 }))
 export default class PulseBindings extends Component {
+  static propTypes = {
+    pulseExchange: string.isRequired,
+    pattern: string.isRequired,
+    bindings: arrayOf(object).isRequired,
+    onBindingAdd: func.isRequired,
+    onBindingRemove: func.isRequired,
+    onChange: func.isRequired,
+  };
+
   render() {
     const {
       pulseExchange,
