@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -exv
 
 ######
 # This script allows you to test a new generic-worker Windows release on
@@ -102,7 +102,7 @@ cat manifest.tt
 
 git clone git@github.com:mozilla-releng/OpenCloudConfig.git
 cd OpenCloudConfig/userdata/Manifest
-for MANIFEST in gecko-t-win10-64-gpu-b gecko-t-win7-32-gpu-b gecko-t-win10-64-cu gecko-t-win7-32-cu gecko-1-b-win2012-beta gecko-t-win10-64-beta gecko-t-win7-32-beta; do
+for MANIFEST in gecko-t-win10-64-gpu-b.json gecko-t-win7-32-gpu-b.json gecko-t-win10-64-cu.json gecko-t-win7-32-cu.json gecko-1-b-win2012-beta.json gecko-t-win10-64-beta.json gecko-t-win7-32-beta.json; do
   cat "${MANIFEST}" > "${MANIFEST}.bak"
   cat "${MANIFEST}.bak" \
     | sed "s_\\(generic-worker/releases/download/v\\)[^/]*\\(/generic-worker-nativeEngine-windows-\\)_\\1${NEW_GW_VERSION}\\2_" | sed "s_\\(\"generic-worker \\)[^ ]*\\(.*\\)\$_\\1${NEW_GW_VERSION}\\2_" \
