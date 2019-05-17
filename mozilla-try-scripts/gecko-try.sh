@@ -1,4 +1,4 @@
-#!/bin/bash -exv
+#!/bin/bash -e
 
 ######
 # This script allows you to test a new generic-worker Windows release on
