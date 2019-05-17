@@ -19,6 +19,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp'], function(mock, ski
   const accountId = slugid.nice().replace(/_/g, '').toLowerCase();
 
   suiteSetup('GCP credentials', async () => {
+    if (skipping()) {
+      return;
+    }
     const credentials = helper.secrets.get('gcp').credentials;
     const projectId = credentials.project_id;
 
@@ -50,6 +53,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp'], function(mock, ski
   });
 
   suiteTeardown(async () => {
+    if (skipping()) {
+      return;
+    }
+
     await iam.projects.serviceAccounts.delete({name: account.name, auth});
   });
 
