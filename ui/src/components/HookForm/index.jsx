@@ -232,7 +232,7 @@ export default class HookForm extends Component {
   }
 
   getHookDefinition = () => {
-    const { hook } = this.state;
+    const { hook, bindings } = this.state;
     const definition = {
       metadata: {
         name: hook.metadata.name,
@@ -240,6 +240,7 @@ export default class HookForm extends Component {
         owner: hook.metadata.owner,
         emailOnError: hook.metadata.emailOnError,
       },
+      bindings,
       schedule: hook.schedule,
       task: hook.task,
       triggerSchema: hook.triggerSchema,
