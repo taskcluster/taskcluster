@@ -1,5 +1,4 @@
 const builder = require('./api');
-const {google} = require('googleapis');
 
 builder.declare({
   method: 'get',
@@ -31,16 +30,9 @@ builder.declare({
     );
   }
 
-  if (!this.googleAuth) {
-    return res.reportError(
-      'InternalServerError',
-      'The credentials for Google Cloud aren\'t available',
-    );
-  }
-
-  const iam = google.iam({
+  const iam = this.gcp.googleapis.iam({
     version: 'v1',
-    auth: this.googleAuth,
+    auth: this.gcp.auth,
   });
 
   // to understand the {get/set}IamPolicy calls, look at
@@ -76,7 +68,7 @@ builder.declare({
     data.bindings.push(binding);
   }
 
-  const myServiceAccount = this.gcpCredentials.client_email;
+  const myServiceAccount = this.gcp.credentials.client_email;
   if (!binding.members.includes(`serviceAccount:${myServiceAccount}`)) {
     binding.members.push(`serviceAccount:${myServiceAccount}`);
     await iam.projects.serviceAccounts.setIamPolicy({
@@ -88,9 +80,9 @@ builder.declare({
     });
   }
 
-  const iamcredentials = google.iamcredentials({
+  const iamcredentials = this.gcp.googleapis.iamcredentials({
     version: 'v1',
-    auth: this.googleAuth,
+    auth: this.gcp.auth,
   });
 
   response = await iamcredentials.projects.serviceAccounts.generateAccessToken({

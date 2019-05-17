@@ -1,88 +1,63 @@
+const _ = require('lodash');
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const slugid = require('slugid');
-const {google} = require('googleapis');
 
-helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp'], function(mock, skipping) {
-  if (mock) {
-    return;
-  }
-
-  helper.withPulse('mock', skipping);
-  helper.withEntities('mock', skipping);
-  helper.withRoles('mock', skipping);
+helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp', 'azure'], function(mock, skipping) {
+  helper.withGcp(mock, skipping);
+  helper.withPulse(mock, skipping);
+  helper.withEntities(mock, skipping);
+  helper.withRoles(mock, skipping);
   helper.withServers(mock, skipping);
   helper.withCfg(mock, skipping);
-
-  let auth, account, iam;
-  const accountId = slugid.nice().replace(/_/g, '').toLowerCase();
-
-  suiteSetup('GCP credentials', async () => {
-    if (skipping()) {
-      return;
-    }
-    const credentials = helper.secrets.get('gcp').credentials;
-    const projectId = credentials.project_id;
-
-    auth = google.auth.fromJSON(credentials);
-
-    auth.scopes = [
-      'https://www.googleapis.com/auth/cloud-platform',
-      'https://www.googleapis.com/auth/iam',
-    ];
-
-    iam = google.iam('v1');
-
-    const res = await iam.projects.serviceAccounts.create({
-      auth,
-      name: `projects/${projectId}`,
-      resource: {
-        accountId,
-        serviceAccount: {
-          // This is a testing account and will be deleted by
-          // the end of the tests. If the test crashes, these
-          // accounts maybe left in IAM. Any account starting
-          // with taskcluster-auth-test- can be safely removed.
-          displayName: `taskcluster-auth-test-${accountId}`,
-        },
-      },
-    });
-
-    account = res.data;
-  });
-
-  suiteTeardown(async () => {
-    if (skipping()) {
-      return;
-    }
-
-    await iam.projects.serviceAccounts.delete({name: account.name, auth});
-  });
 
   test('gcpCredentials invalid account', async () => {
     try {
       await helper.apiClient.gcpCredentials('-', 'invalidserviceaccount@mozilla.com');
-      assert.fail('The call should fail');
     } catch (e) {
-      assert.equal(e.statusCode, 404);
+      if (e.statusCode !== 404) {
+        throw e;
+      }
+      return;
     }
+    assert.fail('The call should fail');
   });
 
   test('gcpCredentials invalid projectId', async () => {
     try {
-      await helper.apiClient.gcpCredentials('invalidprojectid', account.email);
-      assert.fail('The call should fail');
+      await helper.apiClient.gcpCredentials('invalidprojectid', helper.gcpAccount.email);
     } catch (e) {
-      assert.equal(e.statusCode, 400);
+      if (e.statusCode !== 400) {
+        throw e;
+      }
+      return;
     }
+    assert.fail('The call should fail');
   });
 
   test('gcpCredentials successful', async () => {
-    await helper.apiClient.gcpCredentials('-', account.email);
+    const res = await helper.apiClient.gcpCredentials('-', helper.gcpAccount.email);
+
+    if (mock) {
+      assert.equal(res.accessToken, 'sekrit');
+    }
   });
 
   test('gcpCredentials after setting policy', async () => {
-    await helper.apiClient.gcpCredentials('-', account.email);
+    await helper.apiClient.gcpCredentials('-', helper.gcpAccount.email);
+
+    // verify that the service account is still configured correctly and not
+    // endlessly adding bindings or members
+    const {googleapis, auth} = await helper.load('gcp');
+    const iam = googleapis.iam({version: 'v1', auth});
+    const res = await iam.projects.serviceAccounts.getIamPolicy({
+      resource_: `projects/-/serviceAccounts/${helper.gcpAccount.email}`,
+    });
+
+    // GCP obscures the member serviceAccount, so we just assert that
+    // there are the correct number of bindings and members
+    assert.deepEqual(res.data.bindings.map(({role}) => role),
+      ['roles/iam.serviceAccountTokenCreator']);
+    assert.equal(res.data.bindings[0].members.length, 1);
   });
 });

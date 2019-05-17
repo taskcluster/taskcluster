@@ -1,3 +1,4 @@
+const assert = require('assert');
 const debug = require('debug')('test-helper');
 const _ = require('lodash');
 const data = require('../src/data');
@@ -316,4 +317,130 @@ exports.withServers = (mock, skipping) => {
       proxier = null;
     }
   });
+};
+
+/**
+ * Set up the `google` component with a fake if mocking, otherwise
+ * using real credentials.
+ */
+exports.withGcp = (mock, skipping) => {
+  const accountId = slugid.nice().replace(/_/g, '').toLowerCase();
+  let auth, iam;
+  let policy = {};
+
+  const fakeGoogleApis = {
+    iam: ({version, auth}) => {
+      assert.equal(version, 'v1');
+
+      const {client_email} = auth.testCredentials;
+      const iamResource = `projects/-/serviceAccounts/${client_email}`;
+
+      return {
+        projects: {
+          serviceAccounts: {
+            getIamPolicy: async ({resource_}) => {
+              if (resource_ !== iamResource) {
+                // api method treats any error as "not found"
+                throw new Error('Not found');
+              }
+
+              return {data: _.cloneDeep(policy)};
+            },
+            setIamPolicy: async ({resource, requestBody}) => {
+              if (resource !== iamResource) {
+                throw new Error('Not found');
+              }
+
+              assert.equal(requestBody.updateMask, 'bindings');
+              policy = requestBody.policy;
+            },
+          },
+        },
+      };
+    },
+
+    iamcredentials: ({version, auth}) => {
+      assert.equal(version, 'v1');
+
+      const {client_email} = auth.testCredentials;
+
+      return {
+        projects: {
+          serviceAccounts: {
+            generateAccessToken: async ({name, scope, delegates, lifetime}) => {
+              assert.equal(name, `projects/-/serviceAccounts/${client_email}`);
+              assert.deepEqual(scope, ['https://www.googleapis.com/auth/cloud-platform']);
+              assert.deepEqual(delegates, []);
+              assert.equal(lifetime, '3600s');
+
+              return {
+                data: {
+                  accessToken: 'sekrit',
+                  expireTime: new Date(1978, 6, 15).toJSON(),
+                },
+              };
+            },
+          },
+        },
+      };
+    },
+  };
+
+  suiteSetup('GCP credentials', async () => {
+    if (skipping()) {
+      return;
+    }
+
+    if (mock) {
+      const credentials = {
+        project_id: 'testproject',
+        client_email: 'test_client@example.com',
+      };
+      const auth = {testCredentials: credentials};
+
+      exports.load.inject('gcp', {
+        auth,
+        googleapis: fakeGoogleApis,
+        credentials,
+      });
+
+      exports.gcpAccount = {
+        email: 'test_client@example.com',
+        name: 'testAccount',
+      };
+    } else {
+      const {credentials, auth, googleapis} = await exports.load('gcp');
+      const projectId = credentials.project_id;
+
+      iam = googleapis.iam({version: 'v1', auth});
+
+      const res = await iam.projects.serviceAccounts.create({
+        auth,
+        name: `projects/${projectId}`,
+        resource: {
+          accountId,
+          serviceAccount: {
+            // This is a testing account and will be deleted by
+            // the end of the tests. If the test crashes, these
+            // accounts maybe left in IAM. Any account starting
+            // with taskcluster-auth-test- can be safely removed.
+            displayName: `taskcluster-auth-test-${accountId}`,
+          },
+        },
+      });
+
+      exports.gcpAccount = res.data;
+    }
+  });
+
+  suiteTeardown(async () => {
+    if (skipping()) {
+      return;
+    }
+
+    if (!mock) {
+      await iam.projects.serviceAccounts.delete({name: exports.gcpAccount.name, auth});
+    }
+  });
+
 };

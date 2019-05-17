@@ -16,7 +16,7 @@ const taskcluster = require('taskcluster-client');
 const SentryClient = require('sentry-api').Client;
 const SentryManager = require('./sentrymanager');
 const libPulse = require('taskcluster-lib-pulse');
-const {google} = require('googleapis');
+const {google: googleapis} = require('googleapis');
 
 // Create component loader
 const load = Loader({
@@ -121,11 +121,11 @@ const load = Loader({
   api: {
     requires: [
       'cfg', 'Client', 'Roles', 'schemaset', 'publisher', 'resolver',
-      'sentryManager', 'monitor', 'pulseClient', 'googleAuth',
+      'sentryManager', 'monitor', 'pulseClient', 'gcp',
     ],
     setup: async ({
       cfg, Client, Roles, schemaset, publisher, resolver, sentryManager,
-      monitor, pulseClient, googleAuth,
+      monitor, pulseClient, gcp,
     }) => {
       // Set up the Azure tables
       await Client.ensureTable();
@@ -159,8 +159,7 @@ const load = Loader({
           sentryManager,
           statsum: cfg.app.statsum,
           websocktunnel: cfg.app.websocktunnel,
-          googleAuth,
-          gcpCredentials: cfg.gcp.credentials || null,
+          gcp,
         },
         schemaset,
         signatureValidator,
@@ -183,25 +182,26 @@ const load = Loader({
     }),
   },
 
-  googleAuth: {
+  gcp: {
     requires: ['cfg'],
     setup: ({cfg}) => {
       const credentials = cfg.gcp.credentials;
+      const auth = googleapis.auth.fromJSON(credentials);
 
-      // In case credentials aren't available, we guard
-      // against it so mock tests don't fail
-      if (credentials) {
-        const auth = google.auth.fromJSON(credentials);
+      auth.scopes = [
+        'https://www.googleapis.com/auth/cloud-platform',
+        'https://www.googleapis.com/auth/iam',
+      ];
 
-        auth.scopes = [
-          'https://www.googleapis.com/auth/cloud-platform',
-          'https://www.googleapis.com/auth/iam',
-        ];
-
-        return auth;
-      }
-
-      return null;
+      // return an object with..
+      return {
+        // the googleapis module (useful for dependency injection in tests)
+        googleapis,
+        // the constructed auth object
+        auth,
+        // and the credentials configuration
+        credentials,
+      };
     },
   },
 
