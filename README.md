@@ -458,6 +458,11 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v14.1.2 since v14.1.1
+========================
+
+* [Bug 1552465 - generic-worker: only prepare new task environment when task has been claimed](https://bugzil.la/1552465)
+
 In v14.1.1 since v14.1.0
 ========================
 
