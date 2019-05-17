@@ -1233,4 +1233,5 @@ func RotateTaskEnvironment() (reboot bool) {
 	if err != nil {
 		log.Printf("WARNING: failed to remove old task directories/users: %v", err)
 	}
+	return false
 }
