@@ -56,10 +56,8 @@ builder.declare({
   if (data.bindings === undefined) {
     data.bindings = [];
   }
-  let binding = data.bindings.filter(b => b.role === 'roles/iam.serviceAccountTokenCreator');
-  if (binding.length) {
-    binding = binding[0];
-  } else {
+  let binding = data.bindings.find(b => b.role === 'roles/iam.serviceAccountTokenCreator');
+  if (!binding) {
     binding = {
       role: 'roles/iam.serviceAccountTokenCreator',
       members: [],
