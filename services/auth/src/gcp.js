@@ -7,11 +7,12 @@ builder.declare({
   output: 'gcp-credentials-response.yml',
   stability: 'stable',
   scopes: 'auth:gcp:access-token:<projectId>/<serviceAccount>',
-  title: 'Get Temporary Read/Write GCP Credentials',
+  title: 'Get Temporary GCP Credentials',
   description: [
-    'Get temporary GCP credentials for the given serviceAccount.',
-    'projectId must always be the string "-", which means "use the same',
-    'projectId as the account the service is running at.',
+    'Get temporary GCP credentials for the given serviceAccount in the given project.',
+    '',
+    'Only preconfigured projects are allowed.  Any serviceAccount in that project may',
+    'be used.',
     '',
     'The call adds the necessary policy if the serviceAccount doesn\'t have it.',
     'The credentials are set to expire after an hour, but this behavior is',
@@ -27,10 +28,10 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'GCP credentials are not available');
   }
 
-  if (projectId !== '-') {
+  if (projectId !== this.gcp.credentials.project_id) {
     return res.reportError(
-      'InvalidRequestArguments',
-      'projectId must always be "-"',
+      'ResourceNotFound',
+      `The projectId ${projectId} is not configured`,
     );
   }
 
@@ -47,7 +48,9 @@ builder.declare({
   let response;
   try {
     response = await iam.projects.serviceAccounts.getIamPolicy({
-      resource_: `projects/${projectId}/serviceAccounts/${serviceAccount}`,
+      // NOTE: the `-` here represents the projectId, and uses the projectId
+      // from this.gcp.auth, which is why we verified those match above.
+      resource_: `projects/-/serviceAccounts/${serviceAccount}`,
     });
   } catch (e) {
     return res.reportError(
@@ -74,7 +77,9 @@ builder.declare({
   if (!binding.members.includes(`serviceAccount:${myServiceAccount}`)) {
     binding.members.push(`serviceAccount:${myServiceAccount}`);
     await iam.projects.serviceAccounts.setIamPolicy({
-      resource: `projects/${projectId}/serviceAccounts/${serviceAccount}`,
+      // NOTE: the `-` here represents the projectId, and uses the projectId
+      // from this.gcp.auth, which is why we verified those match above.
+      resource: `projects/-/serviceAccounts/${serviceAccount}`,
       requestBody: {
         policy: data,
         updateMask: 'bindings',
@@ -88,7 +93,9 @@ builder.declare({
   });
 
   response = await iamcredentials.projects.serviceAccounts.generateAccessToken({
-    name: `projects/${projectId}/serviceAccounts/${serviceAccount}`,
+    // NOTE: the `-` here represents the projectId, and uses the projectId
+    // from this.gcp.auth, which is why we verified those match above.
+    name: `projects/-/serviceAccounts/${serviceAccount}`,
     scope: [
       'https://www.googleapis.com/auth/cloud-platform',
     ],

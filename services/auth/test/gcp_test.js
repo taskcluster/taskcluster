@@ -13,7 +13,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp', 'azure'], function(
 
   test('gcpCredentials invalid account', async () => {
     try {
-      await helper.apiClient.gcpCredentials('-', 'invalidserviceaccount@mozilla.com');
+      await helper.apiClient.gcpCredentials(helper.gcpAccount.project_id, 'invalid@mozilla.com');
     } catch (e) {
       if (e.statusCode !== 404) {
         throw e;
@@ -27,7 +27,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp', 'azure'], function(
     try {
       await helper.apiClient.gcpCredentials('invalidprojectid', helper.gcpAccount.email);
     } catch (e) {
-      if (e.statusCode !== 400) {
+      if (e.statusCode !== 404) {
         throw e;
       }
       return;
@@ -36,7 +36,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp', 'azure'], function(
   });
 
   test('gcpCredentials successful', async () => {
-    const res = await helper.apiClient.gcpCredentials('-', helper.gcpAccount.email);
+    const res = await helper.apiClient.gcpCredentials(helper.gcpAccount.project_id, helper.gcpAccount.email);
 
     if (mock) {
       assert.equal(res.accessToken, 'sekrit');
@@ -44,7 +44,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp', 'azure'], function(
   });
 
   test('gcpCredentials after setting policy', async () => {
-    await helper.apiClient.gcpCredentials('-', helper.gcpAccount.email);
+    await helper.apiClient.gcpCredentials(helper.gcpAccount.project_id, helper.gcpAccount.email);
 
     // verify that the service account is still configured correctly and not
     // endlessly adding bindings or members

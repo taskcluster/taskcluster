@@ -407,6 +407,7 @@ exports.withGcp = (mock, skipping) => {
       exports.gcpAccount = {
         email: 'test_client@example.com',
         name: 'testAccount',
+        project_id: credentials.project_id,
       };
     } else {
       const {credentials, auth, googleapis} = await exports.load('gcp');
@@ -429,7 +430,11 @@ exports.withGcp = (mock, skipping) => {
         },
       });
 
-      exports.gcpAccount = res.data;
+      exports.gcpAccount = {
+        email: res.data.email,
+        name: res.data.name,
+        project_id: credentials.project_id,
+      };
     }
   });
 
