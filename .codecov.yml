@@ -1,0 +1,9 @@
+---
+codecov:
+  # This allows codecov to wait on all taskcluster checks to finish
+  # it must be told which targetUrl to look out for. I figure we will
+  # get the current tools.tc.net and whatever future rootUrl we end up
+  # with should go in here before we move.
+  ci:
+    - tools.taskcluster.net
+
