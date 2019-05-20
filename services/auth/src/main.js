@@ -186,7 +186,10 @@ const load = Loader({
     requires: ['cfg'],
     setup: ({cfg}) => {
       const credentials = cfg.gcp.credentials;
-      const auth = googleapis.auth.fromJSON(credentials);
+
+      // note that this service can currently start up correctly without GCP
+      // credentials configured.
+      const auth = credentials ? googleapis.auth.fromJSON(credentials) : {};
 
       auth.scopes = [
         'https://www.googleapis.com/auth/cloud-platform',

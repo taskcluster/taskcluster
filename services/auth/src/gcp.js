@@ -23,6 +23,10 @@ builder.declare({
   const serviceAccount = req.params.serviceAccount;
   const projectId = req.params.projectId;
 
+  if (!this.gcp.credentials) {
+    return res.reportError('ResourceNotFound', 'GCP credentials are not available');
+  }
+
   if (projectId !== '-') {
     return res.reportError(
       'InvalidRequestArguments',
