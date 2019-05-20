@@ -1,6 +1,6 @@
 project_name: "taskcluster-purge-cache"
 secrets:
-  azure_account: ".Values.azurermStorageAccountBaseName"
+  azure_account: ".Values.tfAzureAccount"
   force_ssl: "false"
   monitoring_enable: "true"
   node_env: "production"
