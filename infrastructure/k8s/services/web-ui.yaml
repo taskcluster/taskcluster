@@ -1,0 +1,14 @@
+project_name: "taskcluster-web-ui"
+secrets:
+  taskcluster_client_id: "static/taskcluster/web-ui"
+  port: ""
+  graphql_endpoint: ".Values.graphqlEndpoint" # ${var.root_url}/graphql
+  graphql_subscription_endpoint: ".Values.graphqlSubscriptionEndpoint" # ${var.root_url}/subscription
+  login_strategies: ""
+deployments:
+  - service_name: "ui"
+    proc_name: "web"
+    secret_name: "taskcluster-web-ui"
+    root_url: ".Values.rootUrl"
+    docker_image: ".Values.dockerImage"
+    readiness_path: "/"
