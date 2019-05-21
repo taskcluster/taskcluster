@@ -52,8 +52,8 @@ spec:
                   value: ${root_url}
                 - $map: {$eval: 'secret_keys'}
                   each(k):
-                    name: '${k}'
+                    name: '${uppercase(k)}'
                     valueFrom:
                       secretKeyRef:
                         name: '${secret_name}'
-                        key: '${k}'
+                        key: '${uppercase(k)}'
