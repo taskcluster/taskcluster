@@ -85,7 +85,7 @@ def write_file(template, context, suffix):
     filepath = f"{args.chartsdir}/{context['project_name']}-{suffix}.yaml"
     try:
         f = open(filepath, "w+")
-        f.write(yaml.dump(jsone.render(template, context)))
+        f.write(yaml.dump(jsone.render(template, context), default_flow_style=False))
         f.close()
     except:
         print(f"failed to write {filepath}")
