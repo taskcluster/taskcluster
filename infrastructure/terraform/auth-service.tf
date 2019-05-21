@@ -74,6 +74,12 @@ locals {
         "auth:enable-client:mozilla-auth0/*",
         "auth:reset-access-token:mozilla-auth0/*",
         "auth:update-client:mozilla-auth0/*",
+        "auth:create-client:github/*",
+        "auth:delete-client:github/*",
+        "auth:disable-client:github/*",
+        "auth:enable-client:github/*",
+        "auth:reset-access-token:github/*",
+        "auth:update-client:github/*",
         "assume:login-identity:*",
       ]
     },
