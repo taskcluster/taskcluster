@@ -44,7 +44,8 @@ tasks:
           PULSE_CONNECTION_STRING: amqp://guest:guest@localhost:5672/
         command: >-
           service rabbitmq-server start &&
-          yarn workspace taskcluster-lib-pulse test
+          yarn workspace taskcluster-lib-pulse coverage:report &&
+          bash <(curl -s https://codecov.io/bash) -b $TASK_ID.$RUN_ID
       - name: taskcluster-lib-references
       - name: taskcluster-lib-scopes
       - name: taskcluster-lib-testing
@@ -166,7 +167,9 @@ tasks:
               command:  # use `command` if given, falling back to basic yarn test
                 $if: entry['command']
                 then: ${entry.command}
-                else: yarn workspace ${entry.name} coverage:report
+                else: >-
+                  yarn workspace ${entry.name} coverage:report &&
+                  bash <(curl -s https://codecov.io/bash) -b $TASK_ID.$RUN_ID
               env: # add in any custom env vars that this package needs
                 $if: entry['env']
                 then: {$eval: entry.env}
@@ -206,6 +209,7 @@ tasks:
               env:
                 $merge:
                 - DEBUG: ${debug}
+                  CI_BUILD_URL: 'https://tools.taskcluster.net/tasks/${as_slugid(job.name)}'
                   NO_TEST_SKIP:
                     $if: 'job.name != "taskcluster-lib-testing"'
                     then: true
