@@ -87,7 +87,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
     let recycles = 0;
     const client = new Client({
       credentials,
-      recycleInterval: 10,
+      recycleInterval: 5,
       retirementDelay: 50,
       monitor,
       namespace: 'guest',
@@ -100,7 +100,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       return new Connection(50);
     };
 
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
     await client.stop();
     assume(recycles).is.gt(5);
   });
