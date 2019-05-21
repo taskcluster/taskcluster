@@ -47,7 +47,7 @@ tasks:
         command: >-
           service rabbitmq-server start &&
           yarn workspace taskcluster-lib-pulse coverage:report &&
-          bash <(curl -s https://codecov.io/bash) -b $TASK_ID.$RUN_ID
+          bash <(curl -s https://codecov.io/bash) -b $TASK_ID/$RUN_ID
       - name: taskcluster-lib-references
       - name: taskcluster-lib-scopes
       - name: taskcluster-lib-testing
@@ -171,7 +171,7 @@ tasks:
                 then: ${entry.command}
                 else: >-
                   yarn workspace ${entry.name} coverage:report &&
-                  bash <(curl -s https://codecov.io/bash) -b $TASK_ID.$RUN_ID
+                  bash <(curl -s https://codecov.io/bash) -b $TASK_ID/$RUN_ID
               env: # add in any custom env vars that this package needs
                 $if: entry['env']
                 then: {$eval: entry.env}
