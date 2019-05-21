@@ -240,6 +240,10 @@ class GoogleProvider extends Provider {
       throw error;
     }
 
+    if (worker.state !== this.Worker.states.REQUESTED) {
+      throw new Error('Attempt to reclaim credentials from an already existing worker');
+    }
+
     await worker.modify(w => {
       w.state = this.Worker.states.RUNNING;
     });

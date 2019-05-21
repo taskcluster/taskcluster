@@ -265,7 +265,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     throw new Error('allowed fetch of credentials from wrong worker!');
   });
 
-  test('credentials google (but wrong worker)', async function() {
+  test('credentials google (but wrong workertype)', async function() {
     const name = 'ee';
     await helper.Worker.create({
       workerType: 'wrong',
@@ -286,5 +286,30 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       return;
     }
     throw new Error('allowed fetch of credentials from wrong workertype!');
+  });
+
+  test('credentials google (second fetch fails)', async function() {
+    const name = 'ee';
+    await helper.Worker.create({
+      workerType: name,
+      workerId: 'gcp-abc123', // TODO: Don't just copy-paste this from fake-google
+      provider: 'google',
+      created: new Date(),
+      expires: taskcluster.fromNow('1 hour'),
+      state: helper.Worker.states.REQUESTED,
+      providerData: {},
+    });
+    workerTypeCompare(name, googleInput, await helper.workerManager.createWorkerType(name, googleInput));
+
+    await helper.workerManager.credentialsGoogle(name, {token: 'abc'});
+    try {
+      await helper.workerManager.credentialsGoogle(name, {token: 'abc'});
+    } catch (err) {
+      if (err.code !== 'InputError') {
+        throw err;
+      }
+      return;
+    }
+    throw new Error('allowed second fetch of creds');
   });
 });
