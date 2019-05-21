@@ -25,10 +25,12 @@ tasks:
           git_url: ${event.repository.url}
           url: ${event.repository.url}
           ref: ${event.after}
+          branch: ${event.ref}
         else:
           git_url: ${event.pull_request.head.repo.git_url}
           url: ${event.pull_request.head.repo.url}
           ref: ${event.pull_request.head.sha}
+          branch: ${event.pull_request.head.ref}
 
       # We keep the separate from "others" so that we can assert a 1-1 mapping onto existing packages
       packages:
@@ -209,7 +211,9 @@ tasks:
               env:
                 $merge:
                 - DEBUG: ${debug}
+                  CODECOV_NAME: ${job.name}
                   CI_BUILD_URL: 'https://tools.taskcluster.net/tasks/${as_slugid(job.name)}'
+                  GIT_BRANCH: ${repo.branch}
                   NO_TEST_SKIP:
                     $if: 'job.name != "taskcluster-lib-testing"'
                     then: true
