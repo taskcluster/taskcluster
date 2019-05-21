@@ -81,7 +81,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
       await dockerRun({
         image: nodeImage,
         workingDir: '/app',
-        command: ['yarn', 'install', '--frozen-lockfile'],
+        command: ['bash', '-c', 'sleep 20; yarn install --frozen-lockfile'],
         binds: [
           `${appDir}:/app`,
           `${cacheDir}:/cache`,
@@ -136,7 +136,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
         image: nodeImage,
         workingDir: '/app/ui',
         env: ['YARN_CACHE_FOLDER=/cache'],
-        command: ['bash', '-c', 'yarn install'],
+        command: ['bash', '-c', 'sleep 20; yarn install'],
         logfile: `${workDir}/yarn-ui-install.log`,
         utils,
         binds: [
