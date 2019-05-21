@@ -59,7 +59,7 @@ It is not possible to run a full Taskcluster deployment directly from this repos
 * [Services](services#readme)
     * [Auth Service](services/auth#readme)
     * [Built-In Workers Service](services/built-in-workers#readme)
-    * [Github Service](services/github#readme)
+    * [GitHub Service](services/github#readme)
     * [Hooks Service](services/hooks#readme)
     * [Index Service](services/index#readme)
     * [Login Service](services/login#readme)

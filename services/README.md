@@ -7,7 +7,7 @@ These are any packages that are run as part of a deployment of Taskcluster.
 <!-- TOC BEGIN -->
 * [Auth Service](auth#readme)
 * [Built-In Workers Service](built-in-workers#readme)
-* [Github Service](github#readme)
+* [GitHub Service](github#readme)
 * [Hooks Service](hooks#readme)
 * [Index Service](index#readme)
 * [Login Service](login#readme)
