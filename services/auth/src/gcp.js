@@ -1,5 +1,4 @@
 const builder = require('./api');
-const {google} = require('googleapis');
 
 builder.declare({
   method: 'get',
@@ -8,11 +7,12 @@ builder.declare({
   output: 'gcp-credentials-response.yml',
   stability: 'stable',
   scopes: 'auth:gcp:access-token:<projectId>/<serviceAccount>',
-  title: 'Get Temporary Read/Write GCP Credentials',
+  title: 'Get Temporary GCP Credentials',
   description: [
-    'Get temporary GCP credentials for the given serviceAccount.',
-    'projectId must always be the string "-", which means "use the same',
-    'projectId as the account the service is running at.',
+    'Get temporary GCP credentials for the given serviceAccount in the given project.',
+    '',
+    'Only preconfigured projects are allowed.  Any serviceAccount in that project may',
+    'be used.',
     '',
     'The call adds the necessary policy if the serviceAccount doesn\'t have it.',
     'The credentials are set to expire after an hour, but this behavior is',
@@ -24,23 +24,20 @@ builder.declare({
   const serviceAccount = req.params.serviceAccount;
   const projectId = req.params.projectId;
 
-  if (projectId !== '-') {
+  if (!this.gcp.credentials) {
+    return res.reportError('ResourceNotFound', 'GCP credentials are not available');
+  }
+
+  if (projectId !== this.gcp.credentials.project_id) {
     return res.reportError(
-      'InvalidRequestArguments',
-      'projectId must always be "-"',
+      'ResourceNotFound',
+      `The projectId ${projectId} is not configured`,
     );
   }
 
-  if (!this.googleAuth) {
-    return res.reportError(
-      'InternalServerError',
-      'The credentials for Google Cloud aren\'t available',
-    );
-  }
-
-  const iam = google.iam({
+  const iam = this.gcp.googleapis.iam({
     version: 'v1',
-    auth: this.googleAuth,
+    auth: this.gcp.auth,
   });
 
   // to understand the {get/set}IamPolicy calls, look at
@@ -51,7 +48,9 @@ builder.declare({
   let response;
   try {
     response = await iam.projects.serviceAccounts.getIamPolicy({
-      resource_: `projects/${projectId}/serviceAccounts/${serviceAccount}`,
+      // NOTE: the `-` here represents the projectId, and uses the projectId
+      // from this.gcp.auth, which is why we verified those match above.
+      resource_: `projects/-/serviceAccounts/${serviceAccount}`,
     });
   } catch (e) {
     return res.reportError(
@@ -64,10 +63,8 @@ builder.declare({
   if (data.bindings === undefined) {
     data.bindings = [];
   }
-  let binding = data.bindings.filter(b => b.role === 'roles/iam.serviceAccountTokenCreator');
-  if (binding.length) {
-    binding = binding[0];
-  } else {
+  let binding = data.bindings.find(b => b.role === 'roles/iam.serviceAccountTokenCreator');
+  if (!binding) {
     binding = {
       role: 'roles/iam.serviceAccountTokenCreator',
       members: [],
@@ -76,11 +73,13 @@ builder.declare({
     data.bindings.push(binding);
   }
 
-  const myServiceAccount = this.gcpCredentials.client_email;
+  const myServiceAccount = this.gcp.credentials.client_email;
   if (!binding.members.includes(`serviceAccount:${myServiceAccount}`)) {
     binding.members.push(`serviceAccount:${myServiceAccount}`);
     await iam.projects.serviceAccounts.setIamPolicy({
-      resource: `projects/${projectId}/serviceAccounts/${serviceAccount}`,
+      // NOTE: the `-` here represents the projectId, and uses the projectId
+      // from this.gcp.auth, which is why we verified those match above.
+      resource: `projects/-/serviceAccounts/${serviceAccount}`,
       requestBody: {
         policy: data,
         updateMask: 'bindings',
@@ -88,13 +87,15 @@ builder.declare({
     });
   }
 
-  const iamcredentials = google.iamcredentials({
+  const iamcredentials = this.gcp.googleapis.iamcredentials({
     version: 'v1',
-    auth: this.googleAuth,
+    auth: this.gcp.auth,
   });
 
   response = await iamcredentials.projects.serviceAccounts.generateAccessToken({
-    name: `projects/${projectId}/serviceAccounts/${serviceAccount}`,
+    // NOTE: the `-` here represents the projectId, and uses the projectId
+    // from this.gcp.auth, which is why we verified those match above.
+    name: `projects/-/serviceAccounts/${serviceAccount}`,
     scope: [
       'https://www.googleapis.com/auth/cloud-platform',
     ],

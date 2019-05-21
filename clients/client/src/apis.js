@@ -523,7 +523,7 @@ module.exports = {
             "projectId",
             "serviceAccount"
           ],
-          "description": "Get temporary GCP credentials for the given serviceAccount.\nprojectId must always be the string \"-\", which means \"use the same\nprojectId as the account the service is running at.\n\nThe call adds the necessary policy if the serviceAccount doesn't have it.\nThe credentials are set to expire after an hour, but this behavior is\nsubject to change. Hence, you should always read the `expires` property\nfrom the response, if you intend to maintain active credentials in your\napplication.",
+          "description": "Get temporary GCP credentials for the given serviceAccount in the given project.\n\nOnly preconfigured projects are allowed.  Any serviceAccount in that project may\nbe used.\n\nThe call adds the necessary policy if the serviceAccount doesn't have it.\nThe credentials are set to expire after an hour, but this behavior is\nsubject to change. Hence, you should always read the `expires` property\nfrom the response, if you intend to maintain active credentials in your\napplication.",
           "method": "get",
           "name": "gcpCredentials",
           "output": "v1/gcp-credentials-response.json#",
@@ -532,7 +532,7 @@ module.exports = {
           "route": "/gcp/credentials/<projectId>/<serviceAccount>",
           "scopes": "auth:gcp:access-token:<projectId>/<serviceAccount>",
           "stability": "stable",
-          "title": "Get Temporary Read/Write GCP Credentials",
+          "title": "Get Temporary GCP Credentials",
           "type": "function"
         },
         {

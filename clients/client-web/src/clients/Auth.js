@@ -398,9 +398,9 @@ export default class Auth extends Client {
     return this.request(this.websocktunnelToken.entry, args);
   }
   /* eslint-disable max-len */
-  // Get temporary GCP credentials for the given serviceAccount.
-  // projectId must always be the string "-", which means "use the same
-  // projectId as the account the service is running at.
+  // Get temporary GCP credentials for the given serviceAccount in the given project.
+  // Only preconfigured projects are allowed.  Any serviceAccount in that project may
+  // be used.
   // The call adds the necessary policy if the serviceAccount doesn't have it.
   // The credentials are set to expire after an hour, but this behavior is
   // subject to change. Hence, you should always read the `expires` property
