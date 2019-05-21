@@ -37,7 +37,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // https://taskcluster-staging.net/references/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 17 May 2019 at 18:22:00 UTC. The code was generated
+// Tue, 21 May 2019 at 16:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcauth
 
@@ -728,6 +728,38 @@ func (auth *Auth) WebsocktunnelToken(wstAudience, wstClient string) (*Websocktun
 func (auth *Auth) WebsocktunnelToken_SignedURL(wstAudience, wstClient string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
 	return (&cd).SignedURL("/websocktunnel/"+url.QueryEscape(wstAudience)+"/"+url.QueryEscape(wstClient), nil, duration)
+}
+
+// Get temporary GCP credentials for the given serviceAccount in the given project.
+//
+// Only preconfigured projects are allowed.  Any serviceAccount in that project may
+// be used.
+//
+// The call adds the necessary policy if the serviceAccount doesn't have it.
+// The credentials are set to expire after an hour, but this behavior is
+// subject to change. Hence, you should always read the `expires` property
+// from the response, if you intend to maintain active credentials in your
+// application.
+//
+// Required scopes:
+//   auth:gcp:access-token:<projectId>/<serviceAccount>
+//
+// See #gcpCredentials
+func (auth *Auth) GcpCredentials(projectId, serviceAccount string) (*GCPCredentialsResponse, error) {
+	cd := tcclient.Client(*auth)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/gcp/credentials/"+url.QueryEscape(projectId)+"/"+url.QueryEscape(serviceAccount), new(GCPCredentialsResponse), nil)
+	return responseObject.(*GCPCredentialsResponse), err
+}
+
+// Returns a signed URL for GcpCredentials, valid for the specified duration.
+//
+// Required scopes:
+//   auth:gcp:access-token:<projectId>/<serviceAccount>
+//
+// See GcpCredentials for more details.
+func (auth *Auth) GcpCredentials_SignedURL(projectId, serviceAccount string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*auth)
+	return (&cd).SignedURL("/gcp/credentials/"+url.QueryEscape(projectId)+"/"+url.QueryEscape(serviceAccount), nil, duration)
 }
 
 // Validate the request signature given on input and return list of scopes

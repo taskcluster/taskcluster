@@ -1,4 +1,4 @@
-Generated: 1558117347
+Generated: 1558455751
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -608,6 +608,30 @@ The token is valid for a limited time (on the scale of hours). Callers should
 refresh it before expiration.'
 Entry 28    =
     Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/gcp/credentials/<projectId>/<serviceAccount>'
+    Entry Args        = '[projectId serviceAccount]'
+    Entry Query        = '[]'
+    Entry Name        = 'gcpCredentials'
+    Entry Stability   = 'stable'
+    Entry Scopes      = 'auth:gcp:access-token:<projectId>/<serviceAccount>'
+    Entry Input       = ''
+    Entry InputURL    = ''
+    Entry Output      = 'v1/gcp-credentials-response.json#'
+    Entry OutputURL   = 'https://taskcluster-staging.net/schemas/auth/v1/gcp-credentials-response.json#'
+    Entry Title       = 'Get Temporary GCP Credentials'
+    Entry Description = 'Get temporary GCP credentials for the given serviceAccount in the given project.
+
+Only preconfigured projects are allowed.  Any serviceAccount in that project may
+be used.
+
+The call adds the necessary policy if the serviceAccount doesn't have it.
+The credentials are set to expire after an hour, but this behavior is
+subject to change. Hence, you should always read the `expires` property
+from the response, if you intend to maintain active credentials in your
+application.'
+Entry 29    =
+    Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/authenticate-hawk'
     Entry Args        = '[]'
@@ -626,7 +650,7 @@ that the authenticating client has.
 This method is used by other services that wish rely on Taskcluster
 credentials for authentication. This way we can use Hawk without having
 the secret credentials leave this service.'
-Entry 29    =
+Entry 30    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/test-authenticate'
@@ -651,7 +675,7 @@ The request is validated, with any certificate, authorizedScopes, etc.
 applied, and the resulting scopes are checked against `requiredScopes`
 from the request body. On success, the response contains the clientId
 and scopes as seen by the API method.'
-Entry 30    =
+Entry 31    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/test-authenticate-get/'
@@ -1939,6 +1963,53 @@ required:
 - scopes
 - description
 title: Create Role Request
+type: object
+
+
+https://taskcluster-staging.net/schemas/auth/v1/gcp-credentials-response.json#
+==============================================================================
+$id: https://taskcluster-staging.net/schemas/auth/v1/gcp-credentials-response.json#
+$schema: https://taskcluster-staging.net/schemas/common/metaschema.json#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: https://taskcluster-staging.net/schemas/auth/v1/gcp-credentials-response.json#
+TYPE_NAME: GCPCredentialsResponse
+additionalProperties:
+  Boolean: false
+  Properties: null
+description: |
+  Response for a request to get a GCP temporary credential.
+properties:
+  MemberNames:
+    accessToken: AccessToken
+    expireTime: ExpireTime
+  Properties:
+    accessToken:
+      IS_REQUIRED: true
+      PROPERTY_NAME: accessToken
+      SOURCE_URL: https://taskcluster-staging.net/schemas/auth/v1/gcp-credentials-response.json#/properties/accessToken
+      TYPE_NAME: ""
+      description: |
+        Temporary oauth2 access token to access the given service account
+      title: Temporary access token
+      type: string
+    expireTime:
+      IS_REQUIRED: true
+      PROPERTY_NAME: expireTime
+      SOURCE_URL: https://taskcluster-staging.net/schemas/auth/v1/gcp-credentials-response.json#/properties/expireTime
+      TYPE_NAME: ""
+      description: The access token expire time
+      format: date-time
+      title: Expire time
+      type: string
+  SortedPropertyNames:
+  - accessToken
+  - expireTime
+  SourceURL: https://taskcluster-staging.net/schemas/auth/v1/gcp-credentials-response.json#/properties
+required:
+- accessToken
+- expireTime
+title: GCP Credentials Response
 type: object
 
 

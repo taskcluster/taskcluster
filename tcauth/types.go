@@ -408,6 +408,22 @@ type (
 		Secret string `json:"secret"`
 	}
 
+	// Response for a request to get a GCP temporary credential.
+	//
+	// See https://taskcluster-staging.net/schemas/auth/v1/gcp-credentials-response.json#
+	GCPCredentialsResponse struct {
+
+		// Temporary oauth2 access token to access the given service account
+		//
+		// See https://taskcluster-staging.net/schemas/auth/v1/gcp-credentials-response.json#/properties/accessToken
+		AccessToken string `json:"accessToken"`
+
+		// The access token expire time
+		//
+		// See https://taskcluster-staging.net/schemas/auth/v1/gcp-credentials-response.json#/properties/expireTime
+		ExpireTime tcclient.Time `json:"expireTime"`
+	}
+
 	// List of roles
 	//
 	// See https://taskcluster-staging.net/schemas/auth/v1/list-roles-response.json#
