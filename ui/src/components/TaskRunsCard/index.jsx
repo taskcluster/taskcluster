@@ -11,6 +11,7 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Collapse from '@material-ui/core/Collapse';
 import MobileStepper from '@material-ui/core/MobileStepper';
+import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -355,6 +356,7 @@ export default class TaskRunsCard extends Component {
                         component="div"
                         disableGutters>
                         {this.renderArtifactsTable()}
+                        <Divider />
                       </ListItem>
                     </List>
                   </Collapse>
