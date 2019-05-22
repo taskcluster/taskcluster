@@ -40,7 +40,7 @@ const WorkerType = Entity.configure({
     owner: Entity.types.String,
 
     // If true, an email will be sent to the owner for certain conditions such as provisioning errors
-    wantsEmail: Entity.types.Boolean,
+    emailOnError: Entity.types.Boolean,
 
     // Providers can use this to remember values between provisioning runs
     providerData: Entity.types.JSON,
@@ -57,7 +57,7 @@ WorkerType.prototype.serializable = function() {
     config: this.config,
     scheduledForDeletion: this.scheduledForDeletion,
     owner: this.owner,
-    wantsEmail: this.wantsEmail,
+    emailOnError: this.emailOnError,
   };
 };
 
@@ -71,13 +71,13 @@ WorkerType.prototype.compare = function(other) {
     'config',
     'scheduledForDeletion',
     'owner',
-    'wantsEmail',
+    'emailOnError',
   ];
   return _.isEqual(_.pick(other, fields), _.pick(this, fields));
 };
 
 WorkerType.prototype.reportError = async function({kind, title, description, extra={}, notify}) {
-  if (this.wantsEmail) {
+  if (this.emailOnError) {
     let extraInfo = '';
     if (Object.keys(extra).length) {
       extraInfo = `

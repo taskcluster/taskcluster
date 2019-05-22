@@ -52,6 +52,11 @@
           "title": "Description",
           "type": "string"
         },
+        "emailOnError": {
+          "description": "If true, the owner should be emailed on provisioning errors",
+          "title": "Wants Email",
+          "type": "boolean"
+        },
         "lastModified": {
           "description": "Date and time when this workerType was last updated\n",
           "format": "date-time",
@@ -84,11 +89,6 @@
           "description": "If true, a user has requested that this workertype be deleted",
           "title": "Scheduled For Deletion",
           "type": "boolean"
-        },
-        "wantsEmail": {
-          "description": "If true, the owner should be emailed on provisioning errors",
-          "title": "Wants Email",
-          "type": "boolean"
         }
       },
       "required": [
@@ -99,7 +99,7 @@
         "config",
         "owner",
         "scheduledForDeletion",
-        "wantsEmail"
+        "emailOnError"
       ],
       "title": "WorkerType Full",
       "type": "object"
@@ -201,14 +201,14 @@
         "description": {
           "$ref": "workertype-full.json#/properties/description"
         },
+        "emailOnError": {
+          "$ref": "workertype-full.json#/properties/emailOnError"
+        },
         "owner": {
           "$ref": "workertype-full.json#/properties/owner"
         },
         "provider": {
           "$ref": "workertype-full.json#/properties/provider"
-        },
-        "wantsEmail": {
-          "$ref": "workertype-full.json#/properties/wantsEmail"
         }
       },
       "required": [
@@ -216,7 +216,7 @@
         "description",
         "config",
         "owner",
-        "wantsEmail"
+        "emailOnError"
       ],
       "title": "WorkerType Definition",
       "type": "object"

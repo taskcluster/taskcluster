@@ -49,7 +49,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       },
       owner: 'whatever@example.com',
       providerData: {},
-      wantsEmail: false,
+      emailOnError: false,
     });
     worker = await helper.Worker.create({
       workerType: workerTypeName,

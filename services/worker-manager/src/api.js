@@ -66,7 +66,7 @@ builder.declare({
     created: now,
     lastModified: now,
     owner: input.owner,
-    wantsEmail: input.wantsEmail,
+    emailOnError: input.emailOnError,
     providerData: {},
     scheduledForDeletion: false,
   };
@@ -136,7 +136,7 @@ builder.declare({
     wt.description = input.description;
     wt.provider = providerName;
     wt.owner = input.owner;
-    wt.wantsEmail = input.wantsEmail;
+    wt.emailOnError = input.emailOnError;
     wt.lastModified = new Date();
 
     if (previousProvider !== providerName && !wt.previousProviders.includes(previousProvider)) {

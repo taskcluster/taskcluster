@@ -55,7 +55,7 @@ properties:
     title: Scheduled For Deletion
     type: boolean
     description: If true, a user has requested that this workertype be deleted
-  wantsEmail:
+  emailOnError:
     title: Wants Email
     type: boolean
     description: If true, the owner should be emailed on provisioning errors
@@ -68,4 +68,4 @@ required:
   - config
   - owner
   - scheduledForDeletion
-  - wantsEmail
+  - emailOnError

@@ -27,7 +27,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       description: 'bar',
       config: {},
       owner: 'example@example.com',
-      wantsEmail: false,
+      emailOnError: false,
     };
     workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
     const name2 = 'ee2';
@@ -36,7 +36,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       description: 'bing',
       config: {},
       owner: 'example@example.com',
-      wantsEmail: false,
+      emailOnError: false,
     };
     workerTypeCompare(name2, input2, await helper.workerManager.createWorkerType(name2, input2));
   });
@@ -48,7 +48,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       description: 'bar',
       config: {},
       owner: 'example@example.com',
-      wantsEmail: false,
+      emailOnError: false,
     };
     const initial = await helper.workerManager.createWorkerType(name, input);
     workerTypeCompare(name, input, initial);
@@ -57,7 +57,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       description: 'bing',
       config: {},
       owner: 'example@example.com',
-      wantsEmail: false,
+      emailOnError: false,
     };
     const updated = await helper.workerManager.updateWorkerType(name, input2);
     workerTypeCompare(name, input2, updated);
@@ -74,7 +74,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         description: 'e',
         config: {},
         owner: 'example@example.com',
-        wantsEmail: false,
+        emailOnError: false,
       });
     } catch (err) {
       if (err.code !== 'InputError') {
@@ -91,7 +91,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       description: 'e',
       config: {},
       owner: 'example@example.com',
-      wantsEmail: false,
+      emailOnError: false,
     });
     try {
       await helper.workerManager.updateWorkerType('oo', {
@@ -99,7 +99,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         description: 'e',
         config: {},
         owner: 'example@example.com',
-        wantsEmail: false,
+        emailOnError: false,
       });
     } catch (err) {
       if (err.code !== 'InputError') {
@@ -116,7 +116,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       description: 'e',
       config: {},
       owner: 'example@example.com',
-      wantsEmail: false,
+      emailOnError: false,
     });
     try {
       await helper.workerManager.createWorkerType('oo', {
@@ -124,7 +124,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         description: 'e',
         config: {},
         owner: 'example@example.com',
-        wantsEmail: false,
+        emailOnError: false,
       });
     } catch (err) {
       if (err.code !== 'RequestConflict') {
@@ -142,7 +142,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         description: 'e',
         config: {},
         owner: 'example@example.com',
-        wantsEmail: false,
+        emailOnError: false,
       });
     } catch (err) {
       if (err.code !== 'ResourceNotFound') {
@@ -160,7 +160,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       description: 'bar',
       config: {},
       owner: 'example@example.com',
-      wantsEmail: false,
+      emailOnError: false,
     };
     await helper.workerManager.createWorkerType(name, input);
     workerTypeCompare(name, input, await helper.workerManager.workerType(name));
@@ -185,7 +185,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       description: 'bar',
       config: {},
       owner: 'example@example.com',
-      wantsEmail: false,
+      emailOnError: false,
     };
     workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
     await helper.workerManager.deleteWorkerType(name);
@@ -219,7 +219,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       disks: [],
     },
     owner: 'example@example.com',
-    wantsEmail: false,
+    emailOnError: false,
   };
 
   test('create (google) workertype', async function() {
