@@ -117,7 +117,7 @@ export default class ConnectionDataTable extends Component {
     const { pageInfo } = this.pages.get(connection.pageInfo.cursor);
 
     return {
-      count: page + (pageInfo.hasNextPage ? 2 : 1) * pageSize,
+      count: (page + 1) * pageSize + (pageInfo.hasNextPage ? 1 : 0) * pageSize,
     };
   }
 
@@ -142,7 +142,7 @@ export default class ConnectionDataTable extends Component {
     const previousCursor =
       nextPage > page
         ? pageInfo.cursor
-        : this.pages.get(pageInfo.previousCursor).previousCursor;
+        : this.pages.get(pageInfo.previousCursor).pageInfo.previousCursor;
 
     this.setState({ loading: true, page: newPage }, async () => {
       await onPageChange({ cursor, previousCursor });
