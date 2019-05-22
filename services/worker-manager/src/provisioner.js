@@ -6,8 +6,7 @@ const {consume} = require('taskcluster-lib-pulse');
  * Run all provisioning logic
  */
 class Provisioner {
-  constructor({provisionerId, providers, iterateConf, WorkerType, monitor, notify, pulseClient, reference, rootUrl}) {
-    this.provisionerId = provisionerId;
+  constructor({providers, iterateConf, WorkerType, monitor, notify, pulseClient, reference, rootUrl}) {
     this.providers = providers;
     this.WorkerType = WorkerType;
     this.monitor = monitor;
@@ -67,8 +66,8 @@ class Provisioner {
   }
 
   async onMessage({exchange, payload}) {
-    const {name, provider: providerName, previousProvider} = payload;
-    const workerType = await this.WorkerType.load({name});
+    const {workerTypeName, provider: providerName, previousProvider} = payload;
+    const workerType = await this.WorkerType.load({workerTypeName});
     const provider = this.providers[providerName]; // Always have a provider
     switch (exchange.split('/').pop()) {
       case 'workertype-created': {
@@ -118,7 +117,7 @@ class Provisioner {
         }));
 
         this.monitor.log.workertypeProvisioned({
-          workerType: workerType.name,
+          workerTypeName: workerType.workerTypeName,
           provider: workerType.provider,
         });
       },

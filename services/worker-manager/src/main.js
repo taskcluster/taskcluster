@@ -171,7 +171,6 @@ let load = loader({
   estimator: {
     requires: ['cfg', 'queue', 'monitor'],
     setup: ({cfg, queue, monitor}) => new Estimator({
-      provisionerId: cfg.app.provisionerId,
       queue,
       monitor: monitor.childMonitor('estimator'),
     }),
@@ -194,7 +193,6 @@ let load = loader({
           name,
           notify,
           monitor: monitor.childMonitor(name),
-          provisionerId: cfg.app.provisionerId,
           rootUrl: cfg.taskcluster.rootUrl,
           taskclusterCredentials: cfg.taskcluster.credentials,
           estimator,
@@ -214,7 +212,6 @@ let load = loader({
     setup: async ({cfg, monitor, WorkerType, providers, notify, pulseClient, reference}) => {
       const provisioner = new Provisioner({
         monitor: monitor.childMonitor('provisioner'),
-        provisionerId: cfg.app.provisionerId,
         WorkerType,
         providers,
         notify,

@@ -1,12 +1,14 @@
+const {splitWorkerTypeName} = require('./util');
+
 class Estimator {
-  constructor({queue, provisionerId, monitor}) {
+  constructor({queue, monitor}) {
     this.queue = queue;
-    this.provisionerId = provisionerId;
     this.monitor = monitor;
   }
 
-  async simple({name, minCapacity, maxCapacity, capacityPerInstance, running}) {
-    const {pendingTasks} = await this.queue.pendingTasks(this.provisionerId, name);
+  async simple({workerTypeName, minCapacity, maxCapacity, capacityPerInstance, running}) {
+    const {provisionerId, workerType} = splitWorkerTypeName(workerTypeName);
+    const {pendingTasks} = await this.queue.pendingTasks(provisionerId, workerType);
 
     // First we find the amount of capacity we want. This is a very simple approximation
     const desiredCapacity = Math.max(minCapacity, Math.min(pendingTasks, maxCapacity));
@@ -14,7 +16,7 @@ class Estimator {
     const desiredSize = Math.round(desiredCapacity / capacityPerInstance);
 
     this.monitor.log.simpleEstimate({
-      workerType: name,
+      workerTypeName,
       pendingTasks,
       minCapacity,
       maxCapacity,

@@ -12,16 +12,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     await helper.workerManager.ping();
   });
 
-  const workerTypeCompare = (name, input, result, deletion = false) => {
+  const workerTypeCompare = (workerTypeName, input, result, deletion = false) => {
     const {created, lastModified, scheduledForDeletion, ...definition} = result;
     assert(created);
     assert(lastModified);
     assert(scheduledForDeletion === deletion);
-    assert.deepEqual({name, ...input}, definition);
+    assert.deepEqual({workerTypeName, ...input}, definition);
   };
 
   test('create workertype', async function() {
-    const name = 'ee';
+    const workerTypeName = 'pp/ee';
     const input = {
       provider: 'testing1',
       description: 'bar',
@@ -29,8 +29,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       owner: 'example@example.com',
       emailOnError: false,
     };
-    workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
-    const name2 = 'ee2';
+    workerTypeCompare(workerTypeName, input,
+      await helper.workerManager.createWorkerType(workerTypeName, input));
+    const workerTypeName2 = 'pp/ee2';
     const input2 = {
       provider: 'testing1',
       description: 'bing',
@@ -38,11 +39,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       owner: 'example@example.com',
       emailOnError: false,
     };
-    workerTypeCompare(name2, input2, await helper.workerManager.createWorkerType(name2, input2));
+    workerTypeCompare(workerTypeName2, input2,
+      await helper.workerManager.createWorkerType(workerTypeName2, input2));
   });
 
   test('update workertype', async function() {
-    const name = 'ee';
+    const workerTypeName = 'pp/ee';
     const input = {
       provider: 'testing1',
       description: 'bar',
@@ -50,8 +52,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       owner: 'example@example.com',
       emailOnError: false,
     };
-    const initial = await helper.workerManager.createWorkerType(name, input);
-    workerTypeCompare(name, input, initial);
+    const initial = await helper.workerManager.createWorkerType(workerTypeName, input);
+    workerTypeCompare(workerTypeName, input, initial);
     const input2 = {
       provider: 'testing2',
       description: 'bing',
@@ -59,8 +61,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       owner: 'example@example.com',
       emailOnError: false,
     };
-    const updated = await helper.workerManager.updateWorkerType(name, input2);
-    workerTypeCompare(name, input2, updated);
+    const updated = await helper.workerManager.updateWorkerType(workerTypeName, input2);
+    workerTypeCompare(workerTypeName, input2, updated);
 
     assert.equal(initial.lastModified, initial.created);
     assert.equal(initial.created, updated.created);
@@ -69,7 +71,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
 
   test('create workertype (invalid provider)', async function() {
     try {
-      await helper.workerManager.createWorkerType('oo', {
+      await helper.workerManager.createWorkerType('pp/oo', {
         provider: 'foo',
         description: 'e',
         config: {},
@@ -86,7 +88,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   });
 
   test('update workertype (invalid provider)', async function() {
-    await helper.workerManager.createWorkerType('oo', {
+    await helper.workerManager.createWorkerType('pp/oo', {
       provider: 'testing1',
       description: 'e',
       config: {},
@@ -94,7 +96,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       emailOnError: false,
     });
     try {
-      await helper.workerManager.updateWorkerType('oo', {
+      await helper.workerManager.updateWorkerType('pp/oo', {
         provider: 'foo',
         description: 'e',
         config: {},
@@ -111,7 +113,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   });
 
   test('create workertype (already exists)', async function() {
-    await helper.workerManager.createWorkerType('oo', {
+    await helper.workerManager.createWorkerType('pp/oo', {
       provider: 'testing1',
       description: 'e',
       config: {},
@@ -119,7 +121,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       emailOnError: false,
     });
     try {
-      await helper.workerManager.createWorkerType('oo', {
+      await helper.workerManager.createWorkerType('pp/oo', {
         provider: 'testing2',
         description: 'e',
         config: {},
@@ -137,7 +139,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
 
   test('update workertype (does not exist)', async function() {
     try {
-      await helper.workerManager.updateWorkerType('oo', {
+      await helper.workerManager.updateWorkerType('pp/oo', {
         provider: 'testing1',
         description: 'e',
         config: {},
@@ -154,7 +156,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   });
 
   test('get workertype', async function() {
-    const name = 'ee';
+    const workerTypeName = 'pp/ee';
     const input = {
       provider: 'testing1',
       description: 'bar',
@@ -162,13 +164,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       owner: 'example@example.com',
       emailOnError: false,
     };
-    await helper.workerManager.createWorkerType(name, input);
-    workerTypeCompare(name, input, await helper.workerManager.workerType(name));
+    await helper.workerManager.createWorkerType(workerTypeName, input);
+    workerTypeCompare(workerTypeName, input, await helper.workerManager.workerType(workerTypeName));
   });
 
   test('get workertype (does not exist)', async function() {
     try {
-      await helper.workerManager.workerType('oo');
+      await helper.workerManager.workerType('pp/oo');
     } catch (err) {
       if (err.code !== 'ResourceNotFound') {
         throw err;
@@ -179,7 +181,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   });
 
   test('delete workertype', async function() {
-    const name = 'ee';
+    const workerTypeName = 'pp/ee';
     const input = {
       provider: 'testing1',
       description: 'bar',
@@ -187,14 +189,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       owner: 'example@example.com',
       emailOnError: false,
     };
-    workerTypeCompare(name, input, await helper.workerManager.createWorkerType(name, input));
-    await helper.workerManager.deleteWorkerType(name);
-    workerTypeCompare(name, input, await helper.workerManager.workerType(name), true);
+    workerTypeCompare(workerTypeName, input,
+      await helper.workerManager.createWorkerType(workerTypeName, input));
+    await helper.workerManager.deleteWorkerType(workerTypeName);
+    workerTypeCompare(workerTypeName, input,
+      await helper.workerManager.workerType(workerTypeName), true);
   });
 
   test('delete workertype (does not exist)', async function() {
     try {
-      await helper.workerManager.deleteWorkerType('whatever');
+      await helper.workerManager.deleteWorkerType('pp/whatever');
     } catch (err) {
       if (err.code !== 'ResourceNotFound') {
         throw err;
@@ -223,39 +227,44 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   };
 
   test('create (google) workertype', async function() {
-    const name = 'ee';
-    workerTypeCompare(name, googleInput, await helper.workerManager.createWorkerType(name, googleInput));
+    const workerTypeName = 'pp/ee';
+    workerTypeCompare(workerTypeName, googleInput,
+      await helper.workerManager.createWorkerType(workerTypeName, googleInput));
   });
 
   test('credentials google', async function() {
-    const name = 'ee';
+    const workerTypeName = 'pp/ee';
     await helper.Worker.create({
-      workerType: name,
-      workerId: 'gcp-abc123', // TODO: Don't just copy-paste this from fake-google
+      workerTypeName,
+      workerGroup: 'google',
+      workerId: 'abc123',
       provider: 'google',
       created: new Date(),
       expires: taskcluster.fromNow('1 hour'),
       state: helper.Worker.states.REQUESTED,
       providerData: {},
     });
-    workerTypeCompare(name, googleInput, await helper.workerManager.createWorkerType(name, googleInput));
-    await helper.workerManager.credentialsGoogle(name, {token: 'abc'});
+    workerTypeCompare(workerTypeName, googleInput,
+      await helper.workerManager.createWorkerType(workerTypeName, googleInput));
+    await helper.workerManager.credentialsGoogle(workerTypeName, {token: 'abc'});
   });
 
   test('credentials google (but wrong worker)', async function() {
-    const name = 'ee';
+    const workerTypeName = 'pp/ee';
     await helper.Worker.create({
-      workerType: name,
-      workerId: 'gcp-wrong',
+      workerTypeName,
+      workerGroup: 'google',
+      workerId: 'gcp',
       provider: 'google',
       created: new Date(),
       expires: taskcluster.fromNow('1 hour'),
       state: helper.Worker.states.REQUESTED,
       providerData: {},
     });
-    workerTypeCompare(name, googleInput, await helper.workerManager.createWorkerType(name, googleInput));
+    workerTypeCompare(workerTypeName, googleInput,
+      await helper.workerManager.createWorkerType(workerTypeName, googleInput));
     try {
-      await helper.workerManager.credentialsGoogle(name, {token: 'abc'});
+      await helper.workerManager.credentialsGoogle(workerTypeName, {token: 'abc'});
     } catch (err) {
       if (err.code !== 'InputError') {
         throw err;
@@ -266,19 +275,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   });
 
   test('credentials google (but wrong workertype)', async function() {
-    const name = 'ee';
+    const workerTypeName = 'pp/ee';
     await helper.Worker.create({
-      workerType: 'wrong',
-      workerId: 'gcp-abc123', // TODO: Don't just copy-paste this from fake-google
+      workerTypeName: 'wrong',
+      workerGroup: 'google',
+      workerId: 'abc123', // TODO: Don't just copy-paste this from fake-google
       provider: 'google',
       created: new Date(),
       expires: taskcluster.fromNow('1 hour'),
       state: helper.Worker.states.REQUESTED,
       providerData: {},
     });
-    workerTypeCompare(name, googleInput, await helper.workerManager.createWorkerType(name, googleInput));
+    workerTypeCompare(workerTypeName, googleInput,
+      await helper.workerManager.createWorkerType(workerTypeName, googleInput));
     try {
-      await helper.workerManager.credentialsGoogle(name, {token: 'abc'});
+      await helper.workerManager.credentialsGoogle(workerTypeName, {token: 'abc'});
     } catch (err) {
       if (err.code !== 'InputError') {
         throw err;
@@ -289,21 +300,23 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   });
 
   test('credentials google (second fetch fails)', async function() {
-    const name = 'ee';
+    const workerTypeName = 'pp/ee';
     await helper.Worker.create({
-      workerType: name,
-      workerId: 'gcp-abc123', // TODO: Don't just copy-paste this from fake-google
+      workerTypeName,
+      workerGroup: 'google',
+      workerId: 'abc123', // TODO: Don't just copy-paste this from fake-google
       provider: 'google',
       created: new Date(),
       expires: taskcluster.fromNow('1 hour'),
       state: helper.Worker.states.REQUESTED,
       providerData: {},
     });
-    workerTypeCompare(name, googleInput, await helper.workerManager.createWorkerType(name, googleInput));
+    workerTypeCompare(workerTypeName, googleInput,
+      await helper.workerManager.createWorkerType(workerTypeName, googleInput));
 
-    await helper.workerManager.credentialsGoogle(name, {token: 'abc'});
+    await helper.workerManager.credentialsGoogle(workerTypeName, {token: 'abc'});
     try {
-      await helper.workerManager.credentialsGoogle(name, {token: 'abc'});
+      await helper.workerManager.credentialsGoogle(workerTypeName, {token: 'abc'});
     } catch (err) {
       if (err.code !== 'InputError') {
         throw err;

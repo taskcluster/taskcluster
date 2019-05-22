@@ -5,11 +5,12 @@ const Entity = require('azure-entities');
 
 const WorkerType = Entity.configure({
   version: 1,
-  partitionKey: Entity.keys.StringKey('name'),
+  partitionKey: Entity.keys.StringKey('workerTypeName'),
   rowKey: Entity.keys.ConstantKey('workerType'),
   properties: {
-    // A unique name for this workertype. This maps to a workertype name in tc-queue.
-    name: Entity.types.String,
+    // A unique name for this workertype. This is a workerTypeName, so must be
+    // of the form `<provisionerId>/<workerType>`
+    workerTypeName: Entity.types.String,
 
     // Each workertype must choose a single active provider that will do any provisioning on its behalf
     provider: Entity.types.String,
@@ -49,7 +50,7 @@ const WorkerType = Entity.configure({
 
 WorkerType.prototype.serializable = function() {
   return {
-    name: this.name,
+    workerTypeName: this.workerTypeName,
     provider: this.provider,
     description: this.description,
     created: this.created.toJSON(),
@@ -63,7 +64,7 @@ WorkerType.prototype.serializable = function() {
 
 WorkerType.prototype.compare = function(other) {
   const fields = [
-    'name',
+    'workerTypeName',
     'provider',
     'description',
     'created',
@@ -92,7 +93,7 @@ WorkerType.prototype.reportError = async function({kind, title, description, ext
       address: this.owner,
       subject: `Taskcluster Worker Manager Error: ${title}`,
       content: `
-  Worker Manager has encountered an error while trying to provision the workertype ${this.name}:
+  Worker Manager has encountered an error while trying to provision the workertype ${this.workerTypeName}:
 
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -105,7 +106,7 @@ WorkerType.prototype.reportError = async function({kind, title, description, ext
     });
   }
   await WorkerTypeError.create({
-    workerType: this.name,
+    workerTypeName: this.workerTypeName,
     errorId: slugid.v4(),
     reported: new Date(),
     kind,
@@ -117,11 +118,11 @@ WorkerType.prototype.reportError = async function({kind, title, description, ext
 
 const WorkerTypeError = Entity.configure({
   version: 1,
-  partitionKey: Entity.keys.StringKey('workerType'),
+  partitionKey: Entity.keys.StringKey('workerTypeName'),
   rowKey: Entity.keys.StringKey('errorId'),
   properties: {
     // The workertype this maps to.
-    workerType: Entity.types.String,
+    workerTypeName: Entity.types.String,
 
     // An arbitrary id for this error
     errorId: Entity.types.SlugId,
@@ -145,7 +146,7 @@ const WorkerTypeError = Entity.configure({
 
 WorkerTypeError.prototype.serializable = function() {
   return {
-    workerType: this.workerType,
+    workerTypeName: this.workerTypeName,
     errorId: this.errorId,
     reported: this.reported.toJSON(),
     kind: this.kind,
@@ -168,13 +169,14 @@ WorkerTypeError.expire = async (threshold) => {
 
 const Worker = Entity.configure({
   version: 1,
-  partitionKey: Entity.keys.StringKey('workerType'),
-  rowKey: Entity.keys.StringKey('workerId'),
+  partitionKey: Entity.keys.StringKey('workerTypeName'),
+  rowKey: Entity.keys.CompositeKey('workerGroup', 'workerId'),
   properties: {
-    // The workertype this maps to.
-    workerType: Entity.types.String,
+    // The WorkerType this maps to.
+    workerTypeName: Entity.types.String,
 
-    // The id of this worker
+    // The group and id of this worker
+    workerGroup: Entity.types.String,
     workerId: Entity.types.String,
 
     // The provider responsible for this worker

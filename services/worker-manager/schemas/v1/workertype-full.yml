@@ -4,15 +4,14 @@ description: |
   A complete workerType definition.
 type:               object
 properties:
-  name:
+  workerTypeName:
     title: WorkerType Name
     type:           string
-    # Limit this more than usual to increase chances it works on various clouds unchanged
-    pattern:        '[a-z]([-a-z0-9]*[a-z0-9])?'
-    minLength:      {$const: identifier-min-length}
-    maxLength:      {$const: identifier-max-length}
+    # Note that the workerType portion is quite severely limited in hopes it works with
+    # most cloud providers
+    pattern:        '^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$'
     description: |
-      The name of this workertype.
+      The name of this workertype (of the form `providerId/workerType`)
   provider:
     title: Provider
     type:           string

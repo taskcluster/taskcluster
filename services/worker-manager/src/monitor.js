@@ -12,7 +12,7 @@ monitorManager.register({
   level: 'info',
   description: 'A workerType\'s provisioning run has completed',
   fields: {
-    workerType: 'The name of the workertype.',
+    workerTypeName: 'The worker type name (provisionerId/workerType)',
     provider: 'The name of the provider that did the work for this workertype.',
   },
 });
@@ -25,7 +25,7 @@ monitorManager.register({
   level: 'notice',
   description: 'The simple estimator has decided that we need some number of instances.',
   fields: {
-    workerType: 'The name of the workertype.',
+    workerTypeName: 'The worker type name (provisionerId/workerType)',
     pendingTasks: 'The number of tasks the queue reports are pending for this workerType',
     minCapacity: 'The minimum amount of capacity that should be running',
     maxCapacity: 'The maximum amount of capacity that should be running',

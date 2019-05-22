@@ -14,14 +14,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   let workerType;
   let worker;
   let providerName = 'google';
-  let workerTypeName = 'foobar';
+  let workerTypeName = 'foo/bar';
 
   setup(async function() {
     provider = new GoogleProvider({
       name: providerName,
       notify: await helper.load('notify'),
       monitor: (await helper.load('monitor')).childMonitor('google'),
-      provisionerId: 'whatever',
       estimator: await helper.load('estimator'),
       fake: true,
       rootUrl: helper.rootUrl,
@@ -29,7 +28,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       WorkerType: helper.WorkerType,
     });
     workerType = await helper.WorkerType.create({
-      name: workerTypeName,
+      workerTypeName,
       provider: providerName,
       description: 'none',
       scheduledForDeletion: false,
@@ -52,8 +51,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       emailOnError: false,
     });
     worker = await helper.Worker.create({
-      workerType: workerTypeName,
-      workerId: 'gcp-abc123', // TODO: Don't just copy-paste this from fake-google
+      workerTypeName: workerTypeName,
+      workerGroup: providerName,
+      workerId: 'abc123',
       provider: providerName,
       created: new Date(),
       expires: taskcluster.fromNow('1 hour'),
