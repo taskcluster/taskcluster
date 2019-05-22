@@ -67,7 +67,14 @@ export default class AuthController {
     if (user) {
       const expires = new Date(user.expires);
       const now = new Date();
-      const timeout = Math.max(0, expires.getTime() - now.getTime());
+      let timeout = Math.max(0, expires.getTime() - now.getTime());
+
+      // if the timeout is in the future, apply up to a few minutes to it
+      // randomly.  This avoids multiple tabs all trying to renew at the
+      // same time.
+      if (timeout > 0) {
+        timeout += Math.random() * 5 * 60 * 1000;
+      }
 
       this.renewalTimer = window.setTimeout(() => {
         this.renewalTimer = null;
