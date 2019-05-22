@@ -12,6 +12,11 @@ PREFIX=$4
 
 NAMES="
 taskcluster-auth
+taskcluster-hooks
+taskcluster-index
+taskcluster-notify
+taskcluster-secrets
+taskcluster-web-server
 "
 
 for NAME in $NAMES; do
