@@ -43,7 +43,7 @@ export default class AuthController {
 
   loadUser() {
     const auth = localStorage.getItem(AUTH_STORE);
-    const user = auth ? JSON.parse(auth) : null;
+    let user = auth ? JSON.parse(auth) : null;
 
     if (user) {
       const expires = new Date(user.expires);
@@ -51,6 +51,7 @@ export default class AuthController {
 
       if (expires < now) {
         localStorage.removeItem(AUTH_STORE);
+        user = null;
       }
     }
 
