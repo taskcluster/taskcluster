@@ -16,6 +16,18 @@ import isWorkerTypeNameValid from '../../../utils/isWorkerTypeNameValid';
 import Dashboard from '../../../components/Dashboard';
 import Button from '../../../components/Button';
 
+const gcpConfig = {
+  minCapacity: 0,
+  maxCapacity: 0,
+  capacityPerInstance: 1,
+  machineType: 'n1-highcpu-8',
+  regions: ['us-west2'],
+  userData: {},
+  scheduling: {},
+  networkInterfaces: [{}],
+  disks: [{}],
+};
+
 @hot(module)
 @withStyles(theme => ({
   successIcon: {
@@ -42,7 +54,7 @@ export default class WMWorkerTypeEditor extends Component {
       description: '',
       owner: '',
       wantsEmail: false,
-      providerType: '',
+      providerType: 'gcp',
       providerId: '',
       config: {},
     },
@@ -134,7 +146,7 @@ export default class WMWorkerTypeEditor extends Component {
           />
         </FormGroup>
 
-        <FormGroup>
+        <FormGroup classes={classes.group}>
           <FormLabel component="provider">Provider:</FormLabel>
           <TextField
             id="select-provider-type"
@@ -146,8 +158,6 @@ export default class WMWorkerTypeEditor extends Component {
             onChange={this.handleInputChange}
             margin="normal">
             <MenuItem value="gcp">GCP</MenuItem>
-            <MenuItem value="aws">AWS</MenuItem>
-            <MenuItem value="packet">Packet.net</MenuItem>
           </TextField>
 
           <TextField
@@ -164,7 +174,7 @@ export default class WMWorkerTypeEditor extends Component {
             </ListItem>
             <ListItem>
               <CodeEditor
-                value="Config depending on which provider type was selected"
+                value={JSON.stringify(gcpConfig, null, 2)}
                 onChange={this.handleEditorChange}
                 lint
               />
