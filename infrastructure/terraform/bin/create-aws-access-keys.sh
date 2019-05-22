@@ -9,6 +9,7 @@ PREFIX=$1
 
 NAMES="
 taskcluster-auth
+taskcluster-notify
 "
 
 for NAME in $NAMES; do
