@@ -51,7 +51,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
           description: 'bar',
           config: {},
           owner: 'example@example.com',
-          wantsEmail: false,
+          emailOnError: false,
         },
       },
     ]));
@@ -65,7 +65,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
           description: 'bar',
           config: {},
           owner: 'example@example.com',
-          wantsEmail: false,
+          emailOnError: false,
         },
       },
       {
@@ -76,7 +76,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
           description: 'bar',
           config: {},
           owner: 'example@example.com',
-          wantsEmail: false,
+          emailOnError: false,
         },
       },
     ]));
@@ -90,7 +90,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
           description: 'bar',
           config: {},
           owner: 'example@example.com',
-          wantsEmail: false,
+          emailOnError: false,
         },
       },
       {
@@ -101,7 +101,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
           description: 'bar',
           config: {},
           owner: 'example@example.com',
-          wantsEmail: false,
+          emailOnError: false,
         },
       },
     ]));
@@ -122,7 +122,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         config: {},
         owner: 'whoever@example.com',
         providerData: {},
-        wantsEmail: false,
+        emailOnError: false,
       });
       await helper.initiateProvisioner();
     });
