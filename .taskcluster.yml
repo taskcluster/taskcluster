@@ -46,8 +46,7 @@ tasks:
           PULSE_CONNECTION_STRING: amqp://guest:guest@localhost:5672/
         command: >-
           service rabbitmq-server start &&
-          yarn workspace taskcluster-lib-pulse coverage:report &&
-          bash <(curl -s https://codecov.io/bash) -b $TASK_ID/$RUN_ID
+          yarn workspace taskcluster-lib-pulse coverage:report
       - name: taskcluster-lib-references
       - name: taskcluster-lib-scopes
       - name: taskcluster-lib-testing
@@ -170,8 +169,7 @@ tasks:
                 $if: entry['command']
                 then: ${entry.command}
                 else: >-
-                  yarn workspace ${entry.name} coverage:report &&
-                  bash <(curl -s https://codecov.io/bash) -b $TASK_ID/$RUN_ID
+                  yarn workspace ${entry.name} coverage:report
               env: # add in any custom env vars that this package needs
                 $if: entry['env']
                 then: {$eval: entry.env}
@@ -206,6 +204,12 @@ tasks:
               - assume:project:taskcluster:tests:taskcluster
               - docker-worker:cache:project-taskcluster-test-*
             payload:
+              artifacts:
+                public: 
+                  # This is not used at the moment other than by the trailer task to upload results. Feel free to bump later
+                  expires: {$fromNow: '24 hours'}
+                  path: /taskcluster/artifacts
+                  type: directory
               features:
                 taskclusterProxy: true
               env:

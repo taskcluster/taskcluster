@@ -8,7 +8,7 @@
   "license": "MPL-2.0",
   "scripts": {
     "coverage": "nyc npm test",
-    "coverage:report": "nyc npm test && nyc report --reporter json",
+    "coverage:report": "nyc npm test && nyc report --reporter json --report-dir ../../artifacts",
     "test": "mocha test/*_test.js",
     "lint": "eslint src/*.js test/*.js"
   }
