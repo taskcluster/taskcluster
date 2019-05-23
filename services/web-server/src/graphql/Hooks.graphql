@@ -72,11 +72,17 @@ type DeleteHook {
   hookId: ID
 }
 
+input HookBinding {
+  exchange: String!
+  pattern: String!
+}
+
 input HookInput {
   metadata: HookMetadataInput!
   schedule: [String]
   expires: String
   deadline: String
+  bindings: [HookBinding]
   task: JSON!
   triggerSchema: JSON
 }
