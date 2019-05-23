@@ -41,7 +41,7 @@ class Provisioner {
    * Start the Provisioner
    */
   async initiate() {
-    await Promise.all(Object.values(this.providers).map(x => x.initiate()));
+    await this.providers.forAll(p => p.initiate());
     await this.iterate.start();
 
     this.pq = await consume({
@@ -62,13 +62,13 @@ class Provisioner {
       this.pq = null;
     }
     await this.iterate.stop();
-    await Promise.all(Object.values(this.providers).map(x => x.terminate()));
+    await this.providers.forAll(p => p.terminate());
   }
 
   async onMessage({exchange, payload}) {
     const {workerTypeName, providerId, previousProviderId} = payload;
     const workerType = await this.WorkerType.load({workerTypeName});
-    const provider = this.providers[providerId]; // Always have a provider
+    const provider = this.providers.get(providerId); // Always have a provider
     switch (exchange.split('/').pop()) {
       case 'workertype-created': {
         await provider.createResources({workerType});
@@ -80,7 +80,7 @@ class Provisioner {
         } else {
           await Promise.all([
             provider.createResources({workerType}),
-            this.providers[previousProviderId].removeResources({workerType}),
+            this.providers.get(previousProviderId).removeResources({workerType}),
           ]);
         }
         break;
@@ -99,12 +99,12 @@ class Provisioner {
    */
   async provision() {
     // Any once-per-loop work a provider may want to do
-    await Promise.all(Object.values(this.providers).map(x => x.prepare()));
+    await this.providers.forAll(p => p.prepare());
 
     // Now for each workertype we ask the providers to do stuff
     await this.WorkerType.scan({}, {
       handler: async workerType => {
-        const provider = this.providers[workerType.providerId];
+        const provider = this.providers.get(workerType.providerId);
 
         if (workerType.scheduledForDeletion) {
           await provider.deprovision({workerType});
@@ -113,7 +113,7 @@ class Provisioner {
         }
 
         await Promise.all(workerType.previousProviderIds.map(async pId => {
-          await this.providers[pId].deprovision({workerType});
+          await this.providers.get(pId).deprovision({workerType});
         }));
 
         this.monitor.log.workertypeProvisioned({
@@ -124,7 +124,7 @@ class Provisioner {
     });
 
     // Now allow providers to do whatever per-loop cleanup they may need
-    await Promise.all(Object.values(this.providers).map(x => x.cleanup()));
+    await this.providers.forAll(p => p.cleanup());
   }
 }
 

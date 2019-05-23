@@ -41,11 +41,11 @@ builder.declare({
 
   await req.authorize({workerTypeName, providerId});
 
-  const provider = this.providers[providerId];
+  const provider = this.providers.get(providerId);
   if (!provider) {
     return res.reportError('InputError', 'Invalid Provider', {
       providerId,
-      validProviders: Object.keys(this.providers),
+      validProviderIds: this.providers.validProviderIds(),
     });
   }
 
@@ -112,11 +112,11 @@ builder.declare({
 
   await req.authorize({workerTypeName, providerId});
 
-  const provider = this.providers[providerId];
+  const provider = this.providers.get(providerId);
   if (!provider) {
     return res.reportError('InputError', 'Invalid Provider', {
       providerId,
-      validProviders: Object.keys(this.providers),
+      validProviderIds: this.providers.validProviderIds(),
     });
   }
 
@@ -251,7 +251,7 @@ builder.declare({
 
   try {
     const workerType = await this.WorkerType.load({workerTypeName});
-    return res.reply(await this.providers[workerType.providerId].verifyIdToken({
+    return res.reply(await this.providers.get(workerType.providerId).verifyIdToken({
       token: req.body.token,
       workerType,
     }));
