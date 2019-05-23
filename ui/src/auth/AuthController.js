@@ -73,7 +73,7 @@ export default class AuthController {
       // randomly.  This avoids multiple tabs all trying to renew at the
       // same time.
       if (timeout > 0) {
-        timeout -= Math.random() * 5 * 60 * 1000;
+        timeout = Math.max(0, timeout - Math.random() * 5 * 60 * 1000);
       }
 
       this.renewalTimer = window.setTimeout(() => {
