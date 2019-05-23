@@ -3,7 +3,9 @@ web:
   command: node src/main.js devServer
   readinessPath: /.well-known/apollo/server-health
 scanner:
-  type: heroku-only # TODO: This does not work in kube yet
+  type: cron
+  schedule: '0 0 * * *'
+  deadline: 86400
   command: node src/main.js scanner
 write-docs:
   type: build
