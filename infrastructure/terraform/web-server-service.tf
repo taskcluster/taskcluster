@@ -40,3 +40,17 @@ module "web_server_service" {
   secret_keys    = "${module.web_server_secrets.env_var_keys}"
   docker_image   = "${local.taskcluster_image_monoimage}"
 }
+
+module "web_server_scanner" {
+  source           = "modules/scheduled-job"
+  project_name     = "taskcluster-web-server"
+  service_name     = "web-server"
+  job_name         = "scanner"
+  schedule         = "0 0 * * *"
+  deadline_seconds = 86400
+  secret_name      = "${module.web_server_secrets.secret_name}"
+  secrets_hash     = "${module.web_server_secrets.secrets_hash}"
+  root_url         = "${var.root_url}"
+  secret_keys      = "${module.web_server_secrets.env_var_keys}"
+  docker_image     = "${local.taskcluster_image_monoimage}"
+}
