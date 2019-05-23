@@ -10,7 +10,7 @@ class Provider {
    * logic should be started in `initiate` below.
    */
   constructor({
-    name,
+    providerId,
     monitor,
     notify,
     rootUrl,
@@ -20,8 +20,7 @@ class Provider {
     validator,
     WorkerType,
   }) {
-    // TODO: -> providerId
-    this.name = name;
+    this.providerId = providerId;
     this.monitor = monitor;
     this.validator = validator;
     this.notify = notify;
