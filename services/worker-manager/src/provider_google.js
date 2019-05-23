@@ -11,7 +11,7 @@ const {Provider} = require('./provider');
 class GoogleProvider extends Provider {
 
   constructor({
-    name,
+    providerId,
     taskclusterCredentials,
     monitor,
     estimator,
@@ -27,7 +27,7 @@ class GoogleProvider extends Provider {
     fake = false,
   }) {
     super({
-      name,
+      providerId,
       taskclusterCredentials,
       monitor,
       notify,
@@ -226,7 +226,7 @@ class GoogleProvider extends Provider {
 
     // Google docs say instance id is globally unique even across projects
     const workerId = dat.instance_id;
-    const workerGroup = this.name;
+    const workerGroup = this.providerId;
 
     const worker = await this.Worker.load({
       workerTypeName,
@@ -267,8 +267,8 @@ class GoogleProvider extends Provider {
 
   async deprovision({workerType}) {
     await workerType.modify(wt => {
-      wt.previousProviders = wt.previousProviders.filter(p => p !== this.name);
-      delete wt.providerData[this.name];
+      wt.previousProviders = wt.previousProviders.filter(p => p !== this.providerId);
+      delete wt.providerData[this.providerId];
     });
   }
 
@@ -277,12 +277,12 @@ class GoogleProvider extends Provider {
 
     // TODO: I worry that providerData.trackedOperations will be larger than a single record
     // probably need to have providerData as separate table?
-    const providerData = workerType.providerData[this.name];
+    const providerData = workerType.providerData[this.providerId];
     if (!providerData || providerData.running === undefined || !providerData.trackedOperations) {
       await workerType.modify(wt => {
-        wt.providerData[this.name] = wt.providerData[this.name] || {};
-        wt.providerData[this.name].running = wt.providerData[this.name].running || 0;
-        wt.providerData[this.name].trackedOperations = wt.providerData[this.name].trackOperations || [];
+        wt.providerData[this.providerId] = wt.providerData[this.providerId] || {};
+        wt.providerData[this.providerId].running = wt.providerData[this.providerId].running || 0;
+        wt.providerData[this.providerId].trackedOperations = wt.providerData[this.providerId].trackOperations || [];
       });
     }
     const regions = workerType.config.regions;
@@ -292,7 +292,7 @@ class GoogleProvider extends Provider {
     const toSpawn = await this.estimator.simple({
       workerTypeName,
       ...workerType.config,
-      running: workerType.providerData[this.name].running,
+      running: workerType.providerData[this.providerId].running,
     });
 
     const operations = [];
@@ -353,7 +353,7 @@ class GoogleProvider extends Provider {
                   key: 'taskcluster',
                   value: JSON.stringify({
                     workerTypeName,
-                    workerGroup: this.name,
+                    workerGroup: this.providerId,
                     credentialUrl: libUrls.api(this.rootUrl, 'worker-manager', 'v1', `credentials/google/${workerTypeName}`),
                     rootUrl: this.rootUrl,
                     userData: workerType.config.userData,
@@ -381,8 +381,8 @@ class GoogleProvider extends Provider {
 
       await this.Worker.create({
         workerTypeName,
-        providerId: this.name,
-        workerGroup: this.name,
+        providerId: this.providerId,
+        workerGroup: this.providerId,
         workerId: op.targetId,
         created: new Date(),
         expires: taskcluster.fromNow('1 week'),
@@ -400,7 +400,7 @@ class GoogleProvider extends Provider {
 
     if (operations.length) {
       await workerType.modify(wt => {
-        wt.providerData[this.name].trackedOperations = wt.providerData[this.name].trackedOperations.concat(operations);
+        wt.providerData[this.providerId].trackedOperations = wt.providerData[this.providerId].trackedOperations.concat(operations);
       });
     }
 
@@ -414,18 +414,18 @@ class GoogleProvider extends Provider {
    * the operation when it actually suceeded.
    */
   async handleOperations({workerType}) {
-    if (!workerType.providerData[this.name].trackedOperations.length) {
+    if (!workerType.providerData[this.providerId].trackedOperations.length) {
       return;
     }
     const ongoing = [];
-    for (const op of workerType.providerData[this.name].trackedOperations) {
+    for (const op of workerType.providerData[this.providerId].trackedOperations) {
       if (await this.handleOperation({op, workerType})) {
         ongoing.push(op);
       }
     }
 
     await workerType.modify(wt => {
-      wt.providerData[this.name].trackedOperations = ongoing;
+      wt.providerData[this.providerId].trackedOperations = ongoing;
     });
   }
 
@@ -546,10 +546,10 @@ class GoogleProvider extends Provider {
       }
 
       await workerType.modify(wt => {
-        if (!wt.providerData[this.name]) {
-          wt.providerData[this.name] = {};
+        if (!wt.providerData[this.providerId]) {
+          wt.providerData[this.providerId] = {};
         }
-        wt.providerData[this.name].running = seen;
+        wt.providerData[this.providerId].running = seen;
       });
     }));
   }

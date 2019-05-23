@@ -181,18 +181,18 @@ let load = loader({
     setup: async ({cfg, monitor, notify, estimator, Worker, WorkerType, schemaset}) => {
       const _providers = {};
       const validator = await schemaset.validator(cfg.taskcluster.rootUrl);
-      for (const [name, meta] of Object.entries(cfg.providers)) {
+      for (const [providerId, meta] of Object.entries(cfg.providers)) {
         let Prov;
         switch(meta.providerType) {
           case 'testing': Prov = require('./provider_testing').TestingProvider; break;
           case 'static': Prov = require('./provider_static').StaticProvider; break;
           case 'google': Prov = require('./provider_google').GoogleProvider; break;
-          default: throw new Error(`Unkown providerType ${meta.providerType} selected for providerId ${name}.`);
+          default: throw new Error(`Unkown providerType ${meta.providerType} selected for providerId ${providerId}.`);
         }
-        _providers[name] = new Prov({
-          name,
+        _providers[providerId] = new Prov({
+          providerId,
           notify,
-          monitor: monitor.childMonitor(name),
+          monitor: monitor.childMonitor(providerId),
           rootUrl: cfg.taskcluster.rootUrl,
           taskclusterCredentials: cfg.taskcluster.credentials,
           estimator,
@@ -201,7 +201,7 @@ let load = loader({
           validator,
           ...meta,
         });
-        await _providers[name].setup();
+        await _providers[providerId].setup();
       }
       return _providers;
     },

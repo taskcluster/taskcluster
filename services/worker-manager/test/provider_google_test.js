@@ -18,7 +18,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
 
   setup(async function() {
     provider = new GoogleProvider({
-      name: providerId,
+      providerId,
       notify: await helper.load('notify'),
       monitor: (await helper.load('monitor')).childMonitor('google'),
       estimator: await helper.load('estimator'),
