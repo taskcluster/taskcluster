@@ -183,11 +183,11 @@ let load = loader({
       const validator = await schemaset.validator(cfg.taskcluster.rootUrl);
       for (const [name, meta] of Object.entries(cfg.providers)) {
         let Prov;
-        switch(meta.implementation) {
+        switch(meta.providerType) {
           case 'testing': Prov = require('./provider_testing').TestingProvider; break;
           case 'static': Prov = require('./provider_static').StaticProvider; break;
           case 'google': Prov = require('./provider_google').GoogleProvider; break;
-          default: throw new Error(`Unkown provider ${meta.implementation} selected for provider ${name}.`);
+          default: throw new Error(`Unkown providerType ${meta.providerType} selected for providerId ${name}.`);
         }
         _providers[name] = new Prov({
           name,

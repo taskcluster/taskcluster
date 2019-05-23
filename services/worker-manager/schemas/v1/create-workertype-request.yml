@@ -7,14 +7,14 @@ description: |
   by the service.
 type: object
 properties:
-  provider: {$ref: "workertype-full.json#/properties/provider"}
+  providerId: {$ref: "workertype-full.json#/properties/providerId"}
   description: {$ref: "workertype-full.json#/properties/description"}
   config: {$ref: "workertype-full.json#/properties/config"}
   owner: {$ref: "workertype-full.json#/properties/owner"}
   emailOnError: {$ref: "workertype-full.json#/properties/emailOnError"}
 additionalProperties: false
 required:
-  - provider
+  - providerId
   - description
   - config
   - owner

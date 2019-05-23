@@ -4467,7 +4467,7 @@ import taskcluster
 # Create WorkerManagerEvents client instance
 workerManagerEvents = taskcluster.WorkerManagerEvents(options)
 ```
-These exchanges provide notifications when a workerType is created, updatedor deleted. This is so that the listener running in a differentprocess at the other end can direct another listener specified by`provider` and `workerType` to synchronize its bindings. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.
+These exchanges provide notifications when a workerType is created, updatedor deleted. This is so that the listener running in a differentprocess at the other end can direct another listener specified by`providerId` and `workerType` to synchronize its bindings. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.
 #### WorkerType Created Messages
  * `workerManagerEvents.workerTypeCreated(routingKeyPattern) -> routingKey`
    * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.

@@ -66,21 +66,21 @@ class Provisioner {
   }
 
   async onMessage({exchange, payload}) {
-    const {workerTypeName, provider: providerName, previousProvider} = payload;
+    const {workerTypeName, providerId, previousProviderId} = payload;
     const workerType = await this.WorkerType.load({workerTypeName});
-    const provider = this.providers[providerName]; // Always have a provider
+    const provider = this.providers[providerId]; // Always have a provider
     switch (exchange.split('/').pop()) {
       case 'workertype-created': {
         await provider.createResources({workerType});
         break;
       }
       case 'workertype-updated': {
-        if (providerName === previousProvider) {
+        if (providerId === previousProviderId) {
           await provider.updateResources({workerType});
         } else {
           await Promise.all([
             provider.createResources({workerType}),
-            this.providers[previousProvider].removeResources({workerType}),
+            this.providers[previousProviderId].removeResources({workerType}),
           ]);
         }
         break;
@@ -104,7 +104,7 @@ class Provisioner {
     // Now for each workertype we ask the providers to do stuff
     await this.WorkerType.scan({}, {
       handler: async workerType => {
-        const provider = this.providers[workerType.provider];
+        const provider = this.providers[workerType.providerId];
 
         if (workerType.scheduledForDeletion) {
           await provider.deprovision({workerType});
@@ -112,13 +112,13 @@ class Provisioner {
           await provider.provision({workerType});
         }
 
-        await Promise.all(workerType.previousProviders.map(async p => {
-          await this.providers[p].deprovision({workerType});
+        await Promise.all(workerType.previousProviderIds.map(async pId => {
+          await this.providers[pId].deprovision({workerType});
         }));
 
         this.monitor.log.workertypeProvisioned({
           workerTypeName: workerType.workerTypeName,
-          provider: workerType.provider,
+          providerId: workerType.providerId,
         });
       },
     });

@@ -13,7 +13,7 @@ _defaultConfig = config
 
 class WorkerManagerEvents(AsyncBaseClient):
     """
-    These exchanges provide notifications when a workerType is created, updatedor deleted. This is so that the listener running in a differentprocess at the other end can direct another listener specified by`provider` and `workerType` to synchronize its bindings. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.
+    These exchanges provide notifications when a workerType is created, updatedor deleted. This is so that the listener running in a differentprocess at the other end can direct another listener specified by`providerId` and `workerType` to synchronize its bindings. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.
     """
 
     classOptions = {

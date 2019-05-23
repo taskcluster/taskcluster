@@ -13,7 +13,7 @@ monitorManager.register({
   description: 'A workerType\'s provisioning run has completed',
   fields: {
     workerTypeName: 'The worker type name (provisionerId/workerType)',
-    provider: 'The name of the provider that did the work for this workertype.',
+    providerId: 'The provider that did the work for this workertype.',
   },
 });
 
