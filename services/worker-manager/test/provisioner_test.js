@@ -34,7 +34,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
                 msg => msg.Type === 'workertype-provisioned' && msg.Fields.workerTypeName === wt.workerTypeName), {
                 Logger: 'taskcluster.worker-manager.provisioner',
                 Type: 'workertype-provisioned',
-                Fields: {workerTypeName: wt.workerTypeName, provider: wt.input.provider, v: 1},
+                Fields: {workerTypeName: wt.workerTypeName, providerId: wt.input.providerId, v: 1},
                 Severity: LEVELS.info,
               });
           }));
@@ -51,7 +51,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         workerTypeName: 'pp/ee',
         pending: 1,
         input: {
-          provider: 'testing1',
+          providerId: 'testing1',
           description: 'bar',
           config: {},
           owner: 'example@example.com',
@@ -65,7 +65,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         workerTypeName: 'pp/ee',
         pending: 1,
         input: {
-          provider: 'testing1',
+          providerId: 'testing1',
           description: 'bar',
           config: {},
           owner: 'example@example.com',
@@ -76,7 +76,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         workerTypeName: 'pp/ee2',
         pending: 100,
         input: {
-          provider: 'testing1',
+          providerId: 'testing1',
           description: 'bar',
           config: {},
           owner: 'example@example.com',
@@ -90,7 +90,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         workerTypeName: 'pp/ee',
         pending: 1,
         input: {
-          provider: 'testing1',
+          providerId: 'testing1',
           description: 'bar',
           config: {},
           owner: 'example@example.com',
@@ -101,7 +101,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         workerTypeName: 'pp/ee2',
         pending: 100,
         input: {
-          provider: 'testing2',
+          providerId: 'testing2',
           description: 'bar',
           config: {},
           owner: 'example@example.com',
@@ -117,10 +117,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       const now = new Date();
       workerType = await helper.WorkerType.create({
         workerTypeName: 'pp/foo',
-        provider: 'testing1',
+        providerId: 'testing1',
         description: 'none',
         scheduledForDeletion: false,
-        previousProviders: [],
+        previousProviderIds: [],
         created: now,
         lastModified: now,
         config: {},
@@ -138,7 +138,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       await helper.fakePulseMessage({
         payload: {
           workerTypeName: 'pp/foo',
-          provider: 'testing1',
+          providerId: 'testing1',
         },
         exchange: 'exchange/taskcluster-worker-manager/v1/workertype-created',
         routingKey: 'primary.#',
@@ -156,8 +156,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       await helper.fakePulseMessage({
         payload: {
           workerTypeName: 'pp/foo',
-          provider: 'testing1',
-          previousProvider: 'testing1',
+          providerId: 'testing1',
+          previousProviderId: 'testing1',
         },
         exchange: 'exchange/taskcluster-worker-manager/v1/workertype-updated',
         routingKey: 'primary.#',
@@ -173,13 +173,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
 
     test('workertype modified, different provider', async function() {
       await workerType.modify(wt => {
-        wt.provider = 'testing2';
+        wt.providerId = 'testing2';
       });
       await helper.fakePulseMessage({
         payload: {
           workerTypeName: 'pp/foo',
-          provider: 'testing2',
-          previousProvider: 'testing1',
+          providerId: 'testing2',
+          previousProviderId: 'testing1',
         },
         exchange: 'exchange/taskcluster-worker-manager/v1/workertype-updated',
         routingKey: 'primary.#',
@@ -203,7 +203,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       await helper.fakePulseMessage({
         payload: {
           workerTypeName: 'pp/foo',
-          provider: 'testing1',
+          providerId: 'testing1',
         },
         exchange: 'exchange/taskcluster-worker-manager/v1/workertype-deleted',
         routingKey: 'primary.#',

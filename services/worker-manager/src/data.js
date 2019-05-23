@@ -13,12 +13,12 @@ const WorkerType = Entity.configure({
     workerTypeName: Entity.types.String,
 
     // Each workertype must choose a single active provider that will do any provisioning on its behalf
-    provider: Entity.types.String,
+    providerId: Entity.types.String,
 
     // If a workertype was previously assigned to another provider and no longer is, it will
     // be added to this field. The provider can then remove any resources created for this
     // workertype and then remove itself from this field when done
-    previousProviders: Entity.types.JSON,
+    previousProviderIds: Entity.types.JSON,
 
     // A useful human-readable description of what this workertype is for
     description: Entity.types.String,
@@ -51,7 +51,7 @@ const WorkerType = Entity.configure({
 WorkerType.prototype.serializable = function() {
   return {
     workerTypeName: this.workerTypeName,
-    provider: this.provider,
+    providerId: this.providerId,
     description: this.description,
     created: this.created.toJSON(),
     lastModified: this.lastModified.toJSON(),
@@ -65,7 +65,7 @@ WorkerType.prototype.serializable = function() {
 WorkerType.prototype.compare = function(other) {
   const fields = [
     'workerTypeName',
-    'provider',
+    'providerId',
     'description',
     'created',
     'lastModified',
@@ -180,7 +180,7 @@ const Worker = Entity.configure({
     workerId: Entity.types.String,
 
     // The provider responsible for this worker
-    provider: Entity.types.String,
+    providerId: Entity.types.String,
 
     // The time that this worker was created
     created: Entity.types.Date,

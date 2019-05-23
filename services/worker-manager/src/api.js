@@ -29,7 +29,7 @@ builder.declare({
   output: 'workertype-full.yml',
   scopes: {AllOf: [
     'worker-manager:create-worker-type:<workerTypeName>',
-    'worker-manager:provider:<provider>',
+    'worker-manager:provider:<providerId>',
   ]},
   description: [
     'Create a new workertype. If the workertype already exists, this will throw an error.',
@@ -37,14 +37,14 @@ builder.declare({
 }, async function(req, res) {
   const {workerTypeName} = req.params;
   const input = req.body;
-  const providerName = input.provider;
+  const providerId = input.providerId;
 
-  await req.authorize({workerTypeName, provider: providerName});
+  await req.authorize({workerTypeName, providerId});
 
-  const provider = this.providers[providerName];
+  const provider = this.providers[providerId];
   if (!provider) {
     return res.reportError('InputError', 'Invalid Provider', {
-      provider: providerName,
+      providerId,
       validProviders: Object.keys(this.providers),
     });
   }
@@ -62,8 +62,8 @@ builder.declare({
 
   const definition = {
     workerTypeName,
-    provider: providerName,
-    previousProviders: [],
+    providerId,
+    previousProviderIds: [],
     description: input.description,
     config: input.config,
     created: now,
@@ -86,7 +86,7 @@ builder.declare({
       return res.reportError('RequestConflict', 'WorkerType already exists', {});
     }
   }
-  await this.publisher.workerTypeCreated({workerTypeName, provider: providerName});
+  await this.publisher.workerTypeCreated({workerTypeName, providerId});
   res.reply(workerType.serializable());
 });
 
@@ -100,7 +100,7 @@ builder.declare({
   output: 'workertype-full.yml',
   scopes: {AllOf: [
     'worker-manager:update-worker-type:<workerTypeName>',
-    'worker-manager:provider:<provider>',
+    'worker-manager:provider:<providerId>',
   ]},
   description: [
     'Given an existing workertype definition, this will modify it and return the new definition.',
@@ -108,14 +108,14 @@ builder.declare({
 }, async function(req, res) {
   const {workerTypeName} = req.params;
   const input = req.body;
-  const providerName = input.provider;
+  const providerId = input.providerId;
 
-  await req.authorize({workerTypeName, provider: providerName});
+  await req.authorize({workerTypeName, providerId});
 
-  const provider = this.providers[providerName];
+  const provider = this.providers[providerId];
   if (!provider) {
     return res.reportError('InputError', 'Invalid Provider', {
-      provider: providerName,
+      providerId,
       validProviders: Object.keys(this.providers),
     });
   }
@@ -132,22 +132,22 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'WorkerType does not exist', {});
   }
 
-  const previousProvider = workerType.provider;
+  const previousProviderId = workerType.providerId;
 
   await workerType.modify(wt => {
     wt.config = input.config;
     wt.description = input.description;
-    wt.provider = providerName;
+    wt.providerId = providerId;
     wt.owner = input.owner;
     wt.emailOnError = input.emailOnError;
     wt.lastModified = new Date();
 
-    if (previousProvider !== providerName && !wt.previousProviders.includes(previousProvider)) {
-      wt.previousProviders.push(previousProvider);
+    if (previousProviderId !== providerId && !wt.previousProviderIds.includes(previousProviderId)) {
+      wt.previousProviderIds.push(previousProviderId);
     }
   });
 
-  await this.publisher.workerTypeUpdated({workerTypeName, provider: providerName, previousProvider});
+  await this.publisher.workerTypeUpdated({workerTypeName, providerId, previousProviderId});
   res.reply(workerType.serializable());
 });
 
@@ -197,7 +197,7 @@ builder.declare({
     wt.scheduledForDeletion = true;
   });
 
-  await this.publisher.workerTypeDeleted({workerTypeName, provider: workerType.provider});
+  await this.publisher.workerTypeDeleted({workerTypeName, providerId: workerType.providerId});
   return res.reply();
 });
 
@@ -251,7 +251,7 @@ builder.declare({
 
   try {
     const workerType = await this.WorkerType.load({workerTypeName});
-    return res.reply(await this.providers[workerType.provider].verifyIdToken({
+    return res.reply(await this.providers[workerType.providerId].verifyIdToken({
       token: req.body.token,
       workerType,
     }));

@@ -20,6 +20,7 @@ class Provider {
     validator,
     WorkerType,
   }) {
+    // TODO: -> providerId
     this.name = name;
     this.monitor = monitor;
     this.validator = validator;

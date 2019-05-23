@@ -381,7 +381,7 @@ class GoogleProvider extends Provider {
 
       await this.Worker.create({
         workerTypeName,
-        provider: this.name,
+        providerId: this.name,
         workerGroup: this.name,
         workerId: op.targetId,
         created: new Date(),

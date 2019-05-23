@@ -23,7 +23,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   test('create workertype', async function() {
     const workerTypeName = 'pp/ee';
     const input = {
-      provider: 'testing1',
+      providerId: 'testing1',
       description: 'bar',
       config: {},
       owner: 'example@example.com',
@@ -33,7 +33,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       await helper.workerManager.createWorkerType(workerTypeName, input));
     const workerTypeName2 = 'pp/ee2';
     const input2 = {
-      provider: 'testing1',
+      providerId: 'testing1',
       description: 'bing',
       config: {},
       owner: 'example@example.com',
@@ -46,7 +46,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   test('update workertype', async function() {
     const workerTypeName = 'pp/ee';
     const input = {
-      provider: 'testing1',
+      providerId: 'testing1',
       description: 'bar',
       config: {},
       owner: 'example@example.com',
@@ -55,7 +55,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     const initial = await helper.workerManager.createWorkerType(workerTypeName, input);
     workerTypeCompare(workerTypeName, input, initial);
     const input2 = {
-      provider: 'testing2',
+      providerId: 'testing2',
       description: 'bing',
       config: {},
       owner: 'example@example.com',
@@ -69,10 +69,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     assert(updated.lastModifed !== updated.created);
   });
 
-  test('create workertype (invalid provider)', async function() {
+  test('create workertype (invalid providerId)', async function() {
     try {
       await helper.workerManager.createWorkerType('pp/oo', {
-        provider: 'foo',
+        providerId: 'foo',
         description: 'e',
         config: {},
         owner: 'example@example.com',
@@ -84,12 +84,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       }
       return;
     }
-    throw new Error('Allowed to specify an invalid provider');
+    throw new Error('Allowed to specify an invalid providerId');
   });
 
-  test('update workertype (invalid provider)', async function() {
+  test('update workertype (invalid providerId)', async function() {
     await helper.workerManager.createWorkerType('pp/oo', {
-      provider: 'testing1',
+      providerId: 'testing1',
       description: 'e',
       config: {},
       owner: 'example@example.com',
@@ -97,7 +97,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     });
     try {
       await helper.workerManager.updateWorkerType('pp/oo', {
-        provider: 'foo',
+        providerId: 'foo',
         description: 'e',
         config: {},
         owner: 'example@example.com',
@@ -109,12 +109,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       }
       return;
     }
-    throw new Error('Allowed to specify an invalid provider');
+    throw new Error('Allowed to specify an invalid providerId');
   });
 
   test('create workertype (already exists)', async function() {
     await helper.workerManager.createWorkerType('pp/oo', {
-      provider: 'testing1',
+      providerId: 'testing1',
       description: 'e',
       config: {},
       owner: 'example@example.com',
@@ -122,7 +122,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     });
     try {
       await helper.workerManager.createWorkerType('pp/oo', {
-        provider: 'testing2',
+        providerId: 'testing2',
         description: 'e',
         config: {},
         owner: 'example@example.com',
@@ -140,7 +140,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   test('update workertype (does not exist)', async function() {
     try {
       await helper.workerManager.updateWorkerType('pp/oo', {
-        provider: 'testing1',
+        providerId: 'testing1',
         description: 'e',
         config: {},
         owner: 'example@example.com',
@@ -158,7 +158,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   test('get workertype', async function() {
     const workerTypeName = 'pp/ee';
     const input = {
-      provider: 'testing1',
+      providerId: 'testing1',
       description: 'bar',
       config: {},
       owner: 'example@example.com',
@@ -183,7 +183,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   test('delete workertype', async function() {
     const workerTypeName = 'pp/ee';
     const input = {
-      provider: 'testing1',
+      providerId: 'testing1',
       description: 'bar',
       config: {},
       owner: 'example@example.com',
@@ -209,7 +209,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   });
 
   const googleInput = {
-    provider: 'google',
+    providerId: 'google',
     description: 'bar',
     config: {
       minCapacity: 1,
@@ -238,7 +238,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       workerTypeName,
       workerGroup: 'google',
       workerId: 'abc123',
-      provider: 'google',
+      providerId: 'google',
       created: new Date(),
       expires: taskcluster.fromNow('1 hour'),
       state: helper.Worker.states.REQUESTED,
@@ -255,7 +255,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       workerTypeName,
       workerGroup: 'google',
       workerId: 'gcp',
-      provider: 'google',
+      providerId: 'google',
       created: new Date(),
       expires: taskcluster.fromNow('1 hour'),
       state: helper.Worker.states.REQUESTED,
@@ -280,7 +280,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       workerTypeName: 'wrong',
       workerGroup: 'google',
       workerId: 'abc123', // TODO: Don't just copy-paste this from fake-google
-      provider: 'google',
+      providerId: 'google',
       created: new Date(),
       expires: taskcluster.fromNow('1 hour'),
       state: helper.Worker.states.REQUESTED,
@@ -305,7 +305,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       workerTypeName,
       workerGroup: 'google',
       workerId: 'abc123', // TODO: Don't just copy-paste this from fake-google
-      provider: 'google',
+      providerId: 'google',
       created: new Date(),
       expires: taskcluster.fromNow('1 hour'),
       state: helper.Worker.states.REQUESTED,

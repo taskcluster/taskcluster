@@ -2,10 +2,16 @@
 
 The worker manager service manages workers, including interacting with cloud services to create new workers on demand.
 
-It currently includes providers for:
+## Providers
 
-* Static Workers
-* Google Cloud
+The service configuration defines a number of providers, indexed by `providerId`, along with configuration.
+Each provider has a `providerType` indicating the class that implements the provider.
+
+This service currently includes providers for:
+
+* Static Workers (`static`)
+* Google Cloud (`google`)
+* Testing (`testing`, only used in the service's unit tests)
 
 ## workerTypeName
 

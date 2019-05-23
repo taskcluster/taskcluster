@@ -35,11 +35,11 @@ test:
     trustProxy: false
   providers:
     testing1:
-      implementation: testing
+      providerType: testing
     testing2:
-      implementation: testing
+      providerType: testing
     static:
-      implementation: static
+      providerType: static
     google:
-      implementation: google
+      providerType: google
       fake: true

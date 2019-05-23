@@ -9,7 +9,7 @@ const exchanges = new Exchanges({
     'These exchanges provide notifications when a workerType is created, updated',
     'or deleted. This is so that the listener running in a different',
     'process at the other end can direct another listener specified by',
-    '`provider` and `workerType` to synchronize its bindings. But you are of',
+    '`providerId` and `workerType` to synchronize its bindings. But you are of',
     'course welcome to use these for other purposes, monitoring changes for example.',
   ].join(''),
 });

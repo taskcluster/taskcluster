@@ -13,12 +13,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   let provider;
   let workerType;
   let worker;
-  let providerName = 'google';
+  let providerId = 'google';
   let workerTypeName = 'foo/bar';
 
   setup(async function() {
     provider = new GoogleProvider({
-      name: providerName,
+      name: providerId,
       notify: await helper.load('notify'),
       monitor: (await helper.load('monitor')).childMonitor('google'),
       estimator: await helper.load('estimator'),
@@ -29,10 +29,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     });
     workerType = await helper.WorkerType.create({
       workerTypeName,
-      provider: providerName,
+      providerId,
       description: 'none',
       scheduledForDeletion: false,
-      previousProviders: [],
+      previousProviderIds: [],
       created: new Date(),
       lastModified: new Date(),
       config: {
@@ -52,9 +52,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     });
     worker = await helper.Worker.create({
       workerTypeName: workerTypeName,
-      workerGroup: providerName,
+      workerGroup: providerId,
       workerId: 'abc123',
-      provider: providerName,
+      providerId,
       created: new Date(),
       expires: taskcluster.fromNow('1 hour'),
       state: helper.Worker.states.REQUESTED,

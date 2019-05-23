@@ -4,8 +4,8 @@ description: The message that is emitted when workertypes are created/changed/de
 type: object
 properties:
   workerTypeName: {$ref: "workertype-full.json#/properties/workerTypeName"}
-  provider: {$ref: "workertype-full.json#/properties/provider"}
-  previousProvider:
+  providerId: {$ref: "workertype-full.json#/properties/providerId"}
+  previousProviderId:
     title: Previous Provider
     type: string
     minLength: {$const: identifier-min-length}
@@ -19,4 +19,4 @@ properties:
 additionalProperties: false
 required:
   - workerTypeName
-  - provider
+  - providerId

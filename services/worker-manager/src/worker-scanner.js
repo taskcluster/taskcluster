@@ -46,7 +46,7 @@ class WorkerScanner {
       state: Entity.op.notEqual(this.Worker.states.STOPPED),
     }, {
       handler: async worker => {
-        const provider = this.providers[worker.provider];
+        const provider = this.providers[worker.providerId];
         await provider.checkWorker({worker});
       },
     });
