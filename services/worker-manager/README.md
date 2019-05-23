@@ -13,6 +13,11 @@ This service currently includes providers for:
 * Google Cloud (`google`)
 * Testing (`testing`, only used in the service's unit tests)
 
+## Worker Identity
+
+Workers are identified by a combination of a `workerGroup` and a `workerId`.
+In order to ensure a unique identity for each worker, providers are expected to use their `providerId` as the `workerGroup`, but are free to choose an arbitrary (but unqiue and valid) `workerId` for each worker.
+
 ## workerTypeName
 
 This service considers a "workerTypeName" to be a string of the shape `<provisionerId>/<workerType>`.
