@@ -9,7 +9,7 @@
   },
   "scripts": {
     "coverage": "nyc npm test",
-    "coverage:report": "nyc npm test && nyc report --reporter=text-lcov | codecov --pipe -p ../..",
+    "coverage:report": "nyc npm test && nyc report --reporter json --report-dir ../../artifacts",
     "test": "mocha test/*.js",
     "lint": "eslint src/*.js test/*.js"
   },

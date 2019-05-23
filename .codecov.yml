@@ -7,3 +7,6 @@ codecov:
   ci:
     - tools.taskcluster.net
 
+parsers:
+  javascript:
+    enable_partials: yes
