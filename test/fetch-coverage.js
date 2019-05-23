@@ -27,10 +27,16 @@ const main = async () => {
 
   await fs.mkdir(COVERAGE_DIR);
   for (const taskId of dependencies) {
-    const coverage = await queue.getLatestArtifact(taskId, 'public/coverage-final.json');
-    const filename = path.join(COVERAGE_DIR, `${taskId}-coverage.json`);
-    console.log(`Writing ${filename}`);
-    await fs.writeFile(filename, JSON.stringify(coverage));
+    try {
+      const coverage = await queue.getLatestArtifact(taskId, 'public/coverage-final.json');
+      const filename = path.join(COVERAGE_DIR, `${taskId}-coverage.json`);
+      console.log(`Writing ${filename}`);
+      await fs.writeFile(filename, JSON.stringify(coverage));
+    } catch (err) {
+      if (err.statusCode !== 404) {
+        throw err;
+      }
+    }
   }
 };
 

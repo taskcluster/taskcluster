@@ -217,7 +217,6 @@ tasks:
             created: {$fromNow: ''}
             deadline: {$fromNow: '3 hours'}
             dependencies: {$eval: job.dependencies}
-            requires: all-resolved
             extra:
               notify:
                 email:
