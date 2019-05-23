@@ -37,6 +37,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
                 Fields: {workerPoolId: wt.workerPoolId, providerId: wt.input.providerId, v: 1},
                 Severity: LEVELS.info,
               });
+            assert.deepEqual(
+              monitorManager.messages.find(
+                msg => msg.Type === 'test-provision' && msg.Fields.workerTypeName === wt.workerTypeName), {
+                Logger: `taskcluster.worker-manager.${wt.input.providerId}`,
+                Type: 'test-provision',
+                Fields: {workerTypeName: wt.workerTypeName},
+                Severity: LEVELS.notice,
+              });
           }));
         });
         await helper.terminateProvisioner();
