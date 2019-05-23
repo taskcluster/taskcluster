@@ -13,7 +13,6 @@ class Provider {
     name,
     monitor,
     notify,
-    provisionerId,
     rootUrl,
     taskclusterCredentials,
     estimator,
@@ -25,7 +24,6 @@ class Provider {
     this.monitor = monitor;
     this.validator = validator;
     this.notify = notify;
-    this.provisionerId = provisionerId;
     this.rootUrl = rootUrl;
     this.taskclusterCredentials = taskclusterCredentials;
     this.estimator = estimator;

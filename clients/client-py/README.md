@@ -4347,7 +4347,7 @@ Create a new workertype. If the workertype already exists, this will throw an er
 
 Takes the following arguments:
 
-  * `name`
+  * `workerTypeName`
 
 Has required input schema
 
@@ -4355,11 +4355,11 @@ Has required output schema
 
 ```python
 # Sync calls
-workerManager.createWorkerType(name, payload) # -> result
-workerManager.createWorkerType(payload, name='value') # -> result
+workerManager.createWorkerType(workerTypeName, payload) # -> result
+workerManager.createWorkerType(payload, workerTypeName='value') # -> result
 # Async call
-await asyncWorkerManager.createWorkerType(name, payload) # -> result
-await asyncWorkerManager.createWorkerType(payload, name='value') # -> result
+await asyncWorkerManager.createWorkerType(workerTypeName, payload) # -> result
+await asyncWorkerManager.createWorkerType(payload, workerTypeName='value') # -> result
 ```
 
 #### Update WorkerType
@@ -4369,7 +4369,7 @@ Given an existing workertype definition, this will modify it and return the new 
 
 Takes the following arguments:
 
-  * `name`
+  * `workerTypeName`
 
 Has required input schema
 
@@ -4377,31 +4377,31 @@ Has required output schema
 
 ```python
 # Sync calls
-workerManager.updateWorkerType(name, payload) # -> result
-workerManager.updateWorkerType(payload, name='value') # -> result
+workerManager.updateWorkerType(workerTypeName, payload) # -> result
+workerManager.updateWorkerType(payload, workerTypeName='value') # -> result
 # Async call
-await asyncWorkerManager.updateWorkerType(name, payload) # -> result
-await asyncWorkerManager.updateWorkerType(payload, name='value') # -> result
+await asyncWorkerManager.updateWorkerType(workerTypeName, payload) # -> result
+await asyncWorkerManager.updateWorkerType(payload, workerTypeName='value') # -> result
 ```
 
 #### Get WorkerType
-Given an existing workertype defition, this will fetch it.
+Fetch an existing workertype defition.
 
 
 
 Takes the following arguments:
 
-  * `name`
+  * `workerTypeName`
 
 Has required output schema
 
 ```python
 # Sync calls
-workerManager.workerType(name) # -> result
-workerManager.workerType(name='value') # -> result
+workerManager.workerType(workerTypeName) # -> result
+workerManager.workerType(workerTypeName='value') # -> result
 # Async call
-await asyncWorkerManager.workerType(name) # -> result
-await asyncWorkerManager.workerType(name='value') # -> result
+await asyncWorkerManager.workerType(workerTypeName) # -> result
+await asyncWorkerManager.workerType(workerTypeName='value') # -> result
 ```
 
 #### Delete WorkerType
@@ -4411,15 +4411,15 @@ Delete an existing workertype definition.
 
 Takes the following arguments:
 
-  * `name`
+  * `workerTypeName`
 
 ```python
 # Sync calls
-workerManager.deleteWorkerType(name) # -> None
-workerManager.deleteWorkerType(name='value') # -> None
+workerManager.deleteWorkerType(workerTypeName) # -> None
+workerManager.deleteWorkerType(workerTypeName='value') # -> None
 # Async call
-await asyncWorkerManager.deleteWorkerType(name) # -> None
-await asyncWorkerManager.deleteWorkerType(name='value') # -> None
+await asyncWorkerManager.deleteWorkerType(workerTypeName) # -> None
+await asyncWorkerManager.deleteWorkerType(workerTypeName='value') # -> None
 ```
 
 #### List All WorkerTypes
@@ -4442,7 +4442,7 @@ Get Taskcluster credentials for a worker given an Instance Identity Token
 
 Takes the following arguments:
 
-  * `name`
+  * `workerTypeName`
 
 Has required input schema
 
@@ -4450,11 +4450,11 @@ Has required output schema
 
 ```python
 # Sync calls
-workerManager.credentialsGoogle(name, payload) # -> result
-workerManager.credentialsGoogle(payload, name='value') # -> result
+workerManager.credentialsGoogle(workerTypeName, payload) # -> result
+workerManager.credentialsGoogle(payload, workerTypeName='value') # -> result
 # Async call
-await asyncWorkerManager.credentialsGoogle(name, payload) # -> result
-await asyncWorkerManager.credentialsGoogle(payload, name='value') # -> result
+await asyncWorkerManager.credentialsGoogle(workerTypeName, payload) # -> result
+await asyncWorkerManager.credentialsGoogle(payload, workerTypeName='value') # -> result
 ```
 
 

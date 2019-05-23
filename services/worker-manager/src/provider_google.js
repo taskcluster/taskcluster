@@ -16,7 +16,6 @@ class GoogleProvider extends Provider {
     monitor,
     estimator,
     notify,
-    provisionerId,
     rootUrl,
     project,
     instancePermissions,
@@ -32,7 +31,6 @@ class GoogleProvider extends Provider {
       taskclusterCredentials,
       monitor,
       notify,
-      provisionerId,
       rootUrl,
       estimator,
       Worker,
@@ -199,6 +197,8 @@ class GoogleProvider extends Provider {
    * when selecting new fields to validate here, they may come from the requester.
    */
   async verifyIdToken({token, workerType}) {
+    const {workerTypeName} = workerType;
+
     // This will throw an error if the token is invalid at all
     let {payload} = await this.oauth2.verifyIdToken({
       idToken: token,
@@ -225,10 +225,12 @@ class GoogleProvider extends Provider {
     }
 
     // Google docs say instance id is globally unique even across projects
-    const workerId = `gcp-${dat.instance_id}`;
+    const workerId = dat.instance_id;
+    const workerGroup = this.name;
 
     const worker = await this.Worker.load({
-      workerType: workerType.name,
+      workerTypeName,
+      workerGroup,
       workerId,
     }, true);
 
@@ -249,13 +251,13 @@ class GoogleProvider extends Provider {
     });
 
     return taskcluster.createTemporaryCredentials({
-      clientId: `worker/google/${this.project}/${workerId}`,
+      clientId: `worker/google/${this.project}/${workerGroup}/${workerId}`,
       scopes: [
-        `assume:worker-type:${this.provisionerId}/${workerType.name}`,
-        `assume:worker-id:${workerType.name}-google/${workerId}`,
-        `queue:worker-id:${workerType.name}-google/${workerId}`,
-        `secrets:get:worker-type:${this.provisionerId}/${workerType.name}`,
-        `queue:claim-work:${this.provisionerId}/${workerType.name}`,
+        `assume:worker-type:${workerTypeName}`,
+        `assume:worker-id:${workerGroup}/${workerId}`,
+        `queue:worker-id:${workerGroup}/${workerId}`,
+        `secrets:get:worker-type:${workerTypeName}`,
+        `queue:claim-work:${workerTypeName}`,
       ],
       start: taskcluster.fromNow('-15 minutes'),
       expiry: taskcluster.fromNow('96 hours'),
@@ -271,6 +273,8 @@ class GoogleProvider extends Provider {
   }
 
   async provision({workerType}) {
+    const {workerTypeName} = workerType;
+
     // TODO: I worry that providerData.trackedOperations will be larger than a single record
     // probably need to have providerData as separate table?
     const providerData = workerType.providerData[this.name];
@@ -286,7 +290,7 @@ class GoogleProvider extends Provider {
     // TODO: Use p-queue for all operations against google
 
     const toSpawn = await this.estimator.simple({
-      name: workerType.name,
+      workerTypeName,
       ...workerType.config,
       running: workerType.providerData[this.name].running,
     });
@@ -308,7 +312,7 @@ class GoogleProvider extends Provider {
       // The lost entropy from downcasing, etc should be ok due to the fact that
       // only running instances need not be identical. We do not use this name to identify
       // workers in taskcluster.
-      const instanceName = `${workerType.name}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
+      const instanceName = `${workerTypeName}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
 
       let op;
 
@@ -320,7 +324,7 @@ class GoogleProvider extends Provider {
           requestBody: {
             name: instanceName,
             labels: {
-              workertype: workerType.name,
+              workerTypeName,
             },
             description: workerType.description,
             machineType: `zones/${zone}/machineTypes/${workerType.config.machineType}`,
@@ -348,10 +352,9 @@ class GoogleProvider extends Provider {
                 {
                   key: 'taskcluster',
                   value: JSON.stringify({
-                    provisionerId: this.provisionerId,
-                    workerType: workerType.name,
-                    workerGroup: `${workerType.name}-google`,
-                    credentialUrl: libUrls.api(this.rootUrl, 'worker-manager', 'v1', `credentials/google/${workerType.name}`),
+                    workerTypeName,
+                    workerGroup: this.name,
+                    credentialUrl: libUrls.api(this.rootUrl, 'worker-manager', 'v1', `credentials/google/${workerTypeName}`),
                     rootUrl: this.rootUrl,
                     userData: workerType.config.userData,
                   }),
@@ -377,9 +380,10 @@ class GoogleProvider extends Provider {
       }
 
       await this.Worker.create({
-        workerType: workerType.name,
+        workerTypeName,
         provider: this.name,
-        workerId: `gcp-${op.targetId}`,
+        workerGroup: this.name,
+        workerId: op.targetId,
         created: new Date(),
         expires: taskcluster.fromNow('1 week'),
         state: this.Worker.states.REQUESTED,
@@ -496,13 +500,13 @@ class GoogleProvider extends Provider {
    */
   async checkWorker({worker}) {
     const states = this.Worker.states;
-    this.seen[worker.workerType] = this.seen[worker.workerType] || 0;
+    this.seen[worker.workerTypeName] = this.seen[worker.workerTypeName] || 0;
     let res;
     try {
       res = await this.compute.instances.get({
         project: worker.providerData.project,
         zone: worker.providerData.zone,
-        instance: worker.workerId.replace('gcp-', ''),
+        instance: worker.workerId,
       });
     } catch (err) {
       if (err.code !== 404) {
@@ -515,12 +519,12 @@ class GoogleProvider extends Provider {
     }
     const {status} = res.data;
     if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
-      this.seen[worker.workerType] += 1;
+      this.seen[worker.workerTypeName] += 1;
     } else if (['TERMINATED', 'STOPPED'].includes(status)) {
       await this.compute.instances.delete({
         project: worker.providerData.project,
         zone: worker.providerData.zone,
-        instance: worker.workerId.replace('gcp-', ''),
+        instance: worker.workerId,
       });
       await worker.modify(w => {
         w.state = states.STOPPED;
@@ -532,9 +536,9 @@ class GoogleProvider extends Provider {
    * Called after an iteration of the worker scanner
    */
   async scanCleanup() {
-    await Promise.all(Object.entries(this.seen).map(async ([name, seen]) => {
+    await Promise.all(Object.entries(this.seen).map(async ([workerTypeName, seen]) => {
       const workerType = await this.WorkerType.load({
-        name,
+        workerTypeName,
       }, true);
 
       if (!workerType) {

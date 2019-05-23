@@ -59,7 +59,7 @@ class WorkerManager(BaseClient):
         """
         Get WorkerType
 
-        Given an existing workertype defition, this will fetch it.
+        Fetch an existing workertype defition.
 
         This method is ``experimental``
         """
@@ -101,28 +101,28 @@ class WorkerManager(BaseClient):
 
     funcinfo = {
         "createWorkerType": {
-            'args': ['name'],
+            'args': ['workerTypeName'],
             'input': 'v1/create-workertype-request.json#',
             'method': 'put',
             'name': 'createWorkerType',
             'output': 'v1/workertype-full.json#',
-            'route': '/workertype/<name>',
+            'route': '/workertype/<workerTypeName>',
             'stability': 'experimental',
         },
         "credentialsGoogle": {
-            'args': ['name'],
+            'args': ['workerTypeName'],
             'input': 'v1/credentials-google-request.json#',
             'method': 'post',
             'name': 'credentialsGoogle',
             'output': 'v1/temp-creds-response.json#',
-            'route': '/credentials/google/<name>',
+            'route': '/credentials/google/<workerTypeName>',
             'stability': 'experimental',
         },
         "deleteWorkerType": {
-            'args': ['name'],
+            'args': ['workerTypeName'],
             'method': 'delete',
             'name': 'deleteWorkerType',
-            'route': '/workertype/<name>',
+            'route': '/workertype/<workerTypeName>',
             'stability': 'experimental',
         },
         "listWorkerTypes": {
@@ -142,20 +142,20 @@ class WorkerManager(BaseClient):
             'stability': 'stable',
         },
         "updateWorkerType": {
-            'args': ['name'],
+            'args': ['workerTypeName'],
             'input': 'v1/create-workertype-request.json#',
             'method': 'post',
             'name': 'updateWorkerType',
             'output': 'v1/workertype-full.json#',
-            'route': '/workertype/<name>',
+            'route': '/workertype/<workerTypeName>',
             'stability': 'experimental',
         },
         "workerType": {
-            'args': ['name'],
+            'args': ['workerTypeName'],
             'method': 'get',
             'name': 'workerType',
             'output': 'v1/workertype-full.json#',
-            'route': '/workertype/<name>',
+            'route': '/workertype/<workerTypeName>',
             'stability': 'experimental',
         },
     }

@@ -3,7 +3,7 @@ title: WorkerType Pulse Message
 description: The message that is emitted when workertypes are created/changed/deleted.
 type: object
 properties:
-  name: {$ref: "workertype-full.json#/properties/provider"}
+  workerTypeName: {$ref: "workertype-full.json#/properties/workerTypeName"}
   provider: {$ref: "workertype-full.json#/properties/provider"}
   previousProvider:
     title: Previous Provider
@@ -18,5 +18,5 @@ properties:
       for it.
 additionalProperties: false
 required:
-  - name
+  - workerTypeName
   - provider

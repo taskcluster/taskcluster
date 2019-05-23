@@ -7,6 +7,11 @@ It currently includes providers for:
 * Static Workers
 * Google Cloud
 
+## workerTypeName
+
+This service considers a "workerTypeName" to be a string of the shape `<provisionerId>/<workerType>`.
+This definition is used internally and in the worker-manager API, with translations made to interact with other services such as Queue.
+
 ## Development
 
 No special configuration is required for development.

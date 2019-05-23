@@ -11,12 +11,12 @@ export default class WorkerManager extends Client {
       ...options,
     });
     this.ping.entry = {"args":[],"method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.createWorkerType.entry = {"args":["name"],"input":true,"method":"put","name":"createWorkerType","output":true,"query":[],"route":"/workertype/<name>","scopes":{"AllOf":["worker-manager:create-worker-type:<name>","worker-manager:provider:<provider>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
-    this.updateWorkerType.entry = {"args":["name"],"input":true,"method":"post","name":"updateWorkerType","output":true,"query":[],"route":"/workertype/<name>","scopes":{"AllOf":["worker-manager:update-worker-type:<name>","worker-manager:provider:<provider>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
-    this.workerType.entry = {"args":["name"],"method":"get","name":"workerType","output":true,"query":[],"route":"/workertype/<name>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.deleteWorkerType.entry = {"args":["name"],"method":"delete","name":"deleteWorkerType","query":[],"route":"/workertype/<name>","scopes":"worker-manager:delete-worker-type:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.createWorkerType.entry = {"args":["workerTypeName"],"input":true,"method":"put","name":"createWorkerType","output":true,"query":[],"route":"/workertype/<workerTypeName>","scopes":{"AllOf":["worker-manager:create-worker-type:<workerTypeName>","worker-manager:provider:<provider>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
+    this.updateWorkerType.entry = {"args":["workerTypeName"],"input":true,"method":"post","name":"updateWorkerType","output":true,"query":[],"route":"/workertype/<workerTypeName>","scopes":{"AllOf":["worker-manager:update-worker-type:<workerTypeName>","worker-manager:provider:<provider>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
+    this.workerType.entry = {"args":["workerTypeName"],"method":"get","name":"workerType","output":true,"query":[],"route":"/workertype/<workerTypeName>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.deleteWorkerType.entry = {"args":["workerTypeName"],"method":"delete","name":"deleteWorkerType","query":[],"route":"/workertype/<workerTypeName>","scopes":"worker-manager:delete-worker-type:<workerTypeName>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkerTypes.entry = {"args":[],"method":"get","name":"listWorkerTypes","output":true,"query":["continuationToken","limit"],"route":"/workertypes","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.credentialsGoogle.entry = {"args":["name"],"input":true,"method":"post","name":"credentialsGoogle","output":true,"query":[],"route":"/credentials/google/<name>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.credentialsGoogle.entry = {"args":["workerTypeName"],"input":true,"method":"post","name":"credentialsGoogle","output":true,"query":[],"route":"/credentials/google/<workerTypeName>","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -44,7 +44,7 @@ export default class WorkerManager extends Client {
     return this.request(this.updateWorkerType.entry, args);
   }
   /* eslint-disable max-len */
-  // Given an existing workertype defition, this will fetch it.
+  // Fetch an existing workertype defition.
   /* eslint-enable max-len */
   workerType(...args) {
     this.validate(this.workerType.entry, args);

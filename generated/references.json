@@ -63,14 +63,6 @@
           "title": "Last Modified",
           "type": "string"
         },
-        "name": {
-          "description": "The name of this workertype.\n",
-          "maxLength": 38,
-          "minLength": 1,
-          "pattern": "[a-z]([-a-z0-9]*[a-z0-9])?",
-          "title": "WorkerType Name",
-          "type": "string"
-        },
         "owner": {
           "description": "An email address to notify when there are provisioning errors for this\nworkertype.\n",
           "format": "email",
@@ -89,6 +81,12 @@
           "description": "If true, a user has requested that this workertype be deleted",
           "title": "Scheduled For Deletion",
           "type": "boolean"
+        },
+        "workerTypeName": {
+          "description": "The name of this workertype (of the form `providerId/workerType`)\n",
+          "pattern": "^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
+          "title": "WorkerType Name",
+          "type": "string"
         }
       },
       "required": [
@@ -143,9 +141,6 @@
       "additionalProperties": false,
       "description": "The message that is emitted when workertypes are created/changed/deleted.",
       "properties": {
-        "name": {
-          "$ref": "workertype-full.json#/properties/provider"
-        },
         "previousProvider": {
           "description": "If this is defined, it was the provider that handled this workertype in the \nconfiguration before the current one. This will be used by providers to clean\nup any resources created for this workerType when they are no longer responsible\nfor it.\n",
           "maxLength": 38,
@@ -156,10 +151,13 @@
         },
         "provider": {
           "$ref": "workertype-full.json#/properties/provider"
+        },
+        "workerTypeName": {
+          "$ref": "workertype-full.json#/properties/workerTypeName"
         }
       },
       "required": [
-        "name",
+        "workerTypeName",
         "provider"
       ],
       "title": "WorkerType Pulse Message",
@@ -7875,7 +7873,7 @@
           "description": "A workerType's provisioning run has completed",
           "fields": {
             "provider": "The name of the provider that did the work for this workertype.",
-            "workerType": "The name of the workertype."
+            "workerTypeName": "The worker type name (provisionerId/workerType)"
           },
           "level": "info",
           "name": "workertypeProvisioned",
@@ -7892,7 +7890,7 @@
             "minCapacity": "The minimum amount of capacity that should be running",
             "pendingTasks": "The number of tasks the queue reports are pending for this workerType",
             "running": "Number of currently requested and running instances",
-            "workerType": "The name of the workertype."
+            "workerTypeName": "The worker type name (provisionerId/workerType)"
           },
           "level": "notice",
           "name": "simpleEstimate",
@@ -8040,7 +8038,7 @@
         },
         {
           "args": [
-            "name"
+            "workerTypeName"
           ],
           "description": "Create a new workertype. If the workertype already exists, this will throw an error.",
           "input": "v1/create-workertype-request.json#",
@@ -8049,10 +8047,10 @@
           "output": "v1/workertype-full.json#",
           "query": [
           ],
-          "route": "/workertype/<name>",
+          "route": "/workertype/<workerTypeName>",
           "scopes": {
             "AllOf": [
-              "worker-manager:create-worker-type:<name>",
+              "worker-manager:create-worker-type:<workerTypeName>",
               "worker-manager:provider:<provider>"
             ]
           },
@@ -8062,7 +8060,7 @@
         },
         {
           "args": [
-            "name"
+            "workerTypeName"
           ],
           "description": "Given an existing workertype definition, this will modify it and return the new definition.",
           "input": "v1/create-workertype-request.json#",
@@ -8071,10 +8069,10 @@
           "output": "v1/workertype-full.json#",
           "query": [
           ],
-          "route": "/workertype/<name>",
+          "route": "/workertype/<workerTypeName>",
           "scopes": {
             "AllOf": [
-              "worker-manager:update-worker-type:<name>",
+              "worker-manager:update-worker-type:<workerTypeName>",
               "worker-manager:provider:<provider>"
             ]
           },
@@ -8084,30 +8082,30 @@
         },
         {
           "args": [
-            "name"
+            "workerTypeName"
           ],
-          "description": "Given an existing workertype defition, this will fetch it.",
+          "description": "Fetch an existing workertype defition.",
           "method": "get",
           "name": "workerType",
           "output": "v1/workertype-full.json#",
           "query": [
           ],
-          "route": "/workertype/<name>",
+          "route": "/workertype/<workerTypeName>",
           "stability": "experimental",
           "title": "Get WorkerType",
           "type": "function"
         },
         {
           "args": [
-            "name"
+            "workerTypeName"
           ],
           "description": "Delete an existing workertype definition.",
           "method": "delete",
           "name": "deleteWorkerType",
           "query": [
           ],
-          "route": "/workertype/<name>",
-          "scopes": "worker-manager:delete-worker-type:<name>",
+          "route": "/workertype/<workerTypeName>",
+          "scopes": "worker-manager:delete-worker-type:<workerTypeName>",
           "stability": "experimental",
           "title": "Delete WorkerType",
           "type": "function"
@@ -8130,7 +8128,7 @@
         },
         {
           "args": [
-            "name"
+            "workerTypeName"
           ],
           "description": "Get Taskcluster credentials for a worker given an Instance Identity Token",
           "input": "v1/credentials-google-request.json#",
@@ -8139,7 +8137,7 @@
           "output": "v1/temp-creds-response.json#",
           "query": [
           ],
-          "route": "/credentials/google/<name>",
+          "route": "/credentials/google/<workerTypeName>",
           "stability": "experimental",
           "title": "Google Credentials",
           "type": "function"

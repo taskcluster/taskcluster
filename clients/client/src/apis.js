@@ -3753,7 +3753,7 @@ module.exports = {
         },
         {
           "args": [
-            "name"
+            "workerTypeName"
           ],
           "description": "Create a new workertype. If the workertype already exists, this will throw an error.",
           "input": "v1/create-workertype-request.json#",
@@ -3762,10 +3762,10 @@ module.exports = {
           "output": "v1/workertype-full.json#",
           "query": [
           ],
-          "route": "/workertype/<name>",
+          "route": "/workertype/<workerTypeName>",
           "scopes": {
             "AllOf": [
-              "worker-manager:create-worker-type:<name>",
+              "worker-manager:create-worker-type:<workerTypeName>",
               "worker-manager:provider:<provider>"
             ]
           },
@@ -3775,7 +3775,7 @@ module.exports = {
         },
         {
           "args": [
-            "name"
+            "workerTypeName"
           ],
           "description": "Given an existing workertype definition, this will modify it and return the new definition.",
           "input": "v1/create-workertype-request.json#",
@@ -3784,10 +3784,10 @@ module.exports = {
           "output": "v1/workertype-full.json#",
           "query": [
           ],
-          "route": "/workertype/<name>",
+          "route": "/workertype/<workerTypeName>",
           "scopes": {
             "AllOf": [
-              "worker-manager:update-worker-type:<name>",
+              "worker-manager:update-worker-type:<workerTypeName>",
               "worker-manager:provider:<provider>"
             ]
           },
@@ -3797,30 +3797,30 @@ module.exports = {
         },
         {
           "args": [
-            "name"
+            "workerTypeName"
           ],
-          "description": "Given an existing workertype defition, this will fetch it.",
+          "description": "Fetch an existing workertype defition.",
           "method": "get",
           "name": "workerType",
           "output": "v1/workertype-full.json#",
           "query": [
           ],
-          "route": "/workertype/<name>",
+          "route": "/workertype/<workerTypeName>",
           "stability": "experimental",
           "title": "Get WorkerType",
           "type": "function"
         },
         {
           "args": [
-            "name"
+            "workerTypeName"
           ],
           "description": "Delete an existing workertype definition.",
           "method": "delete",
           "name": "deleteWorkerType",
           "query": [
           ],
-          "route": "/workertype/<name>",
-          "scopes": "worker-manager:delete-worker-type:<name>",
+          "route": "/workertype/<workerTypeName>",
+          "scopes": "worker-manager:delete-worker-type:<workerTypeName>",
           "stability": "experimental",
           "title": "Delete WorkerType",
           "type": "function"
@@ -3843,7 +3843,7 @@ module.exports = {
         },
         {
           "args": [
-            "name"
+            "workerTypeName"
           ],
           "description": "Get Taskcluster credentials for a worker given an Instance Identity Token",
           "input": "v1/credentials-google-request.json#",
@@ -3852,7 +3852,7 @@ module.exports = {
           "output": "v1/temp-creds-response.json#",
           "query": [
           ],
-          "route": "/credentials/google/<name>",
+          "route": "/credentials/google/<workerTypeName>",
           "stability": "experimental",
           "title": "Google Credentials",
           "type": "function"
