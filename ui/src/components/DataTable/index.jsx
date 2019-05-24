@@ -120,6 +120,9 @@ export default class DataTable extends Component {
     } = this.props;
     const colSpan = columnsSize || (headers && headers.length) || 0;
     const { page } = this.state;
+    const elements = paginate
+      ? items.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+      : items;
 
     return (
       <Fragment>
@@ -143,16 +146,14 @@ export default class DataTable extends Component {
               </TableHead>
             )}
             <TableBody>
-              {items.length === 0 ? (
+              {elements.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={colSpan}>
                     <em>{noItemsMessage}</em>
                   </TableCell>
                 </TableRow>
               ) : (
-                items
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map(renderRow)
+                elements.map(renderRow)
               )}
             </TableBody>
           </Table>
@@ -161,7 +162,7 @@ export default class DataTable extends Component {
           <TablePagination
             labelDisplayedRows={() => ''}
             component="div"
-            count={items.length}
+            count={elements.length}
             rowsPerPage={rowsPerPage}
             rowsPerPageOptions={[rowsPerPage]}
             page={page}
