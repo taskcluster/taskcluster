@@ -50,7 +50,6 @@ import DeleteIcon from 'mdi-react/DeleteIcon';
 }))
 export default class PulseBindings extends Component {
   static propTypes = {
-    patternName: string,
     pulseExchange: string.isRequired,
     pattern: string.isRequired,
     bindings: arrayOf(object).isRequired,
@@ -61,7 +60,6 @@ export default class PulseBindings extends Component {
 
   render() {
     const {
-      patternName,
       pulseExchange,
       pattern,
       bindings,
@@ -103,7 +101,7 @@ export default class PulseBindings extends Component {
                     required
                     label="Routing Key Pattern"
                     placeholder="#.some-interesting-key.#"
-                    name={patternName || 'pattern'}
+                    name="pattern"
                     onChange={onChange}
                     fullWidth
                     value={pattern}
