@@ -14,6 +14,7 @@ import LoginVariantIcon from 'mdi-react/LoginVariantIcon';
 import KeyboardOutlineIcon from 'mdi-react/KeyboardOutlineIcon';
 import { withAuth } from '../../utils/Auth';
 import CredentialsDialog from './CredentialsDialog';
+import UserSession from '../../auth/UserSession';
 
 @withAuth
 @withApollo
@@ -37,7 +38,7 @@ export default class SignInDialog extends Component {
           return;
         }
 
-        onAuthorize(e.data);
+        onAuthorize(UserSession.create(e.data));
         window.removeEventListener('message', handler);
         onClose();
       },
@@ -58,15 +59,17 @@ export default class SignInDialog extends Component {
 
     inOneWeek.setDate(inOneWeek.getDate() + 7);
 
-    this.props.onAuthorize({
-      identityProviderId: 'manual',
-      credentials,
-      expires: inOneWeek.toISOString(),
-      profile: {
-        username: credentials.clientId,
-        displayName: credentials.clientId,
-      },
-    });
+    this.props.onAuthorize(
+      UserSession.create({
+        identityProviderId: 'manual',
+        credentials,
+        expires: inOneWeek.toISOString(),
+        profile: {
+          username: credentials.clientId,
+          displayName: credentials.clientId,
+        },
+      })
+    );
     this.props.onClose();
   };
 
