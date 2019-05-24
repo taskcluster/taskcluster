@@ -91,7 +91,7 @@ export default class ViewDenylistAddress extends Component {
     return (
       <Dashboard
         title={isNewAddress ? 'Add Denylist Address' : 'Denylist Address'}>
-        <ErrorPanel error={formatError(error)} />
+        <ErrorPanel fixed error={formatError(error)} />
         {isNewAddress ? (
           <DenylistForm
             loading={loading}
@@ -101,7 +101,7 @@ export default class ViewDenylistAddress extends Component {
         ) : (
           <Fragment>
             {data.loading && <Spinner loading />}
-            {data && <ErrorPanel error={data.error} />}
+            {data && <ErrorPanel fixed error={data.error} />}
             {hasDenylistAddresses && (
               <DenylistForm
                 loading={loading}

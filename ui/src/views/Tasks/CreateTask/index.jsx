@@ -282,10 +282,10 @@ export default class CreateTask extends Component {
         }>
         <Fragment>
           {error ? (
-            <ErrorPanel error={error} />
+            <ErrorPanel fixed error={error} />
           ) : (
             <Fragment>
-              <ErrorPanel error={createdTaskError} />
+              <ErrorPanel fixed error={createdTaskError} />
               <FormControlLabel
                 control={
                   <Switch

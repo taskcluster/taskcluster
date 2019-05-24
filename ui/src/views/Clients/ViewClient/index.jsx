@@ -201,7 +201,6 @@ export default class ViewClient extends Component {
     return (
       <Dashboard title={isNewClient ? 'Create Client' : 'Client'}>
         <Fragment>
-          <ErrorPanel error={error} />
           <Collapse in={accessToken}>
             <Card classes={{ root: classes.panelCard }}>
               <CardHeader
@@ -234,15 +233,18 @@ export default class ViewClient extends Component {
             </Card>
           </Collapse>
           {isNewClient ? (
-            <ClientForm
-              loading={loading}
-              isNewClient
-              onSaveClient={this.handleSaveClient}
-            />
+            <Fragment>
+              <ErrorPanel fixed error={error} />
+              <ClientForm
+                loading={loading}
+                isNewClient
+                onSaveClient={this.handleSaveClient}
+              />
+            </Fragment>
           ) : (
             <Fragment>
               {data.loading && <Spinner loading />}
-              {data && <ErrorPanel error={data.error} />}
+              <ErrorPanel fixed error={error || data.error} />
               {data && data.client && (
                 <ClientForm
                   loading={loading}

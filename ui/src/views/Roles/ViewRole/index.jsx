@@ -75,7 +75,7 @@ export default class ViewRole extends Component {
     return (
       <Dashboard title={isNewRole ? 'Create Role' : 'Role'}>
         <Fragment>
-          <ErrorPanel error={error} />
+          <ErrorPanel fixed error={error} />
           {isNewRole ? (
             <RoleForm
               isNewRole
@@ -85,7 +85,7 @@ export default class ViewRole extends Component {
           ) : (
             <Fragment>
               {data.loading && <Spinner loading />}
-              {data && <ErrorPanel error={data.error} />}
+              {data && <ErrorPanel fixed error={data.error} />}
               {data && data.role && (
                 <RoleForm
                   role={data.role}

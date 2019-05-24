@@ -97,7 +97,7 @@ export default class ListScopes extends PureComponent {
           />
         }>
         <Fragment>
-          <ErrorPanel error={error} />
+          <ErrorPanel fixed error={error} />
           {loading && <Spinner loading />}
           {!loading && (
             <Fragment>

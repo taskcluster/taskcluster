@@ -69,7 +69,7 @@ export default class Roles extends PureComponent {
     return (
       <Fragment>
         {loading && <Spinner loading />}
-        <ErrorPanel error={error} />
+        <ErrorPanel fixed error={error} />
         {listRoleIds && (
           <RolesTable
             onPageChange={this.handlePageChange}

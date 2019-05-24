@@ -82,7 +82,7 @@ export default class ListHooks extends Component {
           />
         }>
         {!hookGroups && loading && <Spinner loading />}
-        <ErrorPanel error={error} />
+        <ErrorPanel fixed error={error} />
         {hookGroups && (
           <MuiTreeView
             // key is necessary to expand the list of hook when searching

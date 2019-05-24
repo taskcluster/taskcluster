@@ -22,7 +22,11 @@ import PageTitle from '../PageTitle';
 import Helmet from '../Helmet';
 import UserMenu from '../UserMenu';
 import SidebarList from './SidebarList';
-import { THEME, DOCS_PATH_PREFIX } from '../../utils/constants';
+import {
+  THEME,
+  DOCS_PATH_PREFIX,
+  CONTENT_MAX_WIDTH,
+} from '../../utils/constants';
 import { withThemeToggler } from '../../utils/ToggleTheme';
 import Link from '../../utils/Link';
 import Logo from '../../images/brandLogo.png';
@@ -104,7 +108,7 @@ import SkipNavigation from '../SkipNavigation';
       paddingRight: theme.spacing.double,
     },
     content: {
-      maxWidth: 1592,
+      maxWidth: CONTENT_MAX_WIDTH,
       flexGrow: 1,
       backgroundColor: theme.palette.background,
       overflowY: 'auto',
@@ -391,7 +395,7 @@ export default class Dashboard extends Component {
             className
           )}
           {...props}>
-          {error ? <ErrorPanel error={error} /> : children}
+          {error ? <ErrorPanel fixed error={error} /> : children}
         </main>
       </div>
     );

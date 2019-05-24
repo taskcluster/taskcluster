@@ -7,7 +7,6 @@ import Dashboard from '../../../components/Dashboard';
 import SecretForm from '../../../components/SecretForm';
 import HelpView from '../../../components/HelpView';
 import ErrorPanel from '../../../components/ErrorPanel';
-import formatError from '../../../utils/formatError';
 import secretQuery from './secret.graphql';
 import createSecretQuery from './createSecret.graphql';
 import updateSecretQuery from './updateSecret.graphql';
@@ -87,7 +86,7 @@ export default class ViewSecret extends Component {
             </Typography>
           </HelpView>
         }>
-        <ErrorPanel error={formatError(error)} />
+        <ErrorPanel fixed error={error} />
         {isNewSecret ? (
           <SecretForm
             loading={loading}
@@ -97,7 +96,7 @@ export default class ViewSecret extends Component {
         ) : (
           <Fragment>
             {data.loading && <Spinner loading />}
-            {data && <ErrorPanel error={data.error} />}
+            {data && <ErrorPanel fixed error={data.error} />}
             {data && data.secret && (
               <SecretForm
                 loading={loading}

@@ -124,8 +124,7 @@ export default class ViewAwsWorkerType extends Component {
 
     return (
       <Dashboard title={`AWS Provisioner ${workerType}`}>
-        <ErrorPanel error={error} />
-        <ErrorPanel error={this.state.error} />
+        <ErrorPanel fixed error={this.state.error || error} />
         <Tabs fullWidth value={currentTab} onChange={this.handleTabChange}>
           <Tab label="Status" />
           <Tab label="Recent Provisioning Errors" />

@@ -70,28 +70,28 @@ export default class ScopesetExpander extends Component {
           {scopes && (
             <Query query={scopesetQuery} variables={{ scopes }}>
               {({ loading, error, data: { expandScopes } }) => (
-                <List dense>
-                  {loading && (
-                    <ListItem>
-                      <Spinner />
-                    </ListItem>
-                  )}
-                  <ListItem>
-                    <ErrorPanel error={error} />
-                  </ListItem>
-                  {expandScopes &&
-                    expandScopes.map(scope => (
-                      <ListItem
-                        key={scope}
-                        button
-                        component={Link}
-                        to={`/auth/scopes/${encodeURIComponent(scope)}`}
-                        className={classes.listItemButton}>
-                        <ListItemText secondary={scope} />
-                        <LinkIcon size={16} />
+                <Fragment>
+                  <ErrorPanel error={error} />
+                  <List dense>
+                    {loading && (
+                      <ListItem>
+                        <Spinner />
                       </ListItem>
-                    ))}
-                </List>
+                    )}
+                    {expandScopes &&
+                      expandScopes.map(scope => (
+                        <ListItem
+                          key={scope}
+                          button
+                          component={Link}
+                          to={`/auth/scopes/${encodeURIComponent(scope)}`}
+                          className={classes.listItemButton}>
+                          <ListItemText secondary={scope} />
+                          <LinkIcon size={16} />
+                        </ListItem>
+                      ))}
+                  </List>
+                </Fragment>
               )}
             </Query>
           )}

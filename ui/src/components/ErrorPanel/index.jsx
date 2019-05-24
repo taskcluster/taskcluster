@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
-import { oneOfType, string, object } from 'prop-types';
+import { bool, oneOfType, string, object } from 'prop-types';
 import MuiErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
+import { CONTENT_MAX_WIDTH } from '../../utils/constants';
 
 @withStyles(theme => ({
   warning: {
@@ -15,15 +16,26 @@ import MuiErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
       ...theme.mixins.link,
     },
   },
+  fixed: {
+    position: 'fixed',
+    zIndex: theme.zIndex.drawer - 1,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '92%',
+    maxWidth: CONTENT_MAX_WIDTH,
+  },
 }))
 export default class ErrorPanel extends Component {
   static propTypes = {
     /** Error to display. */
     error: oneOfType([string, object]),
+    /** If true, the component will be fixed. */
+    fixed: bool,
   };
 
   static defaultProps = {
     error: null,
+    fixed: false,
   };
 
   state = {
@@ -54,7 +66,7 @@ export default class ErrorPanel extends Component {
   };
 
   render() {
-    const { classes, error: _, ...props } = this.props;
+    const { classes, className, fixed, error: _, ...props } = this.props;
     const { error } = this.state;
     const errorMessage =
       error && error.graphQLErrors && error.graphQLErrors[0]
@@ -64,8 +76,9 @@ export default class ErrorPanel extends Component {
     return (
       error && (
         <MuiErrorPanel
-          className={classNames(classes.link, {
+          className={classNames(className, classes.link, {
             [classes.warning]: Boolean(props.warning),
+            [classes.fixed]: fixed,
           })}
           error={errorMessage}
           onClose={this.handleErrorClose}

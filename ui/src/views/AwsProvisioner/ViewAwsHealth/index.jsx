@@ -18,7 +18,7 @@ export default class ViewAwsHealth extends Component {
     return (
       <Dashboard title="AWS Provisioner Health">
         {loading && <Spinner loading />}
-        <ErrorPanel error={error} />
+        <ErrorPanel fixed error={error} />
         {awsProvisionerHealth && (
           <AwsProvisionerHealthTable healthData={awsProvisionerHealth} />
         )}

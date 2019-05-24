@@ -122,7 +122,7 @@ export default class ViewClients extends PureComponent {
         }>
         <Fragment>
           {loading && <Spinner loading />}
-          <ErrorPanel error={error} />
+          <ErrorPanel fixed error={error} />
           {clients && (
             <ClientsTable
               onPageChange={this.handlePageChange}

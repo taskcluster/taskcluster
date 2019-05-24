@@ -30,7 +30,7 @@ export default class ViewProvisioners extends Component {
         title="Provisioners"
         helpView={<HelpView description={description} />}>
         {loading && <Spinner loading />}
-        <ErrorPanel error={error} />
+        <ErrorPanel fixed error={error} />
         {provisioners && (
           <Grid container spacing={24}>
             {provisioners.edges.map(({ node: provisioner }) => (

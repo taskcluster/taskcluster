@@ -140,7 +140,7 @@ export default class ViewWorker extends Component {
       <Dashboard title="Worker">
         <Fragment>
           {loading && <Spinner loading />}
-          <ErrorPanel error={error} />
+          <ErrorPanel fixed error={error} />
           {worker && (
             <Fragment>
               <WorkerDetailsCard worker={worker} />

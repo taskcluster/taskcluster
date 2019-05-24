@@ -112,8 +112,9 @@ export default class IndexedTask extends Component {
         title="Index Browser"
         helpView={<HelpView description={description} />}>
         {loading && <Spinner loading />}
-        {!loading && <ErrorPanel error={indexedTaskError} />}
-        {!loading && <ErrorPanel error={latestArtifactsError} />}
+        {!loading && (
+          <ErrorPanel fixed error={indexedTaskError || latestArtifactsError} />
+        )}
         {latestArtifacts && indexedTask && task && (
           <IndexedEntry
             onArtifactsPageChange={this.handleArtifactsPageChange}

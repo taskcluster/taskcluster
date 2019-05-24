@@ -223,8 +223,7 @@ export default class ViewAwsWorkerTypeDefinition extends Component {
         {data && !data.awsProvisionerWorkerType && data.loading && (
           <Spinner loading />
         )}
-        {data && <ErrorPanel error={data.error} />}
-        <ErrorPanel error={error} />
+        <ErrorPanel fixed error={error || (data && data.error)} />
         <List>
           <ListItem>
             {isNewWorkerType ? (
