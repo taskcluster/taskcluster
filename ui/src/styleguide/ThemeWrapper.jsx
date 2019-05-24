@@ -16,7 +16,7 @@ export default class ThemeWrapper extends Component {
     return (
       <MuiThemeProvider theme={theme.darkTheme}>
         {this.state.error ? (
-          <ErrorPanel error={this.state.error} />
+          <ErrorPanel fixed error={this.state.error} />
         ) : (
           this.props.children
         )}

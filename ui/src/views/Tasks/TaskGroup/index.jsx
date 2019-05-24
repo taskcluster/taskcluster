@@ -7,7 +7,6 @@ import { isEmpty } from 'ramda';
 import jsonSchemaDefaults from 'json-schema-defaults';
 import { safeDump } from 'js-yaml';
 import { withStyles } from '@material-ui/core/styles';
-import classNames from 'classnames';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import HammerIcon from 'mdi-react/HammerIcon';
 import { fade } from '@material-ui/core/styles/colorManipulator';
@@ -63,9 +62,6 @@ const updateTaskGroupIdHistory = id => {
   }),
 })
 @withStyles(theme => ({
-  warningPanel: {
-    ...theme.mixins.warningPanel,
-  },
   dashboard: {
     overflow: 'hidden',
   },
@@ -464,13 +460,7 @@ export default class TaskGroup extends Component {
             defaultValue={taskGroupId}
           />
         }>
-        <ErrorPanel
-          error={error}
-          warning={Boolean(taskGroup)}
-          className={classNames({
-            [classes.warningPanel]: Boolean(taskGroup),
-          })}
-        />
+        <ErrorPanel fixed error={error} warning={Boolean(taskGroup)} />
         {taskGroup && (
           <TaskGroupProgress
             taskGroupId={taskGroupId}

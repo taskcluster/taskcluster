@@ -267,7 +267,7 @@ export default class PulseMessages extends Component {
           </HelpView>
         }>
         <Fragment>
-          <ErrorPanel error={error} />
+          <ErrorPanel fixed error={error} />
           <div className={classes.inputWrapper}>
             <List className={classes.inputList}>
               <ListItem>

@@ -105,7 +105,7 @@ export default class ViewSecrets extends Component {
         }>
         <Fragment>
           {loading && <Spinner loading />}
-          <ErrorPanel error={error} />
+          <ErrorPanel fixed error={error} />
           {secrets && (
             <SecretsTable
               onPageChange={this.handlePageChange}

@@ -141,8 +141,7 @@ export default class ListNamespaces extends Component {
         helpView={<HelpView description={description} />}>
         <Fragment>
           {loading && <Spinner loading />}
-          <ErrorPanel error={namespacesError} />
-          <ErrorPanel error={taskNamespaceError} />
+          <ErrorPanel fixed error={namespacesError || taskNamespaceError} />
           {!loading && !hasNamespaces && !hasIndexedTasks && (
             <Typography>No items for this page.</Typography>
           )}

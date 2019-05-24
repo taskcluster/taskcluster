@@ -102,7 +102,7 @@ export default class ViewScope extends Component {
             <Tab label="Clients" />
           </Tabs>
           {loading && <Spinner loading />}
-          <ErrorPanel error={error} />
+          <ErrorPanel fixed error={error} />
           {roles && currentTabIndex === 0 && (
             <RoleScopesTable
               roles={roles}

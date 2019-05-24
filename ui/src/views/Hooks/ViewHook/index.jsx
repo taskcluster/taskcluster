@@ -173,7 +173,7 @@ export default class ViewHook extends Component {
 
     return (
       <Dashboard title={isNewHook ? 'Create Hook' : 'Hook'}>
-        <ErrorPanel error={error} />
+        <ErrorPanel fixed error={error} />
         {isNewHook ? (
           <Fragment>
             <HookForm

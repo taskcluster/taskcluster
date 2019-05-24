@@ -76,7 +76,7 @@ export default class Denylist extends PureComponent {
     return (
       <Fragment>
         {loading && <Spinner loading />}
-        <ErrorPanel error={error} />
+        <ErrorPanel fixed error={error} />
         {listDenylistAddresses && (
           <DenylistTable
             onPageChange={this.handlePageChange}

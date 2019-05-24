@@ -33,7 +33,7 @@ export default class TaskRedirect extends Component {
       <Dashboard>
         <Fragment>
           {error ? (
-            <ErrorPanel error={error} />
+            <ErrorPanel fixed error={error} />
           ) : (
             <Fragment>
               {loading && <Spinner />}

@@ -75,7 +75,6 @@ const getInteractiveStatus = ({
   warningPanel: {
     marginTop: theme.spacing.double,
     marginBottom: theme.spacing.double,
-    ...theme.mixins.warningPanel,
   },
   viewTaskDetails: {
     marginTop: theme.spacing.double,
@@ -399,7 +398,7 @@ export default class InteractiveConnect extends Component {
       <Dashboard title="Interactive Connect">
         <Fragment>
           {!error && artifactsLoading && <Spinner loading />}
-          <ErrorPanel error={error} />
+          <ErrorPanel fixed error={error} />
           {!artifactsLoading && task && this.renderTask()}
         </Fragment>
       </Dashboard>

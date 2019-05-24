@@ -89,7 +89,7 @@ export default class ViewCachePurges extends Component {
         title="Cache Purges">
         <Fragment>
           {!cachePurges && loading && <Spinner loading />}
-          <ErrorPanel error={error} />
+          <ErrorPanel fixed error={error} />
           {cachePurges && (
             <CachePurgesTable
               cachePurgesConnection={cachePurges}

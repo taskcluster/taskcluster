@@ -76,7 +76,7 @@ export default class CreatePurgeCacheRequest extends Component {
     return (
       <Dashboard title="Create Purge Cache Request">
         <Fragment>
-          <ErrorPanel error={error} />
+          <ErrorPanel fixed error={error} />
           <List>
             <ListItem>
               <TextField

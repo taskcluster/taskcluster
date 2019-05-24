@@ -76,7 +76,7 @@ export default class ViewAwsWorkerTypes extends Component {
         }>
         <Fragment>
           {!awsProvisionerWorkerTypeSummaries && loading && <Spinner loading />}
-          <ErrorPanel error={error} />
+          <ErrorPanel fixed error={error} />
           {awsProvisionerWorkerTypeSummaries && (
             <AwsProvisionerWorkerTypeTable
               searchTerm={workerTypeSearch}

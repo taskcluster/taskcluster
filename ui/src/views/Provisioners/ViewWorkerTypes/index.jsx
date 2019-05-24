@@ -105,7 +105,7 @@ export default class ViewWorkerTypes extends Component {
       <Dashboard title="Worker Types">
         <Fragment>
           {!workerTypes && loading && <Spinner loading />}
-          <ErrorPanel error={error} />
+          <ErrorPanel fixed error={error} />
           {provisioners && workerTypes && (
             <Fragment>
               <div className={classes.actionBar}>

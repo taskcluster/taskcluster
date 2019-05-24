@@ -18,7 +18,7 @@ export default class ViewAwsRecentErrors extends Component {
     return (
       <Dashboard title="AWS Provisioner Recent Provisioning Errors">
         {loading && <Spinner loading />}
-        <ErrorPanel error={error} />
+        <ErrorPanel fixed error={error} />
         {awsProvisionerRecentErrors && (
           <AwsProvisionerErrorsTable errors={awsProvisionerRecentErrors} />
         )}

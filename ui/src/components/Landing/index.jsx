@@ -60,7 +60,7 @@ export default class Landing extends Component {
         <Helmet />
         <PageTitle>{title}</PageTitle>
         <main className={classNames(classes.content, className)} {...props}>
-          {error ? <ErrorPanel error={error} /> : children}
+          {error ? <ErrorPanel fixed error={error} /> : children}
         </main>
       </div>
     );

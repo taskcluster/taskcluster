@@ -57,7 +57,7 @@ export default class Main extends Component {
 
     return (
       <Fragment>
-        <ErrorPanel error={error} />
+        <ErrorPanel fixed error={error} />
         <BrowserRouter>
           <Switch>
             {routes.map(({ routes, ...props }) => (

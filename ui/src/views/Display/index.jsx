@@ -80,7 +80,7 @@ export default class Display extends Component {
           [classes.vncDisplay]: Boolean(display),
         })}
         title={display ? 'VNC Display' : 'Displays'}>
-        <ErrorPanel error={error} />
+        <ErrorPanel fixed error={error} />
         {display && (
           <VncDisplay url={`${props.socketUrl}?display=${display}`} shared />
         )}

@@ -53,6 +53,7 @@ export const THEME = {
   DIVIDER: 'rgba(0, 0, 0, 0.12)',
   TONAL_OFFSET: 0.2,
 };
+export const CONTENT_MAX_WIDTH = 1592;
 
 // eslint-disable-next-line max-len
 export const VALID_TASK = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;

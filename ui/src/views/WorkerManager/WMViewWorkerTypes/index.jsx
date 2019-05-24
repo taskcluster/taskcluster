@@ -37,7 +37,7 @@ export default class WorkerManagerWorkerTypesView extends Component {
         }>
         <Fragment>
           {!WorkerManagerWorkerTypeSummaries && loading && <Spinner loading />}
-          <ErrorPanel error={error} />
+          <ErrorPanel fixed error={error} />
           {WorkerManagerWorkerTypeSummaries && (
             <WorkerManagerWorkerTypesTable
               searchTerm={workerTypeSearch}
