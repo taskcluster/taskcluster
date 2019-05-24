@@ -219,9 +219,11 @@ class WorkClaimer extends events.EventEmitter {
       }
     }
 
-    // Set takenUntil to now + claimTimeout
+    // Set takenUntil to now + claimTimeout, rounding up to the nearest second
+    // since we compare these times for equality after sending them to Azure
+    // and toJSON()
     let takenUntil = new Date();
-    takenUntil.setSeconds(takenUntil.getSeconds() + this._claimTimeout);
+    takenUntil.setSeconds(Math.ceil(takenUntil.getSeconds() + this._claimTimeout));
 
     // Modify task, don't send putClaimMessage more than once!
     let msgSent = false;
