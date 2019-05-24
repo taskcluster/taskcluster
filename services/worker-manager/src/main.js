@@ -14,6 +14,7 @@ const {sasCredentials} = require('taskcluster-lib-azure');
 const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 const {Provisioner} = require('./provisioner');
 const {WorkerScanner} = require('./worker-scanner');
+const {Providers} = require('./providers');
 
 let load = loader({
   cfg: {
@@ -178,33 +179,11 @@ let load = loader({
 
   providers: {
     requires: ['cfg', 'monitor', 'notify', 'estimator', 'Worker', 'WorkerType', 'schemaset'],
-    setup: async ({cfg, monitor, notify, estimator, Worker, WorkerType, schemaset}) => {
-      const _providers = {};
-      const validator = await schemaset.validator(cfg.taskcluster.rootUrl);
-      for (const [name, meta] of Object.entries(cfg.providers)) {
-        let Prov;
-        switch(meta.providerType) {
-          case 'testing': Prov = require('./provider_testing').TestingProvider; break;
-          case 'static': Prov = require('./provider_static').StaticProvider; break;
-          case 'google': Prov = require('./provider_google').GoogleProvider; break;
-          default: throw new Error(`Unkown providerType ${meta.providerType} selected for providerId ${name}.`);
-        }
-        _providers[name] = new Prov({
-          name,
-          notify,
-          monitor: monitor.childMonitor(name),
-          rootUrl: cfg.taskcluster.rootUrl,
-          taskclusterCredentials: cfg.taskcluster.credentials,
-          estimator,
-          Worker,
-          WorkerType,
-          validator,
-          ...meta,
-        });
-        await _providers[name].setup();
-      }
-      return _providers;
-    },
+    setup: async ({cfg, monitor, notify, estimator, Worker, WorkerType, schemaset}) =>
+      new Providers().setup({
+        cfg, monitor, notify, estimator, Worker, WorkerType,
+        validator: await schemaset.validator(cfg.taskcluster.rootUrl),
+      }),
   },
 
   provisioner: {
