@@ -213,6 +213,28 @@ instance.  This is meant to assist those who do not wish to bother figuring out
 how to configure the python logging module but do want debug messages
 
 
+## SlugIDs
+
+To generate slugIds (Taskcluster's client-generated unique IDs), use
+`taskcluster.slugId()`, which will return a unique slugId on each call.
+
+In some cases it is useful to be able to create a mapping from names to
+slugIds, with the ability to generate the same slugId multiple times.
+The `taskcluster.stableSlugId()` function returns a callable that does
+just this.
+
+```python
+gen = taskcluster.stableSlugId()
+sometask = gen('sometask')
+assert gen('sometask') == sometask  # same input generates same output
+assert gen('sometask') != gen('othertask')
+
+gen2 = taskcluster.stableSlugId()
+sometask2 = gen('sometask')
+assert sometask2 != sometask  # but different slugId generators produce
+                              # different output
+```
+
 ## Scopes
 The `scopeMatch(assumedScopes, requiredScopeSets)` function determines
 whether one or more of a set of required scopes are satisfied by the assumed
