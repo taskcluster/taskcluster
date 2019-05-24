@@ -50,6 +50,7 @@ import DeleteIcon from 'mdi-react/DeleteIcon';
 }))
 export default class PulseBindings extends Component {
   static propTypes = {
+    patternName: string,
     pulseExchange: string.isRequired,
     pattern: string.isRequired,
     bindings: arrayOf(object).isRequired,
@@ -62,12 +63,15 @@ export default class PulseBindings extends Component {
     const {
       pulseExchange,
       pattern,
+      patternName,
       bindings,
       classes,
       onBindingAdd,
       onBindingRemove,
       onChange,
     } = this.props;
+
+    console.log(bindings);
 
     return (
       <Fragment>
@@ -101,7 +105,7 @@ export default class PulseBindings extends Component {
                     required
                     label="Routing Key Pattern"
                     placeholder="#.some-interesting-key.#"
-                    name="pattern"
+                    name={patternName || 'pattern'}
                     onChange={onChange}
                     fullWidth
                     value={pattern}
@@ -122,13 +126,14 @@ export default class PulseBindings extends Component {
           {bindings.map(binding => (
             <ListItem
               className={classes.bindingListItem}
-              key={`${binding.exchange}-${binding.routingKeyPattern}`}>
+              key={`${binding.exchange}-${binding.pattern ||
+                bindings.routingKeyPattern}`}>
               <ListItemText
                 disableTypography
                 primary={
                   <Typography variant="body2">
                     <code>{binding.exchange}</code> with{' '}
-                    <code>{binding.pattern}</code>
+                    <code>{binding.pattern || binding.routingKeyPattern}</code>
                   </Typography>
                 }
               />
