@@ -3,21 +3,6 @@ variable "disabled_services" {
   default     = []
   description = "List of services to disable i.e. [\"taskcluster-notify\"]"
 }
-variable "github_app_id" {
-  type        = "string"
-  description = "taskcluster-github app id."
-}
-
-variable "github_private_pem" {
-  type        = "string"
-  description = "taskcluster-github private pem."
-}
-
-variable "github_webhook_secret" {
-  type        = "string"
-  description = "taskcluster-github webhook secret."
-}
-
 
 variable "irc_name" {
   type        = "string"

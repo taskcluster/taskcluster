@@ -14,7 +14,7 @@ secrets:
   taskcluster_access_token: ".Values.githubAccessToken"
   taskcluster_client_id: "static/taskcluster/github"
   trust_proxy: "true"
-  webhook_secret: ".Values.webhookSecret"
+  webhook_secret: ".Values.githubWebhookSecret"
 deployments:
   - service_name: "github"
     docker_image: ".Values.dockerImage"
@@ -26,7 +26,6 @@ deployments:
     background_job: true
     docker_image: ".Values.dockerImage"
     proc_name: "worker"
-    readiness_path: "/api/github/v1/ping"
     root_url: ".Values.rootUrl"
     secret_name: "taskcluster-github"
 cronjobs:
