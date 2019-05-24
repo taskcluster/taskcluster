@@ -1,6 +1,6 @@
 FROM ubuntu_18_04-base
 MAINTAINER Wander Lairson Costa <wcosta@mozilla.com>
-LABEL Description="docker-worker packet image" Vendor="Mozilla"
+LABEL Description="docker-worker packet.net image" Vendor="Mozilla"
 
 # BEGIN BASE IMAGE
 
@@ -8,10 +8,13 @@ ENV DEBIAN_FRONTEND noninteractive
 
 ENV PAPERTRAIL logs.papertrailapp.com:52806
 
+RUN echo $(which nologin) >> /etc/shells
+RUN useradd -m -s $(which nologin) ubuntu
+RUN usermod -L ubuntu
+
 COPY ./deploy/packer/base/scripts/configure_syslog.sh /tmp/
 COPY ./deploy/packer/base/scripts/node.sh /tmp/
-COPY ./deploy/fake-keys/docker-worker-cot-signing.key /etc/
-COPY ./deploy/fake-keys/docker-worker-ed25519-cot-signing.key /etc/
+COPY ./deploy/fake-keys/docker-worker-ed25519-cot-signing-key.key /etc/
 
 RUN chmod +x /tmp/configure_syslog.sh /tmp/node.sh
 
@@ -102,9 +105,6 @@ RUN /tmp/node.sh
 
 COPY deploy/deploy.tar.gz /tmp
 COPY docker-worker.tgz /tmp
-COPY deploy/bin/gen-signing-key /tmp
-
-RUN chmod +x /tmp/gen-signing-key
 
 RUN curl -o /etc/papertrail-bundle.pem https://papertrailapp.com/tools/papertrail-bundle.pem
 # RUN test `md5sum /etc/papertrail-bundle.pem | awk '{ print $1 }'` == "2c43548519379c083d60dd9e84a1b724"
@@ -113,24 +113,13 @@ RUN apt-get install -y python-statsd
 
 RUN tar xzf /tmp/deploy.tar.gz -C / --strip-components=1
 
-RUN mkdir -p $HOME/docker_worker
+RUN mkdir -p /home/ubuntu/docker_worker
 RUN npm i -g yarn
-RUN cd $HOME/docker_worker && tar xzf /tmp/docker-worker.tgz -C . && yarn install --frozen-lockfile
+RUN cd /home/ubuntu/docker_worker && tar xzf /tmp/docker-worker.tgz -C . && yarn install --frozen-lockfile
 
 RUN ln -sf /usr/lib/systemd/system/docker-worker.service /etc/systemd/system/multi-user.target.wants/docker-worker.service
 
-RUN bash -c 'cat > /lib/systemd/system/docker-worker.service <<EOF
-[Unit]
-Description=Taskcluster docker worker
-After=docker.service
-
-[Service]
-Type=notify
-ExecStart=/usr/local/bin/start-docker-worker
-User=root
-Environment="HOST=packet"
-EOF'
-
+COPY ./deploy/packet-net/docker-worker.service /lib/systemd/system/docker-worker.service
 RUN systemctl enable docker-worker
 
 # END OF APP IMAGE

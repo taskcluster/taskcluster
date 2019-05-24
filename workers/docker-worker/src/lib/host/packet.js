@@ -17,6 +17,10 @@ const log = createLogger({
   source: 'host/packet'
 });
 
+function minutes(n) {
+  return n * 60;
+}
+
 module.exports = {
   async configure() {
     try {
@@ -32,6 +36,16 @@ module.exports = {
       assert(publicIp);
       assert(privateIp);
 
+
+      // User data required fields:
+      // * clientId - taskcluster client ID
+      // * accessToken - taskcluster access token
+      // * taskclusterRootUrl - root URL for taskcluster service
+      // * provisionerId - the taskcluster provisioner ID
+      // * worker type - the taskcluster worker type name
+      // * capacity - the worker capacity
+      // * allowPrivileged - boolean indicating if the instance is allowed to run privileged docker containers
+
       const userdata = fs.readFileSync('/var/lib/cloud/instance/user-data.txt')
         .toString()
         .split('\n')
@@ -42,38 +56,48 @@ module.exports = {
 
       // TODO get credentials through worker-manager
       let credentials = {
-        clientId: userdata.TASKCLUSTER_CLIENT_ID,
-        accessToken: userdata.TASKCLUSTER_ACCESS_TOKEN,
+        clientId: userdata.clientId,
+        accessToken: userdata.accessToken,
       };
 
       const secrets = new taskcluster.Secrets({
-        rootUrl: userdata.rootUrl,
+        rootUrl: userdata.taskclusterRootUrl,
         credentials,
       });
 
-      const secretsData = await secrets.get(userdata.secretsPath);
+      let secretsData;
+      try {
+        secretsData = await secrets.get(
+          `worker-type:${userdata.provisionerId}/${userdata.workerType}`
+        );
+      } catch (err) {
+        log(err);
+        secretsData = {
+          secret: {},
+        };
+      }
 
       const config = {
         taskcluster: credentials,
-        rootUrl: userdata.rootUrl,
+        rootUrl: userdata.taskclusterRootUrl,
         host: data.hostname,
         publicIp,
         privateIp,
         workerNodeType: 'packet.net',
         instanceId: data.id,
-        workerId: userdata.workerId,
-        workerGroup: userdata.workerGroup,
+        workerId: data.id,
+        workerGroup: data.facility,
         provisionerId: userdata.provisionerId,
         region: data.facility,
         instanceType: data.plan,
-        capacity: parseInt(userdata.capacity),
+        capacity: parseInt(userdata.capacity) || 1,
         workerType: userdata.workerType,
         shutdown: {
           enabled: true,
-          afterIdleSeconds: 100 * 60 * 60, // 100 hours
+          afterIdleSeconds: minutes(60),
         },
         dockerConfig: {
-          allowPrivileged: true,
+          allowPrivileged: userdata.allowPrivileged == 'true',
         },
         logging: {
           secureLiveLogging: false,

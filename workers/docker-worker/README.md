@@ -293,7 +293,8 @@ folders.
 
 To generate the packet.net image, you need the `ubuntu_18_04-base` docker
 image. You obtain this image, clone the
-[packet-images](https://github.com/packethost/packet-images), and run:
+[packet-images](https://github.com/packethost/packet-images), and run (you may
+need to run the command twice):
 
 ```
 $ sudo ./tools/build.sh -d ubuntu_18_04 -p t1.small.x86 -a x86_64 -b ubuntu_18_04-t1.small.x86-dev
