@@ -183,7 +183,7 @@ export default class HookForm extends Component {
   state = {
     hook: null,
     hookLastFires: null,
-    routingKeyPattern: '#',
+    pattern: '#',
     pulseExchange: '',
     bindings: [],
     // eslint-disable-next-line react/no-unused-state
@@ -460,26 +460,24 @@ export default class HookForm extends Component {
   };
 
   handleAddBinding = () => {
-    const { pulseExchange, routingKeyPattern } = this.state;
+    const { pulseExchange, pattern } = this.state;
     const bindings = this.state.bindings.concat([
       {
         exchange: pulseExchange,
-        routingKeyPattern,
+        pattern,
       },
     ]);
 
     this.setState({
       pulseExchange: '',
-      routingKeyPattern: '#',
+      pattern: '#',
       bindings,
     });
   };
 
-  handleDeleteBinding = ({ exchange, routingKeyPattern }) => {
+  handleDeleteBinding = ({ exchange, pattern }) => {
     const bindings = this.state.bindings.filter(
-      binding =>
-        binding.exchange !== exchange ||
-        binding.routingKeyPattern !== routingKeyPattern
+      binding => binding.exchange !== exchange || binding.pattern !== pattern
     );
 
     this.setState({
@@ -499,7 +497,7 @@ export default class HookForm extends Component {
       onDialogOpen,
     } = this.props;
     const {
-      routingKeyPattern,
+      pattern,
       pulseExchange,
       bindings,
       scheduleTextField,
@@ -640,13 +638,12 @@ export default class HookForm extends Component {
             </Fragment>
           )}
           <PulseBindings
-            patternName="routingKeyPattern"
             bindings={bindings}
             onBindingAdd={this.handleAddBinding}
             onBindingRemove={this.handleDeleteBinding}
             onChange={this.handleInputChange}
             pulseExchange={pulseExchange}
-            pattern={routingKeyPattern}
+            pattern={pattern}
           />
           <List
             subheader={
