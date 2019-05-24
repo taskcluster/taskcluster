@@ -1,0 +1,23 @@
+project_name: "worker-manager"
+secrets:
+  azure_account: ".Values.tfAzureAccount"
+  force_ssl: "false"
+  monitoring_enable: "true"
+  node_env: "production"
+  publish_metadata: "false"
+  taskcluster_access_token: ".Values.workerManagerAccessToken"
+  taskcluster_client_id: "static/taskcluster/worker-manager"
+  trust_proxy: "true"
+deployments:
+  - service_name: "worker-manager"
+    docker_image: ".Values.dockerImage"
+    proc_name: "web"
+    readiness_path: "/api/worker-manager/v1/ping"
+    root_url: ".Values.rootUrl"
+    secret_name: "taskcluster-worker-manager"
+  - service_name: "worker-manager"
+    background_job: true 
+    docker_image: ".Values.dockerImage"
+    proc_name: "provisioner"
+    root_url: ".Values.rootUrl"
+    secret_name: "taskcluster-worker-manager"
