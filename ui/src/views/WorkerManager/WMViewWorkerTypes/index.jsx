@@ -67,7 +67,7 @@ export default class WorkerManagerWorkerTypesView extends Component {
           <Button
             spanProps={{ className: classes.createIconSpan }}
             tooltipProps={{ title: 'Create Worker Type' }}
-            // requiresAuth
+            requiresAuth
             variant="round"
             className={classes.createIcon}
             onClick={this.handleCreate}>
