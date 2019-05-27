@@ -37,7 +37,7 @@
     "deepmerge": "^3.0.0",
     "ejs": "^2.6.1",
     "email-templates": "^5.0.2",
-    "express": "4.17.0",
+    "express": "4.17.1",
     "express-jwt": "^5.3.0",
     "express-sslify": "1.2.0",
     "fast-azure-storage": "^2.3.0",
