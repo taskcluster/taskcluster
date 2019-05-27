@@ -313,7 +313,7 @@ export default class ViewTask extends Component {
   };
 
   handleCreateInteractiveTaskClick = () => {
-    const title = 'Create with SSH';
+    const title = 'Create with SSH/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC';
 
     this.setState({
       dialogOpen: true,
@@ -822,7 +822,7 @@ export default class ViewTask extends Component {
                     disabled: actionLoading,
                   }}
                   icon={<ConsoleLineIcon />}
-                  tooltipTitle="Create with SSH"
+                  tooltipTitle="Create with SSH/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC"
                   onClick={this.handleCreateInteractiveTaskClick}
                 />
               )}

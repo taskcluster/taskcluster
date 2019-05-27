@@ -39,7 +39,7 @@ VNC connection to a running task execution environment.
 
 There are two ways to access this mode. The easiest is to enter the task's ID
 in the [task inspector](https://tools.taskcluster.net/groups). Under
-"actions", select "Create with SSH task". If you have permission to create
+"actions", select "Create with SSH/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC/VNC task". If you have permission to create
 tasks directly (rather than by pushing to a version-control server) then you
 can use this option. Some projects also provide
 [actions](/docs/manual/using/actions) to create
