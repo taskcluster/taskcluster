@@ -6,8 +6,6 @@ defaults:
     playground: false
 
   monitoring:
-    enable: !env:bool MONITORING_ENABLE
-    pretty: !env:bool PRETTY_LOGGING
     level: !env LEVEL
 
   # Server configuration
@@ -61,10 +59,7 @@ development:
     playground: true
   server:
     # taskcluster-ui's dev server assumes port 3050
-    port: 5080
-  monitoring:
-    level: warning
-    enable: false
+    port: 3050
 
 production:
   pulse:

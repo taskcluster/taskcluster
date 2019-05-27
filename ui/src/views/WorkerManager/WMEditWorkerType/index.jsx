@@ -61,13 +61,10 @@ export default class WMWorkerTypeEditor extends Component {
   };
 
   handleInputChange = ({ target: { name, value } }) => {
-    console.log('🦔', this.state);
     this.setState({ workerType: { ...this.state.workerType, [name]: value } });
-    console.log('🐾', this.state);
   };
 
   handleSwitchChange = event => {
-    console.log('🐣', this.state);
     const {
       target: { value },
     } = event;
@@ -78,7 +75,6 @@ export default class WMWorkerTypeEditor extends Component {
         [value]: !this.state.workerType[value],
       },
     });
-    console.log('🐥', this.state);
   };
 
   handleEditorChange = value => {
@@ -185,11 +181,6 @@ export default class WMWorkerTypeEditor extends Component {
           spanProps={{ className: classes.createIconSpan }}
           tooltipProps={{ title: 'Save' }}
           onClick={this.handleCreateWorkerType}
-          // disabled={
-          //   invalidDefinition ||
-          //   !isWorkerTypeNameValid(workerType) ||
-          //   actionLoading
-          // }
           classes={{ root: classes.successIcon }}
           variant="round">
           <CheckIcon />
