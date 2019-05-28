@@ -3,7 +3,6 @@
   "variables": {
     "papertrail":             "",
     "privateKeyLocation":     "",
-    "sslCertificateLocation": "",
     "sslKeyLocation":         "",
     "workerRevision":         ""
   },
@@ -13,10 +12,6 @@
       "destination": "/tmp/docker-worker-priv.pem"
     },
     { "type": "file",
-      "source": "{{user `sslCertificateLocation`}}",
-      "destination": "/tmp/star_taskcluster-worker_net.crt"
-    },
-    { "type": "file",
       "source": "{{user `sslKeyLocation`}}",
       "destination": "/tmp/star_taskcluster-worker_net.key"
     },
@@ -24,7 +19,7 @@
       "type": "shell",
       "inline": [
         "sudo mv /tmp/docker-worker-priv.pem /etc/",
-        "sudo mv /tmp/star_taskcluster* /etc/",
+        "sudo mv /tmp/star_taskcluster-worker_net.key /etc/",
         "sudo chown root:root /etc/docker-worker-priv.pem",
         "sudo chown root:root /etc/star_taskcluster*",
         "sudo chmod 600 /etc/docker-worker-priv.pem",

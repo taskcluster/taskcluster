@@ -1,6 +1,5 @@
 {
   "privateKeyLocation": "{{privateKeyLocation}}",
-  "sslCertificateLocation": "{{sslCertificateLocation}}",
   "sslKeyLocation": "{{sslKeyLocation}}",
   "papertrail": "{{papertrail}}"
 }
