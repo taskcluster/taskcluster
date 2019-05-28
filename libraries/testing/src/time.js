@@ -25,7 +25,6 @@ exports.runWithFakeTime = (fn, {mock=true, maxTime=30000, ...zurvanOptions}={}) 
     });
 
     let finished, err;
-    this.slow(maxTime);
     fn.apply(this, []).then(
       () => {
         finished = true;

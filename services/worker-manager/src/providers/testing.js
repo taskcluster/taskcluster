@@ -18,8 +18,22 @@ class TestingProvider extends Provider {
     this.monitor.notice('remove-resource', {workerPoolId: workerPool.workerPoolId});
   }
 
-  async provision({workerType}) {
-    this.monitor.notice('test-provision', {workerTypeName: workerType.workerTypeName});
+  async provision({workerPool}) {
+    this.monitor.notice('test-provision', {workerPoolId: workerPool.workerPoolId});
+  }
+
+  async scanPrepare() {
+    this.monitor.notice('scan-prepare', {});
+  }
+
+  async checkWorker({worker}) {
+    await worker.modify(w => {
+      w.providerData.checked = true;
+    });
+  }
+
+  async scanCleanup() {
+    this.monitor.notice('scan-cleanup', {});
   }
 }
 

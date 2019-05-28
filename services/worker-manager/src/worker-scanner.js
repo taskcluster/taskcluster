@@ -41,16 +41,16 @@ class WorkerScanner {
   }
 
   async scan() {
-    await Promise.all(Object.values(this.providers).map(x => x.scanPrepare()));
+    await this.providers.forAll(p => p.scanPrepare());
     await this.Worker.scan({
       state: Entity.op.notEqual(this.Worker.states.STOPPED),
     }, {
       handler: async worker => {
-        const provider = this.providers[worker.providerId];
+        const provider = this.providers.get(worker.providerId);
         await provider.checkWorker({worker});
       },
     });
-    await Promise.all(Object.values(this.providers).map(x => x.scanCleanup()));
+    await this.providers.forAll(p => p.scanCleanup());
   }
 }
 
