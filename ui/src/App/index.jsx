@@ -204,6 +204,9 @@ export default class App extends Component {
     const { routes } = this.props;
     const { auth, error, theme } = this.state;
 
+    // eslint-disable-next-line no-console
+    console.log('render method error: ', error);
+
     return (
       <ApolloProvider client={this.apolloClient}>
         <AuthContext.Provider value={auth}>
