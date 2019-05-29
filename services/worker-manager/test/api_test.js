@@ -208,6 +208,29 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     throw new Error('delete of non-existent workertype succeeded');
   });
 
+  test('get workertypes', async function() {
+    const workerTypeName = 'pp/ee';
+    const input = {
+      providerId: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    await helper.workerManager.createWorkerType(workerTypeName, input);
+    let data = await helper.workerManager.listWorkerTypes();
+
+    data.workerTypes.forEach( wt => {
+      workerTypeCompare(workerTypeName, input, wt);
+    });
+  });
+
+  test('get workertypes - no workertypes in db', async function() {
+    let data = await helper.workerManager.listWorkerTypes();
+
+    assert.deepStrictEqual(data.workerTypes, [], 'Should return an empty array of workertypes');
+  });
+
   const googleInput = {
     providerId: 'google',
     description: 'bar',
