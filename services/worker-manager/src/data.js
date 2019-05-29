@@ -3,30 +3,30 @@ const slugid = require('slugid');
 const yaml = require('js-yaml');
 const Entity = require('azure-entities');
 
-const WorkerType = Entity.configure({
+const WorkerPool = Entity.configure({
   version: 1,
-  partitionKey: Entity.keys.StringKey('workerTypeName'),
-  rowKey: Entity.keys.ConstantKey('workerType'),
+  partitionKey: Entity.keys.StringKey('workerPoolId'),
+  rowKey: Entity.keys.ConstantKey('workerPool'),
   properties: {
-    // A unique name for this workertype. This is a workerTypeName, so must be
+    // A unique name for this worker pool. This is a workerPoolId, so must be
     // of the form `<provisionerId>/<workerType>`
-    workerTypeName: Entity.types.String,
+    workerPoolId: Entity.types.String,
 
-    // Each workertype must choose a single active provider that will do any provisioning on its behalf
+    // Each workerPool must choose a single active provider that will do any provisioning on its behalf
     providerId: Entity.types.String,
 
-    // If a workertype was previously assigned to another provider and no longer is, it will
+    // If a workerPool was previously assigned to another provider and no longer is, it will
     // be added to this field. The provider can then remove any resources created for this
-    // workertype and then remove itself from this field when done
+    // workerPool and then remove itself from this field when done
     previousProviderIds: Entity.types.JSON,
 
-    // A useful human-readable description of what this workertype is for
+    // A useful human-readable description of what this workerPool is for
     description: Entity.types.String,
 
     // If this is true, a provider should clean up any resources with this and then delete it
     scheduledForDeletion: Entity.types.Boolean,
 
-    // A timestamp of when this workertype was initially created
+    // A timestamp of when this workerPool was initially created
     created: Entity.types.Date,
 
     // A timestamp of when configuration data was last modified. This does not count for things like
@@ -48,9 +48,9 @@ const WorkerType = Entity.configure({
   },
 });
 
-WorkerType.prototype.serializable = function() {
+WorkerPool.prototype.serializable = function() {
   return {
-    workerTypeName: this.workerTypeName,
+    workerPoolId: this.workerPoolId,
     providerId: this.providerId,
     description: this.description,
     created: this.created.toJSON(),
@@ -62,9 +62,9 @@ WorkerType.prototype.serializable = function() {
   };
 };
 
-WorkerType.prototype.compare = function(other) {
+WorkerPool.prototype.compare = function(other) {
   const fields = [
-    'workerTypeName',
+    'workerPoolId',
     'providerId',
     'description',
     'created',
@@ -77,7 +77,7 @@ WorkerType.prototype.compare = function(other) {
   return _.isEqual(_.pick(other, fields), _.pick(this, fields));
 };
 
-WorkerType.prototype.reportError = async function({kind, title, description, extra={}, notify}) {
+WorkerPool.prototype.reportError = async function({kind, title, description, extra={}, notify}) {
   if (this.emailOnError) {
     let extraInfo = '';
     if (Object.keys(extra).length) {
@@ -93,7 +93,7 @@ WorkerType.prototype.reportError = async function({kind, title, description, ext
       address: this.owner,
       subject: `Taskcluster Worker Manager Error: ${title}`,
       content: `
-  Worker Manager has encountered an error while trying to provision the workertype ${this.workerTypeName}:
+  Worker Manager has encountered an error while trying to provision the worker pool ${this.workerPoolId}:
 
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -105,8 +105,8 @@ WorkerType.prototype.reportError = async function({kind, title, description, ext
       `.trim(),
     });
   }
-  await WorkerTypeError.create({
-    workerTypeName: this.workerTypeName,
+  await WorkerPoolError.create({
+    workerPoolId: this.workerPoolId,
     errorId: slugid.v4(),
     reported: new Date(),
     kind,
@@ -116,13 +116,13 @@ WorkerType.prototype.reportError = async function({kind, title, description, ext
   });
 };
 
-const WorkerTypeError = Entity.configure({
+const WorkerPoolError = Entity.configure({
   version: 1,
-  partitionKey: Entity.keys.StringKey('workerTypeName'),
+  partitionKey: Entity.keys.StringKey('workerPoolId'),
   rowKey: Entity.keys.StringKey('errorId'),
   properties: {
-    // The workertype this maps to.
-    workerTypeName: Entity.types.String,
+    // The worker pool this maps to.
+    workerPoolId: Entity.types.String,
 
     // An arbitrary id for this error
     errorId: Entity.types.SlugId,
@@ -144,9 +144,9 @@ const WorkerTypeError = Entity.configure({
   },
 });
 
-WorkerTypeError.prototype.serializable = function() {
+WorkerPoolError.prototype.serializable = function() {
   return {
-    workerTypeName: this.workerTypeName,
+    workerPoolId: this.workerPoolId,
     errorId: this.errorId,
     reported: this.reported.toJSON(),
     kind: this.kind,
@@ -156,7 +156,7 @@ WorkerTypeError.prototype.serializable = function() {
   };
 };
 
-WorkerTypeError.expire = async (threshold) => {
+WorkerPoolError.expire = async (threshold) => {
   await this.scan({
     reported: Entity.op.lessThan(threshold),
   }, {
@@ -169,11 +169,11 @@ WorkerTypeError.expire = async (threshold) => {
 
 const Worker = Entity.configure({
   version: 1,
-  partitionKey: Entity.keys.StringKey('workerTypeName'),
+  partitionKey: Entity.keys.StringKey('workerPoolId'),
   rowKey: Entity.keys.CompositeKey('workerGroup', 'workerId'),
   properties: {
-    // The WorkerType this maps to.
-    workerTypeName: Entity.types.String,
+    // The worker pool this maps to.
+    workerPoolId: Entity.types.String,
 
     // The group and id of this worker
     workerGroup: Entity.types.String,
@@ -222,6 +222,6 @@ Worker.expire = async () => {
 
 module.exports = {
   Worker,
-  WorkerType,
-  WorkerTypeError,
+  WorkerPool,
+  WorkerPoolError,
 };

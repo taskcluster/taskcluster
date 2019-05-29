@@ -11,10 +11,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   helper.withFakeNotify(mock, skipping);
 
   let provider;
-  let workerType;
+  let workerPool;
   let worker;
   let providerId = 'google';
-  let workerTypeName = 'foo/bar';
+  let workerPoolId = 'foo/bar';
 
   setup(async function() {
     provider = new GoogleProvider({
@@ -25,10 +25,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       fake: true,
       rootUrl: helper.rootUrl,
       Worker: helper.Worker,
-      WorkerType: helper.WorkerType,
+      WorkerPool: helper.WorkerPool,
     });
-    workerType = await helper.WorkerType.create({
-      workerTypeName,
+    workerPool = await helper.WorkerPool.create({
+      workerPoolId,
       providerId,
       description: 'none',
       scheduledForDeletion: false,
@@ -51,7 +51,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       emailOnError: false,
     });
     worker = await helper.Worker.create({
-      workerTypeName: workerTypeName,
+      workerPoolId: workerPoolId,
       workerGroup: providerId,
       workerId: 'abc123',
       providerId,
@@ -64,12 +64,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   });
 
   test('provisioning loop', async function() {
-    await provider.provision({workerType});
-    assert.equal(workerType.providerData.google.trackedOperations.length, 1);
-    assert.equal(workerType.providerData.google.trackedOperations[0].name, 'foo');
-    assert.equal(workerType.providerData.google.trackedOperations[0].zone, 'whatever/a');
-    await provider.handleOperations({workerType});
-    assert.equal(workerType.providerData.google.trackedOperations.length, 0);
+    await provider.provision({workerPool});
+    assert.equal(workerPool.providerData.google.trackedOperations.length, 1);
+    assert.equal(workerPool.providerData.google.trackedOperations[0].name, 'foo');
+    assert.equal(workerPool.providerData.google.trackedOperations[0].zone, 'whatever/a');
+    await provider.handleOperations({workerPool});
+    assert.equal(workerPool.providerData.google.trackedOperations.length, 0);
   });
 
   test('worker-scan loop', async function() {
@@ -77,14 +77,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     await provider.scanPrepare();
     await provider.checkWorker({worker});
     await provider.scanCleanup();
-    await workerType.reload();
-    assert.equal(workerType.providerData.google.running, 1);
+    await workerPool.reload();
+    assert.equal(workerPool.providerData.google.running, 1);
 
     // And now we fake it is stopped
     await provider.scanPrepare();
     await provider.checkWorker({worker});
     await provider.scanCleanup();
-    await workerType.reload();
-    assert.equal(workerType.providerData.google.running, 0);
+    await workerPool.reload();
+    assert.equal(workerPool.providerData.google.running, 0);
   });
 });
