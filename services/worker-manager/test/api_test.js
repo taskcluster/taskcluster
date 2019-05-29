@@ -208,7 +208,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     throw new Error('delete of non-existent worker pool succeeded');
   });
 
-  test('get worker pools', async function() {
+  test('get worker pools - one worker pool', async function() {
     const workerPoolId = 'pp/ee';
     const input = {
       providerId: 'testing1',
@@ -220,8 +220,37 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     await helper.workerManager.createWorkerPool(workerPoolId, input);
     let data = await helper.workerManager.listWorkerPools();
 
-    data.workerPools.forEach( wt => {
-      workerPoolCompare(workerPoolId, input, wt);
+    data.workerPools.forEach( wp => {
+      workerPoolCompare(workerPoolId, input, wp);
+    });
+  });
+
+  test('get worker pools - >1 worker pools', async function() {
+    const sampleWorkerPoolId = 'pp/ee';
+    const sampleInput = {
+      providerId: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+
+    let input = [];
+
+    for (let i of [1, 2, 3]) {
+      const workerPoolId = `${sampleWorkerPoolId}-${i}`;
+      input[i] = {workerPoolId, ...sampleInput};
+    }
+
+    input.forEach(async i => {
+      const {workerPoolId, ...definition} = i;
+      await helper.workerManager.createWorkerPool(workerPoolId, definition);
+    });
+
+    let data = await helper.workerManager.listWorkerPools();
+
+    data.workerPools.forEach( (wp, i) => {
+      workerPoolCompare(input[i].workerPoolId, input[i], wp);
     });
   });
 
