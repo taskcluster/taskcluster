@@ -76,7 +76,7 @@ let load = loader({
   expireWorkers: {
     requires: ['cfg', 'Worker', 'monitor'],
     setup: ({cfg, Worker, monitor}) => {
-      return monitor.childMonitor().oneShot('expire workers', async () => {
+      return monitor.childMonitor('expireWorkers').oneShot('expire workers', async () => {
         debug('Expiring workers');
         const count = await Worker.expire();
         debug(`Expired ${count} rows`);
@@ -87,7 +87,7 @@ let load = loader({
   expireErrors: {
     requires: ['cfg', 'WorkerTypeError', 'monitor'],
     setup: ({cfg, WorkerTypeError, monitor}) => {
-      return monitor.childMonitor().oneShot('expire workerTypeErrors', async () => {
+      return monitor.childMonitor('expireErrors').oneShot('expire workerTypeErrors', async () => {
         const threshold = taskcluster.fromNow(cfg.app.errorsExpirationDelay);
         debug('Expiring workerTypeErrors');
         const count = await WorkerTypeError.expire(threshold);
