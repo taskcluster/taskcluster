@@ -1,16 +1,10 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { arrayOf, bool, node, object, oneOfType, string } from 'prop-types';
-import classNames from 'classnames';
 import { withRouter } from 'react-router-dom';
-import { LazyLog, ScrollFollow } from 'react-lazylog';
+import { LazyLog } from 'react-lazylog';
 import storage from 'localforage';
-import { omit } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import ArrowDownBoldCircleOutlineIcon from 'mdi-react/ArrowDownBoldCircleOutlineIcon';
-import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
-import GoToLineButton from './GoToLineButton';
 import Loading from './Loading';
-import Button from '../Button';
 
 const LINE_NUMBER_MATCH = /L(\d+)-?(\d+)?/;
 const FOLLOW_STORAGE_KEY = 'follow-log';
@@ -177,19 +171,7 @@ export default class Log extends Component {
   }
 
   render() {
-    const {
-      url,
-      stream,
-      classes,
-      actions,
-      GoToLineButtonProps,
-      FollowLogButtonProps,
-      RawLogButtonProps: {
-        className: RawLogButtonClassName,
-        ...RawLogButtonPropsRest
-      },
-      ...props
-    } = this.props;
+    const { url, stream, classes, ...props } = this.props;
     const highlight = this.getHighlightFromHash();
     const scrollToLine = this.getScrollToLine();
     const containerStyle = {
@@ -197,70 +179,24 @@ export default class Log extends Component {
       maxWidth: 'initial',
       overflow: 'initial',
     };
-    const rawLogButton = (
-      <Button
-        spanProps={{ className: RawLogButtonClassName }}
-        tooltipProps={{ title: 'Raw Log' }}
-        component="a"
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        variant="round"
-        color="secondary"
-        {...RawLogButtonPropsRest}>
-        <OpenInNewIcon />
-      </Button>
-    );
-    const FollowLogButtonRest = omit(['className'], FollowLogButtonProps);
 
     return (
-      <ScrollFollow
-        startFollowing={this.shouldStartFollowing()}
-        render={({ follow }) => (
-          <Fragment>
-            <LazyLog
-              enableSearch
-              containerStyle={containerStyle}
-              url={url}
-              onScroll={this.handleScroll}
-              stream={stream}
-              selectableLines
-              follow={follow}
-              highlight={highlight}
-              onHighlight={this.handleHighlight}
-              scrollToLine={scrollToLine}
-              scrollToAlignment="start"
-              lineClassName={classes.line}
-              highlightLineClassName={classes.highlight}
-              loadingComponent={Loading}
-              extraLines={5}
-              {...props}
-            />
-            {rawLogButton}
-            <GoToLineButton
-              onLineNumberChange={this.handleLineNumberChange}
-              {...GoToLineButtonProps}
-            />
-            <Button
-              spanProps={{
-                className:
-                  FollowLogButtonProps && FollowLogButtonProps.className,
-              }}
-              tooltipProps={{
-                title: follow && stream ? 'Unfollow Log' : 'Follow Log',
-              }}
-              variant="round"
-              className={classNames({
-                [classes.followButtonFollowing]: follow && stream,
-              })}
-              color={follow && stream ? 'inherit' : 'secondary'}
-              onClick={this.handleFollowClick}
-              {...FollowLogButtonRest}>
-              <ArrowDownBoldCircleOutlineIcon />
-            </Button>
-            {actions}
-          </Fragment>
-        )}
+      <LazyLog
+        enableSearch
+        containerStyle={containerStyle}
+        url={url}
+        onScroll={this.handleScroll}
+        stream={stream}
+        selectableLines
+        highlight={highlight}
+        onHighlight={this.handleHighlight}
+        scrollToLine={scrollToLine}
+        scrollToAlignment="start"
+        lineClassName={classes.line}
+        highlightLineClassName={classes.highlight}
+        loadingComponent={Loading}
+        extraLines={5}
+        {...props}
       />
     );
   }
