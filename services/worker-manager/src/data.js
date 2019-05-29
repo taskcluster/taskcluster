@@ -183,7 +183,7 @@ WorkerPoolError.prototype.serializable = function() {
   };
 };
 
-WorkerPoolError.expire = async (threshold) => {
+WorkerPoolError.expire = async function(threshold) {
   await this.scan({
     reported: Entity.op.lessThan(threshold),
   }, {
@@ -236,12 +236,13 @@ Worker.states = {
   STOPPED: 'stopped',
 };
 
-Worker.expire = async () => {
+Worker.expire = async function(monitor) {
   await this.scan({
     expires: Entity.op.lessThan(new Date()),
   }, {
     limit: 500,
     handler: async item => {
+      monitor.info(`deleting expired worker ${item.workerGroup}/${item.workerId}`);
       await item.remove();
     },
   });
