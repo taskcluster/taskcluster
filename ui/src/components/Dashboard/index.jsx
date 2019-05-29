@@ -30,7 +30,6 @@ import {
 import { withThemeToggler } from '../../utils/ToggleTheme';
 import Link from '../../utils/Link';
 import Logo from '../../images/brandLogo.png';
-import ErrorPanel from '../ErrorPanel';
 import DocsSidebarList from './DocsSidebarList';
 import SkipNavigation from '../SkipNavigation';
 
@@ -399,7 +398,7 @@ export default class Dashboard extends Component {
             className
           )}
           {...props}>
-          {error ? <ErrorPanel fixed error={error} /> : children}
+          {children}
         </main>
       </div>
     );
