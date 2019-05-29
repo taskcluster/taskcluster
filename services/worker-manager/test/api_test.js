@@ -237,15 +237,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
 
     let input = [];
 
-    for (let i of [1, 2, 3]) {
+    for (let i of [0, 1, 2]) {
       const workerPoolId = `${sampleWorkerPoolId}-${i}`;
       input[i] = {workerPoolId, ...sampleInput};
     }
 
-    input.forEach(async i => {
+    await Promise.all(input.map(async i => {
       const {workerPoolId, ...definition} = i;
       await helper.workerManager.createWorkerPool(workerPoolId, definition);
-    });
+    }));
 
     let data = await helper.workerManager.listWorkerPools();
 
