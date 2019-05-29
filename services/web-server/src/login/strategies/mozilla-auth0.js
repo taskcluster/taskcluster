@@ -109,7 +109,7 @@ module.exports = class MozillaAuth0 {
       return;
     }
 
-    user.expires = new Date(profile.exp * 1000);
+    user.providerExpires = new Date(profile.exp * 1000);
 
     return user;
   }
@@ -213,6 +213,7 @@ module.exports = class MozillaAuth0 {
         // profile has all the information from the user
         async (accessToken, refreshToken, extraParams, profile, done) => {
           const user = await this.getUser({ userId: profile.user_id });
+          const userFromToken = await this.userFromToken(extraParams.id_token);
 
           if (!user) {
             // Don't report much to the user, to avoid revealing sensitive information, although
@@ -224,6 +225,7 @@ module.exports = class MozillaAuth0 {
             profile,
             accessToken: extraParams.id_token,
             identityProviderId: 'mozilla-auth0',
+            providerExpires: userFromToken.providerExpires,
           });
         }
       )

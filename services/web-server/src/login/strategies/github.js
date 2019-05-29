@@ -2,6 +2,7 @@ const assert = require('assert');
 const Debug = require('debug');
 const passport = require('passport');
 const { Strategy } = require('passport-github');
+const taskcluster = require('taskcluster-client');
 const User = require('../User');
 const identityFromClientId = require('../../utils/identityFromClientId');
 const tryCatch = require('../../utils/tryCatch');
@@ -97,6 +98,8 @@ module.exports = class Github {
             profile,
             accessToken,
             identityProviderId: 'github',
+            // GitHub tokens don't expire
+            providerExpires: taskcluster.fromNow('1000 years'),
           });
         }
       )
