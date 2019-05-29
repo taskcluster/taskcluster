@@ -224,11 +224,14 @@ builder.declare({
   };
 
   const data = await this.WorkerType.scan({}, scanOptions);
+  const result = {
+    workerTypes: data.entries.map(e => e.serializable()),
+  };
 
   if (data.continuation) {
-    data.continuationToken = data.continuation;
+    result.continuationToken = data.continuation;
   }
-  return res.reply(data);
+  return res.reply(result);
 });
 
 /*
