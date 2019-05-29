@@ -1,6 +1,5 @@
 import React, { Component, Fragment } from 'react';
 import { func, string, bool, oneOfType, object, array } from 'prop-types';
-import classNames from 'classnames';
 import { equals, assocPath } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
@@ -709,22 +708,18 @@ export default class HookForm extends Component {
           </Button>
         ) : (
           <Fragment>
-            <Button
-              spanProps={{
-                className: classNames(
-                  classes.actionButtonSpan,
-                  classes.saveHookSpan
-                ),
-              }}
-              tooltipProps={{ title: 'Save Hook' }}
-              requiresAuth
-              classes={{ root: classes.successIcon }}
-              variant="round"
-              disabled={!this.validHook() || actionLoading || !isHookDirty}
-              onClick={this.handleUpdateHook}>
-              <ContentSaveIcon />
-            </Button>
             <SpeedDial>
+              <SpeedDialAction
+                requiresAuth
+                tooltipOpen
+                icon={<ContentSaveIcon />}
+                onClick={this.handleUpdateHook}
+                className={classes.successIcon}
+                ButtonProps={{
+                  disabled: !this.validHook() || actionLoading || !isHookDirty,
+                }}
+                tooltipTitle="Save Hook"
+              />
               <SpeedDialAction
                 requiresAuth
                 tooltipOpen
