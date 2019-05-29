@@ -1,17 +1,17 @@
 $schema: "/schemas/common/metaschema.json#"
-title: WorkerType Full
+title: Worker Pool Full Definition
 description: |
-  A complete workerType definition.
+  A complete worker pool definition.
 type:               object
 properties:
-  workerTypeName:
-    title: WorkerType Name
+  workerPoolId:
+    title: Worker Pool ID
     type:           string
-    # Note that the workerType portion is quite severely limited in hopes it works with
+    # Note that the portion after the `/` is quite severely limited in hopes it works with
     # most cloud providers
     pattern:        '^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$'
     description: |
-      The name of this workertype (of the form `providerId/workerType`)
+      The ID of this worker pool (of the form `providerId/workerType` for compatibility)
   providerId:
     title: Provider
     type:           string
@@ -21,23 +21,23 @@ properties:
     maxLength:      {$const: identifier-max-length}
     pattern:        {$const: identifier-pattern}
     description: |
-      The provider responsible for managing this workertype.
+      The provider responsible for managing this worker pool.
   description:
     title: Description
     type:           string
     maxLength:      10240
     description: |
-      A description of this workerType.
+      A description of this worker pool.
   created:
     title: Created
     description: |
-      Date and time when this workerType was created
+      Date and time when this worker pool was created
     type:                   string
     format:                 date-time
   lastModified:
     title: Last Modified
     description: |
-      Date and time when this workerType was last updated
+      Date and time when this worker pool was last updated
     type:                   string
     format:                 date-time
   config:
@@ -51,11 +51,11 @@ properties:
     format: email
     description: |
       An email address to notify when there are provisioning errors for this
-      workertype.
+      worker pool.
   scheduledForDeletion:
     title: Scheduled For Deletion
     type: boolean
-    description: If true, a user has requested that this workertype be deleted
+    description: If true, a user has requested that this worker pool be deleted
   emailOnError:
     title: Wants Email
     type: boolean

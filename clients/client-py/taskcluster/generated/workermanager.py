@@ -13,7 +13,7 @@ _defaultConfig = config
 
 class WorkerManager(BaseClient):
     """
-    This service manages workers, including provisioning for dynamic workertypes.
+    This service manages workers, including provisioning for dynamic worker pools.
     """
 
     classOptions = {
@@ -33,60 +33,60 @@ class WorkerManager(BaseClient):
 
         return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
-    def createWorkerType(self, *args, **kwargs):
+    def createWorkerPool(self, *args, **kwargs):
         """
-        Create WorkerType
+        Create Worker Pool
 
-        Create a new workertype. If the workertype already exists, this will throw an error.
+        Create a new worker pool. If the worker pool already exists, this will throw an error.
 
         This method is ``experimental``
         """
 
-        return self._makeApiCall(self.funcinfo["createWorkerType"], *args, **kwargs)
+        return self._makeApiCall(self.funcinfo["createWorkerPool"], *args, **kwargs)
 
-    def updateWorkerType(self, *args, **kwargs):
+    def updateWorkerPool(self, *args, **kwargs):
         """
-        Update WorkerType
+        Update Worker Pool
 
-        Given an existing workertype definition, this will modify it and return the new definition.
+        Given an existing worker pool definition, this will modify it and return the new definition.
 
         This method is ``experimental``
         """
 
-        return self._makeApiCall(self.funcinfo["updateWorkerType"], *args, **kwargs)
+        return self._makeApiCall(self.funcinfo["updateWorkerPool"], *args, **kwargs)
 
-    def workerType(self, *args, **kwargs):
+    def workerPool(self, *args, **kwargs):
         """
-        Get WorkerType
+        Get Worker Pool
 
-        Fetch an existing workertype defition.
+        Fetch an existing worker pool defition.
 
         This method is ``experimental``
         """
 
-        return self._makeApiCall(self.funcinfo["workerType"], *args, **kwargs)
+        return self._makeApiCall(self.funcinfo["workerPool"], *args, **kwargs)
 
-    def deleteWorkerType(self, *args, **kwargs):
+    def deleteWorkerPool(self, *args, **kwargs):
         """
-        Delete WorkerType
+        Delete Worker Pool
 
-        Delete an existing workertype definition.
+        Delete an existing worker pool definition.
 
         This method is ``experimental``
         """
 
-        return self._makeApiCall(self.funcinfo["deleteWorkerType"], *args, **kwargs)
+        return self._makeApiCall(self.funcinfo["deleteWorkerPool"], *args, **kwargs)
 
-    def listWorkerTypes(self, *args, **kwargs):
+    def listWorkerPools(self, *args, **kwargs):
         """
-        List All WorkerTypes
+        List All Worker Pools
 
-        Get the list of all the existing workertypes
+        Get the list of all the existing worker pools.
 
         This method is ``experimental``
         """
 
-        return self._makeApiCall(self.funcinfo["listWorkerTypes"], *args, **kwargs)
+        return self._makeApiCall(self.funcinfo["listWorkerPools"], *args, **kwargs)
 
     def credentialsGoogle(self, *args, **kwargs):
         """
@@ -100,38 +100,38 @@ class WorkerManager(BaseClient):
         return self._makeApiCall(self.funcinfo["credentialsGoogle"], *args, **kwargs)
 
     funcinfo = {
-        "createWorkerType": {
-            'args': ['workerTypeName'],
-            'input': 'v1/create-workertype-request.json#',
+        "createWorkerPool": {
+            'args': ['workerPoolId'],
+            'input': 'v1/create-worker-pool-request.json#',
             'method': 'put',
-            'name': 'createWorkerType',
-            'output': 'v1/workertype-full.json#',
-            'route': '/workertype/<workerTypeName>',
+            'name': 'createWorkerPool',
+            'output': 'v1/worker-pool-full.json#',
+            'route': '/worker-pool/<workerPoolId>',
             'stability': 'experimental',
         },
         "credentialsGoogle": {
-            'args': ['workerTypeName'],
+            'args': ['workerPoolId'],
             'input': 'v1/credentials-google-request.json#',
             'method': 'post',
             'name': 'credentialsGoogle',
             'output': 'v1/temp-creds-response.json#',
-            'route': '/credentials/google/<workerTypeName>',
+            'route': '/credentials/google/<workerPoolId>',
             'stability': 'experimental',
         },
-        "deleteWorkerType": {
-            'args': ['workerTypeName'],
+        "deleteWorkerPool": {
+            'args': ['workerPoolId'],
             'method': 'delete',
-            'name': 'deleteWorkerType',
-            'route': '/workertype/<workerTypeName>',
+            'name': 'deleteWorkerPool',
+            'route': '/worker-pool/<workerPoolId>',
             'stability': 'experimental',
         },
-        "listWorkerTypes": {
+        "listWorkerPools": {
             'args': [],
             'method': 'get',
-            'name': 'listWorkerTypes',
-            'output': 'v1/workertype-list.json#',
+            'name': 'listWorkerPools',
+            'output': 'v1/worker-pool-list.json#',
             'query': ['continuationToken', 'limit'],
-            'route': '/workertypes',
+            'route': '/worker-pools',
             'stability': 'experimental',
         },
         "ping": {
@@ -141,21 +141,21 @@ class WorkerManager(BaseClient):
             'route': '/ping',
             'stability': 'stable',
         },
-        "updateWorkerType": {
-            'args': ['workerTypeName'],
-            'input': 'v1/create-workertype-request.json#',
+        "updateWorkerPool": {
+            'args': ['workerPoolId'],
+            'input': 'v1/create-worker-pool-request.json#',
             'method': 'post',
-            'name': 'updateWorkerType',
-            'output': 'v1/workertype-full.json#',
-            'route': '/workertype/<workerTypeName>',
+            'name': 'updateWorkerPool',
+            'output': 'v1/worker-pool-full.json#',
+            'route': '/worker-pool/<workerPoolId>',
             'stability': 'experimental',
         },
-        "workerType": {
-            'args': ['workerTypeName'],
+        "workerPool": {
+            'args': ['workerPoolId'],
             'method': 'get',
-            'name': 'workerType',
-            'output': 'v1/workertype-full.json#',
-            'route': '/workertype/<workerTypeName>',
+            'name': 'workerPool',
+            'output': 'v1/worker-pool-full.json#',
+            'route': '/worker-pool/<workerPoolId>',
             'stability': 'experimental',
         },
     }

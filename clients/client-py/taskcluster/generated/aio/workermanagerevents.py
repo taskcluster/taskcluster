@@ -13,7 +13,7 @@ _defaultConfig = config
 
 class WorkerManagerEvents(AsyncBaseClient):
     """
-    These exchanges provide notifications when a workerType is created, updatedor deleted. This is so that the listener running in a differentprocess at the other end can direct another listener specified by`providerId` and `workerType` to synchronize its bindings. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.
+    These exchanges provide notifications when a worker pool is created, updatedor deleted. This is so that the listener running in a differentprocess at the other end can synchronize its bindings. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.
     """
 
     classOptions = {
@@ -22,11 +22,11 @@ class WorkerManagerEvents(AsyncBaseClient):
     serviceName = 'worker-manager'
     apiVersion = 'v1'
 
-    def workerTypeCreated(self, *args, **kwargs):
+    def workerPoolCreated(self, *args, **kwargs):
         """
-        WorkerType Created Messages
+        Worker Pool Created Messages
 
-        Whenever the api receives a request to create aworkerType, a message is posted to this exchange anda provider can act upon it.
+        Whenever the api receives a request to create aworker pool, a message is posted to this exchange anda provider can act upon it.
 
         This exchange takes the following keys:
 
@@ -36,8 +36,8 @@ class WorkerManagerEvents(AsyncBaseClient):
         """
 
         ref = {
-            'exchange': 'workertype-created',
-            'name': 'workerTypeCreated',
+            'exchange': 'worker-pool-created',
+            'name': 'workerPoolCreated',
             'routingKey': [
                 {
                     'constant': 'primary',
@@ -49,15 +49,15 @@ class WorkerManagerEvents(AsyncBaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'v1/pulse-workertype-message.json#',
+            'schema': 'v1/pulse-worker-pool-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
-    def workerTypeUpdated(self, *args, **kwargs):
+    def workerPoolUpdated(self, *args, **kwargs):
         """
-        WorkerType Updated Messages
+        Worker Pool Updated Messages
 
-        Whenever the api receives a request to update aworkerType, a message is posted to this exchange anda provider can act upon it.
+        Whenever the api receives a request to update aworker pool, a message is posted to this exchange anda provider can act upon it.
 
         This exchange takes the following keys:
 
@@ -67,8 +67,8 @@ class WorkerManagerEvents(AsyncBaseClient):
         """
 
         ref = {
-            'exchange': 'workertype-updated',
-            'name': 'workerTypeUpdated',
+            'exchange': 'worker-pool-updated',
+            'name': 'workerPoolUpdated',
             'routingKey': [
                 {
                     'constant': 'primary',
@@ -80,15 +80,15 @@ class WorkerManagerEvents(AsyncBaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'v1/pulse-workertype-message.json#',
+            'schema': 'v1/pulse-worker-pool-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
-    def workerTypeDeleted(self, *args, **kwargs):
+    def workerPoolDeleted(self, *args, **kwargs):
         """
-        WorkerType Deleted Messages
+        Worker Pool Deleted Messages
 
-        Whenever the api receives a request to delete aworkerType, a message is posted to this exchange anda provider can act upon it.
+        Whenever the api receives a request to delete aworker pool, a message is posted to this exchange anda provider can act upon it.
 
         This exchange takes the following keys:
 
@@ -98,8 +98,8 @@ class WorkerManagerEvents(AsyncBaseClient):
         """
 
         ref = {
-            'exchange': 'workertype-deleted',
-            'name': 'workerTypeDeleted',
+            'exchange': 'worker-pool-deleted',
+            'name': 'workerPoolDeleted',
             'routingKey': [
                 {
                     'constant': 'primary',
@@ -111,7 +111,7 @@ class WorkerManagerEvents(AsyncBaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'v1/pulse-workertype-message.json#',
+            'schema': 'v1/pulse-worker-pool-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 

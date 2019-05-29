@@ -3,30 +3,30 @@ const util = require('../src/util');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
-  suite('workerTypeName', function() {
-    test('splitWorkerTypeName for valid workerTypeName', function() {
-      assert.deepEqual(util.splitWorkerTypeName('provFoo/wtFoo'),
+  suite('workerPoolId', function() {
+    test('splitWorkerPoolId for valid workerPoolId', function() {
+      assert.deepEqual(util.splitWorkerPoolId('provFoo/wtFoo'),
         {provisionerId: 'provFoo', workerType: 'wtFoo'});
     });
 
-    test('splitWorkerTypeName for invalid workerTypeName', function() {
-      assert.throws(() => util.splitWorkerTypeName('noSlashes'), /invalid workerTypeName/);
+    test('splitWorkerPoolId for invalid workerPoolId', function() {
+      assert.throws(() => util.splitWorkerPoolId('noSlashes'), /invalid workerPoolId/);
     });
 
-    test('joinWorkerTypeName for valid inputs', function() {
-      assert.equal(util.joinWorkerTypeName('myProv', 'myWt'), 'myProv/myWt');
+    test('joinWorkerPoolId for valid inputs', function() {
+      assert.equal(util.joinWorkerPoolId('myProv', 'myWt'), 'myProv/myWt');
     });
 
-    test('joinWorkerTypeName for undefined provisionerId', function() {
-      assert.throws(() => util.joinWorkerTypeName(undefined, 'myWt'), /provisionerId omitted/);
+    test('joinWorkerPoolId for undefined provisionerId', function() {
+      assert.throws(() => util.joinWorkerPoolId(undefined, 'myWt'), /provisionerId omitted/);
     });
 
-    test('joinWorkerTypeName for invalid provisionerId', function() {
-      assert.throws(() => util.joinWorkerTypeName('a/b', 'myWt'), /provisionerId cannot contain/);
+    test('joinWorkerPoolId for invalid provisionerId', function() {
+      assert.throws(() => util.joinWorkerPoolId('a/b', 'myWt'), /provisionerId cannot contain/);
     });
 
-    test('joinWorkerTypeName for undefined workerTypoe', function() {
-      assert.throws(() => util.joinWorkerTypeName('myProv', undefined), /workerType omitted/);
+    test('joinWorkerPoolId for undefined workerTypoe', function() {
+      assert.throws(() => util.joinWorkerPoolId('myProv', undefined), /workerType omitted/);
     });
   });
 });
