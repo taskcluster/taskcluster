@@ -139,6 +139,9 @@ export default class App extends Component {
   }
 
   static getDerivedStateFromError(error) {
+    // eslint-disable-next-line no-console
+    console.log('error: ', error);
+
     return { error };
   }
 
@@ -190,6 +193,10 @@ export default class App extends Component {
   };
 
   componentDidCatch(error, errorInfo) {
+    // eslint-disable-next-line no-console
+    console.log('error: ', error);
+    // eslint-disable-next-line no-console
+    console.log('errorInfo: ', errorInfo);
     reportError(error, errorInfo);
   }
 
