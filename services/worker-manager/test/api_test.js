@@ -17,7 +17,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     assert(created);
     assert(lastModified);
     assert(scheduledForDeletion === deletion);
-    assert.deepEqual({workerPoolId, ...input}, definition);
+    assert.deepStrictEqual({workerPoolId, ...input}, definition);
   };
 
   test('create worker pool', async function() {
@@ -206,6 +206,58 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       return;
     }
     throw new Error('delete of non-existent worker pool succeeded');
+  });
+
+  test('get worker pools - one worker pool', async function() {
+    const workerPoolId = 'pp/ee';
+    const input = {
+      providerId: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    await helper.workerManager.createWorkerPool(workerPoolId, input);
+    let data = await helper.workerManager.listWorkerPools();
+
+    data.workerPools.forEach( wp => {
+      workerPoolCompare(workerPoolId, input, wp);
+    });
+  });
+
+  test('get worker pools - >1 worker pools', async function() {
+    const sampleWorkerPoolId = 'pp/ee';
+    const sampleInput = {
+      providerId: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+
+    let input = [];
+
+    for (let i of [0, 1, 2]) {
+      const workerPoolId = `${sampleWorkerPoolId}-${i}`;
+      input[i] = {workerPoolId, ...sampleInput};
+    }
+
+    await Promise.all(input.map(async i => {
+      const {workerPoolId, ...definition} = i;
+      await helper.workerManager.createWorkerPool(workerPoolId, definition);
+    }));
+
+    let data = await helper.workerManager.listWorkerPools();
+
+    data.workerPools.forEach( (wp, i) => {
+      workerPoolCompare(input[i].workerPoolId, input[i], wp);
+    });
+  });
+
+  test('get worker pools - no worker pools in db', async function() {
+    let data = await helper.workerManager.listWorkerPools();
+
+    assert.deepStrictEqual(data.workerPools, [], 'Should return an empty array of worker pools');
   });
 
   const googleInput = {

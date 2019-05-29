@@ -12,7 +12,7 @@ properties:
     maxLength: {$const: identifier-max-length}
     pattern: {$const: identifier-pattern}
     description: |
-      If this is defined, it was the provider that handled this worker pool in the
+      If this is defined, it was the provider that handled this worker pool in the 
       configuration before the current one. This will be used by providers to clean
       up any resources created for this workerType when they are no longer responsible
       for it.
