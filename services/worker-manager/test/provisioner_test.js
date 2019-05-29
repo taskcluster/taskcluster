@@ -3,7 +3,7 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const monitorManager = require('../src/monitor');
 const {LEVELS} = require('taskcluster-lib-monitor');
-const {splitWorkerTypeName} = require('../src/util');
+const {splitWorkerPoolId} = require('../src/util');
 
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
@@ -14,12 +14,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   helper.withProvisioner(mock, skipping);
 
   suite('provisioning loop', function() {
-    const testCase = (workerTypes) => {
+    const testCase = (workerPools) => {
       return testing.runWithFakeTime(async function() {
-        await Promise.all(workerTypes.map(async wt => {
-          await helper.workerManager.createWorkerType(wt.workerTypeName, wt.input);
-          const {provisionerId, workerType} = splitWorkerTypeName(wt.workerTypeName);
-          helper.queue.setPending(provisionerId, workerType, wt.pending);
+        await Promise.all(workerPools.map(async wt => {
+          await helper.workerManager.createWorkerPool(wt.workerPoolId, wt.input);
+          const {provisionerId, workerPool} = splitWorkerPoolId(wt.workerPoolId);
+          helper.queue.setPending(provisionerId, workerPool, wt.pending);
         }));
 
         await helper.initiateProvisioner();
@@ -28,13 +28,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
           if (error) {
             throw new Error(JSON.stringify(error, null, 2));
           }
-          await Promise.all(workerTypes.map(async wt => {
+          await Promise.all(workerPools.map(async wt => {
             assert.deepEqual(
               monitorManager.messages.find(
-                msg => msg.Type === 'workertype-provisioned' && msg.Fields.workerTypeName === wt.workerTypeName), {
+                msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === wt.workerPoolId), {
                 Logger: 'taskcluster.worker-manager.provisioner',
-                Type: 'workertype-provisioned',
-                Fields: {workerTypeName: wt.workerTypeName, providerId: wt.input.providerId, v: 1},
+                Type: 'worker-pool-provisioned',
+                Fields: {workerPoolId: wt.workerPoolId, providerId: wt.input.providerId, v: 1},
                 Severity: LEVELS.info,
               });
           }));
@@ -46,9 +46,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       });
     };
 
-    test('single workertype', testCase([
+    test('single worker pool', testCase([
       {
-        workerTypeName: 'pp/ee',
+        workerPoolId: 'pp/ee',
         pending: 1,
         input: {
           providerId: 'testing1',
@@ -60,9 +60,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       },
     ]));
 
-    test('multiple workertypes, same provider', testCase([
+    test('multiple worker pools, same provider', testCase([
       {
-        workerTypeName: 'pp/ee',
+        workerPoolId: 'pp/ee',
         pending: 1,
         input: {
           providerId: 'testing1',
@@ -73,7 +73,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         },
       },
       {
-        workerTypeName: 'pp/ee2',
+        workerPoolId: 'pp/ee2',
         pending: 100,
         input: {
           providerId: 'testing1',
@@ -85,9 +85,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       },
     ]));
 
-    test('multiple workertypes, different provider', testCase([
+    test('multiple worker pools, different provider', testCase([
       {
-        workerTypeName: 'pp/ee',
+        workerPoolId: 'pp/ee',
         pending: 1,
         input: {
           providerId: 'testing1',
@@ -98,7 +98,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         },
       },
       {
-        workerTypeName: 'pp/ee2',
+        workerPoolId: 'pp/ee2',
         pending: 100,
         input: {
           providerId: 'testing2',
@@ -111,12 +111,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     ]));
   });
 
-  suite('workertype exchanges', function() {
-    let workerType;
+  suite('worker pool exchanges', function() {
+    let workerPool;
     setup(async function() {
       const now = new Date();
-      workerType = await helper.WorkerType.create({
-        workerTypeName: 'pp/foo',
+      workerPool = await helper.WorkerPool.create({
+        workerPoolId: 'pp/foo',
         providerId: 'testing1',
         description: 'none',
         scheduledForDeletion: false,
@@ -134,13 +134,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       await helper.terminateProvisioner();
     });
 
-    test('workertype created', async function() {
+    test('worker pool created', async function() {
       await helper.fakePulseMessage({
         payload: {
-          workerTypeName: 'pp/foo',
+          workerPoolId: 'pp/foo',
           providerId: 'testing1',
         },
-        exchange: 'exchange/taskcluster-worker-manager/v1/workertype-created',
+        exchange: 'exchange/taskcluster-worker-manager/v1/worker-pool-created',
         routingKey: 'primary.#',
         routes: [],
       });
@@ -148,18 +148,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         Logger: 'taskcluster.worker-manager.testing1',
         Type: 'create-resource',
         Severity: LEVELS.notice,
-        Fields: {workerTypeName: 'pp/foo'},
+        Fields: {workerPoolId: 'pp/foo'},
       });
     });
 
-    test('workertype modified, same provider', async function() {
+    test('worker pool modified, same provider', async function() {
       await helper.fakePulseMessage({
         payload: {
-          workerTypeName: 'pp/foo',
+          workerPoolId: 'pp/foo',
           providerId: 'testing1',
           previousProviderId: 'testing1',
         },
-        exchange: 'exchange/taskcluster-worker-manager/v1/workertype-updated',
+        exchange: 'exchange/taskcluster-worker-manager/v1/worker-pool-updated',
         routingKey: 'primary.#',
         routes: [],
       });
@@ -167,21 +167,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         Logger: 'taskcluster.worker-manager.testing1',
         Type: 'update-resource',
         Severity: LEVELS.notice,
-        Fields: {workerTypeName: 'pp/foo'},
+        Fields: {workerPoolId: 'pp/foo'},
       });
     });
 
-    test('workertype modified, different provider', async function() {
-      await workerType.modify(wt => {
+    test('worker pool modified, different provider', async function() {
+      await workerPool.modify(wt => {
         wt.providerId = 'testing2';
       });
       await helper.fakePulseMessage({
         payload: {
-          workerTypeName: 'pp/foo',
+          workerPoolId: 'pp/foo',
           providerId: 'testing2',
           previousProviderId: 'testing1',
         },
-        exchange: 'exchange/taskcluster-worker-manager/v1/workertype-updated',
+        exchange: 'exchange/taskcluster-worker-manager/v1/worker-pool-updated',
         routingKey: 'primary.#',
         routes: [],
       });
@@ -189,23 +189,23 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         Logger: 'taskcluster.worker-manager.testing1',
         Type: 'remove-resource',
         Severity: LEVELS.notice,
-        Fields: {workerTypeName: 'pp/foo'},
+        Fields: {workerPoolId: 'pp/foo'},
       });
       assert.deepEqual(monitorManager.messages.find(msg => msg.Type === 'create-resource'), {
         Logger: 'taskcluster.worker-manager.testing2',
         Type: 'create-resource',
         Severity: LEVELS.notice,
-        Fields: {workerTypeName: 'pp/foo'},
+        Fields: {workerPoolId: 'pp/foo'},
       });
     });
 
-    test('workertype deleted', async function() {
+    test('worker pool deleted', async function() {
       await helper.fakePulseMessage({
         payload: {
-          workerTypeName: 'pp/foo',
+          workerPoolId: 'pp/foo',
           providerId: 'testing1',
         },
-        exchange: 'exchange/taskcluster-worker-manager/v1/workertype-deleted',
+        exchange: 'exchange/taskcluster-worker-manager/v1/worker-pool-deleted',
         routingKey: 'primary.#',
         routes: [],
       });
@@ -213,7 +213,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         Logger: 'taskcluster.worker-manager.testing1',
         Type: 'remove-resource',
         Severity: LEVELS.notice,
-        Fields: {workerTypeName: 'pp/foo'},
+        Fields: {workerPoolId: 'pp/foo'},
       });
     });
   });
