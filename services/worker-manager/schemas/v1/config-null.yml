@@ -1,0 +1,9 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Null Config
+description: |
+    A special provider indicating that no provisioning takes place.
+
+    Note that this provider allows any configuration, but ignores it. This saves
+    the trouble of removing the config from a worker-pool when deleting it.
+type: object
+additionalProperties: true

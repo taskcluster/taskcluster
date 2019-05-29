@@ -73,6 +73,15 @@ let load = loader({
     }),
   },
 
+  expireWorkerPools: {
+    requires: ['cfg', 'WorkerPool', 'monitor'],
+    setup: ({cfg, WorkerPool, monitor}) => {
+      return monitor.childMonitor('expireWorkerPools').oneShot('expire worker pools', async () => {
+        await WorkerPool.expire(monitor);
+      });
+    },
+  },
+
   expireWorkers: {
     requires: ['cfg', 'Worker', 'monitor'],
     setup: ({cfg, Worker, monitor}) => {

@@ -4385,7 +4385,13 @@ await asyncWorkerManager.createWorkerPool(payload, workerPoolId='value') # -> re
 ```
 
 #### Update Worker Pool
-Given an existing worker pool definition, this will modify it and return the new definition.
+Given an existing worker pool definition, this will modify it and return
+the new definition.
+
+To delete a worker pool, set its `providerId` to `"null-provider"`.
+After any existing workers have exited, a cleanup job will remove the
+worker pool.  During that time, the worker pool can be updated again, such
+as to set its `providerId` to a real provider.
 
 
 
@@ -4424,24 +4430,6 @@ workerManager.workerPool(workerPoolId='value') # -> result
 # Async call
 await asyncWorkerManager.workerPool(workerPoolId) # -> result
 await asyncWorkerManager.workerPool(workerPoolId='value') # -> result
-```
-
-#### Delete Worker Pool
-Delete an existing worker pool definition.
-
-
-
-Takes the following arguments:
-
-  * `workerPoolId`
-
-```python
-# Sync calls
-workerManager.deleteWorkerPool(workerPoolId) # -> None
-workerManager.deleteWorkerPool(workerPoolId='value') # -> None
-# Async call
-await asyncWorkerManager.deleteWorkerPool(workerPoolId) # -> None
-await asyncWorkerManager.deleteWorkerPool(workerPoolId='value') # -> None
 ```
 
 #### List All Worker Pools
