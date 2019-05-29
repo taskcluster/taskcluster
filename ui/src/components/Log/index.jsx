@@ -219,6 +219,7 @@ export default class Log extends Component {
         render={({ follow }) => (
           <Fragment>
             <LazyLog
+              enableSearch
               containerStyle={containerStyle}
               url={url}
               onScroll={this.handleScroll}
