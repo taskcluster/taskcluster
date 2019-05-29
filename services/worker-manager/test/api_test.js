@@ -17,7 +17,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     assert(created);
     assert(lastModified);
     assert(scheduledForDeletion === deletion);
-    assert.deepEqual({workerTypeName, ...input}, definition);
+    assert.deepStrictEqual({workerTypeName, ...input}, definition);
   };
 
   test('create workertype', async function() {
