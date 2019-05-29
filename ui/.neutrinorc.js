@@ -34,6 +34,9 @@ module.exports = {
       html: {
         title: process.env.APPLICATION_NAME
       },
+      devtool: {
+        production: 'source-map'
+      },
       devServer: {
         port: process.env.PORT,
         historyApiFallback: {
