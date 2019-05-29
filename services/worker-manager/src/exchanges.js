@@ -6,10 +6,9 @@ const exchanges = new Exchanges({
   serviceName: 'worker-manager',
   apiVersion: 'v1',
   description: [
-    'These exchanges provide notifications when a workerType is created, updated',
+    'These exchanges provide notifications when a worker pool is created, updated',
     'or deleted. This is so that the listener running in a different',
-    'process at the other end can direct another listener specified by',
-    '`providerId` and `workerType` to synchronize its bindings. But you are of',
+    'process at the other end can synchronize its bindings. But you are of',
     'course welcome to use these for other purposes, monitoring changes for example.',
   ].join(''),
 });
@@ -40,15 +39,15 @@ let commonMessageBuilder = function(message) {
 };
 
 exchanges.declare({
-  exchange: 'workertype-created',
-  name: 'workerTypeCreated',
-  title: 'WorkerType Created Messages',
+  exchange: 'worker-pool-created',
+  name: 'workerPoolCreated',
+  title: 'Worker Pool Created Messages',
   description: [
     'Whenever the api receives a request to create a',
-    'workerType, a message is posted to this exchange and',
+    'worker pool, a message is posted to this exchange and',
     'a provider can act upon it.',
   ].join(''),
-  schema: 'pulse-workertype-message.yml',
+  schema: 'pulse-worker-pool-message.yml',
   messageBuilder: commonMessageBuilder,
   routingKey: buildCommonRoutingKey(),
   routingKeyBuilder: () => '',
@@ -57,15 +56,15 @@ exchanges.declare({
 
 // Hook updated exchange
 exchanges.declare({
-  exchange: 'workertype-updated',
-  name: 'workerTypeUpdated',
-  title: 'WorkerType Updated Messages',
+  exchange: 'worker-pool-updated',
+  name: 'workerPoolUpdated',
+  title: 'Worker Pool Updated Messages',
   description: [
     'Whenever the api receives a request to update a',
-    'workerType, a message is posted to this exchange and',
+    'worker pool, a message is posted to this exchange and',
     'a provider can act upon it.',
   ].join(''),
-  schema: 'pulse-workertype-message.yml',
+  schema: 'pulse-worker-pool-message.yml',
   messageBuilder: commonMessageBuilder,
   routingKey: buildCommonRoutingKey(),
   routingKeyBuilder: () => '',
@@ -74,15 +73,15 @@ exchanges.declare({
 
 // Hook deleted exchange
 exchanges.declare({
-  exchange: 'workertype-deleted',
-  name: 'workerTypeDeleted',
-  title: 'WorkerType Deleted Messages',
+  exchange: 'worker-pool-deleted',
+  name: 'workerPoolDeleted',
+  title: 'Worker Pool Deleted Messages',
   description: [
     'Whenever the api receives a request to delete a',
-    'workerType, a message is posted to this exchange and',
+    'worker pool, a message is posted to this exchange and',
     'a provider can act upon it.',
   ].join(''),
-  schema: 'pulse-workertype-message.yml',
+  schema: 'pulse-worker-pool-message.yml',
   messageBuilder: commonMessageBuilder,
   routingKey: buildCommonRoutingKey(),
   routingKeyBuilder: () => '',

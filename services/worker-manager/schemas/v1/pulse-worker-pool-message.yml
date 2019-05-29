@@ -1,10 +1,10 @@
 $schema: "/schemas/common/metaschema.json#"
 title: WorkerType Pulse Message
-description: The message that is emitted when workertypes are created/changed/deleted.
+description: The message that is emitted when worker pools are created/changed/deleted.
 type: object
 properties:
-  workerTypeName: {$ref: "workertype-full.json#/properties/workerTypeName"}
-  providerId: {$ref: "workertype-full.json#/properties/providerId"}
+  workerPoolId: {$ref: "worker-pool-full.json#/properties/workerPoolId"}
+  providerId: {$ref: "worker-pool-full.json#/properties/providerId"}
   previousProviderId:
     title: Previous Provider
     type: string
@@ -12,11 +12,11 @@ properties:
     maxLength: {$const: identifier-max-length}
     pattern: {$const: identifier-pattern}
     description: |
-      If this is defined, it was the provider that handled this workertype in the 
+      If this is defined, it was the provider that handled this worker pool in the 
       configuration before the current one. This will be used by providers to clean
       up any resources created for this workerType when they are no longer responsible
       for it.
 additionalProperties: false
 required:
-  - workerTypeName
+  - workerPoolId
   - providerId

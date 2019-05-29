@@ -3,7 +3,7 @@
  * their providerType implementation as required
  */
 class Providers {
-  async setup({cfg, monitor, notify, estimator, Worker, WorkerType, validator}) {
+  async setup({cfg, monitor, notify, estimator, Worker, WorkerPool, validator}) {
     this._providers = {};
 
     for (const [providerId, meta] of Object.entries(cfg.providers)) {
@@ -22,7 +22,7 @@ class Providers {
         taskclusterCredentials: cfg.taskcluster.credentials,
         estimator,
         Worker,
-        WorkerType,
+        WorkerPool,
         validator,
         ...meta,
       });
