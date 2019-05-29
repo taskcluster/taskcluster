@@ -55,6 +55,9 @@ export default class Main extends Component {
   render() {
     const { error, routes } = this.props;
 
+    // eslint-disable-next-line no-console
+    console.log('Main.js error: ', error);
+
     return (
       <Fragment>
         <ErrorPanel fixed error={error} />

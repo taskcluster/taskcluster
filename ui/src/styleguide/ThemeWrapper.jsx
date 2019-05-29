@@ -13,6 +13,9 @@ export default class ThemeWrapper extends Component {
   }
 
   render() {
+    // eslint-disable-next-line no-console
+    console.log('ThemeWrapper error: ', this.state.error);
+
     return (
       <MuiThemeProvider theme={theme.darkTheme}>
         {this.state.error ? (

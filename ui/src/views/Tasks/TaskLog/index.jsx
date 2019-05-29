@@ -38,6 +38,9 @@ export default class TaskLog extends Component {
     const { classes, match, stream } = this.props;
     const url = decodeURIComponent(match.params.logUrl);
 
+    // eslint-disable-next-line no-console
+    console.log('TaskLog this.props: ', this.props);
+
     return (
       <Dashboard title="Log" disablePadding>
         <Log

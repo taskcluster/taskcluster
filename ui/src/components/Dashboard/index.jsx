@@ -247,6 +247,10 @@ export default class Dashboard extends Component {
       ...props
     } = this.props;
     const { error, navOpen, showHelpView, deploymentVersion } = this.state;
+
+    // eslint-disable-next-line no-console
+    console.log('Dashboard error: ', error);
+
     const drawer = (
       <nav className={classes.nav}>
         <div>
