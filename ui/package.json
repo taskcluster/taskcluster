@@ -78,7 +78,7 @@
     "react-ga": "^2.5.3",
     "react-helmet": "^5.2.1",
     "react-hot-loader": "^4.8.4",
-    "react-lazylog": "^3.3.0",
+    "react-lazylog": "^3.2.0",
     "react-router-dom": "^4.3.1",
     "react-schema-viewer": "^3.2.0",
     "react-virtualized": "^9.21.0",

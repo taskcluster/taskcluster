@@ -27,42 +27,6 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
       color: theme.palette.text.primary,
       '-webkit-font-smoothing': 'auto',
     },
-    'div.react-lazylog-searchbar': {
-      backgroundColor: theme.palette.background.default,
-      fontFamily: 'Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace',
-      fontSize: 13,
-      padding: 10,
-      ...(theme.palette.type === 'light'
-        ? {
-            '& > .react-lazylog-searchbar-input': {
-              height: theme.spacing.triple,
-              backgroundColor: theme.palette.grey['300'],
-              color: theme.palette.common.black,
-              borderColor: theme.palette.grey['300'],
-            },
-            '& > .react-lazylog-searchbar-filter': {
-              '&.active': {
-                fill: theme.palette.text.active,
-              },
-              '&.inactive': {
-                fill: theme.palette.text.disabled,
-              },
-            },
-            '& > .react-lazylog-searchbar-matches': {
-              '&.active': {
-                color: theme.palette.text.active,
-              },
-              '&.inactive': {
-                color: theme.palette.text.disabled,
-              },
-            },
-          }
-        : {
-            '& > .react-lazylog-searchbar-input': {
-              height: theme.spacing.triple,
-            },
-          }),
-    },
   },
   highlight: {
     backgroundColor: `${theme.palette.action.selected} !important`,
@@ -255,7 +219,6 @@ export default class Log extends Component {
         render={({ follow }) => (
           <Fragment>
             <LazyLog
-              enableSearch
               containerStyle={containerStyle}
               url={url}
               onScroll={this.handleScroll}

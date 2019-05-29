@@ -81,6 +81,7 @@ class Monitor {
    * Get a prefixed child monitor
    */
   childMonitor(name, metadata = {}) {
+    assert(name, 'Child monitor name is required');
     return new Monitor({
       manager: this.manager,
       name: this.name.concat([name]),
