@@ -218,7 +218,7 @@ module.exports = class MozillaAuth0 {
           if (!user) {
             // Don't report much to the user, to avoid revealing sensitive information, although
             // it is likely in the service logs.
-            throw new WebServerError('InputError', 'Could not generate credentials for this access token');
+            done(new WebServerError('InputError', 'Could not generate credentials for this access token'));
           }
 
           done(null, {
