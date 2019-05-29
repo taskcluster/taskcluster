@@ -47,15 +47,9 @@ export default class AuthController {
     let user = auth ? UserSession.deserialize(auth) : null;
 
     if (user) {
-      const { identityProviderId } = user;
       const now = new Date();
-      // Logout the user if the provider's access token has expired
-      // For manual logins, there is no provider involved so
-      // we simply logout the user if their Taskcluster credentials
-      // have expired.
-      const expires = new Date(
-        user[identityProviderId === 'manual' ? 'expires' : 'providerExpires']
-      );
+      // Logout the user if the provider's access token has expired.
+      const expires = new Date(user.providerExpires);
 
       if (expires < now) {
         localStorage.removeItem(AUTH_STORE);

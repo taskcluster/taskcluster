@@ -55,15 +55,16 @@ export default class SignInDialog extends Component {
   };
 
   handleCredentialsSignIn = credentials => {
-    const inOneWeek = new Date();
+    const inOneThousandYears = new Date();
 
-    inOneWeek.setDate(inOneWeek.getDate() + 7);
+    inOneThousandYears.setDate(inOneThousandYears.getDate() + 365 * 1000);
 
     this.props.onAuthorize(
       UserSession.create({
         identityProviderId: 'manual',
         credentials,
-        expires: inOneWeek.toISOString(),
+        expires: inOneThousandYears.toISOString(),
+        providerExpires: inOneThousandYears.toISOString(),
         profile: {
           username: credentials.clientId,
           displayName: credentials.clientId,
