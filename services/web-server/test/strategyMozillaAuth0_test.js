@@ -10,10 +10,8 @@ suite(testing.suiteName(), () => {
         strategies: {
           'mozilla-auth0': {
             domain: 'login-test.taskcluster.net',
-            audience: 'login-test.taskcluster.net',
             clientId: 'abcd',
             clientSecret: 'efgh',
-            scope: 'taskcluster',
           },
         },
       },
