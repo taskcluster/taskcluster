@@ -1,0 +1,51 @@
+#! /bin/sh
+# Set the CPU Frequency Scaling governor to "ondemand"/"powersave" where available
+set -eu
+
+FIRSTCPU=`cut -f1 -d- /sys/devices/system/cpu/online`
+AVAILABLE="/sys/devices/system/cpu/cpu$FIRSTCPU/cpufreq/scaling_available_governors"
+DOWN_FACTOR="/sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor"
+
+[ -f $AVAILABLE ] || exit 0
+
+read governors < $AVAILABLE
+case $governors in
+        *performance*)
+                GOVERNOR="performance"
+                break
+                ;;
+        *interactive*)
+                GOVERNOR="interactive"
+                break
+                ;;
+        *ondemand*)
+                GOVERNOR="ondemand"
+                case $(uname -m) in
+                        ppc64*)
+                                SAMPLING=100
+                        ;;
+                esac
+                break
+                ;;
+        *powersave*)
+                GOVERNOR="powersave"
+                break
+                ;;
+        *)
+                exit 0
+                ;;
+esac
+
+[ -n "${GOVERNOR:-}" ] || exit 0
+
+echo "Setting $GOVERNOR scheduler for all CPUs"
+
+for CPUFREQ in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+do
+        [ -f $CPUFREQ ] || continue
+        echo -n $GOVERNOR > $CPUFREQ
+done
+if [ -n "${SAMPLING:-}" ] && [ -f $DOWN_FACTOR ]; then
+        echo -n $SAMPLING > $DOWN_FACTOR
+fi
+
