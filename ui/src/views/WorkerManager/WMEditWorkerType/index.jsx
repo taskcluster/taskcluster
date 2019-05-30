@@ -56,8 +56,9 @@ export default class WMWorkerTypeEditor extends Component {
       wantsEmail: false,
       providerType: 'gcp',
       providerId: '',
-      config: {},
+      config: gcpConfig,
     },
+    invalidProviderConfig: false,
   };
 
   handleInputChange = ({ target: { name, value } }) => {
@@ -78,18 +79,28 @@ export default class WMWorkerTypeEditor extends Component {
   };
 
   handleEditorChange = value => {
-    try {
-      JSON.parse(value);
+    const { workerType } = this.state;
 
-      this.setState({ ...this.state.workerType, config: value });
+    try {
+      workerType.config = JSON.parse(value);
+
+      this.setState({
+        workerType,
+        invalidProviderConfig: false,
+      });
     } catch (err) {
-      this.setState({ config: '' });
+      workerType.config = value;
+
+      this.setState({
+        workerType,
+        invalidProviderConfig: true,
+      });
     }
   };
 
   render() {
     const { isNewWorkerType, classes } = this.props;
-    const { workerType } = this.state;
+    const { workerType, invalidProviderConfig } = this.state;
 
     return (
       <Dashboard
@@ -106,7 +117,7 @@ export default class WMWorkerTypeEditor extends Component {
           }
           onChange={this.handleInputChange}
           fullWidth
-          value={this.state.workerType.name}
+          value={workerType.name}
           margin="normal"
         />
 
@@ -115,7 +126,7 @@ export default class WMWorkerTypeEditor extends Component {
           name="description"
           onChange={this.handleInputChange}
           fullWidth
-          value={this.state.workerType.description}
+          value={workerType.description}
           margin="normal"
         />
 
@@ -125,7 +136,7 @@ export default class WMWorkerTypeEditor extends Component {
           error={Boolean(workerType.owner) && !workerType.owner.includes('@')}
           onChange={this.handleInputChange}
           fullWidth
-          value={this.state.workerType.owner}
+          value={workerType.owner}
           margin="normal"
         />
 
@@ -133,7 +144,7 @@ export default class WMWorkerTypeEditor extends Component {
           <FormControlLabel
             control={
               <Switch
-                checked={this.state.workerType.wantsEmail}
+                checked={workerType.wantsEmail}
                 onChange={this.handleSwitchChange}
                 value="wantsEmail"
               />
@@ -149,7 +160,7 @@ export default class WMWorkerTypeEditor extends Component {
             select
             label="Type:"
             helperText="Which service do you want to run your tasks in?"
-            value={this.state.workerType.providerType}
+            value={workerType.providerType}
             name="providerType"
             onChange={this.handleInputChange}
             margin="normal">
@@ -158,7 +169,7 @@ export default class WMWorkerTypeEditor extends Component {
 
           <TextField
             label="Name:"
-            value={this.state.workerType.providerId}
+            value={workerType.providerId}
             name="providerId"
             onChange={this.handleInputChange}
             margin="normal"
@@ -170,7 +181,7 @@ export default class WMWorkerTypeEditor extends Component {
             </ListItem>
             <ListItem>
               <CodeEditor
-                value={JSON.stringify(gcpConfig, null, 2)}
+                value={JSON.stringify(workerType.config, null, 2)}
                 onChange={this.handleEditorChange}
                 lint
               />
@@ -179,6 +190,7 @@ export default class WMWorkerTypeEditor extends Component {
         </FormGroup>
         <Button
           spanProps={{ className: classes.createIconSpan }}
+          disabled={invalidProviderConfig}
           tooltipProps={{ title: 'Save' }}
           onClick={this.handleCreateWorkerType}
           classes={{ root: classes.successIcon }}
