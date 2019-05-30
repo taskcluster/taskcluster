@@ -1,4 +1,3 @@
-const debug = require('debug');
 const loader = require('taskcluster-lib-loader');
 const taskcluster = require('taskcluster-client');
 const App = require('taskcluster-lib-app');
@@ -73,13 +72,20 @@ let load = loader({
     }),
   },
 
+  expireWorkerPools: {
+    requires: ['cfg', 'WorkerPool', 'monitor'],
+    setup: ({cfg, WorkerPool, monitor}) => {
+      return monitor.childMonitor('expireWorkerPools').oneShot('expire worker pools', async () => {
+        await WorkerPool.expire(monitor);
+      });
+    },
+  },
+
   expireWorkers: {
     requires: ['cfg', 'Worker', 'monitor'],
     setup: ({cfg, Worker, monitor}) => {
       return monitor.childMonitor('expireWorkers').oneShot('expire workers', async () => {
-        debug('Expiring workers');
-        const count = await Worker.expire();
-        debug(`Expired ${count} rows`);
+        await Worker.expire(monitor);
       });
     },
   },
@@ -89,9 +95,7 @@ let load = loader({
     setup: ({cfg, WorkerPoolError, monitor}) => {
       return monitor.childMonitor('expireErrors').oneShot('expire workerPoolErrors', async () => {
         const threshold = taskcluster.fromNow(cfg.app.errorsExpirationDelay);
-        debug('Expiring WorkerPoolErrors');
-        const count = await WorkerPoolError.expire(threshold);
-        debug(`Expired ${count} rows`);
+        await WorkerPoolError.expire(threshold);
       });
     },
   },

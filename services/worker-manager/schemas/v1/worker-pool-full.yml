@@ -22,6 +22,9 @@ properties:
     pattern:        {$const: identifier-pattern}
     description: |
       The provider responsible for managing this worker pool.
+
+      If this value is `"null-provider"`, then the worker pool is pending deletion
+      once all existing workers have terminated.
   description:
     title: Description
     type:           string
@@ -52,10 +55,6 @@ properties:
     description: |
       An email address to notify when there are provisioning errors for this
       worker pool.
-  scheduledForDeletion:
-    title: Scheduled For Deletion
-    type: boolean
-    description: If true, a user has requested that this worker pool be deleted
   emailOnError:
     title: Wants Email
     type: boolean
@@ -68,5 +67,4 @@ required:
   - lastModified
   - config
   - owner
-  - scheduledForDeletion
   - emailOnError

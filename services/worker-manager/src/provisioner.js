@@ -106,11 +106,7 @@ class Provisioner {
       handler: async workerPool => {
         const provider = this.providers.get(workerPool.providerId);
 
-        if (workerPool.scheduledForDeletion) {
-          await provider.deprovision({workerPool});
-        } else {
-          await provider.provision({workerPool});
-        }
+        await provider.provision({workerPool});
 
         await Promise.all(workerPool.previousProviderIds.map(async pId => {
           await this.providers.get(pId).deprovision({workerPool});

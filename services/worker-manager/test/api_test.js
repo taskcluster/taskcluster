@@ -12,11 +12,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     await helper.workerManager.ping();
   });
 
-  const workerPoolCompare = (workerPoolId, input, result, deletion = false) => {
-    const {created, lastModified, scheduledForDeletion, ...definition} = result;
+  const workerPoolCompare = (workerPoolId, input, result) => {
+    const {created, lastModified, ...definition} = result;
     assert(created);
     assert(lastModified);
-    assert(scheduledForDeletion === deletion);
     assert.deepStrictEqual({workerPoolId, ...input}, definition);
   };
 
@@ -112,6 +111,23 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     throw new Error('Allowed to specify an invalid providerId');
   });
 
+  test('update worker pool to providerId = null-provider', async function() {
+    await helper.workerManager.createWorkerPool('pp/oo', {
+      providerId: 'testing1',
+      description: 'e',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    });
+    await helper.workerManager.updateWorkerPool('pp/oo', {
+      providerId: 'null-provider',
+      description: 'e',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    });
+  });
+
   test('create worker pool (already exists)', async function() {
     await helper.workerManager.createWorkerPool('pp/oo', {
       providerId: 'testing1',
@@ -178,34 +194,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       return;
     }
     throw new Error('get of non-existent worker pool succeeded');
-  });
-
-  test('delete worker pool', async function() {
-    const workerPoolId = 'pp/ee';
-    const input = {
-      providerId: 'testing1',
-      description: 'bar',
-      config: {},
-      owner: 'example@example.com',
-      emailOnError: false,
-    };
-    workerPoolCompare(workerPoolId, input,
-      await helper.workerManager.createWorkerPool(workerPoolId, input));
-    await helper.workerManager.deleteWorkerPool(workerPoolId);
-    workerPoolCompare(workerPoolId, input,
-      await helper.workerManager.workerPool(workerPoolId), true);
-  });
-
-  test('delete worker pool (does not exist)', async function() {
-    try {
-      await helper.workerManager.deleteWorkerPool('pp/whatever');
-    } catch (err) {
-      if (err.code !== 'ResourceNotFound') {
-        throw err;
-      }
-      return;
-    }
-    throw new Error('delete of non-existent worker pool succeeded');
   });
 
   test('get worker pools - one worker pool', async function() {

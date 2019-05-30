@@ -3777,7 +3777,7 @@ module.exports = {
           "args": [
             "workerPoolId"
           ],
-          "description": "Given an existing worker pool definition, this will modify it and return the new definition.",
+          "description": "Given an existing worker pool definition, this will modify it and return\nthe new definition.\n\nTo delete a worker pool, set its `providerId` to `\"null-provider\"`.\nAfter any existing workers have exited, a cleanup job will remove the\nworker pool.  During that time, the worker pool can be updated again, such\nas to set its `providerId` to a real provider.",
           "input": "v1/create-worker-pool-request.json#",
           "method": "post",
           "name": "updateWorkerPool",
@@ -3808,21 +3808,6 @@ module.exports = {
           "route": "/worker-pool/<workerPoolId>",
           "stability": "experimental",
           "title": "Get Worker Pool",
-          "type": "function"
-        },
-        {
-          "args": [
-            "workerPoolId"
-          ],
-          "description": "Delete an existing worker pool definition.",
-          "method": "delete",
-          "name": "deleteWorkerPool",
-          "query": [
-          ],
-          "route": "/worker-pool/<workerPoolId>",
-          "scopes": "worker-manager:delete-worker-type:<workerPoolId>",
-          "stability": "experimental",
-          "title": "Delete Worker Pool",
           "type": "function"
         },
         {

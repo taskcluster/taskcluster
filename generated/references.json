@@ -70,17 +70,12 @@
           "type": "string"
         },
         "providerId": {
-          "description": "The provider responsible for managing this worker pool.\n",
+          "description": "The provider responsible for managing this worker pool.\n\nIf this value is `\"null-provider\"`, then the worker pool is pending deletion\nonce all existing workers have terminated.\n",
           "maxLength": 38,
           "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_]*)$",
           "title": "Provider",
           "type": "string"
-        },
-        "scheduledForDeletion": {
-          "description": "If true, a user has requested that this worker pool be deleted",
-          "title": "Scheduled For Deletion",
-          "type": "boolean"
         },
         "workerPoolId": {
           "description": "The ID of this worker pool (of the form `providerId/workerType` for compatibility)\n",
@@ -96,7 +91,6 @@
         "lastModified",
         "config",
         "owner",
-        "scheduledForDeletion",
         "emailOnError"
       ],
       "title": "Worker Pool Full Definition",
@@ -242,6 +236,17 @@
       "type": "object"
     },
     "filename": "schemas/worker-manager/v1/config-static.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/config-null.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": true,
+      "description": "A special provider indicating that no provisioning takes place.\n\nNote that this provider allows any configuration, but ignores it. This saves\nthe trouble of removing the config from a worker-pool when deleting it.\n",
+      "title": "Null Config",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/config-null.json"
   },
   {
     "content": {
@@ -8062,7 +8067,7 @@
           "args": [
             "workerPoolId"
           ],
-          "description": "Given an existing worker pool definition, this will modify it and return the new definition.",
+          "description": "Given an existing worker pool definition, this will modify it and return\nthe new definition.\n\nTo delete a worker pool, set its `providerId` to `\"null-provider\"`.\nAfter any existing workers have exited, a cleanup job will remove the\nworker pool.  During that time, the worker pool can be updated again, such\nas to set its `providerId` to a real provider.",
           "input": "v1/create-worker-pool-request.json#",
           "method": "post",
           "name": "updateWorkerPool",
@@ -8093,21 +8098,6 @@
           "route": "/worker-pool/<workerPoolId>",
           "stability": "experimental",
           "title": "Get Worker Pool",
-          "type": "function"
-        },
-        {
-          "args": [
-            "workerPoolId"
-          ],
-          "description": "Delete an existing worker pool definition.",
-          "method": "delete",
-          "name": "deleteWorkerPool",
-          "query": [
-          ],
-          "route": "/worker-pool/<workerPoolId>",
-          "scopes": "worker-manager:delete-worker-type:<workerPoolId>",
-          "stability": "experimental",
-          "title": "Delete Worker Pool",
           "type": "function"
         },
         {

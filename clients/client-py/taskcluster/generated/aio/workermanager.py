@@ -48,7 +48,13 @@ class WorkerManager(AsyncBaseClient):
         """
         Update Worker Pool
 
-        Given an existing worker pool definition, this will modify it and return the new definition.
+        Given an existing worker pool definition, this will modify it and return
+        the new definition.
+
+        To delete a worker pool, set its `providerId` to `"null-provider"`.
+        After any existing workers have exited, a cleanup job will remove the
+        worker pool.  During that time, the worker pool can be updated again, such
+        as to set its `providerId` to a real provider.
 
         This method is ``experimental``
         """
@@ -65,17 +71,6 @@ class WorkerManager(AsyncBaseClient):
         """
 
         return await self._makeApiCall(self.funcinfo["workerPool"], *args, **kwargs)
-
-    async def deleteWorkerPool(self, *args, **kwargs):
-        """
-        Delete Worker Pool
-
-        Delete an existing worker pool definition.
-
-        This method is ``experimental``
-        """
-
-        return await self._makeApiCall(self.funcinfo["deleteWorkerPool"], *args, **kwargs)
 
     async def listWorkerPools(self, *args, **kwargs):
         """
@@ -116,13 +111,6 @@ class WorkerManager(AsyncBaseClient):
             'name': 'credentialsGoogle',
             'output': 'v1/temp-creds-response.json#',
             'route': '/credentials/google/<workerPoolId>',
-            'stability': 'experimental',
-        },
-        "deleteWorkerPool": {
-            'args': ['workerPoolId'],
-            'method': 'delete',
-            'name': 'deleteWorkerPool',
-            'route': '/worker-pool/<workerPoolId>',
             'stability': 'experimental',
         },
         "listWorkerPools": {
