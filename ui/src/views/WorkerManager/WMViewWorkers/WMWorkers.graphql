@@ -1,5 +1,5 @@
-query WorkerManagerWorkers($workerType: String, $provider: String, $quarantined: Boolean) {
-  WorkerManagerWorkers(workerType: $workerType, provider: $provider, isQuarantined: $quarantined) {
+query WorkerManagerWorkers($workerPool: String, $provider: String, $quarantined: Boolean) {
+  WorkerManagerWorkers(workerPool: $workerPool, provider: $provider, isQuarantined: $quarantined) {
     workerId
     workerGroup
     workerAge
@@ -18,6 +18,6 @@ query WorkerManagerWorkers($workerType: String, $provider: String, $quarantined:
     recentErrors
 
     providerId
-    workerType
+    workerPool
   }
 }

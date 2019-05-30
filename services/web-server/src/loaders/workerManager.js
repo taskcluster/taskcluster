@@ -2,10 +2,10 @@ const DataLoader = require('dataloader');
 const sift = require('sift').default;
 
 module.exports = ({ workerManager }) => {
-  // const WorkerManagerWorkerTypeSummaries = new DataLoader(queries =>
+  // const WorkerManagerWorkerPoolSummaries = new DataLoader(queries =>
   //   Promise.all(
   //     queries.map(async (filter) => {
-  //       const summaries = await workerManager.listWorkerTypes();
+  //       const summaries = await workerManager.listWorkerPools();
   //
   //       return filter ? sift(filter, summaries) : summaries;
   //     })
@@ -14,20 +14,20 @@ module.exports = ({ workerManager }) => {
 
   // const WMWorkers = new DataLoader(queries =>
   //   Promise.all(
-  //     queries.map(async (workerType, isQuarantined, filter) => {
-  //       const workers = await workerManager.getWorkers(provisionerId, workerType, isQuarantined);
+  //     queries.map(async (workerPool, isQuarantined, filter) => {
+  //       const workers = await workerManager.getWorkers(provisionerId, workerPool, isQuarantined);
   //
   //       return filter ? sift(filter, workers) : workers;
   //     })
   //   )
   // );
 
-  const WorkerManagerWorkerTypeSummaries = new DataLoader(queries => {
+  const WorkerManagerWorkerPoolSummaries = new DataLoader(queries => {
     return Promise.all(
       queries.map(({ filter }) => {
         const summaries = [
           {
-            workerType: 'banana',
+            workerPool: 'banana',
             lastActive: new Date(),
             pendingCapacity: 0,
             runningCapacity: 1,
@@ -39,7 +39,7 @@ module.exports = ({ workerManager }) => {
             provider: 'aws',
           },
           {
-            workerType: 'pineapple',
+            workerPool: 'pineapple',
             pendingCapacity: 1,
             runningCapacity: 3,
             pendingTasks: 1,
@@ -59,7 +59,7 @@ module.exports = ({ workerManager }) => {
 
   const WorkerManagerWorkers = new DataLoader(queries => {
     return Promise.all(
-      queries.map(({ workerType, provider, isQuarantined, filter }) => {
+      queries.map(({ workerPool, provider, isQuarantined, filter }) => {
         const summaries = [
           {
             workerId: 'rust-awesomness',
@@ -81,7 +81,7 @@ module.exports = ({ workerManager }) => {
               artifacts: {},
             },
 
-            workerType: 'banana',
+            workerPool: 'banana',
             providerId: 'gcp',
             latestTaskStatus: 'great success',
 
@@ -98,7 +98,7 @@ module.exports = ({ workerManager }) => {
   });
 
   return {
-    WorkerManagerWorkerTypeSummaries,
+    WorkerManagerWorkerPoolSummaries,
     WorkerManagerWorkers,
   };
 };

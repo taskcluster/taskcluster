@@ -16,7 +16,7 @@ import Search from '../../../components/Search';
 @graphql(workersQuery, {
   options: props => ({
     variables: {
-      workerType: props.match.params.workerType,
+      workerPool: props.match.params.workerPool,
       provider: props.match.params.provider,
     },
   }),
@@ -43,7 +43,7 @@ export default class WMViewWorkers extends Component {
 
     return (
       <Dashboard
-        title={`Workers for ${this.props.match.params.workerType ||
+        title={`Workers for ${this.props.match.params.workerPool ||
           this.props.match.params.provider}`}
         search={
           <Search
