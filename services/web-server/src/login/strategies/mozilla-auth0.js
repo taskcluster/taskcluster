@@ -3,7 +3,6 @@ const Debug = require('debug');
 const request = require('superagent');
 const passport = require('passport');
 const Auth0Strategy = require('passport-auth0');
-const jwt = require('jsonwebtoken');
 const User = require('../User');
 const PersonAPI = require('../clients/PersonAPI');
 const WebServerError = require('../../utils/WebServerError');
@@ -11,6 +10,7 @@ const { encode, decode } = require('../../utils/codec');
 const identityFromClientId = require('../../utils/identityFromClientId');
 const verifyJwt = require('../../utils/verifyJwt');
 const tryCatch = require('../../utils/tryCatch');
+const login = require('../../utils/login');
 
 const debug = Debug('strategies.mozilla-auth0');
 
@@ -46,15 +46,15 @@ module.exports = class MozillaAuth0 {
         client_id: this.clientId,
         client_secret: this.clientSecret,
       });
-    const accessToken = JSON.parse(res.text).access_token;
+    const {
+      access_token: accessToken,
+      expires_in: expiresIn,
+    } = JSON.parse(res.text);
+    const expires = new Date().getTime() + (expiresIn * 1000);
 
     if (!accessToken) {
       throw new Error('did not receive a token from Auth0 /oauth/token endpoint');
     }
-
-    // Parse the token just enough to figure out when it expires.
-    const decoded = jwt.decode(accessToken);
-    const expires = decoded.exp;
 
     // Create a new
     this._personApi = new PersonAPI({ accessToken });
@@ -186,6 +186,7 @@ module.exports = class MozillaAuth0 {
   useStrategy(app, cfg) {
     const { credentials } = cfg.taskcluster;
     const strategyCfg = cfg.login.strategies['mozilla-auth0'];
+    const loginMiddleware = login(cfg.app.publicUrl);
 
     if (!credentials || !credentials.clientId || !credentials.accessToken) {
       throw new Error(
@@ -237,11 +238,7 @@ module.exports = class MozillaAuth0 {
     app.get(
       callback,
       passport.authenticate('auth0', { session: false }),
-      (request, response) => {
-        response.render('callback', {
-          user: request.user,
-        });
-      }
+      loginMiddleware
     );
   }
 };

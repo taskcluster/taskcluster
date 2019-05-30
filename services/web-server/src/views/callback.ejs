@@ -15,7 +15,7 @@
             identityProviderId: <%- JSON.stringify(user.identityProviderId) %>,
             accessToken: <%- JSON.stringify(user.accessToken) %>,
             providerExpires: <%- JSON.stringify(user.providerExpires) %>
-          }, window.opener.location);
+          }, <%- JSON.stringify(publicUrl) %>);
           window.close();
         }
       });
