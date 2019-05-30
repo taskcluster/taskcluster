@@ -207,10 +207,7 @@ export default class SecretForm extends Component {
           <Fragment>
             <Button
               spanProps={{
-                className: classNames(
-                  classes.fab,
-                  classes.saveSecretSpan
-                ),
+                className: classNames(classes.fab, classes.saveSecretSpan),
               }}
               tooltipProps={{ title: 'Save Secret' }}
               requiresAuth
