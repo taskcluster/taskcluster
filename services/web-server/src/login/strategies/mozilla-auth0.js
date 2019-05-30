@@ -19,7 +19,6 @@ module.exports = class MozillaAuth0 {
     const strategyCfg = cfg.login.strategies[name];
 
     assert(strategyCfg.domain, `${name}.domain is required`);
-    assert(strategyCfg.audience, `${name}.audience is required`);
     assert(strategyCfg.clientId, `${name}.clientId is required`);
     assert(strategyCfg.clientSecret, `${name}.clientSecret is required`);
     assert(strategyCfg.scope, `${name}.scope is required`);
@@ -41,7 +40,7 @@ module.exports = class MozillaAuth0 {
     const res = await request.post(`https://${this.domain}/oauth/token`)
       .set('content-type', 'application/json')
       .send({
-        audience: this.audience,
+        audience: 'api.sso.mozilla.com',
         grant_type: 'client_credentials',
         client_id: this.clientId,
         client_secret: this.clientSecret,
@@ -201,7 +200,6 @@ module.exports = class MozillaAuth0 {
           domain: strategyCfg.domain,
           clientID: strategyCfg.clientId,
           clientSecret: strategyCfg.clientSecret,
-          audience: strategyCfg.audience,
           scope: strategyCfg.scope,
           callbackURL: `${cfg.app.publicUrl}${callback}`,
           // The state parameter requires session support to be enabled.

@@ -120,8 +120,7 @@ UI_LOGIN_STRATEGIES='{
         "domain": "<auth0 subdomain>",
         "clientId": "<clientId from registration of client>",
         "clientSecret": "<clientSecret from registration of client>",
-        "audience": "api.sso.mozilla.com",
-        "scope": "display:all taskcluster-credentials openid profile"
+        "scope": "openid profile"
     }
 }'
 ```
@@ -130,7 +129,6 @@ or in `user-config.yml` as
 * `login.strategies.mozilla-auth0.domain`
 * `login.strategies.mozilla-auth0.clientId`
 * `login.strategies.mozilla-auth0.clientSecret`
-* `login.strategies.mozilla-auth0.audience`
 * `login.strategies.mozilla-auth0.scope`
 
 Now, start the service as you normally would.
