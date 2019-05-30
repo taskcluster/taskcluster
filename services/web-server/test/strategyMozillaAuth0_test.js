@@ -12,7 +12,6 @@ suite(testing.suiteName(), () => {
             domain: 'login-test.taskcluster.net',
             clientId: 'abcd',
             clientSecret: 'efgh',
-            scope: 'taskcluster',
           },
         },
       },

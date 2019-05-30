@@ -119,8 +119,7 @@ UI_LOGIN_STRATEGIES='{
     "mozilla-auth0": {
         "domain": "<auth0 subdomain>",
         "clientId": "<clientId from registration of client>",
-        "clientSecret": "<clientSecret from registration of client>",
-        "scope": "openid profile"
+        "clientSecret": "<clientSecret from registration of client>"
     }
 }'
 ```
