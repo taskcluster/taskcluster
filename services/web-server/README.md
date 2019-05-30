@@ -129,7 +129,6 @@ or in `user-config.yml` as
 * `login.strategies.mozilla-auth0.domain`
 * `login.strategies.mozilla-auth0.clientId`
 * `login.strategies.mozilla-auth0.clientSecret`
-* `login.strategies.mozilla-auth0.scope`
 
 Now, start the service as you normally would.
 

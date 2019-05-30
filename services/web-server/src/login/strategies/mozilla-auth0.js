@@ -21,7 +21,6 @@ module.exports = class MozillaAuth0 {
     assert(strategyCfg.domain, `${name}.domain is required`);
     assert(strategyCfg.clientId, `${name}.clientId is required`);
     assert(strategyCfg.clientSecret, `${name}.clientSecret is required`);
-    assert(strategyCfg.scope, `${name}.scope is required`);
 
     Object.assign(this, strategyCfg);
 
@@ -200,7 +199,7 @@ module.exports = class MozillaAuth0 {
           domain: strategyCfg.domain,
           clientID: strategyCfg.clientId,
           clientSecret: strategyCfg.clientSecret,
-          scope: strategyCfg.scope,
+          scope: 'openid profile',
           callbackURL: `${cfg.app.publicUrl}${callback}`,
           // The state parameter requires session support to be enabled.
           // We can't use cookies until we implement CORS and revisit the RRA.

@@ -42,7 +42,6 @@ defaults:
     #   domain: auth0 domain
     #   clientId: auth0 clientId
     #   clientSecret: auth0 accessToken corresponding to that ID
-    #   scope: (to be removed)
     #
     # github:
     #   # client id and secret for a Github OAuth2 application -- create a
