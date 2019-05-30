@@ -10,6 +10,7 @@ const { encode, decode } = require('../../utils/codec');
 const identityFromClientId = require('../../utils/identityFromClientId');
 const verifyJwt = require('../../utils/verifyJwt');
 const tryCatch = require('../../utils/tryCatch');
+const login = require('../../utils/login');
 
 const debug = Debug('strategies.mozilla-auth0');
 
@@ -47,8 +48,8 @@ module.exports = class MozillaAuth0 {
       });
     const {
       access_token: accessToken,
-      expires_in: expiresIn
-    }  = JSON.parse(res.text);
+      expires_in: expiresIn,
+    } = JSON.parse(res.text);
     const expires = new Date().getTime() + (expiresIn * 1000);
 
     if (!accessToken) {
@@ -185,6 +186,7 @@ module.exports = class MozillaAuth0 {
   useStrategy(app, cfg) {
     const { credentials } = cfg.taskcluster;
     const strategyCfg = cfg.login.strategies['mozilla-auth0'];
+    const loginMiddleware = login(cfg.app.publicUrl);
 
     if (!credentials || !credentials.clientId || !credentials.accessToken) {
       throw new Error(
@@ -236,12 +238,7 @@ module.exports = class MozillaAuth0 {
     app.get(
       callback,
       passport.authenticate('auth0', { session: false }),
-      (request, response) => {
-        response.render('callback', {
-          user: request.user,
-          publicUrl: cfg.app.publicUrl,
-        });
-      }
+      loginMiddleware
     );
   }
 };
