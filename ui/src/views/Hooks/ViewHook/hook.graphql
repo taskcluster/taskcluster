@@ -1,5 +1,9 @@
 query Hook($hookGroupId: ID!, $hookId: ID!) {
   hook(hookGroupId: $hookGroupId, hookId: $hookId) {
+    bindings {
+      exchange
+      routingKeyPattern
+    }
     hookGroupId
     hookId
     schedule
