@@ -39,17 +39,17 @@ const gcpConfig = {
     right: theme.spacing.unit * 11,
   },
 }))
-export default class WMWorkerTypeEditor extends Component {
+export default class WMWorkerPoolEditor extends Component {
   static defaultProps = {
-    isNewWorkerType: true,
+    isNewWorkerPool: true,
   };
 
   static propTypes = {
-    isNewWorkerType: bool,
+    isNewWorkerPool: bool,
   };
 
   state = {
-    workerType: {
+    workerPool: {
       name: '',
       description: '',
       owner: '',
@@ -62,7 +62,7 @@ export default class WMWorkerTypeEditor extends Component {
   };
 
   handleInputChange = ({ target: { name, value } }) => {
-    this.setState({ workerType: { ...this.state.workerType, [name]: value } });
+    this.setState({ workerPool: { ...this.state.workerPool, [name]: value } });
   };
 
   handleSwitchChange = event => {
@@ -71,41 +71,41 @@ export default class WMWorkerTypeEditor extends Component {
     } = event;
 
     this.setState({
-      workerType: {
-        ...this.state.workerType,
-        [value]: !this.state.workerType[value],
+      workerPool: {
+        ...this.state.workerPool,
+        [value]: !this.state.workerPool[value],
       },
     });
   };
 
   handleEditorChange = value => {
-    const { workerType } = this.state;
+    const { workerPool } = this.state;
 
     try {
-      workerType.config = JSON.parse(value);
+      workerPool.config = JSON.parse(value);
 
       this.setState({
-        workerType,
+        workerPool,
         invalidProviderConfig: false,
       });
     } catch (err) {
-      workerType.config = value;
+      workerPool.config = value;
 
       this.setState({
-        workerType,
+        workerPool,
         invalidProviderConfig: true,
       });
     }
   };
 
   render() {
-    const { isNewWorkerType, classes } = this.props;
-    const { workerType, invalidProviderConfig } = this.state;
+    const { isNewWorkerPool, classes } = this.props;
+    const { workerPool, invalidProviderConfig } = this.state;
 
     return (
       <Dashboard
         title={
-          isNewWorkerType
+          isNewWorkerPool
             ? 'Worker Manager: Create Worker Type'
             : 'Worker Manager: Edit Worker Type'
         }>
@@ -113,11 +113,11 @@ export default class WMWorkerTypeEditor extends Component {
           label="Enter Worker Type Name..."
           name="name"
           error={
-            Boolean(workerType.name) && !isWorkerTypeNameValid(workerType.name)
+            Boolean(workerPool.name) && !isWorkerTypeNameValid(workerPool.name)
           }
           onChange={this.handleInputChange}
           fullWidth
-          value={workerType.name}
+          value={workerPool.name}
           margin="normal"
         />
 
@@ -126,17 +126,17 @@ export default class WMWorkerTypeEditor extends Component {
           name="description"
           onChange={this.handleInputChange}
           fullWidth
-          value={workerType.description}
+          value={workerPool.description}
           margin="normal"
         />
 
         <TextField
           label="Enter Owner's Email..."
           name="owner"
-          error={Boolean(workerType.owner) && !workerType.owner.includes('@')}
+          error={Boolean(workerPool.owner) && !workerPool.owner.includes('@')}
           onChange={this.handleInputChange}
           fullWidth
-          value={workerType.owner}
+          value={workerPool.owner}
           margin="normal"
         />
 
@@ -144,7 +144,7 @@ export default class WMWorkerTypeEditor extends Component {
           <FormControlLabel
             control={
               <Switch
-                checked={workerType.wantsEmail}
+                checked={workerPool.wantsEmail}
                 onChange={this.handleSwitchChange}
                 value="wantsEmail"
               />
@@ -160,7 +160,7 @@ export default class WMWorkerTypeEditor extends Component {
             select
             label="Type:"
             helperText="Which service do you want to run your tasks in?"
-            value={workerType.providerType}
+            value={workerPool.providerType}
             name="providerType"
             onChange={this.handleInputChange}
             margin="normal">
@@ -169,7 +169,7 @@ export default class WMWorkerTypeEditor extends Component {
 
           <TextField
             label="Name:"
-            value={workerType.providerId}
+            value={workerPool.providerId}
             name="providerId"
             onChange={this.handleInputChange}
             margin="normal"
@@ -181,7 +181,7 @@ export default class WMWorkerTypeEditor extends Component {
             </ListItem>
             <ListItem>
               <CodeEditor
-                value={JSON.stringify(workerType.config, null, 2)}
+                value={JSON.stringify(workerPool.config, null, 2)}
                 onChange={this.handleEditorChange}
                 lint
               />
@@ -192,7 +192,7 @@ export default class WMWorkerTypeEditor extends Component {
           spanProps={{ className: classes.createIconSpan }}
           disabled={invalidProviderConfig}
           tooltipProps={{ title: 'Save' }}
-          onClick={this.handleCreateWorkerType}
+          onClick={this.handleCreateWorkerPool}
           classes={{ root: classes.successIcon }}
           variant="round">
           <CheckIcon />
