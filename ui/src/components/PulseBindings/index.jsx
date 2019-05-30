@@ -71,8 +71,6 @@ export default class PulseBindings extends Component {
       onChange,
     } = this.props;
 
-    console.log(bindings);
-
     return (
       <Fragment>
         <div className={classes.inputWrapper}>

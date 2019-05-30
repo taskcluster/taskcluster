@@ -51,6 +51,7 @@ type HookStatus {
 type Hook {
   hookGroupId: ID!
   hookId: ID!
+  bindings: [HookBinding]
   metadata: HookMetadata!
   schedule: [String]!
   task: JSON!
@@ -72,7 +73,12 @@ type DeleteHook {
   hookId: ID
 }
 
-input HookBinding {
+type HookBinding {
+  exchange: String!
+  routingKeyPattern: String!
+}
+
+input HookBindingInput {
   exchange: String!
   routingKeyPattern: String!
 }
@@ -82,7 +88,7 @@ input HookInput {
   schedule: [String]
   expires: String
   deadline: String
-  bindings: [HookBinding]
+  bindings: [HookBindingInput]
   task: JSON!
   triggerSchema: JSON
 }

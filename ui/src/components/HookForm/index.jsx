@@ -143,7 +143,6 @@ export default class HookForm extends Component {
   static defaultProps = {
     isNewHook: false,
     hook: initialHook,
-    bindings: [],
     hookLastFires: null,
     onTriggerHook: null,
     onCreateHook: null,
@@ -185,7 +184,6 @@ export default class HookForm extends Component {
     hookLastFires: null,
     routingKeyPattern: '#',
     pulseExchange: '',
-    bindings: [],
     // eslint-disable-next-line react/no-unused-state
     previousHook: null,
     taskInput: '',
@@ -233,7 +231,7 @@ export default class HookForm extends Component {
   }
 
   getHookDefinition = () => {
-    const { hook, bindings } = this.state;
+    const { hook } = this.state;
     const definition = {
       metadata: {
         name: hook.metadata.name,
@@ -241,7 +239,7 @@ export default class HookForm extends Component {
         owner: hook.metadata.owner,
         emailOnError: hook.metadata.emailOnError,
       },
-      bindings,
+      bindings: hook.bindings,
       schedule: hook.schedule,
       task: hook.task,
       triggerSchema: hook.triggerSchema,
@@ -383,7 +381,6 @@ export default class HookForm extends Component {
   validHook = () => {
     const {
       hook,
-      bindings,
       taskValidJson,
       triggerSchemaValidJson,
       validation,
@@ -394,8 +391,8 @@ export default class HookForm extends Component {
       hook.hookId &&
       hook.metadata.name &&
       hook.metadata.owner &&
-      bindings &&
-      bindings.length > 0 &&
+      hook.bindings &&
+      hook.bindings.length > 0 &&
       !validation.owner.error &&
       taskValidJson &&
       triggerSchemaValidJson
@@ -461,7 +458,7 @@ export default class HookForm extends Component {
 
   handleAddBinding = () => {
     const { pulseExchange, routingKeyPattern } = this.state;
-    const bindings = this.state.bindings.concat([
+    const bindings = this.state.hook.bindings.concat([
       {
         exchange: pulseExchange,
         routingKeyPattern,
@@ -471,19 +468,25 @@ export default class HookForm extends Component {
     this.setState({
       pulseExchange: '',
       routingKeyPattern: '#',
-      bindings,
+      hook: {
+        ...this.state.hook,
+        bindings,
+      },
     });
   };
 
   handleDeleteBinding = ({ exchange, routingKeyPattern }) => {
-    const bindings = this.state.bindings.filter(
+    const bindings = this.state.hook.bindings.filter(
       binding =>
         binding.exchange !== exchange ||
         binding.routingKeyPattern !== routingKeyPattern
     );
 
     this.setState({
-      bindings,
+      hook: {
+        ...this.state.hook,
+        bindings,
+      },
     });
   };
 
@@ -501,7 +504,6 @@ export default class HookForm extends Component {
     const {
       routingKeyPattern,
       pulseExchange,
-      bindings,
       scheduleTextField,
       taskInput,
       triggerSchemaInput,
@@ -512,8 +514,7 @@ export default class HookForm extends Component {
       drawerOpen,
       drawerData,
     } = this.state;
-    const isHookDirty =
-      !equals(hook, this.props.hook) || !equals(bindings, this.props.bindings);
+    const isHookDirty = !equals(hook, this.props.hook);
 
     return (
       <Fragment>
@@ -641,7 +642,7 @@ export default class HookForm extends Component {
           )}
           <PulseBindings
             patternName="routingKeyPattern"
-            bindings={bindings}
+            bindings={hook.bindings}
             onBindingAdd={this.handleAddBinding}
             onBindingRemove={this.handleDeleteBinding}
             onChange={this.handleInputChange}
