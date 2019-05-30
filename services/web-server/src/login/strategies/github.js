@@ -111,6 +111,7 @@ module.exports = class Github {
       (request, response) => {
         response.render('callback', {
           user: request.user,
+          publicUrl: cfg.app.publicUrl,
         });
       }
     );
