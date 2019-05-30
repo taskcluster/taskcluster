@@ -117,8 +117,6 @@ RUN mkdir -p /home/ubuntu/docker_worker
 RUN npm i -g yarn
 RUN cd /home/ubuntu/docker_worker && tar xzf /tmp/docker-worker.tgz -C . && yarn install --frozen-lockfile
 
-RUN ln -sf /usr/lib/systemd/system/docker-worker.service /etc/systemd/system/multi-user.target.wants/docker-worker.service
-
 COPY ./deploy/packet-net/docker-worker.service /lib/systemd/system/docker-worker.service
 RUN systemctl enable docker-worker
 
