@@ -1,0 +1,3 @@
+providerType: 'ec2'
+workerConfig:
+    x: 10
