@@ -9,7 +9,7 @@ import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import ListItem from '@material-ui/core/ListItem/ListItem';
 import Switch from '@material-ui/core/Switch/Switch';
 import { withStyles } from '@material-ui/core';
-import CheckIcon from 'mdi-react/CheckIcon';
+import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import List from '../../Documentation/components/List';
 import isWorkerTypeNameValid from '../../../utils/isWorkerTypeNameValid';
 import Button from '../../../components/Button';
@@ -216,7 +216,7 @@ export default class WMEditWorkerPool extends Component {
           onClick={this.handleCreateWorkerPool}
           classes={{ root: classes.successIcon }}
           variant="round">
-          <CheckIcon />
+          <ContentSaveIcon />
         </Button>
       </List>
     );
