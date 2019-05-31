@@ -27,12 +27,4 @@ export default class WorkerManagerEvents extends Client {
 
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
-  // Whenever the api receives a request to delete aworker pool, a message is posted to this exchange anda provider can act upon it.
-  /* eslint-enable max-len */
-  workerPoolDeleted(pattern) {
-    const entry = {"exchange":"worker-pool-deleted","name":"workerPoolDeleted","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-pool-message.json#","type":"topic-exchange"}; // eslint-disable-line
-
-    return this.normalizePattern(entry, pattern);
-  }
 }
