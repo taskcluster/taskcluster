@@ -84,7 +84,7 @@ export default class WorkerManagerWorkersTable extends Component {
       workerAge,
       quarantineUntil,
       recentErrors,
-      workerType,
+      workerPool,
     } = worker;
     const iconSize = 16;
 
@@ -197,7 +197,7 @@ export default class WorkerManagerWorkersTable extends Component {
           <TableCellListItem
             button
             component={Link}
-            to={`${path}/worker-types/${workerType}/workers/${workerGroup}/${workerId}/resources`}>
+            to={`${path}/worker-types/${workerPool}/workers/${workerGroup}/${workerId}/resources`}>
             <ListItemText
               disableTypography
               primary={<Typography>{`${recentErrors}`}</Typography>}

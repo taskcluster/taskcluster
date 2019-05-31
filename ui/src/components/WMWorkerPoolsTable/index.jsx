@@ -11,7 +11,7 @@ import { withRouter } from 'react-router-dom';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case';
 import { isEmpty, map, pipe, sort as rSort } from 'ramda';
-import { WorkerManagerWorkerTypeSummary } from '../../utils/prop-types';
+import { WorkerManagerWorkerPoolSummary } from '../../utils/prop-types';
 import DataTable from '../DataTable';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
@@ -19,9 +19,9 @@ import DateDistance from '../DateDistance';
 import TableCellListItem from '../TableCellListItem';
 
 @withRouter
-export default class WorkerManagerWorkerTypesTable extends Component {
+export default class WorkerManagerWorkerPoolsTable extends Component {
   static propTypes = {
-    workerTypes: arrayOf(WorkerManagerWorkerTypeSummary).isRequired,
+    workerPools: arrayOf(WorkerManagerWorkerPoolSummary).isRequired,
     searchTerm: string,
   };
 
@@ -30,18 +30,18 @@ export default class WorkerManagerWorkerTypesTable extends Component {
     sortDirection: null,
   };
 
-  sortWorkerTypes = memoize(
-    (workerTypes, sortBy, sortDirection, searchTerm) => {
+  sortWorkerPools = memoize(
+    (workerPools, sortBy, sortDirection, searchTerm) => {
       const sortByProperty = camelCase(sortBy);
-      const filteredWorkerTypes = searchTerm
-        ? workerTypes.filter(({ workerType }) =>
-            workerType.includes(searchTerm)
+      const filteredWorkerPools = searchTerm
+        ? workerPools.filter(({ workerPool }) =>
+            workerPool.includes(searchTerm)
           )
-        : workerTypes;
+        : workerPools;
 
-      return isEmpty(filteredWorkerTypes)
-        ? filteredWorkerTypes
-        : [...filteredWorkerTypes].sort((a, b) => {
+      return isEmpty(filteredWorkerPools)
+        ? filteredWorkerPools
+        : [...filteredWorkerPools].sort((a, b) => {
             const firstElement =
               sortDirection === 'desc' ? b[sortByProperty] : a[sortByProperty];
             const secondElement =
@@ -51,11 +51,11 @@ export default class WorkerManagerWorkerTypesTable extends Component {
           });
     },
     {
-      serializer: ([workerTypes, sortBy, sortDirection, searchTerm]) => {
+      serializer: ([workerPools, sortBy, sortDirection, searchTerm]) => {
         const ids = pipe(
-          rSort((a, b) => sort(a.workerType, b.workerType)),
-          map(({ workerType }) => workerType)
-        )(workerTypes);
+          rSort((a, b) => sort(a.workerPool, b.workerPool)),
+          map(({ workerPool }) => workerPool)
+        )(workerPools);
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}-${searchTerm}`;
       },
@@ -69,49 +69,49 @@ export default class WorkerManagerWorkerTypesTable extends Component {
     this.setState({ sortBy, sortDirection });
   };
 
-  renderRow = workerType => {
+  renderRow = workerPool => {
     const {
       match: { path },
     } = this.props;
     const iconSize = 16;
 
     return (
-      <TableRow key={workerType.workerType}>
+      <TableRow key={workerPool.workerPool}>
         <TableCell>
           <TableCellListItem
             button
             component={Link}
-            to={`${path}/worker-types/${workerType.workerType}`}>
+            to={`${path}/worker-pools/${workerPool.workerPool}`}>
             <ListItemText
               disableTypography
-              primary={<Typography>{workerType.workerType}</Typography>}
+              primary={<Typography>{workerPool.workerPool}</Typography>}
             />
             <LinkIcon size={iconSize} />
           </TableCellListItem>
         </TableCell>
 
         <TableCell>
-          <Typography>{workerType.pendingCapacity}</Typography>
+          <Typography>{workerPool.pendingCapacity}</Typography>
         </TableCell>
 
         <TableCell>
-          <Typography>{workerType.runningCapacity}</Typography>
+          <Typography>{workerPool.runningCapacity}</Typography>
         </TableCell>
 
         <TableCell>
-          <Typography>{workerType.pendingTasks}</Typography>
+          <Typography>{workerPool.pendingTasks}</Typography>
         </TableCell>
 
         <CopyToClipboard
-          title={`${workerType.lastActive} (Copy)`}
-          text={workerType.lastActive}>
+          title={`${workerPool.lastActive} (Copy)`}
+          text={workerPool.lastActive}>
           <TableCell>
             <TableCellListItem button>
               <ListItemText
                 disableTypography
                 primary={
                   <Typography>
-                    <DateDistance from={workerType.lastActive} />
+                    <DateDistance from={workerPool.lastActive} />
                   </Typography>
                 }
               />
@@ -121,15 +121,15 @@ export default class WorkerManagerWorkerTypesTable extends Component {
         </CopyToClipboard>
 
         <CopyToClipboard
-          title={`${workerType.lastResolved} (Copy)`}
-          text={workerType.lastResolved}>
+          title={`${workerPool.lastResolved} (Copy)`}
+          text={workerPool.lastResolved}>
           <TableCell>
             <TableCellListItem button>
               <ListItemText
                 disableTypography
                 primary={
                   <Typography>
-                    <DateDistance from={workerType.lastResolved} />
+                    <DateDistance from={workerPool.lastResolved} />
                   </Typography>
                 }
               />
@@ -139,25 +139,25 @@ export default class WorkerManagerWorkerTypesTable extends Component {
         </CopyToClipboard>
 
         <TableCell>
-          <Typography>{workerType.failed}</Typography>
+          <Typography>{workerPool.failed}</Typography>
         </TableCell>
 
         <TableCell>
-          <Typography>{workerType.exception}</Typography>
+          <Typography>{workerPool.exception}</Typography>
         </TableCell>
 
         <TableCell>
-          <Typography>{workerType.unscheduled}</Typography>
+          <Typography>{workerPool.unscheduled}</Typography>
         </TableCell>
 
         <TableCell>
           <TableCellListItem
             button
             component={Link}
-            to={`${path}/providers/${workerType.provider}`}>
+            to={`${path}/providers/${workerPool.provider}`}>
             <ListItemText
               disableTypography
-              primary={<Typography>{workerType.provider}</Typography>}
+              primary={<Typography>{workerPool.provider}</Typography>}
             />
             <LinkIcon size={iconSize} />
           </TableCellListItem>
@@ -167,10 +167,10 @@ export default class WorkerManagerWorkerTypesTable extends Component {
   };
 
   render() {
-    const { workerTypes, searchTerm } = this.props;
+    const { workerPools, searchTerm } = this.props;
     const { sortBy, sortDirection } = this.state;
-    const sortedWorkerTypes = this.sortWorkerTypes(
-      workerTypes,
+    const sortedWorkerPools = this.sortWorkerPools(
+      workerPools,
       sortBy,
       sortDirection,
       searchTerm
@@ -178,9 +178,9 @@ export default class WorkerManagerWorkerTypesTable extends Component {
 
     return (
       <DataTable
-        items={sortedWorkerTypes}
+        items={sortedWorkerPools}
         headers={[
-          'Worker Type',
+          'Worker Pool',
           'Pending Tasks',
           'Running Capacity',
           'Pending Capacity',

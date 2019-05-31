@@ -1,5 +1,5 @@
-type WorkerManagerWorkerTypeSummary {
-    workerType: String!
+type WorkerManagerWorkerPoolSummary {
+    workerPool: String!
     description: String
     owner: String!
     minCapacity: Int!
@@ -27,13 +27,13 @@ type WorkerManagerWorker {
     recentErrors: Int
 
     providerId: String!
-    workerType: String!
+    workerPool: String!
 }
 
 extend type Query {
-    WorkerManagerWorkerTypeSummaries(filter: JSON): [WorkerManagerWorkerTypeSummary]
+    WorkerManagerWorkerPoolSummaries(filter: JSON): [WorkerManagerWorkerPoolSummary]
 }
 
 extend type Query {
-    WorkerManagerWorkers(workerType: String, provider: String, isQuarantined: Boolean): [WorkerManagerWorker]
+    WorkerManagerWorkers(workerPool: String, provider: String, isQuarantined: Boolean): [WorkerManagerWorker]
 }
