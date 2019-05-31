@@ -6,7 +6,7 @@ import (
 	"os"
 
 	docopt "github.com/docopt/docopt-go"
-	"github.com/taskcluster/taskcluster-worker-startup/cfg"
+	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 )
 
 func usage() string {

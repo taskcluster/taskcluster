@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster-worker-startup/cfg"
+	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 )
 
 func TestLoadConfig(t *testing.T) {
