@@ -1,7 +1,7 @@
 # GENERATED FILE from `yarn generate`! To update, change procs.yml and regenerate.
 
 web: cd services/worker-manager && node src/main.js server
-provisioner: cd services/worker-manager && node src/main.js provisioner
+provisioner: cd services/worker-manager && node src/main.js runProvisioner
 workerscanner: cd services/worker-manager && node src/main.js workerScanner
 expire-workers: cd services/worker-manager && node src/main.js expireWorkers
 expire-worker-pools: cd services/worker-manager && node src/main.js expireWorkerPools

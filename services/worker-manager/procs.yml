@@ -3,7 +3,7 @@ web:
   command: node src/main.js server
 provisioner:
   type: background
-  command: node src/main.js provisioner
+  command: node src/main.js runProvisioner
 workerscanner:
   type: background
   command: node src/main.js workerScanner
