@@ -314,6 +314,42 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     throw new Error('allowed fetch of credentials from wrong worker!');
   });
 
+  test('credentials google (but invalid providerId)', async function() {
+    const workerPoolId = 'pp/ee';
+    await helper.Worker.create({
+      workerPoolId,
+      workerGroup: 'google',
+      workerId: 'gcp',
+      providerId: 'NO-SUCH',
+      created: new Date(),
+      expires: taskcluster.fromNow('1 hour'),
+      state: helper.Worker.states.REQUESTED,
+      providerData: {},
+    });
+    await helper.WorkerPool.create({
+      workerPoolId,
+      providerId: 'NO-SUCH',
+      previousProviderIds: ['NO-SUCH'],
+      description: '',
+      created: new Date(),
+      lastModified: new Date(),
+      config: {},
+      owner: 'me@example.com',
+      emailOnError: false,
+      providerData: {},
+    });
+
+    try {
+      await helper.workerManager.credentialsGoogle(workerPoolId, {token: 'abc'});
+    } catch (err) {
+      if (err.code !== 'InputError') {
+        throw err;
+      }
+      return;
+    }
+    throw new Error('allowed fetch of credentials from wrong worker!');
+  });
+
   test('credentials google (but wrong worker pool)', async function() {
     const workerPoolId = 'pp/ee';
     await helper.Worker.create({

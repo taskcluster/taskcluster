@@ -231,7 +231,15 @@ builder.declare({
 
   try {
     const workerPool = await this.WorkerPool.load({workerPoolId});
-    return res.reply(await this.providers.get(workerPool.providerId).verifyIdToken({
+    const provider = this.providers.get(workerPool.providerId);
+
+    if (!provider) {
+      return res.reportError('InputError', 'Invalid Provider', {
+        providerId: workerPool.providerId,
+      });
+    }
+
+    return res.reply(await provider.verifyIdToken({
       token: req.body.token,
       workerPool,
     }));

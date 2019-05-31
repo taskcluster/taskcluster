@@ -48,8 +48,10 @@ exports.withProvisioner = (mock, skipping) => {
     }
     exports.initiateProvisioner = async () => {
       provisioner = await exports.load('provisioner');
-      // remove it right away, as it is started on load
+      // remove it right away, so it will be re-created next time
       exports.load.remove('provisioner');
+
+      await provisioner.initiate();
       return provisioner;
     };
     exports.terminateProvisioner = async () => {

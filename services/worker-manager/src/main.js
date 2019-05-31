@@ -193,7 +193,7 @@ let load = loader({
   provisioner: {
     requires: ['cfg', 'monitor', 'WorkerPool', 'providers', 'notify', 'pulseClient', 'reference'],
     setup: async ({cfg, monitor, WorkerPool, providers, notify, pulseClient, reference}) => {
-      const provisioner = new Provisioner({
+      return new Provisioner({
         monitor: monitor.childMonitor('provisioner'),
         WorkerPool,
         providers,
@@ -202,9 +202,12 @@ let load = loader({
         reference,
         rootUrl: cfg.taskcluster.rootUrl,
       });
-      await provisioner.initiate();
-      return provisioner;
     },
+  },
+
+  runProvisioner: {
+    requires: ['provisioner'],
+    setup: async ({provisioner}) => await provisioner.initiate(),
   },
 
   workerScanner: {

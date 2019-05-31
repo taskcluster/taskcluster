@@ -68,7 +68,13 @@ class Provisioner {
   async onMessage({exchange, payload}) {
     const {workerPoolId, providerId, previousProviderId} = payload;
     const workerPool = await this.WorkerPool.load({workerPoolId});
-    const provider = this.providers.get(providerId); // Always have a provider
+    const provider = this.providers.get(providerId);
+
+    if (!provider) {
+      // ignore messages for unknown providers
+      return;
+    }
+
     switch (exchange.split('/').pop()) {
       case 'worker-pool-created': {
         await provider.createResources({workerPool});
@@ -78,9 +84,10 @@ class Provisioner {
         if (providerId === previousProviderId) {
           await provider.updateResources({workerPool});
         } else {
+          const previousProvider = this.providers.get(previousProviderId);
           await Promise.all([
             provider.createResources({workerPool}),
-            this.providers.get(previousProviderId).removeResources({workerPool}),
+            previousProvider && previousProvider.removeResources({workerPool}),
           ]);
         }
         break;
@@ -105,11 +112,23 @@ class Provisioner {
     await this.WorkerPool.scan({}, {
       handler: async workerPool => {
         const provider = this.providers.get(workerPool.providerId);
+        if (!provider) {
+          this.monitor.warning(
+            `Worker pool ${workerPool.workerPoolId} has unknown providerId ${workerPool.providerId}`);
+          return;
+        }
 
         await provider.provision({workerPool});
 
         await Promise.all(workerPool.previousProviderIds.map(async pId => {
-          await this.providers.get(pId).deprovision({workerPool});
+          const provider = this.providers.get(pId);
+          if (!provider) {
+            this.monitor.info(
+              `Worker pool ${workerPool.workerPoolId} has unknown previousProviderIds entry ${pId} (ignoring)`);
+            return;
+          }
+
+          await provider.deprovision({workerPool});
         }));
 
         this.monitor.log.workerPoolProvisioned({
