@@ -2,7 +2,6 @@ import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
-import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../../components/Dashboard';
 import SecretForm from '../../../components/SecretForm';
 import HelpView from '../../../components/HelpView';
@@ -78,14 +77,7 @@ export default class ViewSecret extends Component {
     return (
       <Dashboard
         title="Secrets"
-        helpView={
-          <HelpView description={description}>
-            <Typography>
-              Secrets starting with <code>garbage/</code> are visible to just
-              about everybody. Use them to experiment, but not for real secrets!
-            </Typography>
-          </HelpView>
-        }>
+        helpView={<HelpView description={description} />}>
         <ErrorPanel fixed error={error} />
         {isNewSecret ? (
           <SecretForm
