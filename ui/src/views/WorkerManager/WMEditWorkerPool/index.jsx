@@ -39,6 +39,15 @@ const providers = {
     ...theme.mixins.actionButton,
     right: theme.spacing.unit * 11,
   },
+  editorListItem: {
+    paddingTop: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'start',
+    '&> :last-child': {
+      marginTop: theme.spacing.unit,
+    },
+  },
 }))
 export default class WMEditWorkerPool extends Component {
   static defaultProps = {
@@ -112,10 +121,9 @@ export default class WMEditWorkerPool extends Component {
             ? 'Worker Manager: Create Worker Pool'
             : 'Worker Manager: Edit Worker Pool'
         }>
-        <ListItem>
+        <ListItem className={classes.editorListItem}>
           <TextField
-            label="Worker Pool"
-            placeholder="Enter Worker Pool Name..."
+            label="Name"
             name="name"
             error={
               Boolean(workerPool.name) &&
@@ -128,9 +136,9 @@ export default class WMEditWorkerPool extends Component {
           />
         </ListItem>
 
-        <ListItem>
+        <ListItem className={classes.editorListItem}>
           <TextField
-            label="Enter Worker Pool Description..."
+            label="Description"
             name="description"
             onChange={this.handleInputChange}
             fullWidth
@@ -139,9 +147,9 @@ export default class WMEditWorkerPool extends Component {
           />
         </ListItem>
 
-        <ListItem>
+        <ListItem className={classes.editorListItem}>
           <TextField
-            label="Enter Owner's Email..."
+            label="Owner's Email"
             name="owner"
             error={Boolean(workerPool.owner) && !workerPool.owner.includes('@')}
             onChange={this.handleInputChange}
@@ -151,7 +159,7 @@ export default class WMEditWorkerPool extends Component {
           />
         </ListItem>
 
-        <ListItem>
+        <ListItem className={classes.editorListItem}>
           <FormControlLabel
             control={
               <Switch
@@ -164,7 +172,7 @@ export default class WMEditWorkerPool extends Component {
           />
         </ListItem>
 
-        <ListItem>
+        <ListItem className={classes.editorListItem}>
           <FormLabel component="provider">Provider:</FormLabel>
         </ListItem>
         <List>
@@ -186,9 +194,9 @@ export default class WMEditWorkerPool extends Component {
             </TextField>
           </ListItem>
 
-          <ListItem>
+          <ListItem className={classes.editorListItem}>
             <TextField
-              label="Name:"
+              label="Name"
               value={workerPool.providerId}
               name="providerId"
               onChange={this.handleInputChange}
@@ -197,10 +205,10 @@ export default class WMEditWorkerPool extends Component {
           </ListItem>
         </List>
 
-        <ListItem>
+        <ListItem className={classes.editorListItem}>
           <FormLabel component="config">Configuration:</FormLabel>
         </ListItem>
-        <ListItem>
+        <ListItem className={classes.editorListItem}>
           <CodeEditor
             value={JSON.stringify(workerPool.config, null, 2)}
             onChange={this.handleEditorChange}
