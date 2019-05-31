@@ -18,14 +18,14 @@ export default path => [
     description: 'Create a worker pool',
   },
   {
-    component: WMWorkerPoolEditor,
-    path: `${path}/:workerPool/edit`,
-    description: 'Edit the worker pool',
-  },
-  {
     component: WorkerManagerViewWorkers,
     path: `${path}/worker-types/:workerType`,
     description: 'View workers for that specific worker type',
+  },
+  {
+    component: WMWorkerPoolEditor,
+    path: `${path}/:workerPool/edit`,
+    description: 'Edit the worker pool',
   },
   {
     component: WorkerManagerViewWorkers,

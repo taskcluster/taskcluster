@@ -1,7 +1,6 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
-import { withRouter } from 'react-router-dom';
 import PlusIcon from 'mdi-react/PlusIcon';
 import { withStyles } from '@material-ui/core';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
@@ -14,7 +13,6 @@ import Button from '../../../components/Button';
 
 @hot(module)
 @graphql(workerTypesQuery)
-@withRouter
 @withStyles(theme => ({
   createIcon: {
     ...theme.mixins.successIcon,
@@ -67,7 +65,7 @@ export default class WorkerManagerWorkerTypesView extends Component {
           <Button
             spanProps={{ className: classes.createIconSpan }}
             tooltipProps={{ title: 'Create Worker Pool' }}
-            requiresAuth
+            // requiresAuth
             variant="round"
             className={classes.createIcon}
             onClick={this.handleCreate}>

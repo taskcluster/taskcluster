@@ -2,7 +2,6 @@ import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { bool } from 'prop-types';
 import TextField from '@material-ui/core/TextField/TextField';
-import FormGroup from '@material-ui/core/FormGroup/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel/FormControlLabel';
 import FormLabel from '@material-ui/core/FormLabel/FormLabel';
 import MenuItem from '@material-ui/core/MenuItem/MenuItem';
@@ -13,7 +12,6 @@ import { withStyles } from '@material-ui/core';
 import CheckIcon from 'mdi-react/CheckIcon';
 import List from '../../Documentation/components/List';
 import isWorkerTypeNameValid from '../../../utils/isWorkerTypeNameValid';
-import Dashboard from '../../../components/Dashboard';
 import Button from '../../../components/Button';
 
 const gcpConfig = {
@@ -27,6 +25,9 @@ const gcpConfig = {
   networkInterfaces: [{}],
   disks: [{}],
 };
+const providers = {
+  GCP: 'google',
+};
 
 @hot(module)
 @withStyles(theme => ({
@@ -39,7 +40,7 @@ const gcpConfig = {
     right: theme.spacing.unit * 11,
   },
 }))
-export default class WMWorkerPoolEditor extends Component {
+export default class WMEditWorkerPool extends Component {
   static defaultProps = {
     isNewWorkerPool: true,
   };
@@ -54,7 +55,7 @@ export default class WMWorkerPoolEditor extends Component {
       description: '',
       owner: '',
       wantsEmail: false,
-      providerType: 'gcp',
+      providerType: providers.GCP,
       providerId: '',
       config: gcpConfig,
     },
@@ -103,44 +104,51 @@ export default class WMWorkerPoolEditor extends Component {
     const { workerPool, invalidProviderConfig } = this.state;
 
     return (
-      <Dashboard
+      <List
         title={
           isNewWorkerPool
-            ? 'Worker Manager: Create Worker Type'
-            : 'Worker Manager: Edit Worker Type'
+            ? 'Worker Manager: Create Worker Pool'
+            : 'Worker Manager: Edit Worker Pool'
         }>
-        <TextField
-          label="Enter Worker Type Name..."
-          name="name"
-          error={
-            Boolean(workerPool.name) && !isWorkerTypeNameValid(workerPool.name)
-          }
-          onChange={this.handleInputChange}
-          fullWidth
-          value={workerPool.name}
-          margin="normal"
-        />
+        <ListItem>
+          <TextField
+            label="Enter Worker Pool Name..."
+            name="name"
+            error={
+              Boolean(workerPool.name) &&
+              !isWorkerTypeNameValid(workerPool.name)
+            }
+            onChange={this.handleInputChange}
+            fullWidth
+            value={workerPool.name}
+            margin="normal"
+          />
+        </ListItem>
 
-        <TextField
-          label="Enter Worker Type Description..."
-          name="description"
-          onChange={this.handleInputChange}
-          fullWidth
-          value={workerPool.description}
-          margin="normal"
-        />
+        <ListItem>
+          <TextField
+            label="Enter Worker Pool Description..."
+            name="description"
+            onChange={this.handleInputChange}
+            fullWidth
+            value={workerPool.description}
+            margin="normal"
+          />
+        </ListItem>
 
-        <TextField
-          label="Enter Owner's Email..."
-          name="owner"
-          error={Boolean(workerPool.owner) && !workerPool.owner.includes('@')}
-          onChange={this.handleInputChange}
-          fullWidth
-          value={workerPool.owner}
-          margin="normal"
-        />
+        <ListItem>
+          <TextField
+            label="Enter Owner's Email..."
+            name="owner"
+            error={Boolean(workerPool.owner) && !workerPool.owner.includes('@')}
+            onChange={this.handleInputChange}
+            fullWidth
+            value={workerPool.owner}
+            margin="normal"
+          />
+        </ListItem>
 
-        <FormGroup>
+        <ListItem>
           <FormControlLabel
             control={
               <Switch
@@ -149,55 +157,64 @@ export default class WMWorkerPoolEditor extends Component {
                 value="wantsEmail"
               />
             }
-            label="Receive emails about errors"
+            label="Email the owner about errors"
           />
-        </FormGroup>
+        </ListItem>
 
-        <FormGroup classes={classes.group}>
+        <ListItem>
           <FormLabel component="provider">Provider:</FormLabel>
-          <TextField
-            id="select-provider-type"
-            select
-            label="Type:"
-            helperText="Which service do you want to run your tasks in?"
-            value={workerPool.providerType}
-            name="providerType"
-            onChange={this.handleInputChange}
-            margin="normal">
-            <MenuItem value="gcp">GCP</MenuItem>
-          </TextField>
+        </ListItem>
+        <List>
+          <ListItem>
+            <TextField
+              id="select-provider-type"
+              select
+              label="Type:"
+              helperText="Which service do you want to run your tasks in?"
+              value={workerPool.providerType}
+              name="providerType"
+              onChange={this.handleInputChange}
+              margin="normal">
+              {Object.keys(providers).map(p => (
+                <MenuItem key={p} value={p}>
+                  {p}
+                </MenuItem>
+              ))}
+            </TextField>
+          </ListItem>
 
-          <TextField
-            label="Name:"
-            value={workerPool.providerId}
-            name="providerId"
-            onChange={this.handleInputChange}
-            margin="normal"
+          <ListItem>
+            <TextField
+              label="Name:"
+              value={workerPool.providerId}
+              name="providerId"
+              onChange={this.handleInputChange}
+              margin="normal"
+            />
+          </ListItem>
+        </List>
+
+        <ListItem>
+          <FormLabel component="config">Configuration:</FormLabel>
+        </ListItem>
+        <ListItem>
+          <CodeEditor
+            value={JSON.stringify(workerPool.config, null, 2)}
+            onChange={this.handleEditorChange}
+            lint
           />
+        </ListItem>
 
-          <List>
-            <ListItem>
-              <FormLabel component="config">Configuration:</FormLabel>
-            </ListItem>
-            <ListItem>
-              <CodeEditor
-                value={JSON.stringify(workerPool.config, null, 2)}
-                onChange={this.handleEditorChange}
-                lint
-              />
-            </ListItem>
-          </List>
-        </FormGroup>
         <Button
           spanProps={{ className: classes.createIconSpan }}
           disabled={invalidProviderConfig}
-          tooltipProps={{ title: 'Save' }}
+          tooltipProps={{ title: 'Save Worker Pool' }}
           onClick={this.handleCreateWorkerPool}
           classes={{ root: classes.successIcon }}
           variant="round">
           <CheckIcon />
         </Button>
-      </Dashboard>
+      </List>
     );
   }
 }
