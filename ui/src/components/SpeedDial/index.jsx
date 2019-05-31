@@ -56,10 +56,9 @@ export default class SpeedDial extends Component {
         icon={
           <SpeedDialIcon icon={<DotsVerticalIcon />} openIcon={<CloseIcon />} />
         }
-        ButtonProps={{ color: 'secondary' }}
+        ButtonProps={{ color: 'secondary', onClick: this.handleClick }}
         className={classNames(classes.speedDial, className)}
         onBlur={this.handleClose}
-        onClick={this.handleClick}
         onClose={this.handleClose}
         onFocus={this.handleOpen}
         onMouseEnter={this.handleOpen}
