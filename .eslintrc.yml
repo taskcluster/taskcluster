@@ -12,7 +12,6 @@ parserOptions:
 
 rules:
   # These seem like good ideas on top of the recommended settings
-  require-atomic-updates: error
   array-callback-return: error
   curly: error
   guard-for-in: error
@@ -73,3 +72,6 @@ rules:
   no-console: off # We don't mind these being used for now until structured logging is available
   no-constant-condition: off # This is legitimately sometimes useful
   no-useless-escape: off # This isn't such a big deal and sometimes improves readability
+
+  # this seems to have a lot of false positives
+  require-atomic-updates: off
