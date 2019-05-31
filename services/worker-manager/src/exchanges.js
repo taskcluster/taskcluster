@@ -6,9 +6,10 @@ const exchanges = new Exchanges({
   serviceName: 'worker-manager',
   apiVersion: 'v1',
   description: [
-    'These exchanges provide notifications when a worker pool is created, updated',
-    'or deleted. This is so that the listener running in a different',
-    'process at the other end can synchronize its bindings. But you are of',
+    'These exchanges provide notifications when a worker pool is created or updated.',
+    '',
+    'This is so that the provisioner running in a different',
+    'process at the other end can synchronize to the changes. But you are of',
     'course welcome to use these for other purposes, monitoring changes for example.',
   ].join(''),
 });
@@ -54,30 +55,12 @@ exchanges.declare({
   CCBuilder: () => [],
 });
 
-// Hook updated exchange
 exchanges.declare({
   exchange: 'worker-pool-updated',
   name: 'workerPoolUpdated',
   title: 'Worker Pool Updated Messages',
   description: [
     'Whenever the api receives a request to update a',
-    'worker pool, a message is posted to this exchange and',
-    'a provider can act upon it.',
-  ].join(''),
-  schema: 'pulse-worker-pool-message.yml',
-  messageBuilder: commonMessageBuilder,
-  routingKey: buildCommonRoutingKey(),
-  routingKeyBuilder: () => '',
-  CCBuilder: () => [],
-});
-
-// Hook deleted exchange
-exchanges.declare({
-  exchange: 'worker-pool-deleted',
-  name: 'workerPoolDeleted',
-  title: 'Worker Pool Deleted Messages',
-  description: [
-    'Whenever the api receives a request to delete a',
     'worker pool, a message is posted to this exchange and',
     'a provider can act upon it.',
   ].join(''),

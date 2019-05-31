@@ -17,7 +17,6 @@ class Provisioner {
     this.bindings = [
       workerManagerEvents.workerPoolCreated(),
       workerManagerEvents.workerPoolUpdated(),
-      workerManagerEvents.workerPoolDeleted(),
     ];
 
     this.iterate = new Iterate({
@@ -83,11 +82,6 @@ class Provisioner {
             this.providers.get(previousProviderId).removeResources({workerPool}),
           ]);
         }
-        break;
-      }
-      case 'worker-pool-deleted': {
-        await provider.removeResources({workerPool});
-        await workerPool.remove(); // This is now gone for real
         break;
       }
       default: throw new Error(`Unknown exchange: ${exchange}`);

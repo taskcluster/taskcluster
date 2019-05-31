@@ -197,23 +197,5 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         Fields: {workerPoolId: 'pp/foo'},
       });
     });
-
-    test('worker pool deleted', async function() {
-      await helper.fakePulseMessage({
-        payload: {
-          workerPoolId: 'pp/foo',
-          providerId: 'testing1',
-        },
-        exchange: 'exchange/taskcluster-worker-manager/v1/worker-pool-deleted',
-        routingKey: 'primary.#',
-        routes: [],
-      });
-      assert.deepEqual(monitorManager.messages.find(msg => msg.Type === 'remove-resource'), {
-        Logger: 'taskcluster.worker-manager.testing1',
-        Type: 'remove-resource',
-        Severity: LEVELS.notice,
-        Fields: {workerPoolId: 'pp/foo'},
-      });
-    });
   });
 });
