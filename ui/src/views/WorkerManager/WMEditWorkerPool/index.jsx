@@ -99,6 +99,8 @@ export default class WMEditWorkerPool extends Component {
     }
   };
 
+  handleCreateWorkerPool = () => {};
+
   render() {
     const { isNewWorkerPool, classes } = this.props;
     const { workerPool, invalidProviderConfig } = this.state;
@@ -112,7 +114,8 @@ export default class WMEditWorkerPool extends Component {
         }>
         <ListItem>
           <TextField
-            label="Enter Worker Pool Name..."
+            label="Worker Pool"
+            placeholder="Enter Worker Pool Name..."
             name="name"
             error={
               Boolean(workerPool.name) &&
@@ -208,6 +211,7 @@ export default class WMEditWorkerPool extends Component {
         <Button
           spanProps={{ className: classes.createIconSpan }}
           disabled={invalidProviderConfig}
+          requiresAuth
           tooltipProps={{ title: 'Save Worker Pool' }}
           onClick={this.handleCreateWorkerPool}
           classes={{ root: classes.successIcon }}
