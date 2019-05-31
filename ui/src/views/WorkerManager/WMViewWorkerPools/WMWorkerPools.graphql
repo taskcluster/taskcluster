@@ -1,6 +1,6 @@
-query workerTypes {
-  WorkerManagerWorkerTypeSummaries {
-    workerType
+query workerPools {
+  WorkerManagerWorkerPoolSummaries {
+    workerPool
     pendingCapacity
     runningCapacity
     pendingTasks

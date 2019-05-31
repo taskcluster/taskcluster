@@ -8,6 +8,21 @@ const WorkerPool = Entity.configure({
   partitionKey: Entity.keys.StringKey('workerPoolId'),
   rowKey: Entity.keys.ConstantKey('workerPool'),
   properties: {
+    workerPoolId: Entity.types.String,
+    providerId: Entity.types.String,
+    previousProviderIds: Entity.types.JSON,
+    description: Entity.types.String,
+    scheduledForDeletion: Entity.types.Boolean,
+    created: Entity.types.Date,
+    lastModified: Entity.types.Date,
+    config: Entity.types.JSON,
+    owner: Entity.types.String,
+    emailOnError: Entity.types.Boolean,
+    providerData: Entity.types.JSON,
+  },
+}).configure({
+  version: 2,
+  properties: {
     // A unique name for this worker pool. This is a workerPoolId, so must be
     // of the form `<provisionerId>/<workerType>`
     workerPoolId: Entity.types.String,
@@ -22,9 +37,6 @@ const WorkerPool = Entity.configure({
 
     // A useful human-readable description of what this workerPool is for
     description: Entity.types.String,
-
-    // If this is true, a provider should clean up any resources with this and then delete it
-    scheduledForDeletion: Entity.types.Boolean,
 
     // A timestamp of when this workerPool was initially created
     created: Entity.types.Date,
@@ -46,6 +58,9 @@ const WorkerPool = Entity.configure({
     // Providers can use this to remember values between provisioning runs
     providerData: Entity.types.JSON,
   },
+  migrate(item) {
+    delete item.scheduledForDeletion;
+  },
 });
 
 WorkerPool.prototype.serializable = function() {
@@ -56,7 +71,6 @@ WorkerPool.prototype.serializable = function() {
     created: this.created.toJSON(),
     lastModified: this.lastModified.toJSON(),
     config: this.config,
-    scheduledForDeletion: this.scheduledForDeletion,
     owner: this.owner,
     emailOnError: this.emailOnError,
   };
@@ -70,11 +84,24 @@ WorkerPool.prototype.compare = function(other) {
     'created',
     'lastModified',
     'config',
-    'scheduledForDeletion',
     'owner',
     'emailOnError',
   ];
   return _.isEqual(_.pick(other, fields), _.pick(this, fields));
+};
+
+WorkerPool.expire = async function(monitor) {
+  // delete any worker pools with providerId `null` and no other
+  // previousProviderIds
+  await this.scan({}, {
+    limit: 500,
+    handler: async item => {
+      if (item.providerId === 'null-provider' && item.previousProviderIds.length === 0) {
+        monitor.info(`deleting worker pool ${item.workerPoolId}`);
+        await item.remove();
+      }
+    },
+  });
 };
 
 WorkerPool.prototype.reportError = async function({kind, title, description, extra={}, notify}) {
@@ -156,7 +183,7 @@ WorkerPoolError.prototype.serializable = function() {
   };
 };
 
-WorkerPoolError.expire = async (threshold) => {
+WorkerPoolError.expire = async function(threshold) {
   await this.scan({
     reported: Entity.op.lessThan(threshold),
   }, {
@@ -209,12 +236,13 @@ Worker.states = {
   STOPPED: 'stopped',
 };
 
-Worker.expire = async () => {
+Worker.expire = async function(monitor) {
   await this.scan({
     expires: Entity.op.lessThan(new Date()),
   }, {
     limit: 500,
     handler: async item => {
+      monitor.info(`deleting expired worker ${item.workerGroup}/${item.workerId}`);
       await item.remove();
     },
   });

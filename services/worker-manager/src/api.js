@@ -71,7 +71,6 @@ builder.declare({
     owner: input.owner,
     emailOnError: input.emailOnError,
     providerData: {},
-    scheduledForDeletion: false,
   };
 
   try {
@@ -103,7 +102,13 @@ builder.declare({
     'worker-manager:provider:<providerId>',
   ]},
   description: [
-    'Given an existing worker pool definition, this will modify it and return the new definition.',
+    'Given an existing worker pool definition, this will modify it and return',
+    'the new definition.',
+    '',
+    'To delete a worker pool, set its `providerId` to `"null-provider"`.',
+    'After any existing workers have exited, a cleanup job will remove the',
+    'worker pool.  During that time, the worker pool can be updated again, such',
+    'as to set its `providerId` to a real provider.',
   ].join('\n'),
 }, async function(req, res) {
   const {workerPoolId} = req.params;
@@ -174,34 +179,6 @@ builder.declare({
 });
 
 builder.declare({
-  method: 'delete',
-  route: '/worker-pool/:workerPoolId',
-  name: 'deleteWorkerPool',
-  title: 'Delete Worker Pool',
-  scopes: 'worker-manager:delete-worker-type:<workerPoolId>',
-  stability: APIBuilder.stability.experimental,
-  description: [
-    'Delete an existing worker pool definition.',
-  ].join('\n'),
-}, async function(req, res) {
-  const {workerPoolId} = req.params;
-
-  const workerPool = await this.WorkerPool.load({
-    workerPoolId,
-  }, true);
-  if (!workerPool) {
-    return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
-  }
-
-  await workerPool.modify(wt => {
-    wt.scheduledForDeletion = true;
-  });
-
-  await this.publisher.workerPoolDeleted({workerPoolId, providerId: workerPool.providerId});
-  return res.reply();
-});
-
-builder.declare({
   method: 'get',
   route: '/worker-pools',
   query: {
@@ -254,7 +231,15 @@ builder.declare({
 
   try {
     const workerPool = await this.WorkerPool.load({workerPoolId});
-    return res.reply(await this.providers.get(workerPool.providerId).verifyIdToken({
+    const provider = this.providers.get(workerPool.providerId);
+
+    if (!provider) {
+      return res.reportError('InputError', 'Invalid Provider', {
+        providerId: workerPool.providerId,
+      });
+    }
+
+    return res.reply(await provider.verifyIdToken({
       token: req.body.token,
       workerPool,
     }));

@@ -31,7 +31,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       workerPoolId,
       providerId,
       description: 'none',
-      scheduledForDeletion: false,
       previousProviderIds: [],
       created: new Date(),
       lastModified: new Date(),

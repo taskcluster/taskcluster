@@ -7,6 +7,7 @@ const User = require('../User');
 const identityFromClientId = require('../../utils/identityFromClientId');
 const tryCatch = require('../../utils/tryCatch');
 const { decode, encode } = require('../../utils/codec');
+const login = require('../../utils/login');
 const GithubClient = require('../clients/GithubClient');
 
 const debug = Debug('strategies.github');
@@ -71,6 +72,7 @@ module.exports = class Github {
   useStrategy(app, cfg) {
     const { credentials } = cfg.taskcluster;
     const strategyCfg = cfg.login.strategies['github'];
+    const loginMiddleware = login(cfg.app.publicUrl);
 
     if (!strategyCfg.clientId || !strategyCfg.clientSecret) {
       throw new Error(
@@ -108,11 +110,7 @@ module.exports = class Github {
     app.get(
       callback,
       passport.authenticate('github', { session: false }),
-      (request, response) => {
-        response.render('callback', {
-          user: request.user,
-        });
-      }
+      loginMiddleware
     );
   }
 };

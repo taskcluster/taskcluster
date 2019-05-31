@@ -4385,7 +4385,13 @@ await asyncWorkerManager.createWorkerPool(payload, workerPoolId='value') # -> re
 ```
 
 #### Update Worker Pool
-Given an existing worker pool definition, this will modify it and return the new definition.
+Given an existing worker pool definition, this will modify it and return
+the new definition.
+
+To delete a worker pool, set its `providerId` to `"null-provider"`.
+After any existing workers have exited, a cleanup job will remove the
+worker pool.  During that time, the worker pool can be updated again, such
+as to set its `providerId` to a real provider.
 
 
 
@@ -4424,24 +4430,6 @@ workerManager.workerPool(workerPoolId='value') # -> result
 # Async call
 await asyncWorkerManager.workerPool(workerPoolId) # -> result
 await asyncWorkerManager.workerPool(workerPoolId='value') # -> result
-```
-
-#### Delete Worker Pool
-Delete an existing worker pool definition.
-
-
-
-Takes the following arguments:
-
-  * `workerPoolId`
-
-```python
-# Sync calls
-workerManager.deleteWorkerPool(workerPoolId) # -> None
-workerManager.deleteWorkerPool(workerPoolId='value') # -> None
-# Async call
-await asyncWorkerManager.deleteWorkerPool(workerPoolId) # -> None
-await asyncWorkerManager.deleteWorkerPool(workerPoolId='value') # -> None
 ```
 
 #### List All Worker Pools
@@ -4489,7 +4477,7 @@ import taskcluster
 # Create WorkerManagerEvents client instance
 workerManagerEvents = taskcluster.WorkerManagerEvents(options)
 ```
-These exchanges provide notifications when a worker pool is created, updatedor deleted. This is so that the listener running in a differentprocess at the other end can synchronize its bindings. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.
+These exchanges provide notifications when a worker pool is created or updated.This is so that the provisioner running in a differentprocess at the other end can synchronize to the changes. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.
 #### Worker Pool Created Messages
  * `workerManagerEvents.workerPoolCreated(routingKeyPattern) -> routingKey`
    * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
@@ -4497,11 +4485,6 @@ These exchanges provide notifications when a worker pool is created, updatedor d
 
 #### Worker Pool Updated Messages
  * `workerManagerEvents.workerPoolUpdated(routingKeyPattern) -> routingKey`
-   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-
-#### Worker Pool Deleted Messages
- * `workerManagerEvents.workerPoolDeleted(routingKeyPattern) -> routingKey`
    * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
    * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 

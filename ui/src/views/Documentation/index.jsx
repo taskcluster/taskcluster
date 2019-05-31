@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { lowerCase } from 'change-case';
 import catchLinks from 'catch-links';
+import { MDXProvider } from '@mdx-js/react';
 import 'prismjs';
 import 'prismjs/themes/prism.css';
 import 'prism-themes/themes/prism-atom-dark.css';
@@ -154,7 +155,11 @@ export default class Documentation extends Component {
           {error && error.code !== 'MODULE_NOT_FOUND' && (
             <ErrorPanel fixed error={error} />
           )}
-          {!error && Page && <Page components={components} />}
+          {!error && Page && (
+            <MDXProvider components={components}>
+              <Page />
+            </MDXProvider>
+          )}
           {pageInfo && <PageMeta pageInfo={pageInfo} history={history} />}
         </ScrollToTop>
       </Dashboard>

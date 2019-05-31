@@ -14,7 +14,6 @@ export default class WorkerManager extends Client {
     this.createWorkerPool.entry = {"args":["workerPoolId"],"input":true,"method":"put","name":"createWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":{"AllOf":["worker-manager:create-worker-type:<workerPoolId>","worker-manager:provider:<providerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.updateWorkerPool.entry = {"args":["workerPoolId"],"input":true,"method":"post","name":"updateWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":{"AllOf":["worker-manager:update-worker-type:<workerPoolId>","worker-manager:provider:<providerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.workerPool.entry = {"args":["workerPoolId"],"method":"get","name":"workerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.deleteWorkerPool.entry = {"args":["workerPoolId"],"method":"delete","name":"deleteWorkerPool","query":[],"route":"/worker-pool/<workerPoolId>","scopes":"worker-manager:delete-worker-type:<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkerPools.entry = {"args":[],"method":"get","name":"listWorkerPools","output":true,"query":["continuationToken","limit"],"route":"/worker-pools","stability":"experimental","type":"function"}; // eslint-disable-line
     this.credentialsGoogle.entry = {"args":["workerPoolId"],"input":true,"method":"post","name":"credentialsGoogle","output":true,"query":[],"route":"/credentials/google/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
   }
@@ -36,7 +35,12 @@ export default class WorkerManager extends Client {
     return this.request(this.createWorkerPool.entry, args);
   }
   /* eslint-disable max-len */
-  // Given an existing worker pool definition, this will modify it and return the new definition.
+  // Given an existing worker pool definition, this will modify it and return
+  // the new definition.
+  // To delete a worker pool, set its `providerId` to `"null-provider"`.
+  // After any existing workers have exited, a cleanup job will remove the
+  // worker pool.  During that time, the worker pool can be updated again, such
+  // as to set its `providerId` to a real provider.
   /* eslint-enable max-len */
   updateWorkerPool(...args) {
     this.validate(this.updateWorkerPool.entry, args);
@@ -50,14 +54,6 @@ export default class WorkerManager extends Client {
     this.validate(this.workerPool.entry, args);
 
     return this.request(this.workerPool.entry, args);
-  }
-  /* eslint-disable max-len */
-  // Delete an existing worker pool definition.
-  /* eslint-enable max-len */
-  deleteWorkerPool(...args) {
-    this.validate(this.deleteWorkerPool.entry, args);
-
-    return this.request(this.deleteWorkerPool.entry, args);
   }
   /* eslint-disable max-len */
   // Get the list of all the existing worker pools.

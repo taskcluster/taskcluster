@@ -3,7 +3,7 @@ web:
   command: node src/main.js server
 provisioner:
   type: background
-  command: node src/main.js provisioner
+  command: node src/main.js runProvisioner
 workerscanner:
   type: background
   command: node src/main.js workerScanner
@@ -12,6 +12,11 @@ expire-workers:
   schedule: '0 0 * * *'
   deadline: 86400
   command: node src/main.js expireWorkers
+expire-worker-pools:
+  type: cron
+  schedule: '0 1 * * *'
+  deadline: 86400
+  command: node src/main.js expireWorkerPools
 expire-errors:
   type: cron
   schedule: '10 0 * * *'

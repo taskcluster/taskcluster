@@ -119,7 +119,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         workerPoolId: 'pp/foo',
         providerId: 'testing1',
         description: 'none',
-        scheduledForDeletion: false,
         previousProviderIds: [],
         created: now,
         lastModified: now,
@@ -150,6 +149,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         Severity: LEVELS.notice,
         Fields: {workerPoolId: 'pp/foo'},
       });
+    });
+
+    test('message with unknown provider', async function() {
+      await helper.fakePulseMessage({
+        payload: {
+          workerPoolId: 'pp/foo',
+          providerId: 'no-such-provider',
+        },
+        exchange: 'exchange/taskcluster-worker-manager/v1/worker-pool-created',
+        routingKey: 'primary.#',
+        routes: [],
+      });
+      assert.deepEqual(monitorManager.messages.find(msg => msg.Type === 'create-resource'), undefined);
     });
 
     test('worker pool modified, same provider', async function() {
@@ -198,23 +210,92 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         Fields: {workerPoolId: 'pp/foo'},
       });
     });
+  });
 
-    test('worker pool deleted', async function() {
-      await helper.fakePulseMessage({
-        payload: {
-          workerPoolId: 'pp/foo',
-          providerId: 'testing1',
-        },
-        exchange: 'exchange/taskcluster-worker-manager/v1/worker-pool-deleted',
-        routingKey: 'primary.#',
-        routes: [],
+  suite('provision', function() {
+    test('provision scan provisions a worker pool', async function() {
+      await helper.WorkerPool.create({
+        workerPoolId: 'pp/ww',
+        providerId: 'testing1',
+        previousProviderIds: [],
+        description: '',
+        created: new Date(),
+        lastModified: new Date(),
+        config: {},
+        owner: 'me@example.com',
+        emailOnError: false,
+        providerData: {},
       });
-      assert.deepEqual(monitorManager.messages.find(msg => msg.Type === 'remove-resource'), {
-        Logger: 'taskcluster.worker-manager.testing1',
-        Type: 'remove-resource',
-        Severity: LEVELS.notice,
-        Fields: {workerPoolId: 'pp/foo'},
+      const provisioner = await helper.load('provisioner');
+      await provisioner.provision();
+      assert.deepEqual(
+        monitorManager.messages.find(
+          msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === 'pp/ww'), {
+          Logger: 'taskcluster.worker-manager.provisioner',
+          Type: 'worker-pool-provisioned',
+          Fields: {workerPoolId: 'pp/ww', providerId: 'testing1', v: 1},
+          Severity: LEVELS.info,
+        });
+    });
+
+    test('provision scan skips worker pools with unknown providerId', async function() {
+      await helper.WorkerPool.create({
+        workerPoolId: 'pp/ww',
+        providerId: 'NO-SUCH',
+        previousProviderIds: [],
+        description: '',
+        created: new Date(),
+        lastModified: new Date(),
+        config: {},
+        owner: 'me@example.com',
+        emailOnError: false,
+        providerData: {},
       });
+      const provisioner = await helper.load('provisioner');
+      await provisioner.provision();
+      assert.deepEqual(
+        monitorManager.messages.find(
+          msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === 'pp/ww'),
+        undefined);
+      assert.deepEqual(
+        monitorManager.messages.find(msg => msg.Type === 'monitor.generic'), {
+          Logger: 'taskcluster.worker-manager.provisioner',
+          Type: 'monitor.generic',
+          Fields: {message: 'Worker pool pp/ww has unknown providerId NO-SUCH'},
+          Severity: LEVELS.warning,
+        });
+    });
+
+    test('provision scan skips worker pools with unknown previous providerId', async function() {
+      await helper.WorkerPool.create({
+        workerPoolId: 'pp/ww',
+        providerId: 'testing1',
+        previousProviderIds: ['NO-SUCH'],
+        description: '',
+        created: new Date(),
+        lastModified: new Date(),
+        config: {},
+        owner: 'me@example.com',
+        emailOnError: false,
+        providerData: {},
+      });
+      const provisioner = await helper.load('provisioner');
+      await provisioner.provision();
+      assert.deepEqual(
+        monitorManager.messages.find(
+          msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === 'pp/ww'), {
+          Logger: 'taskcluster.worker-manager.provisioner',
+          Type: 'worker-pool-provisioned',
+          Fields: {workerPoolId: 'pp/ww', providerId: 'testing1', v: 1},
+          Severity: LEVELS.info,
+        });
+      assert.deepEqual(
+        monitorManager.messages.find(msg => msg.Type === 'monitor.generic'), {
+          Logger: 'taskcluster.worker-manager.provisioner',
+          Type: 'monitor.generic',
+          Fields: {message: 'Worker pool pp/ww has unknown previousProviderIds entry NO-SUCH (ignoring)'},
+          Severity: LEVELS.info,
+        });
     });
   });
 });

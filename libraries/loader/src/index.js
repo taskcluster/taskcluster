@@ -122,8 +122,8 @@ function loader(componentDirectory, virtualComponents = {}) {
     }
     options = Object.assign({}, virtualComponents, options);
     for (const vComp of Object.keys(options)) {
-      if (!options[vComp]) {
-        throw new Error(`Requested component '${vComp}' does not exist in loader`);
+      if (!(vComp in options)) {
+        throw new Error(`Virtual component '${vComp}' does not exist in loader`);
       }
     }
 

@@ -3777,7 +3777,7 @@ module.exports = {
           "args": [
             "workerPoolId"
           ],
-          "description": "Given an existing worker pool definition, this will modify it and return the new definition.",
+          "description": "Given an existing worker pool definition, this will modify it and return\nthe new definition.\n\nTo delete a worker pool, set its `providerId` to `\"null-provider\"`.\nAfter any existing workers have exited, a cleanup job will remove the\nworker pool.  During that time, the worker pool can be updated again, such\nas to set its `providerId` to a real provider.",
           "input": "v1/create-worker-pool-request.json#",
           "method": "post",
           "name": "updateWorkerPool",
@@ -3808,21 +3808,6 @@ module.exports = {
           "route": "/worker-pool/<workerPoolId>",
           "stability": "experimental",
           "title": "Get Worker Pool",
-          "type": "function"
-        },
-        {
-          "args": [
-            "workerPoolId"
-          ],
-          "description": "Delete an existing worker pool definition.",
-          "method": "delete",
-          "name": "deleteWorkerPool",
-          "query": [
-          ],
-          "route": "/worker-pool/<workerPoolId>",
-          "scopes": "worker-manager:delete-worker-type:<workerPoolId>",
-          "stability": "experimental",
-          "title": "Delete Worker Pool",
           "type": "function"
         },
         {
@@ -3866,7 +3851,7 @@ module.exports = {
     "reference": {
       "$schema": "/schemas/common/exchanges-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "These exchanges provide notifications when a worker pool is created, updatedor deleted. This is so that the listener running in a differentprocess at the other end can synchronize its bindings. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.",
+      "description": "These exchanges provide notifications when a worker pool is created or updated.This is so that the provisioner running in a differentprocess at the other end can synchronize to the changes. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.",
       "entries": [
         {
           "description": "Whenever the api receives a request to create aworker pool, a message is posted to this exchange anda provider can act upon it.",
@@ -3912,29 +3897,6 @@ module.exports = {
           ],
           "schema": "v1/pulse-worker-pool-message.json#",
           "title": "Worker Pool Updated Messages",
-          "type": "topic-exchange"
-        },
-        {
-          "description": "Whenever the api receives a request to delete aworker pool, a message is posted to this exchange anda provider can act upon it.",
-          "exchange": "worker-pool-deleted",
-          "name": "workerPoolDeleted",
-          "routingKey": [
-            {
-              "constant": "primary",
-              "multipleWords": false,
-              "name": "routingKeyKind",
-              "required": true,
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
-            },
-            {
-              "multipleWords": true,
-              "name": "reserved",
-              "required": false,
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
-            }
-          ],
-          "schema": "v1/pulse-worker-pool-message.json#",
-          "title": "Worker Pool Deleted Messages",
           "type": "topic-exchange"
         }
       ],
