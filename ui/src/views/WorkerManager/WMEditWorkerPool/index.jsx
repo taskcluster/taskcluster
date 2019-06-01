@@ -13,6 +13,7 @@ import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import List from '../../Documentation/components/List';
 import isWorkerTypeNameValid from '../../../utils/isWorkerTypeNameValid';
 import Button from '../../../components/Button';
+import Dashboard from '../../../components/Dashboard';
 
 const gcpConfig = {
   minCapacity: 0,
@@ -37,16 +38,6 @@ const providers = {
   createIconSpan: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
-    right: theme.spacing.unit * 11,
-  },
-  editorListItem: {
-    paddingTop: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'start',
-    '&> :last-child': {
-      marginTop: theme.spacing.unit,
-    },
   },
 }))
 export default class WMEditWorkerPool extends Component {
@@ -115,118 +106,118 @@ export default class WMEditWorkerPool extends Component {
     const { workerPool, invalidProviderConfig } = this.state;
 
     return (
-      <List
-        title={
-          isNewWorkerPool
-            ? 'Worker Manager: Create Worker Pool'
-            : 'Worker Manager: Edit Worker Pool'
-        }>
-        <ListItem className={classes.editorListItem}>
-          <TextField
-            label="Name"
-            name="name"
-            error={
-              Boolean(workerPool.name) &&
-              !isWorkerTypeNameValid(workerPool.name)
-            }
-            onChange={this.handleInputChange}
-            fullWidth
-            value={workerPool.name}
-            margin="normal"
-          />
-        </ListItem>
-
-        <ListItem className={classes.editorListItem}>
-          <TextField
-            label="Description"
-            name="description"
-            onChange={this.handleInputChange}
-            fullWidth
-            value={workerPool.description}
-            margin="normal"
-          />
-        </ListItem>
-
-        <ListItem className={classes.editorListItem}>
-          <TextField
-            label="Owner's Email"
-            name="owner"
-            error={Boolean(workerPool.owner) && !workerPool.owner.includes('@')}
-            onChange={this.handleInputChange}
-            fullWidth
-            value={workerPool.owner}
-            margin="normal"
-          />
-        </ListItem>
-
-        <ListItem className={classes.editorListItem}>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={workerPool.wantsEmail}
-                onChange={this.handleSwitchChange}
-                value="wantsEmail"
-              />
-            }
-            label="Email the owner about errors"
-          />
-        </ListItem>
-
-        <ListItem className={classes.editorListItem}>
-          <FormLabel component="provider">Provider:</FormLabel>
-        </ListItem>
+      <Dashboard
+        title={isNewWorkerPool ? 'Create Worker Pool' : 'Edit Worker Pool'}>
         <List>
           <ListItem>
             <TextField
-              id="select-provider-type"
-              select
-              label="Type:"
-              helperText="Which service do you want to run your tasks in?"
-              value={workerPool.providerType}
-              name="providerType"
-              onChange={this.handleInputChange}
-              margin="normal">
-              {Object.keys(providers).map(p => (
-                <MenuItem key={p} value={p}>
-                  {p}
-                </MenuItem>
-              ))}
-            </TextField>
-          </ListItem>
-
-          <ListItem className={classes.editorListItem}>
-            <TextField
               label="Name"
-              value={workerPool.providerId}
-              name="providerId"
+              name="name"
+              error={
+                Boolean(workerPool.name) &&
+                !isWorkerTypeNameValid(workerPool.name)
+              }
               onChange={this.handleInputChange}
+              fullWidth
+              value={workerPool.name}
               margin="normal"
             />
           </ListItem>
+
+          <ListItem>
+            <TextField
+              label="Description"
+              name="description"
+              onChange={this.handleInputChange}
+              fullWidth
+              value={workerPool.description}
+              margin="normal"
+            />
+          </ListItem>
+
+          <ListItem>
+            <TextField
+              label="Owner's Email"
+              name="owner"
+              error={
+                Boolean(workerPool.owner) && !workerPool.owner.includes('@')
+              }
+              onChange={this.handleInputChange}
+              fullWidth
+              value={workerPool.owner}
+              margin="normal"
+            />
+          </ListItem>
+
+          <ListItem>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={workerPool.wantsEmail}
+                  onChange={this.handleSwitchChange}
+                  value="wantsEmail"
+                />
+              }
+              label="Email the owner about errors"
+            />
+          </ListItem>
+
+          <ListItem>
+            <FormLabel component="provider">Provider:</FormLabel>
+          </ListItem>
+          <List>
+            <ListItem>
+              <TextField
+                id="select-provider-type"
+                select
+                label="Type:"
+                helperText="Which service do you want to run your tasks in?"
+                value={workerPool.providerType}
+                name="providerType"
+                onChange={this.handleInputChange}
+                margin="normal">
+                {Object.keys(providers).map(p => (
+                  <MenuItem key={p} value={p}>
+                    {p}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </ListItem>
+
+            <ListItem>
+              <TextField
+                label="Name"
+                value={workerPool.providerId}
+                name="providerId"
+                onChange={this.handleInputChange}
+                margin="normal"
+              />
+            </ListItem>
+          </List>
+
+          <ListItem>
+            <FormLabel component="config">Configuration:</FormLabel>
+          </ListItem>
+          <ListItem>
+            <CodeEditor
+              value={JSON.stringify(workerPool.config, null, 2)}
+              onChange={this.handleEditorChange}
+              lint
+            />
+          </ListItem>
+
+          <Button
+            spanProps={{ className: classes.createIconSpan }}
+            disabled={invalidProviderConfig}
+            requiresAuth
+            tooltipProps={{ title: 'Save Worker Pool' }}
+            onClick={this.handleCreateWorkerPool}
+            classes={{ root: classes.successIcon }}
+            variant="round">
+            <ContentSaveIcon />
+          </Button>
         </List>
-
-        <ListItem className={classes.editorListItem}>
-          <FormLabel component="config">Configuration:</FormLabel>
-        </ListItem>
-        <ListItem className={classes.editorListItem}>
-          <CodeEditor
-            value={JSON.stringify(workerPool.config, null, 2)}
-            onChange={this.handleEditorChange}
-            lint
-          />
-        </ListItem>
-
-        <Button
-          spanProps={{ className: classes.createIconSpan }}
-          disabled={invalidProviderConfig}
-          requiresAuth
-          tooltipProps={{ title: 'Save Worker Pool' }}
-          onClick={this.handleCreateWorkerPool}
-          classes={{ root: classes.successIcon }}
-          variant="round">
-          <ContentSaveIcon />
-        </Button>
-      </List>
+      </Dashboard>
     );
   }
 }

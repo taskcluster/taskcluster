@@ -20,7 +20,6 @@ import Button from '../../../components/Button';
   createIconSpan: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
-    right: theme.spacing.unit * 11,
   },
 }))
 export default class WorkerManagerWorkerPoolsView extends Component {
