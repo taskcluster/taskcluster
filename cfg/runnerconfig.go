@@ -6,8 +6,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Config defines the configuration for taskcluster-worker-starter.
-type Config struct {
+// RunnerConfig defines the configuration for taskcluster-worker-starter.
+type RunnerConfig struct {
 	// The worker-manager providerType (and, by implication, cloud) controlling
 	// this worker.
 	ProviderType string `yaml:"providerType"`
@@ -31,12 +31,12 @@ Configuration is in the form of a YAML file with the following fields:
 }
 
 // Load a configuration file
-func Load(filename string) (*Config, error) {
+func Load(filename string) (*RunnerConfig, error) {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
-	var cfg Config
+	var cfg RunnerConfig
 	err = yaml.Unmarshal(data, &cfg)
 	if err != nil {
 		return nil, err
