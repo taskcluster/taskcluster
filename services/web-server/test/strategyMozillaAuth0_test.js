@@ -6,6 +6,9 @@ suite(testing.suiteName(), () => {
   let strategy = new Strategy({
     name: 'mozilla-auth0',
     cfg: {
+      taskcluster: {
+        rootUrl: '',
+      },
       login: {
         strategies: {
           'mozilla-auth0': {
@@ -13,6 +16,10 @@ suite(testing.suiteName(), () => {
             clientId: 'abcd',
             clientSecret: 'efgh',
           },
+        },
+        jwt: {
+          publicKey: '',
+          privateKey: '',
         },
       },
     },
@@ -68,8 +75,6 @@ suite(testing.suiteName(), () => {
     const testUserFromClientId = ({ name, identity, clientId }) => {
       test(name, async function() {
         const result = await strategy.userFromClientId(clientId);
-
-        console.log('result: ', result);
 
         assert.deepEqual(result, { _identity: identity, roles: [] });
       });
