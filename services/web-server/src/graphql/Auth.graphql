@@ -20,16 +20,10 @@ type Credentials {
 }
 
 extend type Query {
-  # Given a token, return a set of Taskcluster credentials
+  # Given a Taskcluster token, return a set of Taskcluster credentials
   # for use on behalf of the identified user.
   #
-  # | -- | --- |
-  # | Provider | Token type |
-  # | mozilla-auth0 | An OIDC token from a trusted OpenID provider |
-  # | github | An OAuth 2.0 token |
-  #
-  # The `accessToken` is first verified against the named
-  # `provider`, then passed to the provider\'s API to retrieve a user
+  # The Taskcluster `accessToken` is first verified prior to retrieving the user
   # profile. That profile is then used to generate Taskcluster credentials
   # appropriate to the user. Note that the resulting credentials may or may
   # not include a `certificate` property. Callers should be prepared for either

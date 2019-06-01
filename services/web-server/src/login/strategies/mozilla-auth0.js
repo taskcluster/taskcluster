@@ -8,9 +8,10 @@ const PersonAPI = require('../clients/PersonAPI');
 const WebServerError = require('../../utils/WebServerError');
 const { encode, decode } = require('../../utils/codec');
 const identityFromClientId = require('../../utils/identityFromClientId');
-const verifyJwt = require('../../utils/verifyJwt');
 const tryCatch = require('../../utils/tryCatch');
 const login = require('../../utils/login');
+const verifyJwtAuth0 = require('../../utils/verifyJwtAuth0');
+const jwt = require('../../utils/jwt');
 
 const debug = Debug('strategies.mozilla-auth0');
 
@@ -24,6 +25,8 @@ module.exports = class MozillaAuth0 {
 
     Object.assign(this, strategyCfg);
 
+    this.jwt = cfg.login.jwt;
+    this.rootUrl = cfg.taskcluster.rootUrl;
     this._personApi = null;
     this._personApiExp = null;
     this.identityProviderId = 'mozilla-auth0';
@@ -88,9 +91,9 @@ module.exports = class MozillaAuth0 {
     return user;
   }
 
-  async userFromToken(accessToken) {
-    const [jwtError, profile] = await tryCatch(
-      verifyJwt({ token: accessToken, domain: this.domain, audience: this.clientId })
+  async userFromToken(token) {
+    const [jwtError, jwtResponse] = await tryCatch(
+      jwt.verify({ publicKey: this.jwt.publicKey, token })
     );
 
     if (jwtError) {
@@ -98,18 +101,29 @@ module.exports = class MozillaAuth0 {
       return;
     }
 
-    debug(`received valid access_token for subject ${profile.sub}`);
+    debug(`received valid access_token for subject ${jwtResponse.sub}`);
 
-    const [err, user] = await tryCatch(this.getUser({ userId: profile.sub }));
+    const [err, user] = await tryCatch(this.userFromClientId(jwtResponse.sub));
 
     if (err) {
       debug(`error retrieving profile from accessToken: ${err}\n${err.stack}`);
       return;
     }
 
-    user.providerExpires = new Date(profile.exp * 1000);
-
     return user;
+  }
+
+  async expFromIdToken(idToken) {
+    const [jwtError, profile] = await tryCatch(
+      verifyJwtAuth0({ token: idToken, domain: this.domain, audience: this.clientId })
+    );
+
+    if (jwtError) {
+      debug(`error validating the idToken jwt: ${jwtError}`);
+      return;
+    }
+
+    return profile.exp;
   }
 
   userFromClientId(clientId) {
@@ -211,7 +225,12 @@ module.exports = class MozillaAuth0 {
         // profile has all the information from the user
         async (accessToken, refreshToken, extraParams, profile, done) => {
           const user = await this.getUser({ userId: profile.user_id });
-          const userFromToken = await this.userFromToken(extraParams.id_token);
+          const { token: taskclusterToken, expires: providerExpires } = jwt.generate({
+            rootUrl: this.rootUrl,
+            privateKey: this.jwt.privateKey,
+            identity: user.identity,
+            exp: await this.expFromIdToken(extraParams.id_token),
+          });
 
           if (!user) {
             // Don't report much to the user, to avoid revealing sensitive information, although
@@ -221,9 +240,9 @@ module.exports = class MozillaAuth0 {
 
           done(null, {
             profile,
-            accessToken: extraParams.id_token,
+            accessToken: taskclusterToken,
+            providerExpires,
             identityProviderId: 'mozilla-auth0',
-            providerExpires: userFromToken.providerExpires,
           });
         }
       )
