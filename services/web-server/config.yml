@@ -49,6 +49,9 @@ defaults:
     #   clientId: !env GITHUB_CLIENT_ID
     #   clientSecret: !env GITHUB_CLIENT_SECRET
     strategies: !env:json UI_LOGIN_STRATEGIES
+    jwt:
+      publicKey: !env JWT_PUBLIC_KEY
+      privateKey: !env JWT_PRIVATE_KEY
 
 development:
   app:
