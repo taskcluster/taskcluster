@@ -6,7 +6,9 @@
   <br>
 </h1>
 
-<img alt="Inspecting a task on Taskcluster UI" src="view-task-flow.gif" width="480px">
+<p align="center">
+  <img alt="Inspecting a task on Taskcluster UI" src="view-task-flow.gif" width="480px">
+</p>
 
 <h5 align="center">The task execution framework that supports Mozilla's continuous integration and release processes.</h5>
 
