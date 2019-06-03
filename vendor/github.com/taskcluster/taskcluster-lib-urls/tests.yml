@@ -1,0 +1,160 @@
+################################################################################
+# This document contains a language-agnostic set of test cases for validating
+# language implementations.
+#
+# The format of this document is as follows:
+#
+# rootURLs:     <A dictionary of cluster names to an array of valid rootURLs for
+#               the cluster; cluster names can be anything, used simply as a key
+#               for tests below>
+# tests:
+#   function:   [api, apiReference, docs, exchangeReference, schema, ui]
+#     argSets:  <A list of list of args to call the function with>
+#     expected: <A dictionary of cluster names (see above) to expected URLs for
+#               the given function call>
+#
+# The specification for generating URLs that the libraries in this repository
+# implement, is defined in `docs/urls-spec.md`.
+#################################################################################
+---
+rootURLs:
+  old:
+  - https://taskcluster.net
+  - https://taskcluster.net/
+  - https://taskcluster.net//
+  new:
+  - https://taskcluster.example.com
+  - https://taskcluster.example.com/
+  - https://taskcluster.example.com//
+  invalid:
+  - '12345'
+  empty:
+  - ''
+
+tests:
+- function: api
+  argSets:
+  - [auth, v1, ping]
+  - [auth, v1, /ping]
+  - [auth, v1, //ping]
+  expected:
+    old: https://auth.taskcluster.net/v1/ping
+    new: https://taskcluster.example.com/api/auth/v1/ping
+    invalid: 12345/api/auth/v1/ping
+    empty: /api/auth/v1/ping
+- function: api
+  argSets:
+  - [auth, v1, foo/ping]
+  - [auth, v1, /foo/ping]
+  - [auth, v1, //foo/ping]
+  expected:
+    old: https://auth.taskcluster.net/v1/foo/ping
+    new: https://taskcluster.example.com/api/auth/v1/foo/ping
+    invalid: 12345/api/auth/v1/foo/ping
+    empty: /api/auth/v1/foo/ping
+- function: docs
+  argSets:
+  - [something/in/docs]
+  - [/something/in/docs]
+  - [//something/in/docs]
+  expected:
+    old: https://docs.taskcluster.net/something/in/docs
+    new: https://taskcluster.example.com/docs/something/in/docs
+    invalid: 12345/docs/something/in/docs
+    empty: /docs/something/in/docs
+- function: schema
+  argSets:
+  - [auth, v1/something.json]
+  - [auth, /v1/something.json]
+  - [auth, //v1/something.json]
+  expected:
+    old: https://schemas.taskcluster.net/auth/v1/something.json
+    new: https://taskcluster.example.com/schemas/auth/v1/something.json
+    invalid: 12345/schemas/auth/v1/something.json
+    empty: /schemas/auth/v1/something.json
+- function: schema
+  argSets:
+  - [auth, v2/something.json]
+  - [auth, /v2/something.json]
+  - [auth, //v2/something.json]
+  expected:
+    old: https://schemas.taskcluster.net/auth/v2/something.json
+    new: https://taskcluster.example.com/schemas/auth/v2/something.json
+    invalid: 12345/schemas/auth/v2/something.json
+    empty: /schemas/auth/v2/something.json
+- function: apiReferenceSchema
+  argSets:
+  - [v1]
+  expected:
+    old: https://schemas.taskcluster.net/common/api-reference-v1.json
+    new: https://taskcluster.example.com/schemas/common/api-reference-v1.json
+    invalid: 12345/schemas/common/api-reference-v1.json
+    empty: /schemas/common/api-reference-v1.json
+- function: exchangesReferenceSchema
+  argSets:
+  - [v1]
+  expected:
+    old: https://schemas.taskcluster.net/common/exchanges-reference-v1.json
+    new: https://taskcluster.example.com/schemas/common/exchanges-reference-v1.json
+    invalid: 12345/schemas/common/exchanges-reference-v1.json
+    empty: /schemas/common/exchanges-reference-v1.json
+- function: apiManifestSchema
+  argSets:
+  - [v1]
+  expected:
+    old: https://schemas.taskcluster.net/common/manifest-v1.json
+    new: https://taskcluster.example.com/schemas/common/manifest-v1.json
+    invalid: 12345/schemas/common/manifest-v1.json
+    empty: /schemas/common/manifest-v1.json
+- function: metadataMetaschema
+  argSets:
+  - [v1]
+  expected:
+    old: https://schemas.taskcluster.net/common/metadata-metaschema.json
+    new: https://taskcluster.example.com/schemas/common/metadata-metaschema.json
+    invalid: 12345/schemas/common/metadata-metaschema.json
+    empty: /schemas/common/metadata-metaschema.json
+- function: apiReference
+  argSets:
+  - [auth, v1]
+  expected:
+    old: https://references.taskcluster.net/auth/v1/api.json
+    new: https://taskcluster.example.com/references/auth/v1/api.json
+    invalid: 12345/references/auth/v1/api.json
+    empty: /references/auth/v1/api.json
+- function: exchangeReference
+  argSets:
+  - [auth, v1]
+  expected:
+    old: https://references.taskcluster.net/auth/v1/exchanges.json
+    new: https://taskcluster.example.com/references/auth/v1/exchanges.json
+    invalid: 12345/references/auth/v1/exchanges.json
+    empty: /references/auth/v1/exchanges.json
+- function: ui
+  argSets:
+  - [something]
+  - [/something]
+  - [//something]
+  expected:
+    old: https://tools.taskcluster.net/something
+    new: https://taskcluster.example.com/something
+    invalid: 12345/something
+    empty: /something
+- function: ui
+  argSets:
+  - ['']
+  - [/]
+  - [//]
+  expected:
+    old: https://tools.taskcluster.net/
+    new: https://taskcluster.example.com/
+    invalid: 12345/
+    empty: /
+- function: apiManifest
+  argSets:
+  - []
+  expected:
+    old: https://references.taskcluster.net/manifest.json
+    new: https://taskcluster.example.com/references/manifest.json
+    invalid: 12345/references/manifest.json
+    empty: /references/manifest.json

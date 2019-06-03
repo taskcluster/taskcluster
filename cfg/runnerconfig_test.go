@@ -18,6 +18,6 @@ func TestLoadConfig(t *testing.T) {
 		t.Fatalf("failed to load: %s", err)
 	}
 
-	assert.Equal(t, "ec2", cfg.ProviderType, "should read providerType correctly")
+	assert.Equal(t, "ec2", cfg.Provider.ProviderType, "should read providerType correctly")
 	assert.Equal(t, map[string]interface{}{"x": 10.0}, cfg.WorkerConfig.Data, "should read workerConfig correctly")
 }

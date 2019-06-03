@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -26,11 +25,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	cfg, err := cfg.Load(opts["<startWorkerConfig>"].(string))
+	filename := opts["<startWorkerConfig>"].(string)
+	log.Printf("Loading taskcluster-worker-runner configuration from %s", filename)
+	cfg, err := cfg.Load(filename)
 	if err != nil {
 		log.Printf("Error loading start-worker config: %s", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("%#v\n", cfg)
+	err = StartWorker(cfg)
+	if err != nil {
+		log.Printf("%s", err)
+		os.Exit(1)
+	}
 }

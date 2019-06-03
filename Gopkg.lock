@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/cenkalti/backoff"
+  packages = ["."]
+  revision = "4b4cebaf850ec58f1bb1fec5bdebdf8501c2bc3f"
+  version = "v3.0.0"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
@@ -12,6 +18,24 @@
   packages = ["."]
   revision = "784ddc588536785e7299f7272f39101f7faccc3f"
   version = "0.6.2"
+
+[[projects]]
+  name = "github.com/fatih/camelcase"
+  packages = ["."]
+  revision = "44e46d280b43ec1531bb25252440e34f1b800b65"
+  version = "v1.0.0"
+
+[[projects]]
+  name = "github.com/google/uuid"
+  packages = ["."]
+  revision = "0cd6bf5da1e1c83f8b45653022c74f71af0538a4"
+  version = "v1.1.1"
+
+[[projects]]
+  name = "github.com/pborman/uuid"
+  packages = ["."]
+  revision = "adf5a7427709b9deb95d29d3fa8a2bf9cfd388f1"
+  version = "v1.2"
 
 [[projects]]
   name = "github.com/pmezard/go-difflib"
@@ -26,6 +50,42 @@
   version = "v1.3.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/taskcluster/httpbackoff"
+  packages = ["."]
+  revision = "e5b331b1135fb39ad0395d49c1a880929629f5b4"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/taskcluster/jsonschema2go"
+  packages = ["text"]
+  revision = "0757acc540d0725f2d78c22e434b7c295f247d8e"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/taskcluster/slugid-go"
+  packages = ["slugid"]
+  revision = "372cc2dd368595718b5b46adc759abcc2cbbe0b5"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/taskcluster/taskcluster-client-go"
+  packages = ["."]
+  revision = "0a5ab71b2099e987ee52741adb9ddc4595ff15ec"
+
+[[projects]]
+  name = "github.com/taskcluster/taskcluster-lib-urls"
+  packages = ["."]
+  revision = "b6a71b141f997a5e74250bd63ea3a3f859af17d8"
+  version = "v12.0.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/tent/hawk-go"
+  packages = ["."]
+  revision = "d341ea31895747c3b8f64837fef40ccf0c1143af"
+
+[[projects]]
   branch = "v3"
   name = "gopkg.in/yaml.v3"
   packages = ["."]
@@ -34,6 +94,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7a1717b78b4851eb9a278907a60a1cbf4a18b9c7c8cbc315678145a057913975"
+  inputs-digest = "c2434e61927b107af978d889e5f7685ddba083cf0cdffb2fd99dd076b592c53b"
   solver-name = "gps-cdcl"
   solver-version = 1

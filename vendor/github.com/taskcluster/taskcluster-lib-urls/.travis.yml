@@ -1,0 +1,30 @@
+language: node_js
+sudo: false
+node_js:
+- '8'
+- '10'
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - g++-4.8
+caches:
+  yarn: true
+env:
+  global:
+  - DEBUG='taskcluster-lib-urls test'
+  - CXX=g++-4.8
+notifications:
+  irc:
+    secure: ub7PLmoLr7fPYdORBBgH1VSF6esn7+XlNXh8zm3NBOf2RAsMAp+Hk2r+yD4PI72+tGiPbUGsKKsCHh6+Xq3RZc9h67bfMS8KLoZGuogap12i0MnwM5x03lLCRhLvW+r1Y35u8NOEOuaQXfPL6UmQ2EGzDzrjVHXHotFnTqPFSFxeIAnAi9BSjqjy/yBstn1ybX0etobc+Mm9CRubD2eblKVwAYJi98yWLz+w8ou3BXUA/9iHZFyda60SJ8BTqxhnh9J1UYESvEoUg0dfO0Tj+++xQBz/mFM05SuVw5fzp4u5rECGkcFwanyeubHjzxvBXn83gV1mQpe9F1kAXsGNHt/1+YeIjo6nsOHdjpzScHfV5Nf063n1RNOFgQc3l5hhWmEFX+qdQFE1yxMXou00H/7iXlA8dUvjHCswqsKOFHiH3v6VQQ5cXtgu8jB1N0ZWPPeS1xIyQlHWXdD2uxKp+PyCnlKEjorIhRgFyr6kdPWRUQW45OJVvaMHs+a5DTZntsLf524kmObkJAmTdfy8Amq7XIKIYzHEo0KFQA4ukKfWwXqu7ESEgoXjI1rIERa9qzGBHR1prPZsBoDrctppL949/RsM48oT0PB7BGVQI9pwGI4oFrBwH/dp5w45AFpIB32r2IlLdsdP5iNiVtGDgVLn03KMvQgnVXP4cK1FEwg=
+deploy:
+  provider: npm
+  email: taskcluster-accounts@mozilla.com
+  skip_cleanup: true
+  api_key:
+    secure: Af1jZIlFU7rxuJS12fb5N4yyz0VHsvgS7haSr5+a9yrMuxWpxLPdDSVlB33KOyhKoUYUY+ayJQqN2I+WYtGf7BYHGgPe6kNR5cCOseH1cRfmPrvNhQEWMrc7stWa6cHOpbI/3gZn6jSigKf6vLm4Wr8fOR+TLQ6tDaKzpqoZW8W6TwJyeM+9BQUY3aHuR6qb+ItpfrtR12vsOtLqDG7KImo0NhIb3ae91/HjC+EqL0UUJWYiqxg7Nkk2ziCWPYL1b554cKXf5HjOQUzWolHDEDybS20H8K20PSMUk3SZ79TKdqI3asXc8+V6AGCmgnq6cT4zLBk0gx6PoZWU6y3/OI1IYRSs7BGdrCiBGRlgAGSXnHoVWA6NDbQrkUrBVmhBKjnhyhO/q8la6fAPqHP2LgEQ6/RvT8XS9y1jpUwt233P+rjsXCW+nyF09cZAZ/CTCwGFuyMhtQZycA5SFE/IDZ3B+B5VMK7+HnC8j2QS/OKaNZXJivvIDpZzKXDz3TsHIlOY2WgfzvHXgCGnuRSNdx6ulgW9RvNOI5/AeWOvdFb3rnb8y8d3jllk1GUDcwycJ0Y702QuwBTzGnrCFl8AR8uEwUY29QSlPgXie2mdweDt1A2xM8iQ9IQeC1nlm71f9msSsa3PDzchJ6R5Shafuiz59UjkfDsekJ6sWvXTkbM=
+  on:
+    tags: true
+    repo: taskcluster/taskcluster-lib-urls
+    node: '10'

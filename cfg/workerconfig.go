@@ -6,6 +6,9 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
+// The configuration that will be passed directly to the worker.
+//
+// Treat this as a read-only data structure, replacing it as necessary.
 type WorkerConfig struct {
 	Data map[string]interface{}
 }

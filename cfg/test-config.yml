@@ -1,3 +1,4 @@
-providerType: 'ec2'
+provider:
+    providerType: 'ec2'
 workerConfig:
     x: 10

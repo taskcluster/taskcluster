@@ -6,14 +6,15 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// RunnerConfig defines the configuration for taskcluster-worker-starter.
+// RunnerConfig defines the configuration for taskcluster-worker-starter.  See the usage
+// string for field descriptions
 type RunnerConfig struct {
-	// The worker-manager providerType (and, by implication, cloud) controlling
-	// this worker.
-	ProviderType string `yaml:"providerType"`
+	Provider     ProviderConfig `yaml:"provider"`
+	WorkerConfig WorkerConfig   `yaml:"workerConfig"`
+}
 
-	// Configuration settings to be merged into the worker.
-	WorkerConfig WorkerConfig `yaml:"workerConfig"`
+type ProviderConfig struct {
+	ProviderType string `yaml:"providerType"`
 }
 
 // Get a fragment of a usage message that describes the configuration file format
@@ -21,9 +22,11 @@ func Usage() string {
 	return `
 Configuration is in the form of a YAML file with the following fields:
 
-	providerType: (required) the worker-manager providerType responsible for this worker;
-		this generally indicates the cloud the worker is running in, or 'static' for a
-		non-cloud-based worker
+	provider: (required) information about the provider for this worker
+
+		providerType: (required) the worker-manager providerType responsible for this worker;
+			this generally indicates the cloud the worker is running in, or 'static' for a
+			non-cloud-based worker
 
 	workerConfig: arbitrary data which forms the basics of the config passed to the worker;
 		this will be merged with several other sources of configuration.
