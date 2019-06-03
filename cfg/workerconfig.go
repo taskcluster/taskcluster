@@ -2,15 +2,20 @@ package cfg
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 
 	yaml "gopkg.in/yaml.v3"
 )
 
-// The configuration that will be passed directly to the worker.
+// The configuration that will be passed directly to the worker.  At
+// the top level, this is a JSON object, but it can contain arbitrary
+// other JSON types within it.
 //
-// Treat this as a read-only data structure, replacing it as necessary.
+// Treat this as a read-only data structure, replacing it as necessary
+// using the methods provided below.
 type WorkerConfig struct {
-	Data map[string]interface{}
+	data map[string]interface{}
 }
 
 // Normalize a JSON value, using the same types regardless of source
@@ -50,7 +55,7 @@ func (wc *WorkerConfig) UnmarshalYAML(node *yaml.Node) error {
 	if err != nil {
 		return err
 	}
-	wc.Data = normalize(res).(map[string]interface{})
+	wc.data = normalize(res).(map[string]interface{})
 	return nil
 }
 
@@ -60,7 +65,7 @@ func (wc *WorkerConfig) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
-	wc.Data = normalize(res).(map[string]interface{})
+	wc.data = normalize(res).(map[string]interface{})
 	return nil
 }
 
@@ -104,8 +109,63 @@ func merge(v1, v2 interface{}) interface{} {
 	return v2
 }
 
+// Merge two WorkerConfig objects, preferring values from the second
+// object where both are provided.  Where both objects have an object
+// as a value, those objects are merged recursively.  Where both objects
+// have an array as a value, those arrays are concatenated.
+//
+// This returns a new WorkerConfig without modifying either input.
 func (wc *WorkerConfig) Merge(other *WorkerConfig) *WorkerConfig {
 	return &WorkerConfig{
-		Data: merge(wc.Data, other.Data).(map[string]interface{}),
+		data: merge(wc.data, other.data).(map[string]interface{}),
 	}
+}
+
+func set(key []string, i int, config interface{}, value interface{}) (interface{}, error) {
+	if i == len(key) {
+		return value, nil
+	}
+
+	configmap, ok := config.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("%s is not an object in existing config", strings.Join(key[:i], "."))
+	}
+
+	clone := make(map[string]interface{})
+	for k, v := range configmap {
+		clone[k] = v
+	}
+
+	k := key[i]
+	v, ok := clone[k]
+	if !ok {
+		v = make(map[string]interface{})
+		clone[k] = v
+	}
+
+	var err error
+	clone[k], err = set(key, i+1, v, value)
+	if err != nil {
+		return nil, err
+	}
+
+	return clone, nil
+}
+
+// Set a value at the given dotted path.
+//
+// This returns a new WorkerConfig containing the updated value.
+func (wc *WorkerConfig) Set(key string, value interface{}) (*WorkerConfig, error) {
+	if key == "" {
+		return nil, fmt.Errorf("Must specify a nonempty key")
+	}
+
+	splitkey := strings.Split(key, ".")
+	data, err := set(splitkey, 0, wc.data, value)
+	if err != nil {
+		return nil, err
+	}
+	return &WorkerConfig{
+		data: data.(map[string]interface{}),
+	}, nil
 }
