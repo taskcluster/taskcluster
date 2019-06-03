@@ -3736,7 +3736,7 @@ module.exports = {
     "reference": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "This service manages workers, including provisioning for dynamic workertypes.",
+      "description": "This service manages workers, including provisioning for dynamic worker pools.",
       "entries": [
         {
           "args": [
@@ -3753,97 +3753,82 @@ module.exports = {
         },
         {
           "args": [
-            "workerTypeName"
+            "workerPoolId"
           ],
-          "description": "Create a new workertype. If the workertype already exists, this will throw an error.",
-          "input": "v1/create-workertype-request.json#",
+          "description": "Create a new worker pool. If the worker pool already exists, this will throw an error.",
+          "input": "v1/create-worker-pool-request.json#",
           "method": "put",
-          "name": "createWorkerType",
-          "output": "v1/workertype-full.json#",
+          "name": "createWorkerPool",
+          "output": "v1/worker-pool-full.json#",
           "query": [
           ],
-          "route": "/workertype/<workerTypeName>",
+          "route": "/worker-pool/<workerPoolId>",
           "scopes": {
             "AllOf": [
-              "worker-manager:create-worker-type:<workerTypeName>",
+              "worker-manager:create-worker-type:<workerPoolId>",
               "worker-manager:provider:<providerId>"
             ]
           },
           "stability": "experimental",
-          "title": "Create WorkerType",
+          "title": "Create Worker Pool",
           "type": "function"
         },
         {
           "args": [
-            "workerTypeName"
+            "workerPoolId"
           ],
-          "description": "Given an existing workertype definition, this will modify it and return the new definition.",
-          "input": "v1/create-workertype-request.json#",
+          "description": "Given an existing worker pool definition, this will modify it and return\nthe new definition.\n\nTo delete a worker pool, set its `providerId` to `\"null-provider\"`.\nAfter any existing workers have exited, a cleanup job will remove the\nworker pool.  During that time, the worker pool can be updated again, such\nas to set its `providerId` to a real provider.",
+          "input": "v1/create-worker-pool-request.json#",
           "method": "post",
-          "name": "updateWorkerType",
-          "output": "v1/workertype-full.json#",
+          "name": "updateWorkerPool",
+          "output": "v1/worker-pool-full.json#",
           "query": [
           ],
-          "route": "/workertype/<workerTypeName>",
+          "route": "/worker-pool/<workerPoolId>",
           "scopes": {
             "AllOf": [
-              "worker-manager:update-worker-type:<workerTypeName>",
+              "worker-manager:update-worker-type:<workerPoolId>",
               "worker-manager:provider:<providerId>"
             ]
           },
           "stability": "experimental",
-          "title": "Update WorkerType",
+          "title": "Update Worker Pool",
           "type": "function"
         },
         {
           "args": [
-            "workerTypeName"
+            "workerPoolId"
           ],
-          "description": "Fetch an existing workertype defition.",
+          "description": "Fetch an existing worker pool defition.",
           "method": "get",
-          "name": "workerType",
-          "output": "v1/workertype-full.json#",
+          "name": "workerPool",
+          "output": "v1/worker-pool-full.json#",
           "query": [
           ],
-          "route": "/workertype/<workerTypeName>",
+          "route": "/worker-pool/<workerPoolId>",
           "stability": "experimental",
-          "title": "Get WorkerType",
-          "type": "function"
-        },
-        {
-          "args": [
-            "workerTypeName"
-          ],
-          "description": "Delete an existing workertype definition.",
-          "method": "delete",
-          "name": "deleteWorkerType",
-          "query": [
-          ],
-          "route": "/workertype/<workerTypeName>",
-          "scopes": "worker-manager:delete-worker-type:<workerTypeName>",
-          "stability": "experimental",
-          "title": "Delete WorkerType",
+          "title": "Get Worker Pool",
           "type": "function"
         },
         {
           "args": [
           ],
-          "description": "Get the list of all the existing workertypes",
+          "description": "Get the list of all the existing worker pools.",
           "method": "get",
-          "name": "listWorkerTypes",
-          "output": "v1/workertype-list.json#",
+          "name": "listWorkerPools",
+          "output": "v1/worker-pool-list.json#",
           "query": [
             "continuationToken",
             "limit"
           ],
-          "route": "/workertypes",
+          "route": "/worker-pools",
           "stability": "experimental",
-          "title": "List All WorkerTypes",
+          "title": "List All Worker Pools",
           "type": "function"
         },
         {
           "args": [
-            "workerTypeName"
+            "workerPoolId"
           ],
           "description": "Get Taskcluster credentials for a worker given an Instance Identity Token",
           "input": "v1/credentials-google-request.json#",
@@ -3852,7 +3837,7 @@ module.exports = {
           "output": "v1/temp-creds-response.json#",
           "query": [
           ],
-          "route": "/credentials/google/<workerTypeName>",
+          "route": "/credentials/google/<workerPoolId>",
           "stability": "experimental",
           "title": "Google Credentials",
           "type": "function"
@@ -3866,12 +3851,12 @@ module.exports = {
     "reference": {
       "$schema": "/schemas/common/exchanges-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "These exchanges provide notifications when a workerType is created, updatedor deleted. This is so that the listener running in a differentprocess at the other end can direct another listener specified by`providerId` and `workerType` to synchronize its bindings. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.",
+      "description": "These exchanges provide notifications when a worker pool is created or updated.This is so that the provisioner running in a differentprocess at the other end can synchronize to the changes. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.",
       "entries": [
         {
-          "description": "Whenever the api receives a request to create aworkerType, a message is posted to this exchange anda provider can act upon it.",
-          "exchange": "workertype-created",
-          "name": "workerTypeCreated",
+          "description": "Whenever the api receives a request to create aworker pool, a message is posted to this exchange anda provider can act upon it.",
+          "exchange": "worker-pool-created",
+          "name": "workerPoolCreated",
           "routingKey": [
             {
               "constant": "primary",
@@ -3887,14 +3872,14 @@ module.exports = {
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
             }
           ],
-          "schema": "v1/pulse-workertype-message.json#",
-          "title": "WorkerType Created Messages",
+          "schema": "v1/pulse-worker-pool-message.json#",
+          "title": "Worker Pool Created Messages",
           "type": "topic-exchange"
         },
         {
-          "description": "Whenever the api receives a request to update aworkerType, a message is posted to this exchange anda provider can act upon it.",
-          "exchange": "workertype-updated",
-          "name": "workerTypeUpdated",
+          "description": "Whenever the api receives a request to update aworker pool, a message is posted to this exchange anda provider can act upon it.",
+          "exchange": "worker-pool-updated",
+          "name": "workerPoolUpdated",
           "routingKey": [
             {
               "constant": "primary",
@@ -3910,31 +3895,8 @@ module.exports = {
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
             }
           ],
-          "schema": "v1/pulse-workertype-message.json#",
-          "title": "WorkerType Updated Messages",
-          "type": "topic-exchange"
-        },
-        {
-          "description": "Whenever the api receives a request to delete aworkerType, a message is posted to this exchange anda provider can act upon it.",
-          "exchange": "workertype-deleted",
-          "name": "workerTypeDeleted",
-          "routingKey": [
-            {
-              "constant": "primary",
-              "multipleWords": false,
-              "name": "routingKeyKind",
-              "required": true,
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
-            },
-            {
-              "multipleWords": true,
-              "name": "reserved",
-              "required": false,
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
-            }
-          ],
-          "schema": "v1/pulse-workertype-message.json#",
-          "title": "WorkerType Deleted Messages",
+          "schema": "v1/pulse-worker-pool-message.json#",
+          "title": "Worker Pool Updated Messages",
           "type": "topic-exchange"
         }
       ],

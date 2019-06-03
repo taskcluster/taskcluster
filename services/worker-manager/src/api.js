@@ -3,15 +3,15 @@ const APIBuilder = require('taskcluster-lib-api');
 let builder = new APIBuilder({
   title: 'Taskcluster Worker Manager',
   description: [
-    'This service manages workers, including provisioning for dynamic workertypes.',
+    'This service manages workers, including provisioning for dynamic worker pools.',
   ].join('\n'),
   serviceName: 'worker-manager',
   apiVersion: 'v1',
   params: {
-    workerTypeName: /^[a-zA-Z0-9-_]{1,38}\/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$/,
+    workerPoolId: /^[a-zA-Z0-9-_]{1,38}\/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$/,
   },
   context: [
-    'WorkerType',
+    'WorkerPool',
     'providers',
     'publisher',
   ],
@@ -21,25 +21,25 @@ module.exports = builder;
 
 builder.declare({
   method: 'put',
-  route: '/workertype/:workerTypeName',
-  name: 'createWorkerType',
-  title: 'Create WorkerType',
+  route: '/worker-pool/:workerPoolId',
+  name: 'createWorkerPool',
+  title: 'Create Worker Pool',
   stability: APIBuilder.stability.experimental,
-  input: 'create-workertype-request.yml',
-  output: 'workertype-full.yml',
+  input: 'create-worker-pool-request.yml',
+  output: 'worker-pool-full.yml',
   scopes: {AllOf: [
-    'worker-manager:create-worker-type:<workerTypeName>',
+    'worker-manager:create-worker-type:<workerPoolId>',
     'worker-manager:provider:<providerId>',
   ]},
   description: [
-    'Create a new workertype. If the workertype already exists, this will throw an error.',
+    'Create a new worker pool. If the worker pool already exists, this will throw an error.',
   ].join('\n'),
 }, async function(req, res) {
-  const {workerTypeName} = req.params;
+  const {workerPoolId} = req.params;
   const input = req.body;
   const providerId = input.providerId;
 
-  await req.authorize({workerTypeName, providerId});
+  await req.authorize({workerPoolId, providerId});
 
   const provider = this.providers.get(providerId);
   if (!provider) {
@@ -58,10 +58,10 @@ builder.declare({
   }
 
   const now = new Date();
-  let workerType;
+  let workerPool;
 
   const definition = {
-    workerTypeName,
+    workerPoolId,
     providerId,
     previousProviderIds: [],
     description: input.description,
@@ -71,46 +71,51 @@ builder.declare({
     owner: input.owner,
     emailOnError: input.emailOnError,
     providerData: {},
-    scheduledForDeletion: false,
   };
 
   try {
-    workerType = await this.WorkerType.create(definition);
+    workerPool = await this.WorkerPool.create(definition);
   } catch (err) {
     if (err.code !== 'EntityAlreadyExists') {
       throw err;
     }
-    workerType = await this.WorkerType.load({workerTypeName});
+    workerPool = await this.WorkerPool.load({workerPoolId});
 
-    if (!workerType.compare(definition)) {
-      return res.reportError('RequestConflict', 'WorkerType already exists', {});
+    if (!workerPool.compare(definition)) {
+      return res.reportError('RequestConflict', 'Worker pool already exists', {});
     }
   }
-  await this.publisher.workerTypeCreated({workerTypeName, providerId});
-  res.reply(workerType.serializable());
+  await this.publisher.workerPoolCreated({workerPoolId, providerId});
+  res.reply(workerPool.serializable());
 });
 
 builder.declare({
   method: 'post',
-  route: '/workertype/:workerTypeName',
-  name: 'updateWorkerType',
-  title: 'Update WorkerType',
+  route: '/worker-pool/:workerPoolId',
+  name: 'updateWorkerPool',
+  title: 'Update Worker Pool',
   stability: APIBuilder.stability.experimental,
-  input: 'create-workertype-request.yml',
-  output: 'workertype-full.yml',
+  input: 'create-worker-pool-request.yml',
+  output: 'worker-pool-full.yml',
   scopes: {AllOf: [
-    'worker-manager:update-worker-type:<workerTypeName>',
+    'worker-manager:update-worker-type:<workerPoolId>',
     'worker-manager:provider:<providerId>',
   ]},
   description: [
-    'Given an existing workertype definition, this will modify it and return the new definition.',
+    'Given an existing worker pool definition, this will modify it and return',
+    'the new definition.',
+    '',
+    'To delete a worker pool, set its `providerId` to `"null-provider"`.',
+    'After any existing workers have exited, a cleanup job will remove the',
+    'worker pool.  During that time, the worker pool can be updated again, such',
+    'as to set its `providerId` to a real provider.',
   ].join('\n'),
 }, async function(req, res) {
-  const {workerTypeName} = req.params;
+  const {workerPoolId} = req.params;
   const input = req.body;
   const providerId = input.providerId;
 
-  await req.authorize({workerTypeName, providerId});
+  await req.authorize({workerPoolId, providerId});
 
   const provider = this.providers.get(providerId);
   if (!provider) {
@@ -125,16 +130,16 @@ builder.declare({
     return res.reportError('InputValidationError', error);
   }
 
-  const workerType = await this.WorkerType.load({
-    workerTypeName,
+  const workerPool = await this.WorkerPool.load({
+    workerPoolId,
   }, true);
-  if (!workerType) {
-    return res.reportError('ResourceNotFound', 'WorkerType does not exist', {});
+  if (!workerPool) {
+    return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
 
-  const previousProviderId = workerType.providerId;
+  const previousProviderId = workerPool.providerId;
 
-  await workerType.modify(wt => {
+  await workerPool.modify(wt => {
     wt.config = input.config;
     wt.description = input.description;
     wt.providerId = providerId;
@@ -147,73 +152,45 @@ builder.declare({
     }
   });
 
-  await this.publisher.workerTypeUpdated({workerTypeName, providerId, previousProviderId});
-  res.reply(workerType.serializable());
+  await this.publisher.workerPoolUpdated({workerPoolId, providerId, previousProviderId});
+  res.reply(workerPool.serializable());
 });
 
 builder.declare({
   method: 'get',
-  route: '/workertype/:workerTypeName',
-  name: 'workerType',
-  title: 'Get WorkerType',
+  route: '/worker-pool/:workerPoolId',
+  name: 'workerPool',
+  title: 'Get Worker Pool',
   stability: APIBuilder.stability.experimental,
-  output: 'workertype-full.yml',
+  output: 'worker-pool-full.yml',
   description: [
-    'Fetch an existing workertype defition.',
+    'Fetch an existing worker pool defition.',
   ].join('\n'),
 }, async function(req, res) {
-  const {workerTypeName} = req.params;
+  const {workerPoolId} = req.params;
 
-  const workerType = await this.WorkerType.load({
-    workerTypeName,
+  const workerPool = await this.WorkerPool.load({
+    workerPoolId,
   }, true);
-  if (!workerType) {
-    return res.reportError('ResourceNotFound', 'WorkerType does not exist', {});
+  if (!workerPool) {
+    return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
-  res.reply(workerType.serializable());
-});
-
-builder.declare({
-  method: 'delete',
-  route: '/workertype/:workerTypeName',
-  name: 'deleteWorkerType',
-  title: 'Delete WorkerType',
-  scopes: 'worker-manager:delete-worker-type:<workerTypeName>',
-  stability: APIBuilder.stability.experimental,
-  description: [
-    'Delete an existing workertype definition.',
-  ].join('\n'),
-}, async function(req, res) {
-  const {workerTypeName} = req.params;
-
-  const workerType = await this.WorkerType.load({
-    workerTypeName,
-  }, true);
-  if (!workerType) {
-    return res.reportError('ResourceNotFound', 'WorkerType does not exist', {});
-  }
-
-  await workerType.modify(wt => {
-    wt.scheduledForDeletion = true;
-  });
-
-  await this.publisher.workerTypeDeleted({workerTypeName, providerId: workerType.providerId});
-  return res.reply();
+  res.reply(workerPool.serializable());
 });
 
 builder.declare({
   method: 'get',
-  route: '/workertypes',
+  route: '/worker-pools',
   query: {
     continuationToken: /./,
     limit: /^[0-9]+$/,
   },
-  name: 'listWorkerTypes',
-  title: 'List All WorkerTypes',
+  name: 'listWorkerPools',
+  title: 'List All Worker Pools',
   stability: APIBuilder.stability.experimental,
-  output: 'workertype-list.yml',
+  output: 'worker-pool-list.yml',
   description: [
-    'Get the list of all the existing workertypes',
+    'Get the list of all the existing worker pools.',
   ].join('\n'),
 }, async function(req, res) {
   const { continuationToken } = req.query;
@@ -223,12 +200,15 @@ builder.declare({
     limit,
   };
 
-  const data = await this.WorkerType.scan({}, scanOptions);
+  const data = await this.WorkerPool.scan({}, scanOptions);
+  const result = {
+    workerPools: data.entries.map(e => e.serializable()),
+  };
 
   if (data.continuation) {
-    data.continuationToken = data.continuation;
+    result.continuationToken = data.continuation;
   }
-  return res.reply(data);
+  return res.reply(result);
 });
 
 /*
@@ -237,7 +217,7 @@ builder.declare({
 
 builder.declare({
   method: 'post',
-  route: '/credentials/google/:workerTypeName',
+  route: '/credentials/google/:workerPoolId',
   name: 'credentialsGoogle',
   title: 'Google Credentials',
   stability: APIBuilder.stability.experimental,
@@ -247,13 +227,21 @@ builder.declare({
     'Get Taskcluster credentials for a worker given an Instance Identity Token',
   ].join('\n'),
 }, async function(req, res) {
-  const {workerTypeName} = req.params;
+  const {workerPoolId} = req.params;
 
   try {
-    const workerType = await this.WorkerType.load({workerTypeName});
-    return res.reply(await this.providers.get(workerType.providerId).verifyIdToken({
+    const workerPool = await this.WorkerPool.load({workerPoolId});
+    const provider = this.providers.get(workerPool.providerId);
+
+    if (!provider) {
+      return res.reportError('InputError', 'Invalid Provider', {
+        providerId: workerPool.providerId,
+      });
+    }
+
+    return res.reply(await provider.verifyIdToken({
       token: req.body.token,
-      workerType,
+      workerPool,
     }));
   } catch (err) {
     // We will internally record what went wrong and report back something generic

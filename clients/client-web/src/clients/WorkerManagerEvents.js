@@ -12,26 +12,18 @@ export default class WorkerManagerEvents extends Client {
     });
   }
   /* eslint-disable max-len */
-  // Whenever the api receives a request to create aworkerType, a message is posted to this exchange anda provider can act upon it.
+  // Whenever the api receives a request to create aworker pool, a message is posted to this exchange anda provider can act upon it.
   /* eslint-enable max-len */
-  workerTypeCreated(pattern) {
-    const entry = {"exchange":"workertype-created","name":"workerTypeCreated","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-workertype-message.json#","type":"topic-exchange"}; // eslint-disable-line
+  workerPoolCreated(pattern) {
+    const entry = {"exchange":"worker-pool-created","name":"workerPoolCreated","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-pool-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
   /* eslint-disable max-len */
-  // Whenever the api receives a request to update aworkerType, a message is posted to this exchange anda provider can act upon it.
+  // Whenever the api receives a request to update aworker pool, a message is posted to this exchange anda provider can act upon it.
   /* eslint-enable max-len */
-  workerTypeUpdated(pattern) {
-    const entry = {"exchange":"workertype-updated","name":"workerTypeUpdated","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-workertype-message.json#","type":"topic-exchange"}; // eslint-disable-line
-
-    return this.normalizePattern(entry, pattern);
-  }
-  /* eslint-disable max-len */
-  // Whenever the api receives a request to delete aworkerType, a message is posted to this exchange anda provider can act upon it.
-  /* eslint-enable max-len */
-  workerTypeDeleted(pattern) {
-    const entry = {"exchange":"workertype-deleted","name":"workerTypeDeleted","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-workertype-message.json#","type":"topic-exchange"}; // eslint-disable-line
+  workerPoolUpdated(pattern) {
+    const entry = {"exchange":"worker-pool-updated","name":"workerPoolUpdated","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-pool-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }

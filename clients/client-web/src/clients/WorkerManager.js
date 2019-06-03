@@ -11,12 +11,11 @@ export default class WorkerManager extends Client {
       ...options,
     });
     this.ping.entry = {"args":[],"method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.createWorkerType.entry = {"args":["workerTypeName"],"input":true,"method":"put","name":"createWorkerType","output":true,"query":[],"route":"/workertype/<workerTypeName>","scopes":{"AllOf":["worker-manager:create-worker-type:<workerTypeName>","worker-manager:provider:<providerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
-    this.updateWorkerType.entry = {"args":["workerTypeName"],"input":true,"method":"post","name":"updateWorkerType","output":true,"query":[],"route":"/workertype/<workerTypeName>","scopes":{"AllOf":["worker-manager:update-worker-type:<workerTypeName>","worker-manager:provider:<providerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
-    this.workerType.entry = {"args":["workerTypeName"],"method":"get","name":"workerType","output":true,"query":[],"route":"/workertype/<workerTypeName>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.deleteWorkerType.entry = {"args":["workerTypeName"],"method":"delete","name":"deleteWorkerType","query":[],"route":"/workertype/<workerTypeName>","scopes":"worker-manager:delete-worker-type:<workerTypeName>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.listWorkerTypes.entry = {"args":[],"method":"get","name":"listWorkerTypes","output":true,"query":["continuationToken","limit"],"route":"/workertypes","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.credentialsGoogle.entry = {"args":["workerTypeName"],"input":true,"method":"post","name":"credentialsGoogle","output":true,"query":[],"route":"/credentials/google/<workerTypeName>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.createWorkerPool.entry = {"args":["workerPoolId"],"input":true,"method":"put","name":"createWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":{"AllOf":["worker-manager:create-worker-type:<workerPoolId>","worker-manager:provider:<providerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
+    this.updateWorkerPool.entry = {"args":["workerPoolId"],"input":true,"method":"post","name":"updateWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":{"AllOf":["worker-manager:update-worker-type:<workerPoolId>","worker-manager:provider:<providerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
+    this.workerPool.entry = {"args":["workerPoolId"],"method":"get","name":"workerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.listWorkerPools.entry = {"args":[],"method":"get","name":"listWorkerPools","output":true,"query":["continuationToken","limit"],"route":"/worker-pools","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.credentialsGoogle.entry = {"args":["workerPoolId"],"input":true,"method":"post","name":"credentialsGoogle","output":true,"query":[],"route":"/credentials/google/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -28,44 +27,41 @@ export default class WorkerManager extends Client {
     return this.request(this.ping.entry, args);
   }
   /* eslint-disable max-len */
-  // Create a new workertype. If the workertype already exists, this will throw an error.
+  // Create a new worker pool. If the worker pool already exists, this will throw an error.
   /* eslint-enable max-len */
-  createWorkerType(...args) {
-    this.validate(this.createWorkerType.entry, args);
+  createWorkerPool(...args) {
+    this.validate(this.createWorkerPool.entry, args);
 
-    return this.request(this.createWorkerType.entry, args);
+    return this.request(this.createWorkerPool.entry, args);
   }
   /* eslint-disable max-len */
-  // Given an existing workertype definition, this will modify it and return the new definition.
+  // Given an existing worker pool definition, this will modify it and return
+  // the new definition.
+  // To delete a worker pool, set its `providerId` to `"null-provider"`.
+  // After any existing workers have exited, a cleanup job will remove the
+  // worker pool.  During that time, the worker pool can be updated again, such
+  // as to set its `providerId` to a real provider.
   /* eslint-enable max-len */
-  updateWorkerType(...args) {
-    this.validate(this.updateWorkerType.entry, args);
+  updateWorkerPool(...args) {
+    this.validate(this.updateWorkerPool.entry, args);
 
-    return this.request(this.updateWorkerType.entry, args);
+    return this.request(this.updateWorkerPool.entry, args);
   }
   /* eslint-disable max-len */
-  // Fetch an existing workertype defition.
+  // Fetch an existing worker pool defition.
   /* eslint-enable max-len */
-  workerType(...args) {
-    this.validate(this.workerType.entry, args);
+  workerPool(...args) {
+    this.validate(this.workerPool.entry, args);
 
-    return this.request(this.workerType.entry, args);
+    return this.request(this.workerPool.entry, args);
   }
   /* eslint-disable max-len */
-  // Delete an existing workertype definition.
+  // Get the list of all the existing worker pools.
   /* eslint-enable max-len */
-  deleteWorkerType(...args) {
-    this.validate(this.deleteWorkerType.entry, args);
+  listWorkerPools(...args) {
+    this.validate(this.listWorkerPools.entry, args);
 
-    return this.request(this.deleteWorkerType.entry, args);
-  }
-  /* eslint-disable max-len */
-  // Get the list of all the existing workertypes
-  /* eslint-enable max-len */
-  listWorkerTypes(...args) {
-    this.validate(this.listWorkerTypes.entry, args);
-
-    return this.request(this.listWorkerTypes.entry, args);
+    return this.request(this.listWorkerPools.entry, args);
   }
   /* eslint-disable max-len */
   // Get Taskcluster credentials for a worker given an Instance Identity Token

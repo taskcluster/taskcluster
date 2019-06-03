@@ -1,0 +1,21 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Worker Pool Definition
+description: |
+  Fields that are defined by a user for a worker pool.
+  Used to create and modify definitions. There is a larger
+  set of fields for viewing since some parts are generated
+  by the service.
+type: object
+properties:
+  providerId: {$ref: "worker-pool-full.json#/properties/providerId"}
+  description: {$ref: "worker-pool-full.json#/properties/description"}
+  config: {$ref: "worker-pool-full.json#/properties/config"}
+  owner: {$ref: "worker-pool-full.json#/properties/owner"}
+  emailOnError: {$ref: "worker-pool-full.json#/properties/emailOnError"}
+additionalProperties: false
+required:
+  - providerId
+  - description
+  - config
+  - owner
+  - emailOnError
