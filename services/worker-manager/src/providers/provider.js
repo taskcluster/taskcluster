@@ -16,9 +16,10 @@ class Provider {
     rootUrl,
     taskclusterCredentials,
     estimator,
-    Worker,
     validator,
+    Worker,
     WorkerPool,
+    WorkerPoolError,
   }) {
     this.providerId = providerId;
     this.monitor = monitor;
@@ -29,6 +30,7 @@ class Provider {
     this.estimator = estimator;
     this.Worker = Worker;
     this.WorkerPool = WorkerPool;
+    this.WorkerPoolError = WorkerPoolError;
   }
 
   /**

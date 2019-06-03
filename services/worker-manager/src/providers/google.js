@@ -24,6 +24,7 @@ class GoogleProvider extends Provider {
     validator,
     Worker,
     WorkerPool,
+    WorkerPoolError,
     fake = false,
   }) {
     super({
@@ -33,9 +34,10 @@ class GoogleProvider extends Provider {
       notify,
       rootUrl,
       estimator,
-      Worker,
       validator,
+      Worker,
       WorkerPool,
+      WorkerPoolError,
     });
     this.configSchema = 'config-google';
     this.fake = fake;
@@ -374,6 +376,7 @@ class GoogleProvider extends Provider {
             title: 'Instance Creation Error',
             description: error.message, // TODO: Make sure we clear exposing this with security folks
             notify: this.notify,
+            WorkerPoolError: this.WorkerPoolError,
           });
         }
         return;
@@ -481,6 +484,7 @@ class GoogleProvider extends Provider {
             code: err.code,
           },
           notify: this.notify,
+          WorkerPoolError: this.WorkerPoolError,
         });
       }
     }
