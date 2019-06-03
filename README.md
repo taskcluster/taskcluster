@@ -1,6 +1,6 @@
-# Taskcluster Worker Starter
+# Taskcluster Worker Runner
 
-This repository defines a utility for starting workers.
+This repository defines a utility for running workers.
 
 It handles:
 
