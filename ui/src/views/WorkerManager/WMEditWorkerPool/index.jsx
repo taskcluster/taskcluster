@@ -42,6 +42,13 @@ const providers = {
   dropdown: {
     minWidth: 200,
   },
+  list: {
+    paddingLeft: 0,
+    paddingRight: 0,
+  },
+  listItem: {
+    paddingLeft: 0,
+  },
 }))
 export default class WMEditWorkerPool extends Component {
   static defaultProps = {
@@ -111,11 +118,11 @@ export default class WMEditWorkerPool extends Component {
     return (
       <Dashboard
         title={isNewWorkerPool ? 'Create Worker Pool' : 'Edit Worker Pool'}>
-        <List>
+        <List className={classes.list}>
           <ListItem>
             <TextField
-              label="Name"
-              name="name"
+              label="Worker Pool ID"
+              name="workerPoolId"
               error={
                 Boolean(workerPool.name) &&
                 !isWorkerTypeNameValid(workerPool.name)
@@ -123,7 +130,6 @@ export default class WMEditWorkerPool extends Component {
               onChange={this.handleInputChange}
               fullWidth
               value={workerPool.name}
-              margin="normal"
             />
           </ListItem>
 
@@ -168,7 +174,7 @@ export default class WMEditWorkerPool extends Component {
           <ListSubheader>Provider</ListSubheader>
 
           <List>
-            <ListItem>
+            <ListItem className={classes.listItem}>
               <TextField
                 id="select-provider-type"
                 className={classes.dropdown}
@@ -187,13 +193,14 @@ export default class WMEditWorkerPool extends Component {
               </TextField>
             </ListItem>
 
-            <ListItem>
+            <ListItem className={classes.listItem}>
               <TextField
                 label="Name"
                 value={workerPool.providerId}
                 name="providerId"
                 onChange={this.handleInputChange}
                 margin="normal"
+                fullWidth
               />
             </ListItem>
           </List>
