@@ -7,9 +7,7 @@ presents the entire REST API to consumers as well as being able to generate
 URLs Signed by Hawk credentials.  It can also generate routing keys for
 listening to pulse messages from Taskcluster.
 
-The library builds the REST API methods from the same [API Reference
-format](/docs/manual/design/apis/reference-format) as the
-Javascript client library.
+The library builds the REST API methods from the Taskcluster API definitions provided in the [Taskcluster repository](https://github.com/taskcluster/taskcluster).
 
 ## Generating Temporary Credentials
 If you have non-temporary taskcluster credentials you can generate a set of
@@ -50,7 +48,7 @@ but unnamed temporary credentials can be created regardless of your scopes.
 
 ## API Documentation
 
-The REST API methods are documented in the [reference docs](/docs/reference).
+The REST API methods are documented in the [reference docs](https://docs.taskcluster.net/docs/reference).
 
 ## Query-String arguments
 Query string arguments are now supported.  In order to use them, you can call
