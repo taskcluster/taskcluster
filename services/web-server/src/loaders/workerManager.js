@@ -2,15 +2,15 @@ const DataLoader = require('dataloader');
 const sift = require('sift').default;
 
 module.exports = ({ workerManager }) => {
-  // const WorkerManagerWorkerPoolSummaries = new DataLoader(queries =>
-  //   Promise.all(
-  //     queries.map(async (filter) => {
-  //       const summaries = await workerManager.listWorkerPools();
-  //
-  //       return filter ? sift(filter, summaries) : summaries;
-  //     })
-  //   )
-  // );
+  const WorkerManagerWorkerPoolSummaries = new DataLoader(queries =>
+    Promise.all(
+      queries.map(async ({ filter }) => {
+        const summaries = await workerManager.listWorkerPools();
+
+        return filter ? sift(filter, summaries) : summaries;
+      })
+    )
+  );
 
   // const WMWorkers = new DataLoader(queries =>
   //   Promise.all(
@@ -21,41 +21,6 @@ module.exports = ({ workerManager }) => {
   //     })
   //   )
   // );
-
-  const WorkerManagerWorkerPoolSummaries = new DataLoader(queries => {
-    return Promise.all(
-      queries.map(({ filter }) => {
-        const summaries = [
-          {
-            workerPool: 'banana',
-            lastActive: new Date(),
-            pendingCapacity: 0,
-            runningCapacity: 1,
-            pendingTasks: 0,
-            lastResolved: new Date(),
-            failed: 0,
-            exception: 1,
-            unscheduled: 2,
-            provider: 'aws',
-          },
-          {
-            workerPool: 'pineapple',
-            pendingCapacity: 1,
-            runningCapacity: 3,
-            pendingTasks: 1,
-            lastActive: new Date('December 17, 1995 03:24:00'),
-            lastResolved: new Date('December 17, 1995 03:24:00'),
-            failed: 1,
-            exception: 2,
-            unscheduled: 3,
-            provider: 'gcp',
-          },
-        ];
-
-        return filter ? Promise.resolve(sift(filter, summaries)) : Promise.resolve(summaries);
-      })
-    );
-  });
 
   const WorkerManagerWorkers = new DataLoader(queries => {
     return Promise.all(
