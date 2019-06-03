@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { bool } from 'prop-types';
 import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormLabel from '@material-ui/core/FormLabel';
+import ListSubheader from '@material-ui/core/ListSubheader';
 import MenuItem from '@material-ui/core/MenuItem';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import ListItem from '@material-ui/core/ListItem';
@@ -38,6 +38,9 @@ const providers = {
   createIconSpan: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
+  },
+  dropdown: {
+    minWidth: 200,
   },
 }))
 export default class WMEditWorkerPool extends Component {
@@ -162,13 +165,13 @@ export default class WMEditWorkerPool extends Component {
             />
           </ListItem>
 
-          <ListItem>
-            <FormLabel component="provider">Provider:</FormLabel>
-          </ListItem>
+          <ListSubheader>Provider</ListSubheader>
+
           <List>
             <ListItem>
               <TextField
                 id="select-provider-type"
+                className={classes.dropdown}
                 select
                 label="Type:"
                 helperText="Which service do you want to run your tasks in?"
@@ -195,9 +198,7 @@ export default class WMEditWorkerPool extends Component {
             </ListItem>
           </List>
 
-          <ListItem>
-            <FormLabel component="config">Configuration:</FormLabel>
-          </ListItem>
+          <ListSubheader>Configuration:</ListSubheader>
           <ListItem>
             <CodeEditor
               value={JSON.stringify(workerPool.config, null, 2)}
