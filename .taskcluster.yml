@@ -4,7 +4,7 @@ policy:
   pullRequests: public
 tasks:
   $let:
-    node: '10.15.3'
+    node: '10.16.0'
     artifactsDir:
       public:
         # This is not used at the moment other than by the trailer task to upload results. Feel free to bump later
