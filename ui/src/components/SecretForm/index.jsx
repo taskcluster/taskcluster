@@ -5,6 +5,7 @@ import { safeDump, safeLoad } from 'js-yaml';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
+import { equals } from 'ramda';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
@@ -126,6 +127,7 @@ export default class SecretForm extends Component {
   render() {
     const { classes, isNewSecret, loading } = this.props;
     const { secretName, editorValue, expires, showSecret } = this.state;
+    const isSecretDirty = !equals(secret, this.props.Secret);
 
     return (
       <Fragment>
@@ -193,7 +195,7 @@ export default class SecretForm extends Component {
             color="secondary"
             variant="round"
             className={classes.saveIcon}
-            disabled={loading || !this.validSecret()}
+            disabled={loading || !this.validSecret() || !isSecretDirty}
             onClick={this.handleSaveSecret}>
             <ContentSaveIcon />
           </Button>
@@ -218,7 +220,7 @@ export default class SecretForm extends Component {
               className={classes.saveIcon}
               tooltipTitle="Save Secret"
               ButtonProps={{
-                disabled: loading || !this.validSecret(),
+                disabled: loading || !this.validSecret() || !isSecretDirty,
               }}
             />
           </SpeedDial>
