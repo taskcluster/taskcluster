@@ -13,7 +13,7 @@ type RunnerConfig struct {
 	ProviderType string `yaml:"providerType"`
 
 	// Configuration settings to be merged into the worker.
-	WorkerConfig map[string]interface{} `yaml:"workerConfig"`
+	WorkerConfig WorkerConfig `yaml:"workerConfig"`
 }
 
 // Get a fragment of a usage message that describes the configuration file format
@@ -25,8 +25,8 @@ Configuration is in the form of a YAML file with the following fields:
 		this generally indicates the cloud the worker is running in, or 'static' for a
 		non-cloud-based worker
 
-	workerConfig: arbitrary data which will be merged into the configuration given to
-		the worker
+	workerConfig: arbitrary data which forms the basics of the config passed to the worker;
+		this will be merged with several other sources of configuration.
 `
 }
 
