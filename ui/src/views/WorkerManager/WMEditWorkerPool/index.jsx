@@ -46,8 +46,11 @@ const providers = {
     paddingLeft: 0,
     paddingRight: 0,
   },
-  listItem: {
+  subList: {
+    paddingTop: 60,
+    paddingBottom: 60,
     paddingLeft: 0,
+    paddingRight: 0,
   },
 }))
 export default class WMEditWorkerPool extends Component {
@@ -171,10 +174,9 @@ export default class WMEditWorkerPool extends Component {
             />
           </ListItem>
 
-          <ListSubheader>Provider</ListSubheader>
-
-          <List>
-            <ListItem className={classes.listItem}>
+          <List className={classes.subList}>
+            <ListSubheader>Provider</ListSubheader>
+            <ListItem>
               <TextField
                 id="select-provider-type"
                 className={classes.dropdown}
@@ -193,7 +195,7 @@ export default class WMEditWorkerPool extends Component {
               </TextField>
             </ListItem>
 
-            <ListItem className={classes.listItem}>
+            <ListItem>
               <TextField
                 label="Name"
                 value={workerPool.providerId}
