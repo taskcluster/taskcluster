@@ -12,6 +12,7 @@ const tryCatch = require('../../utils/tryCatch');
 const login = require('../../utils/login');
 const verifyJwtAuth0 = require('../../utils/verifyJwtAuth0');
 const jwt = require('../../utils/jwt');
+const userIdFromIdentity = require('../../utils/userIdFromIdentity');
 
 const debug = Debug('strategies.mozilla-auth0');
 
@@ -91,26 +92,10 @@ module.exports = class MozillaAuth0 {
     return user;
   }
 
-  async userFromToken(token) {
-    const [jwtError, jwtResponse] = await tryCatch(
-      jwt.verify({ publicKey: this.jwt.publicKey, token })
-    );
+  userFromIdentity(identity) {
+    const userId = userIdFromIdentity(identity);
 
-    if (jwtError) {
-      debug(`error validating jwt: ${jwtError}`);
-      return;
-    }
-
-    debug(`received valid access_token for subject ${jwtResponse.sub}`);
-
-    const [err, user] = await tryCatch(this.userFromClientId(jwtResponse.sub));
-
-    if (err) {
-      debug(`error retrieving profile from accessToken: ${err}\n${err.stack}`);
-      return;
-    }
-
-    return user;
+    return this.getUser({ userId });
   }
 
   async expFromIdToken(idToken) {
@@ -133,14 +118,7 @@ module.exports = class MozillaAuth0 {
       return;
     }
 
-    let encodedUserId = identity.split('/')[1];
-
-    // Reverse the username appending, stripping the username.
-    if (encodedUserId.startsWith('github|') || encodedUserId.startsWith('oauth2|firefoxaccounts|')) {
-      encodedUserId = encodedUserId.replace(/\|[^|]*$/, '');
-    }
-
-    return this.getUser({ userId: decode(encodedUserId) });
+    return this.getUser({ userId: userIdFromIdentity(identity) });
   }
 
   identityFromProfile(profile) {
@@ -228,7 +206,7 @@ module.exports = class MozillaAuth0 {
           const { token: taskclusterToken, expires: providerExpires } = jwt.generate({
             rootUrl: this.rootUrl,
             privateKey: this.jwt.privateKey,
-            identity: user.identity,
+            sub: user.identity,
             exp: await this.expFromIdToken(extraParams.id_token),
           });
 

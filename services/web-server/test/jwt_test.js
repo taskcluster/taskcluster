@@ -27,7 +27,7 @@ suite(testing.suiteName(), () => {
   test('should be able to generate a token with a valid expiration', () => {
     const identity = 'mozilla-auth0/ad|Mozilla-LDAP|haali/';
     const exp = Math.floor(taskcluster.fromNow('2 days').getTime() / 1000);
-    const { token, expires } = jwt.generate({ rootUrl, privateKey, identity, exp });
+    const { token, expires } = jwt.generate({ aud: rootUrl, iss: rootUrl, privateKey, sub: identity, exp });
 
     assert.equal(token.length, 352, 'should of had a token');
     assert.equal(expires.getTime() / 1000, exp, 'should of had a valid expiration');
@@ -36,8 +36,13 @@ suite(testing.suiteName(), () => {
   test('should be able to verify a token', async () => {
     const identity = 'mozilla-auth0/ad|Mozilla-LDAP|haali/';
     const exp = Math.floor(taskcluster.fromNow('2 days').getTime() / 1000);
-    const { expires, token } = jwt.generate({ rootUrl, privateKey, identity, exp });
-    const decoded = await jwt.verify({ publicKey, token });
+    const { expires, token } = jwt.generate({ aud: rootUrl, iss: rootUrl, sub: identity, privateKey, exp });
+    const options = { audience: rootUrl, issuer: rootUrl, subject: identity };
+    const decoded = await jwt.verify({
+      publicKey,
+      token,
+      options
+    });
 
     assert.equal(decoded.sub, identity, 'should of had a valid sub property');
     assert.equal(decoded.iss, rootUrl, 'should of had a valid iss property');
@@ -51,15 +56,85 @@ suite(testing.suiteName(), () => {
   test('should throw when verifying with the wrong publicKey', async () => {
     const identity = 'mozilla-auth0/ad|Mozilla-LDAP|haali/';
     const exp = Math.floor(taskcluster.fromNow('2 days').getTime() / 1000);
-    const { token } = jwt.generate({ rootUrl, privateKey, identity, exp });
+    const { token } = jwt.generate({ aud: rootUrl, iss: rootUrl, sub: identity, privateKey, exp });
+    const options = { audience: rootUrl, issuer: rootUrl, subject: identity };
+
     let f = () => {};
 
     try {
-      await jwt.verify({ publicKey: 'test', token });
+      await jwt.verify({ publicKey: 'test', token, options });
     } catch(e) {
       f = () => { throw e; };
     } finally {
       assert.throws(f, /^Error: PEM_/);
+    }
+  });
+
+  test('should throw when verifying with the wrong audience', async () => {
+    const identity = 'mozilla-auth0/ad|Mozilla-LDAP|haali/';
+    const exp = Math.floor(taskcluster.fromNow('2 days').getTime() / 1000);
+    const { token } = jwt.generate({ aud: rootUrl, iss: rootUrl, sub: identity, privateKey, exp });
+    const options = { audience: 'hassan', issuer: rootUrl, subject: identity };
+    let f = () => {};
+
+    try {
+      await jwt.verify({ publicKey, token, options });
+    } catch(e) {
+      f = () => { throw e; };
+    } finally {
+      assert.throws(f, /^JsonWebTokenError: jwt audience invalid/);
+    }
+  });
+
+  test('should throw when verifying with an expired token', async () => {
+    const identity = 'mozilla-auth0/ad|Mozilla-LDAP|haali/';
+    const exp = Math.floor(taskcluster.fromNow('-2 days').getTime() / 1000);
+    const { token } = jwt.generate({ aud: rootUrl, iss: rootUrl, sub: identity, privateKey, exp });
+    const options = { audience: rootUrl, issuer: rootUrl, subject: identity };
+
+    let f = () => {};
+
+    try {
+      await jwt.verify({ publicKey, token, options });
+    } catch(e) {
+      f = () => { throw e; };
+    } finally {
+      assert.throws(f, /^TokenExpiredError: jwt expired/);
+    }
+  });
+
+  test('should throw when verifying with the wrong subject', async () => {
+    const identity = 'mozilla-auth0/ad|Mozilla-LDAP|haali/';
+    const exp = Math.floor(taskcluster.fromNow('2 days').getTime() / 1000);
+    const { token } = jwt.generate({ aud: rootUrl, iss: rootUrl, sub: identity, privateKey, exp });
+    const options = { audience: rootUrl, issuer: rootUrl, subject: 'hassan' };
+
+    let f = () => {};
+
+    try {
+      await jwt.verify({ publicKey, token, options });
+    } catch(e) {
+      f = () => { throw e; };
+    } finally {
+      assert.throws(f, /^JsonWebTokenError: jwt subject invalid/);
+    }
+  });
+
+  test('should throw when verifying with current time before the nbf claim', async () => {
+    const identity = 'mozilla-auth0/ad|Mozilla-LDAP|haali/';
+    const exp = Math.floor(taskcluster.fromNow('2 days').getTime() / 1000);
+    const nbf = Math.floor(taskcluster.fromNow('1 min').getTime() / 1000);
+    const { token } = jwt.generate({ aud: rootUrl, iss: rootUrl, sub: identity, privateKey, exp, nbf });
+    const options = { audience: rootUrl, issuer: rootUrl, subject: identity };
+
+    let f = () => {};
+
+    try {
+      await jwt.verify({ publicKey, token, options });
+    } catch(e) {
+      f = () => { throw e; };
+    } finally {
+      assert.throws(f, /^NotBeforeError: jwt not active/);
     }
   });
 });
