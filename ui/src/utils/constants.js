@@ -220,3 +220,6 @@ export const DENYLIST_NOTIFICATION_TYPES = {
 
 export const KNOWN_ACRONYMS = ['IRC', 'API'];
 export const AUTH_STORE = '@@TASKCLUSTER_WEB_AUTH';
+// The delay (in milliseconds) for `setTimeout` is a 32 bit signed quantity,
+// which limits it to 2^31-1 ms (2147483647 ms) or 24.855 days.
+export const MAX_SET_TIMEOUT_DELAY = 2 ** 31 - 1;
