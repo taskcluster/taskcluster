@@ -95,24 +95,28 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         </TableCell>
 
         <TableCell>
-          <Typography>{workerPool.pendingTasks}</Typography>
+          <Typography>{workerPool.pendingTasks || '-'}</Typography>
         </TableCell>
 
         <CopyToClipboard
           title={`${workerPool.lastActive} (Copy)`}
           text={workerPool.lastActive}>
           <TableCell>
-            <TableCellListItem button>
-              <ListItemText
-                disableTypography
-                primary={
-                  <Typography>
-                    <DateDistance from={workerPool.lastActive} />
-                  </Typography>
-                }
-              />
-              <ContentCopyIcon size={iconSize} />
-            </TableCellListItem>
+            {workerPool.lastActive ? (
+              <TableCellListItem button>
+                <ListItemText
+                  disableTypography
+                  primary={
+                    <Typography>
+                      <DateDistance from={workerPool.lastActive} />
+                    </Typography>
+                  }
+                />
+                <ContentCopyIcon size={iconSize} />
+              </TableCellListItem>
+            ) : (
+              <Typography> - </Typography>
+            )}
           </TableCell>
         </CopyToClipboard>
 
@@ -120,30 +124,34 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           title={`${workerPool.lastResolved} (Copy)`}
           text={workerPool.lastResolved}>
           <TableCell>
-            <TableCellListItem button>
-              <ListItemText
-                disableTypography
-                primary={
-                  <Typography>
-                    <DateDistance from={workerPool.lastResolved} />
-                  </Typography>
-                }
-              />
-              <ContentCopyIcon size={iconSize} />
-            </TableCellListItem>
+            {workerPool.lastResolved ? (
+              <TableCellListItem button>
+                <ListItemText
+                  disableTypography
+                  primary={
+                    <Typography>
+                      <DateDistance from={workerPool.lastResolved} />
+                    </Typography>
+                  }
+                />
+                <ContentCopyIcon size={iconSize} />
+              </TableCellListItem>
+            ) : (
+              <Typography> - </Typography>
+            )}
           </TableCell>
         </CopyToClipboard>
 
         <TableCell>
-          <Typography>{workerPool.failed}</Typography>
+          <Typography>{workerPool.failed || '-'}</Typography>
         </TableCell>
 
         <TableCell>
-          <Typography>{workerPool.exception}</Typography>
+          <Typography>{workerPool.exception || '-'}</Typography>
         </TableCell>
 
         <TableCell>
-          <Typography>{workerPool.unscheduled}</Typography>
+          <Typography>{workerPool.unscheduled || '-'}</Typography>
         </TableCell>
 
         <TableCell>
