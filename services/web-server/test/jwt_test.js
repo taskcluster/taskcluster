@@ -41,7 +41,7 @@ suite(testing.suiteName(), () => {
     const decoded = await jwt.verify({
       publicKey,
       token,
-      options
+      options,
     });
 
     assert.equal(decoded.sub, identity, 'should of had a valid sub property');

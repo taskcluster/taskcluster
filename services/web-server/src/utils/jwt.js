@@ -36,7 +36,7 @@ module.exports = {
 
     return verify(token, publicKey.trim(), {
       algorithms: ['RS256'],
-      ...options
+      ...options,
     });
   },
 };
