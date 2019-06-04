@@ -26,7 +26,7 @@ const main = async () => {
   const {dependencies} = await queue.task(process.env.TASK_ID);
 
   await fs.mkdir(COVERAGE_DIR);
-  for (const taskId of dependencies) {
+  await Promise.all(dependencies.map(async taskId => {
     try {
       const coverage = await queue.getLatestArtifact(taskId, 'public/coverage-final.json');
       const filename = path.join(COVERAGE_DIR, `${taskId}-coverage.json`);
@@ -37,7 +37,7 @@ const main = async () => {
         throw err;
       }
     }
-  }
+  }));
 };
 
 main().catch(console.error);

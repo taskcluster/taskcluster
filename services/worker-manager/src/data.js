@@ -104,7 +104,7 @@ WorkerPool.expire = async function(monitor) {
   });
 };
 
-WorkerPool.prototype.reportError = async function({kind, title, description, extra={}, notify}) {
+WorkerPool.prototype.reportError = async function({kind, title, description, extra={}, notify, WorkerPoolError}) {
   if (this.emailOnError) {
     let extraInfo = '';
     if (Object.keys(extra).length) {

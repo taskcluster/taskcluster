@@ -37,6 +37,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
                 Fields: {workerPoolId: wt.workerPoolId, providerId: wt.input.providerId, v: 1},
                 Severity: LEVELS.info,
               });
+            assert.deepEqual(
+              monitorManager.messages.find(
+                msg => msg.Type === 'test-provision' && msg.Fields.workerPoolId === wt.workerPoolId), {
+                Logger: `taskcluster.worker-manager.provider.${wt.input.providerId}`,
+                Type: 'test-provision',
+                Fields: {workerPoolId: wt.workerPoolId},
+                Severity: LEVELS.notice,
+              });
           }));
         });
         await helper.terminateProvisioner();
@@ -144,7 +152,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         routes: [],
       });
       assert.deepEqual(monitorManager.messages.find(msg => msg.Type === 'create-resource'), {
-        Logger: 'taskcluster.worker-manager.testing1',
+        Logger: 'taskcluster.worker-manager.provider.testing1',
         Type: 'create-resource',
         Severity: LEVELS.notice,
         Fields: {workerPoolId: 'pp/foo'},
@@ -176,7 +184,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         routes: [],
       });
       assert.deepEqual(monitorManager.messages.find(msg => msg.Type === 'update-resource'), {
-        Logger: 'taskcluster.worker-manager.testing1',
+        Logger: 'taskcluster.worker-manager.provider.testing1',
         Type: 'update-resource',
         Severity: LEVELS.notice,
         Fields: {workerPoolId: 'pp/foo'},
@@ -198,13 +206,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         routes: [],
       });
       assert.deepEqual(monitorManager.messages.find(msg => msg.Type === 'remove-resource'), {
-        Logger: 'taskcluster.worker-manager.testing1',
+        Logger: 'taskcluster.worker-manager.provider.testing1',
         Type: 'remove-resource',
         Severity: LEVELS.notice,
         Fields: {workerPoolId: 'pp/foo'},
       });
       assert.deepEqual(monitorManager.messages.find(msg => msg.Type === 'create-resource'), {
-        Logger: 'taskcluster.worker-manager.testing2',
+        Logger: 'taskcluster.worker-manager.provider.testing2',
         Type: 'create-resource',
         Severity: LEVELS.notice,
         Fields: {workerPoolId: 'pp/foo'},

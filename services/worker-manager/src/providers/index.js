@@ -3,7 +3,7 @@
  * their providerType implementation as required
  */
 class Providers {
-  async setup({cfg, monitor, notify, estimator, Worker, WorkerPool, validator}) {
+  async setup({cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError, validator}) {
     this._providers = {};
 
     if (cfg.providers['null-provider']) {
@@ -26,12 +26,13 @@ class Providers {
       const provider = new Provider({
         providerId,
         notify,
-        monitor: monitor.childMonitor(providerId),
+        monitor: monitor.childMonitor(`provider.${providerId}`),
         rootUrl: cfg.taskcluster.rootUrl,
         taskclusterCredentials: cfg.taskcluster.credentials,
         estimator,
         Worker,
         WorkerPool,
+        WorkerPoolError,
         validator,
         ...meta,
       });
