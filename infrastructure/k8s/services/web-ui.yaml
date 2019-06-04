@@ -3,8 +3,8 @@ secrets:
   application_name: "Taskcluster"
   graphql_endpoint: ".Values.graphqlEndpoint" # ${var.root_url}/graphql
   graphql_subscription_endpoint: ".Values.graphqlSubEndpoint" # ${var.root_url}/subscription
-  login_strategies: ""
-  port: ""
+  login_strategies: ".Values.loginStrategies"
+  port: ".Values.webUiPort"
 deployments:
   - service_name: "ui"
     cpu: "100m"
