@@ -131,9 +131,12 @@ export default class SecretForm extends Component {
   };
 
   render() {
-    const { classes, isNewSecret, loading } = this.props;
+    const { secret, classes, isNewSecret, loading } = this.props;
     const { secretName, editorValue, expires, showSecret } = this.state;
-    const isSecretDirty = !equals(secret, this.props.Secret);
+    const isSecretDirty =
+      secretName !== secret.name ||
+      editorValue !== safeDump(secret.secret) ||
+      expires !== secret.expires;
 
     return (
       <Fragment>
