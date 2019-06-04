@@ -2,7 +2,7 @@ project_name: "taskcluster-web-ui"
 secrets:
   application_name: "Taskcluster"
   graphql_endpoint: ".Values.graphqlEndpoint" # ${var.root_url}/graphql
-  graphql_subscription_endpoint: ".Values.graphqlSubscriptionEndpoint" # ${var.root_url}/subscription
+  graphql_subscription_endpoint: ".Values.graphqlSubEndpoint" # ${var.root_url}/subscription
   login_strategies: ""
   port: ""
 deployments:
