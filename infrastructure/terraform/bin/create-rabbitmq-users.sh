@@ -12,9 +12,11 @@ PREFIX=$4
 
 NAMES="
 taskcluster-auth
+taskcluster-github
 taskcluster-hooks
 taskcluster-index
 taskcluster-notify
+taskcluster-queue
 taskcluster-secrets
 taskcluster-web-server
 "
