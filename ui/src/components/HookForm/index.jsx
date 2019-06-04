@@ -392,7 +392,6 @@ export default class HookForm extends Component {
       hook.metadata.name &&
       hook.metadata.owner &&
       hook.bindings &&
-      hook.bindings.length > 0 &&
       !validation.owner.error &&
       taskValidJson &&
       triggerSchemaValidJson

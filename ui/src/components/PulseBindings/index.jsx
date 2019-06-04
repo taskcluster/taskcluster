@@ -27,10 +27,7 @@ import DeleteIcon from 'mdi-react/DeleteIcon';
     marginTop: 80,
   },
   deleteIcon: {
-    marginRight: -15,
-    [theme.breakpoints.down('sm')]: {
-      marginRight: -14,
-    },
+    marginRight: -theme.spacing.double,
   },
   inputWrapper: {
     display: 'flex',
