@@ -11,7 +11,7 @@ import (
 type RunnerConfig struct {
 	Provider     ProviderConfig             `yaml:"provider"`
 	Worker       WorkerImplementationConfig `yaml:"worker"`
-	WorkerConfig WorkerConfig               `yaml:"workerConfig"`
+	WorkerConfig *WorkerConfig              `yaml:"workerConfig"`
 }
 
 type WorkerImplementationConfig struct {

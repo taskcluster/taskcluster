@@ -169,3 +169,31 @@ func (wc *WorkerConfig) Set(key string, value interface{}) (*WorkerConfig, error
 		data: data.(map[string]interface{}),
 	}, nil
 }
+
+// Get a value at the given dotted path
+func (wc *WorkerConfig) Get(key string) (interface{}, error) {
+	if key == "" {
+		return nil, fmt.Errorf("Must specify a nonempty key")
+	}
+
+	splitkey := strings.Split(key, ".")
+	var val interface{}
+	val = wc.data
+	for _, k := range splitkey {
+		valmap, ok := val.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("key not found")
+		}
+		val, ok = valmap[k]
+		if !ok {
+			return nil, fmt.Errorf("key not found")
+		}
+	}
+	return val, nil
+}
+
+func NewWorkerConfig() *WorkerConfig {
+	return &WorkerConfig{
+		data: make(map[string]interface{}),
+	}
+}

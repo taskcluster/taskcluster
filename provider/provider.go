@@ -14,7 +14,8 @@ type providerInfo struct {
 }
 
 var providers map[string]providerInfo = map[string]providerInfo{
-	"standalone": providerInfo{NewStandalone, StandaloneUsage},
+	"standalone":      providerInfo{NewStandalone, StandaloneUsage},
+	"aws-provisioner": providerInfo{NewAwsProvisioner, AwsProvisionerUsage},
 }
 
 // Provider is responsible for determining the identity of this worker and gathering

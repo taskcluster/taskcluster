@@ -169,3 +169,13 @@ func TestSetNotObject(t *testing.T) {
 	}
 	assert.Equal(t, fmt.Errorf("x is not an object in existing config"), err, "should have errored")
 }
+
+func TestGet(t *testing.T) {
+	var wc WorkerConfig
+
+	err := json.Unmarshal([]byte(`{"x": {"y": "z"}}`), &wc)
+	assert.NoError(t, err, "shouldn't fail")
+	res, err := wc.Get("x.y")
+	assert.NoError(t, err, "shouldn't fail")
+	assert.Equal(t, "z", res, "got correct value")
+}
