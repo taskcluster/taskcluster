@@ -6,12 +6,26 @@ const WorkerManagerViewWorkerPools = lazy(() =>
 const WorkerManagerViewWorkers = lazy(() =>
   import(/* webpackChunkName: 'WorkerManager.WMViewWorkers' */ './WMViewWorkers')
 );
+const WMWorkerPoolEditor = lazy(() =>
+  import(/* webpackChunkName: 'WorkerManager.WMEditWorkerPool' */ './WMEditWorkerPool')
+);
 
 export default path => [
+  {
+    component: WMWorkerPoolEditor,
+    isNewWorkerPool: true,
+    path: `${path}/create`,
+    description: 'Create a worker pool',
+  },
   {
     component: WorkerManagerViewWorkers,
     path: `${path}/worker-pools/:workerPool`,
     description: 'View workers for that specific worker pool',
+  },
+  {
+    component: WMWorkerPoolEditor,
+    path: `${path}/:workerPool/edit`,
+    description: 'Edit the worker pool',
   },
   {
     component: WorkerManagerViewWorkers,
