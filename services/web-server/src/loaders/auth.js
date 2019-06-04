@@ -1,22 +1,50 @@
 const DataLoader = require('dataloader');
+const Debug = require('debug');
 const WebServerError = require('../utils/WebServerError');
+const tryCatch = require('../utils/tryCatch');
+const jwt = require('../utils/jwt');
+
+const debug = Debug('loaders.auth');
 
 module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => {
   const getCredentials = new DataLoader(queries => {
     return Promise.all(
-      queries.map(async ({ provider, accessToken }) => {
+      queries.map(async accessToken => {
+        // Don't report much to the user, to avoid revealing sensitive information, although
+        // it is likely in the service logs.
+        const credentialError = new WebServerError('InputError', 'Could not generate credentials for this access token');
+        const [jwtError, jwtResponse] = await tryCatch(
+          jwt.verify({
+            publicKey: cfg.login.jwt.publicKey,
+            token: accessToken,
+            options: {
+              audience: rootUrl,
+              issuer: rootUrl,
+            }
+          })
+        );
+
+        if (jwtError) {
+          debug(`error validating jwt: ${jwtError}`);
+          // Don't report much to the user, to avoid revealing sensitive information, although
+          // it is likely in the service logs.
+          throw credentialError;
+        }
+
+        debug(`received valid access_token for subject ${jwtResponse.sub}`);
+
+        const provider = jwtResponse.sub.split('/')[0];
         const strategy = strategies[provider];
 
         if (!strategy) {
-          throw new WebServerError('InputError', `Could not find a strategy for provider ${provider}`);
+          throw credentialError;
         }
 
-        const user = await strategy.userFromToken(accessToken);
+        const user = await strategy.userFromIdentity(jwtResponse.sub);
 
         if (!user) {
-          // Don't report much to the user, to avoid revealing sensitive information, although
-          // it is likely in the service logs.
-          throw new WebServerError('InputError', 'Could not generate credentials for this access token');
+          debug(`Could not find user with identity ${jwtResponse.sub}`);
+          throw credentialError;
         }
 
         // Create and return temporary credentials, limiting expires to a max of 15 minutes

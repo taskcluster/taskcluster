@@ -6,9 +6,10 @@ const taskcluster = require('taskcluster-client');
 const User = require('../User');
 const identityFromClientId = require('../../utils/identityFromClientId');
 const tryCatch = require('../../utils/tryCatch');
-const { decode, encode } = require('../../utils/codec');
+const { encode } = require('../../utils/codec');
 const login = require('../../utils/login');
 const jwt = require('../../utils/jwt');
+const userIdFromIdentity = require('../../utils/userIdFromIdentity');
 
 const debug = Debug('strategies.github');
 
@@ -21,7 +22,7 @@ module.exports = class Github {
 
     Object.assign(this, strategyCfg);
 
-    this.jwt = cfg.login.jwt;
+    this.jwtConfig = cfg.login.jwt;
     this.rootUrl = cfg.taskcluster.rootUrl;
     this.identityProviderId = 'github';
   }
@@ -42,26 +43,10 @@ module.exports = class Github {
     return user;
   }
 
-  async userFromToken(token) {
-    const [jwtError, jwtResponse] = await tryCatch(
-      jwt.verify({ publicKey: this.jwt.publicKey, token })
-    );
+  userFromIdentity(identity) {
+    const userId = userIdFromIdentity(identity);
 
-    if (jwtError) {
-      debug(`error validating jwt: ${jwtError}`);
-      return;
-    }
-
-    debug(`received valid access_token for subject ${jwtResponse.sub}`);
-
-    const [err, user] = await tryCatch(this.userFromClientId(jwtResponse.sub));
-
-    if (err) {
-      debug(`error retrieving user profile from the jwt sub field: ${err}\n${err.stack}`);
-      return;
-    }
-
-    return user;
+    return this.getUser({ userId });
   }
 
   userFromClientId(clientId) {
@@ -71,9 +56,7 @@ module.exports = class Github {
       return;
     }
 
-    const encodedUserId = identity.split('/')[1];
-
-    return this.getUser({ userId: decode(encodedUserId) });
+    return this.getUser({ userId: userIdFromIdentity(identity) });
   }
 
   useStrategy(app, cfg) {
@@ -106,8 +89,8 @@ module.exports = class Github {
           const user = await this.getUser({ userId: profile.username });
           const { token: taskclusterToken, expires: providerExpires } = jwt.generate({
             rootUrl: this.rootUrl,
-            privateKey: this.jwt.privateKey,
-            identity: user.identity,
+            privateKey: this.jwtConfig.privateKey,
+            sub: user.identity,
             // GitHub tokens don't expire
             exp: Math.floor(taskcluster.fromNow('1000 year').getTime() / 1000),
           });

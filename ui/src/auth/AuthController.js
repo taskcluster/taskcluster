@@ -1,5 +1,4 @@
 import mitt from 'mitt';
-import { snake, upper } from 'change-case';
 import { MAX_SET_TIMEOUT_DELAY, AUTH_STORE } from '../utils/constants';
 import credentialsQuery from './credentials.graphql';
 import removeKeys from '../utils/removeKeys';
@@ -113,13 +112,11 @@ export default class AuthController {
       return null;
     }
 
-    const provider = upper(snake(user.identityProviderId));
     const { data } = await this.client.query({
       query: credentialsQuery,
       fetchPolicy: 'no-cache',
       variables: {
         accessToken: user.accessToken,
-        provider,
       },
     });
 

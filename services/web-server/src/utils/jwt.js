@@ -8,7 +8,7 @@ const verify = util.promisify(jwt.verify);
 // A utility to generate and verify Taskcluster jwt tokens
 // with expiration taken from the sign-in process
 module.exports = {
-  generate: ({ rootUrl, privateKey, identity, exp }) => {
+  generate: ({ rootUrl, privateKey, exp, sub, ...rest }) => {
     assert(privateKey, `jwt.generate requires a privateKey`);
     const now = taskcluster.fromNow();
     const payload = {
@@ -19,7 +19,8 @@ module.exports = {
       nbf: Math.floor(now.getTime() / 1000),
       aud: rootUrl,
       iss: rootUrl,
-      sub: identity,
+      sub,
+      ...rest,
     };
     const token = jwt.sign(payload, privateKey.trim(), { algorithm: 'RS256' });
 
@@ -28,9 +29,14 @@ module.exports = {
       expires: new Date(exp * 1000),
     };
   },
-  verify: ({ publicKey, token }) => {
-    assert(publicKey, `jwt.verify requires a privateKey`);
+  verify: ({ publicKey, token, options }) => {
+    assert(publicKey, 'jwt.verify requires a privateKey');
+    assert(options.issuer, 'jwt.verify requires an issuer');
+    assert(options.audience, 'jwt.verify requires an audience');
 
-    return verify(token, publicKey.trim(), { algorithms: ['RS256'] });
+    return verify(token, publicKey.trim(), {
+      algorithms: ['RS256'],
+      ...options
+    });
   },
 };
