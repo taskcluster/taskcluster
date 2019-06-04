@@ -2,10 +2,20 @@ package provider
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 )
+
+type providerInfo struct {
+	constructor func(*cfg.RunnerConfig) (Provider, error)
+	usage       func() string
+}
+
+var providers map[string]providerInfo = map[string]providerInfo{
+	"standalone": providerInfo{NewStandalone, StandaloneUsage},
+}
 
 // Provider is responsible for determining the identity of this worker and gathering
 // Takcluster credentials.
@@ -20,9 +30,21 @@ func New(cfg *cfg.RunnerConfig) (Provider, error) {
 		return nil, fmt.Errorf("No provider given in configuration")
 	}
 
-	if cfg.Provider.ProviderType == "standalone" {
-		return NewStandalone(cfg)
+	pi, ok := providers[cfg.Provider.ProviderType]
+	if !ok {
+		return nil, fmt.Errorf("Unrecognized provider type %s", cfg.Provider.ProviderType)
 	}
+	return pi.constructor(cfg)
+}
 
-	return nil, fmt.Errorf("Unrecognized provider type %s", cfg.Provider.ProviderType)
+func Usage() string {
+	rv := []string{`
+Providers configuration depends on the providerType:
+
+`}
+
+	for _, pi := range providers {
+		rv = append(rv, pi.usage())
+	}
+	return strings.Join(rv, "\n")
 }

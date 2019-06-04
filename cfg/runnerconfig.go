@@ -22,7 +22,7 @@ Configuration is in the form of a YAML file with the following fields:
 
 		providerType: (required) the worker-manager providerType responsible for this worker;
 			this generally indicates the cloud the worker is running in, or 'static' for a
-			non-cloud-based worker
+			non-cloud-based worker; see below.
 
 	workerConfig: arbitrary data which forms the basics of the config passed to the worker;
 		this will be merged with several other sources of configuration.

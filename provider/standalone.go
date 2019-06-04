@@ -38,3 +38,19 @@ func (p *StandaloneProvider) ConfigureRun(run *runner.Run) error {
 func NewStandalone(cfg *cfg.RunnerConfig) (Provider, error) {
 	return &StandaloneProvider{cfg}, nil
 }
+
+func StandaloneUsage() string {
+	return `
+The providerType "standalone" is intended for workers that have all of their
+configuration pre-loaded.  It requires the following properties be included
+explicitly in the runner configuration:
+
+	provider:
+		rootURL: ..
+		clientID: ..
+		accessToken: ..
+		workerPoolID: ..
+		workerGroup: ..
+		workerID: ..
+`
+}

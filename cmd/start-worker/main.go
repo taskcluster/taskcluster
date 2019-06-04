@@ -6,16 +6,19 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster-worker-runner/provider"
 )
 
 func usage() string {
 	return `
 start-worker starts Taskcluster workers.
 
-  Usage:
+Usage:
 	start-worker <startWorkerConfig>
 
-` + cfg.Usage()
+` + cfg.Usage() + `
+
+` + provider.Usage()
 }
 
 func main() {
