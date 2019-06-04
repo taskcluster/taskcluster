@@ -1,4 +1,15 @@
+const { splitWorkerPoolId } = require('taskcluster-worker-manager/src/util');
+
 module.exports = {
+  WorkerManagerWorkerPoolSummary: {
+    pendingTasks({ workerPoolId }, args, { loaders }) {
+      const { provisionerId, workerType } = splitWorkerPoolId(workerPoolId);
+      return loaders.pendingTasks.load({
+        provisionerId,
+        workerType,
+      });
+    },
+  },
   Query: {
     WorkerManagerWorkerPoolSummaries(parent, { filter }, { loaders }) {
       return loaders.WorkerManagerWorkerPoolSummaries.load({ filter });

@@ -4,5 +4,6 @@ query workerPools {
     providerId
     description
     owner
+    pendingTasks
   }
 }

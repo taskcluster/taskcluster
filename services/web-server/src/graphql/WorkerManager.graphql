@@ -5,11 +5,12 @@ type WorkerManagerWorkerPoolSummary {
     config: WMWorkerPoolGeneralConfig
     lastActive: DateTime
     lastResolved: DateTime
-    pendingTasks: Int
     failed: Int
     exception: Int
     unscheduled: Int
     providerId: String!
+
+    pendingTasks: Int
 }
 
 type WMWorkerPoolGeneralConfig {
