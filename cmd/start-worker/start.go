@@ -7,6 +7,7 @@ import (
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
+	"github.com/taskcluster/taskcluster-worker-runner/worker"
 )
 
 func StartWorker(cfg *cfg.RunnerConfig) error {
@@ -40,7 +41,22 @@ func StartWorker(cfg *cfg.RunnerConfig) error {
 		return fmt.Errorf("provider did not set WorkerID")
 	}
 
-	fmt.Printf("%#v\n", run)
+	worker, err := worker.New(cfg)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Configuring for worker implementation %s", cfg.Worker.Implementation)
+	err = worker.ConfigureRun(&run)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Starting worker")
+	err = worker.StartWorker(&run)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

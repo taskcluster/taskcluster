@@ -39,9 +39,7 @@ func New(cfg *cfg.RunnerConfig) (Provider, error) {
 
 func Usage() string {
 	rv := []string{`
-Providers configuration depends on the providerType:
-
-`}
+Providers configuration depends on the providerType:`}
 
 	for _, pi := range providers {
 		rv = append(rv, pi.usage())

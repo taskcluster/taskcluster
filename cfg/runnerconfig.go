@@ -9,8 +9,14 @@ import (
 // RunnerConfig defines the configuration for taskcluster-worker-starter.  See the usage
 // string for field descriptions
 type RunnerConfig struct {
-	Provider     ProviderConfig `yaml:"provider"`
-	WorkerConfig WorkerConfig   `yaml:"workerConfig"`
+	Provider     ProviderConfig             `yaml:"provider"`
+	Worker       WorkerImplementationConfig `yaml:"worker"`
+	WorkerConfig WorkerConfig               `yaml:"workerConfig"`
+}
+
+type WorkerImplementationConfig struct {
+	Implementation string `yaml:"implementation"`
+	Path           string `yaml:"path"`
 }
 
 // Get a fragment of a usage message that describes the configuration file format
@@ -23,6 +29,11 @@ Configuration is in the form of a YAML file with the following fields:
 		providerType: (required) the worker-manager providerType responsible for this worker;
 			this generally indicates the cloud the worker is running in, or 'static' for a
 			non-cloud-based worker; see below.
+
+	worker: (required) informatino about the worker being run
+
+		implementation: (required) the name of the worker implementation
+		path: (required) the path to the worker binary
 
 	workerConfig: arbitrary data which forms the basics of the config passed to the worker;
 		this will be merged with several other sources of configuration.

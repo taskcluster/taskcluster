@@ -7,6 +7,7 @@ import (
 	docopt "github.com/docopt/docopt-go"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/provider"
+	"github.com/taskcluster/taskcluster-worker-runner/worker"
 )
 
 func usage() string {
@@ -18,7 +19,9 @@ Usage:
 
 ` + cfg.Usage() + `
 
-` + provider.Usage()
+` + provider.Usage() + `
+
+` + worker.Usage()
 }
 
 func main() {
