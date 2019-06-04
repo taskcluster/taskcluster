@@ -20,7 +20,7 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => 
             options: {
               audience: rootUrl,
               issuer: rootUrl,
-            }
+            },
           })
         );
 

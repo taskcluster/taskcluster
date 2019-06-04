@@ -5,7 +5,6 @@ const { Strategy } = require('passport-github');
 const taskcluster = require('taskcluster-client');
 const User = require('../User');
 const identityFromClientId = require('../../utils/identityFromClientId');
-const tryCatch = require('../../utils/tryCatch');
 const { encode } = require('../../utils/codec');
 const login = require('../../utils/login');
 const jwt = require('../../utils/jwt');
