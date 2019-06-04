@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { arrayOf } from 'prop-types';
 import storage from 'localforage';
 import { ApolloProvider } from 'react-apollo';
@@ -20,28 +20,25 @@ import { init as initSentry } from '@sentry/browser';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import FontStager from '../components/FontStager';
+// import Main from './Main';
 import Main from './Main';
 import { ToggleThemeContext } from '../utils/ToggleTheme';
 import { AuthContext } from '../utils/Auth';
 import db from '../utils/db';
-import reportError from '../utils/reportError';
+// import reportError from '../utils/reportError';
 import theme from '../theme';
 import introspectionQueryResultData from '../fragments/fragmentTypes.json';
 import { route } from '../utils/prop-types';
 import AuthController from '../auth/AuthController';
 
-@hot(module)
-export default class App extends Component {
-  static propTypes = {
-    routes: arrayOf(route).isRequired,
-  };
-
-  fragmentMatcher = new IntrospectionFragmentMatcher({
+const App = ({ routes }) => {
+  const [error, setError] = useState(null);
+  const [themeState, setThemeState] = useState(theme.darkTheme);
+  const fragmentMatcher = new IntrospectionFragmentMatcher({
     introspectionQueryResultData,
   });
-
-  cache = new InMemoryCache({
-    fragmentMatcher: this.fragmentMatcher,
+  const cache = new InMemoryCache({
+    fragmentMatcher,
     /* eslint-disable no-underscore-dangle */
     dataIdFromObject: object => {
       switch (object.__typename) {
@@ -61,18 +58,15 @@ export default class App extends Component {
     },
     /* eslint-enable no-underscore-dangle */
   });
-
-  persistence = new CachePersistor({
-    cache: this.cache,
+  const persistence = new CachePersistor({
+    cache,
     storage,
   });
-
-  httpLink = new HttpLink({
+  const httpLink = new HttpLink({
     uri: window.env.GRAPHQL_ENDPOINT,
     credentials: 'same-origin',
   });
-
-  wsLink = new WebSocketLink({
+  const wsLink = new WebSocketLink({
     // allow configuration of https:// or http:// and translate to ws:// or wss://
     uri: window.env.GRAPHQL_SUBSCRIPTION_ENDPOINT.replace(/^http/, 'ws'),
     options: {
@@ -80,12 +74,11 @@ export default class App extends Component {
       lazy: true,
     },
   });
-
-  apolloClient = new ApolloClient({
-    cache: this.cache,
+  const apolloClient = new ApolloClient({
+    cache,
     link: from([
       setContext((request, { headers }) => {
-        const { user } = this.state.auth;
+        const { user } = auth;
 
         if (!user || !user.credentials) {
           return;
@@ -105,28 +98,44 @@ export default class App extends Component {
 
           return kind === 'OperationDefinition' && operation === 'subscription';
         },
-        this.wsLink,
-        this.httpLink
+        wsLink,
+        httpLink
       ),
     ]),
   });
+  const handleUserChanged = user => {
+    setAuth({
+      ...auth,
+      user,
+    });
+  };
 
-  constructor(props) {
-    super(props);
+  const authController = new AuthController(apolloClient);
 
-    this.authController = new AuthController(this.apolloClient);
-    this.authController.on('user-changed', this.handleUserChanged);
+  authController.on('user-changed', handleUserChanged);
 
-    const state = {
-      error: null,
-      theme: theme.darkTheme,
-      auth: {
-        user: null,
-        authorize: this.authorize,
-        unauthorize: this.unauthorize,
-      },
-    };
+  const authorize = async user => {
+    authController.renew(user);
+  };
 
+  const unauthorize = () => {
+    authController.setUser(null);
+  };
+
+  const [auth, setAuth] = useState({
+    user: null,
+    authorize,
+    unauthorize,
+  });
+  const getThemeType = async () => {
+    const themeType = await db.userPreferences.get('theme');
+
+    if (themeType === 'light') {
+      setThemeState(theme.lightTheme);
+    }
+  };
+
+  useEffect(() => {
     if (window.env.GA_TRACKING_ID) {
       // Unique Google Analytics tracking number
       ReactGA.initialize(`UA-${window.env.GA_TRACKING_ID}`);
@@ -137,84 +146,45 @@ export default class App extends Component {
       initSentry({ dsn: window.env.SENTRY_DSN });
     }
 
-    this.state = state;
-  }
+    getThemeType();
 
-  static getDerivedStateFromError(error) {
-    return { error };
-  }
+    authController.loadUser();
 
-  handleUserChanged = user => {
-    if (!user) {
-      this.authController.clearSession();
-    }
+    return () => {
+      authController.off('user-changed', handleUserChanged);
+    };
+  }, []);
 
-    this.setState({
-      auth: {
-        ...this.state.auth,
-        user,
-      },
-    });
-  };
-
-  componentWillUnmount() {
-    this.authController.off('user-changed', this.handleUserChanged);
-  }
-
-  async componentDidMount() {
-    const themeType = await db.userPreferences.get('theme');
-
-    this.authController.loadUser();
-
-    if (themeType === 'light') {
-      this.setState({ theme: theme.lightTheme });
-    }
-  }
-
-  authorize = async user => {
-    this.authController.renew(user);
-  };
-
-  unauthorize = () => {
-    this.authController.setUser(null);
-  };
-
-  toggleTheme = () => {
-    this.setState({
-      theme:
-        this.state.theme.palette.type === 'dark'
-          ? theme.lightTheme
-          : theme.darkTheme,
-    });
+  const toggleTheme = () => {
     const newTheme =
-      this.state.theme && this.state.theme.palette.type === 'dark'
+      themeState && themeState.palette.type === 'dark'
         ? theme.lightTheme
         : theme.darkTheme;
 
-    db.userPreferences.put(newTheme.palette.type, 'theme');
-    this.setState({ theme: newTheme });
+    setThemeState(newTheme);
   };
 
-  componentDidCatch(error, errorInfo) {
-    reportError(error, errorInfo);
-  }
+  useEffect(() => {
+    db.userPreferences.put(themeState.palette.type, 'theme');
+  }, [themeState]);
 
-  render() {
-    const { routes } = this.props;
-    const { auth, error, theme } = this.state;
+  return (
+    <ApolloProvider client={apolloClient}>
+      <AuthContext.Provider value={auth}>
+        <ToggleThemeContext.Provider value={toggleTheme}>
+          <MuiThemeProvider theme={themeState}>
+            <FontStager />
+            <CssBaseline />
+            <Main key={auth.user} routes={routes} error={error} />
+          </MuiThemeProvider>
+        </ToggleThemeContext.Provider>
+      </AuthContext.Provider>
+    </ApolloProvider>
+  );
+};
 
-    return (
-      <ApolloProvider client={this.apolloClient}>
-        <AuthContext.Provider value={auth}>
-          <ToggleThemeContext.Provider value={this.toggleTheme}>
-            <MuiThemeProvider theme={theme}>
-              <FontStager />
-              <CssBaseline />
-              <Main key={auth.user} routes={routes} error={error} />
-            </MuiThemeProvider>
-          </ToggleThemeContext.Provider>
-        </AuthContext.Provider>
-      </ApolloProvider>
-    );
-  }
-}
+App.propTypes = {
+  routes: arrayOf(route).isRequired,
+};
+
+export default hot(module)(App);

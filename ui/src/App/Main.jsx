@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Fragment, useEffect } from 'react';
 import { BrowserRouter, Switch } from 'react-router-dom';
 import { withApollo } from 'react-apollo';
 import { object, arrayOf } from 'prop-types';
@@ -9,8 +9,7 @@ import { route } from '../utils/prop-types';
 import { withAuth } from '../utils/Auth';
 import isLoggedInQuery from './isLoggedIn.graphql';
 
-@withApollo
-@withStyles(theme => ({
+const styles = theme => ({
   '@global': {
     [[
       'input:-webkit-autofill',
@@ -45,50 +44,49 @@ import isLoggedInQuery from './isLoggedIn.graphql';
       ...theme.mixins.highlight,
     },
   },
-}))
-@withAuth
-export default class Main extends Component {
-  static propTypes = {
-    error: object,
-    routes: arrayOf(route).isRequired,
-  };
+});
+const Main = ({ error, routes, user, onUnauthorize, client }) => {
+  useEffect(() => {
+    async function loggedInQuery() {
+      const { data } = await client.query({
+        query: isLoggedInQuery,
+        fetchPolicy: 'network-only',
+      });
 
-  static defaultProps = {
-    error: null,
-  };
-
-  // Called on user change because of <App key={auth.user} ... />
-  async componentDidMount() {
-    const { user, onUnauthorize } = this.props;
-    const { data } = await this.props.client.query({
-      query: isLoggedInQuery,
-      fetchPolicy: 'network-only',
-    });
-
-    if (
-      user &&
-      user.identityProviderId !== 'manual' &&
-      data &&
-      data.isLoggedIn === false
-    ) {
-      onUnauthorize();
+      if (
+        user &&
+        user.identityProviderId !== 'manual' &&
+        data &&
+        data.isLoggedIn === false
+      ) {
+        onUnauthorize();
+      }
     }
-  }
 
-  render() {
-    const { error, routes } = this.props;
+    loggedInQuery();
+  }, [])
 
-    return (
-      <Fragment>
-        <ErrorPanel fixed error={error} />
-        <BrowserRouter>
-          <Switch>
-            {routes.map(({ routes, ...props }) => (
-              <RouteWithProps key={props.path || 'not-found'} {...props} />
-            ))}
-          </Switch>
-        </BrowserRouter>
-      </Fragment>
-    );
-  }
-}
+  return (
+    <Fragment>
+      <ErrorPanel error={error} />
+      <BrowserRouter>
+        <Switch>
+          {routes.map(({ routes, ...props }) => (
+            <RouteWithProps key={props.path || 'not-found'} {...props} />
+          ))}
+        </Switch>
+      </BrowserRouter>
+    </Fragment>
+  )
+};
+
+Main.propTypes = {
+  error: object,
+  routes: arrayOf(route).isRequired,
+};
+
+Main.defaultProps = {
+  error: null,
+};
+
+export default withAuth(withApollo(withStyles(styles)(Main)));

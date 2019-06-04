@@ -154,6 +154,8 @@ module.exports = {
     (neutrino) => {
       neutrino.config.resolve
         .alias.set('taskcluster-ui', resolve(__dirname, 'src/'));
+      neutrino.config.resolve
+        .alias.set('react-dom', '@hot-loader/react-dom');
     },
     (neutrino) => {
       // Generate env.js, combining env vars into the build, when
