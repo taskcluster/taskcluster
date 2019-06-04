@@ -1,19 +1,23 @@
 type WorkerManagerWorkerPoolSummary {
-    workerPool: String!
+    workerPoolId: String!
     description: String
     owner: String!
-    minCapacity: Int!
-    maxCapacity: Int!
-    requestedCapacity: Int!
-    pendingCapacity: Int!
-    runningCapacity: Int!
-    lastActive: DateTime!
-    lastResolved: DateTime!
-    pendingTasks: Int!
-    failed: Int!
-    exception: Int!
-    unscheduled: Int!
-    provider: String!
+    config: WMWorkerPoolGeneralConfig
+    lastActive: DateTime
+    lastResolved: DateTime
+    pendingTasks: Int
+    failed: Int
+    exception: Int
+    unscheduled: Int
+    providerId: String!
+}
+
+type WMWorkerPoolGeneralConfig {
+    minCapacity: Int
+    maxCapacity: Int
+    requestedCapacity: Int
+    pendingCapacity: Int
+    runningCapacity: Int
 }
 
 type WorkerManagerWorker {

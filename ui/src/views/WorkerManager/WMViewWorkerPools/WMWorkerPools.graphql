@@ -1,14 +1,8 @@
 query workerPools {
   WorkerManagerWorkerPoolSummaries {
-    workerPool
-    pendingCapacity
-    runningCapacity
-    pendingTasks
-    lastActive
-    lastResolved
-    failed
-    exception
-    unscheduled
-    provider
+    workerPoolId
+    providerId
+    description
+    owner
   }
 }

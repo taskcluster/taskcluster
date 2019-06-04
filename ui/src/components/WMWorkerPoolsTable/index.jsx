@@ -81,21 +81,17 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           <TableCellListItem
             button
             component={Link}
-            to={`${path}/worker-pools/${workerPool.workerPool}`}>
+            to={`${path}/worker-pools/${workerPool.workerPoolId}`}>
             <ListItemText
               disableTypography
-              primary={<Typography>{workerPool.workerPool}</Typography>}
+              primary={<Typography>{workerPool.workerPoolId}</Typography>}
             />
             <LinkIcon size={iconSize} />
           </TableCellListItem>
         </TableCell>
 
         <TableCell>
-          <Typography>{workerPool.pendingCapacity}</Typography>
-        </TableCell>
-
-        <TableCell>
-          <Typography>{workerPool.runningCapacity}</Typography>
+          <Typography>{workerPool.owner}</Typography>
         </TableCell>
 
         <TableCell>
@@ -154,10 +150,10 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           <TableCellListItem
             button
             component={Link}
-            to={`${path}/providers/${workerPool.provider}`}>
+            to={`${path}/providers/${workerPool.providerId}`}>
             <ListItemText
               disableTypography
-              primary={<Typography>{workerPool.provider}</Typography>}
+              primary={<Typography>{workerPool.providerId}</Typography>}
             />
             <LinkIcon size={iconSize} />
           </TableCellListItem>
@@ -181,9 +177,8 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         items={sortedWorkerPools}
         headers={[
           'Worker Pool',
+          'Owner',
           'Pending Tasks',
-          'Running Capacity',
-          'Pending Capacity',
           'Last Active',
           'Last Resolved',
           'Failed',
