@@ -5,7 +5,7 @@ module.exports = ({ workerManager }) => {
   const WorkerManagerWorkerPoolSummaries = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ filter }) => {
-        const summaries = await workerManager.listWorkerPools();
+        const summaries = (await workerManager.listWorkerPools()).workerPools;
 
         return filter ? sift(filter, summaries) : summaries;
       })
