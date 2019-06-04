@@ -46,9 +46,9 @@ const providers = {
     paddingLeft: 0,
     paddingRight: 0,
   },
-  subList: {
-    paddingTop: 60,
-    paddingBottom: 60,
+  middleList: {
+    paddingTop: theme.spacing.unit * 7,
+    paddingBottom: theme.spacing.unit * 9,
     paddingLeft: 0,
     paddingRight: 0,
   },
@@ -173,40 +173,42 @@ export default class WMEditWorkerPool extends Component {
               label="Email the owner about errors"
             />
           </ListItem>
+        </List>
 
-          <List className={classes.subList}>
-            <ListSubheader>Provider</ListSubheader>
-            <ListItem>
-              <TextField
-                id="select-provider-type"
-                className={classes.dropdown}
-                select
-                label="Type:"
-                helperText="Which service do you want to run your tasks in?"
-                value={workerPool.providerType}
-                name="providerType"
-                onChange={this.handleInputChange}
-                margin="normal">
-                {Object.keys(providers).map(p => (
-                  <MenuItem key={p} value={p}>
-                    {p}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </ListItem>
+        <List className={classes.middleList}>
+          <ListSubheader>Provider</ListSubheader>
+          <ListItem>
+            <TextField
+              id="select-provider-type"
+              className={classes.dropdown}
+              select
+              label="Type"
+              helperText="Which service do you want to run your tasks in?"
+              value={workerPool.providerType}
+              name="providerType"
+              onChange={this.handleInputChange}
+              margin="normal">
+              {Object.keys(providers).map(p => (
+                <MenuItem key={p} value={p}>
+                  {p}
+                </MenuItem>
+              ))}
+            </TextField>
+          </ListItem>
 
-            <ListItem>
-              <TextField
-                label="Name"
-                value={workerPool.providerId}
-                name="providerId"
-                onChange={this.handleInputChange}
-                margin="normal"
-                fullWidth
-              />
-            </ListItem>
-          </List>
+          <ListItem>
+            <TextField
+              label="Name"
+              value={workerPool.providerId}
+              name="providerId"
+              onChange={this.handleInputChange}
+              margin="normal"
+              fullWidth
+            />
+          </ListItem>
+        </List>
 
+        <List className={classes.list}>
           <ListSubheader>Configuration:</ListSubheader>
           <ListItem>
             <CodeEditor
