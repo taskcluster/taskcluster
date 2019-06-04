@@ -1,6 +1,6 @@
 import mitt from 'mitt';
 import { snake, upper } from 'change-case';
-import { AUTH_STORE } from '../utils/constants';
+import { MAX_SET_TIMEOUT_DELAY, AUTH_STORE } from '../utils/constants';
 import credentialsQuery from './credentials.graphql';
 import removeKeys from '../utils/removeKeys';
 import UserSession from './UserSession';
@@ -82,7 +82,7 @@ export default class AuthController {
       this.renewalTimer = window.setTimeout(() => {
         this.renewalTimer = null;
         this.renew(user);
-      }, timeout);
+      }, Math.min(timeout, MAX_SET_TIMEOUT_DELAY));
     }
   }
 
