@@ -13,10 +13,6 @@ type RunnerConfig struct {
 	WorkerConfig WorkerConfig   `yaml:"workerConfig"`
 }
 
-type ProviderConfig struct {
-	ProviderType string `yaml:"providerType"`
-}
-
 // Get a fragment of a usage message that describes the configuration file format
 func Usage() string {
 	return `

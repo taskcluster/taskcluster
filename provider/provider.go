@@ -11,7 +11,7 @@ import (
 // Takcluster credentials.
 type Provider interface {
 	// Configure the given run.  This is expected to set the Taskcluster deployment
-	// and workerin-information fields, but may modify any part of the run it desires.
+	// and worker-information fields, but may modify any part of the run it desires.
 	ConfigureRun(run *runner.Run) error
 }
 
