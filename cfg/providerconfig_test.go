@@ -47,7 +47,7 @@ func TestUnpack(t *testing.T) {
 	}
 
 	var pc ProviderConfig
-	yaml.Unmarshal([]byte(`{"providerType": "x", "Value": 10, "anotherValue": "hi"}`), &pc)
+	yaml.Unmarshal([]byte(`{"providerType": "x", "value": 10, "anotherValue": "hi"}`), &pc)
 
 	var c mypc
 	err := pc.Unpack(&c)
