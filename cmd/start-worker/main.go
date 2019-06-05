@@ -15,7 +15,7 @@ func usage() string {
 start-worker starts Taskcluster workers.
 
 Usage:
-	start-worker <startWorkerConfig>
+	start-worker <runnerConfig>
 
 ` + cfg.Usage() + `
 
@@ -31,7 +31,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	filename := opts["<startWorkerConfig>"].(string)
+	filename := opts["<runnerConfig>"].(string)
 	log.Printf("Loading taskcluster-worker-runner configuration from %s", filename)
 	cfg, err := cfg.Load(filename)
 	if err != nil {

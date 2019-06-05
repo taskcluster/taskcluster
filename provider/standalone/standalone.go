@@ -47,6 +47,7 @@ configuration pre-loaded.  It requires the following properties be included
 explicitly in the runner configuration:
 
 	provider:
+		providerType: standalone
 		rootURL: ..
 		clientID: ..
 		accessToken: ..
