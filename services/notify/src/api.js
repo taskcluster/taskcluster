@@ -110,6 +110,49 @@ builder.declare({
 
 builder.declare({
   method: 'post',
+  route: '/slack',
+  name: 'slack',
+  scopes: {
+    if: 'channelRequest',
+    then: 'notify:slack-channel:<channel>',
+    else: 'notify:slack-user:<user>',
+  },
+  input: 'slack-request.yml',
+  title: 'Post slack Message',
+  description: [
+    'Post a message on slack to a specific channel or user, or a specific user',
+    'on a specific channel.',
+    '',
+    'Success of this API method does not imply the message was successfully',
+    'posted. This API method merely inserts the slack message into a queue',
+    'that will be processed by a background process.',
+    'This allows us to re-send the message in face of connection issues.',
+    '',
+    'However, if the user isn\'t online the message will be dropped without',
+    'error. We maybe improve this behavior in the future. For now just keep',
+    'in mind that slack is a best-effort service.',
+  ].join('\n'),
+}, async function(req, res) {
+  let input = req.body;
+  await req.authorize({
+    channelRequest: input.channel !== undefined,
+    channel: input.channel,
+    user: input.user,
+  });
+
+  if (await this.denier.isDenied(
+    input.user ? "slack-user" : "slack-channel",
+    input.user ? input.user : input.channel)) {
+    return res.reportError('DenylistedAddress', `slack address ${input.channel || input.user} is denylisted`, {});
+  }
+
+  await this.notifier.slack(input);
+  res.sendStatus(200);
+});
+
+
+builder.declare({
+  method: 'post',
   route: '/denylist/add',
   name: 'addDenylistAddress',
   scopes: 'notify:manage-denylist',

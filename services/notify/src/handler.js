@@ -104,6 +104,24 @@ class Handler {
             message: ircMessage,
           });
         }
+        case 'slack-user': {
+          if (_.has(task, 'extra.notify.slackUserMessage')) {
+            slackMessage = this.renderMessage(task.extra.notify.slackUserMessage, {task, status});
+          }
+          return this.notifier.slack({
+            user: route[2],
+            message: slackMessage,
+          });
+        }
+        case 'slack-channel': {
+          if (_.has(task, 'extra.notify.slackChannelMessage')) {
+            slackMessage = this.renderMessage(task.extra.notify.slackChannelMessage, {task, status});
+          }
+          return this.notifier.slack({
+            channel: route[2],
+            message: slackMessage,
+          });
+        }
         case 'pulse': {
           return this.notifier.pulse({
             routingKey: _.join(_.slice(route, 2, route.length - 1), '.'),

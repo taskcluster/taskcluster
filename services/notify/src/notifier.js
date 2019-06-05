@@ -139,6 +139,35 @@ class Notifier {
     this.monitor.log.irc({dest: user || channel});
     return res;
   }
+
+  async slack(messageRequest) {
+    const {channel, user, message} = messageRequest;
+    if (channel && !/^[#&][^ ,\u{0007}]{1,199}$/u.test(channel)) {
+      debug('slack channel ' + channel + ' invalid format. Not attempting to send.');
+      return;
+    }
+
+    if (this.isDuplicate(channel, user, message)) {
+      debug('Duplicate slack message send detected. Not attempting resend.');
+      return;
+    }
+
+    const notificationType = user ? 'slack-user' : 'slack-channel';
+    const notificationAddress = user || channel;
+    if (await this.options.denier.isDenied(notificationType, notificationAddress)) {
+      debug('Denylist slack: denylisted send detected, discarding the notification');
+      return;
+    }
+
+    debug(`Publishing message on slack for ${user || channel}.`);
+    /*
+    const res = await this.publisher.slackRequest({channel, user, message});
+    Replace it by something that sends message to slack
+    */
+    this.markSent(channel, user, message);
+    this.monitor.log.slack({dest: user || channel});
+    return res;
+  }
 }
 
 // Export notifier
