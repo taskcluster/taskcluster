@@ -7,20 +7,27 @@ import (
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
+	"github.com/taskcluster/taskcluster-worker-runner/secrets"
 	"github.com/taskcluster/taskcluster-worker-runner/worker"
 )
 
 func StartWorker(cfg *cfg.RunnerConfig) error {
+	var run runner.Run
+	run.WorkerConfig = cfg.WorkerConfig
+
+	// provider
+
 	provider, err := provider.New(cfg)
 	if err != nil {
 		return err
 	}
 
-	var run runner.Run
-	run.WorkerConfig = cfg.WorkerConfig
-
 	log.Printf("Configuring with provider %s", cfg.Provider.ProviderType)
-	provider.ConfigureRun(&run)
+	err = provider.ConfigureRun(&run)
+	if err != nil {
+		return err
+	}
+
 	if run.RootURL == "" {
 		return fmt.Errorf("provider did not set RootURL")
 	}
@@ -41,6 +48,16 @@ func StartWorker(cfg *cfg.RunnerConfig) error {
 		return fmt.Errorf("provider did not set WorkerID")
 	}
 
+	// secrets
+
+	log.Println("Getting secrets from secrets service")
+	err = secrets.ConfigureRun(cfg, &run)
+	if err != nil {
+		return err
+	}
+
+	// worker
+
 	worker, err := worker.New(cfg)
 	if err != nil {
 		return err
@@ -51,6 +68,8 @@ func StartWorker(cfg *cfg.RunnerConfig) error {
 	if err != nil {
 		return err
 	}
+
+	// start
 
 	log.Printf("Starting worker")
 	err = worker.StartWorker(&run)

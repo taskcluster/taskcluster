@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	secrets map[string]*tcawsprovisioner.SecretResponse
+	awsProvisionerSecrets map[string]*tcawsprovisioner.SecretResponse
 )
 
 type FakeAwsProvisioner struct {
@@ -21,7 +21,7 @@ func (cli *FakeAwsProvisioner) GetSecret(token string) (*tcawsprovisioner.Secret
 		return nil, fmt.Errorf("must use an unauthenticated client to get secret")
 	}
 
-	secret, ok := secrets[token]
+	secret, ok := awsProvisionerSecrets[token]
 	if !ok {
 		return nil, fmt.Errorf("no secret with that token")
 	}
@@ -34,28 +34,28 @@ func (cli *FakeAwsProvisioner) RemoveSecret(token string) error {
 		return fmt.Errorf("must use an unauthenticated client to remove secret")
 	}
 
-	_, ok := secrets[token]
+	_, ok := awsProvisionerSecrets[token]
 	if !ok {
 		return fmt.Errorf("no secret with that token")
 	}
 
-	delete(secrets, token)
+	delete(awsProvisionerSecrets, token)
 	return nil
 }
 
 // Create a new secret with the given content, returning the token
 func FakeAwsProvisionerCreateSecret(response *tcawsprovisioner.SecretResponse) string {
 	token := slugid.Nice()
-	if secrets == nil {
-		secrets = make(map[string]*tcawsprovisioner.SecretResponse)
+	if awsProvisionerSecrets == nil {
+		awsProvisionerSecrets = make(map[string]*tcawsprovisioner.SecretResponse)
 	}
-	secrets[token] = response
+	awsProvisionerSecrets[token] = response
 	return token
 }
 
 // Get a secret with the given token; used to check that secrets are removed.
 func FakeAwsProvisionerGetSecret(token string) *tcawsprovisioner.SecretResponse {
-	return secrets[token]
+	return awsProvisionerSecrets[token]
 }
 
 // A function matching AwsProvisionerClientFactory that can be used in testing
