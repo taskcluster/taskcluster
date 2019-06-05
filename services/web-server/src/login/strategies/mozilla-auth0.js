@@ -218,7 +218,7 @@ module.exports = class MozillaAuth0 {
 
           done(null, {
             profile,
-            accessToken: taskclusterToken,
+            taskclusterToken,
             providerExpires,
             identityProviderId: 'mozilla-auth0',
           });

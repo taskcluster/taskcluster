@@ -13,7 +13,7 @@
             type: 'login',
             profile: <%- JSON.stringify(user.profile) %>,
             identityProviderId: <%- JSON.stringify(user.identityProviderId) %>,
-            accessToken: <%- JSON.stringify(user.accessToken) %>,
+            taskclusterToken: <%- JSON.stringify(user.taskclusterToken) %>,
             providerExpires: <%- JSON.stringify(user.providerExpires) %>,
           }, <%- JSON.stringify(publicUrl) %>);
           window.close();

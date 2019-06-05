@@ -5,7 +5,7 @@
  * Common properties are:
  * - identityProviderId -- the provider identifier
  * - profile --  the user profile object
- * - accessToken -- the Taskcluster access token
+ * - taskclusterToken -- the Taskcluster access token
  * - expires -- the expiration date time of the Taskcluster access token
  * - credentials -- the Taskcluster credentials (with or without a certificate)
  */

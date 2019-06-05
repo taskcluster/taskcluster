@@ -27,5 +27,5 @@ extend type Query {
   # The given credentials will expire in a relatively short time. Callers should
   # monitor this expiration and refresh the credentials if necessary, by calling
   # this endpoint again, if they have expired.
-  getCredentials(accessToken: ID!): Credentials
+  getCredentials(taskclusterToken: ID!): Credentials
 }
