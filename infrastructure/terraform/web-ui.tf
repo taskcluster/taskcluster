@@ -4,7 +4,6 @@ module "web_ui_secrets" {
 
   secrets = {
     APPLICATION_NAME              = "Taskcluster"
-    PORT                          = ""
     GRAPHQL_ENDPOINT              = "${var.root_url}/graphql"
     GRAPHQL_SUBSCRIPTION_ENDPOINT = "${var.root_url}/subscription"
 

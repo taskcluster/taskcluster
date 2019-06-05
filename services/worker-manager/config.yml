@@ -1,9 +1,9 @@
 defaults:
   app:
     workerTableName: WMWorkers
-    workerTypeTableName: WMWorkerTypes
-    workerTypeErrorTableName: WMWorkerTypeErrors
-    errorsExpirationTime: '-4 days' # Anything older than a few days goes away
+    workerPoolTableName: WMWorkerPools
+    workerPoolErrorTableName: WMWorkerPoolErrors
+    errorsExpirationDelay: '-4 days' # Anything older than a few days goes away
   monitoring:
     level: !env LEVEL
   taskcluster:
@@ -33,6 +33,8 @@ test:
     env: 'development'
     forceSSL: false
     trustProxy: false
+  app:
+    errorsExpirationDelay: '-1 hour'
   providers:
     testing1:
       providerType: testing

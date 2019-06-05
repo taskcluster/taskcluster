@@ -37,7 +37,7 @@
     "deepmerge": "^3.0.0",
     "ejs": "^2.6.1",
     "email-templates": "^5.0.2",
-    "express": "4.17.0",
+    "express": "4.17.1",
     "express-jwt": "^5.3.0",
     "express-sslify": "1.2.0",
     "fast-azure-storage": "^2.3.0",
@@ -156,7 +156,7 @@
     "zurvan": "^0.5.2"
   },
   "scripts": {
-    "lint": "eslint --cache --ext js --ignore-pattern clients/client-web/build libraries services infrastructure clients test",
+    "lint": "eslint --cache --ext js --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test",
     "test": "yarn workspaces run test",
     "test:meta": "mocha test/*_test.js",
     "fetch-coverage": "node test/fetch-coverage.js",

@@ -7,9 +7,7 @@ presents the entire REST API to consumers as well as being able to generate
 URLs Signed by Hawk credentials.  It can also generate routing keys for
 listening to pulse messages from Taskcluster.
 
-The library builds the REST API methods from the same [API Reference
-format](/docs/manual/design/apis/reference-format) as the
-Javascript client library.
+The library builds the REST API methods from the Taskcluster API definitions provided in the [Taskcluster repository](https://github.com/taskcluster/taskcluster).
 
 ## Generating Temporary Credentials
 If you have non-temporary taskcluster credentials you can generate a set of
@@ -50,7 +48,7 @@ but unnamed temporary credentials can be created regardless of your scopes.
 
 ## API Documentation
 
-The REST API methods are documented in the [reference docs](/docs/reference).
+The REST API methods are documented in the [reference docs](https://docs.taskcluster.net/docs/reference).
 
 ## Query-String arguments
 Query string arguments are now supported.  In order to use them, you can call
@@ -212,6 +210,28 @@ and if there are no existing handlers, add a `logging.StreamHandler()`
 instance.  This is meant to assist those who do not wish to bother figuring out
 how to configure the python logging module but do want debug messages
 
+
+## SlugIDs
+
+To generate slugIds (Taskcluster's client-generated unique IDs), use
+`taskcluster.slugId()`, which will return a unique slugId on each call.
+
+In some cases it is useful to be able to create a mapping from names to
+slugIds, with the ability to generate the same slugId multiple times.
+The `taskcluster.stableSlugId()` function returns a callable that does
+just this.
+
+```python
+gen = taskcluster.stableSlugId()
+sometask = gen('sometask')
+assert gen('sometask') == sometask  # same input generates same output
+assert gen('sometask') != gen('othertask')
+
+gen2 = taskcluster.stableSlugId()
+sometask2 = gen('sometask')
+assert sometask2 != sometask  # but different slugId generators produce
+                              # different output
+```
 
 ## Scopes
 The `scopeMatch(assumedScopes, requiredScopeSets)` function determines
@@ -4327,7 +4347,7 @@ loop = asyncio.get_event_loop()
 session = taskcluster.aio.createSession(loop=loop)
 asyncWorkerManager = taskcluster.aio.WorkerManager(options, session=session)
 ```
-This service manages workers, including provisioning for dynamic workertypes.
+This service manages workers, including provisioning for dynamic worker pools.
 #### Ping Server
 Respond without doing anything.
 This endpoint is used to check that the service is up.
@@ -4340,14 +4360,14 @@ workerManager.ping() # -> None
 await asyncWorkerManager.ping() # -> None
 ```
 
-#### Create WorkerType
-Create a new workertype. If the workertype already exists, this will throw an error.
+#### Create Worker Pool
+Create a new worker pool. If the worker pool already exists, this will throw an error.
 
 
 
 Takes the following arguments:
 
-  * `workerTypeName`
+  * `workerPoolId`
 
 Has required input schema
 
@@ -4355,21 +4375,27 @@ Has required output schema
 
 ```python
 # Sync calls
-workerManager.createWorkerType(workerTypeName, payload) # -> result
-workerManager.createWorkerType(payload, workerTypeName='value') # -> result
+workerManager.createWorkerPool(workerPoolId, payload) # -> result
+workerManager.createWorkerPool(payload, workerPoolId='value') # -> result
 # Async call
-await asyncWorkerManager.createWorkerType(workerTypeName, payload) # -> result
-await asyncWorkerManager.createWorkerType(payload, workerTypeName='value') # -> result
+await asyncWorkerManager.createWorkerPool(workerPoolId, payload) # -> result
+await asyncWorkerManager.createWorkerPool(payload, workerPoolId='value') # -> result
 ```
 
-#### Update WorkerType
-Given an existing workertype definition, this will modify it and return the new definition.
+#### Update Worker Pool
+Given an existing worker pool definition, this will modify it and return
+the new definition.
+
+To delete a worker pool, set its `providerId` to `"null-provider"`.
+After any existing workers have exited, a cleanup job will remove the
+worker pool.  During that time, the worker pool can be updated again, such
+as to set its `providerId` to a real provider.
 
 
 
 Takes the following arguments:
 
-  * `workerTypeName`
+  * `workerPoolId`
 
 Has required input schema
 
@@ -4377,62 +4403,44 @@ Has required output schema
 
 ```python
 # Sync calls
-workerManager.updateWorkerType(workerTypeName, payload) # -> result
-workerManager.updateWorkerType(payload, workerTypeName='value') # -> result
+workerManager.updateWorkerPool(workerPoolId, payload) # -> result
+workerManager.updateWorkerPool(payload, workerPoolId='value') # -> result
 # Async call
-await asyncWorkerManager.updateWorkerType(workerTypeName, payload) # -> result
-await asyncWorkerManager.updateWorkerType(payload, workerTypeName='value') # -> result
+await asyncWorkerManager.updateWorkerPool(workerPoolId, payload) # -> result
+await asyncWorkerManager.updateWorkerPool(payload, workerPoolId='value') # -> result
 ```
 
-#### Get WorkerType
-Fetch an existing workertype defition.
+#### Get Worker Pool
+Fetch an existing worker pool defition.
 
 
 
 Takes the following arguments:
 
-  * `workerTypeName`
+  * `workerPoolId`
 
 Has required output schema
 
 ```python
 # Sync calls
-workerManager.workerType(workerTypeName) # -> result
-workerManager.workerType(workerTypeName='value') # -> result
+workerManager.workerPool(workerPoolId) # -> result
+workerManager.workerPool(workerPoolId='value') # -> result
 # Async call
-await asyncWorkerManager.workerType(workerTypeName) # -> result
-await asyncWorkerManager.workerType(workerTypeName='value') # -> result
+await asyncWorkerManager.workerPool(workerPoolId) # -> result
+await asyncWorkerManager.workerPool(workerPoolId='value') # -> result
 ```
 
-#### Delete WorkerType
-Delete an existing workertype definition.
-
-
-
-Takes the following arguments:
-
-  * `workerTypeName`
-
-```python
-# Sync calls
-workerManager.deleteWorkerType(workerTypeName) # -> None
-workerManager.deleteWorkerType(workerTypeName='value') # -> None
-# Async call
-await asyncWorkerManager.deleteWorkerType(workerTypeName) # -> None
-await asyncWorkerManager.deleteWorkerType(workerTypeName='value') # -> None
-```
-
-#### List All WorkerTypes
-Get the list of all the existing workertypes
+#### List All Worker Pools
+Get the list of all the existing worker pools.
 
 
 Has required output schema
 
 ```python
 # Sync calls
-workerManager.listWorkerTypes() # -> result
+workerManager.listWorkerPools() # -> result
 # Async call
-await asyncWorkerManager.listWorkerTypes() # -> result
+await asyncWorkerManager.listWorkerPools() # -> result
 ```
 
 #### Google Credentials
@@ -4442,7 +4450,7 @@ Get Taskcluster credentials for a worker given an Instance Identity Token
 
 Takes the following arguments:
 
-  * `workerTypeName`
+  * `workerPoolId`
 
 Has required input schema
 
@@ -4450,11 +4458,11 @@ Has required output schema
 
 ```python
 # Sync calls
-workerManager.credentialsGoogle(workerTypeName, payload) # -> result
-workerManager.credentialsGoogle(payload, workerTypeName='value') # -> result
+workerManager.credentialsGoogle(workerPoolId, payload) # -> result
+workerManager.credentialsGoogle(payload, workerPoolId='value') # -> result
 # Async call
-await asyncWorkerManager.credentialsGoogle(workerTypeName, payload) # -> result
-await asyncWorkerManager.credentialsGoogle(payload, workerTypeName='value') # -> result
+await asyncWorkerManager.credentialsGoogle(workerPoolId, payload) # -> result
+await asyncWorkerManager.credentialsGoogle(payload, workerPoolId='value') # -> result
 ```
 
 
@@ -4467,19 +4475,14 @@ import taskcluster
 # Create WorkerManagerEvents client instance
 workerManagerEvents = taskcluster.WorkerManagerEvents(options)
 ```
-These exchanges provide notifications when a workerType is created, updatedor deleted. This is so that the listener running in a differentprocess at the other end can direct another listener specified by`providerId` and `workerType` to synchronize its bindings. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.
-#### WorkerType Created Messages
- * `workerManagerEvents.workerTypeCreated(routingKeyPattern) -> routingKey`
+These exchanges provide notifications when a worker pool is created or updated.This is so that the provisioner running in a differentprocess at the other end can synchronize to the changes. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.
+#### Worker Pool Created Messages
+ * `workerManagerEvents.workerPoolCreated(routingKeyPattern) -> routingKey`
    * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
    * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
-#### WorkerType Updated Messages
- * `workerManagerEvents.workerTypeUpdated(routingKeyPattern) -> routingKey`
-   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-
-#### WorkerType Deleted Messages
- * `workerManagerEvents.workerTypeDeleted(routingKeyPattern) -> routingKey`
+#### Worker Pool Updated Messages
+ * `workerManagerEvents.workerPoolUpdated(routingKeyPattern) -> routingKey`
    * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
    * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 

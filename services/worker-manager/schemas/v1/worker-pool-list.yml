@@ -1,14 +1,14 @@
 $schema: "/schemas/common/metaschema.json#"
-title: WorkerType List
-description: A list of worker types
+title: Worker Pool List
+description: A list of worker pools
 type: object
 properties:
-  workerTypes:
+  workerPools:
     type: array
-    title: "List of all workertypes"
-    description: List of all workertypes
+    title: "Worker Pools"
+    description: List of all worker pools
     uniqueItems: true
-    items: {$ref: 'workertype-full.json#'}
+    items: {$ref: 'worker-pool-full.json#'}
 
   continuationToken:
     type:               string
@@ -19,8 +19,8 @@ properties:
       This property is only present if another request is necessary to fetch all
       results. In practice the next request with a `continuationToken` may not
       return additional results, but it can. Thus, you can only be sure to have
-      all the results if you've called `listWorkerTypes` with `continuationToken`
+      all the results if you've called `listWorkerPools` with `continuationToken`
       until you get a result without a `continuationToken`.
 additionalProperties: false
 required:
-  - workerTypes
+  - workerPools

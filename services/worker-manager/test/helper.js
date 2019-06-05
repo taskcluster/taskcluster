@@ -30,9 +30,9 @@ exports.secrets = new Secrets({
 });
 
 exports.withEntities = (mock, skipping) => {
-  withEntity(mock, skipping, exports, 'WorkerTypeError', data.WorkerTypeError);
+  withEntity(mock, skipping, exports, 'WorkerPoolError', data.WorkerPoolError);
   withEntity(mock, skipping, exports, 'Worker', data.Worker);
-  withEntity(mock, skipping, exports, 'WorkerType', data.WorkerType);
+  withEntity(mock, skipping, exports, 'WorkerPool', data.WorkerPool);
 };
 
 exports.withPulse = (mock, skipping) => {
@@ -48,8 +48,10 @@ exports.withProvisioner = (mock, skipping) => {
     }
     exports.initiateProvisioner = async () => {
       provisioner = await exports.load('provisioner');
-      // remove it right away, as it is started on load
+      // remove it right away, so it will be re-created next time
       exports.load.remove('provisioner');
+
+      await provisioner.initiate();
       return provisioner;
     };
     exports.terminateProvisioner = async () => {
@@ -63,6 +65,34 @@ exports.withProvisioner = (mock, skipping) => {
   teardown(function() {
     if (provisioner) {
       throw new Error('Must call terminateProvisioner if you have started it');
+    }
+  });
+};
+
+exports.withWorkerScanner = (mock, skipping) => {
+  let scanner;
+
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+    exports.initiateWorkerScanner = async () => {
+      scanner = await exports.load('workerScanner');
+      // remove it right away, as it is started on load
+      exports.load.remove('workerScanner');
+      return scanner;
+    };
+    exports.terminateWorkerScanner = async () => {
+      if (scanner) {
+        await scanner.terminate();
+        scanner = null;
+      }
+    };
+  });
+
+  teardown(function() {
+    if (scanner) {
+      throw new Error('Must call terminateWorkerScanner if you have started it');
     }
   });
 };

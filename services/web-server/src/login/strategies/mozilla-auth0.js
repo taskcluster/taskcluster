@@ -3,7 +3,6 @@ const Debug = require('debug');
 const request = require('superagent');
 const passport = require('passport');
 const Auth0Strategy = require('passport-auth0');
-const jwt = require('jsonwebtoken');
 const User = require('../User');
 const PersonAPI = require('../clients/PersonAPI');
 const WebServerError = require('../../utils/WebServerError');
@@ -11,6 +10,7 @@ const { encode, decode } = require('../../utils/codec');
 const identityFromClientId = require('../../utils/identityFromClientId');
 const verifyJwt = require('../../utils/verifyJwt');
 const tryCatch = require('../../utils/tryCatch');
+const login = require('../../utils/login');
 
 const debug = Debug('strategies.mozilla-auth0');
 
@@ -19,10 +19,8 @@ module.exports = class MozillaAuth0 {
     const strategyCfg = cfg.login.strategies[name];
 
     assert(strategyCfg.domain, `${name}.domain is required`);
-    assert(strategyCfg.audience, `${name}.audience is required`);
     assert(strategyCfg.clientId, `${name}.clientId is required`);
     assert(strategyCfg.clientSecret, `${name}.clientSecret is required`);
-    assert(strategyCfg.scope, `${name}.scope is required`);
 
     Object.assign(this, strategyCfg);
 
@@ -41,20 +39,20 @@ module.exports = class MozillaAuth0 {
     const res = await request.post(`https://${this.domain}/oauth/token`)
       .set('content-type', 'application/json')
       .send({
-        audience: this.audience,
+        audience: 'api.sso.mozilla.com',
         grant_type: 'client_credentials',
         client_id: this.clientId,
         client_secret: this.clientSecret,
       });
-    const accessToken = JSON.parse(res.text).access_token;
+    const {
+      access_token: accessToken,
+      expires_in: expiresIn,
+    } = JSON.parse(res.text);
+    const expires = new Date().getTime() + (expiresIn * 1000);
 
     if (!accessToken) {
       throw new Error('did not receive a token from Auth0 /oauth/token endpoint');
     }
-
-    // Parse the token just enough to figure out when it expires.
-    const decoded = jwt.decode(accessToken);
-    const expires = decoded.exp;
 
     // Create a new
     this._personApi = new PersonAPI({ accessToken });
@@ -109,7 +107,7 @@ module.exports = class MozillaAuth0 {
       return;
     }
 
-    user.expires = new Date(profile.exp * 1000);
+    user.providerExpires = new Date(profile.exp * 1000);
 
     return user;
   }
@@ -186,6 +184,7 @@ module.exports = class MozillaAuth0 {
   useStrategy(app, cfg) {
     const { credentials } = cfg.taskcluster;
     const strategyCfg = cfg.login.strategies['mozilla-auth0'];
+    const loginMiddleware = login(cfg.app.publicUrl);
 
     if (!credentials || !credentials.clientId || !credentials.accessToken) {
       throw new Error(
@@ -201,8 +200,7 @@ module.exports = class MozillaAuth0 {
           domain: strategyCfg.domain,
           clientID: strategyCfg.clientId,
           clientSecret: strategyCfg.clientSecret,
-          audience: strategyCfg.audience,
-          scope: strategyCfg.scope,
+          scope: 'openid profile',
           callbackURL: `${cfg.app.publicUrl}${callback}`,
           // The state parameter requires session support to be enabled.
           // We can't use cookies until we implement CORS and revisit the RRA.
@@ -213,17 +211,19 @@ module.exports = class MozillaAuth0 {
         // profile has all the information from the user
         async (accessToken, refreshToken, extraParams, profile, done) => {
           const user = await this.getUser({ userId: profile.user_id });
+          const userFromToken = await this.userFromToken(extraParams.id_token);
 
           if (!user) {
             // Don't report much to the user, to avoid revealing sensitive information, although
             // it is likely in the service logs.
-            throw new WebServerError('InputError', 'Could not generate credentials for this access token');
+            done(new WebServerError('InputError', 'Could not generate credentials for this access token'));
           }
 
           done(null, {
             profile,
             accessToken: extraParams.id_token,
             identityProviderId: 'mozilla-auth0',
+            providerExpires: userFromToken.providerExpires,
           });
         }
       )
@@ -235,11 +235,7 @@ module.exports = class MozillaAuth0 {
     app.get(
       callback,
       passport.authenticate('auth0', { session: false }),
-      (request, response) => {
-        response.render('callback', {
-          user: request.user,
-        });
-      }
+      loginMiddleware
     );
   }
 };

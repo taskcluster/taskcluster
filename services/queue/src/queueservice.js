@@ -11,10 +11,12 @@ let slugid = require('slugid');
 /** Timeout for azure queue requests */
 const AZURE_QUEUE_TIMEOUT = 7 * 1000;
 
-/** Get seconds until `target` relative to now (by default) */
+/** Get seconds until `target` relative to now (by default).  This rounds up
+ * and always waits at least one second, to avoid races in tests where
+ * everything happens in a matter of milliseconds. */
 let secondsTo = (target, relativeTo = new Date()) => {
-  let delta = Math.floor((target.getTime() - relativeTo.getTime()) / 1000);
-  return Math.max(delta, 0); // never return negative time
+  let delta = Math.ceil((target.getTime() - relativeTo.getTime()) / 1000);
+  return Math.max(delta, 1);
 };
 
 /** Validate task description object */

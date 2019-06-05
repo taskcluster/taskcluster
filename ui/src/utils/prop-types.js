@@ -253,8 +253,8 @@ export const awsProvisionerWorkerType = shape({
   owner: string,
 });
 
-export const WorkerManagerWorkerTypeSummary = shape({
-  workerType: string,
+export const WorkerManagerWorkerPoolSummary = shape({
+  workerPool: string,
   pendingCapacity: number,
   runningCapacity: number,
   pendingTasks: number,

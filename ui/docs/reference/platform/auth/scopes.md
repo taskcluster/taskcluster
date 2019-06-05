@@ -13,8 +13,6 @@ scopes. For example:
 [
     "queue:create-task:aws-provisioner-v1/tutorial",
     "queue:route:index.garbage.*",
-    "secrets:get:garbage/*",
-    "secrets:set:garbage/*",
 ]
 ```
 

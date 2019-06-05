@@ -18,9 +18,9 @@ This service currently includes providers for:
 Workers are identified by a combination of a `workerGroup` and a `workerId`.
 In order to ensure a unique identity for each worker, providers are expected to use their `providerId` as the `workerGroup`, but are free to choose an arbitrary (but unqiue and valid) `workerId` for each worker.
 
-## workerTypeName
+## workerPoolId
 
-This service considers a "workerTypeName" to be a string of the shape `<provisionerId>/<workerType>`.
+This service considers a "workerPoolId" to be a string of the shape `<provisionerId>/<workerType>`.
 This definition is used internally and in the worker-manager API, with translations made to interact with other services such as Queue.
 
 ## Development

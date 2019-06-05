@@ -3,6 +3,7 @@ import { snake, upper } from 'change-case';
 import { AUTH_STORE } from '../utils/constants';
 import credentialsQuery from './credentials.graphql';
 import removeKeys from '../utils/removeKeys';
+import UserSession from './UserSession';
 
 /**
  * Controller for authentication-related pieces of the site.
@@ -43,14 +44,16 @@ export default class AuthController {
 
   loadUser() {
     const auth = localStorage.getItem(AUTH_STORE);
-    const user = auth ? JSON.parse(auth) : null;
+    let user = auth ? UserSession.deserialize(auth) : null;
 
     if (user) {
-      const expires = new Date(user.expires);
       const now = new Date();
+      // Logout the user if the provider's access token has expired.
+      const expires = new Date(user.providerExpires);
 
       if (expires < now) {
         localStorage.removeItem(AUTH_STORE);
+        user = null;
       }
     }
 
@@ -65,9 +68,9 @@ export default class AuthController {
     }
 
     if (user) {
-      const expires = new Date(user.expires);
+      const taskclusterExpires = new Date(user.expires);
       const now = new Date();
-      let timeout = Math.max(0, expires.getTime() - now.getTime());
+      let timeout = Math.max(0, taskclusterExpires.getTime() - now.getTime());
 
       // if the timeout is in the future, apply up to a few minutes to it
       // randomly.  This avoids multiple tabs all trying to renew at the
@@ -90,11 +93,13 @@ export default class AuthController {
           ? user
           : await this.getCredentials(user);
 
-      this.setUser({
-        ...user,
-        expires,
-        credentials,
-      });
+      this.setUser(
+        UserSession.create({
+          ...user,
+          expires,
+          credentials,
+        })
+      );
     } catch (e) {
       this.setUser(null);
 

@@ -23,7 +23,8 @@ class GoogleProvider extends Provider {
     credsFile,
     validator,
     Worker,
-    WorkerType,
+    WorkerPool,
+    WorkerPoolError,
     fake = false,
   }) {
     super({
@@ -33,9 +34,10 @@ class GoogleProvider extends Provider {
       notify,
       rootUrl,
       estimator,
-      Worker,
       validator,
-      WorkerType,
+      Worker,
+      WorkerPool,
+      WorkerPoolError,
     });
     this.configSchema = 'config-google';
     this.fake = fake;
@@ -70,7 +72,7 @@ class GoogleProvider extends Provider {
     const client = google.auth.fromJSON(creds);
     client.scopes = [
       'https://www.googleapis.com/auth/compute', // For configuring instance templates, groups, etc
-      'https://www.googleapis.com/auth/iam', // For setting up service accounts for each workertype
+      'https://www.googleapis.com/auth/iam', // For setting up service accounts for each WorkerPool
       'https://www.googleapis.com/auth/cloud-platform', // To set roles for service accounts
     ];
     this.compute = google.compute({
@@ -189,15 +191,15 @@ class GoogleProvider extends Provider {
   }
 
   /**
-   * Given a workerType and instance identity token from google, we return
+   * Given a WorkerPool and instance identity token from google, we return
    * taskcluster credentials for a worker to use if it is valid.
    *
    * All fields we check in the token are signed by google rather than the
    * requester so we know that they are not forged arbitrarily. Be careful
    * when selecting new fields to validate here, they may come from the requester.
    */
-  async verifyIdToken({token, workerType}) {
-    const {workerTypeName} = workerType;
+  async verifyIdToken({token, workerPool}) {
+    const {workerPoolId} = workerPool;
 
     // This will throw an error if the token is invalid at all
     let {payload} = await this.oauth2.verifyIdToken({
@@ -229,13 +231,13 @@ class GoogleProvider extends Provider {
     const workerGroup = this.providerId;
 
     const worker = await this.Worker.load({
-      workerTypeName,
+      workerPoolId,
       workerGroup,
       workerId,
     }, true);
 
     // There will be no worker if either the workerId is not one we've made or if it is actually
-    // from a different workerType since the load will not find it in that case
+    // from a different workerPool since the load will not find it in that case
     if (!worker) {
       const error = new Error('Attempt to claim credentials from a non-existent worker');
       error.requestingId = workerId;
@@ -253,11 +255,11 @@ class GoogleProvider extends Provider {
     return taskcluster.createTemporaryCredentials({
       clientId: `worker/google/${this.project}/${workerGroup}/${workerId}`,
       scopes: [
-        `assume:worker-type:${workerTypeName}`,
+        `assume:worker-type:${workerPoolId}`,
         `assume:worker-id:${workerGroup}/${workerId}`,
         `queue:worker-id:${workerGroup}/${workerId}`,
-        `secrets:get:worker-type:${workerTypeName}`,
-        `queue:claim-work:${workerTypeName}`,
+        `secrets:get:worker-type:${workerPoolId}`,
+        `queue:claim-work:${workerPoolId}`,
       ],
       start: taskcluster.fromNow('-15 minutes'),
       expiry: taskcluster.fromNow('96 hours'),
@@ -265,34 +267,34 @@ class GoogleProvider extends Provider {
     });
   }
 
-  async deprovision({workerType}) {
-    await workerType.modify(wt => {
+  async deprovision({workerPool}) {
+    await workerPool.modify(wt => {
       wt.previousProviders = wt.previousProviders.filter(p => p !== this.providerId);
       delete wt.providerData[this.providerId];
     });
   }
 
-  async provision({workerType}) {
-    const {workerTypeName} = workerType;
+  async provision({workerPool}) {
+    const {workerPoolId} = workerPool;
 
     // TODO: I worry that providerData.trackedOperations will be larger than a single record
     // probably need to have providerData as separate table?
-    const providerData = workerType.providerData[this.providerId];
+    const providerData = workerPool.providerData[this.providerId];
     if (!providerData || providerData.running === undefined || !providerData.trackedOperations) {
-      await workerType.modify(wt => {
+      await workerPool.modify(wt => {
         wt.providerData[this.providerId] = wt.providerData[this.providerId] || {};
         wt.providerData[this.providerId].running = wt.providerData[this.providerId].running || 0;
         wt.providerData[this.providerId].trackedOperations = wt.providerData[this.providerId].trackOperations || [];
       });
     }
-    const regions = workerType.config.regions;
+    const regions = workerPool.config.regions;
 
     // TODO: Use p-queue for all operations against google
 
     const toSpawn = await this.estimator.simple({
-      workerTypeName,
-      ...workerType.config,
-      running: workerType.providerData[this.providerId].running,
+      workerPoolId,
+      ...workerPool.config,
+      running: workerPool.providerData[this.providerId].running,
     });
 
     const operations = [];
@@ -312,7 +314,7 @@ class GoogleProvider extends Provider {
       // The lost entropy from downcasing, etc should be ok due to the fact that
       // only running instances need not be identical. We do not use this name to identify
       // workers in taskcluster.
-      const instanceName = `${workerTypeName}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
+      const instanceName = `${workerPoolId}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
 
       let op;
 
@@ -324,13 +326,13 @@ class GoogleProvider extends Provider {
           requestBody: {
             name: instanceName,
             labels: {
-              workerTypeName,
+              workerPoolId,
             },
-            description: workerType.description,
-            machineType: `zones/${zone}/machineTypes/${workerType.config.machineType}`,
-            scheduling: workerType.config.scheduling,
-            networkInterfaces: workerType.config.networkInterfaces,
-            disks: workerType.config.disks,
+            description: workerPool.description,
+            machineType: `zones/${zone}/machineTypes/${workerPool.config.machineType}`,
+            scheduling: workerPool.config.scheduling,
+            networkInterfaces: workerPool.config.networkInterfaces,
+            disks: workerPool.config.disks,
             serviceAccounts: [{
               email: this.workerAccountEmail,
               scopes: [
@@ -352,11 +354,11 @@ class GoogleProvider extends Provider {
                 {
                   key: 'taskcluster',
                   value: JSON.stringify({
-                    workerTypeName,
+                    workerPoolId,
                     workerGroup: this.providerId,
-                    credentialUrl: libUrls.api(this.rootUrl, 'worker-manager', 'v1', `credentials/google/${workerTypeName}`),
+                    credentialUrl: libUrls.api(this.rootUrl, 'worker-manager', 'v1', `credentials/google/${workerPoolId}`),
                     rootUrl: this.rootUrl,
-                    userData: workerType.config.userData,
+                    userData: workerPool.config.userData,
                   }),
                 },
               ],
@@ -369,18 +371,19 @@ class GoogleProvider extends Provider {
           throw err;
         }
         for (const error of err.errors) {
-          await workerType.reportError({
+          await workerPool.reportError({
             kind: 'creation-error',
             title: 'Instance Creation Error',
             description: error.message, // TODO: Make sure we clear exposing this with security folks
             notify: this.notify,
+            WorkerPoolError: this.WorkerPoolError,
           });
         }
         return;
       }
 
       await this.Worker.create({
-        workerTypeName,
+        workerPoolId,
         providerId: this.providerId,
         workerGroup: this.providerId,
         workerId: op.targetId,
@@ -399,13 +402,13 @@ class GoogleProvider extends Provider {
     }
 
     if (operations.length) {
-      await workerType.modify(wt => {
+      await workerPool.modify(wt => {
         wt.providerData[this.providerId].trackedOperations =
           wt.providerData[this.providerId].trackedOperations.concat(operations);
       });
     }
 
-    await this.handleOperations({workerType});
+    await this.handleOperations({workerPool});
   }
 
   /**
@@ -414,23 +417,23 @@ class GoogleProvider extends Provider {
    * provisioning due to the fact that we might not succeed in recording
    * the operation when it actually suceeded.
    */
-  async handleOperations({workerType}) {
-    if (!workerType.providerData[this.providerId].trackedOperations.length) {
+  async handleOperations({workerPool}) {
+    if (!workerPool.providerData[this.providerId].trackedOperations.length) {
       return;
     }
     const ongoing = [];
-    for (const op of workerType.providerData[this.providerId].trackedOperations) {
-      if (await this.handleOperation({op, workerType})) {
+    for (const op of workerPool.providerData[this.providerId].trackedOperations) {
+      if (await this.handleOperation({op, workerPool})) {
         ongoing.push(op);
       }
     }
 
-    await workerType.modify(wt => {
+    await workerPool.modify(wt => {
       wt.providerData[this.providerId].trackedOperations = ongoing;
     });
   }
 
-  async handleOperation({op, workerType}) {
+  async handleOperation({op, workerPool}) {
     let operation;
     let args;
     let obj;
@@ -473,7 +476,7 @@ class GoogleProvider extends Provider {
 
     if (operation.error) {
       for (const err of operation.error.errors) { // Each operation can have multiple errors
-        await workerType.reportError({
+        await workerPool.reportError({
           kind: 'operation-error',
           title: 'Operation Error',
           description: err.message, // TODO: Make sure we clear exposing this with security folks
@@ -481,6 +484,7 @@ class GoogleProvider extends Provider {
             code: err.code,
           },
           notify: this.notify,
+          WorkerPoolError: this.WorkerPoolError,
         });
       }
     }
@@ -501,7 +505,7 @@ class GoogleProvider extends Provider {
    */
   async checkWorker({worker}) {
     const states = this.Worker.states;
-    this.seen[worker.workerTypeName] = this.seen[worker.workerTypeName] || 0;
+    this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     let res;
     try {
       res = await this.compute.instances.get({
@@ -520,7 +524,7 @@ class GoogleProvider extends Provider {
     }
     const {status} = res.data;
     if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
-      this.seen[worker.workerTypeName] += 1;
+      this.seen[worker.workerPoolId] += 1;
     } else if (['TERMINATED', 'STOPPED'].includes(status)) {
       await this.compute.instances.delete({
         project: worker.providerData.project,
@@ -537,16 +541,16 @@ class GoogleProvider extends Provider {
    * Called after an iteration of the worker scanner
    */
   async scanCleanup() {
-    await Promise.all(Object.entries(this.seen).map(async ([workerTypeName, seen]) => {
-      const workerType = await this.WorkerType.load({
-        workerTypeName,
+    await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
+      const workerPool = await this.WorkerPool.load({
+        workerPoolId,
       }, true);
 
-      if (!workerType) {
+      if (!workerPool) {
         return; // In this case, the workertype has been deleted so we can just move on
       }
 
-      await workerType.modify(wt => {
+      await workerPool.modify(wt => {
         if (!wt.providerData[this.providerId]) {
           wt.providerData[this.providerId] = {};
         }

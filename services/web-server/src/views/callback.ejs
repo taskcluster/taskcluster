@@ -13,8 +13,9 @@
             type: 'login',
             profile: <%- JSON.stringify(user.profile) %>,
             identityProviderId: <%- JSON.stringify(user.identityProviderId) %>,
-            accessToken: <%- JSON.stringify(user.accessToken) %>
-          }, window.opener.location);
+            accessToken: <%- JSON.stringify(user.accessToken) %>,
+            providerExpires: <%- JSON.stringify(user.providerExpires) %>
+          }, <%- JSON.stringify(publicUrl) %>);
           window.close();
         }
       });

@@ -16,9 +16,10 @@ class Provider {
     rootUrl,
     taskclusterCredentials,
     estimator,
-    Worker,
     validator,
-    WorkerType,
+    Worker,
+    WorkerPool,
+    WorkerPoolError,
   }) {
     this.providerId = providerId;
     this.monitor = monitor;
@@ -28,7 +29,8 @@ class Provider {
     this.taskclusterCredentials = taskclusterCredentials;
     this.estimator = estimator;
     this.Worker = Worker;
-    this.WorkerType = WorkerType;
+    this.WorkerPool = WorkerPool;
+    this.WorkerPoolError = WorkerPoolError;
   }
 
   /**
@@ -55,7 +57,7 @@ class Provider {
   }
 
   /**
-   * Given a workertype configuration, this will ensure that it matches the
+   * Given a worker pool configuration, this will ensure that it matches the
    * configuration schema for the implementation of a provider.
    * Returns null if everything is fine and an error message if not.
    */
@@ -66,29 +68,29 @@ class Provider {
 
   /**
    * Anything a provider may want to do every provisioning loop but not tied
-   * to any one workertype. Called _before_ provision() is called.
+   * to any one worker pool. Called _before_ provision() is called.
    */
   async prepare() {
   }
 
   /**
-   * Given a WorkerType configuration, do whatever the provider might
-   * do with this worker type. This may mean nothing at all in the case of
+   * Given a worker pool configuration, do whatever the provider might
+   * do with this worker pool. This may mean nothing at all in the case of
    * static provider!
    */
-  async provision({workerType}) {
+  async provision({workerPool}) {
   }
 
-  // This is the oposite of provision. Given a workertype, tear down whatever
+  // This is the oposite of provision. Given a worker pool, tear down whatever
   // resources this provider has created for it. Once complete, remove yourself
-  // from the workertype's list of previous providers.
-  async deprovision({workerType}) {
+  // from the worker pool's list of previous providers.
+  async deprovision({workerPool}) {
   }
 
   /**
    * Anything a provider may want to do every provisioning loop but not tied
-   * to any one workertype. Called _after_ all provision() calls are complete.
-   * You may want to use this time to remove outdated workertypes for instance.
+   * to any one worker pool. Called _after_ all provision() calls are complete.
+   * You may want to use this time to remove outdated worker pools for instance.
    */
   async cleanup() {
   }
@@ -113,25 +115,25 @@ class Provider {
   }
 
   /**
-   * Called when a new workertype is added to this provider to allow the provider
+   * Called when a new worker pool is added to this provider to allow the provider
    * to do whatever setup is necessary
    */
-  async createResources({workerType}) {
+  async createResources({workerPool}) {
   }
 
   /**
-   * Called whenever a workertype currently assigned to this provider is changed.
-   * If a currently existing workertype is moved to a different provider, the old provider
+   * Called whenever a worker pool currently assigned to this provider is changed.
+   * If a currently existing worker pool is moved to a different provider, the old provider
    * will actually be asked to remove resources and the new one to create. This will not
    * be called in that case.
    */
-  async updateResources({workerType}) {
+  async updateResources({workerPool}) {
   }
 
   /**
-   * Called when a workertype is removed and this provider was providing for it.
+   * Called when a worker pool is removed and this provider was providing for it.
    */
-  async removeResources({workerType}) {
+  async removeResources({workerPool}) {
   }
 }
 

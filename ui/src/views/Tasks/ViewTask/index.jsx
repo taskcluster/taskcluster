@@ -313,7 +313,7 @@ export default class ViewTask extends Component {
   };
 
   handleCreateInteractiveTaskClick = () => {
-    const title = 'Create Interactive';
+    const title = 'Create with SSH/VNC';
 
     this.setState({
       dialogOpen: true,
@@ -692,7 +692,7 @@ export default class ViewTask extends Component {
 
     return (
       <Dashboard
-        title="Task"
+        title={task ? task.metadata.name : 'Task'}
         helpView={<HelpView description={description} />}
         search={
           <Search
@@ -822,7 +822,7 @@ export default class ViewTask extends Component {
                     disabled: actionLoading,
                   }}
                   icon={<ConsoleLineIcon />}
-                  tooltipTitle="Create Interactive"
+                  tooltipTitle="Create with SSH/VNC"
                   onClick={this.handleCreateInteractiveTaskClick}
                 />
               )}

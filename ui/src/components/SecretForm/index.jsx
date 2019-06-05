@@ -1,11 +1,11 @@
 import React, { Component, Fragment } from 'react';
 import { bool, func } from 'prop-types';
+import classNames from 'classnames';
 import { addYears } from 'date-fns';
 import { safeDump, safeLoad } from 'js-yaml';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
-import { equals } from 'ramda';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
@@ -23,6 +23,11 @@ import { secret } from '../../utils/prop-types';
 @withStyles(theme => ({
   fab: {
     ...theme.mixins.fab,
+  },
+  saveSecretSpan: {
+    position: 'fixed',
+    bottom: theme.spacing.double,
+    right: theme.spacing.unit * 11,
   },
   editorListItem: {
     paddingTop: 0,
@@ -125,9 +130,12 @@ export default class SecretForm extends Component {
   };
 
   render() {
-    const { classes, isNewSecret, loading } = this.props;
+    const { secret, classes, isNewSecret, loading } = this.props;
     const { secretName, editorValue, expires, showSecret } = this.state;
-    const isSecretDirty = !equals(secret, this.props.Secret);
+    const isSecretDirty =
+      secretName !== secret.name ||
+      editorValue !== safeDump(secret.secret) ||
+      expires !== secret.expires;
 
     return (
       <Fragment>
@@ -200,30 +208,36 @@ export default class SecretForm extends Component {
             <ContentSaveIcon />
           </Button>
         ) : (
-          <SpeedDial>
-            <SpeedDialAction
-              requiresAuth
-              tooltipOpen
-              icon={<DeleteIcon />}
-              onClick={this.handleDeleteSecret}
-              className={classes.deleteIcon}
-              tooltipTitle="Delete Secret"
-              ButtonProps={{
-                disabled: loading,
+          <Fragment>
+            <Button
+              spanProps={{
+                className: classNames(classes.fab, classes.saveSecretSpan),
               }}
-            />
-            <SpeedDialAction
+              tooltipProps={{ title: 'Save Secret' }}
               requiresAuth
-              tooltipOpen
-              icon={<ContentSaveIcon />}
-              onClick={this.handleSaveSecret}
+              classes={{ root: classes.successIcon }}
+              variant="round"
               className={classes.saveIcon}
               tooltipTitle="Save Secret"
               ButtonProps={{
                 disabled: loading || !this.validSecret() || !isSecretDirty,
-              }}
-            />
-          </SpeedDial>
+              }}>
+              <ContentSaveIcon />
+            </Button>
+            <SpeedDial>
+              <SpeedDialAction
+                requiresAuth
+                tooltipOpen
+                icon={<DeleteIcon />}
+                onClick={this.handleDeleteSecret}
+                className={classes.deleteIcon}
+                tooltipTitle="Delete Secret"
+                ButtonProps={{
+                  disabled: loading,
+                }}
+              />
+            </SpeedDial>
+          </Fragment>
         )}
       </Fragment>
     );

@@ -3,12 +3,21 @@
  * their providerType implementation as required
  */
 class Providers {
-  async setup({cfg, monitor, notify, estimator, Worker, WorkerType, validator}) {
+  async setup({cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError, validator}) {
     this._providers = {};
 
-    for (const [providerId, meta] of Object.entries(cfg.providers)) {
+    if (cfg.providers['null-provider']) {
+      throw new Error('Explicit configuration of the null-provider providerId is not allowed');
+    }
+
+    const nullEntry = ['null-provider', {providerType: 'null'}];
+    for (const [providerId, meta] of Object.entries(cfg.providers).concat([nullEntry])) {
       let Provider;
+      if (meta.providerType === 'null' && providerId !== 'null-provider') {
+        throw new Error('Only the `null-provider` providerId may have providerType `null`');
+      }
       switch(meta.providerType) {
+        case 'null': Provider = require('./null').NullProvider; break;
         case 'testing': Provider = require('./testing').TestingProvider; break;
         case 'static': Provider = require('./static').StaticProvider; break;
         case 'google': Provider = require('./google').GoogleProvider; break;
@@ -17,12 +26,13 @@ class Providers {
       const provider = new Provider({
         providerId,
         notify,
-        monitor: monitor.childMonitor(providerId),
+        monitor: monitor.childMonitor(`provider.${providerId}`),
         rootUrl: cfg.taskcluster.rootUrl,
         taskclusterCredentials: cfg.taskcluster.credentials,
         estimator,
         Worker,
-        WorkerType,
+        WorkerPool,
+        WorkerPoolError,
         validator,
         ...meta,
       });

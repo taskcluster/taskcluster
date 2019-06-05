@@ -61,7 +61,3 @@ var getApiKey = () => {
 
 There are taskcluster clients available in many languages - use the one most
 comfortable for you.
-
-_Note:_ the `garbage/` namespace is provided for experimentation with the API,
-but it is what it says on the tin: garbage, and more importantly, readable by
-anyone.  Never put important information in a secret under `garbage/`!

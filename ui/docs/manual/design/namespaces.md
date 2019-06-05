@@ -81,10 +81,6 @@ Client IDs have the following forms:
    Administrators for the project are granted control over this namespace, and may further subdivide it as they see fit.
    They are welcome to document those subdivisions here.
 
- * `garbage/*` -
-   Playground for testing; clients here should not be active in the wild.
-   Likewise, deleting or modifying clients with this prefix will not cause production failures.
-
 ---
 
 ## Roles
@@ -263,10 +259,6 @@ Cache names do not contain directory separators.
 Secrets provide key-value storage governed by scopes.
 As such, it's very important that secrets not be unexpectedly made accessible to users who should not see them.
 Secret names have the following structure:
-
-* `garbage/<ircnick>/` -
-  Secrets with this prefix are not actually secret - lots of people have access to them.
-  This is a place to test out interfaces to the secrets API, but do not store anything important here.
 
 * `project/<project>/` -
   Secrets with this prefix are the exclusive domain of the given project.

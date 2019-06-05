@@ -6,18 +6,17 @@ const {consume} = require('taskcluster-lib-pulse');
  * Run all provisioning logic
  */
 class Provisioner {
-  constructor({providers, iterateConf, WorkerType, monitor, notify, pulseClient, reference, rootUrl}) {
+  constructor({providers, iterateConf, WorkerPool, monitor, notify, pulseClient, reference, rootUrl}) {
     this.providers = providers;
-    this.WorkerType = WorkerType;
+    this.WorkerPool = WorkerPool;
     this.monitor = monitor;
     this.notify = notify;
     this.pulseClient = pulseClient;
     const WorkerManagerEvents = taskcluster.createClient(reference);
     const workerManagerEvents = new WorkerManagerEvents({rootUrl});
     this.bindings = [
-      workerManagerEvents.workerTypeCreated(),
-      workerManagerEvents.workerTypeUpdated(),
-      workerManagerEvents.workerTypeDeleted(),
+      workerManagerEvents.workerPoolCreated(),
+      workerManagerEvents.workerPoolUpdated(),
     ];
 
     this.iterate = new Iterate({
@@ -47,7 +46,7 @@ class Provisioner {
     this.pq = await consume({
       client: this.pulseClient,
       bindings: this.bindings,
-      queueName: 'workerTypeUpdates',
+      queueName: 'workerPoolUpdates',
     },
     this.monitor.timedHandler('notification', this.onMessage.bind(this)),
     );
@@ -66,28 +65,30 @@ class Provisioner {
   }
 
   async onMessage({exchange, payload}) {
-    const {workerTypeName, providerId, previousProviderId} = payload;
-    const workerType = await this.WorkerType.load({workerTypeName});
-    const provider = this.providers.get(providerId); // Always have a provider
+    const {workerPoolId, providerId, previousProviderId} = payload;
+    const workerPool = await this.WorkerPool.load({workerPoolId});
+    const provider = this.providers.get(providerId);
+
+    if (!provider) {
+      // ignore messages for unknown providers
+      return;
+    }
+
     switch (exchange.split('/').pop()) {
-      case 'workertype-created': {
-        await provider.createResources({workerType});
+      case 'worker-pool-created': {
+        await provider.createResources({workerPool});
         break;
       }
-      case 'workertype-updated': {
+      case 'worker-pool-updated': {
         if (providerId === previousProviderId) {
-          await provider.updateResources({workerType});
+          await provider.updateResources({workerPool});
         } else {
+          const previousProvider = this.providers.get(previousProviderId);
           await Promise.all([
-            provider.createResources({workerType}),
-            this.providers.get(previousProviderId).removeResources({workerType}),
+            provider.createResources({workerPool}),
+            previousProvider && previousProvider.removeResources({workerPool}),
           ]);
         }
-        break;
-      }
-      case 'workertype-deleted': {
-        await provider.removeResources({workerType});
-        await workerType.remove(); // This is now gone for real
         break;
       }
       default: throw new Error(`Unknown exchange: ${exchange}`);
@@ -101,24 +102,32 @@ class Provisioner {
     // Any once-per-loop work a provider may want to do
     await this.providers.forAll(p => p.prepare());
 
-    // Now for each workertype we ask the providers to do stuff
-    await this.WorkerType.scan({}, {
-      handler: async workerType => {
-        const provider = this.providers.get(workerType.providerId);
-
-        if (workerType.scheduledForDeletion) {
-          await provider.deprovision({workerType});
-        } else {
-          await provider.provision({workerType});
+    // Now for each worker pool we ask the providers to do stuff
+    await this.WorkerPool.scan({}, {
+      handler: async workerPool => {
+        const provider = this.providers.get(workerPool.providerId);
+        if (!provider) {
+          this.monitor.warning(
+            `Worker pool ${workerPool.workerPoolId} has unknown providerId ${workerPool.providerId}`);
+          return;
         }
 
-        await Promise.all(workerType.previousProviderIds.map(async pId => {
-          await this.providers.get(pId).deprovision({workerType});
+        await provider.provision({workerPool});
+
+        await Promise.all(workerPool.previousProviderIds.map(async pId => {
+          const provider = this.providers.get(pId);
+          if (!provider) {
+            this.monitor.info(
+              `Worker pool ${workerPool.workerPoolId} has unknown previousProviderIds entry ${pId} (ignoring)`);
+            return;
+          }
+
+          await provider.deprovision({workerPool});
         }));
 
-        this.monitor.log.workertypeProvisioned({
-          workerTypeName: workerType.workerTypeName,
-          providerId: workerType.providerId,
+        this.monitor.log.workerPoolProvisioned({
+          workerPoolId: workerPool.workerPoolId,
+          providerId: workerPool.providerId,
         });
       },
     });

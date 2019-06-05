@@ -6,16 +6,34 @@ class TestingProvider extends Provider {
     this.configSchema = 'config-testing';
   }
 
-  async createResources({workerType}) {
-    this.monitor.notice('create-resource', {workerTypeName: workerType.workerTypeName});
+  async createResources({workerPool}) {
+    this.monitor.notice('create-resource', {workerPoolId: workerPool.workerPoolId});
   }
 
-  async updateResources({workerType}) {
-    this.monitor.notice('update-resource', {workerTypeName: workerType.workerTypeName});
+  async updateResources({workerPool}) {
+    this.monitor.notice('update-resource', {workerPoolId: workerPool.workerPoolId});
   }
 
-  async removeResources({workerType}) {
-    this.monitor.notice('remove-resource', {workerTypeName: workerType.workerTypeName});
+  async removeResources({workerPool}) {
+    this.monitor.notice('remove-resource', {workerPoolId: workerPool.workerPoolId});
+  }
+
+  async provision({workerPool}) {
+    this.monitor.notice('test-provision', {workerPoolId: workerPool.workerPoolId});
+  }
+
+  async scanPrepare() {
+    this.monitor.notice('scan-prepare', {});
+  }
+
+  async checkWorker({worker}) {
+    await worker.modify(w => {
+      w.providerData.checked = true;
+    });
+  }
+
+  async scanCleanup() {
+    this.monitor.notice('scan-cleanup', {});
   }
 }
 

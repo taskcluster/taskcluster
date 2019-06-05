@@ -1,11 +1,9 @@
-const fs = require('fs');
 const util = require('util');
 const path = require('path');
 const {writeFile} = require('../util');
 const {REPO_ROOT, modifyFile} = require('../util');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
-const unlink = util.promisify(fs.unlink);
 
 const HEADER = `\
 # coding=utf-8
@@ -14,34 +12,8 @@ const HEADER = `\
 #####################################################
 `;
 
-const writePyFile = async (filename, content) => {
-  await writeFile(path.join(filename), HEADER + content.trim() + '\n');
-};
-
-const cleanup = async moduleDir => {
-  const keepers = new Set([
-    '__init__.py',
-    'client.py',
-    'exceptions.py',
-    'utils.py',
-    'asyncutils.py',
-    'asyncclient.py',
-  ]);
-  const generatedFiles = fs.readdirSync(moduleDir)
-    .filter(file => file.endsWith('.py') || file.endsWith('.pyc'))
-    .filter(file => !keepers.has(file))
-    .map(file => path.join(moduleDir, file))
-    .concat(fs.readdirSync(path.join(moduleDir, 'aio'))
-      .filter(file => file.endsWith('.py') || file.endsWith('.pyc'))
-      .filter(file => !keepers.has(file))
-      .map(file => path.join(moduleDir, 'aio', file)));
-
-  for (let file of generatedFiles) {
-    await unlink(file);
-  }
-  await rimraf(path.join(moduleDir, '__pycache__'));
-  await rimraf(path.join(moduleDir, 'aio', '__pycache__'));
-  await mkdirp(path.join(moduleDir, 'aio'));
+const writePyFile = async (filename, content, omitHeader) => {
+  await writeFile(path.join(filename), (omitHeader ? '' : HEADER) + content.trim() + '\n');
 };
 
 // poor man's python repr(..)
@@ -79,7 +51,7 @@ const cleanDocstring = (docstring, indent) => {
 };
 
 const generateStaticClient = async (className, reference, filename, genAsync) => {
-  const baseModule = genAsync ? '.asyncclient' : '.client';
+  const baseModule = genAsync ? '...aio.asyncclient' : '..client';
   const baseClass = genAsync ? 'AsyncBaseClient' : 'BaseClient';
   const lines = [];
 
@@ -356,11 +328,17 @@ exports.tasks = [{
   provides: ['target-taskcluster-client-py'],
   run: async (requirements, utils) => {
     const apis = requirements['apis'];
-    const moduleDir = path.join(REPO_ROOT, 'clients/client-py/taskcluster');
+    const moduleDir = path.join(REPO_ROOT, 'clients', 'client-py', 'taskcluster', 'generated');
 
     // clean up the clients directory to eliminate any "leftovers"
     utils.status({message: 'cleanup'});
-    await cleanup(moduleDir);
+    await rimraf(moduleDir);
+    await mkdirp(moduleDir);
+    await mkdirp(path.join(moduleDir, 'aio'));
+
+    // generate Python package semaphore files
+    await writeFile(path.join(moduleDir, '__init__.py'), '');
+    await writeFile(path.join(moduleDir, 'aio', '__init__.py'), '');
 
     const clientImporter = [];
 
