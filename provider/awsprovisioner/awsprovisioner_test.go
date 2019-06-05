@@ -68,6 +68,8 @@ func TestAwsProviderConfigureRun(t *testing.T) {
 	err = p.ConfigureRun(&run)
 	assert.NoError(t, err, "ConfigureRun")
 
+	assert.Nil(t, tc.FakeAwsProvisionerGetSecret(token), "secret should have been removed")
+
 	assert.Equal(t, "https://tc.example.com", run.RootURL, "rootURL is correct")
 	assert.Equal(t, "cli", run.Credentials.ClientID, "clientID is correct")
 	assert.Equal(t, "at", run.Credentials.AccessToken, "accessToken is correct")
