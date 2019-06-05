@@ -9,14 +9,14 @@ const debug = Debug('loaders.auth');
 module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => {
   const getCredentials = new DataLoader(queries => {
     return Promise.all(
-      queries.map(async accessToken => {
+      queries.map(async taskclusterToken => {
         // Don't report much to the user, to avoid revealing sensitive information, although
         // it is likely in the service logs.
         const credentialError = new WebServerError('InputError', 'Could not generate credentials for this access token');
         const [jwtError, jwtResponse] = await tryCatch(
           jwt.verify({
             publicKey: cfg.login.jwt.publicKey,
-            token: accessToken,
+            token: taskclusterToken,
             options: {
               audience: rootUrl,
               issuer: rootUrl,

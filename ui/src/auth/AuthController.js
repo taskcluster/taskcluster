@@ -116,7 +116,7 @@ export default class AuthController {
       query: credentialsQuery,
       fetchPolicy: 'no-cache',
       variables: {
-        accessToken: user.accessToken,
+        taskclusterToken: user.taskclusterToken,
       },
     });
 

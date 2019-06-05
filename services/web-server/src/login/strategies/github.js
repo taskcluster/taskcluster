@@ -97,7 +97,7 @@ module.exports = class Github {
           next(null, {
             profile,
             providerExpires,
-            accessToken: taskclusterToken,
+            taskclusterToken,
             identityProviderId: 'github',
           });
         }
