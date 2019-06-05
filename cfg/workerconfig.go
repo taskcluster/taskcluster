@@ -69,6 +69,14 @@ func (wc *WorkerConfig) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+func (wc *WorkerConfig) MarshalYAML() (interface{}, error) {
+	return wc.data, nil
+}
+
+func (wc *WorkerConfig) MarshalJSON() ([]byte, error) {
+	return json.Marshal(wc.data)
+}
+
 func merge(v1, v2 interface{}) interface{} {
 	// if both are maps, merge them
 	map1, map1ok := v1.(map[string]interface{})
