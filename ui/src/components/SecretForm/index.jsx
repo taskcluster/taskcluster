@@ -218,10 +218,8 @@ export default class SecretForm extends Component {
               classes={{ root: classes.successIcon }}
               variant="round"
               className={classes.saveIcon}
-              tooltipTitle="Save Secret"
-              ButtonProps={{
-                disabled: loading || !this.validSecret() || !isSecretDirty,
-              }}>
+              disabled={loading || !this.validSecret() || !isSecretDirty}
+              onClick={this.handleSaveSecret}>
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
