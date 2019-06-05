@@ -1,6 +1,8 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { bool } from 'prop-types';
+import { joinWorkerPoolId } from 'taskcluster-worker-manager/src/util';
+import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import ListSubheader from '@material-ui/core/ListSubheader';
@@ -14,6 +16,7 @@ import List from '../../Documentation/components/List';
 import isWorkerTypeNameValid from '../../../utils/isWorkerTypeNameValid';
 import Button from '../../../components/Button';
 import Dashboard from '../../../components/Dashboard';
+import createWorkerPoolQuery from './createWorkerPool.graphql';
 
 const gcpConfig = {
   minCapacity: 0,
@@ -52,6 +55,10 @@ const providers = {
     paddingLeft: 0,
     paddingRight: 0,
   },
+  separator: {
+    padding: theme.spacing.double,
+    paddingBottom: 0,
+  },
 }))
 export default class WMEditWorkerPool extends Component {
   static defaultProps = {
@@ -64,14 +71,15 @@ export default class WMEditWorkerPool extends Component {
 
   state = {
     workerPool: {
-      name: '',
+      workerPoolId1: '',
+      workerPoolId2: '',
       description: '',
       owner: '',
-      wantsEmail: false,
-      providerType: providers.GCP,
+      emailOnError: false,
       providerId: '',
       config: gcpConfig,
     },
+    providerType: providers.GCP,
     invalidProviderConfig: false,
   };
 
@@ -112,30 +120,59 @@ export default class WMEditWorkerPool extends Component {
     }
   };
 
-  handleCreateWorkerPool = () => {};
+  handleCreateWorkerPool = async () => {
+    const { workerPoolId1, workerPoolId2, ...payload } = this.state.workerPool;
+
+    await this.props.client.mutate({
+      mutation: createWorkerPoolQuery,
+      variables: {
+        workerPoolId: joinWorkerPoolId(workerPoolId1, workerPoolId2),
+        payload,
+      },
+    });
+  };
 
   render() {
     const { isNewWorkerPool, classes } = this.props;
-    const { workerPool, invalidProviderConfig } = this.state;
+    const { workerPool, providerType, invalidProviderConfig } = this.state;
 
     return (
       <Dashboard
         title={isNewWorkerPool ? 'Create Worker Pool' : 'Edit Worker Pool'}>
         <List className={classes.list}>
+          <ListSubheader>Worker Pool ID</ListSubheader>
           <ListItem>
             <TextField
-              label="Worker Pool ID"
-              name="workerPoolId"
+              name="workerPoolId1"
+              helperText="Must be unique"
               error={
-                Boolean(workerPool.name) &&
-                !isWorkerTypeNameValid(workerPool.name)
+                Boolean(workerPool.workerPoolId1) &&
+                !isWorkerTypeNameValid(workerPool.workerPoolId1) &&
+                workerPool.workerPoolId2 === workerPool.workerPoolId1
               }
               onChange={this.handleInputChange}
               fullWidth
-              value={workerPool.name}
+              value={workerPool.workerPoolId1}
+            />
+            <Typography className={classes.separator} variant="h5">
+              /
+            </Typography>
+            <TextField
+              name="workerPoolId2"
+              helperText="Must be unique"
+              error={
+                Boolean(workerPool.workerPoolId2) &&
+                !isWorkerTypeNameValid(workerPool.workerPoolId2) &&
+                workerPool.workerPoolId2 === workerPool.workerPoolId1
+              }
+              onChange={this.handleInputChange}
+              fullWidth
+              value={workerPool.workerPoolId2}
             />
           </ListItem>
+        </List>
 
+        <List className={classes.list}>
           <ListItem>
             <TextField
               label="Description"
@@ -165,7 +202,7 @@ export default class WMEditWorkerPool extends Component {
             <FormControlLabel
               control={
                 <Switch
-                  checked={workerPool.wantsEmail}
+                  checked={workerPool.emailOnError}
                   onChange={this.handleSwitchChange}
                   value="wantsEmail"
                 />
@@ -184,7 +221,7 @@ export default class WMEditWorkerPool extends Component {
               select
               label="Type"
               helperText="Which service do you want to run your tasks in?"
-              value={workerPool.providerType}
+              value={providerType}
               name="providerType"
               onChange={this.handleInputChange}
               margin="normal">
