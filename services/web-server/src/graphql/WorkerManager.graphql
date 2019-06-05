@@ -3,11 +3,6 @@ type WorkerManagerWorkerPoolSummary {
     description: String
     owner: String!
     config: WMWorkerPoolGeneralConfig
-    lastActive: DateTime
-    lastResolved: DateTime
-    failed: Int
-    exception: Int
-    unscheduled: Int
     providerId: String!
 
     pendingTasks: Int
