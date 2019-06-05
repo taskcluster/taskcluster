@@ -1999,7 +1999,7 @@ builder.declare({
 // Load artifacts.js so API end-points declared in that file is loaded
 require('./artifacts');
 
-/** Count pending tasks for workerType */
+/** Get all active provisioners */
 builder.declare({
   method: 'get',
   route: '/provisioners',
