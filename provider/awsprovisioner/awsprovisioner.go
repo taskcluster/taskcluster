@@ -7,6 +7,7 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
 )
@@ -92,8 +93,22 @@ func clientFactory(rootURL string, credentials *tcclient.Credentials) (tc.AwsPro
 	return prov, nil
 }
 
+func New(cfg *cfg.RunnerConfig) (provider.Provider, error) {
+	return new(cfg, nil, nil)
+}
+
+func Usage() string {
+	return `
+The providerType "aws-provisioner" is intended for workers provisioned with
+the legacy aws-provisioner application.  It requires 
+
+	provider:
+	    providerType: aws-provisioner
+`
+}
+
 // New takes its dependencies as optional arguments, allowing injection of fake dependencies for testing.
-func New(cfg *cfg.RunnerConfig, awsProvisionerClientFactory tc.AwsProvisionerClientFactory, metadataService MetadataService) (*AwsProvisionerProvider, error) {
+func new(cfg *cfg.RunnerConfig, awsProvisionerClientFactory tc.AwsProvisionerClientFactory, metadataService MetadataService) (*AwsProvisionerProvider, error) {
 	if awsProvisionerClientFactory == nil {
 		awsProvisionerClientFactory = clientFactory
 	}

@@ -42,7 +42,7 @@ func (mds *realMetadataService) queryUserData() (*UserData, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	userData := new(UserData)
+	userData := &UserData{}
 	decoder := json.NewDecoder(resp.Body)
 	err = decoder.Decode(userData)
 	return userData, err

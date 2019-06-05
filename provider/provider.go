@@ -5,28 +5,22 @@ import (
 	"strings"
 
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster-worker-runner/runner"
+	"github.com/taskcluster/taskcluster-worker-runner/provider/awsprovisioner"
+	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster-worker-runner/provider/standalone"
 )
 
 type providerInfo struct {
-	constructor func(*cfg.RunnerConfig) (Provider, error)
+	constructor func(*cfg.RunnerConfig) (provider.Provider, error)
 	usage       func() string
 }
 
 var providers map[string]providerInfo = map[string]providerInfo{
-	"standalone":      providerInfo{NewStandalone, StandaloneUsage},
-	"aws-provisioner": providerInfo{NewAwsProvisioner, AwsProvisionerUsage},
+	"standalone":      providerInfo{standalone.New, standalone.Usage},
+	"aws-provisioner": providerInfo{awsprovisioner.New, awsprovisioner.Usage},
 }
 
-// Provider is responsible for determining the identity of this worker and gathering
-// Takcluster credentials.
-type Provider interface {
-	// Configure the given run.  This is expected to set the Taskcluster deployment
-	// and worker-information fields, but may modify any part of the run it desires.
-	ConfigureRun(run *runner.Run) error
-}
-
-func New(cfg *cfg.RunnerConfig) (Provider, error) {
+func New(cfg *cfg.RunnerConfig) (provider.Provider, error) {
 	if cfg.Provider.ProviderType == "" {
 		return nil, fmt.Errorf("No provider given in configuration")
 	}

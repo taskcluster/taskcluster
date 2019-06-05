@@ -1,7 +1,8 @@
-package provider
+package standalone
 
 import (
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 )
 
@@ -35,11 +36,11 @@ func (p *StandaloneProvider) ConfigureRun(run *runner.Run) error {
 	return nil
 }
 
-func NewStandalone(cfg *cfg.RunnerConfig) (Provider, error) {
+func New(cfg *cfg.RunnerConfig) (provider.Provider, error) {
 	return &StandaloneProvider{cfg}, nil
 }
 
-func StandaloneUsage() string {
+func Usage() string {
 	return `
 The providerType "standalone" is intended for workers that have all of their
 configuration pre-loaded.  It requires the following properties be included

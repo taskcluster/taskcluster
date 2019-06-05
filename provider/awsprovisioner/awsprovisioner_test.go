@@ -59,7 +59,7 @@ func TestAwsProviderConfigureRun(t *testing.T) {
 		"/meta-data/local-ipv4":                  "192.168.0.1",
 	}
 
-	p, err := New(runnercfg, tc.FakeAwsProvisionerClientFactory, &fakeMetadataService{nil, userData, metaData})
+	p, err := new(runnercfg, tc.FakeAwsProvisionerClientFactory, &fakeMetadataService{nil, userData, metaData})
 	assert.NoError(t, err, "creating provider")
 
 	run := runner.Run{
