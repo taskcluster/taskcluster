@@ -3,6 +3,7 @@ import { bool, func } from 'prop-types';
 import { addYears } from 'date-fns';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import classNames from 'classnames';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -28,6 +29,11 @@ import Link from '../../utils/Link';
 @withStyles(theme => ({
   fab: {
     ...theme.mixins.fab,
+  },
+  saveClientSpan: {
+    position: 'fixed',
+    bottom: theme.spacing.double,
+    right: theme.spacing.unit * 11,
   },
   expandedScopesListItem: {
     paddingTop: 0,
@@ -184,6 +190,11 @@ export default class ClientForm extends Component {
       expandedScopes,
       disabled,
     } = this.state;
+    const isClientDirty =
+      clientId !== client.ID ||
+      description !== client.description ||
+      expires !== client.expires ||
+      scopeText !== client.scopeText;
 
     return (
       <Fragment>
@@ -328,57 +339,63 @@ export default class ClientForm extends Component {
             spanProps={{ className: classes.fab }}
             tooltipProps={{ title: 'Save' }}
             requiresAuth
-            disabled={loading}
+            disabled={loading || !isClientDirty}
             variant="round"
             onClick={this.handleSaveClient}
             classes={{ root: classes.saveIcon }}>
             <ContentSaveIcon />
           </Button>
         ) : (
-          <SpeedDial>
-            <SpeedDialAction
+          <Fragment>
+            <Button
               requiresAuth
               tooltipOpen
-              icon={<DeleteIcon />}
-              onClick={this.handleDeleteClient}
-              className={classes.deleteIcon}
-              tooltipTitle="Delete"
-              ButtonProps={{ disabled: loading }}
-            />
-            <SpeedDialAction
-              requiresAuth
-              tooltipOpen
-              icon={<ContentSaveIcon className={classes.saveIcon} />}
+              variant="round"
               onClick={this.handleSaveClient}
-              className={classes.saveIcon}
-              tooltipTitle="Save"
-              ButtonProps={{ disabled: loading }}
-            />
-            <SpeedDialAction
-              tooltipOpen
-              icon={disabled ? <PowerIcon /> : <CancelIcon />}
-              onClick={
-                disabled ? this.handleEnableClient : this.handleDisableClient
-              }
-              tooltipTitle={disabled ? 'Enable' : 'Disable'}
-              classes={{
-                button: disabled ? classes.enableIcon : classes.disableIcon,
+              spanProps={{
+                className: classNames(classes.fab, classes.saveClientSpan),
               }}
-              ButtonProps={{
-                disabled: loading,
-              }}
-            />
-            <SpeedDialAction
-              requiresAuth
-              tooltipOpen
-              icon={<LockResetIcon />}
-              onClick={this.handleResetAccessToken}
-              tooltipTitle="Reset Access Token"
-              ButtonProps={{
-                disabled: loading,
-              }}
-            />
-          </SpeedDial>
+              tooltipProps={{ title: 'Save' }}
+              disabled={loading || !isClientDirty}
+              classes={{ root: classes.saveIcon }}>
+              <ContentSaveIcon />
+            </Button>
+            <SpeedDial>
+              <SpeedDialAction
+                requiresAuth
+                tooltipOpen
+                icon={<DeleteIcon />}
+                onClick={this.handleDeleteClient}
+                className={classes.deleteIcon}
+                tooltipTitle="Delete"
+                ButtonProps={{ disabled: loading }}
+              />
+              <SpeedDialAction
+                tooltipOpen
+                icon={disabled ? <PowerIcon /> : <CancelIcon />}
+                onClick={
+                  disabled ? this.handleEnableClient : this.handleDisableClient
+                }
+                tooltipTitle={disabled ? 'Enable' : 'Disable'}
+                classes={{
+                  button: disabled ? classes.enableIcon : classes.disableIcon,
+                }}
+                ButtonProps={{
+                  disabled: loading,
+                }}
+              />
+              <SpeedDialAction
+                requiresAuth
+                tooltipOpen
+                icon={<LockResetIcon />}
+                onClick={this.handleResetAccessToken}
+                tooltipTitle="Reset Access Token"
+                ButtonProps={{
+                  disabled: loading,
+                }}
+              />
+            </SpeedDial>
+          </Fragment>
         )}
       </Fragment>
     );
