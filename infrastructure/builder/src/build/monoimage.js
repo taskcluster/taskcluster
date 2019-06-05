@@ -12,6 +12,7 @@ const appRootDir = require('app-root-dir');
 const {
   gitClone,
   gitIsDirty,
+  gitDescribe,
   dockerRun,
   dockerPull,
   dockerImages,
@@ -158,6 +159,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
     provides: [
       'monorepo-dir', // full path of the repository
       'monorepo-exact-source', // exact source URL for the repository
+      'monorepo-git-descr', // `git describe --tag --always` output
       'monorepo-stamp',
     ],
     locks: ['git'],
@@ -189,9 +191,15 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
       const stamp = new Stamp({step: 'repo-clone', version: 1},
         `${repoUrl}#${exactRev}`);
 
+      const {gitDescription} = await gitDescribe({
+        dir: repoDir,
+        utils,
+      });
+
       const provides = {
         'monorepo-dir': repoDir,
         'monorepo-exact-source': `${repoUrl}#${exactRev}`,
+        'monorepo-git-descr': gitDescription,
         'monorepo-stamp': stamp,
       };
 
@@ -295,7 +303,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
   ensureTask(tasks, {
     title: `Build Monoimage`,
     requires: [
-      'monoimage-stamp',
+      'monorepo-git-descr',
       'monoimage-built-app-dir',
       `docker-image-${nodeAlpineImage}`,
     ],
@@ -307,10 +315,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
     run: async (requirements, utils) => {
 
       // find the requirements ending in '-stamp' that we should depend on
-      const stamp = new Stamp({step: 'build-image', version: 1},
-        {nodeAlpineImage},
-        requirements['monoimage-stamp']);
-      const tag = `${cfg.docker.repositoryPrefix}monoimage:SVC-${stamp.hash()}`;
+      const tag = `${cfg.docker.repositoryPrefix}monoimage:${requirements['monorepo-git-descr']}`;
 
       utils.step({title: 'Check for Existing Images'});
 

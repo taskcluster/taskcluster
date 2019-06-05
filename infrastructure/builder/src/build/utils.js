@@ -11,7 +11,6 @@ const {PassThrough, Transform} = require('stream');
 const got = require('got');
 const glob = require('glob');
 const {spawn} = require('child_process');
-const Stamp = require('./stamp');
 
 /**
  * Perform a git clone
@@ -78,13 +77,13 @@ exports.gitIsDirty = async ({dir}) => {
  *   exactRev: ..,     // the exact revision checked out (possibly with -dirty suffix)
  * }
  */
-exports.gitId = async ({dir, utils}) => {
+exports.gitDescribe = async ({dir, utils}) => {
   const opts = {cwd: dir};
 
   assert(fs.existsSync(dir), `${dir} does not exist`);
-  const describe = await exec('git', ['describe', '--always', '--dirty', '--exclude', '.*'], opts);
+  const describe = await exec('git', ['describe', '--tag', '--always'], opts);
   return {
-    exactRev: describe.stdout.split(/\s+/)[0],
+    gitDescription: describe.stdout.split(/\s+/)[0],
   };
 };
 
@@ -396,71 +395,6 @@ exports.ensureDockerImage = (tasks, baseDir, image) => {
       return {
         [`docker-image-${image}`]: image,
       };
-    },
-  });
-};
-
-/**
- * Create the "Build Image" task, in a standard shape:
- *  - create a standardized tag for the image
- *  - check if it already exists locally or on the registry;
- *    - if locally, skip
- *    - if on the registry but not locally, pull it and skip
- *  - run `docker build` using the tarball returned from makeTarball
- *
- * The resulting task requires `service-${name}-stamp` and anything given in `requires`.
- * It provides `service-${name}-docker-image` and `service-${name}-image-on-registry`.
- */
-exports.serviceDockerImageTask = ({tasks, baseDir, workDir, cfg, name, requires, makeTarball}) => {
-  tasks.push({
-    title: `Service ${name} - Build Image`,
-    requires,
-    provides: [
-      `service-${name}-docker-image`, // docker image tag
-      `service-${name}-image-on-registry`, // true if the image already exists on registry
-    ],
-    locks: ['docker'],
-    run: async (requirements, utils) => {
-
-      // find the requirements ending in '-stamp' that we should depend on
-      const requiredStamps = Object.keys(requirements)
-        .filter(r => r.endsWith('-stamp'))
-        .sort()
-        .map(r => requirements[r]);
-      assert(requiredStamps.length > 0);
-      const stamp = new Stamp({step: 'build-image', version: 1}, ...requiredStamps);
-      const tag = `${cfg.docker.repositoryPrefix}${name}:SVC-${stamp.hash()}`;
-
-      utils.step({title: 'Check for Existing Images'});
-
-      const imageLocal = (await exports.dockerImages({baseDir}))
-        .some(image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1);
-      const imageOnRegistry = await exports.dockerRegistryCheck({tag});
-
-      const provides = {
-        [`service-${name}-docker-image`]: tag,
-        [`service-${name}-image-on-registry`]: imageOnRegistry,
-      };
-
-      // bail out if we can, pulling the image if it's only available remotely
-      if (!imageLocal && imageOnRegistry) {
-        await exports.dockerPull({image: tag, utils, baseDir});
-        return utils.skip({provides});
-      } else if (imageLocal) {
-        return utils.skip({provides});
-      }
-
-      utils.step({title: 'Building'});
-
-      await exports.dockerBuild({
-        tarball: await makeTarball(requirements, utils),
-        logfile: `${workDir}/docker-build.log`,
-        tag,
-        utils,
-        baseDir,
-      });
-
-      return provides;
     },
   });
 };
