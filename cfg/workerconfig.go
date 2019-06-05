@@ -200,6 +200,15 @@ func (wc *WorkerConfig) Get(key string) (interface{}, error) {
 	return val, nil
 }
 
+// Like Get, but panic on error (for tests)
+func (wc *WorkerConfig) MustGet(key string) interface{} {
+	val, err := wc.Get(key)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 func NewWorkerConfig() *WorkerConfig {
 	return &WorkerConfig{
 		data: make(map[string]interface{}),

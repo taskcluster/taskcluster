@@ -85,11 +85,6 @@ func TestAwsProviderConfigureRun(t *testing.T) {
 		"local-ipv4":        "192.168.0.1",
 	}, run.ProviderMetadata, "providerMetadata is correct")
 
-	val, err := run.WorkerConfig.Get("from-user-data")
-	assert.NoError(t, err, "got error")
-	assert.Equal(t, true, val, "value for from-user-data")
-
-	val, err = run.WorkerConfig.Get("from-runner-cfg")
-	assert.NoError(t, err, "got error")
-	assert.Equal(t, true, val, "value for from-runner-cfg")
+	assert.Equal(t, true, run.WorkerConfig.MustGet("from-user-data"), "value for from-user-data")
+	assert.Equal(t, true, run.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
 }
