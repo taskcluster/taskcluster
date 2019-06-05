@@ -1,8 +1,3 @@
-enum LoginStrategy {
-  MOZILLA_AUTH0
-  GITHUB
-}
-
 # Taskcluster credentials.
 type TaskclusterCredentials {
   clientId: ID!
@@ -20,16 +15,10 @@ type Credentials {
 }
 
 extend type Query {
-  # Given a token, return a set of Taskcluster credentials
+  # Given a Taskcluster token, return a set of Taskcluster credentials
   # for use on behalf of the identified user.
   #
-  # | -- | --- |
-  # | Provider | Token type |
-  # | mozilla-auth0 | An OIDC token from a trusted OpenID provider |
-  # | github | An OAuth 2.0 token |
-  #
-  # The `accessToken` is first verified against the named
-  # `provider`, then passed to the provider\'s API to retrieve a user
+  # The Taskcluster token is first verified prior to retrieving the user
   # profile. That profile is then used to generate Taskcluster credentials
   # appropriate to the user. Note that the resulting credentials may or may
   # not include a `certificate` property. Callers should be prepared for either
@@ -38,5 +27,5 @@ extend type Query {
   # The given credentials will expire in a relatively short time. Callers should
   # monitor this expiration and refresh the credentials if necessary, by calling
   # this endpoint again, if they have expired.
-  getCredentials(provider: LoginStrategy!, accessToken: ID!): Credentials
+  getCredentials(taskclusterToken: ID!): Credentials
 }

@@ -6,11 +6,13 @@ const Auth0Strategy = require('passport-auth0');
 const User = require('../User');
 const PersonAPI = require('../clients/PersonAPI');
 const WebServerError = require('../../utils/WebServerError');
-const { encode, decode } = require('../../utils/codec');
+const { encode } = require('../../utils/codec');
 const identityFromClientId = require('../../utils/identityFromClientId');
-const verifyJwt = require('../../utils/verifyJwt');
 const tryCatch = require('../../utils/tryCatch');
 const login = require('../../utils/login');
+const verifyJwtAuth0 = require('../../utils/verifyJwtAuth0');
+const jwt = require('../../utils/jwt');
+const userIdFromIdentity = require('../../utils/userIdFromIdentity');
 
 const debug = Debug('strategies.mozilla-auth0');
 
@@ -24,6 +26,8 @@ module.exports = class MozillaAuth0 {
 
     Object.assign(this, strategyCfg);
 
+    this.jwt = cfg.login.jwt;
+    this.rootUrl = cfg.taskcluster.rootUrl;
     this._personApi = null;
     this._personApiExp = null;
     this.identityProviderId = 'mozilla-auth0';
@@ -88,28 +92,23 @@ module.exports = class MozillaAuth0 {
     return user;
   }
 
-  async userFromToken(accessToken) {
+  userFromIdentity(identity) {
+    const userId = userIdFromIdentity(identity);
+
+    return this.getUser({ userId });
+  }
+
+  async expFromIdToken(idToken) {
     const [jwtError, profile] = await tryCatch(
-      verifyJwt({ token: accessToken, domain: this.domain, audience: this.clientId })
+      verifyJwtAuth0({ token: idToken, domain: this.domain, audience: this.clientId })
     );
 
     if (jwtError) {
-      debug(`error validating jwt: ${jwtError}`);
+      debug(`error validating the idToken jwt: ${jwtError}`);
       return;
     }
 
-    debug(`received valid access_token for subject ${profile.sub}`);
-
-    const [err, user] = await tryCatch(this.getUser({ userId: profile.sub }));
-
-    if (err) {
-      debug(`error retrieving profile from accessToken: ${err}\n${err.stack}`);
-      return;
-    }
-
-    user.providerExpires = new Date(profile.exp * 1000);
-
-    return user;
+    return profile.exp;
   }
 
   userFromClientId(clientId) {
@@ -119,14 +118,7 @@ module.exports = class MozillaAuth0 {
       return;
     }
 
-    let encodedUserId = identity.split('/')[1];
-
-    // Reverse the username appending, stripping the username.
-    if (encodedUserId.startsWith('github|') || encodedUserId.startsWith('oauth2|firefoxaccounts|')) {
-      encodedUserId = encodedUserId.replace(/\|[^|]*$/, '');
-    }
-
-    return this.getUser({ userId: decode(encodedUserId) });
+    return this.getUser({ userId: userIdFromIdentity(identity) });
   }
 
   identityFromProfile(profile) {
@@ -211,7 +203,12 @@ module.exports = class MozillaAuth0 {
         // profile has all the information from the user
         async (accessToken, refreshToken, extraParams, profile, done) => {
           const user = await this.getUser({ userId: profile.user_id });
-          const userFromToken = await this.userFromToken(extraParams.id_token);
+          const { token: taskclusterToken, expires: providerExpires } = jwt.generate({
+            rootUrl: this.rootUrl,
+            privateKey: this.jwt.privateKey,
+            sub: user.identity,
+            exp: await this.expFromIdToken(extraParams.id_token),
+          });
 
           if (!user) {
             // Don't report much to the user, to avoid revealing sensitive information, although
@@ -221,9 +218,9 @@ module.exports = class MozillaAuth0 {
 
           done(null, {
             profile,
-            accessToken: extraParams.id_token,
+            taskclusterToken,
+            providerExpires,
             identityProviderId: 'mozilla-auth0',
-            providerExpires: userFromToken.providerExpires,
           });
         }
       )
