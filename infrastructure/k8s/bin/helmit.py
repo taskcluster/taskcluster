@@ -29,7 +29,7 @@ def format_values(context):
 
 def render_rbac(project_name):
     context = {"project_name": project_name}
-    for templatetype in ("role", "role-binding", "service-account"):
+    for templatetype in ("role", "rolebinding", "serviceaccount"):
         template = yaml.load(
             open(f"templates/{templatetype}.yaml"), Loader=yaml.SafeLoader
         )
@@ -64,6 +64,11 @@ def render_deployment(project_name, secret_keys, deployment):
         f"deployment-{context['proc_name']}" if context["proc_name"] else "deployment"
     )
     write_file(template, context, suffix)
+    template = yaml.load(open("templates/service.yaml"), Loader=yaml.SafeLoader)
+    suffix = (
+        f"service-{context['proc_name']}" if context["proc_name"] else "service"
+    )
+    write_file(template, context, suffix)
 
 
 def render_cronjob(project_name, secret_keys, deployment):
@@ -76,7 +81,7 @@ def render_cronjob(project_name, secret_keys, deployment):
     }
     context.update(deployment)
     format_values(context)
-    template = yaml.load(open("templates/cron-job.yaml"), Loader=yaml.SafeLoader)
+    template = yaml.load(open("templates/cronjob.yaml"), Loader=yaml.SafeLoader)
     suffix = f"cron-{context['job_name'].lower()}"
     write_file(template, context, suffix)
 
