@@ -8,7 +8,6 @@ secrets:
 deployments:
   - service_name: "built-in-workers"
     proc_name: "server"
-    secret_name: "taskcluster-built-in-workers"
     root_url: ".Values.rootUrl"
     docker_image: ".Values.dockerImage"
     background_job: true

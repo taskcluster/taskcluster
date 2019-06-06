@@ -18,12 +18,10 @@ deployments:
     proc_name: "web"
     readiness_path: "/api/index/v1/ping"
     root_url: ".Values.rootUrl"
-    secret_name: "taskcluster-index"
   - service_name: "index"
     docker_image: ".Values.dockerImage"
     proc_name: "handlers"
     root_url: ".Values.rootUrl"
-    secret_name: "taskcluster-index"
 cronjobs:
   - service_name: "index"
     deadline_seconds: 86400
@@ -32,4 +30,3 @@ cronjobs:
     project_name: "taskcluster-index"
     root_url: ".Values.rootUrl"
     schedule: "0 0 * * *"
-    secret_name: "taskcluster-index"

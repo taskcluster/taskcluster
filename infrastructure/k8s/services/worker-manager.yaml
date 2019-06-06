@@ -14,10 +14,8 @@ deployments:
     proc_name: "web"
     readiness_path: "/api/worker-manager/v1/ping"
     root_url: ".Values.rootUrl"
-    secret_name: "taskcluster-worker-manager"
   - service_name: "worker-manager"
     background_job: true 
     docker_image: ".Values.dockerImage"
     proc_name: "provisioner"
     root_url: ".Values.rootUrl"
-    secret_name: "taskcluster-worker-manager"

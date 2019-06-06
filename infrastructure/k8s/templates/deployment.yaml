@@ -32,7 +32,7 @@ in:
             each(mount):
               name: ${mount.source}
               secret:
-                secretName: ${secret_name}
+                secretName: ${project_name}
                 items:
                   - key: ${mount.source}
                     path: ${mount.name}
@@ -61,7 +61,7 @@ in:
                   name: '${uppercase(k)}'
                   valueFrom:
                     secretKeyRef:
-                      name: '${secret_name}'
+                      name: '${project_name}'
                       key: '${uppercase(k)}'
           volumeMounts:
             $if: 'len(volume_mounts) > 0'

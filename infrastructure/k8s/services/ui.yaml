@@ -12,4 +12,3 @@ deployments:
     proc_name: "web"
     readiness_path: "/"
     root_url: ".Values.rootUrl"
-    secret_name: "taskcluster-ui"

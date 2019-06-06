@@ -17,4 +17,3 @@ deployments:
     proc_name: "web"
     readiness_path: "/.well-known/apollo/server-health"
     root_url: ".Values.rootUrl"
-    secret_name: "taskcluster-web-server"

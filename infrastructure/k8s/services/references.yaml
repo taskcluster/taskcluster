@@ -7,4 +7,3 @@ deployments:
     proc_name: "web"
     readiness_path: "/references/"
     root_url: ".Values.rootUrl"
-    secret_name: "taskcluster-references"

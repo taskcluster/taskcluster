@@ -21,13 +21,11 @@ deployments:
     proc_name: "web"
     readiness_path: "/api/github/v1/ping"
     root_url: ".Values.rootUrl"
-    secret_name: "taskcluster-github"
   - service_name: "github"
     background_job: true
     docker_image: ".Values.dockerImage"
     proc_name: "worker"
     root_url: ".Values.rootUrl"
-    secret_name: "taskcluster-github"
 cronjobs:
   - service_name: "github"
     deadline_seconds: 86400
@@ -35,4 +33,3 @@ cronjobs:
     job_name: "sync"
     root_url: ".Values.rootUrl"
     schedule: "0 0 * * *"
-    secret_name: "taskcluster-github"

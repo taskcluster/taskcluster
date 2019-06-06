@@ -14,7 +14,6 @@ deployments:
     proc_name: "web"
     readiness_path: "/api/cache/v1/ping"
     root_url: ".Values.rootUrl"
-    secret_name: "taskcluster-purge-cache"
 cronjobs:
   - service_name: "purge-cache"
     deadline_seconds: 86400
@@ -22,4 +21,3 @@ cronjobs:
     job_name: "expireCachePurges"
     root_url: ".Values.rootUrl"
     schedule: "0 0 * * *"
-    secret_name: "taskcluster-purge-cache"
