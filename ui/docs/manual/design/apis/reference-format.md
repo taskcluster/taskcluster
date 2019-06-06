@@ -18,23 +18,32 @@ this site. To further simplify the generation of documentation and API-clients
 we have formalized formats for describing interfaces.
 
 This document describes the formats in which references for API end-points and
-AMQP exchanges are documented. This is useful for **automatic generation** of:
-
- * Documentation
- * Client libraries
- * Dummy mock servers
+AMQP exchanges are documented. 
 
 ## Reference Manifest
 
-All services are linked in a reference manifest, available at
-`/references/manifest.json`.  The file contains links to API references
-(`api.json`) and to exchange references (`exchanges.json`).
+All services are linked in a reference manifest, available at `/references/manifest.json` on any Taskcluster deployment.
+The file contains links to reference documents for specific services.
 
-The schema for this manifest is as follows:
+The schema for the reference manifest is as follows:
 
-<SchemaTable schema="/schemas/common/manifest-v2.json" />
+<SchemaTable schema="/schemas/common/manifest-v3.json" />
 
-## API References
+## Reference Documents
+
+The format of each linked reference document is identified by its schema.
+In particular, schema has a `metadata` property containing `name` and `version` properties that define the type of reference and the version of the schema.
+Software which interprets the references should use these `name` and `version` fields to identify documents it understands, and ignore documents it does not understand.
+
+That metadata is defined in a meta-schema:
+
+<SchemaTable schema="/schemas/common/metadata-metaschema.json" />
+
+Note that the manifest document also adheres to the metaschema.
+
+### API References
+
+API reference files have metadata name `api`.
 
 Taskcluster API calls are REST-like HTTP transactions, and the API reference
 describes how to formulate a request and what to expect in the response.  This
@@ -57,24 +66,20 @@ The API reference format has the following format:
 
 <SchemaTable schema="/schemas/common/api-reference-v0.json" />
 
-## AMQP Exchange References
+## Pulse Exchange References
 
 Each service which sends Pulse messages has its exchanges and messages defined
-in a reference document with the following format.
+in a reference document with metadata name `exchanges` and the following format.
 
 <SchemaTable schema="/schemas/common/exchanges-reference-v0.json" />
 
 Messages are validated on the server prior to publication.
 Note that clients should not validate received messages against the declared
-schema, as messages may change by adding additional properties.
+schema, as messages may be changed by adding additional properties.
 
-## Taskcluster-References
+## Log References
 
-The
-[taskcluster-references](https://github.com/taskcluster/taskcluster-references)
-service handles collating and serving references and schemas, and also holds
-the authoritative copy of the schemas linked above.
+Each service generates log messages that match formats defined in log references.
+These reference documents have metadata name `logs` and the following schema:
 
-When these schemas must be modified, new versions will be added, thus changing
-the `$schema` URI in the documents. The schemas at the existing URIs will not
-change.
+<SchemaTable schema="/schemas/common/logs-reference-v0.json" />
