@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { bool, func } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
+import classNames from 'classnames';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -18,6 +19,11 @@ import splitLines from '../../utils/splitLines';
 @withStyles(theme => ({
   fab: {
     ...theme.mixins.fab,
+  },
+  saveRoleSpan: {
+    position: 'fixed',
+    bottom: theme.spacing.double,
+    right: theme.spacing.unit * 11,
   },
   expandedScopesListItem: {
     paddingTop: 0,
@@ -111,6 +117,10 @@ export default class RoleForm extends Component {
       lastModified,
       expandedScopes,
     } = this.state;
+    const isRoleDirty =
+      isNewRole ||
+      description !== role.description ||
+      scopeText !== role.scopes.join('\n');
 
     return (
       <Fragment>
@@ -208,35 +218,42 @@ export default class RoleForm extends Component {
             spanProps={{ className: classes.fab }}
             tooltipProps={{ title: 'Save' }}
             requiresAuth
-            disabled={loading}
+            disabled={loading || !isRoleDirty}
             variant="round"
             onClick={this.handleSaveRole}
             classes={{ root: classes.saveIcon }}>
             <ContentSaveIcon />
           </Button>
         ) : (
-          <SpeedDial>
-            <SpeedDialAction
-              requiresAuth
-              tooltipOpen
-              icon={<DeleteIcon />}
-              onClick={this.handleDeleteRole}
-              tooltipTitle="Delete"
-              className={classes.deleteIcon}
-              ButtonProps={{
-                disabled: loading,
+          <Fragment>
+            <Button
+              spanProps={{
+                className: classNames(classes.fab, classes.saveRoleSpan),
               }}
-            />
-            <SpeedDialAction
               requiresAuth
               tooltipOpen
-              icon={<ContentSaveIcon />}
               onClick={this.handleSaveRole}
               className={classes.saveIcon}
-              tooltipTitle="Save"
-              ButtonProps={{ disabled: loading }}
-            />
-          </SpeedDial>
+              variant="round"
+              tooltipProps={{ title: 'Save' }}
+              disabled={loading || !isRoleDirty}
+              classes={{ root: classes.saveIcon }}>
+              <ContentSaveIcon />
+            </Button>
+            <SpeedDial>
+              <SpeedDialAction
+                requiresAuth
+                tooltipOpen
+                icon={<DeleteIcon />}
+                onClick={this.handleDeleteRole}
+                tooltipTitle="Delete"
+                className={classes.deleteIcon}
+                ButtonProps={{
+                  disabled: loading,
+                }}
+              />
+            </SpeedDial>
+          </Fragment>
         )}
       </Fragment>
     );
