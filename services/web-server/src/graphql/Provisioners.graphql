@@ -33,8 +33,9 @@ type Provisioner {
   expires: DateTime!
   lastDateActive: DateTime!
   actions: [ProvisionerAction]!
-
+  # This field will trigger an additional request.
   workerTypes(provisionerId: String = provisionerId, connection: PageConnection, filter: JSON): WorkerTypesConnection
+  # This field will trigger an additional request.
   workerType(provisionerId: String = provisionerId, workerType: String!): WorkerType
 }
 

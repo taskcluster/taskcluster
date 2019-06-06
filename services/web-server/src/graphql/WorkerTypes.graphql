@@ -12,19 +12,21 @@ type WorkerType {
   expires: DateTime!
   lastDateActive: DateTime!
   actions: [ProvisionerAction]!
-
+  # This field will trigger an additional request.
   workers(
     provisionerId: String = provisionerId,
     workerType: String = workerType,
     connection: PageConnection,
     filter: JSON
   ): WorkersCompactConnection
+  # This field will trigger an additional request.
   worker(
     provisionerId: String = provisionerId,
     workerType: String = workerType,
     workerGroup: String!,
     workerId: ID!
   ): Worker
+  # This field will trigger an additional request.
   pendingTasks(provisionerId: String = provisionerId, workerType: String = workerType): Int!
 }
 

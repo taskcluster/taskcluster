@@ -57,13 +57,13 @@ type Hook {
   expires: DateTime!
   deadline: DateTime!
   triggerSchema: JSON!
-
+  # This field will trigger an additional request.
   status(hookGroupId: ID = hookGroupId, hookId: ID = hookId): HookStatus
 }
 
 type HookGroup {
   hookGroupId: ID!
-
+  # This field will trigger an additional request.
   hooks(hookGroupId: ID = hookGroupId): [Hook]
 }
 
