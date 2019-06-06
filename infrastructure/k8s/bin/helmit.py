@@ -3,10 +3,10 @@
 import argparse
 import glob
 import jsone
-import yaml
 import os
+import shutil
+import yaml
 
-# todo: add secret hash calculation to deployment
 # todo: make things work no matter cwd and os
 
 # secrets are interpolated by json-e into this goland template expression
@@ -88,6 +88,10 @@ def render_cronjob(project_name, secret_keys, deployment):
     write_file(template, context, suffix)
 
 
+def render_ingress():
+    shutil.copy("ingress/ingress.yaml", args.chartsdir)
+
+
 def write_file(template, context, suffix):
     filepath = f"{args.chartsdir}/{context['project_name']}-{suffix}.yaml"
     try:
@@ -114,6 +118,9 @@ if args.service:
     service_declarations = [f"services/{args.service}.yaml"]
 else:
     service_declarations = glob.glob("services/*yaml")
+
+# in the future may support multiple styles of ingress
+render_ingress()
 
 for p in service_declarations:
     declaration = yaml.load(open(p), Loader=yaml.SafeLoader)

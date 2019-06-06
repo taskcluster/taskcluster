@@ -1,0 +1,68 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: taskcluster-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: {{ .Values.ingressStaticIpName }}
+    ingress.gcp.kubernetes.io/pre-shared-cert: {{ .Values.ingressCertName }}
+spec:
+  rules:
+  - http:
+      paths:
+       - path: '/*'
+         backend:
+           #serviceName: taskcluster-ui
+           serviceName: taskcluster-references # hack until taskcluster-ui is working
+           servicePort: 80
+       - path: '/references/*'
+         backend:
+           serviceName: taskcluster-references
+           servicePort: 80
+       - path: '/schemas/*'
+         backend:
+           serviceName: taskcluster-references
+           servicePort: 80
+       - path: '/graphql/*'
+         backend:
+           serviceName: taskcluster-web-server
+           servicePort: 80
+#       - path: '/api/auth/*'
+#         backend:
+#           serviceName:  taskcluster-auth
+#           servicePort: 80
+#       - path: '/api/secrets/*'
+#         backend:
+#           serviceName:  taskcluster-secrets
+#           servicePort: 80
+#       - path: '/api/queue/*'
+#         backend:
+#           serviceName:  taskcluster-queue
+#           servicePort: 80
+#       - path: '/api/hooks/*'
+#         backend:
+#           serviceName:  taskcluster-hooks
+#           servicePort: 80
+#       - path: '/api/index/*'
+#         backend:
+#           serviceName:  taskcluster-index
+#           servicePort: 80
+#       - path: '/api/events/*'
+#         backend:
+#           serviceName:  taskcluster-events
+#           servicePort: 80
+#       - path: '/api/notify/*'
+#         backend:
+#           serviceName:  taskcluster-notify
+#           servicePort: 80
+#       - path: '/api/purge-cache/*'
+#         backend:
+#           serviceName:  taskcluster-purge-cache
+#           servicePort: 80
+#       - path: '/api/github/*'
+#         backend:
+#           serviceName:  taskcluster-github
+#           servicePort: 80
+#       - path: '/api/worker-manager/*'
+#         backend:
+#           serviceName:  taskcluster-worker-manager
+#           servicePort: 80
