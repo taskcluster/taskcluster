@@ -162,7 +162,7 @@ export default class DataTable extends Component {
           <TablePagination
             labelDisplayedRows={() => ''}
             component="div"
-            count={elements.length}
+            count={items.length}
             rowsPerPage={rowsPerPage}
             rowsPerPageOptions={[rowsPerPage]}
             page={page}
