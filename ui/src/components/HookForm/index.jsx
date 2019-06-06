@@ -31,6 +31,7 @@ import SpeedDialAction from '../SpeedDialAction';
 import DialogAction from '../DialogAction';
 import DateDistance from '../DateDistance';
 import HookLastFiredTable from '../HookLastFiredTable';
+import PulseBindings from '../PulseBindings';
 import { hook } from '../../utils/prop-types';
 import removeKeys from '../../utils/removeKeys';
 
@@ -181,6 +182,8 @@ export default class HookForm extends Component {
   state = {
     hook: null,
     hookLastFires: null,
+    routingKeyPattern: '#',
+    pulseExchange: '',
     // eslint-disable-next-line react/no-unused-state
     previousHook: null,
     taskInput: '',
@@ -236,6 +239,7 @@ export default class HookForm extends Component {
         owner: hook.metadata.owner,
         emailOnError: hook.metadata.emailOnError,
       },
+      bindings: hook.bindings,
       schedule: hook.schedule,
       task: hook.task,
       triggerSchema: hook.triggerSchema,
@@ -387,6 +391,7 @@ export default class HookForm extends Component {
       hook.hookId &&
       hook.metadata.name &&
       hook.metadata.owner &&
+      hook.bindings &&
       !validation.owner.error &&
       taskValidJson &&
       triggerSchemaValidJson
@@ -446,6 +451,44 @@ export default class HookForm extends Component {
     });
   };
 
+  handleInputChange = ({ target: { name, value } }) => {
+    this.setState({ [name]: value });
+  };
+
+  handleAddBinding = () => {
+    const { pulseExchange, routingKeyPattern } = this.state;
+    const bindings = this.state.hook.bindings.concat([
+      {
+        exchange: pulseExchange,
+        routingKeyPattern,
+      },
+    ]);
+
+    this.setState({
+      pulseExchange: '',
+      routingKeyPattern: '#',
+      hook: {
+        ...this.state.hook,
+        bindings,
+      },
+    });
+  };
+
+  handleDeleteBinding = ({ exchange, routingKeyPattern }) => {
+    const bindings = this.state.hook.bindings.filter(
+      binding =>
+        binding.exchange !== exchange ||
+        binding.routingKeyPattern !== routingKeyPattern
+    );
+
+    this.setState({
+      hook: {
+        ...this.state.hook,
+        bindings,
+      },
+    });
+  };
+
   render() {
     const {
       actionLoading,
@@ -458,6 +501,8 @@ export default class HookForm extends Component {
       onDialogOpen,
     } = this.props;
     const {
+      routingKeyPattern,
+      pulseExchange,
       scheduleTextField,
       taskInput,
       triggerSchemaInput,
@@ -594,7 +639,21 @@ export default class HookForm extends Component {
               </ListItem>
             </Fragment>
           )}
-          <List>
+          <PulseBindings
+            patternName="routingKeyPattern"
+            bindings={hook.bindings}
+            onBindingAdd={this.handleAddBinding}
+            onBindingRemove={this.handleDeleteBinding}
+            onChange={this.handleInputChange}
+            pulseExchange={pulseExchange}
+            pattern={routingKeyPattern}
+          />
+          <List
+            subheader={
+              <ListSubheader className={classes.subheader}>
+                Schedule
+              </ListSubheader>
+            }>
             <ListItem>
               <ListItemText
                 primary={
@@ -611,7 +670,6 @@ export default class HookForm extends Component {
                         for format information. Times are in UTC.
                       </span>
                     }
-                    label="Schedule"
                     name="scheduleTextField"
                     placeholder="* * * * * *"
                     fullWidth
