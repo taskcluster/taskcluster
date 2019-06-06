@@ -54,10 +54,10 @@ spec:
 #         backend:
 #           serviceName:  taskcluster-notify
 #           servicePort: 80
-#       - path: '/api/purge-cache/*'
-#         backend:
-#           serviceName:  taskcluster-purge-cache
-#           servicePort: 80
+       - path: '/api/purge-cache/*'
+         backend:
+           serviceName:  taskcluster-purge-cache
+           servicePort: 80
 #       - path: '/api/github/*'
 #         backend:
 #           serviceName:  taskcluster-github
