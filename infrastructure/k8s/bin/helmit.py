@@ -37,6 +37,8 @@ def render_rbac(project_name):
 
 
 def render_secrets(project_name, secrets):
+    secrets['debug'] = '*'
+    secrets['level'] = 'TRACE'
     format_secrets(secrets)
     context = {"project_name": project_name, "secrets": secrets}
     template = yaml.load(open("templates/secret.yaml"), Loader=yaml.SafeLoader)
