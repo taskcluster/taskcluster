@@ -5,7 +5,7 @@ type WorkerManagerWorkerPoolSummary {
     config: WMWorkerPoolGeneralConfig
     providerId: String!
 
-    pendingTasks: Int
+    pendingTasks: Int #this value comes from a separate request to queue
 }
 
 type WMWorkerPoolGeneralConfig {
