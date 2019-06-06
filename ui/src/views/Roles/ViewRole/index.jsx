@@ -68,6 +68,8 @@ export default class ViewRole extends Component {
 
       if (isNewRole) {
         this.props.history.push(`/auth/roles/${encodeURIComponent(roleId)}`);
+
+        return;
       }
 
       this.handleSnackbarOpen({ message: 'Role Saved', open: true });
