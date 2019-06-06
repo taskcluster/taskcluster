@@ -50,5 +50,39 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     const errors = await helper.WorkerPoolError.scan({}, {});
     assert.equal(errors.entries.length, 1);
     assert.equal(errors.entries[0].workerPoolId, 'ww/tt');
+
+    assert.equal(helper.notify.emails.length, 0);
+  });
+
+  test('report errors (w/ email)', async function() {
+    const wp = await helper.WorkerPool.create({
+      workerPoolId: 'ww/tt',
+      providerId: 'testing1',
+      description: 'none',
+      previousProviderIds: [],
+      scheduledForDeletion: false,
+      created: new Date(),
+      lastModified: new Date(),
+      config: {
+      },
+      owner: 'whatever@example.com',
+      providerData: {},
+      emailOnError: true,
+    });
+
+    await wp.reportError({
+      kind: 'something-error',
+      title: 'And Error about Something',
+      description: 'WHO KNOWS',
+      notify: helper.notify,
+      WorkerPoolError: helper.WorkerPoolError,
+    });
+
+    const errors = await helper.WorkerPoolError.scan({}, {});
+    assert.equal(errors.entries.length, 1);
+    assert.equal(errors.entries[0].workerPoolId, 'ww/tt');
+
+    assert.equal(helper.notify.emails.length, 1);
+    assert.equal(helper.notify.emails[0].address, 'whatever@example.com');
   });
 });

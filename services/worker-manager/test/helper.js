@@ -215,6 +215,7 @@ const stubbedQueue = () => {
  * make a notify object with the `email` method stubbed out
  */
 const stubbedNotify = () => {
+  const emails = [];
   const notify = new taskcluster.Notify({
     rootUrl: exports.rootUrl,
     credentials: {
@@ -222,11 +223,13 @@ const stubbedNotify = () => {
       accessToken: 'none',
     },
     fake: {
-      email: async (address, subject, content) => {
-        throw new Error(content);
+      email: async ({address, subject, content}) => {
+        emails.push({address, subject, content});
       },
     },
   });
+
+  notify.emails = emails;
 
   return notify;
 };
