@@ -203,18 +203,19 @@ module.exports = class MozillaAuth0 {
         // profile has all the information from the user
         async (accessToken, refreshToken, extraParams, profile, done) => {
           const user = await this.getUser({ userId: profile.user_id });
-          const { token: taskclusterToken, expires: providerExpires } = jwt.generate({
-            rootUrl: this.rootUrl,
-            privateKey: this.jwt.privateKey,
-            sub: user.identity,
-            exp: await this.expFromIdToken(extraParams.id_token),
-          });
 
           if (!user) {
             // Don't report much to the user, to avoid revealing sensitive information, although
             // it is likely in the service logs.
             done(new WebServerError('InputError', 'Could not generate credentials for this access token'));
           }
+
+          const { token: taskclusterToken, expires: providerExpires } = jwt.generate({
+            rootUrl: this.rootUrl,
+            privateKey: this.jwt.privateKey,
+            sub: user.identity,
+            exp: await this.expFromIdToken(extraParams.id_token),
+          });
 
           done(null, {
             profile,
