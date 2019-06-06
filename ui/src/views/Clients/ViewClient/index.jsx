@@ -187,6 +187,8 @@ export default class ViewClient extends Component {
           pathname: `/auth/clients/${encodeURIComponent(clientId)}`,
           state: { accessToken: result.data.createClient.accessToken },
         });
+
+        return;
       }
 
       this.handleSnackbarOpen({ message: 'Client Saved', open: true });
