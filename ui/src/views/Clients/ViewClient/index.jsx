@@ -14,6 +14,7 @@ import IconButton from '@material-ui/core/IconButton';
 import ClearIcon from 'mdi-react/ClearIcon';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
+import Snackbar from '../../../components/Snackbar';
 import Dashboard from '../../../components/Dashboard';
 import ClientForm from '../../../components/ClientForm';
 import ErrorPanel from '../../../components/ErrorPanel';
@@ -75,6 +76,11 @@ export default class ViewClient extends Component {
     accessToken: this.props.location.state
       ? this.props.location.state.accessToken
       : null,
+    snackbar: {
+      message: '',
+      variant: 'success',
+      open: false,
+    },
   };
 
   handleDeleteClient = async clientId => {
@@ -182,13 +188,29 @@ export default class ViewClient extends Component {
           state: { accessToken: result.data.createClient.accessToken },
         });
       }
+
+      this.handleSnackbarOpen({ message: 'Client Saved', open: true });
     } catch (error) {
       this.setState({ error, loading: false });
     }
   };
 
+  handleSnackbarOpen = ({ message, variant = 'success', open }) => {
+    this.setState({ snackbar: { message, variant, open } });
+  };
+
+  handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    this.setState({
+      snackbar: { message: '', variant: 'success', open: false },
+    });
+  };
+
   render() {
-    const { error, loading, accessToken } = this.state;
+    const { error, loading, accessToken, snackbar } = this.state;
     const { isNewClient, data, classes, location } = this.props;
 
     if (location.state && location.state.accessToken) {
@@ -259,6 +281,7 @@ export default class ViewClient extends Component {
             </Fragment>
           )}
         </Fragment>
+        <Snackbar onClose={this.handleSnackbarClose} {...snackbar} />
       </Dashboard>
     );
   }
