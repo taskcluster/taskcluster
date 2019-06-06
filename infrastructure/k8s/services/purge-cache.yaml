@@ -12,7 +12,7 @@ deployments:
   - service_name: "purge-cache"
     docker_image: ".Values.dockerImage"
     proc_name: "web"
-    readiness_path: "/api/v1/cache/ping"
+    readiness_path: "/api/cache/v1/ping"
     root_url: ".Values.rootUrl"
     secret_name: "taskcluster-purge-cache"
 cronjobs:
