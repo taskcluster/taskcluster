@@ -2,6 +2,7 @@ import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
+import Snackbar from '../../../components/Snackbar';
 import Dashboard from '../../../components/Dashboard';
 import RoleForm from '../../../components/RoleForm';
 import ErrorPanel from '../../../components/ErrorPanel';
@@ -25,6 +26,11 @@ export default class ViewRole extends Component {
   state = {
     loading: false,
     error: null,
+    snackbar: {
+      message: '',
+      variant: 'success',
+      open: false,
+    },
   };
 
   handleDeleteRole = async roleId => {
@@ -63,13 +69,29 @@ export default class ViewRole extends Component {
       if (isNewRole) {
         this.props.history.push(`/auth/roles/${encodeURIComponent(roleId)}`);
       }
+
+      this.handleSnackbarOpen({ message: 'Role Saved', open: true });
     } catch (error) {
       this.setState({ error, loading: false });
     }
   };
 
+  handleSnackbarOpen = ({ message, variant = 'success', open }) => {
+    this.setState({ snackbar: { message, variant, open } });
+  };
+
+  handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    this.setState({
+      snackbar: { message: '', variant: 'success', open: false },
+    });
+  };
+
   render() {
-    const { loading, error } = this.state;
+    const { loading, error, snackbar } = this.state;
     const { isNewRole, data } = this.props;
 
     return (
@@ -97,6 +119,7 @@ export default class ViewRole extends Component {
             </Fragment>
           )}
         </Fragment>
+        <Snackbar onClose={this.handleSnackbarClose} {...snackbar} />
       </Dashboard>
     );
   }
