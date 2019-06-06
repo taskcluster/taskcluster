@@ -257,11 +257,7 @@ export const WorkerManagerWorkerPoolSummary = shape({
   workerPoolId: string,
   owner: string,
   pendingTasks: number,
-  lastActive: date,
-  lastResolved: date,
-  failed: number,
-  exception: number,
-  unscheduled: number,
+  description: string,
   providerId: string,
 });
 
