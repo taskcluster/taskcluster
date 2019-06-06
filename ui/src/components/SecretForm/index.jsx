@@ -133,6 +133,7 @@ export default class SecretForm extends Component {
     const { secret, classes, isNewSecret, loading } = this.props;
     const { secretName, editorValue, expires, showSecret } = this.state;
     const isSecretDirty =
+      isNewSecret ||
       secretName !== secret.name ||
       editorValue !== safeDump(secret.secret) ||
       expires !== secret.expires;
