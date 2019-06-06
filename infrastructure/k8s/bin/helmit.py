@@ -58,6 +58,8 @@ def render_deployment(project_name, secret_keys, deployment):
         "replicas": "1",
         "background_job": False,
         "is_monoimage": True,
+        # doing this ugly thing here because attempting to do it in jsone turned out even worse
+        "checksum_calculation": "{{ " + f'include (print $.Template.BasePath "/{project_name}-secrets.yaml") . | sha256sum' + " }}"
     }
     context.update(deployment)
     format_values(context)
@@ -96,7 +98,7 @@ def write_file(template, context, suffix):
     filepath = f"{args.chartsdir}/{context['project_name']}-{suffix}.yaml"
     try:
         f = open(filepath, "w+")
-        f.write(yaml.dump(jsone.render(template, context), default_flow_style=False))
+        f.write(yaml.dump(jsone.render(template, context), default_flow_style=False, width=float("inf")))
         f.close()
     except:
         print(f"failed to write {filepath}")
