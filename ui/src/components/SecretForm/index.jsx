@@ -130,8 +130,13 @@ export default class SecretForm extends Component {
   };
 
   render() {
-    const { classes, isNewSecret, loading } = this.props;
+    const { secret, classes, isNewSecret, loading } = this.props;
     const { secretName, editorValue, expires, showSecret } = this.state;
+    const isSecretDirty =
+      isNewSecret ||
+      secretName !== secret.name ||
+      editorValue !== safeDump(secret.secret) ||
+      expires !== secret.expires;
 
     return (
       <Fragment>
@@ -199,7 +204,7 @@ export default class SecretForm extends Component {
             color="secondary"
             variant="round"
             className={classes.saveIcon}
-            disabled={loading || !this.validSecret()}
+            disabled={loading || !this.validSecret() || !isSecretDirty}
             onClick={this.handleSaveSecret}>
             <ContentSaveIcon />
           </Button>
@@ -214,7 +219,7 @@ export default class SecretForm extends Component {
               classes={{ root: classes.successIcon }}
               variant="round"
               className={classes.saveIcon}
-              disabled={loading || !this.validSecret()}
+              disabled={loading || !this.validSecret() || !isSecretDirty}
               onClick={this.handleSaveSecret}>
               <ContentSaveIcon />
             </Button>
