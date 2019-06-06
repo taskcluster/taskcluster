@@ -277,14 +277,10 @@ class GoogleProvider extends Provider {
   async provision({workerPool}) {
     const {workerPoolId} = workerPool;
 
-    // TODO: I worry that providerData.trackedOperations will be larger than a single record
-    // probably need to have providerData as separate table?
-    const providerData = workerPool.providerData[this.providerId];
-    if (!providerData || providerData.running === undefined || !providerData.trackedOperations) {
+    if (!workerPool.providerData[this.providerId] || workerPool.providerData[this.providerId].running === undefined) {
       await workerPool.modify(wt => {
         wt.providerData[this.providerId] = wt.providerData[this.providerId] || {};
         wt.providerData[this.providerId].running = wt.providerData[this.providerId].running || 0;
-        wt.providerData[this.providerId].trackedOperations = wt.providerData[this.providerId].trackOperations || [];
       });
     }
     const regions = workerPool.config.regions;
@@ -296,8 +292,6 @@ class GoogleProvider extends Provider {
       ...workerPool.config,
       running: workerPool.providerData[this.providerId].running,
     });
-
-    const operations = [];
 
     for (let i = 0; i < toSpawn; i++) {
       const region = regions[Math.floor(Math.random() * regions.length)];
@@ -393,47 +387,114 @@ class GoogleProvider extends Provider {
         providerData: {
           project: this.project,
           zone,
+          operation: {
+            name: op.name,
+            zone: op.zone,
+          },
         },
       });
-      operations.push({
-        name: op.name,
-        zone: op.zone,
+    }
+  }
+
+  /*
+   * Called before an iteration of the worker scanner
+   */
+  async scanPrepare() {
+    this.seen = {};
+    this.errors = {};
+  }
+
+  /*
+   * Called for every worker on a schedule so that we can update the state of
+   * the worker locally
+   */
+  async checkWorker({worker}) {
+    const states = this.Worker.states;
+    this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
+    this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
+
+    let deleteOp = false;
+    if (worker.providerData.operation) {
+      deleteOp = await this.handleOperation({
+        op: worker.providerData.operation,
+        errors: this.errors[worker.workerPoolId],
       });
     }
 
-    if (operations.length) {
+    let res;
+    try {
+      res = await this.compute.instances.get({
+        project: worker.providerData.project,
+        zone: worker.providerData.zone,
+        instance: worker.workerId,
+      });
+    } catch (err) {
+      if (err.code !== 404) {
+        throw err;
+      }
+      await worker.modify(w => {
+        w.state = states.STOPPED;
+        if (deleteOp) {
+          delete w.providerData.operation;
+        }
+      });
+      return;
+    }
+    const {status} = res.data;
+    if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
+      this.seen[worker.workerPoolId] += 1;
+    } else if (['TERMINATED', 'STOPPED'].includes(status)) {
+      await this.compute.instances.delete({
+        project: worker.providerData.project,
+        zone: worker.providerData.zone,
+        instance: worker.workerId,
+      });
+      await worker.modify(w => {
+        w.state = states.STOPPED;
+        if (deleteOp) {
+          delete w.providerData.operation;
+        }
+      });
+    }
+  }
+
+  /*
+   * Called after an iteration of the worker scanner
+   */
+  async scanCleanup() {
+    await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
+      const workerPool = await this.WorkerPool.load({
+        workerPoolId,
+      }, true);
+
+      if (!workerPool) {
+        return; // In this case, the workertype has been deleted so we can just move on
+      }
+
+      if (this.errors[workerPoolId].length) {
+        await Promise.all(this.errors.map(error => workerPool.reportError(error)));
+      }
+
       await workerPool.modify(wt => {
-        wt.providerData[this.providerId].trackedOperations =
-          wt.providerData[this.providerId].trackedOperations.concat(operations);
+        if (!wt.providerData[this.providerId]) {
+          wt.providerData[this.providerId] = {};
+        }
+        wt.providerData[this.providerId].running = seen;
       });
-    }
-
-    await this.handleOperations({workerPool});
+    }));
   }
 
   /**
-   * It is important that with the current design we only check on errors
-   * for error reporting. We should not use it to gate further progress of
-   * provisioning due to the fact that we might not succeed in recording
-   * the operation when it actually suceeded.
+   * Used to check in on the state of any operations
+   * that are ongoing. This should not be used to gate
+   * any other actions in the provider as we may fail to write these
+   * operations when we create them. This is just a nice-to-have for
+   * reporting configuration/provisioning errors to the users.
+   *
+   * op: an object with keys `name` and optionally `region` or `zone` if it is a region or zone based operation
+   * errors: a list that will have any errors found for that operation appended to it
    */
-  async handleOperations({workerPool}) {
-    if (!workerPool.providerData[this.providerId].trackedOperations.length) {
-      return;
-    }
-    const ongoing = [];
-    for (const op of workerPool.providerData[this.providerId].trackedOperations) {
-      if (await this.handleOperation({op, workerPool})) {
-        ongoing.push(op);
-      }
-    }
-
-    await workerPool.modify(wt => {
-      wt.providerData[this.providerId].trackedOperations = ongoing;
-    });
-  }
-
-  async handleOperation({op, workerPool}) {
+  async handleOperation({op, errors}) {
     let operation;
     let args;
     let obj;
@@ -476,7 +537,7 @@ class GoogleProvider extends Provider {
 
     if (operation.error) {
       for (const err of operation.error.errors) { // Each operation can have multiple errors
-        await workerPool.reportError({
+        errors.push({
           kind: 'operation-error',
           title: 'Operation Error',
           description: err.message, // TODO: Make sure we clear exposing this with security folks
@@ -490,73 +551,6 @@ class GoogleProvider extends Provider {
     }
     await obj.delete(args);
     return false;
-  }
-
-  /*
-   * Called before an iteration of the worker scanner
-   */
-  async scanPrepare() {
-    this.seen = {};
-  }
-
-  /*
-   * Called for every worker on a schedule so that we can update the state of
-   * the worker locally
-   */
-  async checkWorker({worker}) {
-    const states = this.Worker.states;
-    this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
-    let res;
-    try {
-      res = await this.compute.instances.get({
-        project: worker.providerData.project,
-        zone: worker.providerData.zone,
-        instance: worker.workerId,
-      });
-    } catch (err) {
-      if (err.code !== 404) {
-        throw err;
-      }
-      await worker.modify(w => {
-        w.state = states.STOPPED;
-      });
-      return;
-    }
-    const {status} = res.data;
-    if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
-      this.seen[worker.workerPoolId] += 1;
-    } else if (['TERMINATED', 'STOPPED'].includes(status)) {
-      await this.compute.instances.delete({
-        project: worker.providerData.project,
-        zone: worker.providerData.zone,
-        instance: worker.workerId,
-      });
-      await worker.modify(w => {
-        w.state = states.STOPPED;
-      });
-    }
-  }
-
-  /*
-   * Called after an iteration of the worker scanner
-   */
-  async scanCleanup() {
-    await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
-      const workerPool = await this.WorkerPool.load({
-        workerPoolId,
-      }, true);
-
-      if (!workerPool) {
-        return; // In this case, the workertype has been deleted so we can just move on
-      }
-
-      await workerPool.modify(wt => {
-        if (!wt.providerData[this.providerId]) {
-          wt.providerData[this.providerId] = {};
-        }
-        wt.providerData[this.providerId].running = seen;
-      });
-    }));
   }
 
   /*

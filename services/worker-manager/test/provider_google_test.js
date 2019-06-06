@@ -49,35 +49,36 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       providerData: {},
       emailOnError: false,
     });
-    worker = await helper.Worker.create({
-      workerPoolId: workerPoolId,
-      workerGroup: providerId,
-      workerId: 'abc123',
-      providerId,
-      created: new Date(),
-      expires: taskcluster.fromNow('1 hour'),
-      state: helper.Worker.states.REQUESTED,
-      providerData: {},
-    });
     await provider.setup();
   });
 
   test('provisioning loop', async function() {
     await provider.provision({workerPool});
-    assert.equal(workerPool.providerData.google.trackedOperations.length, 1);
-    assert.equal(workerPool.providerData.google.trackedOperations[0].name, 'foo');
-    assert.equal(workerPool.providerData.google.trackedOperations[0].zone, 'whatever/a');
-    await provider.handleOperations({workerPool});
-    assert.equal(workerPool.providerData.google.trackedOperations.length, 0);
+    const workers = await helper.Worker.scan({}, {});
+    assert.deepEqual(workers.entries[0].providerData.operation, {
+      name: 'foo',
+      zone: 'whatever/a',
+    });
   });
 
   test('worker-scan loop', async function() {
+    await provider.provision({workerPool});
+    const worker = await helper.Worker.load({
+      workerPoolId: 'foo/bar',
+      workerId: '123',
+      workerGroup: 'google',
+    });
+
+    assert(worker.providerData.operation);
+
     // On the first run we've faked that the instance is running
     await provider.scanPrepare();
     await provider.checkWorker({worker});
     await provider.scanCleanup();
     await workerPool.reload();
     assert.equal(workerPool.providerData.google.running, 1);
+    worker.reload();
+    assert(worker.providerData.operation);
 
     // And now we fake it is stopped
     await provider.scanPrepare();
@@ -85,5 +86,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     await provider.scanCleanup();
     await workerPool.reload();
     assert.equal(workerPool.providerData.google.running, 0);
+    worker.reload();
+    assert(worker.providerData.operation);
   });
 });
