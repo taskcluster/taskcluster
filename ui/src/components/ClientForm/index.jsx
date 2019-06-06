@@ -191,10 +191,10 @@ export default class ClientForm extends Component {
       disabled,
     } = this.state;
     const isClientDirty =
-      clientId !== client.ID ||
+      isNewClient ||
       description !== client.description ||
       expires !== client.expires ||
-      scopeText !== client.scopeText;
+      scopeText !== client.scopes.join('\n');
 
     return (
       <Fragment>

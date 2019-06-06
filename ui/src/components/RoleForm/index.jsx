@@ -118,9 +118,9 @@ export default class RoleForm extends Component {
       expandedScopes,
     } = this.state;
     const isRoleDirty =
-      roleId !== role.ID ||
+      isNewRole ||
       description !== role.description ||
-      scopeText !== role.scopeText;
+      scopeText !== role.scopes.join('\n');
 
     return (
       <Fragment>
