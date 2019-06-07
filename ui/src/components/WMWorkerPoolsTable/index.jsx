@@ -73,7 +73,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     const iconSize = 16;
 
     return (
-      <TableRow key={workerPool.workerPool}>
+      <TableRow key={workerPool.workerPoolId}>
         <TableCell>
           <TableCellListItem
             button
