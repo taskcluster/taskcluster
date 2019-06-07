@@ -1,5 +1,6 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
+import { withApollo } from 'react-apollo';
 import { bool } from 'prop-types';
 import { joinWorkerPoolId } from 'taskcluster-worker-manager/src/util';
 import Typography from '@material-ui/core/Typography';
@@ -34,6 +35,7 @@ const providers = {
 };
 
 @hot(module)
+@withApollo
 @withStyles(theme => ({
   successIcon: {
     ...theme.mixins.successIcon,
@@ -118,6 +120,14 @@ export default class WMEditWorkerPool extends Component {
         invalidProviderConfig: true,
       });
     }
+  };
+
+  handleProviderTypeChange = event => {
+    const {
+      target: { value },
+    } = event;
+
+    this.setState({ providerType: providers[value] });
   };
 
   handleCreateWorkerPool = async () => {
@@ -223,7 +233,7 @@ export default class WMEditWorkerPool extends Component {
               helperText="Which service do you want to run your tasks in?"
               value={providerType}
               name="providerType"
-              onChange={this.handleInputChange}
+              onChange={this.handleProviderTypeChange}
               margin="normal">
               {Object.keys(providers).map(p => (
                 <MenuItem key={p} value={p}>
