@@ -66,7 +66,7 @@ The API reference format has the following format:
 
 <SchemaTable schema="/schemas/common/api-reference-v0.json" />
 
-## Pulse Exchange References
+### Pulse Exchange References
 
 Each service which sends Pulse messages has its exchanges and messages defined
 in a reference document with metadata name `exchanges` and the following format.
@@ -77,9 +77,27 @@ Messages are validated on the server prior to publication.
 Note that clients should not validate received messages against the declared
 schema, as messages may be changed by adding additional properties.
 
-## Log References
+### Log References
 
 Each service generates log messages that match formats defined in log references.
 These reference documents have metadata name `logs` and the following schema:
 
 <SchemaTable schema="/schemas/common/logs-reference-v0.json" />
+
+## Rolled-Up References
+
+If you are tempted to "crawl" a Taskcluster deployment to get its references and schemas, `/references/references.json` may save you some time.
+It contains an array of all reference and schema files, each in the shape `{content, filename}` where filename is the URL path relative to the deployment's rootUrl.
+Schema `$id`'s are represented with relative URLs.
+
+For example:
+
+```json
+{
+    "filename": "schemas/common/api-reference-v0.json",
+    "content": {
+        "$id": "/schemas/common-api-reference-v0.json#",
+        ..
+    }
+}
+```
