@@ -26,6 +26,8 @@ The `taskcluster.rootUrl` configuration setting is required. Either set
 to `user-config.yml` and edit it to include the `rootUrl` for the Taskcluster
 instance you are accessing; for example `https://taskcluster.net`.
 
+The Taskcluster team has a series of [best practices](../../dev-docs/best-practices#taskcluster-web-server)
+for this service which may help guide you in modifying the source code and making a pull request.
 That is enough to run the service, so if that's all you need, skip down to "Starting".
 
 ### Taskcluster Credentials
@@ -271,16 +273,3 @@ Variables:
 ## Data Flow Diagram
 
 ![data flow](https://cldup.com/e3lrkf28ab.png)
-
-## Style Guide
-
-### Contents
-
-* [Schema Field Definitions](#schema-field-definitions)
- 
-### Schema Field Definitions
-
-* For fields that may trigger an additional request for a client,
-add a comment above the field definition of the form "Note: This field will trigger an additional request."
-This will make sure developers are aware of possible performance penalties.
-

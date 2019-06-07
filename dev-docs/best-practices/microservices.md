@@ -121,3 +121,15 @@ Be friendly and document the errors in the API's `description` property, as they
 
 *Do not use* `taskcluster-lib-stats` or `raven`.
 Instead, use `taskcluster-lib-monitor` as described in its documentation.
+
+### taskcluster-web-server
+
+#### Contents
+
+* [Schema Field Definitions](#schema-field-definitions)
+
+#### Schema Field Definitions
+
+* For fields that may trigger an additional request for a client,
+add a comment above the field definition of the form "Note: This field will trigger an additional request."
+This will make sure developers are aware of possible performance penalties.
