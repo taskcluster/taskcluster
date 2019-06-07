@@ -5,7 +5,6 @@ const taskcluster = require('taskcluster-client');
 const libUrls = require('taskcluster-lib-urls');
 const uuid = require('uuid');
 const {google} = require('googleapis');
-const {FakeGoogle} = require('./fake-google');
 const {Provider} = require('./provider');
 
 class GoogleProvider extends Provider {
@@ -25,7 +24,7 @@ class GoogleProvider extends Provider {
     Worker,
     WorkerPool,
     WorkerPoolError,
-    fake = false,
+    fakes,
   }) {
     super({
       providerId,
@@ -40,20 +39,17 @@ class GoogleProvider extends Provider {
       WorkerPoolError,
     });
     this.configSchema = 'config-google';
-    this.fake = fake;
 
     this.instancePermissions = instancePermissions;
     this.project = project;
     this.zonesByRegion = {};
 
-    // TODO: Make fakes be injected
-    if (fake) {
+    if (fakes['google']) {
       this.ownClientEmail = 'whatever@example.com';
-      const fakeGoogle = new FakeGoogle();
-      this.compute = fakeGoogle.compute();
-      this.iam = fakeGoogle.iam();
-      this.crm = fakeGoogle.cloudresourcemanager();
-      this.oauth2 = new fakeGoogle.OAuth2({project});
+      this.compute = fakes['google'].compute();
+      this.iam = fakes['google'].iam();
+      this.crm = fakes['google'].cloudresourcemanager();
+      this.oauth2 = new fakes['google'].OAuth2({project});
       return;
     }
 

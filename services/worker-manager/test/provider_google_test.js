@@ -1,6 +1,6 @@
-const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 const helper = require('./helper');
+const {FakeGoogle} = require('./fake-google');
 const {GoogleProvider} = require('../src/providers/google');
 const testing = require('taskcluster-lib-testing');
 
@@ -12,7 +12,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
 
   let provider;
   let workerPool;
-  let worker;
   let providerId = 'google';
   let workerPoolId = 'foo/bar';
 
@@ -22,7 +21,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       notify: await helper.load('notify'),
       monitor: (await helper.load('monitor')).childMonitor('google'),
       estimator: await helper.load('estimator'),
-      fake: true,
+      fakes: {
+        google: new FakeGoogle(),
+      },
       rootUrl: helper.rootUrl,
       Worker: helper.Worker,
       WorkerPool: helper.WorkerPool,

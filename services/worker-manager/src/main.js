@@ -181,11 +181,17 @@ let load = loader({
     }),
   },
 
+  // This is used in testing to inject provider fakes
+  externalFakes: {
+    requires: [],
+    setup: () => {},
+  },
+
   providers: {
-    requires: ['cfg', 'monitor', 'notify', 'estimator', 'Worker', 'WorkerPool', 'WorkerPoolError', 'schemaset'],
-    setup: async ({cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError, schemaset}) =>
+    requires: ['cfg', 'monitor', 'notify', 'estimator', 'Worker', 'WorkerPool', 'WorkerPoolError', 'schemaset', 'externalFakes'],
+    setup: async ({cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError, schemaset, externalFakes}) =>
       new Providers().setup({
-        cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError,
+        cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError, fakes: externalFakes,
         validator: await schemaset.validator(cfg.taskcluster.rootUrl),
       }),
   },

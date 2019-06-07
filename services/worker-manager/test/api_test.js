@@ -6,6 +6,7 @@ const testing = require('taskcluster-lib-testing');
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
+  helper.withProviders(mock, skipping);
   helper.withServer(mock, skipping);
 
   test('ping', async function() {

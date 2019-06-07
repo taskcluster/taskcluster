@@ -6,7 +6,6 @@
  * more testing later or we can come up with some other plan.
 */
 
-// TODO: Move all google stuff into its own folder?
 const sinon = require('sinon');
 
 const WORKER_SERVICE_ACCOUNT_ID = '12345';

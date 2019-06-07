@@ -10,6 +10,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   helper.withPulse(mock, skipping);
   helper.withFakeNotify(mock, skipping);
   helper.withFakeQueue(mock, skipping);
+  helper.withProviders(mock, skipping);
   helper.withServer(mock, skipping);
   helper.withProvisioner(mock, skipping);
 

@@ -1,5 +1,6 @@
 const libUrls = require('taskcluster-lib-urls');
 const taskcluster = require('taskcluster-client');
+const {FakeGoogle} = require('./fake-google.js');
 const {stickyLoader, Secrets, withEntity, fakeauth, withMonitor, withPulse} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const data = require('../src/data');
@@ -37,6 +38,18 @@ exports.withEntities = (mock, skipping) => {
 
 exports.withPulse = (mock, skipping) => {
   withPulse({helper: exports, skipping, namespace: 'taskcluster-worker-manager'});
+};
+
+exports.withProviders = (mock, skipping) => {
+  suiteSetup(function() {
+    if (skipping()) {
+      return;
+    }
+
+    exports.load.inject('externalFakes', {
+      google: new FakeGoogle(),
+    });
+  });
 };
 
 exports.withProvisioner = (mock, skipping) => {
