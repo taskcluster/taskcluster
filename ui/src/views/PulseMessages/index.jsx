@@ -115,7 +115,11 @@ export default class PulseMessages extends Component {
     this.unsubscribe();
   }
 
-  handleInputChange = ({ target: { name, value } }) => {
+  handleRoutingKeyPatternChange = ({ target: { value } }) => {
+    this.setState({ pattern: value });
+  };
+
+  handlePulseExchangeChange = ({ target: { name, value } }) => {
     this.setState({ [name]: value });
   };
 
@@ -247,7 +251,8 @@ export default class PulseMessages extends Component {
             bindings={bindings}
             onBindingAdd={this.handleAddBinding}
             onBindingRemove={this.handleDeleteBinding}
-            onChange={this.handleInputChange}
+            onRoutingKeyPatternChange={this.handleRoutingKeyPatternChange}
+            onPulseExchangeChange={this.handlePulseExchangeChange}
             pulseExchange={pulseExchange}
             pattern={pattern}
           />

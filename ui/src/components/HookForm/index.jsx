@@ -451,7 +451,11 @@ export default class HookForm extends Component {
     });
   };
 
-  handleInputChange = ({ target: { name, value } }) => {
+  handleRoutingKeyPatternChange = ({ target: { value } }) => {
+    this.setState({ routingKeyPattern: value });
+  };
+
+  handlePulseExchangeChange = ({ target: { name, value } }) => {
     this.setState({ [name]: value });
   };
 
@@ -640,11 +644,11 @@ export default class HookForm extends Component {
             </Fragment>
           )}
           <PulseBindings
-            patternName="routingKeyPattern"
             bindings={hook.bindings}
             onBindingAdd={this.handleAddBinding}
             onBindingRemove={this.handleDeleteBinding}
-            onChange={this.handleInputChange}
+            onRoutingKeyPatternChange={this.handleRoutingKeyPatternChange}
+            onPulseExchangeChange={this.handlePulseExchangeChange}
             pulseExchange={pulseExchange}
             pattern={routingKeyPattern}
           />
