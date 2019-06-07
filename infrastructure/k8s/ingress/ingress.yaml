@@ -11,8 +11,7 @@ spec:
       paths:
        - path: '/*'
          backend:
-           #serviceName: taskcluster-ui
-           serviceName: taskcluster-references # hack until taskcluster-ui is working
+           serviceName: taskcluster-ui
            servicePort: 80
        - path: '/references/*'
          backend:
