@@ -1,4 +1,4 @@
-const { splitWorkerPoolId } = require('taskcluster-worker-manager/src/util');
+const {splitWorkerPoolId} = require('../utils/workerPool');
 
 module.exports = {
   WorkerManagerWorkerPoolSummary: {
