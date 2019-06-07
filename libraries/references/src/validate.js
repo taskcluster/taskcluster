@@ -25,6 +25,7 @@ const UNREFERENCED_SCHEMAS = [
 
   // schemas for dynamic configs in worker-manager TODO: What to do about these?
   {service: 'worker-manager', schema: 'v1/config-google.json#'},
+  {service: 'worker-manager', schema: 'v1/config-packet.json#'},
   {service: 'worker-manager', schema: 'v1/config-static.json#'},
   {service: 'worker-manager', schema: 'v1/config-testing.json#'},
   {service: 'worker-manager', schema: 'v1/config-null.json#'},

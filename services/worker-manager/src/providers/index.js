@@ -21,6 +21,7 @@ class Providers {
         case 'testing': Provider = require('./testing').TestingProvider; break;
         case 'static': Provider = require('./static').StaticProvider; break;
         case 'google': Provider = require('./google').GoogleProvider; break;
+        case 'packet': Provider = require('./packet').PacketProvider; break;
         default: throw new Error(`Unkown providerType ${meta.providerType} selected for providerId ${providerId}.`);
       }
       const provider = new Provider({

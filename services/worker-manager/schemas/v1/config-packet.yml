@@ -1,0 +1,102 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Packet Provider Config
+description: |
+  'The config section of a workertype is using the packet provider.'
+type: object
+properties:
+  minCapacity:
+    title: Minimum Capacity
+    type: integer
+    minimum: 0
+    description: |
+      The minimum amount of capacity that worker-manager should make
+      available at any given time.
+  maxCapacity:
+    title: Maximum Capacity
+    type: integer
+    minimum: 0
+    description: |
+      The maximum amount of capacity that worker-manager should make
+      available at any given time.
+  capacityPerInstance:
+    title: Capacity Per Instance
+    type: integer
+    minimum: 1
+    description: |
+      The number of tasks a single worker of this type
+      can run at any given time.
+  plan:
+    title: Plan
+    type: string
+    description: |
+      The plan to use to run this instance. This is equivalent
+      to the "instance type" in other cloud providers.
+  facilities:
+    title: Facilities
+    type: array
+    description: |
+      The packet cloud facilities to run these instances in.
+      This is equivalent to "regions" in other cloud providers.
+    uniqueItems: true
+    items:
+      type: string
+  billingCycle:
+    title: Billing Cycle
+    type: string
+    description: |
+      The instance billing cycle.
+  ipAddresses:
+    title: "IP addresses configuration"
+    type: array
+    uniqueItems: false
+    items:
+      additionalProperties: false
+      type: object
+      properties:
+        address_family:
+          type: integer
+        public:
+          type: boolean
+      required:
+        - address_family
+        - public
+  imageRepo:
+    title: Image repository
+    type: string
+    description: |
+      The git image repository where there is the custom image.
+  imageTag:
+    title: Image tag
+    type: string
+    description: |
+      The git image tag/commit of the image repository.
+  operatingSystem:
+    title: Operating System
+    type: string
+    description: |
+      Specify the operating system to run.
+  maxBid:
+    title: Max Bid
+    type: number
+    description: The max bid price.
+  userData:
+    title: User Data
+    type: object
+    additionalProperties: true
+    description: |
+      Arbitrary configuration that Worker Manager will make available to the worker
+      on start up via instance user data.
+additionalProperties: false
+required:
+  - minCapacity
+  - maxCapacity
+  - capacityPerInstance
+  - plan
+  - facilities
+  - billingCycle
+  - ipAddresses
+  - imageRepo
+  - imageTag
+  - operatingSystem
+  - maxBid
+  - userData
