@@ -36,9 +36,10 @@ def render_rbac(project_name):
         write_file(template, context, templatetype)
 
 
-def render_secrets(project_name, secrets):
-    secrets['debug'] = '*'
-    secrets['level'] = 'DEBUG'
+def render_secrets(project_name, debug_mode, secrets):
+    if debug_mode:
+        secrets['debug'] = '*'
+        secrets['level'] = 'DEBUG'
     format_secrets(secrets)
     context = {"project_name": project_name, "secrets": secrets}
     template = yaml.load(open("templates/secret.yaml"), Loader=yaml.SafeLoader)
@@ -125,8 +126,9 @@ render_ingress()
 for p in service_declarations:
     declaration = yaml.load(open(p), Loader=yaml.SafeLoader)
     project_name = declaration["project_name"]
+    debug_mode = declaration.get("debug_mode", True)
 
-    render_secrets(project_name, declaration["secrets"])
+    render_secrets(project_name, debug_mode, declaration["secrets"])
     render_rbac(project_name)
     for deployment in declaration.get("deployments", []):
         render_deployment(project_name, deployment)

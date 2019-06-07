@@ -1,4 +1,5 @@
 project_name: "taskcluster-ui"
+debug_mode: False
 secrets:
   application_name: "Taskcluster"
   graphql_endpoint: ".Values.graphqlEndpoint" # ${var.root_url}/graphql
