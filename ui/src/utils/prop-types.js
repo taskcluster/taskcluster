@@ -255,10 +255,14 @@ export const awsProvisionerWorkerType = shape({
 
 export const WorkerManagerWorkerPoolSummary = shape({
   workerPoolId: string,
-  owner: string,
-  pendingTasks: number,
-  description: string,
   providerId: string,
+  description: string,
+  created: date,
+  lastModified: date,
+  config: object,
+  owner: string,
+  emailOnError: bool,
+  pendingTasks: number,
 });
 
 export const awsProvisionerWorkerTypeSummary = shape({
