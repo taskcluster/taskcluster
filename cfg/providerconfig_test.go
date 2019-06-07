@@ -30,7 +30,7 @@ func TestNonStringProviderType(t *testing.T) {
 	assert.Equal(t, fmt.Errorf("provider config's `providerType` property must be a string"), err, "should have errored")
 }
 
-func TestOK(t *testing.T) {
+func TestProviderOK(t *testing.T) {
 	var pc ProviderConfig
 	err := yaml.Unmarshal([]byte(`{"providerType": "something", "value": "sure"}`), &pc)
 	if err != nil {
@@ -40,7 +40,7 @@ func TestOK(t *testing.T) {
 	assert.Equal(t, map[string]interface{}{"value": "sure"}, pc.data, "did not get expected config")
 }
 
-func TestUnpack(t *testing.T) {
+func TestProviderUnpack(t *testing.T) {
 	type mypc struct {
 		Value   int
 		Another string `provider:"anotherValue"`
@@ -57,7 +57,7 @@ func TestUnpack(t *testing.T) {
 	assert.Equal(t, mypc{10, "hi"}, c, "unpacked values correctly")
 }
 
-func TestUnpackMissing(t *testing.T) {
+func TestProviderUnpackMissing(t *testing.T) {
 	type mypc struct {
 		Value int
 	}
@@ -72,7 +72,7 @@ func TestUnpackMissing(t *testing.T) {
 	}
 }
 
-func TestUnpackWrongType(t *testing.T) {
+func TestProviderUnpackWrongType(t *testing.T) {
 	type mypc struct {
 		Value int
 	}

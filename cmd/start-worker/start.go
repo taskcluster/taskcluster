@@ -63,7 +63,7 @@ func StartWorker(cfg *cfg.RunnerConfig) error {
 		return err
 	}
 
-	log.Printf("Configuring for worker implementation %s", cfg.Worker.Implementation)
+	log.Printf("Configuring for worker implementation %s", cfg.WorkerImplementation.Implementation)
 	err = worker.ConfigureRun(&run)
 	if err != nil {
 		return err

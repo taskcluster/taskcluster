@@ -20,7 +20,7 @@ func TestAwsProviderConfigureRun(t *testing.T) {
 		Provider: cfg.ProviderConfig{
 			ProviderType: "aws-provisioner",
 		},
-		Worker: cfg.WorkerImplementationConfig{
+		WorkerImplementation: cfg.WorkerImplementationConfig{
 			Implementation: "whatever",
 		},
 		WorkerConfig: runnerWorkerConfig,

@@ -5,37 +5,29 @@ import (
 	"strings"
 
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster-worker-runner/runner"
+	"github.com/taskcluster/taskcluster-worker-runner/worker/dockerworker"
+	"github.com/taskcluster/taskcluster-worker-runner/worker/dummy"
+	"github.com/taskcluster/taskcluster-worker-runner/worker/worker"
 )
 
 type workerInfo struct {
-	constructor func(*cfg.RunnerConfig) (Worker, error)
+	constructor func(*cfg.RunnerConfig) (worker.Worker, error)
 	usage       func() string
 }
 
 var workers map[string]workerInfo = map[string]workerInfo{
-	"dummy": workerInfo{NewDummy, DummyUsage},
+	"dummy":         workerInfo{dummy.New, dummy.Usage},
+	"docker-worker": workerInfo{dockerworker.New, dockerworker.Usage},
 }
 
-// Worker is responsible for determining the identity of this worker and gathering
-// Takcluster credentials.
-type Worker interface {
-	// Configure the given run.  This is expected to set the Taskcluster deployment
-	// and worker-information fields, but may modify any part of the run it desires.
-	ConfigureRun(run *runner.Run) error
-
-	// Actually start the worker.
-	StartWorker(run *runner.Run) error
-}
-
-func New(cfg *cfg.RunnerConfig) (Worker, error) {
-	if cfg.Worker.Implementation == "" {
+func New(cfg *cfg.RunnerConfig) (worker.Worker, error) {
+	if cfg.WorkerImplementation.Implementation == "" {
 		return nil, fmt.Errorf("No worker implementation given in configuration")
 	}
 
-	pi, ok := workers[cfg.Worker.Implementation]
+	pi, ok := workers[cfg.WorkerImplementation.Implementation]
 	if !ok {
-		return nil, fmt.Errorf("Unrecognized worker implementation %s", cfg.Worker.Implementation)
+		return nil, fmt.Errorf("Unrecognized worker implementation %s", cfg.WorkerImplementation.Implementation)
 	}
 	return pi.constructor(cfg)
 }

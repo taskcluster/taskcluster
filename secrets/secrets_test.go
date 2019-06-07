@@ -23,7 +23,7 @@ func setup(t *testing.T) (*cfg.RunnerConfig, *runner.Run) {
 		Provider: cfg.ProviderConfig{
 			ProviderType: "dummy",
 		},
-		Worker: cfg.WorkerImplementationConfig{
+		WorkerImplementation: cfg.WorkerImplementationConfig{
 			Implementation: "whatever",
 		},
 		WorkerConfig: runnerWorkerConfig,

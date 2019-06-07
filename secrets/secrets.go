@@ -58,14 +58,12 @@ func configureRun(runnercfg *cfg.RunnerConfig, run *runner.Run, secretsClientFac
 	if err != nil {
 		log.Printf("Falling back to legacy secret format without top-level config/files properties")
 		err := json.Unmarshal(secResponse.Secret, &secret.Config)
-		fmt.Printf("%#v\n", secret.Config)
 		if err != nil {
 			return fmt.Errorf("Secret value is not a JSON object")
 		}
 	}
 
 	run.WorkerConfig = run.WorkerConfig.Merge(secret.Config)
-	fmt.Printf("%#v\n", run.WorkerConfig)
 
 	if len(secret.Files) != 0 {
 		return fmt.Errorf("secret files are nonempty - files are not supported yet")

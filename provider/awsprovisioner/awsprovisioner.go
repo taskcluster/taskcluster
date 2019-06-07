@@ -62,6 +62,16 @@ func (p *AwsProvisionerProvider) ConfigureRun(run *runner.Run) error {
 
 	run.WorkerConfig = run.WorkerConfig.Merge(userData.Data.Config)
 
+	// aws-provisioner includes capacity in the userdata, but we would like to reflect
+	// that as worker config instead.  For compatibility, we just do this when it is
+	// not 1
+	if userData.Capacity != 1 {
+		run.WorkerConfig, err = run.WorkerConfig.Set("capacity", userData.Capacity)
+		if err != nil {
+			return fmt.Errorf("Could not set workerConfig capacity: %v", err)
+		}
+	}
+
 	awsMetadata := map[string]string{}
 	for _, path := range []string{
 		"/meta-data/ami-id",
@@ -83,6 +93,20 @@ func (p *AwsProvisionerProvider) ConfigureRun(run *runner.Run) error {
 
 	run.WorkerID = awsMetadata["instance-id"]
 	run.ProviderMetadata = awsMetadata
+
+	// As a special case, set the shutdown behavior configuration specifically
+	// for docker-worker on AWS.  In future this should be set in the worker
+	// pool config.
+	if p.cfg.WorkerImplementation.Implementation == "docker-worker" {
+		run.WorkerConfig, err = run.WorkerConfig.Set("shutdown.enabled", true)
+		if err != nil {
+			return fmt.Errorf("Could not set shutdown.enabled: %v", err)
+		}
+		run.WorkerConfig, err = run.WorkerConfig.Set("shutdown.afterIdleSeconds", 15*60)
+		if err != nil {
+			return fmt.Errorf("Could not set shutdown.afterIdleSeconds: %v", err)
+		}
+	}
 
 	return nil
 }

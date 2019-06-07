@@ -22,6 +22,7 @@ type UserData struct {
 	Region             string       `json:"region"`
 	TaskclusterRootURL string       `json:"taskclusterRootUrl"`
 	SecurityToken      string       `json:"securityToken"`
+	Capacity           int          `json:"capacity"`
 }
 
 type MetadataService interface {
