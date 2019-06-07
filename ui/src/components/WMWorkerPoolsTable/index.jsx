@@ -5,8 +5,6 @@ import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography/';
 import ListItemText from '@material-ui/core/ListItemText/ListItemText';
 import LinkIcon from 'mdi-react/LinkIcon';
-import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { withRouter } from 'react-router-dom';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case';
@@ -15,7 +13,6 @@ import { WorkerManagerWorkerPoolSummary } from '../../utils/prop-types';
 import DataTable from '../DataTable';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
-import DateDistance from '../DateDistance';
 import TableCellListItem from '../TableCellListItem';
 
 @withRouter
@@ -81,83 +78,35 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           <TableCellListItem
             button
             component={Link}
-            to={`${path}/worker-pools/${workerPool.workerPool}`}>
+            to={`${path}/worker-pools/${workerPool.workerPoolId}`}>
             <ListItemText
               disableTypography
-              primary={<Typography>{workerPool.workerPool}</Typography>}
+              primary={<Typography>{workerPool.workerPoolId}</Typography>}
             />
             <LinkIcon size={iconSize} />
           </TableCellListItem>
         </TableCell>
 
         <TableCell>
-          <Typography>{workerPool.pendingCapacity}</Typography>
+          <Typography>{workerPool.owner}</Typography>
         </TableCell>
 
         <TableCell>
-          <Typography>{workerPool.runningCapacity}</Typography>
+          <Typography>{workerPool.description}</Typography>
         </TableCell>
 
         <TableCell>
           <Typography>{workerPool.pendingTasks}</Typography>
         </TableCell>
 
-        <CopyToClipboard
-          title={`${workerPool.lastActive} (Copy)`}
-          text={workerPool.lastActive}>
-          <TableCell>
-            <TableCellListItem button>
-              <ListItemText
-                disableTypography
-                primary={
-                  <Typography>
-                    <DateDistance from={workerPool.lastActive} />
-                  </Typography>
-                }
-              />
-              <ContentCopyIcon size={iconSize} />
-            </TableCellListItem>
-          </TableCell>
-        </CopyToClipboard>
-
-        <CopyToClipboard
-          title={`${workerPool.lastResolved} (Copy)`}
-          text={workerPool.lastResolved}>
-          <TableCell>
-            <TableCellListItem button>
-              <ListItemText
-                disableTypography
-                primary={
-                  <Typography>
-                    <DateDistance from={workerPool.lastResolved} />
-                  </Typography>
-                }
-              />
-              <ContentCopyIcon size={iconSize} />
-            </TableCellListItem>
-          </TableCell>
-        </CopyToClipboard>
-
-        <TableCell>
-          <Typography>{workerPool.failed}</Typography>
-        </TableCell>
-
-        <TableCell>
-          <Typography>{workerPool.exception}</Typography>
-        </TableCell>
-
-        <TableCell>
-          <Typography>{workerPool.unscheduled}</Typography>
-        </TableCell>
-
         <TableCell>
           <TableCellListItem
             button
             component={Link}
-            to={`${path}/providers/${workerPool.provider}`}>
+            to={`${path}/providers/${workerPool.providerId}`}>
             <ListItemText
               disableTypography
-              primary={<Typography>{workerPool.provider}</Typography>}
+              primary={<Typography>{workerPool.providerId}</Typography>}
             />
             <LinkIcon size={iconSize} />
           </TableCellListItem>
@@ -180,15 +129,10 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       <DataTable
         items={sortedWorkerPools}
         headers={[
-          'Worker Pool',
+          'Worker Pool ID',
+          'Owner',
+          'Description',
           'Pending Tasks',
-          'Running Capacity',
-          'Pending Capacity',
-          'Last Active',
-          'Last Resolved',
-          'Failed',
-          'Exception',
-          'Unscheduled',
           'Provider',
         ]}
         sortByHeader={sortBy}
