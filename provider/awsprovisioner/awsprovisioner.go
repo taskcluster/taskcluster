@@ -91,6 +91,10 @@ func (p *AwsProvisionerProvider) ConfigureRun(run *runner.Run) error {
 		awsMetadata[key] = value
 	}
 
+	// region is available as availability-zone minus the final letter
+	az := awsMetadata["availability-zone"]
+	awsMetadata["region"] = az[:len(az)-1]
+
 	run.WorkerID = awsMetadata["instance-id"]
 	run.ProviderMetadata = awsMetadata
 

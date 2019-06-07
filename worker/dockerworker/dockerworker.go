@@ -37,7 +37,7 @@ func (d *dockerworker) ConfigureRun(run *runner.Run) error {
 		"workerNodeType": "instance-type",
 		"instanceType":   "instance-type",
 		"instanceId":     "instance-id",
-		"region":         "availability-zone", // weird, I know!
+		"region":         "region",
 	} {
 		v, ok := run.ProviderMetadata[md]
 		if ok {
