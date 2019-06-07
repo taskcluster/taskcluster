@@ -45,10 +45,9 @@ def render_secrets(project_name, secrets):
     write_file(template, context, "secrets")
 
 
-def render_deployment(project_name, secret_keys, deployment):
+def render_deployment(project_name, deployment):
     context = {
         "project_name": project_name,
-        "secret_keys": secret_keys,
         # below are default values
         "volume_mounts": [],
         "readiness_path": "/",
@@ -75,10 +74,9 @@ def render_deployment(project_name, secret_keys, deployment):
     write_file(template, context, suffix)
 
 
-def render_cronjob(project_name, secret_keys, deployment):
+def render_cronjob(project_name, deployment):
     context = {
         "project_name": project_name,
-        "secret_keys": secret_keys,
         # below are default values
         "volume_mounts": [],
         "is_monoimage": True,
@@ -127,11 +125,10 @@ render_ingress()
 for p in service_declarations:
     declaration = yaml.load(open(p), Loader=yaml.SafeLoader)
     project_name = declaration["project_name"]
-    secret_keys = list(declaration["secrets"].keys())
 
     render_secrets(project_name, declaration["secrets"])
     render_rbac(project_name)
     for deployment in declaration.get("deployments", []):
-        render_deployment(project_name, secret_keys, deployment)
+        render_deployment(project_name, deployment)
     for cronjob in declaration.get("cronjobs", []):
-        render_cronjob(project_name, secret_keys, cronjob)
+        render_cronjob(project_name, cronjob)
