@@ -21,10 +21,20 @@ type WorkerManagerWorker {
     workerPool: String!
 }
 
-extend type Query {
-    WorkerManagerWorkerPoolSummaries(filter: JSON): [WorkerManagerWorkerPoolSummary]
+input WorkerPoolInput {
+    providerId: String!
+    description: String!
+    owner: String!
+    emailOnError: Boolean!
+    config: JSON!
 }
 
 extend type Query {
+    WorkerManagerWorkerPoolSummaries(filter: JSON): [WorkerManagerWorkerPoolSummary]
+
     WorkerManagerWorkers(workerPool: String, provider: String, isQuarantined: Boolean): [WorkerManagerWorker]
+}
+
+extend type Mutation {
+    createWorkerPool(workerPoolId: String!, payload: WorkerPoolInput!): WorkerManagerWorkerPoolSummary
 }

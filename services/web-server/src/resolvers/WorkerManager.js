@@ -18,4 +18,9 @@ module.exports = {
       return loaders.WorkerManagerWorkers.load({ workerPool, provider, isQuarantined, filter });
     },
   },
+  Mutation: {
+    createWorkerPool(parent, { workerPoolId, payload }, { clients} ) {
+      return clients.workerManager.createWorkerPool(workerPoolId, payload);
+    },
+  },
 };
