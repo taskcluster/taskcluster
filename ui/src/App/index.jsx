@@ -20,12 +20,12 @@ import { init as initSentry } from '@sentry/browser';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import FontStager from '../components/FontStager';
-// import Main from './Main';
+import ErrorBoundary from 'react-error-boundary';
 import Main from './Main';
 import { ToggleThemeContext } from '../utils/ToggleTheme';
 import { AuthContext } from '../utils/Auth';
 import db from '../utils/db';
-// import reportError from '../utils/reportError';
+import reportError from '../utils/reportError';
 import theme from '../theme';
 import introspectionQueryResultData from '../fragments/fragmentTypes.json';
 import { route } from '../utils/prop-types';
@@ -169,17 +169,19 @@ const App = ({ routes }) => {
   }, [themeState]);
 
   return (
-    <ApolloProvider client={apolloClient}>
-      <AuthContext.Provider value={auth}>
-        <ToggleThemeContext.Provider value={toggleTheme}>
-          <MuiThemeProvider theme={themeState}>
-            <FontStager />
-            <CssBaseline />
-            <Main key={auth.user} routes={routes} error={error} />
-          </MuiThemeProvider>
-        </ToggleThemeContext.Provider>
-      </AuthContext.Provider>
-    </ApolloProvider>
+    <ErrorBoundary onError={reportError}>
+      <ApolloProvider client={apolloClient}>
+        <AuthContext.Provider value={auth}>
+          <ToggleThemeContext.Provider value={toggleTheme}>
+            <MuiThemeProvider theme={themeState}>
+              <FontStager />
+              <CssBaseline />
+              <Main key={auth.user} routes={routes} error={error} />
+            </MuiThemeProvider>
+          </ToggleThemeContext.Provider>
+        </AuthContext.Provider>
+      </ApolloProvider>
+    </ErrorBoundary>
   );
 };
 
