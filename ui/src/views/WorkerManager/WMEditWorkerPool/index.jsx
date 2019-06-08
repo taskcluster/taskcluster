@@ -158,7 +158,7 @@ export default class WMEditWorkerPool extends Component {
         },
       });
 
-      this.setState({ error: null, actionLoading: false });
+      this.props.history.push('/worker-manager');
     } catch (error) {
       this.setState({ error: formatError(error), actionLoading: false });
     }
