@@ -25,7 +25,7 @@ export default path => [
   {
     component: WMWorkerPoolEditor,
     isNewWorkerPool: false,
-    path: `${path}/:workerPool/edit`,
+    path: `${path}/:workerPoolId/edit`,
     description: 'Edit the worker pool',
   },
   {
