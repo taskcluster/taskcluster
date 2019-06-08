@@ -1,19 +1,10 @@
 type WorkerManagerWorkerPoolSummary {
-    workerPool: String!
+    workerPoolId: String!
     description: String
     owner: String!
-    minCapacity: Int!
-    maxCapacity: Int!
-    requestedCapacity: Int!
-    pendingCapacity: Int!
-    runningCapacity: Int!
-    lastActive: DateTime!
-    lastResolved: DateTime!
-    pendingTasks: Int!
-    failed: Int!
-    exception: Int!
-    unscheduled: Int!
-    provider: String!
+    providerId: String!
+
+    pendingTasks: Int #this value comes from a separate request to queue
 }
 
 type WorkerManagerWorker {

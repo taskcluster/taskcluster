@@ -254,16 +254,15 @@ export const awsProvisionerWorkerType = shape({
 });
 
 export const WorkerManagerWorkerPoolSummary = shape({
-  workerPool: string,
-  pendingCapacity: number,
-  runningCapacity: number,
+  workerPoolId: string,
+  providerId: string,
+  description: string,
+  created: date,
+  lastModified: date,
+  config: object,
+  owner: string,
+  emailOnError: bool,
   pendingTasks: number,
-  lastActive: date,
-  lastResolved: date,
-  failed: number,
-  exception: number,
-  unscheduled: number,
-  provider: string,
 });
 
 export const awsProvisionerWorkerTypeSummary = shape({

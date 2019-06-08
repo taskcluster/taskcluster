@@ -10,6 +10,7 @@ const {
   QueueEvents,
   Secrets,
   Notify,
+  WorkerManager,
 } = require('taskcluster-client');
 
 module.exports = options => ({
@@ -24,4 +25,5 @@ module.exports = options => ({
   secrets: new Secrets(options),
   queueEvents: new QueueEvents(options),
   notify: new Notify(options),
+  workerManager: new WorkerManager(options),
 });
