@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
+import { withStyles } from '@material-ui/core';
 import { arrayOf, string } from 'prop-types';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography/';
-import ListItemText from '@material-ui/core/ListItemText/ListItemText';
+import ListItemText from '@material-ui/core/ListItemText';
+import IconButton from '@material-ui/core/IconButton';
 import LinkIcon from 'mdi-react/LinkIcon';
+import PencilIcon from 'mdi-react/PencilIcon';
 import { withRouter } from 'react-router-dom';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case';
@@ -16,6 +19,13 @@ import Link from '../../utils/Link';
 import TableCellListItem from '../TableCellListItem';
 
 @withRouter
+@withStyles(theme => ({
+  editButton: {
+    marginLeft: -theme.spacing.double,
+    marginRight: theme.spacing.unit,
+    borderRadius: 4,
+  },
+}))
 export default class WorkerManagerWorkerPoolsTable extends Component {
   static propTypes = {
     workerPools: arrayOf(WorkerManagerWorkerPoolSummary).isRequired,
@@ -66,15 +76,28 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     this.setState({ sortBy, sortDirection });
   };
 
+  handleEditClick = ({ currentTarget: { name } }) => {
+    this.props.history.push(
+      `${this.props.match.path}/${encodeURIComponent(name)}/edit`
+    );
+  };
+
   renderRow = workerPool => {
     const {
       match: { path },
+      classes,
     } = this.props;
     const iconSize = 16;
 
     return (
       <TableRow key={workerPool.workerPoolId}>
         <TableCell>
+          <IconButton
+            className={classes.editButton}
+            name={`${workerPool.workerPoolId}`}
+            onClick={this.handleEditClick}>
+            <PencilIcon size={iconSize} />
+          </IconButton>
           <TableCellListItem
             button
             component={Link}
