@@ -179,32 +179,35 @@ export default class WMEditWorkerPool extends Component {
         title={isNewWorkerPool ? 'Create Worker Pool' : 'Edit Worker Pool'}>
         <ErrorPanel fixed error={error} />
         <List className={classes.list}>
-          <ListSubheader>Worker Pool ID</ListSubheader>
+          <ListSubheader>Worker Pool ID *</ListSubheader>
           <ListItem>
             <TextField
               name="workerPoolId1"
-              error={
-                Boolean(workerPool.workerPoolId1) &&
-                !isWorkerTypeNameValid(workerPool.workerPoolId1) &&
-                workerPool.workerPoolId2 === workerPool.workerPoolId1
-              }
+              error={!isWorkerTypeNameValid(workerPool.workerPoolId1)}
               onChange={this.handleInputChange}
               fullWidth
               value={workerPool.workerPoolId1}
+              required
+              autoFocus
+              helperText={
+                !isWorkerTypeNameValid(workerPool.workerPoolId1) &&
+                '1 to 38 alphanumeric characters'
+              }
             />
             <Typography className={classes.separator} variant="h5">
               /
             </Typography>
             <TextField
               name="workerPoolId2"
-              error={
-                Boolean(workerPool.workerPoolId2) &&
-                !isWorkerTypeNameValid(workerPool.workerPoolId2) &&
-                workerPool.workerPoolId2 === workerPool.workerPoolId1
-              }
+              error={!isWorkerTypeNameValid(workerPool.workerPoolId2)}
               onChange={this.handleInputChange}
               fullWidth
               value={workerPool.workerPoolId2}
+              required
+              helperText={
+                !isWorkerTypeNameValid(workerPool.workerPoolId2) &&
+                '1 to 38 alphanumeric characters'
+              }
             />
           </ListItem>
         </List>
@@ -225,13 +228,15 @@ export default class WMEditWorkerPool extends Component {
             <TextField
               label="Owner's Email"
               name="owner"
-              error={
-                Boolean(workerPool.owner) && !workerPool.owner.includes('@')
-              }
+              error={!workerPool.owner.includes('@')}
               onChange={this.handleInputChange}
               fullWidth
               value={workerPool.owner}
               margin="normal"
+              required
+              helperText={
+                !workerPool.owner.includes('@') && 'Should be valid email'
+              }
             />
           </ListItem>
 
@@ -241,7 +246,7 @@ export default class WMEditWorkerPool extends Component {
                 <Switch
                   checked={workerPool.emailOnError}
                   onChange={this.handleSwitchChange}
-                  value="wantsEmail"
+                  value="emailOnError"
                 />
               }
               label="Email the owner about errors"
