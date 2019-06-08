@@ -2,7 +2,6 @@ import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { withApollo } from 'react-apollo';
 import { bool } from 'prop-types';
-import { joinWorkerPoolId } from 'taskcluster-worker-manager/src/util';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -18,8 +17,15 @@ import isWorkerTypeNameValid from '../../../utils/isWorkerTypeNameValid';
 import Button from '../../../components/Button';
 import Dashboard from '../../../components/Dashboard';
 import createWorkerPoolQuery from './createWorkerPool.graphql';
+import { joinWorkerPoolId } from '../../../utils/workerPool';
 
-const gcpConfig = {
+const gcp = 'GCP';
+const providers = new Map();
+const providerConfigs = new Map();
+
+providers.set(`${gcp}`, 'google');
+
+providerConfigs.set(`${gcp}`, {
   minCapacity: 0,
   maxCapacity: 0,
   capacityPerInstance: 1,
@@ -29,10 +35,7 @@ const gcpConfig = {
   scheduling: {},
   networkInterfaces: [{}],
   disks: [{}],
-};
-const providers = {
-  GCP: 'google',
-};
+});
 
 @hot(module)
 @withApollo
@@ -78,10 +81,9 @@ export default class WMEditWorkerPool extends Component {
       description: '',
       owner: '',
       emailOnError: false,
-      providerId: '',
-      config: gcpConfig,
+      config: providerConfigs.get(gcp),
     },
-    providerType: providers.GCP,
+    providerType: gcp,
     invalidProviderConfig: false,
   };
 
@@ -127,11 +129,19 @@ export default class WMEditWorkerPool extends Component {
       target: { value },
     } = event;
 
-    this.setState({ providerType: providers[value] });
+    this.setState({
+      providerType: value,
+      workerPool: {
+        ...this.state.workerPool,
+        config: providerConfigs.get(value),
+      },
+    });
   };
 
   handleCreateWorkerPool = async () => {
     const { workerPoolId1, workerPoolId2, ...payload } = this.state.workerPool;
+
+    payload.providerId = providers.get(this.state.providerType);
 
     await this.props.client.mutate({
       mutation: createWorkerPoolQuery,
@@ -154,7 +164,6 @@ export default class WMEditWorkerPool extends Component {
           <ListItem>
             <TextField
               name="workerPoolId1"
-              helperText="Must be unique"
               error={
                 Boolean(workerPool.workerPoolId1) &&
                 !isWorkerTypeNameValid(workerPool.workerPoolId1) &&
@@ -169,7 +178,6 @@ export default class WMEditWorkerPool extends Component {
             </Typography>
             <TextField
               name="workerPoolId2"
-              helperText="Must be unique"
               error={
                 Boolean(workerPool.workerPoolId2) &&
                 !isWorkerTypeNameValid(workerPool.workerPoolId2) &&
@@ -229,29 +237,17 @@ export default class WMEditWorkerPool extends Component {
               id="select-provider-type"
               className={classes.dropdown}
               select
-              label="Type"
-              helperText="Which service do you want to run your tasks in?"
+              helperText="Which cloud do you want to run your tasks in?"
               value={providerType}
               name="providerType"
               onChange={this.handleProviderTypeChange}
               margin="normal">
-              {Object.keys(providers).map(p => (
+              {Array.from(providers.keys()).map(p => (
                 <MenuItem key={p} value={p}>
                   {p}
                 </MenuItem>
               ))}
             </TextField>
-          </ListItem>
-
-          <ListItem>
-            <TextField
-              label="Name"
-              value={workerPool.providerId}
-              name="providerId"
-              onChange={this.handleInputChange}
-              margin="normal"
-              fullWidth
-            />
           </ListItem>
         </List>
 
