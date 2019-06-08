@@ -18,6 +18,8 @@ import Button from '../../../components/Button';
 import Dashboard from '../../../components/Dashboard';
 import createWorkerPoolQuery from './createWorkerPool.graphql';
 import { joinWorkerPoolId } from '../../../utils/workerPool';
+import formatError from '../../../utils/formatError';
+import ErrorPanel from '../../../components/ErrorPanel';
 
 const gcp = 'GCP';
 const providers = new Map();
@@ -85,6 +87,8 @@ export default class WMEditWorkerPool extends Component {
     },
     providerType: gcp,
     invalidProviderConfig: false,
+    actionLoading: false,
+    error: null,
   };
 
   handleInputChange = ({ target: { name, value } }) => {
@@ -143,22 +147,37 @@ export default class WMEditWorkerPool extends Component {
 
     payload.providerId = providers.get(this.state.providerType);
 
-    await this.props.client.mutate({
-      mutation: createWorkerPoolQuery,
-      variables: {
-        workerPoolId: joinWorkerPoolId(workerPoolId1, workerPoolId2),
-        payload,
-      },
-    });
+    this.setState({ error: null, actionLoading: true });
+
+    try {
+      await this.props.client.mutate({
+        mutation: createWorkerPoolQuery,
+        variables: {
+          workerPoolId: joinWorkerPoolId(workerPoolId1, workerPoolId2),
+          payload,
+        },
+      });
+
+      this.setState({ error: null, actionLoading: false });
+    } catch (error) {
+      this.setState({ error: formatError(error), actionLoading: false });
+    }
   };
 
   render() {
     const { isNewWorkerPool, classes } = this.props;
-    const { workerPool, providerType, invalidProviderConfig } = this.state;
+    const {
+      workerPool,
+      providerType,
+      invalidProviderConfig,
+      actionLoading,
+      error,
+    } = this.state;
 
     return (
       <Dashboard
         title={isNewWorkerPool ? 'Create Worker Pool' : 'Edit Worker Pool'}>
+        <ErrorPanel fixed error={error} />
         <List className={classes.list}>
           <ListSubheader>Worker Pool ID</ListSubheader>
           <ListItem>
@@ -263,7 +282,7 @@ export default class WMEditWorkerPool extends Component {
 
           <Button
             spanProps={{ className: classes.createIconSpan }}
-            disabled={invalidProviderConfig}
+            disabled={invalidProviderConfig || actionLoading}
             requiresAuth
             tooltipProps={{ title: 'Save Worker Pool' }}
             onClick={this.handleCreateWorkerPool}
