@@ -1,6 +1,6 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
-import { withApollo } from 'react-apollo';
+import { withApollo, graphql } from 'react-apollo';
 import { bool } from 'prop-types';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
@@ -17,6 +17,7 @@ import isWorkerTypeNameValid from '../../../utils/isWorkerTypeNameValid';
 import Button from '../../../components/Button';
 import Dashboard from '../../../components/Dashboard';
 import createWorkerPoolQuery from './createWorkerPool.graphql';
+import workerPoolQuery from './workerPool.graphql';
 import { joinWorkerPoolId } from '../../../utils/workerPool';
 import formatError from '../../../utils/formatError';
 import ErrorPanel from '../../../components/ErrorPanel';
@@ -41,6 +42,15 @@ providerConfigs.set(`${gcp}`, {
 
 @hot(module)
 @withApollo
+@graphql(workerPoolQuery, {
+  skip: props => !props.match.params.workerPoolId || props.isNewWorkerPool,
+  options: ({ match: { params } }) => ({
+    fetchPolicy: 'network-only',
+    variables: {
+      workerPoolId: decodeURIComponent(params.workerPoolId),
+    },
+  }),
+})
 @withStyles(theme => ({
   successIcon: {
     ...theme.mixins.successIcon,

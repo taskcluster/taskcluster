@@ -12,6 +12,14 @@ module.exports = ({ workerManager }) => {
     )
   );
 
+  const WorkerPool = new DataLoader(queries =>
+    Promise.all(
+      queries.map(async ({ workerPoolId }) =>
+        workerManager.workerPool(workerPoolId)
+      )
+    )
+  );
+
   // const WMWorkers = new DataLoader(queries =>
   //   Promise.all(
   //     queries.map(async (workerPool, isQuarantined, filter) => {
@@ -65,5 +73,6 @@ module.exports = ({ workerManager }) => {
   return {
     WorkerManagerWorkerPoolSummaries,
     WorkerManagerWorkers,
+    WorkerPool,
   };
 };
