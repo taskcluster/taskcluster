@@ -209,7 +209,7 @@ export default class WorkerManagerWorkersTable extends Component {
         <TableCell>
           {quarantineUntil ? (
             formatDistanceStrict(new Date(), quarantineUntil, {
-              unit: 'd',
+              unit: 'day',
             })
           ) : (
             <Typography>n/a</Typography>

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { func, string } from 'prop-types';
-import { formatDistanceStrict } from 'date-fns';
+import { formatDistanceStrict, parseISO } from 'date-fns';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -238,8 +238,8 @@ export default class WorkersTable extends Component {
             )}
             <TableCell>
               {quarantineUntil ? (
-                formatDistanceStrict(new Date(), quarantineUntil, {
-                  unit: 'd',
+                formatDistanceStrict(new Date(), parseISO(quarantineUntil), {
+                  unit: 'day',
                 })
               ) : (
                 <Typography>n/a</Typography>
