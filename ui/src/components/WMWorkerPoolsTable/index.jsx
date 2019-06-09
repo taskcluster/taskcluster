@@ -77,9 +77,11 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
   };
 
   handleEditClick = ({ currentTarget: { name } }) => {
-    this.props.history.push(
-      `${this.props.match.path}/${encodeURIComponent(name)}/edit`
-    );
+    this.props.history.push({
+      pathname: `${this.props.match.path}/${encodeURIComponent(name)}/edit`,
+      state: { hello: 'world' },
+    });
+    console.log('🏓', this.props);
   };
 
   renderRow = workerPool => {
