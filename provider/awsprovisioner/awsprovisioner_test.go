@@ -85,6 +85,7 @@ func TestAwsProviderConfigureRun(t *testing.T) {
 		"availability-zone": "rgna",
 		"public-hostname":   "foo.ec2-dns",
 		"local-ipv4":        "192.168.0.1",
+		"region":            "rgn",
 	}, run.ProviderMetadata, "providerMetadata is correct")
 
 	assert.Equal(t, true, run.WorkerConfig.MustGet("from-user-data"), "value for from-user-data")
