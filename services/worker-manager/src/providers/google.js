@@ -24,7 +24,7 @@ class GoogleProvider extends Provider {
     Worker,
     WorkerPool,
     WorkerPoolError,
-    fakes,
+    fakeCloudApis,
   }) {
     super({
       providerId,
@@ -44,12 +44,12 @@ class GoogleProvider extends Provider {
     this.project = project;
     this.zonesByRegion = {};
 
-    if (fakes['google']) {
+    if (fakeCloudApis && fakeCloudApis.google) {
       this.ownClientEmail = 'whatever@example.com';
-      this.compute = fakes['google'].compute();
-      this.iam = fakes['google'].iam();
-      this.crm = fakes['google'].cloudresourcemanager();
-      this.oauth2 = new fakes['google'].OAuth2({project});
+      this.compute = fakeCloudApis.google.compute();
+      this.iam = fakeCloudApis.google.iam();
+      this.crm = fakeCloudApis.google.cloudresourcemanager();
+      this.oauth2 = new fakeCloudApis.google.OAuth2({project});
       return;
     }
 

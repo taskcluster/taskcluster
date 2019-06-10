@@ -21,7 +21,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       notify: await helper.load('notify'),
       monitor: (await helper.load('monitor')).childMonitor('google'),
       estimator: await helper.load('estimator'),
-      fakes: {
+      fakeCloudApis: {
         google: new FakeGoogle(),
       },
       rootUrl: helper.rootUrl,

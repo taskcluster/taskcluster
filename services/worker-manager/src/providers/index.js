@@ -3,7 +3,7 @@
  * their providerType implementation as required
  */
 class Providers {
-  async setup({cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError, validator, fakes}) {
+  async setup({cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError, validator, fakeCloudApis}) {
     this._providers = {};
 
     if (cfg.providers['null-provider']) {
@@ -34,7 +34,7 @@ class Providers {
         WorkerPool,
         WorkerPoolError,
         validator,
-        fakes,
+        fakeCloudApis,
         ...meta,
       });
       this._providers[providerId] = provider;

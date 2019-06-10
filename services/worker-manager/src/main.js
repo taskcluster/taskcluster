@@ -182,16 +182,16 @@ let load = loader({
   },
 
   // This is used in testing to inject provider fakes
-  externalFakes: {
+  fakeCloudApis: {
     requires: [],
     setup: () => {},
   },
 
   providers: {
-    requires: ['cfg', 'monitor', 'notify', 'estimator', 'Worker', 'WorkerPool', 'WorkerPoolError', 'schemaset', 'externalFakes'],
-    setup: async ({cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError, schemaset, externalFakes}) =>
+    requires: ['cfg', 'monitor', 'notify', 'estimator', 'Worker', 'WorkerPool', 'WorkerPoolError', 'schemaset', 'fakeCloudApis'],
+    setup: async ({cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError, schemaset, fakeCloudApis}) =>
       new Providers().setup({
-        cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError, fakes: externalFakes,
+        cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError, fakeCloudApis,
         validator: await schemaset.validator(cfg.taskcluster.rootUrl),
       }),
   },

@@ -46,7 +46,7 @@ exports.withProviders = (mock, skipping) => {
       return;
     }
 
-    exports.load.inject('externalFakes', {
+    exports.load.inject('fakeCloudApis', {
       google: new FakeGoogle(),
     });
   });
