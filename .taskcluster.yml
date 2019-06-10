@@ -11,7 +11,7 @@ tasks:
       workerType: github-worker
       payload:
         maxRunTime: 3600
-        image: golang
+        image: golang:1.10
         command:
           - /bin/bash
           - '-c'
@@ -38,7 +38,7 @@ tasks:
       workerType: github-worker
       payload:
         maxRunTime: 3600
-        image: golang
+        image: golang:1.10
         command:
           - /bin/bash
           - '-c'
