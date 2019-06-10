@@ -77,3 +77,40 @@ exports.gitDescribe = async ({dir, utils}) => {
     gitDescription: describe.stdout.split(/\s+/)[0],
   };
 };
+
+/**
+ * Perform a git commit
+ *
+ * - dir -- directory to commit in
+ * - message -- the commit message
+ * - files -- files to include in the commit (anything staged will get committed too..)
+ * - utils -- taskgraph utils (waitFor, etc.)
+ */
+exports.gitCommit = async ({dir, message, files, utils}) => {
+  const opts = {cwd: dir};
+  await exec('git', ['commit', '-m', message, ...files], opts);
+};
+
+/**
+ * Create a git tag.  This does not use `-f`, so existing tags will cause an error.
+ *
+ * - dir -- directory to commit in
+ * - rev -- revision to tag
+ * - tag -- tag to apply
+ */
+exports.gitTag = async ({dir, rev, tag, utils}) => {
+  const opts = {cwd: dir};
+  await exec('git', ['tag', tag, rev], opts);
+};
+
+/**
+ * Push to an external repo.  This does not use `-f`.
+ *
+ * - dir -- directory to commit in
+ * - remote -- remote to push to
+ * - ref -- ref to push
+ */
+exports.gitPush = async ({dir, remote, ref, utils}) => {
+  const opts = {cwd: dir};
+  await exec('git', ['push', remote, ref], opts);
+};

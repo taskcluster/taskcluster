@@ -325,6 +325,11 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
         .some(image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1);
       const imageOnRegistry = await dockerRegistryCheck({tag});
 
+      if (imageOnRegistry && cmdOptions.noCache) {
+        throw new Error(
+          `Image ${tag} already exists on the registry, but --no-cache was given.`);
+      }
+
       const provides = {
         'monoimage-docker-image': tag,
         'monoimage-image-on-registry': imageOnRegistry,

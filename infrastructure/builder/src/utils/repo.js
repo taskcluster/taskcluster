@@ -84,10 +84,11 @@ exports.modifyRepoJSON = async (filename, modifier) => {
 /**
  * Call `git ls-files` in the current working copy
  */
-exports.gitLsFiles = async () => {
+exports.gitLsFiles = async ({patterns}={}) => {
   const opts = {cwd: REPO_ROOT};
-  const files = (await exec('git', ['ls-files', '-z'], opts))
-    .stdout.split(/\0/);
+  const files = (await exec('git', ['ls-files', '-z'].concat(patterns || []), opts))
+    .stdout.split(/\0/)
+    .filter(v => v !== '');
   return files;
 };
 
