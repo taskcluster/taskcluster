@@ -1,17 +1,18 @@
-package cfg
+package runner
 
 import (
 	"io/ioutil"
 
+	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"gopkg.in/yaml.v3"
 )
 
 // RunnerConfig defines the configuration for taskcluster-worker-starter.  See the usage
 // string for field descriptions
 type RunnerConfig struct {
-	Provider             ProviderConfig             `yaml:"provider"`
-	WorkerImplementation WorkerImplementationConfig `yaml:"worker"`
-	WorkerConfig         *WorkerConfig              `yaml:"workerConfig"`
+	Provider             cfg.ProviderConfig             `yaml:"provider"`
+	WorkerImplementation cfg.WorkerImplementationConfig `yaml:"worker"`
+	WorkerConfig         *cfg.WorkerConfig              `yaml:"workerConfig"`
 }
 
 // Get a fragment of a usage message that describes the configuration file format
@@ -40,10 +41,10 @@ func Load(filename string) (*RunnerConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	var cfg RunnerConfig
-	err = yaml.Unmarshal(data, &cfg)
+	var runnercfg RunnerConfig
+	err = yaml.Unmarshal(data, &runnercfg)
 	if err != nil {
 		return nil, err
 	}
-	return &cfg, nil
+	return &runnercfg, nil
 }

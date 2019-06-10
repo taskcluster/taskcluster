@@ -11,7 +11,7 @@ import (
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
 )
 
-func setup(t *testing.T) (*cfg.RunnerConfig, *runner.Run) {
+func setup(t *testing.T) (*runner.RunnerConfig, *runner.Run) {
 	tc.FakeSecretsReset()
 
 	runnerWorkerConfig := cfg.NewWorkerConfig()
@@ -19,7 +19,7 @@ func setup(t *testing.T) (*cfg.RunnerConfig, *runner.Run) {
 	assert.NoError(t, err, "setting config")
 	runnerWorkerConfig, err = runnerWorkerConfig.Set("from-runner-cfg", true)
 	assert.NoError(t, err, "setting config")
-	runnercfg := &cfg.RunnerConfig{
+	runnercfg := &runner.RunnerConfig{
 		Provider: cfg.ProviderConfig{
 			ProviderType: "dummy",
 		},

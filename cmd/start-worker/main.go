@@ -5,8 +5,8 @@ import (
 	"os"
 
 	docopt "github.com/docopt/docopt-go"
-	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/provider"
+	"github.com/taskcluster/taskcluster-worker-runner/runner"
 	"github.com/taskcluster/taskcluster-worker-runner/worker"
 )
 
@@ -17,7 +17,7 @@ start-worker starts Taskcluster workers.
 Usage:
 	start-worker <runnerConfig>
 
-` + cfg.Usage() + `
+` + runner.Usage() + `
 
 ` + provider.Usage() + `
 
@@ -33,13 +33,13 @@ func main() {
 
 	filename := opts["<runnerConfig>"].(string)
 	log.Printf("Loading taskcluster-worker-runner configuration from %s", filename)
-	cfg, err := cfg.Load(filename)
+	runnercfg, err := runner.Load(filename)
 	if err != nil {
 		log.Printf("Error loading start-worker config: %s", err)
 		os.Exit(1)
 	}
 
-	err = StartWorker(cfg)
+	err = StartWorker(runnercfg)
 	if err != nil {
 		log.Printf("%s", err)
 		os.Exit(1)

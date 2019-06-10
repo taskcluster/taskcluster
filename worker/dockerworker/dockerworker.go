@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 	"github.com/taskcluster/taskcluster-worker-runner/worker/worker"
 )
@@ -20,8 +19,8 @@ type dockerworkerConfig struct {
 }
 
 type dockerworker struct {
-	cfg   *cfg.RunnerConfig
-	wicfg dockerworkerConfig
+	runnercfg *runner.RunnerConfig
+	wicfg     dockerworkerConfig
 }
 
 func (d *dockerworker) ConfigureRun(run *runner.Run) error {
@@ -106,9 +105,9 @@ func (d *dockerworker) StartWorker(run *runner.Run) error {
 	return nil
 }
 
-func New(cfg *cfg.RunnerConfig) (worker.Worker, error) {
-	rv := dockerworker{cfg, dockerworkerConfig{}}
-	err := cfg.WorkerImplementation.Unpack(&rv.wicfg)
+func New(runnercfg *runner.RunnerConfig) (worker.Worker, error) {
+	rv := dockerworker{runnercfg, dockerworkerConfig{}}
+	err := runnercfg.WorkerImplementation.Unpack(&rv.wicfg)
 	if err != nil {
 		return nil, err
 	}

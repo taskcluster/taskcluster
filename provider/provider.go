@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/awsprovisioner"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/standalone"
+	"github.com/taskcluster/taskcluster-worker-runner/runner"
 )
 
 type providerInfo struct {
-	constructor func(*cfg.RunnerConfig) (provider.Provider, error)
+	constructor func(*runner.RunnerConfig) (provider.Provider, error)
 	usage       func() string
 }
 
@@ -20,16 +20,16 @@ var providers map[string]providerInfo = map[string]providerInfo{
 	"aws-provisioner": providerInfo{awsprovisioner.New, awsprovisioner.Usage},
 }
 
-func New(cfg *cfg.RunnerConfig) (provider.Provider, error) {
-	if cfg.Provider.ProviderType == "" {
+func New(runnercfg *runner.RunnerConfig) (provider.Provider, error) {
+	if runnercfg.Provider.ProviderType == "" {
 		return nil, fmt.Errorf("No provider given in configuration")
 	}
 
-	pi, ok := providers[cfg.Provider.ProviderType]
+	pi, ok := providers[runnercfg.Provider.ProviderType]
 	if !ok {
-		return nil, fmt.Errorf("Unrecognized provider type %s", cfg.Provider.ProviderType)
+		return nil, fmt.Errorf("Unrecognized provider type %s", runnercfg.Provider.ProviderType)
 	}
-	return pi.constructor(cfg)
+	return pi.constructor(runnercfg)
 }
 
 func Usage() string {

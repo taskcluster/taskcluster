@@ -3,14 +3,13 @@ package dummy
 import (
 	"log"
 
-	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 	"github.com/taskcluster/taskcluster-worker-runner/worker/worker"
 	yaml "gopkg.in/yaml.v3"
 )
 
 type dummy struct {
-	cfg *cfg.RunnerConfig
+	runnercfg *runner.RunnerConfig
 }
 
 func (d *dummy) ConfigureRun(run *runner.Run) error {
@@ -26,8 +25,8 @@ func (d *dummy) StartWorker(run *runner.Run) error {
 	return nil
 }
 
-func New(cfg *cfg.RunnerConfig) (worker.Worker, error) {
-	return &dummy{cfg}, nil
+func New(runnercfg *runner.RunnerConfig) (worker.Worker, error) {
+	return &dummy{runnercfg}, nil
 }
 
 func Usage() string {

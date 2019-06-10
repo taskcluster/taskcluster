@@ -16,7 +16,7 @@ func TestAwsProviderConfigureRun(t *testing.T) {
 	assert.NoError(t, err, "setting config")
 	runnerWorkerConfig, err = runnerWorkerConfig.Set("from-runner-cfg", true)
 	assert.NoError(t, err, "setting config")
-	runnercfg := &cfg.RunnerConfig{
+	runnercfg := &runner.RunnerConfig{
 		Provider: cfg.ProviderConfig{
 			ProviderType: "aws-provisioner",
 		},

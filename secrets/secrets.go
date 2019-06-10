@@ -18,11 +18,11 @@ func clientFactory(rootURL string, credentials *tcclient.Credentials) (tc.Secret
 	return tcsecrets.New(credentials, rootURL), nil
 }
 
-func ConfigureRun(cfg *cfg.RunnerConfig, run *runner.Run) error {
-	return configureRun(cfg, run, clientFactory)
+func ConfigureRun(runnercfg *runner.RunnerConfig, run *runner.Run) error {
+	return configureRun(runnercfg, run, clientFactory)
 }
 
-func configureRun(runnercfg *cfg.RunnerConfig, run *runner.Run, secretsClientFactory tc.SecretsClientFactory) error {
+func configureRun(runnercfg *runner.RunnerConfig, run *runner.Run, secretsClientFactory tc.SecretsClientFactory) error {
 	secretsClient, err := secretsClientFactory(run.RootURL, &run.Credentials)
 	if err != nil {
 		return err

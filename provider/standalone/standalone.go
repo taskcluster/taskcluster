@@ -1,7 +1,6 @@
 package standalone
 
 import (
-	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 )
@@ -16,12 +15,12 @@ type standaloneProviderConfig struct {
 }
 
 type StandaloneProvider struct {
-	cfg *cfg.RunnerConfig
+	runnercfg *runner.RunnerConfig
 }
 
 func (p *StandaloneProvider) ConfigureRun(run *runner.Run) error {
 	var pc standaloneProviderConfig
-	err := p.cfg.Provider.Unpack(&pc)
+	err := p.runnercfg.Provider.Unpack(&pc)
 	if err != nil {
 		return err
 	}
@@ -36,8 +35,8 @@ func (p *StandaloneProvider) ConfigureRun(run *runner.Run) error {
 	return nil
 }
 
-func New(cfg *cfg.RunnerConfig) (provider.Provider, error) {
-	return &StandaloneProvider{cfg}, nil
+func New(runnercfg *runner.RunnerConfig) (provider.Provider, error) {
+	return &StandaloneProvider{runnercfg}, nil
 }
 
 func Usage() string {

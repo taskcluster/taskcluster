@@ -4,25 +4,24 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 	"github.com/taskcluster/taskcluster-worker-runner/secrets"
 	"github.com/taskcluster/taskcluster-worker-runner/worker"
 )
 
-func StartWorker(cfg *cfg.RunnerConfig) error {
+func StartWorker(runnercfg *runner.RunnerConfig) error {
 	var run runner.Run
-	run.WorkerConfig = cfg.WorkerConfig
+	run.WorkerConfig = runnercfg.WorkerConfig
 
 	// provider
 
-	provider, err := provider.New(cfg)
+	provider, err := provider.New(runnercfg)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("Configuring with provider %s", cfg.Provider.ProviderType)
+	log.Printf("Configuring with provider %s", runnercfg.Provider.ProviderType)
 	err = provider.ConfigureRun(&run)
 	if err != nil {
 		return err
@@ -51,19 +50,19 @@ func StartWorker(cfg *cfg.RunnerConfig) error {
 	// secrets
 
 	log.Println("Getting secrets from secrets service")
-	err = secrets.ConfigureRun(cfg, &run)
+	err = secrets.ConfigureRun(runnercfg, &run)
 	if err != nil {
 		return err
 	}
 
 	// worker
 
-	worker, err := worker.New(cfg)
+	worker, err := worker.New(runnercfg)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("Configuring for worker implementation %s", cfg.WorkerImplementation.Implementation)
+	log.Printf("Configuring for worker implementation %s", runnercfg.WorkerImplementation.Implementation)
 	err = worker.ConfigureRun(&run)
 	if err != nil {
 		return err

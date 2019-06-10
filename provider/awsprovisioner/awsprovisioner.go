@@ -6,14 +6,13 @@ import (
 
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
-	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
 )
 
 type AwsProvisionerProvider struct {
-	cfg                         *cfg.RunnerConfig
+	runnercfg                   *runner.RunnerConfig
 	awsProvisionerClientFactory tc.AwsProvisionerClientFactory
 	metadataService             MetadataService
 }
@@ -101,7 +100,7 @@ func (p *AwsProvisionerProvider) ConfigureRun(run *runner.Run) error {
 	// As a special case, set the shutdown behavior configuration specifically
 	// for docker-worker on AWS.  In future this should be set in the worker
 	// pool config.
-	if p.cfg.WorkerImplementation.Implementation == "docker-worker" {
+	if p.runnercfg.WorkerImplementation.Implementation == "docker-worker" {
 		run.WorkerConfig, err = run.WorkerConfig.Set("shutdown.enabled", true)
 		if err != nil {
 			return fmt.Errorf("Could not set shutdown.enabled: %v", err)
@@ -121,8 +120,8 @@ func clientFactory(rootURL string, credentials *tcclient.Credentials) (tc.AwsPro
 	return prov, nil
 }
 
-func New(cfg *cfg.RunnerConfig) (provider.Provider, error) {
-	return new(cfg, nil, nil)
+func New(runnercfg *runner.RunnerConfig) (provider.Provider, error) {
+	return new(runnercfg, nil, nil)
 }
 
 func Usage() string {
@@ -136,12 +135,12 @@ the legacy aws-provisioner application.  It requires
 }
 
 // New takes its dependencies as optional arguments, allowing injection of fake dependencies for testing.
-func new(cfg *cfg.RunnerConfig, awsProvisionerClientFactory tc.AwsProvisionerClientFactory, metadataService MetadataService) (*AwsProvisionerProvider, error) {
+func new(runnercfg *runner.RunnerConfig, awsProvisionerClientFactory tc.AwsProvisionerClientFactory, metadataService MetadataService) (*AwsProvisionerProvider, error) {
 	if awsProvisionerClientFactory == nil {
 		awsProvisionerClientFactory = clientFactory
 	}
 	if metadataService == nil {
 		metadataService = &realMetadataService{}
 	}
-	return &AwsProvisionerProvider{cfg, awsProvisionerClientFactory, metadataService}, nil
+	return &AwsProvisionerProvider{runnercfg, awsProvisionerClientFactory, metadataService}, nil
 }
