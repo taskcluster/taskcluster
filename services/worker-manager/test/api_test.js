@@ -172,6 +172,49 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     throw new Error('update of non-existent worker pool succeeded');
   });
 
+  test('create worker pool (invalid config)', async function() {
+    try {
+      await helper.workerManager.createWorkerPool('pp/oo', {
+        providerId: 'testing1',
+        description: 'e',
+        config: {bar: 'extra'},
+        owner: 'example@example.com',
+        emailOnError: false,
+      });
+    } catch (err) {
+      if (err.code !== 'InputValidationError') {
+        throw err;
+      }
+      return;
+    }
+    throw new Error('Allowed to specify an invalid config');
+  });
+
+  test('update worker pool (invalid config)', async function() {
+    await helper.workerManager.createWorkerPool('pp/oo', {
+      providerId: 'testing1',
+      description: 'e',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    });
+    try {
+      await helper.workerManager.updateWorkerPool('pp/oo', {
+        providerId: 'testing1',
+        description: 'e',
+        config: {bar: 'extra'},
+        owner: 'example@example.com',
+        emailOnError: false,
+      });
+    } catch (err) {
+      if (err.code !== 'InputValidationError') {
+        throw err;
+      }
+      return;
+    }
+    throw new Error('Allowed to specify an invalid config');
+  });
+
   test('get worker pool', async function() {
     const workerPoolId = 'pp/ee';
     const input = {
