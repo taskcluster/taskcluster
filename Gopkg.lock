@@ -2,98 +2,141 @@
 
 
 [[projects]]
+  digest = "1:8561fc011218ed9821f6d73057154e692cdfd0f37e929ef6c4a574b6299136cb"
   name = "github.com/cenkalti/backoff"
   packages = ["."]
+  pruneopts = ""
   revision = "4b4cebaf850ec58f1bb1fec5bdebdf8501c2bc3f"
   version = "v3.0.0"
 
 [[projects]]
+  digest = "1:0deddd908b6b4b768cfc272c16ee61e7088a60f7fe2f06c547bd3d8e1f8b8e77"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
+  pruneopts = ""
   revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
   version = "v1.1.1"
 
 [[projects]]
+  digest = "1:d741c40674d5d73ae7bfad6a4b5c920bcc2492ce776ea606d83c91a05a093e0a"
   name = "github.com/docopt/docopt-go"
   packages = ["."]
+  pruneopts = ""
   revision = "784ddc588536785e7299f7272f39101f7faccc3f"
   version = "0.6.2"
 
 [[projects]]
+  digest = "1:23a5efa4b272df86a8ebffc942f5e0c1aac4b750836037394cc450b6d91e241a"
   name = "github.com/fatih/camelcase"
   packages = ["."]
+  pruneopts = ""
   revision = "44e46d280b43ec1531bb25252440e34f1b800b65"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:ad92aa49f34cbc3546063c7eb2cabb55ee2278b72842eda80e2a20a8a06a8d73"
   name = "github.com/google/uuid"
   packages = ["."]
+  pruneopts = ""
   revision = "0cd6bf5da1e1c83f8b45653022c74f71af0538a4"
   version = "v1.1.1"
 
 [[projects]]
+  digest = "1:a5484d4fa43127138ae6e7b2299a6a52ae006c7f803d98d717f60abf3e97192e"
   name = "github.com/pborman/uuid"
   packages = ["."]
+  pruneopts = ""
   revision = "adf5a7427709b9deb95d29d3fa8a2bf9cfd388f1"
   version = "v1.2"
 
 [[projects]]
+  digest = "1:256484dbbcd271f9ecebc6795b2df8cad4c458dd0f5fd82a8c2fa0c29f233411"
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
+  pruneopts = ""
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:381bcbeb112a51493d9d998bbba207a529c73dbb49b3fd789e48c63fac1f192c"
   name = "github.com/stretchr/testify"
   packages = ["assert"]
+  pruneopts = ""
   revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
   version = "v1.3.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:87b3f3ed7d12fa09b011063233fee477aec3f5856ee72abc04c359290e43b282"
   name = "github.com/taskcluster/httpbackoff"
   packages = ["."]
+  pruneopts = ""
   revision = "e5b331b1135fb39ad0395d49c1a880929629f5b4"
 
 [[projects]]
   branch = "master"
+  digest = "1:4f8b3f91b4e2ef91da1737d043da16ccfa25cfabb7810116ea01bcdcbfc9e301"
   name = "github.com/taskcluster/jsonschema2go"
   packages = ["text"]
+  pruneopts = ""
   revision = "0757acc540d0725f2d78c22e434b7c295f247d8e"
 
 [[projects]]
   branch = "master"
+  digest = "1:02998568ad040bbef2b634f02065fb1a7ed1475c3d1d3a10eb37339e61fb3269"
   name = "github.com/taskcluster/slugid-go"
   packages = ["slugid"]
+  pruneopts = ""
   revision = "372cc2dd368595718b5b46adc759abcc2cbbe0b5"
 
 [[projects]]
   branch = "master"
+  digest = "1:6a0c84e2b1d3f426816ad5451022e9d54952765ac3d964186896505ed09b109b"
   name = "github.com/taskcluster/taskcluster-client-go"
-  packages = [".","tcawsprovisioner","tcsecrets"]
+  packages = [
+    ".",
+    "tcawsprovisioner",
+    "tcsecrets",
+  ]
+  pruneopts = ""
   revision = "0a5ab71b2099e987ee52741adb9ddc4595ff15ec"
 
 [[projects]]
+  digest = "1:2368208abd6848e8c9cbca589eafdc9a16e994074eb349a4f999c568cb486d13"
   name = "github.com/taskcluster/taskcluster-lib-urls"
   packages = ["."]
+  pruneopts = ""
   revision = "b6a71b141f997a5e74250bd63ea3a3f859af17d8"
   version = "v12.0.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:f151058721134c3ea5f781f27adb176dfb346922ac2731c9ea19f15046c35176"
   name = "github.com/tent/hawk-go"
   packages = ["."]
+  pruneopts = ""
   revision = "d341ea31895747c3b8f64837fef40ccf0c1143af"
 
 [[projects]]
   branch = "v3"
+  digest = "1:fb31ede3dc953f7c38370bd8ebd31c144c9515ff0a6ba76766c508d654f70320"
   name = "gopkg.in/yaml.v3"
   packages = ["."]
+  pruneopts = ""
   revision = "55513cacd4ae8b250e3a9084ab9d8c407b1ed618"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3fe831b34b1407af251a76471daf9d6cc3b7c422b8ed5211ad80fd71dd96b508"
+  input-imports = [
+    "github.com/docopt/docopt-go",
+    "github.com/stretchr/testify/assert",
+    "github.com/taskcluster/httpbackoff",
+    "github.com/taskcluster/slugid-go/slugid",
+    "github.com/taskcluster/taskcluster-client-go",
+    "github.com/taskcluster/taskcluster-client-go/tcawsprovisioner",
+    "github.com/taskcluster/taskcluster-client-go/tcsecrets",
+    "gopkg.in/yaml.v3",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
