@@ -13,6 +13,7 @@ It will handle:
 
 ## Usage
 
+<!-- start-usage -->
 ```
 start-worker starts Taskcluster workers.
 
@@ -63,10 +64,6 @@ explicitly in the runner configuration:
 
 The following worker implementations are supported:
 
-The "dummy" worker implementation does nothing but dump the run instead of
-"starting" anything.  It is intended for debugging.
-
-
 
 The "docker-worker" worker implementation starts docker-worker
 (https://github.com/taskcluster/docker-worker).  It takes the following
@@ -79,7 +76,13 @@ values in the 'worker' section of the runner configuration:
 		# path where taskcluster-worker-runner should write the generated
 		# docker-worker configuration.
 		configPath: ..
+
+
+
+The "dummy" worker implementation does nothing but dump the run instead of
+"starting" anything.  It is intended for debugging.
 ```
+<!-- end-usage -->
 
 ## Operation
 

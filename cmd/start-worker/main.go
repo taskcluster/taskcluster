@@ -11,7 +11,7 @@ import (
 	"github.com/taskcluster/taskcluster-worker-runner/worker"
 )
 
-func usage() string {
+func Usage() string {
 	return `
 start-worker starts Taskcluster workers.
 
@@ -26,7 +26,7 @@ Usage:
 }
 
 func main() {
-	opts, err := docopt.Parse(usage(), nil, true, "start-worker "+tcworkerrunner.Version, false, true)
+	opts, err := docopt.Parse(Usage(), nil, true, "start-worker "+tcworkerrunner.Version, false, true)
 	if err != nil {
 		log.Printf("Error parsing command-line arguments: %s", err)
 		os.Exit(1)

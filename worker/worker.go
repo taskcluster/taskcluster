@@ -2,6 +2,7 @@ package worker
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
@@ -36,8 +37,17 @@ func Usage() string {
 	rv := []string{`
 The following worker implementations are supported:`}
 
-	for _, pi := range workers {
-		rv = append(rv, pi.usage())
+	sortedWorkers := make([]string, len(workers))
+	i := 0
+	for n := range workers {
+		sortedWorkers[i] = n
+		i++
+	}
+	sort.Strings(sortedWorkers)
+
+	for _, n := range sortedWorkers {
+		info := workers[n]
+		rv = append(rv, info.usage())
 	}
 	return strings.Join(rv, "\n")
 }

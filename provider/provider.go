@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/taskcluster/taskcluster-worker-runner/provider/awsprovisioner"
@@ -36,8 +37,17 @@ func Usage() string {
 	rv := []string{`
 Providers configuration depends on the providerType:`}
 
-	for _, pi := range providers {
-		rv = append(rv, pi.usage())
+	sortedProviders := make([]string, len(providers))
+	i := 0
+	for n := range providers {
+		sortedProviders[i] = n
+		i++
+	}
+	sort.Strings(sortedProviders)
+
+	for _, n := range sortedProviders {
+		info := providers[n]
+		rv = append(rv, info.usage())
 	}
 	return strings.Join(rv, "\n")
 }
