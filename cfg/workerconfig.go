@@ -120,6 +120,16 @@ func merge(v1, v2 interface{}) interface{} {
 //
 // This returns a new WorkerConfig without modifying either input.
 func (wc *WorkerConfig) Merge(other *WorkerConfig) *WorkerConfig {
+	if wc == nil {
+		if other == nil {
+			return NewWorkerConfig()
+		}
+		return other
+	}
+	if other == nil {
+		return wc
+	}
+
 	return &WorkerConfig{
 		data: merge(wc.data, other.data).(map[string]interface{}),
 	}
@@ -162,6 +172,10 @@ func set(key []string, i int, config interface{}, value interface{}) (interface{
 func (wc *WorkerConfig) Set(key string, value interface{}) (*WorkerConfig, error) {
 	if key == "" {
 		return nil, fmt.Errorf("Must specify a nonempty key")
+	}
+
+	if wc == nil {
+		wc = NewWorkerConfig()
 	}
 
 	splitkey := strings.Split(key, ".")

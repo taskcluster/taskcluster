@@ -108,6 +108,48 @@ func TestMergeRecurseObjects(t *testing.T) {
 		"should merge objects recursively")
 }
 
+func TestMergeFirstNil(t *testing.T) {
+	var wc1 *WorkerConfig
+	var wc2 WorkerConfig
+
+	err := yaml.Unmarshal([]byte(`x: 10`), &wc2)
+	assert.NoError(t, err, "should not fail")
+
+	merged := wc1.Merge(&wc2)
+
+	assert.Equal(t, map[string]interface{}{"x": 10.0}, merged.data, "should return existing config")
+}
+
+func TestMergeSecondNil(t *testing.T) {
+	var wc1 WorkerConfig
+	var wc2 *WorkerConfig
+
+	err := yaml.Unmarshal([]byte(`x: 10`), &wc1)
+	assert.NoError(t, err, "should not fail")
+
+	merged := wc1.Merge(wc2)
+
+	assert.Equal(t, map[string]interface{}{"x": 10.0}, merged.data, "should return existing config")
+}
+
+func TestMergeBothNil(t *testing.T) {
+	var wc1 *WorkerConfig
+	var wc2 *WorkerConfig
+
+	merged := wc1.Merge(wc2)
+
+	assert.Equal(t, map[string]interface{}{}, merged.data, "should return empty config")
+}
+
+func TestSetNilNoDot(t *testing.T) {
+	var wc *WorkerConfig
+	wc2, err := wc.Set("x", "a")
+	if err != nil {
+		t.Fatalf("failed to set: %s", err)
+	}
+	assert.Equal(t, map[string]interface{}{"x": "a"}, wc2.data, "should set x")
+}
+
 func TestSetEmptyNoDot(t *testing.T) {
 	var wc WorkerConfig
 
