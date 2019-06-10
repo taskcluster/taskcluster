@@ -15,7 +15,26 @@ program.command('build')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    require('./build')(options[0]).then(
+    const {main} = require('./build');
+    main(options[0]).then(
+      () => {},
+      err => {
+        console.error(err);
+        process.exit(1);
+      });
+  });
+
+program.command('release')
+  .option('--base-dir <base-dir>', 'Base directory for build (fast and big!; default /tmp/taskcluster-builder-build)')
+  .option('--dry-run', 'Do not run any tasks, but generate the list of tasks')
+  .option('--ignore-uncommitted-files', 'Do not fail if there are un-committed files in the working copy')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {main} = require('./release');
+    main(options[0]).then(
       () => {},
       err => {
         console.error(err);
@@ -30,7 +49,8 @@ program.command('generate')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    require('./generate')(options[0]).then(
+    const {main} = require('./generate');
+    main(options[0]).then(
       () => {},
       err => {
         console.error(err);

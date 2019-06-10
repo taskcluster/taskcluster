@@ -162,6 +162,7 @@
     "fetch-coverage": "node test/fetch-coverage.js",
     "test:cleanup": "yarn workspace taskcluster-auth test:cleanup",
     "build": "node infrastructure/builder/src/main.js build",
+    "release": "node infrastructure/builder/src/main.js release",
     "generate": "node infrastructure/builder/src/main.js generate",
     "shared-secrets": "node test/shared-secrets.js",
     "heroku-prebuild": "echo $SOURCE_VERSION > taskcluster-version",

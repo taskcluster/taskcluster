@@ -36,7 +36,7 @@ const {
  *  All of this is done using a "hooks" approach to allow segmenting the various oddball bits of
  *  this process by theme.
  */
-const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
+const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
   const packageJson = JSON.parse(fs.readFileSync(path.join(appRootDir.get(), 'package.json')));
   const nodeVersion = packageJson.engines.node;
   const workDir = path.join(baseDir, 'monoimage');
@@ -317,7 +317,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
     run: async (requirements, utils) => {
 
       // find the requirements ending in '-stamp' that we should depend on
-      const tag = `${cfg.docker.repositoryPrefix}monoimage:${requirements['monorepo-git-descr']}`;
+      const tag = `taskcluster/taskcluster:${requirements['monorepo-git-descr']}`;
 
       utils.step({title: 'Check for Existing Images'});
 
