@@ -12,7 +12,7 @@ import (
 
 func StartWorker(runnercfg *runner.RunnerConfig) error {
 	var run runner.Run
-	run.WorkerConfig = runnercfg.WorkerConfig
+	run.WorkerConfig = run.WorkerConfig.Merge(runnercfg.WorkerConfig)
 
 	// provider
 
