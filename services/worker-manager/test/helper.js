@@ -145,6 +145,10 @@ exports.withFakeNotify = (mock, skipping) => {
 
     exports.notify = stubbedNotify();
     exports.load.inject('notify', exports.notify);
+
+    setup(async function() {
+      exports.notify.emails.splice(0);
+    });
   });
 };
 

@@ -85,4 +85,40 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     assert.equal(helper.notify.emails.length, 1);
     assert.equal(helper.notify.emails[0].address, 'whatever@example.com');
   });
+
+  test('report errors (w/ email and extraInfo)', async function() {
+    const wp = await helper.WorkerPool.create({
+      workerPoolId: 'ww/tt',
+      providerId: 'testing1',
+      description: 'none',
+      previousProviderIds: [],
+      scheduledForDeletion: false,
+      created: new Date(),
+      lastModified: new Date(),
+      config: {
+      },
+      owner: 'whatever@example.com',
+      providerData: {},
+      emailOnError: true,
+    });
+
+    await wp.reportError({
+      kind: 'something-error',
+      title: 'And Error about Something',
+      description: 'WHO KNOWS',
+      notify: helper.notify,
+      WorkerPoolError: helper.WorkerPoolError,
+      extra: {
+        foo: 'bar-123-456',
+      },
+    });
+
+    const errors = await helper.WorkerPoolError.scan({}, {});
+    assert.equal(errors.entries.length, 1);
+    assert.equal(errors.entries[0].workerPoolId, 'ww/tt');
+
+    assert.equal(helper.notify.emails.length, 1);
+    assert.equal(helper.notify.emails[0].address, 'whatever@example.com');
+    assert(helper.notify.emails[0].content.includes('bar-123-456'));
+  });
 });
