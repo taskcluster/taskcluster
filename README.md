@@ -106,3 +106,13 @@ With all of this complete, the run parameters are fully determined:
  * Configuration for the worker
 
 The final step, then, is to start the worker with the derived configuration.
+
+# Development
+
+This application requires go1.11.
+Test with `go test ./...`.
+
+## Releases
+
+To make a new release, run `./release.sh <version>`.
+Examine the resulting commit and tag for completeness, then push to the upstream repository.
