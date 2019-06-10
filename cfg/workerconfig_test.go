@@ -32,8 +32,10 @@ func TestUnmarshalJSON(t *testing.T) {
 func TestMergeDistinctProperties(t *testing.T) {
 	var wc1, wc2 WorkerConfig
 
-	yaml.Unmarshal([]byte(`x: 10`), &wc1)
-	yaml.Unmarshal([]byte(`y: 20`), &wc2)
+	err := yaml.Unmarshal([]byte(`x: 10`), &wc1)
+	assert.NoError(t, err, "should not fail")
+	err = yaml.Unmarshal([]byte(`y: 20`), &wc2)
+	assert.NoError(t, err, "should not fail")
 
 	merged := wc1.Merge(&wc2)
 
@@ -43,8 +45,10 @@ func TestMergeDistinctProperties(t *testing.T) {
 func TestMergeOverwriteProperty(t *testing.T) {
 	var wc1, wc2 WorkerConfig
 
-	yaml.Unmarshal([]byte(`x: 10`), &wc1)
-	yaml.Unmarshal([]byte(`x: 20`), &wc2)
+	err := yaml.Unmarshal([]byte(`x: 10`), &wc1)
+	assert.NoError(t, err, "should not fail")
+	err = yaml.Unmarshal([]byte(`x: 20`), &wc2)
+	assert.NoError(t, err, "should not fail")
 
 	merged := wc1.Merge(&wc2)
 
@@ -54,8 +58,10 @@ func TestMergeOverwriteProperty(t *testing.T) {
 func TestMergeOverwritePropertyDifferentTypes(t *testing.T) {
 	var wc1, wc2 WorkerConfig
 
-	yaml.Unmarshal([]byte(`x: {}`), &wc1)
-	yaml.Unmarshal([]byte(`x: 13`), &wc2)
+	err := yaml.Unmarshal([]byte(`x: {}`), &wc1)
+	assert.NoError(t, err, "should not fail")
+	err = yaml.Unmarshal([]byte(`x: 13`), &wc2)
+	assert.NoError(t, err, "should not fail")
 
 	merged := wc1.Merge(&wc2)
 
@@ -65,8 +71,10 @@ func TestMergeOverwritePropertyDifferentTypes(t *testing.T) {
 func TestMergeAppendArray(t *testing.T) {
 	var wc1, wc2 WorkerConfig
 
-	yaml.Unmarshal([]byte(`x: [a]`), &wc1)
-	yaml.Unmarshal([]byte(`x: [b]`), &wc2)
+	err := yaml.Unmarshal([]byte(`x: [a]`), &wc1)
+	assert.NoError(t, err, "should not fail")
+	err = yaml.Unmarshal([]byte(`x: [b]`), &wc2)
+	assert.NoError(t, err, "should not fail")
 
 	merged := wc1.Merge(&wc2)
 
@@ -82,8 +90,10 @@ func TestMergeAppendArray(t *testing.T) {
 func TestMergeRecurseObjects(t *testing.T) {
 	var wc1, wc2 WorkerConfig
 
-	yaml.Unmarshal([]byte(`x: {a: 10}`), &wc1)
-	yaml.Unmarshal([]byte(`x: {b: 10}`), &wc2)
+	err := yaml.Unmarshal([]byte(`x: {a: 10}`), &wc1)
+	assert.NoError(t, err, "should not fail")
+	err = yaml.Unmarshal([]byte(`x: {b: 10}`), &wc2)
+	assert.NoError(t, err, "should not fail")
 
 	merged := wc1.Merge(&wc2)
 
@@ -101,7 +111,8 @@ func TestMergeRecurseObjects(t *testing.T) {
 func TestSetEmptyNoDot(t *testing.T) {
 	var wc WorkerConfig
 
-	json.Unmarshal([]byte(`{}`), &wc)
+	err := json.Unmarshal([]byte(`{}`), &wc)
+	assert.NoError(t, err, "should not fail")
 	wc2, err := wc.Set("x", "a")
 	if err != nil {
 		t.Fatalf("failed to set: %s", err)
@@ -112,7 +123,8 @@ func TestSetEmptyNoDot(t *testing.T) {
 func TestSetEmptyWithDot(t *testing.T) {
 	var wc WorkerConfig
 
-	json.Unmarshal([]byte(`{}`), &wc)
+	err := json.Unmarshal([]byte(`{}`), &wc)
+	assert.NoError(t, err, "should not fail")
 	wc2, err := wc.Set("x.y", "a")
 	if err != nil {
 		t.Fatalf("failed to set: %s", err)
@@ -123,7 +135,8 @@ func TestSetEmptyWithDot(t *testing.T) {
 func TestSetExistingData(t *testing.T) {
 	var wc WorkerConfig
 
-	json.Unmarshal([]byte(`{"x": {"y": "xxx"}}`), &wc)
+	err := json.Unmarshal([]byte(`{"x": {"y": "xxx"}}`), &wc)
+	assert.NoError(t, err, "should not fail")
 	wc2, err := wc.Set("x.y", "a")
 	if err != nil {
 		t.Fatalf("failed to set: %s", err)
@@ -134,7 +147,8 @@ func TestSetExistingData(t *testing.T) {
 func TestSetExistingDataSiblings(t *testing.T) {
 	var wc WorkerConfig
 
-	json.Unmarshal([]byte(`{"p": true, "x": {"q": true, "y": "xxx"}}`), &wc)
+	err := json.Unmarshal([]byte(`{"p": true, "x": {"q": true, "y": "xxx"}}`), &wc)
+	assert.NoError(t, err, "should not fail")
 	wc2, err := wc.Set("x.y", "a")
 	if err != nil {
 		t.Fatalf("failed to set: %s", err)
@@ -162,8 +176,9 @@ func TestSetExistingDataSiblings(t *testing.T) {
 func TestSetNotObject(t *testing.T) {
 	var wc WorkerConfig
 
-	json.Unmarshal([]byte(`{"x": "xxx"}`), &wc)
-	_, err := wc.Set("x.y", "a")
+	err := json.Unmarshal([]byte(`{"x": "xxx"}`), &wc)
+	assert.NoError(t, err, "should not fail")
+	_, err = wc.Set("x.y", "a")
 	if err == nil {
 		t.Fatalf("did not fail")
 	}

@@ -47,10 +47,11 @@ func TestWorkerImplUnpack(t *testing.T) {
 	}
 
 	var pc WorkerImplementationConfig
-	yaml.Unmarshal([]byte(`{"implementation": "x", "value": 10, "anotherValue": "hi"}`), &pc)
+	err := yaml.Unmarshal([]byte(`{"implementation": "x", "value": 10, "anotherValue": "hi"}`), &pc)
+	assert.NoError(t, err, "should fail")
 
 	var c mypc
-	err := pc.Unpack(&c)
+	err = pc.Unpack(&c)
 	if err != nil {
 		t.Fatalf("failed to unmarshal: %s", err)
 	}
@@ -63,10 +64,11 @@ func TestWorkerImplUnpackMissing(t *testing.T) {
 	}
 
 	var pc WorkerImplementationConfig
-	yaml.Unmarshal([]byte(`{}`), &pc)
+	err := yaml.Unmarshal([]byte(`{"implementation": "x"}`), &pc)
+	assert.NoError(t, err, "should fail")
 
 	var c mypc
-	err := pc.Unpack(&c)
+	err = pc.Unpack(&c)
 	if err == nil {
 		t.Fatalf("failed to fail")
 	}
@@ -78,10 +80,11 @@ func TestWorkerImplUnpackWrongType(t *testing.T) {
 	}
 
 	var pc WorkerImplementationConfig
-	yaml.Unmarshal([]byte(`{"Value": "yo"}`), &pc)
+	err := yaml.Unmarshal([]byte(`{"implementation": "x", "value": "yo"}`), &pc)
+	assert.NoError(t, err, "should fail")
 
 	var c mypc
-	err := pc.Unpack(&c)
+	err = pc.Unpack(&c)
 	if err == nil {
 		t.Fatalf("failed to fail")
 	}

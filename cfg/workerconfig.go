@@ -103,12 +103,8 @@ func merge(v1, v2 interface{}) interface{} {
 	arr2, arr2ok := v2.([]interface{})
 	if arr1ok && arr2ok {
 		res := make([]interface{}, 0, len(arr1)+len(arr2))
-		for _, value := range arr1 {
-			res = append(res, value)
-		}
-		for _, value := range arr2 {
-			res = append(res, value)
-		}
+		res = append(res, arr1...)
+		res = append(res, arr2...)
 
 		return res
 	}
@@ -185,8 +181,7 @@ func (wc *WorkerConfig) Get(key string) (interface{}, error) {
 	}
 
 	splitkey := strings.Split(key, ".")
-	var val interface{}
-	val = wc.data
+	val := interface{}(wc.data)
 	for _, k := range splitkey {
 		valmap, ok := val.(map[string]interface{})
 		if !ok {

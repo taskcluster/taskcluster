@@ -47,10 +47,11 @@ func TestProviderUnpack(t *testing.T) {
 	}
 
 	var pc ProviderConfig
-	yaml.Unmarshal([]byte(`{"providerType": "x", "value": 10, "anotherValue": "hi"}`), &pc)
+	err := yaml.Unmarshal([]byte(`{"providerType": "x", "value": 10, "anotherValue": "hi"}`), &pc)
+	assert.NoError(t, err, "should not fail")
 
 	var c mypc
-	err := pc.Unpack(&c)
+	err = pc.Unpack(&c)
 	if err != nil {
 		t.Fatalf("failed to unmarshal: %s", err)
 	}
@@ -63,10 +64,11 @@ func TestProviderUnpackMissing(t *testing.T) {
 	}
 
 	var pc ProviderConfig
-	yaml.Unmarshal([]byte(`{}`), &pc)
+	err := yaml.Unmarshal([]byte(`{"providerType": "x"}`), &pc)
+	assert.NoError(t, err, "should not fail")
 
 	var c mypc
-	err := pc.Unpack(&c)
+	err = pc.Unpack(&c)
 	if err == nil {
 		t.Fatalf("failed to fail")
 	}
@@ -78,10 +80,11 @@ func TestProviderUnpackWrongType(t *testing.T) {
 	}
 
 	var pc ProviderConfig
-	yaml.Unmarshal([]byte(`{"Value": "yo"}`), &pc)
+	err := yaml.Unmarshal([]byte(`{"providerType": "x", "value": "yo"}`), &pc)
+	assert.NoError(t, err, "should not fail")
 
 	var c mypc
-	err := pc.Unpack(&c)
+	err = pc.Unpack(&c)
 	if err == nil {
 		t.Fatalf("failed to fail")
 	}

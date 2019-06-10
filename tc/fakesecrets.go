@@ -29,7 +29,7 @@ func (cli *FakeSecrets) Get(name string) (*tcsecrets.Secret, error) {
 			HttpResponseCode: 404,
 			Message:          "no secret with that name",
 		}
-		return nil, &tcclient.APICallException{&cs, rc}
+		return nil, &tcclient.APICallException{CallSummary: &cs, RootCause: rc}
 	}
 
 	return secret, nil

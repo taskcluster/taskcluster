@@ -29,13 +29,14 @@ func TestAwsProvisionerSecretsGetExists(t *testing.T) {
 	}
 	token := FakeAwsProvisionerCreateSecret(secret)
 	gotsecret, err := aws.GetSecret(token)
-	assert.Equal(t, nil, err, "should not fail")
+	assert.NoError(t, err, "should not fail")
 	assert.Equal(t, secret, gotsecret, "should have gotten the secret back")
 
 	fakegot := FakeAwsProvisionerGetSecret(token)
 	assert.Equal(t, secret, fakegot, "FakeAwsProvisionerGetSecret should return it too")
 
 	err = aws.RemoveSecret(token)
+	assert.NoError(t, err, "should not fail")
 	fakegot = FakeAwsProvisionerGetSecret(token)
 	assert.Nil(t, fakegot, "secret should be gone")
 }
