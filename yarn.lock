@@ -1876,10 +1876,10 @@ console-control-strings@^1.0.0, console-control-strings@~1.1.0:
   resolved "https://registry.yarnpkg.com/console-control-strings/-/console-control-strings-1.1.0.tgz#3d7cf4464db6446ea644bf4b39507f9851008e8e"
   integrity sha1-PXz0Rk22RG6mRL9LOVB/mFEAjo4=
 
-console-taskgraph@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/console-taskgraph/-/console-taskgraph-1.5.0.tgz#3ab55d82319dafbc39633b5bcd4145974d78652b"
-  integrity sha512-EQxODovY9DBjPAoLgslApda/Dlmqk8sjINEUTSGsWSo4Y/gCMF13kqMjRYRPDnd459hRz9avJ+9ORxJrPEvZJQ==
+console-taskgraph@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/console-taskgraph/-/console-taskgraph-1.6.0.tgz#a4fdef21ac0035ee7c997245b6958ffa8754016e"
+  integrity sha512-QL6nst8TwVB8vvWXb1Xf3QL5gT8OQUECIvtOAqXwpf0rQ76JDyHL5ejOtVQk4awFFiFT1xzvK9zG/yrYMLuPfg==
   dependencies:
     assert "^1.4.1"
     chalk "^2.3.2"

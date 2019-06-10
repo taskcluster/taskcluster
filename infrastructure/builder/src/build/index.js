@@ -15,6 +15,26 @@ class Build {
     this.cfg = null;
   }
 
+  /**
+   * Generate the tasks for `yarn build`.  The result is a set of tasks which
+   * culminates in one providing `monoimage-docker-image`, a docker image path
+   * for the resulting monoimage.  The tasks in this subgraph that clone and build the
+   * repository depend on `build-can-start` (tasks to download docker images,
+   * and other such preparatory work, can begin earlier)
+   */
+  generateTasks() {
+    let tasks = [];
+
+    generateMonoimageTasks({
+      tasks,
+      baseDir: this.baseDir,
+      cfg: this.cfg,
+      cmdOptions: this.cmdOptions,
+    });
+
+    return tasks;
+  }
+
   async run() {
     this.cfg = config({
       files: [
@@ -29,14 +49,7 @@ class Build {
     }
     await mkdirp(this.baseDir);
 
-    let tasks = [];
-
-    generateMonoimageTasks({
-      tasks,
-      baseDir: this.baseDir,
-      cfg: this.cfg,
-      cmdOptions: this.cmdOptions,
-    });
+    let tasks = this.generateTasks();
 
     const taskgraph = new TaskGraph(tasks, {
       locks: {
@@ -53,7 +66,7 @@ class Build {
       console.log('Dry run successful.');
       return;
     }
-    const context = await taskgraph.run();
+    const context = await taskgraph.run({'build-can-start': true});
 
     console.log(`Monoimage docker image: ${context['monoimage-docker-image']}`);
     if (!this.cmdOptions.push) {

@@ -155,6 +155,9 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
 
   ensureTask(tasks, {
     title: 'Clone Monorepo from Working Copy',
+    requires: [
+      'build-can-start', // (used to delay building in `yarn release`)
+    ],
     provides: [
       'monorepo-dir', // full path of the repository
       'monorepo-exact-source', // exact source URL for the repository
