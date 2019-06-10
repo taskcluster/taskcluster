@@ -81,7 +81,6 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       pathname: `${this.props.match.path}/${encodeURIComponent(name)}/edit`,
       state: { hello: 'world' },
     });
-    console.log('🏓', this.props);
   };
 
   renderRow = workerPool => {

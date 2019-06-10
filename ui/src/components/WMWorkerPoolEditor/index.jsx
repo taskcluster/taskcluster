@@ -1,19 +1,23 @@
 import React, { Component, Fragment } from 'react';
-import List from '../../views/Documentation/components/List';
-import ListSubheader from '@material-ui/core/ListSubheader/ListSubheader';
-import ListItem from '@material-ui/core/ListItem/ListItem';
-import TextField from '@material-ui/core/TextField/TextField';
-import isWorkerTypeNameValid from '../../utils/isWorkerTypeNameValid';
+import { withRouter } from 'react-router-dom';
+import { func, bool } from 'prop-types';
+import ListSubheader from '@material-ui/core/ListSubheader';
+import ListItem from '@material-ui/core/ListItem';
+import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography/Typography';
-import FormControlLabel from '@material-ui/core/FormControlLabel/FormControlLabel';
-import Switch from '@material-ui/core/Switch/Switch';
-import MenuItem from '@material-ui/core/MenuItem/MenuItem';
-import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
-import Button from '../Button';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
+import MenuItem from '@material-ui/core/MenuItem';
+import { withStyles } from '@material-ui/core';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
-import {withStyles} from '@material-ui/core';
+import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
+import List from '../../views/Documentation/components/List';
+import Button from '../Button';
+import isWorkerTypeNameValid from '../../utils/isWorkerTypeNameValid';
 import { WorkerManagerWorkerPoolSummary } from '../../utils/prop-types';
-import { func, string, bool, oneOfType, object, array } from 'prop-types';
+import ErrorPanel from '../ErrorPanel';
+import { joinWorkerPoolId } from '../../utils/workerPool';
+import formatError from '../../utils/formatError';
 
 const gcp = 'GCP';
 const providers = new Map();
@@ -33,6 +37,7 @@ providerConfigs.set(`${gcp}`, {
   disks: [{}],
 });
 
+@withRouter
 @withStyles(theme => ({
   successIcon: {
     ...theme.mixins.successIcon,
@@ -62,7 +67,7 @@ providerConfigs.set(`${gcp}`, {
 export default class WMWorkerPoolEditor extends Component {
   static propTypes = {
     workerPool: WorkerManagerWorkerPoolSummary.isRequired,
-    onSaveHandler: func.isRequired,
+    saveRequest: func.isRequired,
     actionLoading: bool.isRequired,
   };
 
@@ -85,15 +90,85 @@ export default class WMWorkerPoolEditor extends Component {
     this.setState({ workerPool: { ...this.state.workerPool, [name]: value } });
   };
 
-  render() {
-    const { classes, workerPool, actionLoading } = this.props;
+  handleSwitchChange = event => {
     const {
+      target: { value },
+    } = event;
+
+    this.setState({
+      workerPool: {
+        ...this.state.workerPool,
+        [value]: !this.state.workerPool[value],
+      },
+    });
+  };
+
+  handleProviderTypeChange = event => {
+    const {
+      target: { value },
+    } = event;
+
+    this.setState({
+      providerType: value,
+      workerPool: {
+        ...this.state.workerPool,
+        config: providerConfigs.get(value),
+      },
+    });
+  };
+
+  handleEditorChange = value => {
+    const { workerPool } = this.state;
+
+    try {
+      workerPool.config = JSON.parse(value);
+
+      this.setState({
+        workerPool,
+        invalidProviderConfig: false,
+      });
+    } catch (err) {
+      workerPool.config = value;
+
+      this.setState({
+        workerPool,
+        invalidProviderConfig: true,
+      });
+    }
+  };
+
+  handleOnSaveClick = async () => {
+    const { workerPoolId1, workerPoolId2, ...payload } = this.state.workerPool;
+
+    payload.providerId = providers.get(this.state.providerType);
+
+    this.setState({ error: null, actionLoading: true });
+
+    try {
+      await this.props.saveRequest({
+        workerPoolId: joinWorkerPoolId(workerPoolId1, workerPoolId2),
+        payload,
+      });
+
+      this.props.history.push('/worker-manager');
+    } catch (error) {
+      this.setState({ error: formatError(error), actionLoading: false });
+    }
+  };
+
+  render() {
+    const { classes } = this.props;
+    const {
+      workerPool,
       providerType,
       invalidProviderConfig,
+      error,
+      actionLoading,
     } = this.state;
 
     return (
       <Fragment>
+        <ErrorPanel fixed error={error} />
         <List className={classes.list}>
           <ListSubheader>Worker Pool ID *</ListSubheader>
           <ListItem>
@@ -206,7 +281,7 @@ export default class WMWorkerPoolEditor extends Component {
             disabled={invalidProviderConfig || actionLoading}
             requiresAuth
             tooltipProps={{ title: 'Save Worker Pool' }}
-            onClick={this.handleCreateWorkerPool}
+            onClick={this.handleOnSaveClick}
             classes={{ root: classes.successIcon }}
             variant="round">
             <ContentSaveIcon />
