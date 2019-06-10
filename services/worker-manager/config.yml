@@ -44,4 +44,3 @@ test:
       providerType: static
     google:
       providerType: google
-      fake: true
