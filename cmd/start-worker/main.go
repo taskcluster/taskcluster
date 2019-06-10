@@ -5,6 +5,7 @@ import (
 	"os"
 
 	docopt "github.com/docopt/docopt-go"
+	tcworkerrunner "github.com/taskcluster/taskcluster-worker-runner"
 	"github.com/taskcluster/taskcluster-worker-runner/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 	"github.com/taskcluster/taskcluster-worker-runner/worker"
@@ -25,7 +26,7 @@ Usage:
 }
 
 func main() {
-	opts, err := docopt.Parse(usage(), nil, true, "start-worker", false, true)
+	opts, err := docopt.Parse(usage(), nil, true, "start-worker "+tcworkerrunner.Version, false, true)
 	if err != nil {
 		log.Printf("Error parsing command-line arguments: %s", err)
 		os.Exit(1)
