@@ -1,5 +1,9 @@
-module.exports = ({tasks, cmdOptions}) => {
-  tasks.push({
+const {
+  ensureTask,
+} = require('../utils');
+
+module.exports = ({tasks, version, cmdOptions}) => {
+  ensureTask(tasks, {
     title: 'Pre-build Release-y Stuff',
     requires: [],
     provides: [

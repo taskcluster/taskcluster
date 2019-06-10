@@ -22,7 +22,7 @@ const {
   ensureTask,
   listServices,
   dockerPush,
-} = require('./utils');
+} = require('../utils');
 
 /**
  * The "monoimage" is a single docker image containing all tasks.  This build process goes

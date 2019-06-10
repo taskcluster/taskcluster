@@ -1,7 +1,6 @@
 const util = require('util');
 const path = require('path');
-const {writeFile} = require('../util');
-const {REPO_ROOT, modifyFile} = require('../util');
+const {writeRepoFile, REPO_ROOT, modifyRepoFile} = require('../../utils');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 
@@ -13,7 +12,7 @@ const HEADER = `\
 `;
 
 const writePyFile = async (filename, content, omitHeader) => {
-  await writeFile(path.join(filename), (omitHeader ? '' : HEADER) + content.trim() + '\n');
+  await writeRepoFile(path.join(filename), (omitHeader ? '' : HEADER) + content.trim() + '\n');
 };
 
 // poor man's python repr(..)
@@ -337,8 +336,8 @@ exports.tasks = [{
     await mkdirp(path.join(moduleDir, 'aio'));
 
     // generate Python package semaphore files
-    await writeFile(path.join(moduleDir, '__init__.py'), '');
-    await writeFile(path.join(moduleDir, 'aio', '__init__.py'), '');
+    await writeRepoFile(path.join(moduleDir, '__init__.py'), '');
+    await writeRepoFile(path.join(moduleDir, 'aio', '__init__.py'), '');
 
     const clientImporter = [];
 
@@ -363,7 +362,7 @@ exports.tasks = [{
     await writePyFile(path.join(moduleDir, 'aio', '_client_importer.py'), clientImporterString);
 
     utils.status({message: 'README'});
-    await modifyFile(path.join('clients', 'client-py', 'README.md'),
+    await modifyRepoFile(path.join('clients', 'client-py', 'README.md'),
       contents => modifyReadme(apis, contents));
   },
 }];

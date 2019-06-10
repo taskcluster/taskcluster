@@ -1,5 +1,5 @@
 const path = require('path');
-const {gitLsFiles, readFile, writeFile} = require('../util');
+const {gitLsFiles, readRepoFile, writeRepoFile} = require('../../utils');
 
 exports.tasks = [{
   title: 'README TOCs',
@@ -17,7 +17,7 @@ exports.tasks = [{
     // read each README and extract titles where available
     const firstLine = /^# (.*)\n/;
     for (let readme of readmes) {
-      readme.content = await readFile(path.join(readme.dir, 'README.md'));
+      readme.content = await readRepoFile(path.join(readme.dir, 'README.md'));
       const match = firstLine.exec(readme.content);
       if (match) {
         readme.title = match[1];
@@ -59,7 +59,7 @@ exports.tasks = [{
           /(<!-- TOC BEGIN -->)(?:.|\n)*(<!-- TOC END -->)/m,
           `$1\n${lines.join('\n')}\n$2`);
         if (content !== newContent) {
-          await writeFile(path.join(dir, 'README.md'), newContent);
+          await writeRepoFile(path.join(dir, 'README.md'), newContent);
         }
       }
 

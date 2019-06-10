@@ -1,10 +1,9 @@
 const util = require('util');
 const stringify = require('json-stable-stringify');
 const path = require('path');
-const {writeFile} = require('../util');
 const {omit} = require('lodash');
 const {compile} = require('ejs');
-const {REPO_ROOT, readFile, modifyFile} = require('../util');
+const {REPO_ROOT, readRepoFile, writeRepoFile, modifyRepoFile} = require('../../utils');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 
@@ -20,7 +19,7 @@ exports.tasks = [{
     await mkdirp(path.join(REPO_ROOT, 'clients/client-web/src/clients'));
 
     utils.status({message: 'index'});
-    await modifyFile(path.join('clients/client-web/src/index.js'), async contents => {
+    await modifyRepoFile(path.join('clients/client-web/src/index.js'), async contents => {
       const exports = Object
         .keys(apis)
         .sort()
@@ -32,13 +31,13 @@ exports.tasks = [{
       );
     });
 
-    const template = compile(await readFile('clients/client-web/templates/client.ejs'));
+    const template = compile(await readRepoFile('clients/client-web/templates/client.ejs'));
 
     for (let name of Object.keys(apis)) {
       const {reference} = apis[name];
 
       utils.status({message: name});
-      await writeFile(
+      await writeRepoFile(
         path.join('clients/client-web/src', `clients/${name}.js`),
         template({
           name,

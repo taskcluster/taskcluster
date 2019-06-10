@@ -4,7 +4,8 @@ const {Build} = require('../build');
 const generateReleaseTasks = require('./tasks');
 
 class Release {
-  constructor(cmdOptions) {
+  constructor(version, cmdOptions) {
+    this.version = version;
     this.cmdOptions = cmdOptions;
 
     // The `yarn build` process is a subgraph of the release taskgraph, with some
@@ -28,6 +29,7 @@ class Release {
 
     generateReleaseTasks({
       tasks,
+      version: this.version,
       cmdOptions: this.cmdOptions,
     });
 
@@ -58,8 +60,8 @@ class Release {
   }
 }
 
-const main = async (options) => {
-  const release = new Release(options);
+const main = async (version, options) => {
+  const release = new Release(version, options);
   await release.run();
 };
 
