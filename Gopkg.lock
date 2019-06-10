@@ -70,7 +70,7 @@
 [[projects]]
   branch = "master"
   name = "github.com/taskcluster/taskcluster-client-go"
-  packages = [".","tcawsprovisioner"]
+  packages = [".","tcawsprovisioner","tcsecrets"]
   revision = "0a5ab71b2099e987ee52741adb9ddc4595ff15ec"
 
 [[projects]]
@@ -94,6 +94,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ff182f173d6edfb7f486b3d46e2adb099efda7c6f817127764475a344bd0e537"
+  inputs-digest = "3fe831b34b1407af251a76471daf9d6cc3b7c422b8ed5211ad80fd71dd96b508"
   solver-name = "gps-cdcl"
   solver-version = 1
