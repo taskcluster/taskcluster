@@ -53,7 +53,7 @@ suite('Repo Meta Tests', function() {
     ];
     for (let pattern of Taskcluster) {
       try {
-        const res = await exec(`git grep '${pattern}'`);
+        const res = await exec(`git grep '${pattern}' -- './*' ':!.yarn'`);
         // if the grep succeeded, then something matched
         throw new Error(`misspellings found: ${res.stdout}`);
       } catch (err) {
