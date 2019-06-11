@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
-import { func, bool } from 'prop-types';
+import { func, bool, string } from 'prop-types';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import ListItem from '@material-ui/core/ListItem';
 import TextField from '@material-ui/core/TextField';
@@ -18,24 +18,7 @@ import { WorkerManagerWorkerPoolSummary } from '../../utils/prop-types';
 import ErrorPanel from '../ErrorPanel';
 import { joinWorkerPoolId } from '../../utils/workerPool';
 import formatError from '../../utils/formatError';
-
-const gcp = 'GCP';
-const providers = new Map();
-const providerConfigs = new Map();
-
-providers.set(`${gcp}`, 'google');
-
-providerConfigs.set(`${gcp}`, {
-  minCapacity: 0,
-  maxCapacity: 0,
-  capacityPerInstance: 1,
-  machineType: 'n1-highcpu-8',
-  regions: ['us-west2'],
-  userData: {},
-  scheduling: {},
-  networkInterfaces: [{}],
-  disks: [{}],
-});
+import { PROVIDER_CONFIGS, PROVIDERS } from '../../utils/constants';
 
 @withRouter
 @withStyles(theme => ({
@@ -65,22 +48,27 @@ providerConfigs.set(`${gcp}`, {
   },
 }))
 export default class WMWorkerPoolEditor extends Component {
+  static defaultProps = {
+    allowEditWorkerPoolId: false,
+  };
+
   static propTypes = {
     workerPool: WorkerManagerWorkerPoolSummary.isRequired,
     saveRequest: func.isRequired,
-    actionLoading: bool.isRequired,
+    providerType: string.isRequired,
+    allowEditWorkerPoolId: bool,
   };
 
   state = {
     workerPool: {
-      workerPoolId1: '',
-      workerPoolId2: '',
-      description: '',
-      owner: '',
-      emailOnError: false,
-      config: providerConfigs.get(gcp),
+      workerPoolId1: this.props.workerPool.workerPoolId1,
+      workerPoolId2: this.props.workerPool.workerPoolId2,
+      description: this.props.workerPool.description,
+      owner: this.props.workerPool.owner,
+      emailOnError: this.props.workerPool.emailOnError,
+      config: this.props.workerPool.config,
     },
-    providerType: gcp,
+    providerType: this.props.providerType,
     invalidProviderConfig: false,
     actionLoading: false,
     error: null,
@@ -112,7 +100,7 @@ export default class WMWorkerPoolEditor extends Component {
       providerType: value,
       workerPool: {
         ...this.state.workerPool,
-        config: providerConfigs.get(value),
+        config: PROVIDER_CONFIGS.get(value),
       },
     });
   };
@@ -140,7 +128,7 @@ export default class WMWorkerPoolEditor extends Component {
   handleOnSaveClick = async () => {
     const { workerPoolId1, workerPoolId2, ...payload } = this.state.workerPool;
 
-    payload.providerId = providers.get(this.state.providerType);
+    payload.providerId = PROVIDERS.get(this.state.providerType);
 
     this.setState({ error: null, actionLoading: true });
 
@@ -157,7 +145,7 @@ export default class WMWorkerPoolEditor extends Component {
   };
 
   render() {
-    const { classes } = this.props;
+    const { classes, allowEditWorkerPoolId } = this.props;
     const {
       workerPool,
       providerType,
@@ -179,7 +167,8 @@ export default class WMWorkerPoolEditor extends Component {
               fullWidth
               value={workerPool.workerPoolId1}
               required
-              autoFocus
+              disabled={!allowEditWorkerPoolId}
+              autoFocus={allowEditWorkerPoolId}
               helperText={
                 !isWorkerTypeNameValid(workerPool.workerPoolId1) &&
                 '1 to 38 alphanumeric characters'
@@ -195,6 +184,7 @@ export default class WMWorkerPoolEditor extends Component {
               fullWidth
               value={workerPool.workerPoolId2}
               required
+              disabled={!allowEditWorkerPoolId}
               helperText={
                 !isWorkerTypeNameValid(workerPool.workerPoolId2) &&
                 '1 to 38 alphanumeric characters'
@@ -257,7 +247,7 @@ export default class WMWorkerPoolEditor extends Component {
               name="providerType"
               onChange={this.handleProviderTypeChange}
               margin="normal">
-              {Array.from(providers.keys()).map(p => (
+              {Array.from(PROVIDERS.keys()).map(p => (
                 <MenuItem key={p} value={p}>
                   {p}
                 </MenuItem>

@@ -1,29 +1,14 @@
 import { hot } from 'react-hot-loader';
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { withApollo, graphql } from 'react-apollo';
 import { bool } from 'prop-types';
+import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import createWorkerPoolQuery from './createWorkerPool.graphql';
+import updateWorkerPoolQuery from './updateWorkerPool.graphql';
 import workerPoolQuery from './workerPool.graphql';
 import WMWorkerPoolEditor from '../../../components/WMWorkerPoolEditor';
-
-const gcp = 'GCP';
-const providers = new Map();
-const providerConfigs = new Map();
-
-providers.set(`${gcp}`, 'google');
-
-providerConfigs.set(`${gcp}`, {
-  minCapacity: 0,
-  maxCapacity: 0,
-  capacityPerInstance: 1,
-  machineType: 'n1-highcpu-8',
-  regions: ['us-west2'],
-  userData: {},
-  scheduling: {},
-  networkInterfaces: [{}],
-  disks: [{}],
-});
+import { PROVIDER_CONFIGS, PROVIDERS, GCP } from '../../../utils/constants';
 
 @hot(module)
 @withApollo
@@ -52,9 +37,8 @@ export default class WMEditWorkerPool extends Component {
       description: '',
       owner: '',
       emailOnError: false,
-      config: providerConfigs.get(gcp),
+      config: PROVIDER_CONFIGS.get(GCP),
     },
-    actionLoading: false,
   };
 
   createWorkerPoolRequest = async ({ workerPoolId, payload }) => {
@@ -67,18 +51,42 @@ export default class WMEditWorkerPool extends Component {
     });
   };
 
+  updateWorkerPoolRequest = async ({ workerPoolId, payload }) => {
+    await this.props.client.mutate({
+      mutation: updateWorkerPoolQuery,
+      variables: {
+        workerPoolId,
+        payload,
+      },
+    });
+  };
+
   render() {
-    const { isNewWorkerPool } = this.props;
-    const { workerPool, actionLoading } = this.state;
+    const { isNewWorkerPool, data } = this.props;
+    const { workerPool, providerType } = this.state;
 
     return (
       <Dashboard
         title={isNewWorkerPool ? 'Create Worker Pool' : 'Edit Worker Pool'}>
-        <WMWorkerPoolEditor
-          workerPool={workerPool}
-          saveRequest={this.createWorkerPoolRequest}
-          actionLoading={actionLoading}
-        />
+        {isNewWorkerPool ? (
+          <WMWorkerPoolEditor
+            workerPool={workerPool}
+            providerType={providerType}
+            saveRequest={this.createWorkerPoolRequest}
+            allowEditWorkerPoolId
+          />
+        ) : (
+          <Fragment>
+            {!data.WorkerPool && data.loading && <Spinner loading />}
+            {data.WorkerPool && (
+              <WMWorkerPoolEditor
+                workerPool={data.WorkerPool}
+                providerType={GCP}
+                saveRequest={this.updateWorkerPoolRequest}
+              />
+            )}
+          </Fragment>
+        )}
       </Dashboard>
     );
   }

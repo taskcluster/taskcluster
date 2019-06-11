@@ -229,3 +229,25 @@ export const AUTH_STORE = '@@TASKCLUSTER_WEB_AUTH';
 export const MAX_SET_TIMEOUT_DELAY = 2 ** 31 - 1;
 export const GROUP_NOTIFY_TASK_FAILED_KEY = 'group-notify-task-failed';
 export const GROUP_NOTIFY_SUCCESS_KEY = 'group-notify-success';
+
+// Worker Manager constants
+export const GCP = 'GCP';
+const providers = new Map();
+const providerConfigs = new Map();
+
+providers.set(`${GCP}`, 'google');
+
+providerConfigs.set(`${GCP}`, {
+  minCapacity: 0,
+  maxCapacity: 0,
+  capacityPerInstance: 1,
+  machineType: 'n1-highcpu-8',
+  regions: ['us-west2'],
+  userData: {},
+  scheduling: {},
+  networkInterfaces: [{}],
+  disks: [{}],
+});
+
+export const PROVIDERS = providers;
+export const PROVIDER_CONFIGS = providerConfigs;
