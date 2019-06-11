@@ -1,6 +1,7 @@
 query WorkerPool($workerPoolId: String!) {
     WorkerPool(workerPoolId: $workerPoolId) {
-        workerPoolId,
+        workerPoolId1,
+        workerPoolId2,
         description,
         owner,
         emailOnError,

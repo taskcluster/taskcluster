@@ -255,6 +255,8 @@ export const awsProvisionerWorkerType = shape({
 
 export const WorkerManagerWorkerPoolSummary = shape({
   workerPoolId: string,
+  workerPoolId1: string,
+  workerPoolId2: string,
   providerId: string,
   description: string,
   created: date,
