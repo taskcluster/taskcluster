@@ -8,6 +8,7 @@ import createWorkerPoolQuery from './createWorkerPool.graphql';
 import updateWorkerPoolQuery from './updateWorkerPool.graphql';
 import workerPoolQuery from './workerPool.graphql';
 import WMWorkerPoolEditor from '../../../components/WMWorkerPoolEditor';
+import { findKeyInMap } from '../../../utils/mapUtils';
 import { PROVIDER_CONFIGS, PROVIDERS, GCP } from '../../../utils/constants';
 
 @hot(module)
@@ -81,7 +82,10 @@ export default class WMEditWorkerPool extends Component {
             {data.WorkerPool && (
               <WMWorkerPoolEditor
                 workerPool={data.WorkerPool}
-                providerType={GCP}
+                providerType={findKeyInMap({
+                  map: PROVIDERS,
+                  value: data.WorkerPool.providerId,
+                })}
                 saveRequest={this.updateWorkerPoolRequest}
               />
             )}
