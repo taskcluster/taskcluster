@@ -12,6 +12,7 @@ let builder = new APIBuilder({
   },
   context: [
     'WorkerPool',
+    'WorkerPoolError',
     'providers',
     'publisher',
   ],
@@ -203,6 +204,42 @@ builder.declare({
   const data = await this.WorkerPool.scan({}, scanOptions);
   const result = {
     workerPools: data.entries.map(e => e.serializable()),
+  };
+
+  if (data.continuation) {
+    result.continuationToken = data.continuation;
+  }
+  return res.reply(result);
+});
+
+builder.declare({
+  method: 'get',
+  route: '/worker-pool-errors/:workerPoolId',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
+  name: 'listWorkerPoolErrors',
+  title: 'List Worker Pool Errors',
+  stability: APIBuilder.stability.experimental,
+  output: 'worker-pool-error-list.yml',
+  description: [
+    'Get the list of worker pool errors.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { continuationToken } = req.query;
+  const limit = parseInt(req.query.limit || 100, 10);
+  const scanOptions = {
+    continuation: continuationToken,
+    limit,
+    matchPartition: 'exact',
+  };
+
+  const data = await this.WorkerPoolError.scan({
+    workerPoolId: req.params.workerPoolId,
+  }, scanOptions);
+  const result = {
+    workerPoolErrors: data.entries.map(e => e.serializable()),
   };
 
   if (data.continuation) {

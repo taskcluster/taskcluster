@@ -292,6 +292,129 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     assert.deepStrictEqual(data.workerPools, [], 'Should return an empty array of worker pools');
   });
 
+  test('get worker pool errors - no errors in db', async function() {
+    let data = await helper.workerManager.listWorkerPoolErrors('foobar/baz');
+
+    assert.deepStrictEqual(data.workerPoolErrors, [], 'Should return an empty array of worker pool errors');
+  });
+
+  test('get worker pool errors - single', async function() {
+    const workerPoolId = 'foobar/baz';
+    const input = {
+      providerId: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    workerPoolCompare(workerPoolId, input,
+      await helper.workerManager.createWorkerPool(workerPoolId, input));
+
+    const wp = await helper.WorkerPool.load({
+      workerPoolId,
+    });
+
+    await wp.reportError({
+      kind: 'something-error',
+      title: 'And Error about Something',
+      description: 'WHO KNOWS',
+      notify: helper.notify,
+      WorkerPoolError: helper.WorkerPoolError,
+      extra: {
+        foo: 'bar-123-456',
+      },
+    });
+
+    let data = await helper.workerManager.listWorkerPoolErrors('foobar/baz');
+
+    assert.equal(data.workerPoolErrors.length, 1);
+
+    assert(data.workerPoolErrors[0].reported);
+    delete data.workerPoolErrors[0].reported;
+    assert(data.workerPoolErrors[0].errorId);
+    delete data.workerPoolErrors[0].errorId;
+
+    assert.deepEqual(data.workerPoolErrors, [
+      {
+        description: "WHO KNOWS",
+        extra: {
+          foo: "bar-123-456",
+        },
+        kind: "something-error",
+        title: "And Error about Something",
+        workerPoolId: "foobar/baz",
+      },
+    ]);
+  });
+
+  test('get worker pool errors - multiple', async function() {
+    const workerPoolId = 'foobar/baz';
+    const input = {
+      providerId: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    workerPoolCompare(workerPoolId, input,
+      await helper.workerManager.createWorkerPool(workerPoolId, input));
+
+    const wp = await helper.WorkerPool.load({
+      workerPoolId,
+    });
+
+    await wp.reportError({
+      kind: 'something-error',
+      title: 'And Error about Something',
+      description: 'WHO KNOWS',
+      notify: helper.notify,
+      WorkerPoolError: helper.WorkerPoolError,
+      extra: {
+        foo: 'bar-123-456',
+      },
+    });
+
+    await wp.reportError({
+      kind: 'another-error',
+      title: 'And Error about another something',
+      description: 'huh',
+      notify: helper.notify,
+      WorkerPoolError: helper.WorkerPoolError,
+    });
+
+    let data = await helper.workerManager.listWorkerPoolErrors('foobar/baz');
+
+    assert.equal(data.workerPoolErrors.length, 2);
+
+    data.workerPoolErrors.forEach(wpe => {
+      assert(wpe.reported);
+      delete wpe.reported;
+      assert(wpe.errorId);
+      delete wpe.errorId;
+    });
+
+    // Just sort on an arbitrary field
+    const sorter = (x, y) => x.kind > y.kind;
+
+    assert.deepEqual(data.workerPoolErrors.sort(sorter), [
+      {
+        description: "huh",
+        extra: {},
+        kind: "another-error",
+        title: "And Error about another something",
+        workerPoolId: "foobar/baz",
+      }, {
+        description: "WHO KNOWS",
+        extra: {
+          foo: "bar-123-456",
+        },
+        kind: "something-error",
+        title: "And Error about Something",
+        workerPoolId: "foobar/baz",
+      },
+    ].sort(sorter));
+  });
+
   const googleInput = {
     providerId: 'google',
     description: 'bar',
