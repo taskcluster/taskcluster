@@ -1,7 +1,7 @@
 {
   "name": "taskcluster-lib-references",
   "private": true,
-  "version": "1.5.0",
+  "version": "14.1.0",
   "main": "src/index.js",
   "scripts": {
     "coverage": "nyc npm test",
