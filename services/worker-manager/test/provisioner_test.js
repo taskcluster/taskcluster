@@ -3,7 +3,6 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const monitorManager = require('../src/monitor');
 const {LEVELS} = require('taskcluster-lib-monitor');
-const {splitWorkerPoolId} = require('../src/util');
 
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
