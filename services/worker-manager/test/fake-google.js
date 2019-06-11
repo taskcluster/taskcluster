@@ -61,9 +61,23 @@ class FakeGoogle {
     opStub.onCall(0).returns({data: {status: 'RUNNING'}});
     opStub.onCall(1).returns({data: {status: 'DONE'}});
 
-    const instanceStub = sinon.stub();
-    instanceStub.onCall(0).returns({data: {status: 'RUNNING'}});
-    instanceStub.onCall(1).returns({data: {status: 'STOPPED'}});
+    const instanceGetStub = sinon.stub();
+    instanceGetStub.onCall(0).returns({data: {status: 'RUNNING'}});
+    instanceGetStub.onCall(1).returns({data: {status: 'STOPPED'}});
+
+    const instanceInsertStub = sinon.stub();
+    instanceInsertStub.onCall(0).returns({
+      data: {
+        targetId: '123', // This is the instanceId
+        name: 'foo',
+        zone: 'whatever/a',
+      },
+    });
+    const googleError = new Error('something');
+    googleError.errors = [
+      {message: 'something went wrong'},
+    ];
+    instanceInsertStub.onCall(1).throws(googleError);
 
     return {
       regions: {
@@ -74,14 +88,8 @@ class FakeGoogle {
         }),
       },
       instances: {
-        insert: async () => ({
-          data: {
-            targetId: '123', // This is the instanceId
-            name: 'foo',
-            zone: 'whatever/a',
-          },
-        }),
-        get: async () => instanceStub(),
+        insert: async () => instanceInsertStub(),
+        get: async () => instanceGetStub(),
         delete: async () => {},
       },
       zoneOperations: {
