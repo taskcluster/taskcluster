@@ -12,7 +12,11 @@ import Search from '../../../components/Search';
 import Button from '../../../components/Button';
 
 @hot(module)
-@graphql(workerPoolsQuery)
+@graphql(workerPoolsQuery, {
+  options: () => ({
+    fetchPolicy: 'network-only', // so that it refreshes view after editing/creating
+  }),
+})
 @withStyles(theme => ({
   createIcon: {
     ...theme.mixins.successIcon,
