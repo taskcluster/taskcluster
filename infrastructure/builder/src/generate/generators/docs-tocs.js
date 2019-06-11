@@ -1,7 +1,7 @@
 const { promisify } = require('util');
 const md = require('md-directory');
 const { join } = require('path');
-const { REPO_ROOT, writeJSON } = require('../util');
+const { REPO_ROOT, writeRepoJSON } = require('../../utils');
 
 const mdParseDir = promisify(md.parseDir);
 
@@ -173,6 +173,6 @@ exports.tasks = [{
       people,
     };
 
-    writeJSON('generated/docs-table-of-contents.json', docsToc);
+    writeRepoJSON('generated/docs-table-of-contents.json', docsToc);
   },
 }];

@@ -4,7 +4,7 @@ const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const References = require('taskcluster-lib-references');
 const exec = util.promisify(require('child_process').execFile);
-const {REPO_ROOT, writeJSON, services} = require('../util');
+const {REPO_ROOT, writeRepoJSON, listServices} = require('../../utils');
 
 /**
  * This file defines a few tasks that call generateReferences for all services,
@@ -12,7 +12,7 @@ const {REPO_ROOT, writeJSON, services} = require('../util');
  */
 
 // this can't run writeDocs without 'yarn build', so ignore it for now.
-const SERVICES = services().filter(service => service !== 'web-server');
+const SERVICES = listServices().filter(service => service !== 'web-server');
 
 const tempDir = path.join(REPO_ROOT, 'temp');
 const genDir = path.join(tempDir, 'generated');
@@ -82,7 +82,7 @@ exports.tasks.push({
       }
     });
 
-    await writeJSON('generated/references.json', serializable);
+    await writeRepoJSON('generated/references.json', serializable);
 
     return {
       'target-references': true,

@@ -1,7 +1,7 @@
 const path = require('path');
-const {services, readYAML, writeFile} = require('../util');
+const {listServices, readRepoYAML, writeRepoFile} = require('../../utils');
 
-const SERVICES = services();
+const SERVICES = listServices();
 
 exports.tasks = [];
 
@@ -15,7 +15,7 @@ SERVICES.forEach(name => {
       `procs-${name}`,
     ],
     run: async (requirements, utils) => {
-      const procs = await readYAML(path.join('services', name, 'procs.yml'));
+      const procs = await readRepoYAML(path.join('services', name, 'procs.yml'));
 
       const res = ['# GENERATED FILE from `yarn generate`! To update, change procs.yml and regenerate.\n'];
 
@@ -23,7 +23,7 @@ SERVICES.forEach(name => {
         res.push(`${proc}: cd services/${name} && ${command}`);
       });
 
-      await writeFile(path.join('services', name, 'Procfile'), res.join('\n'));
+      await writeRepoFile(path.join('services', name, 'Procfile'), res.join('\n'));
 
       return {
         [`procs-${name}`]: procs,

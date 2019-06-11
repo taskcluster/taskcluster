@@ -12,6 +12,7 @@ const appRootDir = require('app-root-dir');
 const {
   gitClone,
   gitIsDirty,
+  gitDescribe,
   dockerRun,
   dockerPull,
   dockerImages,
@@ -21,7 +22,7 @@ const {
   ensureTask,
   listServices,
   dockerPush,
-} = require('./utils');
+} = require('../utils');
 
 /**
  * The "monoimage" is a single docker image containing all tasks.  This build process goes
@@ -35,7 +36,7 @@ const {
  *  All of this is done using a "hooks" approach to allow segmenting the various oddball bits of
  *  this process by theme.
  */
-const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
+const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
   const packageJson = JSON.parse(fs.readFileSync(path.join(appRootDir.get(), 'package.json')));
   const nodeVersion = packageJson.engines.node;
   const workDir = path.join(baseDir, 'monoimage');
@@ -62,11 +63,10 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
   const hooks = [];
   hooks.push({
     name: 'Set taskcluster-version',
-    requires: ['monorepo-exact-source'],
+    requires: ['monorepo-git-descr'],
     build: async (requirements, utils) => {
-      // let the services learn their git version
-      const revision = requirements['monorepo-exact-source'].split('#')[1];
-      fs.writeFileSync(path.join(appDir, 'taskcluster-version'), revision);
+      // let the services know what version they are running
+      fs.writeFileSync(path.join(appDir, 'taskcluster-version'), requirements['monorepo-git-descr']);
     },
   });
 
@@ -155,9 +155,13 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
 
   ensureTask(tasks, {
     title: 'Clone Monorepo from Working Copy',
+    requires: [
+      'build-can-start', // (used to delay building in `yarn release`)
+    ],
     provides: [
       'monorepo-dir', // full path of the repository
       'monorepo-exact-source', // exact source URL for the repository
+      'monorepo-git-descr', // `git describe --tag --always` output
       'monorepo-stamp',
     ],
     locks: ['git'],
@@ -189,9 +193,15 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
       const stamp = new Stamp({step: 'repo-clone', version: 1},
         `${repoUrl}#${exactRev}`);
 
+      const {gitDescription} = await gitDescribe({
+        dir: repoDir,
+        utils,
+      });
+
       const provides = {
         'monorepo-dir': repoDir,
         'monorepo-exact-source': `${repoUrl}#${exactRev}`,
+        'monorepo-git-descr': gitDescription,
         'monorepo-stamp': stamp,
       };
 
@@ -295,7 +305,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
   ensureTask(tasks, {
     title: `Build Monoimage`,
     requires: [
-      'monoimage-stamp',
+      'monorepo-git-descr',
       'monoimage-built-app-dir',
       `docker-image-${nodeAlpineImage}`,
     ],
@@ -307,16 +317,18 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
     run: async (requirements, utils) => {
 
       // find the requirements ending in '-stamp' that we should depend on
-      const stamp = new Stamp({step: 'build-image', version: 1},
-        {nodeAlpineImage},
-        requirements['monoimage-stamp']);
-      const tag = `${cfg.docker.repositoryPrefix}monoimage:SVC-${stamp.hash()}`;
+      const tag = `taskcluster/taskcluster:${requirements['monorepo-git-descr']}`;
 
       utils.step({title: 'Check for Existing Images'});
 
       const imageLocal = (await dockerImages({baseDir}))
         .some(image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1);
       const imageOnRegistry = await dockerRegistryCheck({tag});
+
+      if (imageOnRegistry && cmdOptions.noCache) {
+        throw new Error(
+          `Image ${tag} already exists on the registry, but --no-cache was given.`);
+      }
 
       const provides = {
         'monoimage-docker-image': tag,

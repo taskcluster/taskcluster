@@ -7,4 +7,4 @@ const main = async (options) => {
   await taskgraph.run();
 };
 
-module.exports = main;
+module.exports = {main};

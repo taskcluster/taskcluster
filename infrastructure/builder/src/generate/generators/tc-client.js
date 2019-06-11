@@ -1,5 +1,5 @@
 const stringify = require('json-stable-stringify');
-const {writeFile} = require('../util');
+const {writeRepoFile} = require('../../utils');
 
 exports.tasks = [{
   title: 'Generate Taskcluster-Client',
@@ -8,7 +8,7 @@ exports.tasks = [{
   run: async (requirements, utils) => {
     const apis = requirements['apis'];
 
-    await writeFile('clients/client/src/apis.js',
+    await writeRepoFile('clients/client/src/apis.js',
       '/* eslint-disable */\nmodule.exports = ' + stringify(apis, {space: 2}) + ';');
   },
 }];
