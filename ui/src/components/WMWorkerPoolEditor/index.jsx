@@ -10,6 +10,7 @@ import Switch from '@material-ui/core/Switch';
 import MenuItem from '@material-ui/core/MenuItem';
 import { withStyles } from '@material-ui/core';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
+import DeleteIcon from 'mdi-react/DeleteIcon';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import List from '../../views/Documentation/components/List';
 import Button from '../Button';
@@ -19,15 +20,24 @@ import ErrorPanel from '../ErrorPanel';
 import { joinWorkerPoolId } from '../../utils/workerPool';
 import formatError from '../../utils/formatError';
 import { PROVIDER_CONFIGS, PROVIDERS } from '../../utils/constants';
+import SpeedDialAction from '../SpeedDialAction';
+import SpeedDial from '../SpeedDial';
 
 @withRouter
 @withStyles(theme => ({
-  successIcon: {
+  saveIcon: {
     ...theme.mixins.successIcon,
+  },
+  deleteIcon: {
+    ...theme.mixins.errorIcon,
   },
   createIconSpan: {
     ...theme.mixins.fab,
-    ...theme.mixins.actionButton,
+  },
+  saveIconSpan: {
+    position: 'fixed',
+    bottom: theme.spacing.double,
+    right: theme.spacing.unit * 11,
   },
   dropdown: {
     minWidth: 200,
@@ -143,6 +153,8 @@ export default class WMWorkerPoolEditor extends Component {
       this.setState({ error: formatError(error), actionLoading: false });
     }
   };
+
+  handleOnDeleteClick = () => {};
 
   render() {
     const { classes, allowEditWorkerPoolId } = this.props;
@@ -267,15 +279,33 @@ export default class WMWorkerPoolEditor extends Component {
           </ListItem>
 
           <Button
-            spanProps={{ className: classes.createIconSpan }}
+            spanProps={{
+              className: allowEditWorkerPoolId
+                ? classes.createIconSpan
+                : classes.saveIconSpan,
+            }}
             disabled={invalidProviderConfig || actionLoading}
             requiresAuth
             tooltipProps={{ title: 'Save Worker Pool' }}
             onClick={this.handleOnSaveClick}
-            classes={{ root: classes.successIcon }}
+            classes={{ root: classes.saveIcon }}
             variant="round">
             <ContentSaveIcon />
           </Button>
+
+          {!allowEditWorkerPoolId && (
+            <SpeedDial>
+              <SpeedDialAction
+                requiresAuth
+                tooltipOpen
+                icon={<DeleteIcon />}
+                onClick={this.handleOnDeleteClick}
+                tooltipTitle="Delete"
+                className={classes.deleteIcon}
+                disabled={actionLoading}
+              />
+            </SpeedDial>
+          )}
         </List>
       </Fragment>
     );
