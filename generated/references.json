@@ -100,6 +100,98 @@
   },
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/worker-pool-error.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "A complete worker pool error definition.\n",
+      "properties": {
+        "description": {
+          "description": "A longer description of what occured in the error.",
+          "maxLength": 10240,
+          "title": "Description",
+          "type": "string"
+        },
+        "errorId": {
+          "description": "An arbitary unique identifier for this error",
+          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+          "title": "Error ID",
+          "type": "string"
+        },
+        "extra": {
+          "additionalProperties": true,
+          "description": "Any extra structured information about this error",
+          "title": "Extra",
+          "type": "object"
+        },
+        "kind": {
+          "description": "A general machine-readable way to identify this sort of error.",
+          "maxLength": 128,
+          "pattern": "[-a-z0-9]+",
+          "title": "Kind",
+          "type": "string"
+        },
+        "reported": {
+          "description": "Date and time when this error was reported",
+          "format": "date-time",
+          "title": "Reported",
+          "type": "string"
+        },
+        "title": {
+          "description": "A human-readable version of `kind`.",
+          "maxLength": 128,
+          "title": "Title",
+          "type": "string"
+        },
+        "workerPoolId": {
+          "$ref": "worker-pool-full.json#/properties/workerPoolId"
+        }
+      },
+      "required": [
+        "workerPoolId",
+        "errorId",
+        "reported",
+        "kind",
+        "title",
+        "description",
+        "extra"
+      ],
+      "title": "Worker Pool Error",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/worker-pool-error.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/worker-pool-error-list.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "A list of worker pool errors",
+      "properties": {
+        "continuationToken": {
+          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of worker-types in the worker-manager.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called `listWorkerPools` with `continuationToken`\nuntil you get a result without a `continuationToken`.\n",
+          "title": "Continuation Token",
+          "type": "string"
+        },
+        "workerPoolErrors": {
+          "description": "List of worker pool errors",
+          "items": {
+            "$ref": "worker-pool-error.json#"
+          },
+          "title": "Worker Pool Errors",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "workerPoolErrors"
+      ],
+      "title": "Worker Pool Error List",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/worker-pool-error-list.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/temp-creds-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -8091,6 +8183,23 @@
           "route": "/worker-pools",
           "stability": "experimental",
           "title": "List All Worker Pools",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId"
+          ],
+          "description": "Get the list of worker pool errors.",
+          "method": "get",
+          "name": "listWorkerPoolErrors",
+          "output": "v1/worker-pool-error-list.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/worker-pool-errors/<workerPoolId>",
+          "stability": "experimental",
+          "title": "List Worker Pool Errors",
           "type": "function"
         },
         {

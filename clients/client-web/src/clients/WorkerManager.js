@@ -15,6 +15,7 @@ export default class WorkerManager extends Client {
     this.updateWorkerPool.entry = {"args":["workerPoolId"],"input":true,"method":"post","name":"updateWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":{"AllOf":["worker-manager:update-worker-type:<workerPoolId>","worker-manager:provider:<providerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.workerPool.entry = {"args":["workerPoolId"],"method":"get","name":"workerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkerPools.entry = {"args":[],"method":"get","name":"listWorkerPools","output":true,"query":["continuationToken","limit"],"route":"/worker-pools","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.listWorkerPoolErrors.entry = {"args":["workerPoolId"],"method":"get","name":"listWorkerPoolErrors","output":true,"query":["continuationToken","limit"],"route":"/worker-pool-errors/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.credentialsGoogle.entry = {"args":["workerPoolId"],"input":true,"method":"post","name":"credentialsGoogle","output":true,"query":[],"route":"/credentials/google/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
@@ -62,6 +63,14 @@ export default class WorkerManager extends Client {
     this.validate(this.listWorkerPools.entry, args);
 
     return this.request(this.listWorkerPools.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Get the list of worker pool errors.
+  /* eslint-enable max-len */
+  listWorkerPoolErrors(...args) {
+    this.validate(this.listWorkerPoolErrors.entry, args);
+
+    return this.request(this.listWorkerPoolErrors.entry, args);
   }
   /* eslint-disable max-len */
   // Get Taskcluster credentials for a worker given an Instance Identity Token
