@@ -25,5 +25,8 @@ module.exports = {
     createWorkerPool(parent, { workerPoolId, payload }, { clients} ) {
       return clients.workerManager.createWorkerPool(workerPoolId, payload);
     },
+    updateWorkerPool(parent, { workerPoolId, payload }, { clients} ) {
+      return clients.workerManager.updateWorkerPool(workerPoolId, payload);
+    },
   },
 };
