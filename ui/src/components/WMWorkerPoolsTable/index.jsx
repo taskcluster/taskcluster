@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core';
+import classNames from 'classnames';
 import { arrayOf, string } from 'prop-types';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
@@ -8,6 +9,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import IconButton from '@material-ui/core/IconButton';
 import LinkIcon from 'mdi-react/LinkIcon';
 import PencilIcon from 'mdi-react/PencilIcon';
+import DeleteIcon from 'mdi-react/DeleteIcon';
 import { withRouter } from 'react-router-dom';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case';
@@ -20,10 +22,13 @@ import TableCellListItem from '../TableCellListItem';
 
 @withRouter
 @withStyles(theme => ({
-  editButton: {
+  button: {
     marginLeft: -theme.spacing.double,
     marginRight: theme.spacing.unit,
     borderRadius: 4,
+  },
+  deleteButton: {
+    ...theme.mixins.errorIcon,
   },
 }))
 export default class WorkerManagerWorkerPoolsTable extends Component {
@@ -83,6 +88,8 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     });
   };
 
+  handleDeleteClick = () => {};
+
   renderRow = workerPool => {
     const {
       match: { path },
@@ -94,7 +101,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       <TableRow key={workerPool.workerPoolId}>
         <TableCell>
           <IconButton
-            className={classes.editButton}
+            className={classes.button}
             name={`${workerPool.workerPoolId}`}
             onClick={this.handleEditClick}>
             <PencilIcon size={iconSize} />
@@ -135,6 +142,15 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
             <LinkIcon size={iconSize} />
           </TableCellListItem>
         </TableCell>
+
+        <TableCell>
+          <IconButton
+            className={classNames(classes.button, classes.deleteButton)}
+            name={`${workerPool.workerPoolId}`}
+            onClick={this.handleDeleteClick}>
+            <DeleteIcon size={iconSize} />
+          </IconButton>
+        </TableCell>
       </TableRow>
     );
   };
@@ -158,6 +174,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           'Description',
           'Pending Tasks',
           'Provider',
+          '',
         ]}
         sortByHeader={sortBy}
         sortDirection={sortDirection}
