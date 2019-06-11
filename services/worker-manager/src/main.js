@@ -142,11 +142,12 @@ let load = loader({
   },
 
   api: {
-    requires: ['cfg', 'schemaset', 'monitor', 'WorkerPool', 'providers', 'publisher'],
-    setup: async ({cfg, schemaset, monitor, WorkerPool, providers, publisher}) => builder.build({
+    requires: ['cfg', 'schemaset', 'monitor', 'WorkerPool', 'WorkerPoolError', 'providers', 'publisher'],
+    setup: async ({cfg, schemaset, monitor, WorkerPool, WorkerPoolError, providers, publisher}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {
         WorkerPool,
+        WorkerPoolError,
         providers,
         publisher,
       },

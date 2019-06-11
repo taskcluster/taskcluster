@@ -3,7 +3,6 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const monitorManager = require('../src/monitor');
 const {LEVELS} = require('taskcluster-lib-monitor');
-const {splitWorkerPoolId} = require('../src/util');
 
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
@@ -19,8 +18,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       return testing.runWithFakeTime(async function() {
         await Promise.all(workerPools.map(async wt => {
           await helper.workerManager.createWorkerPool(wt.workerPoolId, wt.input);
-          const {provisionerId, workerPool} = splitWorkerPoolId(wt.workerPoolId);
-          helper.queue.setPending(provisionerId, workerPool, wt.pending);
         }));
 
         await helper.initiateProvisioner();
@@ -58,7 +55,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     test('single worker pool', testCase([
       {
         workerPoolId: 'pp/ee',
-        pending: 1,
         input: {
           providerId: 'testing1',
           description: 'bar',
@@ -72,7 +68,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     test('multiple worker pools, same provider', testCase([
       {
         workerPoolId: 'pp/ee',
-        pending: 1,
         input: {
           providerId: 'testing1',
           description: 'bar',
@@ -83,7 +78,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       },
       {
         workerPoolId: 'pp/ee2',
-        pending: 100,
         input: {
           providerId: 'testing1',
           description: 'bar',
@@ -97,7 +91,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     test('multiple worker pools, different provider', testCase([
       {
         workerPoolId: 'pp/ee',
-        pending: 1,
         input: {
           providerId: 'testing1',
           description: 'bar',
@@ -108,7 +101,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       },
       {
         workerPoolId: 'pp/ee2',
-        pending: 100,
         input: {
           providerId: 'testing2',
           description: 'bar',
@@ -304,6 +296,94 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
           Type: 'monitor.generic',
           Fields: {message: 'Worker pool pp/ww has unknown previousProviderIds entry NO-SUCH (ignoring)'},
           Severity: LEVELS.info,
+        });
+    });
+  });
+
+  suite('deprovisioning loop', function() {
+    test('create and destroy', async function() {
+      const workerPool = {
+        workerPoolId: 'pp/ee',
+        input: {
+          providerId: 'testing1',
+          description: 'bar',
+          config: {},
+          owner: 'example@example.com',
+          emailOnError: false,
+        },
+      };
+      await helper.workerManager.createWorkerPool(workerPool.workerPoolId, workerPool.input);
+      const provisioner = await helper.load('provisioner');
+      await provisioner.provision();
+      assert.deepEqual(
+        monitorManager.messages.find(
+          msg => msg.Type === 'test-provision' && msg.Fields.workerPoolId === workerPool.workerPoolId), {
+          Logger: `taskcluster.worker-manager.provider.${workerPool.input.providerId}`,
+          Type: 'test-provision',
+          Fields: {workerPoolId: workerPool.workerPoolId},
+          Severity: LEVELS.notice,
+        });
+
+      await monitorManager.reset(); // So we can assert there is no provisioning message this time
+      workerPool.input.providerId = 'null-provider';
+      await helper.workerManager.updateWorkerPool(workerPool.workerPoolId, workerPool.input);
+      await provisioner.provision();
+
+      assert(!monitorManager.messages.find(msg => msg.Type === 'test-provision'));
+      assert.deepEqual(
+        monitorManager.messages.find(
+          msg => msg.Type === 'test-deprovision' && msg.Fields.workerPoolId === workerPool.workerPoolId), {
+          Logger: 'taskcluster.worker-manager.provider.testing1', // This is the old providerId
+          Type: 'test-deprovision',
+          Fields: {workerPoolId: workerPool.workerPoolId},
+          Severity: LEVELS.notice,
+        });
+    });
+
+    test('create and change', async function() {
+      const workerPool = {
+        workerPoolId: 'pp/ee',
+        input: {
+          providerId: 'testing1',
+          description: 'bar',
+          config: {},
+          owner: 'example@example.com',
+          emailOnError: false,
+        },
+      };
+      await helper.workerManager.createWorkerPool(workerPool.workerPoolId, workerPool.input);
+      const provisioner = await helper.load('provisioner');
+      await provisioner.provision();
+      assert.deepEqual(
+        monitorManager.messages.find(
+          msg => msg.Type === 'test-provision' && msg.Fields.workerPoolId === workerPool.workerPoolId), {
+          Logger: `taskcluster.worker-manager.provider.${workerPool.input.providerId}`,
+          Type: 'test-provision',
+          Fields: {workerPoolId: workerPool.workerPoolId},
+          Severity: LEVELS.notice,
+        });
+
+      await monitorManager.reset(); // So we can assert there is no provisioning message this time
+      workerPool.input.providerId = 'testing2';
+      await helper.workerManager.updateWorkerPool(workerPool.workerPoolId, workerPool.input);
+      await provisioner.provision();
+
+      assert(!monitorManager.messages.find(msg => msg.Type === 'test-provision' && msg.Logger.endsWith('testing1')));
+      assert.deepEqual(
+        monitorManager.messages.find(
+          msg => msg.Type === 'test-deprovision' && msg.Fields.workerPoolId === workerPool.workerPoolId), {
+          Logger: 'taskcluster.worker-manager.provider.testing1', // This is the old providerId
+          Type: 'test-deprovision',
+          Fields: {workerPoolId: workerPool.workerPoolId},
+          Severity: LEVELS.notice,
+        });
+      assert.deepEqual(
+        monitorManager.messages.find(
+          msg => msg.Type === 'test-provision' && msg.Fields.workerPoolId === workerPool.workerPoolId), {
+          Logger: `taskcluster.worker-manager.provider.${workerPool.input.providerId}`,
+          Type: 'test-provision',
+          Fields: {workerPoolId: workerPool.workerPoolId},
+          Severity: LEVELS.notice,
         });
     });
   });

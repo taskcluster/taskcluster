@@ -22,6 +22,10 @@ class TestingProvider extends Provider {
     this.monitor.notice('test-provision', {workerPoolId: workerPool.workerPoolId});
   }
 
+  async deprovision({workerPool}) {
+    this.monitor.notice('test-deprovision', {workerPoolId: workerPool.workerPoolId});
+  }
+
   async scanPrepare() {
     this.monitor.notice('scan-prepare', {});
   }

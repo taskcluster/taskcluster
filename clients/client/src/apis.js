@@ -3830,6 +3830,23 @@ module.exports = {
           "args": [
             "workerPoolId"
           ],
+          "description": "Get the list of worker pool errors.",
+          "method": "get",
+          "name": "listWorkerPoolErrors",
+          "output": "v1/worker-pool-error-list.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/worker-pool-errors/<workerPoolId>",
+          "stability": "experimental",
+          "title": "List Worker Pool Errors",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId"
+          ],
           "description": "Get Taskcluster credentials for a worker given an Instance Identity Token",
           "input": "v1/credentials-google-request.json#",
           "method": "post",

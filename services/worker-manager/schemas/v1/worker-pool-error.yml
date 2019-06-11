@@ -1,0 +1,47 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Worker Pool Error
+description: |
+  A complete worker pool error definition.
+type: object
+properties:
+  workerPoolId: {$ref: "worker-pool-full.json#/properties/workerPoolId"}
+  errorId:
+    title: Error ID
+    type: string
+    pattern: {$const: slugid-pattern}
+    description: An arbitary unique identifier for this error
+  reported:
+    title: Reported
+    description: Date and time when this error was reported
+    type:                   string
+    format:                 date-time
+  kind:
+    title: Kind
+    description: A general machine-readable way to identify this sort of error.
+    type:                   string
+    maxLength:              128
+    pattern:                '[-a-z0-9]+'
+  title:
+    title: Title
+    description: A human-readable version of `kind`.
+    type:                   string
+    maxLength:              128
+  description:
+    title: Description
+    description: A longer description of what occured in the error.
+    type:                   string
+    maxLength:              10240
+  extra:
+    title: Extra
+    description: Any extra structured information about this error
+    type: object
+    additionalProperties: true
+additionalProperties: false
+required:
+  - workerPoolId
+  - errorId
+  - reported
+  - kind
+  - title
+  - description
+  - extra

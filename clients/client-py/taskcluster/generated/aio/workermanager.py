@@ -83,6 +83,17 @@ class WorkerManager(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["listWorkerPools"], *args, **kwargs)
 
+    async def listWorkerPoolErrors(self, *args, **kwargs):
+        """
+        List Worker Pool Errors
+
+        Get the list of worker pool errors.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["listWorkerPoolErrors"], *args, **kwargs)
+
     async def credentialsGoogle(self, *args, **kwargs):
         """
         Google Credentials
@@ -111,6 +122,15 @@ class WorkerManager(AsyncBaseClient):
             'name': 'credentialsGoogle',
             'output': 'v1/temp-creds-response.json#',
             'route': '/credentials/google/<workerPoolId>',
+            'stability': 'experimental',
+        },
+        "listWorkerPoolErrors": {
+            'args': ['workerPoolId'],
+            'method': 'get',
+            'name': 'listWorkerPoolErrors',
+            'output': 'v1/worker-pool-error-list.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/worker-pool-errors/<workerPoolId>',
             'stability': 'experimental',
         },
         "listWorkerPools": {
