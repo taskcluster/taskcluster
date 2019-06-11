@@ -62,6 +62,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     });
   });
 
+  test('de-provisioning loop', async function() {
+    // simulate previous provisionig and deleting the workerpool
+    await workerPool.modify(wp => {
+      wp.providerId = 'null-provider';
+      wp.previousProviderIds = ['google'];
+      wp.providerData.google = {};
+      return wp;
+    });
+    await provider.deprovision({workerPool});
+    assert(!workerPool.previousProviderIds.includes('google'));
+    assert(!workerPool.providerData.google);
+  });
+
   test('worker-scan loop', async function() {
     await provider.provision({workerPool});
     const worker = await helper.Worker.load({
