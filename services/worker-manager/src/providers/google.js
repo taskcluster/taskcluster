@@ -105,7 +105,7 @@ class GoogleProvider extends Provider {
       })).data,
       compare: () => true, // We do not modify this resource
       modify: () => {}, // Not needed due to no modifications
-      set: async () => await this.iam.projects.serviceAccounts.create({
+      set: async () => (await this.iam.projects.serviceAccounts.create({
         name: `projects/${this.project}`,
         accountId,
         requestBody: {
@@ -114,7 +114,7 @@ class GoogleProvider extends Provider {
             description: 'A service account shared by all Taskcluster workers.',
           },
         },
-      }),
+      })).data,
     });
     this.workerAccountId = serviceAccount.uniqueId;
 

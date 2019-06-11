@@ -19,13 +19,16 @@ class FakeOAuth2 {
     if (!idToken || !audience) {
       throw new Error('Must provide both idToken and audience');
     }
+    const sub = idToken !== 'wrongSub' ? WORKER_SERVICE_ACCOUNT_ID : 'bad';
+    const project_id = idToken !== 'wrongProject' ? this.project : 'bad';
+    const instance_id = idToken !== 'wrongId' ? 'abc123' : 'bad';
     return {
       payload: {
+        sub,
         google: {
           compute_engine: {
-            project_id: this.project,
-            sub: WORKER_SERVICE_ACCOUNT_ID,
-            instance_id: 'abc123',
+            project_id,
+            instance_id,
           },
         },
       },
