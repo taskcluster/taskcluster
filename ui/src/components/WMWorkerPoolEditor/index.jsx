@@ -19,6 +19,7 @@ import { WorkerManagerWorkerPoolSummary } from '../../utils/prop-types';
 import ErrorPanel from '../ErrorPanel';
 import {
   joinWorkerPoolId,
+  splitWorkerPoolId,
   isWorkerPoolIdSecondHalfValid,
 } from '../../utils/workerPool';
 import formatError from '../../utils/formatError';
@@ -78,8 +79,12 @@ export default class WMWorkerPoolEditor extends Component {
 
   state = {
     workerPool: {
-      workerPoolId1: this.props.workerPool.workerPoolId1,
-      workerPoolId2: this.props.workerPool.workerPoolId2,
+      workerPoolId1: this.props.allowEditWorkerPoolId
+        ? this.props.workerPool.workerPoolId1
+        : splitWorkerPoolId(this.props.workerPool.workerPoolId).provisionerId,
+      workerPoolId2: this.props.allowEditWorkerPoolId
+        ? this.props.workerPool.workerPoolId2
+        : splitWorkerPoolId(this.props.workerPool.workerPoolId).workerType,
       description: this.props.workerPool.description,
       owner: this.props.workerPool.owner,
       emailOnError: this.props.workerPool.emailOnError,

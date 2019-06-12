@@ -1,7 +1,5 @@
 type WorkerManagerWorkerPoolSummary {
     workerPoolId: String!
-    workerPoolId1: String
-    workerPoolId2: String
     description: String
     owner: String!
     providerId: String!

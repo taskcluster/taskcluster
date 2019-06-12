@@ -16,15 +16,9 @@ module.exports = ({ workerManager }) => {
 
   const WorkerPool = new DataLoader(queries =>
     Promise.all(
-      queries.map(async ({ workerPoolId }) => {
-        const workerPool = await workerManager.workerPool(workerPoolId);
-
-        const { provisionerId, workerType } = splitWorkerPoolId(workerPool.workerPoolId);
-        workerPool.workerPoolId1 = provisionerId;
-        workerPool.workerPoolId2 = workerType;
-
-        return workerPool;
-      })
+      queries.map(async ({ workerPoolId }) =>
+        workerManager.workerPool(workerPoolId)
+      )
     )
   );
 
