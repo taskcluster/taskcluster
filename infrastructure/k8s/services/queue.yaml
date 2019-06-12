@@ -4,7 +4,7 @@ secrets:
   aws_access_key_id: ".Values.queueAwsAccessKeyId"
   aws_secret_access_key: ".Values.queueAwsSecretAccessKey"
   azure_account_id: ".Values.tfAzureAccount"
-  azure_account_key: ".Values.azureAccountKey"
+  azure_account_key: ".Values.queueAzureAccountKey"
   blob_artifact_region: ".Values.awsRegion"
   force_ssl: "false"
   monitoring_enable: "true"
