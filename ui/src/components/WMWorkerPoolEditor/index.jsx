@@ -19,7 +19,7 @@ import { WorkerManagerWorkerPoolSummary } from '../../utils/prop-types';
 import ErrorPanel from '../ErrorPanel';
 import { joinWorkerPoolId } from '../../utils/workerPool';
 import formatError from '../../utils/formatError';
-import { PROVIDER_CONFIGS, PROVIDERS } from '../../utils/constants';
+import { PROVIDER_CONFIGS, PROVIDERS, GCP } from '../../utils/constants';
 import SpeedDialAction from '../SpeedDialAction';
 import SpeedDial from '../SpeedDial';
 
@@ -33,11 +33,13 @@ import SpeedDial from '../SpeedDial';
   },
   createIconSpan: {
     ...theme.mixins.fab,
+    ...theme.mixins.actionButton,
   },
   saveIconSpan: {
     position: 'fixed',
     bottom: theme.spacing.double,
     right: theme.spacing.unit * 11,
+    ...theme.mixins.actionButton,
   },
   dropdown: {
     minWidth: 200,
@@ -60,6 +62,7 @@ import SpeedDial from '../SpeedDial';
 export default class WMWorkerPoolEditor extends Component {
   static defaultProps = {
     allowEditWorkerPoolId: false,
+    providerType: GCP,
   };
 
   static propTypes = {
@@ -67,6 +70,7 @@ export default class WMWorkerPoolEditor extends Component {
     saveRequest: func.isRequired,
     providerType: string.isRequired,
     allowEditWorkerPoolId: bool,
+    deleteRequest: func,
   };
 
   state = {
@@ -135,15 +139,16 @@ export default class WMWorkerPoolEditor extends Component {
     }
   };
 
-  handleOnSaveClick = async () => {
+  handleOnClick = async event => {
     const { workerPoolId1, workerPoolId2, ...payload } = this.state.workerPool;
+    const { name: requestName } = event.currentTarget;
 
     payload.providerId = PROVIDERS.get(this.state.providerType);
 
     this.setState({ error: null, actionLoading: true });
 
     try {
-      await this.props.saveRequest({
+      await this.props[requestName]({
         workerPoolId: joinWorkerPoolId(workerPoolId1, workerPoolId2),
         payload,
       });
@@ -153,8 +158,6 @@ export default class WMWorkerPoolEditor extends Component {
       this.setState({ error: formatError(error), actionLoading: false });
     }
   };
-
-  handleOnDeleteClick = () => {};
 
   render() {
     const { classes, allowEditWorkerPoolId } = this.props;
@@ -284,10 +287,11 @@ export default class WMWorkerPoolEditor extends Component {
                 ? classes.createIconSpan
                 : classes.saveIconSpan,
             }}
+            name="saveRequest"
             disabled={invalidProviderConfig || actionLoading}
             requiresAuth
             tooltipProps={{ title: 'Save Worker Pool' }}
-            onClick={this.handleOnSaveClick}
+            onClick={this.handleOnClick}
             classes={{ root: classes.saveIcon }}
             variant="round">
             <ContentSaveIcon />
@@ -296,10 +300,11 @@ export default class WMWorkerPoolEditor extends Component {
           {!allowEditWorkerPoolId && (
             <SpeedDial>
               <SpeedDialAction
+                name="deleteRequest"
                 requiresAuth
                 tooltipOpen
                 icon={<DeleteIcon />}
-                onClick={this.handleOnDeleteClick}
+                onClick={this.handleOnClick}
                 tooltipTitle="Delete"
                 className={classes.deleteIcon}
                 disabled={actionLoading}

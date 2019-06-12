@@ -10,6 +10,7 @@ import workerPoolQuery from './workerPool.graphql';
 import WMWorkerPoolEditor from '../../../components/WMWorkerPoolEditor';
 import { findKeyInMap } from '../../../utils/mapUtils';
 import { PROVIDER_CONFIGS, PROVIDERS, GCP } from '../../../utils/constants';
+import deleteWorkerPoolQuery from '../WMViewWorkerPools/deleteWorkerPool.graphql';
 
 @hot(module)
 @withApollo
@@ -62,9 +63,19 @@ export default class WMEditWorkerPool extends Component {
     });
   };
 
+  deleteRequest = async ({ workerPoolId, payload }) => {
+    await this.props.client.mutate({
+      mutation: deleteWorkerPoolQuery,
+      variables: {
+        workerPoolId,
+        payload,
+      },
+    });
+  };
+
   render() {
     const { isNewWorkerPool, data } = this.props;
-    const { workerPool, providerType } = this.state;
+    const { workerPool } = this.state;
 
     return (
       <Dashboard
@@ -72,7 +83,6 @@ export default class WMEditWorkerPool extends Component {
         {isNewWorkerPool ? (
           <WMWorkerPoolEditor
             workerPool={workerPool}
-            providerType={providerType}
             saveRequest={this.createWorkerPoolRequest}
             allowEditWorkerPoolId
           />
@@ -87,6 +97,7 @@ export default class WMEditWorkerPool extends Component {
                   value: data.WorkerPool.providerId,
                 })}
                 saveRequest={this.updateWorkerPoolRequest}
+                deleteRequest={this.deleteRequest}
               />
             )}
           </Fragment>
