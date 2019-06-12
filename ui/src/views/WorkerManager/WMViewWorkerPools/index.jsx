@@ -20,9 +20,6 @@ import deleteWorkerPoolQuery from './deleteWorkerPool.graphql';
   }),
 })
 @withStyles(theme => ({
-  createIcon: {
-    ...theme.mixins.successIcon,
-  },
   createIconSpan: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
@@ -83,8 +80,8 @@ export default class WorkerManagerWorkerPoolsView extends Component {
             spanProps={{ className: classes.createIconSpan }}
             tooltipProps={{ title: 'Create Worker Pool' }}
             requiresAuth
+            color="secondary"
             variant="round"
-            className={classes.createIcon}
             onClick={this.handleCreate}>
             <PlusIcon />
           </Button>

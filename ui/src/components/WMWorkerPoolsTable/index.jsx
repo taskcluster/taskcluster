@@ -32,6 +32,9 @@ import formatError from '../../utils/formatError';
   deleteButton: {
     ...theme.mixins.errorIcon,
   },
+  editButton: {
+    ...theme.mixins.secondaryIcon,
+  },
 }))
 export default class WorkerManagerWorkerPoolsTable extends Component {
   static propTypes = {
@@ -129,11 +132,14 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       <TableRow key={workerPool.workerPoolId}>
         <TableCell>
           <IconButton
-            className={classes.button}
+            className={classNames(classes.button, classes.editButton)}
             name={`${workerPool.workerPoolId}`}
             onClick={this.handleEditClick}>
             <PencilIcon size={iconSize} />
           </IconButton>
+        </TableCell>
+
+        <TableCell>
           <TableCellListItem
             button
             component={Link}
@@ -200,6 +206,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         <DataTable
           items={sortedWorkerPools}
           headers={[
+            '',
             'Worker Pool ID',
             'Owner',
             'Description',
