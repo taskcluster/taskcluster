@@ -3,7 +3,7 @@ output "azure_account" {
 }
 
 output "private_artifact_bucket" {
-  value = "${aws_s3_bucket.iprivate_artifacts}"
+  value = "${aws_s3_bucket.private_artifacts}"
 }
 
 output "private_blob_artifact_bucket" {
