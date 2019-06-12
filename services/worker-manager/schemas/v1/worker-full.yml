@@ -1,0 +1,73 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Worker Full Definition
+description: A complete worker definition.
+type: object
+properties:
+
+  workerPoolId:
+    title: Worker Pool ID
+    type: string
+    # Note that the portion after the `/` is quite severely limited in hopes it works with
+    # most cloud providers
+    pattern: '^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$'
+    description: |
+      The ID of this worker pool (of the form `providerId/workerType` for compatibility)
+
+  workerGroup:
+    title: Worker group
+    type: string
+    description: Worker group to which this worker belongs
+    minLength: {$const: identifier-min-length}
+    maxLength: {$const: identifier-max-length}
+    pattern: {$const: identifier-pattern}
+
+  workerId:
+    title: Worker ID
+    type: string
+    description: Worker ID
+    minLength: {$const: identifier-min-length}
+    maxLength: {$const: identifier-max-length}
+    pattern: {$const: identifier-pattern}
+
+  providerId:
+    title: Provider
+    type: string
+    # note that this is typically used as the workerGroup for workers,
+    # so its format should match that for workerGroup.
+    minLength: {$const: identifier-min-length}
+    maxLength: {$const: identifier-max-length}
+    pattern: {$const: identifier-pattern}
+    description: |
+      The provider responsible for managing this worker.
+
+      If this value is `"null-provider"`, then the worker pool is pending deletion
+      once all existing workers have terminated.
+
+  created:
+    title: Created
+    description: Date and time when this worker was created
+    type: string
+    format: date-time
+
+  expires:
+    title: Expires
+    description: Date and time when this worker will expire
+    type: string
+    format: date-time
+
+  state:
+    title: State
+    description: |
+      A string specifying the state this worker is in so far as worker-manager knows.
+    type: string
+    enum: ["requested", "running", "stopped"]
+
+additionalProperties: false
+required:
+  - workerPoolId
+  - workerGroup
+  - workerId
+  - providerId
+  - created
+  - expires
+  - state
