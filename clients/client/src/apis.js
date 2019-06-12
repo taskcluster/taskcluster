@@ -3847,6 +3847,23 @@ module.exports = {
           "args": [
             "workerPoolId"
           ],
+          "description": "Get the list of all the existing workers in a given worker pool.",
+          "method": "get",
+          "name": "listWorkersForWorkerPool",
+          "output": "v1/worker-list.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "workers/<workerPoolId>",
+          "stability": "experimental",
+          "title": "Workers in a Worker Pool",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId"
+          ],
           "description": "Get Taskcluster credentials for a worker given an Instance Identity Token",
           "input": "v1/credentials-google-request.json#",
           "method": "post",

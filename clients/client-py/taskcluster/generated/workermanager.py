@@ -94,6 +94,17 @@ class WorkerManager(BaseClient):
 
         return self._makeApiCall(self.funcinfo["listWorkerPoolErrors"], *args, **kwargs)
 
+    def listWorkersForWorkerPool(self, *args, **kwargs):
+        """
+        Workers in a Worker Pool
+
+        Get the list of all the existing workers in a given worker pool.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["listWorkersForWorkerPool"], *args, **kwargs)
+
     def credentialsGoogle(self, *args, **kwargs):
         """
         Google Credentials
@@ -140,6 +151,15 @@ class WorkerManager(BaseClient):
             'output': 'v1/worker-pool-list.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/worker-pools',
+            'stability': 'experimental',
+        },
+        "listWorkersForWorkerPool": {
+            'args': ['workerPoolId'],
+            'method': 'get',
+            'name': 'listWorkersForWorkerPool',
+            'output': 'v1/worker-list.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': 'workers/<workerPoolId>',
             'stability': 'experimental',
         },
         "ping": {
