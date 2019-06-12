@@ -568,4 +568,80 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     }
     throw new Error('allowed second fetch of creds');
   });
+
+  test('credentials google (but wrong project in token)', async function() {
+    const workerPoolId = 'pp/ee';
+    await helper.Worker.create({
+      workerPoolId,
+      workerGroup: 'google',
+      workerId: 'abc123', // TODO: Don't just copy-paste this from fake-google
+      providerId: 'google',
+      created: new Date(),
+      expires: taskcluster.fromNow('1 hour'),
+      state: helper.Worker.states.REQUESTED,
+      providerData: {},
+    });
+    workerPoolCompare(workerPoolId, googleInput,
+      await helper.workerManager.createWorkerPool(workerPoolId, googleInput));
+    try {
+      await helper.workerManager.credentialsGoogle(workerPoolId, {token: 'wrongProject'});
+    } catch (err) {
+      if (err.code !== 'InputError') {
+        throw err;
+      }
+      return;
+    }
+    throw new Error('allowed fetch of credentials from wrong project!');
+  });
+
+  test('credentials google (but wrong instance id in token)', async function() {
+    const workerPoolId = 'pp/ee';
+    await helper.Worker.create({
+      workerPoolId,
+      workerGroup: 'google',
+      workerId: 'abc123', // TODO: Don't just copy-paste this from fake-google
+      providerId: 'google',
+      created: new Date(),
+      expires: taskcluster.fromNow('1 hour'),
+      state: helper.Worker.states.REQUESTED,
+      providerData: {},
+    });
+    workerPoolCompare(workerPoolId, googleInput,
+      await helper.workerManager.createWorkerPool(workerPoolId, googleInput));
+    try {
+      await helper.workerManager.credentialsGoogle(workerPoolId, {token: 'wrongId'});
+    } catch (err) {
+      if (err.code !== 'InputError') {
+        throw err;
+      }
+      return;
+    }
+    throw new Error('allowed fetch of credentials from wrong id!');
+  });
+
+  test('credentials google (but wrong service account in token)', async function() {
+    const workerPoolId = 'pp/ee';
+    await helper.Worker.create({
+      workerPoolId,
+      workerGroup: 'google',
+      workerId: 'abc123', // TODO: Don't just copy-paste this from fake-google
+      providerId: 'google',
+      created: new Date(),
+      expires: taskcluster.fromNow('1 hour'),
+      state: helper.Worker.states.REQUESTED,
+      providerData: {},
+    });
+    workerPoolCompare(workerPoolId, googleInput,
+      await helper.workerManager.createWorkerPool(workerPoolId, googleInput));
+    try {
+      await helper.workerManager.credentialsGoogle(workerPoolId, {token: 'wrongSub'});
+    } catch (err) {
+      if (err.code !== 'InputError') {
+        throw err;
+      }
+      return;
+    }
+    throw new Error('allowed fetch of credentials from wrong service account!');
+  });
+
 });

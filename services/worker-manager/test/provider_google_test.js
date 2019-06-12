@@ -27,6 +27,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       rootUrl: helper.rootUrl,
       Worker: helper.Worker,
       WorkerPool: helper.WorkerPool,
+      WorkerPoolError: helper.WorkerPoolError,
     });
     workerPool = await helper.WorkerPool.create({
       workerPoolId,
@@ -60,6 +61,30 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       name: 'foo',
       zone: 'whatever/a',
     });
+  });
+
+  test('provisioning loop with failure', async function() {
+    // The fake throws an error on the second call
+    await provider.provision({workerPool});
+    await provider.provision({workerPool});
+    const errors = await helper.WorkerPoolError.scan({}, {});
+    assert.equal(errors.entries.length, 1);
+    assert.equal(errors.entries[0].description, 'something went wrong');
+    const workers = await helper.Worker.scan({}, {});
+    assert.equal(workers.entries.length, 1); // second loop should not have created one
+  });
+
+  test('de-provisioning loop', async function() {
+    // simulate previous provisionig and deleting the workerpool
+    await workerPool.modify(wp => {
+      wp.providerId = 'null-provider';
+      wp.previousProviderIds = ['google'];
+      wp.providerData.google = {};
+      return wp;
+    });
+    await provider.deprovision({workerPool});
+    assert(!workerPool.previousProviderIds.includes('google'));
+    assert(!workerPool.providerData.google);
   });
 
   test('worker-scan loop', async function() {
