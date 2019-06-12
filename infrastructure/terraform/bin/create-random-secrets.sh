@@ -3,7 +3,7 @@ set -u
 
 # will not work for > 130
 function genpw () {
-    openssl rand -base64 94 | cut -c1-"$1"
+    openssl rand -base64 94 |  tr -d '\n' | cut -c1-"$1"
 }
 
 genpw 32 > auth_azure_crypto_key
