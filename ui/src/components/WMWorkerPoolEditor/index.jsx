@@ -17,7 +17,10 @@ import Button from '../Button';
 import isWorkerTypeNameValid from '../../utils/isWorkerTypeNameValid';
 import { WorkerManagerWorkerPoolSummary } from '../../utils/prop-types';
 import ErrorPanel from '../ErrorPanel';
-import { joinWorkerPoolId } from '../../utils/workerPool';
+import {
+  joinWorkerPoolId,
+  isWorkerPoolIdSecondHalfValid,
+} from '../../utils/workerPool';
 import formatError from '../../utils/formatError';
 import { PROVIDER_CONFIGS, PROVIDERS, GCP } from '../../utils/constants';
 import SpeedDialAction from '../SpeedDialAction';
@@ -194,7 +197,7 @@ export default class WMWorkerPoolEditor extends Component {
             </Typography>
             <TextField
               name="workerPoolId2"
-              error={!isWorkerTypeNameValid(workerPool.workerPoolId2)}
+              error={!isWorkerPoolIdSecondHalfValid(workerPool.workerPoolId2)}
               onChange={this.handleInputChange}
               fullWidth
               value={workerPool.workerPoolId2}

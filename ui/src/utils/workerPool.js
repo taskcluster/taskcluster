@@ -30,3 +30,6 @@ const joinWorkerPoolId = (provisionerId, workerType) => {
 };
 
 exports.joinWorkerPoolId = joinWorkerPoolId;
+
+exports.isWorkerPoolIdSecondHalfValid = workerType =>
+  /^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$/.test(workerType);
