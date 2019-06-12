@@ -1,6 +1,6 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
-import { graphql } from 'react-apollo';
+import { withApollo, graphql } from 'react-apollo';
 import PlusIcon from 'mdi-react/PlusIcon';
 import { withStyles } from '@material-ui/core';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
@@ -10,8 +10,10 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import WorkerManagerWorkerPoolsTable from '../../../components/WMWorkerPoolsTable';
 import Search from '../../../components/Search';
 import Button from '../../../components/Button';
+import deleteWorkerPoolQuery from './deleteWorkerPool.graphql';
 
 @hot(module)
+@withApollo
 @graphql(workerPoolsQuery, {
   options: () => ({
     fetchPolicy: 'network-only', // so that it refreshes view after editing/creating
@@ -39,6 +41,17 @@ export default class WorkerManagerWorkerPoolsView extends Component {
     this.props.history.push(`${this.props.match.path}/create`);
   };
 
+  deleteRequest = async ({ workerPoolId, payload }) => {
+    await this.props.client.mutate({
+      mutation: deleteWorkerPoolQuery,
+      variables: {
+        workerPoolId,
+        payload,
+      },
+    });
+    window.location.reload();
+  };
+
   render() {
     const {
       data: { loading, error, WorkerManagerWorkerPoolSummaries },
@@ -63,6 +76,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
             <WorkerManagerWorkerPoolsTable
               searchTerm={workerPoolSearch}
               workerPools={WorkerManagerWorkerPoolSummaries}
+              deleteRequest={this.deleteRequest}
             />
           )}
           <Button

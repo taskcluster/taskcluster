@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core';
 import classNames from 'classnames';
-import { arrayOf, string } from 'prop-types';
+import { arrayOf, string, func } from 'prop-types';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography/';
@@ -19,6 +19,8 @@ import DataTable from '../DataTable';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
 import TableCellListItem from '../TableCellListItem';
+import ErrorPanel from '../ErrorPanel';
+import formatError from '../../utils/formatError';
 
 @withRouter
 @withStyles(theme => ({
@@ -35,11 +37,14 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
   static propTypes = {
     workerPools: arrayOf(WorkerManagerWorkerPoolSummary).isRequired,
     searchTerm: string,
+    deleteRequest: func.isRequired,
   };
 
   state = {
     sortBy: null,
     sortDirection: null,
+    error: null,
+    actionLoading: false,
   };
 
   sortWorkerPools = memoize(
@@ -88,13 +93,36 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     });
   };
 
-  handleDeleteClick = () => {};
+  handleDeleteClick = async ({ currentTarget: { name } }) => {
+    const workerPool = this.props.workerPools.find(
+      wp => wp.workerPoolId === name
+    );
+    const payload = {
+      providerId: workerPool.providerId,
+      description: workerPool.description,
+      config: workerPool.config,
+      owner: workerPool.owner,
+      emailOnError: workerPool.emailOnError,
+    };
+
+    this.props.history.replace('/worker-manager');
+
+    try {
+      await this.props.deleteRequest({
+        workerPoolId: workerPool.workerPoolId,
+        payload,
+      });
+    } catch (error) {
+      this.setState({ error: formatError(error), actionLoading: false });
+    }
+  };
 
   renderRow = workerPool => {
     const {
       match: { path },
       classes,
     } = this.props;
+    const { actionLoading } = this.state;
     const iconSize = 16;
 
     return (
@@ -147,7 +175,8 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           <IconButton
             className={classNames(classes.button, classes.deleteButton)}
             name={`${workerPool.workerPoolId}`}
-            onClick={this.handleDeleteClick}>
+            onClick={this.handleDeleteClick}
+            disabled={actionLoading}>
             <DeleteIcon size={iconSize} />
           </IconButton>
         </TableCell>
@@ -157,7 +186,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
 
   render() {
     const { workerPools, searchTerm } = this.props;
-    const { sortBy, sortDirection } = this.state;
+    const { sortBy, sortDirection, error } = this.state;
     const sortedWorkerPools = this.sortWorkerPools(
       workerPools,
       sortBy,
@@ -166,22 +195,25 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     );
 
     return (
-      <DataTable
-        items={sortedWorkerPools}
-        headers={[
-          'Worker Pool ID',
-          'Owner',
-          'Description',
-          'Pending Tasks',
-          'Provider',
-          '',
-        ]}
-        sortByHeader={sortBy}
-        sortDirection={sortDirection}
-        onHeaderClick={this.handleHeaderClick}
-        renderRow={this.renderRow}
-        padding="dense"
-      />
+      <Fragment>
+        {error && <ErrorPanel fixed error={error} />}
+        <DataTable
+          items={sortedWorkerPools}
+          headers={[
+            'Worker Pool ID',
+            'Owner',
+            'Description',
+            'Pending Tasks',
+            'Provider',
+            '',
+          ]}
+          sortByHeader={sortBy}
+          sortDirection={sortDirection}
+          onHeaderClick={this.handleHeaderClick}
+          renderRow={this.renderRow}
+          padding="dense"
+        />
+      </Fragment>
     );
   }
 }
