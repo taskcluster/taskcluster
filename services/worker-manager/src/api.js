@@ -248,6 +248,39 @@ builder.declare({
   return res.reply(result);
 });
 
+builder.declare({
+  method: 'get',
+  route: 'workers/:workerPoolId',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
+  name: 'listWorkersForWorkerPool',
+  title: 'Workers in a Worker Pool',
+  stability: APIBuilder.stability.experimental,
+  output: 'worker-list.yml',
+  description: [
+    'Get the list of all the existing workers in a given worker pool.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { workerPoolId, continuationToken } = req.query;
+  const limit = parseInt(req.query.limit || 100, 30);
+  const scanOptions = {
+    continuation: continuationToken,
+    limit,
+  };
+
+  const data = await this.Worker.scan({workerPoolId}, scanOptions);
+  const result = {
+    workers: data.entries.map(e => e.serializable()),
+  };
+
+  if (data.continuation) {
+    result.continuationToken = data.continuation;
+  }
+  return res.reply(result);
+});
+
 /*
  * ************** BELOW HERE LIVE PROVIDER ENDPOINTS **************
  */
