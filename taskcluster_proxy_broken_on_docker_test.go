@@ -1,4 +1,4 @@
-// +build !dockerEngine
+// +build !docker
 
 package main
 

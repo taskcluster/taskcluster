@@ -17,27 +17,31 @@ the worker implementation, and tells the worker what to execute, and which
 artifacts to upload. This page documents the payload property for
 generic-worker, on all the platforms that it is supported on.
 
-* [Windows](#generic-worker-on-windows-native-engine)
-* [macOS](#generic-worker-on-macos-native-engine)
+* [Windows](#generic-worker-on-windows-multiuser-engine)
+* [macOS](#generic-worker-on-macos-multiuser-engine)
 * [Linux (docker engine)](#generic-worker-on-linux-docker-engine)
-* [Linux (native engine)](#generic-worker-on-linux-native-engine)
+* [Linux (multiuser engine)](#generic-worker-on-linux-multiuser-engine)
 
 
-# Generic Worker on Windows (native engine)
+# Generic Worker on Windows (multiuser engine)
 
-<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/native-windows.json"></div>
+<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/windows.json"></div>
 
-# Generic Worker on macOS (native engine)
+# Generic Worker on macOS (multiuser engine)
 
-<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/native-darwin.json"></div>
+<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/posix.json"></div>
+
+# Generic Worker on macOS (simple engine)
+
+<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/posix.json"></div>
 
 # Generic Worker on Linux (docker engine)
 
-<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/docker-linux.json"></div>
+<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/docker.json"></div>
 
-# Generic Worker on Linux (native engine)
+# Generic Worker on Linux (simple engine)
 
-<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/native-linux.json"></div>
+<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/posix.json"></div>
 
 The payload comprises of a command to run, environment variables to be set
 (optionally encrypted) and a timeout for the task (`maxRunTime`).

@@ -3,15 +3,16 @@ go:
   - "1.10.8"
 
 env:
-  - "CGO_ENABLED=0 GIMME_OS=linux GIMME_ARCH=amd64 engine=dockerEngine"
-  - "CGO_ENABLED=0 GIMME_OS=linux GIMME_ARCH=386   engine=nativeEngine"
-  - "CGO_ENABLED=0 GIMME_OS=linux GIMME_ARCH=amd64 engine=nativeEngine"
-  - "CGO_ENABLED=0 GIMME_OS=linux GIMME_ARCH=arm   engine=nativeEngine"
+  - "CGO_ENABLED=0 GIMME_OS=linux GIMME_ARCH=amd64 engine=docker"
+  - "CGO_ENABLED=0 GIMME_OS=linux GIMME_ARCH=386   engine=simple"
+  - "CGO_ENABLED=0 GIMME_OS=linux GIMME_ARCH=amd64 engine=simple"
+  - "CGO_ENABLED=0 GIMME_OS=linux GIMME_ARCH=arm   engine=simple"
   # currently broken
-  # "CGO_ENABLED=0 GIMME_OS=linux   GIMME_ARCH=arm64 engine=nativeEngine"
-  - "CGO_ENABLED=0 GIMME_OS=darwin  GIMME_ARCH=amd64 engine=nativeEngine"
-  - "CGO_ENABLED=0 GIMME_OS=windows GIMME_ARCH=amd64 engine=nativeEngine"
-  - "CGO_ENABLED=0 GIMME_OS=windows GIMME_ARCH=386   engine=nativeEngine"
+  # "CGO_ENABLED=0 GIMME_OS=linux   GIMME_ARCH=arm64 engine=simple"
+  - "CGO_ENABLED=0 GIMME_OS=darwin  GIMME_ARCH=amd64 engine=simple"
+  - "CGO_ENABLED=0 GIMME_OS=darwin  GIMME_ARCH=amd64 engine=multiuser"
+  - "CGO_ENABLED=0 GIMME_OS=windows GIMME_ARCH=amd64 engine=multiuser"
+  - "CGO_ENABLED=0 GIMME_OS=windows GIMME_ARCH=386   engine=multiuser"
 
 install:
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || go get github.com/mattn/goveralls github.com/taskcluster/taskcluster-proxy github.com/taskcluster/livelog github.com/gordonklaus/ineffassign"
@@ -21,7 +22,7 @@ script:
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || go generate"
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || git status"
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || test $(git status --porcelain | wc -l) == 0"
-  - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || GORACE=history_size=7 travis_wait 45 ./gotestcover.sh nativeEngine coverage.report"
+  - "test $GIMME_OS.$GIMME_ARCH.$engine != linux.amd64.simple || GORACE=history_size=7 travis_wait 60 ./gotestcover.sh $engine coverage.report"
   - "go install -tags \"${engine}\" -ldflags \"-X main.revision=$(git rev-parse HEAD)\" -v ./..."
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || ${GOPATH}/bin/ineffassign ."
 

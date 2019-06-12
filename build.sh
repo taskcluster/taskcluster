@@ -26,7 +26,7 @@ elif [ "${GO_MAJ}" != "go${GO_MAJOR_VERSION}" ] || [ "${GO_MIN}" -lt "${MIN_GO_M
 fi
 echo "Go version ok (${GO_VERSION} >= go${GO_MAJOR_VERSION}.${MIN_GO_MINOR_VERSION})"
 TEST=false
-OUTPUT_ALL_PLATFORMS="Building just for the native platform (build.sh -a argument NOT specified)"
+OUTPUT_ALL_PLATFORMS="Building just for the multiuser platform (build.sh -a argument NOT specified)"
 OUTPUT_TEST="Test flag NOT detected (-t) as argument to build.sh script"
 ALL_PLATFORMS=false
 while getopts ":at" opt; do
@@ -59,23 +59,34 @@ function install {
 }
 
 if ${ALL_PLATFORMS}; then
-  install dockerEngine  linux    amd64
+  install docker linux amd64
 
-  install nativeEngine  windows  amd64
-  install nativeEngine  windows  386
+  install multiuser windows amd64
+  install multiuser windows 386
 
-  install nativeEngine  darwin   amd64
-  install nativeEngine  darwin   386
+  install multiuser darwin amd64
+  install multiuser darwin 386
 
-  install nativeEngine  linux    amd64
-  install nativeEngine  linux    386
-  install nativeEngine  linux    arm
-  install nativeEngine  linux    arm64
+  install simple darwin amd64
+  install simple darwin 386
+
+  install simple linux amd64
+  install simple linux 386
+  install simple linux arm
+  install simple linux arm64
 else
-  install nativeEngine  "$(go env GOHOSTOS)"  "$(go env GOHOSTARCH)"
-  if [ "$(go env GOHOSTOS)" == "linux" ]; then
-    install dockerEngine  "$(go env GOHOSTOS)"  "$(go env GOHOSTARCH)"
-  fi
+  MY_GOHOSTOS="$(go env GOHOSTOS)"
+  MY_GOHOSTARCH="$(go env GOHOSTARCH)"
+  case "${MY_GOHOSTOS}" in
+      linux) install simple    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
+             install docker    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
+             ;;
+     darwin) install simple    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
+             install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
+             ;;
+    windows) install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
+             ;;
+  esac
 fi
 
 find "${GOPATH}/bin" -name 'generic-worker*'
@@ -84,9 +95,9 @@ CGO_ENABLED=0 go get github.com/taskcluster/livelog
 
 if $TEST; then
   go get github.com/taskcluster/taskcluster-proxy
-  CGO_ENABLED=1 GORACE="history_size=7" go test -tags nativeEngine -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+  CGO_ENABLED=1 GORACE="history_size=7" /usr/bin/sudo "GW_TESTS_RUN_AS_TASK_USER=true" "TASKCLUSTER_CERTIFICATE=$TASKCLUSTER_CERTIFICATE" "TASKCLUSTER_ACCESS_TOKEN=$TASKCLUSTER_ACCESS_TOKEN" "TASKCLUSTER_CLIENT_ID=$TASKCLUSTER_CLIENT_ID" "TASKCLUSTER_ROOT_URL=$TASKCLUSTER_ROOT_URL" go test -v -tags multiuser -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
   if [ "$(go env GOHOSTOS)" == "linux" ]; then
-    CGO_ENABLED=1 GORACE="history_size=7" go test -tags dockerEngine -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+    CGO_ENABLED=1 GORACE="history_size=7" go test -v -tags docker -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
   fi
 fi
 go get golang.org/x/lint/golint

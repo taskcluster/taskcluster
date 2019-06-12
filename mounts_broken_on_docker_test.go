@@ -1,4 +1,4 @@
-// +build !dockerEngine
+// +build !docker
 
 package main
 
@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"testing"
 )
@@ -241,12 +240,7 @@ func TestCacheMoved(t *testing.T) {
 
 	// whether permission is granted to task user depends if running under windows or not
 	// and is independent of whether running as current user or not
-	granting := []string{}
-	if runtime.GOOS == "windows" {
-		granting = []string{
-			`Granting task_.* full control of '.*TestCacheMoved'`,
-		}
-	}
+	granting, _ := grantingDenying(t, "directory", t.Name())
 
 	// No cache on first pass
 	pass1 := append([]string{
@@ -254,14 +248,14 @@ func TestCacheMoved(t *testing.T) {
 		`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip \(.*\) matches required SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
-		`Creating directory .*TestCacheMoved with permissions 0700`,
-		`Extracting zip file .* to '.*TestCacheMoved'`,
+		`Creating directory .*` + t.Name() + ` with permissions 0700`,
+		`Extracting zip file .* to '.*` + t.Name() + `'`,
 	},
 		granting...,
 	)
 	pass1 = append(pass1,
-		`Successfully mounted writable directory cache '.*TestCacheMoved'`,
-		`Preserving cache: Moving ".*TestCacheMoved" to ".*"`,
+		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
+		`Preserving cache: Moving ".*`+t.Name()+`" to ".*"`,
 		`Removing cache banana-cache from cache table`,
 		`Deleting cache banana-cache file\(s\) at .*`,
 		`Could not unmount task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip due to: 'Could not persist cache "banana-cache" due to .*'`,
@@ -271,14 +265,14 @@ func TestCacheMoved(t *testing.T) {
 	pass2 := append([]string{
 		`No existing writable directory cache 'banana-cache' - creating .*`,
 		`Found existing download for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
-		`Creating directory .*TestCacheMoved with permissions 0700`,
-		`Extracting zip file .* to '.*TestCacheMoved'`,
+		`Creating directory .*` + t.Name() + ` with permissions 0700`,
+		`Extracting zip file .* to '.*` + t.Name() + `'`,
 	},
 		granting...,
 	)
 	pass2 = append(pass2,
-		`Successfully mounted writable directory cache '.*TestCacheMoved'`,
-		`Preserving cache: Moving ".*TestCacheMoved" to ".*"`,
+		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
+		`Preserving cache: Moving ".*`+t.Name()+`" to ".*"`,
 		`Removing cache banana-cache from cache table`,
 		`Deleting cache banana-cache file\(s\) at .*`,
 		`Could not unmount task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip due to: 'Could not persist cache "banana-cache" due to .*'`,
@@ -290,7 +284,7 @@ func TestCacheMoved(t *testing.T) {
 			Mounts: []MountEntry{
 				&WritableDirectoryCache{
 					CacheName: "banana-cache",
-					Directory: "TestCacheMoved",
+					Directory: t.Name(),
 					// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
 					Content: json.RawMessage(`{
 						"taskId": "LK1Rz2UtT16d-HBSqyCtuA",
@@ -305,7 +299,7 @@ func TestCacheMoved(t *testing.T) {
 			},
 			Scopes: []string{"generic-worker:cache:banana-cache"},
 			Payload: &GenericWorkerPayload{
-				Command:    goRun("move-file.go", "TestCacheMoved", "MovedCache"),
+				Command:    goRun("move-file.go", t.Name(), "MovedCache"),
 				MaxRunTime: 180,
 			},
 			TaskRunResolutionState: "failed",
@@ -319,4 +313,144 @@ func TestCacheMoved(t *testing.T) {
 		},
 	)
 
+}
+
+func TestMountFileAndDirSameLocation(t *testing.T) {
+
+	// whether permission is granted to task user depends if running under windows or not
+	// and is independent of whether running as current user or not
+	granting, _ := grantingDenying(t, "file", "file-located-here")
+
+	// No cache on first pass
+	pass1 := append([]string{
+		`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Download .* of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
+		`Creating directory .* with permissions 0700`,
+		`Copying .* to .*file-located-here`,
+	},
+		granting...,
+	)
+
+	pass1 = append(pass1,
+		`Found existing download for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
+		`Creating directory .*file-located-here with permissions 0700`,
+		// error is platform specific
+		`(mkdir .*file-located-here: not a directory|mkdir .*file-located-here: The system cannot find the path specified.|Cannot create directory .*file-located-here)`,
+	)
+
+	// On second pass, cache already exists
+	pass2 := append([]string{
+		`No SHA256 specified in task mounts for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip - SHA256 from downloaded file .* is 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e.`,
+		`Creating directory .* with permissions 0700`,
+		`Copying .* to .*file-located-here`,
+	},
+		granting...,
+	)
+
+	pass2 = append(pass2,
+		`Found existing download for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
+		`Creating directory .*file-located-here with permissions 0700`,
+		// error is platform specific
+		`(mkdir .*file-located-here: not a directory|mkdir .*file-located-here: The system cannot find the path specified.|Cannot create directory .*file-located-here)`,
+	)
+
+	LogTest(
+		&MountsLoggingTestCase{
+			Test: t,
+			Mounts: []MountEntry{
+				&FileMount{
+					File: "file-located-here",
+					// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
+					Content: json.RawMessage(`{
+						"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
+						"artifact": "public/build/unknown_issuer_app_1.zip"
+					}`),
+				},
+				&ReadOnlyDirectory{
+					Directory: "file-located-here",
+					// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
+					Content: json.RawMessage(`{
+						"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
+						"artifact": "public/build/unknown_issuer_app_1.zip",
+						"sha256":   "625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e"
+					}`),
+					Format: "zip",
+				},
+			},
+			Dependencies: []string{
+				"LK1Rz2UtT16d-HBSqyCtuA",
+			},
+			TaskRunResolutionState: "failed",
+			TaskRunReasonResolved:  "failed",
+			PerTaskRunLogExcerpts: [][]string{
+				// Required text from first task with no cached value
+				pass1,
+				// Required text from second task when download is already cached
+				pass2,
+			},
+		},
+	)
+}
+
+func TestInvalidSHADoesNotPreventMountedMountsFromBeingUnmounted(t *testing.T) {
+
+	defer setup(t)()
+
+	mounts := []MountEntry{
+		&WritableDirectoryCache{
+			CacheName: "unknown-issuer-app-cache",
+			Directory: filepath.Join(t.Name(), "1"),
+		},
+		&ReadOnlyDirectory{
+			Directory: filepath.Join(t.Name(), "2"),
+			// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
+			// SHA256 is intentionally incorrect to make sure that above cache is still persisted
+			Content: json.RawMessage(`{
+				"taskId": "LK1Rz2UtT16d-HBSqyCtuA",
+				"artifact": "public/build/unknown_issuer_app_1.zip",
+				"sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+			}`),
+			Format: "zip",
+		},
+	}
+
+	payload := GenericWorkerPayload{
+		Mounts:     toMountArray(t, &mounts),
+		Command:    helloGoodbye(),
+		MaxRunTime: 180,
+	}
+
+	td := testTask(t)
+	td.Dependencies = []string{
+		"LK1Rz2UtT16d-HBSqyCtuA",
+	}
+	td.Scopes = []string{
+		"generic-worker:cache:unknown-issuer-app-cache",
+	}
+
+	// check task failed due to bad SHA256
+	_ = submitAndAssert(t, td, payload, "failed", "failed")
+
+	mounts = []MountEntry{
+		&WritableDirectoryCache{
+			CacheName: "unknown-issuer-app-cache",
+			Directory: filepath.Join(t.Name(), "1"),
+		},
+	}
+
+	payload = GenericWorkerPayload{
+		Mounts:     toMountArray(t, &mounts),
+		Command:    helloGoodbye(),
+		MaxRunTime: 180,
+	}
+
+	td = testTask(t)
+	td.Scopes = []string{
+		"generic-worker:cache:unknown-issuer-app-cache",
+	}
+
+	// check task succeeded, and worker didn't crash when trying to mount cache
+	// (which can happen if it wasn't unmounted after first task failed)
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
 }

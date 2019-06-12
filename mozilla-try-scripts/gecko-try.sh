@@ -92,8 +92,8 @@ function updateSHA512 {
   jq --arg sha512 "${SHA512}" --arg componentName "${OCC_COMPONENT}" '(.Components[] | select(.ComponentName == $componentName) | .sha512) |= $sha512' "${MANIFEST}.bak" > "${MANIFEST}"
 }
 
-add_github "taskcluster/generic-worker"    "${NEW_GW_VERSION}" "generic-worker-nativeEngine-windows-386.exe"   "Intel 80386"
-add_github "taskcluster/generic-worker"    "${NEW_GW_VERSION}" "generic-worker-nativeEngine-windows-amd64.exe" "x86-64"
+add_github "taskcluster/generic-worker"    "${NEW_GW_VERSION}" "generic-worker-multiuser-windows-386.exe"   "Intel 80386"
+add_github "taskcluster/generic-worker"    "${NEW_GW_VERSION}" "generic-worker-multiuser-windows-amd64.exe" "x86-64"
 add_github "taskcluster/taskcluster-proxy" "${NEW_TP_VERSION}" "taskcluster-proxy-windows-386.exe"             "Intel 80386"
 add_github "taskcluster/taskcluster-proxy" "${NEW_TP_VERSION}" "taskcluster-proxy-windows-amd64.exe"           "x86-64"
 
@@ -105,16 +105,16 @@ cd OpenCloudConfig/userdata/Manifest
 for MANIFEST in gecko-t-win10-64-gpu-b.json gecko-t-win7-32-gpu-b.json gecko-t-win10-64-cu.json gecko-t-win7-32-cu.json gecko-1-b-win2012-beta.json gecko-t-win10-64-beta.json gecko-t-win7-32-beta.json; do
   cat "${MANIFEST}" > "${MANIFEST}.bak"
   cat "${MANIFEST}.bak" \
-    | sed "s_\\(generic-worker/releases/download/v\\)[^/]*\\(/generic-worker-nativeEngine-windows-\\)_\\1${NEW_GW_VERSION}\\2_" | sed "s_\\(\"generic-worker \\)[^ ]*\\(.*\\)\$_\\1${NEW_GW_VERSION}\\2_" \
+    | sed "s_\\(generic-worker/releases/download/v\\)[^/]*\\(/generic-worker-multiuser-windows-\\)_\\1${NEW_GW_VERSION}\\2_" | sed "s_\\(\"generic-worker \\)[^ ]*\\(.*\\)\$_\\1${NEW_GW_VERSION}\\2_" \
     | sed "s_\\(taskcluster-proxy/releases/download/v\\)[^/]*\\(/taskcluster-proxy-windows-\\)_\\1${NEW_TP_VERSION}\\2_" \
     > "${MANIFEST}"
   cat "${MANIFEST}" > "${MANIFEST}.bak"
-  THIS_ARCH="$(cat "${MANIFEST}" | sed -n 's/.*\/generic-worker-nativeEngine-windows-\(.*\)\.exe.*/\1/p' | sort -u)"
+  THIS_ARCH="$(cat "${MANIFEST}" | sed -n 's/.*\/generic-worker-multiuser-windows-\(.*\)\.exe.*/\1/p' | sort -u)"
   if [ "${THIS_ARCH}" != "386" ] && [ "${THIS_ARCH}" != "amd64" ]; then
     echo "NOOOOOOO - cannot recognise ARCH '${THIS_ARCH}' of generic-worker binary in manifest '${MANIFEST}' (from dir '$(pwd)')" >&2
     exit 67
   fi
-  updateSHA512 "generic-worker-nativeEngine-windows-${THIS_ARCH}.exe" "GenericWorkerDownload"
+  updateSHA512 "generic-worker-multiuser-windows-${THIS_ARCH}.exe" "GenericWorkerDownload"
   cat "${MANIFEST}" > "${MANIFEST}.bak"
   updateSHA512 "taskcluster-proxy-windows-${THIS_ARCH}.exe" "TaskClusterProxyDownload"
   rm "${MANIFEST}.bak"

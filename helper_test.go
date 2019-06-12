@@ -136,7 +136,6 @@ func setup(t *testing.T) (teardown func()) {
 			RequiredDiskSpaceMegabytes:     16,
 			RootURL:                        os.Getenv("TASKCLUSTER_ROOT_URL"),
 			RunAfterUserCreation:           "",
-			RunTasksAsCurrentUser:          os.Getenv("GW_TESTS_RUN_AS_TASK_USER") == "",
 			SentryProject:                  "generic-worker-tests",
 			ShutdownMachineOnIdle:          false,
 			ShutdownMachineOnInternalError: false,
@@ -170,6 +169,7 @@ func setup(t *testing.T) (teardown func()) {
 			},
 		},
 	}
+	setConfigRunTasksAsCurrentUser()
 	return teardown
 }
 
@@ -387,23 +387,6 @@ func submitAndAssert(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload Ge
 	return taskID
 }
 
-func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {
-	taskID := submitAndAssert(t, td, payload, "exception", "malformed-payload")
-
-	expectedArtifacts := ExpectedArtifacts{
-		"public/logs/live_backing.log": {
-			Extracts: []string{
-				ChainOfTrustKeyNotSecureMessage,
-			},
-			ContentType:     "text/plain; charset=utf-8",
-			ContentEncoding: "gzip",
-		},
-	}
-
-	expectedArtifacts.Validate(t, taskID, 0)
-	return
-}
-
 func checkSHA256OfFile(t *testing.T, path string, SHA256 string) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -438,8 +421,10 @@ func toMountArray(t *testing.T, x interface{}) []json.RawMessage {
 }
 
 func cancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {
+	command := goGet("github.com/taskcluster/taskcluster-client-go")
+	command = append(command, goRun("resolvetask.go")...)
 	payload = GenericWorkerPayload{
-		Command:    goRun("resolvetask.go"),
+		Command:    command,
 		MaxRunTime: 120,
 		Artifacts: []Artifact{
 			{
@@ -458,7 +443,7 @@ func cancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload Generi
 		t.Skip("Skipping since I need permanent TC credentials for this test")
 	}
 	td = testTask(t)
-	tempCreds, err := fullCreds.CreateNamedTemporaryCredentials("project/taskcluster:generic-worker-tester/TestResolveResolvedTask", time.Minute, "queue:cancel-task:"+td.SchedulerID+"/"+td.TaskGroupID+"/*")
+	tempCreds, err := fullCreds.CreateNamedTemporaryCredentials("project/taskcluster:generic-worker-tester/"+t.Name(), time.Minute, "queue:cancel-task:"+td.SchedulerID+"/"+td.TaskGroupID+"/*")
 	if err != nil {
 		t.Fatalf("%v", err)
 	}

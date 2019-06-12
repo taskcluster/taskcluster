@@ -22,17 +22,16 @@
 If you prefer not to use a prepackaged binary, or want to have the latest unreleased version from the development head:
 
 * Head over to https://golang.org/dl/ and follow the instructions for your platform. __NOTE: go 1.8 or higher is required__. Be sure to set your GOPATH to something appropriate.
-* Run `go get github.com/taskcluster/generic-worker`
 * Run `go get github.com/taskcluster/livelog`
 * Run `go get github.com/taskcluster/taskcluster-proxy`
 
-Run `go get -tags nativeEngine github.com/taskcluster/generic-worker` (all platforms) and/or `go get -tags dockerEngine github.com/taskcluster/generic-worker` (linux only). This should also build binaries for your platform.
+Run `go get -tags multiuser github.com/taskcluster/generic-worker` (windows/darwin) and/or `go get -tags simple github.com/taskcluster/generic-worker` (linux/darwin) and/or `go get -tags docker github.com/taskcluster/generic-worker` (linux). This should also build binaries for your platform.
 
 Run `./build.sh` to check go version, generate code, build binaries, compile (but not run) tests, perform linting, and ensure there are no ineffective assignments in go code.
 
 `./build.sh` takes optional arguments, `-a` to build all platforms, and `-t` to run tests. By default tests are not run and only the current platform is built.
 
-All being well, the binaries will be built under `${GOPATH}/bin`.
+All being well, the binaries will be built in the directory you executed the `build.sh` script from.
 
 # Acquire taskcluster credentials for running tests
 

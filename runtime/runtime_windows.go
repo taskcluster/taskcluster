@@ -3,6 +3,10 @@ package runtime
 import (
 	"fmt"
 	"log"
+	"os/exec"
+	"strings"
+
+	"github.com/taskcluster/generic-worker/win32"
 )
 
 type OSUser struct {
@@ -10,7 +14,7 @@ type OSUser struct {
 	Password string
 }
 
-func (user *OSUser) Create(okIfExists bool) error {
+func (user *OSUser) CreateNew(okIfExists bool) error {
 	log.Print("Creating Windows user " + user.Name + "...")
 	userExisted, err := AllowError(
 		"The account already exists",
@@ -42,4 +46,25 @@ func (user *OSUser) Create(okIfExists bool) error {
 func (user *OSUser) MakeAdmin() error {
 	_, err := AllowError("The specified account name is already a member of the group", "net", "localgroup", "administrators", user.Name, "/add")
 	return err
+}
+
+func DeleteUser(username string) (err error) {
+	return RunCommands(false, []string{"net", "user", username, "/delete"})
+}
+
+func ListUserAccounts() (usernames []string, err error) {
+	var out []byte
+	out, err = exec.Command("wmic", "useraccount", "get", "name").Output()
+	if err != nil {
+		return
+	}
+	for _, line := range strings.Split(string(out), "\r\n") {
+		trimmedLine := strings.Trim(line, "\r\n ")
+		usernames = append(usernames, trimmedLine)
+	}
+	return
+}
+
+func UserHomeDirectoriesParent() string {
+	return win32.ProfilesDirectory()
 }

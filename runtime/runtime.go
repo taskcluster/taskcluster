@@ -7,15 +7,10 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/dchest/uniuri"
+	"github.com/taskcluster/shell"
 )
-
-func (user *OSUser) EnsureCreated() error {
-	return user.Create(true)
-}
-
-func (user *OSUser) CreateNew() error {
-	return user.Create(false)
-}
 
 // Runs command `command` with arguments `args`. If standard error from command
 // includes `errString` then true, is returned with no error. Otherwise false
@@ -60,4 +55,43 @@ func Error(c *exec.Cmd) ([]byte, error) {
 	c.Stderr = &b
 	err := c.Run()
 	return b.Bytes(), err
+}
+
+func ProcessCommandOutput(lineEnding string, callback func(line string), prog string, options ...string) error {
+	out, err := exec.Command(prog, options...).Output()
+	if err != nil {
+		log.Printf("%v", err)
+		return err
+	}
+	for _, line := range strings.Split(string(out), lineEnding) {
+		trimmedLine := strings.Trim(line, lineEnding+" ")
+		callback(trimmedLine)
+	}
+	return nil
+}
+
+// Uses [A-Za-z0-9] characters (default set) to avoid strange escaping problems
+// that could potentially affect security. Prefixed with `pWd0_` to ensure
+// password contains a special character (_), lowercase and uppercase letters,
+// and a number. This is useful if the OS has a strict password policy
+// requiring all of these. The total password length is 29 characters (24 of
+// which are random). 29 characters should not be too long for the OS. The 24
+// random characters of [A-Za-z0-9] provide (26+26+10)^24 possible permutations
+// (approx 143 bits of randomness). Randomisation is not seeded, so results
+// should not be reproducible.
+func GeneratePassword() string {
+	return "pWd0_" + uniuri.NewLen(24)
+}
+
+func CommandOutputOrPanic(command string, args ...string) string {
+	logMessage := "Running " + shell.Escape(command)
+	if len(args) > 0 {
+		logMessage += " " + shell.Escape(args...)
+	}
+	log.Print(logMessage)
+	output, err := exec.Command(command, args...).Output()
+	if err != nil {
+		panic(err)
+	}
+	return strings.TrimSpace(string(output))
 }

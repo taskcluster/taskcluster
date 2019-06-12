@@ -11,14 +11,14 @@ tasks:
 
 
   ##########################################################
-  ########### Windows Server 2012 R2 Native Build ##########
+  ######### Windows Server 2012 R2 Multiuser Build #########
   ##########################################################
 
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
     workerType: win2012r2-cu
     metadata:
-      name: "Build/test 64 bit generic-worker (native engine) on Windows Server 2012 R2"
-      description: "This builds and tests the 64 bit Windows version of generic-worker (native engine) on Windows Server 2012 R2"
+      name: "Build/test 64 bit generic-worker (multiuser engine) on Windows Server 2012 R2"
+      description: "This builds and tests the 64 bit Windows version of generic-worker (multiuser engine) on Windows Server 2012 R2"
       owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
       source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
     extra:
@@ -65,13 +65,13 @@ tasks:
           exit /b 0
         - git rev-parse HEAD > revision.txt
         - set /p revision=< revision.txt
-        - go install -tags nativeEngine -v -ldflags "-X main.revision=%revision%" ./...
+        - go install -tags multiuser -v -ldflags "-X main.revision=%revision%" ./...
         - set CGO_ENABLED=1
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
-        - 'go test -tags nativeEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
+        - 'go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
         - set GW_TESTS_RUN_AS_TASK_USER=true
-        - 'go test -tags nativeEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
+        - 'go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
         - ineffassign .
       artifacts:
         - name: public/build/generic-worker-windows-amd64.exe
@@ -94,14 +94,14 @@ tasks:
 
 
   ##########################################################
-  ############## Windows 7 Native Build ####################
+  ############### Windows 7 Multiuser Build ################
   ##########################################################
 
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
     workerType: gecko-t-win7-32-cu
     metadata:
-      name: "Build/test 32 bit generic-worker (native engine) on Windows 7"
-      description: "This builds and tests the 32 bit Windows version of generic-worker (native engine) on Windows 7"
+      name: "Build/test 32 bit generic-worker (multiuser engine) on Windows 7"
+      description: "This builds and tests the 32 bit Windows version of generic-worker (multiuser engine) on Windows 7"
       owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
       source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
     extra:
@@ -143,12 +143,12 @@ tasks:
         - cd ..
         - go generate
         - set revision={{ event.head.sha }}
-        - go install -tags nativeEngine -v -ldflags "-X main.revision=%revision%" ./...
+        - go install -tags multiuser -v -ldflags "-X main.revision=%revision%" ./...
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
-        - 'go test -tags nativeEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v ./...'
+        - 'go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v ./...'
         - set GW_TESTS_RUN_AS_TASK_USER=true
-        - 'go test -tags nativeEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v'
+        - 'go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v'
         - ineffassign .
       artifacts:
         - name: public/build/generic-worker-windows-386.exe
@@ -171,14 +171,14 @@ tasks:
 
 
   ##########################################################
-  ############## Windows 10 Native Build ###################
+  ############### Windows 10 Multiuser Build ###############
   ##########################################################
 
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
     workerType: gecko-t-win10-64-cu
     metadata:
-      name: "Build/test 64 bit generic-worker (native engine) on Windows 10"
-      description: "This builds and tests the 32 bit Windows version of generic-worker (native engine) on Windows 10"
+      name: "Build/test 64 bit generic-worker (multiuser engine) on Windows 10"
+      description: "This builds and tests the 32 bit Windows version of generic-worker (multiuser engine) on Windows 10"
       owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
       source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
     extra:
@@ -225,13 +225,13 @@ tasks:
           exit /b 0
         - git rev-parse HEAD > revision.txt
         - set /p revision=< revision.txt
-        - go install -tags nativeEngine -v -ldflags "-X main.revision=%revision%" ./...
+        - go install -tags multiuser -v -ldflags "-X main.revision=%revision%" ./...
         - set CGO_ENABLED=1
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
-        - 'go test -tags nativeEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
+        - 'go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
         - set GW_TESTS_RUN_AS_TASK_USER=true
-        - 'go test -tags nativeEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
+        - 'go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
         - ineffassign .
       artifacts:
         - name: public/build/generic-worker-windows-amd64.exe
@@ -254,14 +254,14 @@ tasks:
 
 
   ##########################################################
-  ######### macOS High Sierra 10.13 Native Build ###########
+  ########## macOS High Sierra 10.13 Simple Build ##########
   ##########################################################
 
   - provisionerId: pmoore-manual
     workerType: mac-os-x
     metadata:
-      name: "Build/test 64 bit generic-worker (native engine) on macOS High Sierra 10.13"
-      description: "This builds the 64 bit macOS version of generic-worker (native engine)"
+      name: "Build/test 64 bit generic-worker (simple engine) on macOS High Sierra 10.13"
+      description: "This builds the 64 bit macOS version of generic-worker (simple engine)"
       owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
       source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
     extra:
@@ -275,6 +275,8 @@ tasks:
       - generic-worker:cache:generic-worker-checkout
     payload:
       maxRunTime: 3600
+      env:
+        GW_CREDS_BOOTSTRAP: /Users/genericworker/generic-worker/gw_private_env.sh
       command:
         - - /bin/bash
           - -vxec
@@ -300,10 +302,10 @@ tasks:
             go get -v
             cd ..
             go generate
-            go install -tags nativeEngine -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
+            go install -tags simple -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
             # output of wc command can contain spaces on darwin, so no quotes around expression
             test $(git status --porcelain | wc -l) == 0
-            GORACE=history_size=7 CGO_ENABLED=1 go test -tags nativeEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -v ./...
+            GORACE=history_size=7 CGO_ENABLED=1 go test -tags simple -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -v ./...
             ineffassign .
       artifacts:
         - name: public/build/generic-worker-darwin-amd64
@@ -311,8 +313,8 @@ tasks:
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
       mounts:
-        - cacheName: generic-worker-checkout
-          directory: gopath1.10.8/src
+#       - cacheName: generic-worker-checkout
+#         directory: gopath1.10.8/src
         - content:
             url: https://storage.googleapis.com/golang/go1.10.8.darwin-amd64.tar.gz
             sha256: f41bc914a721ac98a187df824b3b40f0a7f35bfb3c6d31221bdd940d537d3c28
@@ -321,7 +323,77 @@ tasks:
 
 
   ##########################################################
-  ################ Linux ARM6 Native Build #################
+  ######## macOS High Sierra 10.13 Multiuser Build #########
+  ##########################################################
+
+  - provisionerId: pmoore-manual
+    workerType: mac-os-x
+    metadata:
+      name: "Build/test 64 bit generic-worker (multiuser engine) on macOS High Sierra 10.13"
+      description: "This builds the 64 bit macOS version of generic-worker (multiuser engine)"
+      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+    extra:
+      github:
+        # Events that will trigger this task
+        events:
+          - pull_request.opened
+          - pull_request.synchronize
+          - push
+    scopes:
+      - generic-worker:cache:generic-worker-checkout
+    payload:
+      maxRunTime: 3600
+      env:
+        GW_CREDS_BOOTSTRAP: /Users/genericworker/generic-worker/gw_private_env.sh
+      command:
+        - - /bin/bash
+          - -vxec
+          - |
+            export CGO_ENABLED=0
+            export GOROOT="$(pwd)/go1.10.8/go"
+            export GOPATH="$(pwd)/gopath1.10.8"
+            export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
+            go version
+            go env
+            source "${GW_CREDS_BOOTSTRAP}"
+            mkdir -p "${GOPATH}/src/github.com/taskcluster"
+            cd "${GOPATH}/src/github.com/taskcluster"
+            if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
+            cd 'generic-worker'
+            git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/X${TASK_ID}"
+            git checkout -f "X${TASK_ID}"
+            git reset --hard '{{ event.head.sha }}'
+            git clean -fdx
+            git checkout -B tmp -t "X${TASK_ID}"
+            go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
+            cd gw-codegen
+            go get -v
+            cd ..
+            go generate
+            go install -tags multiuser -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
+            # output of wc command can contain spaces on darwin, so no quotes around expression
+            test $(git status --porcelain | wc -l) == 0
+            GORACE=history_size=7 CGO_ENABLED=1 go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -v ./...
+            GW_TESTS_RUN_AS_TASK_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -v
+            ineffassign .
+      artifacts:
+        - name: public/build/generic-worker-darwin-amd64
+          path: gopath1.10.8/bin/generic-worker
+          expires: "{{ '2 weeks' | $fromNow }}"
+          type: file
+      mounts:
+#       - cacheName: generic-worker-checkout
+#         directory: gopath1.10.8/src
+        - content:
+            url: https://storage.googleapis.com/golang/go1.10.8.darwin-amd64.tar.gz
+            sha256: f41bc914a721ac98a187df824b3b40f0a7f35bfb3c6d31221bdd940d537d3c28
+          directory: go1.10.8
+          format: tar.gz
+
+
+  ##########################################################
+  ################ Linux ARM6 Simple Build #################
   ##########################################################
 
 
@@ -333,8 +405,8 @@ tasks:
   # - provisionerId: pmoore-manual
   #   workerType: raspberry-pi-3b
   #   metadata:
-  #     name: "Build/test ARM6 generic-worker on Linux (Raspberry Pi)"
-  #     description: "This builds the ARM6 Linux version of generic-worker"
+  #     name: "Build/test ARM6 generic-worker (simple engine) on Linux (Raspberry Pi)"
+  #     description: "This builds the ARM6 Linux version of generic-worker (simple engine)"
   #     owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
   #     source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
   #   extra:
@@ -374,9 +446,9 @@ tasks:
   #           go get -v
   #           cd ..
   #           go generate
-  #           go install -tags nativeEngine -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
+  #           go install -tags simple -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
   #           test "$(git status --porcelain | wc -l)" == 0
-  #           GORACE=history_size=7 go test -tags nativeEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v ./...
+  #           GORACE=history_size=7 go test -tags simple -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v ./...
   #           ineffassign .
   #     artifacts:
   #       - name: public/build/generic-worker-linux-armv6l
@@ -394,14 +466,14 @@ tasks:
 
 
   ##########################################################
-  ################ Linux amd64 Native Build ################
+  ################ Linux amd64 Simple Build ################
   ##########################################################
 
   - provisionerId: pmoore-manual
     workerType: linux-amd64
     metadata:
-      name: "Build/test 64 bit generic-worker (native engine) on Ubuntu 17.04 VM"
-      description: "This builds the 64 bit linux version of generic-worker (native engine)"
+      name: "Build/test 64 bit generic-worker (simple engine) on Ubuntu 17.04 VM"
+      description: "This builds the 64 bit linux version of generic-worker (simple engine)"
       owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
       source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
     extra:
@@ -445,9 +517,9 @@ tasks:
             go get -v
             cd ..
             go generate
-            go install -tags nativeEngine -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
+            go install -tags simple -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
             test "$(git status --porcelain | wc -l)" == 0
-            GORACE=history_size=7 CGO_ENABLED=1 go test -tags nativeEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race ./...
+            GORACE=history_size=7 CGO_ENABLED=1 go test -tags simple -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race ./...
             "${GOPATH}/bin/ineffassign" .
       artifacts:
         - name: public/build/generic-worker-linux-amd64
@@ -516,9 +588,9 @@ tasks:
             go get -v
             cd ..
             go generate
-            go install -tags dockerEngine -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
+            go install -tags docker -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
             test "$(git status --porcelain | wc -l)" == 0
-            GORACE=history_size=7 CGO_ENABLED=1 go test -tags dockerEngine -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race ./...
+            GORACE=history_size=7 CGO_ENABLED=1 go test -tags docker -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race ./...
             "${GOPATH}/bin/ineffassign" .
       artifacts:
         - name: public/build/generic-worker-linux-amd64
