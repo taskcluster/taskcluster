@@ -1,9 +1,12 @@
-#!/bin/bash -e
+#!/bin/bash -exv
+
+# This script is needed because `go test -covermode=atomic` cover doesn't
+# currently support being run against multiple packages
 
 ENGINE="${1}"
 REPORT="${2}"
 if [ -z "${REPORT}" ]; then
-  echo "Specify build tags and a report filename, e.g. '${0}' 'nativeEngine' myreport.txt" >&2
+  echo "Specify build tags and a report filename, e.g. '${0}' 'multiuser' myreport.txt" >&2
   exit 64
 fi
 cd "$(dirname "${0}")"

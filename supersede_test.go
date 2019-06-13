@@ -22,7 +22,7 @@ func TestSupersede(t *testing.T) {
 		payload := GenericWorkerPayload{
 			Command:       command,
 			MaxRunTime:    30,
-			SupersederURL: "http://localhost:52856/TestSupersede",
+			SupersederURL: "http://localhost:52856/" + t.Name(),
 		}
 		td := testTask(t)
 
@@ -42,7 +42,7 @@ func TestSupersede(t *testing.T) {
 	// registered handler functions won't interfere with future tests that also
 	// use http.DefaultServeMux.
 	supersedeHandler := http.NewServeMux()
-	supersedeHandler.HandleFunc("/TestSupersede", func(res http.ResponseWriter, req *http.Request) {
+	supersedeHandler.HandleFunc("/"+t.Name(), func(res http.ResponseWriter, req *http.Request) {
 		_, err := res.Write(serviceResponseBody)
 		if err != nil {
 			t.Fatalf("Mock supersede service could not write http response: %v", err)
@@ -88,7 +88,7 @@ func TestEmptySupersedeList(t *testing.T) {
 	payload := GenericWorkerPayload{
 		Command:       helloGoodbye(),
 		MaxRunTime:    30,
-		SupersederURL: "http://localhost:52856/TestEmptySupersedeList",
+		SupersederURL: "http://localhost:52856/" + t.Name(),
 	}
 	td := testTask(t)
 
@@ -101,7 +101,7 @@ func TestEmptySupersedeList(t *testing.T) {
 		t.Fatalf("Could not marshal service response body into json: %v", err)
 	}
 
-	http.HandleFunc("/TestEmptySupersedeList", func(res http.ResponseWriter, req *http.Request) {
+	http.HandleFunc("/"+t.Name(), func(res http.ResponseWriter, req *http.Request) {
 		_, err := res.Write(serviceResponseBody)
 		if err != nil {
 			t.Fatalf("Mock supersede service could not write http response: %v", err)

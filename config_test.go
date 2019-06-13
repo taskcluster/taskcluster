@@ -116,7 +116,7 @@ func TestBoolAsString(t *testing.T) {
 	if err == nil {
 		t.Fatal("Was expecting to get an error back due to a bool being specified as a string, but didn't get one!")
 	}
-	expectedErrorText := `cannot unmarshal string into Go struct field Config.runTasksAsCurrentUser of type bool`
+	expectedErrorText := `cannot unmarshal string into Go struct field Config.shutdownMachineOnIdle of type bool`
 	if !strings.Contains(err.Error(), expectedErrorText) {
 		t.Fatalf("Was expecting error text to include %q but it didn't: %v", expectedErrorText, err)
 	}

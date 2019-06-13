@@ -31,9 +31,6 @@ type (
 		Queue          *tcqueue.Queue     `json:"-"`
 		StatusManager  *TaskStatusManager `json:"-"`
 		LocalClaimTime time.Time          `json:"-"`
-		// PlatformData contains platform-specific data related to the
-		// execution environment, such as access tokens on Windows
-		PlatformData *PlatformData `json:"-"`
 		// This is a map of artifact names to internal feature names for
 		// reserving artifact names that are uploaded implicitly rather than
 		// being listed in the task.payload.artifacts section, such as logs,

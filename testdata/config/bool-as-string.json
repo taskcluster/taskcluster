@@ -8,5 +8,5 @@
   "workerType" : "some-worker-type",
   "publicIP" : "2.1.2.1",
   "ed25519SigningKeyLocation": "C:\\some\\place.ed25519.key",
-  "runTasksAsCurrentUser": "true"
+  "shutdownMachineOnIdle": "true"
 }

@@ -18,9 +18,9 @@ func (osGroups *OSGroups) Start() *CommandExecutionError {
 	if len(notUpdatedGroups) > 0 {
 		return MalformedPayloadError(fmt.Errorf("Could not add task user to os group(s): %v", notUpdatedGroups))
 	}
-	osGroups.Task.PlatformData.RefreshLoginSession()
+	taskContext.pd.RefreshLoginSession(taskContext.User.Name, taskContext.User.Password)
 	for _, command := range osGroups.Task.Commands {
-		command.SysProcAttr.Token = osGroups.Task.PlatformData.LoginInfo.AccessToken()
+		command.SysProcAttr.Token = taskContext.pd.LoginInfo.AccessToken()
 	}
 	return nil
 }

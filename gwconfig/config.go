@@ -2,11 +2,9 @@ package gwconfig
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net"
 	"reflect"
-	"runtime"
 
 	"github.com/taskcluster/generic-worker/fileutil"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
@@ -25,6 +23,7 @@ type (
 	}
 
 	PublicConfig struct {
+		PublicEngineConfig
 		AuthBaseURL                    string                 `json:"authBaseURL"`
 		AvailabilityZone               string                 `json:"availabilityZone"`
 		CachesDir                      string                 `json:"cachesDir"`
@@ -54,7 +53,6 @@ type (
 		RequiredDiskSpaceMegabytes     uint                   `json:"requiredDiskSpaceMegabytes"`
 		RootURL                        string                 `json:"rootURL"`
 		RunAfterUserCreation           string                 `json:"runAfterUserCreation"`
-		RunTasksAsCurrentUser          bool                   `json:"runTasksAsCurrentUser"`
 		SecretsBaseURL                 string                 `json:"secretsBaseURL"`
 		SentryProject                  string                 `json:"sentryProject"`
 		ShutdownMachineOnIdle          bool                   `json:"shutdownMachineOnIdle"`
@@ -92,11 +90,28 @@ func (c *Config) String() string {
 	cCopy := *c
 	cCopy.AccessToken = "*************"
 	cCopy.LiveLogSecret = "*************"
-	json, err := json.MarshalIndent(&cCopy, "", "  ")
+	// This json.Marshal call won't sort all inherited properties
+	// alphabetically, since it sorts properties within each nested struct, but
+	// concatenates the results from each of the nested structs together.
+	// Therefore we need to flatten the data structure first before marshaling
+	// into json in order to have all properties sorted alphabetically. We do
+	// this by first marshaling to json, then unmarshaling to an interface{}
+	// (so that the structure is flattened), and then finally marshaling back
+	// to json. Whew.
+	j, err := json.Marshal(&cCopy)
 	if err != nil {
 		panic(err)
 	}
-	return string(json)
+	var data interface{}
+	err = json.Unmarshal(j, &data)
+	if err != nil {
+		panic(err)
+	}
+	j, err = json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	return string(j)
 }
 
 func (c *Config) Validate() error {
@@ -131,10 +146,6 @@ func (c *Config) Validate() error {
 		}
 	}
 
-	// Platform specific checks...
-	if runtime.GOOS != "windows" && !c.RunTasksAsCurrentUser {
-		return fmt.Errorf("Only Windows platform supports running tasks as different users, config setting 'runTasksAsCurrentUser' must be set to true, but is currently set to false; detected platform is %v", runtime.GOOS)
-	}
 	// all required config set!
 	return nil
 }

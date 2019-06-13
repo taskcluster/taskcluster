@@ -49,7 +49,7 @@ func TestPayloadSchemaValid(t *testing.T) {
 	schemaLoader := gojsonschema.NewStringLoader(payloadSchema)
 	_, err := gojsonschema.NewSchema(schemaLoader)
 	if err != nil {
-		t.Logf("Generic Worker payload schema is not a valid json schema for platform %v.", runtime.GOOS)
+		t.Logf("Generic Worker payload schema is not a valid json schema for platform/engine %v/%v.", runtime.GOOS, engine)
 		t.Log("Payload schema:")
 		t.Log(payloadSchema)
 		t.Log("Error:")

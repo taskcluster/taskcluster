@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 	"testing"
 
@@ -323,6 +322,31 @@ func TestInvalidSHA256(t *testing.T) {
 }
 
 func TestValidSHA256(t *testing.T) {
+
+	// whether permission is granted to task user depends if running under windows or not
+	// and is independent of whether running as current user or not
+	granting, _ := grantingDenying(t, "directory", "unknown_issuer_app_1")
+
+	// Required text from first task with no cached value
+	pass1 := append([]string{
+		`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip \(.*\) matches required SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
+		`Creating directory .*unknown_issuer_app_1 with permissions 0700`,
+		`Extracting zip file .* to '.*unknown_issuer_app_1'`,
+	},
+		granting...,
+	)
+
+	// Required text from second task when download is already cached
+	pass2 := append([]string{
+		`Found existing download for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
+		`Creating directory .*unknown_issuer_app_1 with permissions 0700`,
+		`Extracting zip file .* to '.*unknown_issuer_app_1'`,
+	},
+		granting...,
+	)
+
 	LogTest(
 		&MountsLoggingTestCase{
 			Test: t,
@@ -344,32 +368,45 @@ func TestValidSHA256(t *testing.T) {
 			TaskRunResolutionState: "completed",
 			TaskRunReasonResolved:  "completed",
 			PerTaskRunLogExcerpts: [][]string{
-				// Required text from first task with no cached value
-				[]string{
-					`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip \(.*\) matches required SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
-					`Creating directory .*unknown_issuer_app_1 with permissions 0700`,
-					`Extracting zip file .* to '.*unknown_issuer_app_1'`,
-				},
-				// Required text from second task when download is already cached
-				[]string{
-					`Found existing download for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
-					`Creating directory .*unknown_issuer_app_1 with permissions 0700`,
-					`Extracting zip file .* to '.*unknown_issuer_app_1'`,
-				},
+				pass1,
+				pass2,
 			},
 		},
 	)
 }
 
 func TestFileMountNoSHA256(t *testing.T) {
+
+	// whether permission is granted to task user depends if running under windows or not
+	// and is independent of whether running as current user or not
+	granting, _ := grantingDenying(t, "file", t.Name())
+
+	// No cache on first pass
+	pass1 := append([]string{
+		`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Download .* of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
+		`Creating directory .* with permissions 0700`,
+		`Copying .* to .*` + t.Name(),
+	},
+		granting...,
+	)
+
+	// On second pass, cache already exists
+	pass2 := append([]string{
+		`No SHA256 specified in task mounts for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip - SHA256 from downloaded file .* is 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e.`,
+		`Creating directory .* with permissions 0700`,
+		`Copying .* to .*` + t.Name(),
+	},
+		granting...,
+	)
+
 	LogTest(
 		&MountsLoggingTestCase{
 			Test: t,
 			Mounts: []MountEntry{
 				&FileMount{
-					File: "TestFileMountNoSHA256",
+					File: t.Name(),
 					// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
 					Content: json.RawMessage(`{
 						"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
@@ -384,19 +421,9 @@ func TestFileMountNoSHA256(t *testing.T) {
 			TaskRunReasonResolved:  "completed",
 			PerTaskRunLogExcerpts: [][]string{
 				// Required text from first task with no cached value
-				[]string{
-					`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Download .* of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
-					`Creating directory .* with permissions 0700`,
-					`Copying .* to .*TestFileMountNoSHA256`,
-				},
+				pass1,
 				// Required text from second task when download is already cached
-				[]string{
-					`No SHA256 specified in task mounts for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip - SHA256 from downloaded file .* is 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e.`,
-					`Creating directory .* with permissions 0700`,
-					`Copying .* to .*TestFileMountNoSHA256`,
-				},
+				pass2,
 			},
 		},
 	)
@@ -448,76 +475,11 @@ func TestMountFileAtCWD(t *testing.T) {
 	)
 }
 
-func TestMountFileAndDirSameLocation(t *testing.T) {
-	LogTest(
-		&MountsLoggingTestCase{
-			Test: t,
-			Mounts: []MountEntry{
-				&FileMount{
-					File: "file-located-here",
-					// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
-					Content: json.RawMessage(`{
-						"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
-						"artifact": "public/build/unknown_issuer_app_1.zip"
-					}`),
-				},
-				&ReadOnlyDirectory{
-					Directory: "file-located-here",
-					// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
-					Content: json.RawMessage(`{
-						"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
-						"artifact": "public/build/unknown_issuer_app_1.zip",
-						"sha256":   "625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e"
-					}`),
-					Format: "zip",
-				},
-			},
-			Dependencies: []string{
-				"LK1Rz2UtT16d-HBSqyCtuA",
-			},
-			TaskRunResolutionState: "failed",
-			TaskRunReasonResolved:  "failed",
-			PerTaskRunLogExcerpts: [][]string{
-				// Required text from first task with no cached value
-				[]string{
-					`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Download .* of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
-					`Creating directory .* with permissions 0700`,
-					`Copying .* to .*file-located-here`,
-					`Found existing download for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
-					`Creating directory .*file-located-here with permissions 0700`,
-					// error is platform specific
-					`mkdir .*file-located-here: (not a directory|The system cannot find the path specified.)`,
-				},
-				// Required text from second task when download is already cached
-				[]string{
-					`No SHA256 specified in task mounts for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip - SHA256 from downloaded file .* is 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e.`,
-					`Creating directory .* with permissions 0700`,
-					`Copying .* to .*file-located-here`,
-					`Found existing download for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
-					`Creating directory .*file-located-here with permissions 0700`,
-					// error is platform specific
-					`mkdir .*file-located-here: (not a directory|The system cannot find the path specified.)`,
-				},
-			},
-		},
-	)
-}
-
 func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 
 	// whether permission is granted to task user depends if running under windows or not
 	// and is independent of whether running as current user or not
-	granting, denying := []string{}, []string{}
-	if runtime.GOOS == "windows" {
-		granting = []string{
-			`Granting task_.* full control of '.*TestWritableDirectoryCacheNoSHA256'`,
-		}
-		denying = []string{
-			`Denying task_.* access to '.*'`,
-		}
-	}
+	granting, denying := grantingDenying(t, "directory", t.Name())
 
 	// No cache on first pass
 	pass1 := append([]string{
@@ -525,27 +487,27 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 		`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Download .* of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
-		`Creating directory .*TestWritableDirectoryCacheNoSHA256 with permissions 0700`,
-		`Extracting zip file .* to '.*TestWritableDirectoryCacheNoSHA256'`,
+		`Creating directory .*` + t.Name() + ` with permissions 0700`,
+		`Extracting zip file .* to '.*` + t.Name() + `'`,
 	},
 		granting...,
 	)
 	pass1 = append(pass1,
-		`Successfully mounted writable directory cache '.*TestWritableDirectoryCacheNoSHA256'`,
-		`Preserving cache: Moving ".*TestWritableDirectoryCacheNoSHA256" to ".*"`,
+		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
+		`Preserving cache: Moving ".*`+t.Name()+`" to ".*"`,
 	)
 	pass1 = append(pass1, denying...)
 
 	// On second pass, cache already exists
 	pass2 := append([]string{
-		`Moving existing writable directory cache banana-cache from .* to .*TestWritableDirectoryCacheNoSHA256`,
+		`Moving existing writable directory cache banana-cache from .* to .*` + t.Name(),
 		`Creating directory .* with permissions 0700`,
 	},
 		granting...,
 	)
 	pass2 = append(pass2,
-		`Successfully mounted writable directory cache '.*TestWritableDirectoryCacheNoSHA256'`,
-		`Preserving cache: Moving ".*TestWritableDirectoryCacheNoSHA256" to ".*"`,
+		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
+		`Preserving cache: Moving ".*`+t.Name()+`" to ".*"`,
 	)
 	pass2 = append(pass2, denying...)
 
@@ -555,7 +517,7 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 			Mounts: []MountEntry{
 				&WritableDirectoryCache{
 					CacheName: "banana-cache",
-					Directory: "TestWritableDirectoryCacheNoSHA256",
+					Directory: t.Name(),
 					// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
 					Content: json.RawMessage(`{
 						"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
@@ -578,66 +540,4 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 			Scopes: []string{"generic-worker:cache:banana-cache"},
 		},
 	)
-}
-
-func TestInvalidSHADoesNotPreventMountedMountsFromBeingUnmounted(t *testing.T) {
-
-	defer setup(t)()
-
-	mounts := []MountEntry{
-		&WritableDirectoryCache{
-			CacheName: "unknown-issuer-app-cache",
-			Directory: filepath.Join(t.Name(), "1"),
-		},
-		&ReadOnlyDirectory{
-			Directory: filepath.Join(t.Name(), "2"),
-			// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
-			// SHA256 is intentionally incorrect to make sure that above cache is still persisted
-			Content: json.RawMessage(`{
-				"taskId": "LK1Rz2UtT16d-HBSqyCtuA",
-				"artifact": "public/build/unknown_issuer_app_1.zip",
-				"sha256": "7777777777777777777777777777777777777777777777777777777777777777"
-			}`),
-			Format: "zip",
-		},
-	}
-
-	payload := GenericWorkerPayload{
-		Mounts:     toMountArray(t, &mounts),
-		Command:    helloGoodbye(),
-		MaxRunTime: 180,
-	}
-
-	td := testTask(t)
-	td.Dependencies = []string{
-		"LK1Rz2UtT16d-HBSqyCtuA",
-	}
-	td.Scopes = []string{
-		"generic-worker:cache:unknown-issuer-app-cache",
-	}
-
-	// check task failed due to bad SHA256
-	_ = submitAndAssert(t, td, payload, "failed", "failed")
-
-	mounts = []MountEntry{
-		&WritableDirectoryCache{
-			CacheName: "unknown-issuer-app-cache",
-			Directory: filepath.Join(t.Name(), "1"),
-		},
-	}
-
-	payload = GenericWorkerPayload{
-		Mounts:     toMountArray(t, &mounts),
-		Command:    helloGoodbye(),
-		MaxRunTime: 180,
-	}
-
-	td = testTask(t)
-	td.Scopes = []string{
-		"generic-worker:cache:unknown-issuer-app-cache",
-	}
-
-	// check task succeeded, and worker didn't crash when trying to mount cache
-	// (which can happen if it wasn't unmounted after first task failed)
-	_ = submitAndAssert(t, td, payload, "completed", "completed")
 }

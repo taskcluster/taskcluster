@@ -1,3 +1,5 @@
+// +build multiuser
+
 package main
 
 import (

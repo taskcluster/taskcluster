@@ -118,7 +118,7 @@ func (feature *MountsFeature) PersistState() (err error) {
 
 func MkdirAll(task *TaskRun, dir string, perms os.FileMode) error {
 	task.Infof("[mounts] Creating directory %v with permissions 0%o", dir, perms)
-	return os.MkdirAll(dir, perms)
+	return MkdirAllTaskUser(dir, perms)
 }
 
 func MkdirAllOrDie(task *TaskRun, dir string, perms os.FileMode) {
@@ -134,10 +134,10 @@ func (cm *CacheMap) LoadFromFile(stateFile string, cacheDir string) {
 		log.Printf("No %v file found, creating empty CacheMap", stateFile)
 		*cm = CacheMap{}
 		perms := os.FileMode(0700)
-		log.Printf("Creating directory %v with permissions %o", cacheDir, perms)
+		log.Printf("[mounts] Creating worker cache directory %v with permissions 0%o", cacheDir, perms)
 		err := os.MkdirAll(cacheDir, perms)
 		if err != nil {
-			panic(fmt.Errorf("[mounts] Not able to create directory %v with permissions %o: %v", cacheDir, perms, err))
+			panic(fmt.Errorf("[mounts] Not able to create worker cache directory %v with permissions 0%o: %v", cacheDir, perms, err))
 		}
 		return
 	}
@@ -474,7 +474,7 @@ func (w *WritableDirectoryCache) Mount(task *TaskRun) error {
 	// since the mounted folder sits inside the task directory of the task user,
 	// which is owned and controlled by the task user, even if commands execute as
 	// LocalSystem, the file system resources should still be owned by task user.
-	err := makeDirReadableForTaskUser(task, target)
+	err := makeDirReadWritableForTaskUser(task, target)
 	if err != nil {
 		panic(err)
 	}
@@ -537,7 +537,12 @@ func (r *ReadOnlyDirectory) Mount(task *TaskRun) error {
 	if err != nil {
 		return fmt.Errorf("Not able to retrieve FSContent: %v", err)
 	}
-	return extract(c, r.Format, filepath.Join(taskContext.TaskDir, r.Directory), task)
+	dir := filepath.Join(taskContext.TaskDir, r.Directory)
+	err = extract(c, r.Format, dir, task)
+	if err != nil {
+		return err
+	}
+	return makeDirReadWritableForTaskUser(task, dir)
 }
 
 // Nothing to do - original archive file wasn't moved
@@ -575,7 +580,7 @@ func (f *FileMount) Mount(task *TaskRun) error {
 		task.Infof("%v", err)
 		return err
 	}
-	return nil
+	return makeFileReadWritableForTaskUser(task, file)
 }
 
 // Nothing to do - original archive file was copied, not moved

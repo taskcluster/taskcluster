@@ -33,7 +33,7 @@ type MockAWSProvisionedEnvironment struct {
 }
 
 func (m *MockAWSProvisionedEnvironment) ValidPublicConfig(t *testing.T) map[string]interface{} {
-	return map[string]interface{}{
+	result := map[string]interface{}{
 		// Need common caches directory across tests, since files
 		// directory-caches.json and file-caches.json are not per-test.
 		"cachesDir":       filepath.Join(cwd, "caches"),
@@ -50,7 +50,6 @@ func (m *MockAWSProvisionedEnvironment) ValidPublicConfig(t *testing.T) map[stri
 		"queueBaseURL":               tcqueue.New(nil, os.Getenv("TASKCLUSTER_ROOT_URL")).BaseURL,
 		"purgeCacheBaseURL":          tcpurgecache.New(nil, os.Getenv("TASKCLUSTER_ROOT_URL")).BaseURL,
 		"requiredDiskSpaceMegabytes": 16,
-		"runTasksAsCurrentUser":      os.Getenv("GW_TESTS_RUN_AS_TASK_USER") == "",
 		// "secretsBaseURL":                 "http://localhost:13243/secrets",
 		"sentryProject":                  "generic-worker-tests",
 		"shutdownMachineOnIdle":          false,
@@ -64,6 +63,8 @@ func (m *MockAWSProvisionedEnvironment) ValidPublicConfig(t *testing.T) map[stri
 			},
 		},
 	}
+	EngineTestSettings(result)
+	return result
 }
 
 func (m *MockAWSProvisionedEnvironment) ValidPrivateConfig(t *testing.T) map[string]interface{} {

@@ -243,7 +243,7 @@ func TestMissingFileArtifact(t *testing.T) {
 		// what appears in task payload
 		[]Artifact{{
 			Expires: inAnHour,
-			Path:    "TestMissingFileArtifact/no_such_file",
+			Path:    t.Name() + "/no_such_file",
 			Type:    "file",
 		}},
 
@@ -251,11 +251,11 @@ func TestMissingFileArtifact(t *testing.T) {
 		[]TaskArtifact{
 			&ErrorArtifact{
 				BaseArtifact: &BaseArtifact{
-					Name:    "TestMissingFileArtifact/no_such_file",
+					Name:    t.Name() + "/no_such_file",
 					Expires: inAnHour,
 				},
-				Path:    "TestMissingFileArtifact/no_such_file",
-				Message: "Could not read file '" + filepath.Join(taskContext.TaskDir, "TestMissingFileArtifact", "no_such_file") + "'",
+				Path:    t.Name() + "/no_such_file",
+				Message: "Could not read file '" + filepath.Join(taskContext.TaskDir, t.Name(), "no_such_file") + "'",
 				Reason:  "file-missing-on-worker",
 			},
 		})
@@ -270,7 +270,7 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 		// what appears in task payload
 		[]Artifact{{
 			Expires: inAnHour,
-			Path:    "TestMissingDirectoryArtifact/no_such_dir",
+			Path:    t.Name() + "/no_such_dir",
 			Type:    "directory",
 		}},
 
@@ -278,11 +278,11 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 		[]TaskArtifact{
 			&ErrorArtifact{
 				BaseArtifact: &BaseArtifact{
-					Name:    "TestMissingDirectoryArtifact/no_such_dir",
+					Name:    t.Name() + "/no_such_dir",
 					Expires: inAnHour,
 				},
-				Path:    "TestMissingDirectoryArtifact/no_such_dir",
-				Message: "Could not read directory '" + filepath.Join(taskContext.TaskDir, "TestMissingDirectoryArtifact", "no_such_dir") + "'",
+				Path:    t.Name() + "/no_such_dir",
+				Message: "Could not read directory '" + filepath.Join(taskContext.TaskDir, t.Name(), "no_such_dir") + "'",
 				Reason:  "file-missing-on-worker",
 			},
 		})

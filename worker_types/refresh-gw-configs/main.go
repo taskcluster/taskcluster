@@ -83,7 +83,6 @@ func main() {
 				ProvisionerID:                  "",
 				RequiredDiskSpaceMegabytes:     3,
 				RunAfterUserCreation:           "",
-				RunTasksAsCurrentUser:          true,
 				ShutdownMachineOnInternalError: true,
 				ShutdownMachineOnIdle:          true,
 				Subdomain:                      "",

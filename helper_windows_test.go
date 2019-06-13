@@ -73,6 +73,10 @@ func sleep(seconds uint) []string {
 	}
 }
 
+func goGet(packages ...string) []string {
+	return []string{"go get " + strings.Join(packages, " ")}
+}
+
 func goRun(goFile string, args ...string) []string {
 	return goRunFileOutput("", goFile, args...)
 }

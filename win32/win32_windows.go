@@ -14,6 +14,8 @@ import (
 	"time"
 	"unicode/utf8"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 var (
@@ -695,4 +697,65 @@ func GetUserObjectName(obj syscall.Handle) (string, error) {
 		return "", err
 	}
 	return syscall.UTF16ToString(namebuf), nil
+}
+
+func DumpTokenInfo(token syscall.Token) {
+	log.Print("==================================================")
+	primaryGroup, err := token.GetTokenPrimaryGroup()
+	if err != nil {
+		panic(err)
+	}
+	account, domain, accType, err := primaryGroup.PrimaryGroup.LookupAccount("")
+	if err != nil {
+		panic(err)
+	}
+	primaryGroupSid, err := primaryGroup.PrimaryGroup.String()
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("Token Primary Group (%v): %v/%v (%#x)", primaryGroupSid, account, domain, accType)
+	tokenUser, err := token.GetTokenUser()
+	if err != nil {
+		panic(err)
+	}
+	tokenUserSid, err := tokenUser.User.Sid.String()
+	if err != nil {
+		panic(err)
+	}
+	account, domain, accType, err = tokenUser.User.Sid.LookupAccount("")
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("Token User (%v): %v/%v (%#x) - with attributes: %#x", tokenUserSid, account, domain, accType, tokenUser.User.Attributes)
+	tokenSessionID, err := GetTokenSessionID(token)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("Token Session ID: %#x", tokenSessionID)
+	tokenUIAccess, err := GetTokenUIAccess(token)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("Token UI Access: %#x", tokenUIAccess)
+	wt := windows.Token(token)
+	tokenGroups, err := wt.GetTokenGroups()
+	if err != nil {
+		panic(err)
+	}
+	groups := make([]windows.SIDAndAttributes, tokenGroups.GroupCount, tokenGroups.GroupCount)
+	for i := uint32(0); i < tokenGroups.GroupCount; i++ {
+		groups[i] = *(*windows.SIDAndAttributes)(unsafe.Pointer(uintptr(unsafe.Pointer(&tokenGroups.Groups[0])) + uintptr(i)*unsafe.Sizeof(tokenGroups.Groups[0])))
+		groupSid, err := groups[i].Sid.String()
+		if err != nil {
+			panic(fmt.Errorf("WEIRD: got error: %v", err))
+		}
+		account, domain, accType, err := groups[i].Sid.LookupAccount("")
+		if err != nil {
+			log.Printf("Token Group (%v): <<NO_SID>> - with attributes: %#x", groupSid, groups[i].Attributes)
+		} else {
+			log.Printf("Token Group (%v): %v/%v (%#x) - with attributes: %#x", groupSid, account, domain, accType, groups[i].Attributes)
+		}
+	}
+
+	log.Print("==================================================")
 }
