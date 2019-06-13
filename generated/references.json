@@ -234,13 +234,13 @@
           "type": "string"
         },
         "expires": {
-          "description": "Date and time when this worker will expire",
+          "description": "Date and time when this worker will be deleted from the DB",
           "format": "date-time",
           "title": "Expires",
           "type": "string"
         },
         "providerId": {
-          "description": "The provider responsible for managing this worker.\n\nIf this value is `\"null-provider\"`, then the worker pool is pending deletion\nonce all existing workers have terminated.\n",
+          "description": "The provider responsible for managing this worker.",
           "maxLength": 38,
           "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_]*)$",
@@ -274,10 +274,7 @@
           "type": "string"
         },
         "workerPoolId": {
-          "description": "The ID of this worker pool (of the form `providerId/workerType` for compatibility)\n",
-          "pattern": "^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
-          "title": "Worker Pool ID",
-          "type": "string"
+          "$ref": "worker-pool-full.json#/properties/workerPoolId"
         }
       },
       "required": [
