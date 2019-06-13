@@ -10,7 +10,7 @@
 
 
 
-# Install binary
+# Obtain prebuilt release
 
 * Download the latest release for your platform from https://github.com/taskcluster/generic-worker/releases
 * Download the latest release of livelog for your platform from https://github.com/taskcluster/livelog/releases
@@ -32,6 +32,161 @@ Run `./build.sh` to check go version, generate code, build binaries, compile (bu
 `./build.sh` takes optional arguments, `-a` to build all platforms, and `-t` to run tests. By default tests are not run and only the current platform is built.
 
 All being well, the binaries will be built in the directory you executed the `build.sh` script from.
+
+# Guide to installation on worker machines
+
+The following instructions should be considered more as a guide rather than
+concrete requirements.
+
+They document _possible_ (and simple) ways to install and run generic-worker on
+various platforms. Real life production deployments may be integrated quite
+differently.
+
+Each installation guide provides a bootstrap script to runs the generic-worker
+binary. The bootstrapping script can be easily customised (for example, to deal
+with automatic quarantining of workers, waiting for custom events, etc).
+
+## Windows - multiuser build
+
+1. Build or download a `generic-worker.exe` windows multiuser binary.
+
+2. Run the following command to generate an ed25519 private key for signing
+   artifacts:
+
+   * `generic-worker.exe new-ed25519-keypair --file C:\generic-worker\ed25519_key`
+
+   The private key will be written to the file `C:\generic-worker\ed25519_key`,
+   and the public key will be written to standard out. Keep a copy of the
+   public key if you wish to validate artifact signatures.
+
+3. Download NSSM 2.24 from https://nssm.cc/release/nssm-2.24.zip and extract it
+   under `C:\`.
+
+4. Install generic-worker as a Windows service running under the `LocalSystem`
+   account, by running the following command as an `Administrator`:
+
+   * `generic-worker.exe install service` (see `generic-worker.exe --help` to
+     apply non-default configuration settings)
+
+5. Download livelog from https://github.com/taskcluster/livelog/releases and
+   place it in `C:\generic-worker\livelog.exe`.
+
+6. Download taskcluster proxy from
+   https://github.com/taskcluster/taskcluster-proxy/releases and place it in
+   `C:\generic-worker\taskcluster-proxy.exe`.
+
+7. Run `C:\generic-worker\run-generic-worker.bat` as an `Administrator` to
+   create `C:\generic-worker\generic-worker.config`.
+
+8. Edit file `C:\generic-worker\generic-worker.config` with appropriate
+   settings (see `generic-worker.exe --help` for information).
+
+9. Reboot the machine, and the worker should be running. Check logs under
+   `C:\generic-worker\generic-worker.log`.
+
+
+## macOS - multiuser/simple build
+
+ 1. Log into target user account:
+
+    __Simple build__: Create user account `genericworker` to run the worker
+	under, and log in as `genericworker` in a shell.
+
+    __Multiuser build__: Log in as root (`sudo su -`) in a shell.
+
+ 2. Obtain a copy of `generic-worker` and install it under `/usr/local/bin/generic-worker`.
+
+ 3. Obtain a copy of `taskcluster-proxy` and install it under `/usr/local/bin/taskcluster-proxy`.
+
+ 4. Obtain a copy of `livelog` and install it under `/usr/local/bin/livelog`.
+
+ 5. Make `generic-worker`, `taskcluster-proxy`, `livelog` binaries executable:
+
+    * `chmod a+x /usr/local/bin/{generic-worker,taskcluster-proxy,livelog}`
+
+ 6. Generate a key for signing artifacts:
+
+    * `mkdir /etc/generic-worker`
+
+    * __Simple build only__: `sudo chown genericworker:staff /etc/generic-worker`
+
+    * `/usr/local/bin/generic-worker new-ed25519-keypair --file /etc/generic-worker/ed25519_key`
+
+    The private key will be written to the file
+    `/etc/generic-worker/ed25519_key`, and the public key will be written to
+    standard out. Keep a copy of the public key if you wish to validate artifact
+    signatures.
+
+ 6. Create the file `/usr/local/bin/run-generic-worker.sh` with the following content:
+
+    ```
+    #!/bin/bash
+
+    . /etc/rc.common
+
+    CheckForNetwork
+
+    while [ "${NETWORKUP}" != "-YES-" ]
+    do
+      sleep 5
+      NETWORKUP=
+      CheckForNetwork
+    done
+
+    /usr/local/bin/generic-worker run --config /etc/generic-worker/config
+    ```
+
+ 7. Run the following to make the `run-generic-worker.sh` script executable:
+
+    * `chmod a+x /usr/local/bin/run-generic-worker.sh`
+
+ 8. Execute `run-generic-worker.sh` in order to create `/etc/generic-worker/config` file:
+
+    * `/usr/local/bin/run-generic-worker.sh`
+
+ 9. Edit `/etc/generic-worker/config` to have appropriate configuration settings
+    (see `generic-worker --help` for details).
+
+10. Create launch daemon:
+
+    Create the file `/Library/LaunchDaemons/com.mozilla.genericworker.plist`
+    with the following content:
+
+    ```
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+        <dict>
+            <key>Label</key>
+            <string>com.mozilla.genericworker</string>
+            <key>Program</key>
+            <string>/usr/local/bin/run-generic-worker.sh</string>
+            <key>StandardOutPath</key>
+            <string>/var/log/genericworker/stdout.log</string>
+            <key>StandardErrorPath</key>
+            <string>/var/log/genericworker/stderr.log</string>
+            <key>RunAtLoad</key>
+            <true/>
+            <key>UserName</key>
+            <string>root</string> <----------- (for multiuser build)
+            <string>genericworker</string> <----------- (for simple build)
+        </dict>
+    </plist>
+    ```
+
+11. Install launch daemon:
+
+    * `sudo launchctl load -w /Library/LaunchDaemons/com.mozilla.genericworker.plist`
+
+12. Reboot machine, and watch for logs in `/var/log/generic-worker/`.
+
+## Linux simple/docker build
+
+See
+https://github.com/mozilla-releng/build-puppet/tree/531513eae6109d9baca2675f013f9c61b770af19/modules/generic_worker
+and
+https://github.com/mozilla-releng/build-puppet/blob/master/modules/packages/manifests/mozilla/generic_worker.pp
+for inspiration.
 
 # Acquire taskcluster credentials for running tests
 
