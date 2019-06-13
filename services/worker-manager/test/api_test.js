@@ -292,6 +292,25 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     assert.deepStrictEqual(data.workerPools, [], 'Should return an empty array of worker pools');
   });
 
+  test.only('get workers for a given worker pool', async function () {
+    const workerPoolId = 'foobar/baz';
+
+    await helper.Worker.create({
+      workerPoolId,
+      providerId: 'google',
+      workerGroup: 'rust-workers',
+      workerId: 's-3434',
+      created: new Date(),
+      expires: taskcluster.fromNow('1 week'),
+      state: helper.Worker.states.REQUESTED,
+      providerData: {},
+    });
+
+    let data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
+
+    console.log(data);
+  });
+
   test('get worker pool errors - no errors in db', async function() {
     let data = await helper.workerManager.listWorkerPoolErrors('foobar/baz');
 

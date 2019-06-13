@@ -11,6 +11,7 @@ let builder = new APIBuilder({
     workerPoolId: /^[a-zA-Z0-9-_]{1,38}\/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$/,
   },
   context: [
+    'Worker',
     'WorkerPool',
     'WorkerPoolError',
     'providers',
@@ -270,7 +271,8 @@ builder.declare({
     limit,
   };
 
-  const data = await this.Worker.scan({workerPoolId}, scanOptions);
+  const data = await this.context.Worker.scan({workerPoolId}, scanOptions);
+
   const result = {
     workers: data.entries.map(e => e.serializable()),
   };
