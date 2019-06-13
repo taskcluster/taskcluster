@@ -32,7 +32,7 @@ class Build {
   }
 
   async run() {
-    if (this.cmdOptions.noCache) {
+    if (!this.cmdOptions.cache) {
       await rimraf(this.baseDir);
     }
     await mkdirp(this.baseDir);
