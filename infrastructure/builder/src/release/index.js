@@ -13,7 +13,7 @@ class Release {
     this.build = new Build({
       ...cmdOptions,
       push: true, // always push the resuting image
-      noCache: true, // always build from scratch
+      cache: false, // always build from scratch
     });
   }
 
