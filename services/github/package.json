@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-github",
-  "version": "1.0.0",
+  "version": "14.1.0",
   "private": true,
   "scripts": {
     "coverage": "nyc npm test",
