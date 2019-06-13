@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 module "auth_rabbitmq_user" {
   source         = "modules/rabbitmq-user"
   prefix         = "${var.prefix}"
