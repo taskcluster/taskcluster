@@ -246,7 +246,7 @@ Once you have been granted the above scope:
 To see a full description of all the config options available to you, run `generic-worker --help`:
 
 ```
-generic-worker 14.1.2
+generic-worker (multiuser engine) 15.0.0
 
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -256,13 +256,8 @@ and reports back results to the queue.
   Usage:
     generic-worker run                      [--config         CONFIG-FILE]
                                             [--configure-for-aws | --configure-for-gcp]
-    generic-worker install service          [--nssm           NSSM-EXE]
-                                            [--service-name   SERVICE-NAME]
-                                            [--config         CONFIG-FILE]
-                                            [--configure-for-aws | --configure-for-gcp]
     generic-worker show-payload-schema
     generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE
-    generic-worker grant-winsta-access      --sid SID
     generic-worker --help
     generic-worker --version
 
@@ -274,24 +269,10 @@ and reports back results to the queue.
                                             into the release. This option outputs the json
                                             schema used in this version of the generic
                                             worker.
-    install service                         This will install the generic worker as a
-                                            Windows service running under the Local System
-                                            account. This is the preferred way to run the
-                                            worker under Windows. Note, the service will
-                                            be configured to start automatically. If you
-                                            wish the service only to run when certain
-                                            preconditions have been met, it is recommended
-                                            to disable the automatic start of the service,
-                                            after you have installed the service, and
-                                            instead explicitly start the service when the
-                                            preconditions have been met.
     new-ed25519-keypair                     This will generate a fresh, new ed25519
                                             compliant private/public key pair. The public
                                             key will be written to stdout and the private
                                             key will be written to the specified file.
-    grant-winsta-access                     Windows only. Used internally by generic-
-                                            worker to grant a logon SID full control of the
-                                            interactive windows station and desktop.
 
   Options:
     --config CONFIG-FILE                    Json configuration file to use. See
@@ -311,18 +292,10 @@ and reports back results to the queue.
     --configure-for-gcp                     This will create the CONFIG-FILE for a GCP
                                             installation by querying the GCP environment
                                             and setting appropriate values.
-    --nssm NSSM-EXE                         The full path to nssm.exe to use for installing
-                                            the service.
-                                            [default: C:\nssm-2.24\win64\nssm.exe]
-    --service-name SERVICE-NAME             The name that the Windows service should be
-                                            installed under. [default: Generic Worker]
     --file PRIVATE-KEY-FILE                 The path to the file to write the private key
                                             to. The parent directory must already exist.
                                             If the file exists it will be overwritten,
                                             otherwise it will be created.
-    --sid SID                               A SID to be granted full control of the
-                                            interactive windows station and desktop, for
-                                            example: 'S-1-5-5-0-41431533'.
     --help                                  Display this help text.
     --version                               The release version of the generic-worker.
 
@@ -464,7 +437,7 @@ and reports back results to the queue.
                                             option does *not* support running a command as
                                             Administrator.
           runTasksAsCurrentUser             If true, users will not be created for tasks, but
-                                            the current OS user will be used. [default: true]
+                                            the current OS user will be used. [default: false]
           secretsBaseURL                    The base URL for taskcluster secrets API calls.
                                             If not provided, the base URL for API calls is
                                             instead derived from rootURL setting as follows:
@@ -552,13 +525,9 @@ and reports back results to the queue.
     72     The worker is running on spot infrastructure in AWS EC2 and has been served a
            spot termination notice, and therefore has shut down.
     73     The config provided to the worker is invalid.
-    74     Could not grant provided SID full control of interactive windows stations and
-           desktop.
     75     Not able to create an ed25519 key pair.
     76     Not able to save generic-worker config file after fetching it from AWS provisioner
            or Google Cloud metadata.
-    77     Not able to apply required file access permissions to the generic-worker config
-           file so that task users can't read from or write to it.
 ```
 
 # Start the generic worker
@@ -601,7 +570,7 @@ go test -v ./...
 Run the `release.sh` script like so:
 
 ```
-$ ./release.sh 14.1.2
+$ ./release.sh 15.0.0
 ```
 
 This will perform some checks, tag the repo, push the tag to github, which will then trigger travis-ci to run tests, and publish the new release.
