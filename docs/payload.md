@@ -25,23 +25,23 @@ generic-worker, on all the platforms that it is supported on.
 
 # Generic Worker on Windows (multiuser engine)
 
-<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/windows.json"></div>
+<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/multiuser_windows.json"></div>
 
 # Generic Worker on macOS (multiuser engine)
 
-<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/posix.json"></div>
+<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/multiuser_posix.json"></div>
 
 # Generic Worker on macOS (simple engine)
 
-<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/posix.json"></div>
+<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/simple_posix.json"></div>
 
 # Generic Worker on Linux (docker engine)
 
-<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/docker.json"></div>
+<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/docker_posix.json"></div>
 
 # Generic Worker on Linux (simple engine)
 
-<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/posix.json"></div>
+<div data-render-schema="https://schemas.taskcluster.net/generic-worker/v1/simple_posix.json"></div>
 
 The payload comprises of a command to run, environment variables to be set
 (optionally encrypted) and a timeout for the task (`maxRunTime`).
