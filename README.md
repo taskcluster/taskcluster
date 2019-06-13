@@ -8,7 +8,60 @@
 [![Coverage Status](https://coveralls.io/repos/taskcluster/generic-worker/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/generic-worker?branch=master)
 [![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
+# Engines
 
+## Simple engine
+
+This was the first engine to be written, and is, pretty simple. It executes
+processes as child processes of the generic-worker process, under the same user
+account that the generic-worker process runs as. Note, this means that anything
+that the worker has access to, the tasks will also have access to.
+
+This is therefore a pretty insecure engine (tasks can read generic-worker
+config file and thus access taskcluster credentials for claiming work from the
+Queue).
+
+Also it is impossible for the worker to guarantee a clean task environment
+between task runs, since any task can potentially soil the environment by
+changing user settings or for example, leaving files around.
+
+## Multiuser engine
+
+This was the next engine to be written, and solves the problem of task
+isolation by creating unique OS user accounts for each task that is to be run.
+Each task user account (by default) is unprivileged, much like a guest user
+account. Once the task has completed, the task user account is purged, and
+there should be no further trace of the task on the system. The task user does
+not have permission to alter system-wide settings, so after the user account is
+purged, the host environment should be restored to a pristine state.
+
+Since the generic-worker process runs under a different user account to the
+task processes, taskcluster credentials, signing keys, and other private matter
+can be protected from task access. Note, it is the responsibility of the host
+owner to lock down resources as necessary, to ensure that an unprivleged
+account does not have access to anything private on the machine.
+
+Since tasks run on the host of the worker (without any container technology or
+virtualisation technology), toolchains that need to be installed as an
+Administrator typically need to be installed on the host environment.
+Toolchains that do not require Administrator privileges to be installed can be
+installed as task steps.
+
+## Docker engine
+
+Work has started to provide a docker engine, that allows tasks to be executed
+in the context of a docker container running on the host system. This has
+similar benefits as the multiuser engine (task isolation, protection of host
+secrets) but additionally has the advantage that the target execution
+environment can be defined in a docker image, varying significantly from the
+host environment. This makes it possible to have arbitrary toolchains available
+to a task, without needing to roll new host environments, and also allows tasks
+to run task steps as the root user, without impacting the security of the host
+environment.
+
+At the moment there is only elementary support for running tasks inside a
+docker container, and this should not be used in production. The features are
+being implemented in [bug 1499055](https://bugzil.la/1499055).
 
 # Obtain prebuilt release
 
