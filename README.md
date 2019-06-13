@@ -634,6 +634,26 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v15.0.0 since v14.1.2
+========================
+
+With this release of generic-worker, we now have three unique engines:
+
+* simple
+* multiuser
+* docker
+
+The generic-worker source code `README.md` provides information about these
+different engines, together with updated installation instructions.
+
+This should mostly be a no-op change for Windows/Linux, but due to the large
+codebase refactoring and internal reorganisation of code, the major version
+number has been bumped to 15.
+
+### Changes
+
+* [Bug 1499051 - Run tasks under unique OS user accounts on darwin (macOS)](https://bugzil.la/1499051)
+
 In v14.1.2 since v14.1.1
 ========================
 
