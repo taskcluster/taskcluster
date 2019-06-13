@@ -94,8 +94,8 @@ function updateSHA512 {
 
 add_github "taskcluster/generic-worker"    "${NEW_GW_VERSION}" "generic-worker-multiuser-windows-386.exe"   "Intel 80386"
 add_github "taskcluster/generic-worker"    "${NEW_GW_VERSION}" "generic-worker-multiuser-windows-amd64.exe" "x86-64"
-add_github "taskcluster/taskcluster-proxy" "${NEW_TP_VERSION}" "taskcluster-proxy-windows-386.exe"             "Intel 80386"
-add_github "taskcluster/taskcluster-proxy" "${NEW_TP_VERSION}" "taskcluster-proxy-windows-amd64.exe"           "x86-64"
+add_github "taskcluster/taskcluster-proxy" "${NEW_TP_VERSION}" "taskcluster-proxy-windows-386.exe"          "Intel 80386"
+add_github "taskcluster/taskcluster-proxy" "${NEW_TP_VERSION}" "taskcluster-proxy-windows-amd64.exe"        "x86-64"
 
 cat manifest.tt
 "${THIS_SCRIPT_DIR}/lib/tooltool.py" upload -v --authentication-file="$(echo ~/.tooltool-upload)" --message "Upgrade *STAGING* worker types to use generic-worker ${NEW_GW_VERSION} / taskcluster-proxy ${NEW_TP_VERSION}"
@@ -105,7 +105,7 @@ cd OpenCloudConfig/userdata/Manifest
 for MANIFEST in gecko-t-win10-64-gpu-b.json gecko-t-win7-32-gpu-b.json gecko-t-win10-64-cu.json gecko-t-win7-32-cu.json gecko-1-b-win2012-beta.json gecko-t-win10-64-beta.json gecko-t-win7-32-beta.json; do
   cat "${MANIFEST}" > "${MANIFEST}.bak"
   cat "${MANIFEST}.bak" \
-    | sed "s_\\(generic-worker/releases/download/v\\)[^/]*\\(/generic-worker-multiuser-windows-\\)_\\1${NEW_GW_VERSION}\\2_" | sed "s_\\(\"generic-worker \\)[^ ]*\\(.*\\)\$_\\1${NEW_GW_VERSION}\\2_" \
+    | sed "s_\\(generic-worker/releases/download/v\\)[^/]*\\(/generic-worker-multiuser-windows-\\)_\\1${NEW_GW_VERSION}\\2_" | sed "s_\\(\"generic-worker (multiuser engine) \\)[^ ]*\\(.*\\)\$_\\1${NEW_GW_VERSION}\\2_" \
     | sed "s_\\(taskcluster-proxy/releases/download/v\\)[^/]*\\(/taskcluster-proxy-windows-\\)_\\1${NEW_TP_VERSION}\\2_" \
     > "${MANIFEST}"
   cat "${MANIFEST}" > "${MANIFEST}.bak"
