@@ -1,14 +1,21 @@
 #!/bin/bash
 set -u
 
+# for generating a random password of a given length
 # will not work for > 130
 function genpw () {
     openssl rand -base64 94 |  tr -d '\n' | cut -c1-"$1"
 }
 
-genpw 32 > auth_azure_crypto_key
-genpw 32 > hooks_azure_crypto_key
-genpw 32 > secrets_azure_crypto_key
+# for generating a random number bytes of a given length after being decoded
+function genkey() {
+    openssl rand -base64 $1
+}
+
+genkey 32 > auth_azure_crypto_key
+genkey 32 > hooks_azure_crypto_key
+genkey 32 > secrets_azure_crypto_key
+
 genpw 40 > auth_azure_signing_key
 genpw 40 > hooks_azure_signing_key
 genpw 40 > secrets_azure_signing_key
