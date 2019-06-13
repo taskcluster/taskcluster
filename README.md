@@ -13,9 +13,9 @@
 # Obtain prebuilt release
 
 * Download the latest release for your platform from https://github.com/taskcluster/generic-worker/releases
+* Download the latest release of taskcluster-proxy for your platform from https://github.com/taskcluster/taskcluster-proxy/releases
 * Download the latest release of livelog for your platform from https://github.com/taskcluster/livelog/releases
-* Download the latest release of livelog for your platform from https://github.com/taskcluster/taskcluster-proxy/releases
-* For darwin/linux, make the binaries executable: `chmod a+x {generic-worker,livelog}*`
+* For darwin/linux, make the binaries executable: `chmod a+x {generic-worker,livelog,taskcluster-proxy}*`
 
 # Build from source
 
