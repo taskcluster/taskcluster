@@ -212,7 +212,7 @@ module.exports = class MozillaAuth0 {
 
           const { token: taskclusterToken, expires: providerExpires } = jwt.generate({
             rootUrl: this.rootUrl,
-            privateKey: this.jwt.privateKey,
+            key: this.jwt.key,
             sub: user.identity,
             exp: await this.expFromIdToken(extraParams.id_token),
           });

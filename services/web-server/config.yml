@@ -50,8 +50,9 @@ defaults:
     #   clientSecret: !env GITHUB_CLIENT_SECRET
     strategies: !env:json UI_LOGIN_STRATEGIES
     jwt:
-      publicKey: !env JWT_PUBLIC_KEY
-      privateKey: !env JWT_PRIVATE_KEY
+      # this should be a random string, and is used as input to the HS256 JWT
+      # signing algorithm
+      key: !env JWT_KEY
 
 development:
   app:

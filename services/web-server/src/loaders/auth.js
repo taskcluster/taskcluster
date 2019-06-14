@@ -15,7 +15,7 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => 
         const credentialError = new WebServerError('InputError', 'Could not generate credentials for this access token');
         const [jwtError, jwtResponse] = await tryCatch(
           jwt.verify({
-            publicKey: cfg.login.jwt.publicKey,
+            key: cfg.login.jwt.key,
             token: taskclusterToken,
             options: {
               audience: rootUrl,
