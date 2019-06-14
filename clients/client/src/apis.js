@@ -3855,7 +3855,7 @@ module.exports = {
             "continuationToken",
             "limit"
           ],
-          "route": "workers/<workerPoolId>",
+          "route": "/workers/<workerPoolId>",
           "stability": "experimental",
           "title": "Workers in a Worker Pool",
           "type": "function"

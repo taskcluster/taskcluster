@@ -16,7 +16,7 @@ export default class WorkerManager extends Client {
     this.workerPool.entry = {"args":["workerPoolId"],"method":"get","name":"workerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkerPools.entry = {"args":[],"method":"get","name":"listWorkerPools","output":true,"query":["continuationToken","limit"],"route":"/worker-pools","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkerPoolErrors.entry = {"args":["workerPoolId"],"method":"get","name":"listWorkerPoolErrors","output":true,"query":["continuationToken","limit"],"route":"/worker-pool-errors/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.listWorkersForWorkerPool.entry = {"args":["workerPoolId"],"method":"get","name":"listWorkersForWorkerPool","output":true,"query":["continuationToken","limit"],"route":"workers/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.listWorkersForWorkerPool.entry = {"args":["workerPoolId"],"method":"get","name":"listWorkersForWorkerPool","output":true,"query":["continuationToken","limit"],"route":"/workers/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.credentialsGoogle.entry = {"args":["workerPoolId"],"input":true,"method":"post","name":"credentialsGoogle","output":true,"query":[],"route":"/credentials/google/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */

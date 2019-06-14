@@ -159,7 +159,7 @@ class WorkerManager(AsyncBaseClient):
             'name': 'listWorkersForWorkerPool',
             'output': 'v1/worker-list.json#',
             'query': ['continuationToken', 'limit'],
-            'route': 'workers/<workerPoolId>',
+            'route': '/workers/<workerPoolId>',
             'stability': 'experimental',
         },
         "ping": {
