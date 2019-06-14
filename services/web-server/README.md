@@ -73,7 +73,7 @@ The `taskcluster-ui` service expects this service to run on port 3050.
 
 To pass credentials to the server from the GraphQL Playground, click the "HTTP Headers"
 section, and paste a JSON object with a key of "Authorization" with a value of
-"Bearer YOUR_ACCESS_TOKEN", such as:
+"Bearer YOUR_TC_TOKEN", such as:
 
 ```json
 {
@@ -83,16 +83,29 @@ section, and paste a JSON object with a key of "Authorization" with a value of
 
 <img src="https://cldup.com/XDpBc-qY5Q.png" alt="authorization header" height="75%" width="75%" />
 
+You can find your TC token in localStorage after signing into the UI.
+
 ## Login Strategies
 
 Taskcluster supports the following strategies:
 * GitHub
 * Mozilla Auth0
 
+All login strategies require configuration of the `login.jwt.key` configuration value, which is a secret used for HMAC signatures.
+For development, it can be anything.
+
+```sh
+JWT_KEY=this-is-a-secret-value-be-very-careful-with-it
+```
+
 ### GitHub
 
 In order to enable the GitHub login strategy, specify the GitHub client ID and secret for an OAuth application created
-for use against this service and its web UI:
+for use against this service and its web UI.
+
+The callback URL should be `http://localhost:3050/login/github/callback` for local development, or `<rootUrl>/login/github/callback` for a deployment.
+
+Configure it as:
 
 ```sh
 UI_LOGIN_STRATEGIES='{"github": {"clientId": "..", "clientSecret": ".."}}'
