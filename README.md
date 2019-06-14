@@ -299,7 +299,7 @@ Once you have been granted the above scope:
 To see a full description of all the config options available to you, run `generic-worker --help`:
 
 ```
-generic-worker (multiuser engine) 15.0.0
+generic-worker (multiuser engine) 15.0.1
 
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -488,7 +488,10 @@ and reports back results to the queue.
                                             should apply to all generated users (and thus all
                                             tasks) and be run as the task user itself. This
                                             option does *not* support running a command as
-                                            Administrator.
+                                            Administrator. Furthermore, even if
+                                            runTasksAsCurrentUser is true, the script will still
+                                            be executed as the task user, rather than the
+                                            current user (that runs the generic-worker process).
           runTasksAsCurrentUser             If true, users will not be created for tasks, but
                                             the current OS user will be used. [default: false]
           secretsBaseURL                    The base URL for taskcluster secrets API calls.
