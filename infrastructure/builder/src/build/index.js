@@ -55,7 +55,6 @@ class Build {
       return;
     }
     const context = await taskgraph.run({'build-can-start': true});
-    console.log('DONE');
 
     console.log(`Monoimage docker image: ${context['monoimage-docker-image']}`);
     if (!this.cmdOptions.push) {

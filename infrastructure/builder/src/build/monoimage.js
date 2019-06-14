@@ -395,7 +395,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
       await dockerRun({
         image: nodeImage,
         workingDir: '/',
-        command: ['bash', '-cex', 'ls -al /base && tar -C /base/app -cf - . | tar -C /app -xf -'],
+        command: ['bash', '-cex', 'tar -C /base/app -cf - . | tar -C /app -xf -'],
         logfile: `${baseDir}/app-copy.log`,
         utils,
         mounts: [
