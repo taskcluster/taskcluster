@@ -209,7 +209,10 @@ and reports back results to the queue.
                                             should apply to all generated users (and thus all
                                             tasks) and be run as the task user itself. This
                                             option does *not* support running a command as
-                                            Administrator.` + runTasksAsCurrentUserUsage() + `
+                                            Administrator. Furthermore, even if
+                                            runTasksAsCurrentUser is true, the script will still
+                                            be executed as the task user, rather than the
+                                            current user (that runs the generic-worker process).` + runTasksAsCurrentUserUsage() + `
           secretsBaseURL                    The base URL for taskcluster secrets API calls.
                                             If not provided, the base URL for API calls is
                                             instead derived from rootURL setting as follows:

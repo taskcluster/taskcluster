@@ -19,30 +19,33 @@ type PlatformData struct {
 }
 
 func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
-	pd = &PlatformData{}
 	if currentUser {
-		return
+		return &PlatformData{}, nil
 	}
+	return TaskUserPlatformData()
+}
+
+func TaskUserPlatformData() (pd *PlatformData, err error) {
 	user, err := kc.AutoLoginUsername()
 	if err != nil {
-		return
+		return nil, err
 	}
 	uid, err := strconv.Atoi(runtime.CommandOutputOrPanic(`id`, `-ur`, user))
 	if err != nil {
-		return
+		return nil, err
 	}
 	gid, err := strconv.Atoi(runtime.CommandOutputOrPanic(`id`, `-gr`, user))
 	if err != nil {
-		return
+		return nil, err
 	}
-	pd.SysProcAttr = &syscall.SysProcAttr{
-		Credential: &syscall.Credential{
-			Uid: uint32(uid),
-			Gid: uint32(gid),
+	return &PlatformData{
+		SysProcAttr: &syscall.SysProcAttr{
+			Credential: &syscall.Credential{
+				Uid: uint32(uid),
+				Gid: uint32(gid),
+			},
 		},
-	}
-	//	user.HomeDir = runtime.CommandOutputOrPanic(`/bin/bash`, `-c`, `dscl -q . -read '/Users/`+user.Name+`' NFSHomeDirectory | sed 's/^[^ ]*: //'`)
-	return
+	}, nil
 }
 
 func (pd *PlatformData) ReleaseResources() error {

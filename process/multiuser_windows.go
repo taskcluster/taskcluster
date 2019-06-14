@@ -28,16 +28,24 @@ func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
 			LoginInfo: &LoginInfo{},
 		}, nil
 	}
+	pd, err = TaskUserPlatformData()
+	if err != nil {
+		return
+	}
+	// This is the SID of "Everyone" group
+	// TODO: we should probably change this to the logon SID of the user
+	sid := "S-1-1-0"
+	GrantSIDWinstaAccess(sid, pd)
+	return
+}
+
+func TaskUserPlatformData() (pd *PlatformData, err error) {
 	pd = &PlatformData{}
 	pd.LoginInfo, err = InteractiveLoginInfo(3 * time.Minute)
 	if err != nil {
 		return
 	}
 	pd.CommandAccessToken = pd.LoginInfo.AccessToken()
-	// This is the SID of "Everyone" group
-	// TODO: we should probably change this to the logon SID of the user
-	sid := "S-1-1-0"
-	GrantSIDWinstaAccess(sid, pd)
 	return
 }
 
