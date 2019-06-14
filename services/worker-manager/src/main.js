@@ -190,7 +190,17 @@ let load = loader({
   },
 
   providers: {
-    requires: ['cfg', 'monitor', 'notify', 'estimator', 'Worker', 'WorkerPool', 'WorkerPoolError', 'schemaset', 'fakeCloudApis'],
+    requires: [
+      'cfg',
+      'monitor',
+      'notify',
+      'estimator',
+      'Worker',
+      'WorkerPool',
+      'WorkerPoolError',
+      'schemaset',
+      'fakeCloudApis',
+    ],
     setup: async ({cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError, schemaset, fakeCloudApis}) =>
       new Providers().setup({
         cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError, fakeCloudApis,
