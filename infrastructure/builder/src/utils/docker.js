@@ -27,15 +27,23 @@ const _dockerSetup = ({baseDir}) => {
       AutoRemove: true,
       User: `${uid}:${gid}`,
       Env: [
-        'HOME=/app',
+        'HOME=/base/app',
       ],
-      Binds: [
-        `${baseDir}/passwd:/etc/passwd:ro`,
-        `${baseDir}/group:/etc/group:ro`,
+      Mounts: [{
+        Type: 'bind',
+        Target: '/etc/passwd',
+        Source: `${baseDir}/passwd`,
+        ReadOnly: true,
+      }, {
+        Type: 'bind',
+        Target: '/etc/group',
+        Source: `${baseDir}/group`,
+        ReadOnly: true,
+      },
       ],
     };
 
-    return {docker, dockerRunOpts};
+    return {docker, dockerRunOpts, uid, gid};
   };
 
   if (!(baseDir in _dockerSetup.memos)) {
@@ -56,9 +64,10 @@ _dockerSetup.memos = {};
  * - env -- environment variables to set
  * - workingDir -- directory to run in
  * - image -- image to run it in
+ * - asRoot -- run as root
  * - utils -- taskgraph utils (waitFor, etc.)
  */
-exports.dockerRun = async ({baseDir, logfile, command, env, binds, workingDir, image, utils}) => {
+exports.dockerRun = async ({baseDir, logfile, command, env, mounts, workingDir, image, asRoot, utils}) => {
   const {docker, dockerRunOpts} = await _dockerSetup({baseDir});
 
   const output = new PassThrough().pipe(new DemuxDockerStream());
@@ -68,7 +77,7 @@ exports.dockerRun = async ({baseDir, logfile, command, env, binds, workingDir, i
     errorAddendum = ` Logs available in ${logfile}`;
   }
 
-  const {Binds, Env, ...otherOpts} = dockerRunOpts;
+  const {Mounts, Env, ...otherOpts} = dockerRunOpts;
   const containerOpts = {
     Image: image,
     AttachStdin: false,
@@ -81,13 +90,17 @@ exports.dockerRun = async ({baseDir, logfile, command, env, binds, workingDir, i
     WorkingDir: workingDir,
     Cmd: command,
     HostConfig: {
-      Binds: [...Binds, ...binds || []],
+      Mounts: [...Mounts, ...mounts || []],
       // AutoRemove would help clean up stray containers, but means we cannot reliably
       // get the exit status of the container
       AutoRemove: false,
     },
     ...otherOpts,
   };
+
+  if (asRoot) {
+    delete containerOpts.User;
+  }
 
   // this is roughly the equivalent of `docker run`, performed as individual
   // docker API calls.
@@ -285,4 +298,56 @@ exports.dockerPush = async ({baseDir, tag, logfile, utils}) => {
       }
     });
   }));
+};
+
+/**
+ * Ensure a docker volume exists, clearing it (by deleting and re-creating) if
+ * desired.
+ *
+ * - baseDir -- base directory for operations
+ * - name -- name of the volume
+ * - empty -- if true, ensure it's empty
+ * - image -- image that can run `chown`
+ * - utils -- taskgraph utils (waitFor, etc.)
+ */
+exports.ensureDockerVolume = async ({baseDir, name, empty, image, utils}) => {
+  const {docker, uid, gid} = await _dockerSetup({baseDir});
+  const vol = docker.getVolume(name);
+
+  let exists;
+  try {
+    await vol.inspect();
+    exists = true;
+  } catch(e) {
+    if (e.statusCode !== 404) {
+      throw e;
+    }
+    exists = false;
+  }
+
+  if (exists && empty) {
+    utils.status({message: 'removing old docker volume'});
+    await vol.remove();
+    exists = false;
+  }
+
+  if (!exists) {
+    utils.status({message: 'creating docker volume'});
+    await docker.createVolume({Name: name});
+
+    utils.status({message: 'changing ownership of docker volume'});
+
+    await exports.dockerRun({
+      image,
+      workingDir: '/',
+      command: ['sh', '-cex', `chown ${uid}:${gid} /base`],
+      logfile: `${baseDir}/volume-chown.log`,
+      asRoot: true,
+      utils,
+      mounts: [{Type: 'volume', Target: '/base', Source: name}],
+      baseDir,
+    });
+
+    utils.status({message: 'docker volume ready'});
+  }
 };
