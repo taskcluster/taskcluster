@@ -1,6 +1,7 @@
 package standalone
 
 import (
+	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 )
@@ -34,6 +35,17 @@ func (p *StandaloneProvider) ConfigureRun(run *runner.Run) error {
 
 	run.WorkerConfig = run.WorkerConfig.Merge(nil)
 
+	return nil
+}
+
+func (p *StandaloneProvider) SetProtocol(proto *protocol.Protocol) {
+}
+
+func (p *StandaloneProvider) WorkerStarted() error {
+	return nil
+}
+
+func (p *StandaloneProvider) WorkerFinished() error {
 	return nil
 }
 

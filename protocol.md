@@ -50,4 +50,17 @@ If a worker is run outside of a taskcluster-worker-runner context, it will never
 
 The following sections describe the defined message types, each under a heading giving the corresponding capability.
 
-_(none yet)_
+### graceful-termination
+
+Graceful termination is a way of indicating that the worker should shut down gracefully but quickly.
+Typically, workers should stop claiming tasks and resolve any running tasks as `worker-shutdown`.
+
+Graceful termination is initiated by a message from start-worker containing a `finish-tasks` property.
+If this property is true, the worker may take the time to finish any running tasks.
+If false, then shutdown is imminent and the worker should simply clean up and exit.
+
+```
+~{"type": "graceful-termination", "finish-tasks": false}
+```
+
+There is no reponse message.

@@ -2,10 +2,13 @@ package awsprovisioner
 
 import (
 	"fmt"
+	"log"
 	"strings"
+	"time"
 
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
+	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
@@ -15,6 +18,8 @@ type AwsProvisionerProvider struct {
 	runnercfg                   *runner.RunnerConfig
 	awsProvisionerClientFactory tc.AwsProvisionerClientFactory
 	metadataService             MetadataService
+	proto                       *protocol.Protocol
+	terminationTicker           *time.Ticker
 }
 
 func (p *AwsProvisionerProvider) ConfigureRun(run *runner.Run) error {
@@ -114,6 +119,46 @@ func (p *AwsProvisionerProvider) ConfigureRun(run *runner.Run) error {
 	return nil
 }
 
+func (p *AwsProvisionerProvider) SetProtocol(proto *protocol.Protocol) {
+	p.proto = proto
+}
+
+func (p *AwsProvisionerProvider) checkTerminationTime() {
+	_, err := p.metadataService.queryMetadata("/meta-data/spot/termination-time")
+	// if the file exists (so, no error), it's time to go away
+	if err == nil {
+		log.Println("EC2 Metadata Service says termination is imminent")
+		if p.proto.Capable("graceful-termination") {
+			p.proto.Send(protocol.Message{
+				Type: "graceful-termination",
+				Properties: map[string]interface{}{
+					// spot termination generally doesn't leave time to finish tasks
+					"finish-tasks": false,
+				},
+			})
+		}
+	}
+}
+
+func (p *AwsProvisionerProvider) WorkerStarted() error {
+	// start polling for graceful shutdown
+	p.terminationTicker = time.NewTicker(30 * time.Second)
+	go func() {
+		for {
+			<-p.terminationTicker.C
+			log.Println("polling for termination-time")
+			p.checkTerminationTime()
+		}
+	}()
+
+	return nil
+}
+
+func (p *AwsProvisionerProvider) WorkerFinished() error {
+	p.terminationTicker.Stop()
+	return nil
+}
+
 func clientFactory(rootURL string, credentials *tcclient.Credentials) (tc.AwsProvisioner, error) {
 	prov := tcawsprovisioner.New(credentials)
 	prov.BaseURL = tcclient.BaseURL(rootURL, "aws-provisioner", "v1")
@@ -142,5 +187,11 @@ func new(runnercfg *runner.RunnerConfig, awsProvisionerClientFactory tc.AwsProvi
 	if metadataService == nil {
 		metadataService = &realMetadataService{}
 	}
-	return &AwsProvisionerProvider{runnercfg, awsProvisionerClientFactory, metadataService}, nil
+	return &AwsProvisionerProvider{
+		runnercfg:                   runnercfg,
+		awsProvisionerClientFactory: awsProvisionerClientFactory,
+		metadataService:             metadataService,
+		proto:                       nil,
+		terminationTicker:           nil,
+	}, nil
 }

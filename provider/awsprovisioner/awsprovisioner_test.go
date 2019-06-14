@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
 )
@@ -90,4 +91,42 @@ func TestAwsProviderConfigureRun(t *testing.T) {
 
 	assert.Equal(t, true, run.WorkerConfig.MustGet("from-user-data"), "value for from-user-data")
 	assert.Equal(t, true, run.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
+}
+
+func TestCheckTerminationTime(t *testing.T) {
+	transp := protocol.NewFakeTransport()
+	proto := protocol.NewProtocol(transp)
+
+	metaData := map[string]string{}
+	p := &AwsProvisionerProvider{
+		runnercfg:                   nil,
+		awsProvisionerClientFactory: nil,
+		metadataService:             &fakeMetadataService{nil, nil, metaData},
+		proto:                       proto,
+		terminationTicker:           nil,
+	}
+
+	p.checkTerminationTime()
+
+	// not time yet..
+	assert.Equal(t, []protocol.Message{}, transp.Messages)
+
+	metaData["/meta-data/spot/termination-time"] = "now!"
+	p.checkTerminationTime()
+
+	// protocol does not have the capability set..
+	assert.Equal(t, []protocol.Message{}, transp.Messages)
+
+	proto.Capabilities.Add("graceful-termination")
+	p.checkTerminationTime()
+
+	// now we send a message..
+	assert.Equal(t, []protocol.Message{
+		protocol.Message{
+			Type: "graceful-termination",
+			Properties: map[string]interface{}{
+				"finish-tasks": false,
+			},
+		},
+	}, transp.Messages)
 }
