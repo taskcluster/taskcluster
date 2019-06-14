@@ -1,7 +1,7 @@
 project_name: "taskcluster-notify"
 secrets:
   aws_access_key_id: ".Values.awsAccessKeyId"
-  aws_region: ".Values.awsRegion"
+  aws_region: ".Values.tfAwsRegion"
   azure_account: ".Values.tfAzureAccount"
   denylisted_notification_table_name: "DenylistedNotification"
   email_blacklist: "[]"
@@ -20,7 +20,7 @@ secrets:
   pulse_password: ".Values.notifyPulsePassword"
   pulse_username: ".Values.notifyPulseUsername"
   pulse_vhost: ".Values.pulseVhost"
-  sqs_queue: ".Values.sqsQueue"
+  sqs_queue: ".Values.awsSqsQueue"
   taskcluster_access_token: ".Values.notifyAccessToken"
   taskcluster_client_id: "static/taskcluster/notify"
   trust_proxy: "true"
