@@ -17,3 +17,13 @@ variable "rabbitmq_vhost" {
   type        = "string"
   description = "rabbitmq vhost name"
 }
+
+variable "email_source_address" {
+  type	      = "string"
+  description = "email address from which notify emails"
+}
+
+variable "notify_ses_arn" {
+  type	      = "string"
+  description = "SES queue from which notify emails"
+}

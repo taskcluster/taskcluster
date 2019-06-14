@@ -34,11 +34,6 @@ variable "irc_server" {
   description = "server for irc bot."
 }
 
-variable "notify_ses_arn" {
-  type        = "string"
-  description = "arn of an ses address. This must be manually set up in aws."
-}
-
 variable "root_url" {
   type        = "string"
   description = "Taskcluster rootUrl"
