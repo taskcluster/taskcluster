@@ -251,7 +251,7 @@ builder.declare({
 
 builder.declare({
   method: 'get',
-  route: 'workers/:workerPoolId',
+  route: '/workers/:workerPoolId',
   query: {
     continuationToken: /./,
     limit: /^[0-9]+$/,
@@ -264,14 +264,15 @@ builder.declare({
     'Get the list of all the existing workers in a given worker pool.',
   ].join('\n'),
 }, async function(req, res) {
-  const { workerPoolId, continuationToken } = req.query;
-  const limit = parseInt(req.query.limit || 100, 30);
   const scanOptions = {
-    continuation: continuationToken,
-    limit,
+    continuation: req.query.continuationToken,
+    limit: parseInt(req.query.limit || 100, 10),
+    matchPartition: 'exact',
   };
 
-  const data = await this.context.Worker.scan({workerPoolId}, scanOptions);
+  const data = await this.Worker.scan({
+    workerPoolId: req.params.workerPoolId,
+  }, scanOptions);
 
   const result = {
     workers: data.entries.map(e => e.serializable()),

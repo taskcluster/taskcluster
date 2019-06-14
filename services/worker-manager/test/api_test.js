@@ -292,10 +292,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     assert.deepStrictEqual(data.workerPools, [], 'Should return an empty array of worker pools');
   });
 
-  test.only('get workers for a given worker pool', async function () {
-    const workerPoolId = 'foobar/baz';
-
-    await helper.Worker.create({
+  test('get one worker for a given worker pool', async function () {
+    const workerPoolId = 'r/r';
+    const input = {
       workerPoolId,
       providerId: 'google',
       workerGroup: 'rust-workers',
@@ -304,11 +303,63 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       expires: taskcluster.fromNow('1 week'),
       state: helper.Worker.states.REQUESTED,
       providerData: {},
+    };
+
+    await helper.Worker.create(input);
+
+    let data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
+    input.created = input.created.toJSON();
+    input.expires = input.expires.toJSON();
+    delete input.providerData;
+
+    assert.deepStrictEqual(data.workers, [input]);
+  });
+
+  test('get many workers for a given worker pool', async function () {
+    const workerPoolId = 'apple/apple';
+    let input = [
+      {
+        workerPoolId,
+        providerId: 'google',
+        workerGroup: 'rust-workers',
+        workerId: 's-3434',
+        created: new Date(),
+        expires: taskcluster.fromNow('1 week'),
+        state: helper.Worker.states.RUNNING,
+        providerData: {},
+      },
+      {
+        workerPoolId,
+        providerId: 'google',
+        workerGroup: 'rust-workers',
+        workerId: 's-555',
+        created: new Date(),
+        expires: taskcluster.fromNow('1 week'),
+        state: helper.Worker.states.STOPPED,
+        providerData: {},
+      },
+    ];
+
+    await Promise.all(input.map(i => helper.Worker.create(i)));
+
+    input = input.map(i => {
+      i.created = i.created.toJSON();
+      i.expires = i.expires.toJSON();
+      delete i.providerData;
+      return i;
     });
 
     let data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
 
-    console.log(data);
+    assert.deepStrictEqual(data.workers, input);
+  });
+
+  test('get workers for a given worker pool - no workers', async function () {
+    const workerPoolId = 'r/r';
+
+    let data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
+
+    assert.deepStrictEqual(data.workers, []);
   });
 
   test('get worker pool errors - no errors in db', async function() {

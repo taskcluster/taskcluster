@@ -226,6 +226,18 @@ const Worker = Entity.configure({
   },
 });
 
+Worker.prototype.serializable = function() {
+  return {
+    workerPoolId: this.workerPoolId,
+    workerGroup: this.workerGroup,
+    workerId: this.workerId,
+    providerId: this.providerId,
+    created: this.created.toJSON(),
+    expires: this.expires.toJSON(),
+    state: this.state,
+  };
+};
+
 // This is made available to make it slightly less likely that people
 // typo worker states. We can change this if there are new requirements
 // from providers we make in the future. Will need to make sure that the
