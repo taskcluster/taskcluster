@@ -25,14 +25,14 @@ spec:
          backend:
            serviceName: taskcluster-web-server
            servicePort: 80
-#       - path: '/api/auth/*'
-#         backend:
-#           serviceName:  taskcluster-auth
-#           servicePort: 80
-#       - path: '/api/secrets/*'
-#         backend:
-#           serviceName:  taskcluster-secrets
-#           servicePort: 80
+       - path: '/api/auth/*'
+         backend:
+           serviceName:  taskcluster-auth
+           servicePort: 80
+       - path: '/api/secrets/*'
+         backend:
+           serviceName:  taskcluster-secrets
+           servicePort: 80
 #       - path: '/api/queue/*'
 #         backend:
 #           serviceName:  taskcluster-queue
@@ -41,10 +41,10 @@ spec:
 #         backend:
 #           serviceName:  taskcluster-hooks
 #           servicePort: 80
-#       - path: '/api/index/*'
-#         backend:
-#           serviceName:  taskcluster-index
-#           servicePort: 80
+       - path: '/api/index/*'
+         backend:
+           serviceName:  taskcluster-index
+           servicePort: 80
 #       - path: '/api/events/*'
 #         backend:
 #           serviceName:  taskcluster-events
