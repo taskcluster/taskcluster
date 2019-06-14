@@ -634,6 +634,11 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v15.0.1 since v15.0.0
+========================
+
+* [Bug 1559210 - generic-worker: runAfterUserCreation to run as task user even if runTasksAsCurrentUser is true](https://bugzil.la/1559210)
+
 In v15.0.0 since v14.1.2
 ========================
 
