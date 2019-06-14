@@ -62,7 +62,14 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 			panic(err)
 		}
 		if script := config.RunAfterUserCreation; script != "" {
-			command, err := process.NewCommand([]string{script}, taskContext.TaskDir, nil, pd)
+			// See https://bugzil.la/1559210
+			// Regardless of whether we are running tasks as current user or
+			// not, task initialisation steps should be run as task user.
+			pdTaskUser, err := process.TaskUserPlatformData()
+			if err != nil {
+				panic(err)
+			}
+			command, err := process.NewCommand([]string{script}, taskContext.TaskDir, nil, pdTaskUser)
 			if err != nil {
 				panic(err)
 			}
