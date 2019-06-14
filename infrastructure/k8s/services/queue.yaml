@@ -14,7 +14,7 @@ secrets:
   public_artifact_bucket: ".Values.tfPublicArtifactBucket"
   public_blob_artifact_bucket: ".Values.tfPublicBlobArtifactBucket"
   publish_metadata: "false"
-  pulse_hostname: ".Values.pulseHostname"
+  pulse_hostname: ".Values.tfRabbitmqHostname"
   pulse_password: ".Values.queuePulsePassword"
   pulse_username: ".Values.queuePulseUsername"
   pulse_vhost: ".Values.pulseVhost"

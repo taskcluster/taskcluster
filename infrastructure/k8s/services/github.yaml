@@ -7,7 +7,7 @@ secrets:
   monitoring_enable: "true"
   node_env: "production"
   publish_metadata: "false"
-  pulse_hostname: ".Values.pulseHostname"
+  pulse_hostname: ".Values.tfRabbitmqHostname"
   pulse_password: ".Values.githubPulsePassword"
   pulse_username: ".Values.githubPulseUsername"
   pulse_vhost: ".Values.pulseVhost"

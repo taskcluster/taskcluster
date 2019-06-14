@@ -5,7 +5,7 @@ secrets:
   monitoring_project: "taskcluster-web-server"
   node_env: "production"
   public_url: ".Values.rootUrl"
-  pulse_hostname: ".Values.pulseHostname"
+  pulse_hostname: ".Values.tfRabbitmqHostname"
   pulse_password: ".Values.webServerPulsePassword"
   pulse_username: ".Values.webServerPulseUsername"
   pulse_vhost: ".Values.pulseVhost"
