@@ -155,7 +155,9 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
 
   ensureTask(tasks, {
     title: 'Set Up Docker Volume',
-    requires: [],
+    requires: [
+      `docker-image-${nodeAlpineImage}`,
+    ],
     provides: [
       'build-docker-volume',
     ],
@@ -179,6 +181,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
     requires: [
       'build-can-start', // (used to delay building in `yarn release`)
       'build-docker-volume',
+      `docker-image-${nodeImage}`,
     ],
     provides: [
       'monorepo-git-descr', // `git describe --tag --always` output
@@ -265,6 +268,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
       const appStampDir = path.join(baseDir, 'app-stamp');
       const stamp = new Stamp({step: 'monoimage-build', version: 1},
         {nodeVersion},
+        requirements['monorepo-stamp'],
         ...[...buildRequires]
           .filter(req => req.endsWith('-stamp'))
           .map(req => requirements[req]));
