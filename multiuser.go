@@ -22,9 +22,7 @@ const (
 func secureConfigFile() {
 	if !config.RunTasksAsCurrentUser {
 		secureError := fileutil.SecureFiles([]string{configFile})
-		if secureError != nil {
-			os.Exit(int(CANT_SECURE_CONFIG))
-		}
+		exitOnError(CANT_SECURE_CONFIG, secureError, "Not able to secure config file %v", configFile)
 	}
 }
 

@@ -54,12 +54,6 @@ func exitCode74() string {
            desktop.`
 }
 
-func exitCode77() string {
-	return `
-    77     Not able to apply required file access permissions to the generic-worker config
-           file so that task users can't read from or write to it.`
-}
-
 func sidSID() string {
 	return `
     --sid SID                               A SID to be granted full control of the

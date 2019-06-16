@@ -133,14 +133,9 @@ func main() {
 		// for config settings not provided in the user-supplied config file.
 		if _, statError := os.Stat(configFile); os.IsNotExist(statError) && config != nil {
 			err = config.Persist(configFile)
-			if err != nil {
-				os.Exit(int(CANT_SAVE_CONFIG))
-			}
+			exitOnError(CANT_SAVE_CONFIG, err, "Not able to persist config file %v", configFile)
 		}
-		if err != nil {
-			log.Printf("Error loading configuration: %v", err)
-			os.Exit(int(CANT_LOAD_CONFIG))
-		}
+		exitOnError(CANT_LOAD_CONFIG, err, "Error loading configuration file %v", configFile)
 
 		// Config known to be loaded successfully at this point...
 
@@ -175,18 +170,10 @@ func main() {
 	case arguments["install"]:
 		// platform specific...
 		err := install(arguments)
-		if err != nil {
-			log.Println("Error installing generic worker:")
-			log.Printf("%#v\n", err)
-			os.Exit(int(CANT_INSTALL_GENERIC_WORKER))
-		}
+		exitOnError(CANT_INSTALL_GENERIC_WORKER, err, "Error installing generic worker")
 	case arguments["new-ed25519-keypair"]:
 		err := generateEd25519Keypair(arguments["--file"].(string))
-		if err != nil {
-			log.Println("Error generating ed25519 keypair for worker:")
-			log.Printf("%#v\n", err)
-			os.Exit(int(CANT_CREATE_ED25519_KEYPAIR))
-		}
+		exitOnError(CANT_CREATE_ED25519_KEYPAIR, err, "Error generating ed25519 keypair %v for worker", arguments["--file"].(string))
 	default:
 		// platform specific...
 		os.Exit(int(platformTargets(arguments)))
@@ -1194,4 +1181,13 @@ func RotateTaskEnvironment() (reboot bool) {
 		log.Printf("WARNING: failed to remove old task directories/users: %v", err)
 	}
 	return false
+}
+
+func exitOnError(exitCode ExitCode, err error, logMessage string, args ...interface{}) {
+	if err == nil {
+		return
+	}
+	log.Printf(logMessage, args...)
+	log.Printf("%v", err)
+	os.Exit(int(exitCode))
 }
