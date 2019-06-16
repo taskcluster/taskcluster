@@ -128,8 +128,7 @@ with automatic quarantining of workers, waiting for custom events, etc).
    https://github.com/taskcluster/taskcluster-proxy/releases and place it in
    `C:\generic-worker\taskcluster-proxy.exe`.
 
-7. Run `C:\generic-worker\run-generic-worker.bat` as an `Administrator` to
-   create `C:\generic-worker\generic-worker.config`.
+7. Create `C:\generic-worker\generic-worker.config` with appopriate values.
 
 8. Edit file `C:\generic-worker\generic-worker.config` with appropriate
    settings (see `generic-worker.exe --help` for information).
@@ -147,11 +146,16 @@ with automatic quarantining of workers, waiting for custom events, etc).
 
     __Multiuser build__: Log in as root (`sudo su -`) in a shell.
 
- 2. Obtain a copy of `generic-worker` and install it under `/usr/local/bin/generic-worker`.
+ 2. Download `generic-worker` from
+    https://github.com/taskcluster/generic-worker/releases and place it in
+    `/usr/local/bin/generic-worker`.
 
- 3. Obtain a copy of `taskcluster-proxy` and install it under `/usr/local/bin/taskcluster-proxy`.
+ 3. Download livelog from https://github.com/taskcluster/livelog/releases and
+    place it in `/usr/local/bin/livelog`.
 
- 4. Obtain a copy of `livelog` and install it under `/usr/local/bin/livelog`.
+ 4. Download taskcluster proxy from
+    https://github.com/taskcluster/taskcluster-proxy/releases and place it in
+    `/usr/local/bin/taskcluster-proxy`.
 
  5. Make `generic-worker`, `taskcluster-proxy`, `livelog` binaries executable:
 
@@ -193,14 +197,37 @@ with automatic quarantining of workers, waiting for custom events, etc).
 
     * `chmod a+x /usr/local/bin/run-generic-worker.sh`
 
- 8. Execute `run-generic-worker.sh` in order to create `/etc/generic-worker/config` file:
+ 8. Create `/etc/generic-worker/config` with appropriate configuration settings
+    (see `generic-worker --help` for details). Something like this:
 
-    * `/usr/local/bin/run-generic-worker.sh`
+    ```
+    {
+      "accessToken": "********************************************",
+      "cachesDir": "/Library/Caches/generic-worker/caches",
+      "cleanUpTaskDirs": true,
+      "clientId": "project/foo/bar/my/client",
+      "disableReboots": false,
+      "downloadsDir": "/Library/Caches/generic-worker/downloads",
+      "ed25519SigningKeyLocation": "/etc/generic-worker/ed25519_key",
+      "provisionerId": "my-dear-provisioner",
+      "publicIP": "1.2.3.4",
+      "requiredDiskSpaceMegabytes": 2048,
+      "rootURL": "https://my-root-url.com",
+      "sentryProject": "generic-worker",
+      "shutdownMachineOnIdle": false,
+      "shutdownMachineOnInternalError": false,
+      "subdomain": "taskcluster-worker.net",
+      "taskclusterProxyPort": 8080,
+      "tasksDir": "/Users",
+      "workerGroup": "my-worker-group",
+      "workerId": "my-lovely-computer",
+      "workerType": "my-special-worker-type",
+      "wstAudience": "taskcluster-net",
+      "wstServerURL": "https://websocktunnel.tasks.build"
+    }
+    ```
 
- 9. Edit `/etc/generic-worker/config` to have appropriate configuration settings
-    (see `generic-worker --help` for details).
-
-10. Create launch daemon:
+ 9. Create launch daemon:
 
     Create the file `/Library/LaunchDaemons/com.mozilla.genericworker.plist`
     with the following content:
@@ -227,11 +254,12 @@ with automatic quarantining of workers, waiting for custom events, etc).
     </plist>
     ```
 
-11. Install launch daemon:
+10. Install launch daemon:
 
     * `sudo launchctl load -w /Library/LaunchDaemons/com.mozilla.genericworker.plist`
 
-12. Reboot machine, and watch for logs in `/var/log/generic-worker/`.
+11. Watch for logs in `/var/log/generic-worker/`.
+
 
 ## Linux simple/docker build
 
