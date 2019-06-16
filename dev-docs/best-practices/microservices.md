@@ -121,3 +121,26 @@ Be friendly and document the errors in the API's `description` property, as they
 
 *Do not use* `taskcluster-lib-stats` or `raven`.
 Instead, use `taskcluster-lib-monitor` as described in its documentation.
+
+### taskcluster-web-server
+
+#### GraphQL Schemas
+
+For fields that may trigger an additional request for a client,
+add a comment above the field definition of the form "Note: This field will trigger an additional request."
+This will make sure developers are aware of possible performance penalties. For example:
+
+```graphql
+type Hook {
+  hookGroupId: ID!
+  hookId: ID!
+  metadata: HookMetadata!
+  schedule: [String]!
+  task: JSON!
+  expires: DateTime!
+  deadline: DateTime!
+  triggerSchema: JSON!
+  # Note: This field will trigger an additional request.
+  status(hookGroupId: ID = hookGroupId, hookId: ID = hookId): HookStatus
+}
+```

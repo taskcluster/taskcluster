@@ -176,7 +176,7 @@ type AwsProvisionerWorkerTypeSummary {
   requestedCapacity: Int!
   pendingCapacity: Int!
   runningCapacity: Int!
-
+  # Note: This field will trigger an additional request.
   pendingTasks: Int!
 }
 
