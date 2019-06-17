@@ -13,11 +13,11 @@ See [the taskcluster-auth
 docs](/docs/reference/platform/auth/clients) for more detailed
 information.
 
-The set of defined clients is visible in the [Clients
-tool](http://tools.taskcluster.net/auth/clients/). This interface helpfully
-shows both the scopes configured for the client, and the "expanded scopes" that
-result after all roles are expanded. Note that, in keeping with the open
-nature of Taskcluster, anyone can see the full list of clients.
+The set of defined clients is visible in the "Clients" tool in the Taskcluster
+UI.  This interface helpfully shows both the scopes configured for the client,
+and the "expanded scopes" that result after all roles are expanded. Note that,
+in keeping with the open nature of Taskcluster, anyone can see the full list of
+clients.
 
 **NOTE** Taskcluster does not identify users. All API calls are made with
 Taskcluster credentials, which include a `clientId`, but that identifier does

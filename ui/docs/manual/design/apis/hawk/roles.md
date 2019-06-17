@@ -26,9 +26,8 @@ In practice, roles are used in a few ways within Taskcluster:
 
 See the [namespaces](/docs/manual/using/namespaces) document for more information.
 
-The set of defined roles is visible in the [Roles
-tool](http://tools.taskcluster.net/auth/roles/). This interface helpfully
-shows both the scopes configured for the role, and the "expanded scopes" for
-that role. The latter value can be a little misleading for `*`-suffixed
-roles, so be careful and if in doubt, create a throwaway client to test your
-assumptions.
+The set of defined roles is visible in the Taskcluster UI.  This interface
+helpfully shows both the scopes configured for the role, and the "expanded
+scopes" for that role. The latter value can be a little misleading for
+`*`-suffixed roles, so be careful and if in doubt, create a throwaway client to
+test your assumptions.
