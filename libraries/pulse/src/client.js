@@ -1,9 +1,37 @@
 const events = require('events');
-const debug = require('debug');
 const amqplib = require('amqplib');
 const assert = require('assert');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 let clientCounter = 0;
+
+defaultMonitorManager.register({
+  name: 'pulseConnected',
+  title: 'Connection to pulse established',
+  type: 'pulse.connected',
+  level: 'info',
+  version: 1,
+  description: `
+    A connection to Pulse has been established.  Taskcluster services
+    automatically reconnect to Pulse periodically and in the event of
+    an error, but rapid reconnections may signal a Pulse failure.`,
+  fields: {},
+});
+
+defaultMonitorManager.register({
+  name: 'pulseDisconnected',
+  title: 'Connection to pulse has ended',
+  type: 'pulse.disconnected',
+  level: 'info',
+  version: 1,
+  description: `
+    A connection to Pulse has ended or failed.  This may be due to normal
+    reconnection or to an error communicating with Pulse.  The service
+    automatically reconnects, so even an error is not necessarily a problem.`,
+  fields: {
+    error: 'The error message, if the disconnection was due to an error.',
+  },
+});
 
 /**
  * An object to create connections to a pulse server.  This class will
@@ -55,13 +83,11 @@ class Client extends events.EventEmitter {
     this.connections = [];
     this.lastConnectionTime = 0;
     this.id = ++clientCounter;
-    this.debug = debug(`taskcluster-lib-pulse.client-${this.id}`);
 
     // we might have many event listeners in a busy service, each listening for
     // 'connected'
     this.setMaxListeners(Infinity);
 
-    this.debug('starting');
     this.running = true;
     this.recycle();
 
@@ -72,7 +98,6 @@ class Client extends events.EventEmitter {
 
   async stop() {
     assert(this.running, 'Not running');
-    this.debug('stopping');
     this.running = false;
     clearInterval(this._recycleInterval);
     this._recycleInterval = null;
@@ -97,8 +122,6 @@ class Client extends events.EventEmitter {
       // Note that errors here are likely to leave the connection in a "hung" state;
       // nothing here should depend on network access or anything else that can
       // fail intermittently.
-      this.debug('recycling');
-
       if (this.connections.length) {
         const currentConn = this.connections[0];
         currentConn.retire();
@@ -125,7 +148,7 @@ class Client extends events.EventEmitter {
 
   _startConnection() {
     // This method is part of recycle() and bears the same cautions about failure
-    const newConn = new Connection(this._retirementDelay);
+    const newConn = new Connection(this.monitor, this._retirementDelay);
 
     // don't actually start connecting until at least minReconnectionInterval has passed
     const earliestConnectionTime = this.lastConnectionTime + this._minReconnectionInterval;
@@ -143,7 +166,9 @@ class Client extends events.EventEmitter {
         const {connectionString} = await this.credentials();
         newConn.connect(connectionString);
       } catch (err) {
-        this.debug(`Error while fetching credentials: ${err}`);
+        this.monitor.log.pulseDisconnected({
+          error: `Error while fetching credentials: ${err}`,
+        });
         newConn.failed();
       }
     }, now < earliestConnectionTime ? earliestConnectionTime - now : 0);
@@ -277,19 +302,18 @@ let nextConnectionId = 1;
  *
  */
 class Connection extends events.EventEmitter {
-  constructor(retirementDelay) {
+  constructor(monitor, retirementDelay) {
     super();
 
+    this.monitor = monitor;
     this.retirementDelay = retirementDelay;
     this.id = nextConnectionId++;
     this.amqp = null;
-    this.debug = debug(`taskcluster-lib-pulse.conn-${this.id}`);
 
     // we might have many event listeners in a busy service, each listening for
     // 'retiring'
     this.setMaxListeners(Infinity);
 
-    this.debug('waiting');
     this.state = 'waiting';
   }
 
@@ -298,7 +322,6 @@ class Connection extends events.EventEmitter {
       return;
     }
 
-    this.debug('connecting');
     this.state = 'connecting';
 
     const amqp = await amqplib.connect(connectionString, {
@@ -306,7 +329,7 @@ class Connection extends events.EventEmitter {
       noDelay: true,
       timeout: 30 * 1000,
     }).catch(err => {
-      this.debug(`Error while connecting: ${err}`);
+      this.monitor.log.pulseDisconnected({error: `${err}`});
       this.failed();
     });
 
@@ -321,14 +344,14 @@ class Connection extends events.EventEmitter {
 
       amqp.on('error', err => {
         if (this.state === 'connected') {
-          this.debug(`error from aqplib connection: ${err}`);
+          this.monitor.log.pulseDisconnected({error: `${err}`});
           this.failed();
         }
       });
 
       amqp.on('close', err => {
         if (this.state === 'connected') {
-          this.debug('connection closed unexpectedly');
+          this.monitor.log.pulseDisconnected({error: 'connection closed unexpectedly'});
           this.failed();
         }
       });
@@ -339,7 +362,7 @@ class Connection extends events.EventEmitter {
       amqp.on('blocked', () => { this.emit('blocked'); });
       amqp.on('unblocked', () => { this.emit('unblocked'); });
 
-      this.debug('connected');
+      this.monitor.log.pulseConnected();
       this.state = 'connected';
       this.emit('connected');
     }
@@ -350,7 +373,6 @@ class Connection extends events.EventEmitter {
       // failure doesn't matter at this point
       return;
     }
-    this.debug('failed');
     this.emit('failed');
   }
 
@@ -359,13 +381,11 @@ class Connection extends events.EventEmitter {
       return;
     }
 
-    this.debug('retiring');
     this.state = 'retiring';
     this.emit('retiring');
 
     // actually close this connection 30 seconds later
     setTimeout(() => {
-      this.debug('finished; closing AMQP connection');
       if (this.amqp) {
         // ignore errors in close
         this.amqp.close().catch(err => {});
