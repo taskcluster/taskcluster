@@ -8,6 +8,7 @@ const exec = promisify(require('child_process').execFile);
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
+const unlink = promisify(fs.unlink);
 
 const REPO_ROOT = path.join(__dirname, '../../../../');
 exports.REPO_ROOT = REPO_ROOT;
@@ -73,6 +74,13 @@ let modifyRepoPromise = Promise.resolve();
 exports.modifyRepoFile = (filename, modifier) => {
   modifyRepoPromise = modifyRepoPromise.catch(() => {}).then(() => modifyRepoFile(filename, modifier));
   return modifyRepoPromise;
+};
+
+/**
+ * Remove a file from the repo
+ */
+exports.removeRepoFile = async (filename) => {
+  await unlink(filename);
 };
 
 /**

@@ -102,6 +102,10 @@ class ChangeLog {
    * Get the formatted list of snippets as a string
    */
   format() {
+    if (this.snippets.length === 0) {
+      return 'No changes';
+    }
+
     const levelLabels = {
       'major': '[MAJOR] ',
       'minor': '[minor] ',

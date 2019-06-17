@@ -188,7 +188,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
         'monoimage-image-on-registry': imageOnRegistry,
       };
 
-      if (imageOnRegistry && !cmdOptions.cache) {
+      if (imageOnRegistry && cmdOptions.noCache) {
         throw new Error(
           `Image ${tag} already exists on the registry, but --no-cache was given.`);
       }
