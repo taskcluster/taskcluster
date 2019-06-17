@@ -24,14 +24,6 @@ This has a number of advantages over other options:
    tasks with only slightly different parameters, avoiding repetition of complex
    task-definition logic in all of the related services.
 
-The disadvantage being Taskcluster does not provide an easy way to design decision
-tasks. The Gecko (Firefox) project has a sophisticated implementation, but it
-is not designed to be used outside of the Gecko source tree. Other projects
-are left to implement decision tasks on their own.
-
-We on the Taskcluster team would like to remedy this shortcoming, but it is not
-an active project.  Contributors are welcome!
-
 ## Conventions
 
 We have established a few conventions about decision tasks. These are based on

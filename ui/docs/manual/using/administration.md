@@ -28,9 +28,8 @@ the Taskcluster :: Service Requests component for help.
 
 Any administrative task you can perform with the Tools site is simply making
 API calls to Taskcluster services, so it can be automated.  The
-[Taskcluster-CLI](https://github.com/taskcluster/taskcluster-cli) and
-[Taskcluster-Admin](https://github.com/taskcluster/taskcluster-admin) tools may
-be helpful in this regard.
+[Taskcluster-CLI](https://github.com/taskcluster/taskcluster-cli) tool may be
+helpful in this regard.
 
 Bear in mind that configuration changes are far removed from your project's
 source code. Best practice suggests putting as much of your logic as possible

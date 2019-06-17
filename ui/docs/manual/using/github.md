@@ -12,11 +12,9 @@ simple: add the integration to the Github organization and repository
 (this requires administrator rights on the organization), then add a file called
 `.taskcluster.yml` to the root of the repository.
 
-We recommend using [The quickstart
-tool](https://tools.taskcluster.net/quickstart/) to get started.  For more
-in-depth documentation, [the reference
-pages](/docs/reference/integrations/github)
-provide detailed information.
+We recommend using the quickstart tool in the Taskcluster UI to get started.
+For more in-depth documentation, [the reference
+pages](/docs/reference/integrations/github) provide detailed information.
 
 ## Task Security
 

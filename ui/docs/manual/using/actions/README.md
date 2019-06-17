@@ -29,5 +29,3 @@ At a very high level, the process looks like this:
     That action task is responsible for carrying out the named action,
     and may create new sub-tasks if necessary (for example, to
     re-trigger a task).
-
-For Gecko developers, there is [documentation](https://firefox-source-docs.mozilla.org/taskcluster/taskcluster/action-implementation.html) on how to write action tasks in-tree.
