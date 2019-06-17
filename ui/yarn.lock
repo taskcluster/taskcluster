@@ -4995,11 +4995,6 @@ foreach@^2.0.5:
   resolved "https://registry.yarnpkg.com/foreach/-/foreach-2.0.5.tgz#0bee005018aeb260d0a3af3ae658dd0136ec1b99"
   integrity sha1-C+4AUBiusmDQo6865ljdATbsG5k=
 
-format-util@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/format-util/-/format-util-1.0.3.tgz#032dca4a116262a12c43f4c3ec8566416c5b2d95"
-  integrity sha1-Ay3KShFiYqEsQ/TD7IVmQWxbLZU=
-
 forwarded@~0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/forwarded/-/forwarded-0.1.2.tgz#98c23dab1175657b8c0573e8ceccd91b0ff18c84"
@@ -6480,7 +6475,7 @@ js-yaml@3.12.0:
     argparse "^1.0.7"
     esprima "^4.0.0"
 
-js-yaml@3.x, js-yaml@^3.11.0, js-yaml@^3.12.0, js-yaml@^3.12.1, js-yaml@^3.8.1, js-yaml@^3.9.0:
+js-yaml@3.x, js-yaml@^3.11.0, js-yaml@^3.12.0, js-yaml@^3.8.1, js-yaml@^3.9.0:
   version "3.12.1"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.12.1.tgz#295c8632a18a23e054cf5c9d3cecafe678167600"
   integrity sha512-um46hB9wNOKlwkHgiuyEVAybXBjwFUV0Z/RaHJblRd9DXltue9FTYvzCr9ErQrK9Adz5MU4gHWVaNUfdmrC8qA==
@@ -6492,6 +6487,14 @@ js-yaml@^3.13.0:
   version "3.13.0"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.13.0.tgz#38ee7178ac0eea2c97ff6d96fff4b18c7d8cf98e"
   integrity sha512-pZZoSxcCYco+DIKBTimr67J6Hy+EYGZDY/HCWC+iAEA9h1ByhMXAIVUXMcMFpOCxQ/xjXmPI2MkDL5HRm5eFrQ==
+  dependencies:
+    argparse "^1.0.7"
+    esprima "^4.0.0"
+
+js-yaml@^3.13.1:
+  version "3.13.1"
+  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.13.1.tgz#aff151b30bfdfa8e49e05da22e7415e9dfa37847"
+  integrity sha512-YfbcO7jXDdyj0DGxYVSlSeQNHbD7XPWvrVWeVUujrQEoZzWJIRrCPoyk6kL6IAjAG2IolMK4T0hNUe0HOUs5Jw==
   dependencies:
     argparse "^1.0.7"
     esprima "^4.0.0"
@@ -6538,14 +6541,14 @@ json-schema-defaults@^0.4.0:
   dependencies:
     argparse "^1.0.9"
 
-json-schema-ref-parser@^6.0.3:
-  version "6.0.3"
-  resolved "https://registry.yarnpkg.com/json-schema-ref-parser/-/json-schema-ref-parser-6.0.3.tgz#0c2e4bc6e89bef59293e354f71afff63d6a4d845"
-  integrity sha512-Ds/0541IPed88JSiMb3CBeUsxfL5Eosc0r97z0QMSXiBJTYKZLhOAGZd8zFVfpkKaRb4zDAnumyFYxnHLmbQmw==
+json-schema-ref-parser@^7.0.0:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/json-schema-ref-parser/-/json-schema-ref-parser-7.0.1.tgz#aba71c99c3559e4f87c70a764a444376733260c3"
+  integrity sha512-dyKV6n/x9oyRoXrPYckbPu4P3ldcWz7ecI7zMR6AG3fNAQqdn79YFnJ/wwINXsQLgtc0LnYTkulUiTKbWZ6TTg==
   dependencies:
     call-me-maybe "^1.0.1"
-    js-yaml "^3.12.1"
-    ono "^4.0.11"
+    js-yaml "^3.13.1"
+    ono "^5.0.1"
 
 json-schema-traverse@^0.4.1:
   version "0.4.1"
@@ -8216,12 +8219,10 @@ onetime@^2.0.0:
   dependencies:
     mimic-fn "^1.0.0"
 
-ono@^4.0.11:
-  version "4.0.11"
-  resolved "https://registry.yarnpkg.com/ono/-/ono-4.0.11.tgz#c7f4209b3e396e8a44ef43b9cedc7f5d791d221d"
-  integrity sha512-jQ31cORBFE6td25deYeD80wxKBMj+zBmHTrVxnc6CKhx8gho6ipmWM5zj/oeoqioZ99yqBls9Z/9Nss7J26G2g==
-  dependencies:
-    format-util "^1.0.3"
+ono@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/ono/-/ono-5.0.1.tgz#a39e0af7ab2c2a143a06f08ad9d187e61f9da0c8"
+  integrity sha512-4/4BPGHX8OuDDNx1SrOqTOI7zajPjvBvrG1jDG3hDq4qBpoKlzG2d83Vdz26hvv0FFWYsLdHf+1Vu/k2d8Ww9w==
 
 opn@5.2.0:
   version "5.2.0"
@@ -11287,7 +11288,7 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-lib-scopes@link:../libraries/scopes":
-  version "10.0.1"
+  version "14.1.0"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
