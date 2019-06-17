@@ -6998,10 +6998,10 @@ shell-quote@^1.6.1:
     array-reduce "~0.0.0"
     jsonify "~0.0.0"
 
-sift@^7.0.0:
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/sift/-/sift-7.0.1.tgz#47d62c50b159d316f1372f8b53f9c10cd21a4b08"
-  integrity sha512-oqD7PMJ+uO6jV9EQCl0LrRw1OwsiPsiFQR5AR30heR+4Dl7jBBbDLnNvWiak20tzZlSE1H7RB30SX/1j/YYT7g==
+sift@^8.0.0:
+  version "8.4.0"
+  resolved "https://registry.yarnpkg.com/sift/-/sift-8.4.0.tgz#b859ef0a5e81ef39863563656db356d4c365b976"
+  integrity sha512-KD19SaM3ZFPNvvcY01UejAJEh8OoldQcA2mIpv8ef/6epzwu0kfpBtrmORDd87RtqbC+77cBjjC5PBrrZUp9Vg==
 
 signal-exit@^3.0.0, signal-exit@^3.0.2:
   version "3.0.2"

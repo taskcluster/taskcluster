@@ -84,7 +84,7 @@
     "rimraf": "^2.6.2",
     "sentry-api": "^0.1.1",
     "serialize-error": "^4.0.0",
-    "sift": "^7.0.0",
+    "sift": "^8.0.0",
     "slugid": "^2.0.0",
     "statsum": "^0.6.0",
     "subscriptions-transport-ws": "^0.9.7",
