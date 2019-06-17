@@ -11545,6 +11545,21 @@
           "version": 1
         },
         {
+          "description": "A hook was fired, meaning that a task was created for it.  This is also\nlogged when the attempt to fire the hook failed, in which case the 'result'\nfield is \"failed\".  Since this is often the result of user error, the error\nmessage itself is not included; consult the last-fires for the indicated\nhook to see them.",
+          "fields": {
+            "firedBy": "The event leading to the hook being fired",
+            "hookGroupId": "The group ID of the hook that failed",
+            "hookId": "The ID of the hook that failed",
+            "result": "\"success\" (task created), \"failure\" (task not created), or \"declined\" (hook did not generate a task)\"",
+            "taskId": "The taskId of the task that was (or would have been) created"
+          },
+          "level": "info",
+          "name": "hookFire",
+          "title": "A hook was fired",
+          "type": "hook-fire",
+          "version": 1
+        },
+        {
           "description": "A pulse publisher has been notified by the pulse server\nthat it has been blocked, usually because the server is\nresource-constrained.  If `blocked` is false, then the\nnotification is that the publisher has been unblocked\nafter having previously been blocked.",
           "fields": {
             "blocked": "If true, the publisher has been blocked; if false, it has been unblocked."

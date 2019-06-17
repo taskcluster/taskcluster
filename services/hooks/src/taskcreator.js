@@ -119,8 +119,7 @@ class TaskCreator {
 
       if (!task) {
         this.monitor.count(`fire.${context.firedBy}.declined`);
-        debug(`hook ${hook.hookGroupId}/${hook.hookId} declined to produce a task`);
-        return {response: {}};
+        return {response: {}, declined: true};
       }
       this.monitor.count(`fire.${context.firedBy}.created`);
 
@@ -155,7 +154,15 @@ class TaskCreator {
       }
     };
 
-    const {lastFire, error, response} = await inner();
+    const {lastFire, error, response, declined} = await inner();
+
+    this.monitor.log.hookFire({
+      hookGroupId: hook.hookGroupId,
+      hookId: hook.hookId,
+      firedBy: context.firedBy,
+      taskId: options.taskId,
+      result: error ? 'failure' : (declined ? 'declined' : 'success'),
+    });
 
     if (lastFire) {
       await this.appendLastFire(lastFire);
