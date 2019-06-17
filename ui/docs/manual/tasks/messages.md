@@ -4,7 +4,7 @@ title: Messages
 order: 70
 ---
 
-Taskcluster publishes pulse messages when tasks change state.
+The Taskcluster Queue service publishes pulse messages when tasks change state.
 [Pulse](/docs/manual/design/apis/pulse) is a message bus with a publish /
 subscribe model.  These messages are sent by default with a route containing
 several of the task's ID's, but can be "copied" (using the AMQP `Cc` header) to
