@@ -20,10 +20,8 @@ scopes.
 
 ## Using Hooks
 
-Hooks are named with a `hookGroupId` and a `hookId`. The group IDs follow a
-pattern given in the [namespaces document](/docs/manual/design/namespaces). The
-`hookId` is arbitrary, although it is a good idea to think carefully about the
-names and use long, hierarchical names.
+Hooks are named with a `hookGroupId` and a `hookId`. The [namespaces
+document](/docs/manual/using/namespaces) has some suggestions for naming hooks.
 
 The scopes available to a hook are given by a role. This allows separation of
 hook management from scope management, and the full generality of scope

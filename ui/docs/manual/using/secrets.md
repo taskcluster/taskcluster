@@ -17,8 +17,8 @@ The [Secrets service](/docs/reference/core/secrets) provides a simple way to sto
 JSON-formatted secrets in a secure fashion. Access to secrets can be controlled
 by [scopes](/docs/manual/design/apis/hawk/scopes).
 
-The most common approach is to use the Tools site to create secrets named
-according to the [namespaces document](/docs/manual/design/namespaces), then read
+The most common approach is to use the Taskcluster UI to create secrets named
+according to the [namespaces document](/docs/manual/usin/namespaces), then read
 those secrets in tasks via the taskcluster proxy. Access to the secrets is
 granted by adding a scope to the repository's role.
 
