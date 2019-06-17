@@ -251,10 +251,12 @@ class GoogleProvider extends Provider {
     return taskcluster.createTemporaryCredentials({
       clientId: `worker/google/${this.project}/${workerGroup}/${workerId}`,
       scopes: [
-        `assume:worker-type:${workerPoolId}`,
+        `assume:worker-type:${workerPoolId}`, // deprecated role
+        `assume:worker-pool:${workerPoolId}`,
         `assume:worker-id:${workerGroup}/${workerId}`,
         `queue:worker-id:${workerGroup}/${workerId}`,
-        `secrets:get:worker-type:${workerPoolId}`,
+        `secrets:get:worker-type:${workerPoolId}`, // deprecated secret name
+        `secrets:get:worker-pool:${workerPoolId}`,
         `queue:claim-work:${workerPoolId}`,
       ],
       start: taskcluster.fromNow('-15 minutes'),
