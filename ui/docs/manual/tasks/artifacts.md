@@ -23,7 +23,7 @@ do not handle most of these cases.
 
 Taskcluster's Queue service supports a number of artifact types, including
 several cloud data-storage back-ends as well as two special types: errors and
-references. Error artifacts will always return an HTTP 403 (Forbidden), with
+references. Error artifacts will always return an HTTP 424 (Failed Dependency), with
 message and details supplied by the task. Reference artifacts return a 303 (See
 Other) redirecting the client to another URL.
 
