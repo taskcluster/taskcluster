@@ -299,8 +299,8 @@
             },
             "name": "workers",
             "next": {
-              "path": "manual/task-execution/worker-types",
-              "title": "Worker Types"
+              "path": "manual/task-execution/worker-pools",
+              "title": "Worker Pools"
             },
             "path": "manual/task-execution/workers",
             "prev": {
@@ -316,16 +316,15 @@
             "children": [
             ],
             "data": {
-              "filename": "task-execution/worker-types.md",
               "order": 30,
-              "title": "Worker Types"
+              "title": "Worker Pools"
             },
-            "name": "worker-types",
+            "name": "worker-pools",
             "next": {
               "path": "manual/task-execution/provisioning",
               "title": "Provisioning"
             },
-            "path": "manual/task-execution/worker-types",
+            "path": "manual/task-execution/worker-pools",
             "prev": {
               "path": "manual/task-execution/workers",
               "title": "Workers"
@@ -350,8 +349,8 @@
             },
             "path": "manual/task-execution/provisioning",
             "prev": {
-              "path": "manual/task-execution/worker-types",
-              "title": "Worker Types"
+              "path": "manual/task-execution/worker-pools",
+              "title": "Worker Pools"
             },
             "up": {
               "path": "manual/task-execution",

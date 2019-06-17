@@ -12,8 +12,8 @@ both identifiers. Thus `gcp-provisioner/persona-build` and
 `rackspace-provisioner/persona-build` are completely different worker types,
 despite sharing the same `workerType` identifier.
 
-*NOTE*: [RFC#145](https://github.com/taskcluster/taskcluster-rfcs/pull/145) addresses this confusion by introducing the terms `workerPoolId` and `taskQueueId`.
-However, it is not yet fully implemented.
+*NOTE*: [RFC#145](https://github.com/taskcluster/taskcluster-rfcs/pull/145) addresses this confusion by introducing the term `taskQueueId` to name the queue in which a task is stored.
+This RFC is not yet fully implemented, so the Queue API still uses identifiers `provisionerId` and `workerType`.
 
 Workers of the same worker type all consume tasks from a single queue, as
 [described later](/docs/manual/task-execution/queues), and as such are
