@@ -4463,6 +4463,26 @@ await asyncWorkerManager.listWorkerPoolErrors(workerPoolId) # -> result
 await asyncWorkerManager.listWorkerPoolErrors(workerPoolId='value') # -> result
 ```
 
+#### Workers in a Worker Pool
+Get the list of all the existing workers in a given worker pool.
+
+
+
+Takes the following arguments:
+
+  * `workerPoolId`
+
+Has required output schema
+
+```python
+# Sync calls
+workerManager.listWorkersForWorkerPool(workerPoolId) # -> result
+workerManager.listWorkersForWorkerPool(workerPoolId='value') # -> result
+# Async call
+await asyncWorkerManager.listWorkersForWorkerPool(workerPoolId) # -> result
+await asyncWorkerManager.listWorkersForWorkerPool(workerPoolId='value') # -> result
+```
+
 #### Google Credentials
 Get Taskcluster credentials for a worker given an Instance Identity Token
 

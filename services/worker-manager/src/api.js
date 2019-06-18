@@ -11,6 +11,7 @@ let builder = new APIBuilder({
     workerPoolId: /^[a-zA-Z0-9-_]{1,38}\/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$/,
   },
   context: [
+    'Worker',
     'WorkerPool',
     'WorkerPoolError',
     'providers',
@@ -240,6 +241,41 @@ builder.declare({
   }, scanOptions);
   const result = {
     workerPoolErrors: data.entries.map(e => e.serializable()),
+  };
+
+  if (data.continuation) {
+    result.continuationToken = data.continuation;
+  }
+  return res.reply(result);
+});
+
+builder.declare({
+  method: 'get',
+  route: '/workers/:workerPoolId',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
+  name: 'listWorkersForWorkerPool',
+  title: 'Workers in a Worker Pool',
+  stability: APIBuilder.stability.experimental,
+  output: 'worker-list.yml',
+  description: [
+    'Get the list of all the existing workers in a given worker pool.',
+  ].join('\n'),
+}, async function(req, res) {
+  const scanOptions = {
+    continuation: req.query.continuationToken,
+    limit: parseInt(req.query.limit || 100, 10),
+    matchPartition: 'exact',
+  };
+
+  const data = await this.Worker.scan({
+    workerPoolId: req.params.workerPoolId,
+  }, scanOptions);
+
+  const result = {
+    workers: data.entries.map(e => e.serializable()),
   };
 
   if (data.continuation) {

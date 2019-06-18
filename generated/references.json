@@ -192,6 +192,107 @@
   },
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/worker-list.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "A list of workers in a given worker pool",
+      "properties": {
+        "continuationToken": {
+          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of workers in the worker-manager.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called `listWorkerPools` with `continuationToken`\nuntil you get a result without a `continuationToken`.\n",
+          "title": "Continuation Token",
+          "type": "string"
+        },
+        "workers": {
+          "description": "List of all workers in a given worker pool",
+          "items": {
+            "$ref": "worker-full.json#"
+          },
+          "title": "Workers",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "workers"
+      ],
+      "title": "Worker List in a Given Worker Pool",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/worker-list.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/worker-full.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "A complete worker definition.",
+      "properties": {
+        "created": {
+          "description": "Date and time when this worker was created",
+          "format": "date-time",
+          "title": "Created",
+          "type": "string"
+        },
+        "expires": {
+          "description": "Date and time when this worker will be deleted from the DB",
+          "format": "date-time",
+          "title": "Expires",
+          "type": "string"
+        },
+        "providerId": {
+          "description": "The provider that had started the worker and responsible for managing it.\nCan be different from the provider that's currently in the worker pool config.\n",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "title": "Provider",
+          "type": "string"
+        },
+        "state": {
+          "description": "A string specifying the state this worker is in so far as worker-manager knows.\n",
+          "enum": [
+            "requested",
+            "running",
+            "stopped"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "workerGroup": {
+          "description": "Worker group to which this worker belongs",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "title": "Worker group",
+          "type": "string"
+        },
+        "workerId": {
+          "description": "Worker ID",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "title": "Worker ID",
+          "type": "string"
+        },
+        "workerPoolId": {
+          "$ref": "worker-pool-full.json#/properties/workerPoolId"
+        }
+      },
+      "required": [
+        "workerPoolId",
+        "workerGroup",
+        "workerId",
+        "providerId",
+        "created",
+        "expires",
+        "state"
+      ],
+      "title": "Worker Full Definition",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/worker-full.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/temp-creds-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -8200,6 +8301,23 @@
           "route": "/worker-pool-errors/<workerPoolId>",
           "stability": "experimental",
           "title": "List Worker Pool Errors",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId"
+          ],
+          "description": "Get the list of all the existing workers in a given worker pool.",
+          "method": "get",
+          "name": "listWorkersForWorkerPool",
+          "output": "v1/worker-list.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/workers/<workerPoolId>",
+          "stability": "experimental",
+          "title": "Workers in a Worker Pool",
           "type": "function"
         },
         {
