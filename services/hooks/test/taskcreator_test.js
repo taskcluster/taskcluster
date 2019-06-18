@@ -9,6 +9,7 @@ const _ = require('lodash');
 const hookDef = require('./test_definition');
 const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 suite(testing.suiteName(), function() {
   helper.secrets.mockSuite('TaskCreator', ['taskcluster'], function(mock, skipping) {
@@ -120,6 +121,21 @@ suite(testing.suiteName(), function() {
       }
     };
 
+    const assertFireLogged = fields =>
+      assert.deepEqual(
+        defaultMonitorManager.messages.find(({Type}) => Type === 'hook-fire'),
+        {
+          Fields: {
+            hookGroupId: 'tc-hooks-tests',
+            hookId: 'tc-test-hook',
+            ...fields,
+            v: 1,
+          },
+          Logger: "taskcluster.hooks.taskcreator",
+          Severity: 6,
+          Type: "hook-fire",
+        });
+
     test('firing a real task succeeds', async function() {
       let hook = await createTestHook([], {
         context: '${context}',
@@ -134,6 +150,7 @@ suite(testing.suiteName(), function() {
         assume(resp.status.taskId).equals(taskId);
         assume(resp.status.workerType).equals(hook.task.then.workerType);
       }
+      assertFireLogged({firedBy: "schedule", taskId, result: 'success'});
     });
 
     test('firing a real task with a JSON-e context succeeds', async function() {
@@ -164,6 +181,7 @@ suite(testing.suiteName(), function() {
       });
       assume(new Date(task.deadline) - new Date(task.created)).to.equal(60000);
       assume(new Date(task.expires) - new Date(task.created)).to.equal(120000);
+      assertFireLogged({firedBy: "schedule", taskId, result: 'success'});
     });
 
     test('firing a hook where the json-e renders to nothing does nothing', async function() {
@@ -171,8 +189,9 @@ suite(testing.suiteName(), function() {
       hook.task = {$if: 'false', then: hook.task};
       await helper.Hook.create(hook);
       let taskId = taskcluster.slugid();
-      await creator.fire(hook, {});
+      await creator.fire(hook, {firedBy: 'schedule'}, {taskId});
       await assertNoTask(taskId);
+      assertFireLogged({firedBy: "schedule", taskId, result: 'declined'});
     });
 
     test('firing a hook where the json-e fails to render fails', async function() {
@@ -196,6 +215,9 @@ suite(testing.suiteName(), function() {
         assume(lf.result).to.equal('error');
         assume(lf.error).to.match(/unknown context value uhoh/);
         assume(lf.firedBy).to.equal('me');
+
+        assertFireLogged({firedBy: "me", taskId, result: 'failure'});
+
         return;
       }
       throw new Error('should have seen an error from .fire');
