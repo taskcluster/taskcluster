@@ -40,7 +40,7 @@ module "notify_user" {
             "Resource": "*",
             "Condition": {
               "StringEquals": {
-                "ses:FromAddress": "${local.email_source_address}"
+                "ses:FromAddress": "${var.email_source_address}"
               }
             }
         }
