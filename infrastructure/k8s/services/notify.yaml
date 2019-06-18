@@ -6,7 +6,7 @@ secrets:
   azure_account: ".Values.tfAzureAccount"
   denylisted_notification_table_name: "DenylistedNotification"
   email_blacklist: "[]"
-  email_source_address: ".Values.tfEmailSourceAddress"
+  email_source_address: ".Values.emailSourceAddress"
   force_ssl: "false"
   irc_nick: ".Values.ircNick"
   irc_password: ".Values.ircPassword"
