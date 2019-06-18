@@ -240,7 +240,7 @@
           "type": "string"
         },
         "providerId": {
-          "description": "The provider responsible for managing this worker.",
+          "description": "The provider that had started the worker and responsible for managing it.\nCan be different from the provider that's currently in the worker pool config.\n",
           "maxLength": 38,
           "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_]*)$",
