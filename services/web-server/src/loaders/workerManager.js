@@ -1,4 +1,3 @@
-const {splitWorkerPoolId} = require('../utils/workerPool');
 const DataLoader = require('dataloader');
 const sift = require('sift').default;
 
