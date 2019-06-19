@@ -3,6 +3,8 @@ title: Worker Pools
 order: 30
 ---
 
+# Worker Pools
+
 There are a few different reasons to create new Taskcluster worker pools:
  * worker configurations
  * security boundaries

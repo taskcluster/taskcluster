@@ -5,7 +5,7 @@ title: Taskcluster Manual
 
 # Taskcluster Manual
 
-# What does Taskcluster do?
+## What does Taskcluster do?
 
 Fundamentally, it executes *tasks*. A task is defined in a JSON object, and
 placed on a *queue*. A *worker* later claims that task, executes it, and
