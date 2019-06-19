@@ -299,8 +299,8 @@
             },
             "name": "workers",
             "next": {
-              "path": "manual/task-execution/worker-types",
-              "title": "Worker Types"
+              "path": "manual/task-execution/worker-pools",
+              "title": "Worker Pools"
             },
             "path": "manual/task-execution/workers",
             "prev": {
@@ -316,16 +316,15 @@
             "children": [
             ],
             "data": {
-              "filename": "task-execution/worker-types.md",
               "order": 30,
-              "title": "Worker Types"
+              "title": "Worker Pools"
             },
-            "name": "worker-types",
+            "name": "worker-pools",
             "next": {
               "path": "manual/task-execution/provisioning",
               "title": "Provisioning"
             },
-            "path": "manual/task-execution/worker-types",
+            "path": "manual/task-execution/worker-pools",
             "prev": {
               "path": "manual/task-execution/workers",
               "title": "Workers"
@@ -350,8 +349,8 @@
             },
             "path": "manual/task-execution/provisioning",
             "prev": {
-              "path": "manual/task-execution/worker-types",
-              "title": "Worker Types"
+              "path": "manual/task-execution/worker-pools",
+              "title": "Worker Pools"
             },
             "up": {
               "path": "manual/task-execution",
@@ -712,36 +711,13 @@
             },
             "name": "env-vars",
             "next": {
-              "path": "manual/design/namespaces",
-              "title": "Namespaces"
+              "path": "manual/using",
+              "title": "Using Taskcluster"
             },
             "path": "manual/design/env-vars",
             "prev": {
               "path": "manual/design/logs",
               "title": "Structured Logs"
-            },
-            "up": {
-              "path": "manual/design",
-              "title": "System Design"
-            }
-          },
-          {
-            "children": [
-            ],
-            "data": {
-              "filename": "design/namespaces.md",
-              "order": 30,
-              "title": "Namespaces"
-            },
-            "name": "namespaces",
-            "next": {
-              "path": "manual/using",
-              "title": "Using Taskcluster"
-            },
-            "path": "manual/design/namespaces",
-            "prev": {
-              "path": "manual/design/env-vars",
-              "title": "Standard Environment Variables"
             },
             "up": {
               "path": "manual/design",
@@ -827,13 +803,35 @@
             },
             "name": "indexing",
             "next": {
-              "path": "manual/using/scheduled-tasks",
-              "title": "Running Periodic Tasks"
+              "path": "manual/using/namespaces",
+              "title": "Namespaces"
             },
             "path": "manual/using/indexing",
             "prev": {
               "path": "manual/using/secrets",
               "title": "Handling Secrets"
+            },
+            "up": {
+              "path": "manual/using",
+              "title": "Using Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 30,
+              "title": "Namespaces"
+            },
+            "name": "namespaces",
+            "next": {
+              "path": "manual/using/scheduled-tasks",
+              "title": "Running Periodic Tasks"
+            },
+            "path": "manual/using/namespaces",
+            "prev": {
+              "path": "manual/using/indexing",
+              "title": "Indexing Tasks"
             },
             "up": {
               "path": "manual/using",
@@ -855,8 +853,8 @@
             },
             "path": "manual/using/scheduled-tasks",
             "prev": {
-              "path": "manual/using/indexing",
-              "title": "Indexing Tasks"
+              "path": "manual/using/namespaces",
+              "title": "Namespaces"
             },
             "up": {
               "path": "manual/using",
@@ -1259,8 +1257,8 @@
         },
         "path": "manual/using",
         "prev": {
-          "path": "manual/design/namespaces",
-          "title": "Namespaces"
+          "path": "manual/design/env-vars",
+          "title": "Standard Environment Variables"
         },
         "up": {
           "path": "manual",

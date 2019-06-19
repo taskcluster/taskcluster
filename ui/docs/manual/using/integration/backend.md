@@ -12,7 +12,7 @@ This is quite simple: call
 from your backend with the appropriate parts of the HTTP request.  Then verify
 that the returned scopes satisfy the scopes required for the operation being
 protected.  There is no need to "register" the scopes you would like to use,
-but see the [namespaces document](/docs/manual/design/namespaces) for guidance on
+but see the [namespaces document](/docs/manual/using/namespaces) for guidance on
 selecting appropriate names.
 
 The advantage of this approach is that it facilitates service re-use: anyone

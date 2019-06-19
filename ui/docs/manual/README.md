@@ -5,36 +5,22 @@ title: Taskcluster Manual
 
 # Taskcluster Manual
 
-What does Taskcluster do?
+# What does Taskcluster do?
 
 Fundamentally, it executes *tasks*. A task is defined in a JSON object, and
 placed on a *queue*. A *worker* later claims that task, executes it, and
 updates the task with the results.
 
-## The Taskcluster Service and Team
+## What is Taskcluster?
 
-We provide Taskcluster as a service, rather than as an installable application.
-The service is constructed as a collection of loosely-coupled microservices.
-These microservices share many characteristics, making it easy to use them
-together.
-
-Taskcluster aims to be a general platform for task execution to support
-software development within the Mozilla organization. It is very much a work
-in progress. The current focus is to support Firefox development, without
-losing the generality that will make it useful for other Mozilla projects.
-
-Taskcluster is designed to integrate well with other services and components.
-Some of those integrations are Mozilla-specific (for example, Treeherder),
-while others are not. Some integrations are maintained and provided by the
-Taskcluster team, such as AWS compute resources. Others are managed separately,
-and may not be available to all users -- including the compute resources
-assigned to Firefox development.
+Taskcluster is a set of microservices exposing a REST API, together with a convenient user interface and a set of workers that are responsible for executing tasks.
+A *deployment* of Taskcluster consists of running services associated workers (or configuration to start workers on-demand).
 
 ## Working with Taskcluster
 
 Most people do not need to understand everything about Taskcluster! The
-[Taskcluster Tutorial](/docs/tutorial) is designed to lead you to the information
-that is most relevant to you.
+[Taskcluster Tutorial](/docs/tutorial) is designed to lead newcomers to the information
+that is most relevant to them.
 
 The [reference section](/docs/reference) contains documentation about the
 Taskcluster services and libraries. Once you have determined the services you

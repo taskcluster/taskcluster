@@ -17,7 +17,11 @@ Permission for these methods is based on the task's `schedulerId`.
 A task which has unfinished dependencies is considered "unscheduled", and not yet
 "pending". A scheduled task that depends on itself will remain in that state
 until its deadline, unless it is *force-scheduled* with the Queue service's
-`scheduleTask` method.
+`scheduleTask` method.  This moves the task into the "pending" state, allowing
+workers to claim it.
+
+This method can also be used on tasks which depend on other tasks that are
+failed or unfinished.
 
 ## Cancelling
 
