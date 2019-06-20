@@ -1,7 +1,7 @@
 project_name: "taskcluster-notify"
 secrets:
-  aws_access_key_id: ".Values.awsAccessKeyId"
-  aws_secret_access_key: ".Values.awsSecretAccessKey"
+  aws_access_key_id: ".Values.notifyAwsAccessKeyId"
+  aws_secret_access_key: ".Values.notifyAwsSecretAccessKey"
   aws_region: ".Values.tfAwsRegion"
   azure_account: ".Values.tfAzureAccount"
   denylisted_notification_table_name: "DenylistedNotification"
