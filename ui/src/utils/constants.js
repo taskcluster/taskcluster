@@ -231,6 +231,7 @@ export const GROUP_NOTIFY_TASK_FAILED_KEY = 'group-notify-task-failed';
 export const GROUP_NOTIFY_SUCCESS_KEY = 'group-notify-success';
 
 // Worker Manager constants
+export const NULL_PROVIDER = 'null-provider';
 export const GCP = 'GCP';
 const providers = new Map();
 const providerConfigs = new Map();

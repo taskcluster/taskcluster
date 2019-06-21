@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core';
 import classNames from 'classnames';
+import Label from '@mozilla-frontend-infra/components/Label';
 import { arrayOf, string, func } from 'prop-types';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
@@ -21,6 +22,7 @@ import Link from '../../utils/Link';
 import TableCellListItem from '../TableCellListItem';
 import ErrorPanel from '../ErrorPanel';
 import formatError from '../../utils/formatError';
+import { NULL_PROVIDER } from '../../utils/constants';
 
 @withRouter
 @withStyles(theme => ({
@@ -134,7 +136,8 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           <IconButton
             className={classNames(classes.button, classes.editButton)}
             name={`${workerPool.workerPoolId}`}
-            onClick={this.handleEditClick}>
+            onClick={this.handleEditClick}
+            disabled={actionLoading || workerPool.providerId === NULL_PROVIDER}>
             <PencilIcon size={iconSize} />
           </IconButton>
         </TableCell>
@@ -148,6 +151,11 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
               disableTypography
               primary={<Typography>{workerPool.workerPoolId}</Typography>}
             />
+            {workerPool.providerId === NULL_PROVIDER && (
+              <Label mini status="warning" className={classes.button}>
+                {'To be deleted'}
+              </Label>
+            )}
             <LinkIcon size={iconSize} />
           </TableCellListItem>
         </TableCell>
@@ -165,16 +173,9 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         </TableCell>
 
         <TableCell>
-          <TableCellListItem
-            button
-            component={Link}
-            to={`${path}/providers/${workerPool.providerId}`}>
-            <ListItemText
-              disableTypography
-              primary={<Typography>{workerPool.providerId}</Typography>}
-            />
-            <LinkIcon size={iconSize} />
-          </TableCellListItem>
+          <Typography>
+            {workerPool.providerId !== NULL_PROVIDER && workerPool.providerId}
+          </Typography>
         </TableCell>
 
         <TableCell>
@@ -182,7 +183,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
             className={classNames(classes.button, classes.deleteButton)}
             name={`${workerPool.workerPoolId}`}
             onClick={this.handleDeleteClick}
-            disabled={actionLoading}>
+            disabled={actionLoading || workerPool.providerId === NULL_PROVIDER}>
             <DeleteIcon size={iconSize} />
           </IconButton>
         </TableCell>
@@ -211,7 +212,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
             'Owner',
             'Description',
             'Pending Tasks',
-            'Provider',
+            'Provider ID',
             '',
           ]}
           sortByHeader={sortBy}

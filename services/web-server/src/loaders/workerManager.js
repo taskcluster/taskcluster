@@ -6,9 +6,8 @@ module.exports = ({ workerManager }) => {
     Promise.all(
       queries.map(async ({ filter }) => {
         const summaries = (await workerManager.listWorkerPools()).workerPools;
-        const notDeletedSummaries = summaries.filter(s => s.providerId !== 'null-provider');
 
-        return filter ? sift(filter, notDeletedSummaries) : notDeletedSummaries;
+        return filter ? sift(filter, summaries) : summaries;
       })
     )
   );
