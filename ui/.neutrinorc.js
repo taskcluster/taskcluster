@@ -1,6 +1,9 @@
 const merge = require('deepmerge');
 const { join, resolve } = require('path');
 
+const DEFAULT_PORT = 5080;
+const port = process.env.PORT || DEFAULT_PORT;
+
 require('@babel/register')({
   presets: [require.resolve('@babel/preset-env')],
   cache: false,
@@ -35,7 +38,7 @@ module.exports = {
         title: process.env.APPLICATION_NAME
       },
       devServer: {
-        port: process.env.PORT,
+        port,
         historyApiFallback: {
           disableDotRule: true,
           rewrites: [
