@@ -224,8 +224,8 @@ tasks:
             routes:
               $if: 'tasks_for == "github-push" && event["ref"] == "refs/heads/master"'
               then:
-                - notify.email.${owner}.com.on-failed
-                - notify.email.${owner}.com.on-exception
+                - notify.email.${owner}.on-failed
+                - notify.email.${owner}.on-exception
                 - notify.irc-channel.#taskcluster-bots.on-any
             scopes:
               - assume:project:taskcluster:tests:taskcluster
