@@ -5,6 +5,7 @@ import (
 	"log"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/taskcluster/generic-worker/win32"
 )
@@ -67,4 +68,9 @@ func ListUserAccounts() (usernames []string, err error) {
 
 func UserHomeDirectoriesParent() string {
 	return win32.ProfilesDirectory()
+}
+
+func WaitForLoginCompletion(user string, timeout time.Duration) error {
+	_, err := win32.InteractiveUserToken(timeout)
+	return err
 }
