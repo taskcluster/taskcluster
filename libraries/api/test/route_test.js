@@ -141,6 +141,16 @@ suite(testing.suiteName(), function() {
       });
   });
 
+  test('single parameter, trailing slash', function() {
+    const url = u('/single-param/Hello/');
+    return request
+      .get(url)
+      .then(function(res) {
+        assert(res.ok, 'Request failed');
+        assert(res.text === 'Hello', 'Got wrong value');
+      });
+  });
+
   test('query parameter', function() {
     const url = u('/query-param/');
     return request
@@ -323,4 +333,14 @@ suite(testing.suiteName(), function() {
     }, /Identical route and method/);
   });
 
+  test('routes are case-sensitive', function() {
+    const url = u('/SiNgLe-pArAm/Hello');
+    return request
+      .get(url)
+      .then(function(res) {
+        assert(!res.ok, 'Request succeeded');
+      }, function(err) {
+        assert.equal(err.status, 404);
+      });
+  });
 });
