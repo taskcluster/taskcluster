@@ -23,7 +23,7 @@ module.exports = builder;
 
 builder.declare({
   method: 'put',
-  route: '/worker-pool/:workerPoolId',
+  route: '/worker-pool/:workerPoolId(*)',
   name: 'createWorkerPool',
   title: 'Create Worker Pool',
   stability: APIBuilder.stability.experimental,
@@ -93,7 +93,7 @@ builder.declare({
 
 builder.declare({
   method: 'post',
-  route: '/worker-pool/:workerPoolId',
+  route: '/worker-pool/:workerPoolId(*)',
   name: 'updateWorkerPool',
   title: 'Update Worker Pool',
   stability: APIBuilder.stability.experimental,
@@ -160,7 +160,7 @@ builder.declare({
 
 builder.declare({
   method: 'get',
-  route: '/worker-pool/:workerPoolId',
+  route: '/worker-pool/:workerPoolId(*)',
   name: 'workerPool',
   title: 'Get Worker Pool',
   stability: APIBuilder.stability.experimental,
@@ -215,7 +215,7 @@ builder.declare({
 
 builder.declare({
   method: 'get',
-  route: '/worker-pool-errors/:workerPoolId',
+  route: '/worker-pool-errors/:workerPoolId(*)',
   query: {
     continuationToken: /./,
     limit: /^[0-9]+$/,
@@ -251,7 +251,7 @@ builder.declare({
 
 builder.declare({
   method: 'get',
-  route: '/workers/:workerPoolId',
+  route: '/workers/:workerPoolId(*)',
   query: {
     continuationToken: /./,
     limit: /^[0-9]+$/,

@@ -605,7 +605,7 @@ class GoogleProvider extends Provider {
 
 builder.declare({
   method: 'post',
-  route: '/credentials/google/:workerPoolId',
+  route: '/credentials/google/:workerPoolId(*)',
   name: 'credentialsGoogle',
   title: 'Google Credentials',
   stability: APIBuilder.stability.experimental,
