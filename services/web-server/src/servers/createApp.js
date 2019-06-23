@@ -11,7 +11,18 @@ module.exports = async ({ cfg, strategies }) => {
 
   app.set('view engine', 'ejs');
   app.set('views', 'src/views');
-  app.use(cors());
+
+  const allowedCORSOrigins = cfg.server.allowedCORSOrigins.map(o => {
+    if (typeof(o) === 'string' && o.startsWith('/')) {
+      return new RegExp(o.slice(1, o.length - 1));
+    }
+    if (o === 'https://taskcluster.net') {
+      o = 'https://taskcluster-ui.herokuapp.com';
+    }
+    return o;
+  }).filter(o => o);
+  app.use(cors({origin: allowedCORSOrigins}));
+
   app.use(passport.initialize());
   app.use(credentials());
   app.use(compression());

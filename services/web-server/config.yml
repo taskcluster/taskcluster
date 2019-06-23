@@ -13,6 +13,15 @@ defaults:
     # Port to listen for requests on
     port: !env:number PORT
 
+    # The CORS allowed origins (passed to https://yarnpkg.com/en/package/cors);
+    # typically this is the root URL, but in testing it may have other values.
+    # The legacy root URL is special-cased.  Values beginning with `/` are
+    # treated as regular expressions.  ADDITIONAL_ALLOWED_CORS_ORIGIN is used
+    # to allow UI deploy previews to access a running deployment.
+    allowedCORSOrigins:
+      - !env TASKCLUSTER_ROOT_URL
+      - !env ADDITIONAL_ALLOWED_CORS_ORIGIN
+
   # Configuration of access to other taskcluster components
   taskcluster:
     rootUrl: !env TASKCLUSTER_ROOT_URL
@@ -62,6 +71,12 @@ development:
   server:
     # taskcluster-ui's dev server assumes port 3050
     port: 3050
+    # for testing, allow any origin
+    allowedCORSOrigins: [true]
+
+test:
+  server:
+    port: 63821
 
 production:
   pulse:
