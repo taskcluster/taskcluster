@@ -5,10 +5,9 @@ const { Strategy } = require('passport-github');
 const taskcluster = require('taskcluster-client');
 const User = require('../User');
 const identityFromClientId = require('../../utils/identityFromClientId');
-const { encode } = require('../../utils/codec');
+const { encode, decode } = require('../../utils/codec');
 const login = require('../../utils/login');
 const jwt = require('../../utils/jwt');
-const userIdFromIdentity = require('../../utils/userIdFromIdentity');
 
 const debug = Debug('strategies.github');
 
@@ -43,7 +42,8 @@ module.exports = class Github {
   }
 
   userFromIdentity(identity) {
-    const userId = userIdFromIdentity(identity);
+    const encodedUserId = identity.split('/')[1];
+    const userId = decode(encodedUserId);
 
     return this.getUser({ userId });
   }
@@ -55,7 +55,7 @@ module.exports = class Github {
       return;
     }
 
-    return this.getUser({ userId: userIdFromIdentity(identity) });
+    return this.userFromIdentity(identity);
   }
 
   useStrategy(app, cfg) {

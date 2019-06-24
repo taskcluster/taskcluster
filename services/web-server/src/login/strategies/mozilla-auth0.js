@@ -6,13 +6,12 @@ const Auth0Strategy = require('passport-auth0');
 const User = require('../User');
 const PersonAPI = require('../clients/PersonAPI');
 const WebServerError = require('../../utils/WebServerError');
-const { encode } = require('../../utils/codec');
+const { encode, decode } = require('../../utils/codec');
 const identityFromClientId = require('../../utils/identityFromClientId');
 const tryCatch = require('../../utils/tryCatch');
 const login = require('../../utils/login');
 const verifyJwtAuth0 = require('../../utils/verifyJwtAuth0');
 const jwt = require('../../utils/jwt');
-const userIdFromIdentity = require('../../utils/userIdFromIdentity');
 
 const debug = Debug('strategies.mozilla-auth0');
 
@@ -93,8 +92,13 @@ module.exports = class MozillaAuth0 {
   }
 
   userFromIdentity(identity) {
-    const userId = userIdFromIdentity(identity);
+    let encodedUserId = identity.split('/')[1];
 
+    if (encodedUserId.startsWith('github|') || encodedUserId.startsWith('oauth2|firefoxaccounts|')) {
+      encodedUserId = encodedUserId.replace(/\|[^|]*$/, '');
+    }
+
+    const userId = decode(encodedUserId);
     return this.getUser({ userId });
   }
 
@@ -118,7 +122,7 @@ module.exports = class MozillaAuth0 {
       return;
     }
 
-    return this.getUser({ userId: userIdFromIdentity(identity) });
+    return this.userFromIdentity(identity);
   }
 
   identityFromProfile(profile) {
