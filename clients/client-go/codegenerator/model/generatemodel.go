@@ -14,8 +14,8 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	"github.com/taskcluster/jsonschema2go"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/codegenerator/model"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go"
+	"github.com/taskcluster/taskcluster/clients/client-go/codegenerator/model"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 )
 
@@ -26,7 +26,7 @@ generatemodel
 generatemodel takes input from a json file describing a set of taskcluster APIs, and generates
 go source files for inclusion in the (Go) Taskcluster Client API library. It is referenced by
 go generate commands in the model package. See go generate --help and ../build.sh to see how
-this is used by the build process for this taskcluster-client-go go project.
+this is used by the build process for this taskcluster/clients/client-go go project.
 
   Usage:
       generatemodel -o GO-OUTPUT-DIR -m MODEL-DATA-FILE

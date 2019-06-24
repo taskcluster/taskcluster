@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
-	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go"
+	"github.com/taskcluster/taskcluster/clients/client-go/tcqueue"
 	artifact "github.com/taskcluster/taskcluster-lib-artifact-go"
 )
 

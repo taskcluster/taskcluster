@@ -51,7 +51,7 @@ echo "UNIX_TIMESTAMP = '${UNIX_TIMESTAMP}'"
 unset GOOS
 
 # remove any binaries built from any fork
-rm -rf "${GOPATH}"/pkg/*/github.com/*/taskcluster-client-go
+rm -rf "${GOPATH}"/pkg/*/github.com/*/taskcluster/clients/client-go
 # remove any binaries from this fork
 go clean -i ./...
 
@@ -64,7 +64,7 @@ go get golang.org/x/tools/cmd/goimports
 ##### TODO: check README.md examples still work
 "${GENERATE}" && go generate ./...
 
-# fetch deps/build/install taskcluster-client-go
+# fetch deps/build/install taskcluster/clients/client-go
 go get -t -v ./...
 go fmt ./...
 

@@ -1,46 +1,46 @@
 <img align="right" src="http://media.taskcluster.net/logo/logo-96x120.png" />
 
-# taskcluster-client-go
+# taskcluster/clients/client-go
 
-[![Build Status](https://travis-ci.org/taskcluster/taskcluster-client-go.svg?branch=master)](http://travis-ci.org/taskcluster/taskcluster-client-go)
-[![GoDoc](https://godoc.org/github.com/taskcluster/taskcluster-client-go?status.svg)](https://godoc.org/github.com/taskcluster/taskcluster-client-go)
-[![Coverage Status](https://coveralls.io/repos/taskcluster/taskcluster-client-go/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/taskcluster-client-go?branch=master)
+[![Build Status](https://travis-ci.org/taskcluster/taskcluster/clients/client-go.svg?branch=master)](http://travis-ci.org/taskcluster/taskcluster/clients/client-go)
+[![GoDoc](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go?status.svg)](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go)
+[![Coverage Status](https://coveralls.io/repos/taskcluster/taskcluster/clients/client-go/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/taskcluster/clients/client-go?branch=master)
 [![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
 A go (golang) port of taskcluster-client.
 
-Complete godoc documentation [here](https://godoc.org/github.com/taskcluster/taskcluster-client-go).
+Complete godoc documentation [here](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go).
 
 This library provides the following packages to interface with Taskcluster:
 
 ### HTTP APIs
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcauth
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcawsprovisioner
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcec2manager
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcgithub
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tchooks
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcindex
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tclogin
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcnotify
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcpurgecache
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcqueue
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcsecrets
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcawsprovisioner
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcec2manager
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcgithub
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tchooks
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcindex
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tclogin
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcnotify
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcpurgecache
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcqueue
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcsecrets
 
 ### AMQP APIs
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcauthevents
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcawsprovisionerevents
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcgithubevents
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcpurgecacheevents
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcqueueevents
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tctreeherderevents
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauthevents
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcawsprovisionerevents
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcgithubevents
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcpurgecacheevents
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcqueueevents
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tctreeherderevents
 
 ## Example programs
 
 To get you started quickly, I have also included some example programs that use both the http services and the amqp services:
 
-* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcauth#example-package--Scopes) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcauth) package to query the expiry and expanded scopes of a given clientId.
-* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcauth#example-package--UpdateClient) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcauth) package to update an existing clientId with a new description and expiry.
-* The [AMQP example program](http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcqueueevents#example-package--TaskclusterSniffer) demonstrates the use of the [tcqueueevents](http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcqueueevents) package to listen in on Task Cluster tasks being defined and executed.
+* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth#example-package--Scopes) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth) package to query the expiry and expanded scopes of a given clientId.
+* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth#example-package--UpdateClient) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth) package to update an existing clientId with a new description and expiry.
+* The [AMQP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcqueueevents#example-package--TaskclusterSniffer) demonstrates the use of the [tcqueueevents](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcqueueevents) package to listen in on Task Cluster tasks being defined and executed.
 
 ## Calling API End-Points
 
@@ -58,8 +58,8 @@ import (
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go"
+	"github.com/taskcluster/taskcluster/clients/client-go/tcqueue"
 )
 
 // *********************************************************
@@ -529,8 +529,8 @@ import (
 	"strconv"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go"
+	"github.com/taskcluster/taskcluster/clients/client-go/tcqueue"
 )
 
 const (
@@ -548,14 +548,14 @@ const (
 // Note, the queueClient.ListArtifacts(...) call doesn't require any scopes.
 // The generation of temporary credentials, and limiting via authorized scopes
 // is purely illustrative. The TASKCLUSTER_CLIENT_ID must satisfy
-// auth:create-client:demo-client/taskcluster-client-go, though.
+// auth:create-client:demo-client/taskcluster/clients/client-go, though.
 func main() {
 	permCreds := &tcclient.Credentials{
 		ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 	}
 	tempCreds, err := permCreds.CreateNamedTemporaryCredentials(
-		"demo-client/taskcluster-client-go",
+		"demo-client/taskcluster/clients/client-go",
 		time.Hour*24,
 		"assume:legacy-permacred",
 	)
@@ -583,23 +583,23 @@ func main() {
 ```
 
 See the [HTTP API godocs](#http-apis) for more information, or browse the [integration
-tests](https://github.com/taskcluster/taskcluster-client-go/tree/master/integrationtest)
+tests](https://github.com/taskcluster/taskcluster/clients/client-go/tree/master/integrationtest)
 for further examples.
 
 ## Building
 The libraries provided by this client are auto-generated based on the schemas listed under
 http://references.taskcluster.net/manifest.json combined with the supplementary information stored in
-[apis.json](https://github.com/taskcluster/taskcluster-client-go/blob/master/codegenerator/model/apis.json).
+[apis.json](https://github.com/taskcluster/taskcluster/clients/client-go/blob/master/codegenerator/model/apis.json).
 
-In order to completely regenerate all of the HTTP and AMQP libraries, please run [build.sh](https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh)
+In order to completely regenerate all of the HTTP and AMQP libraries, please run [build.sh](https://github.com/taskcluster/taskcluster/clients/client-go/blob/master/build.sh)
 found in the top level directory. This will completely regenerate the library. Please note you will need an active internet connection as the build process must
 download several json files and schemas in order to build the library.
 
-The code which generates the library can all be found under the top level [codegenerator](https://github.com/taskcluster/taskcluster-client-go/tree/master/codegenerator)
+The code which generates the library can all be found under the top level [codegenerator](https://github.com/taskcluster/taskcluster/clients/client-go/tree/master/codegenerator)
 directory.
 
 ## Contributing
 Contributions are welcome. Please fork, and issue a Pull Request back with an explanation of your changes.
 
 ## Travis
-Travis build [success/failure messages](http://travis-ci.org/taskcluster/taskcluster-client-go) are posted to irc channel #taskcluster-bots on irc.mozilla.org:6697.
+Travis build [success/failure messages](http://travis-ci.org/taskcluster/taskcluster/clients/client-go) are posted to irc channel #taskcluster-bots on irc.mozilla.org:6697.

@@ -35,13 +35,13 @@
 // The source code of this go package was auto-generated from the API definition at
 // https://taskcluster-staging.net/references/events/v1/api.json together with the input and output schemas it references, downloaded on
 // Tue, 29 Jan 2019 at 08:22:00 UTC. The code was generated
-// by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
+// by https://github.com/taskcluster/taskcluster/clients/client-go/blob/master/build.sh.
 package tcevents
 
 import (
 	"net/url"
 
-	tcclient "github.com/taskcluster/taskcluster-client-go"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go"
 )
 
 type Events tcclient.Client

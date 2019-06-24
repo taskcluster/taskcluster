@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/taskcluster/jsonschema2go/text"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 )
 
@@ -111,7 +111,7 @@ func (api *API) generateAPICode(apiName string) string {
 	comment += "// The source code of this go package was auto-generated from the API definition at\n"
 	comment += "// " + api.apiDef.URL + " together with the input and output schemas it references, downloaded on\n"
 	comment += "// " + downloadedTime.UTC().Format("Mon, 2 Jan 2006 at 15:04:00 UTC") + ". The code was generated\n"
-	comment += "// by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.\n"
+	comment += "// by https://github.com/taskcluster/taskcluster/clients/client-go/blob/master/build.sh.\n"
 
 	content := comment
 	content += "package " + api.apiDef.PackageName + "\n"
@@ -126,7 +126,7 @@ import (
 	"errors"
 	"net/url"
 	"time"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go"
 )
 
 type ` + api.Name() + ` tcclient.Client

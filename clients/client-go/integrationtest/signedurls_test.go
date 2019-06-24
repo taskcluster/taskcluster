@@ -9,9 +9,9 @@ import (
 
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/tcqueue"
-	"github.com/taskcluster/taskcluster-client-go/tcutil"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go"
+	"github.com/taskcluster/taskcluster/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/clients/client-go/tcutil"
 )
 
 // TestSignedURLPermCredsAuthScopes tests that permanent credentials are able
@@ -146,7 +146,7 @@ func createSampleTaskAndArtifact(myQueue *tcqueue.Queue, t *testing.T) (taskID s
 			Description: "Task created by integration test " + t.Name(),
 			Name:        t.Name(),
 			Owner:       "pmoore@mozilla.com",
-			Source:      "https://github.com/taskcluster/taskcluster-client-go/blob/master/integrationtest/signedurls_test.go",
+			Source:      "https://github.com/taskcluster/taskcluster/clients/client-go/blob/master/integrationtest/signedurls_test.go",
 		},
 		Payload:       json.RawMessage(`{}`),
 		ProvisionerID: "test-provisioner",
