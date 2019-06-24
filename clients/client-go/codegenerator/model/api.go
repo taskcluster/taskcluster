@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/taskcluster/jsonschema2go/text"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go"
 )
 
 //////////////////////////////////////////////////////////////////
@@ -191,7 +191,7 @@ type ` + api.Name() + ` tcclient.Client
 func New(credentials *tcclient.Credentials, rootURL string) *` + api.Name() + ` {
 	return &` + api.Name() + `{
 		Credentials: credentials,
-		BaseURL: tcclient.BaseURL(rootURL, "` + api.ServiceName + `", "` + api.APIVersion + `"),
+		BaseURL: tcclient.BaseURL(rootURL, "` + api.ServiceName + `", "` + "v1" + `"),
 		Authenticate: credentials != nil,
 	}
 }
@@ -214,7 +214,7 @@ func NewFromEnv() *` + api.Name() + ` {
 	c := tcclient.CredentialsFromEnvVars()
 	return &` + api.Name() + `{
 		Credentials: c,
-		BaseURL: tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "` + api.ServiceName + `", "` + api.APIVersion + `"),
+		BaseURL: tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "` + api.ServiceName + `", "` + "v1" + `"),
 		Authenticate: c.ClientID != "",
 	}
 }

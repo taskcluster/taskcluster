@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -181,6 +182,10 @@ func FormatSourceAndSave(sourceFile string, sourceCode []byte) {
 	if err == nil {
 		// now run a standard system format
 		formattedContent, err = format.Source(fixedImports)
+	}
+	// imports inscrutably uses the old tc-client path, so fix that up
+	if err == nil {
+		formattedContent = regexp.MustCompile(`taskcluster-client-go`).ReplaceAll(formattedContent, []byte(`taskcluster/clients/client-go`))
 	}
 	// in case of formatting failure from either of the above formatting
 	// steps, let's keep the unformatted version so we can troubleshoot
