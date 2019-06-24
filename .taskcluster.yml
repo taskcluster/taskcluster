@@ -147,6 +147,12 @@ tasks:
             /sandbox/bin/pip install tox
         command: >-
             TOXENV=py37 /sandbox/bin/tox
+      - name: taskcluster-client-go-1.12
+        image: 'golang:1.12.6'
+        install: >-
+            cd clients/client-go
+        command: >-
+            go test -v -race ./...
       - name: taskcluster-ui
         image: 'taskcluster/browser-test:${node}'
         install: >-
