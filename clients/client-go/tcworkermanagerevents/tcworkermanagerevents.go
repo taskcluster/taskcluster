@@ -6,9 +6,9 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// https://taskcluster-staging.net/references/worker-manager/v1/exchanges.json
+// /references/worker-manager/v1/exchanges.json
 
-// These exchanges provide notifications when a workerType is created, updatedor deleted. This is so that the listener running in a differentprocess at the other end can direct another listener specified by`provider` and `workerType` to synchronize its bindings. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.
+// These exchanges provide notifications when a worker pool is created or updated.This is so that the provisioner running in a differentprocess at the other end can synchronize to the changes. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.
 //
 // See:
 //
@@ -41,63 +41,43 @@ import (
 	"strings"
 )
 
-// Whenever the api receives a request to create aworkerType, a message is posted to this exchange anda provider can act upon it.
+// Whenever the api receives a request to create aworker pool, a message is posted to this exchange anda provider can act upon it.
 //
-// See #workerTypeCreated
-type WorkerTypeCreated struct {
+// See #workerPoolCreated
+type WorkerPoolCreated struct {
 	RoutingKeyKind string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
-func (binding WorkerTypeCreated) RoutingKey() string {
+func (binding WorkerPoolCreated) RoutingKey() string {
 	return generateRoutingKey(&binding)
 }
 
-func (binding WorkerTypeCreated) ExchangeName() string {
-	return "exchange/taskcluster-worker-manager/v1/workertype-created"
+func (binding WorkerPoolCreated) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/worker-pool-created"
 }
 
-func (binding WorkerTypeCreated) NewPayloadObject() interface{} {
+func (binding WorkerPoolCreated) NewPayloadObject() interface{} {
 	return new(WorkerTypePulseMessage)
 }
 
-// Whenever the api receives a request to update aworkerType, a message is posted to this exchange anda provider can act upon it.
+// Whenever the api receives a request to update aworker pool, a message is posted to this exchange anda provider can act upon it.
 //
-// See #workerTypeUpdated
-type WorkerTypeUpdated struct {
+// See #workerPoolUpdated
+type WorkerPoolUpdated struct {
 	RoutingKeyKind string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
-func (binding WorkerTypeUpdated) RoutingKey() string {
+func (binding WorkerPoolUpdated) RoutingKey() string {
 	return generateRoutingKey(&binding)
 }
 
-func (binding WorkerTypeUpdated) ExchangeName() string {
-	return "exchange/taskcluster-worker-manager/v1/workertype-updated"
+func (binding WorkerPoolUpdated) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/worker-pool-updated"
 }
 
-func (binding WorkerTypeUpdated) NewPayloadObject() interface{} {
-	return new(WorkerTypePulseMessage)
-}
-
-// Whenever the api receives a request to delete aworkerType, a message is posted to this exchange anda provider can act upon it.
-//
-// See #workerTypeDeleted
-type WorkerTypeDeleted struct {
-	RoutingKeyKind string `mwords:"*"`
-	Reserved       string `mwords:"#"`
-}
-
-func (binding WorkerTypeDeleted) RoutingKey() string {
-	return generateRoutingKey(&binding)
-}
-
-func (binding WorkerTypeDeleted) ExchangeName() string {
-	return "exchange/taskcluster-worker-manager/v1/workertype-deleted"
-}
-
-func (binding WorkerTypeDeleted) NewPayloadObject() interface{} {
+func (binding WorkerPoolUpdated) NewPayloadObject() interface{} {
 	return new(WorkerTypePulseMessage)
 }
 

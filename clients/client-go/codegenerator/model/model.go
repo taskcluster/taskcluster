@@ -1,24 +1,19 @@
 package model
 
-//go:generate go run generatemodel.go -o ../.. -m ../model-data.txt
+//go:generate go run generatemodel.go -o ../..
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"go/format"
-	"io"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
 	"github.com/taskcluster/jsonschema2go"
-	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	"github.com/xeipuuv/gojsonschema"
 	"golang.org/x/tools/imports"
 )
 
@@ -72,27 +67,46 @@ func (apiDef *APIDefinition) generateAPICode() string {
 	return apiDef.Data.generateAPICode(apiDef.Data.Name())
 }
 
-func (apiDef *APIDefinition) loadJSON(reader io.Reader, rootURL string) bool {
-	b := new(bytes.Buffer)
-	_, err := b.ReadFrom(reader)
-	exitOnFail(err)
-	data := b.Bytes()
+func (apiDef *APIDefinition) loadJSON(refRaw json.RawMessage) bool {
 	f := new(interface{})
-	err = json.Unmarshal(data, f)
+	err = json.Unmarshal(refRaw, f)
 	exitOnFail(err)
-	schema := (*f).(map[string]interface{})["$schema"].(string)
-	apiDef.SchemaURL = schema
+	schemaURL := (*f).(map[string]interface{})["$schema"].(string)
+	apiDef.SchemaURL = schemaURL
+
+	schemaRaw := ReferencesServerGet(schemaURL[:len(schemaURL)-1])
+	if schemaRaw == nil {
+		panic(fmt.Sprintf("No schema %s", schemaRaw))
+	}
+	var schema interface{}
+	err = json.Unmarshal(*schemaRaw, &schema)
+	exitOnFail(err)
+	var x interface{}
+
+	x = schema
+	x = x.(map[string]interface{})["metadata"]
+	x = x.(map[string]interface{})["name"]
+	schemaName := x.(string)
+
+	x = schema
+	x = x.(map[string]interface{})["metadata"]
+	x = x.(map[string]interface{})["version"]
+	schemaVersion := int(x.(float64))
+
 	var m APIModel
-	switch schema {
-	case tcurls.APIReferenceSchema(rootURL, "v0") + "#":
+	switch fmt.Sprintf("%s/v%d", schemaName, schemaVersion) {
+	case "api/v0":
 		m = new(API)
-	case tcurls.ExchangesReferenceSchema(rootURL, "v0") + "#":
+	case "exchanges/v0":
 		m = new(Exchange)
+	case "logs/v0":
+		// nothing to do for logs..
+		return false
 	default:
-		log.Printf("WARNING: Do not know how to handle API with schema %q", schema)
+		log.Printf("WARNING: Do not know how to handle API reference %s version %d", schemaName, schemaVersion)
 		return false
 	}
-	err = json.Unmarshal(data, m)
+	err = json.Unmarshal(refRaw, m)
 	exitOnFail(err)
 	m.setAPIDefinition(apiDef)
 	m.postPopulate(apiDef)
@@ -110,87 +124,48 @@ func (apiDef *APIDefinition) loadJSON(reader io.Reader, rootURL string) bool {
 //
 // When LoadAPIs returns, all json schemas and sub schemas should have been
 // read and unmarhsalled into go objects.
-func LoadAPIs(rootURL string) APIDefinitions {
-	apiManifestURL := tcurls.APIManifest(rootURL)
-	fmt.Printf("Downloading manifest from url: '%v'...\n", apiManifestURL)
-	resp, err := http.Get(apiManifestURL)
-	if err != nil {
-		fmt.Printf("Could not download api manifest from url: '%v'!\n", apiManifestURL)
+func LoadAPIs() APIDefinitions {
+	manifestRaw := ReferencesServerGet("references/manifest.json")
+	if manifestRaw == nil {
+		panic("no manifest.json")
 	}
-	exitOnFail(err)
-	apiManifestDecoder := json.NewDecoder(resp.Body)
 	apiMan := TaskclusterServiceManifest{}
-	err = apiManifestDecoder.Decode(&apiMan)
+	err = json.Unmarshal(*manifestRaw, &apiMan)
 	exitOnFail(err)
 	apiDefs := []*APIDefinition{}
 	for i := range apiMan.References {
-		var resp *http.Response
-		resp, err = http.Get(apiMan.References[i])
-		exitOnFail(err)
-		defer resp.Body.Close()
+		refRaw := ReferencesServerGet(apiMan.References[i])
+		if refRaw == nil {
+			panic(fmt.Sprintf("could not find %s", apiMan.References[i]))
+		}
+
 		apiDef := &APIDefinition{
 			URL: apiMan.References[i],
 		}
 
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// SKIP worker-manager for now, as we currently can't handle
-		// https://github.com/taskcluster/taskcluster/blob/6282ebbcf0ddd00d5b3f7ac4b718247d615739f3/services/worker-manager/schemas/v1/worker-configuration.yml#L13-L15
-		// despite it being valid jsonschema: https://json-schema.org/latest/json-schema-validation.html#rfc.section.6.1.1
-		if apiDef.URL == tcurls.APIReference(rootURL, "worker-manager", "v1") {
-			continue
-		}
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		if apiDef.loadJSON(resp.Body, rootURL) {
+		if apiDef.loadJSON(*refRaw) {
 			apiDefs = append(apiDefs, apiDef)
-			// check that the json schema is valid!
-			validateJSON(apiDef.SchemaURL, apiDef.URL)
 		}
 	}
 	return APIDefinitions(apiDefs)
 }
 
-func validateJSON(schemaURL, docURL string) {
-	schemaLoader := gojsonschema.NewReferenceLoader(schemaURL)
-	docLoader := gojsonschema.NewReferenceLoader(docURL)
-	result, err := gojsonschema.Validate(schemaLoader, docLoader)
-	exitOnFail(err)
-	if result.Valid() {
-		fmt.Printf("Document '%v' is valid against '%v'.\n", docURL, schemaURL)
-	} else {
-		fmt.Printf("Document '%v' is INVALID against '%v'.\n", docURL, schemaURL)
-		for _, desc := range result.Errors() {
-			fmt.Println("")
-			fmt.Printf("- %s\n", desc)
-		}
-		// os.Exit(70)
-	}
-}
-
 func FormatSourceAndSave(sourceFile string, sourceCode []byte) {
 	fmt.Println("Formatting source code " + sourceFile + "...")
 	// first run goimports to clean up unused imports
-	fixedImports, err := imports.Process(sourceFile, sourceCode, nil)
-	var formattedContent []byte
-	// only perform general format, if that worked...
-	if err == nil {
-		// now run a standard system format
-		formattedContent, err = format.Source(fixedImports)
-	}
-	// imports inscrutably uses the old tc-client path, so fix that up
-	if err == nil {
-		formattedContent = regexp.MustCompile(`taskcluster-client-go`).ReplaceAll(formattedContent, []byte(`taskcluster/clients/client-go`))
-	}
-	// in case of formatting failure from either of the above formatting
-	// steps, let's keep the unformatted version so we can troubleshoot
-	// more easily...
-	if err != nil {
-		// no need to handle error as we exit below anyway
-		_ = ioutil.WriteFile(sourceFile, sourceCode, 0644)
-	}
+	formattedContent, err := imports.Process(sourceFile, sourceCode, nil)
 	exitOnFail(err)
+
+	// imports inscrutably uses the old tc-client path, so fix that up
+	formattedContent = regexp.MustCompile(`taskcluster-client-go`).ReplaceAll(formattedContent, []byte(`taskcluster/clients/client-go`))
+
+	// remove links based on the schema server
+	formattedContent = regexp.MustCompile(`(?:[ \t]*//\n)?[ \t]*// See http://127.0.0.1:.*\n`).ReplaceAll(formattedContent, []byte(""))
+
+	// only perform general format, if that worked...
+	formattedContent, err = format.Source(formattedContent)
+	exitOnFail(err)
+
 	exitOnFail(ioutil.WriteFile(sourceFile, formattedContent, 0644))
 }
 

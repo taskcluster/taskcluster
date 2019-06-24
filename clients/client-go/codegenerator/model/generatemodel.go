@@ -12,8 +12,6 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	"github.com/taskcluster/jsonschema2go"
-	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go"
 	"github.com/taskcluster/taskcluster/clients/client-go/codegenerator/model"
 )
 
@@ -27,15 +25,12 @@ go generate commands in the model package. See go generate --help and ../build.s
 this is used by the build process for this taskcluster/clients/client-go go project.
 
   Usage:
-      generatemodel -o GO-OUTPUT-DIR -m MODEL-DATA-FILE
+      generatemodel -o GO-OUTPUT-DIR
       generatemodel --help
 
   Options:
     -h --help               Display this help text.
     -o GO-OUTPUT-DIR        Directory to place generated go packages.
-
-Please note, you *must* set TASKCLUSTER_ROOT_URL to a valid taskcluster deployment to
-retrieve the manifest/references/schemas from.
 `
 )
 
@@ -47,21 +42,19 @@ func main() {
 		os.Exit(64)
 	}
 
-	rootURL := tcclient.RootURLFromEnvVars()
-	if rootURL == "" {
-		log.Fatal("No TASKCLUSTER_ROOT_URL/TASKCLUSTER_PROXY_URL environment variable found to download manifest/references/schemas from.")
+	err = model.StartReferencesServer()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "generatemodel: ERROR: Cannot load references: %s\n", err)
+		os.Exit(64)
 	}
-
-	// echo "https://taskcluster-staging.net/schemas/common/api-reference-v0.json
-	// https://taskcluster-staging.net/schemas/common/manifest-v3.json" | "${GOPATH}/bin/jsonschema2go" -o model | sed 's/^\([[:space:]]*\)API\(Entry struct\)/\1\2/' | sed 's/json\.RawMessage/ScopeExpressionTemplate/g' > codegenerator/model/types.go
 
 	log.Print("Generating go types for code generator...")
 	job := &jsonschema2go.Job{
 		Package: "model",
 		URLs: []string{
-			tcurls.APIReferenceSchema(rootURL, "v0"),
-			tcurls.ExchangesReferenceSchema(rootURL, "v0"),
-			tcurls.APIManifestSchema(rootURL, "v3"),
+			model.ReferencesServerUrl("schemas/common/api-reference-v0.json"),
+			model.ReferencesServerUrl("schemas/common/exchanges-reference-v0.json"),
+			model.ReferencesServerUrl("schemas/common/manifest-v3.json"),
 		},
 		ExportTypes:          true,
 		TypeNameBlacklist:    jsonschema2go.StringSet(map[string]bool{}),
@@ -72,13 +65,14 @@ func main() {
 		log.Fatalf("Error generating go types for code generator: %v", err)
 	}
 
-	source := regexp.MustCompile(`APIEntry struct`).ReplaceAll(result.SourceCode, []byte(`Entry struct`))
+	source := result.SourceCode
+	source = regexp.MustCompile(`APIEntry struct`).ReplaceAll(source, []byte(`Entry struct`))
 	source = regexp.MustCompile(`json\.RawMessage`).ReplaceAll(source, []byte(`ScopeExpressionTemplate`))
 
 	model.FormatSourceAndSave("types.go", source)
 
 	log.Print("Loading APIs...")
-	apiDefs := model.LoadAPIs(rootURL)
+	apiDefs := model.LoadAPIs()
 	log.Print("Generating code...")
 	apiDefs.GenerateCode(arguments["-o"].(string))
 	log.Print("All done")

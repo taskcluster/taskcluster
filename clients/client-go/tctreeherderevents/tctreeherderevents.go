@@ -6,7 +6,7 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// https://taskcluster-staging.net/references/treeherder/v1/exchanges.json
+// /references/treeherder/v1/exchanges.json
 
 // The taskcluster-treeherder service is responsible for processing
 // task events published by Taskcluster Queue and producing job messages

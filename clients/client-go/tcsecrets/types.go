@@ -10,26 +10,18 @@ import (
 
 type (
 	// Message containing a Taskcluster Secret
-	//
-	// See https://taskcluster-staging.net/schemas/secrets/v1/secret.json#
 	Secret struct {
 
 		// An expiration date for this secret.
-		//
-		// See https://taskcluster-staging.net/schemas/secrets/v1/secret.json#/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// The secret value to be encrypted.
 		//
 		// Additional properties allowed
-		//
-		// See https://taskcluster-staging.net/schemas/secrets/v1/secret.json#/properties/secret
 		Secret json.RawMessage `json:"secret"`
 	}
 
 	// Message containing a list of secret names
-	//
-	// See https://taskcluster-staging.net/schemas/secrets/v1/secret-list.json#
 	SecretsList struct {
 
 		// Opaque `continuationToken` to be given as query-string option to get the
@@ -39,18 +31,12 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called with `continuationToken` until you get a
 		// result without a `continuationToken`.
-		//
-		// See https://taskcluster-staging.net/schemas/secrets/v1/secret-list.json#/properties/continuationToken
 		ContinuationToken string `json:"continuationToken,omitempty"`
 
 		// Secret names
 		//
 		// Array items:
 		// Secret name
-		//
-		// See https://taskcluster-staging.net/schemas/secrets/v1/secret-list.json#/properties/secrets/items
-		//
-		// See https://taskcluster-staging.net/schemas/secrets/v1/secret-list.json#/properties/secrets
 		Secrets []string `json:"secrets"`
 	}
 )

@@ -4,8 +4,6 @@ import (
 	"fmt"
 
 	"github.com/taskcluster/jsonschema2go/text"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go"
-	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 )
 
 ////////////////////////////////////////////////////////////////////////
@@ -80,7 +78,7 @@ type ExchangeEntry struct {
 
 func (entry *ExchangeEntry) postPopulate(apiDef *APIDefinition) {
 	entry.typeName = text.GoIdentifierFrom(entry.Name, true, entry.Parent.apiDef.members)
-	entry.schemaURL = tcurls.Schema(tcclient.RootURLFromEnvVars(), entry.Parent.ServiceName, entry.Schema)
+	entry.schemaURL = ReferencesServerUrl(fmt.Sprintf("schemas/%s/%s", entry.Parent.ServiceName, entry.Schema))
 	entry.Parent.apiDef.schemaURLs = append(entry.Parent.apiDef.schemaURLs, entry.schemaURL)
 }
 

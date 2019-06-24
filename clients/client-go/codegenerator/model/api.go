@@ -8,8 +8,6 @@ import (
 	"strings"
 
 	"github.com/taskcluster/jsonschema2go/text"
-	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go"
 )
 
 //////////////////////////////////////////////////////////////////
@@ -243,11 +241,11 @@ type APIEntry struct {
 // Add entry.Input and entry.Output to schemaURLs, if they are set
 func (entry *APIEntry) postPopulate(apiDef *APIDefinition) {
 	if x := &entry.Parent.apiDef.schemaURLs; entry.Input != "" {
-		entry.InputURL = tcurls.Schema(tcclient.RootURLFromEnvVars(), entry.Parent.ServiceName, entry.Input)
+		entry.InputURL = ReferencesServerUrl(fmt.Sprintf("schemas/%s/%s", entry.Parent.ServiceName, entry.Input))
 		*x = append(*x, entry.InputURL)
 	}
 	if x := &entry.Parent.apiDef.schemaURLs; entry.Output != "" {
-		entry.OutputURL = tcurls.Schema(tcclient.RootURLFromEnvVars(), entry.Parent.ServiceName, entry.Output)
+		entry.OutputURL = ReferencesServerUrl(fmt.Sprintf("schemas/%s/%s", entry.Parent.ServiceName, entry.Output))
 		*x = append(*x, entry.OutputURL)
 	}
 }

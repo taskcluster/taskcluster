@@ -6,7 +6,7 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// https://taskcluster-staging.net/references/notify/v1/exchanges.json
+// /references/notify/v1/exchanges.json
 
 // This pretty much only contains the simple free-form
 // message that can be published from this service from a request

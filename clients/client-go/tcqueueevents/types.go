@@ -8,21 +8,15 @@ import (
 
 type (
 	// Information about the artifact that was created
-	//
-	// See https://taskcluster-staging.net/schemas/queue/v1/artifact-created-message.json#/properties/artifact
 	Artifact struct {
 
 		// Mimetype for the artifact that was created.
 		//
 		// Max length: 255
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/artifact-created-message.json#/properties/artifact/properties/contentType
 		ContentType string `json:"contentType"`
 
 		// Date and time after which the artifact created will be automatically
 		// deleted by the queue.
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/artifact-created-message.json#/properties/artifact/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// Name of the artifact that was created, this is useful if you want to
@@ -30,8 +24,6 @@ type (
 		// artifact is created doesn't mean that it's immediately available.
 		//
 		// Max length: 1024
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/artifact-created-message.json#/properties/artifact/properties/name
 		Name string `json:"name"`
 
 		// This is the `storageType` for the request that was used to create the
@@ -41,40 +33,28 @@ type (
 		//   * "blob"
 		//   * "reference"
 		//   * "error"
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/artifact-created-message.json#/properties/artifact/properties/storageType
 		StorageType string `json:"storageType"`
 	}
 
 	// Message reporting a new artifact has been created for a given task.
-	//
-	// See https://taskcluster-staging.net/schemas/queue/v1/artifact-created-message.json#
 	ArtifactCreatedMessage struct {
 
 		// Information about the artifact that was created
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/artifact-created-message.json#/properties/artifact
 		Artifact Artifact `json:"artifact"`
 
 		// Id of the run on which artifact was created.
 		//
 		// Mininum:    0
 		// Maximum:    1000
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/artifact-created-message.json#/properties/runId
 		RunID int64 `json:"runId"`
 
 		// A representation of **task status** as known by the queue
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 
 		// Message version
 		//
 		// Possible values:
 		//   * 1
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/artifact-created-message.json#/properties/version
 		Version int64 `json:"version"`
 
 		// Identifier for the worker-group within which the run with the created
@@ -83,8 +63,6 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/artifact-created-message.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
 
 		// Identifier for the worker within which the run with the created artifact
@@ -93,14 +71,10 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/artifact-created-message.json#/properties/workerId
 		WorkerID string `json:"workerId"`
 	}
 
 	// JSON object with information about a run
-	//
-	// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/runs/items
 	RunInformation struct {
 
 		// Reason for the creation of this run,
@@ -112,8 +86,6 @@ type (
 		//   * "task-retry"
 		//   * "rerun"
 		//   * "exception"
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/runs/items/properties/reasonCreated
 		ReasonCreated string `json:"reasonCreated"`
 
 		// Reason that run was resolved, this is mainly
@@ -135,36 +107,26 @@ type (
 		//   * "resource-unavailable"
 		//   * "internal-error"
 		//   * "intermittent-task"
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/runs/items/properties/reasonResolved
 		ReasonResolved string `json:"reasonResolved,omitempty"`
 
 		// Date-time at which this run was resolved, ie. when the run changed
 		// state from `running` to either `completed`, `failed` or `exception`.
 		// This property is only present after the run as been resolved.
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/runs/items/properties/resolved
 		Resolved tcclient.Time `json:"resolved,omitempty"`
 
 		// Id of this task run, `run-id`s always starts from `0`
 		//
 		// Mininum:    0
 		// Maximum:    1000
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/runs/items/properties/runId
 		RunID int64 `json:"runId"`
 
 		// Date-time at which this run was scheduled, ie. when the run was
 		// created in state `pending`.
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/runs/items/properties/scheduled
 		Scheduled tcclient.Time `json:"scheduled"`
 
 		// Date-time at which this run was claimed, ie. when the run changed
 		// state from `pending` to `running`. This property is only present
 		// after the run has been claimed.
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/runs/items/properties/started
 		Started tcclient.Time `json:"started,omitempty"`
 
 		// State of this run
@@ -175,15 +137,11 @@ type (
 		//   * "completed"
 		//   * "failed"
 		//   * "exception"
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/runs/items/properties/state
 		State string `json:"state"`
 
 		// Time at which the run expires and is resolved as `failed`, if the
 		// run isn't reclaimed. Note, only present after the run has been
 		// claimed.
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/runs/items/properties/takenUntil
 		TakenUntil tcclient.Time `json:"takenUntil,omitempty"`
 
 		// Identifier for group that worker who executes this run is a part of,
@@ -193,8 +151,6 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/runs/items/properties/workerGroup
 		WorkerGroup string `json:"workerGroup,omitempty"`
 
 		// Identifier for worker evaluating this run within given
@@ -204,35 +160,25 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/runs/items/properties/workerId
 		WorkerID string `json:"workerId,omitempty"`
 	}
 
 	// Message reporting that a task has complete successfully.
-	//
-	// See https://taskcluster-staging.net/schemas/queue/v1/task-completed-message.json#
 	TaskCompletedMessage struct {
 
 		// Id of the run that completed the task
 		//
 		// Mininum:    0
 		// Maximum:    1000
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-completed-message.json#/properties/runId
 		RunID int64 `json:"runId"`
 
 		// A representation of **task status** as known by the queue
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 
 		// Message version
 		//
 		// Possible values:
 		//   * 1
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-completed-message.json#/properties/version
 		Version int64 `json:"version"`
 
 		// Identifier for the worker-group within which this run ran.
@@ -240,8 +186,6 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-completed-message.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
 
 		// Identifier for the worker that executed this run.
@@ -249,34 +193,24 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-completed-message.json#/properties/workerId
 		WorkerID string `json:"workerId"`
 	}
 
 	// Message reporting that a task has been defined. The task may or may not be
 	// _scheduled_ too.
-	//
-	// See https://taskcluster-staging.net/schemas/queue/v1/task-defined-message.json#
 	TaskDefinedMessage struct {
 
 		// A representation of **task status** as known by the queue
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 
 		// Message version
 		//
 		// Possible values:
 		//   * 1
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-defined-message.json#/properties/version
 		Version int64 `json:"version"`
 	}
 
 	// Message reporting that Taskcluster have failed to run a task.
-	//
-	// See https://taskcluster-staging.net/schemas/queue/v1/task-exception-message.json#
 	TaskExceptionMessage struct {
 
 		// Id of the last run for the task, not provided if `deadline`
@@ -284,21 +218,15 @@ type (
 		//
 		// Mininum:    0
 		// Maximum:    1000
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-exception-message.json#/properties/runId
 		RunID int64 `json:"runId,omitempty"`
 
 		// A representation of **task status** as known by the queue
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 
 		// Message version
 		//
 		// Possible values:
 		//   * 1
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-exception-message.json#/properties/version
 		Version int64 `json:"version"`
 
 		// Identifier for the worker-group within which the last attempt of the task
@@ -307,8 +235,6 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-exception-message.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup,omitempty"`
 
 		// Identifier for the last worker that failed to report, causing the task
@@ -318,35 +244,25 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-exception-message.json#/properties/workerId
 		WorkerID string `json:"workerId,omitempty"`
 	}
 
 	// Message reporting that a task failed to complete successfully.
-	//
-	// See https://taskcluster-staging.net/schemas/queue/v1/task-failed-message.json#
 	TaskFailedMessage struct {
 
 		// Id of the run that failed.
 		//
 		// Mininum:    0
 		// Maximum:    1000
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-failed-message.json#/properties/runId
 		RunID int64 `json:"runId"`
 
 		// A representation of **task status** as known by the queue
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 
 		// Message version
 		//
 		// Possible values:
 		//   * 1
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-failed-message.json#/properties/version
 		Version int64 `json:"version"`
 
 		// Identifier for the worker-group within which this run ran.
@@ -354,8 +270,6 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-failed-message.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
 
 		// Identifier for the worker that executed this run.
@@ -363,16 +277,12 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-failed-message.json#/properties/workerId
 		WorkerID string `json:"workerId"`
 	}
 
 	// Message written once a task group has no tasks to be run. It is
 	// possible for a task group to later have another task added, in which
 	// case this message will be sent again once it finishes.
-	//
-	// See https://taskcluster-staging.net/schemas/queue/v1/task-group-resolved.json#
 	TaskGroupResolvedMessage struct {
 
 		// Identifier for the scheduler that created this task-group.
@@ -380,53 +290,39 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-group-resolved.json#/properties/schedulerId
 		SchedulerID string `json:"schedulerId"`
 
 		// Identifier for the task-group being listed.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-group-resolved.json#/properties/taskGroupId
 		TaskGroupID string `json:"taskGroupId"`
 
 		// Message version
 		//
 		// Possible values:
 		//   * 1
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-group-resolved.json#/properties/version
 		Version int64 `json:"version,omitempty"`
 	}
 
 	// Required task metadata
-	//
-	// See https://taskcluster-staging.net/schemas/queue/v1/task-metadata.json#
 	TaskMetadata struct {
 
 		// Human readable description of the task, please **explain** what the
 		// task does. A few lines of documentation is not going to hurt you.
 		//
 		// Max length: 32768
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-metadata.json#/properties/description
 		Description string `json:"description"`
 
 		// Human readable name of task, used to very briefly given an idea about
 		// what the task does.
 		//
 		// Max length: 255
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-metadata.json#/properties/name
 		Name string `json:"name"`
 
 		// E-mail of person who caused this task, e.g. the person who did
 		// `hg push`. The person we should contact to ask why this task is here.
 		//
 		// Max length: 255
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-metadata.json#/properties/owner
 		Owner string `json:"owner"`
 
 		// Link to source of this task, should specify a file, revision and
@@ -435,68 +331,48 @@ type (
 		//
 		// Syntax:     ^https?://
 		// Max length: 4096
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-metadata.json#/properties/source
 		Source string `json:"source"`
 	}
 
 	// Message reporting that a task is now pending
-	//
-	// See https://taskcluster-staging.net/schemas/queue/v1/task-pending-message.json#
 	TaskPendingMessage struct {
 
 		// Id of run that became pending, `run-id`s always starts from 0
 		//
 		// Mininum:    0
 		// Maximum:    1000
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-pending-message.json#/properties/runId
 		RunID int64 `json:"runId"`
 
 		// A representation of **task status** as known by the queue
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 
 		// Message version
 		//
 		// Possible values:
 		//   * 1
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-pending-message.json#/properties/version
 		Version int64 `json:"version"`
 	}
 
 	// Message reporting that a given run of a task have started
-	//
-	// See https://taskcluster-staging.net/schemas/queue/v1/task-running-message.json#
 	TaskRunningMessage struct {
 
 		// Id of the run that just started, always starts from 0
 		//
 		// Mininum:    0
 		// Maximum:    1000
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-running-message.json#/properties/runId
 		RunID int64 `json:"runId"`
 
 		// A representation of **task status** as known by the queue
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 
 		// Time at which the run expires and is resolved as `failed`, if the run
 		// isn't reclaimed.
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-running-message.json#/properties/takenUntil
 		TakenUntil tcclient.Time `json:"takenUntil"`
 
 		// Message version
 		//
 		// Possible values:
 		//   * 1
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-running-message.json#/properties/version
 		Version int64 `json:"version"`
 
 		// Identifier for the worker-group within which this run started.
@@ -504,8 +380,6 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-running-message.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
 
 		// Identifier for the worker executing this run.
@@ -513,29 +387,21 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-running-message.json#/properties/workerId
 		WorkerID string `json:"workerId"`
 	}
 
 	// A representation of **task status** as known by the queue
-	//
-	// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#
 	TaskStatusStructure struct {
 
 		// Deadline of the task, `pending` and `running` runs are
 		// resolved as **exception** if not resolved by other means
 		// before the deadline. Note, deadline cannot be more than
 		// 5 days into the future
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/deadline
 		Deadline tcclient.Time `json:"deadline"`
 
 		// Task expiration, time at which task definition and
 		// status is deleted. Notice that all artifacts for the task
 		// must have an expiration that is no later than this.
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// Unique identifier for a provisioner, that can supply specified
@@ -544,21 +410,15 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
 
 		// Number of retries left for the task in case of infrastructure issues
 		//
 		// Mininum:    0
 		// Maximum:    999
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/retriesLeft
 		RetriesLeft int64 `json:"retriesLeft"`
 
 		// List of runs, ordered so that index `i` has `runId == i`
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/runs
 		Runs []RunInformation `json:"runs"`
 
 		// All tasks in a task group must have the same `schedulerId`. This is used for several purposes:
@@ -575,8 +435,6 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task.json#/properties/schedulerId
 		SchedulerID string `json:"schedulerId"`
 
 		// State of this task. This is just an auxiliary property derived from state
@@ -589,8 +447,6 @@ type (
 		//   * "completed"
 		//   * "failed"
 		//   * "exception"
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/state
 		State string `json:"state"`
 
 		// Identifier for a group of tasks scheduled together with this task.
@@ -601,8 +457,6 @@ type (
 		// decision tasks.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task.json#/properties/taskGroupId
 		TaskGroupID string `json:"taskGroupId"`
 
 		// Unique task identifier, this is UUID encoded as
@@ -610,8 +464,6 @@ type (
 		// stripped of `=` padding.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task-status.json#/properties/taskId
 		TaskID string `json:"taskId"`
 
 		// Unique identifier for a worker-type within a specific provisioner
@@ -619,8 +471,6 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		//
-		// See https://taskcluster-staging.net/schemas/queue/v1/task.json#/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
 )

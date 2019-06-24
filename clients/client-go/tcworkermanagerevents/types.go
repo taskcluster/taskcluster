@@ -3,21 +3,10 @@
 package tcworkermanagerevents
 
 type (
-	// The message that is emitted when workertypes are created/changed/deleted.
-	//
-	// See https://taskcluster-staging.net/schemas/worker-manager/v1/pulse-workertype-message.json#
+	// The message that is emitted when worker pools are created/changed/deleted.
 	WorkerTypePulseMessage struct {
 
-		// The provider responsible for managing this workertype.
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
-		//
-		// See https://taskcluster-staging.net/schemas/worker-manager/v1/workertype-full.json#/properties/provider
-		Name string `json:"name"`
-
-		// If this is defined, it was the provider that handled this workertype in the
+		// If this is defined, it was the provider that handled this worker pool in the
 		// configuration before the current one. This will be used by providers to clean
 		// up any resources created for this workerType when they are no longer responsible
 		// for it.
@@ -25,17 +14,21 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		//
-		// See https://taskcluster-staging.net/schemas/worker-manager/v1/pulse-workertype-message.json#/properties/previousProvider
-		PreviousProvider string `json:"previousProvider,omitempty"`
+		PreviousProviderID string `json:"previousProviderId,omitempty"`
 
-		// The provider responsible for managing this workertype.
+		// The provider responsible for managing this worker pool.
+		//
+		// If this value is `"null-provider"`, then the worker pool is pending deletion
+		// once all existing workers have terminated.
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
+		ProviderID string `json:"providerId"`
+
+		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
 		//
-		// See https://taskcluster-staging.net/schemas/worker-manager/v1/workertype-full.json#/properties/provider
-		Provider string `json:"provider"`
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		WorkerPoolID string `json:"workerPoolId"`
 	}
 )

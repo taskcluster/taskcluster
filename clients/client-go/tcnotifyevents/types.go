@@ -9,45 +9,33 @@ import (
 
 type (
 	// Request to post a message on IRC.
-	//
-	// See https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[0]
 	ChannelMessage struct {
 
 		// Channel to post the message in.
 		//
 		// Syntax:     ^[#&][^ ,\u0007]{1,199}$
 		// Min length: 1
-		//
-		// See https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[0]/properties/channel
 		Channel string `json:"channel"`
 
 		// IRC message to send as plain text.
 		//
 		// Min length: 1
 		// Max length: 510
-		//
-		// See https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions/message
 		Message string `json:"message"`
 	}
 
 	// This can be pretty much anything you want it to be.
-	//
-	// See https://taskcluster-staging.net/schemas/notify/v1/notification-message.json#
 	NotificationMessage struct {
 
 		// Arbitrary message.
 		//
 		// Additional properties allowed
-		//
-		// See https://taskcluster-staging.net/schemas/notify/v1/notification-message.json#/properties/message
 		Message json.RawMessage `json:"message"`
 
 		// Message version
 		//
 		// Possible values:
 		//   * 1
-		//
-		// See https://taskcluster-staging.net/schemas/notify/v1/notification-message.json#/properties/version
 		Version int64 `json:"version,omitempty"`
 	}
 
@@ -56,21 +44,15 @@ type (
 	// One of:
 	//   * ChannelMessage
 	//   * PrivateMessage
-	//
-	// See https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#
 	PostIRCMessageRequest json.RawMessage
 
 	// Request to post a message on IRC.
-	//
-	// See https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[1]
 	PrivateMessage struct {
 
 		// IRC message to send as plain text.
 		//
 		// Min length: 1
 		// Max length: 510
-		//
-		// See https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/definitions/message
 		Message string `json:"message"`
 
 		// User to post the message to.
@@ -78,8 +60,6 @@ type (
 		// Syntax:     ^[A-Za-z\[\]\\~_\^{|}][A-Za-z0-9\-\[\]\\~_\^{|}]{0,254}$
 		// Min length: 1
 		// Max length: 255
-		//
-		// See https://taskcluster-staging.net/schemas/notify/v1/irc-request.json#/oneOf[1]/properties/user
 		User string `json:"user"`
 	}
 )
