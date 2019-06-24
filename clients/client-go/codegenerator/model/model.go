@@ -17,7 +17,6 @@ import (
 	"strings"
 
 	"github.com/taskcluster/jsonschema2go"
-	"github.com/taskcluster/jsonschema2go/text"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 	"github.com/xeipuuv/gojsonschema"
 	"golang.org/x/tools/imports"
@@ -199,7 +198,7 @@ type APIDefinitions []*APIDefinition
 
 // GenerateCode takes the objects loaded into memory in LoadAPIs
 // and writes them out as go code.
-func (apiDefs APIDefinitions) GenerateCode(goOutputDir, modelData string) {
+func (apiDefs APIDefinitions) GenerateCode(goOutputDir string) {
 	for i := range apiDefs {
 		apiDefs[i].PackageName = "tc" + strings.ToLower(apiDefs[i].Data.Name())
 		// Used throughout docs, and also methods that use the class, we need a
@@ -250,17 +249,4 @@ func (apiDefs APIDefinitions) GenerateCode(goOutputDir, modelData string) {
 		sourceFile := filepath.Join(apiDefs[i].PackagePath, apiDefs[i].PackageName+".go")
 		FormatSourceAndSave(sourceFile, []byte(content))
 	}
-
-	content := "The following file is an auto-generated static dump of the API models at time of code generation.\n"
-	content += "It is provided here for reference purposes, but is not used by any code.\n"
-	content += "\n"
-	for i := range apiDefs {
-		content += text.Underline(apiDefs[i].URL)
-		content += apiDefs[i].Data.String() + "\n\n"
-		for _, url := range apiDefs[i].schemas.SortedSanitizedURLs() {
-			content += text.Underline(url)
-			content += apiDefs[i].schemas.SubSchema(url).String() + "\n\n"
-		}
-	}
-	exitOnFail(ioutil.WriteFile(modelData, []byte(content), 0644))
 }

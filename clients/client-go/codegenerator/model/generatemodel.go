@@ -33,10 +33,6 @@ this is used by the build process for this taskcluster/clients/client-go go proj
   Options:
     -h --help               Display this help text.
     -o GO-OUTPUT-DIR        Directory to place generated go packages.
-    -m MODEL-DATA-FILE      When all api descriptions have been downloaded and
-                            parsed, and their dependencies have also been
-                            processed, an overview of all the processed data
-                            will be written to this file.
 
 Please note, you *must* set TASKCLUSTER_ROOT_URL to a valid taskcluster deployment to
 retrieve the manifest/references/schemas from.
@@ -84,6 +80,6 @@ func main() {
 	log.Print("Loading APIs...")
 	apiDefs := model.LoadAPIs(rootURL)
 	log.Print("Generating code...")
-	apiDefs.GenerateCode(arguments["-o"].(string), arguments["-m"].(string))
+	apiDefs.GenerateCode(arguments["-o"].(string))
 	log.Print("All done")
 }
