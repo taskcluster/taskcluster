@@ -1,6 +1,4 @@
-<img align="right" src="http://media.taskcluster.net/logo/logo-96x120.png" />
-
-# taskcluster/clients/client-go
+# Taskcluster Client Go
 
 [![Build Status](https://travis-ci.org/taskcluster/taskcluster/clients/client-go.svg?branch=master)](http://travis-ci.org/taskcluster/taskcluster/clients/client-go)
 [![GoDoc](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go?status.svg)](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go)
@@ -36,7 +34,7 @@ This library provides the following packages to interface with Taskcluster:
 
 ## Example programs
 
-To get you started quickly, I have also included some example programs that use both the http services and the amqp services:
+To get you started quickly, some example programs are included that use both the HTTP APIs and the AMQP APIs:
 
 * This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth#example-package--Scopes) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth) package to query the expiry and expanded scopes of a given clientId.
 * This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth#example-package--UpdateClient) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth) package to update an existing clientId with a new description and expiry.
@@ -534,8 +532,9 @@ import (
 )
 
 const (
-	taskID = "VESwp9JaRo-XkFN_bemBhw"
-	runID  = 0
+	taskID  = "VESwp9JaRo-XkFN_bemBhw"
+	runID   = 0
+    rootURL = "https://tc.example.com"
 )
 
 // This simple demo lists the artifacts in run 0 of task
@@ -565,7 +564,7 @@ func main() {
 	tempCreds.AuthorizedScopes = []string{
 		"queue:get-artifact:private/build/*",
 	}
-	queueClient, err := tcqueue.New(tempCreds)
+	queueClient, err := tcqueue.New(tempCreds, rootURL)
 	if err != nil {
 		// bug in code
 		log.Fatalf("SERIOUS BUG! Could not create client from generated temporary credentials: %v", err)
@@ -586,20 +585,10 @@ See the [HTTP API godocs](#http-apis) for more information, or browse the [integ
 tests](https://github.com/taskcluster/taskcluster/clients/client-go/tree/master/integrationtest)
 for further examples.
 
-## Building
-The libraries provided by this client are auto-generated based on the schemas listed under
-http://references.taskcluster.net/manifest.json combined with the supplementary information stored in
-[apis.json](https://github.com/taskcluster/taskcluster/clients/client-go/blob/master/codegenerator/model/apis.json).
+## Generating
+The libraries provided by this client are auto-generated based on the schema references in this repository.
 
-In order to completely regenerate all of the HTTP and AMQP libraries, please run [build.sh](https://github.com/taskcluster/taskcluster/clients/client-go/blob/master/build.sh)
-found in the top level directory. This will completely regenerate the library. Please note you will need an active internet connection as the build process must
-download several json files and schemas in order to build the library.
+In order to completely regenerate all of the HTTP and AMQP libraries, please run `go generate ./...`.
 
 The code which generates the library can all be found under the top level [codegenerator](https://github.com/taskcluster/taskcluster/clients/client-go/tree/master/codegenerator)
 directory.
-
-## Contributing
-Contributions are welcome. Please fork, and issue a Pull Request back with an explanation of your changes.
-
-## Travis
-Travis build [success/failure messages](http://travis-ci.org/taskcluster/taskcluster/clients/client-go) are posted to irc channel #taskcluster-bots on irc.mozilla.org:6697.
