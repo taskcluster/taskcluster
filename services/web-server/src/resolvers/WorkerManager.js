@@ -28,9 +28,5 @@ module.exports = {
     updateWorkerPool(parent, { workerPoolId, payload }, { clients} ) {
       return clients.workerManager.updateWorkerPool(workerPoolId, payload);
     },
-    deleteWorkerPool(parent, { workerPoolId, payload }, { clients} ) {
-      payload.providerId = 'null-provider';
-      return clients.workerManager.updateWorkerPool(workerPoolId, payload);
-    },
   },
 };

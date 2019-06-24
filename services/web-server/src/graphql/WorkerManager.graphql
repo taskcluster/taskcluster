@@ -42,6 +42,4 @@ extend type Mutation {
     createWorkerPool(workerPoolId: String!, payload: WorkerPoolInput!): WorkerManagerWorkerPoolSummary
 
     updateWorkerPool(workerPoolId: String!, payload: WorkerPoolInput!): WorkerManagerWorkerPoolSummary
-
-    deleteWorkerPool(workerPoolId: String!, payload: WorkerPoolInput!): WorkerManagerWorkerPoolSummary
 }

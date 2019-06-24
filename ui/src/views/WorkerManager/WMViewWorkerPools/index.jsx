@@ -10,7 +10,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import WorkerManagerWorkerPoolsTable from '../../../components/WMWorkerPoolsTable';
 import Search from '../../../components/Search';
 import Button from '../../../components/Button';
-import deleteWorkerPoolQuery from './deleteWorkerPool.graphql';
+import updateWorkerPoolQuery from '../WMEditWorkerPool/updateWorkerPool.graphql';
 
 @hot(module)
 @withApollo
@@ -40,10 +40,13 @@ export default class WorkerManagerWorkerPoolsView extends Component {
 
   deleteRequest = async ({ workerPoolId, payload }) => {
     await this.props.client.mutate({
-      mutation: deleteWorkerPoolQuery,
+      mutation: updateWorkerPoolQuery,
       variables: {
         workerPoolId,
-        payload,
+        payload: {
+          ...payload,
+          providerId: 'null-provider', // this is how we delete worker pools
+        },
       },
     });
     window.location.reload();

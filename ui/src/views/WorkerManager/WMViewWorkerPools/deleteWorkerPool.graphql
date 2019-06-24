@@ -1,5 +1,0 @@
-mutation DeleteWorkerPool($workerPoolId: String!, $payload: WorkerPoolInput!) {
-    deleteWorkerPool(workerPoolId: $workerPoolId, payload: $payload) {
-        workerPoolId
-    }
-}
