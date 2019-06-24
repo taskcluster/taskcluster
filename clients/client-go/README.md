@@ -38,7 +38,7 @@ To get you started quickly, some example programs are included that use both the
 
 * This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth#example-package--Scopes) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth) package to query the expiry and expanded scopes of a given clientId.
 * This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth#example-package--UpdateClient) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth) package to update an existing clientId with a new description and expiry.
-* The [AMQP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcqueueevents#example-package--TaskclusterSniffer) demonstrates the use of the [tcqueueevents](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcqueueevents) package to listen in on Task Cluster tasks being defined and executed.
+* The [AMQP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcqueueevents#example-package--TaskclusterSniffer) demonstrates the use of the [tcqueueevents](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcqueueevents) package to listen in on Taskcluster tasks being defined and executed.
 
 ## Calling API End-Points
 
