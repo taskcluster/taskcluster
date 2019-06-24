@@ -14,9 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/taskcluster/jsonschema2go"
 	"github.com/taskcluster/jsonschema2go/text"
@@ -26,8 +24,7 @@ import (
 )
 
 var (
-	err            error
-	downloadedTime time.Time
+	err error
 )
 
 // SortedAPIDefs is a sorted array of APIDefinitions
@@ -202,8 +199,7 @@ type APIDefinitions []*APIDefinition
 
 // GenerateCode takes the objects loaded into memory in LoadAPIs
 // and writes them out as go code.
-func (apiDefs APIDefinitions) GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
-	downloadedTime = downloaded
+func (apiDefs APIDefinitions) GenerateCode(goOutputDir, modelData string) {
 	for i := range apiDefs {
 		apiDefs[i].PackageName = "tc" + strings.ToLower(apiDefs[i].Data.Name())
 		// Used throughout docs, and also methods that use the class, we need a
@@ -255,8 +251,7 @@ func (apiDefs APIDefinitions) GenerateCode(goOutputDir, modelData string, downlo
 		FormatSourceAndSave(sourceFile, []byte(content))
 	}
 
-	content := "Generated: " + strconv.FormatInt(downloadedTime.Unix(), 10) + "\n"
-	content += "The following file is an auto-generated static dump of the API models at time of code generation.\n"
+	content := "The following file is an auto-generated static dump of the API models at time of code generation.\n"
 	content += "It is provided here for reference purposes, but is not used by any code.\n"
 	content += "\n"
 	for i := range apiDefs {

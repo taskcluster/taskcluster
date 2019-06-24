@@ -9,14 +9,12 @@ import (
 	"log"
 	"os"
 	"regexp"
-	"strconv"
-	"time"
 
 	docopt "github.com/docopt/docopt-go"
 	"github.com/taskcluster/jsonschema2go"
+	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go"
 	"github.com/taskcluster/taskcluster/clients/client-go/codegenerator/model"
-	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 )
 
 var (
@@ -53,20 +51,6 @@ func main() {
 		os.Exit(64)
 	}
 
-	// allow time to be passed via env var UNIX_TIMESTAMP
-	var downloadedTime time.Time
-	switch t := os.Getenv("UNIX_TIMESTAMP"); t {
-	case "":
-		downloadedTime = time.Now()
-	default:
-		i, err := strconv.ParseInt(t, 10, 0)
-		if err != nil {
-			fmt.Printf("ERROR: Cannot convert UNIX_TIMESTAMP ('%s') to an int\n", t)
-			os.Exit(65)
-		}
-		downloadedTime = time.Unix(i, 0)
-	}
-
 	rootURL := tcclient.RootURLFromEnvVars()
 	if rootURL == "" {
 		log.Fatal("No TASKCLUSTER_ROOT_URL/TASKCLUSTER_PROXY_URL environment variable found to download manifest/references/schemas from.")
@@ -100,6 +84,6 @@ func main() {
 	log.Print("Loading APIs...")
 	apiDefs := model.LoadAPIs(rootURL)
 	log.Print("Generating code...")
-	apiDefs.GenerateCode(arguments["-o"].(string), arguments["-m"].(string), downloadedTime)
+	apiDefs.GenerateCode(arguments["-o"].(string), arguments["-m"].(string))
 	log.Print("All done")
 }
