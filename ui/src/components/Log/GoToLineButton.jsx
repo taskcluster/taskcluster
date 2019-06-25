@@ -57,13 +57,13 @@ export default class GoToLineButton extends Component {
     return (
       <Fragment>
         <Button
+          size="small"
           spanProps={{ className }}
           tooltipProps={{ title: 'Go to Line' }}
-          variant="round"
           color="secondary"
           onClick={this.handleOpenClick}
           {...props}>
-          <NumericIcon />
+          <NumericIcon size={20} />
         </Button>
         <Dialog
           open={open}
