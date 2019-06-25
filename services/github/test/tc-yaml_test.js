@@ -91,7 +91,7 @@ suite(testing.suiteName(), function() {
       assume(config.tasks[1].taskId).to.not.equal(config.tasks[1].task.taskGroupId);
     });
 
-    test('compileTasks forces schedulerId, but uses user-supplied taskId/taskGroupId', function() {
+    test('compileTasks uses user-supplied taskId/taskGroupId/schedulerId', function() {
       const config = {
         tasks: [{
           taskId: 'task-1',
@@ -109,7 +109,7 @@ suite(testing.suiteName(), function() {
         task: {
           created: now,
           taskGroupId: 'tgid-1',
-          schedulerId: 'test-sched',
+          schedulerId: 'my-scheduler-id',
           routes: ['statuses-queue'],
         },
       }, {
@@ -117,7 +117,7 @@ suite(testing.suiteName(), function() {
         task: {
           created: now,
           taskGroupId: 'tgid-2',
-          schedulerId: 'test-sched',
+          schedulerId: 'my-scheduler-id',
           routes: ['statuses-queue'],
         },
       }]);
