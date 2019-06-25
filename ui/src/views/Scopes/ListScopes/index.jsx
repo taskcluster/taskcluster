@@ -1,5 +1,5 @@
 import React, { PureComponent, Fragment } from 'react';
-import { hot } from 'react-hot-loader';
+import { hot } from 'react-hot-loader/root';
 import { graphql } from 'react-apollo';
 import { withRouter } from 'react-router-dom';
 import dotProp from 'dot-prop-immutable';

@@ -1,4 +1,4 @@
-import { hot } from 'react-hot-loader';
+import { hot } from 'react-hot-loader/root';
 import React, { Component, Fragment } from 'react';
 import { Redirect } from 'react-router-dom';
 import { withApollo } from 'react-apollo';

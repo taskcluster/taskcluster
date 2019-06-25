@@ -1,4 +1,4 @@
-import { hot } from 'react-hot-loader';
+import { hot } from 'react-hot-loader/root';
 import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import PlusIcon from 'mdi-react/PlusIcon';

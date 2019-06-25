@@ -1,4 +1,4 @@
-import { hot } from 'react-hot-loader';
+import { hot } from 'react-hot-loader/root';
 import React, { Component } from 'react';
 import { bool } from 'prop-types';
 import TextField from '@material-ui/core/TextField';

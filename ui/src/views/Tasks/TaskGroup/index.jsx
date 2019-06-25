@@ -1,4 +1,4 @@
-import { hot } from 'react-hot-loader';
+import { hot } from 'react-hot-loader/root';
 import cloneDeep from 'lodash.clonedeep';
 import React, { Component } from 'react';
 import { graphql, withApollo } from 'react-apollo';

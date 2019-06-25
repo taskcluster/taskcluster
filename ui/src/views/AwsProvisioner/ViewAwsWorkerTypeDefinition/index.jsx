@@ -1,4 +1,4 @@
-import { hot } from 'react-hot-loader';
+import { hot } from 'react-hot-loader/root';
 import React, { Component } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import { bool } from 'prop-types';

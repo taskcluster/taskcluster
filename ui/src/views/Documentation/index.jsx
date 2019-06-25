@@ -1,4 +1,4 @@
-import { hot } from 'react-hot-loader';
+import { hot } from 'react-hot-loader/root';
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { lowerCase } from 'change-case';

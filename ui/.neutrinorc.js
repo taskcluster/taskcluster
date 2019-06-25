@@ -1,5 +1,8 @@
 const merge = require('deepmerge');
 const { join, resolve } = require('path');
+const reactLint = require('@mozilla-frontend-infra/react-lint');
+const react = require('@neutrinojs/react');
+const karma = require('@neutrinojs/karma');
 
 const DEFAULT_PORT = 5080;
 const port = process.env.PORT || DEFAULT_PORT;
@@ -19,7 +22,7 @@ module.exports = {
     },
   },
   use: [
-    ['@mozilla-frontend-infra/react-lint', {
+    reactLint({
       parserOptions: {
         ecmaFeatures: {
           legacyDecorators: true
@@ -32,8 +35,8 @@ module.exports = {
         'linebreak-style': 'off',
         'react-hooks/rules-of-hooks': 'error',
       },
-    }],
-    ['@neutrinojs/react', {
+    }),
+    react({
       html: {
         title: process.env.APPLICATION_NAME
       },
@@ -71,7 +74,7 @@ module.exports = {
         DOCS_ONLY: false,
         SHOW_WORKER_MANAGER: false,
       },
-    }],
+    }),
     (neutrino) => {
       neutrino.register('styleguide', () => ({
         webpackConfig: neutrino.config.toConfig(),
@@ -164,10 +167,10 @@ module.exports = {
       neutrino.config.resolve
         .alias.set('taskcluster-ui', resolve(__dirname, 'src/'));
     },
-    ['@neutrinojs/karma', {
+    karma({
       plugins: [
         'karma-firefox-launcher',
       ],
-    }],
+    }),
   ],
 };

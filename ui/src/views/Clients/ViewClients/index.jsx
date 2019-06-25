@@ -1,5 +1,5 @@
 import React, { PureComponent, Fragment } from 'react';
-import { hot } from 'react-hot-loader';
+import { hot } from 'react-hot-loader/root';
 import { graphql } from 'react-apollo';
 import { parse, stringify } from 'qs';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';

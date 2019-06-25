@@ -1,4 +1,4 @@
-import { hot } from 'react-hot-loader';
+import { hot } from 'react-hot-loader/root';
 import React, { Component } from 'react';
 import Dashboard from '../../components/Dashboard';
 import NotFoundComponent from '../../components/NotFound';
