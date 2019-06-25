@@ -9,9 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os/exec"
-	"time"
 )
 
 var (
@@ -43,15 +41,15 @@ func Decode(encoded []byte) []byte {
 }
 
 func SetAutoLogin(user string, password []byte) (err error) {
-	pList, err := LoginWindowPList()
+	pList, err := loginWindowPList()
 	if err != nil {
-		return err
+		return
 	}
 	pList["autoLoginUser"] = user
 	var data []byte
 	data, err = json.Marshal(&pList)
 	if err != nil {
-		return err
+		return
 	}
 	buf := bytes.NewBuffer(data)
 	cmd := exec.Command("/usr/bin/sudo", "/usr/bin/plutil", "-convert", "binary1", "-", "-o", "/Library/Preferences/com.apple.loginwindow.plist")
@@ -74,7 +72,7 @@ func AutoLoginUser() (user string, password []byte, err error) {
 }
 
 func AutoLoginUsername() (user string, err error) {
-	pList, err := LoginWindowPList()
+	pList, err := loginWindowPList()
 	if err != nil {
 		return "", err
 	}
@@ -93,7 +91,7 @@ func AutoLoginPassword() (password []byte, err error) {
 	return
 }
 
-func LoginWindowPList() (data map[string]interface{}, err error) {
+func loginWindowPList() (data map[string]interface{}, err error) {
 	var loginWindowPListBytes []byte
 	loginWindowPListBytes, err = exec.Command("/usr/bin/sudo", "/usr/bin/plutil", "-convert", "json", "/Library/Preferences/com.apple.loginwindow.plist", "-o", "-").CombinedOutput()
 	if err != nil {
@@ -101,24 +99,4 @@ func LoginWindowPList() (data map[string]interface{}, err error) {
 	}
 	err = json.Unmarshal(loginWindowPListBytes, &data)
 	return data, err
-}
-
-func WaitForLoginCompletion(user string, timeout time.Duration) (err error) {
-	deadline := time.Now().Add(timeout)
-	log.Print("Checking if a user is logged in...")
-	var pList map[string]interface{}
-	for time.Now().Before(deadline) {
-		pList, err = LoginWindowPList()
-		if err != nil {
-			return err
-		}
-		if pList["lastUser"] == "loggedIn" && pList["lastUserName"] == user {
-			log.Printf("User %v logged in", pList["lastUserName"])
-			return nil
-		}
-		log.Print("No user logged in yet...")
-		time.Sleep(time.Second)
-	}
-	log.Printf("Timed out waiting for user login: %#v", pList)
-	return fmt.Errorf("No user logged in: %#v", pList)
 }

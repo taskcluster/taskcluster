@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/taskcluster/generic-worker/fileutil"
 	"github.com/taskcluster/generic-worker/process"
@@ -30,7 +29,6 @@ func secureConfigFile() {
 func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 	reboot = true
 	if autoLogonUser := AutoLogonCredentials(); strings.HasPrefix(autoLogonUser.Name, "task_") {
-		runtime.WaitForLoginCompletion(autoLogonUser.Name, 5*time.Minute)
 		reboot = false
 		pd, err := process.NewPlatformData(config.RunTasksAsCurrentUser)
 		if err != nil {

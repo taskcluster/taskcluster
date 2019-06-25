@@ -5,9 +5,6 @@ import (
 	"log"
 	"os/exec"
 	"strings"
-	"time"
-
-	"github.com/taskcluster/generic-worker/kc"
 )
 
 func (user *OSUser) CreateNew(okIfExists bool) (err error) {
@@ -64,8 +61,4 @@ func ListUserAccounts() (usernames []string, err error) {
 
 func UserHomeDirectoriesParent() string {
 	return "/Users"
-}
-
-func WaitForLoginCompletion(user string, timeout time.Duration) error {
-	return kc.WaitForLoginCompletion(user, timeout)
 }
