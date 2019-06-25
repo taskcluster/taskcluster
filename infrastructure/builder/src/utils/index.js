@@ -3,4 +3,5 @@ module.exports = {
   ...require('./tasks'),
   ...require('./git'),
   ...require('./docker'),
+  ...require('./command'),
 };
