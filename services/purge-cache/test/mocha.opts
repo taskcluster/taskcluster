@@ -1,4 +1,0 @@
---ui tdd
---timeout 240s
---reporter spec
---exit

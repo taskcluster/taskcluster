@@ -7,13 +7,6 @@ const libUrls = require('taskcluster-lib-urls');
  * allowed here for historical or documentary purposes
  */
 const UNREFERENCED_SCHEMAS = [
-  /*
-     https://validate-root.example.com/schemas/index/v-1/list-tasks-request.json#
-     https://validate-root.example.com/schemas/login/v1/credentials-response.json#
-     https://validate-root.example.com/schemas/queue/v1/poll-task-urls-response.json#
-     https://validate-root.example.com/schemas/treeherder/v1/task-treeherder-config.json#
-     https://validate-root.example.com/schemas/worker-manager/v1/worker-configuration-result.json#
-     */
   // schemas used in documentation
   {service: 'github', schema: 'v1/taskcluster-github-config.json#'},
   {service: 'github', schema: 'v1/taskcluster-github-config.v1.json#'},
@@ -23,7 +16,7 @@ const UNREFERENCED_SCHEMAS = [
   {service: 'index', schema: 'v1/list-namespaces-request.json#'},
   {service: 'queue', schema: 'v1/poll-task-urls-response.json#'},
 
-  // schemas for dynamic configs in worker-manager TODO: What to do about these?
+  // schemas for dynamic configs in worker-manager
   {service: 'worker-manager', schema: 'v1/config-google.json#'},
   {service: 'worker-manager', schema: 'v1/config-static.json#'},
   {service: 'worker-manager', schema: 'v1/config-testing.json#'},

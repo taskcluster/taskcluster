@@ -99,7 +99,7 @@ To run this process locally:
 NODE_ENV=development node src/main expire-artifacts
 ```
 
-You may need to provde additional configuration, either as environment variables or in `user-config.yml`.
+You may need to provide additional configuration, either as environment variables or in `user-config.yml`.
 You can find a template for `user-config.yml` in `user-config-example.yml`: just copy the latter to the former and edit it.
 
 ## Hacking on Clients
