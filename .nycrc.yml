@@ -1,6 +1,0 @@
----
-all: true
-include:
-  - src/**/*.js
-exclude:
-  - src/main.js
