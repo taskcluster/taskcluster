@@ -2,17 +2,16 @@
 
 /**
  * Looks up a key by value. If there are >1 keys with the
- * same value, it will return the last one it finds
+ * same value, it will return the first one it finds
+ *
+ * If nothing found, it return undefined
  *
  * @param map Map
  * @param value {any}
- * @returns key {any}
+ * @returns key {any | undefined}
  */
-exports.findKeyInMap = ({ map, value }) =>
-  Array.from(map).reduce((acc, curr) => {
-    if (curr.includes(value)) {
-      return curr[0];
-    }
+exports.findKeyInMap = ({ map, value }) => {
+  const found = Array.from(map).find(kv => kv[1] === value);
 
-    return null;
-  }, []);
+  return found ? found[0] : found;
+};
