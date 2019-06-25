@@ -17,10 +17,10 @@ var (
 )
 
 func Encode(password []byte) []byte {
-	overflow := len(password) % (len(MagicKey) + 1)
+	overflow := len(password) % len(MagicKey)
 	paddingLength := 0
 	if overflow > 0 {
-		paddingLength = len(MagicKey) + 1 - overflow
+		paddingLength = len(MagicKey) - overflow
 	}
 	data := append(password, make([]byte, paddingLength, paddingLength)...)
 	for j := 0; j < len(data); j++ {
