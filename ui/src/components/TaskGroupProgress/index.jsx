@@ -169,7 +169,7 @@ export default class TaskGroupProgress extends Component {
   static propTypes = {
     /** The selected task state. This will change the card icon. */
     filter: taskState,
-    /** Callback fired when the status progress count changes. */
+    /** Callback fired when statusCount changes with the statusCount. */
     onUpdate: func,
     /** Callback fired when the a state card is clicked */
     onStatusClick: func.isRequired,
