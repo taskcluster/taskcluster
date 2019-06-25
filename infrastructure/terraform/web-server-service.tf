@@ -10,6 +10,10 @@ resource "random_string" "web_server_access_token" {
   override_special = "_-"
 }
 
+resource "random_string" "web_server_jwt_key" {
+  length = 66
+}
+
 module "web_server_secrets" {
   source            = "modules/service-secrets"
   project_name      = "taskcluster-web-server"
@@ -25,6 +29,7 @@ module "web_server_secrets" {
     PULSE_HOSTNAME           = "${var.rabbitmq_hostname}"
     PULSE_VHOST              = "${var.rabbitmq_vhost}"
     PUBLIC_URL               = "${var.root_url}"
+    JWT_KEY                  = "${random_string.web_server_jwt_key.result}"
   }
 }
 

@@ -88,7 +88,7 @@ module.exports = class Github {
           const user = await this.getUser({ userId: profile.username });
           const { token: taskclusterToken, expires: providerExpires } = jwt.generate({
             rootUrl: this.rootUrl,
-            privateKey: this.jwtConfig.privateKey,
+            key: this.jwtConfig.key,
             sub: user.identity,
             // GitHub tokens don't expire
             exp: Math.floor(taskcluster.fromNow('1000 year').getTime() / 1000),
