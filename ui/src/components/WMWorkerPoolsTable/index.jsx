@@ -9,8 +9,8 @@ import Typography from '@material-ui/core/Typography/';
 import ListItemText from '@material-ui/core/ListItemText';
 import IconButton from '@material-ui/core/IconButton';
 import LinkIcon from 'mdi-react/LinkIcon';
-import PencilIcon from 'mdi-react/PencilIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
+import WorkerIcon from 'mdi-react/WorkerIcon';
 import { withRouter } from 'react-router-dom';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case';
@@ -93,7 +93,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
 
   handleEditClick = ({ currentTarget: { name } }) => {
     this.props.history.push({
-      pathname: `${this.props.match.path}/${encodeURIComponent(name)}/edit`,
+      pathname: `${this.props.match.path}/${encodeURIComponent(name)}/workers`,
     });
   };
 
@@ -137,7 +137,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
             name={`${workerPool.workerPoolId}`}
             onClick={this.handleEditClick}
             disabled={actionLoading || workerPool.providerId === NULL_PROVIDER}>
-            <PencilIcon size={iconSize} />
+            <WorkerIcon size={iconSize} />
           </IconButton>
         </TableCell>
 
@@ -145,7 +145,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           <TableCellListItem
             button
             component={Link}
-            to={`${path}/worker-pools/${workerPool.workerPoolId}`}>
+            to={`${path}/${encodeURIComponent(workerPool.workerPoolId)}/edit`}>
             <ListItemText
               disableTypography
               primary={<Typography>{workerPool.workerPoolId}</Typography>}

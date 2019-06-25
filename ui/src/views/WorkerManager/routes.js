@@ -19,7 +19,7 @@ export default path => [
   },
   {
     component: WorkerManagerViewWorkers,
-    path: `${path}/worker-pools/:workerPool`,
+    path: `${path}/:workerPoolId/workers`,
     description: 'View workers for that specific worker pool',
   },
   {
