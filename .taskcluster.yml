@@ -257,7 +257,7 @@ tasks:
                 - "/bin/bash"
                 - "-lc"
                 - >-
-                  git clone --quiet --depth=1 --no-single-branch ${repo.git_url} taskcluster &&
+                  git clone --quiet --depth=20 --no-single-branch ${repo.git_url} taskcluster &&
                   cd taskcluster &&
                   git checkout ${repo.ref} &&
                   ${job.install} &&
