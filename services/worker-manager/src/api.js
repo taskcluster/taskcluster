@@ -23,7 +23,7 @@ module.exports = builder;
 
 builder.declare({
   method: 'put',
-  route: '/worker-pool/:workerPoolId',
+  route: '/worker-pool/:workerPoolId(*)',
   name: 'createWorkerPool',
   title: 'Create Worker Pool',
   stability: APIBuilder.stability.experimental,
@@ -93,7 +93,7 @@ builder.declare({
 
 builder.declare({
   method: 'post',
-  route: '/worker-pool/:workerPoolId',
+  route: '/worker-pool/:workerPoolId(*)',
   name: 'updateWorkerPool',
   title: 'Update Worker Pool',
   stability: APIBuilder.stability.experimental,
@@ -160,7 +160,7 @@ builder.declare({
 
 builder.declare({
   method: 'get',
-  route: '/worker-pool/:workerPoolId',
+  route: '/worker-pool/:workerPoolId(*)',
   name: 'workerPool',
   title: 'Get Worker Pool',
   stability: APIBuilder.stability.experimental,
@@ -215,7 +215,7 @@ builder.declare({
 
 builder.declare({
   method: 'get',
-  route: '/worker-pool-errors/:workerPoolId',
+  route: '/worker-pool-errors/:workerPoolId(*)',
   query: {
     continuationToken: /./,
     limit: /^[0-9]+$/,
@@ -251,7 +251,7 @@ builder.declare({
 
 builder.declare({
   method: 'get',
-  route: '/workers/:workerPoolId',
+  route: '/workers/:workerPoolId(*)',
   query: {
     continuationToken: /./,
     limit: /^[0-9]+$/,
@@ -283,46 +283,3 @@ builder.declare({
   }
   return res.reply(result);
 });
-
-/*
- * ************** BELOW HERE LIVE PROVIDER ENDPOINTS **************
- */
-
-builder.declare({
-  method: 'post',
-  route: '/credentials/google/:workerPoolId',
-  name: 'credentialsGoogle',
-  title: 'Google Credentials',
-  stability: APIBuilder.stability.experimental,
-  input: 'credentials-google-request.yml',
-  output: 'temp-creds-response.yml',
-  description: [
-    'Get Taskcluster credentials for a worker given an Instance Identity Token',
-  ].join('\n'),
-}, async function(req, res) {
-  const {workerPoolId} = req.params;
-
-  try {
-    const workerPool = await this.WorkerPool.load({workerPoolId});
-    const provider = this.providers.get(workerPool.providerId);
-
-    if (!provider) {
-      return res.reportError('InputError', 'Invalid Provider', {
-        providerId: workerPool.providerId,
-      });
-    }
-
-    return res.reply(await provider.verifyIdToken({
-      token: req.body.token,
-      workerPool,
-    }));
-  } catch (err) {
-    // We will internally record what went wrong and report back something generic
-    this.monitor.reportError(err, 'warning');
-    return res.reportError('InputError', 'Invalid Token', {});
-  }
-});
-
-/*
- * ************** THIS SECTION FOR PROVIDER ENDPOINTS **************
- */

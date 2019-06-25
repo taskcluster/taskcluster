@@ -37,6 +37,17 @@ suite(testing.suiteName(), function() {
 
   builder.declare({
     method: 'get',
+    route: '/single-param-with-slashes/:myparam(*)',
+    name: 'testParamWithSlashes',
+    title: 'Test End-Point',
+    stability: APIBuilder.stability.stable,
+    description: 'Place we can call to test something',
+  }, function(req, res) {
+    res.status(200).send(req.params.myparam);
+  });
+
+  builder.declare({
+    method: 'get',
     route: '/query-param/',
     query: {
       nextPage: /^[0-9]+$/,
@@ -138,6 +149,46 @@ suite(testing.suiteName(), function() {
       .then(function(res) {
         assert(res.ok, 'Request failed');
         assert(res.text === 'Hello', 'Got wrong value');
+      });
+  });
+
+  test('single parameter, trailing slash', function() {
+    const url = u('/single-param/Hello/');
+    return request
+      .get(url)
+      .then(function(res) {
+        assert(res.ok, 'Request failed');
+        assert(res.text === 'Hello', 'Got wrong value');
+      });
+  });
+
+  test('single parameter with slashes', function() {
+    const url = u('/single-param-with-slashes/Hello/world');
+    return request
+      .get(url)
+      .then(function(res) {
+        assert(res.ok, 'Request failed');
+        assert.equal(res.text, 'Hello/world', 'Got wrong value');
+      });
+  });
+
+  test('single parameter allowing slashes without slashes', function() {
+    const url = u('/single-param-with-slashes/Helloworld');
+    return request
+      .get(url)
+      .then(function(res) {
+        assert(res.ok, 'Request failed');
+        assert.equal(res.text, 'Helloworld', 'Got wrong value');
+      });
+  });
+
+  test('single parameter with encoded slashes', function() {
+    const url = u('/single-param-with-slashes/Hello%2Fworld');
+    return request
+      .get(url)
+      .then(function(res) {
+        assert(res.ok, 'Request failed');
+        assert.equal(res.text, 'Hello/world', 'Got wrong value');
       });
   });
 
@@ -323,4 +374,14 @@ suite(testing.suiteName(), function() {
     }, /Identical route and method/);
   });
 
+  test('routes are case-sensitive', function() {
+    const url = u('/SiNgLe-pArAm/Hello');
+    return request
+      .get(url)
+      .then(function(res) {
+        assert(!res.ok, 'Request succeeded');
+      }, function(err) {
+        assert.equal(err.status, 404);
+      });
+  });
 });

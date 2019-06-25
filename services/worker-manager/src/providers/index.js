@@ -1,3 +1,15 @@
+const {NullProvider} = require('./null');
+const {TestingProvider} = require('./testing');
+const {StaticProvider} = require('./static');
+const {GoogleProvider} = require('./google');
+
+const PROVIDER_TYPES = {
+  null: NullProvider,
+  testing: TestingProvider,
+  static: StaticProvider,
+  google: GoogleProvider,
+};
+
 /**
  * Load all of the providers in the configuration, including loading
  * their providerType implementation as required
@@ -12,16 +24,12 @@ class Providers {
 
     const nullEntry = ['null-provider', {providerType: 'null'}];
     for (const [providerId, meta] of Object.entries(cfg.providers).concat([nullEntry])) {
-      let Provider;
       if (meta.providerType === 'null' && providerId !== 'null-provider') {
         throw new Error('Only the `null-provider` providerId may have providerType `null`');
       }
-      switch(meta.providerType) {
-        case 'null': Provider = require('./null').NullProvider; break;
-        case 'testing': Provider = require('./testing').TestingProvider; break;
-        case 'static': Provider = require('./static').StaticProvider; break;
-        case 'google': Provider = require('./google').GoogleProvider; break;
-        default: throw new Error(`Unkown providerType ${meta.providerType} selected for providerId ${providerId}.`);
+      const Provider = PROVIDER_TYPES[meta.providerType];
+      if (!Provider) {
+        throw new Error(`Unkown providerType ${meta.providerType} selected for providerId ${providerId}.`);
       }
       const provider = new Provider({
         providerId,

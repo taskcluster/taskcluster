@@ -6,6 +6,8 @@ const libUrls = require('taskcluster-lib-urls');
 const uuid = require('uuid');
 const {google} = require('googleapis');
 const {Provider} = require('./provider');
+const APIBuilder = require('taskcluster-lib-api');
+const builder = require('../api');
 
 class GoogleProvider extends Provider {
 
@@ -600,6 +602,49 @@ class GoogleProvider extends Provider {
     }
   }
 }
+
+builder.declare({
+  method: 'post',
+  route: '/credentials/google/:workerPoolId(*)',
+  name: 'credentialsGoogle',
+  title: 'Google Credentials',
+  stability: APIBuilder.stability.experimental,
+  input: 'credentials-google-request.yml',
+  output: 'temp-creds-response.yml',
+  description: [
+    'Get Taskcluster credentials for a worker given an Instance Identity Token',
+  ].join('\n'),
+}, async function(req, res) {
+  const {workerPoolId} = req.params;
+
+  try {
+    const workerPool = await this.WorkerPool.load({workerPoolId});
+    const provider = this.providers.get(workerPool.providerId);
+
+    if (!provider) {
+      return res.reportError('InputError', 'Pool has an invalid provider', {
+        providerId: workerPool.providerId,
+      });
+    }
+
+    // check that this workerPool is at least using the google provider. This
+    // can cause worker startup to fail when a pool's provider changes.
+    if (!(provider instanceof GoogleProvider)) {
+      return res.reportError('InputError', 'Pool does not have a Google provider', {
+        providerId: workerPool.providerId,
+      });
+    }
+
+    return res.reply(await provider.verifyIdToken({
+      token: req.body.token,
+      workerPool,
+    }));
+  } catch (err) {
+    // We will internally record what went wrong and report back something generic
+    this.monitor.reportError(err, 'warning');
+    return res.reportError('InputError', 'Invalid Token', {});
+  }
+});
 
 module.exports = {
   GoogleProvider,

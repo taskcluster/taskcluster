@@ -117,6 +117,12 @@ To declare an API method, call `builder.declare(options, handler)` with the foll
 The `handler` parameter is a normal Express request handler, with some extra
 features; see "Request Handlers" below.
 
+The `route` option follows typical Express parameter matching.
+In particular, if the `route`'s last component is a parameter with a trailing `(*)`, then that parameter will be allowed to include multiple slash-separated components.
+For example, `/things/:path(*)` will match `/things/a/b/c` or `/things/a%2Fb%2Fc` with the `path` parameter being `a/b/c` in either case.
+Note that the generated documentation does not reflect this, and that the generated clients will always escape slashes.
+Where it is useful to users to allow unescaped slashes, include that information in the API method documentation.
+
 ### Parameters and Queries
 
 Both URL parameters (appearing as `../:paramName/..` in the route) and query

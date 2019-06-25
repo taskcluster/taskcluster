@@ -12,7 +12,7 @@ Each section also describes the conditions where a Taskcluster component sets th
 
 `TASKCLUSTER_ROOT_URL` is the root URL for the current Taskcluster deployment.
 It is typically set during task execution by worker implementations.
-The value is used by client libraries by calling functions like `fromEnvVars` or `optionsFromEnvironment`.
+The value is used by [client libraries](/docs/manual/using/integration/libraries) by calling functions like `fromEnvVars` or `optionsFromEnvironment`.
 
 The root URL serves as a scope for `TASKCLUSTER_CLIENT_ID`, etc. which only have meaning in a single deployment.
 
@@ -20,7 +20,7 @@ The root URL serves as a scope for `TASKCLUSTER_CLIENT_ID`, etc. which only have
 
 `TASKCLUSTER_CLIENT_ID` is the clientId to use for Taskcluster API calls.
 
-This is read by client libraries using functions like `fromEnvVars` or `optionsFromEnvironment`.
+This is read by [client libraries](/docs/manual/using/integration/libraries) using functions like `fromEnvVars` or `optionsFromEnvironment`.
 The `taskcluster-cli` command `taskcluster signin` sets this and related variables in a shell environment.
 
 ## TASKCLUSTER_ACCESS_TOKEN
