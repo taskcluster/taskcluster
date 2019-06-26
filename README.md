@@ -139,31 +139,45 @@ with automatic quarantining of workers, waiting for custom events, etc).
 
 ## macOS - multiuser/simple build
 
+__These instructions require macOS Mojave version 10.14.x__
+
  1. Log into target user account:
 
     __Simple build__: Create user account `genericworker` to run the worker
 	under, and log in as `genericworker` in a shell.
 
-    __Multiuser build__: Log in as root (`sudo su -`) in a shell.
+    __Multiuser build__: Log in as _root_ (`sudo su -`) in a shell.
 
- 2. Download `generic-worker` from
+ 2. __Multiuser build only__
+
+    Disable wizards/warning pop ups on first-login to user accounts:
+
+    * `git clone git@github.com:rtrouton/profiles.git`
+    * `git -C profiles checkout f23bc6146ca570108dbaa9e3cb8da954ce325002` (just because this is the version I tested, later versions may also be fine)
+    * `profiles install -path=profiles/SkipSiriSetup/SkipSiriSetup.mobileconfig`
+    * `profiles install -path=profiles/SkipDarkorLightAppearance/SkipDarkorLightAppearance.mobileconfig`
+    * `profiles install -path=profiles/Disable32BitApplicationWarning/10.14/Disable32BitApplicationWarning.mobileconfig`
+    * `profiles install -path=profiles/SkipDataAndPrivacy/SkipDataAndPrivacy.mobileconfig`
+    * `profiles install -path=profiles/SkipiCloudSetup/SkipiCloudSetup.mobileconfig`
+
+ 3. Download `generic-worker` from
     https://github.com/taskcluster/generic-worker/releases and place it in
     `/usr/local/bin/generic-worker`.
 
- 3. Download livelog from https://github.com/taskcluster/livelog/releases and
+ 4. Download livelog from https://github.com/taskcluster/livelog/releases and
     place it in `/usr/local/bin/livelog`.
 
- 4. Download taskcluster proxy from
+ 5. Download taskcluster proxy from
     https://github.com/taskcluster/taskcluster-proxy/releases and place it in
     `/usr/local/bin/taskcluster-proxy`.
 
- 5. Make `generic-worker`, `taskcluster-proxy`, `livelog` binaries executable:
+ 6. Make `generic-worker`, `taskcluster-proxy`, `livelog` binaries executable:
 
     * `chmod a+x /usr/local/bin/{generic-worker,taskcluster-proxy,livelog}`
 
- 6. Generate a key for signing artifacts:
+ 7. Generate a key for signing artifacts:
 
-    * `mkdir /etc/generic-worker`
+    * `sudo mkdir /etc/generic-worker`
 
     * __Simple build only__: `sudo chown genericworker:staff /etc/generic-worker`
 
@@ -174,7 +188,7 @@ with automatic quarantining of workers, waiting for custom events, etc).
     standard out. Keep a copy of the public key if you wish to validate artifact
     signatures.
 
- 6. Create the file `/usr/local/bin/run-generic-worker.sh` with the following content:
+ 8. Create the file `/usr/local/bin/run-generic-worker.sh` with the following content:
 
     ```
     #!/bin/bash
@@ -193,11 +207,11 @@ with automatic quarantining of workers, waiting for custom events, etc).
     /usr/local/bin/generic-worker run --config /etc/generic-worker/config
     ```
 
- 7. Run the following to make the `run-generic-worker.sh` script executable:
+ 9. Run the following to make the `run-generic-worker.sh` script executable:
 
     * `chmod a+x /usr/local/bin/run-generic-worker.sh`
 
- 8. Create `/etc/generic-worker/config` with appropriate configuration settings
+10. Create `/etc/generic-worker/config` with appropriate configuration settings
     (see `generic-worker --help` for details). Something like this:
 
     ```
@@ -227,7 +241,7 @@ with automatic quarantining of workers, waiting for custom events, etc).
     }
     ```
 
- 9. Create launch daemon:
+11. Create launch daemon:
 
     Create the file `/Library/LaunchDaemons/com.mozilla.genericworker.plist`
     with the following content:
@@ -254,11 +268,11 @@ with automatic quarantining of workers, waiting for custom events, etc).
     </plist>
     ```
 
-10. Install launch daemon:
+12. Install launch daemon:
 
     * `sudo launchctl load -w /Library/LaunchDaemons/com.mozilla.genericworker.plist`
 
-11. Watch for logs in `/var/log/generic-worker/`.
+13. Watch for logs in `/var/log/generic-worker/`.
 
 
 ## Linux simple/docker build
@@ -753,7 +767,7 @@ allowed in the generic-worker config file:
 openpgpSigningKeyLocation
 ```
 
-**Please note, you need to remove this config property from your config file, if it exists, in order to 
+**Please note, you need to remove this config property from your config file, if it exists, in order to
 work with generic-worker 14 onwards.**
 
 * [Bug 1436195 - Deploy websocktunnel on generic-worker](https://bugzil.la/1436195)

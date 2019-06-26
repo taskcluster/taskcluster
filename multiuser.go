@@ -3,12 +3,14 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/taskcluster/generic-worker/fileutil"
 	"github.com/taskcluster/generic-worker/process"
@@ -28,20 +30,43 @@ func secureConfigFile() {
 
 func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 	reboot = true
-	if autoLogonUser := AutoLogonCredentials(); strings.HasPrefix(autoLogonUser.Name, "task_") {
+	_, err := os.Stat("next-task-user.json")
+	if err == nil {
+		_, err = fileutil.Copy("current-task-user.json", "next-task-user.json")
+		if err != nil {
+			panic(err)
+		}
+		err = fileutil.SecureFiles([]string{"current-task-user.json"})
+		if err != nil {
+			panic(err)
+		}
+		taskUserCredentials, err := StoredUserCredentials()
+		if err != nil {
+			panic(err)
+		}
+		err = runtime.WaitForLoginCompletion(5 * time.Minute)
+		if err != nil {
+			panic(err)
+		}
+		interactiveUsername, err := runtime.InteractiveUsername()
+		if err != nil {
+			panic(err)
+		}
+		if taskUserCredentials.Name != interactiveUsername {
+			panic(fmt.Errorf("Interactive username %v does not match task user %v from next-task-user.json file", interactiveUsername, taskUserCredentials.Name))
+		}
 		reboot = false
 		pd, err := process.NewPlatformData(config.RunTasksAsCurrentUser)
 		if err != nil {
 			panic(err)
 		}
+
 		taskContext = &TaskContext{
-			User: &runtime.OSUser{
-				Name:     autoLogonUser.Name,
-				Password: autoLogonUser.Password,
-			},
-			TaskDir: filepath.Join(config.TasksDir, autoLogonUser.Name),
+			User:    taskUserCredentials,
+			TaskDir: filepath.Join(config.TasksDir, interactiveUsername),
 			pd:      pd,
 		}
+
 		// At this point, we know we have already booted into the new task user, and the user
 		// is logged in.
 		// Note we don't create task directory before logging in, since
@@ -117,13 +142,21 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 		Name:     taskDirName,
 		Password: runtime.GeneratePassword(),
 	}
-	err := nextTaskUser.CreateNew(false)
+	err = nextTaskUser.CreateNew(false)
 	if err != nil {
 		panic(err)
 	}
 	PreRebootSetup(nextTaskUser)
 	// configure worker to auto-login to this newly generated user account
 	err = SetAutoLogin(nextTaskUser)
+	if err != nil {
+		panic(err)
+	}
+	err = fileutil.WriteToFileAsJSON(nextTaskUser, "next-task-user.json")
+	if err != nil {
+		panic(err)
+	}
+	err = fileutil.SecureFiles([]string{"next-task-user.json"})
 	if err != nil {
 		panic(err)
 	}
@@ -166,4 +199,22 @@ func deleteExistingOSUsers() (err error) {
 		err = errors.New(strings.Join(allErrors, "\n"))
 	}
 	return
+}
+
+func StoredUserCredentials() (*runtime.OSUser, error) {
+	credsFile, err := os.Open("current-task-user.json")
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		credsFile.Close()
+	}()
+	decoder := json.NewDecoder(credsFile)
+	decoder.DisallowUnknownFields()
+	var user runtime.OSUser
+	err = decoder.Decode(&user)
+	if err != nil {
+		panic(err)
+	}
+	return &user, nil
 }

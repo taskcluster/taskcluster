@@ -125,6 +125,9 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		}
 		contents += "set TASK_ID=" + task.TaskID + "\r\n"
 		contents += "set TASKCLUSTER_ROOT_URL=" + config.RootURL + "\r\n"
+		if config.RunTasksAsCurrentUser {
+			contents += "set TASK_USER_CREDENTIALS=" + filepath.Join(cwd, "current-task-user.json") + "\r\n"
+		}
 		contents += "cd \"" + taskContext.TaskDir + "\"" + "\r\n"
 
 		// Otherwise get the env from the previous command

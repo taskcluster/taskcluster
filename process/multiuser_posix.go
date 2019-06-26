@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/taskcluster/generic-worker/kc"
 	"github.com/taskcluster/generic-worker/runtime"
 )
 
@@ -26,7 +25,7 @@ func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
 }
 
 func TaskUserPlatformData() (pd *PlatformData, err error) {
-	user, err := kc.AutoLoginUsername()
+	user, err := runtime.InteractiveUsername()
 	if err != nil {
 		return nil, err
 	}

@@ -166,6 +166,9 @@ func (task *TaskRun) EnvVars() []string {
 	// Values that should be overwritten if also set in task definition
 	taskEnv["TASK_ID"] = task.TaskID
 	taskEnv["TASKCLUSTER_ROOT_URL"] = config.RootURL
+	if config.RunTasksAsCurrentUser {
+		taskEnv["TASK_USER_CREDENTIALS"] = filepath.Join(cwd, "current-task-user.json")
+	}
 
 	for i, j := range taskEnv {
 		taskEnvArray = append(taskEnvArray, i+"="+j)
