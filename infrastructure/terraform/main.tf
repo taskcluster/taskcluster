@@ -139,6 +139,8 @@ resource "azurerm_storage_account" "base" {
   location                 = "${var.azure_region}"
   account_tier             = "Standard"
   account_replication_type = "RAGRS"
+  enable_blob_encryption   = "true"
+  enable_file_encryption   = "true"
 
   tags {
     environment = "staging"
