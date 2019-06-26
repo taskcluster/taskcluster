@@ -4,7 +4,7 @@ secrets:
   application_name: "Taskcluster"
   graphql_endpoint: ".Values.graphqlEndpoint" # ${var.root_url}/graphql
   graphql_subscription_endpoint: ".Values.graphqlSubEndpoint" # ${var.root_url}/subscription
-  login_strategies: ".Values.loginStrategies"
+  ui_login_strategy_names: ".Values.uiLoginStrategyNames"
 deployments:
   - service_name: "ui"
     cpu: "100m"

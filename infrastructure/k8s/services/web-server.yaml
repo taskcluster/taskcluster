@@ -1,6 +1,5 @@
 project_name: "taskcluster-web-server"
 secrets:
-  login_strategies: ".Values.loginStrategies" 
   monitoring_enable: "true"
   monitoring_project: "taskcluster-web-server"
   node_env: "production"
@@ -11,6 +10,7 @@ secrets:
   pulse_vhost: ".Values.pulseVhost"
   taskcluster_access_token: ".Values.webServerAccessToken"
   taskcluster_client_id: "static/taskcluster/web-server"
+  ui_login_strategies: ".Values.uiLoginStrategies"
 deployments:
   - service_name: "web-server"
     docker_image: ".Values.dockerImage"
