@@ -13,7 +13,7 @@ require (
 	github.com/taskcluster/httpbackoff v0.0.0-20190424103228-e5b331b1135f
 	github.com/taskcluster/jsonschema2go v0.0.0-20190401131741-0757acc540d0
 	github.com/taskcluster/pulse-go v0.0.0-20190423141329-79f6799ed4d4
-	github.com/taskcluster/slugid-go v1.0.1-0.20190423134720-372cc2dd3685
+	github.com/taskcluster/slugid-go v1.0.1
 	github.com/taskcluster/taskcluster-base-go v0.0.0-20190423141050-7a7f5c044876
 	github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible
 	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
