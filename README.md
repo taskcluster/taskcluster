@@ -341,7 +341,7 @@ Once you have been granted the above scope:
 To see a full description of all the config options available to you, run `generic-worker --help`:
 
 ```
-generic-worker (multiuser engine) 15.0.1
+generic-worker (multiuser engine) 15.1.0
 
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -626,6 +626,8 @@ and reports back results to the queue.
     75     Not able to create an ed25519 key pair.
     76     Not able to save generic-worker config file after fetching it from AWS provisioner
            or Google Cloud metadata.
+    77     Not able to apply required file access permissions to the generic-worker config
+           file so that task users can't read from or write to it.
 ```
 
 # Start the generic worker
@@ -668,7 +670,7 @@ go test -v ./...
 Run the `release.sh` script like so:
 
 ```
-$ ./release.sh 15.0.1
+$ ./release.sh 15.1.0
 ```
 
 This will perform some checks, tag the repo, push the tag to github, which will then trigger travis-ci to run tests, and publish the new release.
