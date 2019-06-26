@@ -129,7 +129,7 @@ func (workerManager *WorkerManager) CreateWorkerPool(workerPoolId string, payloa
 //   * worker-manager:provider:<providerId>
 //
 // See #updateWorkerPool
-func (workerManager *WorkerManager) UpdateWorkerPool(workerPoolId string, payload *WorkerPoolDefinition) (*WorkerPoolFullDefinition, error) {
+func (workerManager *WorkerManager) UpdateWorkerPool(workerPoolId string, payload *WorkerPoolDefinition1) (*WorkerPoolFullDefinition, error) {
 	cd := tcclient.Client(*workerManager)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/worker-pool/"+url.QueryEscape(workerPoolId), new(WorkerPoolFullDefinition), nil)
 	return responseObject.(*WorkerPoolFullDefinition), err

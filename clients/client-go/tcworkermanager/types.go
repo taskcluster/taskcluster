@@ -92,7 +92,7 @@ type (
 	}
 
 	// Fields that are defined by a user for a worker pool.
-	// Used to create and modify definitions. There is a larger
+	// Used to create worker-pool definitions. There is a larger
 	// set of fields for viewing since some parts are generated
 	// by the service.
 	WorkerPoolDefinition struct {
@@ -121,6 +121,51 @@ type (
 		// Min length: 1
 		// Max length: 38
 		ProviderID string `json:"providerId"`
+	}
+
+	// Fields that are defined by a user for a worker pool.
+	// Used to modify worker-pool definitions.
+	//
+	// The `workerPoolId`, `created`, and `lastModified` fields are optional and
+	// allowed only to ease the common practice of getting a worker pool definition
+	// with `workerPool(..)`, modifying it, and writing it back with
+	// `updateWorkerPool(..).  `workerPoolId` must be correct if
+	// supplied, and the values of `created` and `lastModified` are ignored.
+	WorkerPoolDefinition1 struct {
+
+		// Additional properties allowed
+		Config json.RawMessage `json:"config"`
+
+		// Ignored on update
+		Created tcclient.Time `json:"created,omitempty"`
+
+		// A description of this worker pool.
+		//
+		// Max length: 10240
+		Description string `json:"description"`
+
+		// If true, the owner should be emailed on provisioning errors
+		EmailOnError bool `json:"emailOnError"`
+
+		// Ignored on update
+		LastModified tcclient.Time `json:"lastModified,omitempty"`
+
+		// An email address to notify when there are provisioning errors for this
+		// worker pool.
+		Owner string `json:"owner"`
+
+		// The provider responsible for managing this worker pool.
+		//
+		// If this value is `"null-provider"`, then the worker pool is pending deletion
+		// once all existing workers have terminated.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		ProviderID string `json:"providerId"`
+
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		WorkerPoolID string `json:"workerPoolId,omitempty"`
 	}
 
 	// A complete worker pool error definition.
