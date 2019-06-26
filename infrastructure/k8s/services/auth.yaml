@@ -10,7 +10,6 @@ secrets:
   azure_signing_key: ".Values.authAzureSigningKey"
   force_ssl: "false"
   lock_roles: "false"
-  monitoring_enable: "true"
   node_env: "production"
   owner_email: "cloud-ops@mozilla.com"
   profile: "production"

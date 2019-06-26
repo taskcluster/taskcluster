@@ -2,7 +2,6 @@ project_name: "taskcluster-purge-cache"
 secrets:
   azure_account: ".Values.tfAzureAccount"
   force_ssl: "false"
-  monitoring_enable: "true"
   node_env: "production"
   taskcluster_access_token: ".Values.purgeCacheAccessToken"
   taskcluster_client_id: "static/taskcluster/purge-cache"

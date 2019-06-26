@@ -4,7 +4,6 @@ secrets:
   force_ssl: "false"
   hook_table_name: "Hooks"
   lastfire_table_name: "LastFire2"
-  monitoring_enable: "true"
   node_env: "production"
   pulse_hostname: ".Values.tfRabbitmqHostname"
   pulse_password: ".Values.hooksPulsePassword"

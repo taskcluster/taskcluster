@@ -7,7 +7,6 @@ secrets:
   azure_account_key: ".Values.azureAccountKey"
   blob_artifact_region: ".Values.awsRegion"
   force_ssl: "false"
-  monitoring_enable: "true"
   node_env: "production"
   private_artifact_bucket: ".Values.tfPrivateArtifactBucket"
   private_blob_artifact_bucket: ".Values.tfPrivateBlobArtifactBucket"

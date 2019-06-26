@@ -14,7 +14,6 @@ secrets:
   irc_real_name: ".Values.ircRealName"
   irc_server: ".Values.ircServer"
   irc_user_name: ".Values.ircUserName"
-  monitoring_enable: "true"
   node_env: "production"
   pulse_hostname: ".Values.tfRabbitmqHostname"
   pulse_password: ".Values.notifyPulsePassword"

@@ -2,7 +2,6 @@ project_name: "taskcluster-index"
 secrets:
   azure_account: ".Values.tfAzureAccount"
   force_ssl: "false"
-  monitoring_enable: "true"
   node_env: "production"
   pulse_hostname: ".Values.tfRabbitmqHostname"
   pulse_password: ".Values.indexPulsePassword"

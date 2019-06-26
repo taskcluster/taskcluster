@@ -1,7 +1,5 @@
 project_name: "taskcluster-web-server"
 secrets:
-  monitoring_enable: "true"
-  monitoring_project: "taskcluster-web-server"
   node_env: "production"
   public_url: ".Values.rootUrl"
   pulse_hostname: ".Values.tfRabbitmqHostname"
