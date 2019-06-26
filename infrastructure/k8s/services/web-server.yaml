@@ -1,5 +1,6 @@
 project_name: "taskcluster-web-server"
 secrets:
+  jwt_key: ".Values.jwtKey"
   node_env: "production"
   public_url: ".Values.rootUrl"
   pulse_hostname: ".Values.tfRabbitmqHostname"

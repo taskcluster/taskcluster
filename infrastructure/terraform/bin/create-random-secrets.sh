@@ -31,3 +31,4 @@ genpw 65 > secrets_access_token
 genpw 65 > web_server_access_token
 genpw 65 > worker_manager_access_token
 genpw 66 > auth_websocktunnel_secret
+genpw 66 > jwt_key
