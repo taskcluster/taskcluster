@@ -1,0 +1,60 @@
+# UI
+
+The Taskcluster UI is implemented in the `ui/` directory of this repository.
+When we have a good reason to not follow the best practices in the UI, we document why.
+
+## Contents
+* [Tables](#tables)
+* [Links](#links)
+* [Buttons](#buttons)
+* [Text](#text)
+* [Spacing](#spacing)
+* [Color](#color)
+* [Visual Hierarchy](#visual-hierarchy)
+* [Document Hierarchy](#document-hierarchy)
+
+## Tables
+* Avoid multi-line text in a table - too much information for the given space. Alternatives:
+  * A [Card](https://material-ui.com/components/cards/).
+  * A [Drawer](https://material-ui.com/components/drawers/) that opens up via a button click in the table.
+* Right-align numbers - it’s easier to scan a column of numbers if the decimal part starts in the same location.
+
+## Links
+* Calculate link URLs before the user clicks on them. By doing so, a user will be able to do things like open links in a
+new tab or have the ability to inspect link URLs prior to the clicking.
+
+## Buttons
+* Destructive actions (e.g., a delete operation) should have a confirmation step.
+It’s an added click but will prevent accidental data loss frustration.
+
+## Text
+* Don’t center text spanning more than 3 lines. It’s not pretty. Alternatives:
+  * Rewrite the content to be shorter.
+  * Left-align the content if the text direction is left-to-right. Otherwise Right-align.
+
+## Spacing
+If you need to add spacing to an element, use the spacing scale defined in the UI as opposed to picking
+a number that looks right to you. This will make sure there is a feel of consistency across the site design.
+
+## Color
+Don’t depend only on color to communicate information, otherwise people who are color blind will have a hard time
+understanding the UI. You can use labels. For things like graphs, you can use different shades of the same color.
+They are easier to differentiate for someone who is color blind since the colors will differ in contrast.
+
+## Visual Hierarchy
+Each button in a view has its own level of importance in that page relative to other actions.
+Most views have a single primary action, a couple that are medium emphasis and some that are rarely used.
+Buttons that are not primary should not have high contrast background colors.
+For example, a destructive button that isn’t considered a primary action in a view destructive does not
+need to be red and bold. It could have a secondary look. Still want it to be red and bold?
+Hide it behind a menu like a [SpeedDial](https://material-ui.com/components/speed-dial/) component.
+
+## Document Hierarchy
+Document hierarchy should be respected everywhere, especially for documentation pages.
+There should be at most one `h1` tag in a page and it should be the first header in the document.
+
+---
+
+Did you find a place in the UI where some of the guidelines are not followed?
+[File an issue](https://github.com/taskcluster/taskcluster/issues/new/).
+Bonus points for sending a pull-request to close the issue :-)
