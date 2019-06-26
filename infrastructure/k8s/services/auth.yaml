@@ -27,7 +27,6 @@ deployments:
     proc_name: "web"
     readiness_path: "/api/auth/v1/ping"
     root_url: ".Values.rootUrl"
-    secret_name: "taskcluster-auth"
 cronjobs:
   - service_name: "auth"
     deadline_seconds: 86400
@@ -35,4 +34,3 @@ cronjobs:
     job_name: "purgeExpiredClients"
     root_url: ".Values.rootUrl"
     schedule: "0 0 * * *"
-    secret_name: "taskcluster-auth"

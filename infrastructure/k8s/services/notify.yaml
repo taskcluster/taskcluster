@@ -39,4 +39,3 @@ deployments:
     docker_image: ".Values.dockerImage"
     proc_name: "irc"
     root_url: ".Values.rootUrl"
-    secret_name: "taskcluster-notify"
