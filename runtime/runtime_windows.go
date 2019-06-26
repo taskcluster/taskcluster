@@ -5,13 +5,14 @@ import (
 	"log"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/taskcluster/generic-worker/win32"
 )
 
 type OSUser struct {
-	Name     string
-	Password string
+	Name     string `json:"name"`
+	Password string `json:"password"`
 }
 
 func (user *OSUser) CreateNew(okIfExists bool) error {
@@ -67,4 +68,25 @@ func ListUserAccounts() (usernames []string, err error) {
 
 func UserHomeDirectoriesParent() string {
 	return win32.ProfilesDirectory()
+}
+
+func WaitForLoginCompletion(timeout time.Duration) error {
+	_, err := win32.InteractiveUserToken(timeout)
+	return err
+}
+
+func InteractiveUsername() (string, error) {
+	userToken, err := win32.InteractiveUserToken(time.Minute * 3)
+	if err != nil {
+		return "", err
+	}
+	tokenUser, err := userToken.GetTokenUser()
+	if err != nil {
+		panic(err)
+	}
+	account, _, _, err := tokenUser.User.Sid.LookupAccount("")
+	if err != nil {
+		panic(err)
+	}
+	return account, nil
 }

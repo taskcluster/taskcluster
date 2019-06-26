@@ -3,6 +3,6 @@
 package runtime
 
 type OSUser struct {
-	Name     string
-	Password string
+	Name     string `json:"name"`
+	Password string `json:"password"`
 }

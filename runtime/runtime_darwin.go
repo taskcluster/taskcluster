@@ -1,10 +1,13 @@
 package runtime
 
 import (
+	"errors"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 func (user *OSUser) CreateNew(okIfExists bool) (err error) {
@@ -61,4 +64,43 @@ func ListUserAccounts() (usernames []string, err error) {
 
 func UserHomeDirectoriesParent() string {
 	return "/Users"
+}
+
+func WaitForLoginCompletion(timeout time.Duration) error {
+	deadline := time.Now().Add(timeout)
+	log.Print("Checking if user is logged in...")
+	for time.Now().Before(deadline) {
+		username, err := InteractiveUsername()
+		if err != nil {
+			time.Sleep(time.Second)
+			continue
+		}
+		fi, err := os.Stat("/Library/Preferences/com.apple.loginwindow.plist")
+		if err != nil {
+			return fmt.Errorf("Could not read file /Library/Preferences/com.apple.loginwindow.plist to determine when last login occurred: %v", err)
+		}
+		modTime := fi.ModTime()
+		log.Printf("User %v logged in at %v", username, modTime)
+		// See https://bugzilla.mozilla.org/show_bug.cgi?id=1560388#c3
+		sleepUntil := modTime.Add(10 * time.Second)
+		now := time.Now()
+		if sleepUntil.After(now) {
+			log.Printf("Sleeping until %v (10 seconds after login) due to https://bugzilla.mozilla.org/show_bug.cgi?id=1560388#c3", sleepUntil)
+			time.Sleep(sleepUntil.Sub(now))
+		}
+		return nil
+	}
+	log.Print("Timed out waiting for user login")
+	return errors.New("No user logged in with console session")
+}
+
+func InteractiveUsername() (string, error) {
+	output, err := exec.Command("/usr/bin/last", "-t", "console", "-1").CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+	if strings.Contains(string(output), "logged in") {
+		return string(output)[:strings.Index(string(output), " ")], nil
+	}
+	return "", fmt.Errorf("Could not parse username from %q", string(output))
 }
