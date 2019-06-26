@@ -4,7 +4,6 @@ secrets:
   taskcluster_access_token: ".Values.builtInWorkersAccessToken"
   node_env: "production"
   monitoring_enable: "true"
-  publish_metadata: "false"
 deployments:
   - service_name: "built-in-workers"
     proc_name: "server"

@@ -14,7 +14,6 @@ secrets:
   node_env: "production"
   owner_email: "cloud-ops@mozilla.com"
   profile: "production"
-  publish_metadata: "false"
   pulse_hostname: ".Values.tfRabbitmqHostname"
   pulse_password: ".Values.authPulsePassword"
   pulse_username: ".Values.authPulseUsername"

@@ -4,7 +4,6 @@ secrets:
   force_ssl: "false"
   monitoring_enable: "true"
   node_env: "production"
-  publish_metadata: "false"
   taskcluster_access_token: ".Values.workerManagerAccessToken"
   taskcluster_client_id: "static/taskcluster/worker-manager"
   trust_proxy: "true"

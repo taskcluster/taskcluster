@@ -6,7 +6,6 @@ secrets:
   lastfire_table_name: "LastFire2"
   monitoring_enable: "true"
   node_env: "production"
-  publish_metadata: "false"
   pulse_hostname: ".Values.tfRabbitmqHostname"
   pulse_password: ".Values.hooksPulsePassword"
   pulse_username: ".Values.hooksPulseUsername"
