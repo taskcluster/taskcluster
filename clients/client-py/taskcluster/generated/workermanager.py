@@ -171,7 +171,7 @@ class WorkerManager(BaseClient):
         },
         "updateWorkerPool": {
             'args': ['workerPoolId'],
-            'input': 'v1/create-worker-pool-request.json#',
+            'input': 'v1/update-worker-pool-request.json#',
             'method': 'post',
             'name': 'updateWorkerPool',
             'output': 'v1/worker-pool-full.json#',

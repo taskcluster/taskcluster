@@ -293,6 +293,58 @@
   },
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/update-worker-pool-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Fields that are defined by a user for a worker pool.\nUsed to modify worker-pool definitions.\n\nThe `workerPoolId`, `created`, and `lastModified` fields are optional and\nallowed only to ease the common practice of getting a worker pool definition\nwith `workerPool(..)`, modifying it, and writing it back with\n`updateWorkerPool(..).  `workerPoolId` must be correct if\nsupplied, and the values of `created` and `lastModified` are ignored.\n",
+      "properties": {
+        "config": {
+          "$ref": "worker-pool-full.json#/properties/config"
+        },
+        "created": {
+          "description": "Ignored on update",
+          "format": "date-time",
+          "title": "Created",
+          "type": "string"
+        },
+        "description": {
+          "$ref": "worker-pool-full.json#/properties/description"
+        },
+        "emailOnError": {
+          "$ref": "worker-pool-full.json#/properties/emailOnError"
+        },
+        "lastModified": {
+          "description": "Ignored on update",
+          "format": "date-time",
+          "title": "Last Modified",
+          "type": "string"
+        },
+        "owner": {
+          "$ref": "worker-pool-full.json#/properties/owner"
+        },
+        "providerId": {
+          "$ref": "worker-pool-full.json#/properties/providerId"
+        },
+        "workerPoolId": {
+          "pattern": "^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
+          "title": "Worker Pool ID",
+          "type": "string"
+        }
+      },
+      "required": [
+        "providerId",
+        "description",
+        "config",
+        "owner",
+        "emailOnError"
+      ],
+      "title": "Worker Pool Definition",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/update-worker-pool-request.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/temp-creds-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -378,7 +430,7 @@
       "$id": "/schemas/worker-manager/v1/create-worker-pool-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
-      "description": "Fields that are defined by a user for a worker pool.\nUsed to create and modify definitions. There is a larger\nset of fields for viewing since some parts are generated\nby the service.\n",
+      "description": "Fields that are defined by a user for a worker pool.\nUsed to create worker-pool definitions. There is a larger\nset of fields for viewing since some parts are generated\nby the service.\n",
       "properties": {
         "config": {
           "$ref": "worker-pool-full.json#/properties/config"
@@ -8238,7 +8290,7 @@
             "workerPoolId"
           ],
           "description": "Given an existing worker pool definition, this will modify it and return\nthe new definition.\n\nTo delete a worker pool, set its `providerId` to `\"null-provider\"`.\nAfter any existing workers have exited, a cleanup job will remove the\nworker pool.  During that time, the worker pool can be updated again, such\nas to set its `providerId` to a real provider.",
-          "input": "v1/create-worker-pool-request.json#",
+          "input": "v1/update-worker-pool-request.json#",
           "method": "post",
           "name": "updateWorkerPool",
           "output": "v1/worker-pool-full.json#",

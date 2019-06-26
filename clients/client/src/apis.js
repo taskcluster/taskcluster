@@ -3778,7 +3778,7 @@ module.exports = {
             "workerPoolId"
           ],
           "description": "Given an existing worker pool definition, this will modify it and return\nthe new definition.\n\nTo delete a worker pool, set its `providerId` to `\"null-provider\"`.\nAfter any existing workers have exited, a cleanup job will remove the\nworker pool.  During that time, the worker pool can be updated again, such\nas to set its `providerId` to a real provider.",
-          "input": "v1/create-worker-pool-request.json#",
+          "input": "v1/update-worker-pool-request.json#",
           "method": "post",
           "name": "updateWorkerPool",
           "output": "v1/worker-pool-full.json#",

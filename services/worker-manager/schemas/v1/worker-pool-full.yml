@@ -7,9 +7,7 @@ properties:
   workerPoolId:
     title: Worker Pool ID
     type:           string
-    # Note that the portion after the `/` is quite severely limited in hopes it works with
-    # most cloud providers
-    pattern:        '^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$'
+    pattern:        {$const: workerpoolid-pattern}
     description: |
       The ID of this worker pool (of the form `providerId/workerType` for compatibility)
   providerId:
