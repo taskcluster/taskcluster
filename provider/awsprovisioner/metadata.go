@@ -35,17 +35,14 @@ type MetadataService interface {
 
 type realMetadataService struct{}
 
-// TODO: rewrite in terms of mds.queryMetadata
 func (mds *realMetadataService) queryUserData() (*UserData, error) {
 	// http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-user-data-retrieval
-	resp, _, err := httpbackoff.Get(EC2MetadataBaseURL + "/user-data")
+	content, err := mds.queryMetadata("/user-data")
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 	userData := &UserData{}
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(userData)
+	err = json.Unmarshal([]byte(content), userData)
 	return userData, err
 }
 

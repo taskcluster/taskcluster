@@ -107,6 +107,11 @@ With all of this complete, the run parameters are fully determined:
 
 The final step, then, is to start the worker with the derived configuration.
 
+## Protocol
+
+This application defines a simple, text-based protocol between start-worker and the worker itself.
+The protocol is defined in [protocol.md](protocol.md).
+
 # Development
 
 This application requires go1.11.

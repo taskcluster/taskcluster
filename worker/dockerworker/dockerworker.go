@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 	"github.com/taskcluster/taskcluster-worker-runner/worker/worker"
 )
@@ -21,6 +22,7 @@ type dockerworkerConfig struct {
 type dockerworker struct {
 	runnercfg *runner.RunnerConfig
 	wicfg     dockerworkerConfig
+	cmd       *exec.Cmd
 }
 
 func (d *dockerworker) ConfigureRun(run *runner.Run) error {
@@ -75,15 +77,15 @@ func (d *dockerworker) ConfigureRun(run *runner.Run) error {
 	return nil
 }
 
-func (d *dockerworker) StartWorker(run *runner.Run) error {
+func (d *dockerworker) StartWorker(run *runner.Run) (protocol.Transport, error) {
 	// write out the config file
 	content, err := json.MarshalIndent(run.WorkerConfig, "", "  ")
 	if err != nil {
-		return fmt.Errorf("Error constructing worker config: %v", err)
+		return nil, fmt.Errorf("Error constructing worker config: %v", err)
 	}
 	err = ioutil.WriteFile(d.wicfg.ConfigPath, content, 0600)
 	if err != nil {
-		return fmt.Errorf("Error writing worker config to %s: %v", d.wicfg.ConfigPath, err)
+		return nil, fmt.Errorf("Error writing worker config to %s: %v", d.wicfg.ConfigPath, err)
 	}
 
 	// the --host taskcluster-worker-runner instructs docker-worker to merge
@@ -94,19 +96,25 @@ func (d *dockerworker) StartWorker(run *runner.Run) error {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	d.cmd = cmd
+
 	err = cmd.Start()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	err = cmd.Wait()
-	if err != nil {
-		return err
-	}
-	return nil
+
+	return protocol.NewNullTransport(), nil
+}
+
+func (d *dockerworker) SetProtocol(proto *protocol.Protocol) {
+}
+
+func (d *dockerworker) Wait() error {
+	return d.cmd.Wait()
 }
 
 func New(runnercfg *runner.RunnerConfig) (worker.Worker, error) {
-	rv := dockerworker{runnercfg, dockerworkerConfig{}}
+	rv := dockerworker{runnercfg, dockerworkerConfig{}, nil}
 	err := runnercfg.WorkerImplementation.Unpack(&rv.wicfg)
 	if err != nil {
 		return nil, err
