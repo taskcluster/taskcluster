@@ -110,7 +110,7 @@ The final step, then, is to start the worker with the derived configuration.
 ## Protocol
 
 This application defines a simple, text-based protocol between start-worker and the worker itself.
-The protocl ios defined in [protocol.md](protocol.md).
+The protocol is defined in [protocol.md](protocol.md).
 
 # Development
 
