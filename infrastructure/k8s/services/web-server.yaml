@@ -15,3 +15,10 @@ deployments:
     proc_name: "web"
     readiness_path: "/.well-known/apollo/server-health"
     root_url: ".Values.rootUrl"
+cronjobs:
+  - service_name: "web-server"
+    deadline_seconds: 86400
+    docker_image: ".Values.dockerImage"
+    job_name: "scanner"
+    root_url: ".Values.rootUrl"
+    schedule: "0 0 * * *"
