@@ -94,7 +94,10 @@ parameters for a run of a worker:
    step provides Taskcluster credentials for the worker, as well as
    identification information (worker pool, worker ID, etc.).
  * Using the Taskcluster credentials, load configuration from the secrets
-   service with secret name `worker-type:<workerPoolId>`.
+   service with secret name `worker-pool:<workerPoolId>` (and, for
+   compatibility, supports secrets named `worker-type:<workerPoolId>` too, and
+   secrets containing the expected `{config: .., files: ..}` or for
+   compatibility just the worker configuration).
  * Load support for the given worker implementation and ask it to add
    settings to the run.
 

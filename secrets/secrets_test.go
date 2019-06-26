@@ -40,8 +40,21 @@ func setup(t *testing.T) (*runner.RunnerConfig, *runner.Run) {
 func TestGetSecretLegacy(t *testing.T) {
 	runnercfg, run := setup(t)
 
-	tc.FakeSecretsCreateSecret("worker-type:pp/wt", &tcsecrets.Secret{
+	tc.FakeSecretsCreateSecret("worker-pool:pp/wt", &tcsecrets.Secret{
 		Secret: []byte(`{"from-secret": true}`),
+	})
+
+	err := configureRun(runnercfg, run, tc.FakeSecretsClientFactory)
+	assert.NoError(t, err, "expected great success")
+	assert.Equal(t, true, run.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
+	assert.Equal(t, true, run.WorkerConfig.MustGet("from-secret"), "value for from-secret")
+}
+
+func TestGetSecretLegacyName(t *testing.T) {
+	runnercfg, run := setup(t)
+
+	tc.FakeSecretsCreateSecret("worker-type:pp/wt", &tcsecrets.Secret{
+		Secret: []byte(`{"config": {"from-secret": true}}`),
 	})
 
 	err := configureRun(runnercfg, run, tc.FakeSecretsClientFactory)
@@ -53,7 +66,7 @@ func TestGetSecretLegacy(t *testing.T) {
 func TestGetSecretConfigFilesFormat(t *testing.T) {
 	runnercfg, run := setup(t)
 
-	tc.FakeSecretsCreateSecret("worker-type:pp/wt", &tcsecrets.Secret{
+	tc.FakeSecretsCreateSecret("worker-pool:pp/wt", &tcsecrets.Secret{
 		Secret: []byte(`{"config": {"from-secret": true}}`),
 	})
 
