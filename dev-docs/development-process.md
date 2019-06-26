@@ -7,6 +7,21 @@ You will probably be working on only one of these pieces, so read carefully belo
 
 ## Setup
 
+### Node
+
+<!-- the next line is automatically edited; do not change -->
+You will need Node version 10.16.0 installed.
+We recommend using https://github.com/nvm-sh/nvm to support installing multiple Node versions.
+
+### Go
+
+<!-- the next line is automatically edited; do not change -->
+Go version go1.12.6 is required for some development tasks, in particular to run `yarn generate`.
+For new contributors not familiar with Go, it's probably safe to skip installing Go for now -- you will see a helpful error if and when it is needed.
+We recommend using https://github.com/moovweb/gvm to support installing multiple Go versions.
+
+### Dependency Installation
+
 To set up the repository, run `yarn` in the root directory.
 This will install all required dependencies from the Yarn registry.
 
@@ -16,15 +31,6 @@ To set this up, in the root directory, run
 ```sh
 export PATH=$PWD/node_modules/.bin:$PATH
 ```
-
-All of the server-side code runs in Node, and uses the [debug](https://yarnpkg.com/en/package/debug) module to log debugging information.
-You can see all debugging output with
-
-```sh
-export DEBUG=*
-```
-
-and can filter out specific debugging output with other values, as described in the [module documentation](https://github.com/visionmedia/debug/blob/master/README.md).
 
 ## Hacking on the UI
 
@@ -70,14 +76,23 @@ mocha test/api_test.js
 mocha -b test/api_test.js
 ```
 
-### Generating Code
+All of the server-side code runs in Node, and uses the [debug](https://yarnpkg.com/en/package/debug) module to log debugging information.
+You can see all debugging output with
+
+```sh
+export DEBUG=*
+```
+
+and can filter out specific debugging output with other values, as described in the [module documentation](https://github.com/visionmedia/debug/blob/master/README.md).
+
+## Generating Code
 
 If you change the API for a service (even changing documentation), you will need to regenerate the API references.
 Happily, this is easy.
 In the root directory of the repository, run `yarn generate`.
 It will change a few files, and you should include those changes in your Git commit.
 
-### Running Services
+## Running Services
 
 We generally depend on tests to ensure that services are behaving correctly.
 It is rare to run a service directly.
