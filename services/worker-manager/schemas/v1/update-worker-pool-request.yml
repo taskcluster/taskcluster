@@ -1,0 +1,39 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Worker Pool Definition
+description: |
+  Fields that are defined by a user for a worker pool.
+  Used to modify worker-pool definitions.
+
+  The `workerPoolId`, `created`, and `lastModified` fields are optional and
+  allowed only to ease the common practice of getting a worker pool definition
+  with `workerPool(..)`, modifying it, and writing it back with
+  `updateWorkerPool(..).  `workerPoolId` must be correct if
+  supplied, and the values of `created` and `lastModified` are ignored.
+type: object
+properties:
+  providerId: {$ref: "worker-pool-full.json#/properties/providerId"}
+  description: {$ref: "worker-pool-full.json#/properties/description"}
+  config: {$ref: "worker-pool-full.json#/properties/config"}
+  owner: {$ref: "worker-pool-full.json#/properties/owner"}
+  emailOnError: {$ref: "worker-pool-full.json#/properties/emailOnError"}
+  workerPoolId:
+    title: Worker Pool ID
+    type:           string
+    pattern:        {$const: workerpoolid-pattern}
+  created:
+    title: Created
+    type:                   string
+    format:                 date-time
+    description: 'Ignored on update'
+  lastModified:
+    title: Last Modified
+    type:                   string
+    format:                 date-time
+    description: 'Ignored on update'
+additionalProperties: false
+required:
+  - providerId
+  - description
+  - config
+  - owner
+  - emailOnError

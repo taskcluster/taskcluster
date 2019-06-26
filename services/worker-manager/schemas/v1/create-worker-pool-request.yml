@@ -2,7 +2,7 @@ $schema: "/schemas/common/metaschema.json#"
 title: Worker Pool Definition
 description: |
   Fields that are defined by a user for a worker pool.
-  Used to create and modify definitions. There is a larger
+  Used to create worker-pool definitions. There is a larger
   set of fields for viewing since some parts are generated
   by the service.
 type: object

@@ -97,7 +97,7 @@ builder.declare({
   name: 'updateWorkerPool',
   title: 'Update Worker Pool',
   stability: APIBuilder.stability.experimental,
-  input: 'create-worker-pool-request.yml',
+  input: 'update-worker-pool-request.yml',
   output: 'worker-pool-full.yml',
   scopes: {AllOf: [
     'worker-manager:update-worker-type:<workerPoolId>',
@@ -130,6 +130,10 @@ builder.declare({
   const error = provider.validate(input.config);
   if (error) {
     return res.reportError('InputValidationError', error);
+  }
+
+  if (input.workerPoolId && input.workerPoolId !== workerPoolId) {
+    return res.reportError('InputError', 'Incorrect workerPoolId in request body', {});
   }
 
   const workerPool = await this.WorkerPool.load({
