@@ -100,55 +100,8 @@ For development, it can be anything.
 JWT_KEY=this-is-a-secret-value-be-very-careful-with-it
 ```
 
-### GitHub
-
-In order to enable the GitHub login strategy, specify the GitHub client ID and secret for an OAuth application created
-for use against this service and its web UI.
-
-The callback URL should be `http://localhost:3050/login/github/callback` for local development, or `<rootUrl>/login/github/callback` for a deployment.
-
-Configure it as:
-
-```sh
-UI_LOGIN_STRATEGIES='{"github": {"clientId": "..", "clientSecret": ".."}}'
-```
-
-or in `user-config.yml` as
-* `login.strategies.github.clientId`
-* `login.strategies.github.clientSecret`
-
-Now, start the service as you normally would.
-
-**Note: be sure to not commit these environment variables to source control,
-and use a separate client ID and secret for production than used in
-development.**
-
-
-### Mozilla Auth0
-
-In order to enable the Mozilla Auth0 login strategy, specify the GitHub client ID and secret for an OAuth application created
-for use against this service and its web UI, either as an environment variable:
-
-```sh
-UI_LOGIN_STRATEGIES='{
-    "mozilla-auth0": {
-        "domain": "<auth0 subdomain>",
-        "clientId": "<clientId from registration of client>",
-        "clientSecret": "<clientSecret from registration of client>"
-    }
-}'
-```
-
-or in `user-config.yml` as
-* `login.strategies.mozilla-auth0.domain`
-* `login.strategies.mozilla-auth0.clientId`
-* `login.strategies.mozilla-auth0.clientSecret`
-
-Now, start the service as you normally would.
-
-**Note: be sure to not commit these environment variables to source control,
-and use a separate client ID and secret for production than used in
-development.**
+See the [deployment documentation](../../deployment-docs/login-strategies.md) for information on how to set up and configure these strategies.
+Note that in many cases such setup is not required for development of this service.
 
 ## Sample Queries
 
