@@ -681,6 +681,11 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v15.1.0 since v15.0.1
+========================
+
+* [Bug 1560388 - generic-worker: macOS multiuser engine - autologin sometimes not successful](https://bugzil.la/1560388)
+
 In v15.0.1 since v15.0.0
 ========================
 
