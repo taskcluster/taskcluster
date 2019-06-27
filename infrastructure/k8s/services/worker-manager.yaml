@@ -3,6 +3,11 @@ secrets:
   azure_account: ".Values.tfAzureAccount"
   force_ssl: "false"
   node_env: "production"
+  providers: ".Values.workerManagerProviders"
+  pulse_hostname: ".Values.tfRabbitmqHostname"
+  pulse_password: ".Values.workerManagerPulsePassword"
+  pulse_username: ".Values.workerManagerPulseUsername"
+  pulse_vhost: ".Values.pulseVhost"
   taskcluster_access_token: ".Values.workerManagerAccessToken"
   taskcluster_client_id: "static/taskcluster/worker-manager"
   trust_proxy: "true"
@@ -13,7 +18,12 @@ deployments:
     readiness_path: "/api/worker-manager/v1/ping"
     root_url: ".Values.rootUrl"
   - service_name: "worker-manager"
-    background_job: true 
+    background_job: true
     docker_image: ".Values.dockerImage"
     proc_name: "provisioner"
+    root_url: ".Values.rootUrl"
+  - service_name: "worker-manager"
+    background_job: true
+    docker_image: ".Values.dockerImage"
+    proc_name: "workerscanner"
     root_url: ".Values.rootUrl"

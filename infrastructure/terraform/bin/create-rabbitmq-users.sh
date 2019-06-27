@@ -19,6 +19,7 @@ taskcluster-notify
 taskcluster-queue
 taskcluster-secrets
 taskcluster-web-server
+taskcluster-worker-manager
 "
 
 for NAME in $NAMES; do
