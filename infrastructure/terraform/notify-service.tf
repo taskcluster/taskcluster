@@ -3,14 +3,14 @@ resource "aws_sqs_queue" "notify_irc_queue" {
 }
 
 module "notify_rabbitmq_user" {
-  source         = "modules/rabbitmq-user"
+  source         = "./modules/rabbitmq-user"
   prefix         = "${var.prefix}"
   project_name   = "taskcluster-notify"
   rabbitmq_vhost = "${var.rabbitmq_vhost}"
 }
 
 module "notify_user" {
-  source = "modules/taskcluster-service-iam-user"
+  source = "./modules/taskcluster-service-iam-user"
   name   = "taskcluster-notify"
   prefix = "${var.prefix}"
 

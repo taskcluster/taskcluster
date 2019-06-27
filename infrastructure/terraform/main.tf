@@ -1,9 +1,5 @@
 terraform {
-  required_version = ">= 0.11.3"
-}
-
-provider "random" {
-  version = "~> 1.2.0"
+  required_version = ">= 0.12.0"
 }
 
 provider "rabbitmq" {
@@ -27,7 +23,7 @@ resource "aws_s3_bucket" "public_artifacts" {
   bucket = "${var.prefix}-public-artifacts"
   acl    = "public-read"
 
-  versioning = {
+  versioning {
     enabled = true
   }
 
@@ -102,7 +98,7 @@ resource "aws_s3_bucket" "backups" {
   bucket = "${var.prefix}-backups"
   acl    = "private"
 
-  versioning = {
+  versioning {
     enabled = true
   }
 
@@ -142,7 +138,7 @@ resource "azurerm_storage_account" "base" {
   enable_blob_encryption   = "true"
   enable_file_encryption   = "true"
 
-  tags {
+  tags = {
     environment = "staging"
     managed_by  = "terraform"
   }

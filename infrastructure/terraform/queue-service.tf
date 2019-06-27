@@ -1,12 +1,12 @@
 module "queue_rabbitmq_user" {
-  source         = "modules/rabbitmq-user"
+  source         = "./modules/rabbitmq-user"
   prefix         = "${var.prefix}"
   project_name   = "taskcluster-queue"
   rabbitmq_vhost = "${var.rabbitmq_vhost}"
 }
 
 module "queue_user" {
-  source = "modules/taskcluster-service-iam-user"
+  source = "./modules/taskcluster-service-iam-user"
   name   = "taskcluster-queue"
   prefix = "${var.prefix}"
 
