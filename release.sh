@@ -17,7 +17,7 @@ git tag v$VERSION
 
 build() {
     local output=start-worker-${1}-${2}
-    GOOS="${1}" GOARCH="${2}" CGO_ENABLED=0 go build -o $output
+    GOOS="${1}" GOARCH="${2}" CGO_ENABLED=0 go build -o $output ./cmd/start-worker
     echo $output
 }
 echo "Building:"
