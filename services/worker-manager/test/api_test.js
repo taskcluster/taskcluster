@@ -392,6 +392,64 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     assert.deepStrictEqual(data.workers, []);
   });
 
+  test('Report a worker error', async function() {
+    const workerPoolId = 'foobar/baz';
+    const input = {
+      providerId: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    await helper.workerManager.createWorkerPool(workerPoolId, input);
+
+    await helper.workerManager.reportWorkerError(workerPoolId, {
+      workerGroup: 'wg',
+      workerId: 'wi',
+      kind: "worker-error",
+      title: 'Something is Wrong',
+      description: 'Uhoh!',
+      extra: {amISure: true},
+    });
+
+    let data = await helper.workerManager.listWorkerPoolErrors(workerPoolId);
+
+    assert.equal(data.workerPoolErrors.length, 1);
+
+    assert(data.workerPoolErrors[0].reported);
+    delete data.workerPoolErrors[0].reported;
+    assert(data.workerPoolErrors[0].errorId);
+    delete data.workerPoolErrors[0].errorId;
+
+    assert.deepEqual(data.workerPoolErrors, [
+      {
+        workerPoolId,
+        kind: "worker-error",
+        title: 'Something is Wrong',
+        description: 'Uhoh!',
+        extra: {
+          workerGroup: 'wg',
+          workerId: 'wi',
+          amISure: true,
+        },
+      },
+    ]);
+  });
+
+  test('Report a worker error, no such pool', async function() {
+    await assert.rejects(async () =>
+      await helper.workerManager.reportWorkerError('no/such', {
+        workerGroup: 'wg',
+        workerId: 'wi',
+        kind: "worker-error",
+        title: 'Something is Wrong',
+        description: 'Uhoh!',
+        extra: {amISure: true},
+      }),
+    /Worker pool does not exist/,
+    );
+  });
+
   test('get worker pool errors - no errors in db', async function() {
     let data = await helper.workerManager.listWorkerPoolErrors('foobar/baz');
 

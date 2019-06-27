@@ -15,6 +15,7 @@ export default class WorkerManager extends Client {
     this.updateWorkerPool.entry = {"args":["workerPoolId"],"input":true,"method":"post","name":"updateWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":{"AllOf":["worker-manager:update-worker-type:<workerPoolId>","worker-manager:provider:<providerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.workerPool.entry = {"args":["workerPoolId"],"method":"get","name":"workerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkerPools.entry = {"args":[],"method":"get","name":"listWorkerPools","output":true,"query":["continuationToken","limit"],"route":"/worker-pools","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.reportWorkerError.entry = {"args":["workerPoolId"],"input":true,"method":"post","name":"reportWorkerError","output":true,"query":[],"route":"/worker-pools-errors/<workerPoolId>","scopes":{"AllOf":["assume:worker-pool:<workerPoolId>","assume:worker-id:<workerGroup>/<workerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkerPoolErrors.entry = {"args":["workerPoolId"],"method":"get","name":"listWorkerPoolErrors","output":true,"query":["continuationToken","limit"],"route":"/worker-pool-errors/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkersForWorkerPool.entry = {"args":["workerPoolId"],"method":"get","name":"listWorkersForWorkerPool","output":true,"query":["continuationToken","limit"],"route":"/workers/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.credentialsGoogle.entry = {"args":["workerPoolId"],"input":true,"method":"post","name":"credentialsGoogle","output":true,"query":[],"route":"/credentials/google/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
@@ -64,6 +65,20 @@ export default class WorkerManager extends Client {
     this.validate(this.listWorkerPools.entry, args);
 
     return this.request(this.listWorkerPools.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Report an error that occurred on a worker.  This error will be included
+  // with the other errors in `listWorkerPoolErrors(workerPoolId)`.
+  // Workers can use this endpoint to report startup or configuration errors
+  // that might be associated with the worker pool configuration and thus of
+  // interest to a worker-pool administrator.
+  // NOTE: errors are publicly visible.  Ensure that none of the content
+  // contains secrets or other sensitive information.
+  /* eslint-enable max-len */
+  reportWorkerError(...args) {
+    this.validate(this.reportWorkerError.entry, args);
+
+    return this.request(this.reportWorkerError.entry, args);
   }
   /* eslint-disable max-len */
   // Get the list of worker pool errors.

@@ -132,7 +132,7 @@ WorkerPool.prototype.reportError = async function({kind, title, description, ext
       `.trim(),
     });
   }
-  await WorkerPoolError.create({
+  return await WorkerPoolError.create({
     workerPoolId: this.workerPoolId,
     errorId: slugid.v4(),
     reported: new Date(),
