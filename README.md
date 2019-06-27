@@ -2,14 +2,12 @@
 
 This repository defines a utility for running workers.
 
-It will handle:
+It handles:
 
  - Getting Taskcluster credentials
  - Interacting with the worker manager
  - Gathering configuration from various sources
- - Workers which reboot as part of their handling of tasks
- - Managing autologin
- - Polling for changed deployment IDs and signalling to workers when they should stop
+ - Polling for interruptions of cloud instances (e.g., spot termination)
 
 ## Usage
 
@@ -84,6 +82,36 @@ The "dummy" worker implementation does nothing but dump the run instead of
 ```
 <!-- end-usage -->
 
+## Worker Configuration
+
+Worker configuration comes from a number of sources; in order from lowest to
+highest precedence, these are:
+
+* The worker runner config file (described above)
+* The configuration defined by the provider, if any
+* Configuration stored in the secrets service
+
+Providers can supply configuration to the worker via whatever means makes sense.
+For example, an EC2 or GCP provider would read configuration from the instance's userData.
+
+Secrets are stored in the secrets service under a secret named
+`worker-pool:<workerPoolId>`, in the format
+
+```yaml
+config:
+  workerConfigValue: ...
+files:
+  - ...
+```
+
+Where `config` is an object that is merged directly into the worker config.
+Files are not yet supported.
+
+Two backward-compatibility measures exist:
+
+1. A secret named `worker-type:<workerPoolId>` is also consulted, as used before [RFC#145](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0145-workerpoolid-taskqueueid.md) landed.
+1. If a secret does not have properties `config` and `files`, then its top-level contents are assumed to be worker configuration, with no files.
+
 ## Operation
 
 In operation, this tool performs the following steps to determine the
@@ -92,9 +120,10 @@ parameters for a run of a worker:
  * Read the *runner* configuration (`<runnerConfig>`).
  * Load the given provider and ask it to add settings to the run.  This
    step provides Taskcluster credentials for the worker, as well as
-   identification information (worker pool, worker ID, etc.).
+   identification information (worker pool, worker ID, etc.) and more worker
+   configuration.
  * Using the Taskcluster credentials, load configuration from the secrets
-   service with secret name `worker-type:<workerPoolId>`.
+   service.
  * Load support for the given worker implementation and ask it to add
    settings to the run.
 
