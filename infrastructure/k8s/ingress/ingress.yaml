@@ -13,7 +13,15 @@ spec:
          backend:
            serviceName: taskcluster-ui
            servicePort: 80
+       - path: '/references'
+         backend:
+           serviceName: taskcluster-references
+           servicePort: 80
        - path: '/references/*'
+         backend:
+           serviceName: taskcluster-references
+           servicePort: 80
+       - path: '/schemas'
          backend:
            serviceName: taskcluster-references
            servicePort: 80
@@ -21,11 +29,19 @@ spec:
          backend:
            serviceName: taskcluster-references
            servicePort: 80
+       - path: '/graphql'
+         backend:
+           serviceName: taskcluster-web-server
+           servicePort: 80
        - path: '/graphql/*'
          backend:
            serviceName: taskcluster-web-server
            servicePort: 80
-       - path: '/login*'
+       - path: '/login'
+         backend:
+           serviceName: taskcluster-web-server
+           servicePort: 80
+       - path: '/login/*'
          backend:
            serviceName: taskcluster-web-server
            servicePort: 80
