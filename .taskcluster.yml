@@ -180,7 +180,7 @@ tasks:
     workerType: gecko-t-win10-64-cu
     metadata:
       name: "Build/test 64 bit generic-worker (multiuser engine) on Windows 10"
-      description: "This builds and tests the 32 bit Windows version of generic-worker (multiuser engine) on Windows 10"
+      description: "This builds and tests the 64 bit Windows version of generic-worker (multiuser engine) on Windows 10"
       owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
       source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
     extra:
