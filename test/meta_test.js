@@ -10,7 +10,7 @@ const glob = require('glob');
 
 const ROOT_DIR = path.join(__dirname, '..');
 
-suite('Repo Meta Tests', function() {
+suite('Repo Meta Tests', function () {
   const packageJsonFile = path.join(ROOT_DIR, 'package.json');
   const uiPackageJsonFile = path.join(ROOT_DIR, 'ui/package.json');
   const packageJson = JSON.parse(fs.readFileSync(packageJsonFile, 'utf8'));
@@ -19,10 +19,10 @@ suite('Repo Meta Tests', function() {
   const taskclusterYmlFile = path.join(ROOT_DIR, '.taskcluster.yml');
   const taskclusterYml = yaml.safeLoad(fs.readFileSync(taskclusterYmlFile, 'utf8'));
 
-  test('All packages in CI', async function() {
+  test('All packages in CI', async function () {
     const configured = taskclusterYml.tasks.in.$let.packages.map(pkg => pkg.name);
 
-    const {stdout} = await exec('yarn workspaces info -s');
+    const { stdout } = await exec('yarn workspaces info -s');
     const existing = Object.keys(JSON.parse(stdout))
       // taskcluster-client is tested separately
       .filter(name => name !== 'taskcluster-client');
@@ -35,15 +35,15 @@ suite('Repo Meta Tests', function() {
     assert(extra.length === 0, `${warning} Remove: ${JSON.stringify(extra)}`);
   });
 
-  test('Node version in .taskcluster.yml matches that in package.json', function() {
+  test('Node version in .taskcluster.yml matches that in package.json', function () {
     assert.equal(taskclusterYml.tasks.$let.node, packageJson.engines.node);
   });
 
-  test('Node version for UI matches the rest of the repo', function() {
+  test('Node version for UI matches the rest of the repo', function () {
     assert.equal(taskclusterYml.tasks.$let.node, uiPackageJson.engines.node);
   });
 
-  test('proper spelling and capitalization of Taskcluster', async function() {
+  test('proper spelling and capitalization of Taskcluster', async function () {
     const Taskcluster = [
       "Task[C]luster",
       "Task [c]luster",
@@ -66,7 +66,7 @@ suite('Repo Meta Tests', function() {
     }
   });
 
-  test('Dependencies are not missing/unused', async function() {
+  test('Dependencies are not missing/unused', async function () {
     const depOptions = {
       specials: [], // don't target webpack
     };
@@ -76,7 +76,7 @@ suite('Repo Meta Tests', function() {
     const rootPkg = require(path.join(ROOT_DIR, 'package.json'));
     const rootDeps = (Object.keys(rootPkg.dependencies || {})).concat((Object.keys(rootPkg.devDependencies || {})));
 
-    const {stdout} = await exec('yarn workspaces info -s');
+    const { stdout } = await exec('yarn workspaces info -s');
     const packages = Object.values(JSON.parse(stdout)).map(p => p.location);
     const unused = {};
     const missing = {};
@@ -97,10 +97,10 @@ suite('Repo Meta Tests', function() {
     assert(Object.keys(missing).length === 0, `Missing dependencies: ${JSON.stringify(missing, null, 2)}`);
   });
 
-  test('workspace package.jsons do not have forbidden fields', async function() {
+  test('workspace package.jsons do not have forbidden fields', async function () {
     const packageJsons = glob.sync(
       '{services,libraries}/*/package.json',
-      {cwd: ROOT_DIR});
+      { cwd: ROOT_DIR });
 
     const forbidden = [
       'engines',
@@ -124,10 +124,13 @@ suite('Repo Meta Tests', function() {
       'ui/docs/**/*.md',
       { cwd: ROOT_DIR });
 
+    var errors = "";
+    var count_errors = 0;
+
     for (let filename of markdowns) {
       var data = fs.readFileSync(filename, 'utf8');
       var md = data.toString();
-      
+
       //remove the markdown code blocks which may include python # comment which can be confused with # markdown heading, as in, ui/docs/manual/using/s3-uploads.md
       md = md.replace(/```[a-z]*[\s\S]*?\```/g, "");
       var hd = [];
@@ -153,15 +156,24 @@ suite('Repo Meta Tests', function() {
       // check if there is a single top-level heading
       if (topLevelHd < 7) {
         if (hd[topLevelHd].length > 1) {
-          throw new Error(`${filename} does not match the expectations`);
+          count_errors++;
+          errors+=`${filename} does not have a single top level heading\n`;
+          console.log(errors);
         }
       }
 
       //check if there are no headings besides a single top-level heading
       if (countLevel == 1) {
-        if (hd[topLevelHd].length == 1)
-          throw new Error(`${filename} does not match the expectations`);
+        if (hd[topLevelHd].length == 1) {
+          count_errors++;
+          errors+=`${filename} have no headings besides a single top level heading\n`;
+        }
       }
+    }
+
+    //if there are any errors found
+    if(count_errors>0) {
+      throw new Error(errors);
     }
   });
 });
