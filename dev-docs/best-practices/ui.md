@@ -11,7 +11,7 @@ When we have a good reason to not follow the best practices in the UI, we docume
 * [Spacing](#spacing)
 * [Color](#color)
 * [Visual Hierarchy](#visual-hierarchy)
-* [Document Hierarchy](#document-hierarchy)
+* [Document Header Hierarchy](#document-header-hierarchy)
 
 ## Tables
 * Avoid multi-line text in a table - too much information for the given space. Alternatives:
@@ -49,7 +49,7 @@ For example, a destructive button that isn’t considered a primary action in a 
 need to be red and bold. It could have a secondary look. Still want it to be red and bold?
 Hide it behind a menu like a [SpeedDial](https://material-ui.com/components/speed-dial/) component.
 
-## Document Hierarchy
+## Document Header Hierarchy
 Document hierarchy should be respected everywhere, especially for documentation pages.
 There should be at most one `h1` tag in a page and it should be the first header in the document.
 
