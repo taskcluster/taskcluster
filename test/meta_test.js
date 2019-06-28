@@ -124,16 +124,17 @@ suite('Repo Meta Tests', function () {
       'ui/docs/**/*.md',
       { cwd: ROOT_DIR });
 
-    var errors = "";
-    var count_errors = 0;
+    let errors = "";
+    let count_errors = 0;
 
     for (let filename of markdowns) {
-      var data = fs.readFileSync(filename, 'utf8');
-      var md = data.toString();
+      const data = fs.readFileSync(filename, 'utf8');
+      let md = data.toString();
 
-      //remove the markdown code blocks which may include python # comment which can be confused with # markdown heading, as in, ui/docs/manual/using/s3-uploads.md
+      //remove the markdown code blocks which may include python # comment
+      // which can be confused with # markdown heading, as in, ui/docs/manual/using/s3-uploads.md
       md = md.replace(/```[a-z]*[\s\S]*?\```/g, "");
-      var hd = [];
+      const hd = [];
 
       //hd[i] stores the number of headings with level i
       hd[1] = md.match(/^# /gm);
@@ -143,13 +144,14 @@ suite('Repo Meta Tests', function () {
       hd[5] = md.match(/^##### /gm);
       hd[6] = md.match(/^###### /gm);
 
-      //counting levels of headings present and marking the top level 
-      var countLevel = 0, topLevelHd = 7;
-      for (var i = 1; i <= 6; i++) {
+      //counting levels of headings present and marking the top level
+      let countLevel = 0, topLevelHd = 7;
+      for (let i = 1; i <= 6; i++) {
         if (hd[i] != null && hd[i].length > 0) {
           countLevel++;
-          if (i < topLevelHd)
+          if (i < topLevelHd){
             topLevelHd = i;
+          }
         }
       }
 
@@ -163,8 +165,8 @@ suite('Repo Meta Tests', function () {
       }
 
       //check if there are no headings besides a single top-level heading
-      if (countLevel == 1) {
-        if (hd[topLevelHd].length == 1) {
+      if (countLevel === 1) {
+        if (hd[topLevelHd].length === 1) {
           count_errors++;
           errors+=`${filename} have no headings besides a single top level heading\n`;
         }
