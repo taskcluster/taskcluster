@@ -68,11 +68,9 @@ def render_deployment(project_name, deployment):
         f"deployment-{context['proc_name']}" if context["proc_name"] else "deployment"
     )
     write_file(template, context, suffix)
-    template = yaml.load(open("templates/service.yaml"), Loader=yaml.SafeLoader)
-    suffix = (
-        f"service-{context['proc_name']}" if context["proc_name"] else "service"
-    )
-    write_file(template, context, suffix)
+    if not context["background_job"]:
+        template = yaml.load(open("templates/service.yaml"), Loader=yaml.SafeLoader)
+        write_file(template, context, "service")
 
 
 def render_cronjob(project_name, deployment):
@@ -96,7 +94,7 @@ def render_ingress():
 def write_file(template, context, suffix):
     filepath = f"{args.chartsdir}/{context['project_name']}-{suffix}.yaml"
     try:
-        f = open(filepath, "w+")
+        f = open(filepath, "x")
         f.write(yaml.dump(jsone.render(template, context), default_flow_style=False, width=float("inf")))
         f.close()
     except:
