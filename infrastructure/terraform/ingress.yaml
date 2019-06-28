@@ -40,7 +40,6 @@ spec:
             - {service_name: queue, project_name: taskcluster-queue}
             - {service_name: hooks, project_name: taskcluster-hooks}
             - {service_name: index, project_name: taskcluster-index}
-            - {service_name: events, project_name: taskcluster-events}
             - {service_name: notify, project_name: taskcluster-notify}
             - {service_name: purge-cache, project_name: taskcluster-purge-cache}
             - {service_name: github, project_name: taskcluster-github}
