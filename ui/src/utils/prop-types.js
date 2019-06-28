@@ -100,15 +100,6 @@ export const status = shape({
   runs,
 });
 
-export const provisionerAction = shape({
-  name: string,
-  title: string,
-  context: oneOf(['PROVISIONER', 'WORKER_TYPE', 'WORKER']),
-  url: string,
-  method: oneOf(['POST', 'PUT', 'DELETE', 'PATCH']),
-  description: string,
-});
-
 export const stability = oneOf(['EXPERIMENTAL', 'STABLE', 'DEPRECATED']);
 
 export const taskMetadata = shape({
@@ -157,29 +148,6 @@ export const task = shape({
 
 Object.assign(task, { taskGroup: task });
 
-const taskRun = shape({
-  taskId: string,
-  runId: number,
-  run,
-});
-
-export const worker = shape({
-  provisionerId: string,
-  workerType: string,
-  workerGroup: string,
-  workerId: string,
-  recentTasks: arrayOf(taskRun),
-  expires: date,
-  quarantineUntil: date,
-  latestTasks: arrayOf(task),
-  actions: arrayOf(provisionerAction),
-});
-
-export const workers = shape({
-  pageInfo,
-  edges: arrayOf(worker),
-});
-
 export const WMWorker = shape({
   workerId: string,
   workerGroup: string,
@@ -203,56 +171,6 @@ export const WMWorker = shape({
   workerType: string,
 });
 
-export const workerType = shape({
-  provisionerId: string,
-  workerType: string,
-  stability,
-  description: string,
-  expires: date,
-  lastDateActive: date,
-  actions: arrayOf(provisionerAction),
-});
-
-export const awsProvisionerWorkerType = shape({
-  workerType: string,
-  launchSpec: object,
-  userData: object,
-  secrets: object,
-  scopes: arrayOf(string),
-  minCapacity: number,
-  maxCapacity: number,
-  scalingRatio: number,
-  minPrice: number,
-  maxPrice: number,
-  lastModified: date,
-  instanceTypes: arrayOf(
-    shape({
-      instanceType: string,
-      capacity: number,
-      utility: number,
-      secrets: object,
-      scopes: arrayOf(string),
-      userData: object,
-      launchSpec: object,
-    })
-  ),
-  regions: arrayOf(
-    shape({
-      region: string,
-      secrets: object,
-      scopes: arrayOf(string),
-      userData: object,
-      launchSpec: shape({
-        ImageId: string,
-      }),
-    })
-  ),
-  canUseOndemand: bool,
-  canUseSpot: bool,
-  description: string,
-  owner: string,
-});
-
 export const WorkerManagerWorkerPoolSummary = shape({
   workerPoolId: string,
   providerId: string,
@@ -263,25 +181,6 @@ export const WorkerManagerWorkerPoolSummary = shape({
   owner: string,
   emailOnError: bool,
   pendingTasks: number,
-});
-
-export const awsProvisionerWorkerTypeSummary = shape({
-  workerType: string,
-  minCapacity: number,
-  maxCapacity: number,
-  requestedCapacity: number,
-  pendingCapacity: number,
-  runningCapacity: number,
-  pendingTasks: number,
-});
-
-export const provisioner = shape({
-  provisionerId: string,
-  stability,
-  description: string,
-  expires: date,
-  lastDateActive: date,
-  actions: arrayOf(provisionerAction),
 });
 
 export const client = shape({
@@ -340,49 +239,6 @@ export const hook = shape({
   expires: date,
   deadline: date,
   triggerSchema: object,
-});
-
-const aws = {
-  region: string,
-  az: string,
-  instanceType: string,
-};
-
-export const awsProvisionerHealth = shape({
-  running: arrayOf(shape(aws)),
-  terminationHealth: arrayOf(
-    shape({
-      ...aws,
-      cleanShutdown: number,
-      spotKill: number,
-      insufficientCapacity: number,
-      volumeLimitExceeded: number,
-      missingAmi: number,
-      startupFailed: number,
-      unknownCodes: number,
-      noCode: number,
-    })
-  ),
-  requestHealth: arrayOf(
-    shape({
-      ...aws,
-      successful: number,
-      failed: number,
-      configurationIssue: number,
-      throttledCalls: number,
-      insufficientCapacity: number,
-      limitExceeded: number,
-    })
-  ),
-});
-
-export const awsProvisionerErrors = shape({
-  ...aws,
-  code: string,
-  type: oneOf(['INSTANCE_REQUEST', 'TERMINATION']),
-  workerType: string,
-  time: date,
-  message: string,
 });
 
 export const secret = shape({
