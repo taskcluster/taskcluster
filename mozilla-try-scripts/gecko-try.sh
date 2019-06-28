@@ -38,6 +38,8 @@ while getopts ":pb:" opt; do
   esac
 done
 
+shift $((OPTIND-1))
+
 NEW_GW_VERSION="${1}"
 NEW_TP_VERSION="${2}"
 
