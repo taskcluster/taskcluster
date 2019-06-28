@@ -25,12 +25,35 @@ function open_browser_page {
   esac
 }
 
+DEPLOYMENT_ENVIRONMENT=STAGING
+MANIFESTS='gecko-t-win10-64-gpu-b.json gecko-t-win7-32-gpu-b.json gecko-t-win10-64-cu.json gecko-t-win7-32-cu.json gecko-1-b-win2012-beta.json gecko-t-win10-64-beta.json gecko-t-win7-32-beta.json'
+
+while getopts ":pb:" opt; do
+  case "${opt}" in
+    p) DEPLOYMENT_ENVIRONMENT=PRODUCTION
+       MANIFESTS='gecko-1-b-win2012.json gecko-2-b-win2012.json gecko-3-b-win2012.json gecko-t-win7-32.json gecko-t-win7-32-gpu.json gecko-t-win10-64.json gecko-t-win10-64-gpu.json'
+       ;;
+    b) BRANCH="${OPTARG}"
+       ;;
+  esac
+done
+
 NEW_GW_VERSION="${1}"
 NEW_TP_VERSION="${2}"
 
 if [ -z "${NEW_GW_VERSION}" ] || [ -z "${NEW_TP_VERSION}" ]; then
-  echo "Please specify version of generic-worker and taskcluster-proxy to use in gecko try push, e.g. '${0}' 12.0.0 5.1.0" >&2
+  echo "Please specify version of generic-worker and taskcluster-proxy to use in gecko try push, e.g. '${0}' [[-p] -b BRANCH] 12.0.0 5.1.0" >&2
   exit 64
+fi
+
+if [ -z "${BRANCH}" ] && [ "${DEPLOYMENT_ENVIRONMENT}" == "PRODUCTION" ]; then
+  echo "${0} requires a branch name (-b BRANCH) when production target is specified (-p)" >&2
+  exit 70
+fi
+
+# only set default value for BRANCH after checking it wasn't empty for a production deployment
+if [ -z "${BRANCH}" ]; then
+  BRANCH='master'
 fi
 
 echo "Checking system dependencies..."
@@ -49,6 +72,7 @@ if ! [ -f ~/.tooltool-upload ]; then
   exit 66
 fi
 
+echo "Upgrading ${DEPLOYMENT_ENVIRONMENT} worker types..."
 
 cd "$(dirname "${0}")"
 THIS_SCRIPT_DIR="$(pwd)"
@@ -98,11 +122,12 @@ add_github "taskcluster/taskcluster-proxy" "${NEW_TP_VERSION}" "taskcluster-prox
 add_github "taskcluster/taskcluster-proxy" "${NEW_TP_VERSION}" "taskcluster-proxy-windows-amd64.exe"        "x86-64"
 
 cat manifest.tt
-"${THIS_SCRIPT_DIR}/lib/tooltool.py" upload -v --authentication-file="$(echo ~/.tooltool-upload)" --message "Upgrade *STAGING* worker types to use generic-worker ${NEW_GW_VERSION} / taskcluster-proxy ${NEW_TP_VERSION}"
+"${THIS_SCRIPT_DIR}/lib/tooltool.py" upload -v --authentication-file="$(echo ~/.tooltool-upload)" --message "Upgrade *${DEPLOYMENT_ENVIRONMENT}* worker types to use generic-worker ${NEW_GW_VERSION} / taskcluster-proxy ${NEW_TP_VERSION}"
 
 git clone git@github.com:mozilla-releng/OpenCloudConfig.git
 cd OpenCloudConfig/userdata/Manifest
-for MANIFEST in gecko-t-win10-64-gpu-b.json gecko-t-win7-32-gpu-b.json gecko-t-win10-64-cu.json gecko-t-win7-32-cu.json gecko-1-b-win2012-beta.json gecko-t-win10-64-beta.json gecko-t-win7-32-beta.json; do
+git checkout "${BRANCH}"
+for MANIFEST in ${MANIFESTS}; do
   cat "${MANIFEST}" > "${MANIFEST}.bak"
   cat "${MANIFEST}.bak" \
     | sed "s_\\(generic-worker/releases/download/v\\)[^/]*\\(/generic-worker-multiuser-windows-\\)_\\1${NEW_GW_VERSION}\\2_" | sed "s_\\(\"generic-worker (multiuser engine) \\)[^ ]*\\(.*\\)\$_\\1${NEW_GW_VERSION}\\2_" \
@@ -124,35 +149,37 @@ DEPLOY="deploy: $(git status --porcelain | sed -n 's/^ M userdata\/Manifest\/\(.
 THIS_REV="$(git -C "${THIS_SCRIPT_DIR}" rev-parse HEAD)"
 THIS_FILE="$(git -C "${THIS_SCRIPT_DIR}" ls-files --full-name "$(basename "${0}")")"
 git add .
-git commit -m "Testing generic-worker ${NEW_GW_VERSION} / taskcluster-proxy ${NEW_TP_VERSION} on *STAGING*
+git commit -m "Deploying generic-worker ${NEW_GW_VERSION} / taskcluster-proxy ${NEW_TP_VERSION} to *${DEPLOYMENT_ENVIRONMENT}*.
 
-This change does _not_ affect any production workers. Commit made with:
+Commit made with:
 
     ${0} $(echo ${@})
 
 See https://github.com/taskcluster/generic-worker/blob/$THIS_REV/$THIS_FILE" -m "${DEPLOY}"
 OCC_COMMIT="$(git rev-parse HEAD)"
-git push
+git push origin "${BRANCH}"
 
-open_browser_page 'https://github.com/mozilla-releng/OpenCloudConfig/commits/master'
+open_browser_page "https://github.com/mozilla-releng/OpenCloudConfig/commits/${BRANCH}"
 
-if ! [ -d ~/.mozilla-central ]; then
-  hg clone https://hg.mozilla.org/mozilla-central ~/.mozilla-central
+if [ "${DEPLOYMENT_ENVIRONMENT}" == "STAGING" ]; then
+  if ! [ -d ~/.mozilla-central ]; then
+    hg clone https://hg.mozilla.org/mozilla-central ~/.mozilla-central
+  fi
+
+  cd ~/.mozilla-central
+  hg up -C
+  hg purge
+
+  # wait for OCC deployment to complete
+  go run "${THIS_SCRIPT_DIR}/waitforOCC.go" "${OCC_COMMIT}"
+
+  hg pull -u -r default
+  patch -p1 -i "${THIS_SCRIPT_DIR}/gecko.patch"
+  hg commit -m "Testing generic-worker ${NEW_GW_VERSION} / taskcluster-proxy ${NEW_TP_VERSION} on Windows; try: -b do -p win32,win64 -u all -t none"
+  hg push -f ssh://hg.mozilla.org/try/ -r .
+
+  open_browser_page 'https://treeherder.mozilla.org/#/jobs?repo=try'
 fi
-
-cd ~/.mozilla-central
-hg up -C
-hg purge
-
-# wait for OCC deployment to complete
-go run "${THIS_SCRIPT_DIR}/waitforOCC.go" "${OCC_COMMIT}"
-
-hg pull -u -r default
-patch -p1 -i "${THIS_SCRIPT_DIR}/gecko.patch"
-hg commit -m "Testing generic-worker ${NEW_GW_VERSION} / taskcluster-proxy ${NEW_TP_VERSION} on Windows; try: -b do -p win32,win64 -u all -t none"
-hg push -f ssh://hg.mozilla.org/try/ -r .
-
-open_browser_page 'https://treeherder.mozilla.org/#/jobs?repo=try'
 
 rm -rf "${CHECKOUT}"
 
