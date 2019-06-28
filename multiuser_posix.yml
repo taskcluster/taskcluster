@@ -37,6 +37,19 @@ properties:
       }
       ```
 
+      Note, the following environment variables will automatically be set in the task
+      commands:
+        * `TASK_ID` - the task ID of the currently running task
+        * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment
+        * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the
+           taskcluster authentication proxy for making unauthenticated taskcluster
+           API calls
+        * `TASK_USER_CREDENTIALS` (if config property `runTasksAsCurrentUser` set to
+          `true` in `generic-worker.config` file - the absolute file location of a
+          json file containing the current task OS user account name and password.
+          This is only useful for the generic-worker multiuser CI tasks, where
+          `runTasksAsCurrentUser` is set to `true`.
+
       Since: generic-worker 0.0.1
     type: object
     additionalProperties:

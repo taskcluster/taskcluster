@@ -177,6 +177,19 @@ type (
 		// }
 		// ```
 		//
+		// Note, the following environment variables will automatically be set in the task
+		// commands:
+		//   * `TASK_ID` - the task ID of the currently running task
+		//   * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment
+		//   * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the
+		//      taskcluster authentication proxy for making unauthenticated taskcluster
+		//      API calls
+		//   * `TASK_USER_CREDENTIALS` (if config property `runTasksAsCurrentUser` set to
+		//     `true` in `generic-worker.config` file - the absolute file location of a
+		//     json file containing the current task OS user account name and password.
+		//     This is only useful for the generic-worker multiuser CI tasks, where
+		//     `runTasksAsCurrentUser` is set to `true`.
+		//
 		// Since: generic-worker 0.0.1
 		//
 		// Map entries:
@@ -608,7 +621,7 @@ func taskPayloadSchema() string {
       "additionalProperties": {
         "type": "string"
       },
-      "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"PATH\": \"/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin\",\n  \"GOOS\": \"darwin\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nSince: generic-worker 0.0.1",
+      "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"PATH\": \"/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin\",\n  \"GOOS\": \"darwin\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nNote, the following environment variables will automatically be set in the task\ncommands:\n  * ` + "`" + `TASK_ID` + "`" + ` - the task ID of the currently running task\n  * ` + "`" + `TASKCLUSTER_ROOT_URL` + "`" + ` - the root URL of the taskcluster deployment\n  * ` + "`" + `TASKCLUSTER_PROXY_URL` + "`" + ` (if taskcluster proxy feature enabled) - the\n     taskcluster authentication proxy for making unauthenticated taskcluster\n     API calls\n  * ` + "`" + `TASK_USER_CREDENTIALS` + "`" + ` (if config property ` + "`" + `runTasksAsCurrentUser` + "`" + ` set to\n    ` + "`" + `true` + "`" + ` in ` + "`" + `generic-worker.config` + "`" + ` file - the absolute file location of a\n    json file containing the current task OS user account name and password.\n    This is only useful for the generic-worker multiuser CI tasks, where\n    ` + "`" + `runTasksAsCurrentUser` + "`" + ` is set to ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 0.0.1",
       "title": "Env vars",
       "type": "object"
     },
