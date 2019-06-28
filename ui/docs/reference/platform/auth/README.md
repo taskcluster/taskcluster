@@ -1,4 +1,3 @@
-# Auth Service
 
 The auth service manages permissions and credentials in a Taskcluster deployment.
 This involves managing [clients](/docs/reference/platform/auth/clients) and [roles](/docs/reference/platform/auth/roles) and validating access to API methods.
