@@ -19,6 +19,6 @@ variable "rabbitmq_vhost" {
 }
 
 variable "email_source_address" {
-  type	      = "string"
+  type        = "string"
   description = "email address from which notify emails"
 }

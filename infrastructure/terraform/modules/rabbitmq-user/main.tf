@@ -1,5 +1,5 @@
 locals {
-  re_name = "${replace(var.project_name, "-", "\\-")}"
+  re_name   = "${replace(var.project_name, "-", "\\-")}"
   user_name = "${var.prefix}-${var.project_name}"
 }
 
