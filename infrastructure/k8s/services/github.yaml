@@ -1,6 +1,6 @@
 project_name: "taskcluster-github"
 secrets:
-  azure_account: ".Values.tfAzureAccount"
+  azure_account_name: ".Values.tfAzureAccount"
   force_ssl: "false"
   github_app_id: ".Values.githubAppId" 
   github_private_pem: ".Values.githubPrivatePem"
