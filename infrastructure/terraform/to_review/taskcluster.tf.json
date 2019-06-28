@@ -1,5 +1,0 @@
-{
-  "locals": {
-    "taskcluster_image_monoimage": "taskcluster/taskcluster-monoimage:SVC-a627577dadc4"
-  }
-}
