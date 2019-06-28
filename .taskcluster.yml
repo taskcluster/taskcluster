@@ -257,13 +257,13 @@ tasks:
 
 
   ##########################################################
-  ########## macOS High Sierra 10.13 Simple Build ##########
+  ############ macOS Mojave 10.14 Simple Build #############
   ##########################################################
 
   - provisionerId: pmoore-manual
     workerType: mac-os-x
     metadata:
-      name: "Build/test 64 bit generic-worker (simple engine) on macOS High Sierra 10.13"
+      name: "Build/test 64 bit generic-worker (simple engine) on macOS Mojave 10.14"
       description: "This builds the 64 bit macOS version of generic-worker (simple engine)"
       owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
       source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
@@ -326,13 +326,13 @@ tasks:
 
 
   ##########################################################
-  ######## macOS High Sierra 10.13 Multiuser Build #########
+  ########### macOS Mojave 10.14 Multiuser Build ###########
   ##########################################################
 
   - provisionerId: pmoore-manual
     workerType: mac-os-x
     metadata:
-      name: "Build/test 64 bit generic-worker (multiuser engine) on macOS High Sierra 10.13"
+      name: "Build/test 64 bit generic-worker (multiuser engine) on macOS Mojave 10.14"
       description: "This builds the 64 bit macOS version of generic-worker (multiuser engine)"
       owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
       source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
