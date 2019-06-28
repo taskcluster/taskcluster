@@ -96,7 +96,7 @@ const createSortedTasks = memoize(
   },
   taskGroupName: {
     marginRight: theme.spacing.unit,
-    maxWidth: 500,
+    maxWidth: '55vw',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -220,6 +220,7 @@ export default class TaskGroupTable extends Component {
             component="div"
             role="cell">
             <Link
+              title={taskGroup.metadata.name}
               className={classes.listItemCell}
               to={`/tasks/${taskGroup.taskId}`}>
               <Typography className={classes.taskGroupName}>
