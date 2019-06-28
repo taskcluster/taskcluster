@@ -105,7 +105,15 @@ module.exports = ({tasks, cmdOptions}) => {
         contents.replace(/VERSION = .*/, `VERSION = '${requirements['release-version']}'`));
       changed.push(pyclient);
 
-      // go client is versioned only by git tag
+      // the go client requires the major version number in its import path, so
+      // just about every file needs edited.  This matches the full package
+      // path to avoid false positives, but that might result in missed changes
+      // where the full path is not used.
+      const major = requirements['release-version'].replace(/\..*/, '');
+      for (let file of await gitLsFiles({patterns: ['clients/client-go/**']})) {
+        await modifyRepoFile(file, contents =>
+          contents.replace(/(github.com\/taskcluster\/taskcluster\/clients\/client-go\/v)\d+/g, `$1${major}`));
+      }
 
       return {'version-updated': changed};
     },
