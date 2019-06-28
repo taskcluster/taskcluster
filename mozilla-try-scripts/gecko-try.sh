@@ -28,6 +28,8 @@ function open_browser_page {
 DEPLOYMENT_ENVIRONMENT=STAGING
 MANIFESTS='gecko-t-win10-64-gpu-b.json gecko-t-win7-32-gpu-b.json gecko-t-win10-64-cu.json gecko-t-win7-32-cu.json gecko-1-b-win2012-beta.json gecko-t-win10-64-beta.json gecko-t-win7-32-beta.json'
 
+ORIG_ARGS="${@}"
+
 while getopts ":pb:" opt; do
   case "${opt}" in
     p) DEPLOYMENT_ENVIRONMENT=PRODUCTION
@@ -155,7 +157,7 @@ git commit -m "Deploying generic-worker ${NEW_GW_VERSION} / taskcluster-proxy ${
 
 Commit made with:
 
-    ${0} $(echo ${@})
+    ${0} $(echo ${ORIG_ARGS})
 
 See https://github.com/taskcluster/generic-worker/blob/$THIS_REV/$THIS_FILE" -m "${DEPLOY}"
 OCC_COMMIT="$(git rev-parse HEAD)"
