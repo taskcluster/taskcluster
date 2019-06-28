@@ -29,7 +29,7 @@ for NAME in $NAMES; do
         echo "skipping $FULLNAME because they already exist"
     else
         echo "creating rabbitmq user $FULLNAME"
-        PASSWORD=$(openssl rand -base64 24)
+        PASSWORD=$(openssl rand -base64 40 | tr -d "/" | cut -c1-32)
         PAYLOAD="{\"password\":\"${PASSWORD}\",\"tags\":\"\"}"
         curl -X PUT -H "Content-Type: application/json" -d "$PAYLOAD" \
         -sfu "${SERVER_USERNAME}:${SERVER_PASSWORD}" "https://${SERVER_ADDRESS}/api/users/$FULLNAME" > /dev/null
