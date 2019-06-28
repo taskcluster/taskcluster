@@ -166,6 +166,30 @@ func (workerManager *WorkerManager) ListWorkerPools(continuationToken, limit str
 
 // Stability: *** EXPERIMENTAL ***
 //
+// Report an error that occurred on a worker.  This error will be included
+// with the other errors in `listWorkerPoolErrors(workerPoolId)`.
+//
+// Workers can use this endpoint to report startup or configuration errors
+// that might be associated with the worker pool configuration and thus of
+// interest to a worker-pool administrator.
+//
+// NOTE: errors are publicly visible.  Ensure that none of the content
+// contains secrets or other sensitive information.
+//
+// Required scopes:
+//   All of:
+//   * assume:worker-pool:<workerPoolId>
+//   * assume:worker-id:<workerGroup>/<workerId>
+//
+// See #reportWorkerError
+func (workerManager *WorkerManager) ReportWorkerError(workerPoolId string, payload *WorkerErrorReport) (*WorkerPoolError, error) {
+	cd := tcclient.Client(*workerManager)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/worker-pools-errors/"+url.QueryEscape(workerPoolId), new(WorkerPoolError), nil)
+	return responseObject.(*WorkerPoolError), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
 // Get the list of worker pool errors.
 //
 // See #listWorkerPoolErrors

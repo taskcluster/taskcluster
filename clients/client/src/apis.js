@@ -3830,6 +3830,28 @@ module.exports = {
           "args": [
             "workerPoolId"
           ],
+          "description": "Report an error that occurred on a worker.  This error will be included\nwith the other errors in `listWorkerPoolErrors(workerPoolId)`.\n\nWorkers can use this endpoint to report startup or configuration errors\nthat might be associated with the worker pool configuration and thus of\ninterest to a worker-pool administrator.\n\nNOTE: errors are publicly visible.  Ensure that none of the content\ncontains secrets or other sensitive information.",
+          "input": "v1/report-worker-error-request.json#",
+          "method": "post",
+          "name": "reportWorkerError",
+          "output": "v1/worker-pool-error.json#",
+          "query": [
+          ],
+          "route": "/worker-pools-errors/<workerPoolId>",
+          "scopes": {
+            "AllOf": [
+              "assume:worker-pool:<workerPoolId>",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ]
+          },
+          "stability": "experimental",
+          "title": "Report an error from a worker",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId"
+          ],
           "description": "Get the list of worker pool errors.",
           "method": "get",
           "name": "listWorkerPoolErrors",
