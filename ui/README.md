@@ -46,7 +46,7 @@ PORT=9000
 If you are not running the web service on your local machine, you will also need to set
 
 ```bash
-GRAPHQL_SUBSCRIPTION_ENDPOINT=wss://mydomain.com/subscription
+GRAPHQL_SUBSCRIPTION_ENDPOINT=https://mydomain.com/subscription
 GRAPHQL_ENDPOINT=https://mydomain.com/graphql
 ```
 

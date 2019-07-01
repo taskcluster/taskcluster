@@ -72,7 +72,8 @@ export default class App extends Component {
   });
 
   wsLink = new WebSocketLink({
-    uri: process.env.GRAPHQL_SUBSCRIPTION_ENDPOINT,
+    // allow configuration of https:// or http:// and translate to ws:// or wss://
+    uri: process.env.GRAPHQL_SUBSCRIPTION_ENDPOINT.replace(/^http/, 'ws'),
     options: {
       reconnect: true,
       lazy: true,
