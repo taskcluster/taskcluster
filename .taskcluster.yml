@@ -137,6 +137,7 @@ tasks:
       taskId: {$eval: as_slugid("release_task")}
       created: {$fromNow: ''}
       deadline: {$fromNow: '1 hour'}
+      expires: {$fromNow: '100 years'}
       scopes:
         - auth:aws-s3:read-write:downloads-taskcluster-net/taskcluster-cli/
       routes:
