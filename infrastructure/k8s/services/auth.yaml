@@ -11,7 +11,6 @@ secrets:
   force_ssl: "false"
   lock_roles: "false"
   node_env: "production"
-  owner_email: "cloud-ops@mozilla.com"
   profile: "production"
   pulse_hostname: ".Values.tfRabbitmqHostname"
   pulse_password: ".Values.authPulsePassword"
