@@ -1,13 +1,11 @@
 terraform {
-  required_version = ">= 0.11.3"
+  required_version = ">= 0.12.0"
 }
 
-provider "random" {
-  version = "~> 1.2.0"
+provider "rabbitmq" {
+  version  = "~> 1.0"
+  endpoint = "https://${var.rabbitmq_hostname}"
 }
-
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
 
 resource "aws_s3_bucket" "private_artifacts" {
   bucket = "${var.prefix}-private-artifacts"
@@ -25,7 +23,7 @@ resource "aws_s3_bucket" "public_artifacts" {
   bucket = "${var.prefix}-public-artifacts"
   acl    = "public-read"
 
-  versioning = {
+  versioning {
     enabled = true
   }
 
@@ -74,7 +72,7 @@ POLICY
 
 resource "aws_s3_bucket" "public_blobs" {
   bucket = "${var.prefix}-public-blobs"
-  acl    = "public-read"
+  acl = "public-read"
 
   cors_rule {
     allowed_headers = ["Authorization"]
@@ -86,7 +84,7 @@ resource "aws_s3_bucket" "public_blobs" {
 
 resource "aws_s3_bucket" "private_blobs" {
   bucket = "${var.prefix}-private-blobs"
-  acl    = "private"
+  acl = "private"
 
   cors_rule {
     allowed_headers = ["*"]
@@ -98,9 +96,9 @@ resource "aws_s3_bucket" "private_blobs" {
 
 resource "aws_s3_bucket" "backups" {
   bucket = "${var.prefix}-backups"
-  acl    = "private"
+  acl = "private"
 
-  versioning = {
+  versioning {
     enabled = true
   }
 
@@ -112,8 +110,8 @@ resource "aws_s3_bucket" "backups" {
   }
 
   lifecycle_rule {
-    id                                     = "cleanup-old-backups"
-    enabled                                = true
+    id = "cleanup-old-backups"
+    enabled = true
     abort_incomplete_multipart_upload_days = 14
 
     expiration {
@@ -127,21 +125,25 @@ resource "aws_s3_bucket" "backups" {
 }
 
 resource "azurerm_resource_group" "base" {
-  name     = "${var.prefix}"
+  name = "${var.prefix}"
   location = "${var.azure_region}"
 }
 
 resource "azurerm_storage_account" "base" {
-  name                     = "${azurerm_resource_group.base.name}"
-  resource_group_name      = "${azurerm_resource_group.base.name}"
-  location                 = "${var.azure_region}"
-  account_tier             = "Standard"
+  name = "${azurerm_resource_group.base.name}"
+  resource_group_name = "${azurerm_resource_group.base.name}"
+  location = "${var.azure_region}"
+  account_tier = "Standard"
   account_replication_type = "RAGRS"
-  enable_blob_encryption   = "true"
-  enable_file_encryption   = "true"
+  enable_blob_encryption = "true"
+  enable_file_encryption = "true"
 
-  tags {
+  tags = {
     environment = "staging"
-    managed_by  = "terraform"
+    managed_by = "terraform"
   }
+}
+
+resource "rabbitmq_vhost" "vhost" {
+  name = "${var.rabbitmq_vhost}"
 }
