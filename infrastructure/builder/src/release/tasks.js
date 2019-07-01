@@ -106,7 +106,7 @@ module.exports = ({tasks, cmdOptions}) => {
       changed.push(pyclient);
 
       // the go client requires the major version number in its import path, so
-      // just about every file needs edited.  This matches the full package
+      // just about every file needs to be edited.  This matches the full package
       // path to avoid false positives, but that might result in missed changes
       // where the full path is not used.
       const major = requirements['release-version'].replace(/\..*/, '');
