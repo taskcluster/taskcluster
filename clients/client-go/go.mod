@@ -16,6 +16,9 @@ require (
 	github.com/taskcluster/taskcluster-base-go v1.0.0
 	github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible
 	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
-	golang.org/x/tools v0.0.0-20190701141946-fb37f6ba8261
+	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
+	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
+	github.com/xeipuuv/gojsonschema v1.1.0
+	golang.org/x/tools v0.0.0-20190701013530-fb37f6ba8261
 	gopkg.in/yaml.v2 v2.2.2 // indirect
 )
