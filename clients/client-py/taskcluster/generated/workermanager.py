@@ -124,16 +124,20 @@ class WorkerManager(BaseClient):
 
         return self._makeApiCall(self.funcinfo["listWorkersForWorkerPool"], *args, **kwargs)
 
-    def credentialsGoogle(self, *args, **kwargs):
+    def registerWorker(self, *args, **kwargs):
         """
-        Google Credentials
+        Register a running worker
 
-        Get Taskcluster credentials for a worker given an Instance Identity Token
+        Register a running worker.  Workers call this method on worker start-up.
+
+        This call both marks the worker as running and returns the credentials
+        the worker will require to perform its work.  The worker must provide
+        some proof of its identity, and that proof varies by provider type.
 
         This method is ``experimental``
         """
 
-        return self._makeApiCall(self.funcinfo["credentialsGoogle"], *args, **kwargs)
+        return self._makeApiCall(self.funcinfo["registerWorker"], *args, **kwargs)
 
     funcinfo = {
         "createWorkerPool": {
@@ -143,15 +147,6 @@ class WorkerManager(BaseClient):
             'name': 'createWorkerPool',
             'output': 'v1/worker-pool-full.json#',
             'route': '/worker-pool/<workerPoolId>',
-            'stability': 'experimental',
-        },
-        "credentialsGoogle": {
-            'args': ['workerPoolId'],
-            'input': 'v1/credentials-google-request.json#',
-            'method': 'post',
-            'name': 'credentialsGoogle',
-            'output': 'v1/temp-creds-response.json#',
-            'route': '/credentials/google/<workerPoolId>',
             'stability': 'experimental',
         },
         "listWorkerPoolErrors": {
@@ -187,6 +182,15 @@ class WorkerManager(BaseClient):
             'name': 'ping',
             'route': '/ping',
             'stability': 'stable',
+        },
+        "registerWorker": {
+            'args': [],
+            'input': 'v1/register-worker-request.json#',
+            'method': 'get',
+            'name': 'registerWorker',
+            'output': 'v1/register-worker-response.json#',
+            'route': '/worker/register',
+            'stability': 'experimental',
         },
         "reportWorkerError": {
             'args': ['workerPoolId'],

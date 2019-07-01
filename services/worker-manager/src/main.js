@@ -156,6 +156,7 @@ let load = loader({
     }) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {
+        cfg,
         Worker,
         WorkerPool,
         WorkerPoolError,

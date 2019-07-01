@@ -36,7 +36,6 @@ class Providers {
         notify,
         monitor: monitor.childMonitor(`provider.${providerId}`),
         rootUrl: cfg.taskcluster.rootUrl,
-        taskclusterCredentials: cfg.taskcluster.credentials,
         estimator,
         Worker,
         WorkerPool,

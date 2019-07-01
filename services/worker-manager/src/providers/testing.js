@@ -1,4 +1,6 @@
+const taskcluster = require('taskcluster-client');
 const {Provider} = require('./provider');
+const {Worker} = require('../data');
 
 class TestingProvider extends Provider {
   constructor(conf) {
@@ -38,6 +40,17 @@ class TestingProvider extends Provider {
 
   async scanCleanup() {
     this.monitor.notice('scan-cleanup', {});
+  }
+
+  async registerWorker({worker, workerPool, workerIdentityProof}) {
+    await worker.modify(w => w.state = Worker.states.RUNNING);
+    if (worker.providerData.failRegister) {
+      return {errorMessage: worker.providerData.failRegister};
+    }
+    if (worker.providerData.noExpiry) {
+      return {};
+    }
+    return {expires: taskcluster.fromNow('1 hour')};
   }
 }
 

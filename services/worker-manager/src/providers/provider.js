@@ -88,6 +88,24 @@ class Provider {
   }
 
   /**
+   * Called as a part of registerWorker, given both the WorkerPool and Worker
+   * instances, as well as the workerIdentityProof from the API request.
+   *
+   * The provider should verify the proof and, if it is valid, adjust the worker
+   * row as appropriate (at least setting its state to RUNNING).
+   *
+   * Providers that wish to limit registration to once per worker should return
+   * an error message from this function if the worker is already RUNNING.
+   *
+   * The return is either {errorMessage} in case the verification failed or
+   * some other user-visible error occurred, or {expires} giving the expiration
+   * time of the resulting credentials.  As these are temporary credentials,
+   * this cannot be more than 30 days in the future.
+   */
+  async registerWorker({worker, workerPool, workerIdentityProof}) {
+  }
+
+  /**
    * Anything a provider may want to do every provisioning loop but not tied
    * to any one worker pool. Called _after_ all provision() calls are complete.
    * You may want to use this time to remove outdated worker pools for instance.
