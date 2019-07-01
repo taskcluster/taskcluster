@@ -200,7 +200,13 @@ export default class RoleForm extends Component {
                           key={scope}
                           button
                           component={Link}
-                          to={`/auth/scopes/${encodeURIComponent(scope)}`}
+                          to={
+                            scope.startsWith('assume:')
+                              ? `/auth/roles/${encodeURIComponent(
+                                  scope.replace('assume:', '')
+                                )}`
+                              : `/auth/scopes/${encodeURIComponent(scope)}`
+                          }
                           className={classes.listItemButton}>
                           <ListItemText secondary={<code>{scope}</code>} />
                           <LinkIcon />
