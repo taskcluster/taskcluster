@@ -11,13 +11,11 @@ tasks:
       workerType: github-worker
       payload:
         maxRunTime: 3600
-        image: golang:1.11
+        image: golang:1.12.6
         command:
           - /bin/bash
           - '-c'
           - >-
-            mkdir -p /go/src/github.com/taskcluster &&
-            cd /go/src/github.com/taskcluster &&
             git clone ${event.pull_request.head.repo.git_url} taskcluster-worker-runner &&
             cd taskcluster-worker-runner &&
             git config advice.detachedHead false &&
@@ -31,34 +29,6 @@ tasks:
 
   - $if: '(tasks_for == "github-pull-request"  && event["action"] in ["opened", "reopened", "synchronize"])'
     then:
-      taskId: {$eval: as_slugid("dep")}
-      created: {$fromNow: ''}
-      deadline: {$fromNow: '2 hours'}
-      provisionerId: aws-provisioner-v1
-      workerType: github-worker
-      payload:
-        maxRunTime: 3600
-        image: golang:1.11
-        command:
-          - /bin/bash
-          - '-c'
-          - >-
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh &&
-            mkdir -p /go/src/github.com/taskcluster &&
-            cd /go/src/github.com/taskcluster &&
-            git clone ${event.pull_request.head.repo.git_url} taskcluster-worker-runner &&
-            cd taskcluster-worker-runner &&
-            git config advice.detachedHead false &&
-            git checkout ${event.pull_request.head.sha} &&
-            dep check
-      metadata:
-        name: taskcluster-worker-runner-dep
-        description: check dep for taskcluster-worker-runner
-        owner: ${event.pull_request.user.login}@users.noreply.github.com
-        source: ${event.repository.url}
-
-  - $if: '(tasks_for == "github-pull-request"  && event["action"] in ["opened", "reopened", "synchronize"])'
-    then:
       taskId: {$eval: as_slugid("lint")}
       created: {$fromNow: ''}
       deadline: {$fromNow: '2 hours'}
@@ -66,14 +36,12 @@ tasks:
       workerType: github-worker
       payload:
         maxRunTime: 3600
-        image: golang:1.11
+        image: golang:1.12.6
         command:
           - /bin/bash
           - '-c'
           - >-
             curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.17.1 &&
-            mkdir -p /go/src/github.com/taskcluster &&
-            cd /go/src/github.com/taskcluster &&
             git clone ${event.pull_request.head.repo.git_url} taskcluster-worker-runner &&
             cd taskcluster-worker-runner &&
             git config advice.detachedHead false &&
@@ -94,20 +62,17 @@ tasks:
       workerType: github-worker
       payload:
         maxRunTime: 3600
-        image: golang:1.11
+        image: golang:1.12.6
         command:
           - /bin/bash
           - '-c'
           - >-
             curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.17.1 &&
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh &&
-            mkdir -p /go/src/github.com/taskcluster &&
-            cd /go/src/github.com/taskcluster &&
             git clone ${event.repository.url} taskcluster-worker-runner &&
             cd taskcluster-worker-runner &&
             git config advice.detachedHead false &&
             git checkout ${event.after} &&
-            dep check &&
             golangci-lint run &&
             go test -v -race ./...
       metadata:
