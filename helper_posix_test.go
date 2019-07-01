@@ -99,7 +99,7 @@ func logOncePerSecond(count uint, file string) [][]string {
 			"/bin/bash",
 			"-c",
 			// don't use ping since that isn't available on travis-ci.org !
-			`for ((i=0; i<30; i++)); do echo $i; sleep 1; done > '` + file + `'`,
+			`for ((i=0; i<count; i++)); do echo $i; sleep 1; done > '` + file + `'`,
 		},
 	}
 }

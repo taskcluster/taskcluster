@@ -30,7 +30,7 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 	payload := GenericWorkerPayload{
 		Mounts: toMountArray(t, &mounts),
 		Command: append(
-			logOncePerSecond(27, filepath.Join("bananas", "banana.log")),
+			logOncePerSecond(33, filepath.Join("bananas", "banana.log")),
 			// also make sure subsequent commands after abort don't run
 			helloGoodbye()...,
 		),
@@ -72,8 +72,8 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 	if duration < 5 {
 		t.Fatalf("Task %v should have taken at least 5 seconds, but took %v seconds", taskID, duration)
 	}
-	if duration > 20 {
-		t.Fatalf("Task %v should have taken no more than 20 seconds, but took %v seconds", taskID, duration)
+	if duration > 25 {
+		t.Fatalf("Task %v should have taken no more than 25 seconds, but took %v seconds", taskID, duration)
 	}
 }
 
