@@ -22,6 +22,8 @@ github.com/taskcluster/pulse-go v1.0.0 h1:ys4ZUNp5TYiV5LSMxge4YF/AtuBUNH9StAA/bk
 github.com/taskcluster/pulse-go v1.0.0/go.mod h1:uuaqnRQj9XqouabCEKjnrlJiC6UT9Gurx2oSe6s+irM=
 github.com/taskcluster/slugid-go v1.0.1 h1:qcuE5VYQ9a7IW5EUNQ63MoCC30LNJfzo56teJPIWKB8=
 github.com/taskcluster/slugid-go v1.0.1/go.mod h1:a6qZo5JMShWvjDrupo8HLd+FVldMYW0Tc7YTrLT1ML4=
+github.com/taskcluster/slugid-go v1.1.0 h1:SWsUplliyamdYzOKVM4+lDohZKuL63fKreGkvIKJ9aI=
+github.com/taskcluster/slugid-go v1.1.0/go.mod h1:5sOAcPHjqso1UkKxSl77CkKgOwha0D9X0msBKBj0AOg=
 github.com/taskcluster/taskcluster-base-go v1.0.0 h1:Jh2R/J7+a23LjtYEHQtkFV04QBxx6EVX8E0PrzUqJo4=
 github.com/taskcluster/taskcluster-base-go v1.0.0/go.mod h1:ByyzyqqufsfZTrAHUw+0Grp8FwZAizZOKzVE1IpDXxQ=
 github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible h1:57WLzh7B04y6ahTOJ8wjvdkbwYqnyJkwLXQ1Tu4E/DU=
