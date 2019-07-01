@@ -26,7 +26,7 @@ Usage:
 }
 
 func main() {
-	opts, err := docopt.Parse(Usage(), nil, true, "start-worker "+tcworkerrunner.Version, false, true)
+	opts, err := docopt.ParseArgs(Usage(), os.Args[1:], "start-worker "+tcworkerrunner.Version)
 	if err != nil {
 		log.Printf("Error parsing command-line arguments: %s", err)
 		os.Exit(1)
