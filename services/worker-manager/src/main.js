@@ -234,6 +234,7 @@ let load = loader({
     setup: async ({cfg, monitor, Worker, WorkerPool, providers}) => {
       const workerScanner = new WorkerScanner({
         Worker,
+        WorkerPool,
         providers,
         monitor: monitor.childMonitor('worker-scanner'),
       });
