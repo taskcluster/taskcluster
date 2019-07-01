@@ -47,6 +47,7 @@ It is not possible to run a full Taskcluster deployment directly from this repos
 * [Infrastructure](infrastructure#readme)
     * [Taskcluster Builder](infrastructure/builder#readme)
     * [Docker Images](infrastructure/docker-images#readme)
+    * [infrastructure/k8s](infrastructure/k8s#readme)
     * [References](infrastructure/references#readme)
     * [Terraform](infrastructure/terraform#readme)
 * [Libraries](libraries#readme)
