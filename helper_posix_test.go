@@ -99,7 +99,7 @@ func logOncePerSecond(count uint, file string) [][]string {
 			"/bin/bash",
 			"-c",
 			// don't use ping since that isn't available on travis-ci.org !
-			`for ((i=0; i<count; i++)); do echo $i; sleep 1; done > '` + file + `'`,
+			fmt.Sprintf(`for ((i=0; i<%v; i++)); do echo $i; sleep 1; done > '%v'`, count, file),
 		},
 	}
 }
