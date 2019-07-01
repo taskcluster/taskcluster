@@ -37,6 +37,14 @@ properties:
       }
       ```
 
+      Note, the following environment variables will automatically be set in the task
+      commands:
+        * `TASK_ID` - the task ID of the currently running task
+        * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment
+        * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the
+           taskcluster authentication proxy for making unauthenticated taskcluster
+           API calls
+
       Since: generic-worker 0.0.1
     type: object
     additionalProperties:
