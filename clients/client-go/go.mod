@@ -16,6 +16,6 @@ require (
 	github.com/taskcluster/taskcluster-base-go v1.0.0
 	github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible
 	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
-	golang.org/x/tools v0.0.0-20190624190245-7f2218787638
+	golang.org/x/tools v0.0.0-20190701141946-fb37f6ba8261
 	gopkg.in/yaml.v2 v2.2.2 // indirect
 )
