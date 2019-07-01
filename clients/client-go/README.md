@@ -581,13 +581,12 @@ func main() {
 ```
 
 See the [HTTP API godocs](#http-apis) for more information, or browse the [integration
-tests](https://github.com/taskcluster/taskcluster/clients/client-go/tree/master/integrationtest)
+tests](https://github.com/taskcluster/taskcluster/tree/master/clients/client-go/integrationtest)
 for further examples.
 
 ## Generating
 The libraries provided by this client are auto-generated based on the schema references in this repository.
+This is done with the `yarn generate` command, run from the top level of the repository.
 
-In order to completely regenerate all of the HTTP and AMQP libraries, please run `go generate ./...`.
-
-The code which generates the library can all be found under the top level [codegenerator](https://github.com/taskcluster/taskcluster/clients/client-go/tree/master/codegenerator)
+The code which generates the library can all be found under the top level [codegenerator](https://github.com/taskcluster/taskcluster/tree/master/clients/client-go/codegenerator)
 directory.
