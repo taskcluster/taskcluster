@@ -439,7 +439,7 @@ func (task *TaskRun) uploadArtifact(artifact TaskArtifact) *CommandExecutionErro
 			switch rootCause := t.RootCause.(type) {
 			case httpbackoff.BadHttpResponseCode:
 				if rootCause.HttpResponseCode/100 == 5 {
-					return ResourceUnavailable(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v", rootCause.HttpResponseCode, artifact, string(payload)))
+					return ResourceUnavailable(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v - HTTP response body: %v", rootCause.HttpResponseCode, artifact, string(payload), t.CallSummary.HTTPResponseBody))
 				}
 				// was artifact already uploaded ( => malformed payload)?
 				if rootCause.HttpResponseCode == 409 {
@@ -461,7 +461,7 @@ func (task *TaskRun) uploadArtifact(artifact TaskArtifact) *CommandExecutionErro
 					return nil
 				}
 				// assume a problem with the request == worker bug
-				panic(fmt.Errorf("WORKER EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v", rootCause.HttpResponseCode, artifact, string(payload)))
+				panic(fmt.Errorf("WORKER EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v - HTTP response body: %v", rootCause.HttpResponseCode, artifact, string(payload), t.CallSummary.HTTPResponseBody))
 			case *url.Error:
 				switch subCause := rootCause.Err.(type) {
 				case *net.OpError:
