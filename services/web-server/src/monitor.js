@@ -18,4 +18,32 @@ monitorManager.register({
   },
 });
 
+monitorManager.register({
+  name: 'bindPulseSubscription',
+  title: 'Bind a Pulse Subscription',
+  type: 'bind-pulse-subscription',
+  version: 1,
+  level: 'debug',
+  description: `
+    The PulseEngine has created a queue and bound it to one or more exchanges in
+    response to a GraphQL subsscription request.`,
+  fields: {
+    subscriptionId: 'The subscriptionId, which will also appear in the AMQP queue name',
+  },
+});
+
+monitorManager.register({
+  name: 'unbindPulseSubscription',
+  title: 'Unbind a Pulse Subscription',
+  type: 'unbind-pulse-subscription',
+  version: 1,
+  level: 'debug',
+  description: `
+    The PulseEngine has deleted a queue bound to one or more exchanges in
+    response to termination of a GraphQL subsscription request.`,
+  fields: {
+    subscriptionId: 'The subscriptionId, which will also appear in the AMQP queue name',
+  },
+});
+
 module.exports = monitorManager;
