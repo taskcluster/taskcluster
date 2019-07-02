@@ -9,7 +9,7 @@ import updateWorkerPoolQuery from './updateWorkerPool.graphql';
 import workerPoolQuery from './workerPool.graphql';
 import WMWorkerPoolEditor from '../../../components/WMWorkerPoolEditor';
 import { findKeyInMap } from '../../../utils/mapUtils';
-import { PROVIDER_CONFIGS, PROVIDERS, GCP } from '../../../utils/constants';
+import { PROVIDERS, NULL_WORKER_POOL } from '../../../utils/constants';
 
 @hot(module)
 @withApollo
@@ -29,17 +29,6 @@ export default class WMEditWorkerPool extends Component {
 
   static propTypes = {
     isNewWorkerPool: bool,
-  };
-
-  state = {
-    workerPool: {
-      workerPoolId1: '',
-      workerPoolId2: '',
-      description: '',
-      owner: '',
-      emailOnError: false,
-      config: PROVIDER_CONFIGS.get(GCP),
-    },
   };
 
   createWorkerPoolRequest = async ({ workerPoolId, payload }) => {
@@ -77,14 +66,13 @@ export default class WMEditWorkerPool extends Component {
 
   render() {
     const { isNewWorkerPool, data } = this.props;
-    const { workerPool } = this.state;
 
     return (
       <Dashboard
         title={isNewWorkerPool ? 'Create Worker Pool' : 'Edit Worker Pool'}>
         {isNewWorkerPool ? (
           <WMWorkerPoolEditor
-            workerPool={workerPool}
+            workerPool={NULL_WORKER_POOL}
             saveRequest={this.createWorkerPoolRequest}
             allowEditWorkerPoolId
           />

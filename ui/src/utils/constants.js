@@ -250,3 +250,11 @@ export const PROVIDER_CONFIGS = new Map([
     },
   ],
 ]);
+export const NULL_WORKER_POOL = {
+  workerPoolId1: '',
+  workerPoolId2: '',
+  description: '',
+  owner: '',
+  emailOnError: false,
+  config: PROVIDER_CONFIGS.get(GCP),
+};
