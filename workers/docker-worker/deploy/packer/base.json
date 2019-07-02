@@ -36,10 +36,6 @@
       ]
     },
     {
-      "type":           "shell",
-      "inline":         ["sudo unattended-upgrade"]
-    },
-    {
       "type": "shell",
       "inline": [
         "sudo bash -c 'echo net.ipv4.tcp_challenge_ack_limit = 999999999 >> /etc/sysctl.conf'"

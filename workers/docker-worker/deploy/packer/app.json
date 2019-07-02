@@ -62,10 +62,6 @@
       "inline": [
         "/tmp/deploy.sh /tmp/deploy.tar.gz /tmp/docker-worker.tgz"
       ]
-    },
-    {
-      "type":           "shell",
-      "inline":         ["sudo unattended-upgrade"]
     }
   ],
   "builders": [

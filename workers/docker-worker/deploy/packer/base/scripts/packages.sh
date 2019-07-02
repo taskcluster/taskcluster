@@ -61,7 +61,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq \
     dkms
 
 ## Install all the packages
-sudo apt-get install -yq \
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq \
     docker-ce=$DOCKER_VERSION \
     lvm2 \
     curl \
