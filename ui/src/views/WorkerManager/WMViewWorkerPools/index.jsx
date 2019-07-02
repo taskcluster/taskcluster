@@ -48,8 +48,9 @@ export default class WorkerManagerWorkerPoolsView extends Component {
           providerId: 'null-provider', // this is how we delete worker pools
         },
       },
+      refetchQueries: ['workerPools'],
+      awaitRefetchQueries: true,
     });
-    window.location.reload();
   };
 
   render() {

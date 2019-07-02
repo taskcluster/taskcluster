@@ -14,7 +14,7 @@ import WorkerIcon from 'mdi-react/WorkerIcon';
 import { withRouter } from 'react-router-dom';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case';
-import { isEmpty, map, pipe, sort as rSort } from 'ramda';
+import { isEmpty } from 'ramda';
 import { WorkerManagerWorkerPoolSummary } from '../../utils/prop-types';
 import DataTable from '../DataTable';
 import sort from '../../utils/sort';
@@ -74,10 +74,12 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     },
     {
       serializer: ([workerPools, sortBy, sortDirection, searchTerm]) => {
-        const ids = pipe(
-          rSort((a, b) => sort(a.workerPool, b.workerPool)),
-          map(({ workerPool }) => workerPool)
-        )(workerPools);
+        // we serialize by workerPool ID - for workerpool addition
+        // and by providerId - for workerpool deletion
+        // (we delete them by changing provider)
+        const ids = workerPools
+          .map(wp => `${wp.workerPoolId}-${wp.providerId}`)
+          .sort();
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}-${searchTerm}`;
       },
