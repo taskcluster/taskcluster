@@ -384,6 +384,7 @@ export default class QuickStart extends Component {
               name="owner"
               onChange={this.handleOrgRepoChange}
               value={owner}
+              autoFocus
             />
             <Typography className={classes.separator} variant="h5">
               /
