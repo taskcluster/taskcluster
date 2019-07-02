@@ -22,6 +22,9 @@ To install, download the `taskcluster` binary for the latest release your
 platform, and run it!  On POSIX platforms you will need to `chmod +x` of
 course.
 
+<!--
+These no longer work since the artifact has expired
+
  * [darwin-amd64](https://index.taskcluster.net/v1/task/project.taskcluster.taskcluster-cli.latest/artifacts/public/darwin-amd64/taskcluster)
  * [freebsd-386](https://index.taskcluster.net/v1/task/project.taskcluster.taskcluster-cli.latest/artifacts/public/freebsd-386/taskcluster)
  * [freebsd-amd64](https://index.taskcluster.net/v1/task/project.taskcluster.taskcluster-cli.latest/artifacts/public/freebsd-amd64/taskcluster)
@@ -30,6 +33,8 @@ course.
  * [openbsd-amd64](https://index.taskcluster.net/v1/task/project.taskcluster.taskcluster-cli.latest/artifacts/public/openbsd-amd64/taskcluster)
  * [windows-386](https://index.taskcluster.net/v1/task/project.taskcluster.taskcluster-cli.latest/artifacts/public/windows-386/taskcluster.exe)
  * [windows-amd64](https://index.taskcluster.net/v1/task/project.taskcluster.taskcluster-cli.latest/artifacts/public/windows-amd64/taskcluster.exe)
+-->
+ * [linux-amd64](https://github.com/taskcluster/taskcluster-cli/releases/download/v0.9.0/taskcluster-linux-amd64)
 
 ## Development
 
