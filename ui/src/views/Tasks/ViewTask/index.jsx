@@ -859,6 +859,7 @@ export default class ViewTask extends Component {
                   ),
                   confirmText: selectedAction.title,
                 }}
+                focusOnPrimary
                 open={dialogOpen}
                 error={dialogError}
                 onError={this.handleTaskActionError}
