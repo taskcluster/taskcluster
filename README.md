@@ -143,7 +143,7 @@ The protocol is defined in [protocol.md](protocol.md).
 
 # Development
 
-This application requires go1.11.
+This application requires go1.12.
 Test with `go test ./...`.
 
 ## Releases

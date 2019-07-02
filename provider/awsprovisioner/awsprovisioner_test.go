@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
+	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcawsprovisioner"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
