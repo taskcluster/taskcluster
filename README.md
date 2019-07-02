@@ -35,6 +35,7 @@ These no longer work since the artifact has expired
  * [windows-amd64](https://index.taskcluster.net/v1/task/project.taskcluster.taskcluster-cli.latest/artifacts/public/windows-amd64/taskcluster.exe)
 -->
  * [linux-amd64](https://github.com/taskcluster/taskcluster-cli/releases/download/v0.9.0/taskcluster-linux-amd64)
+ * [darwin-amd64](https://github.com/taskcluster/taskcluster-cli/releases/download/v0.9.0/taskcluster-darwin-amd64)
 
 ## Development
 
