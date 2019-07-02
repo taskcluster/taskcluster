@@ -162,10 +162,10 @@ export default class TaskDetailsCard extends Component {
                   <IconButton
                     component={Link}
                     title="View Workers"
-                    to={`https://tools.taskcluster.net/provisioners/${
-                      task.provisionerId
-                    }/worker-types/${task.workerType}`}>
-                    <OpenInNewIcon />
+                    to={`/provisioners/${task.provisionerId}/worker-types/${
+                      task.workerType
+                    }`}>
+                    <LinkIcon />
                   </IconButton>
                 </ListItemSecondaryAction>
               </ListItem>

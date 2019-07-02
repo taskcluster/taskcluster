@@ -1,0 +1,90 @@
+type LatestTask {
+  taskId: ID!
+  runId: Int!
+  run: TaskRun!
+}
+
+type WorkerCompact {
+  workerId: ID!
+  workerGroup: String!
+  firstClaim: DateTime!
+  latestTask: LatestTask
+  quarantineUntil: DateTime
+  provisionerId: String!
+  workerType: String!
+}
+
+# Definition of a worker
+type Worker {
+  # Provisioner identifier.
+  provisionerId: String!
+
+  # Worker type name.
+  workerType: String!
+
+  # Identifier for group that worker who executes this run is a part of.
+  # This identifier is mainly used for efficient routing.
+  workerGroup: String!
+
+  # Identifier for worker evaluating this run within given `workerGroup`.
+  workerId: ID!
+
+  # A list of 20 most recent `taskId`s claimed by the worker.
+  recentTasks: [LatestTask]!
+
+  # Date and time after which the worker will be automatically deleted by the queue.
+  expires: DateTime!
+
+  # Quarantining a worker allows the machine to remain alive but not accept jobs.
+  # Once the `quarantineUntil` time has elapsed, the worker resumes accepting jobs.
+  # Note that a quarantine can be lifted by setting quarantineUntil to the present time (or somewhere in the past).
+  quarantineUntil: DateTime
+
+  # Date of the first time this worker claimed a task.
+  firstClaim: DateTime!
+
+  # A list of actions exposed at the worker level.
+  actions: [ProvisionerAction]!
+
+  # A list of most recent tasks claimed by the worker.
+  latestTasks: [Task]!
+}
+
+input WorkerQuarantine {
+  quarantineUntil: DateTime
+}
+
+type WorkersCompactEdge implements Edge {
+  cursor: String
+  node: WorkerCompact
+}
+
+type WorkersCompactConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [WorkersCompactEdge]
+}
+
+type WorkersEdge implements Edge {
+  cursor: String
+  node: Worker
+}
+
+type WorkersConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [WorkersEdge]
+}
+
+extend type Query {
+  worker(provisionerId: String!, workerType: String!, workerGroup: String!, workerId: ID!): Worker
+  workers(provisionerId: String!, workerType: String!, connection: PageConnection, filter: JSON, isQuarantined: Boolean): WorkersCompactConnection
+}
+
+extend type Mutation {
+  quarantineWorker(
+    provisionerId: String!,
+    workerType: String!,
+    workerGroup: String!,
+    workerId: ID!,
+    payload: WorkerQuarantine
+  ): Worker
+}

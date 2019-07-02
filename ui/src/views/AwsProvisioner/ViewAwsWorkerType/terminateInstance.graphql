@@ -1,0 +1,5 @@
+mutation TerminateInstance($region: String!, $instanceId: ID!) {
+  terminateAwsProvisionerInstance(region: $region, instanceId: $instanceId) {
+    instanceId
+  }
+}
