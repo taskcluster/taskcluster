@@ -233,22 +233,20 @@ export const GROUP_NOTIFY_SUCCESS_KEY = 'group-notify-success';
 // Worker Manager constants
 export const NULL_PROVIDER = 'null-provider';
 export const GCP = 'GCP';
-const providers = new Map();
-const providerConfigs = new Map();
-
-providers.set(`${GCP}`, 'google');
-
-providerConfigs.set(`${GCP}`, {
-  minCapacity: 0,
-  maxCapacity: 0,
-  capacityPerInstance: 1,
-  machineType: 'n1-highcpu-8',
-  regions: ['us-west2'],
-  userData: {},
-  scheduling: {},
-  networkInterfaces: [{}],
-  disks: [{}],
-});
-
-export const PROVIDERS = providers;
-export const PROVIDER_CONFIGS = providerConfigs;
+export const PROVIDERS = new Map([[`${GCP}`, 'google']]);
+export const PROVIDER_CONFIGS = new Map([
+  [
+    `${GCP}`,
+    {
+      minCapacity: 0,
+      maxCapacity: 0,
+      capacityPerInstance: 1,
+      machineType: 'n1-highcpu-8',
+      regions: ['us-west2'],
+      userData: {},
+      scheduling: {},
+      networkInterfaces: [{}],
+      disks: [{}],
+    },
+  ],
+]);
