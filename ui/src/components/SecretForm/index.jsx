@@ -149,6 +149,7 @@ export default class SecretForm extends Component {
                 name="secretName"
                 onChange={this.handleInputChange}
                 fullWidth
+                autoFocus
                 value={secretName}
               />
             </ListItem>
