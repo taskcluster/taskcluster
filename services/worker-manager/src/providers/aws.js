@@ -2,22 +2,23 @@ const {Provider} = require('./provider');
 const aws = require('aws-sdk');
 
 class AwsProvider extends Provider {
-  constructor({workerPool}) {
-    super({workerPool});
+  constructor({WorkerPool}) {
+    super({WorkerPool});
     this.configSchema = 'config-aws';
 
-    const {region} = workerPool.config;
-    const {apiVersion} = workerPool.config;
+    const {region} = // from provider config
+    const {apiVersion} = // from provider config
 
     aws.config.update({region});
     this.iam = new aws.IAM({apiVersion});
   }
 
+  /*
+   This method is used to setup permissions for the EC2 instances
+   */
   async setup() {
     // create IAM user
-    const {region} = this.workerPool.config;
-    const {account} = this.workerPool.providerData;
-    const userName = `wm-aws-provider-${this.workerPool.providerData.userName}`;
+    const userName = `wm-aws-provider-${this.providerId}-${/*acountId?*/}`;
 
     await readModifySet({
       read: async () => await this.iam.getUser({UserName: userName}),
@@ -25,6 +26,8 @@ class AwsProvider extends Provider {
     });
 
     // create IAM policy
+    const policies =
+    const ec2policyName = 'AmazonEC2ReadOnlyAccess';
     const ec2policy = {
       "Statement": [{
         "Effect": "Allow",
@@ -38,9 +41,12 @@ class AwsProvider extends Provider {
       }],
     };
     const policyName = 'wm-provider-ec2policy';
-    await this.iam.createPolicy({
-      PolicyDocument: JSON.stringify(ec2policy),
-      PolicyName: policyName,
+    await readModifySet({
+      read: async () => await this.iam.getPolicy({PolicyArn: `arn:aws:iam::aws:policy/${policyName}`}),
+      set: async () => await this.iam.createPolicy({
+        PolicyDocument: JSON.stringify(ec2policy),
+        PolicyName: policyName,
+      }),
     });
 
     // attach the policy to the user
@@ -88,7 +94,7 @@ async function readModifySet({
       throw err;
     }
     await new Promise(accept => setTimeout(accept, Math.pow(2, tries) * 100));
-    return await this.readModifySet({
+    return await readModifySet({
       compare,
       read,
       modify,
