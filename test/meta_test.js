@@ -163,14 +163,6 @@ suite('Repo Meta Tests', function () {
           console.log(errors);
         }
       }
-
-      //check if there are no headings besides a single top-level heading
-      if (countLevel === 1) {
-        if (hd[topLevelHd].length === 1) {
-          count_errors++;
-          errors+=`${filename} have no headings besides a single top level heading\n`;
-        }
-      }
     }
 
     //if there are any errors found
