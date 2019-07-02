@@ -82,6 +82,11 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
       backgroundColor: `${theme.palette.action.hover} !important`,
     },
   },
+  logActions: {
+    position: 'absolute',
+    top: 6,
+    right: 340,
+  },
   followButtonFollowing: {
     ...theme.mixins.successIcon,
   },
@@ -273,27 +278,29 @@ export default class Log extends Component {
               {...props}
             />
             {rawLogButton}
-            <GoToLineButton
-              onLineNumberChange={this.handleLineNumberChange}
-              {...GoToLineButtonProps}
-            />
-            <Button
-              spanProps={{
-                className:
-                  FollowLogButtonProps && FollowLogButtonProps.className,
-              }}
-              tooltipProps={{
-                title: follow && stream ? 'Unfollow Log' : 'Follow Log',
-              }}
-              variant="round"
-              className={classNames({
-                [classes.followButtonFollowing]: follow && stream,
-              })}
-              color={follow && stream ? 'inherit' : 'secondary'}
-              onClick={this.handleFollowClick}
-              {...FollowLogButtonRest}>
-              <ArrowDownBoldCircleOutlineIcon />
-            </Button>
+            <div className={classes.logActions}>
+              <GoToLineButton
+                onLineNumberChange={this.handleLineNumberChange}
+                {...GoToLineButtonProps}
+              />
+              <Button
+                size="small"
+                spanProps={{
+                  className:
+                    FollowLogButtonProps && FollowLogButtonProps.className,
+                }}
+                tooltipProps={{
+                  title: follow && stream ? 'Unfollow Log' : 'Follow Log',
+                }}
+                className={classNames({
+                  [classes.followButtonFollowing]: follow && stream,
+                })}
+                color={follow && stream ? 'inherit' : 'secondary'}
+                onClick={this.handleFollowClick}
+                {...FollowLogButtonRest}>
+                <ArrowDownBoldCircleOutlineIcon size={20} />
+              </Button>
+            </div>
             {actions}
           </Fragment>
         )}

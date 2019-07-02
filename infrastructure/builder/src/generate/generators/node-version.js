@@ -20,6 +20,12 @@ exports.tasks = [{
         /^( *node: ')[0-9.]+(')$/m,
         `$1${nodeVersion}$2`));
 
+    utils.status({message: 'dev-docs/development-process.md'});
+    await modifyRepoFile('dev-docs/development-process.md',
+      contents => contents.replace(
+        /Node version [0-9.]+/,
+        `Node version ${nodeVersion}`));
+
     utils.status({message: 'netlify.toml'});
     await modifyRepoFile('netlify.toml',
       contents => contents.replace(

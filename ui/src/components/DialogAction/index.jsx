@@ -108,12 +108,13 @@ export default class DialogAction extends Component {
       body,
       confirmText,
       classes,
-      onSubmit: _,
       onClose,
       open,
       error,
       focusOnPrimary,
       focusOnSecondary,
+      onSubmit,
+      onComplete,
       ...props
     } = this.props;
 

@@ -83,6 +83,25 @@ class WorkerManager(BaseClient):
 
         return self._makeApiCall(self.funcinfo["listWorkerPools"], *args, **kwargs)
 
+    def reportWorkerError(self, *args, **kwargs):
+        """
+        Report an error from a worker
+
+        Report an error that occurred on a worker.  This error will be included
+        with the other errors in `listWorkerPoolErrors(workerPoolId)`.
+
+        Workers can use this endpoint to report startup or configuration errors
+        that might be associated with the worker pool configuration and thus of
+        interest to a worker-pool administrator.
+
+        NOTE: errors are publicly visible.  Ensure that none of the content
+        contains secrets or other sensitive information.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["reportWorkerError"], *args, **kwargs)
+
     def listWorkerPoolErrors(self, *args, **kwargs):
         """
         List Worker Pool Errors
@@ -169,9 +188,18 @@ class WorkerManager(BaseClient):
             'route': '/ping',
             'stability': 'stable',
         },
+        "reportWorkerError": {
+            'args': ['workerPoolId'],
+            'input': 'v1/report-worker-error-request.json#',
+            'method': 'post',
+            'name': 'reportWorkerError',
+            'output': 'v1/worker-pool-error.json#',
+            'route': '/worker-pools-errors/<workerPoolId>',
+            'stability': 'experimental',
+        },
         "updateWorkerPool": {
             'args': ['workerPoolId'],
-            'input': 'v1/create-worker-pool-request.json#',
+            'input': 'v1/update-worker-pool-request.json#',
             'method': 'post',
             'name': 'updateWorkerPool',
             'output': 'v1/worker-pool-full.json#',

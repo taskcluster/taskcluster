@@ -1,18 +1,21 @@
 const os = require('os');
+const util = require('util');
+const rimraf = util.promisify(require('rimraf'));
+const mkdirp = util.promisify(require('mkdirp'));
 const {TaskGraph, Lock, ConsoleRenderer, LogRenderer} = require('console-taskgraph');
 const {Build} = require('../build');
 const generateReleaseTasks = require('./tasks');
 
 class Release {
-  constructor(version, cmdOptions) {
-    this.version = version;
+  constructor(cmdOptions) {
     this.cmdOptions = cmdOptions;
+
+    this.baseDir = cmdOptions['baseDir'] || '/tmp/taskcluster-builder-build';
 
     // The `yarn build` process is a subgraph of the release taskgraph, with some
     // options "forced"
     this.build = new Build({
       ...cmdOptions,
-      push: true, // always push the resuting image
       cache: false, // always build from scratch
     });
   }
@@ -29,7 +32,6 @@ class Release {
 
     generateReleaseTasks({
       tasks,
-      version: this.version,
       cmdOptions: this.cmdOptions,
     });
 
@@ -37,6 +39,11 @@ class Release {
   }
 
   async run() {
+    if (!this.cmdOptions.cache) {
+      await rimraf(this.baseDir);
+    }
+    await mkdirp(this.baseDir);
+
     let tasks = this.generateTasks();
 
     const taskgraph = new TaskGraph(tasks, {
@@ -56,12 +63,16 @@ class Release {
     }
     const context = await taskgraph.run();
 
+    console.log(`Release version: ${context['release-version']}`);
     console.log(`Release docker image: ${context['monoimage-docker-image']}`);
+    if (!this.cmdOptions.push) {
+      console.log('  NOTE: image and git commit + tag not pushed (use --push)');
+    }
   }
 }
 
-const main = async (version, options) => {
-  const release = new Release(version, options);
+const main = async (options) => {
+  const release = new Release(options);
   await release.run();
 };
 

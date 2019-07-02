@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-ui",
-  "version": "14.1.0",
+  "version": "14.2.0",
   "private": true,
   "license": "MPL-2.0",
   "engines": {
@@ -79,11 +79,11 @@
     "react-ga": "^2.5.3",
     "react-helmet": "^5.2.1",
     "react-hot-loader": "^4.8.4",
-    "react-lazylog": "^4.0.0",
+    "react-lazylog": "^4.1.0",
     "react-router-dom": "^4.3.1",
     "react-schema-viewer": "^3.2.0",
     "react-virtualized": "^9.21.0",
-    "react-vnc-display": "^1.1.0",
+    "react-vnc-display": "^2.0.0",
     "react-window": "^1.8.1",
     "resolve-pathname": "^3.0.0",
     "shebang-loader": "^0.0.1",

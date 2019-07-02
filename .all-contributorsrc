@@ -140,6 +140,26 @@
       ]
     },
     {
+      "login": "milescrabill",
+      "name": "Miles Crabill",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/4430892?v=4",
+      "profile": "https://github.com/milescrabill",
+      "contributions": [
+        "code",
+        "staff"
+      ]
+    },
+    {
+      "login": "ccooper",
+      "name": "Chris Cooper",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/609786?v=4",
+      "profile": "http://coopcoopbware.tumblr.com/",
+      "contributions": [
+        "code",
+        "staff"
+      ]
+    },
+    {
       "login": "grenade",
       "name": "Rob Thijssen",
       "avatar_url": "https://avatars3.githubusercontent.com/u/111819?v=4",
@@ -450,6 +470,15 @@
       "name": "Shubham Gupta",
       "avatar_url": "https://avatars1.githubusercontent.com/u/43504292?v=4",
       "profile": "https://github.com/shubhamgupta2956",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "arku",
+      "name": "Arun Kumar Mohan",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/7039523?v=4",
+      "profile": "https://github.com/arku",
       "contributions": [
         "code"
       ]

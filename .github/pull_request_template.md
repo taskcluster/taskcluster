@@ -1,6 +1,8 @@
-<!-- If this is related to a Bugzilla bug, please begin your title with [Bug XXXXX] and update the following link. -->
-<!-- If there is no bug, consider making one and if you really don't want one, remove the link. -->
+<!-- If this is related to a Bugzilla bug, please begin your title with [Bug XXXXX]
+     and update this link.
 
-<!-- Include any other context you wish here. -->
+     Is this change user-visible?  If so, please include a file in changelog/ describing it.
+     See https://github.com/taskcluster/taskcluster/blob/master/dev-docs/best-practices/changelog.md
+-->
 
 Bugzilla Bug: [XXXXX](https://bugzilla.mozilla.org/show_bug.cgi?id=XXXXX)

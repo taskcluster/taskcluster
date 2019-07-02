@@ -1,12 +1,9 @@
-const Debug = require('debug');
-
-const debug = Debug('Subscription');
-
 module.exports = class Subscription {
-  constructor({ subscriptionId, handleMessage, handleError, subscriptions }) {
+  constructor({ subscriptionId, handleMessage, handleError, monitor, subscriptions }) {
     this.subscriptionId = subscriptionId;
     this.handleMessage = handleMessage;
     this.handleError = handleError;
+    this.monitor = monitor;
     this.subscriptions = subscriptions;
 
     // the identifier for the active consumer, if any (used to cancel it)
@@ -56,13 +53,13 @@ module.exports = class Subscription {
     // up to the caller and will not interfere with other subscriptions.
     try {
       if (listening && unsubscribed) {
-        debug(`Unbinding subscription ${subscriptionId}`);
+        this.monitor.log.unbindPulseSubscription({subscriptionId});
         await channel.cancel(this.consumerTag);
         await channel.deleteQueue(queueName);
         await channel.close();
         this.listening = false;
       } else if (!listening && !unsubscribed) {
-        debug(`Binding subscription ${subscriptionId}`);
+        this.monitor.log.bindPulseSubscription({subscriptionId});
         const { handleError, handleMessage, subscriptions } = this;
 
         // declare the queue, with autoDelete and exclusive both set to false so that
@@ -90,7 +87,6 @@ module.exports = class Subscription {
           // drop the queue since it's partially bound..
           await channel.deleteQueue(queueName);
           // report the error..
-          debug(`Binding to ${queueName} failed: ${err}`);
           // (converting to a string for transfer to the client)
           handleError(new Error(`Error binding queue: ${err}`));
           // and consider this reconciliation complete..
@@ -130,7 +126,6 @@ module.exports = class Subscription {
         this.listening = true;
       }
     } catch (err) {
-      debug(`Reconciling subscription ${subscriptionId}: ${err}`);
       this.handleError(new Error(`Error reconciling subscription: ${err}`));
 
       // try to delete the queue, just to be safe, but if it doesn't work, oh well..

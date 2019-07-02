@@ -142,7 +142,7 @@ let load = loader({
   },
 
   api: {
-    requires: ['cfg', 'schemaset', 'monitor', 'Worker', 'WorkerPool', 'WorkerPoolError', 'providers', 'publisher'],
+    requires: ['cfg', 'schemaset', 'monitor', 'Worker', 'WorkerPool', 'WorkerPoolError', 'providers', 'publisher', 'notify'],
     setup: async ({
       cfg,
       schemaset,
@@ -152,6 +152,7 @@ let load = loader({
       WorkerPoolError,
       providers,
       publisher,
+      notify,
     }) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {
@@ -160,6 +161,7 @@ let load = loader({
         WorkerPoolError,
         providers,
         publisher,
+        notify,
       },
       monitor: monitor.childMonitor('api'),
       schemaset,

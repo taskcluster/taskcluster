@@ -4443,6 +4443,36 @@ workerManager.listWorkerPools() # -> result
 await asyncWorkerManager.listWorkerPools() # -> result
 ```
 
+#### Report an error from a worker
+Report an error that occurred on a worker.  This error will be included
+with the other errors in `listWorkerPoolErrors(workerPoolId)`.
+
+Workers can use this endpoint to report startup or configuration errors
+that might be associated with the worker pool configuration and thus of
+interest to a worker-pool administrator.
+
+NOTE: errors are publicly visible.  Ensure that none of the content
+contains secrets or other sensitive information.
+
+
+
+Takes the following arguments:
+
+  * `workerPoolId`
+
+Has required input schema
+
+Has required output schema
+
+```python
+# Sync calls
+workerManager.reportWorkerError(workerPoolId, payload) # -> result
+workerManager.reportWorkerError(payload, workerPoolId='value') # -> result
+# Async call
+await asyncWorkerManager.reportWorkerError(workerPoolId, payload) # -> result
+await asyncWorkerManager.reportWorkerError(payload, workerPoolId='value') # -> result
+```
+
 #### List Worker Pool Errors
 Get the list of worker pool errors.
 

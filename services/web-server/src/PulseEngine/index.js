@@ -1,11 +1,8 @@
-const Debug = require('debug');
 const { slugid } = require('taskcluster-client');
 const PulseIterator = require('./PulseIterator');
 const MessageIterator = require('./MessageIterator');
 const EventIterator = require('./EventIterator');
 const Subscription = require('./Subscription');
-
-const debug = Debug('PulseEngine');
 
 module.exports = class PulseEngine {
   /* Operation:
@@ -42,8 +39,6 @@ module.exports = class PulseEngine {
   }
 
   connected(connection) {
-    debug('Connected to AMQP server');
-
     // reset everything and reconcile
     Array.from(this.subscriptions.values()).forEach(sub => sub.reset());
     this.reset();
@@ -60,6 +55,7 @@ module.exports = class PulseEngine {
         subscriptionId,
         handleMessage,
         handleError,
+        monitor: this.monitor,
         subscriptions,
       })
     );
@@ -103,8 +99,6 @@ module.exports = class PulseEngine {
 
   innerReconcileSubscriptions() {
     return this._syncReload(async () => {
-      debug('Reconciling subscriptions');
-
       const { connection, client } = this;
 
       // if there's no connection, there's nothing to do; reconciliation

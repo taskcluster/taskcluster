@@ -14,23 +14,11 @@ import Link from '../../../utils/Link';
     ...theme.mixins.actionButton,
     bottom: theme.spacing.triple,
   },
-  miniFab: {
-    ...theme.mixins.fab,
-    ...theme.mixins.actionButton,
-    bottom: theme.spacing.triple,
-    right: theme.spacing.unit * 11,
-  },
-  followButton: {
-    ...theme.mixins.fab,
-    ...theme.mixins.actionButton,
-    bottom: theme.spacing.triple,
-    right: theme.spacing.unit * 19,
-  },
   rawLogButton: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
     bottom: theme.spacing.triple,
-    right: theme.spacing.unit * 27,
+    right: theme.spacing.unit * 12,
   },
 }))
 export default class TaskLog extends Component {
@@ -43,8 +31,6 @@ export default class TaskLog extends Component {
         <Log
           url={url}
           stream={stream}
-          GoToLineButtonProps={{ className: classes.miniFab }}
-          FollowLogButtonProps={{ className: classes.followButton }}
           RawLogButtonProps={{ className: classes.rawLogButton }}
           actions={
             <Button

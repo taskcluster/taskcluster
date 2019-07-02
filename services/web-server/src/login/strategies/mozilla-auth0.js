@@ -188,7 +188,7 @@ module.exports = class MozillaAuth0 {
       );
     }
 
-    const callback = '/login/auth0/callback';
+    const callback = '/login/mozilla-auth0/callback';
 
     passport.use(
       new Auth0Strategy(

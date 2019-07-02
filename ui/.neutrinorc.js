@@ -64,7 +64,7 @@ module.exports = {
         UI_LOGIN_STRATEGY_NAMES: '',
         PORT: 5080,
         TASKCLUSTER_ROOT_URL: 'https://taskcluster.net',
-        GRAPHQL_SUBSCRIPTION_ENDPOINT: 'ws://localhost:5080/subscription',
+        GRAPHQL_SUBSCRIPTION_ENDPOINT: 'http://localhost:5080/subscription',
         GRAPHQL_ENDPOINT: 'http://localhost:5080/graphql',
         GA_TRACKING_ID: '',
         SENTRY_DSN: '',
