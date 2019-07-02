@@ -132,19 +132,21 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     return (
       <TableRow key={workerPool.workerPoolId}>
         <TableCell>
-          <IconButton
-            className={classNames(classes.button, classes.editButton)}
-            name={`${workerPool.workerPoolId}`}
-            onClick={this.handleEditClick}
-            disabled={actionLoading || workerPool.providerId === NULL_PROVIDER}>
-            <WorkerIcon size={iconSize} />
-          </IconButton>
+          {workerPool.providerId !== NULL_PROVIDER && (
+            <IconButton
+              className={classNames(classes.button, classes.editButton)}
+              name={`${workerPool.workerPoolId}`}
+              onClick={this.handleEditClick}
+              disabled={actionLoading}>
+              <WorkerIcon size={iconSize} />
+            </IconButton>
+          )}
         </TableCell>
 
         <TableCell>
           <TableCellListItem
-            button
-            component={Link}
+            button={workerPool.providerId !== NULL_PROVIDER}
+            component={workerPool.providerId !== NULL_PROVIDER && Link}
             to={`${path}/${encodeURIComponent(workerPool.workerPoolId)}/edit`}>
             <ListItemText
               disableTypography
@@ -155,7 +157,9 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
                 {'To be deleted'}
               </Label>
             )}
-            <LinkIcon size={iconSize} />
+            {workerPool.providerId !== NULL_PROVIDER && (
+              <LinkIcon size={iconSize} />
+            )}
           </TableCellListItem>
         </TableCell>
 
@@ -178,13 +182,15 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         </TableCell>
 
         <TableCell>
-          <IconButton
-            className={classNames(classes.button, classes.deleteButton)}
-            name={`${workerPool.workerPoolId}`}
-            onClick={this.handleDeleteClick}
-            disabled={actionLoading || workerPool.providerId === NULL_PROVIDER}>
-            <DeleteIcon size={iconSize} />
-          </IconButton>
+          {workerPool.providerId !== NULL_PROVIDER && (
+            <IconButton
+              className={classNames(classes.button, classes.deleteButton)}
+              name={`${workerPool.workerPoolId}`}
+              onClick={this.handleDeleteClick}
+              disabled={actionLoading}>
+              <DeleteIcon size={iconSize} />
+            </IconButton>
+          )}
         </TableCell>
       </TableRow>
     );
