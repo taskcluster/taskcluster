@@ -19,7 +19,7 @@ exports.withServer = (mock, skipping) => {
     }
     const cfg = await exports.load('cfg');
 
-    webServer = await exports.load('server');
+    webServer = await exports.load('httpServer');
     await new Promise((resolve, reject) => {
       webServer.once('error', reject);
       webServer.listen(cfg.server.port, function() {
