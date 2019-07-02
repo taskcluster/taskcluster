@@ -219,6 +219,7 @@ export default class ClientForm extends Component {
                 name="clientId"
                 onChange={this.handleInputChange}
                 fullWidth
+                autoFocus
                 value={clientId}
               />
             </ListItem>
@@ -280,6 +281,7 @@ export default class ClientForm extends Component {
               fullWidth
               multiline
               rows={5}
+              {!isNewClient && autoFocus}
               value={description}
             />
           </ListItem>
