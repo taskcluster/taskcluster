@@ -21,6 +21,8 @@ import { join } from 'path';
 // eslint-disable-next-line import/prefer-default-export
 export const ARTIFACTS_PAGE_SIZE = 1000;
 export const TASK_GROUP_PAGE_SIZE = 1000;
+export const VIEW_WORKER_TYPES_PAGE_SIZE = 50;
+export const VIEW_WORKERS_PAGE_SIZE = 15;
 export const VIEW_CLIENTS_PAGE_SIZE = 1000;
 export const VIEW_CLIENT_SCOPES_INSPECT_SIZE = 10;
 export const VIEW_ROLES_PAGE_SIZE = 1000;
@@ -57,6 +59,41 @@ export const CONTENT_MAX_WIDTH = 1592;
 export const VALID_TASK = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
 export const TASKS_CREATE_STORAGE_KEY = 'tasks:create';
 export const ISO_8601_REGEX = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/;
+export const DEFAULT_AWS_WORKER_TYPE = {
+  minCapacity: 0,
+  maxCapacity: 5,
+  scalingRatio: 0,
+  minPrice: 0,
+  maxPrice: 0.6,
+  canUseOndemand: false,
+  canUseSpot: true,
+  instanceTypes: [
+    {
+      instanceType: 'c3.xlarge',
+      capacity: 1,
+      utility: 1,
+      secrets: {},
+      scopes: [],
+      userData: {},
+      launchSpec: {},
+    },
+  ],
+  regions: [
+    {
+      region: 'us-west-2',
+      secrets: {},
+      scopes: [],
+      userData: {},
+      launchSpec: {
+        ImageId: 'ami-xx',
+      },
+    },
+  ],
+  userData: {},
+  launchSpec: {},
+  secrets: {},
+  scopes: [],
+};
 export const TASK_STATE = {
   COMPLETED: 'COMPLETED',
   RUNNING: 'RUNNING',
@@ -133,6 +170,11 @@ export const TASK_ADDED_FIELDS = [
   'latestArtifacts',
   'taskActions',
 ];
+export const ACTION_CONTEXT = {
+  PROVISIONER: 'PROVISIONER',
+  WORKER_TYPE: 'WORKER_TYPE',
+  WORKER: 'WORKER',
+};
 export const DOCS_PATH_PREFIX = '/docs';
 export const DOCS_MENU_ITEMS = [
   {

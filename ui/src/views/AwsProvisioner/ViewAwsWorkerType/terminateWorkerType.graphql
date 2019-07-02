@@ -1,0 +1,3 @@
+mutation TerminateWorkerType($workerType: String!) {
+  terminateWorkerType(workerType: $workerType)
+}

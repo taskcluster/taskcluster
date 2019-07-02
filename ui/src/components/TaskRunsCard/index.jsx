@@ -462,10 +462,10 @@ export default class TaskRunsCard extends Component {
                         <IconButton
                           title="View Worker"
                           component={Link}
-                          to={`https://tools.taskcluster.net/provisioners/${provisionerId}/worker-types/${workerType}/workers/${
-                            run.workerGroup
-                          }/${run.workerId}`}>
-                          <OpenInNewIcon />
+                          to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${
+                            run.workerId
+                          }`}>
+                          <LinkIcon />
                         </IconButton>
                       </ListItemSecondaryAction>
                     </ListItem>

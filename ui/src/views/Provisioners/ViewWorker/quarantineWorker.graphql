@@ -1,0 +1,5 @@
+mutation QuarantineWorker($provisionerId: String!, $workerType: String!, $workerGroup: String!, $workerId: ID!, $payload: WorkerQuarantine) {
+  quarantineWorker(provisionerId: $provisionerId, workerType: $workerType, workerGroup: $workerGroup, workerId: $workerId, payload: $payload) {
+    quarantineUntil
+  }
+}
