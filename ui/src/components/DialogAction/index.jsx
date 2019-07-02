@@ -122,6 +122,7 @@ export default class DialogAction extends Component {
           </Button>
           <div className={classes.executingActionWrapper}>
             <Button
+              action={actions => actions.focusVisible()}
               disabled={executing}
               onClick={this.handleSubmit}
               color="secondary"
