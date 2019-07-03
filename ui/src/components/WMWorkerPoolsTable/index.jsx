@@ -50,8 +50,8 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
   };
 
   state = {
-    sortBy: null,
-    sortDirection: null,
+    sortBy: 'Worker Pool ID',
+    sortDirection: 'asc',
     error: null,
     actionLoading: false,
   };
@@ -149,7 +149,11 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         </TableCell>
 
         <TableCell>
-          <Typography>{workerPool.owner}</Typography>
+          {workerPool.providerId !== NULL_PROVIDER ? (
+            <Typography>{workerPool.providerId}</Typography>
+          ) : (
+            <em>n/a</em>
+          )}
         </TableCell>
 
         <TableCell>
@@ -157,11 +161,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         </TableCell>
 
         <TableCell>
-          {workerPool.providerId !== NULL_PROVIDER ? (
-            <Typography>{workerPool.providerId}</Typography>
-          ) : (
-            <em>n/a</em>
-          )}
+          <Typography>{workerPool.owner}</Typography>
         </TableCell>
 
         {workerPool.providerId !== NULL_PROVIDER ? (
@@ -216,9 +216,9 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           items={sortedWorkerPools}
           headers={[
             'Worker Pool ID',
-            'Owner',
-            'Pending Tasks',
             'Provider ID',
+            'Pending Tasks',
+            'Owner',
             '',
           ]}
           sortByHeader={sortBy}
