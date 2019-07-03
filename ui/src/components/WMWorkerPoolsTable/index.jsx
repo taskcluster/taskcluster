@@ -1,6 +1,5 @@
 import React, { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core';
-import classNames from 'classnames';
 import Label from '@mozilla-frontend-infra/components/Label';
 import { arrayOf, string, func } from 'prop-types';
 import TableRow from '@material-ui/core/TableRow';
@@ -19,6 +18,7 @@ import { WorkerManagerWorkerPoolSummary } from '../../utils/prop-types';
 import DataTable from '../DataTable';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
+import Button from '../Button';
 import TableCellListItem from '../TableCellListItem';
 import ErrorPanel from '../ErrorPanel';
 import formatError from '../../utils/formatError';
@@ -31,11 +31,15 @@ import { NULL_PROVIDER } from '../../utils/constants';
     marginRight: theme.spacing.unit,
     borderRadius: 4,
   },
-  deleteButton: {
-    ...theme.mixins.errorIcon,
+  workerIcon: {
+    marginRight: theme.spacing.unit,
   },
-  editButton: {
-    ...theme.mixins.secondaryIcon,
+  viewWorkersButton: {
+    marginRight: theme.spacing.triple,
+  },
+  lastTableCellRoot: {
+    paddingLeft: theme.spacing.unit,
+    paddingRight: theme.spacing.unit,
   },
 }))
 export default class WorkerManagerWorkerPoolsTable extends Component {
@@ -134,18 +138,6 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     return (
       <TableRow key={workerPool.workerPoolId}>
         <TableCell>
-          {workerPool.providerId !== NULL_PROVIDER && (
-            <IconButton
-              className={classNames(classes.button, classes.editButton)}
-              name={`${workerPool.workerPoolId}`}
-              onClick={this.handleEditClick}
-              disabled={actionLoading}>
-              <WorkerIcon size={iconSize} />
-            </IconButton>
-          )}
-        </TableCell>
-
-        <TableCell>
           <TableCellListItem
             button={workerPool.providerId !== NULL_PROVIDER}
             component={workerPool.providerId !== NULL_PROVIDER && Link}
@@ -154,11 +146,6 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
               disableTypography
               primary={<Typography>{workerPool.workerPoolId}</Typography>}
             />
-            {workerPool.providerId === NULL_PROVIDER && (
-              <Label mini status="warning" className={classes.button}>
-                {'To be deleted'}
-              </Label>
-            )}
             {workerPool.providerId !== NULL_PROVIDER && (
               <LinkIcon size={iconSize} />
             )}
@@ -174,22 +161,42 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         </TableCell>
 
         <TableCell>
-          <Typography>
-            {workerPool.providerId !== NULL_PROVIDER && workerPool.providerId}
-          </Typography>
-        </TableCell>
-
-        <TableCell>
-          {workerPool.providerId !== NULL_PROVIDER && (
-            <IconButton
-              className={classNames(classes.button, classes.deleteButton)}
-              name={`${workerPool.workerPoolId}`}
-              onClick={this.handleDeleteClick}
-              disabled={actionLoading}>
-              <DeleteIcon size={iconSize} />
-            </IconButton>
+          {workerPool.providerId !== NULL_PROVIDER ? (
+            <Typography>{workerPool.providerId}</Typography>
+          ) : (
+            <em>n/a</em>
           )}
         </TableCell>
+
+        {workerPool.providerId !== NULL_PROVIDER ? (
+          <TableCell classes={{ root: classes.lastTableCellRoot }}>
+            <Fragment>
+              <Button
+                className={classes.viewWorkersButton}
+                variant="outlined"
+                name={workerPool.workerPoolId}
+                onClick={this.handleEditClick}
+                disabled={actionLoading}
+                size="small">
+                <WorkerIcon className={classes.workerIcon} size={iconSize} />
+                View Workers
+              </Button>
+              <IconButton
+                className={classes.button}
+                name={`${workerPool.workerPoolId}`}
+                onClick={this.handleDeleteClick}
+                disabled={actionLoading}>
+                <DeleteIcon size={iconSize} />
+              </IconButton>
+            </Fragment>
+          </TableCell>
+        ) : (
+          <TableCell>
+            <Label mini status="warning" className={classes.button}>
+              Scheduled for deletion
+            </Label>
+          </TableCell>
+        )}
       </TableRow>
     );
   };
@@ -210,7 +217,6 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         <DataTable
           items={sortedWorkerPools}
           headers={[
-            '',
             'Worker Pool ID',
             'Owner',
             'Pending Tasks',
