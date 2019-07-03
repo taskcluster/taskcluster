@@ -97,12 +97,6 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     this.setState({ sortBy, sortDirection });
   };
 
-  handleEditClick = ({ currentTarget: { name } }) => {
-    this.props.history.push({
-      pathname: `${this.props.match.path}/${encodeURIComponent(name)}/workers`,
-    });
-  };
-
   handleDeleteClick = async ({ currentTarget: { name } }) => {
     const workerPool = this.props.workerPools.find(
       wp => wp.workerPoolId === name
@@ -174,8 +168,10 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
               <Button
                 className={classes.viewWorkersButton}
                 variant="outlined"
-                name={workerPool.workerPoolId}
-                onClick={this.handleEditClick}
+                component={Link}
+                to={`${this.props.match.path}/${encodeURIComponent(
+                  workerPool.workerPoolId
+                )}/workers`}
                 disabled={actionLoading}
                 size="small">
                 <WorkerIcon className={classes.workerIcon} size={iconSize} />
