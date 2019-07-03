@@ -24,6 +24,22 @@ When we have a good reason to not follow the best practices in the UI, we docume
 * Calculate link URLs before the user clicks on them. By doing so, a user will be able to do things like open links in a
 new tab or have the ability to inspect link URLs prior to the clicking.
 
+_Don't_
+
+```jsx
+handleLinkClick = () => {
+   this.props.history.push(...);
+};
+
+<Link onClick={handleLinkClick} />
+```
+
+_Do_
+
+```
+<Link to={...} />
+```
+
 ## Buttons
 * Destructive actions (e.g., a delete operation) should have a confirmation step.
 It’s an added click but will prevent accidental data loss frustration.
@@ -36,6 +52,8 @@ It’s an added click but will prevent accidental data loss frustration.
 ## Spacing
 If you need to add spacing to an element, use the spacing scale defined in the UI as opposed to picking
 a number that looks right to you. This will make sure there is a feel of consistency across the site design.
+The spacing scale for Taskcluster UI is defined
+[here](https://github.com/taskcluster/taskcluster/blob/8b32ca158622af8450626579ad1d4b9d8f1d3a85/ui/src/theme.js#L129-L134)
 
 ## Color
 Don’t depend only on color to communicate information, otherwise people who are color blind will have a hard time
