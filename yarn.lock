@@ -1004,7 +1004,7 @@ arrify@^2.0.0:
   resolved "https://registry.yarnpkg.com/arrify/-/arrify-2.0.1.tgz#c9655e9331e0abcd588d2a7cad7e9956f66701fa"
   integrity sha512-3duEwti880xqi4eAMN8AyR4a0ByT90zoYdLlevfrvU43vb0YZwZVfxOgxWrLXXXpyugL0hNZc9G6BiB5B3nUug==
 
-asap@~2.0.3, asap@~2.0.6:
+asap@~2.0.3:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/asap/-/asap-2.0.6.tgz#e50347611d7e690943208bbdafebcbc2fb866d46"
   integrity sha1-5QNHYR1+aQlDIIu9r+vLwvuGbUY=
@@ -1164,25 +1164,25 @@ aws4@^1.8.0:
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.8.0.tgz#f0e003d9ca9e7f59c7a508945d7b2ef9a04a542f"
   integrity sha512-ReZxvNHIOv88FlT7rxcXIIC0fPt4KZqZbOlivyWtXLt8ESx84zd3kMC6iK5jVeS2qt+g7ftS7ye4fi06X5rtRQ==
 
-azure-blob-storage@^4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/azure-blob-storage/-/azure-blob-storage-4.1.0.tgz#66c5d223000c0312319080734acacb445daee75d"
-  integrity sha512-q0HT3U1/sFVUgR3UIqgCoqx0OsM0aABEk97fMy9NjZEt3TYIDpr4fflI8+LCvrX8GIHY9dUxWpizNx8CFn+y1Q==
+azure-blob-storage@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/azure-blob-storage/-/azure-blob-storage-4.2.0.tgz#8738c0364ea45b56d8eca9023c6735b22e316d54"
+  integrity sha512-jqyAXV9jihuAG+G7Pg6k3NFb0uWnNMC4RBtJE7hJ0mHDSer2qy7sYdvseowifZhCQwea5Gsafh2K56T8sw0uPg==
   dependencies:
     ajv "^6.10.0"
     debug "^4.1.1"
-    fast-azure-storage "^2.3.1"
+    fast-azure-storage "^3.0.0"
     lodash "^4.17.11"
     uuid "^3.3.2"
 
-azure-entities@^5.2.0:
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/azure-entities/-/azure-entities-5.4.0.tgz#26a5094e1e1366b5f1e865ae6cf680d3b4147438"
-  integrity sha512-u57mMqxA5s/xeMLyIeYCd8xyKQEGb8cxFmsbTXoMK4cUE7ZEpj8ZR/krE88LaLpgVkt9MgzJW+O8ekPFwQ5SKw==
+azure-entities@^5.5.0:
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/azure-entities/-/azure-entities-5.5.0.tgz#0fa4e9ae13fa5f7b5be38353d247373da4836c15"
+  integrity sha512-PgPg9QNuuoV/lmuyjXa1uVefMStomB3hmKHkp5920ArieDy1yf2QH10tsB3W4mchMneYdNotgj1ss6xN6L9wfw==
   dependencies:
     ajv "^6.9.2"
     debug "^4.1.1"
-    fast-azure-storage "^2.3.1"
+    fast-azure-storage "^3.0.0"
     json-stable-stringify "^1.0.0"
     lodash "^4.17.11"
     slugid "^2.0.0"
@@ -2984,16 +2984,13 @@ falafel@^2.1.0:
     isarray "0.0.1"
     object-keys "^1.0.6"
 
-fast-azure-storage@^2.3.0, fast-azure-storage@^2.3.1:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/fast-azure-storage/-/fast-azure-storage-2.3.1.tgz#fc3710c183cb56de7faa92dd9176c8b1f5107df1"
-  integrity sha512-T3ZcU0/ufobmV9Ggf47wGojciBsvTTDZg55dqlGcjYcIvh71r1kyO7obsNinsZCbdba6vY2v0I7y7lP6m4XAXg==
+fast-azure-storage@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/fast-azure-storage/-/fast-azure-storage-3.0.0.tgz#2ce9215cf689880c0da7ff9e9fe8ba0a2c34b4ad"
+  integrity sha512-FuTjko5uyGuXieX3VBTqxFJrZS7oAPSIeyZt2m9GjcvWA4aljZ95VBhaQeCwIYqMZkDsI0qRIcZWjs4Cla8v5w==
   dependencies:
-    debug "^3.1.0"
-    pixl-xml "^1.0.13"
-    promise "^8.0.1"
-  optionalDependencies:
-    libxmljs "^0.19.5"
+    debug "^4.1.1"
+    xml2js "^0.4.19"
 
 fast-deep-equal@^2.0.1:
   version "2.0.1"
@@ -6004,11 +6001,6 @@ pinkie@^2.0.0:
   resolved "https://registry.yarnpkg.com/pinkie/-/pinkie-2.0.4.tgz#72556b80cfa0d48a974e80e77248e80ed4f7f870"
   integrity sha1-clVrgM+g1IqXToDnckjoDtT3+HA=
 
-pixl-xml@^1.0.13:
-  version "1.0.13"
-  resolved "https://registry.yarnpkg.com/pixl-xml/-/pixl-xml-1.0.13.tgz#5ba71408bdf37994c239dd01251c10c53c0587e3"
-  integrity sha1-W6cUCL3zeZTCOd0BJRwQxTwFh+M=
-
 pkginfo@0.3.x:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/pkginfo/-/pkginfo-0.3.1.tgz#5b29f6a81f70717142e09e765bbeab97b4f81e21"
@@ -6076,13 +6068,6 @@ promise@^7.0.1, promise@^7.0.4:
   integrity sha512-nolQXZ/4L+bP/UGlkfaIujX9BKxGwmQ9OT4mOt5yvy8iK1h3wqTEJCijzGANTCCl9nWjY41juyAn2K3Q1hLLTg==
   dependencies:
     asap "~2.0.3"
-
-promise@^8.0.1:
-  version "8.0.2"
-  resolved "https://registry.yarnpkg.com/promise/-/promise-8.0.2.tgz#9dcd0672192c589477d56891271bdc27547ae9f0"
-  integrity sha512-EIyzM39FpVOMbqgzEHhxdrEhtOSDOtjMZQ0M6iVfCE+kWNgCkAyOdnuCWqfmflylftfadU6FkiMgHZA2kUzwRw==
-  dependencies:
-    asap "~2.0.6"
 
 promisepipe@^3.0.0:
   version "3.0.0"
