@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core';
 import Label from '@mozilla-frontend-infra/components/Label';
-import { arrayOf, string, func } from 'prop-types';
+import { bool, arrayOf, string, func } from 'prop-types';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography/';
@@ -37,16 +37,18 @@ import { NULL_PROVIDER } from '../../utils/constants';
   viewWorkersButton: {
     marginRight: theme.spacing.triple,
   },
-  lastTableCellRoot: {
-    paddingLeft: theme.spacing.unit,
-    paddingRight: theme.spacing.unit,
-  },
 }))
 export default class WorkerManagerWorkerPoolsTable extends Component {
   static propTypes = {
     workerPools: arrayOf(WorkerManagerWorkerPoolSummary).isRequired,
     searchTerm: string,
     deleteRequest: func.isRequired,
+    includeDeleted: bool,
+  };
+
+  static defaultProps = {
+    searchTerm: '',
+    includeDeleted: false,
   };
 
   state = {
@@ -57,13 +59,18 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
   };
 
   sortWorkerPools = memoize(
-    (workerPools, sortBy, sortDirection, searchTerm) => {
+    (workerPools, sortBy, sortDirection, searchTerm, includeDeleted) => {
       const sortByProperty = camelCase(sortBy);
-      const filteredWorkerPools = searchTerm
-        ? workerPools.filter(({ workerPool }) =>
-            workerPool.includes(searchTerm)
+      const filteredWorkerPoolsBySearchTerm = searchTerm
+        ? workerPools.filter(({ workerPoolId }) =>
+            workerPoolId.includes(searchTerm)
           )
         : workerPools;
+      const filteredWorkerPools = includeDeleted
+        ? filteredWorkerPoolsBySearchTerm
+        : filteredWorkerPoolsBySearchTerm.filter(
+            ({ providerId }) => providerId !== NULL_PROVIDER
+          );
 
       return isEmpty(filteredWorkerPools)
         ? filteredWorkerPools
@@ -77,7 +84,13 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           });
     },
     {
-      serializer: ([workerPools, sortBy, sortDirection, searchTerm]) => {
+      serializer: ([
+        workerPools,
+        sortBy,
+        sortDirection,
+        searchTerm,
+        includeDeleted,
+      ]) => {
         // we serialize by workerPool ID - for workerpool addition
         // and by providerId - for workerpool deletion
         // (we delete them by changing provider)
@@ -85,7 +98,9 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           .map(wp => `${wp.workerPoolId}-${wp.providerId}`)
           .sort();
 
-        return `${ids.join('-')}-${sortBy}-${sortDirection}-${searchTerm}`;
+        return `${ids.join(
+          '-'
+        )}-${sortBy}-${sortDirection}-${searchTerm}-${includeDeleted}`;
       },
     }
   );
@@ -164,8 +179,8 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           <Typography>{workerPool.owner}</Typography>
         </TableCell>
 
-        {workerPool.providerId !== NULL_PROVIDER ? (
-          <TableCell classes={{ root: classes.lastTableCellRoot }}>
+        <TableCell>
+          {workerPool.providerId !== NULL_PROVIDER ? (
             <Fragment>
               <Button
                 className={classes.viewWorkersButton}
@@ -180,6 +195,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
                 View Workers
               </Button>
               <IconButton
+                title="Delete Worker Pool ID"
                 className={classes.button}
                 name={`${workerPool.workerPoolId}`}
                 onClick={this.handleDeleteClick}
@@ -187,26 +203,25 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
                 <DeleteIcon size={iconSize} />
               </IconButton>
             </Fragment>
-          </TableCell>
-        ) : (
-          <TableCell>
+          ) : (
             <Label mini status="warning" className={classes.button}>
               Scheduled for deletion
             </Label>
-          </TableCell>
-        )}
+          )}
+        </TableCell>
       </TableRow>
     );
   };
 
   render() {
-    const { workerPools, searchTerm } = this.props;
+    const { workerPools, searchTerm, includeDeleted } = this.props;
     const { sortBy, sortDirection, error } = this.state;
     const sortedWorkerPools = this.sortWorkerPools(
       workerPools,
       sortBy,
       sortDirection,
-      searchTerm
+      searchTerm,
+      includeDeleted
     );
 
     return (

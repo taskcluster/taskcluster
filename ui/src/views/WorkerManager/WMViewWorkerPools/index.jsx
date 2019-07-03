@@ -2,7 +2,9 @@ import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { withApollo, graphql } from 'react-apollo';
 import PlusIcon from 'mdi-react/PlusIcon';
-import { withStyles } from '@material-ui/core';
+import { withStyles } from '@material-ui/core/styles';
+import Switch from '@material-ui/core/Switch';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import workerPoolsQuery from './WMWorkerPools.graphql';
@@ -24,10 +26,15 @@ import updateWorkerPoolQuery from '../WMEditWorkerPool/updateWorkerPool.graphql'
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
   },
+  toolbar: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+  },
 }))
 export default class WorkerManagerWorkerPoolsView extends Component {
   state = {
     workerPoolSearch: '',
+    includeDeleted: false,
   };
 
   handleWorkerPoolSearchSubmit = workerPoolSearch => {
@@ -49,8 +56,12 @@ export default class WorkerManagerWorkerPoolsView extends Component {
         },
       },
       refetchQueries: ['workerPools'],
-      awaitRefetchQueries: true,
+      awaitRefetchQueries: false,
     });
+  };
+
+  handleSwitchChange = ({ target: { checked } }) => {
+    this.setState({ includeDeleted: checked });
   };
 
   render() {
@@ -58,7 +69,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
       data: { loading, error, WorkerManagerWorkerPoolSummaries },
       classes,
     } = this.props;
-    const { workerPoolSearch } = this.state;
+    const { workerPoolSearch, includeDeleted } = this.state;
 
     return (
       <Dashboard
@@ -67,18 +78,32 @@ export default class WorkerManagerWorkerPoolsView extends Component {
           <Search
             disabled={loading}
             onSubmit={this.handleWorkerPoolSearchSubmit}
-            placeholder="Worker pool contains"
+            placeholder="Worker pool ID contains"
           />
         }>
         <Fragment>
           {!WorkerManagerWorkerPoolSummaries && loading && <Spinner loading />}
           <ErrorPanel fixed error={error} />
           {WorkerManagerWorkerPoolSummaries && (
-            <WorkerManagerWorkerPoolsTable
-              searchTerm={workerPoolSearch}
-              workerPools={WorkerManagerWorkerPoolSummaries}
-              deleteRequest={this.deleteRequest}
-            />
+            <Fragment>
+              <div className={classes.toolbar}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={includeDeleted}
+                      onChange={this.handleSwitchChange}
+                    />
+                  }
+                  label="Include worker pools scheduled for deletion"
+                />
+              </div>
+              <WorkerManagerWorkerPoolsTable
+                searchTerm={workerPoolSearch}
+                workerPools={WorkerManagerWorkerPoolSummaries}
+                deleteRequest={this.deleteRequest}
+                includeDeleted={includeDeleted}
+              />
+            </Fragment>
           )}
           <Button
             spanProps={{ className: classes.createIconSpan }}
