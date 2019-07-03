@@ -28,7 +28,7 @@ import {
 })
 export default class WMEditWorkerPool extends Component {
   static defaultProps = {
-    isNewWorkerPool: true,
+    isNewWorkerPool: false,
   };
 
   static propTypes = {
@@ -72,8 +72,7 @@ export default class WMEditWorkerPool extends Component {
     const { isNewWorkerPool, data } = this.props;
 
     return (
-      <Dashboard
-        title={isNewWorkerPool ? 'Create Worker Pool' : 'Edit Worker Pool'}>
+      <Dashboard title={isNewWorkerPool ? 'Create Worker Pool' : 'Worker Pool'}>
         {isNewWorkerPool ? (
           <WMWorkerPoolEditor
             workerPool={NULL_WORKER_POOL}

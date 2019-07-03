@@ -141,7 +141,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           <TableCellListItem
             button={workerPool.providerId !== NULL_PROVIDER}
             component={workerPool.providerId !== NULL_PROVIDER && Link}
-            to={`${path}/${encodeURIComponent(workerPool.workerPoolId)}/edit`}>
+            to={`${path}/${encodeURIComponent(workerPool.workerPoolId)}`}>
             <ListItemText
               disableTypography
               primary={<Typography>{workerPool.workerPoolId}</Typography>}
