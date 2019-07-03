@@ -145,10 +145,9 @@ suite('Repo Meta Tests', function () {
       hd[6] = md.match(/^###### /gm);
 
       //counting levels of headings present and marking the top level
-      let countLevel = 0, topLevelHd = 7;
+      let topLevelHd = 7;
       for (let i = 1; i <= 6; i++) {
         if (hd[i] != null && hd[i].length > 0) {
-          countLevel++;
           if (i < topLevelHd){
             topLevelHd = i;
           }
@@ -161,14 +160,6 @@ suite('Repo Meta Tests', function () {
           count_errors++;
           errors+=`${filename} does not have a single top level heading\n`;
           console.log(errors);
-        }
-      }
-
-      //check if there are no headings besides a single top-level heading
-      if (countLevel === 1) {
-        if (hd[topLevelHd].length === 1) {
-          count_errors++;
-          errors+=`${filename} have no headings besides a single top level heading\n`;
         }
       }
     }
