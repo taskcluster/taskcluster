@@ -5,7 +5,7 @@ const taskcluster = require('taskcluster-client');
 const libUrls = require('taskcluster-lib-urls');
 const uuid = require('uuid');
 const {google} = require('googleapis');
-const {Provider} = require('./provider');
+const {RegistrationError, Provider} = require('./provider');
 
 class GoogleProvider extends Provider {
 
@@ -187,7 +187,7 @@ class GoogleProvider extends Provider {
   async registerWorker({worker, workerPool, workerIdentityProof}) {
     const {token} = workerIdentityProof;
     if (!token) {
-      return {errorMessage: 'No workerIdentityProof.token provided'};
+      throw new RegistrationError('No workerIdentityProof.token provided');
     }
 
     // This will throw an error if the token is invalid at all
@@ -199,23 +199,23 @@ class GoogleProvider extends Provider {
 
     // First check to see if the request is coming from the project this provider manages
     if (dat.project_id !== this.project) {
-      return {errorMessage: `Token project mismatch`};
+      throw new RegistrationError('Token project mismatch');
     }
 
     // Now check to make sure that the serviceAccount that the worker has is the
     // serviceAccount that we have configured that worker to use. Nobody else in the project
     // should have permissions to create instances with this serviceAccount.
     if (payload.sub !== this.workerAccountId) {
-      return {errorMessage: 'Worker serviceAccount mismatch'};
+      throw new RegistrationError('Worker serviceAccount mismatch');
     }
 
     // Google docs say instance id is globally unique even across projects
     if (worker.workerId !== dat.instance_id) {
-      return {errorMessage: 'workerId mismatch'};
+      throw new RegistrationError('workerId mismatch');
     }
 
     if (worker.state !== this.Worker.states.REQUESTED) {
-      return {errorMessage: 'attempt to register an already-registered worker'};
+      throw new RegistrationError('attempt to register an already-registered worker');
     }
 
     await worker.modify(w => {

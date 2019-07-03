@@ -1,5 +1,5 @@
 const taskcluster = require('taskcluster-client');
-const {Provider} = require('./provider');
+const {Provider, RegistrationError} = require('./provider');
 const {Worker} = require('../data');
 
 class TestingProvider extends Provider {
@@ -45,7 +45,7 @@ class TestingProvider extends Provider {
   async registerWorker({worker, workerPool, workerIdentityProof}) {
     await worker.modify(w => w.state = Worker.states.RUNNING);
     if (worker.providerData.failRegister) {
-      return {errorMessage: worker.providerData.failRegister};
+      throw new RegistrationError(worker.providerData.failRegister);
     }
     if (worker.providerData.noExpiry) {
       return {};

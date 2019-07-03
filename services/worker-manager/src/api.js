@@ -1,6 +1,7 @@
 const taskcluster = require('taskcluster-client');
 const APIBuilder = require('taskcluster-lib-api');
 const assert = require('assert');
+const {RegistrationError} = require('./providers/provider');
 
 let builder = new APIBuilder({
   title: 'Taskcluster Worker Manager',
@@ -388,13 +389,17 @@ builder.declare({
       `Worker ${workerGroup}/${workerId} does not have provider ${providerId}`, {});
   }
 
-  const {expires, errorMessage} = await provider.registerWorker({worker, workerPool, workerIdentityProof});
-
-  if (errorMessage) {
-    return res.reportError('InputError', errorMessage, {});
+  let expires;
+  try {
+    const reg = await provider.registerWorker({worker, workerPool, workerIdentityProof});
+    expires = reg.expires;
+  } catch (err) {
+    if (!(err instanceof RegistrationError)) {
+      throw err;
+    }
+    return res.reportError('InputError', err.message, {});
   }
-
-  assert(expires, 'registerWorker returned neither expires nor errorMessage');
+  assert(expires, 'registerWorker did not return expires');
 
   const credentials = taskcluster.createTemporaryCredentials({
     clientId: `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`,

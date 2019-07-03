@@ -137,9 +137,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         ...defaultWorker,
       });
       const workerIdentityProof = {};
-      assert.deepEqual(
-        await provider.registerWorker({workerPool, worker, workerIdentityProof}),
-        {errorMessage: 'No workerIdentityProof.token provided'});
+      assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /No workerIdentityProof.token provided/);
     });
 
     test('wrong project', async function() {
@@ -147,9 +147,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         ...defaultWorker,
       });
       const workerIdentityProof = {token: 'wrongProject'};
-      assert.deepEqual(
-        await provider.registerWorker({workerPool, worker, workerIdentityProof}),
-        {errorMessage: 'Token project mismatch'});
+      assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Token project mismatch/);
     });
 
     test('wrong project', async function() {
@@ -157,9 +157,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         ...defaultWorker,
       });
       const workerIdentityProof = {token: 'wrongSub'};
-      assert.deepEqual(
-        await provider.registerWorker({workerPool, worker, workerIdentityProof}),
-        {errorMessage: 'Worker serviceAccount mismatch'});
+      assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Worker serviceAccount mismatch/);
     });
 
     test('wrong instance ID', async function() {
@@ -167,9 +167,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         ...defaultWorker,
       });
       const workerIdentityProof = {token: 'wrongId'};
-      assert.deepEqual(
-        await provider.registerWorker({workerPool, worker, workerIdentityProof}),
-        {errorMessage: 'workerId mismatch'});
+      assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /workerId mismatch/);
     });
 
     test('wrong worker state (duplicate call to registerWorker)', async function() {
@@ -178,9 +178,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         state: 'running',
       });
       const workerIdentityProof = {token: 'good'};
-      assert.deepEqual(
-        await provider.registerWorker({workerPool, worker, workerIdentityProof}),
-        {errorMessage: 'attempt to register an already-registered worker'});
+      assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /attempt to register an already-registered worker/);
     });
 
     test('sweet success', async function() {

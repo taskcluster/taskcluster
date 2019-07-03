@@ -97,10 +97,14 @@ class Provider {
    * Providers that wish to limit registration to once per worker should return
    * an error message from this function if the worker is already RUNNING.
    *
-   * The return is either {errorMessage} in case the verification failed or
-   * some other user-visible error occurred, or {expires} giving the expiration
-   * time of the resulting credentials.  As these are temporary credentials,
-   * this cannot be more than 30 days in the future.
+   * If validation fails due to a user error, throw a RegistrationError instance,
+   * which will turn into a 400 error for the user containing the error message.
+   * The message should not reveal any information, whether provided by the user
+   * or about the expected values.
+   *
+   * The return on success is an object {expires} giving the expiration time of
+   * the resulting credentials.  As these are temporary credentials, this
+   * cannot be more than 30 days in the future.
    */
   async registerWorker({worker, workerPool, workerIdentityProof}) {
   }
@@ -155,6 +159,10 @@ class Provider {
   }
 }
 
+class RegistrationError extends Error {
+}
+
 module.exports = {
   Provider,
+  RegistrationError,
 };
