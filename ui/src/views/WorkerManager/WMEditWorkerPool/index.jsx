@@ -9,7 +9,11 @@ import updateWorkerPoolQuery from './updateWorkerPool.graphql';
 import workerPoolQuery from './workerPool.graphql';
 import WMWorkerPoolEditor from '../../../components/WMWorkerPoolEditor';
 import { findKeyInMap } from '../../../utils/mapUtils';
-import { PROVIDERS, NULL_WORKER_POOL } from '../../../utils/constants';
+import {
+  PROVIDERS,
+  NULL_WORKER_POOL,
+  NULL_PROVIDER,
+} from '../../../utils/constants';
 
 @hot(module)
 @withApollo
@@ -58,7 +62,7 @@ export default class WMEditWorkerPool extends Component {
         workerPoolId,
         payload: {
           ...payload,
-          providerId: 'null-provider', // this is how we delete worker pools
+          providerId: NULL_PROVIDER, // this is how we delete worker pools
         },
       },
     });
