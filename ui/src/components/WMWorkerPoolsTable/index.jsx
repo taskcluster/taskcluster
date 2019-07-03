@@ -170,10 +170,6 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         </TableCell>
 
         <TableCell>
-          <Typography>{workerPool.description}</Typography>
-        </TableCell>
-
-        <TableCell>
           <Typography>{workerPool.pendingTasks}</Typography>
         </TableCell>
 
@@ -217,7 +213,6 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
             '',
             'Worker Pool ID',
             'Owner',
-            'Description',
             'Pending Tasks',
             'Provider ID',
             '',
