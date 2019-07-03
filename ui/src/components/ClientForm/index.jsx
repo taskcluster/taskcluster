@@ -281,7 +281,6 @@ export default class ClientForm extends Component {
               fullWidth
               multiline
               rows={5}
-              {!isNewClient && autoFocus}
               value={description}
             />
           </ListItem>
