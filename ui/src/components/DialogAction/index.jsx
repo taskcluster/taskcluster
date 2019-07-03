@@ -34,6 +34,8 @@ export default class DialogAction extends Component {
     error: null,
     onError: null,
     onComplete: null,
+    focusOnPrimary: false,
+    focusOnSecondary: false,
   };
 
   static propTypes = {
@@ -60,6 +62,14 @@ export default class DialogAction extends Component {
     onClose: func.isRequired,
     /** Error to display. */
     error: oneOfType([string, object]),
+    /** If true, the primary action will have its focus visible
+     * on dialog mount.
+     * */
+    focusOnPrimary: bool,
+    /** If true, the secondary action will have its focus visible
+     * on dialog mount.
+     * */
+    focusOnSecondary: bool,
   };
 
   state = {
@@ -101,6 +111,8 @@ export default class DialogAction extends Component {
       onClose,
       open,
       error,
+      focusOnPrimary,
+      focusOnSecondary,
       onSubmit,
       onComplete,
       ...props
@@ -118,16 +130,19 @@ export default class DialogAction extends Component {
           <DialogContentText>{body}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button disabled={executing} onClick={onClose}>
+          <Button
+            disabled={executing}
+            onClick={onClose}
+            action={actions => focusOnSecondary && actions.focusVisible()}>
             Cancel
           </Button>
           <div className={classes.executingActionWrapper}>
             <Button
+              action={actions => focusOnPrimary && actions.focusVisible()}
               disabled={executing}
               onClick={this.handleSubmit}
               color="secondary"
-              variant="outlined"
-              autoFocus>
+              variant="outlined">
               {confirmText}
             </Button>
             {executing && (
