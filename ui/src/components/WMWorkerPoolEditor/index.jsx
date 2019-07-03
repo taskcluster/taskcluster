@@ -98,10 +98,33 @@ export default class WMWorkerPoolEditor extends Component {
     invalidProviderConfig: false,
     actionLoading: false,
     error: null,
+    validation: {
+      owner: {
+        error: null,
+        message: null,
+      },
+    },
   };
 
-  handleInputChange = ({ target: { name, value } }) => {
-    this.setState({ workerPool: { ...this.state.workerPool, [name]: value } });
+  handleInputChange = ({
+    currentTarget: { name, value, validity, validationMessage },
+  }) => {
+    const newState = {
+      workerPool: { ...this.state.workerPool, [name]: value },
+    };
+
+    if (name === 'owner') {
+      Object.assign(newState, {
+        validation: {
+          owner: {
+            error: !validity.valid,
+            message: validationMessage,
+          },
+        },
+      });
+    }
+
+    this.setState(newState);
   };
 
   handleSwitchChange = event => {
@@ -179,6 +202,7 @@ export default class WMWorkerPoolEditor extends Component {
       invalidProviderConfig,
       error,
       actionLoading,
+      validation,
     } = this.state;
 
     return (
@@ -236,15 +260,14 @@ export default class WMWorkerPoolEditor extends Component {
             <TextField
               label="Owner's Email"
               name="owner"
-              error={!workerPool.owner.includes('@')}
+              error={validation.owner.error}
               onChange={this.handleInputChange}
               fullWidth
               value={workerPool.owner}
               margin="normal"
               required
-              helperText={
-                !workerPool.owner.includes('@') && 'Should be valid email'
-              }
+              type="email"
+              helperText={validation.owner.message}
             />
           </ListItem>
 
