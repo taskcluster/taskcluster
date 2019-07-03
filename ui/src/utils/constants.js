@@ -251,8 +251,7 @@ export const PROVIDER_CONFIGS = new Map([
   ],
 ]);
 export const NULL_WORKER_POOL = {
-  workerPoolId1: '',
-  workerPoolId2: '',
+  workerPoolId: '/',
   description: '',
   owner: '',
   emailOnError: false,

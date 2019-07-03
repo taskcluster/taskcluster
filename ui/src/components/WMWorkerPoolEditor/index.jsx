@@ -23,7 +23,12 @@ import {
   isWorkerPoolIdSecondHalfValid,
 } from '../../utils/workerPool';
 import formatError from '../../utils/formatError';
-import { PROVIDER_CONFIGS, PROVIDERS, GCP } from '../../utils/constants';
+import {
+  NULL_WORKER_POOL,
+  PROVIDER_CONFIGS,
+  PROVIDERS,
+  GCP,
+} from '../../utils/constants';
 import SpeedDialAction from '../SpeedDialAction';
 import SpeedDial from '../SpeedDial';
 
@@ -65,26 +70,25 @@ import SpeedDial from '../SpeedDial';
 }))
 export default class WMWorkerPoolEditor extends Component {
   static defaultProps = {
-    allowEditWorkerPoolId: false,
+    isNewWorkerPool: false,
     providerType: GCP,
+    workerPool: NULL_WORKER_POOL,
   };
 
   static propTypes = {
     workerPool: WorkerManagerWorkerPoolSummary.isRequired,
     saveRequest: func.isRequired,
     providerType: string.isRequired,
-    allowEditWorkerPoolId: bool,
+    isNewWorkerPool: bool,
     deleteRequest: func,
   };
 
   state = {
     workerPool: {
-      workerPoolId1: this.props.allowEditWorkerPoolId
-        ? this.props.workerPool.workerPoolId1
-        : splitWorkerPoolId(this.props.workerPool.workerPoolId).provisionerId,
-      workerPoolId2: this.props.allowEditWorkerPoolId
-        ? this.props.workerPool.workerPoolId2
-        : splitWorkerPoolId(this.props.workerPool.workerPoolId).workerType,
+      workerPoolId1: splitWorkerPoolId(this.props.workerPool.workerPoolId)
+        .provisionerId,
+      workerPoolId2: splitWorkerPoolId(this.props.workerPool.workerPoolId)
+        .workerType,
       description: this.props.workerPool.description,
       owner: this.props.workerPool.owner,
       emailOnError: this.props.workerPool.emailOnError,
@@ -168,7 +172,7 @@ export default class WMWorkerPoolEditor extends Component {
   };
 
   render() {
-    const { classes, allowEditWorkerPoolId } = this.props;
+    const { classes, isNewWorkerPool } = this.props;
     const {
       workerPool,
       providerType,
@@ -190,8 +194,8 @@ export default class WMWorkerPoolEditor extends Component {
               fullWidth
               value={workerPool.workerPoolId1}
               required
-              disabled={!allowEditWorkerPoolId}
-              autoFocus={allowEditWorkerPoolId}
+              disabled={!isNewWorkerPool}
+              autoFocus={isNewWorkerPool}
               helperText={
                 !isWorkerTypeNameValid(workerPool.workerPoolId1) &&
                 '1 to 38 alphanumeric characters'
@@ -207,7 +211,7 @@ export default class WMWorkerPoolEditor extends Component {
               fullWidth
               value={workerPool.workerPoolId2}
               required
-              disabled={!allowEditWorkerPoolId}
+              disabled={!isNewWorkerPool}
               helperText={
                 !isWorkerTypeNameValid(workerPool.workerPoolId2) &&
                 '1 to 38 alphanumeric characters'
@@ -291,7 +295,7 @@ export default class WMWorkerPoolEditor extends Component {
 
           <Button
             spanProps={{
-              className: allowEditWorkerPoolId
+              className: isNewWorkerPool
                 ? classes.createIconSpan
                 : classes.saveIconSpan,
             }}
@@ -305,7 +309,7 @@ export default class WMWorkerPoolEditor extends Component {
             <ContentSaveIcon />
           </Button>
 
-          {!allowEditWorkerPoolId && (
+          {!isNewWorkerPool && (
             <SpeedDial>
               <SpeedDialAction
                 name="deleteRequest"
