@@ -90,8 +90,7 @@ module.exports = class Github {
             rootUrl: this.rootUrl,
             key: this.jwtConfig.key,
             sub: user.identity,
-            // GitHub tokens don't expire
-            exp: Math.floor(taskcluster.fromNow('1000 year').getTime() / 1000),
+            exp: Math.floor(taskcluster.fromNow('30 days').getTime() / 1000),
           });
 
           next(null, {
