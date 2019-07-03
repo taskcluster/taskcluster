@@ -26,7 +26,7 @@ The `taskcluster.rootUrl` configuration setting is required. Either set
 to `user-config.yml` and edit it to include the `rootUrl` for the Taskcluster
 instance you are accessing; for example `https://taskcluster.net`.
 
-The Taskcluster team has a series of [best practices](../../dev-docs/best-practices#taskcluster-web-server)
+The Taskcluster team has a series of [best practices](../../dev-docs/best-practices/microservices.md#taskcluster-web-server)
 for this service which may help guide you in modifying the source code and making a pull request.
 That is enough to run the service, so if that's all you need, skip down to "Starting".
 
