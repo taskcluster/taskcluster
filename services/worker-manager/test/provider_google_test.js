@@ -137,9 +137,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         ...defaultWorker,
       });
       const workerIdentityProof = {};
-      assert.rejects(() =>
+      await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /No workerIdentityProof.token provided/);
+      /Token validation error/);
+    });
+
+    test('invalid token', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+      });
+      const workerIdentityProof = {token: 'invalid'};
+      await assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Token validation error/);
     });
 
     test('wrong project', async function() {
@@ -147,9 +157,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         ...defaultWorker,
       });
       const workerIdentityProof = {token: 'wrongProject'};
-      assert.rejects(() =>
+      await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /Token project mismatch/);
+      /Token validation error/);
     });
 
     test('wrong project', async function() {
@@ -157,9 +167,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         ...defaultWorker,
       });
       const workerIdentityProof = {token: 'wrongSub'};
-      assert.rejects(() =>
+      await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /Worker serviceAccount mismatch/);
+      /Token validation error/);
     });
 
     test('wrong instance ID', async function() {
@@ -167,9 +177,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         ...defaultWorker,
       });
       const workerIdentityProof = {token: 'wrongId'};
-      assert.rejects(() =>
+      await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /workerId mismatch/);
+      /Token validation error/);
     });
 
     test('wrong worker state (duplicate call to registerWorker)', async function() {
@@ -178,9 +188,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         state: 'running',
       });
       const workerIdentityProof = {token: 'good'};
-      assert.rejects(() =>
+      await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /attempt to register an already-registered worker/);
+      /Token validation error/);
     });
 
     test('sweet success', async function() {

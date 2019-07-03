@@ -186,36 +186,50 @@ class GoogleProvider extends Provider {
 
   async registerWorker({worker, workerPool, workerIdentityProof}) {
     const {token} = workerIdentityProof;
+
+    // use the same message for all errors here, so as not to give an attacker
+    // extra information.
+    const error = () => new RegistrationError('Token validation error');
+
     if (!token) {
-      throw new RegistrationError('No workerIdentityProof.token provided');
+      throw error();
     }
 
     // This will throw an error if the token is invalid at all
-    let {payload} = await this.oauth2.verifyIdToken({
-      idToken: token,
-      audience: this.rootUrl,
-    });
+    let payload;
+    try {
+      const res = await this.oauth2.verifyIdToken({
+        idToken: token,
+        audience: this.rootUrl,
+      });
+      payload = res.payload;
+    } catch (err) {
+      // log the error message in case this is an issue with GCP, rather than an
+      // invalid token.  In such a case, there should be many such log messages!
+      this.monitor.warning('Error validating GCP OAuth2 token', {error: err.toString()});
+      throw error();
+    }
     const dat = payload.google.compute_engine;
 
     // First check to see if the request is coming from the project this provider manages
     if (dat.project_id !== this.project) {
-      throw new RegistrationError('Token project mismatch');
+      throw error();
     }
 
     // Now check to make sure that the serviceAccount that the worker has is the
     // serviceAccount that we have configured that worker to use. Nobody else in the project
     // should have permissions to create instances with this serviceAccount.
     if (payload.sub !== this.workerAccountId) {
-      throw new RegistrationError('Worker serviceAccount mismatch');
+      throw error();
     }
 
     // Google docs say instance id is globally unique even across projects
     if (worker.workerId !== dat.instance_id) {
-      throw new RegistrationError('workerId mismatch');
+      throw error();
     }
 
     if (worker.state !== this.Worker.states.REQUESTED) {
-      throw new RegistrationError('attempt to register an already-registered worker');
+      throw error();
     }
 
     await worker.modify(w => {
