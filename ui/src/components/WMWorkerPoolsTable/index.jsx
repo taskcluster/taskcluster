@@ -132,18 +132,20 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     return (
       <TableRow key={workerPool.workerPoolId}>
         <TableCell>
-          <TableCellListItem
-            button={workerPool.providerId !== NULL_PROVIDER}
-            component={workerPool.providerId !== NULL_PROVIDER && Link}
-            to={`${path}/${encodeURIComponent(workerPool.workerPoolId)}`}>
-            <ListItemText
-              disableTypography
-              primary={<Typography>{workerPool.workerPoolId}</Typography>}
-            />
-            {workerPool.providerId !== NULL_PROVIDER && (
+          {workerPool.providerId !== NULL_PROVIDER ? (
+            <TableCellListItem
+              button
+              component={Link}
+              to={`${path}/${encodeURIComponent(workerPool.workerPoolId)}`}>
+              <ListItemText
+                disableTypography
+                primary={<Typography>{workerPool.workerPoolId}</Typography>}
+              />
               <LinkIcon size={iconSize} />
-            )}
-          </TableCellListItem>
+            </TableCellListItem>
+          ) : (
+            <Typography>{workerPool.workerPoolId}</Typography>
+          )}
         </TableCell>
 
         <TableCell>
