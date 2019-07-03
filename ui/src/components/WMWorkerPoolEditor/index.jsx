@@ -99,6 +99,14 @@ export default class WMWorkerPoolEditor extends Component {
     actionLoading: false,
     error: null,
     validation: {
+      workerPoolId1: {
+        error: null,
+        message: null,
+      },
+      workerPoolId2: {
+        error: null,
+        message: null,
+      },
       owner: {
         error: null,
         message: null,
@@ -116,9 +124,27 @@ export default class WMWorkerPoolEditor extends Component {
     if (name === 'owner') {
       Object.assign(newState, {
         validation: {
+          ...this.state.validation,
           owner: {
             error: !validity.valid,
             message: validationMessage,
+          },
+        },
+      });
+    }
+
+    if (name === 'workerPoolId1' || name === 'workerPoolId2') {
+      const isValid =
+        name === 'workerPoolId1'
+          ? isWorkerTypeNameValid(value)
+          : isWorkerPoolIdSecondHalfValid(value);
+
+      Object.assign(newState, {
+        validation: {
+          ...this.state.validation,
+          [name]: {
+            error: !isValid,
+            message: !isValid ? '1 to 38 alphanumeric characters' : null,
           },
         },
       });
@@ -213,33 +239,27 @@ export default class WMWorkerPoolEditor extends Component {
           <ListItem>
             <TextField
               name="workerPoolId1"
-              error={!isWorkerTypeNameValid(workerPool.workerPoolId1)}
+              error={validation.workerPoolId1.error}
               onChange={this.handleInputChange}
               fullWidth
               value={workerPool.workerPoolId1}
               required
               disabled={!isNewWorkerPool}
               autoFocus={isNewWorkerPool}
-              helperText={
-                !isWorkerTypeNameValid(workerPool.workerPoolId1) &&
-                '1 to 38 alphanumeric characters'
-              }
+              helperText={validation.workerPoolId1.message}
             />
             <Typography className={classes.separator} variant="h5">
               /
             </Typography>
             <TextField
               name="workerPoolId2"
-              error={!isWorkerPoolIdSecondHalfValid(workerPool.workerPoolId2)}
+              error={validation.workerPoolId2.error}
               onChange={this.handleInputChange}
               fullWidth
               value={workerPool.workerPoolId2}
               required
               disabled={!isNewWorkerPool}
-              helperText={
-                !isWorkerTypeNameValid(workerPool.workerPoolId2) &&
-                '1 to 38 alphanumeric characters'
-              }
+              helperText={validation.workerPoolId2.message}
             />
           </ListItem>
         </List>
