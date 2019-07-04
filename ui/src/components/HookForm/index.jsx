@@ -43,6 +43,7 @@ const initialHook = {
     emailOnError: true,
   },
   schedule: [],
+  bindings: [],
   task: {
     provisionerId: 'aws-provisioner-v1',
     workerType: 'tutorial',

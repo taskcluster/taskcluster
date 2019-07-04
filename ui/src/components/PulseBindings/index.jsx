@@ -1,6 +1,4 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
-import { withApollo } from 'react-apollo';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import { arrayOf, func, object, string } from 'prop-types';
@@ -15,8 +13,6 @@ import IconButton from '@material-ui/core/IconButton';
 import PlusIcon from 'mdi-react/PlusIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 
-@hot(module)
-@withApollo
 @withStyles(theme => ({
   iconButton: {
     '& svg': {
