@@ -175,6 +175,18 @@ type (
 		// A representation of **task status** as known by the queue
 		Status TaskStatusStructure `json:"status"`
 
+		// Arbitrary key-value tags (only strings limited to 4k). These can be used
+		// to attach informal metadata to a task. Use this for informal tags that
+		// tasks can be classified by. You can also think of strings here as
+		// candidates for formal metadata. Something like
+		// `purpose: 'build' || 'test'` is a good example.
+		//
+		// Default:    {}
+		//
+		// Map entries:
+		// Max length: 4096
+		Tags map[string]string `json:"tags,omitempty"`
+
 		// Message version
 		//
 		// Possible values:
@@ -203,6 +215,18 @@ type (
 		// A representation of **task status** as known by the queue
 		Status TaskStatusStructure `json:"status"`
 
+		// Arbitrary key-value tags (only strings limited to 4k). These can be used
+		// to attach informal metadata to a task. Use this for informal tags that
+		// tasks can be classified by. You can also think of strings here as
+		// candidates for formal metadata. Something like
+		// `purpose: 'build' || 'test'` is a good example.
+		//
+		// Default:    {}
+		//
+		// Map entries:
+		// Max length: 4096
+		Tags map[string]string `json:"tags,omitempty"`
+
 		// Message version
 		//
 		// Possible values:
@@ -222,6 +246,18 @@ type (
 
 		// A representation of **task status** as known by the queue
 		Status TaskStatusStructure `json:"status"`
+
+		// Arbitrary key-value tags (only strings limited to 4k). These can be used
+		// to attach informal metadata to a task. Use this for informal tags that
+		// tasks can be classified by. You can also think of strings here as
+		// candidates for formal metadata. Something like
+		// `purpose: 'build' || 'test'` is a good example.
+		//
+		// Default:    {}
+		//
+		// Map entries:
+		// Max length: 4096
+		Tags map[string]string `json:"tags,omitempty"`
 
 		// Message version
 		//
@@ -258,6 +294,18 @@ type (
 
 		// A representation of **task status** as known by the queue
 		Status TaskStatusStructure `json:"status"`
+
+		// Arbitrary key-value tags (only strings limited to 4k). These can be used
+		// to attach informal metadata to a task. Use this for informal tags that
+		// tasks can be classified by. You can also think of strings here as
+		// candidates for formal metadata. Something like
+		// `purpose: 'build' || 'test'` is a good example.
+		//
+		// Default:    {}
+		//
+		// Map entries:
+		// Max length: 4096
+		Tags map[string]string `json:"tags,omitempty"`
 
 		// Message version
 		//
@@ -345,6 +393,18 @@ type (
 
 		// A representation of **task status** as known by the queue
 		Status TaskStatusStructure `json:"status"`
+
+		// Arbitrary key-value tags (only strings limited to 4k). These can be used
+		// to attach informal metadata to a task. Use this for informal tags that
+		// tasks can be classified by. You can also think of strings here as
+		// candidates for formal metadata. Something like
+		// `purpose: 'build' || 'test'` is a good example.
+		//
+		// Default:    {}
+		//
+		// Map entries:
+		// Max length: 4096
+		Tags map[string]string `json:"tags,omitempty"`
 
 		// Message version
 		//

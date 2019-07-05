@@ -6,6 +6,7 @@ type:         object
 properties:
   version:    {$const: message-version}
   status:     {$ref: 'task-status.json#'}
+  tags: {$ref: "task.json#/properties/tags"}
   runId:
     description: |
       Id of the last run for the task, not provided if `deadline`

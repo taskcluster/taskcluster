@@ -2152,6 +2152,9 @@
         "status": {
           "$ref": "task-status.json#"
         },
+        "tags": {
+          "$ref": "task.json#/properties/tags"
+        },
         "version": {
           "description": "Message version",
           "enum": [
@@ -2270,6 +2273,9 @@
         "status": {
           "$ref": "task-status.json#"
         },
+        "tags": {
+          "$ref": "task.json#/properties/tags"
+        },
         "version": {
           "description": "Message version",
           "enum": [
@@ -2348,6 +2354,9 @@
         "status": {
           "$ref": "task-status.json#"
         },
+        "tags": {
+          "$ref": "task.json#/properties/tags"
+        },
         "version": {
           "description": "Message version",
           "enum": [
@@ -2411,6 +2420,9 @@
       "properties": {
         "status": {
           "$ref": "task-status.json#"
+        },
+        "tags": {
+          "$ref": "task.json#/properties/tags"
         },
         "version": {
           "description": "Message version",
@@ -2477,6 +2489,9 @@
         },
         "status": {
           "$ref": "task-status.json#"
+        },
+        "tags": {
+          "$ref": "task.json#/properties/tags"
         },
         "version": {
           "description": "Message version",
