@@ -5,9 +5,7 @@ set -u
 # likely port to python later
 # maybe have it write directly to sops?
 
-SERVER_ADDRESS=$1
-SERVER_USERNAME=$2
-SERVER_PASSWORD=$3
+RABBITMQ_ADDRESS=$1
 PREFIX=$4
 
 NAMES="
@@ -24,7 +22,7 @@ taskcluster-worker-manager
 
 for NAME in $NAMES; do
     FULLNAME="${PREFIX}-${NAME}"
-    curl -sfu "${SERVER_USERNAME}:${SERVER_PASSWORD}" "https://${SERVER_ADDRESS}/api/users/$FULLNAME" > /dev/null
+    curl -sfu "${RABBITMQ_USERNAME}:${RABBITMQ_PASSWORD}" "https://${RABBITMQ_ADDRESS}/api/users/$FULLNAME" > /dev/null
     if [[ $? -eq 0 ]] ; then
         echo "skipping $FULLNAME because they already exist"
     else
@@ -32,7 +30,7 @@ for NAME in $NAMES; do
         PASSWORD=$(openssl rand -base64 40 | tr -d "/" | cut -c1-32)
         PAYLOAD="{\"password\":\"${PASSWORD}\",\"tags\":\"\"}"
         curl -X PUT -H "Content-Type: application/json" -d "$PAYLOAD" \
-        -sfu "${SERVER_USERNAME}:${SERVER_PASSWORD}" "https://${SERVER_ADDRESS}/api/users/$FULLNAME" > /dev/null
+        -sfu "${RABBITMQ_USERNAME}:${RABBITMQ_PASSWORD}" "https://${RABBITMQ_ADDRESS}/api/users/$FULLNAME" > /dev/null
         if [[ $? -ne 0 ]] ; then
             echo "Error creating rabbitmq user $FULLNAME. Aborting."
             exit 1
