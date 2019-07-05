@@ -49,9 +49,9 @@ Finally, run `create-aws-access-keys.sh` and `create-random-secrets.sh`. This wi
 
 Before using this, you need a python 3 installation with a couple packages installed via ` pip install -r requirements.txt`
 
-To generate a helm chart for all the services, run `./bin/helmit.py`. To limit it to a specific service, use the `--service` flag followed by the service name. Output goes in the `charts` directory.
+To generate a helm chart for all the services, run `./bin/helmit.py`. To limit it to a specific service, use the `--service` flag followed by the service name.
 
-You will need to set values for all the variables in `sample-helm-values.yaml` in order to apply the generated helm charts
+The chart is written to the `chart` directory. You will need to set values for all the variables in `values.yaml` in order to apply it.
 
 The generated ingress currently assumes you are deploying to GCP.
 
