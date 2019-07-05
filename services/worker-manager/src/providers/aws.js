@@ -1,13 +1,14 @@
 const {Provider} = require('./provider');
 const aws = require('aws-sdk');
+const _ = require('lodash');
 
 class AwsProvider extends Provider {
-  constructor({WorkerPool}) {
+  constructor({WorkerPool, instancePermissions, apiVersion, region}) {
     super({WorkerPool});
     this.configSchema = 'config-aws';
-
-    const {region} = // from provider config
-    const {apiVersion} = // from provider config
+    this.instancePermissions = instancePermissions;
+    this.apiVersion = apiVersion;
+    this.region = region;
 
     aws.config.update({region});
     this.iam = new aws.IAM({apiVersion});
@@ -17,43 +18,108 @@ class AwsProvider extends Provider {
    This method is used to setup permissions for the EC2 instances
    */
   async setup() {
-    // create IAM user
-    const userName = `wm-aws-provider-${this.providerId}-${/*acountId?*/}`;
 
-    await readModifySet({
-      read: async () => await this.iam.getUser({UserName: userName}),
-      set: async () => await this.iam.createUser({UserName: userName}),
-    });
-
-    // create IAM policy
-    const policies =
-    const ec2policyName = 'AmazonEC2ReadOnlyAccess';
+    // POLICY
+    const ec2policyName = 'TaskclusterWorkerAWSAccess';
+    const ec2PolicyArn = `arn:aws:iam::aws:policy/${ec2policyName}`;
+    // There can be multiple statements in a policy.
+    // Maybe this.instancePermissions should just me an array of Statements?
+    // todo: think about the above
     const ec2policy = {
       "Statement": [{
+        "Version": "2012-10-17",
         "Effect": "Allow",
-        "Action": [
-          "ec2:DescribeAvailabilityZones",
-          "ec2:DescribeInstances",
-          "ec2:TerminateInstances",
-          "ec2:RunInstances",
-        ],
-        "Resource": `arn:aws:ec2:${region}:${account}:*`,
+        "Action": this.instancePermissions.actions,
+        "Resource": this.instancePermissions.resource,
       }],
     };
-    const policyName = 'wm-provider-ec2policy';
-    await readModifySet({
-      read: async () => await this.iam.getPolicy({PolicyArn: `arn:aws:iam::aws:policy/${policyName}`}),
+
+    const freshPolicyMetadata = await readModifySet({
+      read: async () => await this.iam.getPolicy({PolicyArn: ec2PolicyArn}),
+      compare: async policyMetadata => {
+        const existingPolicy = await this.iam.getPolicyVersion({
+          PolicyArn: ec2PolicyArn,
+          VersionId: policyMetadata.DefaultVersionId,
+        });
+        const existingPolicyDocument = JSON.parse(existingPolicy.Document);
+
+        return _.isEqual(existingPolicyDocument.Statement, ec2policy.Statement);
+      },
+      modify: async policyMetadata => {
+        // This won't let us roll back to a different version, but the code is simpler
+        // possibly a temporary way of modifying a policy
+        // a way that would allow to roll back:
+        // listPolicyVersions({PolicyArn}) --> sort them by creation date --> delete the oldest --> createPolicyVersion
+        // there can only be 5 versions of a policy.
+        await this.iam.deletePolicyVersion({
+          PolicyArn: ec2PolicyArn,
+          VersionId: policyMetadata.DefaultVersionId,
+        });
+
+        await this.iam.createPolicy({
+          PolicyDocument: JSON.stringify(ec2policy),
+          PolicyName: ec2policyName,
+        });
+      },
       set: async () => await this.iam.createPolicy({
         PolicyDocument: JSON.stringify(ec2policy),
-        PolicyName: policyName,
+        PolicyName: ec2policyName,
       }),
     });
 
-    // attach the policy to the user
-    await this.iam.attachUserPolicy({
-      PolicyArn: `arn:aws:iam::aws:policy/${policyName}`,
-      UserName: userName,
+    // ROLE
+    const trustPolicy = {
+      "Version": "2012-10-17",
+      "Statement": {
+        "Effect": "Allow",
+        "Principal": {"Service": "ec2.amazonaws.com"},
+        "Action": "sts:AssumeRole"
+      }
+    };
+    const roleName = `wm-aws-provider-${this.providerId}`;
+    const freshRole = await readModifySet({
+      read: async () => await this.iam.getRole({RoleName: roleName}),
+      set: async () => await this.iam.createRole({
+        AssumeRolePolicyDocument: JSON.stringify(trustPolicy),
+        RoleName: roleName,
+      }),
     });
+
+
+    // ROLE + POLICY
+    await readModifySet({
+      set: async () => await this.iam.attachRolePolicy({
+        PolicyArn: freshPolicyMetadata.Arn,
+        RoleName: roleName,
+      }),
+      read: async () => {
+        const entities = await this.iam.listEntitiesForPolicy({PolicyArn: freshPolicyMetadata.Arn});
+        const role = entities.PolicyRoles.find(pr => pr.RoleName === roleName);
+
+        if (role) {
+          // so this function does two things instead of 1
+          // also we always detach policy - even if the policy hasn't changed
+          // todo: refactor
+          await this.iam.detachRolePolicy({
+            PolicyArn: freshPolicyMetadata.Arn,
+            RoleName: role.RoleName,
+          });
+
+          return undefined;
+        }
+
+        return role;
+      }
+    });
+
+
+    // INSTANCE PROFILE
+    this.instanceProfile = await readModifySet({
+      read: async () => await this.iam.getInstanceProfile({InstanceProfileName: roleName}),
+      set: async () => await this.iam.createInstanceProfile({InstanceProfileName: roleName}),
+    });
+
+    //todo: do something to enable logging to stackdriver
   }
 }
 
@@ -79,7 +145,7 @@ async function readModifySet({
 
   try {
     if (resource) {
-      // If the value in google is different
+      // If the value in is different
       // from the one we want it to be, we try to update it
       if (!compare(resource)) {
         resource = await modify(resource);
