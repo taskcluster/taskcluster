@@ -88,11 +88,11 @@ def render_cronjob(project_name, deployment):
 
 
 def render_ingress():
-    shutil.copy("ingress/ingress.yaml", args.chartsdir)
+    shutil.copy("ingress/ingress.yaml", args.destination)
 
 
 def write_file(template, context, suffix):
-    filepath = f"{args.chartsdir}/{context['project_name']}-{suffix}.yaml"
+    filepath = f"{args.destination}/{context['project_name']}-{suffix}.yaml"
     try:
         f = open(filepath, "x")
         f.write(yaml.dump(jsone.render(template, context), default_flow_style=False, width=float("inf")))
@@ -104,12 +104,12 @@ def write_file(template, context, suffix):
 parser = argparse.ArgumentParser()
 parser.add_argument("--service", help="Name of the service to render", default=None)
 parser.add_argument(
-    "--chartsdir", help="Directory to hold charts. Created if absent.", default="chart/templates"
+    "--destination", help="Directory to hold helm templates. Created if absent.", default="chart/templates"
 )
 args = parser.parse_args()
 
 try:
-    os.mkdir(args.chartsdir)
+    os.mkdir(args.destination)
 except FileExistsError:
     pass
 
