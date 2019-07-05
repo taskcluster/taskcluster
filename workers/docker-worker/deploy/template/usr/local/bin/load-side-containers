@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -vex
 
 docker load -i /home/ubuntu/docker_worker/docker_worker_images.tar
 systemd-notify --ready

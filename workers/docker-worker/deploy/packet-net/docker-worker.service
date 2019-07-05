@@ -1,6 +1,7 @@
 [Unit]
 Description=Taskcluster docker worker
-After=docker.service
+Wants=device-drivers
+After=docker.service device-drivers
 
 [Service]
 Type=simple

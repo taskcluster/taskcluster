@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -vex
 
 DOCKER_WORKER='node /home/ubuntu/docker_worker/src/bin/worker.js'
 DOCKER_WORKER_OPTS=

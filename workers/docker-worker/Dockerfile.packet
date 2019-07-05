@@ -119,5 +119,6 @@ RUN cd /home/ubuntu/docker_worker && tar xzf /tmp/docker-worker.tgz -C . && yarn
 
 COPY ./deploy/packet-net/docker-worker.service /lib/systemd/system/docker-worker.service
 RUN systemctl enable docker-worker
+RUN systemctl enable device-drivers
 
 # END OF APP IMAGE

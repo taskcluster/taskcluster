@@ -1,0 +1,17 @@
+# This is required because of a bug in packet.net that overwrites
+# our /etc/modules files during image deployment
+#
+# Adding it to other cloud providers is redundant, but not harmful
+
+[Unit]
+Description=Load the v4l2loopback and sndloop drivers
+
+[Service]
+Type=notify
+NotifyAccess=all
+TimeoutStartSec=300
+ExecStart=/usr/local/bin/load-drivers
+User=root
+
+[Install]
+RequiredBy=docker-worker.service
