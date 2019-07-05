@@ -26,11 +26,17 @@ export default class ViewRole extends Component {
   state = {
     loading: false,
     error: null,
+    dialogError: null,
+    dialogOpen: false,
     snackbar: {
       message: '',
       variant: 'success',
       open: false,
     },
+  };
+
+  preRunningAction = () => {
+    this.setState({ dialogError: null });
   };
 
   handleDeleteRole = async roleId => {
@@ -78,6 +84,22 @@ export default class ViewRole extends Component {
     }
   };
 
+  handleActionDialogClose = () => {
+    this.setState({
+      dialogOpen: false,
+      dialogError: null,
+      error: null,
+    });
+  };
+
+  handleDialogOpen = () => {
+    this.setState({ dialogOpen: true });
+  };
+
+  handleDialogActionError = error => {
+    this.setState({ dialogError: error });
+  };
+
   handleSnackbarOpen = ({ message, variant = 'success', open }) => {
     this.setState({ snackbar: { message, variant, open } });
   };
@@ -93,7 +115,7 @@ export default class ViewRole extends Component {
   };
 
   render() {
-    const { loading, error, snackbar } = this.state;
+    const { loading, error, snackbar, dialogError, dialogOpen } = this.state;
     const { isNewRole, data } = this.props;
 
     return (
@@ -104,6 +126,7 @@ export default class ViewRole extends Component {
             <RoleForm
               isNewRole
               loading={loading}
+              dialogError={dialogError}
               onRoleSave={this.handleSaveRole}
             />
           ) : (
@@ -112,10 +135,15 @@ export default class ViewRole extends Component {
               {data && <ErrorPanel fixed error={data.error} />}
               {data && data.role && (
                 <RoleForm
+                  dialogError={dialogError}
                   role={data.role}
                   loading={loading}
                   onRoleDelete={this.handleDeleteRole}
                   onRoleSave={this.handleSaveRole}
+                  dialogOpen={dialogOpen}
+                  onActionDialogClose={this.handleActionDialogClose}
+                  onDialogActionError={this.handleDialogActionError}
+                  onDialogOpen={this.handleDialogOpen}
                 />
               )}
             </Fragment>
