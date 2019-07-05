@@ -1,0 +1,5 @@
+mutation UpdateWorkerPool($workerPoolId: String!, $payload: WorkerPoolInput!) {
+  updateWorkerPool(workerPoolId: $workerPoolId, payload: $payload) {
+    workerPoolId
+  }
+}

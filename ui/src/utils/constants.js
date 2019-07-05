@@ -229,3 +229,31 @@ export const AUTH_STORE = '@@TASKCLUSTER_WEB_AUTH';
 export const MAX_SET_TIMEOUT_DELAY = 2 ** 31 - 1;
 export const GROUP_NOTIFY_TASK_FAILED_KEY = 'group-notify-task-failed';
 export const GROUP_NOTIFY_SUCCESS_KEY = 'group-notify-success';
+
+// Worker Manager constants
+export const NULL_PROVIDER = 'null-provider';
+export const GCP = 'GCP';
+export const PROVIDERS = new Map([[`${GCP}`, 'google']]);
+export const PROVIDER_CONFIGS = new Map([
+  [
+    `${GCP}`,
+    {
+      minCapacity: 0,
+      maxCapacity: 0,
+      capacityPerInstance: 1,
+      machineType: 'n1-highcpu-8',
+      regions: ['us-west2'],
+      userData: {},
+      scheduling: {},
+      networkInterfaces: [{}],
+      disks: [{}],
+    },
+  ],
+]);
+export const NULL_WORKER_POOL = {
+  workerPoolId: '/',
+  description: '',
+  owner: '',
+  emailOnError: false,
+  config: PROVIDER_CONFIGS.get(GCP),
+};
