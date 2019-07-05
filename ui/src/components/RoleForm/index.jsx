@@ -107,6 +107,7 @@ export default class RoleForm extends Component {
     this.props.onRoleSave(role, roleId);
   };
 
+  
   render() {
     const { role, classes, isNewRole, loading } = this.props;
     const {
@@ -121,6 +122,19 @@ export default class RoleForm extends Component {
       isNewRole ||
       description !== role.description ||
       scopeText !== role.scopes.join('\n');
+
+      function fun(props) {
+        let str=props.scope;
+        let res=[];
+        for (var i = 0; i < str.length; i ++) {
+          if(str.charAt(i).match(/[\/\.*:-]/g))
+            res[i] = <b>{str.charAt(i)}</b>;
+          else
+            res[i] = str.charAt(i);
+        }
+        console.log(res);
+        return <code>{res}</code>;
+      }
 
     return (
       <Fragment>
@@ -202,7 +216,7 @@ export default class RoleForm extends Component {
                           component={Link}
                           to={`/auth/scopes/${encodeURIComponent(scope)}`}
                           className={classes.listItemButton}>
-                          <ListItemText secondary={<code>{scope}</code>} />
+                          <ListItemText secondary={fun({scope})} />
                           <LinkIcon />
                         </ListItem>
                       ))}
