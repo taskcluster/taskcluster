@@ -5,6 +5,7 @@ policy:
 tasks:
   $let:
     node: '10.16.0'
+    go: '1.12.6'
     artifactsDir:
       public:
         # This is not used at the moment other than by the trailer task to upload results. Feel free to bump later
@@ -90,6 +91,7 @@ tasks:
         install: ":"  # nothing to do
         command: 'cd infrastructure/terraform; terraform fmt -check'
       - name: yarn generate
+        image: taskcluster/node-and-go:node${node}-go${go}
         command: >-
             set -o pipefail &&
             yarn generate | cat &&
@@ -147,6 +149,12 @@ tasks:
             /sandbox/bin/pip install tox
         command: >-
             TOXENV=py37 /sandbox/bin/tox
+      - name: taskcluster-client-go-${go}
+        image: 'golang:${go}'
+        install: >-
+            cd clients/client-go
+        command: >-
+            go test -v -race ./...
       - name: taskcluster-ui
         image: 'taskcluster/browser-test:${node}'
         install: >-
@@ -255,7 +263,7 @@ tasks:
               image: ${job.image}
               command:
                 - "/bin/bash"
-                - "-lc"
+                - "-c"
                 - >-
                   git clone --quiet --depth=20 --no-single-branch ${repo.git_url} taskcluster &&
                   cd taskcluster &&

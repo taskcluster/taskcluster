@@ -8156,7 +8156,7 @@ object.getownpropertydescriptors@^2.0.3:
     define-properties "^1.1.2"
     es-abstract "^1.5.1"
 
-object.omit@^2.0.0, object.omit@^2.0.1:
+object.omit@^2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/object.omit/-/object.omit-2.0.1.tgz#1a9c744829f39dbb858c76ca3579ae2a54ebd1fa"
   integrity sha1-Gpx0SCnznbuFjHbKNXmuKlTr0fo=
@@ -9505,10 +9505,10 @@ react-is@^16.3.2, react-is@^16.6.3, react-is@^16.7.0, react-is@^16.8.1:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.8.1.tgz#a80141e246eb894824fb4f2901c0c50ef31d4cdb"
   integrity sha512-ioMCzVDWvCvKD8eeT+iukyWrBGrA3DiFYkXfBsVYIRdaREZuBjENG+KjrikavCLasozqRWTwFUagU/O4vPpRMA==
 
-react-lazylog@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/react-lazylog/-/react-lazylog-4.0.0.tgz#f498e9408b5c09c03b046d55dd7cc8ee28b91edc"
-  integrity sha512-xFduKoCFes4pGYfTvq03S35aHt09uCngAtaRWDjnlmUhuBX+bO8GtgiONqdfeM1Oow7CK7FBcMTm+sBskgDq2Q==
+react-lazylog@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/react-lazylog/-/react-lazylog-4.1.0.tgz#27039d271794c73f7e81cf752000e22ef179565d"
+  integrity sha512-ue1PtP0j+rOpT54TZGR+pD57vJZ+LJr4bb5qbXCmZmeG1W3v5ZjOD70TUa458CDLeXwQixFMPo6azvWmHcr+zw==
   dependencies:
     "@mattiasbuelens/web-streams-polyfill" "^0.2.0"
     fetch-readablestream "^0.2.0"
@@ -9689,14 +9689,13 @@ react-virtualized@^9.21.0:
     prop-types "^15.6.0"
     react-lifecycles-compat "^3.0.4"
 
-react-vnc-display@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/react-vnc-display/-/react-vnc-display-1.1.0.tgz#1081c1bcd072fbd3b6bc055b1ef4d59db316a5b9"
-  integrity sha512-0EzQtDEIKnkLa4SaN2DUpTKcXUwyr5+uxU8zT2NlCIABHaM8QztfWhoUVE0jWKjAK6WfetfcGz13muJrfGodgg==
+react-vnc-display@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/react-vnc-display/-/react-vnc-display-2.0.0.tgz#f7b692d3f34dde6ab654d7cf2c64023718a62eae"
+  integrity sha512-vCSYFbZP9ypqC4R48/UTiGpCOOz20wIdjYxViCI4LdJ1ZYbn0E3ABz0LsX8/9wTRy9AmKOf/ipYGlL2GMPb5yQ==
   dependencies:
     novnc-node "^0.5.3"
-    object.omit "^2.0.1"
-    prop-types "^15.5.10"
+    prop-types "^15.6.1"
 
 react-window@^1.8.1:
   version "1.8.1"
@@ -11288,7 +11287,8 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-lib-scopes@link:../libraries/scopes":
-  version "14.1.0"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"

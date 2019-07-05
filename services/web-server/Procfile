@@ -1,5 +1,5 @@
 # GENERATED FILE from `yarn generate`! To update, change procs.yml and regenerate.
 
-web: cd services/web-server && node src/main.js devServer
+web: cd services/web-server && node src/main.js server
 scanner: cd services/web-server && node src/main.js scanner
 write-docs: cd services/web-server && node src/main.js writeDocs

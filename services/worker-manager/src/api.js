@@ -16,6 +16,7 @@ let builder = new APIBuilder({
     'WorkerPoolError',
     'providers',
     'publisher',
+    'notify',
   ],
 });
 
@@ -97,7 +98,7 @@ builder.declare({
   name: 'updateWorkerPool',
   title: 'Update Worker Pool',
   stability: APIBuilder.stability.experimental,
-  input: 'create-worker-pool-request.yml',
+  input: 'update-worker-pool-request.yml',
   output: 'worker-pool-full.yml',
   scopes: {AllOf: [
     'worker-manager:update-worker-type:<workerPoolId>',
@@ -130,6 +131,10 @@ builder.declare({
   const error = provider.validate(input.config);
   if (error) {
     return res.reportError('InputValidationError', error);
+  }
+
+  if (input.workerPoolId && input.workerPoolId !== workerPoolId) {
+    return res.reportError('InputError', 'Incorrect workerPoolId in request body', {});
   }
 
   const workerPool = await this.WorkerPool.load({
@@ -211,6 +216,53 @@ builder.declare({
     result.continuationToken = data.continuation;
   }
   return res.reply(result);
+});
+
+builder.declare({
+  method: 'post',
+  route: '/worker-pools-errors/:workerPoolId(*)',
+  name: 'reportWorkerError',
+  title: 'Report an error from a worker',
+  input: 'report-worker-error-request.yml',
+  output: 'worker-pool-error.yml',
+  scopes: {AllOf: [
+    'assume:worker-pool:<workerPoolId>',
+    'assume:worker-id:<workerGroup>/<workerId>',
+  ]},
+  stability: APIBuilder.stability.experimental,
+  description: [
+    'Report an error that occurred on a worker.  This error will be included',
+    'with the other errors in `listWorkerPoolErrors(workerPoolId)`.',
+    '',
+    'Workers can use this endpoint to report startup or configuration errors',
+    'that might be associated with the worker pool configuration and thus of',
+    'interest to a worker-pool administrator.',
+    '',
+    'NOTE: errors are publicly visible.  Ensure that none of the content',
+    'contains secrets or other sensitive information.',
+  ].join('\n'),
+}, async function(req, res) {
+  const {workerPoolId} = req.params;
+  const input = req.body;
+  const {workerGroup, workerId} = input;
+
+  await req.authorize({workerPoolId, workerGroup, workerId});
+
+  const workerPool = await this.WorkerPool.load({workerPoolId}, true);
+  if (!workerPool) {
+    return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
+  }
+
+  const wpe = await workerPool.reportError({
+    kind: input.kind,
+    title: input.title,
+    description: input.description,
+    extra: {...input.extra, workerGroup, workerId},
+    notify: this.notify,
+    WorkerPoolError: this.WorkerPoolError,
+  });
+
+  res.reply(wpe.serializable());
 });
 
 builder.declare({

@@ -1,29 +1,65 @@
-const util = require('util');
 const fs = require('fs');
 const path = require('path');
-const rimraf = util.promisify(require('rimraf'));
-const mkdirp = util.promisify(require('mkdirp'));
 const {quote} = require('shell-quote');
 const tar = require('tar-fs');
 const yaml = require('js-yaml');
-const Stamp = require('./stamp');
 const appRootDir = require('app-root-dir');
 const {
   gitIsDirty,
   gitDescribe,
-  dockerRun,
   dockerPull,
   dockerImages,
   dockerBuild,
   dockerRegistryCheck,
   ensureDockerImage,
-  ensureDockerVolume,
   ensureTask,
   listServices,
   dockerPush,
 } = require('../utils');
 
-const DOCKER_VOLUME_NAME = 'taskcluster-builder-build';
+const DOCKERFILE = (nodeImage, nodeAlpineImage) => `
+##
+# Build /app
+
+ARG taskcluster_version
+FROM ${nodeImage} as build
+
+RUN mkdir -p /base /base/cache
+ENV YARN_CACHE_FOLDER=/base/cache
+
+# copy the repository into the image, including the entrypoint
+COPY / /base/repo
+
+# Clone that to /app
+RUN git clone --depth 1 /base/repo /base/app
+
+# set up the /app directory
+WORKDIR /base/app
+RUN cp /base/repo/taskcluster-version taskcluster-version
+RUN cp /base/repo/entrypoint entrypoint
+RUN chmod +x entrypoint
+RUN yarn install --frozen-lockfile
+
+WORKDIR /base/app/ui
+RUN yarn install --frozen-lockfile
+
+# clean up some unnecessary and potentially large stuff
+WORKDIR /base/app
+RUN rm -rf .git
+RUN rm -rf .node-gyp ui/.node-gyp
+RUN rm -rf clients/client-{go,py,web}
+RUN rm -rf {services,libraries}/*/test
+
+##
+# build the final image
+
+FROM ${nodeAlpineImage} as image
+RUN apk update && apk add nginx && mkdir /run/nginx && apk add bash
+COPY --from=build /base/app /app
+ENV HOME=/app
+WORKDIR /app
+ENTRYPOINT ["/app/entrypoint"]
+`;
 
 /**
  * The "monoimage" is a single docker image containing all tasks.  This build process goes
@@ -45,7 +81,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
   // list of all services in the monorepo
   const services = listServices({repoDir: appRootDir.get()});
 
-  // we need the "full" node image to install buffertools, for example..
+  // we need the "full" node image to build (to install buffertools, for example..)
   const nodeImage = `node:${nodeVersion}`;
   // but the alpine image can run the services..
   const nodeAlpineImage = `node:${nodeVersion}-alpine`;
@@ -55,54 +91,17 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
   ensureDockerImage(tasks, baseDir, nodeImage);
   ensureDockerImage(tasks, baseDir, nodeAlpineImage);
 
-  /* Each hook has
-   *  - name -- name for display
-   *  - requires -- requirements for this hook
-   *  - build -- async (requirements, utils) called during the build phase
-   *  - entrypoints -- async (requirements, utils, procs) called to get entrypoint procs
-   * Hooks run in order, so they may depend on results from previous hooks.
-   */
-  const hooks = [];
-  hooks.push({
-    name: 'Set taskcluster-version',
-    requires: ['monorepo-git-descr'],
-    build: async (requirements, utils) => {
-      // let the services know what version they are running
-      await dockerRun({
-        image: nodeImage,
-        workingDir: '/base/app',
-        command: ['sh', '-c', `echo "${requirements['monorepo-git-descr']}" > taskcluster-version`],
-        mounts: [
-          {Type: 'volume', Target: '/base', Source: requirements['build-docker-volume']},
-        ],
-        logfile: `${baseDir}/tc-version.log`,
-        utils,
-        baseDir,
-      });
-    },
-  });
+  ensureTask(tasks, {
+    title: 'Build Entrypoint Script',
+    requires: [
+    ],
+    provides: [
+      'entrypoint-script',
+    ],
+    locks: [],
+    run: async (requirements, utils) => {
+      const procs = {};
 
-  hooks.push({
-    name: 'API Services',
-    build: async (requirements, utils) => {
-      await dockerRun({
-        image: nodeImage,
-        workingDir: '/base/app',
-        command: ['sh', '-ce', [
-          'mkdir -p /base/cache',
-          'YARN_CACHE_FOLDER=/base/cache yarn install --frozen-lockfile',
-          // remove some junk
-          'rm -rf .node-gyp',
-        ].join('\n')],
-        mounts: [
-          {Type: 'volume', Target: '/base', Source: requirements['build-docker-volume']},
-        ],
-        logfile: `${baseDir}/yarn-install.log`,
-        utils,
-        baseDir,
-      });
-    },
-    entrypoints: async (requirements, utils, procs) => {
       services.forEach(name => {
         const procsPath = path.join(sourceDir, 'services', name, 'procs.yml');
         if (!fs.existsSync(procsPath)) {
@@ -113,82 +112,50 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
           procs[`${name}/${proc}`] = `cd services/${name} && ${command}`;
         });
       });
-      return procs;
-    },
-  });
 
-  hooks.push({
-    name: 'References',
-    entrypoints: async (requirements, utils, procs) => {
       // this script:
       //  - reads the references from generated/ and creates rootUrl-relative output
       //  - starts nginx to serve that rootUrl-relative output
       procs['references/web'] = 'exec sh infrastructure/references/references.sh';
-    },
-  });
 
-  hooks.push({
-    name: 'web-ui',
-    build: async (requirements, utils, procs) => {
-      await dockerRun({
-        image: nodeImage,
-        workingDir: '/base/app/ui',
-        command: ['sh', '-ce', [
-          'mkdir -p /base/cache',
-          'YARN_CACHE_FOLDER=/base/cache yarn install --frozen-lockfile',
-          // remove some junk
-          'rm -rf .node-gyp',
-        ].join('\n')],
-        mounts: [
-          {Type: 'volume', Target: '/base', Source: requirements['build-docker-volume']},
-        ],
-        logfile: `${baseDir}/yarn-ui-install.log`,
-        utils,
-        baseDir,
-      });
-    },
-    entrypoints: async (requirements, utils, procs) => {
+      // the ui/web process runs `yarn build` before starting nginx to serve
+      // the resulting, built content
       procs['ui/web'] = 'cd /app/ui && yarn build && ' +
         ' nginx -c /app/ui/web-ui-nginx-site.conf -g \'daemon off;\'';
+
+      const entrypointScript = []
+        .concat([
+          '#! /bin/sh', // note that alpine does not have bash
+          'case "${1}" in',
+        ])
+        .concat(Object.entries(procs).map(([process, command]) =>
+          `${process}) exec ${quote(['sh', '-c', command])};;`))
+        .concat([
+          // catch-all to run whatever command the user specified
+          '*) exec "${@}";;',
+          'esac',
+        ]).join('\n');
+
+      return {'entrypoint-script': entrypointScript};
     },
   });
 
   ensureTask(tasks, {
-    title: 'Set Up Docker Volume',
+    title: 'Build Taskcluster Docker Image',
     requires: [
+      'build-can-start', // (used to delay building in `yarn release`)
+      'entrypoint-script',
+      `docker-image-${nodeImage}`,
       `docker-image-${nodeAlpineImage}`,
     ],
     provides: [
-      'build-docker-volume',
-    ],
-    locks: ['docker'],
-    run: async (requirements, utils) => {
-      await ensureDockerVolume({
-        baseDir,
-        name: DOCKER_VOLUME_NAME,
-        empty: !cmdOptions.cache,
-        image: nodeAlpineImage,
-        utils,
-      });
-      return {
-        'build-docker-volume': DOCKER_VOLUME_NAME,
-      };
-    },
-  });
-
-  ensureTask(tasks, {
-    title: 'Clone Monorepo from Working Copy',
-    requires: [
-      'build-can-start', // (used to delay building in `yarn release`)
-      'build-docker-volume',
-      `docker-image-${nodeImage}`,
-    ],
-    provides: [
-      'monorepo-git-descr', // `git describe --tag --always` output
-      'monorepo-stamp',
+      'monoimage-docker-image', // image tag
+      'monoimage-image-on-registry', // true if the image is already on registry
     ],
     locks: ['git'],
     run: async (requirements, utils) => {
+      utils.step({title: 'Check Repository'});
+
       // Clone from the current working copy, rather than anything upstream;
       // this avoids the need to land-and-push changes.  This is a git clone
       // operation instead of a raw filesystem copy so that any non-checked-in
@@ -204,165 +171,11 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
         }
       }
 
-      // clone the local git repository into the docker volume, using a bit of shell logic
-      // to skip doing so if it's already up to date.
-      const gitCloneScript = [
-        'baserev=`if [ -d /base/monorepo ]; then git --git-dir=/base/monorepo/.git rev-parse HEAD; fi`',
-        'srcrev=`git --git-dir=/src/.git rev-parse HEAD`',
-        'if [ "$baserev" != "$srcrev" ]; then',
-        // We _could_ try to manipulate the repo that already exists by
-        // fetching and checking out, but it can get into weird states easily.
-        // This is doubly true when we do things like set depth=1 etc.
-        //
-        // Instead, we just blow it away and clone. This is lightweight since we
-        // do use that depth=1 anyway.
-        '  rm -rf /base/monorepo',
-        '  git clone /src /base/monorepo --depth 1',
-        'fi',
-      ].join('\n');
-      await dockerRun({
-        image: nodeImage,
-        workingDir: '/',
-        command: ['bash', '-cex', gitCloneScript],
-        logfile: `${baseDir}/git-clone.log`,
-        utils,
-        mounts: [
-          {Type: 'volume', Target: '/base', Source: requirements['build-docker-volume']},
-          {Type: 'bind', Target: '/src', Source: sourceDir},
-        ],
-        baseDir,
-      });
-
       const {gitDescription} = await gitDescribe({
         dir: sourceDir,
         utils,
       });
-
-      const repoUrl = 'https://github.com/taskcluster/taskcluster';
-      const stamp = new Stamp({step: 'repo-clone', version: 1},
-        `${repoUrl}#${gitDescription}`);
-
-      return {
-        'monorepo-git-descr': gitDescription,
-        'monorepo-stamp': stamp,
-      };
-    },
-  });
-
-  const buildRequires = new Set();
-  hooks.forEach(({requires}) => requires && requires.forEach(req => buildRequires.add(req)));
-
-  ensureTask(tasks, {
-    title: 'Build Monorepo',
-    requires: [
-      'monorepo-stamp',
-      `docker-image-${nodeImage}`,
-      'build-docker-volume',
-      ...buildRequires,
-    ],
-    provides: [
-      'monoimage-stamp',
-    ],
-    locks: ['docker'],
-    run: async (requirements, utils) => {
-      const appStampDir = path.join(baseDir, 'app-stamp');
-      const stamp = new Stamp({step: 'monoimage-build', version: 1},
-        {nodeVersion},
-        requirements['monorepo-stamp'],
-        ...[...buildRequires]
-          .filter(req => req.endsWith('-stamp'))
-          .map(req => requirements[req]));
-
-      const provides = {
-        ['monoimage-stamp']: stamp,
-      };
-
-      // if we've already built this with this revision, we're done.
-      if (stamp.dirStamped(appStampDir)) {
-        return utils.skip({provides});
-      } else {
-        await rimraf(appStampDir);
-      }
-      await mkdirp(appStampDir);
-
-      utils.step({title: 'Copy Source Repository'});
-      await dockerRun({
-        image: nodeImage,
-        workingDir: '/',
-        command: ['bash', '-cex', [
-          'rm -rf /base/app',
-          'mkdir -p /base/app',
-          'tar -C /base/monorepo --exclude=./.git -cf - . | tar -C /base/app -xf -',
-        ].join('\n')],
-        logfile: `${baseDir}/app-copy.log`,
-        utils,
-        mounts: [{Type: 'volume', Target: '/base', Source: requirements['build-docker-volume']}],
-        baseDir,
-      });
-
-      for (let {name, build} of hooks) {
-        if (build) {
-          utils.step({title: `Build Hook: ${name}`});
-          await build(requirements, utils);
-        }
-      }
-
-      const procs = {};
-      for (let {name, entrypoints} of hooks) {
-        if (entrypoints) {
-          utils.step({title: `Entrypoint Hook: ${name}`});
-          await entrypoints(requirements, utils, procs);
-        }
-      }
-
-      const entrypointScript = []
-        .concat([
-          '#! /bin/sh', // note that alpine does not have bash
-          'case "${1}" in',
-        ])
-        .concat(Object.entries(procs).map(([process, command]) =>
-          `${process}) exec ${quote(['sh', '-c', command])};;`))
-        .concat([
-          // catch-all to run whatever command the user specified
-          '*) exec "${@}";;',
-          'esac',
-        ]).join('\n');
-      const entrypointFile = path.join(baseDir, 'entrypoint');
-      fs.writeFileSync(entrypointFile, entrypointScript, {mode: 0o777});
-
-      await dockerRun({
-        image: nodeImage,
-        workingDir: '/',
-        command: ['bash', '-cex', 'cp /entrypoint /base/app/entrypoint'],
-        logfile: `${baseDir}/entrypoint-copy.log`,
-        utils,
-        mounts: [
-          {Type: 'volume', Target: '/base', Source: requirements['build-docker-volume']},
-          {Type: 'bind', Target: '/entrypoint', Source: entrypointFile},
-        ],
-        baseDir,
-      });
-
-      stamp.stampDir(appStampDir);
-      return provides;
-    },
-  });
-
-  ensureTask(tasks, {
-    title: `Build Docker Image`,
-    requires: [
-      'monoimage-stamp',
-      'monorepo-git-descr',
-      'build-docker-volume',
-      `docker-image-${nodeAlpineImage}`,
-    ],
-    provides: [
-      'monoimage-docker-image',
-      'monoimage-image-on-registry',
-    ],
-    locks: ['docker'],
-    run: async (requirements, utils) => {
-      const tag = `taskcluster/taskcluster:${requirements['monorepo-git-descr']}`;
+      const tag = `taskcluster/taskcluster:${gitDescription}`;
 
       utils.step({title: 'Check for Existing Images'});
 
@@ -370,15 +183,15 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
         .some(image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1);
       const imageOnRegistry = await dockerRegistryCheck({tag});
 
-      if (imageOnRegistry && !cmdOptions.cache) {
-        throw new Error(
-          `Image ${tag} already exists on the registry, but --no-cache was given.`);
-      }
-
       const provides = {
         'monoimage-docker-image': tag,
         'monoimage-image-on-registry': imageOnRegistry,
       };
+
+      if (imageOnRegistry && cmdOptions.noCache) {
+        throw new Error(
+          `Image ${tag} already exists on the registry, but --no-cache was given.`);
+      }
 
       // bail out if we can, pulling the image if it's only available remotely
       if (!imageLocal && imageOnRegistry) {
@@ -388,46 +201,28 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
         return utils.skip({provides});
       }
 
-      // The bulk of the docker image is the `app` directory, currently residing on
-      // the docker volume.  Docker-build cannot access volumes, though, so we must
-      // copy that data to baseDir first, then pack it into a tarball for the build.
+      utils.step({title: 'Generating Input Tarball'});
 
-      utils.step({title: 'Copying /app out of docker volume'});
-
-      const appDir = path.join(baseDir, 'app');
-      await mkdirp(appDir);
-      await dockerRun({
-        image: nodeImage,
-        workingDir: '/',
-        command: ['bash', '-cex', 'tar -C /base/app -cf - . | tar -C /app -xf -'],
-        logfile: `${baseDir}/app-copy.log`,
-        utils,
-        mounts: [
-          {Type: 'volume', Target: '/base', Source: requirements['build-docker-volume']},
-          {Type: 'bind', Target: '/app', Source: appDir},
-        ],
-        baseDir,
+      const tarball = tar.pack(sourceDir, {
+        // include the repo as-is, filtering out a few large things.  The Dockerfile
+        // will `git clone` this, so any other unnecessary bits will not appear in
+        // the final tarball.
+        entries: ['.'],
+        ignore: name => (
+          name.match(/\/node_modules\//) ||
+          name.match(/\/user-config.yml/)
+        ),
+        finalize: false,
+        finish: pack => {
+          // include a few generated files
+          pack.entry({name: "Dockerfile"}, DOCKERFILE(nodeImage, nodeAlpineImage));
+          pack.entry({name: "entrypoint"}, requirements['entrypoint-script']);
+          pack.entry({name: "taskcluster-version"}, gitDescription);
+          pack.finalize();
+        },
       });
 
-      utils.step({title: 'Building'});
-
-      const dockerfile = [
-        `FROM ${nodeAlpineImage}`,
-        `RUN apk update && \
-          apk add nginx && \
-          mkdir /run/nginx && \
-          apk add bash`,
-        'COPY app /app',
-        'ENV HOME=/app',
-        'WORKDIR /app',
-        'ENTRYPOINT ["/app/entrypoint"]',
-      ].join('\n');
-      fs.writeFileSync(path.join(baseDir, 'Dockerfile'), dockerfile);
-
-      const tarball = tar.pack(baseDir, {
-        // include the built app dir as app/
-        entries: ['app', 'Dockerfile'],
-      });
+      utils.step({title: 'Building Docker Image'});
 
       await dockerBuild({
         tarball: tarball,

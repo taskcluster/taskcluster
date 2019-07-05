@@ -1,14 +1,15 @@
-# Test Docker Image
+# Docker Images
 
-This folder defines two images:
+This folder defines three images used for Taskcluster CI:
 
 1. A docker image suitable for testing things in a browser.
 2. A docker image used for testing things that need a running rabbit server.
+3. A docker image containing both Node and Go, for `yarn generate`
 
-The images are based on the same Node version as the rest of Taskcluster.
-The image label is based on the Node version defined in the root `package.json`.
+The images are based on the same Node and Go versions as the rest of Taskcluster.
+The image label is based on these versions.
 
-To generate the docker images, [install jq](https://github.com/stedolan/jq/wiki/Installation) and run `./build.sh`.
+To generate the docker images, [install jq](https://github.com/stedolan/jq/wiki/Installation) and run `./build-<imagename>.sh`.
 If you are happy with the results, you have to push them to make them available for tests in taskcluster.
 
 ## Browser Test
@@ -31,3 +32,8 @@ docker run -ti --rm -v $PWD:/repo taskcluster/browser-test:10.14.0 bash -c '
 ## Rabbit Test
 
 This is pretty much exactly the standard node image but with rabbitmq-server installed.
+
+## Node-Go
+
+This is a base Node image with the necessary bits of the Golang image copied in.
+This takes advantage of the fact that both imgaes are based on Debian "stretch".

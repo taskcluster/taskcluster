@@ -3778,7 +3778,7 @@ module.exports = {
             "workerPoolId"
           ],
           "description": "Given an existing worker pool definition, this will modify it and return\nthe new definition.\n\nTo delete a worker pool, set its `providerId` to `\"null-provider\"`.\nAfter any existing workers have exited, a cleanup job will remove the\nworker pool.  During that time, the worker pool can be updated again, such\nas to set its `providerId` to a real provider.",
-          "input": "v1/create-worker-pool-request.json#",
+          "input": "v1/update-worker-pool-request.json#",
           "method": "post",
           "name": "updateWorkerPool",
           "output": "v1/worker-pool-full.json#",
@@ -3824,6 +3824,28 @@ module.exports = {
           "route": "/worker-pools",
           "stability": "experimental",
           "title": "List All Worker Pools",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId"
+          ],
+          "description": "Report an error that occurred on a worker.  This error will be included\nwith the other errors in `listWorkerPoolErrors(workerPoolId)`.\n\nWorkers can use this endpoint to report startup or configuration errors\nthat might be associated with the worker pool configuration and thus of\ninterest to a worker-pool administrator.\n\nNOTE: errors are publicly visible.  Ensure that none of the content\ncontains secrets or other sensitive information.",
+          "input": "v1/report-worker-error-request.json#",
+          "method": "post",
+          "name": "reportWorkerError",
+          "output": "v1/worker-pool-error.json#",
+          "query": [
+          ],
+          "route": "/worker-pools-errors/<workerPoolId>",
+          "scopes": {
+            "AllOf": [
+              "assume:worker-pool:<workerPoolId>",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ]
+          },
+          "stability": "experimental",
+          "title": "Report an error from a worker",
           "type": "function"
         },
         {

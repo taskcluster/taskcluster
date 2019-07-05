@@ -8,6 +8,7 @@ const exec = promisify(require('child_process').execFile);
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
+const unlink = promisify(fs.unlink);
 
 const REPO_ROOT = path.join(__dirname, '../../../../');
 exports.REPO_ROOT = REPO_ROOT;
@@ -57,15 +58,29 @@ exports.writeRepoJSON = async (filename, data) => {
 
 /**
  * Modify a file in-place in the current working copy, calling `await modifier(contents)`.
+ * This function is "sequentialized" so that concurrent modifications do not interfere.
  *
  * The file is assumed to be utf-8.
  */
-exports.modifyRepoFile = async (filename, modifier) => {
+const modifyRepoFile = async (filename, modifier) => {
   const contents = await readFile(
     path.join(REPO_ROOT, filename),
     {encoding: 'utf8'});
   const modified = await modifier(contents);
   await writeFile(filename, modified, {encoding: 'utf8'});
+};
+
+let modifyRepoPromise = Promise.resolve();
+exports.modifyRepoFile = (filename, modifier) => {
+  modifyRepoPromise = modifyRepoPromise.catch(() => {}).then(() => modifyRepoFile(filename, modifier));
+  return modifyRepoPromise;
+};
+
+/**
+ * Remove a file from the repo
+ */
+exports.removeRepoFile = async (filename) => {
+  await unlink(filename);
 };
 
 /**

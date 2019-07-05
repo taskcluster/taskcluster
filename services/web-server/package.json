@@ -1,13 +1,13 @@
 {
   "name": "taskcluster-web-server",
-  "version": "14.1.0",
+  "version": "14.2.0",
   "private": true,
   "main": "./src/main.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
   "scripts": {
-    "coverage": "nyc npm test",
-    "coverage:report": "nyc npm test && nyc report --reporter json --report-dir ../../artifacts",
+    "coverage": "c8 yarn test",
+    "coverage:report": "c8 yarn test && c8 report --temp-directory ./coverage/tmp --reporter json --report-dir ../../artifacts",
     "start": "NODE_ENV=development node src/main.js devServer",
     "lint": "eslint --cache --format codeframe --ext mjs,js src test",
     "test": "mocha test/*_test.js"

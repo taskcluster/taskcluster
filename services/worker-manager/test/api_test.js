@@ -60,9 +60,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       config: {},
       owner: 'example@example.com',
       emailOnError: false,
+      // these should be ignored
+      created: taskcluster.fromNow('10 days'),
+      lastModified: taskcluster.fromNow('10 days'),
     };
     const updated = await helper.workerManager.updateWorkerPool(workerPoolId, input2);
-    workerPoolCompare(workerPoolId, input2, updated);
+    const {created: _1, lastModified: _2, ...expected} = input2;
+    workerPoolCompare(workerPoolId, expected, updated);
 
     assert.equal(initial.lastModified, initial.created);
     assert.equal(initial.created, updated.created);
@@ -85,6 +89,32 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       return;
     }
     throw new Error('Allowed to specify an invalid providerId');
+  });
+
+  test('update worker pool (invalid workerPoolId)', async function() {
+    await helper.workerManager.createWorkerPool('pp/oo', {
+      providerId: 'testing1',
+      description: 'e',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    });
+    try {
+      await helper.workerManager.updateWorkerPool('pp/oo', {
+        workerPoolId: 'something/different',
+        providerId: 'testing1',
+        description: 'e',
+        config: {},
+        owner: 'example@example.com',
+        emailOnError: false,
+      });
+    } catch (err) {
+      if (err.code !== 'InputError') {
+        throw err;
+      }
+      return;
+    }
+    throw new Error('Allowed to specify an invalid workerPoolId');
   });
 
   test('update worker pool (invalid providerId)', async function() {
@@ -360,6 +390,64 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     let data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
 
     assert.deepStrictEqual(data.workers, []);
+  });
+
+  test('Report a worker error', async function() {
+    const workerPoolId = 'foobar/baz';
+    const input = {
+      providerId: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    await helper.workerManager.createWorkerPool(workerPoolId, input);
+
+    await helper.workerManager.reportWorkerError(workerPoolId, {
+      workerGroup: 'wg',
+      workerId: 'wi',
+      kind: "worker-error",
+      title: 'Something is Wrong',
+      description: 'Uhoh!',
+      extra: {amISure: true},
+    });
+
+    let data = await helper.workerManager.listWorkerPoolErrors(workerPoolId);
+
+    assert.equal(data.workerPoolErrors.length, 1);
+
+    assert(data.workerPoolErrors[0].reported);
+    delete data.workerPoolErrors[0].reported;
+    assert(data.workerPoolErrors[0].errorId);
+    delete data.workerPoolErrors[0].errorId;
+
+    assert.deepEqual(data.workerPoolErrors, [
+      {
+        workerPoolId,
+        kind: "worker-error",
+        title: 'Something is Wrong',
+        description: 'Uhoh!',
+        extra: {
+          workerGroup: 'wg',
+          workerId: 'wi',
+          amISure: true,
+        },
+      },
+    ]);
+  });
+
+  test('Report a worker error, no such pool', async function() {
+    await assert.rejects(async () =>
+      await helper.workerManager.reportWorkerError('no/such', {
+        workerGroup: 'wg',
+        workerId: 'wi',
+        kind: "worker-error",
+        title: 'Something is Wrong',
+        description: 'Uhoh!',
+        extra: {amISure: true},
+      }),
+    /Worker pool does not exist/,
+    );
   });
 
   test('get worker pool errors - no errors in db', async function() {

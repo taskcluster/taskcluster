@@ -332,6 +332,13 @@ const createTheme = isDarkTheme => {
           maxWidth: 500,
         },
       },
+      MuiExpansionPanelSummary: {
+        root: {
+          '&$focused': {
+            backgroundColor: THEME.TEN_PERCENT_WHITE,
+          },
+        },
+      },
     },
   };
 };

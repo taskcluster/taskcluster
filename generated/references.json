@@ -293,6 +293,58 @@
   },
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/update-worker-pool-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Fields that are defined by a user for a worker pool.\nUsed to modify worker-pool definitions.\n\nThe `workerPoolId`, `created`, and `lastModified` fields are optional and\nallowed only to ease the common practice of getting a worker pool definition\nwith `workerPool(..)`, modifying it, and writing it back with\n`updateWorkerPool(..).  `workerPoolId` must be correct if\nsupplied, and the values of `created` and `lastModified` are ignored.\n",
+      "properties": {
+        "config": {
+          "$ref": "worker-pool-full.json#/properties/config"
+        },
+        "created": {
+          "description": "Ignored on update",
+          "format": "date-time",
+          "title": "Created",
+          "type": "string"
+        },
+        "description": {
+          "$ref": "worker-pool-full.json#/properties/description"
+        },
+        "emailOnError": {
+          "$ref": "worker-pool-full.json#/properties/emailOnError"
+        },
+        "lastModified": {
+          "description": "Ignored on update",
+          "format": "date-time",
+          "title": "Last Modified",
+          "type": "string"
+        },
+        "owner": {
+          "$ref": "worker-pool-full.json#/properties/owner"
+        },
+        "providerId": {
+          "$ref": "worker-pool-full.json#/properties/providerId"
+        },
+        "workerPoolId": {
+          "pattern": "^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
+          "title": "Worker Pool ID",
+          "type": "string"
+        }
+      },
+      "required": [
+        "providerId",
+        "description",
+        "config",
+        "owner",
+        "emailOnError"
+      ],
+      "title": "Worker Pool Definition",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/update-worker-pool-request.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/temp-creds-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -320,6 +372,45 @@
       "type": "object"
     },
     "filename": "schemas/worker-manager/v1/temp-creds-response.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/report-worker-error-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "A report of an error from a worker.  This will be recorded with kind\n`worker-error`.\n\nThe worker's `workerGroup` and `workerId` will be added to `extra`.\n",
+      "properties": {
+        "description": {
+          "$ref": "worker-pool-error.json#/properties/description"
+        },
+        "extra": {
+          "$ref": "worker-pool-error.json#/properties/extra"
+        },
+        "kind": {
+          "$ref": "worker-pool-error.json#/properties/kind"
+        },
+        "title": {
+          "$ref": "worker-pool-error.json#/properties/title"
+        },
+        "workerGroup": {
+          "$ref": "worker-full.json#/properties/workerGroup"
+        },
+        "workerId": {
+          "$ref": "worker-full.json#/properties/workerId"
+        }
+      },
+      "required": [
+        "workerGroup",
+        "workerId",
+        "kind",
+        "title",
+        "description",
+        "extra"
+      ],
+      "title": "Worker Error Report",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/report-worker-error-request.json"
   },
   {
     "content": {
@@ -378,7 +469,7 @@
       "$id": "/schemas/worker-manager/v1/create-worker-pool-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
-      "description": "Fields that are defined by a user for a worker pool.\nUsed to create and modify definitions. There is a larger\nset of fields for viewing since some parts are generated\nby the service.\n",
+      "description": "Fields that are defined by a user for a worker pool.\nUsed to create worker-pool definitions. There is a larger\nset of fields for viewing since some parts are generated\nby the service.\n",
       "properties": {
         "config": {
           "$ref": "worker-pool-full.json#/properties/config"
@@ -8097,6 +8188,27 @@
           "version": 1
         },
         {
+          "description": "A connection to Pulse has been established.  Taskcluster services\nautomatically reconnect to Pulse periodically and in the event of\nan error, but rapid reconnections may signal a Pulse failure.",
+          "fields": {
+          },
+          "level": "info",
+          "name": "pulseConnected",
+          "title": "Connection to pulse established",
+          "type": "pulse.connected",
+          "version": 1
+        },
+        {
+          "description": "A connection to Pulse has ended or failed.  This may be due to normal\nreconnection or to an error communicating with Pulse.  The service\nautomatically reconnects, so even an error is not necessarily a problem.",
+          "fields": {
+            "error": "The error message, if the disconnection was due to an error."
+          },
+          "level": "info",
+          "name": "pulseDisconnected",
+          "title": "Connection to pulse has ended",
+          "type": "pulse.disconnected",
+          "version": 1
+        },
+        {
           "description": "A pulse publisher has been notified by the pulse server\nthat it has been blocked, usually because the server is\nresource-constrained.  If `blocked` is false, then the\nnotification is that the publisher has been unblocked\nafter having previously been blocked.",
           "fields": {
             "blocked": "If true, the publisher has been blocked; if false, it has been unblocked."
@@ -8238,7 +8350,7 @@
             "workerPoolId"
           ],
           "description": "Given an existing worker pool definition, this will modify it and return\nthe new definition.\n\nTo delete a worker pool, set its `providerId` to `\"null-provider\"`.\nAfter any existing workers have exited, a cleanup job will remove the\nworker pool.  During that time, the worker pool can be updated again, such\nas to set its `providerId` to a real provider.",
-          "input": "v1/create-worker-pool-request.json#",
+          "input": "v1/update-worker-pool-request.json#",
           "method": "post",
           "name": "updateWorkerPool",
           "output": "v1/worker-pool-full.json#",
@@ -8284,6 +8396,28 @@
           "route": "/worker-pools",
           "stability": "experimental",
           "title": "List All Worker Pools",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId"
+          ],
+          "description": "Report an error that occurred on a worker.  This error will be included\nwith the other errors in `listWorkerPoolErrors(workerPoolId)`.\n\nWorkers can use this endpoint to report startup or configuration errors\nthat might be associated with the worker pool configuration and thus of\ninterest to a worker-pool administrator.\n\nNOTE: errors are publicly visible.  Ensure that none of the content\ncontains secrets or other sensitive information.",
+          "input": "v1/report-worker-error-request.json#",
+          "method": "post",
+          "name": "reportWorkerError",
+          "output": "v1/worker-pool-error.json#",
+          "query": [
+          ],
+          "route": "/worker-pools-errors/<workerPoolId>",
+          "scopes": {
+            "AllOf": [
+              "assume:worker-pool:<workerPoolId>",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ]
+          },
+          "stability": "experimental",
+          "title": "Report an error from a worker",
           "type": "function"
         },
         {
@@ -8465,6 +8599,27 @@
           "name": "loggingError",
           "title": "Error in Logging",
           "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "A connection to Pulse has been established.  Taskcluster services\nautomatically reconnect to Pulse periodically and in the event of\nan error, but rapid reconnections may signal a Pulse failure.",
+          "fields": {
+          },
+          "level": "info",
+          "name": "pulseConnected",
+          "title": "Connection to pulse established",
+          "type": "pulse.connected",
+          "version": 1
+        },
+        {
+          "description": "A connection to Pulse has ended or failed.  This may be due to normal\nreconnection or to an error communicating with Pulse.  The service\nautomatically reconnects, so even an error is not necessarily a problem.",
+          "fields": {
+            "error": "The error message, if the disconnection was due to an error."
+          },
+          "level": "info",
+          "name": "pulseDisconnected",
+          "title": "Connection to pulse has ended",
+          "type": "pulse.disconnected",
           "version": 1
         },
         {
@@ -8907,6 +9062,27 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
+          "version": 1
+        },
+        {
+          "description": "A connection to Pulse has been established.  Taskcluster services\nautomatically reconnect to Pulse periodically and in the event of\nan error, but rapid reconnections may signal a Pulse failure.",
+          "fields": {
+          },
+          "level": "info",
+          "name": "pulseConnected",
+          "title": "Connection to pulse established",
+          "type": "pulse.connected",
+          "version": 1
+        },
+        {
+          "description": "A connection to Pulse has ended or failed.  This may be due to normal\nreconnection or to an error communicating with Pulse.  The service\nautomatically reconnects, so even an error is not necessarily a problem.",
+          "fields": {
+            "error": "The error message, if the disconnection was due to an error."
+          },
+          "level": "info",
+          "name": "pulseDisconnected",
+          "title": "Connection to pulse has ended",
+          "type": "pulse.disconnected",
           "version": 1
         },
         {
@@ -10766,6 +10942,27 @@
           "version": 1
         },
         {
+          "description": "A connection to Pulse has been established.  Taskcluster services\nautomatically reconnect to Pulse periodically and in the event of\nan error, but rapid reconnections may signal a Pulse failure.",
+          "fields": {
+          },
+          "level": "info",
+          "name": "pulseConnected",
+          "title": "Connection to pulse established",
+          "type": "pulse.connected",
+          "version": 1
+        },
+        {
+          "description": "A connection to Pulse has ended or failed.  This may be due to normal\nreconnection or to an error communicating with Pulse.  The service\nautomatically reconnects, so even an error is not necessarily a problem.",
+          "fields": {
+            "error": "The error message, if the disconnection was due to an error."
+          },
+          "level": "info",
+          "name": "pulseDisconnected",
+          "title": "Connection to pulse has ended",
+          "type": "pulse.disconnected",
+          "version": 1
+        },
+        {
           "description": "A pulse publisher has been notified by the pulse server\nthat it has been blocked, usually because the server is\nresource-constrained.  If `blocked` is false, then the\nnotification is that the publisher has been unblocked\nafter having previously been blocked.",
           "fields": {
             "blocked": "If true, the publisher has been blocked; if false, it has been unblocked."
@@ -11369,6 +11566,27 @@
           "version": 1
         },
         {
+          "description": "A connection to Pulse has been established.  Taskcluster services\nautomatically reconnect to Pulse periodically and in the event of\nan error, but rapid reconnections may signal a Pulse failure.",
+          "fields": {
+          },
+          "level": "info",
+          "name": "pulseConnected",
+          "title": "Connection to pulse established",
+          "type": "pulse.connected",
+          "version": 1
+        },
+        {
+          "description": "A connection to Pulse has ended or failed.  This may be due to normal\nreconnection or to an error communicating with Pulse.  The service\nautomatically reconnects, so even an error is not necessarily a problem.",
+          "fields": {
+            "error": "The error message, if the disconnection was due to an error."
+          },
+          "level": "info",
+          "name": "pulseDisconnected",
+          "title": "Connection to pulse has ended",
+          "type": "pulse.disconnected",
+          "version": 1
+        },
+        {
           "description": "A pulse publisher has been notified by the pulse server\nthat it has been blocked, usually because the server is\nresource-constrained.  If `blocked` is false, then the\nnotification is that the publisher has been unblocked\nafter having previously been blocked.",
           "fields": {
             "blocked": "If true, the publisher has been blocked; if false, it has been unblocked."
@@ -11675,6 +11893,27 @@
           "name": "hookFire",
           "title": "A hook was fired",
           "type": "hook-fire",
+          "version": 1
+        },
+        {
+          "description": "A connection to Pulse has been established.  Taskcluster services\nautomatically reconnect to Pulse periodically and in the event of\nan error, but rapid reconnections may signal a Pulse failure.",
+          "fields": {
+          },
+          "level": "info",
+          "name": "pulseConnected",
+          "title": "Connection to pulse established",
+          "type": "pulse.connected",
+          "version": 1
+        },
+        {
+          "description": "A connection to Pulse has ended or failed.  This may be due to normal\nreconnection or to an error communicating with Pulse.  The service\nautomatically reconnects, so even an error is not necessarily a problem.",
+          "fields": {
+            "error": "The error message, if the disconnection was due to an error."
+          },
+          "level": "info",
+          "name": "pulseDisconnected",
+          "title": "Connection to pulse has ended",
+          "type": "pulse.disconnected",
           "version": 1
         },
         {
@@ -12132,6 +12371,27 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
+          "version": 1
+        },
+        {
+          "description": "A connection to Pulse has been established.  Taskcluster services\nautomatically reconnect to Pulse periodically and in the event of\nan error, but rapid reconnections may signal a Pulse failure.",
+          "fields": {
+          },
+          "level": "info",
+          "name": "pulseConnected",
+          "title": "Connection to pulse established",
+          "type": "pulse.connected",
+          "version": 1
+        },
+        {
+          "description": "A connection to Pulse has ended or failed.  This may be due to normal\nreconnection or to an error communicating with Pulse.  The service\nautomatically reconnects, so even an error is not necessarily a problem.",
+          "fields": {
+            "error": "The error message, if the disconnection was due to an error."
+          },
+          "level": "info",
+          "name": "pulseDisconnected",
+          "title": "Connection to pulse has ended",
+          "type": "pulse.disconnected",
           "version": 1
         },
         {
@@ -12699,6 +12959,27 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
+          "version": 1
+        },
+        {
+          "description": "A connection to Pulse has been established.  Taskcluster services\nautomatically reconnect to Pulse periodically and in the event of\nan error, but rapid reconnections may signal a Pulse failure.",
+          "fields": {
+          },
+          "level": "info",
+          "name": "pulseConnected",
+          "title": "Connection to pulse established",
+          "type": "pulse.connected",
+          "version": 1
+        },
+        {
+          "description": "A connection to Pulse has ended or failed.  This may be due to normal\nreconnection or to an error communicating with Pulse.  The service\nautomatically reconnects, so even an error is not necessarily a problem.",
+          "fields": {
+            "error": "The error message, if the disconnection was due to an error."
+          },
+          "level": "info",
+          "name": "pulseDisconnected",
+          "title": "Connection to pulse has ended",
+          "type": "pulse.disconnected",
           "version": 1
         },
         {

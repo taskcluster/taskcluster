@@ -34,9 +34,10 @@ class Provider {
   }
 
   /**
-   * Once the returned promise is
-   * resolve, the Provider must be fully working. This is called for a provider
-   * whether it is being used to provision or not.
+   * This is called at process start-up for all configured providers (that is,
+   * once for each providerId).  It can be used as an "async constructor" such
+   * as to set up object properties that must be awaited.  It can also be used
+   * to construct provider-global objects in a cloud service, for example.
    */
   async setup() {
   }

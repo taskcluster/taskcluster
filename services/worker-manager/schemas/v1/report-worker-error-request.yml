@@ -1,0 +1,23 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Worker Error Report
+description: |
+  A report of an error from a worker.  This will be recorded with kind
+  `worker-error`.
+
+  The worker's `workerGroup` and `workerId` will be added to `extra`.
+type: object
+properties:
+  workerGroup: {$ref: "worker-full.json#/properties/workerGroup"}
+  workerId: {$ref: "worker-full.json#/properties/workerId"}
+  kind: {$ref: "worker-pool-error.json#/properties/kind"}
+  title: {$ref: "worker-pool-error.json#/properties/title"}
+  description: {$ref: "worker-pool-error.json#/properties/description"}
+  extra: {$ref: "worker-pool-error.json#/properties/extra"}
+additionalProperties: false
+required:
+  - workerGroup
+  - workerId
+  - kind
+  - title
+  - description
+  - extra
