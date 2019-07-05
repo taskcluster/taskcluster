@@ -23,7 +23,7 @@
    type
 
 5. Switch over your desired worker type to the new AMI in the [aws
-   provisioner](http://aws-provisioner.taskcluster.net/)
+   provisioner](https://tools.taskcluster.net/aws-provisioner/)
 
 
 ## Creating a app image
