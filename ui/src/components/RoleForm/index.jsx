@@ -15,6 +15,7 @@ import SpeedDialAction from '../SpeedDialAction';
 import { role } from '../../utils/prop-types';
 import Link from '../../utils/Link';
 import splitLines from '../../utils/splitLines';
+import scopeRedirect from '../../utils/scopeRedirect';
 
 @withStyles(theme => ({
   fab: {
@@ -200,13 +201,7 @@ export default class RoleForm extends Component {
                           key={scope}
                           button
                           component={Link}
-                          to={
-                            scope.startsWith('assume:')
-                              ? `/auth/roles/${encodeURIComponent(
-                                  scope.replace('assume:', '')
-                                )}`
-                              : `/auth/scopes/${encodeURIComponent(scope)}`
-                          }
+                          to={scopeRedirect(scope)}
                           className={classes.listItemButton}>
                           <ListItemText secondary={<code>{scope}</code>} />
                           <LinkIcon />
