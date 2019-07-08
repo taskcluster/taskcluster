@@ -75,7 +75,7 @@ const logRequest = ({builder, entry, monitor}) => {
         apiVersion: builder.apiVersion,
         public: req.public,
         hasAuthed: req.hasAuthed,
-        resource: req.baseUrl + req.path, // Do not log query params here
+        resource: req.path,
         query,
         method: req.method,
         clientId: req.hasAuthed ? await req.clientId() : '',
