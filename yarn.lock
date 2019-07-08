@@ -2984,7 +2984,7 @@ falafel@^2.1.0:
     isarray "0.0.1"
     object-keys "^1.0.6"
 
-fast-azure-storage@^2.3.0, fast-azure-storage@^2.3.1:
+fast-azure-storage@^2.3.1:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/fast-azure-storage/-/fast-azure-storage-2.3.1.tgz#fc3710c183cb56de7faa92dd9176c8b1f5107df1"
   integrity sha512-T3ZcU0/ufobmV9Ggf47wGojciBsvTTDZg55dqlGcjYcIvh71r1kyO7obsNinsZCbdba6vY2v0I7y7lP6m4XAXg==
@@ -2994,6 +2994,14 @@ fast-azure-storage@^2.3.0, fast-azure-storage@^2.3.1:
     promise "^8.0.1"
   optionalDependencies:
     libxmljs "^0.19.5"
+
+fast-azure-storage@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/fast-azure-storage/-/fast-azure-storage-3.0.0.tgz#2ce9215cf689880c0da7ff9e9fe8ba0a2c34b4ad"
+  integrity sha512-FuTjko5uyGuXieX3VBTqxFJrZS7oAPSIeyZt2m9GjcvWA4aljZ95VBhaQeCwIYqMZkDsI0qRIcZWjs4Cla8v5w==
+  dependencies:
+    debug "^4.1.1"
+    xml2js "^0.4.19"
 
 fast-deep-equal@^2.0.1:
   version "2.0.1"
@@ -7498,52 +7506,47 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-client@link:clients/client":
-  version "0.0.0"
-  uid ""
+  version "14.2.0"
+  dependencies:
+    debug "^4.0.0"
+    hawk "^7.0.10"
+    lodash "^4.17.4"
+    slugid "^2.0.0"
+    superagent "^5.0.0"
+    taskcluster-lib-urls "^12.0.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "0.0.0"
-  uid ""
+  version "14.2.0"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "0.0.0"
-  uid ""
+  version "14.2.0"
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "0.0.0"
-  uid ""
+  version "14.2.0"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "0.0.0"
-  uid ""
+  version "14.2.0"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "0.0.0"
-  uid ""
+  version "14.2.0"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "0.0.0"
-  uid ""
+  version "14.2.0"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "0.0.0"
-  uid ""
+  version "14.2.0"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "0.0.0"
-  uid ""
+  version "14.2.0"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "0.0.0"
-  uid ""
+  version "14.2.0"
 
 "taskcluster-lib-scopes@link:libraries/scopes":
-  version "0.0.0"
-  uid ""
+  version "14.2.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "0.0.0"
-  uid ""
+  version "14.2.0"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -7551,8 +7554,7 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "0.0.0"
-  uid ""
+  version "14.2.0"
 
 taskgroup@^4.0.5, taskgroup@^4.2.0:
   version "4.3.1"

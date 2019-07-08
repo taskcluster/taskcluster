@@ -40,7 +40,7 @@
     "express": "4.17.1",
     "express-jwt": "^5.3.0",
     "express-sslify": "1.2.0",
-    "fast-azure-storage": "^2.3.0",
+    "fast-azure-storage": "^3.0.0",
     "fast-json-stable-stringify": "^2.0.0",
     "get-caller-file": "^2.0.5",
     "googleapis": "^40.0.0",
