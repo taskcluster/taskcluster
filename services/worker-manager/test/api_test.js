@@ -392,6 +392,58 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     assert.deepStrictEqual(data.workers, []);
   });
 
+  test('list workers for a given worker pool and group', async function () {
+    const workerPoolId = 'apple/apple';
+    let input = ['wg-a', 'wg-b'].map(workerGroup => ({
+      workerPoolId,
+      providerId: 'google',
+      workerGroup,
+      workerId: 's-3434',
+      created: new Date(),
+      expires: taskcluster.fromNow('1 week'),
+      state: helper.Worker.states.RUNNING,
+      providerData: {},
+    }));
+
+    await Promise.all(input.map(i => helper.Worker.create(i)));
+
+    input = input.map(i => {
+      i.created = i.created.toJSON();
+      i.expires = i.expires.toJSON();
+      delete i.providerData;
+      return i;
+    });
+
+    let data = await helper.workerManager.listWorkersForWorkerGroup(workerPoolId, 'wg-a');
+
+    assert.deepStrictEqual(data.workers, [input[0]]);
+  });
+
+  test('get a specific worker', async function () {
+    const workerPoolId = 'apple/apple';
+    const input = {
+      workerPoolId,
+      providerId: 'google',
+      workerGroup: 'wg-a',
+      workerId: 's-3434',
+      created: new Date(),
+      expires: taskcluster.fromNow('1 week'),
+      state: helper.Worker.states.RUNNING,
+      providerData: {},
+    };
+
+    const entity = await helper.Worker.create(input);
+    const data = await helper.workerManager.worker(workerPoolId, 'wg-a', 's-3434');
+
+    assert.deepStrictEqual(data, entity.serializable());
+  });
+
+  test('get a specific worker that does not exist', async function () {
+    const workerPoolId = 'apple/apple';
+    await assert.rejects(() =>
+      helper.workerManager.worker(workerPoolId, 'wg-a', 's-3434'), {statusCode: 404});
+  });
+
   test('Report a worker error', async function() {
     const workerPoolId = 'foobar/baz';
     const input = {

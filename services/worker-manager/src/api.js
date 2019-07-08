@@ -307,6 +307,66 @@ builder.declare({
 
 builder.declare({
   method: 'get',
+  route: '/workers/:workerPoolId:/:workerGroup',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
+  name: 'listWorkersForWorkerGroup',
+  title: 'Workers in a specific Worker Group in a Worker Pool',
+  stability: APIBuilder.stability.experimental,
+  output: 'worker-list.yml',
+  description: [
+    'Get the list of all the existing workers in a given group in a given worker pool.',
+  ].join('\n'),
+}, async function(req, res) {
+  const scanOptions = {
+    continuation: req.query.continuationToken,
+    limit: parseInt(req.query.limit || 100, 10),
+    matchPartition: 'exact',
+  };
+
+  const data = await this.Worker.scan({
+    workerPoolId: req.params.workerPoolId,
+    workerGroup: req.params.workerGroup,
+  }, scanOptions);
+
+  const result = {
+    workers: data.entries.map(e => e.serializable()),
+  };
+
+  if (data.continuation) {
+    result.continuationToken = data.continuation;
+  }
+  return res.reply(result);
+});
+
+builder.declare({
+  method: 'get',
+  route: '/workers/:workerPoolId:/:workerGroup/:workerId',
+  name: 'worker',
+  title: 'Get a Worker',
+  stability: APIBuilder.stability.experimental,
+  output: 'worker-full.yml',
+  description: [
+    'Get a single worker.',
+  ].join('\n'),
+}, async function(req, res) {
+  const data = await this.Worker.load({
+    workerPoolId: req.params.workerPoolId,
+    workerGroup: req.params.workerGroup,
+    workerId: req.params.workerId,
+  }, true);
+
+  if (!data) {
+    return res.reportError('ResourceNotFound', 'Worker not found', {});
+  }
+
+  return res.reply(data.serializable());
+});
+
+builder.declare({
+  method: 'get',
   route: '/workers/:workerPoolId(*)',
   query: {
     continuationToken: /./,
