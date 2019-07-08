@@ -1,8 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const {quote} = require('shell-quote');
 const tar = require('tar-fs');
-const yaml = require('js-yaml');
 const appRootDir = require('app-root-dir');
 const {
   gitIsDirty,
@@ -13,7 +11,6 @@ const {
   dockerRegistryCheck,
   ensureDockerImage,
   ensureTask,
-  listServices,
   dockerPush,
 } = require('../utils');
 
@@ -36,7 +33,6 @@ RUN git clone --depth 1 /base/repo /base/app
 # set up the /app directory
 WORKDIR /base/app
 RUN cp /base/repo/taskcluster-version taskcluster-version
-RUN cp /base/repo/entrypoint entrypoint
 RUN chmod +x entrypoint
 RUN yarn install --frozen-lockfile
 
@@ -67,7 +63,6 @@ ENTRYPOINT ["/app/entrypoint"]
  *
  *  - Clone the monorepo (from the current working copy)
  *  - Build it (install dependencies, transpile, etc.)
- *    - generate an "entrypoint" script to allow things like "docker run <monoimage> service/web"
  *    - done in a Docker volume to avoid Docker for Mac bugs
  *  - Build the docker image containing the app (/app)
  *
@@ -77,9 +72,6 @@ ENTRYPOINT ["/app/entrypoint"]
 const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
   const packageJson = JSON.parse(fs.readFileSync(path.join(appRootDir.get(), 'package.json')));
   const nodeVersion = packageJson.engines.node;
-
-  // list of all services in the monorepo
-  const services = listServices({repoDir: appRootDir.get()});
 
   // we need the "full" node image to build (to install buffertools, for example..)
   const nodeImage = `node:${nodeVersion}`;
@@ -92,59 +84,9 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
   ensureDockerImage(tasks, baseDir, nodeAlpineImage);
 
   ensureTask(tasks, {
-    title: 'Build Entrypoint Script',
-    requires: [
-    ],
-    provides: [
-      'entrypoint-script',
-    ],
-    locks: [],
-    run: async (requirements, utils) => {
-      const procs = {};
-
-      services.forEach(name => {
-        const procsPath = path.join(sourceDir, 'services', name, 'procs.yml');
-        if (!fs.existsSync(procsPath)) {
-          throw new Error(`Service ${name} has no procs.yml`);
-        }
-        const processes = yaml.safeLoad(fs.readFileSync(procsPath));
-        Object.entries(processes).forEach(([proc, {command}]) => {
-          procs[`${name}/${proc}`] = `cd services/${name} && ${command}`;
-        });
-      });
-
-      // this script:
-      //  - reads the references from generated/ and creates rootUrl-relative output
-      //  - starts nginx to serve that rootUrl-relative output
-      procs['references/web'] = 'exec sh infrastructure/references/references.sh';
-
-      // the ui/web process runs `yarn build` before starting nginx to serve
-      // the resulting, built content
-      procs['ui/web'] = 'cd /app/ui && yarn build && ' +
-        ' nginx -c /app/ui/web-ui-nginx-site.conf -g \'daemon off;\'';
-
-      const entrypointScript = []
-        .concat([
-          '#! /bin/sh', // note that alpine does not have bash
-          'case "${1}" in',
-        ])
-        .concat(Object.entries(procs).map(([process, command]) =>
-          `${process}) exec ${quote(['sh', '-c', command])};;`))
-        .concat([
-          // catch-all to run whatever command the user specified
-          '*) exec "${@}";;',
-          'esac',
-        ]).join('\n');
-
-      return {'entrypoint-script': entrypointScript};
-    },
-  });
-
-  ensureTask(tasks, {
     title: 'Build Taskcluster Docker Image',
     requires: [
       'build-can-start', // (used to delay building in `yarn release`)
-      'entrypoint-script',
       `docker-image-${nodeImage}`,
       `docker-image-${nodeAlpineImage}`,
     ],
@@ -216,7 +158,6 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
         finish: pack => {
           // include a few generated files
           pack.entry({name: "Dockerfile"}, DOCKERFILE(nodeImage, nodeAlpineImage));
-          pack.entry({name: "entrypoint"}, requirements['entrypoint-script']);
           pack.entry({name: "taskcluster-version"}, gitDescription);
           pack.finalize();
         },

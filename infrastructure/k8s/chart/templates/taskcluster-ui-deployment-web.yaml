@@ -1,48 +1,48 @@
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: taskcluster-ui-web
 spec:
-  replicas: 1.0
   selector:
     matchLabels:
       application: taskcluster
-      taskcluster-proc: web
       taskcluster-service: taskcluster-ui
+      taskcluster-proc: web
+  replicas: 1
   template:
     metadata:
       annotations:
-        checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-ui-secrets.yaml") . | sha256sum }}'
+        checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-ui-secret.yaml") . | sha256sum }}'
       labels:
         application: taskcluster
-        taskcluster-proc: web
         taskcluster-service: taskcluster-ui
+        taskcluster-proc: web
     spec:
-      containers:
-      - args:
-        - ui/web
-        env:
-        - name: PORT
-          value: '80'
-        - name: TASKCLUSTER_ROOT_URL
-          value: '{{ .Values.rootUrl }}'
-        envFrom:
-        - secretRef:
-            name: taskcluster-ui
-        image: '{{ .Values.dockerImage }}'
-        imagePullPolicy: Always
-        name: taskcluster-ui
-        ports:
-        - containerPort: 80
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 3
-          periodSeconds: 10
-          timeoutSeconds: 5
-        resources:
-          requests:
-            cpu: 100m
-            memory: 2000Mi
       serviceAccountName: taskcluster-ui
+      containers:
+        - name: taskcluster-ui
+          image: .Values.dockerImage
+          imagePullPolicy: Always
+          args:
+            - ui/web
+          resources:
+            requests:
+              cpu: 1
+              memory: 1
+          env:
+            - name: PORT
+              value: '80'
+            - name: TASKCLUSTER_ROOT_URL
+              value: .Values.rootUrl
+          envFrom:
+            - secretRef:
+                name: taskcluster-ui
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            timeoutSeconds: 5
+            periodSeconds: 10
+            initialDelaySeconds: 3

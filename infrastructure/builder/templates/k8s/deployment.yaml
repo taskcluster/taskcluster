@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${projectName}-${lowercase(procName)}
+spec:
+  selector:
+    # TODO: Copy cloudops labels structure
+    matchLabels:
+      application: taskcluster
+      taskcluster-service: ${projectName}
+      taskcluster-proc: ${procName}
+  replicas: 1 # TODO
+  template:
+    metadata:
+      annotations:
+        checksum/secret: '{{ include (print $.Template.BasePath "/${projectName}-secret.yaml") . | sha256sum }}'
+      labels:
+        application: taskcluster
+        taskcluster-service: ${projectName}
+        taskcluster-proc: '${procName}'
+    spec:
+      serviceAccountName: ${projectName}
+      containers:
+      - name: ${projectName}
+        image: .Values.dockerImage
+        imagePullPolicy: Always
+        args: ['${serviceName}/${procName}']
+        resources:
+          requests:
+            cpu: 1 # TODO
+            memory: 1 # TODO
+        env:
+          $flatten:
+            - $if: 'needsService'
+              then:
+                name: PORT
+                value: '80'
+            - name: TASKCLUSTER_ROOT_URL
+              value: .Values.rootUrl
+        envFrom:
+            - secretRef:
+                name: ${projectName}
+        ports:
+        - $if: 'needsService'
+          then:
+            containerPort: 80
+        readinessProbe:
+          $if: 'needsService'
+          then:
+            httpGet:
+              path: ${readinessPath}
+              port: 80
+            timeoutSeconds: 5
+            periodSeconds: 10
+            initialDelaySeconds: 3

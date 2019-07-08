@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: taskcluster-built-in-workers
+spec:
+  type: NodePort
+  selector:
+    application: taskcluster
+    taskcluster-service: taskcluster-built-in-workers
+    taskcluster-proc: server
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

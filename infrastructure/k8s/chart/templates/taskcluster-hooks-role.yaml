@@ -1,13 +1,13 @@
-apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: taskcluster-hooks-secrets-read
 rules:
-- apiGroups:
-  - ''
-  resources:
-  - secrets/taskcluster-hooks
-  verbs:
-  - get
-  - watch
-  - list
+  - apiGroups:
+      - ''
+    resources:
+      - secrets/taskcluster-hooks
+    verbs:
+      - get
+      - watch
+      - list

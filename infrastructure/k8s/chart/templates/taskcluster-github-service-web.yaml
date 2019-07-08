@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: taskcluster-github
+spec:
+  type: NodePort
+  selector:
+    application: taskcluster
+    taskcluster-service: taskcluster-github
+    taskcluster-proc: web
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

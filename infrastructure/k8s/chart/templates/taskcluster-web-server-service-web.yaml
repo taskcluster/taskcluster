@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: taskcluster-web-server
+spec:
+  type: NodePort
+  selector:
+    application: taskcluster
+    taskcluster-service: taskcluster-web-server
+    taskcluster-proc: web
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

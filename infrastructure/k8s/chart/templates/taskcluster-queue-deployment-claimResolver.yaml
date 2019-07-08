@@ -1,38 +1,38 @@
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: taskcluster-queue-claimresolver
 spec:
-  replicas: 1.0
   selector:
     matchLabels:
       application: taskcluster
-      taskcluster-proc: claimResolver
       taskcluster-service: taskcluster-queue
+      taskcluster-proc: claimResolver
+  replicas: 1
   template:
     metadata:
       annotations:
-        checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-queue-secrets.yaml") . | sha256sum }}'
+        checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-queue-secret.yaml") . | sha256sum }}'
       labels:
         application: taskcluster
-        taskcluster-proc: claimResolver
         taskcluster-service: taskcluster-queue
+        taskcluster-proc: claimResolver
     spec:
-      containers:
-      - args:
-        - queue/claimResolver
-        env:
-        - name: TASKCLUSTER_ROOT_URL
-          value: '{{ .Values.rootUrl }}'
-        envFrom:
-        - secretRef:
-            name: taskcluster-queue
-        image: '{{ .Values.dockerImage }}'
-        imagePullPolicy: Always
-        name: taskcluster-queue
-        ports: []
-        resources:
-          requests:
-            cpu: 50m
-            memory: 100Mi
       serviceAccountName: taskcluster-queue
+      containers:
+        - name: taskcluster-queue
+          image: .Values.dockerImage
+          imagePullPolicy: Always
+          args:
+            - queue/claimResolver
+          resources:
+            requests:
+              cpu: 1
+              memory: 1
+          env:
+            - name: TASKCLUSTER_ROOT_URL
+              value: .Values.rootUrl
+          envFrom:
+            - secretRef:
+                name: taskcluster-queue
+          ports: []

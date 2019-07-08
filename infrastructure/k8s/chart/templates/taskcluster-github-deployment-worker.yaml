@@ -1,38 +1,38 @@
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: taskcluster-github-worker
 spec:
-  replicas: 1.0
   selector:
     matchLabels:
       application: taskcluster
-      taskcluster-proc: worker
       taskcluster-service: taskcluster-github
+      taskcluster-proc: worker
+  replicas: 1
   template:
     metadata:
       annotations:
-        checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-github-secrets.yaml") . | sha256sum }}'
+        checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-github-secret.yaml") . | sha256sum }}'
       labels:
         application: taskcluster
-        taskcluster-proc: worker
         taskcluster-service: taskcluster-github
+        taskcluster-proc: worker
     spec:
-      containers:
-      - args:
-        - github/worker
-        env:
-        - name: TASKCLUSTER_ROOT_URL
-          value: '{{ .Values.rootUrl }}'
-        envFrom:
-        - secretRef:
-            name: taskcluster-github
-        image: '{{ .Values.dockerImage }}'
-        imagePullPolicy: Always
-        name: taskcluster-github
-        ports: []
-        resources:
-          requests:
-            cpu: 50m
-            memory: 100Mi
       serviceAccountName: taskcluster-github
+      containers:
+        - name: taskcluster-github
+          image: .Values.dockerImage
+          imagePullPolicy: Always
+          args:
+            - github/worker
+          resources:
+            requests:
+              cpu: 1
+              memory: 1
+          env:
+            - name: TASKCLUSTER_ROOT_URL
+              value: .Values.rootUrl
+          envFrom:
+            - secretRef:
+                name: taskcluster-github
+          ports: []

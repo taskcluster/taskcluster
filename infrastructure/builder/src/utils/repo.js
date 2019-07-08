@@ -113,3 +113,10 @@ exports.gitLsFiles = async ({patterns}={}) => {
 exports.readRepoYAML = async filename => {
   return yaml.safeLoad(await exports.readRepoFile(filename));
 };
+
+/**
+ * Asynchronously write a yaml file to the current working copy
+ */
+exports.writeRepoYAML = async (filename, data) => {
+  return await writeFile(filename, yaml.safeDump(data, {lineWidth: -1}), {encoding: 'utf8'});
+};

@@ -1,48 +1,48 @@
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: taskcluster-hooks-web
 spec:
-  replicas: 1.0
   selector:
     matchLabels:
       application: taskcluster
-      taskcluster-proc: web
       taskcluster-service: taskcluster-hooks
+      taskcluster-proc: web
+  replicas: 1
   template:
     metadata:
       annotations:
-        checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-hooks-secrets.yaml") . | sha256sum }}'
+        checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-hooks-secret.yaml") . | sha256sum }}'
       labels:
         application: taskcluster
-        taskcluster-proc: web
         taskcluster-service: taskcluster-hooks
+        taskcluster-proc: web
     spec:
-      containers:
-      - args:
-        - hooks/web
-        env:
-        - name: PORT
-          value: '80'
-        - name: TASKCLUSTER_ROOT_URL
-          value: '{{ .Values.rootUrl }}'
-        envFrom:
-        - secretRef:
-            name: taskcluster-hooks
-        image: '{{ .Values.dockerImage }}'
-        imagePullPolicy: Always
-        name: taskcluster-hooks
-        ports:
-        - containerPort: 80
-        readinessProbe:
-          httpGet:
-            path: /api/hooks/v1/ping
-            port: 80
-          initialDelaySeconds: 3
-          periodSeconds: 10
-          timeoutSeconds: 5
-        resources:
-          requests:
-            cpu: 50m
-            memory: 100Mi
       serviceAccountName: taskcluster-hooks
+      containers:
+        - name: taskcluster-hooks
+          image: .Values.dockerImage
+          imagePullPolicy: Always
+          args:
+            - hooks/web
+          resources:
+            requests:
+              cpu: 1
+              memory: 1
+          env:
+            - name: PORT
+              value: '80'
+            - name: TASKCLUSTER_ROOT_URL
+              value: .Values.rootUrl
+          envFrom:
+            - secretRef:
+                name: taskcluster-hooks
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /api/hooks/v1/ping
+              port: 80
+            timeoutSeconds: 5
+            periodSeconds: 10
+            initialDelaySeconds: 3

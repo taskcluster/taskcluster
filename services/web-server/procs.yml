@@ -2,6 +2,11 @@ web:
   type: web
   command: node src/main.js server
   readinessPath: /.well-known/apollo/server-health
+  paths:
+    - '/login'
+    - '/login/*'
+    - '/graphql'
+    - '/graphql/*'
 scanner:
   type: cron
   schedule: '0 0 * * *'
