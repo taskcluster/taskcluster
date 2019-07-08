@@ -182,7 +182,7 @@ func (workerManager *WorkerManager) ListWorkerPools(continuationToken, limit str
 // See #reportWorkerError
 func (workerManager *WorkerManager) ReportWorkerError(workerPoolId string, payload *WorkerErrorReport) (*WorkerPoolError, error) {
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/worker-pools-errors/"+url.QueryEscape(workerPoolId), new(WorkerPoolError), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/worker-pool-errors/"+url.QueryEscape(workerPoolId), new(WorkerPoolError), nil)
 	return responseObject.(*WorkerPoolError), err
 }
 

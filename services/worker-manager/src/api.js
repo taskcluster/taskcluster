@@ -224,7 +224,7 @@ builder.declare({
 
 builder.declare({
   method: 'post',
-  route: '/worker-pools-errors/:workerPoolId(*)',
+  route: '/worker-pool-errors/:workerPoolId(*)',
   name: 'reportWorkerError',
   title: 'Report an error from a worker',
   input: 'report-worker-error-request.yml',
