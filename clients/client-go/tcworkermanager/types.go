@@ -9,25 +9,89 @@ import (
 )
 
 type (
-	// Called by workers to get Taskcluster credentials
-	GoogleCredentialRequest struct {
+	// The credentials the worker
+	// will need to perform its work.  Specifically, credentials with scopes
+	// * `assume:worker-pool:<workerPoolId>`
+	// * `assume:worker-id:<workerGroup>/<workerId>`
+	// * `queue:worker-id:<workerGroup>/<workerId>`
+	// * `secrets:get:worker-pool:<workerPoolId>`
+	// * `queue:claim-work:<workerPoolId>`
+	Credentials struct {
+		AccessToken string `json:"accessToken"`
+
+		// Note that a certificate may not be provided, if the credentials are not temporary.
+		Certificate string `json:"certificate,omitempty"`
+
+		ClientID string `json:"clientId"`
+	}
+
+	// Proof that this call is coming from the worker identified by the other fields.
+	// The form of this proof varies depending on the provider type.
+	GoogleProviderType struct {
 
 		// A JWT token as defined in [this google documentation](https://cloud.google.com/compute/docs/instances/verifying-instance-identity)
 		Token string `json:"token"`
 	}
 
-	// Response for workers that want Taskcluster credentials
-	TemporaryCredentialsResponse struct {
+	// Request body to `registerWorker`.
+	RegisterWorkerRequest struct {
 
-		// AccessToken used for authenticating requests, you should store this
-		// you won't be able to retrive it again!
-		AccessToken string `json:"accessToken"`
+		// The provider that had started the worker and responsible for managing it.
+		// Can be different from the provider that's currently in the worker pool config.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		ProviderID string `json:"providerId"`
 
-		// Needed to access taskcluster apis using temporary credentials
-		Certificate string `json:"certificate"`
+		// Worker group to which this worker belongs
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		WorkerGroup string `json:"workerGroup"`
 
-		// ClientId of the client
-		ClientID string `json:"clientId"`
+		// Worker ID
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		WorkerID string `json:"workerId"`
+
+		// Proof that this call is coming from the worker identified by the other fields.
+		// The form of this proof varies depending on the provider type.
+		//
+		// Any of:
+		//   * StaticProviderType
+		//   * GoogleProviderType
+		WorkerIdentityProof json.RawMessage `json:"workerIdentityProof"`
+
+		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		WorkerPoolID string `json:"workerPoolId"`
+	}
+
+	// Response body to `registerWorker`.
+	RegisterWorkerResponse struct {
+
+		// The credentials the worker
+		// will need to perform its work.  Specifically, credentials with scopes
+		// * `assume:worker-pool:<workerPoolId>`
+		// * `assume:worker-id:<workerGroup>/<workerId>`
+		// * `queue:worker-id:<workerGroup>/<workerId>`
+		// * `secrets:get:worker-pool:<workerPoolId>`
+		// * `queue:claim-work:<workerPoolId>`
+		Credentials Credentials `json:"credentials"`
+
+		// Time at which the included credentials will expire.  Workers must either
+		// re-register (for static workers) or terminate (for dynamically
+		// provisioned workers) before this time.
+		Expires tcclient.Time `json:"expires"`
+	}
+
+	// (No information is currently required; TBD)
+	StaticProviderType struct {
 	}
 
 	// A report of an error from a worker.  This will be recorded with kind

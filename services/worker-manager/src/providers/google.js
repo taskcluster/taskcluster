@@ -5,15 +5,12 @@ const taskcluster = require('taskcluster-client');
 const libUrls = require('taskcluster-lib-urls');
 const uuid = require('uuid');
 const {google} = require('googleapis');
-const {Provider} = require('./provider');
-const APIBuilder = require('taskcluster-lib-api');
-const builder = require('../api');
+const {RegistrationError, Provider} = require('./provider');
 
 class GoogleProvider extends Provider {
 
   constructor({
     providerId,
-    taskclusterCredentials,
     monitor,
     estimator,
     notify,
@@ -30,7 +27,6 @@ class GoogleProvider extends Provider {
   }) {
     super({
       providerId,
-      taskclusterCredentials,
       monitor,
       notify,
       rootUrl,
@@ -188,83 +184,60 @@ class GoogleProvider extends Provider {
     });
   }
 
-  /**
-   * Given a WorkerPool and instance identity token from google, we return
-   * taskcluster credentials for a worker to use if it is valid.
-   *
-   * All fields we check in the token are signed by google rather than the
-   * requester so we know that they are not forged arbitrarily. Be careful
-   * when selecting new fields to validate here, they may come from the requester.
-   */
-  async verifyIdToken({token, workerPool}) {
-    const {workerPoolId} = workerPool;
+  async registerWorker({worker, workerPool, workerIdentityProof}) {
+    const {token} = workerIdentityProof;
+
+    // use the same message for all errors here, so as not to give an attacker
+    // extra information.
+    const error = () => new RegistrationError('Token validation error');
+
+    if (!token) {
+      throw error();
+    }
 
     // This will throw an error if the token is invalid at all
-    let {payload} = await this.oauth2.verifyIdToken({
-      idToken: token,
-      audience: this.rootUrl,
-    });
+    let payload;
+    try {
+      const res = await this.oauth2.verifyIdToken({
+        idToken: token,
+        audience: this.rootUrl,
+      });
+      payload = res.payload;
+    } catch (err) {
+      // log the error message in case this is an issue with GCP, rather than an
+      // invalid token.  In such a case, there should be many such log messages!
+      this.monitor.warning('Error validating GCP OAuth2 token', {error: err.toString()});
+      throw error();
+    }
     const dat = payload.google.compute_engine;
 
     // First check to see if the request is coming from the project this provider manages
     if (dat.project_id !== this.project) {
-      const error = new Error(`Invalid project ${dat.project_id} is not ${this.project}`);
-      error.project = dat.project_id;
-      error.validProject = this.project;
-      throw error;
+      throw error();
     }
 
     // Now check to make sure that the serviceAccount that the worker has is the
     // serviceAccount that we have configured that worker to use. Nobody else in the project
     // should have permissions to create instances with this serviceAccount.
     if (payload.sub !== this.workerAccountId) {
-      const error = new Error('Attempt to claim workertype creds from non-workertype instance');
-      error.correctId = this.workerAccountId;
-      error.requestingAccountId = payload.sub;
-      throw error;
+      throw error();
     }
 
     // Google docs say instance id is globally unique even across projects
-    const workerId = dat.instance_id;
-    const workerGroup = this.providerId;
-
-    const worker = await this.Worker.load({
-      workerPoolId,
-      workerGroup,
-      workerId,
-    }, true);
-
-    // There will be no worker if either the workerId is not one we've made or if it is actually
-    // from a different workerPool since the load will not find it in that case
-    if (!worker) {
-      const error = new Error('Attempt to claim credentials from a non-existent worker');
-      error.requestingId = workerId;
-      throw error;
+    if (worker.workerId !== dat.instance_id) {
+      throw error();
     }
 
     if (worker.state !== this.Worker.states.REQUESTED) {
-      throw new Error('Attempt to reclaim credentials from an already existing worker');
+      throw error();
     }
 
     await worker.modify(w => {
       w.state = this.Worker.states.RUNNING;
     });
 
-    return taskcluster.createTemporaryCredentials({
-      clientId: `worker/google/${this.project}/${workerGroup}/${workerId}`,
-      scopes: [
-        `assume:worker-type:${workerPoolId}`, // deprecated role
-        `assume:worker-pool:${workerPoolId}`,
-        `assume:worker-id:${workerGroup}/${workerId}`,
-        `queue:worker-id:${workerGroup}/${workerId}`,
-        `secrets:get:worker-type:${workerPoolId}`, // deprecated secret name
-        `secrets:get:worker-pool:${workerPoolId}`,
-        `queue:claim-work:${workerPoolId}`,
-      ],
-      start: taskcluster.fromNow('-15 minutes'),
-      expiry: taskcluster.fromNow('96 hours'),
-      credentials: this.taskclusterCredentials,
-    });
+    // assume for the moment that workers self-terminate before 96 hours
+    return {expires: taskcluster.fromNow('96 hours')};
   }
 
   async deprovision({workerPool}) {
@@ -602,49 +575,6 @@ class GoogleProvider extends Provider {
     }
   }
 }
-
-builder.declare({
-  method: 'post',
-  route: '/credentials/google/:workerPoolId(*)',
-  name: 'credentialsGoogle',
-  title: 'Google Credentials',
-  stability: APIBuilder.stability.experimental,
-  input: 'credentials-google-request.yml',
-  output: 'temp-creds-response.yml',
-  description: [
-    'Get Taskcluster credentials for a worker given an Instance Identity Token',
-  ].join('\n'),
-}, async function(req, res) {
-  const {workerPoolId} = req.params;
-
-  try {
-    const workerPool = await this.WorkerPool.load({workerPoolId});
-    const provider = this.providers.get(workerPool.providerId);
-
-    if (!provider) {
-      return res.reportError('InputError', 'Pool has an invalid provider', {
-        providerId: workerPool.providerId,
-      });
-    }
-
-    // check that this workerPool is at least using the google provider. This
-    // can cause worker startup to fail when a pool's provider changes.
-    if (!(provider instanceof GoogleProvider)) {
-      return res.reportError('InputError', 'Pool does not have a Google provider', {
-        providerId: workerPool.providerId,
-      });
-    }
-
-    return res.reply(await provider.verifyIdToken({
-      token: req.body.token,
-      workerPool,
-    }));
-  } catch (err) {
-    // We will internally record what went wrong and report back something generic
-    this.monitor.reportError(err, 'warning');
-    return res.reportError('InputError', 'Invalid Token', {});
-  }
-});
 
 module.exports = {
   GoogleProvider,

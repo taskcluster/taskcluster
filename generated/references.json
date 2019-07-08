@@ -345,36 +345,6 @@
   },
   {
     "content": {
-      "$id": "/schemas/worker-manager/v1/temp-creds-response.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Response for workers that want Taskcluster credentials",
-      "properties": {
-        "accessToken": {
-          "description": "AccessToken used for authenticating requests, you should store this\nyou won't be able to retrive it again!\n",
-          "type": "string"
-        },
-        "certificate": {
-          "description": "Needed to access taskcluster apis using temporary credentials",
-          "type": "string"
-        },
-        "clientId": {
-          "description": "ClientId of the client",
-          "type": "string"
-        }
-      },
-      "required": [
-        "accessToken",
-        "clientId",
-        "certificate"
-      ],
-      "title": "Temporary Credentials Response",
-      "type": "object"
-    },
-    "filename": "schemas/worker-manager/v1/temp-creds-response.json"
-  },
-  {
-    "content": {
       "$id": "/schemas/worker-manager/v1/report-worker-error-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -414,6 +384,114 @@
   },
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/register-worker-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response body to `registerWorker`.",
+      "properties": {
+        "credentials": {
+          "additionalProperties": false,
+          "description": "The credentials the worker\nwill need to perform its work.  Specifically, credentials with scopes\n* `assume:worker-pool:<workerPoolId>`\n* `assume:worker-id:<workerGroup>/<workerId>`\n* `queue:worker-id:<workerGroup>/<workerId>`\n* `secrets:get:worker-pool:<workerPoolId>`\n* `queue:claim-work:<workerPoolId>`\n",
+          "properties": {
+            "accessToken": {
+              "type": "string"
+            },
+            "certificate": {
+              "description": "Note that a certificate may not be provided, if the credentials are not temporary.\n",
+              "type": "string"
+            },
+            "clientId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "accessToken",
+            "clientId"
+          ],
+          "title": "Credentials",
+          "type": "object"
+        },
+        "expires": {
+          "description": "Time at which the included credentials will expire.  Workers must either\nre-register (for static workers) or terminate (for dynamically\nprovisioned workers) before this time.\n",
+          "format": "date-time",
+          "title": "Expires",
+          "type": "string"
+        }
+      },
+      "required": [
+        "expires",
+        "credentials"
+      ],
+      "title": "Register Worker Response",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/register-worker-response.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/register-worker-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Request body to `registerWorker`.",
+      "properties": {
+        "providerId": {
+          "$ref": "worker-full.json#/properties/providerId"
+        },
+        "workerGroup": {
+          "$ref": "worker-full.json#/properties/workerGroup"
+        },
+        "workerId": {
+          "$ref": "worker-full.json#/properties/workerId"
+        },
+        "workerIdentityProof": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "description": "(No information is currently required; TBD)\n",
+              "properties": {
+              },
+              "required": [
+              ],
+              "title": "static provider type",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "token": {
+                  "description": "A JWT token as defined in [this google documentation](https://cloud.google.com/compute/docs/instances/verifying-instance-identity)\n",
+                  "title": "Token",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "token"
+              ],
+              "title": "google provider type",
+              "type": "object"
+            }
+          ],
+          "description": "Proof that this call is coming from the worker identified by the other fields.\nThe form of this proof varies depending on the provider type.\n",
+          "title": "Worker Identity Proof"
+        },
+        "workerPoolId": {
+          "$ref": "worker-pool-full.json#/properties/workerPoolId"
+        }
+      },
+      "required": [
+        "workerPoolId",
+        "providerId",
+        "workerGroup",
+        "workerId",
+        "workerIdentityProof"
+      ],
+      "title": "Register Worker Request",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/register-worker-request.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/pulse-worker-pool-message.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -442,27 +520,6 @@
       "type": "object"
     },
     "filename": "schemas/worker-manager/v1/pulse-worker-pool-message.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/worker-manager/v1/credentials-google-request.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Called by workers to get Taskcluster credentials",
-      "properties": {
-        "token": {
-          "description": "A JWT token as defined in [this google documentation](https://cloud.google.com/compute/docs/instances/verifying-instance-identity)",
-          "title": "Token",
-          "type": "string"
-        }
-      },
-      "required": [
-        "token"
-      ],
-      "title": "Google Credential Request",
-      "type": "object"
-    },
-    "filename": "schemas/worker-manager/v1/credentials-google-request.json"
   },
   {
     "content": {
@@ -8456,18 +8513,17 @@
         },
         {
           "args": [
-            "workerPoolId"
           ],
-          "description": "Get Taskcluster credentials for a worker given an Instance Identity Token",
-          "input": "v1/credentials-google-request.json#",
-          "method": "post",
-          "name": "credentialsGoogle",
-          "output": "v1/temp-creds-response.json#",
+          "description": "Register a running worker.  Workers call this method on worker start-up.\n\nThis call both marks the worker as running and returns the credentials\nthe worker will require to perform its work.  The worker must provide\nsome proof of its identity, and that proof varies by provider type.",
+          "input": "v1/register-worker-request.json#",
+          "method": "get",
+          "name": "registerWorker",
+          "output": "v1/register-worker-response.json#",
           "query": [
           ],
-          "route": "/credentials/google/<workerPoolId>",
+          "route": "/worker/register",
           "stability": "experimental",
-          "title": "Google Credentials",
+          "title": "Register a running worker",
           "type": "function"
         }
       ],

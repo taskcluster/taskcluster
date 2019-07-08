@@ -4513,14 +4513,13 @@ await asyncWorkerManager.listWorkersForWorkerPool(workerPoolId) # -> result
 await asyncWorkerManager.listWorkersForWorkerPool(workerPoolId='value') # -> result
 ```
 
-#### Google Credentials
-Get Taskcluster credentials for a worker given an Instance Identity Token
+#### Register a running worker
+Register a running worker.  Workers call this method on worker start-up.
 
+This call both marks the worker as running and returns the credentials
+the worker will require to perform its work.  The worker must provide
+some proof of its identity, and that proof varies by provider type.
 
-
-Takes the following arguments:
-
-  * `workerPoolId`
 
 Has required input schema
 
@@ -4528,11 +4527,9 @@ Has required output schema
 
 ```python
 # Sync calls
-workerManager.credentialsGoogle(workerPoolId, payload) # -> result
-workerManager.credentialsGoogle(payload, workerPoolId='value') # -> result
+workerManager.registerWorker(payload) # -> result
 # Async call
-await asyncWorkerManager.credentialsGoogle(workerPoolId, payload) # -> result
-await asyncWorkerManager.credentialsGoogle(payload, workerPoolId='value') # -> result
+await asyncWorkerManager.registerWorker(payload) # -> result
 ```
 
 

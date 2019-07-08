@@ -18,7 +18,7 @@ export default class WorkerManager extends Client {
     this.reportWorkerError.entry = {"args":["workerPoolId"],"input":true,"method":"post","name":"reportWorkerError","output":true,"query":[],"route":"/worker-pools-errors/<workerPoolId>","scopes":{"AllOf":["assume:worker-pool:<workerPoolId>","assume:worker-id:<workerGroup>/<workerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkerPoolErrors.entry = {"args":["workerPoolId"],"method":"get","name":"listWorkerPoolErrors","output":true,"query":["continuationToken","limit"],"route":"/worker-pool-errors/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkersForWorkerPool.entry = {"args":["workerPoolId"],"method":"get","name":"listWorkersForWorkerPool","output":true,"query":["continuationToken","limit"],"route":"/workers/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.credentialsGoogle.entry = {"args":["workerPoolId"],"input":true,"method":"post","name":"credentialsGoogle","output":true,"query":[],"route":"/credentials/google/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.registerWorker.entry = {"args":[],"input":true,"method":"get","name":"registerWorker","output":true,"query":[],"route":"/worker/register","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -97,11 +97,14 @@ export default class WorkerManager extends Client {
     return this.request(this.listWorkersForWorkerPool.entry, args);
   }
   /* eslint-disable max-len */
-  // Get Taskcluster credentials for a worker given an Instance Identity Token
+  // Register a running worker.  Workers call this method on worker start-up.
+  // This call both marks the worker as running and returns the credentials
+  // the worker will require to perform its work.  The worker must provide
+  // some proof of its identity, and that proof varies by provider type.
   /* eslint-enable max-len */
-  credentialsGoogle(...args) {
-    this.validate(this.credentialsGoogle.entry, args);
+  registerWorker(...args) {
+    this.validate(this.registerWorker.entry, args);
 
-    return this.request(this.credentialsGoogle.entry, args);
+    return this.request(this.registerWorker.entry, args);
   }
 }

@@ -19,6 +19,9 @@ class FakeOAuth2 {
     if (!idToken || !audience) {
       throw new Error('Must provide both idToken and audience');
     }
+    if (idToken === 'invalid') {
+      throw new Error('Invalid Token');
+    }
     const sub = idToken !== 'wrongSub' ? WORKER_SERVICE_ACCOUNT_ID : 'bad';
     const project_id = idToken !== 'wrongProject' ? this.project : 'bad';
     const instance_id = idToken !== 'wrongId' ? 'abc123' : 'bad';

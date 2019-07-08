@@ -224,11 +224,15 @@ func (workerManager *WorkerManager) ListWorkersForWorkerPool(workerPoolId, conti
 
 // Stability: *** EXPERIMENTAL ***
 //
-// Get Taskcluster credentials for a worker given an Instance Identity Token
+// Register a running worker.  Workers call this method on worker start-up.
 //
-// See #credentialsGoogle
-func (workerManager *WorkerManager) CredentialsGoogle(workerPoolId string, payload *GoogleCredentialRequest) (*TemporaryCredentialsResponse, error) {
+// This call both marks the worker as running and returns the credentials
+// the worker will require to perform its work.  The worker must provide
+// some proof of its identity, and that proof varies by provider type.
+//
+// See #registerWorker
+func (workerManager *WorkerManager) RegisterWorker(payload *RegisterWorkerRequest) (*RegisterWorkerResponse, error) {
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/credentials/google/"+url.QueryEscape(workerPoolId), new(TemporaryCredentialsResponse), nil)
-	return responseObject.(*TemporaryCredentialsResponse), err
+	responseObject, _, err := (&cd).APICall(payload, "GET", "/worker/register", new(RegisterWorkerResponse), nil)
+	return responseObject.(*RegisterWorkerResponse), err
 }
