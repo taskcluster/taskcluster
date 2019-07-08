@@ -482,6 +482,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "sciurus",
+      "name": "Brian Pitts",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/677595?v=4",
+      "profile": "https://www.polibyte.com",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
