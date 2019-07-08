@@ -4,4 +4,3 @@ module "hooks_rabbitmq_user" {
   project_name   = "taskcluster-hooks"
   rabbitmq_vhost = "${var.rabbitmq_vhost}"
 }
-

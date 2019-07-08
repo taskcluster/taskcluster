@@ -48,5 +48,3 @@ module "notify_user" {
 }
 EOF
 }
-
-

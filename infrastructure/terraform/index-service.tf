@@ -4,4 +4,3 @@ module "index_rabbitmq_user" {
   project_name   = "taskcluster-index"
   rabbitmq_vhost = "${var.rabbitmq_vhost}"
 }
-

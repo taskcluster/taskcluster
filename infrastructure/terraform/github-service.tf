@@ -4,4 +4,3 @@ module "github_rabbitmq_user" {
   project_name   = "taskcluster-github"
   rabbitmq_vhost = "${var.rabbitmq_vhost}"
 }
-

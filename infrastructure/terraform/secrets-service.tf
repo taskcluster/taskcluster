@@ -4,4 +4,3 @@ module "secrets_rabbitmq_user" {
   project_name   = "taskcluster-secrets"
   rabbitmq_vhost = "${var.rabbitmq_vhost}"
 }
-

@@ -51,5 +51,3 @@ module "queue_user" {
 }
 EOF
 }
-
-
