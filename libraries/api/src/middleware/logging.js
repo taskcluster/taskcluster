@@ -19,6 +19,7 @@ defaultMonitorManager.register({
     name: 'The name of the API method',
     apiVersion: 'The version of the API (e.g., `v1`)',
     resource: 'The path of the http request.',
+    query: 'Query params that were passed to the request (only ones that are specified as possible in the entry)',
     method: 'The http method of the request.',
     statusCode: 'The http status code that the endpoint resolved with.',
     duration: 'The duration in ms of the call.',
@@ -55,6 +56,15 @@ const logRequest = ({builder, entry, monitor}) => {
       }
       sent = true;
 
+      // This will record the values of any query params
+      // passed in that we requested. Note that bewit is not
+      // included here because it is not specified in entries
+      // directly.
+      const query = {};
+      Object.keys(entry.query).forEach(k => {
+        query[k] = req.query[k];
+      });
+
       const d = process.hrtime(start);
 
       monitor.log.apiMethod({
@@ -62,7 +72,8 @@ const logRequest = ({builder, entry, monitor}) => {
         apiVersion: builder.apiVersion,
         public: req.public,
         hasAuthed: req.hasAuthed,
-        resource: req.originalUrl,
+        resource: req.baseUrl + req.path, // Do not log query params here
+        query,
         method: req.method,
         clientId: req.hasAuthed ? await req.clientId() : '',
         expires: req.hasAuthed ? await req.expires() : '',
