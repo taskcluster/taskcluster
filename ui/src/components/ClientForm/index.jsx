@@ -25,7 +25,7 @@ import Button from '../Button';
 import { client } from '../../utils/prop-types';
 import splitLines from '../../utils/splitLines';
 import Link from '../../utils/Link';
-import scopeRedirect from '../../utils/scopeRedirect';
+import scopeLink from '../../utils/scopeLink';
 
 @withStyles(theme => ({
   fab: {
@@ -323,7 +323,7 @@ export default class ClientForm extends Component {
                           key={scope}
                           button
                           component={Link}
-                          to={scopeRedirect(scope)}
+                          to={scopeLink(scope)}
                           className={classes.listItemButton}>
                           <ListItemText secondary={<code>{scope}</code>} />
                           <LinkIcon />
