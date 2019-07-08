@@ -491,6 +491,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "edunham",
+      "name": "E. Dunham",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/812892?v=4",
+      "profile": "http://edunham.net/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
