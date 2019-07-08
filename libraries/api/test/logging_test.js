@@ -79,6 +79,16 @@ suite(testing.suiteName(), function() {
     res.reply({});
   });
 
+  builder.declare({
+    method: 'get',
+    route: '/bewitiful',
+    name: 'bewitiful',
+    title: 'Bewit having endpoing',
+    description: 'Place we can call to test something',
+  }, function(req, res) {
+    res.reply({});
+  });
+
   test('successful api method is logged', async function() {
     const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/require-some-scopes');
     const {header} = hawk.client.header(url, 'GET', {
@@ -232,6 +242,36 @@ suite(testing.suiteName(), function() {
         satisfyingScopes: [],
         sourceIp: '::ffff:127.0.0.1',
         statusCode: 403,
+        v: 1,
+      },
+      Logger: 'taskcluster.lib-api',
+    });
+  });
+
+  test('bewit is elided', async function() {
+    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/bewitiful?bewit=abc123');
+    const {header} = hawk.client.header(url, 'GET', {
+      credentials: {id: 'client-with-aa-bb-dd', key: 'ignored', algorithm: 'sha256'},
+    });
+    await request.get(url).set('Authorization', header);
+
+    assert.equal(helper.monitorManager.messages.length, 1);
+    delete helper.monitorManager.messages[0].Fields.duration;
+    delete helper.monitorManager.messages[0].Fields.expires;
+    assert.deepEqual(helper.monitorManager.messages[0], {
+      Type: 'monitor.apiMethod',
+      Severity: LEVELS.notice,
+      Fields: {
+        name: 'bewitiful',
+        apiVersion: 'v1',
+        clientId: '',
+        hasAuthed: false,
+        method: 'GET',
+        public: true,
+        resource: '/api/test/v1/bewitiful?bewit=xxxxxx',
+        satisfyingScopes: [],
+        sourceIp: '::ffff:127.0.0.1',
+        statusCode: 200,
         v: 1,
       },
       Logger: 'taskcluster.lib-api',
