@@ -64,6 +64,9 @@ const logRequest = ({builder, entry, monitor}) => {
       Object.keys(entry.query).forEach(k => {
         query[k] = req.query[k];
       });
+      if (req.query['bewit']) {
+        query['bewit'] = '...';
+      }
 
       const d = process.hrtime(start);
 

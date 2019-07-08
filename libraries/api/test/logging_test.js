@@ -282,6 +282,7 @@ suite(testing.suiteName(), function() {
         public: true,
         query: {
           foo: 'abc',
+          bewit: '...',
         },
         resource: '/api/test/v1/bewitiful',
         satisfyingScopes: [],
