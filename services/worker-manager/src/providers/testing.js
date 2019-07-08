@@ -18,6 +18,12 @@ class TestingProvider extends Provider {
 
   async removeResources({workerPool}) {
     this.monitor.notice('remove-resource', {workerPoolId: workerPool.workerPoolId});
+    if (workerPool.providerData.failRemoveResources) {
+      await workerPool.modify(wp => {
+        wp.providerData.failRemoveResources -= 1;
+      });
+      throw new Error('uhoh removing resources');
+    }
   }
 
   async provision({workerPool}) {

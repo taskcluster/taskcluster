@@ -83,11 +83,7 @@ class Provisioner {
         if (providerId === previousProviderId) {
           await provider.updateResources({workerPool});
         } else {
-          const previousProvider = this.providers.get(previousProviderId);
-          await Promise.all([
-            provider.createResources({workerPool}),
-            previousProvider && previousProvider.removeResources({workerPool}),
-          ]);
+          await provider.createResources({workerPool});
         }
         break;
       }

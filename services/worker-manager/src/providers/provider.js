@@ -75,16 +75,24 @@ class Provider {
   }
 
   /**
-   * Given a worker pool configuration, do whatever the provider might
-   * do with this worker pool. This may mean nothing at all in the case of
-   * static provider!
+   * Given a worker pool configuration, do whatever the provider might do with
+   * this worker pool to create workers to do work. This may mean nothing at
+   * all in the case of static provider!
    */
   async provision({workerPool}) {
   }
 
-  // This is the oposite of provision. Given a worker pool, tear down whatever
-  // resources this provider has created for it. Once complete, remove yourself
-  // from the worker pool's list of previous providers.
+  /**
+   * This is the oposite of provision, and is called for providers that are
+   * no longer the provider for the given workerPool, but may still have workers
+   * or other resources defined for the workerPool.
+   *
+   * The provider should tear down whatever resources this provider has created
+   * for the worker pool.  This will be called in every provisioning loop until
+   * there are no remaining workers in this pool with this providerId.  The
+   * provider can pro-actively stop any such workers, or wait for them to stop
+   * themselves.
+   */
   async deprovision({workerPool}) {
   }
 
@@ -113,7 +121,6 @@ class Provider {
   /**
    * Anything a provider may want to do every provisioning loop but not tied
    * to any one worker pool. Called _after_ all provision() calls are complete.
-   * You may want to use this time to remove outdated worker pools for instance.
    */
   async cleanup() {
   }
@@ -139,7 +146,8 @@ class Provider {
 
   /**
    * Called when a new worker pool is added to this provider to allow the provider
-   * to do whatever setup is necessary
+   * to do whatever setup is necessary, such as creating shared resources for the
+   * workers.  This activity is specific to the pool, but not to individual workers.
    */
   async createResources({workerPool}) {
   }
@@ -154,7 +162,9 @@ class Provider {
   }
 
   /**
-   * Called when a worker pool is removed and this provider was providing for it.
+   * Called when a worker pool is removed and this provider was providing for it.  After
+   * this call completes correctly, this provider is removed from the list of previous
+   * providerIds for this worker pool.
    */
   async removeResources({workerPool}) {
   }
