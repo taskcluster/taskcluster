@@ -83,6 +83,9 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/bewitiful',
     name: 'bewitiful',
+    query: {
+      foo: /abc*/,
+    },
     title: 'Bewit having endpoing',
     description: 'Place we can call to test something',
   }, function(req, res) {
@@ -258,7 +261,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('bewit is elided', async function() {
-    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/bewitiful?bewit=abc123');
+    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/bewitiful?bewit=abc123&foo=abc');
     const {header} = hawk.client.header(url, 'GET', {
       credentials: {id: 'client-with-aa-bb-dd', key: 'ignored', algorithm: 'sha256'},
     });
@@ -277,11 +280,87 @@ suite(testing.suiteName(), function() {
         hasAuthed: false,
         method: 'GET',
         public: true,
-        query: {},
+        query: {
+          foo: 'abc',
+        },
         resource: '/api/test/v1/bewitiful',
         satisfyingScopes: [],
         sourceIp: '::ffff:127.0.0.1',
         statusCode: 200,
+        v: 1,
+      },
+      Logger: 'taskcluster.lib-api',
+    });
+  });
+
+  test('unknown query params are not logged', async function() {
+    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/bewitiful?bar=abc');
+    const {header} = hawk.client.header(url, 'GET', {
+      credentials: {id: 'client-with-aa-bb-dd', key: 'ignored', algorithm: 'sha256'},
+    });
+    try {
+      await request.get(url).set('Authorization', header);
+    } catch (err) {
+      if (err.status !== 400) {
+        throw err;
+      }
+    }
+
+    assert.equal(helper.monitorManager.messages.length, 1);
+    delete helper.monitorManager.messages[0].Fields.duration;
+    delete helper.monitorManager.messages[0].Fields.expires;
+    assert.deepEqual(helper.monitorManager.messages[0], {
+      Type: 'monitor.apiMethod',
+      Severity: LEVELS.notice,
+      Fields: {
+        name: 'bewitiful',
+        apiVersion: 'v1',
+        clientId: '',
+        hasAuthed: false,
+        method: 'GET',
+        public: true,
+        query: {},
+        resource: '/api/test/v1/bewitiful',
+        satisfyingScopes: [],
+        sourceIp: '::ffff:127.0.0.1',
+        statusCode: 400,
+        v: 1,
+      },
+      Logger: 'taskcluster.lib-api',
+    });
+  });
+
+  test('invalid query params are not logged', async function() {
+    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/bewitiful?foo=def');
+    const {header} = hawk.client.header(url, 'GET', {
+      credentials: {id: 'client-with-aa-bb-dd', key: 'ignored', algorithm: 'sha256'},
+    });
+    try {
+      await request.get(url).set('Authorization', header);
+    } catch (err) {
+      if (err.status !== 400) {
+        throw err;
+      }
+    }
+
+    assert.equal(helper.monitorManager.messages.length, 1);
+    delete helper.monitorManager.messages[0].Fields.duration;
+    delete helper.monitorManager.messages[0].Fields.expires;
+    assert.deepEqual(helper.monitorManager.messages[0], {
+      Type: 'monitor.apiMethod',
+      Severity: LEVELS.notice,
+      Fields: {
+        name: 'bewitiful',
+        apiVersion: 'v1',
+        clientId: '',
+        hasAuthed: false,
+        method: 'GET',
+        public: true,
+        query: {},
+        resource: '/api/test/v1/bewitiful',
+        satisfyingScopes: [],
+        sourceIp: '::ffff:127.0.0.1',
+        statusCode: 400,
         v: 1,
       },
       Logger: 'taskcluster.lib-api',
