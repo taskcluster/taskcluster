@@ -1,0 +1,32 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: taskcluster-queue-expiretask
+spec:
+  jobTemplate:
+    metadata:
+      labels:
+        application: taskcluster
+        taskcluster-service: taskcluster-queue
+    spec:
+      template:
+        spec:
+          activeDeadlineSeconds: 86400
+          containers:
+          - args:
+            - queue/expireTask
+            env:
+            - name: TASKCLUSTER_ROOT_URL
+              value: '{{ .Values.rootUrl }}'
+            envFrom:
+            - secretRef:
+                name: taskcluster-queue
+            image: '{{ .Values.dockerImage }}'
+            imagePullPolicy: Always
+            name: taskcluster-queue-expiretask
+            resources:
+              requests:
+                cpu: 100m
+                memory: 100Mi
+          restartPolicy: OnFailure
+  schedule: 0 0 * * *

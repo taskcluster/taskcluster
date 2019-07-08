@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: taskcluster-auth-secrets-read
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: taskcluster-auth-secrets-read
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: taskcluster-auth

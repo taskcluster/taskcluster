@@ -1,0 +1,32 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: taskcluster-purge-cache-expirecachepurges
+spec:
+  jobTemplate:
+    metadata:
+      labels:
+        application: taskcluster
+        taskcluster-service: taskcluster-purge-cache
+    spec:
+      template:
+        spec:
+          activeDeadlineSeconds: 86400
+          containers:
+          - args:
+            - purge-cache/expireCachePurges
+            env:
+            - name: TASKCLUSTER_ROOT_URL
+              value: '{{ .Values.rootUrl }}'
+            envFrom:
+            - secretRef:
+                name: taskcluster-purge-cache
+            image: '{{ .Values.dockerImage }}'
+            imagePullPolicy: Always
+            name: taskcluster-purge-cache-expirecachepurges
+            resources:
+              requests:
+                cpu: 100m
+                memory: 100Mi
+          restartPolicy: OnFailure
+  schedule: 0 0 * * *

@@ -1,0 +1,38 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: taskcluster-index-handlers
+spec:
+  replicas: 1.0
+  selector:
+    matchLabels:
+      application: taskcluster
+      taskcluster-proc: handlers
+      taskcluster-service: taskcluster-index
+  template:
+    metadata:
+      annotations:
+        checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-index-secrets.yaml") . | sha256sum }}'
+      labels:
+        application: taskcluster
+        taskcluster-proc: handlers
+        taskcluster-service: taskcluster-index
+    spec:
+      containers:
+      - args:
+        - index/handlers
+        env:
+        - name: TASKCLUSTER_ROOT_URL
+          value: '{{ .Values.rootUrl }}'
+        envFrom:
+        - secretRef:
+            name: taskcluster-index
+        image: '{{ .Values.dockerImage }}'
+        imagePullPolicy: Always
+        name: taskcluster-index
+        ports: []
+        resources:
+          requests:
+            cpu: 50m
+            memory: 100Mi
+      serviceAccountName: taskcluster-index

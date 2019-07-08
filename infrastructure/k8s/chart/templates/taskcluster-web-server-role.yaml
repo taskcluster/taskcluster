@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: taskcluster-web-server-secrets-read
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - secrets/taskcluster-web-server
+  verbs:
+  - get
+  - watch
+  - list
