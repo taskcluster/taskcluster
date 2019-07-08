@@ -3837,7 +3837,7 @@ module.exports = {
           "output": "v1/worker-pool-error.json#",
           "query": [
           ],
-          "route": "/worker-pools-errors/<workerPoolId>",
+          "route": "/worker-pool-errors/<workerPoolId>",
           "scopes": {
             "AllOf": [
               "assume:worker-pool:<workerPoolId>",

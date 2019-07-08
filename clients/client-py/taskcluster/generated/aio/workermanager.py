@@ -198,7 +198,7 @@ class WorkerManager(AsyncBaseClient):
             'method': 'post',
             'name': 'reportWorkerError',
             'output': 'v1/worker-pool-error.json#',
-            'route': '/worker-pools-errors/<workerPoolId>',
+            'route': '/worker-pool-errors/<workerPoolId>',
             'stability': 'experimental',
         },
         "updateWorkerPool": {
