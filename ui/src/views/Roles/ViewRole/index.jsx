@@ -112,6 +112,7 @@ export default class ViewRole extends Component {
               {data && <ErrorPanel fixed error={data.error} />}
               {data && data.role && (
                 <RoleForm
+                  key={data.role.roleId}
                   role={data.role}
                   loading={loading}
                   onRoleDelete={this.handleDeleteRole}
