@@ -233,3 +233,8 @@ hr {
     background-color: #34495e !important;
     border-color: #34495e !important; } }
 
+
+.logo {
+  margin-top: 5px;
+  margin-bottom: -5px;
+}
