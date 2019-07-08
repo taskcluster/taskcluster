@@ -31,6 +31,7 @@ const ELIDED = new Set([
   'secretAccessKey',
   'secret',
   'secrets',
+  'bewit',
 ]);
 
 /*

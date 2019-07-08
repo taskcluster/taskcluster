@@ -22,12 +22,14 @@ const queryValidator = ({context, entry}) => {
       }
       if (pattern instanceof RegExp) {
         if (!pattern.test(value)) {
+          delete req.query[key];
           errors.push('Query-string parameter: ' + key + '="' + value +
                       '" does not match expression: ' + pattern.toString());
         }
       } else {
         const msg = pattern.call(context, value);
         if (typeof msg === 'string') {
+          delete req.query[key];
           errors.push('Query-string parameter: ' + key + '="' + value +
                       '" is not valid, error: ' + msg);
         }
