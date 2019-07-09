@@ -123,17 +123,11 @@ export default class RoleForm extends Component {
       description !== role.description ||
       scopeText !== role.scopes.join('\n');
 
-      function fun(props) {
-        let str=props.scope;
-        let res=[];
-        for (var i = 0; i < str.length; i ++) {
-          if(str.charAt(i).match(/[\/\.*:-]/g))
-            res[i] = <b>{str.charAt(i)}</b>;
-          else
-            res[i] = str.charAt(i);
-        }
-        console.log(res);
-        return <code>{res}</code>;
+      function formatScope(scope) {
+        return scope.replace(
+          /^assume:|\*$|<..>/g,
+          match => `<strong>${match}</strong>`
+        );
       }
 
     return (
@@ -216,7 +210,19 @@ export default class RoleForm extends Component {
                           component={Link}
                           to={`/auth/scopes/${encodeURIComponent(scope)}`}
                           className={classes.listItemButton}>
-                          <ListItemText secondary={fun({scope})} />
+                          <ListItemText
+                              disableTypography
+                            secondary={
+                              <Typography>
+                                <code
+                                  // eslint-disable-next-line react/no-danger
+                                  dangerouslySetInnerHTML={{
+                                    __html: formatScope(scope),
+                                  }}
+                                />
+                              </Typography>
+                            }
+                          />
                           <LinkIcon />
                         </ListItem>
                       ))}
