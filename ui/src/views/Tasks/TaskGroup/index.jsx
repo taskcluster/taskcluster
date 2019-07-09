@@ -703,7 +703,6 @@ export default class TaskGroup extends Component {
         ) : null}
         {dialogOpen && (
           <DialogAction
-            focusOnPrimary
             fullScreen={Boolean(selectedAction.schema)}
             open={dialogOpen}
             error={dialogError}

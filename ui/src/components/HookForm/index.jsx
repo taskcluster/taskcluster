@@ -753,7 +753,6 @@ export default class HookForm extends Component {
         )}
         {dialogOpen && (
           <DialogAction
-            focusOnPrimary
             fullScreen
             open={dialogOpen}
             onSubmit={this.handleTriggerHookSubmit}
