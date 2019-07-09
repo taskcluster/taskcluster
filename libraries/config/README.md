@@ -67,6 +67,8 @@ var cfg = config({
   ]
   profile:  undefined, // Profile to apply (default to none)
   env:      process.env, // Environment variables (mapping string to strings)
+  getEnvVars: false, // If true, rather than returning configuration, this returns the list
+                        of possible env vars
 });
 ```
 

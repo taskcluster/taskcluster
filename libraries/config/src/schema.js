@@ -4,7 +4,7 @@ const yaml = require('js-yaml');
 /*
  * Create a YAML type that loads from environment variable
  */
-const createType = (env, name, typeName, deserialize) => {
+const createType = (env, vars, name, typeName, deserialize) => {
   return new yaml.Type(name, {
     kind: 'scalar', // Takes a string as input
     resolve: (data) => {
@@ -12,6 +12,13 @@ const createType = (env, name, typeName, deserialize) => {
     },
     // Deserialize the data, in the case we read the environment variable
     construct: (data) => {
+      if (Array.isArray(vars)) {
+        vars.push({
+          type: name,
+          var: data,
+        });
+        return undefined;
+      }
       let value = env[data];
       if (value === undefined) {
         return value;
@@ -25,17 +32,17 @@ const createType = (env, name, typeName, deserialize) => {
 /*
  * This schema allows our special !env types
  */
-module.exports = env => yaml.Schema.create(yaml.JSON_SCHEMA, [
-  createType(env, '!env', 'string', val => {
+module.exports = (env, vars) => yaml.Schema.create(yaml.JSON_SCHEMA, [
+  createType(env, vars, '!env', 'string', val => {
     return val;
   }),
-  createType(env, '!env:string', 'string', val => {
+  createType(env, vars, '!env:string', 'string', val => {
     return val;
   }),
-  createType(env, '!env:number', 'number', val => {
+  createType(env, vars, '!env:number', 'number', val => {
     return parseFloat(val);
   }),
-  createType(env, '!env:bool', 'boolean', val => {
+  createType(env, vars, '!env:bool', 'boolean', val => {
     if (/^true$/i.test(val)) {
       return true;
     }
@@ -44,10 +51,10 @@ module.exports = env => yaml.Schema.create(yaml.JSON_SCHEMA, [
     }
     return undefined;
   }),
-  createType(env, '!env:json', 'json', val => {
+  createType(env, vars, '!env:json', 'json', val => {
     return JSON.parse(val);
   }),
-  createType(env, '!env:list', 'list', val => {
+  createType(env, vars, '!env:list', 'list', val => {
     return (val.match(/'[^']*'|"[^"]*"|[^ \t]+/g) || []).map(entry =>{
       let n = entry.length;
       if (entry[0] === '\'' && entry[n - 1] === '\'' ||

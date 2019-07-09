@@ -24,8 +24,7 @@ suite(testing.suiteName(), function() {
       ],
       profile: 'danish',
     });
-
-    assume(cfg).deep.equals({
+assume(cfg).deep.equals({
       text: ['Hej', 'Verden'],
     });
   });
@@ -145,5 +144,26 @@ suite(testing.suiteName(), function() {
       json: {test: 42},
       list: ['abc', 'def', 'qouted string', ''],
     });
+  });
+
+  test('load !env listing', () => {
+    const vars = config({
+      files: [
+        {path: path.join(__dirname, 'test-env.yml'), required: true},
+      ],
+      env: {}, // Notice they do not need to be in the env to do this
+      getEnvVars: true,
+    });
+
+    assume(vars).deep.equals([
+      { type: '!env', var: 'ENV_VARIABLE' },
+      { type: '!env:string', var: 'ENV_VARIABLE' },
+      { type: '!env:number', var: 'ENV_NUMBER' },
+      { type: '!env:bool', var: 'ENV_TRUE' },
+      { type: '!env:bool', var: 'ENV_FALSE' },
+      { type: '!env:bool', var: 'ENV_NOT_SET' },
+      { type: '!env:json', var: 'ENV_JSON' },
+      { type: '!env:list', var: 'ENV_LIST' },
+    ]);
   });
 });
