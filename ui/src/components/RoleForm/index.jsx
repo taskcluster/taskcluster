@@ -109,7 +109,6 @@ export default class RoleForm extends Component {
     this.props.onRoleSave(role, roleId);
   };
 
-
   render() {
     const { role, classes, isNewRole, loading } = this.props;
     const {
@@ -247,36 +246,36 @@ export default class RoleForm extends Component {
             <ContentSaveIcon />
           </Button>
         ) : (
-            <Fragment>
-              <Button
-                spanProps={{
-                  className: classNames(classes.fab, classes.saveRoleSpan),
-                }}
+          <Fragment>
+            <Button
+              spanProps={{
+                className: classNames(classes.fab, classes.saveRoleSpan),
+              }}
+              requiresAuth
+              tooltipOpen
+              onClick={this.handleSaveRole}
+              className={classes.saveIcon}
+              variant="round"
+              tooltipProps={{ title: 'Save' }}
+              disabled={loading || !isRoleDirty}
+              classes={{ root: classes.saveIcon }}>
+              <ContentSaveIcon />
+            </Button>
+            <SpeedDial>
+              <SpeedDialAction
                 requiresAuth
                 tooltipOpen
-                onClick={this.handleSaveRole}
-                className={classes.saveIcon}
-                variant="round"
-                tooltipProps={{ title: 'Save' }}
-                disabled={loading || !isRoleDirty}
-                classes={{ root: classes.saveIcon }}>
-                <ContentSaveIcon />
-              </Button>
-              <SpeedDial>
-                <SpeedDialAction
-                  requiresAuth
-                  tooltipOpen
-                  icon={<DeleteIcon />}
-                  onClick={this.handleDeleteRole}
-                  tooltipTitle="Delete"
-                  className={classes.deleteIcon}
-                  ButtonProps={{
-                    disabled: loading,
-                  }}
-                />
-              </SpeedDial>
-            </Fragment>
-          )}
+                icon={<DeleteIcon />}
+                onClick={this.handleDeleteRole}
+                tooltipTitle="Delete"
+                className={classes.deleteIcon}
+                ButtonProps={{
+                  disabled: loading,
+                }}
+              />
+            </SpeedDial>
+          </Fragment>
+        )}
       </Fragment>
     );
   }
