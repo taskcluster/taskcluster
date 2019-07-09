@@ -16,7 +16,7 @@ import SpeedDialAction from '../SpeedDialAction';
 import { role } from '../../utils/prop-types';
 import Link from '../../utils/Link';
 import splitLines from '../../utils/splitLines';
-import scopeLink from '../../utils/scopeLink';
+import { formatScope, scopeLink } from '../../utils/scopeUtils';
 
 @withStyles(theme => ({
   fab: {
@@ -123,13 +123,6 @@ export default class RoleForm extends Component {
       isNewRole ||
       description !== role.description ||
       scopeText !== role.scopes.join('\n');
-
-    function formatScope(scope) {
-      return scope.replace(
-        /^assume:|\*$|<..>/g,
-        match => `<strong>${match}</strong>`
-      );
-    }
 
     return (
       <Fragment>

@@ -16,7 +16,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import splitLines from '../../../utils/splitLines';
 import Link from '../../../utils/Link';
 import scopesetQuery from './scopeset.graphql';
-import scopeLink from '../../../utils/scopeLink';
+import { scopeLink } from '../../../utils/scopeUtils';
 
 @hot(module)
 @withStyles(theme => ({

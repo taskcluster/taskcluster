@@ -25,7 +25,7 @@ import Button from '../Button';
 import { client } from '../../utils/prop-types';
 import splitLines from '../../utils/splitLines';
 import Link from '../../utils/Link';
-import scopeLink from '../../utils/scopeLink';
+import { scopeLink } from '../../utils/scopeUtils';
 
 @withStyles(theme => ({
   fab: {
