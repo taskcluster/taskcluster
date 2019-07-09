@@ -2,6 +2,7 @@ const path = require('path');
 const glob = require('glob');
 const util = require('util');
 const jsone = require('json-e');
+const config = require('taskcluster-lib-config');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const {listServices, readRepoYAML, writeRepoYAML, REPO_ROOT} = require('../../utils');
@@ -9,7 +10,7 @@ const {listServices, readRepoYAML, writeRepoYAML, REPO_ROOT} = require('../../ut
 const SERVICES = listServices();
 const OUT_DIR = path.join('infrastructure', 'k8s', 'chart', 'templates');
 
-const renderTemplates = async (name, procs, templates) => {
+const renderTemplates = async (name, vars, procs, templates) => {
 
   await rimraf(OUT_DIR);
   await mkdirp(OUT_DIR);
@@ -17,7 +18,10 @@ const renderTemplates = async (name, procs, templates) => {
   for (const resource of ['role', 'rolebinding', 'serviceaccount', 'secret']) {
     const rendered = jsone(templates[resource], {
       projectName: `taskcluster-${name}`,
-      secrets: [], // TODO: Come up with new way to do config
+      secrets: vars.map(v => ({
+        key: v,
+        val: `.Values.${name}.${v.toLowerCase()}`,
+      })),
     });
     const file = `taskcluster-${name}-${resource}.yaml`;
     await writeRepoYAML(path.join(OUT_DIR, file), rendered);
@@ -86,13 +90,31 @@ exports.tasks.push({
 
 SERVICES.forEach(name => {
   exports.tasks.push({
+    title: `Get config options for ${name}`,
+    requires: [],
+    provides: [`configs-${name}`],
+    run: async (requirements, utils) => {
+      const envVars = config({
+        files: [{
+          path: path.join(REPO_ROOT, 'services', name, 'config.yml'),
+          required: true,
+        }],
+        getEnvVars: true,
+      });
+      return {
+        [`configs-${name}`]: envVars,
+      };
+    },
+  });
+  exports.tasks.push({
     title: `Generate helm templates for ${name}`,
-    requires: ['k8s-templates'],
+    requires: [`configs-${name}`, 'k8s-templates'],
     provides: [`ingresses-${name}`],
     run: async (requirements, utils) => {
       const procs = await readRepoYAML(path.join('services', name, 'procs.yml'));
       const templates = requirements['k8s-templates'];
-      return {[`ingresses-${name}`]: await renderTemplates(name, procs, templates)};
+      const vars = requirements[`configs-${name}`].map(v => v.var);
+      return {[`ingresses-${name}`]: await renderTemplates(name, vars, procs, templates)};
     },
   });
 });
@@ -100,35 +122,41 @@ SERVICES.forEach(name => {
 // Now add ui/references separately
 const extras = {
   ui: {
-    web: {
-      type: 'web',
-      readinessPath: '/',
-      paths: [
-        '/*',
-      ],
+    vars: [],
+    procs: {
+      web: {
+        type: 'web',
+        readinessPath: '/',
+        paths: [
+          '/*',
+        ],
+      },
     },
   },
   references: {
-    web: {
-      type: 'web',
-      readinessPath: '/references/',
-      paths: [
-        '/references',
-        '/references/*',
-        '/schemas',
-        '/schemas/*',
-      ],
+    vars: [],
+    procs: {
+      web: {
+        type: 'web',
+        readinessPath: '/references/',
+        paths: [
+          '/references',
+          '/references/*',
+          '/schemas',
+          '/schemas/*',
+        ],
+      },
     },
   },
 };
-Object.entries(extras).forEach(([name, procs]) => {
+Object.entries(extras).forEach(([name, {procs, vars}]) => {
   exports.tasks.push({
     title: `Generate helm templates for ${name}`,
     requires: ['k8s-templates'],
     provides: [`ingresses-${name}`],
     run: async (requirements, utils) => {
       const templates = requirements['k8s-templates'];
-      return {[`ingresses-${name}`]: await renderTemplates(name, procs, templates)};
+      return {[`ingresses-${name}`]: await renderTemplates(name, vars, procs, templates)};
     },
   });
 });
