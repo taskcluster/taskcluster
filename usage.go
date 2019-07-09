@@ -226,6 +226,7 @@ and reports back results to the queue.
                                             posses this scope, no crash reports will be sent.
                                             Similarly, if this property is not specified or
                                             is the empty string, no reports will be sent.
+                                            [default: generic-worker]
           shutdownMachineOnIdle             If true, when the worker is deemed to have been
                                             idle for enough time (see idleTimeoutSecs) the
                                             worker will issue an OS shutdown command. If false,
