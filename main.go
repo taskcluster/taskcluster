@@ -206,7 +206,7 @@ func loadConfig(filename string, queryAWSUserData bool, queryGCPMetaData bool) (
 			RootURL:                        "",
 			RunAfterUserCreation:           "",
 			SecretsBaseURL:                 "",
-			SentryProject:                  "",
+			SentryProject:                  "generic-worker",
 			ShutdownMachineOnIdle:          false,
 			ShutdownMachineOnInternalError: false,
 			Subdomain:                      "taskcluster-worker.net",
