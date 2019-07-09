@@ -14,7 +14,6 @@ class Provider {
     monitor,
     notify,
     rootUrl,
-    taskclusterCredentials,
     estimator,
     validator,
     Worker,
@@ -26,7 +25,6 @@ class Provider {
     this.validator = validator;
     this.notify = notify;
     this.rootUrl = rootUrl;
-    this.taskclusterCredentials = taskclusterCredentials;
     this.estimator = estimator;
     this.Worker = Worker;
     this.WorkerPool = WorkerPool;
