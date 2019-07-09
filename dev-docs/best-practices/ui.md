@@ -5,6 +5,7 @@ When we have a good reason to not follow the best practices in the UI, we docume
 
 ## Contents
 * [Tables](#tables)
+* [Dialogs](#dialogs)
 * [Links](#links)
 * [Buttons](#buttons)
 * [Text](#text)
@@ -19,6 +20,10 @@ When we have a good reason to not follow the best practices in the UI, we docume
   * A [Card](https://material-ui.com/components/cards/).
   * A [Drawer](https://material-ui.com/components/drawers/) that opens up via a button click in the table.
 * Right-align numbers - it’s easier to scan a column of numbers if the decimal part starts in the same location.
+
+## Dialogs
+* Focus should go to the first action button when the modal is opened.
+This should be the close modal button.
 
 ## Links
 * Calculate link URLs before the user clicks on them. By doing so, a user will be able to do things like open links in a
