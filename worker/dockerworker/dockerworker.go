@@ -92,6 +92,7 @@ func (d *dockerworker) StartWorker(run *runner.Run) (protocol.Transport, error) 
 	// config from $DOCKER_WORKER_CONFIG.
 	mainJs := fmt.Sprintf("%s/src/bin/worker.js", d.wicfg.Path)
 	cmd := exec.Command("node", mainJs, "--host", "taskcluster-worker-runner", "production")
+	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "DOCKER_WORKER_CONFIG="+d.wicfg.ConfigPath)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
