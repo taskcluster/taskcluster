@@ -148,11 +148,7 @@ suite('Repo Meta Tests', function () {
       let topLevelHd = 7;
       for (let i = 1; i <= 6; i++) {
         if (hd[i] != null && hd[i].length > 0) {
-<<<<<<< HEAD
-          if (i < topLevelHd) {
-=======
           if (i < topLevelHd){
->>>>>>> fe6583cc58b3708ad7473e80025cfc39ac26f614
             topLevelHd = i;
           }
         }
@@ -162,18 +158,13 @@ suite('Repo Meta Tests', function () {
       if (topLevelHd < 7) {
         if (hd[topLevelHd].length > 1) {
           count_errors++;
-<<<<<<< HEAD
-          errors += `${filename} does not have a single top level heading\n`;
-=======
           errors+=`${filename} does not have a single top level heading\n`;
->>>>>>> fe6583cc58b3708ad7473e80025cfc39ac26f614
           console.log(errors);
         }
       }
     }
 
     //if there are any errors found
-<<<<<<< HEAD
     if (count_errors > 0) {
       throw new Error(errors);
     }
@@ -200,10 +191,4 @@ suite('Repo Meta Tests', function () {
       throw new Error(error_string);
     }
   });
-=======
-    if(count_errors>0) {
-      throw new Error(errors);
-    }
-  });
->>>>>>> fe6583cc58b3708ad7473e80025cfc39ac26f614
 });
