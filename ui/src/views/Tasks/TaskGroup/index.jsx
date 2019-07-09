@@ -3,13 +3,22 @@ import cloneDeep from 'lodash.clonedeep';
 import React, { Component } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
-import { isEmpty } from 'ramda';
+import { sum, isEmpty } from 'ramda';
+import { kebabCase } from 'change-case';
 import jsonSchemaDefaults from 'json-schema-defaults';
 import { safeDump } from 'js-yaml';
 import { withStyles } from '@material-ui/core/styles';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
+import Badge from '@material-ui/core/Badge';
+import FormControl from '@material-ui/core/FormControl';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
+import Grid from '@material-ui/core/Grid';
+import FormGroup from '@material-ui/core/FormGroup';
 import HammerIcon from 'mdi-react/HammerIcon';
+import BellIcon from 'mdi-react/BellIcon';
 import { fade } from '@material-ui/core/styles/colorManipulator';
+import Button from '../../../components/Button';
 import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
 import Dashboard from '../../../components/Dashboard';
@@ -24,12 +33,19 @@ import {
   VALID_TASK,
   ACTIONS_JSON_KNOWN_KINDS,
   INITIAL_CURSOR,
+  TASK_STATE,
+  INITIAL_TASK_GROUP_NOTIFICATION_PREFERENCES,
+  GROUP_NOTIFY_TASK_FAILED_KEY,
+  GROUP_NOTIFY_SUCCESS_KEY,
 } from '../../../utils/constants';
 import db from '../../../utils/db';
 import ErrorPanel from '../../../components/ErrorPanel';
 import taskGroupQuery from './taskGroup.graphql';
 import taskGroupSubscription from './taskGroupSubscription.graphql';
 import submitTaskAction from '../submitTaskAction';
+import notify from '../../../utils/notify';
+import logoFailed from '../../../images/logoFailed.png';
+import logoCompleted from '../../../images/logoCompleted.png';
 
 const updateTaskGroupIdHistory = id => {
   if (!VALID_TASK.test(id)) {
@@ -65,8 +81,15 @@ const updateTaskGroupIdHistory = id => {
   dashboard: {
     overflow: 'hidden',
   },
+  firstGrid: {
+    marginTop: theme.spacing.double,
+  },
+  secondGrid: {
+    marginTop: theme.spacing.double,
+    display: 'flex',
+    justifyContent: 'flex-end',
+  },
   taskNameFormSearch: {
-    marginTop: theme.spacing.triple,
     background: theme.palette.primary.main,
     '&:hover': {
       background: fade(theme.palette.primary.main, 0.9),
@@ -83,6 +106,12 @@ const updateTaskGroupIdHistory = id => {
     '& svg': {
       fill: fade(theme.palette.text.primary, 0.5),
     },
+  },
+  notifyButton: {
+    marginLeft: theme.spacing.triple,
+  },
+  bellIcon: {
+    marginRight: theme.spacing.unit,
   },
 }))
 export default class TaskGroup extends Component {
@@ -135,6 +164,9 @@ export default class TaskGroup extends Component {
 
     return {
       taskGroupLoaded: isFromSameTaskGroupId ? taskGroupLoaded : false,
+      taskGroupWasRunningOnPageLoad: isFromSameTaskGroupId
+        ? state.taskGroupWasRunningOnPageLoad
+        : false,
     };
   }
 
@@ -159,7 +191,31 @@ export default class TaskGroup extends Component {
     dialogError: null,
     taskGroupLoaded: false,
     searchTerm: null,
+    notifyDialogOpen: false,
+    notifyPreferences: INITIAL_TASK_GROUP_NOTIFICATION_PREFERENCES,
+    previousNotifyPreferences: INITIAL_TASK_GROUP_NOTIFICATION_PREFERENCES,
+    taskGroupWasRunningOnPageLoad: false,
   };
+
+  async componentDidMount() {
+    const groupNotifyTaskFailed =
+      'Notification' in window &&
+      (await db.userPreferences.get(GROUP_NOTIFY_TASK_FAILED_KEY)) === true;
+    const groupNotifySuccess =
+      'Notification' in window &&
+      (await db.userPreferences.get(GROUP_NOTIFY_SUCCESS_KEY)) === true;
+
+    this.setState({
+      notifyPreferences: {
+        groupNotifyTaskFailed,
+        groupNotifySuccess,
+      },
+      previousNotifyPreferences: {
+        groupNotifyTaskFailed,
+        groupNotifySuccess,
+      },
+    });
+  }
 
   unsubscribe = () => {
     if (!this.listener) {
@@ -209,6 +265,24 @@ export default class TaskGroup extends Component {
         }
 
         let edges;
+
+        if (
+          this.state.notifyPreferences.groupNotifyTaskFailed &&
+          tasksSubscriptions.state === TASK_STATE.EXCEPTION
+        ) {
+          notify({
+            body: 'A task exception occurred',
+            icon: logoFailed,
+          });
+        } else if (
+          this.state.notifyPreferences.groupNotifyTaskFailed &&
+          tasksSubscriptions.state === TASK_STATE.FAILED
+        ) {
+          notify({
+            body: 'A task failure occurred',
+            icon: logoFailed,
+          });
+        }
 
         if (this.tasks.has(tasksSubscriptions.taskId)) {
           // already have this task, so just update the state
@@ -416,6 +490,100 @@ export default class TaskGroup extends Component {
     this.setState({ searchTerm });
   };
 
+  handleNotifyDialogSubmit = () => {
+    Object.entries(this.state.notifyPreferences).map(([key, checked]) =>
+      db.userPreferences.put(checked, kebabCase(key))
+    );
+
+    this.setState({ previousNotifyPreferences: this.state.notifyPreferences });
+  };
+
+  handleNotifyDialogClose = () => {
+    this.setState({
+      notifyDialogOpen: false,
+      notifyPreferences: this.state.previousNotifyPreferences,
+    });
+  };
+
+  handleNotifyComplete = () => {
+    this.handleNotifyDialogClose();
+  };
+
+  handleNotifyDialogOpen = () => {
+    this.setState({ notifyDialogOpen: true });
+  };
+
+  handleNotifyChange = async ({ target: { checked, value } }) => {
+    // If we are turning off notifications, or if the
+    // notification permission is already granted,
+    // just change the notification state to the new value
+    if (
+      this.state.notifyPreferences[value] ||
+      Notification.permission === 'granted'
+    ) {
+      return this.setState({
+        notifyPreferences: {
+          ...this.state.notifyPreferences,
+          [value]: checked,
+        },
+      });
+    }
+
+    // Here we know the user is requesting to be notified,
+    // but has not yet granted permission
+    const permission = await Notification.requestPermission();
+
+    this.setState({
+      notifyPreferences: {
+        ...this.state.notifyPreferences,
+        [value]: permission === 'granted',
+      },
+    });
+  };
+
+  handleCountUpdate = statusCount => {
+    const {
+      taskGroupLoaded,
+      notifyPreferences,
+      taskGroupWasRunningOnPageLoad,
+    } = this.state;
+    const {
+      completed,
+      exception,
+      failed,
+      pending,
+      running,
+      unscheduled,
+    } = statusCount;
+    const allTasksCount = sum([
+      completed,
+      exception,
+      pending,
+      failed,
+      running,
+      unscheduled,
+    ]);
+    const isTaskGroupSuccess =
+      taskGroupLoaded && allTasksCount - completed === 0 && completed > 0;
+
+    // Allow notifying the success if and only if
+    // the task group was running on page load
+    if (allTasksCount - completed > 0) {
+      this.setState({ taskGroupWasRunningOnPageLoad: true });
+    }
+
+    if (
+      notifyPreferences.groupNotifySuccess &&
+      isTaskGroupSuccess &&
+      taskGroupWasRunningOnPageLoad
+    ) {
+      notify({
+        body: 'Task group success',
+        icon: logoCompleted,
+      });
+    }
+  };
+
   render() {
     const {
       groupActions,
@@ -427,7 +595,10 @@ export default class TaskGroup extends Component {
       dialogError,
       taskGroupLoaded,
       searchTerm,
+      notifyDialogOpen,
+      notifyPreferences,
     } = this.state;
+    const bellIconSize = 16;
     const {
       description,
       match: {
@@ -442,6 +613,8 @@ export default class TaskGroup extends Component {
       taskGroup && taskGroup.edges[0]
         ? taskGroup.edges[0].node.taskGroupId === taskGroupId
         : true;
+    const notificationsCount = Object.values(notifyPreferences).filter(Boolean)
+      .length;
 
     this.subscribe({ taskGroupId, subscribeToMore });
 
@@ -468,14 +641,38 @@ export default class TaskGroup extends Component {
             taskGroup={taskGroup}
             filter={filter}
             onStatusClick={this.handleStatusClick}
+            onUpdate={this.handleCountUpdate}
           />
         )}
         {!loading && taskGroup && (
-          <Search
-            formProps={{ className: classes.taskNameFormSearch }}
-            placeholder="Name contains"
-            onSubmit={this.handleSearchTaskSubmit}
-          />
+          <Grid container>
+            <Grid item xs={12} sm={9} className={classes.firstGrid}>
+              <Search
+                formProps={{ className: classes.taskNameFormSearch }}
+                placeholder="Name contains"
+                onSubmit={this.handleSearchTaskSubmit}
+              />
+            </Grid>
+            <Grid item xs={12} sm={3} className={classes.secondGrid}>
+              {'Notification' in window && (
+                <Badge
+                  className={classes.notifyButton}
+                  color="secondary"
+                  badgeContent={notificationsCount}>
+                  <Button
+                    size="small"
+                    onClick={this.handleNotifyDialogOpen}
+                    variant="outlined">
+                    <BellIcon
+                      size={bellIconSize}
+                      className={classes.bellIcon}
+                    />
+                    Notifications
+                  </Button>
+                </Badge>
+              )}
+            </Grid>
+          </Grid>
         )}
         <br />
         {!error && loading && <Spinner loading />}
@@ -506,6 +703,7 @@ export default class TaskGroup extends Component {
         ) : null}
         {dialogOpen && (
           <DialogAction
+            focusOnPrimary
             fullScreen={Boolean(selectedAction.schema)}
             open={dialogOpen}
             error={dialogError}
@@ -524,6 +722,40 @@ export default class TaskGroup extends Component {
             confirmText={selectedAction.title}
           />
         )}
+        <DialogAction
+          open={notifyDialogOpen}
+          confirmText="Save"
+          title="Task Group Notifications"
+          onSubmit={this.handleNotifyDialogSubmit}
+          onComplete={this.handleNotifyComplete}
+          onClose={this.handleNotifyDialogClose}
+          body={
+            <FormControl component="fieldset" className={classes.formControl}>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={notifyPreferences.groupNotifyTaskFailed}
+                      onChange={this.handleNotifyChange}
+                      value="groupNotifyTaskFailed"
+                    />
+                  }
+                  label="Notify on task failures"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={notifyPreferences.groupNotifySuccess}
+                      onChange={this.handleNotifyChange}
+                      value="groupNotifySuccess"
+                    />
+                  }
+                  label="Notify on task group success"
+                />
+              </FormGroup>
+            </FormControl>
+          }
+        />
       </Dashboard>
     );
   }

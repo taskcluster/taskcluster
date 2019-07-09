@@ -5,7 +5,7 @@ package tcworkermanager
 import (
 	"encoding/json"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
 )
 
 type (
@@ -28,6 +28,48 @@ type (
 
 		// ClientId of the client
 		ClientID string `json:"clientId"`
+	}
+
+	// A report of an error from a worker.  This will be recorded with kind
+	// `worker-error`.
+	//
+	// The worker's `workerGroup` and `workerId` will be added to `extra`.
+	WorkerErrorReport struct {
+
+		// A longer description of what occured in the error.
+		//
+		// Max length: 10240
+		Description string `json:"description"`
+
+		// Any extra structured information about this error
+		//
+		// Additional properties allowed
+		Extra json.RawMessage `json:"extra"`
+
+		// A general machine-readable way to identify this sort of error.
+		//
+		// Syntax:     [-a-z0-9]+
+		// Max length: 128
+		Kind string `json:"kind"`
+
+		// A human-readable version of `kind`.
+		//
+		// Max length: 128
+		Title string `json:"title"`
+
+		// Worker group to which this worker belongs
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		WorkerGroup string `json:"workerGroup"`
+
+		// Worker ID
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		WorkerID string `json:"workerId"`
 	}
 
 	// A complete worker definition.

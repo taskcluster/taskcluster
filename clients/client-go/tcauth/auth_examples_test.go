@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go"
-	"github.com/taskcluster/taskcluster/clients/client-go/tcauth"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
+	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcauth"
 )
 
 func Example_scopes() {

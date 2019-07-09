@@ -1,6 +1,6 @@
 web:
   type: web
-  command: node src/main.js devServer
+  command: node src/main.js server
   readinessPath: /.well-known/apollo/server-health
 scanner:
   type: cron

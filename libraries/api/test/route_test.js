@@ -322,6 +322,17 @@ suite(testing.suiteName(), function() {
       });
   });
 
+  test('cors header', function() {
+    const url = u('/single-param/Hello');
+    return request
+      .get(url)
+      .set('origin', 'https://tc.example.com')
+      .then(function(res) {
+        assert(res.ok, 'Request failed');
+        assert.equal(res.header['access-control-allow-origin'], '*');
+      });
+  });
+
   test('cache header', function() {
     const url = u('/single-param/Hello');
     return request

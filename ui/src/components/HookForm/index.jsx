@@ -482,6 +482,7 @@ export default class HookForm extends Component {
                   name="hookGroupId"
                   onChange={this.handleHookGroupIdChange}
                   fullWidth
+                  autoFocus
                   value={hook.hookGroupId}
                 />
               </ListItem>
@@ -752,6 +753,7 @@ export default class HookForm extends Component {
         )}
         {dialogOpen && (
           <DialogAction
+            focusOnPrimary
             fullScreen
             open={dialogOpen}
             onSubmit={this.handleTriggerHookSubmit}

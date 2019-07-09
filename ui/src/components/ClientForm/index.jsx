@@ -219,6 +219,7 @@ export default class ClientForm extends Component {
                 name="clientId"
                 onChange={this.handleInputChange}
                 fullWidth
+                autoFocus
                 value={clientId}
               />
             </ListItem>

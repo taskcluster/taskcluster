@@ -9,3 +9,34 @@ suiteSetup(async function() {
 });
 
 withMonitor(exports);
+
+exports.withServer = (mock, skipping) => {
+  let webServer;
+
+  suiteSetup('withServer', async function() {
+    if (skipping()) {
+      return;
+    }
+    const cfg = await exports.load('cfg');
+
+    webServer = await exports.load('httpServer');
+    await new Promise((resolve, reject) => {
+      webServer.once('error', reject);
+      webServer.listen(cfg.server.port, function() {
+        resolve();
+      });
+    });
+
+    exports.serverPort = cfg.server.port;
+  });
+
+  suiteTeardown(async function() {
+    if (skipping()) {
+      return;
+    }
+    if (webServer) {
+      await new Promise(resolve => webServer.close(resolve));
+      webServer = null;
+    }
+  });
+};
