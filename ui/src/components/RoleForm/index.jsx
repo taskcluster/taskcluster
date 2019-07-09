@@ -6,6 +6,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
@@ -15,7 +16,7 @@ import SpeedDialAction from '../SpeedDialAction';
 import { role } from '../../utils/prop-types';
 import Link from '../../utils/Link';
 import splitLines from '../../utils/splitLines';
-import scopeLink from '../../utils/scopeLink';
+import { formatScope, scopeLink } from '../../utils/scopeUtils';
 
 @withStyles(theme => ({
   fab: {
@@ -203,7 +204,19 @@ export default class RoleForm extends Component {
                           component={Link}
                           to={scopeLink(scope)}
                           className={classes.listItemButton}>
-                          <ListItemText secondary={<code>{scope}</code>} />
+                          <ListItemText
+                            disableTypography
+                            secondary={
+                              <Typography>
+                                <code
+                                  // eslint-disable-next-line react/no-danger
+                                  dangerouslySetInnerHTML={{
+                                    __html: formatScope(scope),
+                                  }}
+                                />
+                              </Typography>
+                            }
+                          />
                           <LinkIcon />
                         </ListItem>
                       ))}

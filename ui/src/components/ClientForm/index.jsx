@@ -25,7 +25,7 @@ import Button from '../Button';
 import { client } from '../../utils/prop-types';
 import splitLines from '../../utils/splitLines';
 import Link from '../../utils/Link';
-import scopeLink from '../../utils/scopeLink';
+import { formatScope, scopeLink } from '../../utils/scopeUtils';
 
 @withStyles(theme => ({
   fab: {
@@ -325,7 +325,19 @@ export default class ClientForm extends Component {
                           component={Link}
                           to={scopeLink(scope)}
                           className={classes.listItemButton}>
-                          <ListItemText secondary={<code>{scope}</code>} />
+                          <ListItemText
+                            disableTypography
+                            secondary={
+                              <Typography>
+                                <code
+                                  // eslint-disable-next-line react/no-danger
+                                  dangerouslySetInnerHTML={{
+                                    __html: formatScope(scope),
+                                  }}
+                                />
+                              </Typography>
+                            }
+                          />
                           <LinkIcon />
                         </ListItem>
                       ))}
