@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { func, string, bool, oneOfType, object } from 'prop-types';
+import { func, bool } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
 import List from '@material-ui/core/List';
@@ -9,7 +9,6 @@ import TextField from '@material-ui/core/TextField';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
-import Typography from '@material-ui/core/Typography';
 import Button from '../Button';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
@@ -57,11 +56,6 @@ export default class RoleForm extends Component {
     onRoleDelete: func,
     /** If true, form actions will be disabled. */
     loading: bool,
-    dialogError: oneOfType([string, object]),
-    /**
-     * Callback function fired when the DialogAction component throws an error.
-     * */
-    onDialogActionError: func,
   };
 
   static defaultProps = {
@@ -113,6 +107,10 @@ export default class RoleForm extends Component {
     };
 
     this.props.onRoleSave(role, roleId);
+  };
+
+  handleDialogActionError = error => {
+    this.props({ dialogError: error });
   };
 
   render() {
@@ -275,20 +273,15 @@ export default class RoleForm extends Component {
         )}
         {dialogOpen && (
           <DialogAction
-            focusOnPrimary
-            fullScreen
+            focusOnSecondary
             open={dialogOpen}
             onSubmit={this.handleDeleteRole}
             onComplete={onActionDialogClose}
             onClose={onActionDialogClose}
             onError={onDialogActionError}
             error={dialogError}
+            title="Delete Role?"
             confirmText="Delete Role"
-            body={
-              <Fragment>
-                <Typography gutterBottom>Delete Role?</Typography>
-              </Fragment>
-            }
           />
         )}
       </Fragment>

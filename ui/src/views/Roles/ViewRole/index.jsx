@@ -96,10 +96,6 @@ export default class ViewRole extends Component {
     this.setState({ dialogOpen: true });
   };
 
-  handleDialogActionError = error => {
-    this.setState({ dialogError: error });
-  };
-
   handleSnackbarOpen = ({ message, variant = 'success', open }) => {
     this.setState({ snackbar: { message, variant, open } });
   };
