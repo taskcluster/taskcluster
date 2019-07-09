@@ -1,0 +1,21 @@
+project_name: "taskcluster-purge-cache"
+secrets:
+  azure_account: ".Values.tfAzureAccount"
+  force_ssl: "false"
+  node_env: "production"
+  taskcluster_access_token: ".Values.purgeCacheAccessToken"
+  taskcluster_client_id: "static/taskcluster/purge-cache"
+  trust_proxy: "true"
+deployments:
+  - service_name: "purge-cache"
+    docker_image: ".Values.dockerImage"
+    proc_name: "web"
+    readiness_path: "/api/purge-cache/v1/ping"
+    root_url: ".Values.rootUrl"
+cronjobs:
+  - service_name: "purge-cache"
+    deadline_seconds: 86400
+    docker_image: ".Values.dockerImage"
+    job_name: "expireCachePurges"
+    root_url: ".Values.rootUrl"
+    schedule: "0 0 * * *"

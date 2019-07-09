@@ -1,10 +1,10 @@
 const {defaultMonitorManager, LEVELS} = require('taskcluster-lib-monitor');
 
 let monitorSetup = false;
-module.exports = (helper) => {
+module.exports = (helper, options={}) => {
   // ensure that a single monitor instance is injected as soon as possible
   // (even before suite setups run), and only once.
-  if (!monitorSetup) {
+  if (!options.noLoader && !monitorSetup) {
     helper.load.inject('monitor', defaultMonitorManager.setup({
       fake: true,
       debug: true,

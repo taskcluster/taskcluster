@@ -16,6 +16,7 @@ import DialogAction from '../DialogAction';
 import { role } from '../../utils/prop-types';
 import Link from '../../utils/Link';
 import splitLines from '../../utils/splitLines';
+import scopeLink from '../../utils/scopeLink';
 
 @withStyles(theme => ({
   fab: {
@@ -216,7 +217,7 @@ export default class RoleForm extends Component {
                           key={scope}
                           button
                           component={Link}
-                          to={`/auth/scopes/${encodeURIComponent(scope)}`}
+                          to={scopeLink(scope)}
                           className={classes.listItemButton}>
                           <ListItemText secondary={<code>{scope}</code>} />
                           <LinkIcon />

@@ -16,6 +16,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import splitLines from '../../../utils/splitLines';
 import Link from '../../../utils/Link';
 import scopesetQuery from './scopeset.graphql';
+import scopeLink from '../../../utils/scopeLink';
 
 @hot(module)
 @withStyles(theme => ({
@@ -84,7 +85,7 @@ export default class ScopesetExpander extends Component {
                           key={scope}
                           button
                           component={Link}
-                          to={`/auth/scopes/${encodeURIComponent(scope)}`}
+                          to={scopeLink(scope)}
                           className={classes.listItemButton}>
                           <ListItemText secondary={scope} />
                           <LinkIcon size={16} />

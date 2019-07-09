@@ -597,209 +597,143 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       await helper.workerManager.createWorkerPool(workerPoolId, googleInput));
   });
 
-  test('credentials google', async function() {
-    const workerPoolId = 'pp/ee';
-    await helper.Worker.create({
-      workerPoolId,
-      workerGroup: 'google',
-      workerId: 'abc123',
-      providerId: 'google',
-      created: new Date(),
-      expires: taskcluster.fromNow('1 hour'),
-      state: helper.Worker.states.REQUESTED,
-      providerData: {},
-    });
-    workerPoolCompare(workerPoolId, googleInput,
-      await helper.workerManager.createWorkerPool(workerPoolId, googleInput));
-    await helper.workerManager.credentialsGoogle(workerPoolId, {token: 'abc'});
-  });
+  suite('registerWorker', function() {
+    const workerPoolId = 'ff/ee';
+    const providerId = 'testing1';
+    const workerGroup = 'wg';
+    const workerId = 'wi';
+    const workerIdentityProof = {};
 
-  test('credentials google (but wrong worker)', async function() {
-    const workerPoolId = 'pp/ee';
-    await helper.Worker.create({
-      workerPoolId,
-      workerGroup: 'google',
-      workerId: 'gcp',
-      providerId: 'google',
-      created: new Date(),
-      expires: taskcluster.fromNow('1 hour'),
-      state: helper.Worker.states.REQUESTED,
-      providerData: {},
-    });
-    workerPoolCompare(workerPoolId, googleInput,
-      await helper.workerManager.createWorkerPool(workerPoolId, googleInput));
-    try {
-      await helper.workerManager.credentialsGoogle(workerPoolId, {token: 'abc'});
-    } catch (err) {
-      if (err.code !== 'InputError') {
-        throw err;
-      }
-      return;
-    }
-    throw new Error('allowed fetch of credentials from wrong worker!');
-  });
+    const defaultRegisterWorker = {
+      workerPoolId, providerId, workerGroup, workerId, workerIdentityProof};
 
-  test('credentials google (but invalid providerId)', async function() {
-    const workerPoolId = 'pp/ee';
-    await helper.Worker.create({
+    const defaultWorkerPool = {
       workerPoolId,
-      workerGroup: 'google',
-      workerId: 'gcp',
-      providerId: 'NO-SUCH',
-      created: new Date(),
-      expires: taskcluster.fromNow('1 hour'),
-      state: helper.Worker.states.REQUESTED,
-      providerData: {},
-    });
-    await helper.WorkerPool.create({
-      workerPoolId,
-      providerId: 'NO-SUCH',
-      previousProviderIds: ['NO-SUCH'],
-      description: '',
-      created: new Date(),
-      lastModified: new Date(),
+      providerId,
+      previousProviderIds: [],
+      description: 'bar',
+      created: taskcluster.fromNow('0 seconds'),
+      lastModified: taskcluster.fromNow('0 seconds'),
       config: {},
-      owner: 'me@example.com',
+      owner: 'example@example.com',
       emailOnError: false,
       providerData: {},
-    });
+    };
 
-    try {
-      await helper.workerManager.credentialsGoogle(workerPoolId, {token: 'abc'});
-    } catch (err) {
-      if (err.code !== 'InputError') {
-        throw err;
-      }
-      return;
-    }
-    throw new Error('allowed fetch of credentials from wrong worker!');
-  });
-
-  test('credentials google (but wrong worker pool)', async function() {
-    const workerPoolId = 'pp/ee';
-    await helper.Worker.create({
-      workerPoolId: 'wrong',
-      workerGroup: 'google',
-      workerId: 'abc123', // TODO: Don't just copy-paste this from fake-google
-      providerId: 'google',
-      created: new Date(),
-      expires: taskcluster.fromNow('1 hour'),
-      state: helper.Worker.states.REQUESTED,
-      providerData: {},
-    });
-    workerPoolCompare(workerPoolId, googleInput,
-      await helper.workerManager.createWorkerPool(workerPoolId, googleInput));
-    try {
-      await helper.workerManager.credentialsGoogle(workerPoolId, {token: 'abc'});
-    } catch (err) {
-      if (err.code !== 'InputError') {
-        throw err;
-      }
-      return;
-    }
-    throw new Error('allowed fetch of credentials from wrong worker pool!');
-  });
-
-  test('credentials google (second fetch fails)', async function() {
-    const workerPoolId = 'pp/ee';
-    await helper.Worker.create({
+    const defaultWorker = {
       workerPoolId,
-      workerGroup: 'google',
-      workerId: 'abc123', // TODO: Don't just copy-paste this from fake-google
-      providerId: 'google',
-      created: new Date(),
-      expires: taskcluster.fromNow('1 hour'),
-      state: helper.Worker.states.REQUESTED,
+      workerGroup,
+      workerId,
+      providerId,
+      created: taskcluster.fromNow('0 seconds'),
+      expires: taskcluster.fromNow('90 seconds'),
+      state: 'requested',
       providerData: {},
+    };
+
+    test('no such workerPool)', async function() {
+      await assert.rejects(() => helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+        workerPoolId: 'no/such',
+      }), /Worker pool no\/such does not exist/);
     });
-    workerPoolCompare(workerPoolId, googleInput,
-      await helper.workerManager.createWorkerPool(workerPoolId, googleInput));
 
-    await helper.workerManager.credentialsGoogle(workerPoolId, {token: 'abc'});
-    try {
-      await helper.workerManager.credentialsGoogle(workerPoolId, {token: 'abc'});
-    } catch (err) {
-      if (err.code !== 'InputError') {
-        throw err;
-      }
-      return;
-    }
-    throw new Error('allowed second fetch of creds');
-  });
-
-  test('credentials google (but wrong project in token)', async function() {
-    const workerPoolId = 'pp/ee';
-    await helper.Worker.create({
-      workerPoolId,
-      workerGroup: 'google',
-      workerId: 'abc123', // TODO: Don't just copy-paste this from fake-google
-      providerId: 'google',
-      created: new Date(),
-      expires: taskcluster.fromNow('1 hour'),
-      state: helper.Worker.states.REQUESTED,
-      providerData: {},
+    test('no such provider', async function() {
+      const providerId = 'no-such';
+      await helper.WorkerPool.create({
+        ...defaultWorkerPool,
+        providerId,
+      });
+      await assert.rejects(() => helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+        providerId,
+      }), /Provider no-such does not exist/);
     });
-    workerPoolCompare(workerPoolId, googleInput,
-      await helper.workerManager.createWorkerPool(workerPoolId, googleInput));
-    try {
-      await helper.workerManager.credentialsGoogle(workerPoolId, {token: 'wrongProject'});
-    } catch (err) {
-      if (err.code !== 'InputError') {
-        throw err;
-      }
-      return;
-    }
-    throw new Error('allowed fetch of credentials from wrong project!');
-  });
 
-  test('credentials google (but wrong instance id in token)', async function() {
-    const workerPoolId = 'pp/ee';
-    await helper.Worker.create({
-      workerPoolId,
-      workerGroup: 'google',
-      workerId: 'abc123', // TODO: Don't just copy-paste this from fake-google
-      providerId: 'google',
-      created: new Date(),
-      expires: taskcluster.fromNow('1 hour'),
-      state: helper.Worker.states.REQUESTED,
-      providerData: {},
+    test('provider not associated', async function() {
+      await helper.WorkerPool.create({
+        ...defaultWorkerPool,
+        providerId: 'testing2',
+      });
+      await assert.rejects(() => helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+        providerId: 'testing1',
+      }), /Worker pool ff\/ee not associated with provider testing1/);
     });
-    workerPoolCompare(workerPoolId, googleInput,
-      await helper.workerManager.createWorkerPool(workerPoolId, googleInput));
-    try {
-      await helper.workerManager.credentialsGoogle(workerPoolId, {token: 'wrongId'});
-    } catch (err) {
-      if (err.code !== 'InputError') {
-        throw err;
-      }
-      return;
-    }
-    throw new Error('allowed fetch of credentials from wrong id!');
-  });
 
-  test('credentials google (but wrong service account in token)', async function() {
-    const workerPoolId = 'pp/ee';
-    await helper.Worker.create({
-      workerPoolId,
-      workerGroup: 'google',
-      workerId: 'abc123', // TODO: Don't just copy-paste this from fake-google
-      providerId: 'google',
-      created: new Date(),
-      expires: taskcluster.fromNow('1 hour'),
-      state: helper.Worker.states.REQUESTED,
-      providerData: {},
+    test('no such worker', async function() {
+      await helper.WorkerPool.create({
+        ...defaultWorkerPool,
+      });
+      await assert.rejects(() => helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+      }), /Worker wg\/wi in worker pool ff\/ee does not exist/);
     });
-    workerPoolCompare(workerPoolId, googleInput,
-      await helper.workerManager.createWorkerPool(workerPoolId, googleInput));
-    try {
-      await helper.workerManager.credentialsGoogle(workerPoolId, {token: 'wrongSub'});
-    } catch (err) {
-      if (err.code !== 'InputError') {
-        throw err;
-      }
-      return;
-    }
-    throw new Error('allowed fetch of credentials from wrong service account!');
-  });
 
+    test('worker does not have providerId', async function() {
+      await helper.WorkerPool.create({
+        ...defaultWorkerPool,
+      });
+      await helper.Worker.create({
+        ...defaultWorker,
+        providerId: 'testing2',
+      });
+      await assert.rejects(() => helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+      }), /Worker wg\/wi does not have provider testing1/);
+    });
+
+    test('error from prov.registerWorker', async function() {
+      await helper.WorkerPool.create({
+        ...defaultWorkerPool,
+      });
+      await helper.Worker.create({
+        ...defaultWorker,
+        providerData: {failRegister: 'uhoh'},
+      });
+      await assert.rejects(() => helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+      }), /uhoh/);
+    });
+
+    test('sweet success', async function() {
+      await helper.WorkerPool.create({
+        ...defaultWorkerPool,
+      });
+      await helper.Worker.create({
+        ...defaultWorker,
+      });
+      const res = await helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+      });
+
+      assert.equal(res.credentials.clientId,
+        `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
+
+      // cheat a little and look in the certificate to check the scopes
+      const scopes = new Set(JSON.parse(res.credentials.certificate).scopes);
+      const msg = `got scopes ${[...scopes].join(', ')}`;
+      assert(scopes.has(`assume:worker-pool:${workerPoolId}`), msg);
+      assert(scopes.has(`assume:worker-id:${workerGroup}/${workerId}`), msg);
+      assert(scopes.has(`secrets:get:worker-pool:${workerPoolId}`), msg);
+      assert(scopes.has(`queue:claim-work:${workerPoolId}`), msg);
+    });
+
+    test('sweet success for a previous providerId', async function() {
+      await helper.WorkerPool.create({
+        ...defaultWorkerPool,
+        providerId: 'testing2',
+        previousProviderIds: ['testing1'],
+      });
+      await helper.Worker.create({
+        ...defaultWorker,
+      });
+      const res = await helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+      });
+
+      assert.equal(res.credentials.clientId,
+        `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
+    });
+  });
 });

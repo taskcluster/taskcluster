@@ -3,7 +3,8 @@ type WorkerManagerWorkerPoolSummary {
     description: String
     owner: String!
     providerId: String!
-
+    config: JSON
+    emailOnError: Boolean!
     pendingTasks: Int #this value comes from a separate request to queue
 }
 
@@ -21,10 +22,24 @@ type WorkerManagerWorker {
     workerPool: String!
 }
 
-extend type Query {
-    WorkerManagerWorkerPoolSummaries(filter: JSON): [WorkerManagerWorkerPoolSummary]
+input WorkerPoolInput {
+    providerId: String!
+    description: String!
+    owner: String!
+    emailOnError: Boolean!
+    config: JSON!
 }
 
 extend type Query {
+    WorkerManagerWorkerPoolSummaries(filter: JSON): [WorkerManagerWorkerPoolSummary]
+
     WorkerManagerWorkers(workerPool: String, provider: String, isQuarantined: Boolean): [WorkerManagerWorker]
+
+    WorkerPool(workerPoolId: String!): WorkerManagerWorkerPoolSummary
+}
+
+extend type Mutation {
+    createWorkerPool(workerPoolId: String!, payload: WorkerPoolInput!): WorkerManagerWorkerPoolSummary
+
+    updateWorkerPool(workerPoolId: String!, payload: WorkerPoolInput!): WorkerManagerWorkerPoolSummary
 }

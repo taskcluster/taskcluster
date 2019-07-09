@@ -198,12 +198,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         routingKey: 'primary.#',
         routes: [],
       });
-      assert.deepEqual(monitorManager.messages.find(msg => msg.Type === 'remove-resource'), {
-        Logger: 'taskcluster.worker-manager.provider.testing1',
-        Type: 'remove-resource',
-        Severity: LEVELS.notice,
-        Fields: {workerPoolId: 'pp/foo'},
-      });
       assert.deepEqual(monitorManager.messages.find(msg => msg.Type === 'create-resource'), {
         Logger: 'taskcluster.worker-manager.provider.testing2',
         Type: 'create-resource',

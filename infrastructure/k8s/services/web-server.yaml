@@ -1,0 +1,25 @@
+project_name: "taskcluster-web-server"
+secrets:
+  jwt_key: ".Values.jwtKey"
+  node_env: "production"
+  public_url: ".Values.rootUrl"
+  pulse_hostname: ".Values.tfRabbitmqHostname"
+  pulse_password: ".Values.webServerPulsePassword"
+  pulse_username: ".Values.webServerPulseUsername"
+  pulse_vhost: ".Values.pulseVhost"
+  taskcluster_access_token: ".Values.webServerAccessToken"
+  taskcluster_client_id: "static/taskcluster/web-server"
+  ui_login_strategies: ".Values.uiLoginStrategies"
+deployments:
+  - service_name: "web-server"
+    docker_image: ".Values.dockerImage"
+    proc_name: "web"
+    readiness_path: "/.well-known/apollo/server-health"
+    root_url: ".Values.rootUrl"
+cronjobs:
+  - service_name: "web-server"
+    deadline_seconds: 86400
+    docker_image: ".Values.dockerImage"
+    job_name: "scanner"
+    root_url: ".Values.rootUrl"
+    schedule: "0 0 * * *"
