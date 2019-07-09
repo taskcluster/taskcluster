@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/taskcluster/taskcluster-worker-runner/provider/awsprovisioner"
+	"github.com/taskcluster/taskcluster-worker-runner/provider/google"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/standalone"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
@@ -19,6 +20,7 @@ type providerInfo struct {
 var providers map[string]providerInfo = map[string]providerInfo{
 	"standalone":      providerInfo{standalone.New, standalone.Usage},
 	"aws-provisioner": providerInfo{awsprovisioner.New, awsprovisioner.Usage},
+	"google":          providerInfo{google.New, google.Usage},
 }
 
 func New(runnercfg *runner.RunnerConfig) (provider.Provider, error) {
