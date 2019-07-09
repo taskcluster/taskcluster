@@ -444,6 +444,132 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       helper.workerManager.worker(workerPoolId, 'wg-a', 's-3434'), {statusCode: 404});
   });
 
+  suite('worker creation / removal', function() {
+    const workerPoolId = 'ff/ee';
+    const providerId = 'testing1';
+    const workerGroup = 'wg';
+    const workerId = 'wi';
+    const defaultWorkerPool = {
+      workerPoolId,
+      providerId,
+      previousProviderIds: [],
+      description: 'bar',
+      created: taskcluster.fromNow('0 seconds'),
+      lastModified: taskcluster.fromNow('0 seconds'),
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+      providerData: {},
+    };
+    const defaultWorker = {
+      workerPoolId,
+      workerGroup,
+      workerId,
+      providerId,
+      created: taskcluster.fromNow('0 seconds'),
+      expires: taskcluster.fromNow('90 seconds'),
+      state: 'requested',
+      providerData: {},
+    };
+
+    test('create a worker for a worker pool that does not exist', async function () {
+      await assert.rejects(() =>
+        helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
+          expires: taskcluster.fromNow('1 hour'),
+          providerInfo: {},
+        }), new RegExp(`Worker pool ${workerPoolId} does not exist`));
+    });
+
+    test('create a pre-expired worker', async function () {
+      await helper.WorkerPool.create({
+        ...defaultWorkerPool,
+      });
+      await assert.rejects(() =>
+        helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
+          expires: taskcluster.fromNow('-1 hour'),
+          providerInfo: {},
+        }), /expires must be in the future/);
+    });
+
+    test('create a worker for a worker pool with invalid providerId', async function () {
+      await helper.WorkerPool.create({
+        ...defaultWorkerPool,
+        providerId: 'nosuch',
+      });
+      await assert.rejects(() =>
+        helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
+          expires: taskcluster.fromNow('1 hour'),
+          providerInfo: {},
+        }), /Provider nosuch for worker pool/);
+    });
+
+    test('create a worker for a provider that does not want it', async function () {
+      await helper.WorkerPool.create({
+        ...defaultWorkerPool,
+      });
+      await assert.rejects(() =>
+        helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
+          expires: taskcluster.fromNow('1 hour'),
+          providerInfo: {},
+        }), /creating workers is not supported/);
+    });
+
+    test('create a worker for a provider that does want it', async function () {
+      await helper.WorkerPool.create({
+        ...defaultWorkerPool,
+        providerData: {allowCreateWorker: true},
+      });
+
+      const expires = taskcluster.fromNow('1 hour');
+      const worker = await helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
+        expires,
+        providerInfo: {},
+      });
+
+      assert.equal(worker.workerPoolId, workerPoolId);
+      assert.equal(worker.workerGroup, workerGroup);
+      assert.equal(worker.workerId, workerId);
+      assert.equal(worker.providerId, providerId);
+      assert.equal(worker.expires, expires.toJSON());
+    });
+
+    test('remove a worker that does not exist', async function () {
+      await assert.rejects(() =>
+        helper.workerManager.removeWorker(workerPoolId, workerGroup, workerId),
+      /Worker not found/);
+    });
+
+    test('remove a worker that has an invalid provider', async function () {
+      await helper.Worker.create({
+        ...defaultWorker,
+        providerId: 'nosuch',
+      });
+      await assert.rejects(() =>
+        helper.workerManager.removeWorker(workerPoolId, workerGroup, workerId),
+      /Provider nosuch for this worker does not exist/);
+    });
+
+    test('remove a worker for a provider that does not want to', async function () {
+      await helper.Worker.create({
+        ...defaultWorker,
+        providerData: {allowRemoveWorker: false},
+      });
+      await assert.rejects(() =>
+        helper.workerManager.removeWorker(workerPoolId, workerGroup, workerId),
+      /removing workers is not supported/);
+    });
+
+    test('remove a worker for a provider that does want to', async function () {
+      await helper.Worker.create({
+        ...defaultWorker,
+        providerData: {allowRemoveWorker: true},
+      });
+      await helper.workerManager.removeWorker(workerPoolId, workerGroup, workerId);
+      const worker = await helper.Worker.load({workerPoolId, workerGroup, workerId});
+      assert.equal(worker.state, 'stopped');
+    });
+  });
+
   test('Report a worker error', async function() {
     const workerPoolId = 'foobar/baz';
     const input = {

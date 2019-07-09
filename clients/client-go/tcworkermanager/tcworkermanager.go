@@ -206,6 +206,69 @@ func (workerManager *WorkerManager) ListWorkerPoolErrors(workerPoolId, continuat
 
 // Stability: *** EXPERIMENTAL ***
 //
+// Get the list of all the existing workers in a given group in a given worker pool.
+//
+// See #listWorkersForWorkerGroup
+func (workerManager *WorkerManager) ListWorkersForWorkerGroup(workerPoolId, workerGroup, continuationToken, limit string) (*WorkerListInAGivenWorkerPool, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*workerManager)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup), new(WorkerListInAGivenWorkerPool), v)
+	return responseObject.(*WorkerListInAGivenWorkerPool), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Get a single worker.
+//
+// See #worker
+func (workerManager *WorkerManager) Worker(workerPoolId, workerGroup, workerId string) (*WorkerFullDefinition, error) {
+	cd := tcclient.Client(*workerManager)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerFullDefinition), nil)
+	return responseObject.(*WorkerFullDefinition), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Create a new worker.  The precise behavior of this method depends
+// on the provider implementing the given worker pool.  Some providers
+// do not support creating workers at all, and will return a 400 error.
+//
+// Required scopes:
+//   worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>
+//
+// See #createWorker
+func (workerManager *WorkerManager) CreateWorker(workerPoolId, workerGroup, workerId string, payload *WorkerCreationRequest) (*WorkerFullDefinition, error) {
+	cd := tcclient.Client(*workerManager)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerFullDefinition), nil)
+	return responseObject.(*WorkerFullDefinition), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Remove an existing worker.  The precise behavior of this method depends
+// on the provider implementing the given worker.  Some providers
+// do not support removing workers at all, and will return a 400 error.
+// Others may begin removing the worker, but it may remain available via
+// the API (perhaps even in state RUNNING) afterward.
+//
+// Required scopes:
+//   worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>
+//
+// See #removeWorker
+func (workerManager *WorkerManager) RemoveWorker(workerPoolId, workerGroup, workerId string) error {
+	cd := tcclient.Client(*workerManager)
+	_, _, err := (&cd).APICall(nil, "DELETE", "/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), nil, nil)
+	return err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
 // Get the list of all the existing workers in a given worker pool.
 //
 // See #listWorkersForWorkerPool

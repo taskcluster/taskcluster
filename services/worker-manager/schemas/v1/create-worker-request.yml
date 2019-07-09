@@ -1,0 +1,20 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Worker Creation Request
+description: Request to create a worker
+type: object
+properties:
+  expires:
+    title: Expires
+    description: Date and time when this worker will be deleted from the DB
+    type: string
+    format: date-time
+  providerInfo:
+    title: Provider Data
+    description: Provider-specific information
+    type: object
+    properties: {}
+    additionalProperties: false
+    required: []
+additionalProperties: false
+required:
+  - expires

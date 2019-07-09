@@ -3867,6 +3867,77 @@ module.exports = {
         },
         {
           "args": [
+            "workerPoolId",
+            "workerGroup"
+          ],
+          "description": "Get the list of all the existing workers in a given group in a given worker pool.",
+          "method": "get",
+          "name": "listWorkersForWorkerGroup",
+          "output": "v1/worker-list.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/workers/<workerPoolId>:/<workerGroup>",
+          "stability": "experimental",
+          "title": "Workers in a specific Worker Group in a Worker Pool",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId",
+            "workerGroup",
+            "workerId"
+          ],
+          "description": "Get a single worker.",
+          "method": "get",
+          "name": "worker",
+          "output": "v1/worker-full.json#",
+          "query": [
+          ],
+          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Get a Worker",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId",
+            "workerGroup",
+            "workerId"
+          ],
+          "description": "Create a new worker.  The precise behavior of this method depends\non the provider implementing the given worker pool.  Some providers\ndo not support creating workers at all, and will return a 400 error.",
+          "input": "v1/create-worker-request.json#",
+          "method": "put",
+          "name": "createWorker",
+          "output": "v1/worker-full.json#",
+          "query": [
+          ],
+          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "scopes": "worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Create a Worker",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId",
+            "workerGroup",
+            "workerId"
+          ],
+          "description": "Remove an existing worker.  The precise behavior of this method depends\non the provider implementing the given worker.  Some providers\ndo not support removing workers at all, and will return a 400 error.\nOthers may begin removing the worker, but it may remain available via\nthe API (perhaps even in state RUNNING) afterward.",
+          "method": "delete",
+          "name": "removeWorker",
+          "query": [
+          ],
+          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "scopes": "worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Remove a Worker",
+          "type": "function"
+        },
+        {
+          "args": [
             "workerPoolId"
           ],
           "description": "Get the list of all the existing workers in a given worker pool.",

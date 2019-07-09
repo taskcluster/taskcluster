@@ -1,5 +1,5 @@
 const taskcluster = require('taskcluster-client');
-const {Provider, RegistrationError} = require('./provider');
+const {Provider, ApiError} = require('./provider');
 const {Worker} = require('../data');
 
 class TestingProvider extends Provider {
@@ -51,12 +51,39 @@ class TestingProvider extends Provider {
   async registerWorker({worker, workerPool, workerIdentityProof}) {
     await worker.modify(w => w.state = Worker.states.RUNNING);
     if (worker.providerData.failRegister) {
-      throw new RegistrationError(worker.providerData.failRegister);
+      throw new ApiError(worker.providerData.failRegister);
     }
     if (worker.providerData.noExpiry) {
       return {};
     }
     return {expires: taskcluster.fromNow('1 hour')};
+  }
+
+  async createWorker({workerPool, workerGroup, workerId, input}) {
+    if (!workerPool.providerData.allowCreateWorker) {
+      throw new ApiError('creating workers is not supported for testing provider');
+    }
+
+    const worker = await this.Worker.create({
+      workerPoolId: workerPool.workerPoolId,
+      providerId: this.providerId,
+      workerGroup,
+      workerId,
+      created: new Date(),
+      expires: new Date(input.expires),
+      state: this.Worker.states.RUNNING,
+      providerData: {},
+    });
+
+    return worker;
+  }
+
+  async removeWorker(worker) {
+    if (!worker.providerData.allowRemoveWorker) {
+      throw new ApiError('removing workers is not supported for testing provider');
+    }
+
+    await worker.modify(w => w.state = 'stopped');
   }
 }
 
