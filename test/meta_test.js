@@ -169,4 +169,26 @@ suite('Repo Meta Tests', function () {
       throw new Error(errors);
     }
   });
+  test("no references to tools.taskcluster.net in the repository", async function () {
+    const filenames = glob.sync(
+      '**/*',
+      { cwd: ROOT_DIR });
+
+    let files=[]; //this list stores the files which has references to tools.taskcluster.net
+    for (let filename of filenames) {
+      if(fs.lstatSync(filename).isFile()){
+        const data = fs.readFileSync(filename, 'utf8');
+        if(data.match(/tools.taskcluster.net/gm)) {
+          files.push(filename);
+        }
+      }
+    }
+    if(files.length>0){
+      let error_string="The following files have references to tools.taskcluster.net : \n";
+      for(let filename of files){
+        error_string+=filename+"\n";
+      }
+      throw new Error(error_string);
+    }
+  });
 });
