@@ -23,7 +23,8 @@ When we have a good reason to not follow the best practices in the UI, we docume
 
 ## Dialogs
 * Focus should go to the first action button when the modal is opened.
-This should be the close modal button.
+This should be the close modal button. This will help prevent users
+from accidentally triggering a destructive action.
 
 ## Links
 * Calculate link URLs before the user clicks on them. By doing so, a user will be able to do things like open links in a
