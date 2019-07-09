@@ -6,6 +6,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
@@ -108,6 +109,7 @@ export default class RoleForm extends Component {
     this.props.onRoleSave(role, roleId);
   };
 
+
   render() {
     const { role, classes, isNewRole, loading } = this.props;
     const {
@@ -122,6 +124,13 @@ export default class RoleForm extends Component {
       isNewRole ||
       description !== role.description ||
       scopeText !== role.scopes.join('\n');
+
+    function formatScope(scope) {
+      return scope.replace(
+        /^assume:|\*$|<..>/g,
+        match => `<strong>${match}</strong>`
+      );
+    }
 
     return (
       <Fragment>
@@ -203,7 +212,19 @@ export default class RoleForm extends Component {
                           component={Link}
                           to={scopeLink(scope)}
                           className={classes.listItemButton}>
-                          <ListItemText secondary={<code>{scope}</code>} />
+                          <ListItemText
+                            disableTypography
+                            secondary={
+                              <Typography>
+                                <code
+                                  // eslint-disable-next-line react/no-danger
+                                  dangerouslySetInnerHTML={{
+                                    __html: formatScope(scope),
+                                  }}
+                                />
+                              </Typography>
+                            }
+                          />
                           <LinkIcon />
                         </ListItem>
                       ))}
@@ -226,36 +247,36 @@ export default class RoleForm extends Component {
             <ContentSaveIcon />
           </Button>
         ) : (
-          <Fragment>
-            <Button
-              spanProps={{
-                className: classNames(classes.fab, classes.saveRoleSpan),
-              }}
-              requiresAuth
-              tooltipOpen
-              onClick={this.handleSaveRole}
-              className={classes.saveIcon}
-              variant="round"
-              tooltipProps={{ title: 'Save' }}
-              disabled={loading || !isRoleDirty}
-              classes={{ root: classes.saveIcon }}>
-              <ContentSaveIcon />
-            </Button>
-            <SpeedDial>
-              <SpeedDialAction
+            <Fragment>
+              <Button
+                spanProps={{
+                  className: classNames(classes.fab, classes.saveRoleSpan),
+                }}
                 requiresAuth
                 tooltipOpen
-                icon={<DeleteIcon />}
-                onClick={this.handleDeleteRole}
-                tooltipTitle="Delete"
-                className={classes.deleteIcon}
-                ButtonProps={{
-                  disabled: loading,
-                }}
-              />
-            </SpeedDial>
-          </Fragment>
-        )}
+                onClick={this.handleSaveRole}
+                className={classes.saveIcon}
+                variant="round"
+                tooltipProps={{ title: 'Save' }}
+                disabled={loading || !isRoleDirty}
+                classes={{ root: classes.saveIcon }}>
+                <ContentSaveIcon />
+              </Button>
+              <SpeedDial>
+                <SpeedDialAction
+                  requiresAuth
+                  tooltipOpen
+                  icon={<DeleteIcon />}
+                  onClick={this.handleDeleteRole}
+                  tooltipTitle="Delete"
+                  className={classes.deleteIcon}
+                  ButtonProps={{
+                    disabled: loading,
+                  }}
+                />
+              </SpeedDial>
+            </Fragment>
+          )}
       </Fragment>
     );
   }
