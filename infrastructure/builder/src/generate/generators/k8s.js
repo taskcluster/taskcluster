@@ -8,7 +8,7 @@ const mkdirp = util.promisify(require('mkdirp'));
 const {listServices, readRepoYAML, writeRepoYAML, REPO_ROOT} = require('../../utils');
 
 const SERVICES = listServices();
-const CHART_DIR = path.join('infrastructure', 'k8s', 'chart');
+const CHART_DIR = path.join('infrastructure', 'k8s');
 const TMPL_DIR = path.join(CHART_DIR, 'templates');
 
 const renderTemplates = async (name, vars, procs, templates) => {
