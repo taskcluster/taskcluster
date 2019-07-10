@@ -35,10 +35,6 @@ export default class ViewRole extends Component {
     },
   };
 
-  preRunningAction = () => {
-    this.setState({ dialogError: null });
-  };
-
   handleDeleteRole = async roleId => {
     this.setState({ error: null, loading: true });
 

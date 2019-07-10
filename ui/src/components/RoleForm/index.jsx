@@ -109,10 +109,6 @@ export default class RoleForm extends Component {
     this.props.onRoleSave(role, roleId);
   };
 
-  handleDialogActionError = error => {
-    this.props({ dialogError: error });
-  };
-
   render() {
     const {
       role,
