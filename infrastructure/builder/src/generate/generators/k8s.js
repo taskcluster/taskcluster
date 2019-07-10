@@ -8,23 +8,24 @@ const mkdirp = util.promisify(require('mkdirp'));
 const {listServices, readRepoYAML, writeRepoYAML, REPO_ROOT} = require('../../utils');
 
 const SERVICES = listServices();
-const OUT_DIR = path.join('infrastructure', 'k8s', 'chart', 'templates');
+const CHART_DIR = path.join('infrastructure', 'k8s', 'chart');
+const TMPL_DIR = path.join(CHART_DIR, 'templates');
 
 const renderTemplates = async (name, vars, procs, templates) => {
 
-  await rimraf(OUT_DIR);
-  await mkdirp(OUT_DIR);
+  await rimraf(TMPL_DIR);
+  await mkdirp(TMPL_DIR);
 
   for (const resource of ['role', 'rolebinding', 'serviceaccount', 'secret']) {
     const rendered = jsone(templates[resource], {
       projectName: `taskcluster-${name}`,
       secrets: vars.map(v => ({
         key: v,
-        val: `.Values.${name}.${v.toLowerCase()}`,
+        val: `.Values.${name.replace(/-/g, '_')}.${v.toLowerCase()}`,
       })),
     });
     const file = `taskcluster-${name}-${resource}.yaml`;
-    await writeRepoYAML(path.join(OUT_DIR, file), rendered);
+    await writeRepoYAML(path.join(TMPL_DIR, file), rendered);
   }
 
   const ingresses = [];
@@ -47,7 +48,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
           projectName: `taskcluster-${name}`,
           paths: conf['paths'] || [`api/${name}/*`], // TODO: This version of config is only for gcp ingress :(
         });
-        await writeRepoYAML(path.join(OUT_DIR, file), rendered);
+        await writeRepoYAML(path.join(TMPL_DIR, file), rendered);
         break;
       }
       case 'background': {
@@ -64,7 +65,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
     }
     const rendered = jsone(templates[tmpl], context);
     const file = `taskcluster-${name}-${tmpl}-${proc}.yaml`;
-    await writeRepoYAML(path.join(OUT_DIR, file), rendered);
+    await writeRepoYAML(path.join(TMPL_DIR, file), rendered);
   }
   return ingresses;
 };
@@ -164,7 +165,7 @@ Object.entries(extras).forEach(([name, {procs, vars}]) => {
 exports.tasks.push({
   title: `Generate ingress`,
   requires: ['k8s-templates', 'ingresses-ui', 'ingresses-references', ...SERVICES.map(name => `ingresses-${name}`)],
-  provides: ['k8s-ingress'],
+  provides: [],
   run: async (requirements, utils) => {
     const ingresses = [];
     for (const [name, req] of Object.entries(requirements)) {
@@ -181,6 +182,33 @@ exports.tasks.push({
     }
     const templates = requirements['k8s-templates'];
     const rendered = jsone(templates['ingress'], {ingresses});
-    await writeRepoYAML(path.join(OUT_DIR, 'ingress.yaml'), rendered);
+    await writeRepoYAML(path.join(TMPL_DIR, 'ingress.yaml'), rendered);
+  },
+});
+
+exports.tasks.push({
+  title: `Generate values.yaml`,
+  requires: [...SERVICES.map(name => `configs-${name}`)],
+  provides: [],
+  run: async (requirements, utils) => {
+    const variables = {};
+    SERVICES.forEach(name => {
+      // TODO: simplify this when we have Object.fromEntries
+      const subVars = {};
+      requirements[`configs-${name}`].map(v => v.var.toLowerCase()).forEach(v => {
+        subVars[v] = '';
+      });
+      variables[name.replace(/-/g, '_')] = subVars;
+    });
+
+    Object.entries(extras).forEach(([name, {vars}]) => {
+      // TODO: simplify this when we have Object.fromEntries
+      const subVars = {};
+      vars.map(v => v.toLowerCase()).forEach(v => {
+        vars[v] = '';
+      });
+      variables[name.replace(/-/g, '_')] = subVars;
+    });
+    await writeRepoYAML(path.join(CHART_DIR, 'values.yaml'), variables);
   },
 });
