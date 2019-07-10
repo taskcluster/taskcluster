@@ -135,7 +135,6 @@ export default class ViewRole extends Component {
                   onRoleSave={this.handleSaveRole}
                   dialogOpen={dialogOpen}
                   onActionDialogClose={this.handleActionDialogClose}
-                  onDialogActionError={this.handleDialogActionError}
                   onDialogOpen={this.handleDialogOpen}
                 />
               )}
