@@ -4,7 +4,10 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"path/filepath"
 
 	"golang.org/x/crypto/ed25519"
@@ -190,4 +193,17 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 			Path: ed25519SignedCertPath,
 		},
 	))
+}
+
+func (cot *ChainOfTrustTaskFeature) ensureTaskUserCantReadPrivateCotKey() error {
+	c, err := cot.catCotKeyCommand()
+	if err != nil {
+		panic(fmt.Errorf("SERIOUS BUG: Could not create command (not even trying to execute it yet) to cat private chain of trust key %v - %v", config.Ed25519SigningKeyLocation, err))
+	}
+	r := c.Execute()
+	if !r.Failed() {
+		log.Print(r.String())
+		return errors.New(ChainOfTrustKeyNotSecureMessage)
+	}
+	return nil
 }

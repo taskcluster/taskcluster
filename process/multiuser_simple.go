@@ -99,6 +99,9 @@ func (r *Result) String() string {
 	if r.Aborted {
 		return fmt.Sprintf("Command ABORTED after %v", r.Duration)
 	}
+	if r.SystemError != nil {
+		return fmt.Sprintf("System error executing command: %v", r.SystemError)
+	}
 	return fmt.Sprintf(""+
 		"   Exit Code: %v\n"+
 		"   User Time: %v\n"+
