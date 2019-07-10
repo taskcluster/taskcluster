@@ -173,20 +173,47 @@ suite('Repo Meta Tests', function () {
     const filenames = glob.sync(
       '**/*',
       { cwd: ROOT_DIR });
-
-    let files=[]; //this list stores the files which has references to tools.taskcluster.net
+    const whitelist = [
+      'node_modules/slugid/README.md',
+      'node_modules/taskcluster-lib-urls/src/index.js',
+      'node_modules/taskcluster-lib-urls/src/main/java/org/mozilla/taskcluster/urls/LegacyURLs.java',
+      'node_modules/taskcluster-lib-urls/src/main/java/org/mozilla/taskcluster/urls/URLProvider.java',
+      'services/hooks/test/validate_test/create-hook-request.json',
+      'services/notify/test/api_test.js',
+      'test/meta_test.js',
+      'ui/docs/reference/core/notify/usage.md',
+      'ui/docs/reference/guide.md',
+      'ui/docs/reference/integrations/github/intro.md',
+      'ui/docs/reference/integrations/github/taskcluster-yml-v0.md',
+      'ui/docs/reference/integrations/github/taskcluster-yml-v1.md',
+      'ui/docs/reference/platform/queue/worker-hierarchy.md',
+      'ui/docs/tutorial/apis.md',
+      'ui/docs/tutorial/authenticate.md',
+      'ui/docs/tutorial/create-task-via-api.md',
+      'ui/docs/tutorial/debug-task.md',
+      'ui/docs/tutorial/download-task-artifacts.md',
+      'ui/docs/tutorial/finding-tasks.md',
+      'ui/docs/tutorial/gecko-decision-task.md',
+      'ui/docs/tutorial/gecko-tasks.md',
+      'ui/docs/tutorial/hello-world.md',
+      'ui/docs/tutorial/monitor-task-status.md',
+      'ui/src/components/HookForm/index.jsx'
+    ];
+    let files = []; //this list stores the files which has references to tools.taskcluster.net
     for (let filename of filenames) {
-      if(fs.lstatSync(filename).isFile()){
+      if (fs.lstatSync(filename).isFile()) {
         const data = fs.readFileSync(filename, 'utf8');
-        if(data.match(/tools.taskcluster.net/gm)) {
-          files.push(filename);
+        if (data.match(/tools.taskcluster.net/gm)) {
+          if (whitelist.includes(filename) == false) {
+            files.push(filename);
+          }
         }
       }
     }
-    if(files.length>0){
-      let error_string="The following files have references to tools.taskcluster.net : \n";
-      for(let filename of files){
-        error_string+=filename+"\n";
+    if (files.length > 0) {
+      let error_string = "The following files have references to tools.taskcluster.net : \n";
+      for (let filename of files) {
+        error_string += filename + "\n";
       }
       throw new Error(error_string);
     }
