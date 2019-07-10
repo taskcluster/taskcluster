@@ -1,10 +1,12 @@
 const {Client, consume, connectionStringCredentials} = require('../src');
 const amqplib = require('amqplib');
 const assume = require('assume');
+const fs = require('fs');
 const debugModule = require('debug');
 const assert = require('assert');
 const helper = require('./helper');
 const {suiteName} = require('taskcluster-lib-testing');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
   if (mock) {
@@ -121,6 +123,12 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       const numbers = got.map(msg => msg.payload.i);
       numbers.sort(); // with prefetch, order is not guaranteed
       assume(numbers).to.deeply.equal([0, 1, 2, 4, 5, 6, 7, 8, 9]);
+
+      // check that we logged the 'uhoh' error
+      const errors = defaultMonitorManager.messages
+        .filter(({Fields: {message}}) => message === 'uhoh');
+      assert.equal(errors.length, 1);
+      defaultMonitorManager.messages = [];
     });
 
     test('handle connection failure during consumption', async function() {
@@ -143,13 +151,17 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
               routingKeyPattern: '#',
               routingKeyReference,
             }],
-            prefetch: 2,
+            prefetch: 1,
           }, async message => {
             debug(`handling message ${message.payload.i}`);
 
             // Foricibly kill the connection after the first message
             if (got.length === 1) {
-              client.connections[0].amqp.close();
+              // This is not pretty, but works for now.  If this breaks, try to find
+              // another way to access the file descriptor for a socket.
+              const fd = client.connections[0].amqp.connection.stream._handle.fd;
+              debug(`closing pulse socket, file descriptor ${fd}`);
+              fs.closeSync(fd);
             }
 
             got.push(message);
@@ -168,7 +180,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       await client.stop();
 
       const numbers = got.map(msg => msg.payload.i);
-      numbers.sort(); // with prefetch, order is not guaranteed
+      numbers.sort(); // order is not guaranteed
       assume(numbers).to.deeply.equal([0, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     });
 
@@ -192,7 +204,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
               routingKeyPattern: '#',
               routingKeyReference,
             }],
-            prefetch: 2,
+            prefetch: 1,
             onConnected: async () => {
               debug('onConnected');
               got.push({connected: true});
@@ -210,6 +222,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
               // message three gets retried once and then discarded.
               if (message.payload.i === 3) {
                 // inject an error to test retrying
+                debug(`throwing error`);
                 throw new Error('uhoh');
               }
 
@@ -254,6 +267,12 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       // note that order is not guaranteed here, so just assert that we connected, got
       // four messages, reconnected, and then saw nothing.
       assume(numbers).to.deeply.equal(['connected', 'msg', 'msg', 'msg', 'msg', 'connected']);
+
+      // check that we logged the 'uhoh' error
+      const errors = defaultMonitorManager.messages
+        .filter(({Fields: {message}}) => message === 'uhoh');
+      assert.equal(errors.length, 1);
+      defaultMonitorManager.messages = [];
     });
 
     test('no queueuName is an error', async function() {

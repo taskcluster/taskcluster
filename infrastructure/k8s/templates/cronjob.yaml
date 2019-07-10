@@ -1,0 +1,55 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: ${project_name}-${lowercase(job_name)}
+spec:
+  schedule: ${schedule}
+  jobTemplate:
+    metadata:
+      labels:
+        application: taskcluster
+        taskcluster-service: ${project_name}
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          activeDeadlineSeconds: {$eval: 'deadline_seconds'}
+          volumes:
+            $if: 'len(volume_mounts) > 0'
+            then:
+              $map: {$eval: volume_mounts}
+              each(mount):
+                name: ${mount.source}
+                secret:
+                  secretName: ${project_name}
+                  items:
+                    - key: ${mount.source}
+                      path: ${mount.name}
+          containers:
+          - name: ${project_name}-${lowercase(job_name)}
+            image: ${docker_image}
+            imagePullPolicy: Always
+            args:
+              $if: 'is_monoimage'
+              then: ['${service_name}/${job_name}']
+              else: ['${job_name}']
+            resources:
+              # TODO: Make configurable
+              requests:
+                cpu: 100m
+                memory: 100Mi
+            volumeMounts:
+              $if: 'len(volume_mounts) > 0'
+              then:
+                $map: {$eval: volume_mounts}
+                each(mount):
+                  name: ${mount.source}
+                  mountPath: ${mount.path}
+                  readOnly: true
+            env:
+              $flatten:
+                - name: TASKCLUSTER_ROOT_URL
+                  value: ${root_url}
+            envFrom:
+              - secretRef:
+                  name: ${project_name}

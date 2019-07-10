@@ -4,6 +4,23 @@ const assert = require('assert');
 const slugid = require('slugid');
 
 /**
+ * Recognize some "expected", ignorable errors due to normal network failures.
+ */
+const isExpectedError = err => {
+  // IllegalOperationError happens when we are draining a broken channel; ignore
+  if (err instanceof amqplib.IllegalOperationError) {
+    return true;
+  }
+
+  // similarly, an error with this text is sent in some failure modes.  See
+  // https://github.com/streadway/amqp/issues/409 for a request for a better
+  // way to recognize this
+  if (err.message.match(/no reply will be forthcoming/)) {
+    return true;
+  }
+};
+
+/**
  * A PulseConsumer declares a queue and listens for messages on that
  * queue, invoking a callback for each message.
  *
@@ -96,10 +113,9 @@ class PulseConsumer {
       try {
         await channel.cancel(consumerTag);
       } catch (err) {
-        if (!(err instanceof amqplib.IllegalOperationError)) {
+        if (!isExpectedError(err)) {
           throw err;
         }
-        // IllegalOperationError happens when we are draining a broken channel; ignore
       }
     }
 
@@ -116,10 +132,9 @@ class PulseConsumer {
       try {
         await channel.close();
       } catch (err) {
-        if (!(err instanceof amqplib.IllegalOperationError)) {
+        if (!isExpectedError(err)) {
           throw err;
         }
-        // IllegalOperationError happens when we are draining a broken channel; ignore
       }
     }
   }
@@ -191,10 +206,10 @@ class PulseConsumer {
           channel.ack(msg);
         } catch (err) {
           // the error handling in the inner try block went badly, so this
-          // channel is probably sick; but if this is an IllegalOperationError,
+          // channel is probably sick; but if this is an expected error,
           // there's no need to report it (that is basically saying the channel
           // has closed, so we'll re-connect)
-          if (!(err instanceof amqplib.IllegalOperationError)) {
+          if (!isExpectedError(err)) {
             this.client.monitor.reportError(err, {
               queueName,
               exchange: msg.exchange,

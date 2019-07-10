@@ -1,4 +1,7 @@
+const taskcluster = require('taskcluster-client');
 const APIBuilder = require('taskcluster-lib-api');
+const assert = require('assert');
+const {RegistrationError} = require('./providers/provider');
 
 let builder = new APIBuilder({
   title: 'Taskcluster Worker Manager',
@@ -11,6 +14,7 @@ let builder = new APIBuilder({
     workerPoolId: /^[a-zA-Z0-9-_]{1,38}\/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$/,
   },
   context: [
+    'cfg',
     'Worker',
     'WorkerPool',
     'WorkerPoolError',
@@ -220,7 +224,7 @@ builder.declare({
 
 builder.declare({
   method: 'post',
-  route: '/worker-pools-errors/:workerPoolId(*)',
+  route: '/worker-pool-errors/:workerPoolId(*)',
   name: 'reportWorkerError',
   title: 'Report an error from a worker',
   input: 'report-worker-error-request.yml',
@@ -334,4 +338,84 @@ builder.declare({
     result.continuationToken = data.continuation;
   }
   return res.reply(result);
+});
+
+builder.declare({
+  method: 'get',
+  route: '/worker/register',
+  name: 'registerWorker',
+  title: 'Register a running worker',
+  stability: APIBuilder.stability.experimental,
+  input: 'register-worker-request.yml',
+  output: 'register-worker-response.yml',
+  description: [
+    'Register a running worker.  Workers call this method on worker start-up.',
+    '',
+    'This call both marks the worker as running and returns the credentials',
+    'the worker will require to perform its work.  The worker must provide',
+    'some proof of its identity, and that proof varies by provider type.',
+  ].join('\n'),
+}, async function(req, res) {
+  const {workerPoolId, providerId, workerGroup, workerId, workerIdentityProof} = req.body;
+
+  // carefully check each value provided, since we have not yet validated the
+  // worker's "proof"
+
+  const workerPool = await this.WorkerPool.load({workerPoolId}, true);
+  if (!workerPool) {
+    return res.reportError('ResourceNotFound',
+      `Worker pool ${workerPoolId} does not exist`, {});
+  }
+
+  const provider = this.providers.get(providerId);
+  if (!provider) {
+    return res.reportError('ResourceNotFound',
+      `Provider ${providerId} does not exist`, {});
+  }
+
+  if (workerPool.providerId !== providerId && !workerPool.previousProviderIds.includes(providerId)) {
+    return res.reportError('InputError',
+      `Worker pool ${workerPoolId} not associated with provider ${providerId}`, {});
+  }
+
+  const worker = await this.Worker.load({workerPoolId, workerGroup, workerId}, true);
+  if (!worker) {
+    return res.reportError('ResourceNotFound',
+      `Worker ${workerGroup}/${workerId} in worker pool ${workerPoolId} does not exist`, {});
+  }
+
+  if (worker.providerId !== providerId) {
+    return res.reportError('InputError',
+      `Worker ${workerGroup}/${workerId} does not have provider ${providerId}`, {});
+  }
+
+  let expires;
+  try {
+    const reg = await provider.registerWorker({worker, workerPool, workerIdentityProof});
+    expires = reg.expires;
+  } catch (err) {
+    if (!(err instanceof RegistrationError)) {
+      throw err;
+    }
+    return res.reportError('InputError', err.message, {});
+  }
+  assert(expires, 'registerWorker did not return expires');
+
+  const credentials = taskcluster.createTemporaryCredentials({
+    clientId: `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`,
+    scopes: [
+      `assume:worker-type:${workerPoolId}`, // deprecated role
+      `assume:worker-pool:${workerPoolId}`,
+      `assume:worker-id:${workerGroup}/${workerId}`,
+      `queue:worker-id:${workerGroup}/${workerId}`,
+      `secrets:get:worker-type:${workerPoolId}`, // deprecated secret name
+      `secrets:get:worker-pool:${workerPoolId}`,
+      `queue:claim-work:${workerPoolId}`,
+    ],
+    start: taskcluster.fromNow('-15 minutes'),
+    expiry: expires,
+    credentials: this.cfg.taskcluster.credentials,
+  });
+
+  return res.reply({expires: expires.toJSON(), credentials});
 });

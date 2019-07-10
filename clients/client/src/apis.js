@@ -3837,7 +3837,7 @@ module.exports = {
           "output": "v1/worker-pool-error.json#",
           "query": [
           ],
-          "route": "/worker-pools-errors/<workerPoolId>",
+          "route": "/worker-pool-errors/<workerPoolId>",
           "scopes": {
             "AllOf": [
               "assume:worker-pool:<workerPoolId>",
@@ -3884,18 +3884,17 @@ module.exports = {
         },
         {
           "args": [
-            "workerPoolId"
           ],
-          "description": "Get Taskcluster credentials for a worker given an Instance Identity Token",
-          "input": "v1/credentials-google-request.json#",
-          "method": "post",
-          "name": "credentialsGoogle",
-          "output": "v1/temp-creds-response.json#",
+          "description": "Register a running worker.  Workers call this method on worker start-up.\n\nThis call both marks the worker as running and returns the credentials\nthe worker will require to perform its work.  The worker must provide\nsome proof of its identity, and that proof varies by provider type.",
+          "input": "v1/register-worker-request.json#",
+          "method": "get",
+          "name": "registerWorker",
+          "output": "v1/register-worker-response.json#",
           "query": [
           ],
-          "route": "/credentials/google/<workerPoolId>",
+          "route": "/worker/register",
           "stability": "experimental",
-          "title": "Google Credentials",
+          "title": "Register a running worker",
           "type": "function"
         }
       ],

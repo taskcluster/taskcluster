@@ -359,6 +359,11 @@ The function does the following:
 
 Tests should import the MonitorManager instance from `../src/monitor.js` to get access to the messages and modify the message list
 
+Libraries can use this function as
+```js
+withMonitor(exports, {noLoader: true});
+```
+
 Time
 ----
 

@@ -89,7 +89,12 @@ The result looks like this:
 }
 ```
 
-Taskcluster-Github will set the schedulerId of each task, as is required for proper status tracking of the resulting task.
+Taskcluster-Github will set the `schedulerId` of each task, as is required for proper status tracking of the resulting task.
+With the change , it became possible to set a custom `schedulerId` in the task definition, provided you have the scopes
+for using that particular `schedulerId`. However, adding custom schedulerId to the task definition while using github's 
+Statuses API can break the status reporting functionality of tc-github in the case of successful build. 
+Checks API implementation in tc-github is currently in experimental state.
+
 
 The `taskId` and `taskGroupId` properties can be set by the JSON-e template,
 but default values are also available.  If the JSON-e rendering produces only

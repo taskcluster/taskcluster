@@ -1,0 +1,15 @@
+project_name: "taskcluster-ui"
+debug_mode: False
+secrets:
+  application_name: "Taskcluster"
+  graphql_endpoint: ".Values.graphqlEndpoint" # ${var.root_url}/graphql
+  graphql_subscription_endpoint: ".Values.graphqlSubEndpoint" # ${var.root_url}/subscription
+  ui_login_strategy_names: ".Values.uiLoginStrategyNames"
+deployments:
+  - service_name: "ui"
+    cpu: "100m"
+    docker_image: ".Values.dockerImage"
+    memory: "2000Mi"
+    proc_name: "web"
+    readiness_path: "/"
+    root_url: ".Values.rootUrl"

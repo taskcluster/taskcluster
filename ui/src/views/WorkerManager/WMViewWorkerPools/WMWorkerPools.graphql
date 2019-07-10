@@ -4,6 +4,8 @@ query workerPools {
     providerId
     description
     owner
+    config
+    emailOnError
     pendingTasks #this value comes from a separate request to queue
   }
 }
