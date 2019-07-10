@@ -197,14 +197,14 @@ suite('Repo Meta Tests', function () {
       'ui/docs/tutorial/gecko-tasks.md',
       'ui/docs/tutorial/hello-world.md',
       'ui/docs/tutorial/monitor-task-status.md',
-      'ui/src/components/HookForm/index.jsx'
+      'ui/src/components/HookForm/index.jsx',
     ];
     let files = []; //this list stores the files which has references to tools.taskcluster.net
     for (let filename of filenames) {
       if (fs.lstatSync(filename).isFile()) {
         const data = fs.readFileSync(filename, 'utf8');
         if (data.match(/tools.taskcluster.net/gm)) {
-          if (whitelist.includes(filename) == false) {
+          if (whitelist.includes(filename) === false) {
             files.push(filename);
           }
         }
