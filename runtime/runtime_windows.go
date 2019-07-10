@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/generic-worker/win32"
+	"golang.org/x/sys/windows/registry"
 )
 
 type OSUser struct {
@@ -89,4 +90,45 @@ func InteractiveUsername() (string, error) {
 		panic(err)
 	}
 	return account, nil
+}
+
+func AutoLogonCredentials() (user OSUser) {
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`, registry.QUERY_VALUE)
+	if err != nil {
+		log.Printf("Hit error reading Winlogon registry key - assume no autologon set: %v", err)
+		return
+	}
+	defer k.Close()
+	user.Name, _, err = k.GetStringValue("DefaultUserName")
+	if err != nil {
+		log.Printf("Hit error reading winlogon DefaultUserName registry value - assume no autologon set: %v", err)
+		return
+	}
+	user.Password, _, err = k.GetStringValue("DefaultPassword")
+	if err != nil {
+		log.Printf("Hit error reading winlogon DefaultPassword registry value - assume no autologon set: %v", err)
+		return
+	}
+	return
+}
+
+func SetAutoLogin(user *OSUser) error {
+	k, _, err := registry.CreateKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`, registry.WRITE)
+	if err != nil {
+		return fmt.Errorf(`Was not able to create registry key 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' due to %s`, err)
+	}
+	defer k.Close()
+	err = k.SetDWordValue("AutoAdminLogon", 1)
+	if err != nil {
+		return fmt.Errorf(`Was not able to set registry entry 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\AutoAdminLogon' to 1 due to %s`, err)
+	}
+	err = k.SetStringValue("DefaultUserName", user.Name)
+	if err != nil {
+		return fmt.Errorf(`Was not able to set registry entry 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\DefaultUserName' to %q due to %s`, user.Name, err)
+	}
+	err = k.SetStringValue("DefaultPassword", user.Password)
+	if err != nil {
+		return fmt.Errorf(`Was not able to set registry entry 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\DefaultPassword' to %q due to %s`, user.Password, err)
+	}
+	return nil
 }

@@ -148,7 +148,7 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 	}
 	PreRebootSetup(nextTaskUser)
 	// configure worker to auto-login to this newly generated user account
-	err = SetAutoLogin(nextTaskUser)
+	err = runtime.SetAutoLogin(nextTaskUser)
 	if err != nil {
 		panic(err)
 	}
@@ -169,8 +169,8 @@ func purgeOldTasks() error {
 		log.Printf("WARNING: Not purging previous task directories/users since config setting cleanUpTaskDirs is false")
 		return nil
 	}
-	deleteTaskDirs(runtime.UserHomeDirectoriesParent(), taskContext.User.Name, AutoLogonCredentials().Name)
-	deleteTaskDirs(config.TasksDir, taskContext.User.Name, AutoLogonCredentials().Name)
+	deleteTaskDirs(runtime.UserHomeDirectoriesParent(), taskContext.User.Name, runtime.AutoLogonCredentials().Name)
+	deleteTaskDirs(config.TasksDir, taskContext.User.Name, runtime.AutoLogonCredentials().Name)
 	// regardless of whether we are running as current user or not, we should purge old task users
 	err := deleteExistingOSUsers()
 	if err != nil {
@@ -187,7 +187,7 @@ func deleteExistingOSUsers() (err error) {
 	}
 	allErrors := []string{}
 	for _, username := range userAccounts {
-		if strings.HasPrefix(username, "task_") && username != taskContext.User.Name && username != AutoLogonCredentials().Name {
+		if strings.HasPrefix(username, "task_") && username != taskContext.User.Name && username != runtime.AutoLogonCredentials().Name {
 			log.Print("Attempting to remove user " + username + "...")
 			err2 := runtime.DeleteUser(username)
 			if err2 != nil {

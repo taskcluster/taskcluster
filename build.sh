@@ -59,26 +59,23 @@ function install {
 }
 
 if ${ALL_PLATFORMS}; then
-  install docker linux amd64
-
   install multiuser windows amd64
   install multiuser windows 386
 
-  install multiuser darwin amd64
-  install multiuser darwin 386
+  install multiuser darwin  amd64
+  install simple    darwin  amd64
 
-  install simple darwin amd64
-  install simple darwin 386
-
-  install simple linux amd64
-  install simple linux 386
-  install simple linux arm
-  install simple linux arm64
+  install multiuser linux   amd64
+  install docker    linux   amd64
+  install simple    linux   amd64
+  install simple    linux   arm
+  install simple    linux   arm64
 else
   MY_GOHOSTOS="$(go env GOHOSTOS)"
   MY_GOHOSTARCH="$(go env GOHOSTARCH)"
   case "${MY_GOHOSTOS}" in
       linux) install simple    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
+             install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              install docker    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              ;;
      darwin) install simple    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
