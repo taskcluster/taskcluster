@@ -17,6 +17,10 @@ export default class WorkerManager extends Client {
     this.listWorkerPools.entry = {"args":[],"method":"get","name":"listWorkerPools","output":true,"query":["continuationToken","limit"],"route":"/worker-pools","stability":"experimental","type":"function"}; // eslint-disable-line
     this.reportWorkerError.entry = {"args":["workerPoolId"],"input":true,"method":"post","name":"reportWorkerError","output":true,"query":[],"route":"/worker-pool-errors/<workerPoolId>","scopes":{"AllOf":["assume:worker-pool:<workerPoolId>","assume:worker-id:<workerGroup>/<workerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkerPoolErrors.entry = {"args":["workerPoolId"],"method":"get","name":"listWorkerPoolErrors","output":true,"query":["continuationToken","limit"],"route":"/worker-pool-errors/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.listWorkersForWorkerGroup.entry = {"args":["workerPoolId","workerGroup"],"method":"get","name":"listWorkersForWorkerGroup","output":true,"query":["continuationToken","limit"],"route":"/workers/<workerPoolId>:/<workerGroup>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.worker.entry = {"args":["workerPoolId","workerGroup","workerId"],"method":"get","name":"worker","output":true,"query":[],"route":"/workers/<workerPoolId>:/<workerGroup>/<workerId>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.createWorker.entry = {"args":["workerPoolId","workerGroup","workerId"],"input":true,"method":"put","name":"createWorker","output":true,"query":[],"route":"/workers/<workerPoolId>:/<workerGroup>/<workerId>","scopes":"worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.removeWorker.entry = {"args":["workerPoolId","workerGroup","workerId"],"method":"delete","name":"removeWorker","query":[],"route":"/workers/<workerPoolId>:/<workerGroup>/<workerId>","scopes":"worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkersForWorkerPool.entry = {"args":["workerPoolId"],"method":"get","name":"listWorkersForWorkerPool","output":true,"query":["continuationToken","limit"],"route":"/workers/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.registerWorker.entry = {"args":[],"input":true,"method":"get","name":"registerWorker","output":true,"query":[],"route":"/worker/register","stability":"experimental","type":"function"}; // eslint-disable-line
   }
@@ -87,6 +91,44 @@ export default class WorkerManager extends Client {
     this.validate(this.listWorkerPoolErrors.entry, args);
 
     return this.request(this.listWorkerPoolErrors.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Get the list of all the existing workers in a given group in a given worker pool.
+  /* eslint-enable max-len */
+  listWorkersForWorkerGroup(...args) {
+    this.validate(this.listWorkersForWorkerGroup.entry, args);
+
+    return this.request(this.listWorkersForWorkerGroup.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Get a single worker.
+  /* eslint-enable max-len */
+  worker(...args) {
+    this.validate(this.worker.entry, args);
+
+    return this.request(this.worker.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Create a new worker.  The precise behavior of this method depends
+  // on the provider implementing the given worker pool.  Some providers
+  // do not support creating workers at all, and will return a 400 error.
+  /* eslint-enable max-len */
+  createWorker(...args) {
+    this.validate(this.createWorker.entry, args);
+
+    return this.request(this.createWorker.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Remove an existing worker.  The precise behavior of this method depends
+  // on the provider implementing the given worker.  Some providers
+  // do not support removing workers at all, and will return a 400 error.
+  // Others may begin removing the worker, but it may remain available via
+  // the API (perhaps even in state RUNNING) afterward.
+  /* eslint-enable max-len */
+  removeWorker(...args) {
+    this.validate(this.removeWorker.entry, args);
+
+    return this.request(this.removeWorker.entry, args);
   }
   /* eslint-disable max-len */
   // Get the list of all the existing workers in a given worker pool.

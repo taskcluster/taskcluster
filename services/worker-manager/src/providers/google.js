@@ -5,7 +5,7 @@ const taskcluster = require('taskcluster-client');
 const libUrls = require('taskcluster-lib-urls');
 const uuid = require('uuid');
 const {google} = require('googleapis');
-const {RegistrationError, Provider} = require('./provider');
+const {ApiError, Provider} = require('./provider');
 
 class GoogleProvider extends Provider {
 
@@ -189,7 +189,7 @@ class GoogleProvider extends Provider {
 
     // use the same message for all errors here, so as not to give an attacker
     // extra information.
-    const error = () => new RegistrationError('Token validation error');
+    const error = () => new ApiError('Token validation error');
 
     if (!token) {
       throw error();

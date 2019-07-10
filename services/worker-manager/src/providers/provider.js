@@ -14,7 +14,6 @@ class Provider {
     monitor,
     notify,
     rootUrl,
-    taskclusterCredentials,
     estimator,
     validator,
     Worker,
@@ -26,7 +25,6 @@ class Provider {
     this.validator = validator;
     this.notify = notify;
     this.rootUrl = rootUrl;
-    this.taskclusterCredentials = taskclusterCredentials;
     this.estimator = estimator;
     this.Worker = Worker;
     this.WorkerPool = WorkerPool;
@@ -106,7 +104,7 @@ class Provider {
    * Providers that wish to limit registration to once per worker should return
    * an error message from this function if the worker is already RUNNING.
    *
-   * If validation fails due to a user error, throw a RegistrationError instance,
+   * If validation fails due to a user error, throw a ApiError instance,
    * which will turn into a 400 error for the user containing the error message.
    * The message should not reveal any information, whether provided by the user
    * or about the expected values.
@@ -145,6 +143,30 @@ class Provider {
   }
 
   /**
+   * Create the given worker.  Dynamic providers or any providers that do not
+   * support user-initiated workers should throw a ApiError here.
+   *
+   * WorkerPool is the entity for this worker pool.  Input matches the
+   * `create-worker-request.yml` schema, and the return value should be a
+   * Worker entity.  Idempotency is the responsibility of the provider.
+   */
+  async createWorker({workerPool, workerGroup, workerId, input}) {
+  }
+
+  /**
+   * Remove the given worker.  What this means depends on the provider, of course:
+   * those which support `createWorker` can do the inverse here.  Those that create
+   * workers dynamically can either throw ApiError indicating this is not
+   * supported, or can treat this as a request to terminate the given worker.
+   *
+   * The input is a Worker entity.  That entity may still exist (and even have
+   * state RUNNING) after this call returns, if that makes sense for the provider
+   * (for example, if the call merely initiates instance shutdown).
+   */
+  async removeWorker(worker) {
+  }
+
+  /**
    * Called when a new worker pool is added to this provider to allow the provider
    * to do whatever setup is necessary, such as creating shared resources for the
    * workers.  This activity is specific to the pool, but not to individual workers.
@@ -170,10 +192,14 @@ class Provider {
   }
 }
 
-class RegistrationError extends Error {
+/**
+ * An error which, if thrown from API-related Provider methods, will be returned to
+ * the user as a 400 Bad Request error containing `err.message`.
+ */
+class ApiError extends Error {
 }
 
 module.exports = {
   Provider,
-  RegistrationError,
+  ApiError,
 };

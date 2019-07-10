@@ -113,6 +113,56 @@ class WorkerManager(BaseClient):
 
         return self._makeApiCall(self.funcinfo["listWorkerPoolErrors"], *args, **kwargs)
 
+    def listWorkersForWorkerGroup(self, *args, **kwargs):
+        """
+        Workers in a specific Worker Group in a Worker Pool
+
+        Get the list of all the existing workers in a given group in a given worker pool.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["listWorkersForWorkerGroup"], *args, **kwargs)
+
+    def worker(self, *args, **kwargs):
+        """
+        Get a Worker
+
+        Get a single worker.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["worker"], *args, **kwargs)
+
+    def createWorker(self, *args, **kwargs):
+        """
+        Create a Worker
+
+        Create a new worker.  The precise behavior of this method depends
+        on the provider implementing the given worker pool.  Some providers
+        do not support creating workers at all, and will return a 400 error.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["createWorker"], *args, **kwargs)
+
+    def removeWorker(self, *args, **kwargs):
+        """
+        Remove a Worker
+
+        Remove an existing worker.  The precise behavior of this method depends
+        on the provider implementing the given worker.  Some providers
+        do not support removing workers at all, and will return a 400 error.
+        Others may begin removing the worker, but it may remain available via
+        the API (perhaps even in state RUNNING) afterward.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["removeWorker"], *args, **kwargs)
+
     def listWorkersForWorkerPool(self, *args, **kwargs):
         """
         Workers in a Worker Pool
@@ -140,6 +190,15 @@ class WorkerManager(BaseClient):
         return self._makeApiCall(self.funcinfo["registerWorker"], *args, **kwargs)
 
     funcinfo = {
+        "createWorker": {
+            'args': ['workerPoolId', 'workerGroup', 'workerId'],
+            'input': 'v1/create-worker-request.json#',
+            'method': 'put',
+            'name': 'createWorker',
+            'output': 'v1/worker-full.json#',
+            'route': '/workers/<workerPoolId>:/<workerGroup>/<workerId>',
+            'stability': 'experimental',
+        },
         "createWorkerPool": {
             'args': ['workerPoolId'],
             'input': 'v1/create-worker-pool-request.json#',
@@ -167,6 +226,15 @@ class WorkerManager(BaseClient):
             'route': '/worker-pools',
             'stability': 'experimental',
         },
+        "listWorkersForWorkerGroup": {
+            'args': ['workerPoolId', 'workerGroup'],
+            'method': 'get',
+            'name': 'listWorkersForWorkerGroup',
+            'output': 'v1/worker-list.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/workers/<workerPoolId>:/<workerGroup>',
+            'stability': 'experimental',
+        },
         "listWorkersForWorkerPool": {
             'args': ['workerPoolId'],
             'method': 'get',
@@ -192,6 +260,13 @@ class WorkerManager(BaseClient):
             'route': '/worker/register',
             'stability': 'experimental',
         },
+        "removeWorker": {
+            'args': ['workerPoolId', 'workerGroup', 'workerId'],
+            'method': 'delete',
+            'name': 'removeWorker',
+            'route': '/workers/<workerPoolId>:/<workerGroup>/<workerId>',
+            'stability': 'experimental',
+        },
         "reportWorkerError": {
             'args': ['workerPoolId'],
             'input': 'v1/report-worker-error-request.json#',
@@ -208,6 +283,14 @@ class WorkerManager(BaseClient):
             'name': 'updateWorkerPool',
             'output': 'v1/worker-pool-full.json#',
             'route': '/worker-pool/<workerPoolId>',
+            'stability': 'experimental',
+        },
+        "worker": {
+            'args': ['workerPoolId', 'workerGroup', 'workerId'],
+            'method': 'get',
+            'name': 'worker',
+            'output': 'v1/worker-full.json#',
+            'route': '/workers/<workerPoolId>:/<workerGroup>/<workerId>',
             'stability': 'experimental',
         },
         "workerPool": {

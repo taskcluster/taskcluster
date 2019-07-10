@@ -33,6 +33,10 @@ type (
 		Token string `json:"token"`
 	}
 
+	// Provider-specific information
+	ProviderData struct {
+	}
+
 	// Request body to `registerWorker`.
 	RegisterWorkerRequest struct {
 
@@ -92,6 +96,16 @@ type (
 
 	// (No information is currently required; TBD)
 	StaticProviderType struct {
+	}
+
+	// Request to create a worker
+	WorkerCreationRequest struct {
+
+		// Date and time when this worker will be deleted from the DB
+		Expires tcclient.Time `json:"expires"`
+
+		// Provider-specific information
+		ProviderInfo ProviderData `json:"providerInfo,omitempty"`
 	}
 
 	// A report of an error from a worker.  This will be recorded with kind
