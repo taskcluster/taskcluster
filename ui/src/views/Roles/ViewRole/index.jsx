@@ -82,7 +82,7 @@ export default class ViewRole extends Component {
     }
   };
 
-  handleActionDialogClose = () => {
+  handleDialogActionClose = () => {
     this.setState({
       dialogOpen: false,
       dialogError: null,
@@ -137,7 +137,7 @@ export default class ViewRole extends Component {
                   dialogOpen={dialogOpen}
                   onDialogActionError={this.handleDialogActionError}
                   onDialogActionComplete={this.handleDialogActionComplete}
-                  onDialogActionClose={this.handleActionDialogClose}
+                  onDialogActionClose={this.handleDialogActionClose}
                   onDialogActionOpen={this.handleDialogActionOpen}
                 />
               )}
