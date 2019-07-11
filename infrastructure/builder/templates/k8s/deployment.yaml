@@ -2,22 +2,31 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ${projectName}-${lowercase(procName)}
+  labels:
+    app.kubernetes.io/name: taskcluster-${projectName}
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: ${serviceName}-${procName}
+    app.kubernetes.io/part-of: taskcluster
+    app.kubernetes.io/managed-by: helm
 spec:
   selector:
-    # TODO: Copy cloudops labels structure
     matchLabels:
-      application: taskcluster
-      taskcluster-service: ${projectName}
-      taskcluster-proc: ${procName}
+      app.kubernetes.io/name: ${projectName}
+      app.kubernetes.io/instance: '{{ .Release.Name }}'
+      app.kubernetes.io/component: ${serviceName}-${procName}
+      app.kubernetes.io/part-of: taskcluster
+      app.kubernetes.io/managed-by: helm
   replicas: 1 # TODO
   template:
     metadata:
       annotations:
         checksum/secret: '{{ include (print $.Template.BasePath "/${projectName}-secret.yaml") . | sha256sum }}'
       labels:
-        application: taskcluster
-        taskcluster-service: ${projectName}
-        taskcluster-proc: '${procName}'
+        app.kubernetes.io/name: ${projectName}
+        app.kubernetes.io/instance: '{{ .Release.Name }}'
+        app.kubernetes.io/component: ${serviceName}-${procName}
+        app.kubernetes.io/part-of: taskcluster
+        app.kubernetes.io/managed-by: helm
     spec:
       serviceAccountName: ${projectName}
       containers:

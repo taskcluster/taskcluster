@@ -1,0 +1,1092 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "auth": {
+      "additionalProperties": false,
+      "properties": {
+        "audit_log": {
+          "type": "string"
+        },
+        "aws_access_key_id": {
+          "type": "string"
+        },
+        "aws_region": {
+          "type": "string"
+        },
+        "aws_secret_access_key": {
+          "type": "string"
+        },
+        "azure_account": {
+          "type": "string"
+        },
+        "azure_account_key": {
+          "type": "string"
+        },
+        "azure_accounts": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "azure_crypto_key": {
+          "type": "string"
+        },
+        "azure_signing_key": {
+          "type": "string"
+        },
+        "client_table_name": {
+          "type": "string"
+        },
+        "docs_bucket": {
+          "type": "string"
+        },
+        "force_ssl": {
+          "type": "boolean"
+        },
+        "gcp_credentials": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "level": {
+          "type": "string"
+        },
+        "node_env": {
+          "type": "string"
+        },
+        "port": {
+          "type": "number"
+        },
+        "pulse_hostname": {
+          "type": "string"
+        },
+        "pulse_password": {
+          "type": "string"
+        },
+        "pulse_username": {
+          "type": "string"
+        },
+        "pulse_vhost": {
+          "type": "string"
+        },
+        "refs_bucket": {
+          "type": "string"
+        },
+        "roles_container_name": {
+          "type": "string"
+        },
+        "schemas_bucket": {
+          "type": "string"
+        },
+        "sentry_auth_token": {
+          "type": "string"
+        },
+        "sentry_host": {
+          "type": "string"
+        },
+        "sentry_key_prefix": {
+          "type": "string"
+        },
+        "sentry_organization": {
+          "type": "string"
+        },
+        "sentry_team": {
+          "type": "string"
+        },
+        "static_clients": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "statsum_api_secret": {
+          "type": "string"
+        },
+        "statsum_base_url": {
+          "type": "string"
+        },
+        "taskcluster_root_url": {
+          "type": "string"
+        },
+        "test_bucket": {
+          "type": "string"
+        },
+        "trust_proxy": {
+          "type": "boolean"
+        },
+        "websocktunnel_secret": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "taskcluster_root_url",
+        "client_table_name",
+        "roles_container_name",
+        "static_clients",
+        "azure_accounts",
+        "sentry_organization",
+        "sentry_host",
+        "sentry_auth_token",
+        "sentry_team",
+        "sentry_key_prefix",
+        "statsum_api_secret",
+        "statsum_base_url",
+        "websocktunnel_secret",
+        "docs_bucket",
+        "schemas_bucket",
+        "refs_bucket",
+        "audit_log",
+        "level",
+        "port",
+        "node_env",
+        "force_ssl",
+        "trust_proxy",
+        "azure_account",
+        "azure_account_key",
+        "azure_signing_key",
+        "azure_crypto_key",
+        "pulse_username",
+        "pulse_password",
+        "pulse_hostname",
+        "pulse_vhost",
+        "aws_access_key_id",
+        "aws_secret_access_key",
+        "aws_region",
+        "gcp_credentials",
+        "test_bucket"
+      ],
+      "title": "Configuration options for auth",
+      "type": "object"
+    },
+    "built_in_workers": {
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "type": "string"
+        },
+        "taskcluster_access_token": {
+          "type": "string"
+        },
+        "taskcluster_client_id": {
+          "type": "string"
+        },
+        "taskcluster_root_url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "taskcluster_root_url",
+        "taskcluster_client_id",
+        "taskcluster_access_token",
+        "level"
+      ],
+      "title": "Configuration options for built-in-workers",
+      "type": "object"
+    },
+    "github": {
+      "additionalProperties": false,
+      "properties": {
+        "aws_access_key": {
+          "type": "string"
+        },
+        "aws_secret_key": {
+          "type": "string"
+        },
+        "azure_account_name": {
+          "type": "string"
+        },
+        "bot_username": {
+          "type": "string"
+        },
+        "force_ssl": {
+          "type": "boolean"
+        },
+        "github_app_id": {
+          "type": "string"
+        },
+        "github_private_pem": {
+          "type": "string"
+        },
+        "level": {
+          "type": "string"
+        },
+        "port": {
+          "type": "number"
+        },
+        "provisioner_id": {
+          "type": "string"
+        },
+        "pulse_hostname": {
+          "type": "string"
+        },
+        "pulse_namespace": {
+          "type": "string"
+        },
+        "pulse_password": {
+          "type": "string"
+        },
+        "pulse_username": {
+          "type": "string"
+        },
+        "pulse_vhost": {
+          "type": "string"
+        },
+        "taskcluster_access_token": {
+          "type": "string"
+        },
+        "taskcluster_client_id": {
+          "type": "string"
+        },
+        "taskcluster_root_url": {
+          "type": "string"
+        },
+        "trust_proxy": {
+          "type": "boolean"
+        },
+        "webhook_secret": {
+          "type": "array"
+        },
+        "worker_type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "bot_username",
+        "taskcluster_root_url",
+        "taskcluster_client_id",
+        "taskcluster_access_token",
+        "github_private_pem",
+        "github_app_id",
+        "webhook_secret",
+        "provisioner_id",
+        "worker_type",
+        "azure_account_name",
+        "level",
+        "port",
+        "pulse_hostname",
+        "pulse_username",
+        "pulse_password",
+        "pulse_vhost",
+        "pulse_namespace",
+        "aws_access_key",
+        "aws_secret_key",
+        "force_ssl",
+        "trust_proxy"
+      ],
+      "title": "Configuration options for github",
+      "type": "object"
+    },
+    "hooks": {
+      "additionalProperties": false,
+      "properties": {
+        "aws_access_key_id": {
+          "type": "string"
+        },
+        "aws_secret_access_key": {
+          "type": "string"
+        },
+        "azure_account": {
+          "type": "string"
+        },
+        "force_ssl": {
+          "type": "boolean"
+        },
+        "hook_table_name": {
+          "type": "string"
+        },
+        "influx_connection": {
+          "type": "string"
+        },
+        "lastfire_table_name": {
+          "type": "string"
+        },
+        "level": {
+          "type": "string"
+        },
+        "node_env": {
+          "type": "string"
+        },
+        "port": {
+          "type": "number"
+        },
+        "pulse_hostname": {
+          "type": "string"
+        },
+        "pulse_password": {
+          "type": "string"
+        },
+        "pulse_username": {
+          "type": "string"
+        },
+        "pulse_vhost": {
+          "type": "string"
+        },
+        "queue_table_name": {
+          "type": "string"
+        },
+        "table_crypto_key": {
+          "type": "string"
+        },
+        "table_signing_key": {
+          "type": "string"
+        },
+        "taskcluster_access_token": {
+          "type": "string"
+        },
+        "taskcluster_client_id": {
+          "type": "string"
+        },
+        "taskcluster_root_url": {
+          "type": "string"
+        },
+        "trust_proxy": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "hook_table_name",
+        "lastfire_table_name",
+        "queue_table_name",
+        "influx_connection",
+        "azure_account",
+        "table_signing_key",
+        "table_crypto_key",
+        "taskcluster_root_url",
+        "taskcluster_client_id",
+        "taskcluster_access_token",
+        "level",
+        "port",
+        "node_env",
+        "force_ssl",
+        "trust_proxy",
+        "aws_access_key_id",
+        "aws_secret_access_key",
+        "aws_access_key_id",
+        "aws_secret_access_key",
+        "pulse_username",
+        "pulse_password",
+        "pulse_hostname",
+        "pulse_vhost"
+      ],
+      "title": "Configuration options for hooks",
+      "type": "object"
+    },
+    "index": {
+      "additionalProperties": false,
+      "properties": {
+        "aws_access_key_id": {
+          "type": "string"
+        },
+        "aws_secret_access_key": {
+          "type": "string"
+        },
+        "azure_account": {
+          "type": "string"
+        },
+        "force_ssl": {
+          "type": "boolean"
+        },
+        "level": {
+          "type": "string"
+        },
+        "port": {
+          "type": "number"
+        },
+        "pulse_hostname": {
+          "type": "string"
+        },
+        "pulse_namespace": {
+          "type": "string"
+        },
+        "pulse_password": {
+          "type": "string"
+        },
+        "pulse_username": {
+          "type": "string"
+        },
+        "pulse_vhost": {
+          "type": "string"
+        },
+        "taskcluster_access_token": {
+          "type": "string"
+        },
+        "taskcluster_client_id": {
+          "type": "string"
+        },
+        "taskcluster_root_url": {
+          "type": "string"
+        },
+        "trust_proxy": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "azure_account",
+        "level",
+        "port",
+        "taskcluster_root_url",
+        "taskcluster_client_id",
+        "taskcluster_access_token",
+        "pulse_hostname",
+        "pulse_username",
+        "pulse_password",
+        "pulse_vhost",
+        "pulse_namespace",
+        "aws_access_key_id",
+        "aws_secret_access_key",
+        "force_ssl",
+        "trust_proxy"
+      ],
+      "title": "Configuration options for index",
+      "type": "object"
+    },
+    "login": {
+      "additionalProperties": false,
+      "properties": {
+        "auth0_api_audience": {
+          "type": "string"
+        },
+        "auth0_client_id": {
+          "type": "string"
+        },
+        "auth0_client_secret": {
+          "type": "string"
+        },
+        "auth0_domain": {
+          "type": "string"
+        },
+        "aws_access_key_id": {
+          "type": "string"
+        },
+        "aws_secret_access_key": {
+          "type": "string"
+        },
+        "force_ssl": {
+          "type": "boolean"
+        },
+        "level": {
+          "type": "string"
+        },
+        "node_env": {
+          "type": "string"
+        },
+        "port": {
+          "type": "number"
+        },
+        "taskcluster_access_token": {
+          "type": "string"
+        },
+        "taskcluster_client_id": {
+          "type": "string"
+        },
+        "taskcluster_root_url": {
+          "type": "string"
+        },
+        "trust_proxy": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "taskcluster_root_url",
+        "taskcluster_client_id",
+        "taskcluster_access_token",
+        "taskcluster_client_id",
+        "taskcluster_access_token",
+        "aws_access_key_id",
+        "aws_secret_access_key",
+        "level",
+        "port",
+        "force_ssl",
+        "node_env",
+        "trust_proxy",
+        "auth0_domain",
+        "auth0_api_audience",
+        "auth0_client_id",
+        "auth0_client_secret",
+        "taskcluster_client_id",
+        "taskcluster_access_token"
+      ],
+      "title": "Configuration options for login",
+      "type": "object"
+    },
+    "notify": {
+      "additionalProperties": false,
+      "properties": {
+        "aws_access_key_id": {
+          "type": "string"
+        },
+        "aws_region": {
+          "type": "string"
+        },
+        "aws_secret_access_key": {
+          "type": "string"
+        },
+        "azure_account": {
+          "type": "string"
+        },
+        "denylisted_notification_table_name": {
+          "type": "string"
+        },
+        "email_blacklist": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "email_source_address": {
+          "type": "string"
+        },
+        "force_ssl": {
+          "type": "boolean"
+        },
+        "irc_debug": {
+          "type": "string"
+        },
+        "irc_nick": {
+          "type": "string"
+        },
+        "irc_password": {
+          "type": "string"
+        },
+        "irc_port": {
+          "type": "string"
+        },
+        "irc_pulse_queue_name": {
+          "type": "string"
+        },
+        "irc_real_name": {
+          "type": "string"
+        },
+        "irc_server": {
+          "type": "string"
+        },
+        "irc_user_name": {
+          "type": "string"
+        },
+        "level": {
+          "type": "string"
+        },
+        "node_env": {
+          "type": "string"
+        },
+        "port": {
+          "type": "number"
+        },
+        "pulse_hostname": {
+          "type": "string"
+        },
+        "pulse_namespace": {
+          "type": "string"
+        },
+        "pulse_password": {
+          "type": "string"
+        },
+        "pulse_username": {
+          "type": "string"
+        },
+        "pulse_vhost": {
+          "type": "string"
+        },
+        "taskcluster_access_token": {
+          "type": "string"
+        },
+        "taskcluster_client_id": {
+          "type": "string"
+        },
+        "taskcluster_root_url": {
+          "type": "string"
+        },
+        "trust_proxy": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "email_source_address",
+        "email_blacklist",
+        "denylisted_notification_table_name",
+        "taskcluster_root_url",
+        "taskcluster_client_id",
+        "taskcluster_access_token",
+        "azure_account",
+        "level",
+        "port",
+        "node_env",
+        "force_ssl",
+        "trust_proxy",
+        "aws_access_key_id",
+        "aws_secret_access_key",
+        "aws_region",
+        "pulse_namespace",
+        "pulse_hostname",
+        "pulse_username",
+        "pulse_password",
+        "pulse_vhost",
+        "irc_server",
+        "irc_nick",
+        "irc_user_name",
+        "irc_real_name",
+        "irc_password",
+        "irc_port",
+        "irc_debug",
+        "irc_pulse_queue_name"
+      ],
+      "title": "Configuration options for notify",
+      "type": "object"
+    },
+    "purge_cache": {
+      "additionalProperties": false,
+      "properties": {
+        "aws_access_key_id": {
+          "type": "string"
+        },
+        "aws_secret_access_key": {
+          "type": "string"
+        },
+        "azure_account": {
+          "type": "string"
+        },
+        "force_ssl": {
+          "type": "boolean"
+        },
+        "level": {
+          "type": "string"
+        },
+        "port": {
+          "type": "number"
+        },
+        "taskcluster_access_token": {
+          "type": "string"
+        },
+        "taskcluster_client_id": {
+          "type": "string"
+        },
+        "taskcluster_root_url": {
+          "type": "string"
+        },
+        "trust_proxy": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "level",
+        "port",
+        "force_ssl",
+        "trust_proxy",
+        "azure_account",
+        "taskcluster_root_url",
+        "taskcluster_client_id",
+        "taskcluster_access_token",
+        "aws_access_key_id",
+        "aws_secret_access_key",
+        "taskcluster_client_id",
+        "taskcluster_access_token"
+      ],
+      "title": "Configuration options for purge-cache",
+      "type": "object"
+    },
+    "queue": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_region": {
+          "type": "string"
+        },
+        "aws_access_key_id": {
+          "type": "string"
+        },
+        "aws_secret_access_key": {
+          "type": "string"
+        },
+        "azure_account_id": {
+          "type": "string"
+        },
+        "azure_account_key": {
+          "type": "string"
+        },
+        "azure_report_chance": {
+          "type": "number"
+        },
+        "azure_report_threshold": {
+          "type": "number"
+        },
+        "azure_table_account_name": {
+          "type": "string"
+        },
+        "blob_artifact_region": {
+          "type": "string"
+        },
+        "force_ssl": {
+          "type": "boolean"
+        },
+        "level": {
+          "type": "string"
+        },
+        "node_env": {
+          "type": "string"
+        },
+        "port": {
+          "type": "number"
+        },
+        "private_artifact_bucket": {
+          "type": "string"
+        },
+        "private_blob_artifact_bucket": {
+          "type": "string"
+        },
+        "public_artifact_bucket": {
+          "type": "string"
+        },
+        "public_artifact_bucket_cdn": {
+          "type": "string"
+        },
+        "public_artifact_ec2_proxies": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "public_blob_artifact_bucket": {
+          "type": "string"
+        },
+        "pulse_hostname": {
+          "type": "string"
+        },
+        "pulse_namespace": {
+          "type": "string"
+        },
+        "pulse_password": {
+          "type": "string"
+        },
+        "pulse_username": {
+          "type": "string"
+        },
+        "pulse_vhost": {
+          "type": "string"
+        },
+        "taskcluster_access_token": {
+          "type": "string"
+        },
+        "taskcluster_client_id": {
+          "type": "string"
+        },
+        "taskcluster_root_url": {
+          "type": "string"
+        },
+        "use_cloud_mirror": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "public_blob_artifact_bucket",
+        "private_blob_artifact_bucket",
+        "blob_artifact_region",
+        "public_artifact_bucket",
+        "private_artifact_bucket",
+        "azure_report_chance",
+        "azure_report_threshold",
+        "public_artifact_ec2_proxies",
+        "public_artifact_bucket_cdn",
+        "use_cloud_mirror",
+        "taskcluster_root_url",
+        "taskcluster_client_id",
+        "taskcluster_access_token",
+        "level",
+        "port",
+        "node_env",
+        "force_ssl",
+        "azure_account_id",
+        "azure_account_key",
+        "azure_table_account_name",
+        "pulse_namespace",
+        "pulse_username",
+        "pulse_password",
+        "pulse_hostname",
+        "pulse_vhost",
+        "aws_access_key_id",
+        "aws_secret_access_key",
+        "artifact_region"
+      ],
+      "title": "Configuration options for queue",
+      "type": "object"
+    },
+    "references": {
+      "additionalProperties": false,
+      "properties": {
+      },
+      "required": [
+      ],
+      "title": "Configuration options for references",
+      "type": "object"
+    },
+    "secrets": {
+      "additionalProperties": false,
+      "properties": {
+        "aws_access_key_id": {
+          "type": "string"
+        },
+        "aws_secret_access_key": {
+          "type": "string"
+        },
+        "azure_account": {
+          "type": "string"
+        },
+        "azure_crypto_key": {
+          "type": "string"
+        },
+        "azure_signing_key": {
+          "type": "string"
+        },
+        "azure_table_name": {
+          "type": "string"
+        },
+        "force_ssl": {
+          "type": "boolean"
+        },
+        "level": {
+          "type": "string"
+        },
+        "port": {
+          "type": "number"
+        },
+        "taskcluster_access_token": {
+          "type": "string"
+        },
+        "taskcluster_client_id": {
+          "type": "string"
+        },
+        "taskcluster_root_url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "taskcluster_root_url",
+        "taskcluster_client_id",
+        "taskcluster_access_token",
+        "azure_account",
+        "azure_table_name",
+        "azure_crypto_key",
+        "azure_signing_key",
+        "level",
+        "port",
+        "force_ssl",
+        "aws_access_key_id",
+        "aws_secret_access_key"
+      ],
+      "title": "Configuration options for secrets",
+      "type": "object"
+    },
+    "treeherder": {
+      "additionalProperties": false,
+      "properties": {
+        "aws_access_key_id": {
+          "type": "string"
+        },
+        "aws_secret_access_key": {
+          "type": "string"
+        },
+        "level": {
+          "type": "string"
+        },
+        "pulse_hostname": {
+          "type": "string"
+        },
+        "pulse_namespace": {
+          "type": "string"
+        },
+        "pulse_password": {
+          "type": "string"
+        },
+        "pulse_username": {
+          "type": "string"
+        },
+        "pulse_vhost": {
+          "type": "string"
+        },
+        "taskcluster_access_token": {
+          "type": "string"
+        },
+        "taskcluster_client_id": {
+          "type": "string"
+        },
+        "taskcluster_root_url": {
+          "type": "string"
+        },
+        "treeherder_route_prefix": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "pulse_namespace",
+        "pulse_username",
+        "pulse_password",
+        "pulse_hostname",
+        "pulse_vhost",
+        "treeherder_route_prefix",
+        "taskcluster_root_url",
+        "taskcluster_client_id",
+        "taskcluster_access_token",
+        "aws_access_key_id",
+        "aws_secret_access_key",
+        "level"
+      ],
+      "title": "Configuration options for treeherder",
+      "type": "object"
+    },
+    "ui": {
+      "additionalProperties": false,
+      "properties": {
+      },
+      "required": [
+      ],
+      "title": "Configuration options for ui",
+      "type": "object"
+    },
+    "web_server": {
+      "additionalProperties": false,
+      "properties": {
+        "additional_allowed_cors_origin": {
+          "type": "string"
+        },
+        "jwt_key": {
+          "type": "string"
+        },
+        "level": {
+          "type": "string"
+        },
+        "port": {
+          "type": "number"
+        },
+        "public_url": {
+          "type": "string"
+        },
+        "pulse_hostname": {
+          "type": "string"
+        },
+        "pulse_namespace": {
+          "type": "string"
+        },
+        "pulse_password": {
+          "type": "string"
+        },
+        "pulse_username": {
+          "type": "string"
+        },
+        "pulse_vhost": {
+          "type": "string"
+        },
+        "taskcluster_access_token": {
+          "type": "string"
+        },
+        "taskcluster_client_id": {
+          "type": "string"
+        },
+        "taskcluster_root_url": {
+          "type": "string"
+        },
+        "ui_login_strategies": {
+          "additionalProperties": true,
+          "type": "object"
+        }
+      },
+      "required": [
+        "public_url",
+        "level",
+        "port",
+        "taskcluster_root_url",
+        "additional_allowed_cors_origin",
+        "taskcluster_root_url",
+        "taskcluster_client_id",
+        "taskcluster_access_token",
+        "pulse_namespace",
+        "pulse_username",
+        "pulse_password",
+        "pulse_hostname",
+        "pulse_vhost",
+        "ui_login_strategies",
+        "jwt_key"
+      ],
+      "title": "Configuration options for web-server",
+      "type": "object"
+    },
+    "worker_manager": {
+      "additionalProperties": false,
+      "properties": {
+        "azure_account": {
+          "type": "string"
+        },
+        "force_ssl": {
+          "type": "boolean"
+        },
+        "level": {
+          "type": "string"
+        },
+        "node_env": {
+          "type": "string"
+        },
+        "port": {
+          "type": "number"
+        },
+        "providers": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "pulse_hostname": {
+          "type": "string"
+        },
+        "pulse_namespace": {
+          "type": "string"
+        },
+        "pulse_password": {
+          "type": "string"
+        },
+        "pulse_username": {
+          "type": "string"
+        },
+        "pulse_vhost": {
+          "type": "string"
+        },
+        "taskcluster_access_token": {
+          "type": "string"
+        },
+        "taskcluster_client_id": {
+          "type": "string"
+        },
+        "taskcluster_root_url": {
+          "type": "string"
+        },
+        "trust_proxy": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "level",
+        "taskcluster_root_url",
+        "taskcluster_client_id",
+        "taskcluster_access_token",
+        "azure_account",
+        "port",
+        "node_env",
+        "force_ssl",
+        "trust_proxy",
+        "pulse_hostname",
+        "pulse_username",
+        "pulse_password",
+        "pulse_vhost",
+        "pulse_namespace",
+        "providers"
+      ],
+      "title": "Configuration options for worker-manager",
+      "type": "object"
+    }
+  },
+  "required": [
+    "auth",
+    "built_in_workers",
+    "github",
+    "hooks",
+    "index",
+    "login",
+    "notify",
+    "purge_cache",
+    "queue",
+    "secrets",
+    "treeherder",
+    "web_server",
+    "worker_manager",
+    "ui",
+    "references"
+  ],
+  "title": "Taskcluster Configuration Values",
+  "type": "object"
+}

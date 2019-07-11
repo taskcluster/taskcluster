@@ -2,21 +2,31 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: taskcluster-hooks-web
+  labels:
+    app.kubernetes.io/name: taskcluster-taskcluster-hooks
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: hooks-web
+    app.kubernetes.io/part-of: taskcluster
+    app.kubernetes.io/managed-by: helm
 spec:
   selector:
     matchLabels:
-      application: taskcluster
-      taskcluster-service: taskcluster-hooks
-      taskcluster-proc: web
+      app.kubernetes.io/name: taskcluster-hooks
+      app.kubernetes.io/instance: '{{ .Release.Name }}'
+      app.kubernetes.io/component: hooks-web
+      app.kubernetes.io/part-of: taskcluster
+      app.kubernetes.io/managed-by: helm
   replicas: 1
   template:
     metadata:
       annotations:
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-hooks-secret.yaml") . | sha256sum }}'
       labels:
-        application: taskcluster
-        taskcluster-service: taskcluster-hooks
-        taskcluster-proc: web
+        app.kubernetes.io/name: taskcluster-hooks
+        app.kubernetes.io/instance: '{{ .Release.Name }}'
+        app.kubernetes.io/component: hooks-web
+        app.kubernetes.io/part-of: taskcluster
+        app.kubernetes.io/managed-by: helm
     spec:
       serviceAccountName: taskcluster-hooks
       containers:

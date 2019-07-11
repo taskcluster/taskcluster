@@ -2,21 +2,31 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: taskcluster-purge-cache-web
+  labels:
+    app.kubernetes.io/name: taskcluster-taskcluster-purge-cache
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: purge-cache-web
+    app.kubernetes.io/part-of: taskcluster
+    app.kubernetes.io/managed-by: helm
 spec:
   selector:
     matchLabels:
-      application: taskcluster
-      taskcluster-service: taskcluster-purge-cache
-      taskcluster-proc: web
+      app.kubernetes.io/name: taskcluster-purge-cache
+      app.kubernetes.io/instance: '{{ .Release.Name }}'
+      app.kubernetes.io/component: purge-cache-web
+      app.kubernetes.io/part-of: taskcluster
+      app.kubernetes.io/managed-by: helm
   replicas: 1
   template:
     metadata:
       annotations:
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-purge-cache-secret.yaml") . | sha256sum }}'
       labels:
-        application: taskcluster
-        taskcluster-service: taskcluster-purge-cache
-        taskcluster-proc: web
+        app.kubernetes.io/name: taskcluster-purge-cache
+        app.kubernetes.io/instance: '{{ .Release.Name }}'
+        app.kubernetes.io/component: purge-cache-web
+        app.kubernetes.io/part-of: taskcluster
+        app.kubernetes.io/managed-by: helm
     spec:
       serviceAccountName: taskcluster-purge-cache
       containers:

@@ -2,15 +2,31 @@ apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: taskcluster-worker-manager-expire-errors
+  labels:
+    app.kubernetes.io/name: taskcluster-worker-manager
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: worker-manager-expire-errors
+    app.kubernetes.io/part-of: taskcluster
+    app.kubernetes.io/managed-by: helm
 spec:
   schedule: 10 0 * * *
   jobTemplate:
     metadata:
       labels:
-        application: taskcluster
-        taskcluster-service: taskcluster-worker-manager
+        app.kubernetes.io/name: taskcluster-worker-manager
+        app.kubernetes.io/instance: '{{ .Release.Name }}'
+        app.kubernetes.io/component: worker-manager-expire-errors
+        app.kubernetes.io/part-of: taskcluster
+        app.kubernetes.io/managed-by: helm
     spec:
       template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: taskcluster-worker-manager
+            app.kubernetes.io/instance: '{{ .Release.Name }}'
+            app.kubernetes.io/component: worker-manager-expire-errors
+            app.kubernetes.io/part-of: taskcluster
+            app.kubernetes.io/managed-by: helm
         spec:
           restartPolicy: OnFailure
           activeDeadlineSeconds: 86400

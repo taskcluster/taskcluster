@@ -5,11 +5,15 @@ const jsone = require('json-e');
 const config = require('taskcluster-lib-config');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
-const {listServices, readRepoYAML, writeRepoYAML, REPO_ROOT} = require('../../utils');
+const {listServices, readRepoYAML, writeRepoYAML, writeRepoJSON, REPO_ROOT, configToSchema} = require('../../utils');
 
 const SERVICES = listServices();
 const CHART_DIR = path.join('infrastructure', 'k8s');
 const TMPL_DIR = path.join(CHART_DIR, 'templates');
+
+const CLUSTER_DEFAULTS = {
+  level: 'notice',
+};
 
 const renderTemplates = async (name, vars, procs, templates) => {
 
@@ -157,7 +161,7 @@ Object.entries(extras).forEach(([name, {procs, vars}]) => {
     provides: [`ingresses-${name}`],
     run: async (requirements, utils) => {
       const templates = requirements['k8s-templates'];
-      return {[`ingresses-${name}`]: await renderTemplates(name, vars, procs, templates)};
+      return {[`ingresses-${name}`]: await renderTemplates(name, vars.map(v => v.var), procs, templates)};
     },
   });
 });
@@ -187,28 +191,44 @@ exports.tasks.push({
 });
 
 exports.tasks.push({
-  title: `Generate values.yaml`,
+  title: `Generate values.yaml and values.schema.yaml`,
   requires: [...SERVICES.map(name => `configs-${name}`)],
   provides: [],
   run: async (requirements, utils) => {
-    const variables = {};
-    SERVICES.forEach(name => {
-      // TODO: simplify this when we have Object.fromEntries
-      const subVars = {};
-      requirements[`configs-${name}`].map(v => v.var.toLowerCase()).forEach(v => {
-        subVars[v] = '';
+    const schema = {
+      '$schema': 'http://json-schema.org/draft-06/schema#',
+      type: 'object',
+      title: 'Taskcluster Configuration Values',
+      properties: {},
+      required: [],
+      additionalProperties: false,
+    };
+
+    const exampleConfig = {};
+
+    let configs = SERVICES.map(name => ({name, vars: requirements[`configs-${name}`]}));
+    configs = configs.concat(Object.entries(extras).map(([name, {vars}]) => ({name, vars})));
+
+    configs.forEach(cfg => {
+      const confName = cfg.name.replace(/-/g, '_');
+      exampleConfig[confName] = {};
+      schema.required.push(confName);
+      schema.properties[confName] = {
+        type: 'object',
+        title: `Configuration options for ${cfg.name}`,
+        properties: {},
+        required: [],
+        additionalProperties: false,
+      };
+      cfg.vars.forEach(v => {
+        const varName = v.var.toLowerCase();
+        exampleConfig[confName][varName] = '...';
+        schema.properties[confName].required.push(varName);
+        schema.properties[confName].properties[varName] = configToSchema(v.type);
       });
-      variables[name.replace(/-/g, '_')] = subVars;
     });
 
-    Object.entries(extras).forEach(([name, {vars}]) => {
-      // TODO: simplify this when we have Object.fromEntries
-      const subVars = {};
-      vars.map(v => v.toLowerCase()).forEach(v => {
-        vars[v] = '';
-      });
-      variables[name.replace(/-/g, '_')] = subVars;
-    });
-    await writeRepoYAML(path.join(CHART_DIR, 'values.yaml'), variables);
+    await writeRepoJSON(path.join(CHART_DIR, 'values.schema.json'), schema);
+    await writeRepoYAML(path.join(CHART_DIR, 'user-config-example.yaml'), exampleConfig);
   },
 });

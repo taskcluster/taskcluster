@@ -2,21 +2,31 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: taskcluster-queue-dependencyresolver
+  labels:
+    app.kubernetes.io/name: taskcluster-taskcluster-queue
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: queue-dependencyResolver
+    app.kubernetes.io/part-of: taskcluster
+    app.kubernetes.io/managed-by: helm
 spec:
   selector:
     matchLabels:
-      application: taskcluster
-      taskcluster-service: taskcluster-queue
-      taskcluster-proc: dependencyResolver
+      app.kubernetes.io/name: taskcluster-queue
+      app.kubernetes.io/instance: '{{ .Release.Name }}'
+      app.kubernetes.io/component: queue-dependencyResolver
+      app.kubernetes.io/part-of: taskcluster
+      app.kubernetes.io/managed-by: helm
   replicas: 1
   template:
     metadata:
       annotations:
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-queue-secret.yaml") . | sha256sum }}'
       labels:
-        application: taskcluster
-        taskcluster-service: taskcluster-queue
-        taskcluster-proc: dependencyResolver
+        app.kubernetes.io/name: taskcluster-queue
+        app.kubernetes.io/instance: '{{ .Release.Name }}'
+        app.kubernetes.io/component: queue-dependencyResolver
+        app.kubernetes.io/part-of: taskcluster
+        app.kubernetes.io/managed-by: helm
     spec:
       serviceAccountName: taskcluster-queue
       containers:
