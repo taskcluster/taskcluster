@@ -120,7 +120,6 @@ export default class ViewRole extends Component {
             <RoleForm
               isNewRole
               loading={loading}
-              dialogError={dialogError}
               onRoleSave={this.handleSaveRole}
             />
           ) : (
