@@ -71,7 +71,7 @@ tasks:
         - C:\generic-worker\generic-worker-test-creds.cmd
         - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
         - 'go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
-        - set GW_TESTS_RUN_AS_TASK_USER=true
+        - set GW_TESTS_RUN_AS_CURRENT_USER=true
         - 'go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
         - ineffassign .
       artifacts:
@@ -148,8 +148,10 @@ tasks:
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
         - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
+        # This env var is not set on Windows Server 2012 R2 CI tasks; we must set here since this worker type runs tasks from Z: drive
+        - set GW_SKIP_Z_DRIVE_TESTS=true
         - 'go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v ./...'
-        - set GW_TESTS_RUN_AS_TASK_USER=true
+        - set GW_TESTS_RUN_AS_CURRENT_USER=true
         - 'go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v'
         - ineffassign .
       artifacts:
@@ -232,8 +234,10 @@ tasks:
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
         - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
+        # This env var is not set on Windows Server 2012 R2 CI tasks; we must set here since this worker type runs tasks from Z: drive
+        - set GW_SKIP_Z_DRIVE_TESTS=true
         - 'go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
-        - set GW_TESTS_RUN_AS_TASK_USER=true
+        - set GW_TESTS_RUN_AS_CURRENT_USER=true
         - 'go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
         - ineffassign .
       artifacts:
@@ -308,7 +312,7 @@ tasks:
             go install -tags simple -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
             # output of wc command can contain spaces on darwin, so no quotes around expression
             test $(git status --porcelain | wc -l) == 0
-            GORACE=history_size=7 CGO_ENABLED=1 go test -tags simple -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -v ./...
+            GORACE=history_size=7 CGO_ENABLED=1 go test -tags simple -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race ./...
             ineffassign .
       artifacts:
         - name: public/build/generic-worker-darwin-amd64
@@ -378,8 +382,8 @@ tasks:
             # output of wc command can contain spaces on darwin, so no quotes around expression
             test $(git status --porcelain | wc -l) == 0
             cp "${TASK_USER_CREDENTIALS}" next-task-user.json
-            GORACE=history_size=7 CGO_ENABLED=1 go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -v ./...
-            GW_TESTS_RUN_AS_TASK_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -v
+            GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race
+            GORACE=history_size=7 CGO_ENABLED=1 go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race ./...
             ineffassign .
       artifacts:
         - name: public/build/generic-worker-darwin-amd64
@@ -505,7 +509,7 @@ tasks:
             export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
             go version
             go env
-            curl -s "${TASKCLUSTER_PROXY_URL}/secrets/v1/secret/repo:github.com/taskcluster/generic-worker" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -d > ~/env_private.sh
+            wget -q -O- "${TASKCLUSTER_PROXY_URL}/secrets/v1/secret/repo:github.com/taskcluster/generic-worker" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -d > ~/env_private.sh
             source ~/env_private.sh
             mkdir -p "${GOPATH}/src/github.com/taskcluster"
             cd "${GOPATH}/src/github.com/taskcluster"
@@ -576,7 +580,7 @@ tasks:
             export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
             go version
             go env
-            curl -s "${TASKCLUSTER_PROXY_URL}/secrets/v1/secret/repo:github.com/taskcluster/generic-worker" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -d > ~/env_private.sh
+            wget -q -O- "${TASKCLUSTER_PROXY_URL}/secrets/v1/secret/repo:github.com/taskcluster/generic-worker" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -d > ~/env_private.sh
             source ~/env_private.sh
             mkdir -p "${GOPATH}/src/github.com/taskcluster"
             cd "${GOPATH}/src/github.com/taskcluster"

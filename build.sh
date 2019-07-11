@@ -95,8 +95,9 @@ CGO_ENABLED=0 go get github.com/taskcluster/livelog
 
 if $TEST; then
   go get github.com/taskcluster/taskcluster-proxy
-  CGO_ENABLED=1 GORACE="history_size=7" /usr/bin/sudo "GW_TESTS_RUN_AS_TASK_USER=true" "TASKCLUSTER_CERTIFICATE=$TASKCLUSTER_CERTIFICATE" "TASKCLUSTER_ACCESS_TOKEN=$TASKCLUSTER_ACCESS_TOKEN" "TASKCLUSTER_CLIENT_ID=$TASKCLUSTER_CLIENT_ID" "TASKCLUSTER_ROOT_URL=$TASKCLUSTER_ROOT_URL" go test -v -tags multiuser -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
-  if [ "$(go env GOHOSTOS)" == "linux" ]; then
+  CGO_ENABLED=1 GORACE="history_size=7" /usr/bin/sudo "GW_TESTS_RUN_AS_CURRENT_USER=" "TASKCLUSTER_CERTIFICATE=$TASKCLUSTER_CERTIFICATE" "TASKCLUSTER_ACCESS_TOKEN=$TASKCLUSTER_ACCESS_TOKEN" "TASKCLUSTER_CLIENT_ID=$TASKCLUSTER_CLIENT_ID" "TASKCLUSTER_ROOT_URL=$TASKCLUSTER_ROOT_URL" go test -v -tags multiuser -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+  MYGOHOSTOS="$(go env GOHOSTOS)"
+  if [ "${MYGOHOSTOS}" == "linux" ] || [ "${MYGOHOSTOS}" == "darwin" ]; then
     CGO_ENABLED=1 GORACE="history_size=7" go test -v -tags docker -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
   fi
 fi

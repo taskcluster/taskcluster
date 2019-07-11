@@ -7,16 +7,12 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/taskcluster/generic-worker/testutil"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
 func TestTcProxy(t *testing.T) {
-	if os.Getenv("TASKCLUSTER_CLIENT_ID") == "" ||
-		os.Getenv("TASKCLUSTER_ACCESS_TOKEN") == "" ||
-		os.Getenv("TASKCLUSTER_ROOT_URL") == "" {
-		t.Skip("Skipping test since TASKCLUSTER_{CLIENT_ID,ACCESS_TOKEN,ROOT_URL} env vars not set")
-	}
-
+	testutil.RequireTaskclusterCredentials(t)
 	var executable string
 	switch runtime.GOOS {
 	case "windows":

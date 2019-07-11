@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/generic-worker/gwconfig"
+	"github.com/taskcluster/generic-worker/testutil"
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
@@ -174,12 +175,7 @@ func setup(t *testing.T) (teardown func()) {
 }
 
 func NewQueue(t *testing.T) *tcqueue.Queue {
-	// check we have all the env vars we need to run this test
-	if os.Getenv("TASKCLUSTER_CLIENT_ID") == "" ||
-		os.Getenv("TASKCLUSTER_ACCESS_TOKEN") == "" ||
-		os.Getenv("TASKCLUSTER_ROOT_URL") == "" {
-		t.Skip("Skipping test since TASKCLUSTER_{CLIENT_ID,ACCESS_TOKEN,ROOT_URL} env vars not set")
-	}
+	testutil.RequireTaskclusterCredentials(t)
 	// BaseURL shouldn't be proxy otherwise requests will use CI clientId
 	// rather than env var TASKCLUSTER_CLIENT_ID
 	return tcqueue.New(tcclient.CredentialsFromEnvVars(), os.Getenv("TASKCLUSTER_ROOT_URL"))
@@ -439,8 +435,12 @@ func cancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload Generi
 		ClientID:    config.ClientID,
 		Certificate: config.Certificate,
 	}
-	if fullCreds.AccessToken == "" || fullCreds.ClientID == "" || fullCreds.Certificate != "" {
-		t.Skip("Skipping since I need permanent TC credentials for this test")
+	if os.Getenv("GW_SKIP_PERMA_CREDS_TESTS") != "" {
+		t.Skip("Skipping since GW_SKIP_PERMA_CREDS_TESTS env var is set")
+	}
+	testutil.RequireTaskclusterCredentials(t)
+	if fullCreds.Certificate != "" {
+		t.Fatal("Skipping since I need permanent TC credentials for this test and only have temp creds - set GW_SKIP_PERMA_CREDS_TESTS or GW_SKIP_INTEGRATION_TESTS env var to something to skip this test, or change your TASKCLUSTER_* env vars to a permanent client instead of a temporary client")
 	}
 	td = testTask(t)
 	tempCreds, err := fullCreds.CreateNamedTemporaryCredentials("project/taskcluster:generic-worker-tester/"+t.Name(), time.Minute, "queue:cancel-task:"+td.SchedulerID+"/"+td.TaskGroupID+"/*")

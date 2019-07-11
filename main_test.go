@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/taskcluster/generic-worker/testutil"
 )
 
 // Test failure should resolve as "failed"
@@ -26,9 +28,7 @@ func TestFailureResolvesAsFailure(t *testing.T) {
 
 func TestIdleWithoutCrash(t *testing.T) {
 	defer setup(t)()
-	if config.ClientID == "" || config.AccessToken == "" || config.RootURL == "" {
-		t.Skip("Skipping test since TASKCLUSTER_{CLIENT_ID,ACCESS_TOKEN,ROOT_URL} env vars not set")
-	}
+	testutil.RequireTaskclusterCredentials(t)
 	start := time.Now()
 	config.IdleTimeoutSecs = 7
 	exitCode := RunWorker()
