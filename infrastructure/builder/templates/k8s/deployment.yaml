@@ -22,13 +22,14 @@ spec:
       serviceAccountName: ${projectName}
       containers:
       - name: ${projectName}
-        image: .Values.dockerImage
+        image: '{{ .Values.dockerImage }}'
         imagePullPolicy: Always
         args: ['${serviceName}/${procName}']
         resources:
+          # TODO: Make configurable
           requests:
-            cpu: 1 # TODO
-            memory: 1 # TODO
+            cpu: 100m
+            memory: 100Mi
         env:
           $flatten:
             - $if: 'needsService'
@@ -36,7 +37,7 @@ spec:
                 name: PORT
                 value: '80'
             - name: TASKCLUSTER_ROOT_URL
-              value: .Values.rootUrl
+              value: '{{ .Values.rootUrl }}'
         envFrom:
             - secretRef:
                 name: ${projectName}

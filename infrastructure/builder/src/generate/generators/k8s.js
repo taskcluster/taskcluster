@@ -46,7 +46,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
         const file = `taskcluster-${name}-service-${proc}.yaml`;
         ingresses.push({
           projectName: `taskcluster-${name}`,
-          paths: conf['paths'] || [`api/${name}/*`], // TODO: This version of config is only for gcp ingress :(
+          paths: conf['paths'] || [`/api/${name}/*`], // TODO: This version of config is only for gcp ingress :(
         });
         await writeRepoYAML(path.join(TMPL_DIR, file), rendered);
         break;

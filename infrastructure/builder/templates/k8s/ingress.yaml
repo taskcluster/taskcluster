@@ -11,7 +11,7 @@ spec:
       paths:
         $map: {$eval: ingresses}
         each(i):
-          path: ${i.path}
+          path: '${i.path}'
           backend:
-            port: 80
+            servicePort: 80
             serviceName: ${i.projectName}

@@ -21,19 +21,19 @@ spec:
       serviceAccountName: taskcluster-auth
       containers:
         - name: taskcluster-auth
-          image: .Values.dockerImage
+          image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
             - auth/web
           resources:
             requests:
-              cpu: 1
-              memory: 1
+              cpu: 100m
+              memory: 100Mi
           env:
             - name: PORT
               value: '80'
             - name: TASKCLUSTER_ROOT_URL
-              value: .Values.rootUrl
+              value: '{{ .Values.rootUrl }}'
           envFrom:
             - secretRef:
                 name: taskcluster-auth

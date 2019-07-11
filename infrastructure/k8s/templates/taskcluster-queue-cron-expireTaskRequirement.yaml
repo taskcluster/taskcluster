@@ -16,7 +16,7 @@ spec:
           activeDeadlineSeconds: 86400
           containers:
             - name: taskcluster-queue-expiretaskrequirement
-              image: .Values.dockerImage
+              image: '{{ .Values.dockerImage }}'
               imagePullPolicy: Always
               args:
                 - queue/expireTaskRequirement
@@ -26,7 +26,7 @@ spec:
                   memory: 100Mi
               env:
                 - name: TASKCLUSTER_ROOT_URL
-                  value: .Values.rootUrl
+                  value: '{{ .Values.rootUrl }}'
               envFrom:
                 - secretRef:
                     name: taskcluster-queue

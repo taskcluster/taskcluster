@@ -11,77 +11,77 @@ spec:
         paths:
           - path: /*
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-ui
           - path: /references
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-references
           - path: /references/*
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-references
           - path: /schemas
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-references
           - path: /schemas/*
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-references
-          - path: api/auth/*
+          - path: /api/auth/*
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-auth
-          - path: api/built-in-workers/*
+          - path: /api/built-in-workers/*
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-built-in-workers
-          - path: api/github/*
+          - path: /api/github/*
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-github
-          - path: api/hooks/*
+          - path: /api/hooks/*
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-hooks
-          - path: api/index/*
+          - path: /api/index/*
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-index
-          - path: api/notify/*
+          - path: /api/notify/*
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-notify
-          - path: api/purge-cache/*
+          - path: /api/purge-cache/*
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-purge-cache
-          - path: api/queue/*
+          - path: /api/queue/*
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-queue
-          - path: api/secrets/*
+          - path: /api/secrets/*
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-secrets
           - path: /login
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-web-server
           - path: /login/*
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-web-server
           - path: /graphql
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-web-server
           - path: /graphql/*
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-web-server
-          - path: api/worker-manager/*
+          - path: /api/worker-manager/*
             backend:
-              port: 80
+              servicePort: 80
               serviceName: taskcluster-worker-manager

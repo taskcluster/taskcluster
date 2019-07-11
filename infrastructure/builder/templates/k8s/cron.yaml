@@ -16,7 +16,7 @@ spec:
           activeDeadlineSeconds: {$eval: 'deadlineSeconds'}
           containers:
           - name: ${projectName}-${lowercase(procName)}
-            image: .Values.dockerImage
+            image: '{{ .Values.dockerImage }}'
             imagePullPolicy: Always
             args: ['${serviceName}/${procName}']
             resources:
@@ -27,7 +27,7 @@ spec:
             env:
               $flatten:
                 - name: TASKCLUSTER_ROOT_URL
-                  value: .Values.rootUrl
+                  value: '{{ .Values.rootUrl }}'
             envFrom:
               - secretRef:
                   name: ${projectName}

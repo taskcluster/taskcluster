@@ -4,5 +4,4 @@ user-build-config.yml
 *.log
 .idea
 user-config.yml
-user-config.yaml
 /artifacts/

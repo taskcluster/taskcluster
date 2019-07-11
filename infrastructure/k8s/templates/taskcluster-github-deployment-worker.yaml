@@ -21,17 +21,17 @@ spec:
       serviceAccountName: taskcluster-github
       containers:
         - name: taskcluster-github
-          image: .Values.dockerImage
+          image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
             - github/worker
           resources:
             requests:
-              cpu: 1
-              memory: 1
+              cpu: 100m
+              memory: 100Mi
           env:
             - name: TASKCLUSTER_ROOT_URL
-              value: .Values.rootUrl
+              value: '{{ .Values.rootUrl }}'
           envFrom:
             - secretRef:
                 name: taskcluster-github
