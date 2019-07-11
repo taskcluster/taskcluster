@@ -1,0 +1,69 @@
+---
+title: Worker-Manager - Worker Interaction
+order: 100
+---
+
+# Worker-Manager - Worker Interaction
+
+This document outlines how workers interact with the worker-manager service.
+The [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) service exists to implement the worker side of this interaction and is the recommended way to deploy workers.
+
+## Worker Startup
+
+### Initial Information
+
+Workers must "know" the following at startup:
+
+ * Taskcluster root URL
+ * `providerId`
+ * `workerPoolId`
+ * `workerGroup` and `workerId`
+
+In cloud systems, this is typically communicated as "user data" through the cloud provider's metadata service.
+Other deployments may provide this information statically, such as via Puppet.
+
+Note, in particular, that workers are not typically started with static Taskcluster credentials.
+While it remains possible to do so, it is not recommended and will result in a "ghost" worker that claims work but does not appear in the worker-manager.
+
+### Registration
+
+At startup, a worker must register with the worker manager by calling [`workerManager.registerWorker`](/docs/reference/core/worker-manager/api#registerWorker).
+This call requires the information described above, as well as an "identity proof".
+This value allows the worker manager service to be sure that the caller truly is the intended worker, and not an impostor.
+Since `registerWorker` does not require Taskcluster credentials, this proof is a critical access-control mechanism and must be implemented carefully.
+The details vary by provider.
+
+If successful, the `registerWorker` call returns a set of Taskcluster credentials and an `expires` datestamp when those credentials will expire.
+These credentials have the scopes required by the worker for its operation, including scopes to get secrets and to call `queue.claimWork`.
+
+It is the responsibility of the worker to finish its work before the credentials expire.
+
+Depending on the provider, `registerWorker` may be called multiple times for the same worker, or may only be called once.
+
+## Worker Configuration
+
+Worker images and hosts should generally be kept as generic as possible, with configuration provided via the worker-manager.
+This permits centralized control and easier modification.
+
+Workers can get their configuration from a few places, varying somewhat depending on the provider:
+
+* On-Image Configuration -- This is typically used for information about pathnames and devices that are specific to the host where the worker is running.
+* User-data -- Cloud-based providers can provide configuration in the user-data.
+  This is typically used for information specific to the worker pool, such as worker implementation version or enabled features.
+* Secrets -- Worker configuration can be stored in the secrets service as well.
+  By convention these secrets are named `worker-pool:<workerPoolId>`, and the worker-manager-provided credentials have the appropriate `secret:get:` scope to fetch that secret.
+  Secrets are typically used for configuration that cannot be stored in the world-readable worker-pool configuration.
+
+### Error Reporting
+
+The worker-manager service maintains a list of errors that have occurred for each worker pool.
+This list is helpful for admins modifying the worker-pool configuration to see quickly whether those modifications have failed.
+In some cases, the provider can determine that an error has occurred, for example when a particular cloud instance type is not available.
+In other cases, instances start up successfully but cannot execute tasks, for example because the instance has too little disk space.
+
+In such cases, the worker can call [`workerManager.reportWorkerError`](/docs/reference/core/worker-manager/api#reportWorkerError) to add to the worker pool's list of errors.
+Workers should *only* use this method to report errors that might be related to the worker-pool configuration.
+This could include worker start-up issues, but does not include failed tasks or transient issues like network errors.
+
+*NOTE*: errors are publicly visible.
+Workers should not include any secrets or other sensitive information in the error report.

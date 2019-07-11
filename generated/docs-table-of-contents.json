@@ -2271,13 +2271,35 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/integrations/README",
-                  "title": "Integrations"
+                  "path": "reference/core/worker-manager/worker-interaction",
+                  "title": "Worker-Manager - Worker Interaction"
                 },
                 "path": "reference/core/worker-manager/logs",
                 "prev": {
                   "path": "reference/core/worker-manager/api",
                   "title": "api"
+                },
+                "up": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 100,
+                  "title": "Worker-Manager - Worker Interaction"
+                },
+                "name": "worker-interaction",
+                "next": {
+                  "path": "reference/integrations/README",
+                  "title": "Integrations"
+                },
+                "path": "reference/core/worker-manager/worker-interaction",
+                "prev": {
+                  "path": "reference/core/worker-manager/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",
@@ -2696,8 +2718,8 @@
         },
         "path": "reference/integrations/README",
         "prev": {
-          "path": "reference/core/worker-manager/logs",
-          "title": "logs"
+          "path": "reference/core/worker-manager/worker-interaction",
+          "title": "Worker-Manager - Worker Interaction"
         },
         "up": {
           "path": "reference/README",
