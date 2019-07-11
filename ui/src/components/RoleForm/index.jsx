@@ -293,7 +293,6 @@ export default class RoleForm extends Component {
         )}
         {dialogOpen && (
           <DialogAction
-            focusOnSecondary
             open={dialogOpen}
             onSubmit={this.handleDeleteRole}
             onComplete={onDialogActionComplete}
