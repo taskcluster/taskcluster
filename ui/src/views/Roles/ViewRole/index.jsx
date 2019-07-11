@@ -36,20 +36,22 @@ export default class ViewRole extends Component {
   };
 
   handleDeleteRole = async roleId => {
-    this.setState({ error: null, loading: true });
+    this.setState({ dialogError: null, loading: true });
 
-    try {
-      await this.props.client.mutate({
-        mutation: deleteRoleQuery,
-        variables: { roleId },
-      });
+    await this.props.client.mutate({
+      mutation: deleteRoleQuery,
+      variables: { roleId },
+    });
 
-      this.setState({ error: null, loading: false });
+    this.props.history.push(`/auth/roles`);
+  };
 
-      this.props.history.push(`/auth/roles`);
-    } catch (error) {
-      this.setState({ error, loading: false });
-    }
+  handleActionDialogError = error => {
+    this.setState({ dialogError: error, loading: false });
+  };
+
+  handleDialogActionComplete = () => {
+    this.setState({ dialogError: null, loading: false });
   };
 
   handleSaveRole = async (role, roleId) => {
@@ -88,7 +90,7 @@ export default class ViewRole extends Component {
     });
   };
 
-  handleDialogOpen = () => {
+  handleDialogActionOpen = () => {
     this.setState({ dialogOpen: true });
   };
 
@@ -134,8 +136,10 @@ export default class ViewRole extends Component {
                   onRoleDelete={this.handleDeleteRole}
                   onRoleSave={this.handleSaveRole}
                   dialogOpen={dialogOpen}
-                  onActionDialogClose={this.handleActionDialogClose}
-                  onDialogOpen={this.handleDialogOpen}
+                  onDialogActionError={this.handleActionDialogError}
+                  onDialogActionComplete={this.handleDialogActionComplete}
+                  onDialogActionClose={this.handleActionDialogClose}
+                  onDialogActionOpen={this.handleDialogActionOpen}
                 />
               )}
             </Fragment>

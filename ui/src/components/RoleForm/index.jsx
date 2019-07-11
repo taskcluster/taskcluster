@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { func, bool } from 'prop-types';
+import { oneOfType, object, string, func, bool } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
 import List from '@material-ui/core/List';
@@ -58,6 +58,17 @@ export default class RoleForm extends Component {
     onRoleDelete: func,
     /** If true, form actions will be disabled. */
     loading: bool,
+    /** Error to display when an action dialog is open. */
+    dialogError: oneOfType([string, object]),
+    /**
+     * Callback function fired when the DialogAction component throws an error.
+     * */
+    onDialogActionError: func,
+    /**
+     * Callback function fired when the DialogAction component runs
+     * successfully.
+     * */
+    onDialogActionComplete: func,
   };
 
   static defaultProps = {
@@ -92,9 +103,7 @@ export default class RoleForm extends Component {
     expandedScopes: null,
   };
 
-  handleDeleteRole = () => {
-    this.props.onRoleDelete(this.state.roleId);
-  };
+  handleDeleteRole = () => this.props.onRoleDelete(this.state.roleId);
 
   handleInputChange = ({ target: { name, value } }) => {
     this.setState({ [name]: value });
@@ -119,9 +128,10 @@ export default class RoleForm extends Component {
       loading,
       dialogOpen,
       dialogError,
-      onActionDialogClose,
+      onDialogActionClose,
       onDialogActionError,
-      onDialogOpen,
+      onDialogActionOpen,
+      onDialogActionComplete,
     } = this.props;
     const {
       description,
@@ -270,7 +280,7 @@ export default class RoleForm extends Component {
               <SpeedDialAction
                 requiresAuth
                 tooltipOpen
-                onClick={onDialogOpen}
+                onClick={onDialogActionOpen}
                 icon={<DeleteIcon />}
                 tooltipTitle="Delete"
                 className={classes.deleteIcon}
@@ -286,11 +296,12 @@ export default class RoleForm extends Component {
             focusOnSecondary
             open={dialogOpen}
             onSubmit={this.handleDeleteRole}
-            onComplete={onActionDialogClose}
-            onClose={onActionDialogClose}
+            onComplete={onDialogActionComplete}
+            onClose={onDialogActionClose}
             onError={onDialogActionError}
             error={dialogError}
             title="Delete Role?"
+            body={<Typography>This will delete the {roleId} role.</Typography>}
             confirmText="Delete Role"
           />
         )}
