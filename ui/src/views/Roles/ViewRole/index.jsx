@@ -46,7 +46,7 @@ export default class ViewRole extends Component {
     this.props.history.push(`/auth/roles`);
   };
 
-  handleActionDialogError = error => {
+  handleDialogActionError = error => {
     this.setState({ dialogError: error, loading: false });
   };
 
@@ -135,7 +135,7 @@ export default class ViewRole extends Component {
                   onRoleDelete={this.handleDeleteRole}
                   onRoleSave={this.handleSaveRole}
                   dialogOpen={dialogOpen}
-                  onDialogActionError={this.handleActionDialogError}
+                  onDialogActionError={this.handleDialogActionError}
                   onDialogActionComplete={this.handleDialogActionComplete}
                   onDialogActionClose={this.handleActionDialogClose}
                   onDialogActionOpen={this.handleDialogActionOpen}
