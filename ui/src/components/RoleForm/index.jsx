@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { bool, func } from 'prop-types';
+import { oneOfType, object, string, func, bool } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
 import List from '@material-ui/core/List';
@@ -13,6 +13,7 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import Button from '../Button';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
+import DialogAction from '../DialogAction';
 import { role } from '../../utils/prop-types';
 import Link from '../../utils/Link';
 import splitLines from '../../utils/splitLines';
@@ -57,6 +58,17 @@ export default class RoleForm extends Component {
     onRoleDelete: func,
     /** If true, form actions will be disabled. */
     loading: bool,
+    /** Error to display when an action dialog is open. */
+    dialogError: oneOfType([string, object]),
+    /**
+     * Callback function fired when the DialogAction component throws an error.
+     * */
+    onDialogActionError: func,
+    /**
+     * Callback function fired when the DialogAction component runs
+     * successfully.
+     * */
+    onDialogActionComplete: func,
   };
 
   static defaultProps = {
@@ -64,6 +76,7 @@ export default class RoleForm extends Component {
     role: null,
     onRoleDelete: null,
     loading: null,
+    dialogError: null,
   };
 
   static getDerivedStateFromProps({ isNewRole, role }, state) {
@@ -90,9 +103,7 @@ export default class RoleForm extends Component {
     expandedScopes: null,
   };
 
-  handleDeleteRole = () => {
-    this.props.onRoleDelete(this.state.roleId);
-  };
+  handleDeleteRole = () => this.props.onRoleDelete(this.state.roleId);
 
   handleInputChange = ({ target: { name, value } }) => {
     this.setState({ [name]: value });
@@ -110,7 +121,18 @@ export default class RoleForm extends Component {
   };
 
   render() {
-    const { role, classes, isNewRole, loading } = this.props;
+    const {
+      role,
+      classes,
+      isNewRole,
+      loading,
+      dialogOpen,
+      dialogError,
+      onDialogActionClose,
+      onDialogActionError,
+      onDialogActionOpen,
+      onDialogActionComplete,
+    } = this.props;
     const {
       description,
       scopeText,
@@ -258,8 +280,8 @@ export default class RoleForm extends Component {
               <SpeedDialAction
                 requiresAuth
                 tooltipOpen
+                onClick={onDialogActionOpen}
                 icon={<DeleteIcon />}
-                onClick={this.handleDeleteRole}
                 tooltipTitle="Delete"
                 className={classes.deleteIcon}
                 ButtonProps={{
@@ -268,6 +290,19 @@ export default class RoleForm extends Component {
               />
             </SpeedDial>
           </Fragment>
+        )}
+        {dialogOpen && (
+          <DialogAction
+            open={dialogOpen}
+            onSubmit={this.handleDeleteRole}
+            onComplete={onDialogActionComplete}
+            onClose={onDialogActionClose}
+            onError={onDialogActionError}
+            error={dialogError}
+            title="Delete Role?"
+            body={<Typography>This will delete the {roleId} role.</Typography>}
+            confirmText="Delete Role"
+          />
         )}
       </Fragment>
     );

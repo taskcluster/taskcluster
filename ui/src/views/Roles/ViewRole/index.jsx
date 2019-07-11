@@ -26,6 +26,8 @@ export default class ViewRole extends Component {
   state = {
     loading: false,
     error: null,
+    dialogError: null,
+    dialogOpen: false,
     snackbar: {
       message: '',
       variant: 'success',
@@ -34,20 +36,22 @@ export default class ViewRole extends Component {
   };
 
   handleDeleteRole = async roleId => {
-    this.setState({ error: null, loading: true });
+    this.setState({ dialogError: null, loading: true });
 
-    try {
-      await this.props.client.mutate({
-        mutation: deleteRoleQuery,
-        variables: { roleId },
-      });
+    await this.props.client.mutate({
+      mutation: deleteRoleQuery,
+      variables: { roleId },
+    });
 
-      this.setState({ error: null, loading: false });
+    this.props.history.push(`/auth/roles`);
+  };
 
-      this.props.history.push(`/auth/roles`);
-    } catch (error) {
-      this.setState({ error, loading: false });
-    }
+  handleDialogActionError = error => {
+    this.setState({ dialogError: error, loading: false });
+  };
+
+  handleDialogActionComplete = () => {
+    this.setState({ dialogError: null, loading: false });
   };
 
   handleSaveRole = async (role, roleId) => {
@@ -78,6 +82,18 @@ export default class ViewRole extends Component {
     }
   };
 
+  handleDialogActionClose = () => {
+    this.setState({
+      dialogOpen: false,
+      dialogError: null,
+      error: null,
+    });
+  };
+
+  handleDialogActionOpen = () => {
+    this.setState({ dialogOpen: true });
+  };
+
   handleSnackbarOpen = ({ message, variant = 'success', open }) => {
     this.setState({ snackbar: { message, variant, open } });
   };
@@ -93,7 +109,7 @@ export default class ViewRole extends Component {
   };
 
   render() {
-    const { loading, error, snackbar } = this.state;
+    const { loading, error, snackbar, dialogError, dialogOpen } = this.state;
     const { isNewRole, data } = this.props;
 
     return (
@@ -112,11 +128,17 @@ export default class ViewRole extends Component {
               {data && <ErrorPanel fixed error={data.error} />}
               {data && data.role && (
                 <RoleForm
+                  dialogError={dialogError}
                   key={data.role.roleId}
                   role={data.role}
                   loading={loading}
                   onRoleDelete={this.handleDeleteRole}
                   onRoleSave={this.handleSaveRole}
+                  dialogOpen={dialogOpen}
+                  onDialogActionError={this.handleDialogActionError}
+                  onDialogActionComplete={this.handleDialogActionComplete}
+                  onDialogActionClose={this.handleDialogActionClose}
+                  onDialogActionOpen={this.handleDialogActionOpen}
                 />
               )}
             </Fragment>

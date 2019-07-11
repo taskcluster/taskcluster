@@ -105,9 +105,15 @@ export default class DialogAction extends Component {
       onComplete,
       ...props
     } = this.props;
+    const withoutBodyProps = !body ? { maxWidth: 'sm', fullWidth: true } : {};
 
     return (
-      <Dialog open={open} onClose={onClose} fullScreen={fullScreen} {...props}>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        fullScreen={fullScreen}
+        {...withoutBodyProps}
+        {...props}>
         <DialogTitle>{title}</DialogTitle>
         <DialogContent>
           {error && (
