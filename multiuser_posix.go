@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/taskcluster/generic-worker/kc"
 	"github.com/taskcluster/generic-worker/process"
 	"github.com/taskcluster/generic-worker/runtime"
 	gwruntime "github.com/taskcluster/generic-worker/runtime"
@@ -111,19 +110,6 @@ func defaultTasksDir() string {
 	return filepath.Dir(os.Getenv("HOME"))
 }
 
-func AutoLogonCredentials() (user runtime.OSUser) {
-	username, password, err := kc.AutoLoginUser()
-	if err != nil {
-		log.Print("Error fetching auto-logon credentials: " + err.Error())
-		return
-	}
-	log.Print("Auto logon user: " + username)
-	return runtime.OSUser{
-		Name:     username,
-		Password: string(password),
-	}
-}
-
 func rebootBetweenTasks() bool {
 	return true
 }
@@ -144,10 +130,6 @@ func init() {
 	taskContext = &TaskContext{
 		TaskDir: pwd,
 	}
-}
-
-func SetAutoLogin(user *runtime.OSUser) error {
-	return kc.SetAutoLogin(user.Name, []byte(user.Password))
 }
 
 func (task *TaskRun) EnvVars() []string {

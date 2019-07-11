@@ -474,6 +474,79 @@ tasks:
 
 
   ##########################################################
+  ############## Linux amd64 Multiuser Build ###############
+  ##########################################################
+
+  - provisionerId: pmoore-manual
+    workerType: linux-amd64
+    metadata:
+      name: "Build/test 64 bit generic-worker (multiuser engine) on Ubuntu 17.04 VM"
+      description: "This builds the 64 bit linux version of generic-worker (multiuser engine)"
+      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+    extra:
+      github:
+        # Events that will trigger this task
+        events:
+          - pull_request.opened
+          - pull_request.synchronize
+          - push
+    scopes:
+      - generic-worker:cache:generic-worker-checkout
+      - secrets:get:repo:github.com/taskcluster/generic-worker
+    payload:
+      features:
+        taskclusterProxy:
+          true
+      maxRunTime: 3600
+      command:
+        - - /bin/bash
+          - -vxec
+          - |
+            export CGO_ENABLED=0
+            export GOROOT="$(pwd)/go1.10.8/go"
+            export GOPATH="$(pwd)/gopath1.10.8"
+            export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
+            go version
+            go env
+            curl -s "${TASKCLUSTER_PROXY_URL}/secrets/v1/secret/repo:github.com/taskcluster/generic-worker" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -d > ~/env_private.sh
+            source ~/env_private.sh
+            mkdir -p "${GOPATH}/src/github.com/taskcluster"
+            cd "${GOPATH}/src/github.com/taskcluster"
+            if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
+            cd 'generic-worker'
+            git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/X${TASK_ID}"
+            git checkout -f "X${TASK_ID}"
+            git reset --hard '{{ event.head.sha }}'
+            git clean -fdx
+            git checkout -B tmp -t "X${TASK_ID}"
+            go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
+            cd gw-codegen
+            go get -v
+            cd ..
+            go generate
+            go install -tags multiuser -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
+            test "$(git status --porcelain | wc -l)" == 0
+            # These lines should be enabled in bug 1499054:
+            # GORACE=history_size=7 CGO_ENABLED=1 go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race ./...
+            # GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -v
+            "${GOPATH}/bin/ineffassign" .
+      artifacts:
+        - name: public/build/generic-worker-linux-amd64
+          path: gopath1.10.8/bin/generic-worker
+          expires: "{{ '2 weeks' | $fromNow }}"
+          type: file
+      mounts:
+        - cacheName: generic-worker-checkout
+          directory: gopath1.10.8/src
+        - content:
+            url: https://storage.googleapis.com/golang/go1.10.8.linux-amd64.tar.gz
+            sha256: d8626fb6f9a3ab397d88c483b576be41fa81eefcec2fd18562c87626dbb3c39e
+          directory: go1.10.8
+          format: tar.gz
+
+
+  ##########################################################
   ################ Linux amd64 Simple Build ################
   ##########################################################
 

@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/taskcluster/generic-worker/kc"
 )
 
 func (user *OSUser) CreateNew(okIfExists bool) (err error) {
@@ -103,4 +105,21 @@ func InteractiveUsername() (string, error) {
 		return string(output)[:strings.Index(string(output), " ")], nil
 	}
 	return "", fmt.Errorf("Could not parse username from %q", string(output))
+}
+
+func AutoLogonCredentials() (user OSUser) {
+	username, password, err := kc.AutoLoginUser()
+	if err != nil {
+		log.Print("Error fetching auto-logon credentials: " + err.Error())
+		return
+	}
+	log.Print("Auto logon user: " + username)
+	return OSUser{
+		Name:     username,
+		Password: string(password),
+	}
+}
+
+func SetAutoLogin(user *OSUser) error {
+	return kc.SetAutoLogin(user.Name, []byte(user.Password))
 }

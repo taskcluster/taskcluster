@@ -3,6 +3,7 @@
 //go:generate gw-codegen file://simple_posix.yml       generated_simple_linux.go        simple
 //go:generate gw-codegen file://simple_posix.yml       generated_simple_darwin.go       simple
 //go:generate gw-codegen file://multiuser_posix.yml    generated_multiuser_darwin.go    multiuser
+//go:generate gw-codegen file://multiuser_posix.yml    generated_multiuser_linux.go     multiuser
 //go:generate gw-codegen file://multiuser_windows.yml  generated_multiuser_windows.go   multiuser
 // //go:generate gw-codegen https://raw.githubusercontent.com/taskcluster/docker-worker/66dfa0ec97602285fa5f05c2d8cbf487f52c7e27/schemas/payload.json dockerworker/payload.go
 
