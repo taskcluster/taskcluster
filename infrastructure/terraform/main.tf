@@ -72,7 +72,7 @@ POLICY
 
 resource "aws_s3_bucket" "public_blobs" {
   bucket = "${var.prefix}-public-blobs"
-  acl    = "public-read"
+  acl = "public-read"
 
   cors_rule {
     allowed_headers = ["Authorization"]
@@ -84,7 +84,7 @@ resource "aws_s3_bucket" "public_blobs" {
 
 resource "aws_s3_bucket" "private_blobs" {
   bucket = "${var.prefix}-private-blobs"
-  acl    = "private"
+  acl = "private"
 
   cors_rule {
     allowed_headers = ["*"]
@@ -96,7 +96,7 @@ resource "aws_s3_bucket" "private_blobs" {
 
 resource "aws_s3_bucket" "backups" {
   bucket = "${var.prefix}-backups"
-  acl    = "private"
+  acl = "private"
 
   versioning {
     enabled = true
@@ -110,8 +110,8 @@ resource "aws_s3_bucket" "backups" {
   }
 
   lifecycle_rule {
-    id                                     = "cleanup-old-backups"
-    enabled                                = true
+    id = "cleanup-old-backups"
+    enabled = true
     abort_incomplete_multipart_upload_days = 14
 
     expiration {
@@ -125,22 +125,22 @@ resource "aws_s3_bucket" "backups" {
 }
 
 resource "azurerm_resource_group" "base" {
-  name     = "${var.prefix}"
+  name = "${var.prefix}"
   location = "${var.azure_region}"
 }
 
 resource "azurerm_storage_account" "base" {
-  name                     = "${azurerm_resource_group.base.name}"
-  resource_group_name      = "${azurerm_resource_group.base.name}"
-  location                 = "${var.azure_region}"
-  account_tier             = "Standard"
+  name = "${azurerm_resource_group.base.name}"
+  resource_group_name = "${azurerm_resource_group.base.name}"
+  location = "${var.azure_region}"
+  account_tier = "Standard"
   account_replication_type = "RAGRS"
-  enable_blob_encryption   = "true"
-  enable_file_encryption   = "true"
+  enable_blob_encryption = "true"
+  enable_file_encryption = "true"
 
   tags = {
     environment = "staging"
-    managed_by  = "terraform"
+    managed_by = "terraform"
   }
 }
 
