@@ -3,18 +3,18 @@
 We welcome pull requests from everyone. We do expect everyone to adhere to the [Mozilla Community Participation Guidelines][participation].
 
 If you're trying to figure out what to work on, here are some places to find suitable projects: 
-* [Good first bugs][https://codetribute.mozilla.org/projects/taskcluster?tag%3Dgood%2520first%2520issue]: these are scoped to make it easy for first-time contributors to get their feet wet with Taskcluster code.
-* [Mentored bugs][https://codetribute.mozilla.org/projects/taskcluster?tag%3Dbug]: these are slightly more involved projects that may require insight or guidance from someone on the Taskcluster team.
-* [Full list of open issues][https://codetribute.mozilla.org/projects/taskcluster]: everything else
+* [Good first bugs][goodfirstbug]: these are scoped to make it easy for first-time contributors to get their feet wet with Taskcluster code.
+* [Mentored bugs][bugsahoy]: these are slightly more involved projects that may require insight or guidance from someone on the Taskcluster team.
+* [Full list of open issues][issues]: everything else
 
 If the project you're interested in working on isn't covered by a bug or issue, or you're unsure about how to proceed on an existing issue, it's a good idea to talk to someone on the Taskcluster team before you go too far down a particular path. You can find us in the #taskcluster channel on [Mozilla's IRC server][irc] to discuss. You can also simply add a comment to the issue or bug.
 
 Once you've found an issue to work on and written a patch, submit a pull request. Some things that will increase the chance that your pull request is accepted:
 
-* Check out our [development processes][https://github.com/taskcluster/taskcluster/blob/master/dev-docs/development-process.md].
+* Check out our [development processes][developmentprocesses].
 * Follow our [best practices][bestpractices].
 * This includes [writing or updating tests][testing].
-* Write a [good commit message][https://github.com/taskcluster/taskcluster/blob/master/dev-docs/best-practices/commits.md].
+* Write a [good commit message][commit].
 
 Welcome to the team!
 
@@ -23,12 +23,12 @@ You can add new people to the list using the [@all-contributors bot][all-contrib
 
 [participation]: https://www.mozilla.org/en-US/about/governance/policies/participation/
 [issues]: ../../issues
-[bugsahoy]: https://www.joshmatthews.net/bugsahoy/?taskcluster=1
-[goodfirstbug]: http://www.joshmatthews.net/bugsahoy/?taskcluster=1&simple=1
+[bugsahoy]: https://codetribute.mozilla.org/projects/taskcluster?tag%3Dbug
+[goodfirstbug]: https://codetribute.mozilla.org/projects/taskcluster?tag%3Dgood%2520first%2520issue
 [irc]: https://wiki.mozilla.org/IRC
 [bestpractices]: dev-docs/best-practices
-[developmentprocesses]: dev-docs/development-processes
+[developmentprocesses]: dev-docs/development-process.md
 [testing]: dev-docs/best-practices/testing.md
-[commit]: dev-docs/best-practices/commit.md
+[commit]: dev-docs/best-practices/commits.md
 [all-contributors]: https://allcontributors.org/
 [all-contributors-bot]: https://allcontributors.org/docs/en/bot/usage
