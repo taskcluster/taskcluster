@@ -163,6 +163,86 @@ type (
 		WorkerID string `json:"workerId,omitempty"`
 	}
 
+	// Subset of a task definition
+	Task struct {
+
+		// Arbitrary key-value tags (only strings limited to 4k). These can be used
+		// to attach informal metadata to a task. Use this for informal tags that
+		// tasks can be classified by. You can also think of strings here as
+		// candidates for formal metadata. Something like
+		// `purpose: 'build' || 'test'` is a good example.
+		//
+		// Default:    {}
+		//
+		// Map entries:
+		// Max length: 4096
+		Tags map[string]string `json:"tags"`
+	}
+
+	// Subset of a task definition
+	Task1 struct {
+
+		// Arbitrary key-value tags (only strings limited to 4k). These can be used
+		// to attach informal metadata to a task. Use this for informal tags that
+		// tasks can be classified by. You can also think of strings here as
+		// candidates for formal metadata. Something like
+		// `purpose: 'build' || 'test'` is a good example.
+		//
+		// Default:    {}
+		//
+		// Map entries:
+		// Max length: 4096
+		Tags map[string]string `json:"tags"`
+	}
+
+	// Subset of a task definition
+	Task2 struct {
+
+		// Arbitrary key-value tags (only strings limited to 4k). These can be used
+		// to attach informal metadata to a task. Use this for informal tags that
+		// tasks can be classified by. You can also think of strings here as
+		// candidates for formal metadata. Something like
+		// `purpose: 'build' || 'test'` is a good example.
+		//
+		// Default:    {}
+		//
+		// Map entries:
+		// Max length: 4096
+		Tags map[string]string `json:"tags"`
+	}
+
+	// Subset of a task definition
+	Task3 struct {
+
+		// Arbitrary key-value tags (only strings limited to 4k). These can be used
+		// to attach informal metadata to a task. Use this for informal tags that
+		// tasks can be classified by. You can also think of strings here as
+		// candidates for formal metadata. Something like
+		// `purpose: 'build' || 'test'` is a good example.
+		//
+		// Default:    {}
+		//
+		// Map entries:
+		// Max length: 4096
+		Tags map[string]string `json:"tags"`
+	}
+
+	// Subset of a task definition
+	Task4 struct {
+
+		// Arbitrary key-value tags (only strings limited to 4k). These can be used
+		// to attach informal metadata to a task. Use this for informal tags that
+		// tasks can be classified by. You can also think of strings here as
+		// candidates for formal metadata. Something like
+		// `purpose: 'build' || 'test'` is a good example.
+		//
+		// Default:    {}
+		//
+		// Map entries:
+		// Max length: 4096
+		Tags map[string]string `json:"tags"`
+	}
+
 	// Message reporting that a task has complete successfully.
 	TaskCompletedMessage struct {
 
@@ -175,17 +255,8 @@ type (
 		// A representation of **task status** as known by the queue
 		Status TaskStatusStructure `json:"status"`
 
-		// Arbitrary key-value tags (only strings limited to 4k). These can be used
-		// to attach informal metadata to a task. Use this for informal tags that
-		// tasks can be classified by. You can also think of strings here as
-		// candidates for formal metadata. Something like
-		// `purpose: 'build' || 'test'` is a good example.
-		//
-		// Default:    {}
-		//
-		// Map entries:
-		// Max length: 4096
-		Tags map[string]string `json:"tags,omitempty"`
+		// Subset of a task definition
+		Task Task2 `json:"task,omitempty"`
 
 		// Message version
 		//
@@ -215,17 +286,8 @@ type (
 		// A representation of **task status** as known by the queue
 		Status TaskStatusStructure `json:"status"`
 
-		// Arbitrary key-value tags (only strings limited to 4k). These can be used
-		// to attach informal metadata to a task. Use this for informal tags that
-		// tasks can be classified by. You can also think of strings here as
-		// candidates for formal metadata. Something like
-		// `purpose: 'build' || 'test'` is a good example.
-		//
-		// Default:    {}
-		//
-		// Map entries:
-		// Max length: 4096
-		Tags map[string]string `json:"tags,omitempty"`
+		// Subset of a task definition
+		Task Task `json:"task,omitempty"`
 
 		// Message version
 		//
@@ -247,17 +309,8 @@ type (
 		// A representation of **task status** as known by the queue
 		Status TaskStatusStructure `json:"status"`
 
-		// Arbitrary key-value tags (only strings limited to 4k). These can be used
-		// to attach informal metadata to a task. Use this for informal tags that
-		// tasks can be classified by. You can also think of strings here as
-		// candidates for formal metadata. Something like
-		// `purpose: 'build' || 'test'` is a good example.
-		//
-		// Default:    {}
-		//
-		// Map entries:
-		// Max length: 4096
-		Tags map[string]string `json:"tags,omitempty"`
+		// Subset of a task definition
+		Task Task4 `json:"task,omitempty"`
 
 		// Message version
 		//
@@ -295,17 +348,8 @@ type (
 		// A representation of **task status** as known by the queue
 		Status TaskStatusStructure `json:"status"`
 
-		// Arbitrary key-value tags (only strings limited to 4k). These can be used
-		// to attach informal metadata to a task. Use this for informal tags that
-		// tasks can be classified by. You can also think of strings here as
-		// candidates for formal metadata. Something like
-		// `purpose: 'build' || 'test'` is a good example.
-		//
-		// Default:    {}
-		//
-		// Map entries:
-		// Max length: 4096
-		Tags map[string]string `json:"tags,omitempty"`
+		// Subset of a task definition
+		Task Task3 `json:"task,omitempty"`
 
 		// Message version
 		//
@@ -394,17 +438,8 @@ type (
 		// A representation of **task status** as known by the queue
 		Status TaskStatusStructure `json:"status"`
 
-		// Arbitrary key-value tags (only strings limited to 4k). These can be used
-		// to attach informal metadata to a task. Use this for informal tags that
-		// tasks can be classified by. You can also think of strings here as
-		// candidates for formal metadata. Something like
-		// `purpose: 'build' || 'test'` is a good example.
-		//
-		// Default:    {}
-		//
-		// Map entries:
-		// Max length: 4096
-		Tags map[string]string `json:"tags,omitempty"`
+		// Subset of a task definition
+		Task Task1 `json:"task,omitempty"`
 
 		// Message version
 		//
