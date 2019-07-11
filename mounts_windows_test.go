@@ -9,15 +9,18 @@ import (
 )
 
 func TestRenameCrossDevice(t *testing.T) {
+	if os.Getenv("GW_SKIP_Z_DRIVE_TESTS") != "" {
+		t.Skip("Skipping since env var GW_SKIP_Z_DRIVE_TESTS env var is set")
+	}
 	exists, err := exists("Z:\\")
 	if err != nil {
 		t.Fatal("Problem scanning for Z: drive")
 	}
 	if !exists {
-		t.Skip("Skipping test as Z: drive does not exist on this environment")
+		t.Fatal("Z: drive does not exist on this environment")
 	}
 	if strings.HasPrefix(cwd, "Z:\\") {
-		t.Skip("Skipping test as current directory is already on Z: so rename would not be cross device (Z: -> Z:)")
+		t.Fatal("Current directory is already on Z: so rename would not be cross device (Z: -> Z:)")
 	}
 	err = os.MkdirAll("Z:\\a\\b", 0700)
 	if err != nil {

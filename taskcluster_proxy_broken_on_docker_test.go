@@ -6,15 +6,12 @@ import (
 	"fmt"
 	"os"
 	"testing"
+
+	"github.com/taskcluster/generic-worker/testutil"
 )
 
 func TestTaskclusterProxy(t *testing.T) {
-	if os.Getenv("TASKCLUSTER_CLIENT_ID") == "" ||
-		os.Getenv("TASKCLUSTER_ACCESS_TOKEN") == "" ||
-		os.Getenv("TASKCLUSTER_ROOT_URL") == "" {
-		t.Skip("Skipping test since TASKCLUSTER_{CLIENT_ID,ACCESS_TOKEN,ROOT_URL} env vars not set")
-	}
-
+	testutil.RequireTaskclusterCredentials(t)
 	defer setup(t)()
 	payload := GenericWorkerPayload{
 		Command: append(

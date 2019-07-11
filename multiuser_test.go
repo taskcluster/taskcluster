@@ -36,11 +36,11 @@ func grantingDenying(t *testing.T, filetype string, taskPath ...string) (grantin
 }
 
 func setConfigRunTasksAsCurrentUser() {
-	config.RunTasksAsCurrentUser = os.Getenv("GW_TESTS_RUN_AS_TASK_USER") == ""
+	config.RunTasksAsCurrentUser = os.Getenv("GW_TESTS_RUN_AS_CURRENT_USER") != ""
 }
 
 func EngineTestSettings(settings map[string]interface{}) {
-	settings["runTasksAsCurrentUser"] = os.Getenv("GW_TESTS_RUN_AS_TASK_USER") == ""
+	settings["runTasksAsCurrentUser"] = os.Getenv("GW_TESTS_RUN_AS_CURRENT_USER") != ""
 }
 
 // TestMissingDependency tests that if artifact content is mounted, it must be included as a task dependency

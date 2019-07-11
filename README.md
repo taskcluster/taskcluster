@@ -666,6 +666,50 @@ Then cd into the source directory, and run:
 go test -v ./...
 ```
 
+There are a few environment variables that you can set to influence the tests:
+
+### `GW_SKIP_INTEGRATION_TESTS`
+
+Set to a non-empty string if you wish to skip all tests that submit tasks to a
+real taskcluster Queue service.
+
+Otherwise you'll need to configure the taskcluster credentials for talking to
+the taskcluster Queue service:
+
+* `TASKCLUSTER_CLIENT_ID`
+* `TASKCLUSTER_ACCESS_TOKEN`
+* `TASKCLUSTER_ROOT_URL`
+* `TASKCLUSTER_CERTIFICATE` (only if using temp credentials)
+
+### `GW_SKIP_PERMA_CREDS_TESTS`
+
+Set to a non-empty string if you wish to skip tests that require permanent
+taskcluster credentials (e.g. if you only have temp credentials, and don't feel
+like creating a permanent client, or don't have the scopes to do so).
+
+### `GW_SKIP_Z_DRIVE_TESTS`
+
+Only used in a single __Windows-specific__ test - if you don't have a Z: drive
+setup on your computer, or you do but you also run tests from the Z: drive, you
+can set this env var to a non-empty string to skip this test.
+
+### `GW_TESTS_RUN_AS_CURRENT_USER`
+
+This environment variable applies only to the __multiuser__ engine.
+
+If `GW_TESTS_RUN_AS_CURRENT_USER` is not set, generic-worker will be tested
+running in its normal operational mode, i.e. running tasks as task users
+(config setting `runTasksAsCurrentUser` will be `false`).
+
+If `GW_TESTS_RUN_AS_CURRENT_USER` is a non-empty string, generic-worker will be
+tested running tasks as the same user that runs `go test` (config setting
+`runTasksAsCurrentUser` will be `true`). This is how the CI multiuser workers
+are configured, in order that the generic-worker under test has the required
+privileges to function correctly. Set this environment variable to ensure that
+the generic-worker under test will function correctly as a generic-worker CI
+worker.
+```
+
 # Making a new generic worker release
 
 Run the `release.sh` script like so:

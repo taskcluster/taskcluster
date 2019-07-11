@@ -229,7 +229,7 @@ func LogTest(m *MountsLoggingTestCase) {
 	if payload == nil {
 		payload = &GenericWorkerPayload{
 			Command:    helloGoodbye(),
-			MaxRunTime: 30,
+			MaxRunTime: 180,
 		}
 	}
 	payload.Mounts = toMountArray(m.Test, &m.Mounts)
