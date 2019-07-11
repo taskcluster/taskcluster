@@ -357,8 +357,6 @@
         "trust_proxy",
         "aws_access_key_id",
         "aws_secret_access_key",
-        "aws_access_key_id",
-        "aws_secret_access_key",
         "pulse_username",
         "pulse_password",
         "pulse_hostname",
@@ -486,8 +484,6 @@
         "taskcluster_root_url",
         "taskcluster_client_id",
         "taskcluster_access_token",
-        "taskcluster_client_id",
-        "taskcluster_access_token",
         "aws_access_key_id",
         "aws_secret_access_key",
         "level",
@@ -498,9 +494,7 @@
         "auth0_domain",
         "auth0_api_audience",
         "auth0_client_id",
-        "auth0_client_secret",
-        "taskcluster_client_id",
-        "taskcluster_access_token"
+        "auth0_client_secret"
       ],
       "title": "Configuration options for login",
       "type": "object"
@@ -671,9 +665,7 @@
         "taskcluster_client_id",
         "taskcluster_access_token",
         "aws_access_key_id",
-        "aws_secret_access_key",
-        "taskcluster_client_id",
-        "taskcluster_access_token"
+        "aws_secret_access_key"
       ],
       "title": "Configuration options for purge-cache",
       "type": "object"
@@ -985,7 +977,6 @@
         "port",
         "taskcluster_root_url",
         "additional_allowed_cors_origin",
-        "taskcluster_root_url",
         "taskcluster_client_id",
         "taskcluster_access_token",
         "pulse_namespace",

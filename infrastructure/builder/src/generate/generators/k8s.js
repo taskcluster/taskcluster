@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const path = require('path');
 const glob = require('glob');
 const util = require('util');
@@ -5,7 +6,7 @@ const jsone = require('json-e');
 const config = require('taskcluster-lib-config');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
-const {listServices, readRepoYAML, writeRepoYAML, writeRepoJSON, REPO_ROOT, configToSchema} = require('../../utils');
+const {listServices, readRepoYAML, writeRepoYAML, writeRepoJSON, REPO_ROOT, configToSchema, configToExample} = require('../../utils');
 
 const SERVICES = listServices();
 const CHART_DIR = path.join('infrastructure', 'k8s');
@@ -220,15 +221,18 @@ exports.tasks.push({
         required: [],
         additionalProperties: false,
       };
-      cfg.vars.forEach(v => {
+      // Some services actually duplicate their config env vars in multiple places
+      // so we de-dupe first. We use the variable name for this. If they've asked
+      // for the same variable twice with different types then this is not our fault
+      _.uniqBy(cfg.vars, 'var').forEach(v => {
         const varName = v.var.toLowerCase();
-        exampleConfig[confName][varName] = '...';
+        exampleConfig[confName][varName] = configToExample(v.type);
         schema.properties[confName].required.push(varName);
         schema.properties[confName].properties[varName] = configToSchema(v.type);
       });
     });
 
     await writeRepoJSON(path.join(CHART_DIR, 'values.schema.json'), schema);
-    await writeRepoYAML(path.join(CHART_DIR, 'user-config-example.yaml'), exampleConfig);
+    await writeRepoYAML('user-config-example.yaml', exampleConfig);
   },
 });
