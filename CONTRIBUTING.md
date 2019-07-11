@@ -3,18 +3,18 @@
 We welcome pull requests from everyone. We do expect everyone to adhere to the [Mozilla Community Participation Guidelines][participation].
 
 If you're trying to figure out what to work on, here are some places to find suitable projects: 
-* [Good first bugs][goodfirstbug]: these are scoped to make it easy for first-time contributors to get their feet wet with Taskcluster code.
-* [Mentored bugs][bugsahoy]: these are slightly more involved projects that may require insight or guidance from someone on the Taskcluster team.
-* [Full list of open issues][issues]: everything else
+* [Good first bugs][https://codetribute.mozilla.org/projects/taskcluster?tag%3Dgood%2520first%2520issue]: these are scoped to make it easy for first-time contributors to get their feet wet with Taskcluster code.
+* [Mentored bugs][https://codetribute.mozilla.org/projects/taskcluster?tag%3Dbug]: these are slightly more involved projects that may require insight or guidance from someone on the Taskcluster team.
+* [Full list of open issues][https://codetribute.mozilla.org/projects/taskcluster]: everything else
 
 If the project you're interested in working on isn't covered by a bug or issue, or you're unsure about how to proceed on an existing issue, it's a good idea to talk to someone on the Taskcluster team before you go too far down a particular path. You can find us in the #taskcluster channel on [Mozilla's IRC server][irc] to discuss. You can also simply add a comment to the issue or bug.
 
 Once you've found an issue to work on and written a patch, submit a pull request. Some things that will increase the chance that your pull request is accepted:
 
-* Check out our [development processes][developmentprocesses].
+* Check out our [development processes][https://github.com/taskcluster/taskcluster/blob/master/dev-docs/development-process.md].
 * Follow our [best practices][bestpractices].
 * This includes [writing or updating tests][testing].
-* Write a [good commit message][commit].
+* Write a [good commit message][https://github.com/taskcluster/taskcluster/blob/master/dev-docs/best-practices/commits.md].
 
 Welcome to the team!
 
