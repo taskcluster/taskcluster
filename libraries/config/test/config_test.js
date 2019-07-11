@@ -24,7 +24,7 @@ suite(testing.suiteName(), function() {
       ],
       profile: 'danish',
     });
-assume(cfg).deep.equals({
+    assume(cfg).deep.equals({
       text: ['Hej', 'Verden'],
     });
   });
