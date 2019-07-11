@@ -16,7 +16,7 @@ spec:
       app.kubernetes.io/component: github-worker
       app.kubernetes.io/part-of: taskcluster
       app.kubernetes.io/managed-by: helm
-  replicas: 1
+  replicas: {{ int (.Values.github.procs.worker.replicas) }}
   template:
     metadata:
       annotations:
@@ -37,8 +37,8 @@ spec:
             - github/worker
           resources:
             requests:
-              cpu: 100m
-              memory: 100Mi
+              cpu: '{{ .Values.github.procs.worker.cpu }}'
+              memory: '{{ .Values.github.procs.worker.memory }}'
           env:
             - name: TASKCLUSTER_ROOT_URL
               value: '{{ .Values.rootUrl }}'

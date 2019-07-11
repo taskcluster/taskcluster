@@ -5,7 +5,7 @@ metadata:
   labels:
     app.kubernetes.io/name: taskcluster-queue
     app.kubernetes.io/instance: '{{ .Release.Name }}'
-    app.kubernetes.io/component: queue-expireTask
+    app.kubernetes.io/component: queue-expiretask
     app.kubernetes.io/part-of: taskcluster
     app.kubernetes.io/managed-by: helm
 spec:
@@ -15,7 +15,7 @@ spec:
       labels:
         app.kubernetes.io/name: taskcluster-queue
         app.kubernetes.io/instance: '{{ .Release.Name }}'
-        app.kubernetes.io/component: queue-expireTask
+        app.kubernetes.io/component: queue-expiretask
         app.kubernetes.io/part-of: taskcluster
         app.kubernetes.io/managed-by: helm
     spec:
@@ -24,7 +24,7 @@ spec:
           labels:
             app.kubernetes.io/name: taskcluster-queue
             app.kubernetes.io/instance: '{{ .Release.Name }}'
-            app.kubernetes.io/component: queue-expireTask
+            app.kubernetes.io/component: queue-expiretask
             app.kubernetes.io/part-of: taskcluster
             app.kubernetes.io/managed-by: helm
         spec:
@@ -38,8 +38,8 @@ spec:
                 - queue/expireTask
               resources:
                 requests:
-                  cpu: 100m
-                  memory: 100Mi
+                  cpu: '{{ .Values.queue.procs.expireTask.cpu }}'
+                  memory: '{{ .Values.queue.procs.expireTask.memory }}'
               env:
                 - name: TASKCLUSTER_ROOT_URL
                   value: '{{ .Values.rootUrl }}'

@@ -38,8 +38,8 @@ spec:
                 - web-server/scanner
               resources:
                 requests:
-                  cpu: 100m
-                  memory: 100Mi
+                  cpu: '{{ .Values.web_server.procs.scanner.cpu }}'
+                  memory: '{{ .Values.web_server.procs.scanner.memory }}'
               env:
                 - name: TASKCLUSTER_ROOT_URL
                   value: '{{ .Values.rootUrl }}'

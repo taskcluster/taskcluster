@@ -2,11 +2,12 @@ const _ = require('lodash');
 const path = require('path');
 const glob = require('glob');
 const util = require('util');
+const yaml = require('js-yaml');
 const jsone = require('json-e');
 const config = require('taskcluster-lib-config');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
-const {listServices, readRepoYAML, writeRepoYAML, writeRepoJSON, REPO_ROOT, configToSchema, configToExample} = require('../../utils');
+const {listServices, writeRepoFile, readRepoYAML, writeRepoYAML, writeRepoJSON, REPO_ROOT, configToSchema, configToExample} = require('../../utils');
 
 const SERVICES = listServices();
 const CHART_DIR = path.join('infrastructure', 'k8s');
@@ -14,7 +15,17 @@ const TMPL_DIR = path.join(CHART_DIR, 'templates');
 
 const CLUSTER_DEFAULTS = {
   level: 'notice',
+  node_env: 'production',
+
+  // TODO: iirc google doesn't set the headers that we need to trust proxy so we don't set this, let's fix it
+  force_ssl: false,
+  trust_proxy: true,
 };
+
+const NON_CONFIGURABLE = [
+  'port',
+  'taskcluster_root_url', // This is actually configured at the cluster level
+];
 
 const renderTemplates = async (name, vars, procs, templates) => {
 
@@ -39,6 +50,8 @@ const renderTemplates = async (name, vars, procs, templates) => {
     const context = {
       projectName: `taskcluster-${name}`,
       serviceName: name,
+      configName: name.replace(/-/g, '_'),
+      configProcName: proc.replace(/-/g, '_'),
       procName: proc,
       needsService: false,
       readinessPath: conf.readinessPath || `/api/${name}/v1/ping`,
@@ -69,8 +82,15 @@ const renderTemplates = async (name, vars, procs, templates) => {
       default: continue; // We don't do anything with build/heroku-only
     }
     const rendered = jsone(templates[tmpl], context);
-    const file = `taskcluster-${name}-${tmpl}-${proc}.yaml`;
-    await writeRepoYAML(path.join(TMPL_DIR, file), rendered);
+
+    // json-e can't create a "naked" string for go templates to use to render an integer.
+    // thankfully this is the only case where this bites us (so far), so we can just do some
+    // post processing
+    const replicaConfigString = `{{ int (.Values.${context.configName}.procs.${context.configProcName}.replicas) }}`;
+    const processed = yaml.safeDump(rendered, {lineWidth: -1}).replace('REPLICA_CONFIG_STRING', replicaConfigString);
+
+    const filename = `taskcluster-${name}-${tmpl}-${proc}.yaml`;
+    await writeRepoFile(path.join(TMPL_DIR, filename), processed);
   }
   return ingresses;
 };
@@ -115,12 +135,15 @@ SERVICES.forEach(name => {
   exports.tasks.push({
     title: `Generate helm templates for ${name}`,
     requires: [`configs-${name}`, 'k8s-templates'],
-    provides: [`ingresses-${name}`],
+    provides: [`ingresses-${name}`, `procslist-${name}`],
     run: async (requirements, utils) => {
       const procs = await readRepoYAML(path.join('services', name, 'procs.yml'));
       const templates = requirements['k8s-templates'];
       const vars = requirements[`configs-${name}`].map(v => v.var);
-      return {[`ingresses-${name}`]: await renderTemplates(name, vars, procs, templates)};
+      return {
+        [`ingresses-${name}`]: await renderTemplates(name, vars, procs, templates),
+        [`procslist-${name}`]: procs,
+      };
     },
   });
 });
@@ -162,7 +185,9 @@ Object.entries(extras).forEach(([name, {procs, vars}]) => {
     provides: [`ingresses-${name}`],
     run: async (requirements, utils) => {
       const templates = requirements['k8s-templates'];
-      return {[`ingresses-${name}`]: await renderTemplates(name, vars.map(v => v.var), procs, templates)};
+      return {
+        [`ingresses-${name}`]: await renderTemplates(name, vars.map(v => v.var), procs, templates),
+      };
     },
   });
 });
@@ -193,46 +218,123 @@ exports.tasks.push({
 
 exports.tasks.push({
   title: `Generate values.yaml and values.schema.yaml`,
-  requires: [...SERVICES.map(name => `configs-${name}`)],
+  requires: [...SERVICES.map(name => `configs-${name}`), ...SERVICES.map(name => `procslist-${name}`)],
   provides: [],
   run: async (requirements, utils) => {
     const schema = {
       '$schema': 'http://json-schema.org/draft-06/schema#',
       type: 'object',
       title: 'Taskcluster Configuration Values',
-      properties: {},
-      required: [],
-      additionalProperties: false,
+      properties: {
+        rootUrl: {
+          type: 'string',
+          format: 'uri',
+        },
+        dockerImage: {
+          type: 'string',
+        },
+      },
+      required: ['rootUrl', 'dockerImage'],
+      aditionalProperties: false,
     };
 
-    const exampleConfig = {};
+    // Something to copy-paste for users
+    const exampleConfig = {
+      rootUrl: '...',
+      dockerImage: '...',
+    };
+    const variablesYAML = {}; // Defaults that people can override
 
-    let configs = SERVICES.map(name => ({name, vars: requirements[`configs-${name}`]}));
-    configs = configs.concat(Object.entries(extras).map(([name, {vars}]) => ({name, vars})));
+    let configs = SERVICES.map(name => ({
+      name,
+      vars: requirements[`configs-${name}`],
+      procs: requirements[`procslist-${name}`],
+    }));
+    configs = configs.concat(Object.entries(extras).map(([name, {vars, procs}]) => ({
+      name,
+      vars,
+      procs,
+    })));
 
     configs.forEach(cfg => {
       const confName = cfg.name.replace(/-/g, '_');
       exampleConfig[confName] = {};
+      variablesYAML[confName] = {
+        procs: {},
+      };
       schema.required.push(confName);
       schema.properties[confName] = {
         type: 'object',
         title: `Configuration options for ${cfg.name}`,
-        properties: {},
-        required: [],
+        properties: {
+          procs: {
+            type: 'object',
+            title: 'Process settings for this service',
+            properties: {},
+            required: [],
+          },
+        },
+        required: ['procs'],
         additionalProperties: false,
       };
+
       // Some services actually duplicate their config env vars in multiple places
       // so we de-dupe first. We use the variable name for this. If they've asked
       // for the same variable twice with different types then this is not our fault
       _.uniqBy(cfg.vars, 'var').forEach(v => {
         const varName = v.var.toLowerCase();
-        exampleConfig[confName][varName] = configToExample(v.type);
+        if (NON_CONFIGURABLE.includes(varName)) {
+          return; // Things like port that we always set ourselves
+        }
         schema.properties[confName].required.push(varName);
         schema.properties[confName].properties[varName] = configToSchema(v.type);
+        if (Object.keys(CLUSTER_DEFAULTS).includes(varName)) {
+          variablesYAML[confName][varName] = CLUSTER_DEFAULTS[varName];
+        } else {
+          exampleConfig[confName][varName] = configToExample(v.type);
+        }
+      });
+
+      // Now for the procs
+      const procSettings = schema.properties[confName].properties.procs;
+      Object.entries(cfg.procs).forEach(([n, p]) => {
+        n = n.replace(/-/g, '_');
+        if (['web', 'background'].includes(p.type)) {
+          variablesYAML[confName].procs[n] = {
+            replicas: 1,
+            cpu: '50m', // TODO: revisit these defaults
+            memory: '100Mi',
+          };
+          procSettings.required.push(n);
+          procSettings.properties[n] = {
+            type: 'object',
+            properties: {
+              replicas: { type: 'integer' },
+              memory: { type: 'string' },
+              cpu: { type: 'string' },
+            },
+            required: ['replicas', 'memory', 'cpu'],
+          };
+        } else if (p.type === 'cron') {
+          variablesYAML[confName].procs[n] = {
+            cpu: '50m', // TODO: revisit these defaults
+            memory: '100Mi',
+          };
+          procSettings.required.push(n);
+          procSettings.properties[n] = {
+            type: 'object',
+            properties: {
+              memory: { type: 'string' },
+              cpu: { type: 'string' },
+            },
+            required: ['memory', 'cpu'],
+          };
+        }
       });
     });
 
     await writeRepoJSON(path.join(CHART_DIR, 'values.schema.json'), schema);
+    await writeRepoYAML(path.join(CHART_DIR, 'variables.yaml'), variablesYAML);
     await writeRepoYAML('user-config-example.yaml', exampleConfig);
   },
 });

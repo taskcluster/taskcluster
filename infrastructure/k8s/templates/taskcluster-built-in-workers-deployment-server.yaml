@@ -16,7 +16,7 @@ spec:
       app.kubernetes.io/component: built-in-workers-server
       app.kubernetes.io/part-of: taskcluster
       app.kubernetes.io/managed-by: helm
-  replicas: 1
+  replicas: {{ int (.Values.built_in_workers.procs.server.replicas) }}
   template:
     metadata:
       annotations:
@@ -37,8 +37,8 @@ spec:
             - built-in-workers/server
           resources:
             requests:
-              cpu: 100m
-              memory: 100Mi
+              cpu: '{{ .Values.built_in_workers.procs.server.cpu }}'
+              memory: '{{ .Values.built_in_workers.procs.server.memory }}'
           env:
             - name: PORT
               value: '80'

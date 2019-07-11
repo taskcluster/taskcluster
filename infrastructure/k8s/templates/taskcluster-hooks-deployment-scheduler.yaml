@@ -16,7 +16,7 @@ spec:
       app.kubernetes.io/component: hooks-scheduler
       app.kubernetes.io/part-of: taskcluster
       app.kubernetes.io/managed-by: helm
-  replicas: 1
+  replicas: {{ int (.Values.hooks.procs.scheduler.replicas) }}
   template:
     metadata:
       annotations:
@@ -37,8 +37,8 @@ spec:
             - hooks/scheduler
           resources:
             requests:
-              cpu: 100m
-              memory: 100Mi
+              cpu: '{{ .Values.hooks.procs.scheduler.cpu }}'
+              memory: '{{ .Values.hooks.procs.scheduler.memory }}'
           env:
             - name: TASKCLUSTER_ROOT_URL
               value: '{{ .Values.rootUrl }}'

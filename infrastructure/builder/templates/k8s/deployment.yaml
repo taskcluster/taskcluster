@@ -5,7 +5,7 @@ metadata:
   labels:
     app.kubernetes.io/name: taskcluster-${projectName}
     app.kubernetes.io/instance: '{{ .Release.Name }}'
-    app.kubernetes.io/component: ${serviceName}-${procName}
+    app.kubernetes.io/component: ${serviceName}-${lowercase(procName)}
     app.kubernetes.io/part-of: taskcluster
     app.kubernetes.io/managed-by: helm
 spec:
@@ -13,10 +13,10 @@ spec:
     matchLabels:
       app.kubernetes.io/name: ${projectName}
       app.kubernetes.io/instance: '{{ .Release.Name }}'
-      app.kubernetes.io/component: ${serviceName}-${procName}
+      app.kubernetes.io/component: ${serviceName}-${lowercase(procName)}
       app.kubernetes.io/part-of: taskcluster
       app.kubernetes.io/managed-by: helm
-  replicas: 1 # TODO
+  replicas: REPLICA_CONFIG_STRING
   template:
     metadata:
       annotations:
@@ -24,7 +24,7 @@ spec:
       labels:
         app.kubernetes.io/name: ${projectName}
         app.kubernetes.io/instance: '{{ .Release.Name }}'
-        app.kubernetes.io/component: ${serviceName}-${procName}
+        app.kubernetes.io/component: ${serviceName}-${lowercase(procName)}
         app.kubernetes.io/part-of: taskcluster
         app.kubernetes.io/managed-by: helm
     spec:
@@ -35,10 +35,9 @@ spec:
         imagePullPolicy: Always
         args: ['${serviceName}/${procName}']
         resources:
-          # TODO: Make configurable
           requests:
-            cpu: 100m
-            memory: 100Mi
+            cpu: '{{ .Values.${configName}.procs.${configProcName}.cpu }}'
+            memory: '{{ .Values.${configName}.procs.${configProcName}.memory }}'
         env:
           $flatten:
             - $if: 'needsService'

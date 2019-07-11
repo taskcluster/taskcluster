@@ -16,7 +16,7 @@ spec:
       app.kubernetes.io/component: references-web
       app.kubernetes.io/part-of: taskcluster
       app.kubernetes.io/managed-by: helm
-  replicas: 1
+  replicas: {{ int (.Values.references.procs.web.replicas) }}
   template:
     metadata:
       annotations:
@@ -37,8 +37,8 @@ spec:
             - references/web
           resources:
             requests:
-              cpu: 100m
-              memory: 100Mi
+              cpu: '{{ .Values.references.procs.web.cpu }}'
+              memory: '{{ .Values.references.procs.web.memory }}'
           env:
             - name: PORT
               value: '80'

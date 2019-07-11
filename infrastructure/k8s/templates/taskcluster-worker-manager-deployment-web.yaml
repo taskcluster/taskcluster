@@ -16,7 +16,7 @@ spec:
       app.kubernetes.io/component: worker-manager-web
       app.kubernetes.io/part-of: taskcluster
       app.kubernetes.io/managed-by: helm
-  replicas: 1
+  replicas: {{ int (.Values.worker_manager.procs.web.replicas) }}
   template:
     metadata:
       annotations:
@@ -37,8 +37,8 @@ spec:
             - worker-manager/web
           resources:
             requests:
-              cpu: 100m
-              memory: 100Mi
+              cpu: '{{ .Values.worker_manager.procs.web.cpu }}'
+              memory: '{{ .Values.worker_manager.procs.web.memory }}'
           env:
             - name: PORT
               value: '80'

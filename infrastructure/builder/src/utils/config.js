@@ -46,7 +46,7 @@ exports.configToExample = type => {
     case '!env': return '...';
     case '!env:string': return '...';
     case '!env:number': return 1;
-    case '!env:bool': return true;
+    case '!env:bool': return 'true/false';
     case '!env:json': return {};
     case '!env:list': return [];
     default: throw new Error(`Unknown config type ${type}`);

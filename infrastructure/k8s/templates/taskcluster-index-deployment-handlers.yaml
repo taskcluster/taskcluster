@@ -16,7 +16,7 @@ spec:
       app.kubernetes.io/component: index-handlers
       app.kubernetes.io/part-of: taskcluster
       app.kubernetes.io/managed-by: helm
-  replicas: 1
+  replicas: {{ int (.Values.index.procs.handlers.replicas) }}
   template:
     metadata:
       annotations:
@@ -37,8 +37,8 @@ spec:
             - index/handlers
           resources:
             requests:
-              cpu: 100m
-              memory: 100Mi
+              cpu: '{{ .Values.index.procs.handlers.cpu }}'
+              memory: '{{ .Values.index.procs.handlers.memory }}'
           env:
             - name: TASKCLUSTER_ROOT_URL
               value: '{{ .Values.rootUrl }}'

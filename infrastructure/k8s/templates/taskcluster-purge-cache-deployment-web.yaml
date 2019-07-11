@@ -16,7 +16,7 @@ spec:
       app.kubernetes.io/component: purge-cache-web
       app.kubernetes.io/part-of: taskcluster
       app.kubernetes.io/managed-by: helm
-  replicas: 1
+  replicas: {{ int (.Values.purge_cache.procs.web.replicas) }}
   template:
     metadata:
       annotations:
@@ -37,8 +37,8 @@ spec:
             - purge-cache/web
           resources:
             requests:
-              cpu: 100m
-              memory: 100Mi
+              cpu: '{{ .Values.purge_cache.procs.web.cpu }}'
+              memory: '{{ .Values.purge_cache.procs.web.memory }}'
           env:
             - name: PORT
               value: '80'

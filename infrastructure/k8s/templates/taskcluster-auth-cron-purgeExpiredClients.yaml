@@ -5,7 +5,7 @@ metadata:
   labels:
     app.kubernetes.io/name: taskcluster-auth
     app.kubernetes.io/instance: '{{ .Release.Name }}'
-    app.kubernetes.io/component: auth-purgeExpiredClients
+    app.kubernetes.io/component: auth-purgeexpiredclients
     app.kubernetes.io/part-of: taskcluster
     app.kubernetes.io/managed-by: helm
 spec:
@@ -15,7 +15,7 @@ spec:
       labels:
         app.kubernetes.io/name: taskcluster-auth
         app.kubernetes.io/instance: '{{ .Release.Name }}'
-        app.kubernetes.io/component: auth-purgeExpiredClients
+        app.kubernetes.io/component: auth-purgeexpiredclients
         app.kubernetes.io/part-of: taskcluster
         app.kubernetes.io/managed-by: helm
     spec:
@@ -24,7 +24,7 @@ spec:
           labels:
             app.kubernetes.io/name: taskcluster-auth
             app.kubernetes.io/instance: '{{ .Release.Name }}'
-            app.kubernetes.io/component: auth-purgeExpiredClients
+            app.kubernetes.io/component: auth-purgeexpiredclients
             app.kubernetes.io/part-of: taskcluster
             app.kubernetes.io/managed-by: helm
         spec:
@@ -38,8 +38,8 @@ spec:
                 - auth/purgeExpiredClients
               resources:
                 requests:
-                  cpu: 100m
-                  memory: 100Mi
+                  cpu: '{{ .Values.auth.procs.purgeExpiredClients.cpu }}'
+                  memory: '{{ .Values.auth.procs.purgeExpiredClients.memory }}'
               env:
                 - name: TASKCLUSTER_ROOT_URL
                   value: '{{ .Values.rootUrl }}'

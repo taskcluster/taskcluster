@@ -1,0 +1,220 @@
+auth:
+  procs:
+    web:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    purgeExpiredClients:
+      cpu: 50m
+      memory: 100Mi
+  level: notice
+  node_env: production
+  force_ssl: false
+  trust_proxy: true
+built_in_workers:
+  procs:
+    server:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+  level: notice
+github:
+  procs:
+    web:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    worker:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    sync:
+      cpu: 50m
+      memory: 100Mi
+  level: notice
+  force_ssl: false
+  trust_proxy: true
+hooks:
+  procs:
+    web:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    scheduler:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    listeners:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    expires:
+      cpu: 50m
+      memory: 100Mi
+  level: notice
+  node_env: production
+  force_ssl: false
+  trust_proxy: true
+index:
+  procs:
+    web:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    handlers:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    expire:
+      cpu: 50m
+      memory: 100Mi
+  level: notice
+  force_ssl: false
+  trust_proxy: true
+login:
+  procs: {}
+  level: notice
+  force_ssl: false
+  node_env: production
+  trust_proxy: true
+notify:
+  procs:
+    web:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    irc:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    handler:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+  level: notice
+  node_env: production
+  force_ssl: false
+  trust_proxy: true
+purge_cache:
+  procs:
+    web:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    expireCachePurges:
+      cpu: 50m
+      memory: 100Mi
+  level: notice
+  force_ssl: false
+  trust_proxy: true
+queue:
+  procs:
+    web:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    claimResolver:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    deadlineResolver:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    dependencyResolver:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    expireArtifacts:
+      cpu: 50m
+      memory: 100Mi
+    expireTask:
+      cpu: 50m
+      memory: 100Mi
+    expireTaskGroups:
+      cpu: 50m
+      memory: 100Mi
+    expireTaskGroupMembers:
+      cpu: 50m
+      memory: 100Mi
+    expireTaskGroupSizes:
+      cpu: 50m
+      memory: 100Mi
+    expireTaskDependency:
+      cpu: 50m
+      memory: 100Mi
+    expireTaskRequirement:
+      cpu: 50m
+      memory: 100Mi
+    expireQueues:
+      cpu: 50m
+      memory: 100Mi
+    expireWorkerInfo:
+      cpu: 50m
+      memory: 100Mi
+  level: notice
+  node_env: production
+  force_ssl: false
+secrets:
+  procs:
+    web:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    expire:
+      cpu: 50m
+      memory: 100Mi
+  level: notice
+  force_ssl: false
+treeherder:
+  procs: {}
+  level: notice
+web_server:
+  procs:
+    web:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    scanner:
+      cpu: 50m
+      memory: 100Mi
+  level: notice
+worker_manager:
+  procs:
+    web:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    provisioner:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    workerscanner:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+    expire_workers:
+      cpu: 50m
+      memory: 100Mi
+    expire_worker_pools:
+      cpu: 50m
+      memory: 100Mi
+    expire_errors:
+      cpu: 50m
+      memory: 100Mi
+  level: notice
+  node_env: production
+  force_ssl: false
+  trust_proxy: true
+ui:
+  procs:
+    web:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+references:
+  procs:
+    web:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
