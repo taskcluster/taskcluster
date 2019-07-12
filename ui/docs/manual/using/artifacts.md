@@ -59,7 +59,7 @@ endpoint. That will generally look like this:
     https://tc.example.com/api/queue/v1/task/URFDBjl5RtSNz_NJEH3hlw/artifacts/public/build.zip
 
 where `URFDBjl5RtSNz_NJEH3hlw` is the taskId assigned to task A. This URL can
-be calculated before the task runs - for example, by a decision task.  The URL
+be calculated before the task runs - for example, by a [decision task](/docs/manual/design/conventions/decision-task).  The URL
 comes with all the cautions about client robustness in the
 [Artifacts](/docs/manual/tasks/artifacts) section, above.
 
