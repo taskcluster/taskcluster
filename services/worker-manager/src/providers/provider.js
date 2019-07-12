@@ -1,6 +1,11 @@
 const assert = require('assert');
 const libUrls = require('taskcluster-lib-urls');
 
+/**
+ * The parent class for all providers.
+ *
+ * See ../../providers.md for information on writing providers.
+ */
 class Provider {
   constructor({
     providerId,
