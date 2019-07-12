@@ -1,4 +1,4 @@
-const {Provider} = require('./provider');
+const {ApiError, Provider} = require('./provider');
 const aws = require('aws-sdk');
 const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
@@ -39,6 +39,7 @@ class AwsProvider extends Provider {
     const ec2PolicyArn = `arn:aws:iam::aws:policy/${ec2policyName}`;
     // There can be multiple statements in a policy.
     // Maybe this.instancePermissions should just me an array of Statements?
+    // also, we'll probably need the trust policy for the instance: only EC2 instances can assume the role
     // todo: think about the above
     const ec2policy = {
       "Statement": [{
@@ -155,6 +156,10 @@ class AwsProvider extends Provider {
 
     try {
       spawned = await this.ec2.runInstances({
+        IamInstanceProfile: {
+          Arn: this.instanceProfile.Arn,
+          Name: this.instanceProfile.InstanceProfileName,
+        },
         MaxCount: toSpawn,
         MinCount: toSpawn,
         ImageId: workerPool.config.imageId,
@@ -184,7 +189,6 @@ class AwsProvider extends Provider {
         notify: this.notify,
         WorkerPoolError: this.WorkerPoolError,
       });
-      return;
     }
 
     Promise.all(spawned.Instances.map(i => {
@@ -195,7 +199,7 @@ class AwsProvider extends Provider {
         workerId: i.InstanceId,
         created: new Date(),
         expires: taskcluster.fromNow('1 week'),
-        state: this.Worker.states.REQUESTED, // why do we have "requested" if aws and google have "pending"?
+        state: this.Worker.states.REQUESTED,
         providerData: { // what do we want to remember, anyways? 🤔
           project: this.project,
         },
@@ -203,12 +207,30 @@ class AwsProvider extends Provider {
     }));
   }
 
-  async deprovision({workerPool}) { // should this be implemented in Provider? Looks like it's going to be the same for all
+  async deprovision({workerPool}) {
+    // should this be implemented in Provider? Looks like it's going to be the same for all
     await workerPool.modify(wt => {
       wt.previousProviderIds = wt.previousProviderIds.filter(p => p !== this.providerId);
       delete wt.providerData[this.providerId];
     });
+    // why don't we remove workers from db or terminate instances?
   }
+
+  async registerWorker({worker, workerPool, workerIdentityProof}) {
+    // check worker's identity
+    // The way AWS works, workers will be getting temporary creds for accessing AWS APIs
+    // automatically. There's no token back-and-forth
+
+    // mark it as running
+    await worker.modify(w => {
+      w.state = this.Worker.states.RUNNING;
+    });
+
+    // return object that has expires field
+    return {expires: taskcluster.fromNow('96 hours')};
+  }
+
+  async checkWorker({worker});
 }
 
 // this util copy-pasted from gcp provider
