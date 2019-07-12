@@ -286,7 +286,8 @@ exports.tasks.push({
         if (NON_CONFIGURABLE.includes(varName)) {
           return; // Things like port that we always set ourselves
         }
-        schema.properties[confName].required.push(varName);
+        // TODO: In config.ymls somehow mark fields as "required" or "optional" and then assert
+        // that here with  schema.properties[confName].required.push(varName);
         schema.properties[confName].properties[varName] = configToSchema(v.type);
         if (Object.keys(CLUSTER_DEFAULTS).includes(varName)) {
           variablesYAML[confName][varName] = CLUSTER_DEFAULTS[varName];
@@ -314,6 +315,7 @@ exports.tasks.push({
               cpu: { type: 'string' },
             },
             required: ['replicas', 'memory', 'cpu'],
+            additionalProperties: false,
           };
         } else if (p.type === 'cron') {
           variablesYAML[confName].procs[n] = {
@@ -328,6 +330,7 @@ exports.tasks.push({
               cpu: { type: 'string' },
             },
             required: ['memory', 'cpu'],
+            additionalProperties: false,
           };
         }
       });

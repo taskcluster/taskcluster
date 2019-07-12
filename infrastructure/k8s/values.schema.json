@@ -55,6 +55,7 @@
         "procs": {
           "properties": {
             "purgeExpiredClients": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -70,6 +71,7 @@
               "type": "object"
             },
             "web": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -153,40 +155,7 @@
         }
       },
       "required": [
-        "procs",
-        "client_table_name",
-        "roles_container_name",
-        "static_clients",
-        "azure_accounts",
-        "sentry_organization",
-        "sentry_host",
-        "sentry_auth_token",
-        "sentry_team",
-        "sentry_key_prefix",
-        "statsum_api_secret",
-        "statsum_base_url",
-        "websocktunnel_secret",
-        "docs_bucket",
-        "schemas_bucket",
-        "refs_bucket",
-        "audit_log",
-        "level",
-        "node_env",
-        "force_ssl",
-        "trust_proxy",
-        "azure_account",
-        "azure_account_key",
-        "azure_signing_key",
-        "azure_crypto_key",
-        "pulse_username",
-        "pulse_password",
-        "pulse_hostname",
-        "pulse_vhost",
-        "aws_access_key_id",
-        "aws_secret_access_key",
-        "aws_region",
-        "gcp_credentials",
-        "test_bucket"
+        "procs"
       ],
       "title": "Configuration options for auth",
       "type": "object"
@@ -200,6 +169,7 @@
         "procs": {
           "properties": {
             "server": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -233,10 +203,7 @@
         }
       },
       "required": [
-        "procs",
-        "taskcluster_client_id",
-        "taskcluster_access_token",
-        "level"
+        "procs"
       ],
       "title": "Configuration options for built-in-workers",
       "type": "object"
@@ -274,6 +241,7 @@
         "procs": {
           "properties": {
             "sync": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -289,6 +257,7 @@
               "type": "object"
             },
             "web": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -308,6 +277,7 @@
               "type": "object"
             },
             "worker": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -370,26 +340,7 @@
         }
       },
       "required": [
-        "procs",
-        "bot_username",
-        "taskcluster_client_id",
-        "taskcluster_access_token",
-        "github_private_pem",
-        "github_app_id",
-        "webhook_secret",
-        "provisioner_id",
-        "worker_type",
-        "azure_account_name",
-        "level",
-        "pulse_hostname",
-        "pulse_username",
-        "pulse_password",
-        "pulse_vhost",
-        "pulse_namespace",
-        "aws_access_key",
-        "aws_secret_key",
-        "force_ssl",
-        "trust_proxy"
+        "procs"
       ],
       "title": "Configuration options for github",
       "type": "object"
@@ -427,6 +378,7 @@
         "procs": {
           "properties": {
             "expires": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -442,6 +394,7 @@
               "type": "object"
             },
             "listeners": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -461,6 +414,7 @@
               "type": "object"
             },
             "scheduler": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -480,6 +434,7 @@
               "type": "object"
             },
             "web": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -540,26 +495,7 @@
         }
       },
       "required": [
-        "procs",
-        "hook_table_name",
-        "lastfire_table_name",
-        "queue_table_name",
-        "influx_connection",
-        "azure_account",
-        "table_signing_key",
-        "table_crypto_key",
-        "taskcluster_client_id",
-        "taskcluster_access_token",
-        "level",
-        "node_env",
-        "force_ssl",
-        "trust_proxy",
-        "aws_access_key_id",
-        "aws_secret_access_key",
-        "pulse_username",
-        "pulse_password",
-        "pulse_hostname",
-        "pulse_vhost"
+        "procs"
       ],
       "title": "Configuration options for hooks",
       "type": "object"
@@ -585,6 +521,7 @@
         "procs": {
           "properties": {
             "expire": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -600,6 +537,7 @@
               "type": "object"
             },
             "handlers": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -619,6 +557,7 @@
               "type": "object"
             },
             "web": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -672,20 +611,7 @@
         }
       },
       "required": [
-        "procs",
-        "azure_account",
-        "level",
-        "taskcluster_client_id",
-        "taskcluster_access_token",
-        "pulse_hostname",
-        "pulse_username",
-        "pulse_password",
-        "pulse_vhost",
-        "pulse_namespace",
-        "aws_access_key_id",
-        "aws_secret_access_key",
-        "force_ssl",
-        "trust_proxy"
+        "procs"
       ],
       "title": "Configuration options for index",
       "type": "object"
@@ -739,19 +665,7 @@
         }
       },
       "required": [
-        "procs",
-        "taskcluster_client_id",
-        "taskcluster_access_token",
-        "aws_access_key_id",
-        "aws_secret_access_key",
-        "level",
-        "force_ssl",
-        "node_env",
-        "trust_proxy",
-        "auth0_domain",
-        "auth0_api_audience",
-        "auth0_client_id",
-        "auth0_client_secret"
+        "procs"
       ],
       "title": "Configuration options for login",
       "type": "object"
@@ -817,6 +731,7 @@
         "procs": {
           "properties": {
             "handler": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -836,6 +751,7 @@
               "type": "object"
             },
             "irc": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -855,6 +771,7 @@
               "type": "object"
             },
             "web": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -908,33 +825,7 @@
         }
       },
       "required": [
-        "procs",
-        "email_source_address",
-        "email_blacklist",
-        "denylisted_notification_table_name",
-        "taskcluster_client_id",
-        "taskcluster_access_token",
-        "azure_account",
-        "level",
-        "node_env",
-        "force_ssl",
-        "trust_proxy",
-        "aws_access_key_id",
-        "aws_secret_access_key",
-        "aws_region",
-        "pulse_namespace",
-        "pulse_hostname",
-        "pulse_username",
-        "pulse_password",
-        "pulse_vhost",
-        "irc_server",
-        "irc_nick",
-        "irc_user_name",
-        "irc_real_name",
-        "irc_password",
-        "irc_port",
-        "irc_debug",
-        "irc_pulse_queue_name"
+        "procs"
       ],
       "title": "Configuration options for notify",
       "type": "object"
@@ -960,6 +851,7 @@
         "procs": {
           "properties": {
             "expireCachePurges": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -975,6 +867,7 @@
               "type": "object"
             },
             "web": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1012,15 +905,7 @@
         }
       },
       "required": [
-        "procs",
-        "level",
-        "force_ssl",
-        "trust_proxy",
-        "azure_account",
-        "taskcluster_client_id",
-        "taskcluster_access_token",
-        "aws_access_key_id",
-        "aws_secret_access_key"
+        "procs"
       ],
       "title": "Configuration options for purge-cache",
       "type": "object"
@@ -1073,6 +958,7 @@
         "procs": {
           "properties": {
             "claimResolver": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1092,6 +978,7 @@
               "type": "object"
             },
             "deadlineResolver": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1111,6 +998,7 @@
               "type": "object"
             },
             "dependencyResolver": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1130,6 +1018,7 @@
               "type": "object"
             },
             "expireArtifacts": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1145,6 +1034,7 @@
               "type": "object"
             },
             "expireQueues": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1160,6 +1050,7 @@
               "type": "object"
             },
             "expireTask": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1175,6 +1066,7 @@
               "type": "object"
             },
             "expireTaskDependency": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1190,6 +1082,7 @@
               "type": "object"
             },
             "expireTaskGroupMembers": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1205,6 +1098,7 @@
               "type": "object"
             },
             "expireTaskGroupSizes": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1220,6 +1114,7 @@
               "type": "object"
             },
             "expireTaskGroups": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1235,6 +1130,7 @@
               "type": "object"
             },
             "expireTaskRequirement": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1250,6 +1146,7 @@
               "type": "object"
             },
             "expireWorkerInfo": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1265,6 +1162,7 @@
               "type": "object"
             },
             "web": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1341,33 +1239,7 @@
         }
       },
       "required": [
-        "procs",
-        "public_blob_artifact_bucket",
-        "private_blob_artifact_bucket",
-        "blob_artifact_region",
-        "public_artifact_bucket",
-        "private_artifact_bucket",
-        "azure_report_chance",
-        "azure_report_threshold",
-        "public_artifact_ec2_proxies",
-        "public_artifact_bucket_cdn",
-        "use_cloud_mirror",
-        "taskcluster_client_id",
-        "taskcluster_access_token",
-        "level",
-        "node_env",
-        "force_ssl",
-        "azure_account_id",
-        "azure_account_key",
-        "azure_table_account_name",
-        "pulse_namespace",
-        "pulse_username",
-        "pulse_password",
-        "pulse_hostname",
-        "pulse_vhost",
-        "aws_access_key_id",
-        "aws_secret_access_key",
-        "artifact_region"
+        "procs"
       ],
       "title": "Configuration options for queue",
       "type": "object"
@@ -1378,6 +1250,7 @@
         "procs": {
           "properties": {
             "web": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1444,6 +1317,7 @@
         "procs": {
           "properties": {
             "expire": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1459,6 +1333,7 @@
               "type": "object"
             },
             "web": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1493,17 +1368,7 @@
         }
       },
       "required": [
-        "procs",
-        "taskcluster_client_id",
-        "taskcluster_access_token",
-        "azure_account",
-        "azure_table_name",
-        "azure_crypto_key",
-        "azure_signing_key",
-        "level",
-        "force_ssl",
-        "aws_access_key_id",
-        "aws_secret_access_key"
+        "procs"
       ],
       "title": "Configuration options for secrets",
       "type": "object"
@@ -1554,18 +1419,7 @@
         }
       },
       "required": [
-        "procs",
-        "pulse_namespace",
-        "pulse_username",
-        "pulse_password",
-        "pulse_hostname",
-        "pulse_vhost",
-        "treeherder_route_prefix",
-        "taskcluster_client_id",
-        "taskcluster_access_token",
-        "aws_access_key_id",
-        "aws_secret_access_key",
-        "level"
+        "procs"
       ],
       "title": "Configuration options for treeherder",
       "type": "object"
@@ -1576,6 +1430,7 @@
         "procs": {
           "properties": {
             "web": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1623,6 +1478,7 @@
         "procs": {
           "properties": {
             "scanner": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1638,6 +1494,7 @@
               "type": "object"
             },
             "web": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1694,19 +1551,7 @@
         }
       },
       "required": [
-        "procs",
-        "public_url",
-        "level",
-        "additional_allowed_cors_origin",
-        "taskcluster_client_id",
-        "taskcluster_access_token",
-        "pulse_namespace",
-        "pulse_username",
-        "pulse_password",
-        "pulse_hostname",
-        "pulse_vhost",
-        "ui_login_strategies",
-        "jwt_key"
+        "procs"
       ],
       "title": "Configuration options for web-server",
       "type": "object"
@@ -1729,6 +1574,7 @@
         "procs": {
           "properties": {
             "expire_errors": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1744,6 +1590,7 @@
               "type": "object"
             },
             "expire_worker_pools": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1759,6 +1606,7 @@
               "type": "object"
             },
             "expire_workers": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1774,6 +1622,7 @@
               "type": "object"
             },
             "provisioner": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1793,6 +1642,7 @@
               "type": "object"
             },
             "web": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1812,6 +1662,7 @@
               "type": "object"
             },
             "workerscanner": {
+              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string"
@@ -1872,20 +1723,7 @@
         }
       },
       "required": [
-        "procs",
-        "level",
-        "taskcluster_client_id",
-        "taskcluster_access_token",
-        "azure_account",
-        "node_env",
-        "force_ssl",
-        "trust_proxy",
-        "pulse_hostname",
-        "pulse_username",
-        "pulse_password",
-        "pulse_vhost",
-        "pulse_namespace",
-        "providers"
+        "procs"
       ],
       "title": "Configuration options for worker-manager",
       "type": "object"
