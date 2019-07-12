@@ -2293,13 +2293,55 @@
                 },
                 "name": "worker-interaction",
                 "next": {
-                  "path": "reference/integrations/README",
-                  "title": "Integrations"
+                  "path": "reference/core/worker-manager/google",
+                  "title": "google"
                 },
                 "path": "reference/core/worker-manager/worker-interaction",
                 "prev": {
                   "path": "reference/core/worker-manager/logs",
                   "title": "logs"
+                },
+                "up": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000
+                },
+                "name": "google",
+                "next": {
+                  "path": "reference/core/worker-manager/static",
+                  "title": "static"
+                },
+                "path": "reference/core/worker-manager/google",
+                "prev": {
+                  "path": "reference/core/worker-manager/worker-interaction",
+                  "title": "Worker-Manager - Worker Interaction"
+                },
+                "up": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000
+                },
+                "name": "static",
+                "next": {
+                  "path": "reference/integrations/README",
+                  "title": "Integrations"
+                },
+                "path": "reference/core/worker-manager/static",
+                "prev": {
+                  "path": "reference/core/worker-manager/google",
+                  "title": "google"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",
@@ -2718,8 +2760,8 @@
         },
         "path": "reference/integrations/README",
         "prev": {
-          "path": "reference/core/worker-manager/worker-interaction",
-          "title": "Worker-Manager - Worker Interaction"
+          "path": "reference/core/worker-manager/static",
+          "title": "static"
         },
         "up": {
           "path": "reference/README",
