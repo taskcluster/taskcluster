@@ -1,19 +1,11 @@
 ---
-title: Defining User Actions on Existing Tasks
+title: Action Tasks
 ---
 
-This section shows how to define *actions*. Actions allow users to affect a
-task or task-graph after it has been submitted. Common actions are:
+This section defines the Taskcluster convention for *actions*.
+Actions allow users to affect a task or task-graph after it has been submitted.
 
--   Retrigger a task,
--   Retry specific test cases many times,
--   Obtain a loaner machine,
--   Backfill missing tasks,
-
-Actions are defined in-tree, so they are specific to the software being built
-and can be modified through the usual review process.  Taskcluster defines a
-convention -- documented here -- which allows user interfaces to connect users
-to these actions.
+Actions are defined by a decision task, so they can be defined and modified in the source tree in a typical CI configuration, using the usual review processes.
 
 At a very high level, the process looks like this:
 
@@ -29,3 +21,7 @@ At a very high level, the process looks like this:
     That action task is responsible for carrying out the named action,
     and may create new sub-tasks if necessary (for example, to
     re-trigger a task).
+
+Actions are supported by the Taskcluster UI, including default implementations of some common actions.
+
+See the [specification](/docs/manual/design/conventions/actions/spec) for more detail.
