@@ -1,17 +1,32 @@
 const {Provider} = require('./provider');
 const aws = require('aws-sdk');
 const _ = require('lodash');
+const taskcluster = require('taskcluster-client');
 
 class AwsProvider extends Provider {
-  constructor({WorkerPool, instancePermissions, apiVersion, region}) {
-    super({WorkerPool});
+  constructor({
+    WorkerPool,
+    instancePermissions,
+    apiVersion,
+    region,
+    estimator,
+    notify,
+    project,
+  }) {
+    super({
+      WorkerPool,
+      estimator,
+      notify,
+    });
     this.configSchema = 'config-aws';
     this.instancePermissions = instancePermissions;
     this.apiVersion = apiVersion;
     this.region = region;
+    this.project = project;
 
     aws.config.update({region});
     this.iam = new aws.IAM({apiVersion});
+    this.ec2 = new aws.EC2({apiVersion});
   }
 
   /*
@@ -73,8 +88,8 @@ class AwsProvider extends Provider {
       "Statement": {
         "Effect": "Allow",
         "Principal": {"Service": "ec2.amazonaws.com"},
-        "Action": "sts:AssumeRole"
-      }
+        "Action": "sts:AssumeRole",
+      },
     };
     const roleName = `wm-aws-provider-${this.providerId}`;
     const freshRole = await readModifySet({
@@ -84,7 +99,6 @@ class AwsProvider extends Provider {
         RoleName: roleName,
       }),
     });
-
 
     // ROLE + POLICY
     await readModifySet({
@@ -109,9 +123,8 @@ class AwsProvider extends Provider {
         }
 
         return role;
-      }
+      },
     });
-
 
     // INSTANCE PROFILE
     this.instanceProfile = await readModifySet({
@@ -120,6 +133,81 @@ class AwsProvider extends Provider {
     });
 
     //todo: do something to enable logging to stackdriver
+  }
+
+  async provision({workerPool}) {
+    const {workerPoolId} = workerPool;
+
+    if (!workerPool.providerData[this.providerId] || workerPool.providerData[this.providerId].running === undefined) {
+      await workerPool.modify(wt => {
+        wt.providerData[this.providerId] = wt.providerData[this.providerId] || {};
+        wt.providerData[this.providerId].running = wt.providerData[this.providerId].running || 0; // why zero?
+      });
+    }
+
+    const toSpawn = await this.estimator.simple({
+      workerPoolId,
+      ...workerPool.config,
+      running: workerPool.providerData[this.providerId].running,
+    });
+
+    let spawned;
+
+    try {
+      spawned = await this.ec2.runInstances({
+        MaxCount: toSpawn,
+        MinCount: toSpawn,
+        ImageId: workerPool.config.imageId,
+        InstanceType: workerPool.config.instanceType,
+        Placement: {
+          AvailabilityZone: this.region,
+        },
+        TagSpecifications: {
+          ResourceType: 'instance',
+          Tags: [{
+            Key: 'Provider',
+            Value: `wm-${this.providerId}`,
+          }, {
+            Key: 'Owner',
+            Value: workerPool.owner,
+          }, {
+            Key: 'Project',
+            Value: this.project,
+          }],
+        },
+      });
+    } catch (e) {
+      await workerPool.reportError({
+        kind: 'creation-error',
+        title: 'Instance Creation Error',
+        description: e.message, // TODO: Make sure we clear exposing this with security folks
+        notify: this.notify,
+        WorkerPoolError: this.WorkerPoolError,
+      });
+      return;
+    }
+
+    Promise.all(spawned.Instances.map(i => {
+      return this.Worker.create({
+        workerPoolId,
+        providerId: this.providerId,
+        workerGroup: this.providerId,
+        workerId: i.InstanceId,
+        created: new Date(),
+        expires: taskcluster.fromNow('1 week'),
+        state: this.Worker.states.REQUESTED, // why do we have "requested" if aws and google have "pending"?
+        providerData: { // what do we want to remember, anyways? 🤔
+          project: this.project,
+        },
+      });
+    }));
+  }
+
+  async deprovision({workerPool}) { // should this be implemented in Provider? Looks like it's going to be the same for all
+    await workerPool.modify(wt => {
+      wt.previousProviderIds = wt.previousProviderIds.filter(p => p !== this.providerId);
+      delete wt.providerData[this.providerId];
+    });
   }
 }
 
