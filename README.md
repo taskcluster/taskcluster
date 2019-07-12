@@ -726,6 +726,14 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v15.1.1 since v15.1.0
+========================
+
+* [Bug 1382668 - generic-worker: document the env vars that the worker implicitly sets in the task commands it runs](https://bugzil.la/1382668)
+* [Bug 1562964 - generic-worker: log HTTP response body when getting a bad HTTP response code from the queue when uploading artifacts](https://bugzil.la/1562964)
+* [Bug 1564354 - generic-worker: use generic-worker sentry project by default](https://bugzil.la/1564354)
+* [Bug 1564361 - generic-worker: log system failures when checking if chain of trust key is readable](https://bugzil.la/1564361)
+
 In v15.1.0 since v15.0.1
 ========================
 
