@@ -229,9 +229,19 @@ exports.tasks.push({
         rootUrl: {
           type: 'string',
           format: 'uri',
+          description: 'The url pointing to your cluster ingress.',
         },
         dockerImage: {
           type: 'string',
+          description: 'The docker image containing taskcluster.',
+        },
+        ingressStaticIpName: {
+          type: 'string',
+          description: 'A google static ip object that the ingress can use to maintain the same ip address.',
+        },
+        ingressCertName: {
+          type: 'string',
+          description: 'A google certificate name that the ingress can use to set up tls.',
         },
       },
       required: ['rootUrl', 'dockerImage'],
@@ -242,6 +252,8 @@ exports.tasks.push({
     const exampleConfig = {
       rootUrl: '...',
       dockerImage: '...',
+      ingressStaticIpName: '...',
+      ingressCertName: '...',
     };
     const variablesYAML = {}; // Defaults that people can override
 

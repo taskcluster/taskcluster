@@ -228,6 +228,7 @@
       "type": "object"
     },
     "dockerImage": {
+      "description": "The docker image containing taskcluster.",
       "type": "string"
     },
     "github": {
@@ -631,6 +632,14 @@
       ],
       "title": "Configuration options for index",
       "type": "object"
+    },
+    "ingressCertName": {
+      "description": "A google certificate name that the ingress can use to set up tls.",
+      "type": "string"
+    },
+    "ingressStaticIpName": {
+      "description": "A google static ip object that the ingress can use to maintain the same ip address.",
+      "type": "string"
     },
     "login": {
       "properties": {
@@ -1309,6 +1318,7 @@
       "type": "object"
     },
     "rootUrl": {
+      "description": "The url pointing to your cluster ingress.",
       "format": "uri",
       "type": "string"
     },
