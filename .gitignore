@@ -46,5 +46,7 @@ generic-worker.config
 directory-caches.json
 file-caches.json
 tasks-resolved-count.txt
+current-task-user.json
+next-task-user.json
 /revision.txt
 /generic-worker-*
