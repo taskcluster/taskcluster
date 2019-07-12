@@ -149,7 +149,7 @@ export default class RoleForm extends Component {
     return (
       <Fragment>
         <List>
-          {isNewRole &&
+          {isNewRole && (
             <ListItem>
               <TextField
                 label="Role ID"
