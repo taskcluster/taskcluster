@@ -2,9 +2,6 @@
 title: Defining User Actions on Existing Tasks
 ---
 
-## Actions
-
-This section shows how to define *actions*.
 [Actions](/docs/manual/conventions/actions) allow users to affect a task or task-graph after it has been submitted.
 Common actions are:
 
