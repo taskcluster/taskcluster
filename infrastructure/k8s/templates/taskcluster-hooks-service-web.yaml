@@ -5,9 +5,10 @@ metadata:
 spec:
   type: NodePort
   selector:
-    application: taskcluster
-    taskcluster-service: taskcluster-hooks
-    taskcluster-proc: web
+    app.kubernetes.io/name: taskcluster-hooks
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-hooks-web
+    app.kubernetes.io/part-of: taskcluster
   ports:
     - protocol: TCP
       port: 80

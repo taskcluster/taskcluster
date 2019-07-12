@@ -3,9 +3,9 @@ kind: Deployment
 metadata:
   name: taskcluster-notify-handler
   labels:
-    app.kubernetes.io/name: taskcluster-taskcluster-notify
+    app.kubernetes.io/name: taskcluster-notify
     app.kubernetes.io/instance: '{{ .Release.Name }}'
-    app.kubernetes.io/component: notify-handler
+    app.kubernetes.io/component: taskcluster-notify-handler
     app.kubernetes.io/part-of: taskcluster
     app.kubernetes.io/managed-by: helm
 spec:
@@ -13,7 +13,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: taskcluster-notify
       app.kubernetes.io/instance: '{{ .Release.Name }}'
-      app.kubernetes.io/component: notify-handler
+      app.kubernetes.io/component: taskcluster-notify-handler
       app.kubernetes.io/part-of: taskcluster
       app.kubernetes.io/managed-by: helm
   replicas: {{ int (.Values.notify.procs.handler.replicas) }}
@@ -24,7 +24,7 @@ spec:
       labels:
         app.kubernetes.io/name: taskcluster-notify
         app.kubernetes.io/instance: '{{ .Release.Name }}'
-        app.kubernetes.io/component: notify-handler
+        app.kubernetes.io/component: taskcluster-notify-handler
         app.kubernetes.io/part-of: taskcluster
         app.kubernetes.io/managed-by: helm
     spec:

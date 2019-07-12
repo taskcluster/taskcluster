@@ -5,9 +5,10 @@ metadata:
 spec:
   type: NodePort
   selector:
-    application: taskcluster
-    taskcluster-service: taskcluster-built-in-workers
-    taskcluster-proc: server
+    app.kubernetes.io/name: taskcluster-built-in-workers
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-built-in-workers-server
+    app.kubernetes.io/part-of: taskcluster
   ports:
     - protocol: TCP
       port: 80

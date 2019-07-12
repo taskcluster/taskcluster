@@ -3,9 +3,9 @@ kind: Deployment
 metadata:
   name: taskcluster-index-web
   labels:
-    app.kubernetes.io/name: taskcluster-taskcluster-index
+    app.kubernetes.io/name: taskcluster-index
     app.kubernetes.io/instance: '{{ .Release.Name }}'
-    app.kubernetes.io/component: index-web
+    app.kubernetes.io/component: taskcluster-index-web
     app.kubernetes.io/part-of: taskcluster
     app.kubernetes.io/managed-by: helm
 spec:
@@ -13,7 +13,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: taskcluster-index
       app.kubernetes.io/instance: '{{ .Release.Name }}'
-      app.kubernetes.io/component: index-web
+      app.kubernetes.io/component: taskcluster-index-web
       app.kubernetes.io/part-of: taskcluster
       app.kubernetes.io/managed-by: helm
   replicas: {{ int (.Values.index.procs.web.replicas) }}
@@ -24,7 +24,7 @@ spec:
       labels:
         app.kubernetes.io/name: taskcluster-index
         app.kubernetes.io/instance: '{{ .Release.Name }}'
-        app.kubernetes.io/component: index-web
+        app.kubernetes.io/component: taskcluster-index-web
         app.kubernetes.io/part-of: taskcluster
         app.kubernetes.io/managed-by: helm
     spec:

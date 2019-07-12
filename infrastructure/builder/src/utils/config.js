@@ -25,8 +25,15 @@ exports.configToSchema = type => {
     }
     case '!env:json': {
       return {
-        type: 'object',
-        additionalProperties: true,
+        oneOf: [
+          {
+            type: 'object',
+            additionalProperties: true,
+          },
+          {
+            type: 'array',
+          },
+        ],
       };
     }
     case '!env:list': {

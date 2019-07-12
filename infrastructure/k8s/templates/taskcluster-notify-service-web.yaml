@@ -5,9 +5,10 @@ metadata:
 spec:
   type: NodePort
   selector:
-    application: taskcluster
-    taskcluster-service: taskcluster-notify
-    taskcluster-proc: web
+    app.kubernetes.io/name: taskcluster-notify
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-notify-web
+    app.kubernetes.io/part-of: taskcluster
   ports:
     - protocol: TCP
       port: 80

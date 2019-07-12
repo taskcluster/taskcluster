@@ -5,9 +5,10 @@ metadata:
 spec:
   type: NodePort
   selector:
-    application: taskcluster
-    taskcluster-service: taskcluster-purge-cache
-    taskcluster-proc: web
+    app.kubernetes.io/name: taskcluster-purge-cache
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-purge-cache-web
+    app.kubernetes.io/part-of: taskcluster
   ports:
     - protocol: TCP
       port: 80

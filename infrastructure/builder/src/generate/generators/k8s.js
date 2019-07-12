@@ -275,7 +275,6 @@ exports.tasks.push({
           },
         },
         required: ['procs'],
-        additionalProperties: false,
       };
 
       // Some services actually duplicate their config env vars in multiple places

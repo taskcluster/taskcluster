@@ -3,7 +3,6 @@
   "aditionalProperties": false,
   "properties": {
     "auth": {
-      "additionalProperties": false,
       "properties": {
         "audit_log": {
           "type": "string"
@@ -24,8 +23,15 @@
           "type": "string"
         },
         "azure_accounts": {
-          "additionalProperties": true,
-          "type": "object"
+          "oneOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
         },
         "azure_crypto_key": {
           "type": "string"
@@ -43,8 +49,15 @@
           "type": "boolean"
         },
         "gcp_credentials": {
-          "additionalProperties": true,
-          "type": "object"
+          "oneOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
         },
         "level": {
           "type": "string"
@@ -135,8 +148,15 @@
           "type": "string"
         },
         "static_clients": {
-          "additionalProperties": true,
-          "type": "object"
+          "oneOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
         },
         "statsum_api_secret": {
           "type": "string"
@@ -161,7 +181,6 @@
       "type": "object"
     },
     "built_in_workers": {
-      "additionalProperties": false,
       "properties": {
         "level": {
           "type": "string"
@@ -212,7 +231,6 @@
       "type": "string"
     },
     "github": {
-      "additionalProperties": false,
       "properties": {
         "aws_access_key": {
           "type": "string"
@@ -346,7 +364,6 @@
       "type": "object"
     },
     "hooks": {
-      "additionalProperties": false,
       "properties": {
         "aws_access_key_id": {
           "type": "string"
@@ -501,7 +518,6 @@
       "type": "object"
     },
     "index": {
-      "additionalProperties": false,
       "properties": {
         "aws_access_key_id": {
           "type": "string"
@@ -617,7 +633,6 @@
       "type": "object"
     },
     "login": {
-      "additionalProperties": false,
       "properties": {
         "auth0_api_audience": {
           "type": "string"
@@ -671,7 +686,6 @@
       "type": "object"
     },
     "notify": {
-      "additionalProperties": false,
       "properties": {
         "aws_access_key_id": {
           "type": "string"
@@ -689,8 +703,15 @@
           "type": "string"
         },
         "email_blacklist": {
-          "additionalProperties": true,
-          "type": "object"
+          "oneOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
         },
         "email_source_address": {
           "type": "string"
@@ -831,7 +852,6 @@
       "type": "object"
     },
     "purge_cache": {
-      "additionalProperties": false,
       "properties": {
         "aws_access_key_id": {
           "type": "string"
@@ -911,7 +931,6 @@
       "type": "object"
     },
     "queue": {
-      "additionalProperties": false,
       "properties": {
         "artifact_region": {
           "type": "string"
@@ -1207,8 +1226,15 @@
           "type": "string"
         },
         "public_artifact_ec2_proxies": {
-          "additionalProperties": true,
-          "type": "object"
+          "oneOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
         },
         "public_blob_artifact_bucket": {
           "type": "string"
@@ -1245,7 +1271,6 @@
       "type": "object"
     },
     "references": {
-      "additionalProperties": false,
       "properties": {
         "procs": {
           "properties": {
@@ -1288,7 +1313,6 @@
       "type": "string"
     },
     "secrets": {
-      "additionalProperties": false,
       "properties": {
         "aws_access_key_id": {
           "type": "string"
@@ -1374,7 +1398,6 @@
       "type": "object"
     },
     "treeherder": {
-      "additionalProperties": false,
       "properties": {
         "aws_access_key_id": {
           "type": "string"
@@ -1425,7 +1448,6 @@
       "type": "object"
     },
     "ui": {
-      "additionalProperties": false,
       "properties": {
         "procs": {
           "properties": {
@@ -1464,7 +1486,6 @@
       "type": "object"
     },
     "web_server": {
-      "additionalProperties": false,
       "properties": {
         "additional_allowed_cors_origin": {
           "type": "string"
@@ -1546,8 +1567,15 @@
           "type": "string"
         },
         "ui_login_strategies": {
-          "additionalProperties": true,
-          "type": "object"
+          "oneOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
         }
       },
       "required": [
@@ -1557,7 +1585,6 @@
       "type": "object"
     },
     "worker_manager": {
-      "additionalProperties": false,
       "properties": {
         "azure_account": {
           "type": "string"
@@ -1694,8 +1721,15 @@
           "type": "object"
         },
         "providers": {
-          "additionalProperties": true,
-          "type": "object"
+          "oneOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
         },
         "pulse_hostname": {
           "type": "string"

@@ -5,7 +5,7 @@ metadata:
   labels:
     app.kubernetes.io/name: taskcluster-index
     app.kubernetes.io/instance: '{{ .Release.Name }}'
-    app.kubernetes.io/component: index-expire
+    app.kubernetes.io/component: taskcluster-index-expire
     app.kubernetes.io/part-of: taskcluster
     app.kubernetes.io/managed-by: helm
 spec:
@@ -15,7 +15,7 @@ spec:
       labels:
         app.kubernetes.io/name: taskcluster-index
         app.kubernetes.io/instance: '{{ .Release.Name }}'
-        app.kubernetes.io/component: index-expire
+        app.kubernetes.io/component: taskcluster-index-expire
         app.kubernetes.io/part-of: taskcluster
         app.kubernetes.io/managed-by: helm
     spec:
@@ -24,7 +24,7 @@ spec:
           labels:
             app.kubernetes.io/name: taskcluster-index
             app.kubernetes.io/instance: '{{ .Release.Name }}'
-            app.kubernetes.io/component: index-expire
+            app.kubernetes.io/component: taskcluster-index-expire
             app.kubernetes.io/part-of: taskcluster
             app.kubernetes.io/managed-by: helm
         spec:
