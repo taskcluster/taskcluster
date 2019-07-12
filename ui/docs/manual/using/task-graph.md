@@ -6,16 +6,10 @@ order: 50
 
 # Building Task Graphs
 
-Useful work often requires more than one task. For example, new source code
-might be built on several platforms, or slow tests might be split up to run in
-parallel.
+Taskcluster supports creation of large-scale, complex task graphs.
+These depend on the `dependencies` property of tasks, as well as the [decision-task convention](/docs/manual/design/conventions/descision-task).
 
-Taskcluster's developers and users have established a convention for
-accomplishing this, called a "decision task". This is a single task which runs
-first, and creates all of the required tasks directly by calling the
-`queue.createTask` endpoint.
-
-This has a number of advantages over other options:
+This approach has a number of advantages over other options:
 
  * The set of tasks to run can be specified in the same source tree as the code
    being built, allowing unlimited flexibility in what runs and how.
@@ -24,17 +18,10 @@ This has a number of advantages over other options:
    tasks with only slightly different parameters, avoiding repetition of complex
    task-definition logic in all of the related services.
 
-## Conventions
+## Decision-Task Best Practices
 
-We have established a few conventions about decision tasks. These are based on
-our experience with Gecko, and will help avoid some pitfalls we encountered.
-They will also ensure that your decision tasks are compatible with any later
-formalisms we may add around decision tasks.
-
- * A decision task is the first task in a task group, and that task group's
-   `taskGroupId` is identical to its `taskId`. As a corollary, it is easy to
-   find the decision task for a subtask: simply treat its `taskGroupId` as a
-   `taskId`.
+The following are best practices decision tasks, based on experience at Mozilla.
+Following these practices will also ensure that your decision tasks are compatible with any later formalisms we may add around decision tasks.
 
  * Decision tasks call `queue.createTask` using the Taskcluster-Proxy feature,
    meaning that no Taskcluster credentials are required, and the scopes
