@@ -166,7 +166,7 @@
     "generate": "node infrastructure/builder/src/main.js generate",
     "changelog": "node infrastructure/builder/src/main.js changelog",
     "shared-secrets": "node test/shared-secrets.js",
-    "heroku-prebuild": "echo $SOURCE_VERSION > taskcluster-version",
+    "heroku-prebuild": "echo {\\\"version\\\"\\: \\\"$SOURCE_VERSION\\\"} > version.json",
     "heroku-postbuild": "if [ $PROCFILE = \"ui/Procfile\" ]; then cd ui && yarn install --frozen-lockfile && yarn build; fi",
     "COMMENT": "TODO: allow setting own deployment name below",
     "dev:install": "helm install -f ./user-config.yaml -f ./infrastructure/k8s/variables.yaml taskcluster ./infrastructure/k8s",

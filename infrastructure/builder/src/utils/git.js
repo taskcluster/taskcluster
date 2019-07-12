@@ -73,8 +73,10 @@ exports.gitDescribe = async ({dir, utils}) => {
 
   assert(fs.existsSync(dir), `${dir} does not exist`);
   const describe = await exec('git', ['describe', '--tag', '--always'], opts);
+  const revision = await exec('git', ['rev-parse', 'HEAD'], opts);
   return {
     gitDescription: describe.stdout.split(/\s+/)[0],
+    revision: revision.stdout.trim(),
   };
 };
 

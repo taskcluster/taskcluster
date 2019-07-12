@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const tar = require('tar-fs');
+const stringify = require('json-stable-stringify');
 const appRootDir = require('app-root-dir');
 const {
   gitIsDirty,
@@ -32,7 +33,7 @@ RUN git clone --depth 1 /base/repo /base/app
 
 # set up the /app directory
 WORKDIR /base/app
-RUN cp /base/repo/taskcluster-version taskcluster-version
+RUN cp /base/repo/version.json version.json
 RUN chmod +x entrypoint
 RUN yarn install --frozen-lockfile
 
@@ -113,7 +114,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
         }
       }
 
-      const {gitDescription} = await gitDescribe({
+      const {gitDescription, revision} = await gitDescribe({
         dir: sourceDir,
         utils,
       });
@@ -158,7 +159,12 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
         finish: pack => {
           // include a few generated files
           pack.entry({name: "Dockerfile"}, DOCKERFILE(nodeImage, nodeAlpineImage));
-          pack.entry({name: "taskcluster-version"}, gitDescription);
+          pack.entry({name: "version.json"}, stringify({
+            source: "https://github.com/taskcluster/taskcluster",
+            version: gitDescription,
+            commit: revision,
+            build: 'NONE',
+          }, {space: 2}));
           pack.finalize();
         },
       });
