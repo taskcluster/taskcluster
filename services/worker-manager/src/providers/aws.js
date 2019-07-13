@@ -1,21 +1,33 @@
-const {ApiError, Provider} = require('./provider');
+const {Provider} = require('./provider');
 const aws = require('aws-sdk');
 const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
 
 class AwsProvider extends Provider {
   constructor({
+    providerId,
+    monitor,
+    rootUrl,
+    Worker,
     WorkerPool,
+    WorkerPoolError,
     instancePermissions,
     apiVersion,
     region,
     estimator,
+    validator,
     notify,
     project,
   }) {
     super({
+      providerId,
+      monitor,
+      rootUrl,
+      Worker,
       WorkerPool,
+      WorkerPoolError,
       estimator,
+      validator,
       notify,
     });
     this.configSchema = 'config-aws';
