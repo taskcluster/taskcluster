@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/spf13/cobra"
-	assert "github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
 )
@@ -126,6 +125,8 @@ func (suite *FakeServerSuite) TestDefCommand() {
 	suite.Equal("my-test", m["name"])
 }
 
+// TEST REMOVED -- depends on an artifact in a single deployment, which is now gone.
+/*
 // Test the `task log` subcommand against a real task, since it does its own
 // HTTP handling
 func TestLogCommand(t *testing.T) {
@@ -165,6 +166,7 @@ hello World
 `
 	assert.Equal(s, buf.String(), "Log's are not equal.")
 }
+*/
 
 func (suite *FakeServerSuite) TestArtifactsCommand() {
 	// set up to run a command and capture output
