@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcqueue"
 	"github.com/taskcluster/taskcluster/clients/client-shell/cmds/root"
 
 	"github.com/spf13/cobra"
@@ -57,7 +57,7 @@ func waitForTask(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("Error getting request: %v", err)
 	}
-	q := queue.New(nil)
+	q := tcqueue.New(nil, "https://taskcluster.net")
 	var pulseMessage map[string]interface{}
 
 	for {

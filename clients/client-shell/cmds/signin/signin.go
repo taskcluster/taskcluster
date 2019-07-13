@@ -14,9 +14,9 @@ import (
 
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/auth"
 	libUrls "github.com/taskcluster/taskcluster-lib-urls"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
+	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcauth"
 	"github.com/taskcluster/taskcluster/clients/client-shell/cmds/root"
 	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 	graceful "gopkg.in/tylerb/graceful.v1"
@@ -169,7 +169,7 @@ func checkSignin() error {
 	if config.Credentials != nil {
 		creds = config.Credentials.ToClientCredentials()
 	}
-	auth := auth.New(creds)
+	auth := tcauth.New(creds, "https://taskcluster.net")
 	result, err := auth.CurrentScopes()
 	if err != nil {
 		// Don't want an os.Exit() in case it causes scripting loops when used.

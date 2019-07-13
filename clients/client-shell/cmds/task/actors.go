@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/pflag"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/queue"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
+	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcqueue"
 )
 
 // runCancel cancels the runs of a given task.
@@ -122,7 +122,7 @@ func runRetrigger(credentials *tcclient.Credentials, args []string, out io.Write
 		newRoutes = t.Routes
 	}
 
-	newT := &queue.TaskDefinitionRequest{
+	newT := &tcqueue.TaskDefinitionRequest{
 		Created:       tcclient.Time(now),
 		Deadline:      tcclient.Time(now.Add(origDeadline.Sub(origCreated))),
 		Expires:       tcclient.Time(now.Add(origExpires.Sub(origCreated))),
@@ -177,7 +177,7 @@ func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer
 		}
 	}
 
-	c, err := q.ClaimTask(taskID, fmt.Sprint(len(s.Status.Runs)-1), &queue.TaskClaimRequest{
+	c, err := q.ClaimTask(taskID, fmt.Sprint(len(s.Status.Runs)-1), &tcqueue.TaskClaimRequest{
 		WorkerGroup: s.Status.WorkerType,
 		WorkerID:    "taskcluster-cli",
 	})

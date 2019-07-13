@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	assert "github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
 )
 
 const fakeTaskID = "ANnmjMocTymeTID0tlNJAw"

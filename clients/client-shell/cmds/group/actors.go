@@ -10,8 +10,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/queue"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
+	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcqueue"
 )
 
 var listFormat string
@@ -56,8 +56,8 @@ func init() {
 
 var queueBaseURL string
 
-func makeQueue(credentials *tcclient.Credentials) *queue.Queue {
-	q := queue.New(credentials)
+func makeQueue(credentials *tcclient.Credentials) *tcqueue.Queue {
+	q := tcqueue.New(credentials, "https://taskcluster.net")
 	if queueBaseURL != "" {
 		q.BaseURL = queueBaseURL
 	}
@@ -176,7 +176,7 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 
 // filterTask takes a task and returns whether or not this task should be
 // set for cancellation, based on the specified filters through flags
-func filterTask(status queue.TaskStatusStructure, flags *pflag.FlagSet) bool {
+func filterTask(status tcqueue.TaskStatusStructure, flags *pflag.FlagSet) bool {
 	// first check - only delete tasks that are unscheduled, pending, running
 	if status.State != "unscheduled" && status.State != "pending" && status.State != "running" {
 		return false
@@ -290,7 +290,7 @@ func runList(credentials *tcclient.Credentials, args []string, out io.Writer, fl
 
 // filterListTask takes a task and returns whether or not this task should be
 // included in the list requested by the user
-func filterListTask(status queue.TaskStatusStructure, flags *pflag.FlagSet) bool {
+func filterListTask(status tcqueue.TaskStatusStructure, flags *pflag.FlagSet) bool {
 	if include, err := flags.GetBool("all"); include && err == nil {
 		return true
 	}

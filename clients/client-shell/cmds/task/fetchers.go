@@ -12,15 +12,15 @@ import (
 	"strings"
 
 	"github.com/spf13/pflag"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/queue"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
+	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcqueue"
 )
 
 // allow overriding the base URL for testing
 var queueBaseURL string
 
-func makeQueue(credentials *tcclient.Credentials) *queue.Queue {
-	q := queue.New(credentials)
+func makeQueue(credentials *tcclient.Credentials) *tcqueue.Queue {
+	q := tcqueue.New(credentials, "https://taskcluster.net")
 	if queueBaseURL != "" {
 		q.BaseURL = queueBaseURL
 	}

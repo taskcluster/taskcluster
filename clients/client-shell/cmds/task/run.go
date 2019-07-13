@@ -10,8 +10,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/queue"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
+	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcqueue"
 	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 )
 
@@ -25,7 +25,7 @@ var (
 
 	now = time.Now().UTC()
 
-	runPayload = &queue.TaskDefinitionRequest{
+	runPayload = &tcqueue.TaskDefinitionRequest{
 		SchedulerID: "taskcluster-cli",
 
 		Created:  tcclient.Time(now),
@@ -50,7 +50,9 @@ func init() {
 	fs.StringVar(&runPayload.Metadata.Owner, "owner", "name@example.com", "Email of the task's owner")
 	fs.StringVar(&runPayload.Metadata.Source, "source", "http://taskcluster-cli/task/run", "URL pointing to the source of the task")
 	fs.StringSliceVar(&runPayload.Dependencies, "dependency", []string{}, "TaskID of a dependency (repeatable)")
-	fs.IntVar(&runPayload.Retries, "retries", 5, "Number of retries due to infrastructure issues")
+	var retries int
+	fs.IntVar(&retries, "retries", 5, "Number of retries due to infrastructure issues")
+	runPayload.Retries = int64(retries)
 
 	for _, f := range requiredFlags {
 		runCmd.MarkFlagRequired(f)
@@ -121,7 +123,7 @@ func runRunTask(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("could not marshal execution payload: %v", err)
 	}
 
-	q := queue.New(creds)
+	q := tcqueue.New(creds, "https://taskcluster.net")
 	resp, err := q.CreateTask(taskID, runPayload)
 	if err != nil {
 		return fmt.Errorf("could not create task: %v", err)

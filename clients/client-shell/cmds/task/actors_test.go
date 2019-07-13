@@ -4,7 +4,7 @@ import (
 	"io"
 	"net/http"
 
-	tcclient "github.com/taskcluster/taskcluster-client-go"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
 )
 
 // returns the test status on request
