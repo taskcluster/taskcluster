@@ -8,7 +8,6 @@ import _ "github.com/taskcluster/taskcluster/clients/client-shell/cmds/completio
 import _ "github.com/taskcluster/taskcluster/clients/client-shell/cmds/config"
 import _ "github.com/taskcluster/taskcluster/clients/client-shell/cmds/from-now"
 import _ "github.com/taskcluster/taskcluster/clients/client-shell/cmds/group"
-import _ "github.com/taskcluster/taskcluster/clients/client-shell/cmds/pulse"
 import _ "github.com/taskcluster/taskcluster/clients/client-shell/cmds/signin"
 import _ "github.com/taskcluster/taskcluster/clients/client-shell/cmds/slugid"
 import _ "github.com/taskcluster/taskcluster/clients/client-shell/cmds/task"
