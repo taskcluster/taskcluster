@@ -1,5 +1,4 @@
-title: Conventions
----
+# Conventions
 
 The Taskcluster platform is open-ended and can be adapted to a wide variety of situations.
 The developers have established some conventions for use of the platform that support some common continuous-integration and continuous-deployment concepts.
