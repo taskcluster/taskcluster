@@ -217,7 +217,7 @@ class AwsProvider extends Provider {
   }
 
   async registerWorker({worker, workerPool, workerIdentityProof}) {
-    // check worker's identity
+    // check worker's identity -
     // The way AWS works, workers will be getting temporary creds for accessing AWS APIs
     // automatically. There's no token back-and-forth
 
@@ -230,7 +230,56 @@ class AwsProvider extends Provider {
     return {expires: taskcluster.fromNow('96 hours')};
   }
 
-  async checkWorker({worker});
+  async checkWorker({worker}) {
+    this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
+
+    let instanceStatuses = (await this.ec2.describeInstanceStatus({
+      InstanceIds: [worker.workerId.toString()],
+    })).data;
+
+    Promise.all(instanceStatuses.map(is => {
+      switch (is.InstanceState.Name) {
+        case 'pending':
+        case 'running':
+          this.seen[worker.workerPoolId] += 1;
+          return Promise.resolve();
+
+        case 'shutting-down':
+        case 'terminated':
+        case 'stopping':
+        case 'stopped':
+          return worker.modify(w => {w.state = this.Worker.states.STOPPED;});
+
+        default:
+          return Promise.reject(`Unknown state: ${is.InstanceState.Name} for ${is.InstanceId}`);
+      }
+    }));
+  }
+
+  // should this be implemented on Provider? Looks like it's going to be the same for all providers
+  async scanPrepare() {
+    this.seen = {};
+    this.errors = {};
+  }
+
+  async scanCleanup() {
+    await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
+      const workerPool = await this.WorkerPool.load({
+        workerPoolId,
+      }, true);
+
+      if (!workerPool) {
+        return; // In this case, the worker pool has been deleted so we can just move on
+      }
+
+      await workerPool.modify(wp => {
+        if (!wp.providerData[this.providerId]) {
+          wp.providerData[this.providerId] = {};
+        }
+        wp.providerData[this.providerId].running = seen;
+      });
+    }));
+  }
 }
 
 // this util copy-pasted from gcp provider
