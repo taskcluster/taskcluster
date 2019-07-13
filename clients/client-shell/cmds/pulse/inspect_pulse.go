@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/taskcluster/taskcluster-cli/cmds/root"
+	"github.com/taskcluster/taskcluster/clients/client-shell/cmds/root"
 
 	"github.com/spf13/cobra"
 

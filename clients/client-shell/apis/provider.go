@@ -16,10 +16,10 @@ import (
 	got "github.com/taskcluster/go-got"
 	"github.com/xeipuuv/gojsonschema"
 
-	"github.com/taskcluster/taskcluster-cli/apis/definitions"
-	"github.com/taskcluster/taskcluster-cli/client"
-	"github.com/taskcluster/taskcluster-cli/cmds/root"
-	"github.com/taskcluster/taskcluster-cli/config"
+	"github.com/taskcluster/taskcluster/clients/client-shell/apis/definitions"
+	"github.com/taskcluster/taskcluster/clients/client-shell/client"
+	"github.com/taskcluster/taskcluster/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 )
 
 var (

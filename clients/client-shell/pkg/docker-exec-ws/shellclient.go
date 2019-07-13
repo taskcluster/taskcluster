@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster-cli/pkg/iopipes"
 	"github.com/taskcluster/taskcluster-worker/plugins/interactive/shellconsts"
 	"github.com/taskcluster/taskcluster-worker/runtime/atomics"
+	"github.com/taskcluster/taskcluster/clients/client-shell/pkg/iopipes"
 )
 
 const (

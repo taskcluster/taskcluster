@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/taskcluster/taskcluster-cli/cmds/root"
+	"github.com/taskcluster/taskcluster/clients/client-shell/cmds/root"
 
 	"github.com/shibukawa/configdir"
 	"github.com/spf13/cobra"

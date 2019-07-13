@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/taskcluster/taskcluster-cli/config"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
+	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 )
 
 // Executor represents the function interface of the task subcommand.

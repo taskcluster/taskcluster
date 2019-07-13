@@ -14,11 +14,11 @@ import (
 
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
-	"github.com/taskcluster/taskcluster-cli/cmds/root"
-	"github.com/taskcluster/taskcluster-cli/config"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/auth"
 	libUrls "github.com/taskcluster/taskcluster-lib-urls"
+	"github.com/taskcluster/taskcluster/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 	graceful "gopkg.in/tylerb/graceful.v1"
 )
 

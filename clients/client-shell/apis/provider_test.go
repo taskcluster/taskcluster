@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	assert "github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster-cli/apis/definitions"
-	"github.com/taskcluster/taskcluster-cli/config"
+	"github.com/taskcluster/taskcluster/clients/client-shell/apis/definitions"
+	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 )
 
 var providerServer *httptest.Server

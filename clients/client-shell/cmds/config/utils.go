@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/taskcluster/taskcluster-cli/config"
+	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 	"gopkg.in/yaml.v2"
 )
 

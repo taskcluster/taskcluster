@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/taskcluster/taskcluster-cli/apis"
+	"github.com/taskcluster/taskcluster/clients/client-shell/apis"
 )
 
 func main() {

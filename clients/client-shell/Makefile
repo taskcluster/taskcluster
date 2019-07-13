@@ -9,7 +9,7 @@ SOURCEDIR = .
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 
 VERSION := $(shell git describe --always  --dirty --tags)
-LDFLAGS += -X github.com/taskcluster/taskcluster-cli/cmds/version.VersionNumber=$(VERSION)
+LDFLAGS += -X github.com/taskcluster/taskcluster/clients/client-shell/cmds/version.VersionNumber=$(VERSION)
 
 BUILD_ARCH ?= amd64 386
 BUILD_OS ?= !netbsd !plan9
