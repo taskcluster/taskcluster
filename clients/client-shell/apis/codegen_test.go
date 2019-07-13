@@ -55,7 +55,7 @@ func apiDefHandler(w http.ResponseWriter, _ *http.Request) {
   "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
   "title": "Test API",
   "description": "This is a Test service to test taskcluster-cli",
-  "baseUrl": "http://localhost:8080",
+  "servicename": "test",
   "entries": [
     {
       "type": "function",
@@ -85,7 +85,7 @@ import "github.com/taskcluster/taskcluster/clients/client-shell/apis/definitions
 
 var servicesTest = map[string]definitions.Service{
 	"Test": definitions.Service{
-		BaseURL:     "http://localhost:8080",
+		ServiceName: "test",
 		Title:       "Test API",
 		Description: "This is a Test service to test taskcluster-cli",
 		Entries: []definitions.Entry{

@@ -22,13 +22,13 @@ func TestCommandGeneration(t *testing.T) {
 
 	// start test server
 	providerServer := apiServer()
+	config.SetRootURL(providerServer.URL)
 	defer providerServer.Close()
 
 	// make command/subcommand from definition
 	// we're not actually using the URL/port in the def, we get one from httptest
 	// apparently you have to write these 3 things below instead of just one...
 	def := servicesTest["Test"]
-	def.BaseURL = providerServer.URL
 	servicesTest["Test"] = def
 
 	cmd := makeCmdFromDefinition("Test", servicesTest["Test"])
@@ -41,9 +41,6 @@ func TestCommandGeneration(t *testing.T) {
 
 	buf := &bytes.Buffer{}
 	subCmd.SetOutput(buf)
-
-	// load config, we need this for baseURL
-	config.Setup()
 
 	// execute command, server will receive request
 	cmd.SetArgs([]string{"test", "test"})
@@ -71,7 +68,7 @@ func TestCommandGeneration(t *testing.T) {
 // the code from which we generate the test command
 var servicesTest = map[string]definitions.Service{
 	"Test": definitions.Service{
-		BaseURL:     "http://localhost:8080", // will be modified before call for httptest purposes
+		ServiceName: "test",
 		Title:       "Test API",
 		Description: "This is a Test service to test taskcluster-cli",
 		Entries: []definitions.Entry{
@@ -97,7 +94,7 @@ var schemasTest = map[string]string{}
 // apiServer sets up the server and launches it in a new thread
 func apiServer() *httptest.Server {
 	handler := http.NewServeMux()
-	handler.HandleFunc("/test", apiHandler)
+	handler.HandleFunc("/api/test/v1/test", apiHandler)
 
 	return httptest.NewServer(handler)
 }

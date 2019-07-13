@@ -6,7 +6,7 @@ import "github.com/taskcluster/taskcluster/clients/client-shell/apis/definitions
 
 var services = map[string]definitions.Service{
 	"Auth": definitions.Service{
-		BaseURL:     "https://auth.taskcluster.net/v1",
+		ServiceName: "auth",
 		Title:       "Authentication API",
 		Description: "Authentication related API end-points for TaskCluster and related\nservices. These API end-points are of interest if you wish to:\n  * Authorize a request signed with TaskCluster credentials,\n  * Manage clients and roles,\n  * Inspect or audit clients and roles,\n  * Gain access to various services guarded by this API.\n\nNote that in this service \"authentication\" refers to validating the\ncorrectness of the supplied credentials (that the caller posesses the\nappropriate access token). This service does not provide any kind of user\nauthentication (identifying a particular person).\n\n### Clients\nThe authentication service manages _clients_, at a high-level each client\nconsists of a `clientId`, an `accessToken`, scopes, and some metadata.\nThe `clientId` and `accessToken` can be used for authentication when\ncalling TaskCluster APIs.\n\nThe client's scopes control the client's access to TaskCluster resources.\nThe scopes are *expanded* by substituting roles, as defined below.\n\n### Roles\nA _role_ consists of a `roleId`, a set of scopes and a description.\nEach role constitutes a simple _expansion rule_ that says if you have\nthe scope: `assume:<roleId>` you get the set of scopes the role has.\nThink of the `assume:<roleId>` as a scope that allows a client to assume\na role.\n\nAs in scopes the `*` kleene star also have special meaning if it is\nlocated at the end of a `roleId`. If you have a role with the following\n`roleId`: `my-prefix*`, then any client which has a scope staring with\n`assume:my-prefix` will be allowed to assume the role.\n\n### Guarded Services\nThe authentication service also has API end-points for delegating access\nto some guarded service such as AWS S3, or Azure Table Storage.\nGenerally, we add API end-points to this server when we wish to use\nTaskCluster credentials to grant access to a third-party service used\nby many TaskCluster components.",
 		Entries: []definitions.Entry{
@@ -487,7 +487,7 @@ var services = map[string]definitions.Service{
 		},
 	},
 	"AuthEvents": definitions.Service{
-		BaseURL:     "",
+		ServiceName: "auth",
 		Title:       "Auth Pulse Exchanges",
 		Description: "The auth service, typically available at `auth.taskcluster.net`\nis responsible for storing credentials, managing assignment of scopes,\nand validation of request signatures from other services.\n\nThese exchanges provides notifications when credentials or roles are\nupdated. This is mostly so that multiple instances of the auth service\ncan purge their caches and synchronize state. But you are of course\nwelcome to use these for other purposes, monitoring changes for example.",
 		Entries: []definitions.Entry{
@@ -578,7 +578,7 @@ var services = map[string]definitions.Service{
 		},
 	},
 	"AwsProvisioner": definitions.Service{
-		BaseURL:     "https://aws-provisioner.taskcluster.net/v1",
+		ServiceName: "aws-provisioner",
 		Title:       "AWS Provisioner API Documentation",
 		Description: "The AWS Provisioner is responsible for provisioning instances on EC2 for use in\nTaskCluster.  The provisioner maintains a set of worker configurations which\ncan be managed with an API that is typically available at\naws-provisioner.taskcluster.net/v1.  This API can also perform basic instance\nmanagement tasks in addition to maintaining the internal state of worker type\nconfiguration information.\n\nThe Provisioner runs at a configurable interval.  Each iteration of the\nprovisioner fetches a current copy the state that the AWS EC2 api reports.  In\neach iteration, we ask the Queue how many tasks are pending for that worker\ntype.  Based on the number of tasks pending and the scaling ratio, we may\nsubmit requests for new instances.  We use pricing information, capacity and\nutility factor information to decide which instance type in which region would\nbe the optimal configuration.\n\nEach EC2 instance type will declare a capacity and utility factor.  Capacity is\nthe number of tasks that a given machine is capable of running concurrently.\nUtility factor is a relative measure of performance between two instance types.\nWe multiply the utility factor by the spot price to compare instance types and\nregions when making the bidding choices.\n\nWhen a new EC2 instance is instantiated, its user data contains a token in\n`securityToken` that can be used with the `getSecret` method to retrieve\nthe worker's credentials and any needed passwords or other restricted\ninformation.  The worker is responsible for deleting the secret after\nretrieving it, to prevent dissemination of the secret to other proceses\nwhich can read the instance user data.\n",
 		Entries: []definitions.Entry{
@@ -916,7 +916,7 @@ var services = map[string]definitions.Service{
 		},
 	},
 	"AwsProvisionerEvents": definitions.Service{
-		BaseURL:     "",
+		ServiceName: "aws-provisioner",
 		Title:       "AWS Provisioner Pulse Exchanges",
 		Description: "Exchanges from the provisioner... more docs later",
 		Entries: []definitions.Entry{
@@ -965,7 +965,7 @@ var services = map[string]definitions.Service{
 		},
 	},
 	"Github": definitions.Service{
-		BaseURL:     "https://github.taskcluster.net/v1",
+		ServiceName: "github",
 		Title:       "TaskCluster GitHub API Documentation",
 		Description: "The github service, typically available at\n`github.taskcluster.net`, is responsible for publishing pulse\nmessages in response to GitHub events.\n\nThis document describes the API end-point for consuming GitHub\nweb hooks",
 		Entries: []definitions.Entry{
@@ -1055,7 +1055,7 @@ var services = map[string]definitions.Service{
 		},
 	},
 	"GithubEvents": definitions.Service{
-		BaseURL:     "",
+		ServiceName: "github",
 		Title:       "TaskCluster-Github Exchanges",
 		Description: "The github service, typically available at\n`github.taskcluster.net`, is responsible for publishing a pulse\nmessage for supported github events.\n\nThis document describes the exchange offered by the taskcluster\ngithub service",
 		Entries: []definitions.Entry{
@@ -1104,7 +1104,7 @@ var services = map[string]definitions.Service{
 		},
 	},
 	"Hooks": definitions.Service{
-		BaseURL:     "https://hooks.taskcluster.net/v1",
+		ServiceName: "hooks",
 		Title:       "Hooks API Documentation",
 		Description: "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.  The new task has a `taskGroupId` equal to its\n`taskId`, as is the convention for decision tasks.\n\nHooks can have a \"schedule\" indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `['0 0 1 * * *']` -- daily at 1:00 UTC\n * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon",
 		Entries: []definitions.Entry{
@@ -1352,7 +1352,7 @@ var services = map[string]definitions.Service{
 		},
 	},
 	"Index": definitions.Service{
-		BaseURL:     "https://index.taskcluster.net/v1",
+		ServiceName: "index",
 		Title:       "Task Index API Documentation",
 		Description: "The task index, typically available at `index.taskcluster.net`, is\nresponsible for indexing tasks. In order to ensure that tasks can be\nlocated by recency and/or arbitrary strings. Common use-cases includes\n\n * Locate tasks by git or mercurial `<revision>`, or\n * Locate latest task from given `<branch>`, such as a release.\n\n**Index hierarchy**, tasks are indexed in a dot `.` separated hierarchy\ncalled a namespace. For example a task could be indexed in\n`<revision>.linux-64.release-build`. In this case the following\nnamespaces is created.\n\n 1. `<revision>`, and,\n 2. `<revision>.linux-64`\n\nThe inside the namespace `<revision>` you can find the namespace\n`<revision>.linux-64` inside which you can find the indexed task\n`<revision>.linux-64.release-build`. In this example you'll be able to\nfind build for a given revision.\n\n**Task Rank**, when a task is indexed, it is assigned a `rank` (defaults\nto `0`). If another task is already indexed in the same namespace with\nthe same lower or equal `rank`, the task will be overwritten. For example\nconsider a task indexed as `mozilla-central.linux-64.release-build`, in\nthis case on might choose to use a unix timestamp or mercurial revision\nnumber as `rank`. This way the latest completed linux 64 bit release\nbuild is always available at `mozilla-central.linux-64.release-build`.\n\n**Indexed Data**, when a task is located in the index you will get the\n`taskId` and an additional user-defined JSON blob that was indexed with\ntask. You can use this to store additional information you would like to\nget additional from the index.\n\n**Entry Expiration**, all indexed entries must have an expiration date.\nTypically this defaults to one year, if not specified. If you are\nindexing tasks to make it easy to find artifacts, consider using the\nexpiration date that the artifacts is assigned.\n\n**Valid Characters**, all keys in a namespace `<key1>.<key2>` must be\nin the form `/[a-zA-Z0-9_!~*'()%-]+/`. Observe that this is URL-safe and\nthat if you strictly want to put another character you can URL encode it.\n\n**Indexing Routes**, tasks can be indexed using the API below, but the\nmost common way to index tasks is adding a custom route on the following\nform `index.<namespace>`. In-order to add this route to a task you'll\nneed the following scope `queue:route:index.<namespace>`. When a task has\nthis route, it'll be indexed when the task is **completed successfully**.\nThe task will be indexed with `rank`, `data` and `expires` as specified\nin `task.extra.index`, see example below:\n\n```js\n{\n  payload:  { /* ... */ },\n  routes: [\n    // index.<namespace> prefixed routes, tasks CC'ed such a route will\n    // be indexed under the given <namespace>\n    \"index.mozilla-central.linux-64.release-build\",\n    \"index.<revision>.linux-64.release-build\"\n  ],\n  extra: {\n    // Optional details for indexing service\n    index: {\n      // Ordering, this taskId will overwrite any thing that has\n      // rank <= 4000 (defaults to zero)\n      rank:       4000,\n\n      // Specify when the entries expires (Defaults to 1 year)\n      expires:          new Date().toJSON(),\n\n      // A little informal data to store along with taskId\n      // (less 16 kb when encoded as JSON)\n      data: {\n        hgRevision:   \"...\",\n        commitMessae: \"...\",\n        whatever...\n      }\n    },\n    // Extra properties for other services...\n  }\n  // Other task properties...\n}\n```\n\n**Remark**, when indexing tasks using custom routes, it's also possible\nto listen for messages about these tasks. Which is quite convenient, for\nexample one could bind to `route.index.mozilla-central.*.release-build`,\nand pick up all messages about release builds. Hence, it is a\ngood idea to document task index hierarchies, as these make up extension\npoints in their own.",
 		Entries: []definitions.Entry{
@@ -1462,7 +1462,7 @@ var services = map[string]definitions.Service{
 		},
 	},
 	"Login": definitions.Service{
-		BaseURL:     "https://login.taskcluster.net/v1",
+		ServiceName: "login",
 		Title:       "Login API",
 		Description: "The Login service serves as the interface between external authentication\nsystems and TaskCluster credentials.  It acts as the server side of\nhttps://tools.taskcluster.net.  If you are working on federating logins\nwith TaskCluster, this is probably *not* the service you are looking for.\nInstead, use the federated login support in the tools site.",
 		Entries: []definitions.Entry{
@@ -1497,7 +1497,7 @@ var services = map[string]definitions.Service{
 		},
 	},
 	"Notify": definitions.Service{
-		BaseURL:     "https://notify.taskcluster.net/v1",
+		ServiceName: "notify",
 		Title:       "Notification Service",
 		Description: "The notification service, typically available at `notify.taskcluster.net`\nlistens for tasks with associated notifications and handles requests to\nsend emails and post pulse messages.",
 		Entries: []definitions.Entry{
@@ -1573,7 +1573,7 @@ var services = map[string]definitions.Service{
 		},
 	},
 	"Pulse": definitions.Service{
-		BaseURL:     "https://pulse.taskcluster.net/v1",
+		ServiceName: "pulse",
 		Title:       "Pulse Management Service",
 		Description: "The taskcluster-pulse service, typically available at `pulse.taskcluster.net`\nmanages pulse credentials for taskcluster users.\n\nA service to manage Pulse credentials for anything using\nTaskcluster credentials. This allows for self-service pulse\naccess and greater control within the Taskcluster project.",
 		Entries: []definitions.Entry{
@@ -1695,7 +1695,7 @@ var services = map[string]definitions.Service{
 		},
 	},
 	"PurgeCache": definitions.Service{
-		BaseURL:     "https://purge-cache.taskcluster.net/v1",
+		ServiceName: "purge-cache",
 		Title:       "Purge Cache API Documentation",
 		Description: "The purge-cache service, typically available at\n`purge-cache.taskcluster.net`, is responsible for publishing a pulse\nmessage for workers, so they can purge cache upon request.\n\nThis document describes the API end-point for publishing the pulse\nmessage. This is mainly intended to be used by tools.",
 		Entries: []definitions.Entry{
@@ -1773,7 +1773,7 @@ var services = map[string]definitions.Service{
 		},
 	},
 	"PurgeCacheEvents": definitions.Service{
-		BaseURL:     "",
+		ServiceName: "purge-cache",
 		Title:       "Purge-Cache Exchanges",
 		Description: "The purge-cache service, typically available at\n`purge-cache.taskcluster.net`, is responsible for publishing a pulse\nmessage for workers, so they can purge cache upon request.\n\nThis document describes the exchange offered for workers by the\ncache-purge service.",
 		Entries: []definitions.Entry{
@@ -1794,7 +1794,7 @@ var services = map[string]definitions.Service{
 		},
 	},
 	"Queue": definitions.Service{
-		BaseURL:     "https://queue.taskcluster.net/v1",
+		ServiceName: "queue",
 		Title:       "Queue API Documentation",
 		Description: "The queue, typically available at `queue.taskcluster.net`, is responsible\nfor accepting tasks and track their state as they are executed by\nworkers. In order ensure they are eventually resolved.\n\nThis document describes the API end-points offered by the queue. These \nend-points targets the following audience:\n * Schedulers, who create tasks to be executed,\n * Workers, who execute tasks, and\n * Tools, that wants to inspect the state of a task.",
 		Entries: []definitions.Entry{
@@ -2308,7 +2308,7 @@ var services = map[string]definitions.Service{
 		},
 	},
 	"QueueEvents": definitions.Service{
-		BaseURL:     "",
+		ServiceName: "queue",
 		Title:       "Queue AMQP Exchanges",
 		Description: "The queue, typically available at `queue.taskcluster.net`, is responsible\nfor accepting tasks and track their state as they are executed by\nworkers. In order ensure they are eventually resolved.\n\nThis document describes AMQP exchanges offered by the queue, which allows\nthird-party listeners to monitor tasks as they progress to resolution.\nThese exchanges targets the following audience:\n * Schedulers, who takes action after tasks are completed,\n * Workers, who wants to listen for new or canceled tasks (optional),\n * Tools, that wants to update their view as task progress.\n\nYou'll notice that all the exchanges in the document shares the same\nrouting key pattern. This makes it very easy to bind to all messages\nabout a certain kind tasks.\n\n**Task specific routes**, a task can define a task specific route using\nthe `task.routes` property. See task creation documentation for details\non permissions required to provide task specific routes. If a task has\nthe entry `'notify.by-email'` in as task specific route defined in\n`task.routes` all messages about this task will be CC'ed with the\nrouting-key `'route.notify.by-email'`.\n\nThese routes will always be prefixed `route.`, so that cannot interfere\nwith the _primary_ routing key as documented here. Notice that the\n_primary_ routing key is always prefixed `primary.`. This is ensured\nin the routing key reference, so API clients will do this automatically.\n\nPlease, note that the way RabbitMQ works, the message will only arrive\nin your queue once, even though you may have bound to the exchange with\nmultiple routing key patterns that matches more of the CC'ed routing\nrouting keys.\n\n**Delivery guarantees**, most operations on the queue are idempotent,\nwhich means that if repeated with the same arguments then the requests\nwill ensure completion of the operation and return the same response.\nThis is useful if the server crashes or the TCP connection breaks, but\nwhen re-executing an idempotent operation, the queue will also resend\nany related AMQP messages. Hence, messages may be repeated.\n\nThis shouldn't be much of a problem, as the best you can achieve using\nconfirm messages with AMQP is at-least-once delivery semantics. Hence,\nthis only prevents you from obtaining at-most-once delivery semantics.\n\n**Remark**, some message generated by timeouts maybe dropped if the\nserver crashes at wrong time. Ideally, we'll address this in the\nfuture. For now we suggest you ignore this corner case, and notify us\nif this corner case is of concern to you.",
 		Entries: []definitions.Entry{
@@ -2427,7 +2427,7 @@ var services = map[string]definitions.Service{
 		},
 	},
 	"Scheduler": definitions.Service{
-		BaseURL:     "https://scheduler.taskcluster.net/v1",
+		ServiceName: "scheduler",
 		Title:       "Task-Graph Scheduler API Documentation",
 		Description: "The task-graph scheduler, typically available at\n`scheduler.taskcluster.net`, is responsible for accepting task-graphs and\nscheduling tasks for evaluation by the queue as their dependencies are\nsatisfied.\n\nThis document describes API end-points offered by the task-graph\nscheduler. These end-points targets the following audience:\n * Post-commit hooks, that wants to submit task-graphs for testing,\n * End-users, who wants to execute a set of dependent tasks, and\n * Tools, that wants to inspect the state of a task-graph.",
 		Entries: []definitions.Entry{
@@ -2553,7 +2553,7 @@ var services = map[string]definitions.Service{
 		},
 	},
 	"SchedulerEvents": definitions.Service{
-		BaseURL:     "",
+		ServiceName: "scheduler",
 		Title:       "Scheduler AMQP Exchanges",
 		Description: "The scheduler, typically available at `scheduler.taskcluster.net` is\nresponsible for accepting task-graphs and schedule tasks on the queue as\ntheir dependencies are completed successfully.\n\nThis document describes the AMQP exchanges offered by the scheduler,\nwhich allows third-party listeners to monitor task-graph submission and\nresolution. These exchanges targets the following audience:\n * Reporters, who displays the state of task-graphs or emails people on\n   failures, and\n * End-users, who wants notification of completed task-graphs\n\n**Remark**, the task-graph scheduler will require that the `schedulerId`\nfor tasks is set to the `schedulerId` for the task-graph scheduler. In\nproduction the `schedulerId` is typically `\"task-graph-scheduler\"`.\nFurthermore, the task-graph scheduler will also require that\n`taskGroupId` is equal to the `taskGraphId`.\n\nCombined these requirements ensures that `schedulerId` and `taskGroupId`\nhave the same position in the routing keys for the queue exchanges.\nSee queue documentation for details on queue exchanges. Hence, making\nit easy to listen for all tasks in a given task-graph.\n\nNote that routing key entries 2 through 7 used for exchanges on the\ntask-graph scheduler is hardcoded to `_`. This is done to preserve\npositional equivalence with exchanges offered by the queue.",
 		Entries: []definitions.Entry{
@@ -2616,7 +2616,7 @@ var services = map[string]definitions.Service{
 		},
 	},
 	"Secrets": definitions.Service{
-		BaseURL:     "https://secrets.taskcluster.net/v1",
+		ServiceName: "secrets",
 		Title:       "TaskCluster Secrets API Documentation",
 		Description: "The secrets service provides a simple key/value store for small bits of secret\ndata.  Access is limited by scopes, so values can be considered secret from\nthose who do not have the relevant scopes.\n\nSecrets also have an expiration date, and once a secret has expired it can no\nlonger be read.  This is useful for short-term secrets such as a temporary\nservice credential or a one-time signing key.",
 		Entries: []definitions.Entry{
@@ -2711,7 +2711,7 @@ var services = map[string]definitions.Service{
 		},
 	},
 	"TreeherderEvents": definitions.Service{
-		BaseURL:     "",
+		ServiceName: "treeherder",
 		Title:       "Taskcluster-treeherder Pulse Exchange",
 		Description: "The taskcluster-treeherder service is responsible for processing\ntask events published by TaskCluster Queue and producing job messages\nthat are consumable by Treeherder.\n\nThis exchange provides that job messages to be consumed by any queue that\nattached to the exchange.  This could be a production Treeheder instance,\na local development environment, or a custom dashboard.",
 		Entries: []definitions.Entry{

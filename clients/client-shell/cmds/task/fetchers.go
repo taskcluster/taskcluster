@@ -12,19 +12,14 @@ import (
 	"strings"
 
 	"github.com/spf13/pflag"
+	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
 	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcqueue"
+	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 )
 
-// allow overriding the base URL for testing
-var queueBaseURL string
-
 func makeQueue(credentials *tcclient.Credentials) *tcqueue.Queue {
-	q := tcqueue.New(credentials, "https://taskcluster.net")
-	if queueBaseURL != "" {
-		q.BaseURL = queueBaseURL
-	}
-	return q
+	return tcqueue.New(credentials, config.RootURL())
 }
 
 // runStatus gets the status of run(s) of a given task.
@@ -217,7 +212,7 @@ func runLog(credentials *tcclient.Credentials, args []string, out io.Writer, fla
 		return fmt.Errorf("could not fetch the logs of task %s because it's in a %s state", taskID, state)
 	}
 
-	path := "https://queue.taskcluster.net/v1/task/" + taskID + "/artifacts/public/logs/live.log"
+	path := tcurls.API(config.RootURL(), "queue", "v1", "task/"+taskID+"/artifacts/public/logs/live.log")
 
 	resp, err := http.Get(path)
 	if err != nil {

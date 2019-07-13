@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/pflag"
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
 	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcqueue"
+	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 )
 
 var listFormat string
@@ -54,14 +55,8 @@ func init() {
 	Command.AddCommand(listCmd)
 }
 
-var queueBaseURL string
-
 func makeQueue(credentials *tcclient.Credentials) *tcqueue.Queue {
-	q := tcqueue.New(credentials, "https://taskcluster.net")
-	if queueBaseURL != "" {
-		q.BaseURL = queueBaseURL
-	}
-	return q
+	return tcqueue.New(credentials, config.RootURL())
 }
 
 // runCancel cancels all tasks of a group.

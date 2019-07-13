@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
+	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 )
 
 const fakeTaskID = "ANnmjMocTymeTID0tlNJAw"
@@ -26,18 +27,18 @@ func (suite *FakeServerSuite) SetupSuite() {
 	// set up a fake server that knows how to answer the `task()` method
 	handler := http.NewServeMux()
 
-	handler.HandleFunc("/v1/task/"+fakeTaskID+"/cancel", cancelHandler)
-	handler.HandleFunc("/v1/task-group/"+fakeGroupID+"/list", listTaskGroupHandler)
+	handler.HandleFunc("/api/queue/v1/task/"+fakeTaskID+"/cancel", cancelHandler)
+	handler.HandleFunc("/api/queue/v1/task-group/"+fakeGroupID+"/list", listTaskGroupHandler)
 
 	suite.testServer = httptest.NewServer(handler)
 
 	// set the base URL the subcommands use to point to the fake server
-	queueBaseURL = suite.testServer.URL + "/v1"
+	config.SetRootURL(suite.testServer.URL)
 }
 
 func (suite *FakeServerSuite) TearDownSuite() {
 	suite.testServer.Close()
-	queueBaseURL = ""
+	config.SetRootURL("")
 }
 
 func TestFakeServerSuite(t *testing.T) {

@@ -33,6 +33,12 @@ func init() {
 
 	// register config options for this command
 	config.RegisterOptions("config", map[string]config.OptionDefinition{
+		"rootUrl": config.OptionDefinition{
+			Description: "Root URL of the Taskcluster deployment",
+			Default:     "",
+			Env:         "TASKCLUSTER_ROOT_URL",
+			Validate:    isString,
+		},
 		"clientId": config.OptionDefinition{
 			Description: "ClientId to be used for authenticating requests",
 			Default:     "",

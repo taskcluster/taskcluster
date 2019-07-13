@@ -2,7 +2,6 @@
 package signin
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -51,20 +50,6 @@ tools using those libraries can also benefit from this signin method.`,
 	cmd.Flags().IntP("port", "p", 0, "Port to use; defaults to random ephemeral port.")
 
 	root.Command.AddCommand(cmd)
-
-	config.RegisterOptions("signin", map[string]config.OptionDefinition{
-		"rootUrl": config.OptionDefinition{
-			Description: "Root URL against which to act",
-			Default:     "https://taskcluster.net",
-			Env:         "TASKCLUSTER_ROOT_URL",
-			Validate: func(value interface{}) error {
-				if _, ok := value.(string); !ok {
-					return errors.New("Must be a string")
-				}
-				return nil
-			},
-		},
-	})
 }
 
 func cmdSignin(cmd *cobra.Command, _ []string) error {
@@ -89,7 +74,7 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	s.Server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		qs := r.URL.Query()
 		csh, _ := cmd.Flags().GetBool("csh")
-		rootURL := config.Configuration["signin"]["rootUrl"].(string)
+		rootURL := config.RootURL()
 		if csh {
 			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_CLIENT_ID '"+qs.Get("clientId")+"'")
 			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_ACCESS_TOKEN '"+qs.Get("accessToken")+"'")
@@ -129,7 +114,7 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	// Construct URL for login service and open it
 	callbackURL := "http://" + strings.Replace(listener.Addr().String(), "127.0.0.1", "localhost", 1)
 	description := url.QueryEscape("Temporary client for use on the command line")
-	loginURL := libUrls.UI(config.Configuration["signin"]["rootUrl"].(string), "/auth/clients/new")
+	loginURL := libUrls.UI(config.RootURL(), "/auth/clients/new")
 	name, _ := cmd.Flags().GetString("name")
 	loginURL += "?name=" + url.QueryEscape(name)
 	loginURL += "&description=" + description
@@ -169,7 +154,7 @@ func checkSignin() error {
 	if config.Credentials != nil {
 		creds = config.Credentials.ToClientCredentials()
 	}
-	auth := tcauth.New(creds, "https://taskcluster.net")
+	auth := tcauth.New(creds, config.RootURL())
 	result, err := auth.CurrentScopes()
 	if err != nil {
 		// Don't want an os.Exit() in case it causes scripting loops when used.

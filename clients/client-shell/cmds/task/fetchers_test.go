@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
+	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 )
 
 const fakeTaskID = "ANnmjMocTymeTID0tlNJAw"
@@ -24,23 +25,23 @@ type FakeServerSuite struct {
 func (suite *FakeServerSuite) SetupSuite() {
 	// set up a fake server that knows how to answer the `task()` method
 	handler := http.NewServeMux()
-	handler.HandleFunc("/v1/task/"+fakeTaskID, taskHandler)
-	handler.HandleFunc("/v1/task/"+fakeTaskID+"/status", manifestHandler)
-	handler.HandleFunc("/v1/task/"+fakeTaskID+"/runs/"+fakeRunID+"/artifacts", artifactsHandler)
-	handler.HandleFunc("/v1/task/"+fakeTaskID+"/cancel", cancelHandler)
-	handler.HandleFunc("/v1/task/"+fakeTaskID+"/rerun", reRunHandler)
-	handler.HandleFunc("/v1/task/"+fakeTaskID+"/runs/"+fakeRunID+"/claim", claimTaskHandler)
-	handler.HandleFunc("/v1/task/"+fakeTaskID+"/runs/"+fakeRunID+"/completed", manifestHandler)
+	handler.HandleFunc("/api/queue/v1/task/"+fakeTaskID, taskHandler)
+	handler.HandleFunc("/api/queue/v1/task/"+fakeTaskID+"/status", manifestHandler)
+	handler.HandleFunc("/api/queue/v1/task/"+fakeTaskID+"/runs/"+fakeRunID+"/artifacts", artifactsHandler)
+	handler.HandleFunc("/api/queue/v1/task/"+fakeTaskID+"/cancel", cancelHandler)
+	handler.HandleFunc("/api/queue/v1/task/"+fakeTaskID+"/rerun", reRunHandler)
+	handler.HandleFunc("/api/queue/v1/task/"+fakeTaskID+"/runs/"+fakeRunID+"/claim", claimTaskHandler)
+	handler.HandleFunc("/api/queue/v1/task/"+fakeTaskID+"/runs/"+fakeRunID+"/completed", manifestHandler)
 
 	suite.testServer = httptest.NewServer(handler)
 
 	// set the base URL the subcommands use to point to the fake server
-	queueBaseURL = suite.testServer.URL + "/v1"
+	config.SetRootURL(suite.testServer.URL)
 }
 
 func (suite *FakeServerSuite) TearDownSuite() {
 	suite.testServer.Close()
-	queueBaseURL = ""
+	config.SetRootURL("")
 }
 
 func TestFakeServerSuite(t *testing.T) {

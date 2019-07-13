@@ -123,7 +123,7 @@ func runRunTask(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("could not marshal execution payload: %v", err)
 	}
 
-	q := tcqueue.New(creds, "https://taskcluster.net")
+	q := tcqueue.New(creds, config.RootURL())
 	resp, err := q.CreateTask(taskID, runPayload)
 	if err != nil {
 		return fmt.Errorf("could not create task: %v", err)

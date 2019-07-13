@@ -16,6 +16,7 @@ import (
 	got "github.com/taskcluster/go-got"
 	"github.com/xeipuuv/gojsonschema"
 
+	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 	"github.com/taskcluster/taskcluster/clients/client-shell/apis/definitions"
 	"github.com/taskcluster/taskcluster/clients/client-shell/client"
 	"github.com/taskcluster/taskcluster/clients/client-shell/cmds/root"
@@ -68,7 +69,7 @@ func makeCmdFromDefinition(name string, service definitions.Service) *cobra.Comm
 			Use:   usage,
 			Short: entry.Title,
 			Long:  buildHelp(&entry),
-			RunE:  buildExecutor(entry, "api-"+name),
+			RunE:  buildExecutor(service, entry),
 		}
 
 		fs := subCmd.Flags()
@@ -78,20 +79,6 @@ func makeCmdFromDefinition(name string, service definitions.Service) *cobra.Comm
 
 		cmd.AddCommand(subCmd)
 	}
-
-	fs := cmd.PersistentFlags()
-	fs.StringP("base-url", "b", service.BaseURL, "BaseURL for "+cmdString)
-
-	// add baseURL for this service to configuration
-	config.RegisterOptions("api-"+name, map[string]config.OptionDefinition{
-		"baseUrl": config.OptionDefinition{
-			Default: service.BaseURL,
-			Env:     "TASKCLUSTER_QUEUE_BASE_URL",
-			Validate: func(value interface{}) error {
-				return nil
-			},
-		},
-	})
 
 	return cmd
 }
@@ -117,7 +104,7 @@ func buildHelp(entry *definitions.Entry) string {
 	return buf.String()
 }
 
-func buildExecutor(entry definitions.Entry, configKey string) func(*cobra.Command, []string) error {
+func buildExecutor(service definitions.Service, entry definitions.Entry) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		// validate that we have as much arguments as in the definition
 		if len(args) < len(entry.Args) {
@@ -168,12 +155,8 @@ func buildExecutor(entry definitions.Entry, configKey string) func(*cobra.Comman
 			return validate(&entry, argmap, query, input, output)
 		}
 
-		baseURL := config.Configuration[configKey]["baseUrl"].(string)
-		if flag := cmd.Flags().Lookup("base-url"); flag != nil && flag.Changed {
-			baseURL = flag.Value.String()
-		}
-
-		return execute(baseURL, &entry, argmap, query, input, output)
+		// TODO: apiVersion when services have that field
+		return execute(service.ServiceName, "v1", &entry, argmap, query, input, output)
 	}
 }
 
@@ -214,7 +197,7 @@ func validate(
 }
 
 func execute(
-	baseURL string, entry *definitions.Entry, args, query map[string]string,
+	serviceName string, apiVersion string, entry *definitions.Entry, args, query map[string]string,
 	payload io.Reader, output io.Writer,
 ) error {
 	var input []byte
@@ -246,7 +229,7 @@ func execute(
 
 	// Construct parameters
 	method := strings.ToUpper(entry.Method)
-	url := baseURL + route + q
+	url := tcurls.API(config.RootURL(), serviceName, apiVersion, route+q)
 
 	// Try to make the request up to 5 times using go-got
 	// Allow unlimited responses.

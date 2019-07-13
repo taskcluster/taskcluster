@@ -4,7 +4,7 @@ package definitions
 
 // Service definition.
 type Service struct {
-	BaseURL     string  `json:"baseUrl"`
+	ServiceName string  `json:"serviceName"`
 	Title       string  `json:"title"`
 	Description string  `json:"description"`
 	Entries     []Entry `json:"entries"`
