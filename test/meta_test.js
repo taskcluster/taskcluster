@@ -169,15 +169,11 @@ suite('Repo Meta Tests', function () {
       throw new Error(errors);
     }
   });
+
   test("no references to tools.taskcluster.net in the repository", async function () {
-    const filenames = glob.sync(
-      '**/*',
-      { cwd: ROOT_DIR });
-    const whitelist = [
-      'node_modules/slugid/README.md',
-      'node_modules/taskcluster-lib-urls/src/index.js',
-      'node_modules/taskcluster-lib-urls/src/main/java/org/mozilla/taskcluster/urls/LegacyURLs.java',
-      'node_modules/taskcluster-lib-urls/src/main/java/org/mozilla/taskcluster/urls/URLProvider.java',
+    const whitelist = new Set([
+      '.codecov.yml',
+      '.taskcluster.yml',
       'services/hooks/test/validate_test/create-hook-request.json',
       'services/notify/test/api_test.js',
       'test/meta_test.js',
@@ -198,21 +194,32 @@ suite('Repo Meta Tests', function () {
       'ui/docs/tutorial/hello-world.md',
       'ui/docs/tutorial/monitor-task-status.md',
       'ui/src/components/HookForm/index.jsx',
-    ];
-    let files = []; //this list stores the files which has references to tools.taskcluster.net
-    for (let filename of filenames) {
-      if (fs.lstatSync(filename).isFile()) {
-        const data = fs.readFileSync(filename, 'utf8');
-        if (data.match(/tools.taskcluster.net/gm)) {
-          if (whitelist.includes(filename) === false) {
-            files.push(filename);
-          }
-        }
+    ]);
+
+    let res;
+    try {
+      res = await exec(`git grep 'tools\\.taskcluster\\.net' -- './*' ':!.yarn'`);
+    } catch (err) {
+      // if the exit status was 1, then git grep found nothing, and the test has passed
+      if (err.code === 1) {
+        return;
       }
+      throw err;
     }
-    if (files.length > 0) {
+
+    if (res.stderr !== '') {
+      throw new Error(res.stderr);
+    }
+
+    const files = new Set(res.stdout
+      .split('\n')
+      .map(l => l.slice(0, l.indexOf(':')))
+      .filter(f => f !== '')
+      .filter(f => !whitelist.has(f)));
+
+    if (files.size > 0) {
       let error_string = "The following files have references to tools.taskcluster.net : \n";
-      for (let filename of files) {
+      for (let filename of [...files].sort()) {
         error_string += filename + "\n";
       }
       throw new Error(error_string);
