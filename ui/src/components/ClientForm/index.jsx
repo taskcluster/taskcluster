@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { bool, func } from 'prop-types';
+import { oneOfType, object, string, func, bool } from 'prop-types';
 import { addYears } from 'date-fns';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -19,6 +19,7 @@ import PowerIcon from 'mdi-react/PowerIcon';
 import LockResetIcon from 'mdi-react/LockResetIcon';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
+import DialogAction from '../DialogAction';
 import DateDistance from '../DateDistance';
 import DatePicker from '../DatePicker';
 import Button from '../Button';
@@ -78,6 +79,17 @@ export default class ClientForm extends Component {
     onResetAccessToken: func,
     /** If true, form actions will be disabled. */
     loading: bool,
+    /** Error to display when an action dialog is open. */
+    dialogError: oneOfType([string, object]),
+    /**
+     * Callback function fired when the DialogAction component throws an error.
+     * */
+    onDialogActionError: func,
+    /**
+     * Callback function fired when the DialogAction component runs
+     * successfully.
+     * */
+    onDialogActionComplete: func,
   };
 
   static defaultProps = {
@@ -88,6 +100,7 @@ export default class ClientForm extends Component {
     onDisableClient: null,
     onEnableClient: null,
     onResetAccessToken: null,
+    dialogError: null,
   };
 
   static getDerivedStateFromProps({ isNewClient, client }, state) {
@@ -177,7 +190,18 @@ export default class ClientForm extends Component {
   };
 
   render() {
-    const { client, classes, isNewClient, loading } = this.props;
+    const {
+      client,
+      classes,
+      isNewClient,
+      loading,
+      dialogOpen,
+      dialogError,
+      onDialogActionClose,
+      onDialogActionError,
+      onDialogActionOpen,
+      onDialogActionComplete,
+    } = this.props;
     const {
       description,
       scopeText,
@@ -379,7 +403,7 @@ export default class ClientForm extends Component {
                 requiresAuth
                 tooltipOpen
                 icon={<DeleteIcon />}
-                onClick={this.handleDeleteClient}
+                onClick={onDialogActionOpen}
                 className={classes.deleteIcon}
                 tooltipTitle="Delete"
                 ButtonProps={{ disabled: loading }}
@@ -410,6 +434,21 @@ export default class ClientForm extends Component {
               />
             </SpeedDial>
           </Fragment>
+        )}
+        {dialogOpen && (
+          <DialogAction
+            open={dialogOpen}
+            onSubmit={this.handleDeleteClient}
+            onComplete={onDialogActionComplete}
+            onClose={onDialogActionClose}
+            onError={onDialogActionError}
+            error={dialogError}
+            title="Delete Client?"
+            body={
+              <Typography>This will delete the {clientId} client.</Typography>
+            }
+            confirmText="Delete Client"
+          />
         )}
       </Fragment>
     );
