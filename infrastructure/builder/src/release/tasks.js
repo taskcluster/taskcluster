@@ -18,6 +18,7 @@ const {
   readRepoFile,
   writeRepoFile,
   modifyRepoJSON,
+  modifyRepoYAML,
   modifyRepoFile,
   removeRepoFile,
   REPO_ROOT,
@@ -102,6 +103,13 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
         });
         changed.push(file);
       }
+
+      const helmchart = 'infrastructure/k8s/Chart.yaml';
+      utils.status({message: `Update ${helmchart}`});
+      await modifyRepoYAML(helmchart, contents => {
+        contents.appVersion = requirements['release-version'];
+      });
+      changed.push(helmchart);
 
       const pyclient = 'clients/client-py/setup.py';
       utils.status({message: `Update ${pyclient}`});
