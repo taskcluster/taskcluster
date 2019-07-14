@@ -17,8 +17,8 @@ var (
 	}
 
 	// VersionNumber is a formatted string with the version information. This is
-	// filled in by the Makefile
-	VersionNumber = "dev"
+	// filled in by `yarn release`
+	VersionNumber = "14.2.0"
 )
 
 func init() {
@@ -26,5 +26,5 @@ func init() {
 }
 
 func printVersion(cmd *cobra.Command, _ []string) {
-	fmt.Fprintf(cmd.OutOrStdout(), "taskcluster (TaskCluster CLI) version %s\n", VersionNumber)
+	fmt.Fprintf(cmd.OutOrStdout(), "taskcluster version %s\n", VersionNumber)
 }
