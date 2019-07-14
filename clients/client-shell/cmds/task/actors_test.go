@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/stretchr/testify/assert"
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
 )
 
@@ -22,7 +23,7 @@ func cancelHandler(w http.ResponseWriter, _ *http.Request) {
 				    ]
 				  }
 				}`
-	io.WriteString(w, status)
+	_, _ = io.WriteString(w, status)
 }
 
 // returns the test status on request
@@ -40,7 +41,7 @@ func reRunHandler(w http.ResponseWriter, _ *http.Request) {
 				    ]
 				  }
 				}`
-	io.WriteString(w, status)
+	_, _ = io.WriteString(w, status)
 }
 
 // returns the test status on request
@@ -59,7 +60,7 @@ func claimTaskHandler(w http.ResponseWriter, _ *http.Request) {
 				    ]
 				  }
 				}`
-	io.WriteString(w, status)
+	_, _ = io.WriteString(w, status)
 }
 
 func (suite *FakeServerSuite) TestRunCancelCommand() {
@@ -68,7 +69,7 @@ func (suite *FakeServerSuite) TestRunCancelCommand() {
 
 	// run the command
 	args := []string{fakeTaskID}
-	runCancel(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+	assert.NoError(suite.T(), runCancel(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
 	suite.Equal("cancelled 'cancelled'\n", buf.String())
 }
@@ -79,7 +80,7 @@ func (suite *FakeServerSuite) TestRunRerunCommand() {
 
 	// run the command
 	args := []string{fakeTaskID}
-	runRerun(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+	assert.NoError(suite.T(), runRerun(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
 	suite.Equal("running 'running'\n", buf.String())
 }
@@ -90,7 +91,7 @@ func (suite *FakeServerSuite) TestRunCompleteCommand() {
 
 	// run the command
 	args := []string{fakeTaskID}
-	runComplete(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+	assert.NoError(suite.T(), runComplete(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
 	suite.Equal("completed 'completed'\n", buf.String())
 }

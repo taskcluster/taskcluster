@@ -55,7 +55,10 @@ func init() {
 	runPayload.Retries = int64(retries)
 
 	for _, f := range requiredFlags {
-		runCmd.MarkFlagRequired(f)
+		err := runCmd.MarkFlagRequired(f)
+		if err != nil {
+			panic(fmt.Sprintf("Cannot mark flag required: %s", err))
+		}
 	}
 
 	Command.AddCommand(runCmd)

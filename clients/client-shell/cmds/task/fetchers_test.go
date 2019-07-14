@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
 	"github.com/taskcluster/taskcluster/clients/client-shell/config"
@@ -51,7 +52,7 @@ func TestFakeServerSuite(t *testing.T) {
 // returns the test task on request
 func taskHandler(w http.ResponseWriter, _ *http.Request) {
 	metadata := `{"metadata": {"name": "my-test"}, "taskGroupId": "my-test"}`
-	io.WriteString(w, metadata)
+	_, _ = io.WriteString(w, metadata)
 }
 
 // returns the test status on request
@@ -69,7 +70,7 @@ func manifestHandler(w http.ResponseWriter, _ *http.Request) {
 				    ]
 				  }
 				}`
-	io.WriteString(w, status)
+	_, _ = io.WriteString(w, status)
 }
 
 func artifactsHandler(w http.ResponseWriter, _ *http.Request) {
@@ -89,7 +90,7 @@ func artifactsHandler(w http.ResponseWriter, _ *http.Request) {
 				    }
 				  ]
 				}`
-	io.WriteString(w, artifacts)
+	_, _ = io.WriteString(w, artifacts)
 }
 
 func setUpCommand() (*bytes.Buffer, *cobra.Command) {
@@ -106,7 +107,7 @@ func (suite *FakeServerSuite) TestNameCommand() {
 
 	// run the command
 	args := []string{fakeTaskID}
-	runName(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+	assert.NoError(suite.T(), runName(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
 	suite.Equal("my-test\n", buf.String())
 }
@@ -117,10 +118,10 @@ func (suite *FakeServerSuite) TestDefCommand() {
 
 	// run the command
 	args := []string{fakeTaskID}
-	runDef(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+	assert.NoError(suite.T(), runDef(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
 	var f interface{}
-	json.Unmarshal(buf.Bytes(), &f)
+	assert.NoError(suite.T(), json.Unmarshal(buf.Bytes(), &f))
 	m := f.(map[string]interface{})
 	m = m["metadata"].(map[string]interface{})
 	suite.Equal("my-test", m["name"])
@@ -176,7 +177,7 @@ func (suite *FakeServerSuite) TestArtifactsCommand() {
 	// run the command
 	args := []string{fakeTaskID}
 
-	runArtifacts(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+	assert.NoError(suite.T(), runArtifacts(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 	suite.Equal("fake_live.log\nfake_live_backing.log\n", buf.String())
 
 }
@@ -187,7 +188,7 @@ func (suite *FakeServerSuite) TestGroupCommand() {
 
 	// run the command
 	args := []string{fakeTaskID}
-	runGroup(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+	assert.NoError(suite.T(), runGroup(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
 	suite.Equal("my-test\n", buf.String())
 }
@@ -200,17 +201,17 @@ func (suite *FakeServerSuite) TestStatusCommand() {
 
 	// Test run flag
 	cmd.Flags().IntP("run", "r", 0, "Specifies which run to consider.")
-	runStatus(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+	assert.NoError(suite.T(), runStatus(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
 	suite.Equal("completed 'completed'\n", buf.String())
 
 	// Test all-runs flag
 	buf.Reset()
 
-	cmd.Flags().Set("run", "-1")
+	assert.NoError(suite.T(), cmd.Flags().Set("run", "-1"))
 	cmd.Flags().BoolP("all-runs", "a", true, "Specifies which run to consider.")
 
-	runStatus(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+	assert.NoError(suite.T(), runStatus(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
 	suite.Equal("Run #0: completed 'completed'\n", buf.String())
 }

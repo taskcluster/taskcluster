@@ -45,7 +45,7 @@ func manifestServer() *httptest.Server {
 // manifestHandler returns the test manifest on request
 func manifestHandler(w http.ResponseWriter, _ *http.Request) {
 	manifest := `{"Test": "` + codegenServer.URL + `/definition.json"}`
-	io.WriteString(w, manifest)
+	_, _ = io.WriteString(w, manifest)
 }
 
 // apiDefHandler returns the api definition on request
@@ -70,7 +70,7 @@ func apiDefHandler(w http.ResponseWriter, _ *http.Request) {
     }
   ]
 }`
-	io.WriteString(w, definition)
+	_, _ = io.WriteString(w, definition)
 }
 
 // TODO possibly test generation of schemas

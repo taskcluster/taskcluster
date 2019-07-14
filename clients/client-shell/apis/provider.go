@@ -42,7 +42,10 @@ func init() {
 	fs := Command.PersistentFlags()
 	fs.StringP("output", "o", "-", "Output file")
 	fs.BoolP("dry-run", "d", false, "Validate input against schema without making an actual request")
-	Command.MarkPersistentFlagFilename("output")
+	err := Command.MarkPersistentFlagFilename("output")
+	if err != nil {
+		panic(err)
+	}
 
 	root.Command.AddCommand(Command)
 }
@@ -250,7 +253,10 @@ func execute(
 		// Create payload hash if there is any
 		if len(input) != 0 {
 			h = client.PayloadHash("application/json")
-			h.Write(input)
+			_, err := h.Write(input)
+			if err != nil {
+				return fmt.Errorf("Failed to write hash, error: %s", err)
+			}
 		}
 		err := config.Credentials.SignGotRequest(req, h)
 		if err != nil {

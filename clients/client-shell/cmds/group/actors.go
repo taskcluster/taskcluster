@@ -270,7 +270,10 @@ func runList(credentials *tcclient.Credentials, args []string, out io.Writer, fl
 
 		for _, t := range ts.Tasks {
 			if filterListTask(t.Status, flags) {
-				templ.Execute(out, t)
+				err := templ.Execute(out, t)
+				if err != nil {
+					return err
+				}
 			}
 		}
 

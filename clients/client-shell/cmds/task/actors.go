@@ -21,8 +21,7 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 	taskID := args[0]
 
 	if noop {
-		displayNoopMsg("Would cancel", credentials, args)
-		return nil
+		return displayNoopMsg("Would cancel", credentials, args)
 	}
 
 	if confirm {
@@ -52,8 +51,7 @@ func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, f
 	taskID := args[0]
 
 	if noop {
-		displayNoopMsg("Would re-run", credentials, args)
-		return nil
+		return displayNoopMsg("Would re-run", credentials, args)
 	}
 
 	if confirm {
@@ -166,8 +164,7 @@ func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer
 	}
 
 	if noop {
-		displayNoopMsg("Would complete", credentials, args)
-		return nil
+		return displayNoopMsg("Would complete", credentials, args)
 	}
 
 	if confirm {

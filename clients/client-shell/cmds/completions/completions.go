@@ -34,6 +34,5 @@ func genCompletion(cmd *cobra.Command, args []string) error {
 		filename = args[0]
 	}
 
-	root.Command.GenBashCompletionFile(filename)
-	return nil
+	return root.Command.GenBashCompletionFile(filename)
 }

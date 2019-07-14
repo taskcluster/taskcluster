@@ -194,8 +194,8 @@ func runArtifacts(credentials *tcclient.Credentials, args []string, out io.Write
 		}
 	}
 
-	buf.WriteTo(out)
-	return nil
+	_, err = buf.WriteTo(out)
+	return err
 }
 
 func runLog(credentials *tcclient.Credentials, args []string, out io.Writer, flagSet *pflag.FlagSet) error {

@@ -70,7 +70,6 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	}
 
 	// Handle callback
-	var serr error
 	s.Server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		qs := r.URL.Query()
 		csh, _ := cmd.Flags().GetBool("csh")
@@ -87,7 +86,7 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 		fmt.Fprintln(cmd.OutOrStderr(), "Credentials output as environment variables")
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`
+		_, _ = w.Write([]byte(`
 			<!doctype html>
 			<html>
 				<head>
@@ -135,13 +134,15 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	browser.Stdout = ioutil.Discard
 
 	// Open browser
-	browser.OpenURL(loginURL)
+	err = browser.OpenURL(loginURL)
+	if err != nil {
+		return fmt.Errorf("failed to open browser, error: %s", err)
+	}
 
 	// Start serving
-	s.Serve(listener)
-
-	if serr != nil {
-		return fmt.Errorf("failed to save configuration, error: %s", serr)
+	err = s.Serve(listener)
+	if err != nil {
+		return fmt.Errorf("failed to start localhost server, error: %s", err)
 	}
 
 	return nil

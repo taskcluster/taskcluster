@@ -27,11 +27,8 @@ func TestCredentialsAuth(t *testing.T) {
 		port   int
 		hdr    string
 		now    int64
-		perr   error
-		verr   error
 		key    string
 		hash   hash.Hash
-		reply  bool
 		nonce  string
 		ext    string
 	}
@@ -50,7 +47,7 @@ func TestCredentialsAuth(t *testing.T) {
 	}
 
 	request := http.NewRequest(testCredentials.method, testCredentials.url, nil)
-	credentials.SignRequest(request, testCredentials.hash)
+	assert.NoError(credentials.SignRequest(request, testCredentials.hash))
 
 	auth, err := credentials.newAuth(testCredentials.method, testCredentials.url, testCredentials.hash)
 	assert.NoError(err, "err should be nothing")

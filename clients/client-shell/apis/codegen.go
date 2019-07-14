@@ -65,8 +65,8 @@ func GenerateServices(manifestURL, servicesVar, schemasVar string) ([]byte, erro
 
 	// Fetch all schemas
 	log.Println("Fetching Schemas:")
-	schemas := make(map[string]string, 0)
-	urls := make(map[string]bool, 0)
+	schemas := make(map[string]string)
+	urls := make(map[string]bool)
 
 	// addSchema is the function that determines if a schema url needs to be
 	// fetched and starts the goroutine to fetch it if needed.

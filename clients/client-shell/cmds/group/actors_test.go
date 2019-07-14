@@ -8,13 +8,13 @@ import (
 	"testing"
 
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
 	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 )
 
 const fakeTaskID = "ANnmjMocTymeTID0tlNJAw"
-const fakeRunID = "0"
 const fakeGroupID = "e4WPAAeSdaSdKxeWzDCBA"
 const badGroupID = "AAAAAAAAAAAAAAAAAAAAA"
 
@@ -60,7 +60,7 @@ func cancelHandler(w http.ResponseWriter, _ *http.Request) {
 				    ]
 				  }
 				}`
-	io.WriteString(w, status)
+	_, _ = io.WriteString(w, status)
 }
 
 func listTaskGroupHandler(w http.ResponseWriter, _ *http.Request) {
@@ -102,7 +102,7 @@ func listTaskGroupHandler(w http.ResponseWriter, _ *http.Request) {
 			  ]
 			}`
 
-	io.WriteString(w, list)
+	_, _ = io.WriteString(w, list)
 }
 
 func setUpCommand() (*bytes.Buffer, *cobra.Command) {
@@ -120,7 +120,7 @@ func (suite *FakeServerSuite) TestRunCancel() {
 
 	// run the command
 	args := []string{fakeGroupID}
-	runCancel(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+	assert.NoError(suite.T(), runCancel(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
 	suite.Equal("cancelling task ANnmjMocTymeTID0tlNJAw\n", buf.String())
 }
@@ -130,7 +130,7 @@ func (suite *FakeServerSuite) TestRunStatus() {
 	buf, cmd := setUpCommand()
 	// run the command
 	args := []string{fakeGroupID}
-	runStatus(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+	assert.NoError(suite.T(), runStatus(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
 	suite.Equal("pending: 1\n", buf.String())
 }
@@ -140,7 +140,7 @@ func (suite *FakeServerSuite) TestRunStatusBadGroupId() {
 	buf, cmd := setUpCommand()
 	// run the command
 	args := []string{badGroupID}
-	runStatus(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+	assert.Error(suite.T(), runStatus(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
 	suite.Equal("", buf.String())
 }
@@ -152,7 +152,7 @@ func (suite *FakeServerSuite) TestRunListAll() {
 
 	// run the command
 	args := []string{fakeGroupID}
-	runList(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+	assert.NoError(suite.T(), runList(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
 	suite.Equal("ANnmjMocTymeTID0tlNJAw test-framework-task/opt pending\n", buf.String())
 }
@@ -164,7 +164,7 @@ func (suite *FakeServerSuite) TestRunListPending() {
 
 	// run the command
 	args := []string{fakeGroupID}
-	runList(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+	assert.NoError(suite.T(), runList(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
 	suite.Equal("ANnmjMocTymeTID0tlNJAw test-framework-task/opt pending\n", buf.String())
 }
@@ -176,7 +176,7 @@ func (suite *FakeServerSuite) TestRunListWrongFilter() {
 
 	// run the command
 	args := []string{fakeGroupID}
-	runList(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+	assert.NoError(suite.T(), runList(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
 	suite.Equal("", buf.String())
 }
@@ -188,7 +188,7 @@ func (suite *FakeServerSuite) TestRunListBadGraphId() {
 
 	// run the command
 	args := []string{badGroupID}
-	runList(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+	assert.Error(suite.T(), runList(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
 	suite.Equal("", buf.String())
 }

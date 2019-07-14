@@ -13,8 +13,6 @@ import (
 	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 )
 
-var providerServer *httptest.Server
-
 // TestCommandGeneration checks that we generate a valid command from a definition
 // it uses a test server to see that the command makes the right request to the backend
 func TestCommandGeneration(t *testing.T) {
@@ -89,7 +87,6 @@ var servicesTest = map[string]definitions.Service{
 		},
 	},
 }
-var schemasTest = map[string]string{}
 
 // apiServer sets up the server and launches it in a new thread
 func apiServer() *httptest.Server {
@@ -106,8 +103,8 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 
 	if _, ok := query["key"]; ok {
-		io.WriteString(w, query.Get("key"))
+		_, _ = io.WriteString(w, query.Get("key"))
 	} else {
-		io.WriteString(w, "true")
+		_, _ = io.WriteString(w, "true")
 	}
 }
