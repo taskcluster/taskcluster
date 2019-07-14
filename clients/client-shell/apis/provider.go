@@ -1,4 +1,3 @@
-//go:generate go run _codegen/fetch-apis.go
 package apis
 
 import (
@@ -14,7 +13,6 @@ import (
 
 	"github.com/spf13/cobra"
 	got "github.com/taskcluster/go-got"
-	"github.com/xeipuuv/gojsonschema"
 
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 	"github.com/taskcluster/taskcluster/clients/client-shell/apis/definitions"
@@ -41,7 +39,6 @@ func init() {
 	// flags for the main `api` command
 	fs := Command.PersistentFlags()
 	fs.StringP("output", "o", "-", "Output file")
-	fs.BoolP("dry-run", "d", false, "Validate input against schema without making an actual request")
 	err := Command.MarkPersistentFlagFilename("output")
 	if err != nil {
 		panic(err)
@@ -89,18 +86,15 @@ func makeCmdFromDefinition(name string, service definitions.Service) *cobra.Comm
 func buildHelp(entry *definitions.Entry) string {
 	buf := &bytes.Buffer{}
 
-	fmt.Fprintf(buf, "%s\n", entry.Title)
-	fmt.Fprintf(buf, "Method:    %s\n", entry.Method)
-	fmt.Fprintf(buf, "Path:      %s\n", entry.Route)
-	fmt.Fprintf(buf, "Stability: %s\n", entry.Stability)
-	fmt.Fprintf(buf, "Scopes:\n")
-	for i, scopes := range entry.Scopes {
-		fmt.Fprintf(buf, "  * %s", strings.Join(scopes, ","))
-		if i < len(entry.Scopes)-1 {
-			fmt.Fprintf(buf, ", or")
-		}
-		fmt.Fprintln(buf, "")
+	jsonInput := "no"
+	if entry.Input != "" {
+		jsonInput = "yes"
 	}
+	fmt.Fprintf(buf, "%s\n", entry.Title)
+	fmt.Fprintf(buf, "Method:     %s\n", entry.Method)
+	fmt.Fprintf(buf, "Path:       %s\n", entry.Route)
+	fmt.Fprintf(buf, "Stability:  %s\n", entry.Stability)
+	fmt.Fprintf(buf, "JSON Input: %s\n", jsonInput)
 	fmt.Fprintln(buf, "")
 	fmt.Fprint(buf, entry.Description)
 
@@ -154,49 +148,8 @@ func buildExecutor(service definitions.Service, entry definitions.Entry) func(*c
 			output = f
 		}
 
-		if dry, _ := cmd.Flags().GetBool("dry-run"); dry {
-			return validate(&entry, argmap, query, input, output)
-		}
-
-		// TODO: apiVersion when services have that field
-		return execute(service.ServiceName, "v1", &entry, argmap, query, input, output)
+		return execute(service.ServiceName, service.APIVersion, &entry, argmap, query, input, output)
 	}
-}
-
-func validate(
-	entry *definitions.Entry, args, query map[string]string,
-	payload io.Reader, output io.Writer,
-) error {
-	// If there is no schema, there is nothing to validate
-	schema, ok := schemas[entry.Input]
-	if !ok {
-		return nil
-	}
-
-	// Read all input
-	data, err := ioutil.ReadAll(payload)
-	if err != nil {
-		return fmt.Errorf("Failed to read input, error: %s", err)
-	}
-	input := gojsonschema.NewStringLoader(string(data))
-
-	// Validate against input schema
-	result, err := gojsonschema.Validate(
-		gojsonschema.NewStringLoader(schema), input,
-	)
-	if err != nil {
-		return fmt.Errorf("Validation failed, error: %s", err)
-	}
-
-	// Print all validation errors
-	for _, e := range result.Errors() {
-		fmt.Fprintf(os.Stderr, " - %s\n", e.Description())
-	}
-
-	if !result.Valid() {
-		return errors.New("Input is invalid")
-	}
-	return nil
 }
 
 func execute(

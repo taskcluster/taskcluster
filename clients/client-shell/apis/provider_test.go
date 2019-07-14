@@ -67,22 +67,20 @@ func TestCommandGeneration(t *testing.T) {
 var servicesTest = map[string]definitions.Service{
 	"Test": definitions.Service{
 		ServiceName: "test",
+		APIVersion:  "v1",
 		Title:       "Test API",
 		Description: "This is a Test service to test taskcluster-cli",
 		Entries: []definitions.Entry{
 			definitions.Entry{
-				Type:        "function",
 				Name:        "test",
 				Title:       "Do a test",
 				Description: "The server will match the request against a specific format to see if tc-cli works properly.",
-				Scopes:      [][]string(nil),
 				Stability:   "stable",
 				Method:      "get",
 				Route:       "/test",
 				Args:        []string{},
 				Query:       []string{"key"},
 				Input:       "",
-				Output:      "",
 			},
 		},
 	},

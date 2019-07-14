@@ -4,6 +4,7 @@ package definitions
 
 // Service definition.
 type Service struct {
+	APIVersion  string  `json:"apiVersion"`
 	ServiceName string  `json:"serviceName"`
 	Title       string  `json:"title"`
 	Description string  `json:"description"`
@@ -12,16 +13,13 @@ type Service struct {
 
 // Entry definition for services.
 type Entry struct {
-	Type        string     `json:"type"`
-	Name        string     `json:"name"`
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	Scopes      [][]string `json:"scopes"`
-	Stability   string     `json:"stability"`
-	Method      string     `json:"method"`
-	Route       string     `json:"route"`
-	Args        []string   `json:"args"`
-	Query       []string   `json:"query"`
-	Input       string     `json:"input"`
-	Output      string     `json:"output"`
+	Name        string   `json:"name"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	Stability   string   `json:"stability"`
+	Method      string   `json:"method"`
+	Route       string   `json:"route"`
+	Args        []string `json:"args"`
+	Query       []string `json:"query"`
+	Input       string   `json:"input"`
 }
