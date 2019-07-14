@@ -12,7 +12,7 @@ import (
 func init() {
 	Command.AddCommand(&cobra.Command{
 		Use:   "help [<option>]",
-		Short: "Get help for TaskCluster's configuration options.",
+		Short: "Get help for Taskcluster's configuration options.",
 		RunE:  cmdHelp,
 	})
 }

@@ -7,7 +7,7 @@ var (
 	// Command is the root of the command tree.
 	Command = &cobra.Command{
 		Use:   "taskcluster",
-		Short: "TaskCluster Shell client.",
+		Short: "Taskcluster Shell client.",
 		Long:  "A shell interface to Taskcluster",
 	}
 )

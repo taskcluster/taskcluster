@@ -12,7 +12,7 @@ var (
 	// Command is the cobra command representing the version subtree.
 	Command = &cobra.Command{
 		Use:   "version",
-		Short: "Prints the TaskCluster version.",
+		Short: "Prints the Taskcluster version.",
 		Run:   printVersion,
 	}
 

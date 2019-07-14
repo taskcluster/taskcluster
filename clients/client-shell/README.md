@@ -1,8 +1,8 @@
-# TaskCluster Shell Client
+# Taskcluster Shell Client
 
 ## Overview
 
-TaskCluster Shell Client is a command-line client offering control and access to
+Taskcluster Shell Client is a command-line client offering control and access to
 taskcluster from the comfort of your command-line. It provides utilities
 ranging from direct calls to the specific API endpoints to more complex and
 _practical_ tasks like listing and cancelling scheduled runs.
