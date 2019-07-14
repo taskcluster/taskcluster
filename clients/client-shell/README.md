@@ -1,10 +1,8 @@
-# TaskCluster CLI Client
-
-[![Task Status](https://github.taskcluster.net/v1/repository/taskcluster/taskcluster-cli/master/badge.svg)](https://github.taskcluster.net/v1/repository/taskcluster/taskcluster-cli/master/latest)
+# TaskCluster Shell Client
 
 ## Overview
 
-TaskCluster CLI is a command-line client offering control and access to
+TaskCluster Shell Client is a command-line client offering control and access to
 taskcluster from the comfort of your command-line. It provides utilities
 ranging from direct calls to the specific API endpoints to more complex and
 _practical_ tasks like listing and cancelling scheduled runs.
@@ -41,49 +39,15 @@ These no longer work since the artifact has expired
 
 ### Requirements
 
-We currently support Go versions starting at 1.8; the project may or may not
-build on earlier versions.
-
-Please note that the default repositories for popular Linux distributions (e.g.
-Ubuntu) do not carry that version of Go. We recommend you download the latest
-version of the language from [the official website](https://golang.org/dl/).
+This package requires Go version 1.12 and uses Go Modules.
 
 ### Building
 
-Getting the source is as simple as running the following command in your shell.
-Go will download the source and set up the repository in your `$GOPATH`.
+To build the client, clone the Taskcluster repository, switch to the `clients/client-shell` directory, and run `go build -o taskcluster .`.
 
-```
-go get -d github.com/taskcluster/taskcluster-cli
-```
+### Code Generation
 
-To actually build the application, simply run `make` in
-`$GOPATH/github.com/taskcluster/taskcluster-cli` which will generate the
-executable `taskcluster` in the root of the source.
-
-### Dependency vendoring
-
-The dependencies are managed through the
-[govendor](https://github.com/kardianos/govendor) tool, but its use should be
-transparent when building the project. After cloning the project, running
-`govendor sync` will download the various dependencies and ensure that they
-are at the version specified in the _vendor/vendor.json_ file, so that
-everyone uses the same dependencies at the same version. The `make` process
-automatically runs that command before building.
-
-To add a new dependency to the project, simply run
-`govendor fetch <go-import-url>` to add it to the list of dependencies. To
-update all dependencies to their latest version, run `govendor fetch`. More
-commands are described on the govendor project page.
-
-### APIs
-
-The API-related commands (`apis/`) are generated from the TaskCluster reference
-data.  When that data changes, the commands can be updated automatically:
-
-```
-make generate-apis
-```
+The API specifications are generated automatically as part of running `yarn generate` in the root directory of this repository.
 
 ### Commands
 

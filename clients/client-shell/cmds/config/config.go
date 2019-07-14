@@ -18,7 +18,7 @@ var (
 	// we attach `taskcluster config [...]` subcommands on it
 	Command = &cobra.Command{
 		Use:   "config",
-		Short: "Get/set taskcluster CLI configuration options.",
+		Short: "Get/set taskcluster shell client configuration options.",
 		RunE:  cmdConfig,
 	}
 )
