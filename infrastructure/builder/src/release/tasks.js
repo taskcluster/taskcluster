@@ -92,13 +92,6 @@ module.exports = ({tasks, cmdOptions}) => {
         changed.push(file);
       }
 
-      const tctf = 'infrastructure/terraform/taskcluster.tf.json';
-      utils.status({message: `Update ${tctf}`});
-      await modifyRepoJSON(tctf, contents => {
-        contents.locals.taskcluster_image_monoimage = `taskcluster/taskcluster:v${requirements['release-version']}`;
-      });
-      changed.push(tctf);
-
       const pyclient = 'clients/client-py/setup.py';
       utils.status({message: `Update ${pyclient}`});
       await modifyRepoFile(pyclient, contents =>
