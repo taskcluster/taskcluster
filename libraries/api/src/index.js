@@ -108,7 +108,7 @@ class APIBuilder {
    * nothing happens.
    */
   declare(options, handler) {
-    ['name', 'method', 'route', 'title', 'description'].forEach(function(key) {
+    ['name', 'method', 'route', 'title', 'description', 'category'].forEach(function(key) {
       assert(options[key], 'Option \'' + key + '\' must be provided');
     });
     // Default to experimental API end-points
