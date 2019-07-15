@@ -84,7 +84,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       return wp;
     });
     await provider.deprovision({workerPool});
-    assert(!workerPool.previousProviderIds.includes('google'));
+    // nothing has changed..
+    assert(workerPool.previousProviderIds.includes('google'));
+  });
+
+  test('removeResources', async function() {
+    await workerPool.modify(wp => {
+      wp.providerData.google = {};
+      return wp;
+    });
+    await provider.removeResources({workerPool});
     assert(!workerPool.providerData.google);
   });
 
