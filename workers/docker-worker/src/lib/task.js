@@ -25,47 +25,6 @@ const _ = require('lodash');
 const EventEmitter = require('events');
 const libUrls = require('taskcluster-lib-urls');
 
-const APP_ARMOR_TEMPLATE = `
-#include <tunables/global>
-
-
-profile docker-default flags=(attach_disconnected,mediate_deleted) {
-
-  #include <abstractions/base>
-
-
-  network,
-  capability,
-  file,
-  umount,
-
-  deny @{PROC}/* w,   # deny write for all files directly in /proc (not in a subdir)
-  # deny write to files not in /proc/<number>/** or /proc/sys/**
-  deny @{PROC}/{[^1-9],[^1-9][^0-9],[^1-9s][^0-9y][^0-9s],[^1-9][^0-9][^0-9][^0-9]*}/** w,
-  deny @{PROC}/sys/[^k]** w,  # deny /proc/sys except /proc/sys/k* (effectively /proc/sys/kernel)
-  deny @{PROC}/sys/kernel/{?,??,[^s][^h][^m]**} w,  # deny everything except shm* in /proc/sys/kernel/
-  deny @{PROC}/sysrq-trigger rwklx,
-  deny @{PROC}/mem rwklx,
-  deny @{PROC}/kmem rwklx,
-  deny @{PROC}/kcore rwklx,
-
-  deny mount,
-
-  deny /sys/[^f]*/** wklx,
-  deny /sys/f[^s]*/** wklx,
-  deny /sys/fs/[^c]*/** wklx,
-  deny /sys/fs/c[^g]*/** wklx,
-  deny /sys/fs/cg[^r]*/** wklx,
-  deny /sys/firmware/efi/efivars/** rwklx,
-  deny /sys/kernel/security/** rwklx,
-
-
-  # suppress ptrace denials when using 'docker ps' or using 'ps' inside a container
-  ptrace (trace,read) peer=docker-default,
-
-}
-`;
-
 let debug = new Debug('runTask');
 
 // TODO probably a terrible error message, look at making it better later
@@ -468,40 +427,10 @@ class Task extends EventEmitter {
     }
 
     if(this.task.payload.features && this.task.payload.features.allowPtrace) {
-      // generate and load a new AppArmor profile specialized to this taskId
-      // allowing ptrace within the container
-      let aa_profile = await this.makePtraceAppArmorProfile();
-
-      // add the equivalent of --security-opt apparmor:docker-ptrace
-      let hc = procConfig.create.HostConfig;
-      hc.SecurityOpt = hc.SecurityOpt || [];
-      hc.SecurityOpt.push('apparmor:' + aa_profile);
+      procConfig.create.HostConfig.CapAdd = ['SYS_PTRACE'];
     }
 
     return procConfig;
-  }
-
-  async makePtraceAppArmorProfile() {
-    let name = 'worker-' + this.status.taskId + '-' + this.runId;
-
-    let profile = APP_ARMOR_TEMPLATE.replace('profile docker-default', 'profile ' + name);
-
-    // add a rule allowing ptrace to other processes with this policy, at
-    // the very end
-    profile = profile.replace('\n}', '\n  ptrace (trace,read) peer=' + name + ',\n}');
-
-    // write out the new profile; note that these are not cleaned up, but since
-    // instances are not long-lived and the profiles are small this is not a
-    // big deal
-    let filename = '/etc/apparmor.d/' + name;
-    await fs.writeFile(filename, profile);
-
-    // hand that to the apparmor parser to add the profile to the kernel
-    let stdout, stderr = await child_process.exec('apparmor_parser -a ' + filename);
-    console.log('stdout from \'apparmor_parser\': ' + stdout);
-    console.log('stderr from \'apparmor_parser\': ' + stderr);
-
-    return name;
   }
 
   writeLogHeader() {
