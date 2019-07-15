@@ -6,15 +6,7 @@ type:         object
 properties:
   version:    {$const: message-version}
   status:     {$ref: 'task-status.json#'}
-  task:
-    description: |
-      Subset of a task definition
-    type:               object
-    properties:
-      tags:   {$ref: "task.json#/properties/tags"}
-    additionalProperties: false
-    required:
-      - tags
+  task: {$ref: 'task-pulse-definition.json#'}
   runId:
     description: |
       Id of the run that failed.
