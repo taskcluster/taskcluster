@@ -78,10 +78,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     });
 
     debug('### Wait for defined message');
-    helper.assertPulseMessage('task-defined', m => _.isEqual(m.payload.status, r1.status));
+    helper.assertPulseMessage('task-defined', m => (
+      _.isEqual(m.payload.status, r1.status) &&
+      _.isEqual(m.payload.task.tags, taskDef.tags)));
 
     debug('### Wait for pending message');
-    helper.assertPulseMessage('task-pending', m => _.isEqual(m.payload.status, r1.status));
+    helper.assertPulseMessage('task-pending', m => (
+      _.isEqual(m.payload.status, r1.status) &&
+      _.isEqual(m.payload.task.tags, taskDef.tags)));
 
     debug('### Get task status');
     const r2 = await helper.queue.status(taskId);

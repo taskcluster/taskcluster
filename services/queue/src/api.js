@@ -723,6 +723,9 @@ builder.declare({
 
   // Construct task status, as we'll return this many times
   let status = task.status();
+  let taskPulseContents = {
+    tags: task.tags,
+  };
 
   // If first run isn't unscheduled or pending, all message must have been
   // published before, this can happen if we came from the catch-branch
@@ -734,7 +737,7 @@ builder.declare({
 
   // Publish task-defined message, we want this arriving before the
   // task-pending message, so we have to await publication here
-  await this.publisher.taskDefined({status}, task.routes);
+  await this.publisher.taskDefined({status, task: taskPulseContents}, task.routes);
   this.monitor.log.taskDefined({taskId});
 
   // If first run is pending we publish messages about this
@@ -744,7 +747,7 @@ builder.declare({
       this.queueService.putPendingMessage(task, 0),
 
       // Put message in appropriate azure queue, and publish message to pulse
-      this.publisher.taskPending({status, runId: 0}, task.routes),
+      this.publisher.taskPending({status, task: taskPulseContents, runId: 0}, task.routes),
     ]);
     this.monitor.log.taskPending({taskId, runId: 0});
   }
@@ -903,6 +906,9 @@ builder.declare({
 
   // Construct task status
   let status = task.status();
+  let taskPulseContents = {
+    tags: task.tags,
+  };
 
   // If runs are present, then we don't need to publish messages as this must
   // have happened already...
@@ -912,7 +918,7 @@ builder.declare({
   }
 
   // Publish task-defined message
-  await this.publisher.taskDefined({status}, task.routes);
+  await this.publisher.taskDefined({status, task: taskPulseContents}, task.routes);
   this.monitor.log.taskDefined({taskId});
 
   // Reply
@@ -1750,12 +1756,15 @@ let resolveTask = async function(req, res, taskId, runId, target) {
 
   // Construct status object
   let status = task.status();
-
+  let taskPulseContents = {
+    tags: task.tags,
+  };
   // Post message about task resolution
   if (target === 'completed') {
     await this.publisher.taskCompleted({
       status,
       runId,
+      task: taskPulseContents,
       workerGroup: run.workerGroup,
       workerId: run.workerId,
     }, task.routes);
@@ -1764,6 +1773,7 @@ let resolveTask = async function(req, res, taskId, runId, target) {
     await this.publisher.taskFailed({
       status,
       runId,
+      task: taskPulseContents,
       workerGroup: run.workerGroup,
       workerId: run.workerId,
     }, task.routes);
@@ -1954,6 +1964,9 @@ builder.declare({
   }
 
   let status = task.status();
+  let taskPulseContents = {
+    tags: task.tags,
+  };
 
   // If a newRun was created and it is a retry with state pending then we better
   // publish messages about it. And if we're not retrying the task, because then
@@ -1969,6 +1982,7 @@ builder.declare({
       this.queueService.putPendingMessage(task, runId + 1),
       this.publisher.taskPending({
         status,
+        task: taskPulseContents,
         runId: runId + 1,
       }, task.routes),
     ]);
@@ -1986,6 +2000,7 @@ builder.declare({
     await this.publisher.taskException({
       status,
       runId,
+      task: taskPulseContents,
       workerGroup: run.workerGroup,
       workerId: run.workerId,
     }, task.routes);

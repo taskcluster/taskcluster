@@ -1,0 +1,14 @@
+$schema: "/schemas/common/metaschema.json#"
+title:              "Task Definition Structure for Pulse Messages"
+description: |
+  Subset of a task definition containing values that are useful for determining
+  whether a message is interesting to the receiver. Where the full task
+  definition is required, the receiver should call queue.task to download that
+  definition.
+type:               object
+properties:
+  tags:     {$ref: "task.json#/properties/tags"}
+additionalProperties: false
+required:
+  - tags
+
