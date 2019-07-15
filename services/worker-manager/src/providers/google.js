@@ -240,8 +240,12 @@ class GoogleProvider extends Provider {
   }
 
   async deprovision({workerPool}) {
+    // nothing to do: we just wait for workers to terminate themselves
+  }
+
+  async removeResources({workerPool}) {
+    // remove any remaining providerData when we are no longer responsible for this workerPool
     await workerPool.modify(wt => {
-      wt.previousProviderIds = wt.previousProviderIds.filter(p => p !== this.providerId);
       delete wt.providerData[this.providerId];
     });
   }
