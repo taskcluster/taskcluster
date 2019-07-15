@@ -43,23 +43,23 @@ const DOTS_VARIANT_LIMIT = 5;
 @withStyles(
   theme => ({
     headline: {
-      paddingLeft: theme.spacing.triple,
-      paddingRight: theme.spacing.triple,
+      paddingLeft: theme.spacing(3),
+      paddingRight: theme.spacing(3),
     },
     cardContent: {
       paddingLeft: 0,
       paddingRight: 0,
-      paddingTop: theme.spacing.double,
-      paddingBottom: theme.spacing.double,
+      paddingTop: theme.spacing(2),
+      paddingBottom: theme.spacing(2),
       '&:last-child': {
-        paddingBottom: theme.spacing.triple,
+        paddingBottom: theme.spacing(3),
       },
     },
     controls: {
       display: 'flex',
       alignItems: 'center',
-      paddingLeft: theme.spacing.unit,
-      paddingBottom: theme.spacing.unit,
+      paddingLeft: theme.spacing(1),
+      paddingBottom: theme.spacing(1),
     },
     listItemButton: {
       ...theme.mixins.listItemButton,
@@ -71,7 +71,7 @@ const DOTS_VARIANT_LIMIT = 5;
       textAlign: 'right',
     },
     logButton: {
-      marginRight: theme.spacing.unit,
+      marginRight: theme.spacing(1),
     },
     artifactsListItemContainer: {
       display: 'block',
@@ -87,7 +87,7 @@ const DOTS_VARIANT_LIMIT = 5;
       color: fade(theme.palette.text.primary, 0.4),
     },
     listItemSecondaryAction: {
-      paddingRight: theme.spacing.unit,
+      paddingRight: theme.spacing(1),
       display: 'flex',
       alignItems: 'center',
       '& button, & a': {
@@ -108,14 +108,14 @@ const DOTS_VARIANT_LIMIT = 5;
       width: '100%',
     },
     artifactsTableCell: {
-      padding: `${theme.spacing.unit}px ${theme.spacing.triple}px`,
+      padding: `${theme.spacing(1)}px ${theme.spacing(3)}px`,
     },
     artifactNameWrapper: {
       display: 'inline-flex',
     },
     liveLogLabel: {
-      marginLeft: theme.spacing.unit / 2,
-      marginBottom: theme.spacing.unit / 2,
+      marginLeft: theme.spacing(0.5),
+      marginBottom: theme.spacing(0.5),
     },
   }),
   { withTheme: true }
@@ -268,7 +268,7 @@ export default class TaskRunsCard extends Component {
                       LOG
                     </Label>
                   )}
-                  <Typography>{artifact.name}</Typography>
+                  <Typography variant="body2">{artifact.name}</Typography>
                 </div>
               </TableCell>
               <TableCell
@@ -498,7 +498,7 @@ export default class TaskRunsCard extends Component {
                 <Typography className={classes.boxVariantText} variant="h6">
                   No Runs
                 </Typography>
-                <Typography className={classes.boxVariantText}>
+                <Typography className={classes.boxVariantText} variant="body2">
                   A run will be created when the task gets schedueled.
                 </Typography>
               </div>

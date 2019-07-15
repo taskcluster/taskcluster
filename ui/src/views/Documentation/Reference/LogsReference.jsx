@@ -37,7 +37,7 @@ export default class LogsReference extends Component {
         {ref.description && (
           <MDX components={components}>{ref.description}</MDX>
         )}
-        <Typography>
+        <Typography variant="body2">
           For more information on how to interpret logs, see{' '}
           <Anchor href="/docs/manual/design/logs">
             Interpreting Log Types
@@ -48,7 +48,7 @@ export default class LogsReference extends Component {
         {serviceLogTypes && Boolean(serviceLogTypes.length) && (
           <Fragment>
             <HeaderWithAnchor type="h3">Service Message Types</HeaderWithAnchor>
-            <Typography>
+            <Typography variant="body2">
               These message types are defined by this service in particular.
             </Typography>
             <br />
@@ -66,7 +66,7 @@ export default class LogsReference extends Component {
         {commonLogTypes && Boolean(commonLogTypes.length) && (
           <Fragment>
             <HeaderWithAnchor type="h3">Common Message Types</HeaderWithAnchor>
-            <Typography>
+            <Typography variant="body2">
               These message types are written by all Taskcluster services.
             </Typography>
             <br />

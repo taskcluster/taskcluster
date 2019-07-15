@@ -96,7 +96,7 @@ export default class WorkerManagerWorkersTable extends Component {
           <TableCellListItem button component={Link} to={`${path}/tasks`}>
             <ListItemText
               disableTypography
-              primary={<Typography>{workerId}</Typography>}
+              primary={<Typography variant="body2">{workerId}</Typography>}
             />
             <LinkIcon size={iconSize} />
           </TableCellListItem>
@@ -108,7 +108,7 @@ export default class WorkerManagerWorkersTable extends Component {
               <ListItemText
                 disableTypography
                 primary={
-                  <Typography>
+                  <Typography variant="body2">
                     <DateDistance from={workerAge} />
                   </Typography>
                 }
@@ -126,12 +126,16 @@ export default class WorkerManagerWorkersTable extends Component {
               to={`/tasks/${latestTaskRun.taskId}/runs/${latestTaskRun.runId}`}>
               <ListItemText
                 disableTypography
-                primary={<Typography>{latestTaskRun.taskId}</Typography>}
+                primary={
+                  <Typography variant="body2">
+                    {latestTaskRun.taskId}
+                  </Typography>
+                }
               />
               <LinkIcon size={iconSize} />
             </TableCellListItem>
           ) : (
-            <Typography>n/a</Typography>
+            <Typography variant="body2">n/a</Typography>
           )}
         </TableCell>
 
@@ -144,7 +148,7 @@ export default class WorkerManagerWorkersTable extends Component {
                 <ListItemText
                   disableTypography
                   primary={
-                    <Typography>
+                    <Typography variant="body2">
                       <DateDistance from={latestTaskRun.started} />
                     </Typography>
                   }
@@ -155,7 +159,7 @@ export default class WorkerManagerWorkersTable extends Component {
           </CopyToClipboard>
         ) : (
           <TableCell>
-            <Typography>n/a</Typography>
+            <Typography variant="body2">n/a</Typography>
           </TableCell>
         )}
 
@@ -168,7 +172,7 @@ export default class WorkerManagerWorkersTable extends Component {
                 <ListItemText
                   disableTypography
                   primary={
-                    <Typography>
+                    <Typography variant="body2">
                       <DateDistance from={latestTaskRun.resolved} />
                     </Typography>
                   }
@@ -179,7 +183,7 @@ export default class WorkerManagerWorkersTable extends Component {
           </CopyToClipboard>
         ) : (
           <TableCell>
-            <Typography>n/a</Typography>
+            <Typography variant="body2">n/a</Typography>
           </TableCell>
         )}
 
@@ -187,7 +191,9 @@ export default class WorkerManagerWorkersTable extends Component {
           <TableCellListItem button component={Link} to={`${path}/errors`}>
             <ListItemText
               disableTypography
-              primary={<Typography>Click to see errors</Typography>}
+              primary={
+                <Typography variant="body2">Click to see errors</Typography>
+              }
             />
             <AlertIcon size={iconSize} />
           </TableCellListItem>
@@ -200,7 +206,9 @@ export default class WorkerManagerWorkersTable extends Component {
             to={`${path}/worker-types/${workerPool}/workers/${workerGroup}/${workerId}/resources`}>
             <ListItemText
               disableTypography
-              primary={<Typography>{`${recentErrors}`}</Typography>}
+              primary={
+                <Typography variant="body2">{`${recentErrors}`}</Typography>
+              }
             />
             <LinkIcon size={iconSize} />
           </TableCellListItem>
@@ -212,7 +220,7 @@ export default class WorkerManagerWorkersTable extends Component {
               unit: 'd',
             })
           ) : (
-            <Typography>n/a</Typography>
+            <Typography variant="body2">n/a</Typography>
           )}
         </TableCell>
       </TableRow>

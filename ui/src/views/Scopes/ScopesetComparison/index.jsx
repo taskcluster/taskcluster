@@ -29,10 +29,10 @@ import splitLines from '../../../utils/splitLines';
     backgroundColor: 'rgba(255, 255, 0, 0.25)',
   },
   editorGrid: {
-    marginBottom: theme.spacing.unit,
+    marginBottom: theme.spacing(1),
   },
   cellGrid: {
-    padding: `0 ${theme.spacing.unit}px`,
+    padding: `0 ${theme.spacing(1)}px`,
   },
 }))
 export default class ScopesetComparison extends Component {
@@ -101,7 +101,7 @@ export default class ScopesetComparison extends Component {
     return (
       <Dashboard title="Compare Scopesets">
         <Fragment>
-          <Grid className={classes.editorGrid} container spacing={8}>
+          <Grid className={classes.editorGrid} container spacing={1}>
             <Grid item xs={12} md={6}>
               <Typography gutterBottom variant="subtitle1">
                 Scope A

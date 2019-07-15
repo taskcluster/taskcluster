@@ -29,7 +29,7 @@ import scopesQuery from '../scopes.graphql';
 })
 @withStyles(theme => ({
   tabs: {
-    marginBottom: theme.spacing.triple,
+    marginBottom: theme.spacing(3),
   },
 }))
 export default class ListScopes extends PureComponent {
@@ -103,7 +103,6 @@ export default class ListScopes extends PureComponent {
             <Fragment>
               <Tabs
                 className={classes.tabs}
-                fullWidth
                 value={currentTabIndex}
                 onChange={this.handleTabChange}>
                 <Tab label="Roles" />

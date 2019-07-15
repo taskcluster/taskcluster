@@ -9,10 +9,10 @@ import Button from '../Button';
 
 @withStyles(theme => ({
   button: {
-    margin: theme.spacing.unit,
+    margin: theme.spacing(1),
   },
   rightIcon: {
-    marginLeft: theme.spacing.unit,
+    marginLeft: theme.spacing(1),
   },
   rightButtonText: {
     display: 'flex',
@@ -20,7 +20,7 @@ import Button from '../Button';
     textAlign: 'left',
   },
   leftIcon: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
   },
   leftButtonText: {
     display: 'flex',

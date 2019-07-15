@@ -82,10 +82,10 @@ const updateTaskGroupIdHistory = id => {
     overflow: 'hidden',
   },
   firstGrid: {
-    marginTop: theme.spacing.double,
+    marginTop: theme.spacing(2),
   },
   secondGrid: {
-    marginTop: theme.spacing.double,
+    marginTop: theme.spacing(2),
     display: 'flex',
     justifyContent: 'flex-end',
   },
@@ -108,10 +108,10 @@ const updateTaskGroupIdHistory = id => {
     },
   },
   notifyButton: {
-    marginLeft: theme.spacing.triple,
+    marginLeft: theme.spacing(3),
   },
   bellIcon: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
   },
 }))
 export default class TaskGroup extends Component {

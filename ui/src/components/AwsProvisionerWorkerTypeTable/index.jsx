@@ -105,19 +105,29 @@ export default class AwsProvisionerWorkerTypeTable extends Component {
                   to={`/aws-provisioner/${workerType.workerType}`}>
                   <ListItemText
                     disableTypography
-                    primary={<Typography>{workerType.workerType}</Typography>}
+                    primary={
+                      <Typography variant="body2">
+                        {workerType.workerType}
+                      </Typography>
+                    }
                   />
                   <LinkIcon size={iconSize} />
                 </TableCellListItem>
               </TableCell>
               <TableCell>
-                <Typography>{workerType.pendingTasks}</Typography>
+                <Typography variant="body2">
+                  {workerType.pendingTasks}
+                </Typography>
               </TableCell>
               <TableCell>
-                <Typography>{workerType.runningCapacity}</Typography>
+                <Typography variant="body2">
+                  {workerType.runningCapacity}
+                </Typography>
               </TableCell>
               <TableCell>
-                <Typography>{workerType.pendingCapacity}</Typography>
+                <Typography variant="body2">
+                  {workerType.pendingCapacity}
+                </Typography>
               </TableCell>
             </TableRow>
           )}

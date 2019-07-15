@@ -143,7 +143,7 @@ export default class ListNamespaces extends Component {
           {loading && <Spinner loading />}
           <ErrorPanel fixed error={namespacesError || taskNamespaceError} />
           {!loading && !hasNamespaces && !hasIndexedTasks && (
-            <Typography>No items for this page.</Typography>
+            <Typography variant="body2">No items for this page.</Typography>
           )}
           {!loading && hasNamespaces && (
             <Fragment>

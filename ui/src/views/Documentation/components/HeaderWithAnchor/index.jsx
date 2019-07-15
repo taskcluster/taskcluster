@@ -8,7 +8,7 @@ import Typography from '@material-ui/core/Typography';
 @withStyles(theme => ({
   header: {
     color: theme.palette.text.primary,
-    marginTop: theme.spacing.quad,
+    marginTop: theme.spacing(4),
     '&:first-child': {
       marginTop: 0,
     },
@@ -20,7 +20,7 @@ import Typography from '@material-ui/core/Typography';
     '&:hover .anchor-link-style': {
       display: 'inline-block',
       opacity: 1,
-      padding: `0 ${theme.spacing.unit}px`,
+      padding: `0 ${theme.spacing(1)}px`,
       color: theme.palette.text.hint,
       '&:hover': {
         color: theme.palette.text.primary,

@@ -128,7 +128,9 @@ export default class IndexTaskNamespaceTable extends Component {
                 <ListItemText
                   disableTypography
                   primary={
-                    <Typography>{this.taskFromNamespace(namespace)}</Typography>
+                    <Typography variant="body2">
+                      {this.taskFromNamespace(namespace)}
+                    </Typography>
                   }
                 />
                 <LinkIcon size={iconSize} />

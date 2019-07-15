@@ -4,7 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 
 @withStyles(theme => ({
   spinner: {
-    marginTop: theme.spacing.triple,
+    marginTop: theme.spacing(3),
   },
 }))
 export default class Loading extends Component {

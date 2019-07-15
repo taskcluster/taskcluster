@@ -38,7 +38,7 @@ import workersQuery from './workers.graphql';
   },
   dropdown: {
     minWidth: 200,
-    marginBottom: theme.spacing.double,
+    marginBottom: theme.spacing(2),
   },
 }))
 export default class ViewWorkers extends Component {

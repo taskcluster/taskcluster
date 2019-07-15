@@ -46,8 +46,8 @@ import SpeedDial from '../SpeedDial';
   },
   saveIconSpan: {
     position: 'fixed',
-    bottom: theme.spacing.double,
-    right: theme.spacing.unit * 11,
+    bottom: theme.spacing(2),
+    right: theme.spacing(11),
     ...theme.mixins.actionButton,
   },
   dropdown: {
@@ -58,13 +58,13 @@ import SpeedDial from '../SpeedDial';
     paddingRight: 0,
   },
   middleList: {
-    paddingTop: theme.spacing.unit * 7,
-    paddingBottom: theme.spacing.unit * 9,
+    paddingTop: theme.spacing(7),
+    paddingBottom: theme.spacing(9),
     paddingLeft: 0,
     paddingRight: 0,
   },
   separator: {
-    padding: theme.spacing.double,
+    padding: theme.spacing(2),
     paddingBottom: 0,
   },
 }))

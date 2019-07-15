@@ -77,7 +77,7 @@ export default class ViewCachePurges extends Component {
       <Dashboard
         helpView={
           <HelpView description={description}>
-            <Typography>
+            <Typography variant="body2">
               All currently active cache purges are displayed below. 24 hours
               after creation, requests expire and are no longer displayed here.
               The <strong>before</strong> column is the time at which any caches

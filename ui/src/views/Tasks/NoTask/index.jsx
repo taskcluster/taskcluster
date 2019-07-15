@@ -16,7 +16,7 @@ import Link from '../../../utils/Link';
 @hot(module)
 @withStyles(theme => ({
   infoText: {
-    marginBottom: theme.spacing.unit,
+    marginBottom: theme.spacing(1),
   },
   listItemButton: {
     ...theme.mixins.listItemButton,
@@ -49,7 +49,7 @@ export default class NoTask extends Component {
         title="View Tasks"
         helpView={<HelpView description={description} />}
         search={<Search onSubmit={this.handleTaskSearchSubmit} />}>
-        <Typography className={classes.infoText}>
+        <Typography variant="body2" className={classes.infoText}>
           Enter a task ID in the search box
         </Typography>
         {recentTasks && Boolean(recentTasks.length) && (
@@ -67,7 +67,7 @@ export default class NoTask extends Component {
                 key={taskId}>
                 <ListItemText
                   disableTypography
-                  primary={<Typography>{taskId}</Typography>}
+                  primary={<Typography variant="body2">{taskId}</Typography>}
                 />
                 <LinkIcon />
               </ListItem>

@@ -112,7 +112,7 @@ export default class IndexedEntry extends Component {
               {artifact.icon && <artifact.icon />}
             </TableCell>
             <TableCell>
-              <Typography>{artifact.name}</Typography>
+              <Typography variant="body2">{artifact.name}</Typography>
             </TableCell>
             <TableCell className={classes.linkCell}>
               <OpenInNewIcon />

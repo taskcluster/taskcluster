@@ -33,8 +33,8 @@ import { formatScope, scopeLink } from '../../utils/scopeUtils';
   },
   saveClientSpan: {
     position: 'fixed',
-    bottom: theme.spacing.double,
-    right: theme.spacing.unit * 11,
+    bottom: theme.spacing(2),
+    right: theme.spacing(11),
   },
   expandedScopesListItem: {
     paddingTop: 0,
@@ -328,7 +328,7 @@ export default class ClientForm extends Component {
                           <ListItemText
                             disableTypography
                             secondary={
-                              <Typography>
+                              <Typography variant="body2">
                                 <code
                                   // eslint-disable-next-line react/no-danger
                                   dangerouslySetInnerHTML={{

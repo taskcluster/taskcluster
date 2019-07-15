@@ -4,12 +4,12 @@ import classNames from 'classnames';
 import { omit } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
-import MuiBreadcrumbs from '@material-ui/lab/Breadcrumbs';
+import MuiBreadcrumbs from '@material-ui/core/Breadcrumbs';
 import NavigateNextIcon from 'mdi-react/NavigateNextIcon';
 
 @withStyles(theme => ({
   paper: {
-    padding: `${theme.spacing.double}px ${theme.spacing.double}px`,
+    padding: `${theme.spacing(2)}px ${theme.spacing(2)}px`,
   },
 }))
 export default class Breadcrumbs extends Component {
@@ -30,6 +30,7 @@ export default class Breadcrumbs extends Component {
 
     return (
       <Paper
+        elevation={2}
         className={classNames(classes.paper, paperProps.className)}
         {...paperPropsRest}>
         <MuiBreadcrumbs

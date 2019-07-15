@@ -25,15 +25,15 @@ import { formatScope, scopeLink } from '../../../utils/scopeUtils';
     ...theme.mixins.fab,
   },
   editor: {
-    marginBottom: theme.spacing.double,
+    marginBottom: theme.spacing(2),
   },
   title: {
-    marginBottom: theme.spacing.double,
+    marginBottom: theme.spacing(2),
   },
   listItemButton: {
     ...theme.mixins.listItemButton,
-    paddingTop: theme.spacing.unit / 2,
-    paddingBottom: theme.spacing.unit / 2,
+    paddingTop: theme.spacing(0.5),
+    paddingBottom: theme.spacing(0.5),
   },
 }))
 export default class ScopesetExpander extends Component {
@@ -91,7 +91,7 @@ export default class ScopesetExpander extends Component {
                           <ListItemText
                             disableTypography
                             secondary={
-                              <Typography>
+                              <Typography variant="body2">
                                 <code
                                   // eslint-disable-next-line react/no-danger
                                   dangerouslySetInnerHTML={{

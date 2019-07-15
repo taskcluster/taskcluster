@@ -29,7 +29,7 @@ const tableHeaders = ['Client ID', 'Last Date Used'];
     display: 'flex',
     justifyContent: 'space-between',
     width: '100%',
-    padding: theme.spacing.unit,
+    padding: theme.spacing(1),
     ...theme.mixins.hover,
   },
 }))
@@ -107,12 +107,12 @@ export default class ClientsTable extends Component {
         onPageChange={onPageChange}
         renderRow={({ node: client }) => (
           <TableRow key={client.clientId}>
-            <TableCell padding="dense">
+            <TableCell size="small">
               <Link
                 className={classes.tableCell}
                 to={`/auth/clients/${encodeURIComponent(client.clientId)}`}>
                 <div className={classes.listItemCell}>
-                  <Typography>{client.clientId}</Typography>
+                  <Typography variant="body2">{client.clientId}</Typography>
                   <LinkIcon size={iconSize} />
                 </div>
               </Link>

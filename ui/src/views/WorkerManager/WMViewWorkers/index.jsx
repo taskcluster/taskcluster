@@ -54,7 +54,7 @@ export default class WMViewWorkers extends Component {
         }>
         <ErrorPanel fixed error={this.state.error || error} />
 
-        <Tabs fullWidth value={currentTab} onChange={this.handleTabChange}>
+        <Tabs value={currentTab} onChange={this.handleTabChange}>
           <Tab label="Failures and Exceptions" />
           <Tab label="Pending" />
           <Tab label="Running" />

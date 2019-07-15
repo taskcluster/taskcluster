@@ -28,7 +28,7 @@ const tableHeaders = ['Role ID'];
     display: 'flex',
     justifyContent: 'space-between',
     width: '100%',
-    padding: theme.spacing.unit,
+    padding: theme.spacing(1),
     ...theme.mixins.hover,
   },
 }))
@@ -113,12 +113,12 @@ export default class RolesTable extends Component {
         sortDirection={sortDirection}
         renderRow={({ node: role }) => (
           <TableRow key={role.roleId}>
-            <TableCell padding="dense">
+            <TableCell size="small">
               <Link
                 className={classes.tableCell}
                 to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
                 <div className={classes.listItemCell}>
-                  <Typography>{role.roleId}</Typography>
+                  <Typography variant="body2">{role.roleId}</Typography>
                   <LinkIcon size={iconSize} />
                 </div>
               </Link>

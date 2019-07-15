@@ -30,16 +30,16 @@ const or0 = defaultTo(0);
 
 @withStyles(theme => ({
   drawerContainer: {
-    paddingTop: theme.spacing.double,
-    paddingBottom: theme.spacing.double,
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
     width: 400,
   },
   headline: {
-    paddingLeft: theme.spacing.triple,
-    paddingRight: theme.spacing.triple,
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
   },
   emptyText: {
-    marginTop: theme.spacing.unit,
+    marginTop: theme.spacing(1),
   },
 }))
 export default class AwsProvisionerHealthTable extends Component {

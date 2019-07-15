@@ -43,7 +43,7 @@ const variantIcon = {
     color: theme.palette.warning.contrastText,
   },
   iconVariant: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
   },
   message: {
     display: 'flex',

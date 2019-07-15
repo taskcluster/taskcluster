@@ -52,8 +52,8 @@ import { THEME } from '../../../utils/constants';
     },
   },
   panelHeader: {
-    paddingTop: theme.spacing.unit,
-    paddingBottom: theme.spacing.unit,
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
   },
   panelTextPrimary: {
     color: THEME.PRIMARY_TEXT_LIGHT,
@@ -63,7 +63,7 @@ import { THEME } from '../../../utils/constants';
   },
   panelCard: {
     background: theme.palette.warning.dark,
-    marginBottom: theme.spacing.unit,
+    marginBottom: theme.spacing(1),
   },
   clearIcon: {
     fill: THEME.PRIMARY_TEXT_LIGHT,

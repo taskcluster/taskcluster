@@ -23,7 +23,7 @@ const sortedInstanceTypes = pipe(
 
 @withStyles(theme => ({
   emptyText: {
-    marginTop: theme.spacing.unit,
+    marginTop: theme.spacing(1),
   },
 }))
 export default class AwsProvisionerWorkerTypeStatus extends Component {
@@ -162,16 +162,16 @@ export default class AwsProvisionerWorkerTypeStatus extends Component {
         renderRow={status => (
           <TableRow key={`${status.instanceType}-${status.zone}`}>
             <TableCell>
-              <Typography>{status.instanceType}</Typography>
+              <Typography variant="body2">{status.instanceType}</Typography>
             </TableCell>
             <TableCell>
-              <Typography>{status.zone}</Typography>
+              <Typography variant="body2">{status.zone}</Typography>
             </TableCell>
             <TableCell>
-              <Typography>{status.running}</Typography>
+              <Typography variant="body2">{status.running}</Typography>
             </TableCell>
             <TableCell>
-              <Typography>{status.pending}</Typography>
+              <Typography variant="body2">{status.pending}</Typography>
             </TableCell>
           </TableRow>
         )}

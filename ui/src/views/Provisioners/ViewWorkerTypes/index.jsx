@@ -20,7 +20,7 @@ import workerTypesQuery from './workerTypes.graphql';
   },
   dropdown: {
     minWidth: 200,
-    marginBottom: theme.spacing.double,
+    marginBottom: theme.spacing(2),
   },
 }))
 @graphql(workerTypesQuery, {

@@ -149,7 +149,7 @@ export default class Ec2ResourcesTable extends Component {
               <StatusLabel state={upper(instance.state)} />
             </TableCell>
             <TableCell>
-              <Typography>{instance.zone}</Typography>
+              <Typography variant="body2">{instance.zone}</Typography>
             </TableCell>
             <TableCell>
               <DateDistance from={instance.launch} />

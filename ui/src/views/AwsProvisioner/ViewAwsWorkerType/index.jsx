@@ -32,7 +32,7 @@ import terminateWorkerTypeQuery from './terminateWorkerType.graphql';
     ...theme.mixins.fab,
   },
   spinner: {
-    marginTop: theme.spacing.double,
+    marginTop: theme.spacing(2),
   },
   terminateButton: {
     ...theme.mixins.errorIcon,
@@ -125,7 +125,7 @@ export default class ViewAwsWorkerType extends Component {
     return (
       <Dashboard title={`AWS Provisioner ${workerType}`}>
         <ErrorPanel fixed error={this.state.error || error} />
-        <Tabs fullWidth value={currentTab} onChange={this.handleTabChange}>
+        <Tabs value={currentTab} onChange={this.handleTabChange}>
           <Tab label="Status" />
           <Tab label="Recent Provisioning Errors" />
           <Tab label="EC2 Resources" />

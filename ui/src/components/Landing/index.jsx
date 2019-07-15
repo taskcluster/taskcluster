@@ -19,7 +19,7 @@ import ErrorPanel from '../ErrorPanel';
   content: {
     flexGrow: 1,
     backgroundColor: theme.palette.background,
-    paddingBottom: theme.spacing.unit * 12,
+    paddingBottom: theme.spacing(12),
     overflowY: 'auto',
     minHeight: '100vh',
   },

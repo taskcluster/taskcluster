@@ -27,16 +27,16 @@ import Link from '../../utils/Link';
 
 @withStyles(theme => ({
   headline: {
-    paddingLeft: theme.spacing.triple,
-    paddingRight: theme.spacing.triple,
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
   },
   cardContent: {
     paddingLeft: 0,
     paddingRight: 0,
-    paddingTop: theme.spacing.double,
-    paddingBottom: theme.spacing.double,
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
     '&:last-child': {
-      paddingBottom: theme.spacing.double,
+      paddingBottom: theme.spacing(2),
     },
   },
   sourceHeadline: {
@@ -55,7 +55,7 @@ import Link from '../../utils/Link';
     fontSize: theme.typography.body2.fontSize,
   },
   listItemSecondaryAction: {
-    paddingRight: theme.spacing.unit,
+    paddingRight: theme.spacing(1),
     display: 'flex',
     alignItems: 'center',
     '& button, & a': {
@@ -352,6 +352,7 @@ export default class TaskDetailsCard extends Component {
                           {task.scopes.map(scope => (
                             <li key={scope}>
                               <Typography
+                                variant="body2"
                                 component="span"
                                 color="textSecondary">
                                 {scope}
@@ -377,6 +378,7 @@ export default class TaskDetailsCard extends Component {
                           {task.routes.map(route => (
                             <li key={route}>
                               <Typography
+                                variant="body2"
                                 component="span"
                                 color="textSecondary">
                                 {route}

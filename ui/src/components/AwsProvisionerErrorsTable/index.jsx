@@ -24,7 +24,7 @@ const sorted = pipe(
 
 @withStyles(theme => ({
   emptyText: {
-    marginTop: theme.spacing.unit,
+    marginTop: theme.spacing(1),
   },
 }))
 export default class AwsProvisionerErrorsTable extends Component {
@@ -121,27 +121,29 @@ export default class AwsProvisionerErrorsTable extends Component {
               error.time
             }`}>
             <TableCell>
-              <Typography>{error.az}</Typography>
+              <Typography variant="body2">{error.az}</Typography>
             </TableCell>
             <TableCell>
-              <Typography>{this.getErrorType(error.type)}</Typography>
+              <Typography variant="body2">
+                {this.getErrorType(error.type)}
+              </Typography>
             </TableCell>
             <TableCell>
-              <Typography>{error.instanceType}</Typography>
+              <Typography variant="body2">{error.instanceType}</Typography>
             </TableCell>
             <TableCell>
-              <Typography>
+              <Typography variant="body2">
                 <code>{error.code}</code>
               </Typography>
             </TableCell>
             <TableCell>
-              <Typography>{error.region}</Typography>
+              <Typography variant="body2">{error.region}</Typography>
             </TableCell>
             <TableCell>
               <DateDistance from={error.time} />
             </TableCell>
             <TableCell>
-              <Typography>{error.message}</Typography>
+              <Typography variant="body2">{error.message}</Typography>
             </TableCell>
           </TableRow>
         )}

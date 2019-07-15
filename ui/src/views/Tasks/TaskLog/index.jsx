@@ -12,13 +12,13 @@ import Link from '../../../utils/Link';
   fab: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
-    bottom: theme.spacing.triple,
+    bottom: theme.spacing(3),
   },
   rawLogButton: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
-    bottom: theme.spacing.triple,
-    right: theme.spacing.unit * 12,
+    bottom: theme.spacing(3),
+    right: theme.spacing(12),
   },
 }))
 export default class TaskLog extends Component {

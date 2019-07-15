@@ -75,8 +75,8 @@ const initialHook = {
   },
   saveHookSpan: {
     position: 'fixed',
-    bottom: theme.spacing.double,
-    right: theme.spacing.unit * 11,
+    bottom: theme.spacing(2),
+    right: theme.spacing(11),
   },
   editorListItem: {
     paddingTop: 0,
@@ -84,7 +84,7 @@ const initialHook = {
     flexDirection: 'column',
     alignItems: 'start',
     '&> :last-child': {
-      marginTop: theme.spacing.unit,
+      marginTop: theme.spacing(1),
     },
   },
   iconButton: {
@@ -125,12 +125,12 @@ const initialHook = {
     },
   },
   headline: {
-    paddingLeft: theme.spacing.triple,
-    paddingRight: theme.spacing.triple,
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
   },
   metadataContainer: {
-    paddingTop: theme.spacing.double,
-    paddingBottom: theme.spacing.double,
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
   },
   drawerPaper: {
     width: '40vw',
@@ -826,14 +826,14 @@ export default class HookForm extends Component {
             confirmText="Trigger Hook"
             body={
               <Fragment>
-                <Typography gutterBottom>
+                <Typography gutterBottom variant="body2">
                   Trigger Hook{' '}
                   <code>
                     {hook.hookGroupId}/{hook.hookId}
                   </code>{' '}
                   with the following context:
                 </Typography>
-                <Grid container spacing={16}>
+                <Grid container spacing={2}>
                   <Grid item lg={6} md={6} sm={12}>
                     <Typography gutterBottom variant="subtitle1">
                       Context

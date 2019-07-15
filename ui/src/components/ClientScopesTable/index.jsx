@@ -36,7 +36,7 @@ const sorted = pipe(
     display: 'flex',
     justifyContent: 'space-between',
     width: '100%',
-    padding: theme.spacing.unit,
+    padding: theme.spacing(1),
     ...theme.mixins.hover,
   },
 }))
@@ -112,7 +112,7 @@ export default class ClientScopesTable extends Component {
       searchTerm ? filter(contains(searchTerm)) : identity,
       map(node => (
         <TableRow key={node}>
-          <TableCell padding="dense">
+          <TableCell size="small">
             <Link
               className={classes.tableCell}
               to={
@@ -121,7 +121,7 @@ export default class ClientScopesTable extends Component {
                   : `/auth/scopes/${encodeURIComponent(node)}`
               }>
               <div className={classes.listItemCell}>
-                <Typography>{node}</Typography>
+                <Typography variant="body2">{node}</Typography>
                 <LinkIcon size={16} />
               </div>
             </Link>

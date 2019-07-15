@@ -23,7 +23,7 @@ import DeleteIcon from 'mdi-react/DeleteIcon';
     marginTop: 80,
   },
   deleteIcon: {
-    marginRight: -theme.spacing.double,
+    marginRight: -theme.spacing(2),
   },
   inputWrapper: {
     display: 'flex',

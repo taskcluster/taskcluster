@@ -28,7 +28,7 @@ import Button from '../Button';
   },
   dropdown: {
     minWidth: 200,
-    marginBottom: theme.spacing.double,
+    marginBottom: theme.spacing(2),
   },
 }))
 
