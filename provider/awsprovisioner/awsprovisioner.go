@@ -122,7 +122,7 @@ func (p *AwsProvisionerProvider) checkTerminationTime() {
 	// if the file exists (so, no error), it's time to go away
 	if err == nil {
 		log.Println("EC2 Metadata Service says termination is imminent")
-		if p.proto.Capable("graceful-termination") {
+		if p.proto != nil && p.proto.Capable("graceful-termination") {
 			p.proto.Send(protocol.Message{
 				Type: "graceful-termination",
 				Properties: map[string]interface{}{
