@@ -155,6 +155,12 @@ tasks:
             cd clients/client-go
         command: >-
             go test -v -race ./...
+      - name: taskcluster-client-shell-${go}
+        image: 'golang:${go}'
+        install: >-
+            cd clients/client-shell
+        command: >-
+            go test -v -race ./...
       - name: taskcluster-ui
         image: 'taskcluster/browser-test:${node}'
         install: >-

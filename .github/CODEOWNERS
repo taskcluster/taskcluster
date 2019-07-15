@@ -3,4 +3,5 @@
 services/web-server @taskcluster/frontend-reviewers
 clients/client-web @taskcluster/frontend-reviewers
 clients/client-go @taskcluster/worker-reviewers
+clients/client-shell @taskcluster/worker-reviewers
 ui @taskcluster/frontend-reviewers

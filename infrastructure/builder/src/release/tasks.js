@@ -92,27 +92,27 @@ module.exports = ({tasks, cmdOptions}) => {
         changed.push(file);
       }
 
-      const tctf = 'infrastructure/terraform/taskcluster.tf.json';
-      utils.status({message: `Update ${tctf}`});
-      await modifyRepoJSON(tctf, contents => {
-        contents.locals.taskcluster_image_monoimage = `taskcluster/taskcluster:v${requirements['release-version']}`;
-      });
-      changed.push(tctf);
-
       const pyclient = 'clients/client-py/setup.py';
       utils.status({message: `Update ${pyclient}`});
       await modifyRepoFile(pyclient, contents =>
         contents.replace(/VERSION = .*/, `VERSION = '${requirements['release-version']}'`));
       changed.push(pyclient);
 
+      const shellclient = 'clients/client-shell/cmds/version/version.go';
+      utils.status({message: `Update ${shellclient}`});
+      await modifyRepoFile(shellclient, contents =>
+        contents.replace(/VersionNumber = .*/, `VersionNumber = "${requirements['release-version']}"`));
+      changed.push(shellclient);
+
       // the go client requires the major version number in its import path, so
       // just about every file needs to be edited.  This matches the full package
       // path to avoid false positives, but that might result in missed changes
       // where the full path is not used.
       const major = requirements['release-version'].replace(/\..*/, '');
-      for (let file of await gitLsFiles({patterns: ['clients/client-go/**']})) {
+      for (let file of await gitLsFiles({patterns: ['clients/client-go/**', 'clients/client-shell/**']})) {
         await modifyRepoFile(file, contents =>
           contents.replace(/(github.com\/taskcluster\/taskcluster\/clients\/client-go\/v)\d+/g, `$1${major}`));
+        changed.push(file);
       }
 
       return {'version-updated': changed};
