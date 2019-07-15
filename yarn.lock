@@ -4330,12 +4330,12 @@ json-buffer@3.0.0:
   resolved "https://registry.yarnpkg.com/json-buffer/-/json-buffer-3.0.0.tgz#5b1f397afc75d677bde8bcfc0e47e1f9a3d9a898"
   integrity sha1-Wx85evx11ne96Lz8Dkfh+aPZqJg=
 
-json-e@^2.5.0:
-  version "2.7.1"
-  resolved "https://registry.yarnpkg.com/json-e/-/json-e-2.7.1.tgz#875f754489b2b12655634933612d1f4c9cac3d6a"
-  integrity sha512-z1kdwLWe6BxXH0iczQ8rjw3z/UOlhHJxbvWh757FzSslYVdlZLnjrhKof25i9AmPjGTjTfuht8bjlCzoIcJQ4Q==
+json-e@^3.0.0:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/json-e/-/json-e-3.0.1.tgz#8e674e622012559747994f872739ea142cff4453"
+  integrity sha512-ZYUZ6KXdeL52Gd9yh7ig3k0a+O/5XwlBnel5fDHuCxAcAMXfqbed5FkCnZYiv52E0uB8dHoP5W7xOHjfISzHnQ==
   dependencies:
-    json-stable-stringify "^1.0.1"
+    json-stable-stringify-without-jsonify "^1.0.1"
 
 json-edm-parser@0.1.2:
   version "0.1.2"

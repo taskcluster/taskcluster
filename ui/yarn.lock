@@ -6385,12 +6385,12 @@ jsesc@~0.5.0:
   resolved "https://registry.yarnpkg.com/jsesc/-/jsesc-0.5.0.tgz#e7dee66e35d6fc16f710fe91d5cf69f70f08911d"
   integrity sha1-597mbjXW/Bb3EP6R1c9p9w8IkR0=
 
-json-e@^2.7.0:
-  version "2.7.1"
-  resolved "https://registry.yarnpkg.com/json-e/-/json-e-2.7.1.tgz#875f754489b2b12655634933612d1f4c9cac3d6a"
-  integrity sha512-z1kdwLWe6BxXH0iczQ8rjw3z/UOlhHJxbvWh757FzSslYVdlZLnjrhKof25i9AmPjGTjTfuht8bjlCzoIcJQ4Q==
+json-e@^3.0.0:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/json-e/-/json-e-3.0.1.tgz#8e674e622012559747994f872739ea142cff4453"
+  integrity sha512-ZYUZ6KXdeL52Gd9yh7ig3k0a+O/5XwlBnel5fDHuCxAcAMXfqbed5FkCnZYiv52E0uB8dHoP5W7xOHjfISzHnQ==
   dependencies:
-    json-stable-stringify "^1.0.1"
+    json-stable-stringify-without-jsonify "^1.0.1"
 
 json-loader@^0.5.7:
   version "0.5.7"
@@ -6427,13 +6427,6 @@ json-stable-stringify-without-jsonify@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/json-stable-stringify-without-jsonify/-/json-stable-stringify-without-jsonify-1.0.1.tgz#9db7b59496ad3f3cfef30a75142d2d930ad72651"
   integrity sha1-nbe1lJatPzz+8wp1FC0tkwrXJlE=
-
-json-stable-stringify@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/json-stable-stringify/-/json-stable-stringify-1.0.1.tgz#9a759d39c5f2ff503fd5300646ed445f88c4f9af"
-  integrity sha1-mnWdOcXy/1A/1TAGRu1EX4jE+a8=
-  dependencies:
-    jsonify "~0.0.0"
 
 json3@^3.3.2:
   version "3.3.2"
@@ -10997,8 +10990,7 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-lib-scopes@link:../libraries/scopes":
-  version "0.0.0"
-  uid ""
+  version "14.2.0"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
