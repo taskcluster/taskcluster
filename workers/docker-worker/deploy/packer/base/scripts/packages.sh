@@ -38,6 +38,17 @@ sudo add-apt-repository \
    $(lsb_release -cs) \
    stable"
 
+# Add kernel debug info for SystemTap
+# Ref: https://wiki.ubuntu.com/Kernel/Systemtap
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys C8CAB6595FDFF622
+codename=$(lsb_release -c | awk  '{print $2}')
+sudo tee /etc/apt/sources.list.d/ddebs.list << EOF
+deb http://ddebs.ubuntu.com/ ${codename}      main restricted universe multiverse
+#deb http://ddebs.ubuntu.com/ ${codename}-security main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ ${codename}-updates  main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ ${codename}-proposed main restricted universe multiverse
+EOF
+
 ## Update to pick up new registries
 sudo apt-get update -y
 
@@ -55,6 +66,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get remove -yq \
 # We install the generic kernel because it has the V4L2 driver
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq \
     linux-image-$KERNEL_VER \
+    linux-image-$KERNEL_VER-dbgsym \
     linux-headers-$KERNEL_VER \
     linux-modules-$KERNEL_VER \
     linux-modules-extra-$KERNEL_VER \
@@ -83,6 +95,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq \
     rsyslog-gnutls \
     openvpn \
     rng-tools \
+    systemtap \
     liblz4-tool
 
 # Remove apport because it prevents obtaining crashes from containers
