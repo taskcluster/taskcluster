@@ -2227,6 +2227,25 @@
   },
   {
     "content": {
+      "$id": "/schemas/queue/v1/task-pulse-definition.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Subset of a task definition containing values that are useful for determining\nwhether a message is interesting to the receiver. Where the full task\ndefinition is required, the receiver should call queue.task to download that\ndefinition.\n",
+      "properties": {
+        "tags": {
+          "$ref": "task.json#/properties/tags"
+        }
+      },
+      "required": [
+        "tags"
+      ],
+      "title": "Task Definition Structure for Pulse Messages",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/task-pulse-definition.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/queue/v1/task-pending-message.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -2240,6 +2259,19 @@
         },
         "status": {
           "$ref": "task-status.json#"
+        },
+        "task": {
+          "additionalProperties": false,
+          "description": "Subset of a task definition\n",
+          "properties": {
+            "tags": {
+              "$ref": "task.json#/properties/tags"
+            }
+          },
+          "required": [
+            "tags"
+          ],
+          "type": "object"
         },
         "version": {
           "description": "Message version",
@@ -2359,6 +2391,9 @@
         "status": {
           "$ref": "task-status.json#"
         },
+        "task": {
+          "$ref": "task-pulse-definition.json#"
+        },
         "version": {
           "description": "Message version",
           "enum": [
@@ -2437,6 +2472,9 @@
         "status": {
           "$ref": "task-status.json#"
         },
+        "task": {
+          "$ref": "task-pulse-definition.json#"
+        },
         "version": {
           "description": "Message version",
           "enum": [
@@ -2500,6 +2538,9 @@
       "properties": {
         "status": {
           "$ref": "task-status.json#"
+        },
+        "task": {
+          "$ref": "task-pulse-definition.json#"
         },
         "version": {
           "description": "Message version",
@@ -2566,6 +2607,9 @@
         },
         "status": {
           "$ref": "task-status.json#"
+        },
+        "task": {
+          "$ref": "task-pulse-definition.json#"
         },
         "version": {
           "description": "Message version",
