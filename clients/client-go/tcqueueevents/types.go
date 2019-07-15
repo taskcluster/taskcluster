@@ -179,70 +179,6 @@ type (
 		Tags map[string]string `json:"tags"`
 	}
 
-	// Subset of a task definition
-	Task1 struct {
-
-		// Arbitrary key-value tags (only strings limited to 4k). These can be used
-		// to attach informal metadata to a task. Use this for informal tags that
-		// tasks can be classified by. You can also think of strings here as
-		// candidates for formal metadata. Something like
-		// `purpose: 'build' || 'test'` is a good example.
-		//
-		// Default:    {}
-		//
-		// Map entries:
-		// Max length: 4096
-		Tags map[string]string `json:"tags"`
-	}
-
-	// Subset of a task definition
-	Task2 struct {
-
-		// Arbitrary key-value tags (only strings limited to 4k). These can be used
-		// to attach informal metadata to a task. Use this for informal tags that
-		// tasks can be classified by. You can also think of strings here as
-		// candidates for formal metadata. Something like
-		// `purpose: 'build' || 'test'` is a good example.
-		//
-		// Default:    {}
-		//
-		// Map entries:
-		// Max length: 4096
-		Tags map[string]string `json:"tags"`
-	}
-
-	// Subset of a task definition
-	Task3 struct {
-
-		// Arbitrary key-value tags (only strings limited to 4k). These can be used
-		// to attach informal metadata to a task. Use this for informal tags that
-		// tasks can be classified by. You can also think of strings here as
-		// candidates for formal metadata. Something like
-		// `purpose: 'build' || 'test'` is a good example.
-		//
-		// Default:    {}
-		//
-		// Map entries:
-		// Max length: 4096
-		Tags map[string]string `json:"tags"`
-	}
-
-	// Subset of a task definition
-	Task4 struct {
-
-		// Arbitrary key-value tags (only strings limited to 4k). These can be used
-		// to attach informal metadata to a task. Use this for informal tags that
-		// tasks can be classified by. You can also think of strings here as
-		// candidates for formal metadata. Something like
-		// `purpose: 'build' || 'test'` is a good example.
-		//
-		// Default:    {}
-		//
-		// Map entries:
-		// Max length: 4096
-		Tags map[string]string `json:"tags"`
-	}
-
 	// Message reporting that a task has complete successfully.
 	TaskCompletedMessage struct {
 
@@ -255,8 +191,11 @@ type (
 		// A representation of **task status** as known by the queue
 		Status TaskStatusStructure `json:"status"`
 
-		// Subset of a task definition
-		Task Task2 `json:"task,omitempty"`
+		// Subset of a task definition containing values that are useful for determining
+		// whether a message is interesting to the receiver. Where the full task
+		// definition is required, the receiver should call queue.task to download that
+		// definition.
+		Task Var `json:"task,omitempty"`
 
 		// Message version
 		//
@@ -286,8 +225,11 @@ type (
 		// A representation of **task status** as known by the queue
 		Status TaskStatusStructure `json:"status"`
 
-		// Subset of a task definition
-		Task Task `json:"task,omitempty"`
+		// Subset of a task definition containing values that are useful for determining
+		// whether a message is interesting to the receiver. Where the full task
+		// definition is required, the receiver should call queue.task to download that
+		// definition.
+		Task Var `json:"task,omitempty"`
 
 		// Message version
 		//
@@ -309,8 +251,11 @@ type (
 		// A representation of **task status** as known by the queue
 		Status TaskStatusStructure `json:"status"`
 
-		// Subset of a task definition
-		Task Task4 `json:"task,omitempty"`
+		// Subset of a task definition containing values that are useful for determining
+		// whether a message is interesting to the receiver. Where the full task
+		// definition is required, the receiver should call queue.task to download that
+		// definition.
+		Task Var `json:"task,omitempty"`
 
 		// Message version
 		//
@@ -348,8 +293,11 @@ type (
 		// A representation of **task status** as known by the queue
 		Status TaskStatusStructure `json:"status"`
 
-		// Subset of a task definition
-		Task Task3 `json:"task,omitempty"`
+		// Subset of a task definition containing values that are useful for determining
+		// whether a message is interesting to the receiver. Where the full task
+		// definition is required, the receiver should call queue.task to download that
+		// definition.
+		Task Var `json:"task,omitempty"`
 
 		// Message version
 		//
@@ -439,7 +387,7 @@ type (
 		Status TaskStatusStructure `json:"status"`
 
 		// Subset of a task definition
-		Task Task1 `json:"task,omitempty"`
+		Task Task `json:"task,omitempty"`
 
 		// Message version
 		//
@@ -567,5 +515,24 @@ type (
 		// Min length: 1
 		// Max length: 38
 		WorkerType string `json:"workerType"`
+	}
+
+	// Subset of a task definition containing values that are useful for determining
+	// whether a message is interesting to the receiver. Where the full task
+	// definition is required, the receiver should call queue.task to download that
+	// definition.
+	Var struct {
+
+		// Arbitrary key-value tags (only strings limited to 4k). These can be used
+		// to attach informal metadata to a task. Use this for informal tags that
+		// tasks can be classified by. You can also think of strings here as
+		// candidates for formal metadata. Something like
+		// `purpose: 'build' || 'test'` is a good example.
+		//
+		// Default:    {}
+		//
+		// Map entries:
+		// Max length: 4096
+		Tags map[string]string `json:"tags"`
 	}
 )
