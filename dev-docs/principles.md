@@ -24,7 +24,7 @@ These are all under an umbrella we call Getting Things Built&#8482;. None of our
 
 - Scalability
 - Correctness
-  - [Idempotent APIs](/docs/manual/design/devel/idempotency)
+  - [Idempotent APIs](/dev-docs/idempotency.md)
 - Minimal Self-hosting
   - Use managed services, e.g. S3, Azure Storage
   - Don't self-host mutable services
