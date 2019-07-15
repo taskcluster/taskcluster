@@ -2,7 +2,6 @@ const slugid = require('slugid');
 const _ = require('lodash');
 const fs = require('fs');
 const taskcluster = require('taskcluster-client');
-const libUrls = require('taskcluster-lib-urls');
 const uuid = require('uuid');
 const {google} = require('googleapis');
 const {ApiError, Provider} = require('./provider');
@@ -322,8 +321,8 @@ class GoogleProvider extends Provider {
                   key: 'taskcluster',
                   value: JSON.stringify({
                     workerPoolId,
+                    providerId: this.providerId,
                     workerGroup: this.providerId,
-                    credentialUrl: libUrls.api(this.rootUrl, 'worker-manager', 'v1', `credentials/google/${workerPoolId}`),
                     rootUrl: this.rootUrl,
                     userData: workerPool.config.userData,
                   }),

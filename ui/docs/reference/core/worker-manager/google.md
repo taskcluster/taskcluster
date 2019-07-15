@@ -53,3 +53,13 @@ See the note above about using a dedicated project.
 Worker-pool configuration for a worker-pool using this provider type must match the following schema.
 
 <SchemaTable schema="/schemas/worker-manager/v1/config-google.json" />
+
+## Worker Interaction
+
+The provider starts workers with an instance attribute named `taskcluster` containing a JSON object with the following properties:
+
+* `workerPoolId` -- worker pool for this worker
+* `providerId` -- provider ID that started the worker
+* `workerGroup` -- the worker's workerGroup (currently equal to the providerId, but do not depend on this)
+* `rootUrl` -- root URL for the Taskcluster deployment
+* `userData` -- userData from the worker pool configuration
