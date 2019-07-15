@@ -4,6 +4,7 @@ We welcome pull requests from everyone. We do expect everyone to adhere to the [
 
 If you're trying to figure out what to work on, here are some places to find suitable projects: 
 * [Good first bugs][goodfirstbug]: these are scoped to make it easy for first-time contributors to get their feet wet with Taskcluster code.
+* [Good first issues][goodfirstissue]: these are scoped to help first-time-contributors to get to know what might be a good issue to start with.
 * [Mentored bugs][bugsahoy]: these are slightly more involved projects that may require insight or guidance from someone on the Taskcluster team.
 * [Full list of open issues][issues]: everything else
 
@@ -23,12 +24,13 @@ You can add new people to the list using the [@all-contributors bot][all-contrib
 
 [participation]: https://www.mozilla.org/en-US/about/governance/policies/participation/
 [issues]: ../../issues
-[bugsahoy]: https://www.joshmatthews.net/bugsahoy/?taskcluster=1
-[goodfirstbug]: http://www.joshmatthews.net/bugsahoy/?taskcluster=1&simple=1
+[bugsahoy]: https://codetribute.mozilla.org/projects/taskcluster?tag%3Dbug
+[goodfirstbug]: https://codetribute.mozilla.org/projects/taskcluster?tag%3Dgood-first-bug
+[goodfirstissue]: https://codetribute.mozilla.org/projects/taskcluster?tag%3Dgood%2520first%2520issue
 [irc]: https://wiki.mozilla.org/IRC
 [bestpractices]: dev-docs/best-practices
-[developmentprocesses]: dev-docs/development-processes
+[developmentprocesses]: dev-docs/development-process.md
 [testing]: dev-docs/best-practices/testing.md
-[commit]: dev-docs/best-practices/commit.md
+[commit]: dev-docs/best-practices/commits.md
 [all-contributors]: https://allcontributors.org/
 [all-contributors-bot]: https://allcontributors.org/docs/en/bot/usage
