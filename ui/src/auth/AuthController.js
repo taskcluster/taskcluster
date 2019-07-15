@@ -115,11 +115,12 @@ export default class AuthController {
     const { data } = await this.client.query({
       query: credentialsQuery,
       fetchPolicy: 'no-cache',
-      variables: {
-        taskclusterToken: user.taskclusterToken,
-      },
     });
 
     return removeKeys(data.getCredentials, ['__typename']);
+  };
+
+  clearSession = () => {
+    fetch('/logout', { method: 'POST' });
   };
 }

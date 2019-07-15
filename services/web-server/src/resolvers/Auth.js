@@ -1,7 +1,7 @@
 module.exports = {
   Query: {
-    getCredentials(parent, { taskclusterToken }, { loaders }) {
-      return loaders.getCredentials.load(taskclusterToken);
+    getCredentials(parent, args, { loaders }) {
+      return loaders.getCredentials.load(args);
     },
   },
 };

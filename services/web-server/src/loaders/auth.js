@@ -1,49 +1,32 @@
 const DataLoader = require('dataloader');
 const Debug = require('debug');
 const WebServerError = require('../utils/WebServerError');
-const tryCatch = require('../utils/tryCatch');
-const jwt = require('../utils/jwt');
 
 const debug = Debug('loaders.auth');
 
 module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => {
   const getCredentials = new DataLoader(queries => {
     return Promise.all(
-      queries.map(async taskclusterToken => {
+      queries.map(async () => {
         // Don't report much to the user, to avoid revealing sensitive information, although
         // it is likely in the service logs.
-        const credentialError = new WebServerError('InputError', 'Could not generate credentials for this access token');
-        const [jwtError, jwtResponse] = await tryCatch(
-          jwt.verify({
-            key: cfg.login.jwt.key,
-            token: taskclusterToken,
-            options: {
-              audience: rootUrl,
-              issuer: rootUrl,
-            },
-          })
-        );
+        const credentialError = new WebServerError('InputError', 'Could not generate credentials for this user');
 
-        if (jwtError) {
-          debug(`error validating jwt: ${jwtError}`);
-          // Don't report much to the user, to avoid revealing sensitive information, although
-          // it is likely in the service logs.
-          throw credentialError;
+        if (!req.user) {
+          throw new WebServerError('Unauthorized', 'Authentication is required to generate credentials');
         }
 
-        debug(`received valid access_token for subject ${jwtResponse.sub}`);
-
-        const provider = jwtResponse.sub.split('/')[0];
+        const provider = req.user.identityProviderId;
         const strategy = strategies[provider];
 
         if (!strategy) {
           throw credentialError;
         }
 
-        const user = await strategy.userFromIdentity(jwtResponse.sub);
+        const user = await strategy.getUser({ userId: req.user.userId });
 
         if (!user) {
-          debug(`Could not find user with identity ${jwtResponse.sub}`);
+          debug(`Could not find user ${req.user.userId}`);
           throw credentialError;
         }
 

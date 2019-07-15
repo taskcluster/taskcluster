@@ -1,13 +1,20 @@
 const bodyParser = require('body-parser-graphql');
+const session = require('express-session');
+const MemoryStore = require('memorystore')(session);
 const compression = require('compression');
 const cors = require('cors');
 const express = require('express');
 const playground = require('graphql-playground-middleware-express').default;
 const passport = require('passport');
+const url = require('url');
 const credentials = require('./credentials');
 
 module.exports = async ({ cfg, strategies }) => {
   const app = express();
+  const store = new MemoryStore({
+    // prune expired entries every 24h
+    checkPeriod: 24 * 60 * 60 * 1000,
+  });
 
   app.set('view engine', 'ejs');
   app.set('views', 'src/views');
@@ -23,7 +30,27 @@ module.exports = async ({ cfg, strategies }) => {
   }).filter(o => o);
   app.use(cors({origin: allowedCORSOrigins}));
 
+  app.use(session({
+    store,
+    secret: cfg.login.sessionSecret,
+    sameSite: true,
+    resave: false,
+    saveUninitialized: false,
+    unset: 'destroy',
+    // Force a session identifier cookie to be set on every response.
+    // The expiration is reset to the original maxAge,
+    // resetting the expiration countdown.
+    rolling: true,
+    cookie: {
+      secure: url.parse(cfg.app.publicUrl).hostname !== 'localhost',
+      httpOnly: true,
+      // 15 minutes
+      maxAge: 15 * 60 * 5000,
+    },
+  }));
+
   app.use(passport.initialize());
+  app.use(passport.session());
   app.use(credentials());
   app.use(compression());
   app.post(
@@ -43,8 +70,26 @@ module.exports = async ({ cfg, strategies }) => {
     );
   }
 
-  passport.serializeUser((user, done) => done(null, user));
-  passport.deserializeUser((obj, done) => done(null, obj));
+  passport.serializeUser((user, done) => {
+    const isGithub = user.profile.provider === 'github';
+    const userId = isGithub ? user.profile.id : user.profile.user_id;
+
+    return done(null, {
+      identityProviderId: isGithub ? 'github' : 'mozilla-auth0',
+      userId,
+    });
+  });
+  passport.deserializeUser(async (obj, done) => {
+    return done(null, obj);
+  });
+
+  app.post('/logout', (req, res) => {
+    // Remove the req.user property and clear the login session
+    req.logout();
+    res
+      .status('200')
+      .send();
+  });
 
   Object.values(strategies).forEach(strategy => {
     strategy.useStrategy(app, cfg);
