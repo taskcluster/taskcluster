@@ -708,7 +708,6 @@ are configured, in order that the generic-worker under test has the required
 privileges to function correctly. Set this environment variable to ensure that
 the generic-worker under test will function correctly as a generic-worker CI
 worker.
-```
 
 # Making a new generic worker release
 
