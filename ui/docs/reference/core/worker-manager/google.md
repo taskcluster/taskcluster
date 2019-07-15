@@ -63,3 +63,5 @@ The provider starts workers with an instance attribute named `taskcluster` conta
 * `workerGroup` -- the worker's workerGroup (currently equal to the providerId, but do not depend on this)
 * `rootUrl` -- root URL for the Taskcluster deployment
 * `userData` -- userData from the worker pool configuration
+
+The worker's `workerId` is identical to its instance ID, which can be retrieved from the GCP metadata service at `instance/id`.
