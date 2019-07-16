@@ -213,15 +213,6 @@ class AwsProvider extends Provider {
     }));
   }
 
-  async deprovision({workerPool}) {
-    // should this be implemented in Provider? Looks like it's going to be the same for all
-    await workerPool.modify(wt => {
-      wt.previousProviderIds = wt.previousProviderIds.filter(p => p !== this.providerId);
-      delete wt.providerData[this.providerId];
-    });
-    // why don't we remove workers from db or terminate instances?
-  }
-
   async registerWorker({worker, workerPool, workerIdentityProof}) {
     // check worker's identity -
     // The way AWS works, workers will be getting temporary creds for accessing AWS APIs
