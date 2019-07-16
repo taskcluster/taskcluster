@@ -7,11 +7,11 @@ import (
 	"log"
 
 	"github.com/taskcluster/httpbackoff"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
-	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcsecrets"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
+	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcsecrets"
 )
 
 func clientFactory(rootURL string, credentials *tcclient.Credentials) (tc.Secrets, error) {
@@ -30,16 +30,25 @@ func configureRun(runnercfg *runner.RunnerConfig, run *runner.Run, secretsClient
 
 	// Consult secrets named both `worker-type:..` and (preferred) `worker-pool:..`.
 	found := false
-	for _, prefix := range([]string{"worker-type:", "worker-pool:"}) {
+	for _, prefix := range []string{"worker-type:", "worker-pool:"} {
 		secretName := prefix + run.WorkerPoolID
 		secResponse, err := secretsClient.Get(secretName)
 		if err != nil {
-			// 404 error is ok, since secrets aren't required. Anything else indicates there was a problem retrieving
-			// secret or talking to secrets service, so they should return an error
 			if apiCallException, isAPICallException := err.(*tcclient.APICallException); isAPICallException {
 				rootCause := apiCallException.RootCause
 				if badHTTPResponseCode, isBadHTTPResponseCode := rootCause.(httpbackoff.BadHttpResponseCode); isBadHTTPResponseCode {
+					// 404 error is ok, since secrets aren't required. Anything
+					// else indicates there was a problem retrieving secret or
+					// talking to secrets service, so they should return an
+					// error
 					if badHTTPResponseCode.HttpResponseCode == 404 {
+						continue
+					}
+
+					// and a 403 (insufficient scopes) is OK for the older
+					// (worker-type) name, as worker-manager will eventually
+					// stop providing scopes for it.
+					if prefix == "worker-type:" && badHTTPResponseCode.HttpResponseCode == 403 {
 						continue
 					}
 				}

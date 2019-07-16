@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
-	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcsecrets"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
+	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcsecrets"
 )
 
 func setup(t *testing.T) (*runner.RunnerConfig, *runner.Run) {
@@ -37,7 +37,7 @@ func setup(t *testing.T) (*runner.RunnerConfig, *runner.Run) {
 	return runnercfg, run
 }
 
-func TestGetSecretLegacy(t *testing.T) {
+func TestGetSecretLegacyFormat(t *testing.T) {
 	runnercfg, run := setup(t)
 
 	tc.FakeSecretsCreateSecret("worker-pool:pp/wt", &tcsecrets.Secret{
@@ -48,6 +48,17 @@ func TestGetSecretLegacy(t *testing.T) {
 	assert.NoError(t, err, "expected great success")
 	assert.Equal(t, true, run.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
 	assert.Equal(t, true, run.WorkerConfig.MustGet("from-secret"), "value for from-secret")
+}
+
+func TestGetSecretLegacyInsuffScopes(t *testing.T) {
+	runnercfg, run := setup(t)
+
+	tc.FakeSecretsCreateSecret("worker-type:pp/wt", nil) // meaning 403
+
+	err := configureRun(runnercfg, run, tc.FakeSecretsClientFactory)
+	assert.NoError(t, err, "expected great success")
+	assert.Equal(t, true, run.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
+	assert.Equal(t, false, run.WorkerConfig.MustGet("from-secret"), "value for from-secret")
 }
 
 func TestGetSecretLegacyName(t *testing.T) {

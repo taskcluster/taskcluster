@@ -32,10 +32,21 @@ func (cli *FakeSecrets) Get(name string) (*tcsecrets.Secret, error) {
 		return nil, &tcclient.APICallException{CallSummary: &cs, RootCause: rc}
 	}
 
+	// nil secrets are treated as inaccessible
+	if secret == nil {
+		cs := tcclient.CallSummary{}
+		rc := httpbackoff.BadHttpResponseCode{
+			HttpResponseCode: 403,
+			Message:          "insufficient scopes",
+		}
+		return nil, &tcclient.APICallException{CallSummary: &cs, RootCause: rc}
+	}
+
 	return secret, nil
 }
 
-// Create a new secret with the given content
+// Create a new secret with the given content; if this is nil then the secret
+// is inaccessible (403 / InsufficientScopes)
 func FakeSecretsCreateSecret(name string, response *tcsecrets.Secret) {
 	if secrets == nil {
 		secrets = make(map[string]*tcsecrets.Secret)
