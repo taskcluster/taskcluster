@@ -17,7 +17,6 @@ class AwsProvider extends Provider {
     estimator,
     validator,
     notify,
-    project,
   }) {
     super({
       providerId,
@@ -34,7 +33,6 @@ class AwsProvider extends Provider {
     this.instancePermissions = instancePermissions;
     this.apiVersion = apiVersion;
     this.region = region;
-    this.project = project;
 
     aws.config.update({region});
     this.iam = new aws.IAM({apiVersion});
@@ -187,14 +185,11 @@ class AwsProvider extends Provider {
           }, {
             Key: 'Owner',
             Value: workerPool.owner,
-          }, {
-            Key: 'Project',
-            Value: this.project,
           }],
         },
       });
     } catch (e) {
-      await workerPool.reportError({
+      return await workerPool.reportError({
         kind: 'creation-error',
         title: 'Instance Creation Error',
         description: e.message, // TODO: Make sure we clear exposing this with security folks
@@ -212,8 +207,7 @@ class AwsProvider extends Provider {
         created: new Date(),
         expires: taskcluster.fromNow('1 week'),
         state: this.Worker.states.REQUESTED,
-        providerData: { // what do we want to remember, anyways? 🤔
-          project: this.project,
+        providerData: { // what do we want to remember, anyways?
         },
       });
     }));
