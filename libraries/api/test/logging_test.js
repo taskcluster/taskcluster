@@ -29,11 +29,12 @@ suite(testing.suiteName(), function() {
     name: 'requireSomeScopes',
     title: 'Requre some scopse',
     description: 'Place we can call to test something',
+    category: 'API Library',
     scopes: {
       AnyOf: [
         {AllOf: ['aa', 'bb']},
         {AllOf: ['aa', 'bb', 'cc']},
-        {AllOf: ['bb', 'dd']},
+        {AllOf: ['bb', 'dd']},F
       ],
     },
   }, function(req, res) {
