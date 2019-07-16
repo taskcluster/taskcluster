@@ -34,7 +34,7 @@ suite(testing.suiteName(), function() {
       AnyOf: [
         {AllOf: ['aa', 'bb']},
         {AllOf: ['aa', 'bb', 'cc']},
-        {AllOf: ['bb', 'dd']},F
+        {AllOf: ['bb', 'dd']},
       ],
     },
   }, function(req, res) {
