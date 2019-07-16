@@ -116,7 +116,10 @@ func TestCredsExpiration(t *testing.T) {
 	// and wait until that happens
 	for {
 		time.Sleep(10 * time.Millisecond)
-		if len(transp.Messages) != 0 {
+
+		haveMessage := len(transp.Messages()) != 0
+
+		if haveMessage {
 			break
 		}
 	}
@@ -128,7 +131,7 @@ func TestCredsExpiration(t *testing.T) {
 				"finish-tasks": false,
 			},
 		},
-	}, transp.Messages)
+	}, transp.Messages())
 
 	err = p.WorkerFinished()
 	assert.NoError(t, err)
