@@ -476,7 +476,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       await assert.rejects(() =>
         helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
           expires: taskcluster.fromNow('1 hour'),
-          providerInfo: {},
         }), new RegExp(`Worker pool ${workerPoolId} does not exist`));
     });
 
@@ -487,7 +486,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       await assert.rejects(() =>
         helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
           expires: taskcluster.fromNow('-1 hour'),
-          providerInfo: {},
         }), /expires must be in the future/);
     });
 
@@ -499,7 +497,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       await assert.rejects(() =>
         helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
           expires: taskcluster.fromNow('1 hour'),
-          providerInfo: {},
         }), /Provider nosuch for worker pool/);
     });
 
@@ -510,7 +507,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       await assert.rejects(() =>
         helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
           expires: taskcluster.fromNow('1 hour'),
-          providerInfo: {},
         }), /creating workers is not supported/);
     });
 
@@ -523,7 +519,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       const expires = taskcluster.fromNow('1 hour');
       const worker = await helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
         expires,
-        providerInfo: {},
       });
 
       assert.equal(worker.workerPoolId, workerPoolId);
@@ -780,7 +775,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     const providerId = 'testing1';
     const workerGroup = 'wg';
     const workerId = 'wi';
-    const workerIdentityProof = {};
+    const workerIdentityProof = {'token': 'tok'};
 
     const defaultRegisterWorker = {
       workerPoolId, providerId, workerGroup, workerId, workerIdentityProof};
