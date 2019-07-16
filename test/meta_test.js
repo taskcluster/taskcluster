@@ -183,7 +183,6 @@ suite('Repo Meta Tests', function () {
       'ui/docs/reference/integrations/github/taskcluster-yml-v0.md',
       'ui/docs/reference/integrations/github/taskcluster-yml-v1.md',
       'ui/docs/reference/platform/queue/worker-hierarchy.md',
-      'ui/docs/tutorial/apis.md',
       'ui/docs/tutorial/authenticate.md',
       'ui/docs/tutorial/create-task-via-api.md',
       'ui/docs/tutorial/debug-task.md',
