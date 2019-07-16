@@ -132,6 +132,7 @@ builder.declare({
   route: '/task/:taskId',
   name: 'task',
   stability: APIBuilder.stability.stable,
+  category: 'Queue Service',
   idempotent: true,
   output: 'task.yml',
   title: 'Get Task Definition',
@@ -170,6 +171,7 @@ builder.declare({
   stability: APIBuilder.stability.stable,
   input: undefined, // No input is accepted
   output: 'task-status-response.yml',
+  category: 'Queue Service',
   title: 'Get task status',
   description: [
     'Get task status structure from `taskId`',
@@ -206,6 +208,7 @@ builder.declare({
   },
   name: 'listTaskGroup',
   stability: APIBuilder.stability.stable,
+  category: 'Queue Service',
   output: 'list-task-group-response.yml',
   title: 'List Task Group',
   description: [
@@ -290,6 +293,7 @@ builder.declare({
     limit: /^[0-9]+$/,
   },
   name: 'listDependentTasks',
+  category: 'Queue Service',
   stability: APIBuilder.stability.stable,
   output: 'list-dependent-tasks-response.yml',
   title: 'List Dependent Tasks',
@@ -549,6 +553,7 @@ builder.declare({
   name: 'createTask',
   stability: APIBuilder.stability.stable,
   idempotent: true,
+  category: 'Queue Service',
   scopes: {AllOf: [
     {for: 'scope', in: 'scopes', each: '<scope>'},
     {for: 'route', in: 'routes', each: 'queue:route:<route>'},
@@ -759,6 +764,7 @@ builder.declare({
   route: '/task/:taskId/define',
   name: 'defineTask',
   stability: APIBuilder.stability.deprecated,
+  category: 'Queue Service',
   scopes: {AllOf: [
     {for: 'scope', in: 'scopes', each: '<scope>'},
     {for: 'route', in: 'routes', each: 'queue:route:<route>'},
@@ -925,6 +931,7 @@ builder.declare({
   route: '/task/:taskId/schedule',
   name: 'scheduleTask',
   stability: APIBuilder.stability.stable,
+  category: 'Queue Service',
   scopes: {AnyOf: [
     'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
     {AllOf: [ // Legacy scopes
@@ -995,6 +1002,7 @@ builder.declare({
   route: '/task/:taskId/rerun',
   name: 'rerunTask',
   stability: APIBuilder.stability.deprecated,
+  category: 'Queue Service',
   scopes: {AnyOf: [
     'queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>',
     {AllOf: [ // Legacy scopes
@@ -1122,6 +1130,7 @@ builder.declare({
   route: '/task/:taskId/cancel',
   name: 'cancelTask',
   stability: APIBuilder.stability.stable,
+  category: 'Queue Service',
   scopes: {AnyOf: [
     'queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>',
     {AllOf: [ // Legacy scopes
@@ -1249,6 +1258,7 @@ builder.declare({
   route: '/poll-task-url/:provisionerId/:workerType',
   name: 'pollTaskUrls',
   stability: APIBuilder.stability.deprecated,
+  category: 'Queue Service',
   // this is so deprecated we do not even want to show its docs
   noPublish: true,
   scopes: {AnyOf: [
@@ -1301,6 +1311,7 @@ builder.declare({
   route: '/claim-work/:provisionerId/:workerType',
   name: 'claimWork',
   stability: APIBuilder.stability.stable,
+  category: 'Queue Service',
   scopes: {AllOf: [
     'queue:claim-work:<provisionerId>/<workerType>',
     'queue:worker-id:<workerGroup>/<workerId>',
@@ -1389,6 +1400,7 @@ builder.declare({
   route: '/task/:taskId/runs/:runId/claim',
   name: 'claimTask',
   stability: APIBuilder.stability.deprecated,
+  category: 'Queue Service',
   scopes: {AnyOf: [
     {AllOf: [
       'queue:claim-task:<provisionerId>/<workerType>',
@@ -1498,6 +1510,7 @@ builder.declare({
   route: '/task/:taskId/runs/:runId/reclaim',
   name: 'reclaimTask',
   stability: APIBuilder.stability.stable,
+  category: 'Queue Service',
   scopes: {AnyOf: [
     'queue:reclaim-task:<taskId>/<runId>',
     {AllOf: [ // Legacy
@@ -1779,6 +1792,7 @@ builder.declare({
   route: '/task/:taskId/runs/:runId/completed',
   name: 'reportCompleted',
   stability: APIBuilder.stability.stable,
+  category: 'Queue Service',
   scopes: {AnyOf: [
     'queue:resolve-task:<taskId>/<runId>',
     {AllOf: [ // Legacy
@@ -1808,6 +1822,7 @@ builder.declare({
   route: '/task/:taskId/runs/:runId/failed',
   name: 'reportFailed',
   stability: APIBuilder.stability.stable,
+  category: 'Queue Service',
   scopes: {AnyOf: [
     'queue:resolve-task:<taskId>/<runId>',
     {AllOf: [ // Legacy
@@ -1840,6 +1855,7 @@ builder.declare({
   route: '/task/:taskId/runs/:runId/exception',
   name: 'reportException',
   stability: APIBuilder.stability.stable,
+  category: 'Queue Service',
   scopes: {AnyOf: [
     'queue:resolve-task:<taskId>/<runId>',
     {AllOf: [ // Legacy
@@ -2008,6 +2024,7 @@ builder.declare({
     limit: /^[0-9]+$/,
   },
   name: 'listProvisioners',
+  category: 'Queue Service',
   stability: APIBuilder.stability.experimental,
   output: 'list-provisioners-response.yml',
   title: 'Get a list of all active provisioners',
@@ -2046,6 +2063,7 @@ builder.declare({
   name: 'getProvisioner',
   stability: APIBuilder.stability.experimental,
   output: 'provisioner-response.yml',
+  category: 'Queue Service',
   title: 'Get an active provisioner',
   description: [
     'Get an active provisioner.',
@@ -2079,6 +2097,7 @@ builder.declare({
   route: '/provisioners/:provisionerId',
   name: 'declareProvisioner',
   stability: APIBuilder.stability.experimental,
+  category: 'Queue Service',
   scopes: {AllOf: [{
     for: 'property',
     in: 'properties',
@@ -2125,6 +2144,7 @@ builder.declare({
   route: '/pending/:provisionerId/:workerType',
   name: 'pendingTasks',
   stability: APIBuilder.stability.stable,
+  category: 'Queue Service',
   output: 'pending-tasks-response.yml',
   title: 'Get Number of Pending Tasks',
   description: [
@@ -2162,6 +2182,7 @@ builder.declare({
     limit: /^[0-9]+$/,
   },
   name: 'listWorkerTypes',
+  category: 'Queue Service',
   stability: APIBuilder.stability.experimental,
   output: 'list-workertypes-response.yml',
   title: 'Get a list of all active worker-types',
@@ -2197,6 +2218,7 @@ builder.declare({
   route: '/provisioners/:provisionerId/worker-types/:workerType',
   name: 'getWorkerType',
   stability: APIBuilder.stability.experimental,
+  category: 'Queue Service',
   output: 'workertype-response.yml',
   title: 'Get a worker-type',
   description: [
@@ -2233,6 +2255,7 @@ builder.declare({
   route: '/provisioners/:provisionerId/worker-types/:workerType',
   name: 'declareWorkerType',
   stability: APIBuilder.stability.experimental,
+  category: 'Queue Service',
   scopes: {AllOf: [
     {
       for: 'property',
@@ -2287,6 +2310,7 @@ builder.declare({
   },
   name: 'listWorkers',
   stability: APIBuilder.stability.experimental,
+  category: 'Queue Service',
   output: 'list-workers-response.yml',
   title: 'Get a list of all active workers of a workerType',
   description: [
@@ -2358,6 +2382,7 @@ builder.declare({
   stability: APIBuilder.stability.experimental,
   output: 'worker-response.yml',
   title: 'Get a worker-type',
+  category: 'Queue Service',
   description: [
     'Get a worker from a worker-type.',
   ].join('\n'),
@@ -2402,6 +2427,7 @@ builder.declare({
   route: '/provisioners/:provisionerId/worker-types/:workerType/workers/:workerGroup/:workerId',
   name: 'quarantineWorker',
   stability: APIBuilder.stability.experimental,
+  category: 'Queue Service',
   scopes: {AllOf: [
     'queue:quarantine-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>',
   ]},
@@ -2447,6 +2473,7 @@ builder.declare({
   route: '/provisioners/:provisionerId/worker-types/:workerType/:workerGroup/:workerId',
   name: 'declareWorker',
   stability: APIBuilder.stability.experimental,
+  category: 'Queue Service',
   scopes: {AllOf: [
     {
       for: 'property',
