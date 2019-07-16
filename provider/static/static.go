@@ -1,10 +1,7 @@
 package static
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
-	"time"
 
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
@@ -27,9 +24,6 @@ type StaticProvider struct {
 	runnercfg                  *runner.RunnerConfig
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	proto                      *protocol.Protocol
-
-	credsExpire      tcclient.Time
-	credsExpireTimer *time.Timer
 }
 
 func (p *StaticProvider) ConfigureRun(run *runner.Run) error {
@@ -40,15 +34,6 @@ func (p *StaticProvider) ConfigureRun(run *runner.Run) error {
 	}
 
 	run.RootURL = pc.RootURL
-	run.WorkerPoolID = pc.WorkerPoolID
-	run.WorkerGroup = pc.WorkerGroup
-	run.WorkerID = pc.WorkerID
-
-	workerIdentityProofMap := map[string]interface{}{"secret": interface{}(pc.IdentitySecret)}
-	workerIdentityProof, err := json.Marshal(workerIdentityProofMap)
-	if err != nil {
-		return err
-	}
 
 	// We need a worker manager client for fetching taskcluster credentials.
 	// Ensure auth is disabled in client, since we don't have credentials yet.
@@ -57,22 +42,10 @@ func (p *StaticProvider) ConfigureRun(run *runner.Run) error {
 		return fmt.Errorf("Could not create worker manager client: %v", err)
 	}
 
-	reg, err := wm.RegisterWorker(&tcworkermanager.RegisterWorkerRequest{
-		WorkerPoolID:        pc.WorkerPoolID,
-		ProviderID:          pc.ProviderID,
-		WorkerGroup:         pc.WorkerGroup,
-		WorkerID:            pc.WorkerID,
-		WorkerIdentityProof: json.RawMessage(workerIdentityProof),
-	})
+	err = provider.RegisterWorker(run, wm, pc.WorkerPoolID, pc.ProviderID, pc.WorkerGroup, pc.WorkerID, "secret", pc.IdentitySecret)
 	if err != nil {
-		return fmt.Errorf("Could not register worker: %v", err)
+		return err
 	}
-
-	run.Credentials.ClientID = reg.Credentials.ClientID
-	run.Credentials.AccessToken = reg.Credentials.AccessToken
-	run.Credentials.Certificate = reg.Credentials.Certificate
-
-	p.credsExpire = reg.Expires
 
 	run.ProviderMetadata = map[string]string{}
 
@@ -84,28 +57,10 @@ func (p *StaticProvider) SetProtocol(proto *protocol.Protocol) {
 }
 
 func (p *StaticProvider) WorkerStarted() error {
-	// gracefully terminate the worker when the credentials expire
-	untilExpire := time.Until(time.Time(p.credsExpire))
-	p.credsExpireTimer = time.AfterFunc(untilExpire-30*time.Second, func() {
-		if p.proto != nil && p.proto.Capable("graceful-termination") {
-			log.Println("Taskcluster Credentials are expiring in 30s; stopping worker")
-			p.proto.Send(protocol.Message{
-				Type: "graceful-termination",
-				Properties: map[string]interface{}{
-					// credentials are expiring, so no time to shut down..
-					"finish-tasks": false,
-				},
-			})
-		}
-	})
 	return nil
 }
 
 func (p *StaticProvider) WorkerFinished() error {
-	if p.credsExpireTimer != nil {
-		p.credsExpireTimer.Stop()
-		p.credsExpireTimer = nil
-	}
 	return nil
 }
 

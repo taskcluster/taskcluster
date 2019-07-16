@@ -1,11 +1,8 @@
 package google
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
-	"time"
 
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
@@ -20,18 +17,13 @@ type GoogleProvider struct {
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	metadataService            MetadataService
 	proto                      *protocol.Protocol
-
-	credsExpire      tcclient.Time
-	credsExpireTimer *time.Timer
 }
 
 func (p *GoogleProvider) ConfigureRun(run *runner.Run) error {
-	instanceID, err := p.metadataService.queryMetadata("/instance/id")
+	workerID, err := p.metadataService.queryMetadata("/instance/id")
 	if err != nil {
 		return fmt.Errorf("Could not query metadata: %v", err)
 	}
-
-	run.WorkerID = instanceID
 
 	userData, err := p.metadataService.queryUserData()
 	if err != nil {
@@ -39,18 +31,10 @@ func (p *GoogleProvider) ConfigureRun(run *runner.Run) error {
 	}
 
 	run.RootURL = userData.RootURL
-	run.WorkerPoolID = userData.WorkerPoolID
-	run.WorkerGroup = userData.WorkerGroup
 
 	// the worker identity
 	proofPath := fmt.Sprintf("/instance/service-accounts/default/identity?audience=%s&format=full", userData.RootURL)
 	proofToken, err := p.metadataService.queryMetadata(proofPath)
-	if err != nil {
-		return err
-	}
-
-	workerIdentityProofMap := map[string]interface{}{"token": interface{}(proofToken)}
-	workerIdentityProof, err := json.Marshal(workerIdentityProofMap)
 	if err != nil {
 		return err
 	}
@@ -62,25 +46,13 @@ func (p *GoogleProvider) ConfigureRun(run *runner.Run) error {
 		return fmt.Errorf("Could not create worker manager client: %v", err)
 	}
 
-	reg, err := wm.RegisterWorker(&tcworkermanager.RegisterWorkerRequest{
-		WorkerPoolID:        userData.WorkerPoolID,
-		ProviderID:          userData.ProviderID,
-		WorkerGroup:         userData.WorkerGroup,
-		WorkerID:            instanceID,
-		WorkerIdentityProof: json.RawMessage(workerIdentityProof),
-	})
+	err = provider.RegisterWorker(run, wm, userData.WorkerPoolID, userData.ProviderID, userData.WorkerGroup, workerID, "token", proofToken)
 	if err != nil {
-		return fmt.Errorf("Could not register worker: %v", err)
+		return err
 	}
 
-	run.Credentials.ClientID = reg.Credentials.ClientID
-	run.Credentials.AccessToken = reg.Credentials.AccessToken
-	run.Credentials.Certificate = reg.Credentials.Certificate
-
-	p.credsExpire = reg.Expires
-
 	providerMetadata := map[string]string{
-		"instance-id": instanceID,
+		"instance-id": workerID,
 	}
 	for _, f := range []struct {
 		name string
@@ -118,28 +90,10 @@ func (p *GoogleProvider) SetProtocol(proto *protocol.Protocol) {
 }
 
 func (p *GoogleProvider) WorkerStarted() error {
-	// gracefully terminate the worker when the credentials expire
-	untilExpire := time.Until(time.Time(p.credsExpire))
-	p.credsExpireTimer = time.AfterFunc(untilExpire-30*time.Second, func() {
-		if p.proto != nil && p.proto.Capable("graceful-termination") {
-			log.Println("Taskcluster Credentials are expiring in 30s; stopping worker")
-			p.proto.Send(protocol.Message{
-				Type: "graceful-termination",
-				Properties: map[string]interface{}{
-					// credentials are expiring, so no time to shut down..
-					"finish-tasks": false,
-				},
-			})
-		}
-	})
 	return nil
 }
 
 func (p *GoogleProvider) WorkerFinished() error {
-	if p.credsExpireTimer != nil {
-		p.credsExpireTimer.Stop()
-		p.credsExpireTimer = nil
-	}
 	return nil
 }
 
