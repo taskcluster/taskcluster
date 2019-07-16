@@ -174,7 +174,7 @@ class AwsProvider extends Provider {
         },
         MaxCount: toSpawn,
         MinCount: toSpawn,
-        ImageId: workerPool.config.imageId,
+        ImageId: workerPool.config.image[this.region],
         InstanceType: workerPool.config.instanceType,
         Placement: {
           AvailabilityZone: this.region,
