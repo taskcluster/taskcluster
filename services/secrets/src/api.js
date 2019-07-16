@@ -36,6 +36,7 @@ builder.declare({
   scopes: 'secrets:set:<name>',
   title: 'Set Secret',
   stability: 'stable',
+  category: 'Secrets Service',
   cleanPayload,
   description: [
     'Set the secret associated with some key.  If the secret already exists, it is',
@@ -72,6 +73,7 @@ builder.declare({
   scopes: 'secrets:set:<name>',
   title: 'Delete Secret',
   stability: 'stable',
+  category: 'Secrets Service',
   description: [
     'Delete the secret associated with some key.',
   ].join('\n'),
@@ -97,6 +99,7 @@ builder.declare({
   scopes: 'secrets:get:<name>',
   title: 'Read Secret',
   stability: 'stable',
+  category: 'Secrets Service',
   description: [
     'Read the secret associated with some key.  If the secret has recently',
     'expired, the response code 410 is returned.  If the caller lacks the',
@@ -129,6 +132,7 @@ builder.declare({
   output: 'secret-list.yml',
   title: 'List Secrets',
   stability: 'stable',
+  category: 'Secrets Service',
   query: {
     continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,

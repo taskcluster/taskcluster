@@ -32,6 +32,7 @@ suite(testing.suiteName(), function() {
     name: 'testInputValidate',
     input: 'test-schema.yml',
     title: 'Test End-Point',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send('Hello World');
@@ -44,6 +45,7 @@ suite(testing.suiteName(), function() {
     name: 'testInputValidOutputValidate',
     output: 'test-schema.yml',
     title: 'Test End-Point',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.reply({value: 4});
@@ -56,6 +58,7 @@ suite(testing.suiteName(), function() {
     name: 'testInputInvalidOutputValidate',
     output: 'test-schema.yml',
     title: 'Test End-Point',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.reply({value: 12});
@@ -69,6 +72,7 @@ suite(testing.suiteName(), function() {
     input: 'test-schema.yml',
     skipInputValidation: true,
     title: 'Test End-Point',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send('Hello World');
@@ -81,6 +85,7 @@ suite(testing.suiteName(), function() {
     name: 'testOutputSkipOutputValidation',
     output: 'test-schema.yml',
     skipOutputValidation: true,
+    category: 'API Library',
     title: 'Test End-Point',
     description: 'Place we can call to test something',
   }, function(req, res) {
@@ -94,6 +99,7 @@ suite(testing.suiteName(), function() {
     name: 'testBlobOutput',
     output: 'blob',
     title: 'Test End-Point',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.reply({value: 'Hello World'});
@@ -105,6 +111,7 @@ suite(testing.suiteName(), function() {
     route: '/test-res-reply',
     name: 'testResReplyGet',
     title: 'Test End-Point',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.reply();
@@ -116,6 +123,7 @@ suite(testing.suiteName(), function() {
     name: 'testResReplyPost',
     output: 'test-schema.yml',
     title: 'Test End-Point',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.reply();
@@ -267,6 +275,7 @@ suite(testing.suiteName(), function() {
       route: '/test-input',
       name: 'testInputValidate',
       input: 'no-such-schema.yml',
+      category: 'API Library',
       title: 'Test End-Point',
       description: '..',
     }, function(req, res) {});

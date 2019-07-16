@@ -9,6 +9,7 @@ builder.declare({
   input: undefined,
   output: 'statsum-token-response.yml',
   stability: 'stable',
+  category: 'Auth Service',
   scopes: 'auth:statsum:<project>',
   title: 'Get Token for Statsum Project',
   description: [

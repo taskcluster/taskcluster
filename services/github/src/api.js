@@ -182,6 +182,7 @@ builder.declare({
   route: '/github',
   name: 'githubWebHookConsumer',
   title: 'Consume GitHub WebHook',
+  category: 'Github Service',
   stability: 'experimental',
   description: [
     'Capture a GitHub event and publish it via pulse, if it\'s a push,',
@@ -308,6 +309,7 @@ builder.declare({
   name: 'builds',
   title: 'List of Builds',
   stability: 'experimental',
+  category: 'Github Service',
   output: 'build-list.yml',
   query: {
     continuationToken: Entity.continuationTokenPattern,
@@ -352,6 +354,7 @@ builder.declare({
     'and returns corresponding badge svg.',
   ].join('\n'),
   stability: 'experimental',
+  category: 'Github Service',
   method: 'get',
   route: '/repository/:owner/:repo/:branch/badge.svg',
 }, async function(req, res) {
@@ -399,6 +402,7 @@ builder.declare({
   ].join('\n'),
   stability: 'experimental',
   method: 'get',
+  category: 'Github Service',
   route: '/repository/:owner/:repo',
   output: 'repository.yml',
 }, async function(req, res) {
@@ -444,6 +448,7 @@ builder.declare({
     'Note: This is a redirect rather than a direct link.',
   ].join('\n'),
   stability: 'experimental',
+  category: 'Github Service',
   method: 'get',
   route: '/repository/:owner/:repo/:branch/latest',
 }, async function(req, res) {
@@ -478,6 +483,7 @@ builder.declare({
   ].join('\n'),
   stability: 'experimental',
   method: 'post',
+  category: 'Github Service',
   // route and input (schema) matches github API
   // https://developer.github.com/v3/repos/statuses/#create-a-status
   route: '/repository/:owner/:repo/statuses/:sha',
@@ -529,6 +535,7 @@ builder.declare({
   ].join('\n'),
   stability: 'experimental',
   method: 'post',
+  category: 'Github Service',
   // route and input (schema) matches github API
   // https://developer.github.com/v3/issues/comments/#create-a-comment
   // number is a Issue or Pull request ID. Both share the same IDs set.

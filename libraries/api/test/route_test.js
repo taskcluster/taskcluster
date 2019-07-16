@@ -29,6 +29,7 @@ suite(testing.suiteName(), function() {
     route: '/single-param/:myparam',
     name: 'testParam',
     title: 'Test End-Point',
+    category: 'API Library',
     stability: APIBuilder.stability.stable,
     description: 'Place we can call to test something',
   }, function(req, res) {
@@ -41,6 +42,7 @@ suite(testing.suiteName(), function() {
     name: 'testParamWithSlashes',
     title: 'Test End-Point',
     stability: APIBuilder.stability.stable,
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send(req.params.myparam);
@@ -54,6 +56,7 @@ suite(testing.suiteName(), function() {
     },
     name: 'testQueryParam',
     title: 'Test End-Point',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send(req.query.nextPage || 'empty');
@@ -71,6 +74,7 @@ suite(testing.suiteName(), function() {
     },
     name: 'testQueryParamFn',
     title: 'Test End-Point',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send(req.query.incantation);
@@ -81,6 +85,7 @@ suite(testing.suiteName(), function() {
     route: '/slash-param/:name(*)',
     name: 'testSlashParam',
     title: 'Test End-Point',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send(req.params.name);
@@ -91,6 +96,7 @@ suite(testing.suiteName(), function() {
     route: '/validated-param/:taskId',
     name: 'testParamValidation',
     title: 'Test End-Point',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send(req.params.taskId);
@@ -101,6 +107,7 @@ suite(testing.suiteName(), function() {
     route: '/function-validated-param/:fnValidated',
     name: 'testFunctionParamValidation',
     title: 'Test End-Point',
+    category: 'API Library',
     params: {
       fnValidated: function(val) {
         if (val !== this.expectedValidatedParam) {
@@ -119,6 +126,7 @@ suite(testing.suiteName(), function() {
     name: 'testParam2Validation',
     title: 'Test End-Point',
     description: 'Place we can call to test something',
+    category: 'API Library',
     params: {
       param2: function(value) {
         if (value !== 'correct') {
@@ -371,6 +379,7 @@ suite(testing.suiteName(), function() {
       route: '/test',
       name: 'test',
       title: 'Test',
+      category: 'API Library',
       description: 'Test',
     }, function(req, res) {});
 
@@ -380,6 +389,7 @@ suite(testing.suiteName(), function() {
         route: '/test',
         name: 'testDuplicate',
         title: 'Test',
+        category: 'API Library',
         description: 'Test',
       }, function(req, res) {});
     }, /Identical route and method/);

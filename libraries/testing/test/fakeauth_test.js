@@ -38,6 +38,7 @@ builder.declare({
   scopes: 'test.scope',
   title: 'Test function',
   description: 'for testing',
+  category: 'Testing library',
 }, async function(req, res) {
   try {
     await req.authorize();

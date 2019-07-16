@@ -32,6 +32,7 @@ suite(testing.suiteName(), function() {
     route: '/inputerror',
     name: 'InputError',
     title: 'Test End-Point',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.reportError('InputError', 'Testing Error', {dee: 'tails'});
@@ -61,6 +62,7 @@ suite(testing.suiteName(), function() {
     route: '/toomanyfoos',
     name: 'toomanyfoos',
     title: 'Test End-Point',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     req.body.foos = [4, 5];
@@ -109,6 +111,7 @@ suite(testing.suiteName(), function() {
     route: '/ISE',
     name: 'ISE',
     title: 'Test End-Point',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     throw new Error('uhoh');
@@ -137,6 +140,7 @@ suite(testing.suiteName(), function() {
     name: 'InputValidationError',
     title: 'Test End-Point',
     input: 'test-schema.yml',
+    category: 'API Library',
     description: 'Place we can call to test something',
     cleanPayload: payload => {
       payload.secret = '<HIDDEN>';

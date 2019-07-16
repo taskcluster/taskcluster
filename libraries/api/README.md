@@ -99,6 +99,7 @@ To declare an API method, call `builder.declare(options, handler)` with the foll
  * `title` (required) - short title of the API method
  * `description` (required) - detailed description / documentation of the method, in markdwon
  * `method` (required) - the HTTP method used to invoke this method, lower-cased, e.g., `"post"`
+ * `category` (required) - the category for this API method. API methods with same category will be grouped together in documentation.
  * `route` (required) - the URL pattern, with parameters, e.g., `'/object/:id/action/:param'`
  * `params` - patterns for URL parameters (see below)
  * `query` - patterns for query parameters (see below)

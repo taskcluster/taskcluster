@@ -31,6 +31,7 @@ builder.declare({
   route: '/worker-pool/:workerPoolId(*)',
   name: 'createWorkerPool',
   title: 'Create Worker Pool',
+  category: 'Worker Manager',
   stability: APIBuilder.stability.experimental,
   input: 'create-worker-pool-request.yml',
   output: 'worker-pool-full.yml',
@@ -102,6 +103,7 @@ builder.declare({
   name: 'updateWorkerPool',
   title: 'Update Worker Pool',
   stability: APIBuilder.stability.experimental,
+  category: 'Worker Manager',
   input: 'update-worker-pool-request.yml',
   output: 'worker-pool-full.yml',
   scopes: {AllOf: [
@@ -172,6 +174,7 @@ builder.declare({
   route: '/worker-pool/:workerPoolId(*)',
   name: 'workerPool',
   title: 'Get Worker Pool',
+  category: 'Worker Manager',
   stability: APIBuilder.stability.experimental,
   output: 'worker-pool-full.yml',
   description: [
@@ -199,6 +202,7 @@ builder.declare({
   name: 'listWorkerPools',
   title: 'List All Worker Pools',
   stability: APIBuilder.stability.experimental,
+  category: 'Worker Manager',
   output: 'worker-pool-list.yml',
   description: [
     'Get the list of all the existing worker pools.',
@@ -228,6 +232,7 @@ builder.declare({
   name: 'reportWorkerError',
   title: 'Report an error from a worker',
   input: 'report-worker-error-request.yml',
+  category: 'Worker Manager',
   output: 'worker-pool-error.yml',
   scopes: {AllOf: [
     'assume:worker-pool:<workerPoolId>',
@@ -278,6 +283,7 @@ builder.declare({
   },
   name: 'listWorkerPoolErrors',
   title: 'List Worker Pool Errors',
+  category: 'Worker Manager',
   stability: APIBuilder.stability.experimental,
   output: 'worker-pool-error-list.yml',
   description: [
@@ -316,6 +322,7 @@ builder.declare({
   title: 'Workers in a specific Worker Group in a Worker Pool',
   stability: APIBuilder.stability.experimental,
   output: 'worker-list.yml',
+  category: 'Worker Manager',
   description: [
     'Get the list of all the existing workers in a given group in a given worker pool.',
   ].join('\n'),
@@ -348,6 +355,7 @@ builder.declare({
   title: 'Get a Worker',
   stability: APIBuilder.stability.experimental,
   output: 'worker-full.yml',
+  category: 'Worker Manager',
   description: [
     'Get a single worker.',
   ].join('\n'),
@@ -370,6 +378,7 @@ builder.declare({
   route: '/workers/:workerPoolId:/:workerGroup/:workerId',
   name: 'createWorker',
   title: 'Create a Worker',
+  category: 'Worker Manager',
   stability: APIBuilder.stability.experimental,
   input: 'create-worker-request.yml',
   output: 'worker-full.yml',
@@ -423,6 +432,7 @@ builder.declare({
   route: '/workers/:workerPoolId:/:workerGroup/:workerId',
   name: 'removeWorker',
   title: 'Remove a Worker',
+  category: 'Worker Manager',
   stability: APIBuilder.stability.experimental,
   // note that this pattern relies on workerGroup and workerId not containing `/`
   scopes: 'worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>',
@@ -468,6 +478,7 @@ builder.declare({
   },
   name: 'listWorkersForWorkerPool',
   title: 'Workers in a Worker Pool',
+  category: 'Worker Manager',
   stability: APIBuilder.stability.experimental,
   output: 'worker-list.yml',
   description: [
@@ -500,6 +511,7 @@ builder.declare({
   name: 'registerWorker',
   title: 'Register a running worker',
   stability: APIBuilder.stability.experimental,
+  category: 'Worker Manager',
   input: 'register-worker-request.yml',
   output: 'register-worker-response.yml',
   description: [

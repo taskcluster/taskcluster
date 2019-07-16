@@ -10,6 +10,7 @@ builder.declare({
     format: /iam-role-compat/,
   },
   stability: 'stable',
+  category: 'Auth Service',
   scopes: {
     if: 'levelIsReadOnly',
     then: {AnyOf: [

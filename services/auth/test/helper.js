@@ -221,6 +221,7 @@ testServiceBuilder.declare({
   name: 'resource',
   scopes: {AllOf: ['myapi:resource']},
   title: 'Get Resource',
+  category: 'Auth Service',
   description: '...',
 }, function(req, res) {
   res.status(200).json({
