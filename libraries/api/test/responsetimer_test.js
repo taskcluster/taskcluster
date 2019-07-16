@@ -24,6 +24,7 @@ suite(testing.suiteName(), function() {
     route: '/single-param/:myparam',
     name: 'testParam',
     title: 'Test End-Point',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send(req.params.myparam);
@@ -34,6 +35,7 @@ suite(testing.suiteName(), function() {
     route: '/slash-param/:name(*)',
     name: 'testSlashParam',
     title: 'Test End-Point',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(404).send(req.params.name);
@@ -44,6 +46,7 @@ suite(testing.suiteName(), function() {
     route: '/another-param/:name(*)',
     name: 'testAnotherParam',
     title: 'Test End-Point',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(500).send(req.params.name);
