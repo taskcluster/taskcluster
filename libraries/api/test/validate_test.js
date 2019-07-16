@@ -72,6 +72,7 @@ suite(testing.suiteName(), function() {
     input: 'test-schema.yml',
     skipInputValidation: true,
     title: 'Test End-Point',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send('Hello World');
