@@ -43,7 +43,7 @@ suite(testing.suiteName(), function() {
     route: '/internal-error-sometimes',
     name: 'getOccasionalInternalError',
     title: 'Test End-Point',
-    category: 'TaskCluster Client',
+    category: 'Taskcluster Client',
     scopes: 'test:internal-error',
     description: 'Place we can call to test something',
   }, function(req, res) {
@@ -69,7 +69,7 @@ suite(testing.suiteName(), function() {
     route: '/user-error',
     name: 'getUserError',
     title: 'Test End-Point',
-    category: 'TaskCluster Client',
+    category: 'Taskcluster Client',
     scopes: 'test:internal-error',
     description: 'Place we can call to test something',
   }, function(req, res) {
@@ -88,7 +88,7 @@ suite(testing.suiteName(), function() {
     name: 'getConnectionError',
     title: 'Test End-Point',
     scopes: 'test:internal-error',
-    category: 'TaskCluster Client',
+    category: 'Taskcluster Client',
     description: 'Place we can call to test something',
   }, function(req, res) {
     getConnectionErrorCount += 1;
