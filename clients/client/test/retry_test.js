@@ -26,7 +26,7 @@ suite(testing.suiteName(), function() {
     name: 'getInternalError',
     title: 'Test End-Point',
     scopes: 'test:internal-error',
-    category: 'TaskCluster Client',
+    category: 'Taskcluster Client',
     description: 'Place we can call to test something',
   }, function(req, res) {
     getInternalErrorCount += 1;
