@@ -14,6 +14,8 @@ import (
 // filepaths, with 0600 file permissions.
 func SecureFiles(filepaths []string) (err error) {
 	// Use /usr/bin/id rather than user.Current due to https://bugzil.la/1566159
+	// Note, if we enabled CGO in builds, we could use user.Current, but for now
+	// we've decided not to.
 	uidBytes, err := exec.Command("/usr/bin/id", "-u").CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s: %v", uidBytes, err)
