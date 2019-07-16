@@ -2140,7 +2140,7 @@ date-fns@^1.27.2, date-fns@^1.29.0:
   resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-1.30.1.tgz#2e71bf0b119153dbb4cc4e88d9ea5acfb50dc05c"
   integrity sha512-hBSVCvSmWC+QypYObzwGOd9wqdDpOt+0wl0KbU+R+uuZBS1jN8VsD1ss3irQDknRj5NvxiTF6oj/nDRnN/UQNw==
 
-debug@*, debug@4, debug@^4.0.0, debug@^4.0.1, debug@^4.1.0, debug@^4.1.1:
+debug@*, debug@4, debug@4.1.1, debug@^4.0.0, debug@^4.0.1, debug@^4.1.0, debug@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.1.1.tgz#3b72260255109c6b589cee050f1d516139664791"
   integrity sha512-pYAIzeRo8J6KPEaJ0VWOh5Pzkbw/RetuzehGM7QRRX5he4fPHx2rdKMB256ehJCkX+XRQm16eZLqLNS8RSZXZw==
@@ -2731,7 +2731,7 @@ esprima@^4.0.0:
   resolved "https://registry.yarnpkg.com/esprima/-/esprima-4.0.1.tgz#13b04cdb3e6c5d19df91ab6987a8695619b0aa71"
   integrity sha512-eGuFFw7Upda+g4p+QHvnW0RyTX/SVeJBDM/gCtMARO0cLuT2HcEKnTPvhjV6aGeqrCB/sbNop0Kszm0jsaWU4A==
 
-esprima@~1.0.2:
+esprima@~1.0, esprima@~1.0.2:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/esprima/-/esprima-1.0.4.tgz#9f557e08fc3b4d26ece9dd34f8fbf476b62585ad"
   integrity sha1-n1V+CPw7TSbs6d00+Pv0drYlha0=
@@ -3722,6 +3722,11 @@ hoek@6.x.x:
   resolved "https://registry.yarnpkg.com/hoek/-/hoek-6.1.2.tgz#99e6d070561839de74ee427b61aa476bd6bddfd6"
   integrity sha512-6qhh/wahGYZHFSFw12tBbJw5fsAhhwrrG/y3Cs0YMTv2WzMnL0oLPnQJjv1QJvEfylRSOFuP+xCu+tdx0tD16Q==
 
+hoister@~0.0:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/hoister/-/hoister-0.0.2.tgz#0d0d8b1ce0f191553e61afec654f6b180eb96e5d"
+  integrity sha1-DQ2LHODxkVU+Ya/sZU9rGA65bl0=
+
 homedir-polyfill@^1.0.1:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/homedir-polyfill/-/homedir-polyfill-1.0.3.tgz#743298cef4e5af3e194161fbadcc2151d3a058e8"
@@ -4363,13 +4368,14 @@ json-edm-parser@0.1.2:
   dependencies:
     jsonparse "~1.2.0"
 
-json-parameterization@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/json-parameterization/-/json-parameterization-0.2.0.tgz#263aea2cc3c69614dbc26c176f772662050d04c8"
-  integrity sha1-JjrqLMPGlhTbwmwXb3cmYgUNBMg=
+json-parameterization@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/json-parameterization/-/json-parameterization-1.0.0.tgz#d5afb6611be97cf11fb4fbd9183dd31a4598ecb5"
+  integrity sha512-ChYO6ZyZFlofFcdC5JYaf8ml26ZQEZEK0Y+dOosf6ffm0k1KCsPWN2viIETIj84HXIEhM49Ef1dBja3Zwm9LBw==
   dependencies:
-    debug "^2.2.0"
-    lodash "^3.10.1"
+    debug "4.1.1"
+    lodash "4.17.14"
+    notevil "1.3.1"
 
 json-parse-better-errors@^1.0.1:
   version "1.0.2"
@@ -5538,6 +5544,14 @@ normalize-url@^3.1.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/normalize-url/-/normalize-url-3.3.0.tgz#b2e1c4dc4f7c6d57743df733a4f5978d18650559"
   integrity sha512-U+JJi7duF1o+u2pynbp2zXDW2/PADgC30f0GsHZtRh+HOcXHnw137TrNlyxxRvWW5fjKd3bcLHPxofWuCjaeZg==
+
+notevil@1.3.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/notevil/-/notevil-1.3.1.tgz#c5f7d689ffab67b4df22f7e07eb33333d998c363"
+  integrity sha512-euoqrKnWmOyp+zVV+xk0lGURWQTRntVf9XlhpkOolfnqV4/4uvZRyFVU983WHgQVsFOUp23PMdbMIfPgYIuiIQ==
+  dependencies:
+    esprima "~1.0"
+    hoister "~0.0"
 
 npm-bundled@^1.0.1:
   version "1.0.6"
@@ -7507,47 +7521,52 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-client@link:clients/client":
-  version "14.2.0"
-  dependencies:
-    debug "^4.0.0"
-    hawk "^7.0.10"
-    lodash "^4.17.4"
-    slugid "^2.0.0"
-    superagent "^5.0.0"
-    taskcluster-lib-urls "^12.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-api@link:libraries/api":
-  version "14.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-app@link:libraries/app":
-  version "14.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "14.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-config@link:libraries/config":
-  version "14.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "14.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "14.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "14.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "14.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-references@link:libraries/references":
-  version "14.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-scopes@link:libraries/scopes":
-  version "14.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "14.2.0"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -7555,7 +7574,8 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "14.2.0"
+  version "0.0.0"
+  uid ""
 
 taskgroup@^4.0.5, taskgroup@^4.2.0:
   version "4.3.1"
