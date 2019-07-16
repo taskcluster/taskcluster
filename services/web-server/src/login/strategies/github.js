@@ -98,6 +98,7 @@ module.exports = class Github {
             profile,
             providerExpires: new Date(exp * 1000),
             identityProviderId: 'github',
+            identity: user.identity,
           });
         }
       )

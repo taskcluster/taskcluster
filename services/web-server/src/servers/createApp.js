@@ -71,12 +71,11 @@ module.exports = async ({ cfg, strategies }) => {
   }
 
   passport.serializeUser((user, done) => {
-    const isGithub = user.profile.provider === 'github';
-    const userId = isGithub ? user.profile.id : user.profile.user_id;
+    const { identityProviderId, identity } = user;
 
     return done(null, {
-      identityProviderId: isGithub ? 'github' : 'mozilla-auth0',
-      userId,
+      identityProviderId,
+      userId: identity.split('/')[1],
     });
   });
   passport.deserializeUser(async (obj, done) => {

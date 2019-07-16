@@ -218,6 +218,7 @@ module.exports = class MozillaAuth0 {
             profile,
             providerExpires: new Date(exp * 1000),
             identityProviderId: 'mozilla-auth0',
+            identity: user.identity,
           });
         }
       )
