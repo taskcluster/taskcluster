@@ -18,7 +18,9 @@ type RunnerConfig struct {
 // Get a fragment of a usage message that describes the configuration file format
 func Usage() string {
 	return `
-Configuration is in the form of a YAML file with the following fields:
+## Configuration
+
+Configuration for this process is in the form of a YAML file with the following fields:
 
 	provider: (required) information about the provider for this worker
 
@@ -28,7 +30,7 @@ Configuration is in the form of a YAML file with the following fields:
 
 	worker: (required) information about the worker being run
 
-		implementation: (required) the name of the worker implementation
+		implementation: (required) the name of the worker implementation; see below.
 
 	workerConfig: arbitrary data which forms the basics of the config passed to the worker;
 		this will be merged with several other sources of configuration.

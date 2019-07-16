@@ -169,7 +169,7 @@ The providerType "aws-provisioner" is intended for workers provisioned with
 the legacy aws-provisioner application.  It requires 
 
 	provider:
-	    providerType: aws-provisioner
+		providerType: aws-provisioner
 `
 }
 

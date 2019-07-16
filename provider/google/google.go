@@ -158,7 +158,7 @@ The providerType "google" is intended for workers provisioned with worker-manage
 providers using providerType "google".  It requires
 
 	provider:
-	    providerType: google
+		providerType: google
 `
 }
 
