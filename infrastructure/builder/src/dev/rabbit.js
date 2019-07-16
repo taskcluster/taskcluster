@@ -23,6 +23,7 @@ module.exports = ({userConfig, prompts, configTmpl}) => {
     when: () => !userConfig.pulseVhost,
     type: 'input',
     name: 'pulseVhost',
+    default: previous => (previous.meta || {}).deploymentPrefix || (userConfig.meta || {}).deploymentPrefix,
     message: 'What is the vhost for this deployment inside your rabbitmq cluster?',
     validate: vhost => {
       if (!/^[a-z0-9]+$/.test(vhost)) {

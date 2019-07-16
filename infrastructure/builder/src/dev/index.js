@@ -3,7 +3,7 @@ const {readRepoYAML, writeRepoYAML} = require('../utils');
 const inquirer = require('inquirer');
 const commonPrompts = require('./common');
 const rabbitPrompts = require('./rabbit');
-//const awsPrompts = require('./aws');
+const awsResources = require('./aws');
 
 const USER_CONF_FILE = 'user-config.yaml';
 
@@ -17,11 +17,24 @@ const main = async (options) => {
       throw err;
     }
   }
+  const {hasSetup} = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'hasSetup',
+      message: 'You\'ll need to have set up all credentials described in the dev-docs. Have you done so?',
+      default: true,
+    },
+  ]);
+
+  if (!hasSetup) {
+    console.log('Exiting. Please configure credentials and then try again.');
+    process.exit(1);
+  }
+
   const prompts = [];
 
   await commonPrompts({userConfig, prompts, configTmpl});
   await rabbitPrompts({userConfig, prompts, configTmpl});
-  //await awsPrompts({userConfig, prompts, configTmpl});
 
   let {meta, ...answer} = await inquirer.prompt(prompts);
   let rabbitUsers = {};
@@ -32,7 +45,9 @@ const main = async (options) => {
     meta = {};
   }
   answer = _.merge(answer, rabbitUsers, {meta});
-  await writeRepoYAML(USER_CONF_FILE, _.merge(configTmpl, userConfig, answer));
+
+  userConfig = await awsResources({userConfig, answer});
+  await writeRepoYAML(USER_CONF_FILE, _.merge(userConfig, answer));
 };
 
 module.exports = {main};

@@ -34,4 +34,17 @@ module.exports = ({userConfig, prompts, configTmpl}) => {
     name: 'ui.application_name',
     message: 'What human-readable name will your deployment have?',
   });
+
+  prompts.push({
+    when: () => !userConfig.meta || !userConfig.meta.deploymentPrefix,
+    type: 'input',
+    name: 'meta.deploymentPrefix',
+    message: 'Specify a prefix to use for most resources needed by this cluster.',
+    validate: prefix => {
+      if (!/^[a-z0-9]+$/.test(prefix)) {
+        return 'Must consist of lowercase characters and numbers';
+      }
+      return true;
+    },
+  });
 };
