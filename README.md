@@ -725,6 +725,11 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v15.1.2 since v15.1.1
+========================
+
+* [Bug 1566159 - generic-worker: user: Current not implemented on darwin/amd64](https://bugzil.la/1566159)
+
 In v15.1.1 since v15.1.0
 ========================
 
