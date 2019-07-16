@@ -13,7 +13,7 @@ defaults:
     maxDelay:         300
     maxPendingPoints: 300
   azure:
-    accountId:        !env AZURE_ACCOUNT
+    accountId:        !env AZURE_ACCOUNT_ID
     signingKey:       !env TABLE_SIGNING_KEY
     cryptoKey:        !env TABLE_CRYPTO_KEY
   taskcluster:

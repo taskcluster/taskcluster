@@ -34,7 +34,7 @@ defaults:
     workerType: !env WORKER_TYPE
 
   azure:
-    accountId: !env AZURE_ACCOUNT_NAME
+    accountId: !env AZURE_ACCOUNT_ID
 
   monitoring:
     level: !env LEVEL

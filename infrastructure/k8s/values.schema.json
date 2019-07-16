@@ -16,9 +16,6 @@
         "aws_secret_access_key": {
           "type": "string"
         },
-        "azure_account": {
-          "type": "string"
-        },
         "azure_account_key": {
           "type": "string"
         },
@@ -111,16 +108,10 @@
           "title": "Process settings for this service",
           "type": "object"
         },
-        "pulse_hostname": {
-          "type": "string"
-        },
         "pulse_password": {
           "type": "string"
         },
         "pulse_username": {
-          "type": "string"
-        },
-        "pulse_vhost": {
           "type": "string"
         },
         "refs_bucket": {
@@ -180,6 +171,10 @@
       "title": "Configuration options for auth",
       "type": "object"
     },
+    "azureAccountId": {
+      "description": "An azure storage account for this deployment. Note this is a _storage_ account, not a billing one.",
+      "type": "string"
+    },
     "built_in_workers": {
       "properties": {
         "level": {
@@ -237,9 +232,6 @@
           "type": "string"
         },
         "aws_secret_key": {
-          "type": "string"
-        },
-        "azure_account_name": {
           "type": "string"
         },
         "bot_username": {
@@ -327,9 +319,6 @@
         "provisioner_id": {
           "type": "string"
         },
-        "pulse_hostname": {
-          "type": "string"
-        },
         "pulse_namespace": {
           "type": "string"
         },
@@ -337,9 +326,6 @@
           "type": "string"
         },
         "pulse_username": {
-          "type": "string"
-        },
-        "pulse_vhost": {
           "type": "string"
         },
         "taskcluster_access_token": {
@@ -370,9 +356,6 @@
           "type": "string"
         },
         "aws_secret_access_key": {
-          "type": "string"
-        },
-        "azure_account": {
           "type": "string"
         },
         "force_ssl": {
@@ -481,16 +464,10 @@
           "title": "Process settings for this service",
           "type": "object"
         },
-        "pulse_hostname": {
-          "type": "string"
-        },
         "pulse_password": {
           "type": "string"
         },
         "pulse_username": {
-          "type": "string"
-        },
-        "pulse_vhost": {
           "type": "string"
         },
         "queue_table_name": {
@@ -524,9 +501,6 @@
           "type": "string"
         },
         "aws_secret_access_key": {
-          "type": "string"
-        },
-        "azure_account": {
           "type": "string"
         },
         "force_ssl": {
@@ -602,9 +576,6 @@
           "title": "Process settings for this service",
           "type": "object"
         },
-        "pulse_hostname": {
-          "type": "string"
-        },
         "pulse_namespace": {
           "type": "string"
         },
@@ -612,9 +583,6 @@
           "type": "string"
         },
         "pulse_username": {
-          "type": "string"
-        },
-        "pulse_vhost": {
           "type": "string"
         },
         "taskcluster_access_token": {
@@ -694,6 +662,11 @@
       "title": "Configuration options for login",
       "type": "object"
     },
+    "meta": {
+      "additionalProperties": true,
+      "description": "Metadata about a deployment. Automatically generated in deploy configs.",
+      "type": "object"
+    },
     "notify": {
       "properties": {
         "aws_access_key_id": {
@@ -703,9 +676,6 @@
           "type": "string"
         },
         "aws_secret_access_key": {
-          "type": "string"
-        },
-        "azure_account": {
           "type": "string"
         },
         "denylisted_notification_table_name": {
@@ -829,9 +799,6 @@
           "title": "Process settings for this service",
           "type": "object"
         },
-        "pulse_hostname": {
-          "type": "string"
-        },
         "pulse_namespace": {
           "type": "string"
         },
@@ -839,9 +806,6 @@
           "type": "string"
         },
         "pulse_username": {
-          "type": "string"
-        },
-        "pulse_vhost": {
           "type": "string"
         },
         "taskcluster_access_token": {
@@ -860,15 +824,20 @@
       "title": "Configuration options for notify",
       "type": "object"
     },
+    "pulseHostname": {
+      "description": "A rabbitmq cluster",
+      "type": "string"
+    },
+    "pulseVhost": {
+      "description": "The vhost this deployment will use on the rabbitmq cluster",
+      "type": "string"
+    },
     "purge_cache": {
       "properties": {
         "aws_access_key_id": {
           "type": "string"
         },
         "aws_secret_access_key": {
-          "type": "string"
-        },
-        "azure_account": {
           "type": "string"
         },
         "force_ssl": {
@@ -948,9 +917,6 @@
           "type": "string"
         },
         "aws_secret_access_key": {
-          "type": "string"
-        },
-        "azure_account_id": {
           "type": "string"
         },
         "azure_account_key": {
@@ -1248,9 +1214,6 @@
         "public_blob_artifact_bucket": {
           "type": "string"
         },
-        "pulse_hostname": {
-          "type": "string"
-        },
         "pulse_namespace": {
           "type": "string"
         },
@@ -1258,9 +1221,6 @@
           "type": "string"
         },
         "pulse_username": {
-          "type": "string"
-        },
-        "pulse_vhost": {
           "type": "string"
         },
         "taskcluster_access_token": {
@@ -1328,9 +1288,6 @@
           "type": "string"
         },
         "aws_secret_access_key": {
-          "type": "string"
-        },
-        "azure_account": {
           "type": "string"
         },
         "azure_crypto_key": {
@@ -1426,9 +1383,6 @@
           "title": "Process settings for this service",
           "type": "object"
         },
-        "pulse_hostname": {
-          "type": "string"
-        },
         "pulse_namespace": {
           "type": "string"
         },
@@ -1436,9 +1390,6 @@
           "type": "string"
         },
         "pulse_username": {
-          "type": "string"
-        },
-        "pulse_vhost": {
           "type": "string"
         },
         "taskcluster_access_token": {
@@ -1555,9 +1506,6 @@
         "public_url": {
           "type": "string"
         },
-        "pulse_hostname": {
-          "type": "string"
-        },
         "pulse_namespace": {
           "type": "string"
         },
@@ -1565,9 +1513,6 @@
           "type": "string"
         },
         "pulse_username": {
-          "type": "string"
-        },
-        "pulse_vhost": {
           "type": "string"
         },
         "taskcluster_access_token": {
@@ -1596,9 +1541,6 @@
     },
     "worker_manager": {
       "properties": {
-        "azure_account": {
-          "type": "string"
-        },
         "force_ssl": {
           "type": "boolean"
         },
@@ -1741,9 +1683,6 @@
             }
           ]
         },
-        "pulse_hostname": {
-          "type": "string"
-        },
         "pulse_namespace": {
           "type": "string"
         },
@@ -1751,9 +1690,6 @@
           "type": "string"
         },
         "pulse_username": {
-          "type": "string"
-        },
-        "pulse_vhost": {
           "type": "string"
         },
         "taskcluster_access_token": {
@@ -1776,6 +1712,9 @@
   "required": [
     "rootUrl",
     "dockerImage",
+    "pulseHostname",
+    "pulseVhost",
+    "azureAccountId",
     "auth",
     "built_in_workers",
     "github",

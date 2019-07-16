@@ -74,6 +74,22 @@ program.command('changelog')
       });
   });
 
+program.command('dev')
+  .option('--init', 'set up resources and config file')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {main} = require('./dev');
+    main(options[0]).then(
+      () => {},
+      err => {
+        console.error(err);
+        process.exit(1);
+      });
+  });
+
 program.command('*', {noHelp: true})
   .action(() => program.help(txt => txt));
 

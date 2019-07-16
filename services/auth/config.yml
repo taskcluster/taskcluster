@@ -78,7 +78,7 @@ defaults:
 
   azure:
     # Azure table storage account name
-    accountId:                !env AZURE_ACCOUNT
+    accountId:                !env AZURE_ACCOUNT_ID
     # Azure table storage account key
     accessKey:               !env AZURE_ACCOUNT_KEY
 

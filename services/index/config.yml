@@ -17,7 +17,7 @@ defaults:
 
   # Azure account
   azure:
-    accountId: !env AZURE_ACCOUNT
+    accountId: !env AZURE_ACCOUNT_ID
 
   monitoring:
     level: !env LEVEL

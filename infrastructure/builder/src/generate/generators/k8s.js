@@ -22,10 +22,18 @@ const CLUSTER_DEFAULTS = {
   trust_proxy: true,
 };
 
+// Things like port that we always set ourselves
 const NON_CONFIGURABLE = [
   'port',
   'taskcluster_root_url', // This is actually configured at the cluster level
 ];
+
+// Shared across an entire deployment
+const SHARED_CONFIG = {
+  pulse_hostname: '.Values.pulseHostname',
+  pulse_vhost: '.Values.pulseVhost',
+  azure_account_id: '.Values.azureAccountId',
+};
 
 const renderTemplates = async (name, vars, procs, templates) => {
 
@@ -37,7 +45,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
       projectName: `taskcluster-${name}`,
       secrets: vars.map(v => ({
         key: v,
-        val: `.Values.${name.replace(/-/g, '_')}.${v.toLowerCase()}`,
+        val: SHARED_CONFIG[v.toLowerCase()] || `.Values.${name.replace(/-/g, '_')}.${v.toLowerCase()}`,
       })),
     });
     const file = `taskcluster-${name}-${resource}.yaml`;
@@ -243,8 +251,25 @@ exports.tasks.push({
           type: 'string',
           description: 'A google certificate name that the ingress can use to set up tls.',
         },
+        pulseHostname: {
+          type: 'string',
+          description: 'A rabbitmq cluster',
+        },
+        pulseVhost: {
+          type: 'string',
+          description: 'The vhost this deployment will use on the rabbitmq cluster',
+        },
+        azureAccountId: {
+          type: 'string',
+          description: 'An azure storage account for this deployment. Note this is a _storage_ account, not a billing one.',
+        },
+        meta: {
+          type: 'object',
+          description: 'Metadata about a deployment. Automatically generated in deploy configs.',
+          additionalProperties: true,
+        },
       },
-      required: ['rootUrl', 'dockerImage'],
+      required: ['rootUrl', 'dockerImage', 'pulseHostname', 'pulseVhost', 'azureAccountId'],
       aditionalProperties: false,
     };
 
@@ -254,6 +279,10 @@ exports.tasks.push({
       dockerImage: '...',
       ingressStaticIpName: '...',
       ingressCertName: '...',
+      pulstHostname: '...',
+      pulseVhost: '...',
+      azureAccountId: '...',
+      meta: {},
     };
     const variablesYAML = {}; // Defaults that people can override
 
@@ -294,8 +323,8 @@ exports.tasks.push({
       // for the same variable twice with different types then this is not our fault
       _.uniqBy(cfg.vars, 'var').forEach(v => {
         const varName = v.var.toLowerCase();
-        if (NON_CONFIGURABLE.includes(varName)) {
-          return; // Things like port that we always set ourselves
+        if (NON_CONFIGURABLE.includes(varName) || Object.keys(SHARED_CONFIG).includes(varName)) {
+          return;
         }
         // TODO: In config.ymls somehow mark fields as "required" or "optional" and then assert
         // that here with  schema.properties[confName].required.push(varName);
