@@ -18,6 +18,7 @@
   from = "https://taskcluster-web.netlify.com/*"
   to = "https://taskcluster-ui.herokuapp.com/:splat"
   status = 301
+  force = true
 
 # Rule for Single Page Applications (docs)
 [[redirects]]
