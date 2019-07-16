@@ -18,12 +18,12 @@ func TestConfigureRun(t *testing.T) {
 		Provider: cfg.ProviderConfig{
 			ProviderType: "static",
 			Data: map[string]interface{}{
-				"rootURL":        "https://tc.example.com",
-				"providerID":     "static-1",
-				"workerPoolID":   "w/p",
-				"workerGroup":    "wg",
-				"workerID":       "wi",
-				"identitySecret": "quiet",
+				"rootURL":      "https://tc.example.com",
+				"providerID":   "static-1",
+				"workerPoolID": "w/p",
+				"workerGroup":  "wg",
+				"workerID":     "wi",
+				"staticSecret": "quiet",
 			},
 		},
 		WorkerImplementation: cfg.WorkerImplementationConfig{
@@ -48,7 +48,7 @@ func TestConfigureRun(t *testing.T) {
 		assert.Equal(t, "static-1", reg.ProviderID)
 		assert.Equal(t, "wg", reg.WorkerGroup)
 		assert.Equal(t, "wi", reg.WorkerID)
-		assert.Equal(t, json.RawMessage(`{"secret":"quiet"}`), reg.WorkerIdentityProof)
+		assert.Equal(t, json.RawMessage(`{"staticSecret":"quiet"}`), reg.WorkerIdentityProof)
 		assert.Equal(t, "w/p", reg.WorkerPoolID)
 	}
 

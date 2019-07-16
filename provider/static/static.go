@@ -12,12 +12,12 @@ import (
 )
 
 type staticProviderConfig struct {
-	RootURL        string
-	ProviderID     string
-	WorkerPoolID   string
-	WorkerGroup    string
-	WorkerID       string
-	IdentitySecret string
+	RootURL      string
+	ProviderID   string
+	WorkerPoolID string
+	WorkerGroup  string
+	WorkerID     string
+	StaticSecret string
 }
 
 type StaticProvider struct {
@@ -42,7 +42,7 @@ func (p *StaticProvider) ConfigureRun(run *runner.Run) error {
 		return fmt.Errorf("Could not create worker manager client: %v", err)
 	}
 
-	err = provider.RegisterWorker(run, wm, pc.WorkerPoolID, pc.ProviderID, pc.WorkerGroup, pc.WorkerID, "secret", pc.IdentitySecret)
+	err = provider.RegisterWorker(run, wm, pc.WorkerPoolID, pc.ProviderID, pc.WorkerGroup, pc.WorkerID, "staticSecret", pc.StaticSecret)
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ providers using providerType "static".  It requires
 		workerPoolID: ...
 		workerGroup: ...
 		workerID: ...
-		identitySecret: ... // shared secret configured for this worker in worker-manager
+		staticSecret: ... // shared secret configured for this worker in worker-manager
 `
 }
 
