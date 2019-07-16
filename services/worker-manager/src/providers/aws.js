@@ -247,12 +247,12 @@ class AwsProvider extends Provider {
       switch (is.InstanceState.Name) {
         case 'pending':
         case 'running':
+        case 'shutting-down': //so that we don't turn on new instances until they're entirely gone
+        case 'stopping':
           this.seen[worker.workerPoolId] += 1;
           return Promise.resolve();
 
-        case 'shutting-down':
         case 'terminated':
-        case 'stopping':
         case 'stopped':
           return worker.modify(w => {w.state = this.Worker.states.STOPPED;});
 
