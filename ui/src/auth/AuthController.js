@@ -121,6 +121,6 @@ export default class AuthController {
   };
 
   clearSession = () => {
-    fetch('/logout', { method: 'POST' });
+    fetch('/login/logout', { method: 'POST' });
   };
 }

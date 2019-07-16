@@ -83,7 +83,7 @@ module.exports = async ({ cfg, strategies }) => {
     return done(null, obj);
   });
 
-  app.post('/logout', (req, res) => {
+  app.post('/login/logout', (req, res) => {
     // Remove the req.user property and clear the login session
     req.logout();
     res

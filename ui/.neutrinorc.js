@@ -49,9 +49,6 @@ module.exports = {
           '/login': {
             target: 'http://localhost:3050',
           },
-          '/logout': {
-            target: 'http://localhost:3050',
-          },
           '/graphql': {
             target: 'http://localhost:3050',
           },
