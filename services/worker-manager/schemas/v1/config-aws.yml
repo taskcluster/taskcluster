@@ -24,10 +24,17 @@ properties:
     type: integer
     minimum: 1
     description: The number of tasks a single worker of this type can run at any given time.
-  imageId:
-    title: AMI ID
-    type: string
-    description: Defines the AMI (and, therefore, worker implementation/version)
+  image:
+    title: AMI
+    type: object
+    description: Map. Defines the AMI (and, therefore, worker implementation/version) for a given region
+      properties:
+        region:
+          title: AWS availability zone
+          type: string
+        imageId:
+          title: AMI ID
+          type: string
   instanceType:
     title: Instance Type
     type: string
