@@ -44,8 +44,8 @@ module.exports = async ({ cfg, strategies }) => {
     cookie: {
       secure: url.parse(cfg.app.publicUrl).hostname !== 'localhost',
       httpOnly: true,
-      // 15 minutes
-      maxAge: 15 * 60 * 5000,
+      // 1 week
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     },
   }));
 
