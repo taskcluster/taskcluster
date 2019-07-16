@@ -19,11 +19,6 @@ properties:
     description: |
       The maximum amount of capacity that worker-manager should make
       available at any given time.
-  capacityPerInstance:
-    title: Capacity Per Instance
-    type: integer
-    minimum: 1
-    description: The number of tasks a single worker of this type can run at any given time.
   image:
     title: AMI
     type: object
@@ -35,7 +30,21 @@ properties:
         imageId:
           title: AMI ID
           type: string
-  instanceType:
-    title: Instance Type
-    type: string
-    description: Defines the type of instance to spin. Refer to https://aws.amazon.com/ec2/instance-types/
+  instanceTypes:
+    title: Instance Types
+    type: array
+    description: Defines the possible types of instances to spin
+    uniqueItems: true
+    items:
+      type: object
+      additionalProperties: false
+      properties:
+        instanceType:
+          title: Instance Type
+          type: string
+          description: Refer to https://aws.amazon.com/ec2/instance-types/
+        capacityPerInstance:
+          title: Capacity Per Instance
+          type: integer
+          minimum: 1
+          description: The number of tasks a single worker can run at any given time on this instance type.
