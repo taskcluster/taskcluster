@@ -45,6 +45,7 @@ suite(testing.suiteName(), function() {
     route: '/require-no-scopes',
     name: 'requireNoScopes',
     title: 'Requre no scopse',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.reply({});
@@ -56,6 +57,7 @@ suite(testing.suiteName(), function() {
     name: 'sometimesRequireNoScopes',
     title: 'Requre no scopes when private is false',
     description: 'Place we can call to test something',
+    category: 'API Library',
     query: {
       private: /[01]/,
     },
@@ -73,6 +75,7 @@ suite(testing.suiteName(), function() {
     route: '/require-extra-scopes',
     name: 'requireExtraScopes',
     title: 'Requre extra scopse',
+    category: 'API Library',
     description: 'Place we can call to test something',
     scopes: 'XXXX',
   }, function(req, res) {
@@ -83,6 +86,7 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/bewitiful',
     name: 'bewitiful',
+    category: 'API Library',
     query: {
       foo: /abc*/,
     },
