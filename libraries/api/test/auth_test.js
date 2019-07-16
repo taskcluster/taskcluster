@@ -67,6 +67,7 @@ suite(testing.suiteName(), function() {
       method,
       route,
       name,
+      category: 'API Library',
       title: 'placeholder',
       description: 'placeholder',
       scopes,
