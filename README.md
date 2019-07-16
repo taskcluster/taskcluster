@@ -75,6 +75,20 @@ configuration:
 		workerGroup: ..
 		workerID: ..
 
+### static
+
+The providerType "static" is intended for workers provisioned with worker-manager
+providers using providerType "static".  It requires
+
+	provider:
+		providerType: static
+		rootURL: ...
+		providerID: ...
+		workerPoolID: ...
+		workerGroup: ...
+		workerID: ...
+		identitySecret: ... // shared secret configured for this worker in worker-manager
+
 
 ## Workers
 

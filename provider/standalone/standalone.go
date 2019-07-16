@@ -33,7 +33,7 @@ func (p *StandaloneProvider) ConfigureRun(run *runner.Run) error {
 	run.WorkerGroup = pc.WorkerGroup
 	run.WorkerID = pc.WorkerID
 
-	run.WorkerConfig = run.WorkerConfig.Merge(nil)
+	run.ProviderMetadata = map[string]string{}
 
 	return nil
 }
