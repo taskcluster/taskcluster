@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcawsprovisioner"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
+	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcawsprovisioner"
 )
 
 func TestAwsProviderConfigureRun(t *testing.T) {
@@ -109,13 +109,13 @@ func TestCheckTerminationTime(t *testing.T) {
 	p.checkTerminationTime()
 
 	// not time yet..
-	assert.Equal(t, []protocol.Message{}, transp.Messages)
+	assert.Equal(t, []protocol.Message{}, transp.Messages())
 
 	metaData["/meta-data/spot/termination-time"] = "now!"
 	p.checkTerminationTime()
 
 	// protocol does not have the capability set..
-	assert.Equal(t, []protocol.Message{}, transp.Messages)
+	assert.Equal(t, []protocol.Message{}, transp.Messages())
 
 	proto.Capabilities.Add("graceful-termination")
 	p.checkTerminationTime()
@@ -128,5 +128,5 @@ func TestCheckTerminationTime(t *testing.T) {
 				"finish-tasks": false,
 			},
 		},
-	}, transp.Messages)
+	}, transp.Messages())
 }

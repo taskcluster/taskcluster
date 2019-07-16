@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
-	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcawsprovisioner"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
+	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcawsprovisioner"
 )
 
 type AwsProvisionerProvider struct {
@@ -23,12 +23,6 @@ type AwsProvisionerProvider struct {
 }
 
 func (p *AwsProvisionerProvider) ConfigureRun(run *runner.Run) error {
-	// create an unauthenticated aws provisioner client to get the "secret"
-	_, err := p.awsProvisionerClientFactory("foo", nil)
-	if err != nil {
-		return err
-	}
-
 	userData, err := p.metadataService.queryUserData()
 	if err != nil {
 		// if we can't read user data, this is a serious problem
@@ -128,7 +122,7 @@ func (p *AwsProvisionerProvider) checkTerminationTime() {
 	// if the file exists (so, no error), it's time to go away
 	if err == nil {
 		log.Println("EC2 Metadata Service says termination is imminent")
-		if p.proto.Capable("graceful-termination") {
+		if p.proto != nil && p.proto.Capable("graceful-termination") {
 			p.proto.Send(protocol.Message{
 				Type: "graceful-termination",
 				Properties: map[string]interface{}{
