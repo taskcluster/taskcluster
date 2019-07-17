@@ -65,6 +65,7 @@ suite(testing.suiteName(), function() {
       unTrue: false,
       notThere: undefined,
       empty: undefined,
+      optional: undefined,
       json: {test: 42},
       list: ['abc', 'def', 'qouted string', ''],
     });
@@ -118,6 +119,7 @@ suite(testing.suiteName(), function() {
       unTrue: false,
       notThere: undefined,
       empty: undefined,
+      optional: undefined,
       json: {test: 42},
       list: ['abc', 'def', 'qouted string', ''],
     });
@@ -147,6 +149,7 @@ suite(testing.suiteName(), function() {
       unTrue: false,
       notThere: undefined,
       empty: undefined,
+      optional: undefined,
       json: {test: 42},
       list: ['abc', 'def', 'qouted string', ''],
     });
@@ -162,15 +165,16 @@ suite(testing.suiteName(), function() {
     });
 
     assume(vars).deep.equals([
-      { type: '!env', var: 'ENV_VARIABLE' },
-      { type: '!env:string', var: 'ENV_VARIABLE' },
-      { type: '!env:number', var: 'ENV_NUMBER' },
-      { type: '!env:bool', var: 'ENV_TRUE' },
-      { type: '!env:bool', var: 'ENV_FALSE' },
-      { type: '!env:bool', var: 'ENV_NOT_SET' },
-      { type: '!env', var: 'ENV_EMPTY' },
-      { type: '!env:json', var: 'ENV_JSON' },
-      { type: '!env:list', var: 'ENV_LIST' },
+      { type: '!env', var: 'ENV_VARIABLE', optional: false },
+      { type: '!env:string', var: 'ENV_VARIABLE', optional: false },
+      { type: '!env:number', var: 'ENV_NUMBER', optional: false },
+      { type: '!env:bool', var: 'ENV_TRUE', optional: false },
+      { type: '!env:bool', var: 'ENV_FALSE', optional: false },
+      { type: '!env:bool', var: 'ENV_NOT_SET', optional: false },
+      { type: '!env', var: 'ENV_EMPTY', optional: false },
+      { type: '!env', var: 'ENV_OPTIONAL', optional: true },
+      { type: '!env:json', var: 'ENV_JSON', optional: false },
+      { type: '!env:list', var: 'ENV_LIST', optional: false },
     ]);
   });
 });

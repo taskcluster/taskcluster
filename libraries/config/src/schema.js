@@ -1,38 +1,42 @@
+const _ = require('lodash');
 const assert = require('assert');
 const yaml = require('js-yaml');
 
 /*
  * Create a YAML type that loads from environment variable
  */
-const createType = (env, vars, name, typeName, deserialize) => {
-  return new yaml.Type(name, {
-    kind: 'scalar', // Takes a string as input
-    resolve: (data) => {
-      return typeof data === 'string' && /^[A-Z0-9_]+$/.test(data);
-    },
-    // Deserialize the data, in the case we read the environment variable
-    construct: (data) => {
-      if (Array.isArray(vars)) {
-        vars.push({
-          type: name,
-          var: data,
-        });
-        return undefined;
-      }
-      let value = env[data];
-      if (value === undefined || value === '') {
-        return undefined;
-      }
-      assert(typeof value === 'string', `${name} key env vars must be strings: ${data} is ${typeof value}`);
-      return deserialize(value);
-    },
+const createType = (env, vars, basename, typeName, deserialize) => {
+  return [basename, `${basename}:optional`].map(name => {
+    return new yaml.Type(name, {
+      kind: 'scalar', // Takes a string as input
+      resolve: (data) => {
+        return typeof data === 'string' && /^[A-Z0-9_]+$/.test(data);
+      },
+      // Deserialize the data, in the case we read the environment variable
+      construct: (data) => {
+        if (Array.isArray(vars)) {
+          vars.push({
+            type: basename,
+            var: data,
+            optional: name.endsWith(':optional'),
+          });
+          return undefined;
+        }
+        let value = env[data];
+        if (value === undefined || value === '') {
+          return undefined;
+        }
+        assert(typeof value === 'string', `${basename} key env vars must be strings: ${data} is ${typeof value}`);
+        return deserialize(value);
+      },
+    });
   });
 };
 
 /*
  * This schema allows our special !env types
  */
-module.exports = (env, vars) => yaml.Schema.create(yaml.JSON_SCHEMA, [
+module.exports = (env, vars) => yaml.Schema.create(yaml.JSON_SCHEMA, _.flatten([
   createType(env, vars, '!env', 'string', val => {
     return val;
   }),
@@ -64,4 +68,4 @@ module.exports = (env, vars) => yaml.Schema.create(yaml.JSON_SCHEMA, [
       return entry;
     });
   }),
-]);
+]));
