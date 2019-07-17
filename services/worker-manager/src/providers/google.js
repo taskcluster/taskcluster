@@ -9,32 +9,12 @@ const {ApiError, Provider} = require('./provider');
 class GoogleProvider extends Provider {
 
   constructor({
-    providerId,
-    monitor,
-    estimator,
-    notify,
-    rootUrl,
-    project,
-    instancePermissions,
-    creds,
-    credsFile,
-    validator,
-    Worker,
-    WorkerPool,
-    WorkerPoolError,
+    providerConfig,
     fakeCloudApis,
+    ...conf
   }) {
-    super({
-      providerId,
-      monitor,
-      notify,
-      rootUrl,
-      estimator,
-      validator,
-      Worker,
-      WorkerPool,
-      WorkerPoolError,
-    });
+    super(conf);
+    let {project, instancePermissions, creds, credsFile} = providerConfig;
     this.configSchema = 'config-google';
 
     this.instancePermissions = instancePermissions;

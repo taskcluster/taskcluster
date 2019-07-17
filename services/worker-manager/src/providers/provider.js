@@ -9,14 +9,14 @@ const libUrls = require('taskcluster-lib-urls');
 class Provider {
   constructor({
     providerId,
-    monitor,
     notify,
+    monitor,
     rootUrl,
     estimator,
-    validator,
     Worker,
     WorkerPool,
     WorkerPoolError,
+    validator,
   }) {
     this.providerId = providerId;
     this.monitor = monitor;
