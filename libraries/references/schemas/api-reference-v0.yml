@@ -224,6 +224,9 @@ properties:
         description:
           type: string
           description: Description (ie. documentation) for the API entry
+        category:
+          type: string
+          description:  Category for the API method
       additionalProperties: false
       required:
         - type
@@ -234,6 +237,7 @@ properties:
         - stability
         - title
         - description
+        - category
 additionalProperties: false
 required:
   - apiVersion
