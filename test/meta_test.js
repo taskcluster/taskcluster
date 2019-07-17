@@ -175,7 +175,6 @@ suite('Repo Meta Tests', function () {
       '.codecov.yml',
       '.taskcluster.yml',
       'services/hooks/test/validate_test/create-hook-request.json',
-      'services/notify/test/api_test.js',
       'test/meta_test.js',
       'ui/docs/reference/core/notify/usage.md',
       'ui/docs/reference/guide.md',
