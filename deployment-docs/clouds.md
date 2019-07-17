@@ -7,7 +7,7 @@ Services' data is stored in Azure Table Storage, so Azure credentials will be re
 
 Taskcluster can dynamically provision workers in a variety of clouds.
 You will need appropriate credentials for any clouds you intend to use for workers.
-See the [worker-manager documentation](https://docs.taskcluster.net/docs/reference/core/worker-manager) for details on how these credentials are configured.
+See the [worker-manager documentation](https://github.com/taskcluster/taskcluster/blob/master/ui/docs/reference/core/worker-manager/google.md) for details on how these credentials are configured.
 
 The Terraform module is designed to namespace all resources it uses with a `prefix`, allowing multiple deployments of Taskcluster to share the same cloud accounts so long as the prefixes are different.
 We use this internally to deploy multiple development deployments.
