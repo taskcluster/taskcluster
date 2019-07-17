@@ -477,8 +477,8 @@ tasks:
   ############## Linux amd64 Multiuser Build ###############
   ##########################################################
 
-  - provisionerId: pmoore-manual
-    workerType: linux-amd64
+  - provisionerId: aws-provisioner-v1
+    workerType: gwci-linux
     metadata:
       name: "Build/test 64 bit generic-worker (multiuser engine) on Ubuntu 17.04 VM"
       description: "This builds the 64 bit linux version of generic-worker (multiuser engine)"
@@ -550,8 +550,8 @@ tasks:
   ################ Linux amd64 Simple Build ################
   ##########################################################
 
-  - provisionerId: pmoore-manual
-    workerType: linux-amd64
+  - provisionerId: aws-provisioner-v1
+    workerType: gwci-linux
     metadata:
       name: "Build/test 64 bit generic-worker (simple engine) on Ubuntu 17.04 VM"
       description: "This builds the 64 bit linux version of generic-worker (simple engine)"
@@ -621,8 +621,8 @@ tasks:
   ################ Linux amd64 Docker Build ################
   ##########################################################
 
-  - provisionerId: pmoore-manual
-    workerType: linux-amd64
+  - provisionerId: aws-provisioner-v1
+    workerType: gwci-linux
     metadata:
       name: "Build/test 64 bit generic-worker (docker engine) on Ubuntu 17.04 VM"
       description: "This builds the 64 bit linux version of generic-worker (docker engine)"
