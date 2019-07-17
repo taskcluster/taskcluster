@@ -20,8 +20,8 @@ const createType = (env, vars, name, typeName, deserialize) => {
         return undefined;
       }
       let value = env[data];
-      if (value === undefined) {
-        return value;
+      if (value === undefined || value === '') {
+        return undefined;
       }
       assert(typeof value === 'string', `${name} key env vars must be strings: ${data} is ${typeof value}`);
       return deserialize(value);

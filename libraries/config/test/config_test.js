@@ -53,6 +53,7 @@ suite(testing.suiteName(), function() {
         ENV_FALSE: 'false',
         ENV_JSON: '{"test": 42}',
         ENV_LIST: 'abc def "qouted string" \'\'',
+        ENV_EMPTY: '',
       },
     });
 
@@ -63,6 +64,7 @@ suite(testing.suiteName(), function() {
       soTrue: true,
       unTrue: false,
       notThere: undefined,
+      empty: undefined,
       json: {test: 42},
       list: ['abc', 'def', 'qouted string', ''],
     });
@@ -104,6 +106,7 @@ suite(testing.suiteName(), function() {
         ENV_FALSE: 'false',
         ENV_JSON: '{"test": 42}',
         ENV_LIST: 'abc def "qouted string" \'\'',
+        ENV_EMPTY: '',
       },
     });
 
@@ -114,6 +117,7 @@ suite(testing.suiteName(), function() {
       soTrue: true,
       unTrue: false,
       notThere: undefined,
+      empty: undefined,
       json: {test: 42},
       list: ['abc', 'def', 'qouted string', ''],
     });
@@ -131,6 +135,7 @@ suite(testing.suiteName(), function() {
         ENV_FALSE: 'false',
         ENV_JSON: '{"test": 42}',
         ENV_LIST: 'abc def "qouted string" \'\'',
+        ENV_EMPTY: '',
       },
     });
 
@@ -141,6 +146,7 @@ suite(testing.suiteName(), function() {
       soTrue: true,
       unTrue: false,
       notThere: undefined,
+      empty: undefined,
       json: {test: 42},
       list: ['abc', 'def', 'qouted string', ''],
     });
@@ -162,6 +168,7 @@ suite(testing.suiteName(), function() {
       { type: '!env:bool', var: 'ENV_TRUE' },
       { type: '!env:bool', var: 'ENV_FALSE' },
       { type: '!env:bool', var: 'ENV_NOT_SET' },
+      { type: '!env', var: 'ENV_EMPTY' },
       { type: '!env:json', var: 'ENV_JSON' },
       { type: '!env:list', var: 'ENV_LIST' },
     ]);
