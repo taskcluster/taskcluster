@@ -31,7 +31,7 @@ const azurePrompts = ({userConfig, prompts, configTmpl}) => {
 
 const azureResources = async ({userConfig, answer, configTmpl}) => {
   userConfig.auth = userConfig.auth || {};
-  if (!userConfig.auth.azure_access_key) {
+  if (!userConfig.auth.azure_account_key) {
     const resourceGroupName = answer.azureAccountId || userConfig.azureAccountId;
     const location = (answer.meta || {}).azureRegion || (userConfig.meta || {}).azureRegion;
     const creds = await msRestNodeAuth.interactiveLogin();
@@ -61,7 +61,7 @@ const azureResources = async ({userConfig, answer, configTmpl}) => {
       answer.azureAccountId || userConfig.azureAccountId,
       resourceGroupName,
     );
-    userConfig.auth.azure_access_key = result.keys[0].value;
+    userConfig.auth.azure_account_key = result.keys[0].value;
   }
 
   for (const [service, cfg] of Object.entries(configTmpl)) {

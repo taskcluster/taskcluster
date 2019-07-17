@@ -26,12 +26,8 @@ module.exports = async ({userConfig, answer, configTmpl}) => {
 
     const accessToken = slugid.v4() + slugid.v4();
 
-    // We only push accessToken because that's the dynamic part
-    // and clientId so that we can find it again. This lets
-    // the checked-in version of scopes that a service needs automatically
-    // update from defaults on every deploy.
     userConfig.auth.static_clients.push({
-      clientId: client.clientId,
+      ...client,
       accessToken,
     });
 
