@@ -78,7 +78,7 @@ if __name__ == '__main__':
         long_description_content_type="text/markdown",
         author='Mozilla Taskcluster and Release Engineering',
         author_email='release+python@mozilla.com',
-        url='https://github.com/taskcluster/taskcluster-client.py',
+        url='https://github.com/taskcluster/taskcluster',
         packages=['taskcluster', 'taskcluster.aio'],
         install_requires=install_requires,
         test_suite="nose.collector",
