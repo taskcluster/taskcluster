@@ -444,17 +444,8 @@
           "$ref": "worker-full.json#/properties/workerId"
         },
         "workerIdentityProof": {
-          "anyOf": [
-            {
-              "additionalProperties": false,
-              "description": "(No information is currently required; TBD)\n",
-              "properties": {
-              },
-              "required": [
-              ],
-              "title": "static provider type",
-              "type": "object"
-            },
+          "description": "Proof that this call is coming from the worker identified by the other fields.\nThe form of this proof varies depending on the provider type.\n",
+          "oneOf": [
             {
               "additionalProperties": false,
               "properties": {
@@ -469,9 +460,24 @@
               ],
               "title": "google provider type",
               "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "staticSecret": {
+                  "description": "The secret value that was configured when the worker was created (in `createWorker`).\n",
+                  "pattern": "^[a-zA-Z0-9_-]{44}$",
+                  "title": "Secret",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "staticSecret"
+              ],
+              "title": "static provider type",
+              "type": "object"
             }
           ],
-          "description": "Proof that this call is coming from the worker identified by the other fields.\nThe form of this proof varies depending on the provider type.\n",
           "title": "Worker Identity Proof"
         },
         "workerPoolId": {
@@ -535,14 +541,26 @@
           "type": "string"
         },
         "providerInfo": {
-          "additionalProperties": false,
           "description": "Provider-specific information",
-          "properties": {
-          },
-          "required": [
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "staticSecret": {
+                  "description": "A secret value shared with the worker.  This value must be passed in the `workerIdentityProof` of the `registerWorker` method.\nThe ideal way to generate a secret of this form is `slugid() + slugid()`.\n\nSecrets are traded for Taskcluster credentials, and should be treated with similar care.\nEach worker should have a distinct secret.\n",
+                  "pattern": "^[a-zA-Z0-9_-]{44}$",
+                  "title": "Secret",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "staticSecret"
+              ],
+              "title": "static provider type",
+              "type": "object"
+            }
           ],
-          "title": "Provider Data",
-          "type": "object"
+          "title": "Provider Data"
         }
       },
       "required": [

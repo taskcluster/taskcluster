@@ -12,14 +12,9 @@ properties:
     description: |
       Proof that this call is coming from the worker identified by the other fields.
       The form of this proof varies depending on the provider type.
-    anyOf:
-      - title: static provider type
-        description: |
-          (No information is currently required; TBD)
-        type: object
-        properties: {}
-        additionalProperties: false
-        required: []
+    oneOf:
+      # note: each of these structures should be different, so that `oneOf` can distinguish them
+      # unambiguously
       - title: google provider type
         type: object
         properties:
@@ -30,6 +25,17 @@ properties:
               A JWT token as defined in [this google documentation](https://cloud.google.com/compute/docs/instances/verifying-instance-identity)
         additionalProperties: false
         required: [token]
+      - title: static provider type
+        type: object
+        properties:
+          staticSecret:
+            title: Secret
+            type: string
+            pattern: "^[a-zA-Z0-9_-]{44}$"
+            description: |
+              The secret value that was configured when the worker was created (in `createWorker`).
+        additionalProperties: false
+        required: [staticSecret]
 additionalProperties: false
 required:
   - workerPoolId

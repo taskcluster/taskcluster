@@ -33,10 +33,6 @@ type (
 		Token string `json:"token"`
 	}
 
-	// Provider-specific information
-	ProviderData struct {
-	}
-
 	// Request body to `registerWorker`.
 	RegisterWorkerRequest struct {
 
@@ -65,9 +61,9 @@ type (
 		// Proof that this call is coming from the worker identified by the other fields.
 		// The form of this proof varies depending on the provider type.
 		//
-		// Any of:
-		//   * StaticProviderType
+		// One of:
 		//   * GoogleProviderType
+		//   * StaticProviderType1
 		WorkerIdentityProof json.RawMessage `json:"workerIdentityProof"`
 
 		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
@@ -94,8 +90,27 @@ type (
 		Expires tcclient.Time `json:"expires"`
 	}
 
-	// (No information is currently required; TBD)
+	// Provider-specific information
 	StaticProviderType struct {
+
+		// A secret value shared with the worker.  This value must be passed in the `workerIdentityProof` of the `registerWorker` method.
+		// The ideal way to generate a secret of this form is `slugid() + slugid()`.
+		//
+		// Secrets are traded for Taskcluster credentials, and should be treated with similar care.
+		// Each worker should have a distinct secret.
+		//
+		// Syntax:     ^[a-zA-Z0-9_-]{44}$
+		StaticSecret string `json:"staticSecret"`
+	}
+
+	// Proof that this call is coming from the worker identified by the other fields.
+	// The form of this proof varies depending on the provider type.
+	StaticProviderType1 struct {
+
+		// The secret value that was configured when the worker was created (in `createWorker`).
+		//
+		// Syntax:     ^[a-zA-Z0-9_-]{44}$
+		StaticSecret string `json:"staticSecret"`
 	}
 
 	// Request to create a worker
@@ -105,7 +120,10 @@ type (
 		Expires tcclient.Time `json:"expires"`
 
 		// Provider-specific information
-		ProviderInfo ProviderData `json:"providerInfo,omitempty"`
+		//
+		// One of:
+		//   * StaticProviderType
+		ProviderInfo json.RawMessage `json:"providerInfo,omitempty"`
 	}
 
 	// A report of an error from a worker.  This will be recorded with kind

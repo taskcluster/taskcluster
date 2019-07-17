@@ -53,6 +53,7 @@ class Provider {
   }
 
   async registerWorker({worker, workerPool, workerIdentityProof}) {
+    throw new ApiError('not supported for this provider');
   }
 
   async cleanup() {
@@ -68,9 +69,11 @@ class Provider {
   }
 
   async createWorker({workerPool, workerGroup, workerId, input}) {
+    throw new ApiError('not supported for this provider');
   }
 
   async removeWorker(worker) {
+    throw new ApiError('not supported for this provider');
   }
 
   async createResources({workerPool}) {
