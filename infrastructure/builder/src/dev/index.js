@@ -3,6 +3,7 @@ const {readRepoYAML, writeRepoYAML} = require('../utils');
 const inquirer = require('inquirer');
 const commonPrompts = require('./common');
 const rabbitPrompts = require('./rabbit');
+const {azurePrompts, azureResources} = require('./azure');
 const awsResources = require('./aws');
 const taskclusterResources = require('./taskcluster');
 
@@ -18,24 +19,12 @@ const main = async (options) => {
       throw err;
     }
   }
-  const {hasSetup} = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'hasSetup',
-      message: 'You\'ll need to have set up all credentials described in the dev-docs. Have you done so?',
-      default: true,
-    },
-  ]);
-
-  if (!hasSetup) {
-    console.log('Exiting. Please configure credentials and then try again.');
-    process.exit(1);
-  }
 
   const prompts = [];
 
   await commonPrompts({userConfig, prompts, configTmpl});
   await rabbitPrompts({userConfig, prompts, configTmpl});
+  await azurePrompts({userConfig, prompts, configTmpl});
 
   let {meta, ...answer} = await inquirer.prompt(prompts);
   let rabbitUsers = {};
@@ -49,6 +38,7 @@ const main = async (options) => {
 
   userConfig = await awsResources({userConfig, answer, configTmpl});
   userConfig = await taskclusterResources({userConfig, answer, configTmpl});
+  userConfig = await azureResources({userConfig, answer, configTmpl});
   await writeRepoYAML(USER_CONF_FILE, _.merge(userConfig, answer));
 };
 

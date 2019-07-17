@@ -44,6 +44,9 @@ module.exports = ({userConfig, prompts, configTmpl}) => {
       if (!/^[a-z0-9]+$/.test(prefix)) {
         return 'Must consist of lowercase characters and numbers';
       }
+      if (prefix.length > 24 || prefix.length < 3) {
+        return 'Must be between 3 and 24 characters in length';
+      }
       return true;
     },
   });

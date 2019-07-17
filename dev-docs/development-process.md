@@ -128,9 +128,7 @@ You will first need to have
 
 Once those are all set up, you will need:
 
-* access to an admin account username/password for the rabbitmq cluster
-* to have your terminal logged into an iam user in the aws account you intend to use. This iam user must be able to configure s3/iam resources
-* `az login` for azure
+* set up a local iam user; this iam user must be able to configure s3/iam resources
 * `gcloud container clusters get-credentials` for your k8s cluster
 
 ## Hacking on Clients

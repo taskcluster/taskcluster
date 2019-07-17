@@ -3,6 +3,8 @@ const slugid = require('slugid');
 module.exports = async ({userConfig, answer, configTmpl}) => {
   const oldClients = {};
 
+  userConfig.auth = userConfig.auth || {};
+
   if (userConfig.auth.static_clients) {
     for (const client of userConfig.auth.static_clients) {
       oldClients[client.clientId] = client;
