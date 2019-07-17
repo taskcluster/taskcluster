@@ -1,3 +1,4 @@
+---
 order: 11
 ---
 import SchemaTable from 'taskcluster-ui/components/SchemaTable'

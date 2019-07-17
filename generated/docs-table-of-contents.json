@@ -6,8 +6,6 @@
       "noAnchors": true,
       "order": 1000
     },
-    "excerpt": "",
-    "isEmpty": false,
     "name": "README",
     "path": "README"
   },
@@ -1370,8 +1368,6 @@
       "order": 1000,
       "title": "People"
     },
-    "excerpt": "",
-    "isEmpty": false,
     "name": "people",
     "path": "people"
   },
@@ -2360,8 +2356,8 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/worker-manager/worker-interaction",
-                  "title": "Worker-Manager - Worker Interaction"
+                  "path": "reference/core/worker-manager/google",
+                  "title": "google"
                 },
                 "path": "reference/core/worker-manager/logs",
                 "prev": {
@@ -2377,15 +2373,14 @@
                 "children": [
                 ],
                 "data": {
-                  "order": 100,
-                  "title": "Worker-Manager - Worker Interaction"
+                  "order": 10
                 },
-                "name": "worker-interaction",
+                "name": "google",
                 "next": {
-                  "path": "reference/core/worker-manager/google",
-                  "title": "google"
+                  "path": "reference/core/worker-manager/static",
+                  "title": "static"
                 },
-                "path": "reference/core/worker-manager/worker-interaction",
+                "path": "reference/core/worker-manager/google",
                 "prev": {
                   "path": "reference/core/worker-manager/logs",
                   "title": "logs"
@@ -2399,17 +2394,17 @@
                 "children": [
                 ],
                 "data": {
-                  "order": 1000
+                  "order": 11
                 },
-                "name": "google",
+                "name": "static",
                 "next": {
-                  "path": "reference/core/worker-manager/static",
-                  "title": "static"
-                },
-                "path": "reference/core/worker-manager/google",
-                "prev": {
                   "path": "reference/core/worker-manager/worker-interaction",
                   "title": "Worker-Manager - Worker Interaction"
+                },
+                "path": "reference/core/worker-manager/static",
+                "prev": {
+                  "path": "reference/core/worker-manager/google",
+                  "title": "google"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",
@@ -2420,17 +2415,18 @@
                 "children": [
                 ],
                 "data": {
-                  "order": 1000
+                  "order": 100,
+                  "title": "Worker-Manager - Worker Interaction"
                 },
-                "name": "static",
+                "name": "worker-interaction",
                 "next": {
                   "path": "reference/integrations/README",
                   "title": "Integrations"
                 },
-                "path": "reference/core/worker-manager/static",
+                "path": "reference/core/worker-manager/worker-interaction",
                 "prev": {
-                  "path": "reference/core/worker-manager/google",
-                  "title": "google"
+                  "path": "reference/core/worker-manager/static",
+                  "title": "static"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",
@@ -2849,8 +2845,8 @@
         },
         "path": "reference/integrations/README",
         "prev": {
-          "path": "reference/core/worker-manager/static",
-          "title": "static"
+          "path": "reference/core/worker-manager/worker-interaction",
+          "title": "Worker-Manager - Worker Interaction"
         },
         "up": {
           "path": "reference/README",
@@ -2880,8 +2876,6 @@
       "order": 1000,
       "title": "Resources"
     },
-    "excerpt": "",
-    "isEmpty": false,
     "name": "resources",
     "path": "resources"
   },
