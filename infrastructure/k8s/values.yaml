@@ -332,3 +332,4 @@ references:
       cpu: 50m
       memory: 100Mi
   taskcluster_client_id: static/taskcluster/references
+dockerImage: taskcluster/taskcluster:v14.2.0

@@ -104,6 +104,13 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
         changed.push(file);
       }
 
+      const valuesYaml = 'infrastructure/k8s/values.yaml';
+      utils.status({message: `Update ${valuesYaml}`});
+      await modifyRepoYAML(valuesYaml, contents => {
+        contents.dockerImage = `taskcluster/taskcluster:v${requirements['release-version']}`;
+      });
+      changed.push(valuesYaml);
+
       const helmchart = 'infrastructure/k8s/Chart.yaml';
       utils.status({message: `Update ${helmchart}`});
       await modifyRepoYAML(helmchart, contents => {
