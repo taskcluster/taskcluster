@@ -191,6 +191,7 @@ class APIBuilder {
           input: entry.input,
           output: entry.output,
           description: entry.description,
+          category: entry.category
         };
         if (entry.scopes) {
           retval.scopes = entry.scopes;
