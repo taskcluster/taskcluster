@@ -115,6 +115,12 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
         contents.replace(/VersionNumber = .*/, `VersionNumber = "${requirements['release-version']}"`));
       changed.push(shellclient);
 
+      const shellreadme = 'clients/client-shell/cmds/version/version.go';
+      utils.status({message: `Update ${shellreadme}`});
+      await modifyRepoFile(shellreadme, contents =>
+        contents.replace(/download\/v[0-9.]*\/taskcluster-/, `download/v${requirements['release-version']}/taskcluster-"`));
+      changed.push(shellreadme);
+
       // the go client requires the major version number in its import path, so
       // just about every file needs to be edited.  This matches the full package
       // path to avoid false positives, but that might result in missed changes
