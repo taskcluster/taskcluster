@@ -88,12 +88,10 @@ export default class ViewClient extends Component {
   handleDeleteClient = async clientId => {
     this.setState({ dialogError: null, loading: true });
 
-    await this.props.client.mutate({
+    return this.props.client.mutate({
       mutation: deleteClientQuery,
       variables: { clientId },
     });
-
-    this.props.history.push(`/auth/roles`);
   };
 
   handleDialogActionError = error => {
@@ -101,7 +99,7 @@ export default class ViewClient extends Component {
   };
 
   handleDialogActionComplete = () => {
-    this.setState({ dialogError: null, loading: false });
+    this.props.history.push(`/auth/clients`);
   };
 
   handleDisableClient = async clientId => {
