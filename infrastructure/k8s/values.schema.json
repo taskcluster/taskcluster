@@ -155,6 +155,10 @@
         "statsum_base_url": {
           "type": "string"
         },
+        "taskcluster_client_id": {
+          "description": "A clientId for this service.",
+          "type": "string"
+        },
         "test_bucket": {
           "type": "string"
         },
@@ -213,6 +217,7 @@
           "type": "string"
         },
         "taskcluster_client_id": {
+          "description": "A clientId for this service.",
           "type": "string"
         }
       },
@@ -332,6 +337,7 @@
           "type": "string"
         },
         "taskcluster_client_id": {
+          "description": "A clientId for this service.",
           "type": "string"
         },
         "trust_proxy": {
@@ -483,6 +489,7 @@
           "type": "string"
         },
         "taskcluster_client_id": {
+          "description": "A clientId for this service.",
           "type": "string"
         },
         "trust_proxy": {
@@ -589,6 +596,7 @@
           "type": "string"
         },
         "taskcluster_client_id": {
+          "description": "A clientId for this service.",
           "type": "string"
         },
         "trust_proxy": {
@@ -650,6 +658,7 @@
           "type": "string"
         },
         "taskcluster_client_id": {
+          "description": "A clientId for this service.",
           "type": "string"
         },
         "trust_proxy": {
@@ -812,6 +821,7 @@
           "type": "string"
         },
         "taskcluster_client_id": {
+          "description": "A clientId for this service.",
           "type": "string"
         },
         "trust_proxy": {
@@ -896,6 +906,7 @@
           "type": "string"
         },
         "taskcluster_client_id": {
+          "description": "A clientId for this service.",
           "type": "string"
         },
         "trust_proxy": {
@@ -1227,6 +1238,7 @@
           "type": "string"
         },
         "taskcluster_client_id": {
+          "description": "A clientId for this service.",
           "type": "string"
         },
         "use_cloud_mirror": {
@@ -1269,6 +1281,10 @@
           ],
           "title": "Process settings for this service",
           "type": "object"
+        },
+        "taskcluster_client_id": {
+          "description": "A clientId for this service.",
+          "type": "string"
         }
       },
       "required": [
@@ -1355,6 +1371,7 @@
           "type": "string"
         },
         "taskcluster_client_id": {
+          "description": "A clientId for this service.",
           "type": "string"
         }
       },
@@ -1396,6 +1413,7 @@
           "type": "string"
         },
         "taskcluster_client_id": {
+          "description": "A clientId for this service.",
           "type": "string"
         },
         "treeherder_route_prefix": {
@@ -1438,6 +1456,10 @@
           ],
           "title": "Process settings for this service",
           "type": "object"
+        },
+        "taskcluster_client_id": {
+          "description": "A clientId for this service.",
+          "type": "string"
         }
       },
       "required": [
@@ -1519,6 +1541,7 @@
           "type": "string"
         },
         "taskcluster_client_id": {
+          "description": "A clientId for this service.",
           "type": "string"
         },
         "ui_login_strategies": {
@@ -1696,6 +1719,7 @@
           "type": "string"
         },
         "taskcluster_client_id": {
+          "description": "A clientId for this service.",
           "type": "string"
         },
         "trust_proxy": {

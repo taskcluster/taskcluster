@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk');
 
-module.exports = async ({userConfig, answer}) => {
+module.exports = async ({userConfig, answer, configTmpl}) => {
   const iam = new AWS.IAM();
   const s3 = new AWS.S3();
   const prefix = (answer.meta || {}).deploymentPrefix || (userConfig.meta || {}).deploymentPrefix;
@@ -88,6 +88,6 @@ module.exports = async ({userConfig, answer}) => {
     userConfig.queue.aws_access_key_id = accessKey.AccessKeyId;
     userConfig.queue.aws_secret_access_key = accessKey.SecretAccessKey;
 
-    return userConfig;
   }
+  return userConfig;
 };

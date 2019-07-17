@@ -4,6 +4,7 @@ const inquirer = require('inquirer');
 const commonPrompts = require('./common');
 const rabbitPrompts = require('./rabbit');
 const awsResources = require('./aws');
+const taskclusterResources = require('./taskcluster');
 
 const USER_CONF_FILE = 'user-config.yaml';
 
@@ -46,7 +47,8 @@ const main = async (options) => {
   }
   answer = _.merge(answer, rabbitUsers, {meta});
 
-  userConfig = await awsResources({userConfig, answer});
+  userConfig = await awsResources({userConfig, answer, configTmpl});
+  userConfig = await taskclusterResources({userConfig, answer, configTmpl});
   await writeRepoYAML(USER_CONF_FILE, _.merge(userConfig, answer));
 };
 
