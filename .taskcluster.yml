@@ -78,5 +78,5 @@ tasks:
       metadata:
         name: taskcluster-worker-runner-everything
         description: all checks for taskcluster-worker-runner
-        owner: ${event.pusher.name}@users.noreply.github.com
+        owner: ${event.pull_request.user.login}@users.noreply.github.com
         source: ${event.repository.url}
