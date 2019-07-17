@@ -39,7 +39,7 @@ module.exports = ({userConfig, prompts, configTmpl}) => {
     when: () => !userConfig.meta || !userConfig.meta.deploymentPrefix,
     type: 'input',
     name: 'meta.deploymentPrefix',
-    message: 'Specify a prefix to use for most resources needed by this cluster.',
+    message: 'Specify a prefix to use for most resources needed by this deployment.',
     validate: prefix => {
       if (!/^[a-z0-9]+$/.test(prefix)) {
         return 'Must consist of lowercase characters and numbers';
@@ -55,7 +55,7 @@ module.exports = ({userConfig, prompts, configTmpl}) => {
     when: () => !userConfig.ingressStaticIpName,
     type: 'input',
     name: 'ingressStaticIpName',
-    message: 'Name of the google reserved static ip for your cluster.',
+    message: 'Name of the google reserved static ip for this deloyment.',
   });
 
   prompts.push({

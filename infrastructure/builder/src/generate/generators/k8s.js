@@ -243,7 +243,7 @@ exports.tasks.push({
         rootUrl: {
           type: 'string',
           format: 'uri',
-          description: 'The url pointing to your cluster ingress.',
+          description: 'The url pointing to your deployment\'s ingress.',
         },
         dockerImage: {
           type: 'string',
