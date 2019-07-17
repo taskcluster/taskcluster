@@ -10,6 +10,10 @@ class Release {
   constructor(cmdOptions) {
     this.cmdOptions = cmdOptions;
 
+    if (cmdOptions.push && !cmdOptions.ghToken) {
+      throw new Error('Cannot use --push without --gh-token');
+    }
+
     this.baseDir = cmdOptions['baseDir'] || '/tmp/taskcluster-builder-build';
 
     // The `yarn build` process is a subgraph of the release taskgraph, with some
@@ -33,6 +37,7 @@ class Release {
     generateReleaseTasks({
       tasks,
       cmdOptions: this.cmdOptions,
+      baseDir: this.baseDir,
     });
 
     return tasks;
@@ -66,7 +71,13 @@ class Release {
     console.log(`Release version: ${context['release-version']}`);
     console.log(`Release docker image: ${context['monoimage-docker-image']}`);
     if (!this.cmdOptions.push) {
-      console.log('  NOTE: image and git commit + tag not pushed (use --push)');
+      console.log('NOTE: image and git commit + tag not pushed (use --push)');
+    } else {
+      console.log(`GitHub release: ${context['github-release']}`);
+      console.log('** YOUR NEXT STEPS **');
+      console.log(' * run `npm publish` in clients/client');
+      console.log(' * run `npm publish` in clients/client-web');
+      console.log(' * run `./release.sh --real` in clients/client-py');
     }
   }
 }
