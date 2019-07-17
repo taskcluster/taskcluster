@@ -8,10 +8,9 @@ chmod 400 "${REGION}.id_rsa"
 
 # aws cli docs lie, they say userdata must be base64 encoded, but cli encodes for you, so just cat it...
 USER_DATA="$(cat userdata)"
-AMI_BASE_NAME="$(cat ami-base-name)"
 
-# find out latest windows 2012 r2 ami to use...
-AMI_METADATA="$(aws --region "${REGION}" ec2 describe-images --owners self amazon --filters "Name=platform,Values=windows" "Name=name,Values=${AMI_BASE_NAME}" --query 'Images[*].{A:CreationDate,B:ImageId,C:Name}' --output text | sort -u | tail -1 | cut -f2,3)"
+# search for latest base AMI to use
+AMI_METADATA="$(aws --region "${REGION}" ec2 describe-images --owners $(cat owners) --filters $(cat filters) --query 'Images[*].{A:CreationDate,B:ImageId,C:Name}' --output text | sort -u | tail -1 | cut -f2,3)"
 
 AMI="$(echo $AMI_METADATA | sed 's/ .*//')"
 AMI_NAME="$(echo $AMI_METADATA | sed 's/.* //')"
@@ -39,28 +38,38 @@ log "I've triggered the creation of instance ${INSTANCE_ID} - it can take a \x1B
 aws --region "${REGION}" ec2 create-tags --resources "${INSTANCE_ID}" --tags "Key=WorkerType,Value=aws-provisioner-v1/${WORKER_TYPE}" "Key=Name,Value=${WORKER_TYPE} base instance" "Key=TC-Windows-Base,Value=true"
 log "I've tagged it with \"WorkerType\": \"aws-provisioner-v1/${WORKER_TYPE}\""
 
+sleep 1
+
 # grab public IP before it shuts down and loses it!
 PUBLIC_IP="$(aws --region "${REGION}" ec2 describe-instances --instance-id "${INSTANCE_ID}" --query 'Reservations[*].Instances[*].NetworkInterfaces[*].Association.PublicIp' --output text)"
-
-# poll for a stopped state
-until aws --region "${REGION}" ec2 wait instance-stopped --instance-ids "${INSTANCE_ID}" >/dev/null 2>&1; do
-  log "  Waiting for instance ${INSTANCE_ID} to shut down..."
-  sleep 30
-done
-
-log "Now snapshotting the instance to create an AMI..."
-# now capture the AMI
-IMAGE_ID="$(aws --region "${REGION}" ec2 create-image --instance-id "${INSTANCE_ID}" --name "${WORKER_TYPE} mozillabuild version ${SLUGID}" --description "firefox desktop builds on windows - taskcluster worker - version ${SLUGID}" --output text)"
-
-log "The AMI is currently being created: ${IMAGE_ID}"
 
 PASSWORD="$(aws --region "${REGION}" ec2 get-password-data --instance-id "${INSTANCE_ID}" --priv-launch-key ${REGION}.id_rsa --output text --query PasswordData)"
 
 log "To connect to the template instance (please don't do so until AMI creation process is completed"'!'"):"
 log ''
-log "             Public IP: ${PUBLIC_IP}"
-log "             Username:  Administrator"
-log "             Password:  ${PASSWORD}"
+
+if [ -n "${PASSWORD}" ]; then
+  # windows
+  log "             Public IP: ${PUBLIC_IP}"
+  log "             Username:  Administrator"
+  log "             Password:  ${PASSWORD}"
+else
+  # linux
+  log "             ssh -i '$(pwd)/${REGION}.id_rsa' ubuntu@${PUBLIC_IP}"
+fi
+
+# poll for a stopped state
+until aws --region "${REGION}" ec2 wait instance-stopped --instance-ids "${INSTANCE_ID}" >/dev/null 2>&1; do
+  log "  Waiting for instance ${INSTANCE_ID} (IP ${PUBLIC_IP}) to shut down..."
+  sleep 30
+done
+
+log "Now snapshotting the instance to create an AMI..."
+# now capture the AMI
+IMAGE_ID="$(aws --region "${REGION}" ec2 create-image --instance-id "${INSTANCE_ID}" --name "${WORKER_TYPE} mozillabuild version ${SLUGID}" --description "generic-worker ${SLUGID}" --output text)"
+
+log "The AMI is currently being created: ${IMAGE_ID}"
+
 log ''
 log "To monitor the AMI creation process, see:"
 log ''
@@ -78,7 +87,7 @@ touch "${REGION}.${IMAGE_ID}.latest-ami"
 {
     echo "Instance:  ${INSTANCE_ID}"
     echo "Public IP: ${PUBLIC_IP}"
-    echo "Password:  ${PASSWORD}"
+    [ -n "${PASSWORD}" ] && echo "Password:  ${PASSWORD}"
     echo "AMI:       ${IMAGE_ID}"
 } > "${REGION}.secrets"
 
