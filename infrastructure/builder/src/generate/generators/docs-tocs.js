@@ -152,14 +152,18 @@ exports.tasks = [{
   requires: [],
   provides: ['docs-toc'],
   run: async (requirements, utils) => {
-    const files = await mdParseDir(DOCS_DIR, { dirnames: true });
+    const filesWithExtensions = await mdParseDir(DOCS_DIR, { dirnames: true });
+    // strip .md and .mdx extensions frmo those filenames..
+    const files = Object.assign({},
+      ...Object.entries(filesWithExtensions)
+        .map(([filename, value]) => ({[filename.replace(/\.mdx?/, '')]: value})));
     const [gettingStarted, resources, people] = ['README', 'resources', 'people'].map(fileName =>
       Object.assign(files[fileName], {
         name: fileName,
         path: fileName,
         children: [],
         content: undefined,
-        data: Object.assign(files[fileName].data, {
+        data: Object.assign(files[fileName].data || {}, {
           order: files[fileName].data.order || 1000,
         }),
       })
