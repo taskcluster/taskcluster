@@ -1428,6 +1428,9 @@
     },
     "ui": {
       "properties": {
+        "application_name": {
+          "type": "string"
+        },
         "procs": {
           "properties": {
             "web": {

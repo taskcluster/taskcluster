@@ -160,7 +160,9 @@ SERVICES.forEach(name => {
 // Now add ui/references separately
 const extras = {
   ui: {
-    vars: [],
+    vars: [
+      {type: '!env', var: 'APPLICATION_NAME'},
+    ],
     procs: {
       web: {
         type: 'web',
