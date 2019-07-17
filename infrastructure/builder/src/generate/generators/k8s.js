@@ -288,7 +288,7 @@ exports.tasks.push({
       azureAccountId: '...',
       meta: {},
     };
-    const variablesYAML = {}; // Defaults that people can override
+    const valuesYAML = {}; // Defaults that people can override
 
     let configs = SERVICES.map(name => ({
       name,
@@ -306,7 +306,7 @@ exports.tasks.push({
     configs.forEach(cfg => {
       const confName = cfg.name.replace(/-/g, '_');
       exampleConfig[confName] = {};
-      variablesYAML[confName] = {
+      valuesYAML[confName] = {
         procs: {},
         taskcluster_client_id: `static/taskcluster/${cfg.name}`,
       };
@@ -349,7 +349,7 @@ exports.tasks.push({
         // that here with  schema.properties[confName].required.push(varName);
         schema.properties[confName].properties[varName] = configToSchema(v.type);
         if (Object.keys(CLUSTER_DEFAULTS).includes(varName)) {
-          variablesYAML[confName][varName] = CLUSTER_DEFAULTS[varName];
+          valuesYAML[confName][varName] = CLUSTER_DEFAULTS[varName];
         } else {
           exampleConfig[confName][varName] = configToExample(v.type);
         }
@@ -360,7 +360,7 @@ exports.tasks.push({
       Object.entries(cfg.procs).forEach(([n, p]) => {
         n = n.replace(/-/g, '_');
         if (['web', 'background'].includes(p.type)) {
-          variablesYAML[confName].procs[n] = {
+          valuesYAML[confName].procs[n] = {
             replicas: 1,
             cpu: '50m', // TODO: revisit these defaults
             memory: '100Mi',
@@ -377,7 +377,7 @@ exports.tasks.push({
             additionalProperties: false,
           };
         } else if (p.type === 'cron') {
-          variablesYAML[confName].procs[n] = {
+          valuesYAML[confName].procs[n] = {
             cpu: '50m', // TODO: revisit these defaults
             memory: '100Mi',
           };
@@ -402,14 +402,14 @@ exports.tasks.push({
       scopes: ['*'],
     });
 
-    variablesYAML.auth.static_clients = staticClients;
+    valuesYAML.auth.static_clients = staticClients;
     exampleConfig.auth.static_clients = staticClients.map(c => {
       c.accessToken = '...';
       return c;
     });
 
     await writeRepoJSON(path.join(CHART_DIR, 'values.schema.json'), schema);
-    await writeRepoYAML(path.join(CHART_DIR, 'variables.yaml'), variablesYAML);
+    await writeRepoYAML(path.join(CHART_DIR, 'values.yaml'), valuesYAML);
     await writeRepoYAML('user-config-example.yaml', exampleConfig);
   },
 });
