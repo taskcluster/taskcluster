@@ -20,12 +20,12 @@ const CLUSTER_DEFAULTS = {
 // Things like port that we always set ourselves
 const NON_CONFIGURABLE = [
   'port',
-  'taskcluster_root_url', // This is actually configured at the cluster level
   'taskcluster_client_id', // Generated for each service
 ];
 
 // Shared across an entire deployment
 const SHARED_CONFIG = {
+  taskcluster_root_url: '.Values.rootUrl',
   pulse_hostname: '.Values.pulseHostname',
   pulse_vhost: '.Values.pulseVhost',
   azure_account_id: '.Values.azureAccountId',

@@ -57,11 +57,15 @@ const azureResources = async ({userConfig, answer, configTmpl}) => {
         tags: {},
       },
     );
+    const accountId = answer.azureAccountId || userConfig.azureAccountId;
     const result = await storageClient.storageAccounts.listKeys(
-      answer.azureAccountId || userConfig.azureAccountId,
+      accountId,
       resourceGroupName,
     );
     userConfig.auth.azure_account_key = result.keys[0].value;
+    userConfig.auth.azure_accounts = {
+      [accountId]: result.keys[0].value,
+    };
   }
 
   for (const [service, cfg] of Object.entries(configTmpl)) {
