@@ -15,11 +15,6 @@ const TMPL_DIR = path.join(CHART_DIR, 'templates');
 
 const CLUSTER_DEFAULTS = {
   level: 'notice',
-  node_env: 'production',
-
-  // TODO: iirc google doesn't set the headers that we need to trust proxy so we don't set this, let's fix it
-  force_ssl: false,
-  trust_proxy: true,
 };
 
 // Things like port that we always set ourselves
@@ -34,6 +29,9 @@ const SHARED_CONFIG = {
   pulse_hostname: '.Values.pulseHostname',
   pulse_vhost: '.Values.pulseVhost',
   azure_account_id: '.Values.azureAccountId',
+  force_ssl: '.Values.forceSSL',
+  trust_proxy: '.Values.trustProxy',
+  node_env: '.Values.nodeEnv',
 };
 
 const renderTemplates = async (name, vars, procs, templates) => {
@@ -269,13 +267,27 @@ exports.tasks.push({
           type: 'string',
           description: 'An azure storage account for this deployment. Note this is a _storage_ account, not a billing one.',
         },
+
+        // TODO: iirc google doesn't set the headers that we need to trust proxy so we don't set this, let's fix it
+        forceSSL: {
+          type: 'boolean',
+          description: 'If true, all connections must use ssl',
+        },
+        trustProxy: {
+          type: 'boolean',
+          description: 'If true, only the external ingress needs to use ssl. connections to services are allowed however.',
+        },
+        nodeEnv: {
+          type: 'string',
+          description: 'You almost certainly want "production" here.',
+        },
         meta: {
           type: 'object',
           description: 'Metadata about a deployment. Automatically generated in deploy configs.',
           additionalProperties: true,
         },
       },
-      required: ['rootUrl', 'dockerImage', 'pulseHostname', 'pulseVhost', 'azureAccountId'],
+      required: ['rootUrl', 'dockerImage', 'pulseHostname', 'pulseVhost', 'azureAccountId', 'forceSSL', 'trustProxy', 'nodeEnv'],
       aditionalProperties: false,
     };
 
@@ -288,9 +300,20 @@ exports.tasks.push({
       pulstHostname: '...',
       pulseVhost: '...',
       azureAccountId: '...',
+      forceSSL: false,
+      trustProxy: true,
+      nodeEnv: 'production',
       meta: {},
     };
-    const valuesYAML = {}; // Defaults that people can override
+
+    const currentRelease = await readRepoYAML(path.join('infrastructure', 'builder', 'current-release.yml'));
+    // Defaults that people can override
+    const valuesYAML = {
+      dockerImage: currentRelease.image,
+      trustProxy: true,
+      forceSSL: false,
+      nodeEnv: 'production',
+    };
 
     let configs = SERVICES.map(name => ({
       name,

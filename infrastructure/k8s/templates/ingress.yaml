@@ -73,11 +73,11 @@ spec:
             backend:
               servicePort: 80
               serviceName: taskcluster-web-server
-          - path: /graphql
+          - path: /subscription
             backend:
               servicePort: 80
               serviceName: taskcluster-web-server
-          - path: /graphql/*
+          - path: /graphql
             backend:
               servicePort: 80
               serviceName: taskcluster-web-server

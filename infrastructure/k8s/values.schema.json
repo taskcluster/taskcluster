@@ -42,9 +42,6 @@
         "docs_bucket": {
           "type": "string"
         },
-        "force_ssl": {
-          "type": "boolean"
-        },
         "gcp_credentials": {
           "oneOf": [
             {
@@ -57,9 +54,6 @@
           ]
         },
         "level": {
-          "type": "string"
-        },
-        "node_env": {
           "type": "string"
         },
         "procs": {
@@ -163,9 +157,6 @@
         "test_bucket": {
           "type": "string"
         },
-        "trust_proxy": {
-          "type": "boolean"
-        },
         "websocktunnel_secret": {
           "type": "string"
         }
@@ -233,6 +224,10 @@
       "description": "The docker image containing taskcluster.",
       "type": "string"
     },
+    "forceSSL": {
+      "description": "If true, all connections must use ssl",
+      "type": "boolean"
+    },
     "github": {
       "properties": {
         "aws_access_key": {
@@ -243,9 +238,6 @@
         },
         "bot_username": {
           "type": "string"
-        },
-        "force_ssl": {
-          "type": "boolean"
         },
         "github_app_id": {
           "type": "string"
@@ -343,9 +335,6 @@
           "description": "A clientId for this service.",
           "type": "string"
         },
-        "trust_proxy": {
-          "type": "boolean"
-        },
         "webhook_secret": {
           "type": "array"
         },
@@ -367,9 +356,6 @@
         "aws_secret_access_key": {
           "type": "string"
         },
-        "force_ssl": {
-          "type": "boolean"
-        },
         "hook_table_name": {
           "type": "string"
         },
@@ -380,9 +366,6 @@
           "type": "string"
         },
         "level": {
-          "type": "string"
-        },
-        "node_env": {
           "type": "string"
         },
         "procs": {
@@ -495,9 +478,6 @@
         "taskcluster_client_id": {
           "description": "A clientId for this service.",
           "type": "string"
-        },
-        "trust_proxy": {
-          "type": "boolean"
         }
       },
       "required": [
@@ -513,9 +493,6 @@
         },
         "aws_secret_access_key": {
           "type": "string"
-        },
-        "force_ssl": {
-          "type": "boolean"
         },
         "level": {
           "type": "string"
@@ -603,9 +580,6 @@
         "taskcluster_client_id": {
           "description": "A clientId for this service.",
           "type": "string"
-        },
-        "trust_proxy": {
-          "type": "boolean"
         }
       },
       "required": [
@@ -642,13 +616,7 @@
         "aws_secret_access_key": {
           "type": "string"
         },
-        "force_ssl": {
-          "type": "boolean"
-        },
         "level": {
-          "type": "string"
-        },
-        "node_env": {
           "type": "string"
         },
         "procs": {
@@ -666,9 +634,6 @@
         "taskcluster_client_id": {
           "description": "A clientId for this service.",
           "type": "string"
-        },
-        "trust_proxy": {
-          "type": "boolean"
         }
       },
       "required": [
@@ -681,6 +646,10 @@
       "additionalProperties": true,
       "description": "Metadata about a deployment. Automatically generated in deploy configs.",
       "type": "object"
+    },
+    "nodeEnv": {
+      "description": "You almost certainly want \"production\" here.",
+      "type": "string"
     },
     "notify": {
       "properties": {
@@ -710,9 +679,6 @@
         "email_source_address": {
           "type": "string"
         },
-        "force_ssl": {
-          "type": "boolean"
-        },
         "irc_debug": {
           "type": "string"
         },
@@ -738,9 +704,6 @@
           "type": "string"
         },
         "level": {
-          "type": "string"
-        },
-        "node_env": {
           "type": "string"
         },
         "procs": {
@@ -830,9 +793,6 @@
         "taskcluster_client_id": {
           "description": "A clientId for this service.",
           "type": "string"
-        },
-        "trust_proxy": {
-          "type": "boolean"
         }
       },
       "required": [
@@ -856,9 +816,6 @@
         },
         "aws_secret_access_key": {
           "type": "string"
-        },
-        "force_ssl": {
-          "type": "boolean"
         },
         "level": {
           "type": "string"
@@ -916,9 +873,6 @@
         "taskcluster_client_id": {
           "description": "A clientId for this service.",
           "type": "string"
-        },
-        "trust_proxy": {
-          "type": "boolean"
         }
       },
       "required": [
@@ -953,13 +907,7 @@
         "blob_artifact_region": {
           "type": "string"
         },
-        "force_ssl": {
-          "type": "boolean"
-        },
         "level": {
-          "type": "string"
-        },
-        "node_env": {
           "type": "string"
         },
         "private_artifact_bucket": {
@@ -1325,9 +1273,6 @@
         "azure_table_name": {
           "type": "string"
         },
-        "force_ssl": {
-          "type": "boolean"
-        },
         "level": {
           "type": "string"
         },
@@ -1437,6 +1382,10 @@
       ],
       "title": "Configuration options for treeherder",
       "type": "object"
+    },
+    "trustProxy": {
+      "description": "If true, only the external ingress needs to use ssl. connections to services are allowed however.",
+      "type": "boolean"
     },
     "ui": {
       "properties": {
@@ -1581,13 +1530,7 @@
     },
     "worker_manager": {
       "properties": {
-        "force_ssl": {
-          "type": "boolean"
-        },
         "level": {
-          "type": "string"
-        },
-        "node_env": {
           "type": "string"
         },
         "procs": {
@@ -1739,9 +1682,6 @@
         "taskcluster_client_id": {
           "description": "A clientId for this service.",
           "type": "string"
-        },
-        "trust_proxy": {
-          "type": "boolean"
         }
       },
       "required": [
@@ -1757,6 +1697,9 @@
     "pulseHostname",
     "pulseVhost",
     "azureAccountId",
+    "forceSSL",
+    "trustProxy",
+    "nodeEnv",
     "auth",
     "built_in_workers",
     "github",

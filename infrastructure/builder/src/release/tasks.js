@@ -19,6 +19,7 @@ const {
   writeRepoFile,
   modifyRepoJSON,
   modifyRepoYAML,
+  writeRepoYAML,
   modifyRepoFile,
   removeRepoFile,
   REPO_ROOT,
@@ -104,10 +105,17 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
         changed.push(file);
       }
 
+      const releaseImage = `taskcluster/taskcluster:v${requirements['release-version']}`;
+
+      const build = 'infrastructure/builder/current-release.yml';
+      utils.status({message: `Update ${build}`});
+      await writeRepoYAML(build, {image: releaseImage});
+      changed.push(build);
+
       const valuesYaml = 'infrastructure/k8s/values.yaml';
       utils.status({message: `Update ${valuesYaml}`});
       await modifyRepoYAML(valuesYaml, contents => {
-        contents.dockerImage = `taskcluster/taskcluster:v${requirements['release-version']}`;
+        contents.dockerImage = releaseImage;
       });
       changed.push(valuesYaml);
 
