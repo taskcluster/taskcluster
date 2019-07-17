@@ -51,8 +51,8 @@ In either case, the data is the large JSON object containing a service account's
   "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/thisthing%40something.iam.gserviceaccount.com"
 }
-
 ```
+and will need to be included as a single string in the `creds` property.
 
 The service account for which you provide these GCP credentials must carry the roles
 
