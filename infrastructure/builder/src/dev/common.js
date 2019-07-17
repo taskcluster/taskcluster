@@ -47,4 +47,18 @@ module.exports = ({userConfig, prompts, configTmpl}) => {
       return true;
     },
   });
+
+  prompts.push({
+    when: () => !userConfig.ingressStaticIpName,
+    type: 'input',
+    name: 'ingressStaticIpName',
+    message: 'Name of the google reserved static ip for your cluster.',
+  });
+
+  prompts.push({
+    when: () => !userConfig.ingressCertName,
+    type: 'input',
+    name: 'ingressCertName',
+    message: 'Name of the google cert for your cluster.',
+  });
 };
