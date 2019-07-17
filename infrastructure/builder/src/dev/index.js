@@ -1,3 +1,4 @@
+const path = require('path');
 const _ = require('lodash');
 const {readRepoYAML, writeRepoYAML} = require('../utils');
 const inquirer = require('inquirer');
@@ -7,10 +8,10 @@ const {azurePrompts, azureResources} = require('./azure');
 const awsResources = require('./aws');
 const taskclusterResources = require('./taskcluster');
 
-const USER_CONF_FILE = 'user-config.yaml';
+const USER_CONF_FILE = 'user-config.yml';
 
 const main = async (options) => {
-  let configTmpl = await readRepoYAML('user-config-example.yaml');
+  let configTmpl = await readRepoYAML(path.join('dev-docs', 'user-config-example.yml'));
   let userConfig = {};
   try {
     userConfig = await readRepoYAML(USER_CONF_FILE);

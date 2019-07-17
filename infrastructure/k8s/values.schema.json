@@ -63,6 +63,7 @@
           "type": "string"
         },
         "procs": {
+          "additionalProperties": false,
           "properties": {
             "purgeExpiredClients": {
               "additionalProperties": false,
@@ -185,6 +186,7 @@
           "type": "string"
         },
         "procs": {
+          "additionalProperties": false,
           "properties": {
             "server": {
               "additionalProperties": false,
@@ -255,6 +257,7 @@
           "type": "string"
         },
         "procs": {
+          "additionalProperties": false,
           "properties": {
             "sync": {
               "additionalProperties": false,
@@ -383,6 +386,7 @@
           "type": "string"
         },
         "procs": {
+          "additionalProperties": false,
           "properties": {
             "expires": {
               "additionalProperties": false,
@@ -517,6 +521,7 @@
           "type": "string"
         },
         "procs": {
+          "additionalProperties": false,
           "properties": {
             "expire": {
               "additionalProperties": false,
@@ -647,6 +652,7 @@
           "type": "string"
         },
         "procs": {
+          "additionalProperties": false,
           "properties": {
           },
           "required": [
@@ -738,6 +744,7 @@
           "type": "string"
         },
         "procs": {
+          "additionalProperties": false,
           "properties": {
             "handler": {
               "additionalProperties": false,
@@ -857,6 +864,7 @@
           "type": "string"
         },
         "procs": {
+          "additionalProperties": false,
           "properties": {
             "expireCachePurges": {
               "additionalProperties": false,
@@ -961,6 +969,7 @@
           "type": "string"
         },
         "procs": {
+          "additionalProperties": false,
           "properties": {
             "claimResolver": {
               "additionalProperties": false,
@@ -1254,6 +1263,7 @@
     "references": {
       "properties": {
         "procs": {
+          "additionalProperties": false,
           "properties": {
             "web": {
               "additionalProperties": false,
@@ -1294,7 +1304,7 @@
       "type": "object"
     },
     "rootUrl": {
-      "description": "The url pointing to your cluster ingress.",
+      "description": "The url pointing to your deployment's ingress.",
       "format": "uri",
       "type": "string"
     },
@@ -1322,6 +1332,7 @@
           "type": "string"
         },
         "procs": {
+          "additionalProperties": false,
           "properties": {
             "expire": {
               "additionalProperties": false,
@@ -1393,6 +1404,7 @@
           "type": "string"
         },
         "procs": {
+          "additionalProperties": false,
           "properties": {
           },
           "required": [
@@ -1432,6 +1444,7 @@
           "type": "string"
         },
         "procs": {
+          "additionalProperties": false,
           "properties": {
             "web": {
               "additionalProperties": false,
@@ -1483,6 +1496,7 @@
           "type": "string"
         },
         "procs": {
+          "additionalProperties": false,
           "properties": {
             "scanner": {
               "additionalProperties": false,
@@ -1577,6 +1591,7 @@
           "type": "string"
         },
         "procs": {
+          "additionalProperties": false,
           "properties": {
             "expire_errors": {
               "additionalProperties": false,

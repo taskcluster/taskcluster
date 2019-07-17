@@ -174,10 +174,10 @@
     "heroku-postbuild": "if [ $PROCFILE = \"ui/Procfile\" ]; then cd ui && yarn install --frozen-lockfile && yarn build; fi",
     "COMMENT": "TODO: allow setting own deployment name below",
     "dev:init": "node infrastructure/builder/src/main.js dev --init",
-    "dev:install": "helm install -f ./user-config.yaml taskcluster ./infrastructure/k8s",
-    "dev:upgrade": "helm upgrade -f ./user-config.yaml taskcluster ./infrastructure/k8s --force --recreate-pods",
+    "dev:install": "helm install -f ./user-config.yml taskcluster ./infrastructure/k8s",
+    "dev:upgrade": "helm upgrade -f ./user-config.yml taskcluster ./infrastructure/k8s --force --recreate-pods",
     "dev:delete": "helm delete taskcluster",
-    "dev:template": "helm template -f ./user-config.yaml ./infrastructure/k8s"
+    "dev:template": "helm template -f ./user-config.yml ./infrastructure/k8s"
   },
   "renovate": {
     "extends": [
