@@ -142,7 +142,7 @@ export default class DocsSidebarList extends Component {
         <Typography component="span">(</Typography>
         {nodes.map((node, idx) => {
           const href = removeReadmeFromPath(`${DOCS_PATH_PREFIX}/${node.path}`);
-          const isLinkActive = removeReadmeFromPath(location.pathname) === href || removeReadmeFromPath(location.pathname) === href + "/";
+          const isLinkActive = removeReadmeFromPath(location.pathname) === href;
           return (
             <Fragment key={node.name}>
               {idx !== 0 && (
