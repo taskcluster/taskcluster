@@ -1,2 +1,2 @@
-export default (path = '') => 
+export default (path = '') =>
   path.replace(/\/+$/, '').replace(/\/?README\/?/, '');
