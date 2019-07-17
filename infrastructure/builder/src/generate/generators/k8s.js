@@ -322,6 +322,7 @@ exports.tasks.push({
             title: 'Process settings for this service',
             properties: {},
             required: [],
+            additionalProperties: false,
           },
           taskcluster_client_id: {
             type: 'string',
