@@ -1,5 +1,6 @@
 ---
 order: 10
+title: Google Provider Type
 ---
 import SchemaTable from 'taskcluster-ui/components/SchemaTable'
 
