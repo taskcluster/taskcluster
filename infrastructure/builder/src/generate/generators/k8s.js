@@ -433,7 +433,6 @@ exports.tasks.push({
       scopes: ['*'],
     });
 
-    valuesYAML.auth.static_clients = staticClients;
     exampleConfig.auth.static_clients = staticClients.map(c => {
       c.accessToken = '...';
       return c;

@@ -18,19 +18,19 @@ web-server:
   - auth:update-client:github/*
   - assume:login-identity:*
 secrets:
-  - auth:azure-table-access:{{ .Values.azureAccountId }}/Secrets
-  - auth:azure-table:read-write:{{ .Values.azureAccountId }}/Secrets
+  - auth:azure-table-access:${azureAccountId}/Secrets
+  - auth:azure-table:read-write:${azureAccountId}/Secrets
 index:
-  - auth:azure-table-access:{{ .Values.azureAccountId }}/IndexedTasks
-  - auth:azure-table-access:{{ .Values.azureAccountId }}/Namespaces
-  - auth:azure-table:read-write:{{ .Values.azureAccountId }}/IndexedTasks
-  - auth:azure-table:read-write:{{ .Values.azureAccountId }}/Namespaces
+  - auth:azure-table-access:${azureAccountId}/IndexedTasks
+  - auth:azure-table-access:${azureAccountId}/Namespaces
+  - auth:azure-table:read-write:${azureAccountId}/IndexedTasks
+  - auth:azure-table:read-write:${azureAccountId}/Namespaces
   - queue:get-artifact:*
 worker-manager:
   - auth:create-client:worker/*
   - assume:worker-type:worker-manager/*
   - assume:worker-id:*
-  - auth:azure-table:read-write:{{ .Values.azureAccountId }}/WM*
+  - auth:azure-table:read-write:${azureAccountId}/WM*
   - notify:email:*
   - secrets:get:worker-type:*
   - queue:claim-work:worker-manager/*
@@ -38,23 +38,23 @@ worker-manager:
 github:
   - assume:repo:github.com/*
   - assume:scheduler-id:taskcluster-github/*
-  - auth:azure-table-access:{{ .Values.azureAccountId }}/TaskclusterGithubBuilds
-  - auth:azure-table-access:{{ .Values.azureAccountId }}/TaskclusterIntegrationOwners
-  - auth:azure-table:read-write:{{ .Values.azureAccountId }}/TaskclusterGithubBuilds
-  - auth:azure-table:read-write:{{ .Values.azureAccountId }}/TaskclusterIntegrationOwners
-  - auth:azure-table:read-write:{{ .Values.azureAccountId }}/TaskclusterChecksToTasks
-  - auth:azure-table:read-write:{{ .Values.azureAccountId }}/TaskclusterCheckRuns
+  - auth:azure-table-access:${azureAccountId}/TaskclusterGithubBuilds
+  - auth:azure-table-access:${azureAccountId}/TaskclusterIntegrationOwners
+  - auth:azure-table:read-write:${azureAccountId}/TaskclusterGithubBuilds
+  - auth:azure-table:read-write:${azureAccountId}/TaskclusterIntegrationOwners
+  - auth:azure-table:read-write:${azureAccountId}/TaskclusterChecksToTasks
+  - auth:azure-table:read-write:${azureAccountId}/TaskclusterCheckRuns
 hooks:
-  - auth:azure-table:read-write:{{ .Values.azureAccountId }}/Hooks
-  - auth:azure-table:read-write:{{ .Values.azureAccountId }}/Queue
-  - auth:azure-table:read-write:{{ .Values.azureAccountId }}/LastFire2
+  - auth:azure-table:read-write:${azureAccountId}/Hooks
+  - auth:azure-table:read-write:${azureAccountId}/Queue
+  - auth:azure-table:read-write:${azureAccountId}/LastFire2
   - assume:hook-id:*
   - notify:email:*
   - queue:create-task:*
 notify:
-  - auth:azure-table:read-write:{{ .Values.azureAccountId }}/DenylistedNotification
+  - auth:azure-table:read-write:${azureAccountId}/DenylistedNotification
 purge-cache:
-  - auth:azure-table:read-write:{{ .Values.azureAccountId }}/CachePurges
+  - auth:azure-table:read-write:${azureAccountId}/CachePurges
 built-in-workers:
   - queue:claim-work:built-in/*
   - assume:worker-id:built-in/*
