@@ -140,9 +140,7 @@ export default class ClientForm extends Component {
     prevClient: null,
   };
 
-  handleDeleteClient = () => {
-    this.props.onDeleteClient(this.state.clientId);
-  };
+  handleDeleteClient = () => this.props.onDeleteClient(this.state.clientId);
 
   handleDeleteOnExpirationChange = () => {
     this.setState({ deleteOnExpiration: !this.state.deleteOnExpiration });
