@@ -132,7 +132,7 @@ test:
     # hardcoded into helper.js
     staticClients:
     - clientId:     static/taskcluster/root
-      accessToken:  -test-access-token-
+      accessToken:  -test-access-token-that-is-at-least-22-chars-long-
       description: |
         Root client used for creating other clients (bootstrapping).
       scopes:
