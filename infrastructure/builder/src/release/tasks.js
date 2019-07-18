@@ -114,16 +114,14 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
 
       const valuesYaml = 'infrastructure/k8s/values.yaml';
       utils.status({message: `Update ${valuesYaml}`});
-      await modifyRepoYAML(valuesYaml, contents => {
-        contents.dockerImage = releaseImage;
-      });
+      await modifyRepoFile(valuesYaml, contents =>
+        contents.replace(/dockerImage: .*/, `dockerImage: '${releaseImage}'`));
       changed.push(valuesYaml);
 
       const helmchart = 'infrastructure/k8s/Chart.yaml';
       utils.status({message: `Update ${helmchart}`});
-      await modifyRepoYAML(helmchart, contents => {
-        contents.appVersion = requirements['release-version'];
-      });
+      await modifyRepoFile(helmchart, contents =>
+        contents.replace(/appVersion: .*/, `appVersion: '${requirements['release-version']}'`));
       changed.push(helmchart);
 
       const pyclient = 'clients/client-py/setup.py';
