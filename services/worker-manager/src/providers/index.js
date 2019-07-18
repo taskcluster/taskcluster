@@ -23,13 +23,13 @@ class Providers {
     }
 
     const nullEntry = ['null-provider', {providerType: 'null'}];
-    for (const [providerId, meta] of Object.entries(cfg.providers).concat([nullEntry])) {
-      if (meta.providerType === 'null' && providerId !== 'null-provider') {
+    for (const [providerId, providerConfig] of Object.entries(cfg.providers).concat([nullEntry])) {
+      if (providerConfig.providerType === 'null' && providerId !== 'null-provider') {
         throw new Error('Only the `null-provider` providerId may have providerType `null`');
       }
-      const Provider = PROVIDER_TYPES[meta.providerType];
+      const Provider = PROVIDER_TYPES[providerConfig.providerType];
       if (!Provider) {
-        throw new Error(`Unkown providerType ${meta.providerType} selected for providerId ${providerId}.`);
+        throw new Error(`Unkown providerType ${providerConfig.providerType} selected for providerId ${providerId}.`);
       }
       const provider = new Provider({
         providerId,
@@ -42,7 +42,7 @@ class Providers {
         WorkerPoolError,
         validator,
         fakeCloudApis,
-        ...meta,
+        providerConfig,
       });
       this._providers[providerId] = provider;
       await provider.setup();
