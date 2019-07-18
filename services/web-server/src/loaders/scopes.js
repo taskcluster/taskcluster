@@ -16,7 +16,7 @@ module.exports = ({ auth }) => {
       queries.map(async ({ scopes, filter }) => {
         const { scopes: expandedScopes } = await auth.expandScopes({ scopes });
 
-        return siftUtil(filter, expandScopes);
+        return siftUtil(filter, expandedScopes);
       })
     )
   );
