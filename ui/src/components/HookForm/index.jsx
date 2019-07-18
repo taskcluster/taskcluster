@@ -498,11 +498,13 @@ export default class HookForm extends Component {
     const {
       actionLoading,
       dialogOpen,
+      dialogDeleteHook,
       dialogError,
       classes,
       isNewHook,
       onActionDialogClose,
       onDialogActionError,
+      onDialogDeleteHook,
       onDialogOpen,
     } = this.props;
     const {
@@ -793,7 +795,7 @@ export default class HookForm extends Component {
                 requiresAuth
                 tooltipOpen
                 icon={<DeleteIcon />}
-                onClick={this.handleDeleteHook}
+                onClick={onDialogDeleteHook}
                 className={classes.deleteIcon}
                 ButtonProps={{
                   disabled: actionLoading,
@@ -855,6 +857,23 @@ export default class HookForm extends Component {
                   </Grid>
                 </Grid>
               </Fragment>
+            }
+          />
+        )}
+        {dialogDeleteHook && (
+          <DialogAction
+            open={dialogDeleteHook}
+            title="Delete?"
+            onSubmit={this.handleDeleteHook}
+            onComplete={onActionDialogClose}
+            onClose={onActionDialogClose}
+            onError={onDialogActionError}
+            error={dialogError}
+            confirmText="Delete Hook"
+            body={
+              <p>
+                This will delete {hook.hookGroupId}/{hook.hookId}
+              </p>
             }
           />
         )}

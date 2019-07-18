@@ -29,6 +29,7 @@ export default class ViewHook extends Component {
     actionLoading: false,
     error: null,
     dialogError: null,
+    dialogDeleteHook: false,
     dialogOpen: false,
     snackbar: {
       message: '',
@@ -127,6 +128,7 @@ export default class ViewHook extends Component {
     this.setState({
       actionLoading: false,
       dialogOpen: false,
+      dialogDeleteHook: false,
       dialogError: null,
       error: null,
     });
@@ -134,6 +136,10 @@ export default class ViewHook extends Component {
 
   handleDialogOpen = () => {
     this.setState({ dialogOpen: true });
+  };
+
+  handleDeleteDialogHook = () => {
+    this.setState({ dialogDeleteHook: true });
   };
 
   handleDialogActionError = error => {
@@ -160,6 +166,7 @@ export default class ViewHook extends Component {
       error: err,
       dialogError,
       actionLoading,
+      dialogDeleteHook,
       dialogOpen,
       snackbar,
     } = this.state;
@@ -193,12 +200,14 @@ export default class ViewHook extends Component {
                 hook={data.hook}
                 hookLastFires={hookLastFires}
                 dialogOpen={dialogOpen}
+                dialogDeleteHook={dialogDeleteHook}
                 onTriggerHook={this.handleTriggerHook}
                 onUpdateHook={this.handleUpdateHook}
                 onDeleteHook={this.handleDeleteHook}
                 onActionDialogClose={this.handleActionDialogClose}
                 onDialogActionError={this.handleDialogActionError}
                 onDialogOpen={this.handleDialogOpen}
+                onDialogDeleteHook={this.handleDeleteDialogHook}
               />
             )}
           </Fragment>
