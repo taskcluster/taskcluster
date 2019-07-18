@@ -115,7 +115,7 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
         contents.replace(/VersionNumber = .*/, `VersionNumber = "${requirements['release-version']}"`));
       changed.push(shellclient);
 
-      const shellreadme = 'clients/client-shell/cmds/version/version.go';
+      const shellreadme = 'clients/client-shell/cmds/README.md';
       utils.status({message: `Update ${shellreadme}`});
       await modifyRepoFile(shellreadme, contents =>
         contents.replace(/download\/v[0-9.]*\/taskcluster-/, `download/v${requirements['release-version']}/taskcluster-"`));
