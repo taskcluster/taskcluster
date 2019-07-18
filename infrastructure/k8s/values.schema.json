@@ -376,6 +376,12 @@
         "aws_secret_access_key": {
           "type": "string"
         },
+        "azure_crypto_key": {
+          "type": "string"
+        },
+        "azure_signing_key": {
+          "type": "string"
+        },
         "hook_table_name": {
           "type": "string"
         },
@@ -486,12 +492,6 @@
         "queue_table_name": {
           "type": "string"
         },
-        "table_crypto_key": {
-          "type": "string"
-        },
-        "table_signing_key": {
-          "type": "string"
-        },
         "taskcluster_access_token": {
           "type": "string"
         },
@@ -505,8 +505,8 @@
         "hook_table_name",
         "lastfire_table_name",
         "queue_table_name",
-        "table_signing_key",
-        "table_crypto_key",
+        "azure_signing_key",
+        "azure_crypto_key",
         "taskcluster_access_token",
         "pulse_username",
         "pulse_password"
@@ -790,7 +790,6 @@
         "taskcluster_access_token",
         "aws_access_key_id",
         "aws_secret_access_key",
-        "aws_region",
         "pulse_namespace",
         "pulse_username",
         "pulse_password"
@@ -1213,8 +1212,7 @@
         "pulse_username",
         "pulse_password",
         "aws_access_key_id",
-        "aws_secret_access_key",
-        "artifact_region"
+        "aws_secret_access_key"
       ],
       "title": "Configuration options for queue",
       "type": "object"

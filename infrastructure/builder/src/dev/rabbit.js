@@ -77,7 +77,9 @@ module.exports = ({userConfig, prompts, configTmpl}) => {
 
         users[service] = users[service] || {};
         users[service].pulse_username = user;
-        users[service].pulse_namespace = `taskcluster-${service.replace(/_/g, '-')}`;
+        if (!['hooks', 'auth'].includes(service)) { // These services hardcode namespace TODO: fix?
+          users[service].pulse_namespace = `taskcluster-${service.replace(/_/g, '-')}`;
+        }
         users[service].pulse_password = password;
       }
       return users;

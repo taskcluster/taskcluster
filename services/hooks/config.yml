@@ -14,8 +14,8 @@ defaults:
     maxPendingPoints: 300
   azure:
     accountId:        !env AZURE_ACCOUNT_ID
-    signingKey:       !env TABLE_SIGNING_KEY
-    cryptoKey:        !env TABLE_CRYPTO_KEY
+    signingKey:       !env AZURE_SIGNING_KEY
+    cryptoKey:        !env AZURE_CRYPTO_KEY
   taskcluster:
     rootUrl:          !env TASKCLUSTER_ROOT_URL
     credentials:

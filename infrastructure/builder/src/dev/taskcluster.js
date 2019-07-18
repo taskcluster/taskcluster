@@ -40,5 +40,24 @@ module.exports = async ({userConfig, answer, configTmpl}) => {
     userConfig[serviceName].taskcluster_access_token = accessToken;
   }
 
+  // The following are some hacks for now until we can do all of this in a
+  // nicer way (presumably?)
+  userConfig['hooks']['hook_table_name'] = 'Hooks';
+  userConfig['hooks']['lastfire_table_name'] = 'LastFire';
+  userConfig['hooks']['queue_table_name'] = 'HooksQueue';
+  userConfig['secrets']['azure_table_name'] = 'Secrets';
+  userConfig['notify']['denylisted_notification_table_name'] = 'Denylist';
+  userConfig['worker_manager']['providers'] = {};
+  // TODO: Figure out what any of these should be set to
+  userConfig['web_server']['public_url'] = (answer.rootUrl || userConfig.rootUrl).replace(/\/$/, '');
+  userConfig['web_server']['additional_allowed_cors_origin'] = '???';
+  userConfig['web_server']['ui_login_strategies'] = {};
+  userConfig['web_server']['jwt_key'] = '???';
+  //TODO: These github things can/should be questions in this setup thing
+  userConfig['github']['bot_username'] = '???';
+  userConfig['github']['github_private_pem'] = '???';
+  userConfig['github']['github_app_id'] = '???';
+  userConfig['github']['webhook_secret'] = [];
+
   return userConfig;
 };

@@ -136,7 +136,7 @@ defaults:
     # references/schemas.taskcluster.net if you wish to publish meta-data
     accessKeyId:      !env AWS_ACCESS_KEY_ID
     secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
-    region:           !env ARTIFACT_REGION
+    region:           !env:optional ARTIFACT_REGION
     apiVersion:       2014-01-01
 
 # Configuration in production
