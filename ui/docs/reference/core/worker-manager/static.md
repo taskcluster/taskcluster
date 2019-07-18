@@ -1,5 +1,6 @@
 ---
 order: 11
+title: Static Provider Type
 ---
 import SchemaTable from 'taskcluster-ui/components/SchemaTable'
 
