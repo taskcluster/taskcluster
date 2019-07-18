@@ -114,9 +114,12 @@ function makeToc({ files, rootPath }) {
             child = {
               name,
               children: [],
-              data: Object.assign(item.data, {
-                order: item.data.order || 1000,
-              }),
+              data: {
+                // apply some defaults..
+                title: name === 'README' ? undefined : name,
+                order: 1000,
+                ...item.data,
+              },
               path: `${rootPath}${path.join('/')}`,
             };
 

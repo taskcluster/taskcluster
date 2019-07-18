@@ -714,7 +714,7 @@
             "name": "env-vars",
             "next": {
               "path": "manual/design/conventions",
-              "title": "conventions"
+              "title": "Conventions"
             },
             "path": "manual/design/env-vars",
             "prev": {
@@ -784,7 +784,7 @@
                     "name": "ui",
                     "next": {
                       "path": "manual/design/conventions/decision-task",
-                      "title": "decision-task"
+                      "title": "Decision Tasks"
                     },
                     "path": "manual/design/conventions/actions/ui",
                     "prev": {
@@ -809,23 +809,24 @@
                 "path": "manual/design/conventions/actions",
                 "prev": {
                   "path": "manual/design/conventions",
-                  "title": "conventions"
+                  "title": "Conventions"
                 },
                 "up": {
                   "path": "manual/design/conventions",
-                  "title": "conventions"
+                  "title": "Conventions"
                 }
               },
               {
                 "children": [
                 ],
                 "data": {
-                  "order": 1000
+                  "order": 1000,
+                  "title": "Decision Tasks"
                 },
                 "name": "decision-task",
                 "next": {
                   "path": "manual/design/conventions/task-logs",
-                  "title": "task-logs"
+                  "title": "Task Logs"
                 },
                 "path": "manual/design/conventions/decision-task",
                 "prev": {
@@ -834,14 +835,15 @@
                 },
                 "up": {
                   "path": "manual/design/conventions",
-                  "title": "conventions"
+                  "title": "Conventions"
                 }
               },
               {
                 "children": [
                 ],
                 "data": {
-                  "order": 1000
+                  "order": 1000,
+                  "title": "Task Logs"
                 },
                 "name": "task-logs",
                 "next": {
@@ -851,16 +853,17 @@
                 "path": "manual/design/conventions/task-logs",
                 "prev": {
                   "path": "manual/design/conventions/decision-task",
-                  "title": "decision-task"
+                  "title": "Decision Tasks"
                 },
                 "up": {
                   "path": "manual/design/conventions",
-                  "title": "conventions"
+                  "title": "Conventions"
                 }
               }
             ],
             "data": {
-              "order": 1000
+              "order": 1000,
+              "title": "Conventions"
             },
             "name": "conventions",
             "next": {
@@ -1344,7 +1347,7 @@
         "path": "manual/using",
         "prev": {
           "path": "manual/design/conventions/task-logs",
-          "title": "task-logs"
+          "title": "Task Logs"
         },
         "up": {
           "path": "manual",
