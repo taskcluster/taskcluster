@@ -9,7 +9,6 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import TextField from '@material-ui/core/TextField';
-import PlusIcon from 'mdi-react/PlusIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import Button from '../../../components/Button';
@@ -265,7 +264,7 @@ export default class ViewAwsWorkerTypeDefinition extends Component {
             }
             classes={{ root: classes.successIcon }}
             variant="round">
-            <PlusIcon />
+            <ContentSaveIcon />
           </Button>
         ) : (
           <SpeedDial>

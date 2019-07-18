@@ -21,7 +21,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import LinkIcon from 'mdi-react/LinkIcon';
-import PlusIcon from 'mdi-react/PlusIcon';
+import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import RotateLeftIcon from 'mdi-react/RotateLeftIcon';
 import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
 import SpeedDial from '../../../components/SpeedDial';
@@ -336,7 +336,7 @@ export default class CreateTask extends Component {
                 variant="round"
                 className={classes.createIcon}
                 onClick={this.handleCreateTask}>
-                <PlusIcon />
+                <ContentSaveIcon />
               </Button>
               <SpeedDial>
                 <SpeedDialAction

@@ -25,9 +25,6 @@ import Button from '../../../components/Button';
   heartIcon: {
     ...theme.mixins.errorIcon,
   },
-  createIcon: {
-    ...theme.mixins.successIcon,
-  },
   createIconSpan: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
@@ -88,7 +85,7 @@ export default class ViewAwsWorkerTypes extends Component {
             tooltipProps={{ title: 'Create Worker Type' }}
             requiresAuth
             variant="round"
-            className={classes.createIcon}
+            color="secondary"
             onClick={this.handleCreate}>
             <PlusIcon />
           </Button>
