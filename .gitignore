@@ -3,6 +3,6 @@ node_modules
 user-build-config.yml
 *.log
 .idea
-user-config.yml
-user-config.yaml
+user-config.*
+dev-config.*
 /artifacts/

@@ -153,7 +153,8 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
         entries: ['.'],
         ignore: name => (
           name.match(/\/node_modules\//) ||
-          name.match(/\/user-config.yml/)
+          name.match(/\/user-config.yml/) ||
+          name.match(/\/dev-config.yml/)
         ),
         finalize: false,
         finish: pack => {

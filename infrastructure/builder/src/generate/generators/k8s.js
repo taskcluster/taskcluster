@@ -441,6 +441,6 @@ exports.tasks.push({
 
     await writeRepoJSON(path.join(CHART_DIR, 'values.schema.json'), schema);
     await writeRepoYAML(path.join(CHART_DIR, 'values.yaml'), valuesYAML); // helm requires this to be "yaml"
-    await writeRepoYAML(path.join('dev-docs', 'user-config-example.yml'), exampleConfig);
+    await writeRepoYAML(path.join('dev-docs', 'dev-config-example.yml'), exampleConfig);
   },
 });

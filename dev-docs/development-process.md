@@ -135,7 +135,7 @@ Now follow along:
 1. Use [this guide](https://cloud.google.com/kubernetes-engine/docs/how-to/managed-certs) to set up an ip addr and
    certificate for later use. For now you can do the manually managed option and create a certificate with certbot.
 2. `yarn dev:init` will ask you a bunch of questions and fill out your local config for you (most of it anyway).
-   once it has done this, your `user-config.yml` is filled with secrets so don't leak it. These are dev-only secrets
+   once it has done this, your `dev-config.yml` is filled with secrets so don't leak it. These are dev-only secrets
    though so don't be too worried. Soon we may work on getting this to be encryped at rest.
 3. Run `yarn dev:template` and see if it complains about any missing values in your configuration
 4. If you want to deploy local changes, run `yarn build --push` and add the resulting image id to your config file with

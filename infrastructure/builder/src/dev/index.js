@@ -8,10 +8,10 @@ const {azurePrompts, azureResources} = require('./azure');
 const awsResources = require('./aws');
 const taskclusterResources = require('./taskcluster');
 
-const USER_CONF_FILE = 'user-config.yml';
+const USER_CONF_FILE = 'dev-config.yml';
 
 const main = async (options) => {
-  let configTmpl = await readRepoYAML(path.join('dev-docs', 'user-config-example.yml'));
+  let configTmpl = await readRepoYAML(path.join('dev-docs', 'dev-config-example.yml'));
   let userConfig = {};
   try {
     userConfig = await readRepoYAML(USER_CONF_FILE);
