@@ -55,7 +55,7 @@ module.exports = async ({userConfig, answer, configTmpl}) => {
   userConfig['web_server']['public_url'] = answer.rootUrl || userConfig.rootUrl;
   userConfig['web_server']['additional_allowed_cors_origin'] = '';
   userConfig['web_server']['ui_login_strategies'] = {};
-  userConfig['web_server']['jwt_key'] = '???';
+  userConfig['web_server']['jwt_key'] = '';
   //TODO: These github things can/should be questions in this setup thing
   userConfig['github']['bot_username'] = '???';
   userConfig['github']['github_private_pem'] = '???';

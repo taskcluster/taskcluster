@@ -22,6 +22,7 @@ const CLUSTER_DEFAULTS = {
 // Things like port that we always set ourselves
 const NON_CONFIGURABLE = [
   'port',
+  'node_env',
 ];
 
 // Shared across an entire deployment

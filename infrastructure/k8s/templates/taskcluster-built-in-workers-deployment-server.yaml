@@ -44,6 +44,8 @@ spec:
               value: '80'
             - name: TASKCLUSTER_ROOT_URL
               value: '{{ .Values.rootUrl }}'
+            - name: NODE_ENV
+              value: production
           envFrom:
             - secretRef:
                 name: taskcluster-built-in-workers

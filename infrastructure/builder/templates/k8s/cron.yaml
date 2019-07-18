@@ -40,9 +40,10 @@ spec:
                 cpu: '{{ .Values.${configName}.procs.${configProcName}.cpu }}'
                 memory: '{{ .Values.${configName}.procs.${configProcName}.memory }}'
             env:
-              $flatten:
-                - name: TASKCLUSTER_ROOT_URL
-                  value: '{{ .Values.rootUrl }}'
+              - name: TASKCLUSTER_ROOT_URL
+                value: '{{ .Values.rootUrl }}'
+              - name: NODE_ENV
+                value: 'production'
             envFrom:
               - secretRef:
                   name: ${projectName}
