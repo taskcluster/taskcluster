@@ -9,28 +9,30 @@ module.exports = async action => {
 
   const namespace = config.meta.deploymentPrefix;
 
-  let res = child_process.spawnSync('kubectl', ['create', 'namespace', namespace]);
-  let output = res.stdout.toString() + res.stderr.toString();
-  if (res.status !== 0) {
-    if (!output.includes('AlreadyExists')) {
-      throw new Error(output);
+  if (action !== 'template') {
+    let res = child_process.spawnSync('kubectl', ['create', 'namespace', namespace]);
+    let output = res.stdout.toString() + res.stderr.toString();
+    if (res.status !== 0) {
+      if (!output.includes('AlreadyExists')) {
+        throw new Error(output);
+      }
     }
-  }
 
-  res = child_process.spawnSync('kubectl', ['config', 'set-context', '--current', '--namespace', namespace]);
-  output = res.stdout.toString() + res.stderr.toString();
-  console.log(output);
-  if (res.status !== 0) {
-    throw new Error('Failed to update kubectl context');
+    res = child_process.spawnSync('kubectl', ['config', 'set-context', '--current', '--namespace', namespace]);
+    output = res.stdout.toString() + res.stderr.toString();
+    console.log(output);
+    if (res.status !== 0) {
+      throw new Error('Failed to update kubectl context');
+    }
   }
 
   let extraArgs = [];
   if (action !== 'uninstall') {
-    extraArgs = [
+    extraArgs = extraArgs.concat([
       '-f',
       './dev-config.yml',
       './infrastructure/k8s',
-    ];
+    ]);
   }
 
   const helm = child_process.spawn('helm', [

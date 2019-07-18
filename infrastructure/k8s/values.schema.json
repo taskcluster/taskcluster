@@ -1203,6 +1203,9 @@
       },
       "required": [
         "procs",
+        "public_blob_artifact_bucket",
+        "private_blob_artifact_bucket",
+        "blob_artifact_region",
         "public_artifact_bucket",
         "private_artifact_bucket",
         "taskcluster_access_token",
