@@ -298,7 +298,7 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
       await gitPush({
         dir: REPO_ROOT,
         remote: 'git@github.com:taskcluster/taskcluster',
-        ref: tag,
+        refs: [tag, 'master'],
         utils,
       });
 
