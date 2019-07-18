@@ -1,4 +1,4 @@
-const sift = require('sift').default;
+const siftUtil = require('../utils/siftUtil');
 const ConnectionLoader = require('../ConnectionLoader');
 
 module.exports = ({ index }) => {
@@ -8,7 +8,7 @@ module.exports = ({ index }) => {
 
       return {
         ...raw,
-        items: filter ? sift(filter, raw.namespaces) : raw.namespaces,
+        items: siftUtil(filter, raw.namespaces),
       };
     }
   );
@@ -18,7 +18,7 @@ module.exports = ({ index }) => {
 
       return {
         ...raw,
-        items: filter ? sift(filter, raw.tasks) : raw.tasks,
+        items: siftUtil(filter, raw.tasks),
       };
     }
   );
