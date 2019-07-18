@@ -194,7 +194,13 @@ export default class Log extends Component {
   };
 
   handleScroll = ({ scrollTop, scrollHeight, clientHeight }) => {
-    if (this.state.follow && scrollHeight - scrollTop !== clientHeight) {
+    if (
+      this.state.follow &&
+      scrollHeight - scrollTop !== clientHeight &&
+      // LazyLog triggers `handleScroll` on initial load.
+      // This will make sure it doesn't set follow to false on log load.
+      scrollTop !== 0
+    ) {
       this.setState({ follow: false });
     }
   };
