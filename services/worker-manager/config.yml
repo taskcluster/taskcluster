@@ -5,7 +5,7 @@ defaults:
     workerPoolErrorTableName: WMWorkerPoolErrors
     errorsExpirationDelay: '-4 days' # Anything older than a few days goes away
   monitoring:
-    level: !env LEVEL
+    level: !env:optional LEVEL
   taskcluster:
     rootUrl: !env TASKCLUSTER_ROOT_URL
     credentials:

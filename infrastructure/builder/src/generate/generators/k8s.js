@@ -9,7 +9,8 @@ const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const {listServices, writeRepoFile, readRepoYAML, writeRepoYAML, writeRepoJSON, REPO_ROOT, configToSchema, configToExample} = require('../../utils');
 
-const SERVICES = listServices();
+// We're not going to deploy login/treeherder into k8s
+const SERVICES = listServices().filter(s => !['login', 'treeherder'].includes(s));
 const CHART_DIR = path.join('infrastructure', 'k8s');
 const TMPL_DIR = path.join(CHART_DIR, 'templates');
 
@@ -353,6 +354,7 @@ exports.tasks.push({
           },
         },
         required: ['procs'],
+        additionalProperties: false,
       };
 
       if (serviceScopes[cfg.name]) {
@@ -374,6 +376,9 @@ exports.tasks.push({
         // TODO: In config.ymls somehow mark fields as "required" or "optional" and then assert
         // that here with  schema.properties[confName].required.push(varName);
         schema.properties[confName].properties[varName] = configToSchema(v.type);
+        if (!v.optional) {
+          schema.properties[confName].required.push(varName);
+        }
         if (Object.keys(CLUSTER_DEFAULTS).includes(varName)) {
           valuesYAML[confName][varName] = CLUSTER_DEFAULTS[varName];
         } else {

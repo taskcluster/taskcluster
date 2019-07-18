@@ -169,10 +169,6 @@ index:
       memory: 100Mi
   taskcluster_client_id: static/taskcluster/index
   level: notice
-login:
-  procs: {}
-  taskcluster_client_id: static/taskcluster/login
-  level: notice
 notify:
   procs:
     web:
@@ -257,10 +253,6 @@ secrets:
       cpu: 50m
       memory: 100Mi
   taskcluster_client_id: static/taskcluster/secrets
-  level: notice
-treeherder:
-  procs: {}
-  taskcluster_client_id: static/taskcluster/treeherder
   level: notice
 web_server:
   procs:

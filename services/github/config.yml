@@ -30,14 +30,14 @@ defaults:
     secret: !env:list WEBHOOK_SECRET
 
   intree:
-    provisionerId: !env PROVISIONER_ID
-    workerType: !env WORKER_TYPE
+    provisionerId: !env:optional PROVISIONER_ID
+    workerType: !env:optional WORKER_TYPE
 
   azure:
     accountId: !env AZURE_ACCOUNT_ID
 
   monitoring:
-    level: !env LEVEL
+    level: !env:optional LEVEL
 
   server:
     port: !env:number PORT
@@ -53,9 +53,9 @@ defaults:
     namespace: !env PULSE_NAMESPACE
 
   aws:
-    accessKeyId: !env AWS_ACCESS_KEY
-    secretAccessKey: !env AWS_SECRET_KEY
-    region: 'us-west-2'
+    accessKeyId: !env:optional AWS_ACCESS_KEY
+    secretAccessKey: !env:optional AWS_SECRET_KEY
+    region: 'us-west-2' # TODO: This probably shouldn't be set here #1567016
     apiVersion: '2014-01-01'
 
 production:

@@ -3,6 +3,7 @@
   "aditionalProperties": false,
   "properties": {
     "auth": {
+      "additionalProperties": false,
       "properties": {
         "audit_log": {
           "type": "string"
@@ -162,7 +163,16 @@
         }
       },
       "required": [
-        "procs"
+        "procs",
+        "static_clients",
+        "azure_accounts",
+        "azure_account_key",
+        "azure_signing_key",
+        "azure_crypto_key",
+        "pulse_username",
+        "pulse_password",
+        "aws_access_key_id",
+        "aws_secret_access_key"
       ],
       "title": "Configuration options for auth",
       "type": "object"
@@ -172,6 +182,7 @@
       "type": "string"
     },
     "built_in_workers": {
+      "additionalProperties": false,
       "properties": {
         "level": {
           "type": "string"
@@ -215,7 +226,8 @@
         }
       },
       "required": [
-        "procs"
+        "procs",
+        "taskcluster_access_token"
       ],
       "title": "Configuration options for built-in-workers",
       "type": "object"
@@ -229,6 +241,7 @@
       "type": "boolean"
     },
     "github": {
+      "additionalProperties": false,
       "properties": {
         "aws_access_key": {
           "type": "string"
@@ -343,12 +356,21 @@
         }
       },
       "required": [
-        "procs"
+        "procs",
+        "bot_username",
+        "taskcluster_access_token",
+        "github_private_pem",
+        "github_app_id",
+        "webhook_secret",
+        "pulse_username",
+        "pulse_password",
+        "pulse_namespace"
       ],
       "title": "Configuration options for github",
       "type": "object"
     },
     "hooks": {
+      "additionalProperties": false,
       "properties": {
         "aws_access_key_id": {
           "type": "string"
@@ -481,12 +503,21 @@
         }
       },
       "required": [
-        "procs"
+        "procs",
+        "hook_table_name",
+        "lastfire_table_name",
+        "queue_table_name",
+        "table_signing_key",
+        "table_crypto_key",
+        "taskcluster_access_token",
+        "pulse_username",
+        "pulse_password"
       ],
       "title": "Configuration options for hooks",
       "type": "object"
     },
     "index": {
+      "additionalProperties": false,
       "properties": {
         "aws_access_key_id": {
           "type": "string"
@@ -583,7 +614,11 @@
         }
       },
       "required": [
-        "procs"
+        "procs",
+        "taskcluster_access_token",
+        "pulse_username",
+        "pulse_password",
+        "pulse_namespace"
       ],
       "title": "Configuration options for index",
       "type": "object"
@@ -596,52 +631,6 @@
       "description": "A google static ip object that the ingress can use to maintain the same ip address.",
       "type": "string"
     },
-    "login": {
-      "properties": {
-        "auth0_api_audience": {
-          "type": "string"
-        },
-        "auth0_client_id": {
-          "type": "string"
-        },
-        "auth0_client_secret": {
-          "type": "string"
-        },
-        "auth0_domain": {
-          "type": "string"
-        },
-        "aws_access_key_id": {
-          "type": "string"
-        },
-        "aws_secret_access_key": {
-          "type": "string"
-        },
-        "level": {
-          "type": "string"
-        },
-        "procs": {
-          "additionalProperties": false,
-          "properties": {
-          },
-          "required": [
-          ],
-          "title": "Process settings for this service",
-          "type": "object"
-        },
-        "taskcluster_access_token": {
-          "type": "string"
-        },
-        "taskcluster_client_id": {
-          "description": "A clientId for this service.",
-          "type": "string"
-        }
-      },
-      "required": [
-        "procs"
-      ],
-      "title": "Configuration options for login",
-      "type": "object"
-    },
     "meta": {
       "additionalProperties": true,
       "description": "Metadata about a deployment. Automatically generated in deploy configs.",
@@ -652,6 +641,7 @@
       "type": "string"
     },
     "notify": {
+      "additionalProperties": false,
       "properties": {
         "aws_access_key_id": {
           "type": "string"
@@ -796,7 +786,16 @@
         }
       },
       "required": [
-        "procs"
+        "procs",
+        "email_source_address",
+        "denylisted_notification_table_name",
+        "taskcluster_access_token",
+        "aws_access_key_id",
+        "aws_secret_access_key",
+        "aws_region",
+        "pulse_namespace",
+        "pulse_username",
+        "pulse_password"
       ],
       "title": "Configuration options for notify",
       "type": "object"
@@ -810,6 +809,7 @@
       "type": "string"
     },
     "purge_cache": {
+      "additionalProperties": false,
       "properties": {
         "aws_access_key_id": {
           "type": "string"
@@ -876,12 +876,14 @@
         }
       },
       "required": [
-        "procs"
+        "procs",
+        "taskcluster_access_token"
       ],
       "title": "Configuration options for purge-cache",
       "type": "object"
     },
     "queue": {
+      "additionalProperties": false,
       "properties": {
         "artifact_region": {
           "type": "string"
@@ -1203,12 +1205,24 @@
         }
       },
       "required": [
-        "procs"
+        "procs",
+        "public_artifact_bucket",
+        "private_artifact_bucket",
+        "taskcluster_access_token",
+        "azure_account_key",
+        "azure_table_account_name",
+        "pulse_namespace",
+        "pulse_username",
+        "pulse_password",
+        "aws_access_key_id",
+        "aws_secret_access_key",
+        "artifact_region"
       ],
       "title": "Configuration options for queue",
       "type": "object"
     },
     "references": {
+      "additionalProperties": false,
       "properties": {
         "procs": {
           "additionalProperties": false,
@@ -1257,6 +1271,7 @@
       "type": "string"
     },
     "secrets": {
+      "additionalProperties": false,
       "properties": {
         "aws_access_key_id": {
           "type": "string"
@@ -1332,55 +1347,13 @@
         }
       },
       "required": [
-        "procs"
+        "procs",
+        "taskcluster_access_token",
+        "azure_table_name",
+        "azure_crypto_key",
+        "azure_signing_key"
       ],
       "title": "Configuration options for secrets",
-      "type": "object"
-    },
-    "treeherder": {
-      "properties": {
-        "aws_access_key_id": {
-          "type": "string"
-        },
-        "aws_secret_access_key": {
-          "type": "string"
-        },
-        "level": {
-          "type": "string"
-        },
-        "procs": {
-          "additionalProperties": false,
-          "properties": {
-          },
-          "required": [
-          ],
-          "title": "Process settings for this service",
-          "type": "object"
-        },
-        "pulse_namespace": {
-          "type": "string"
-        },
-        "pulse_password": {
-          "type": "string"
-        },
-        "pulse_username": {
-          "type": "string"
-        },
-        "taskcluster_access_token": {
-          "type": "string"
-        },
-        "taskcluster_client_id": {
-          "description": "A clientId for this service.",
-          "type": "string"
-        },
-        "treeherder_route_prefix": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "procs"
-      ],
-      "title": "Configuration options for treeherder",
       "type": "object"
     },
     "trustProxy": {
@@ -1388,6 +1361,7 @@
       "type": "boolean"
     },
     "ui": {
+      "additionalProperties": false,
       "properties": {
         "application_name": {
           "type": "string"
@@ -1428,12 +1402,14 @@
         }
       },
       "required": [
-        "procs"
+        "procs",
+        "application_name"
       ],
       "title": "Configuration options for ui",
       "type": "object"
     },
     "web_server": {
+      "additionalProperties": false,
       "properties": {
         "additional_allowed_cors_origin": {
           "type": "string"
@@ -1523,12 +1499,21 @@
         }
       },
       "required": [
-        "procs"
+        "procs",
+        "public_url",
+        "additional_allowed_cors_origin",
+        "taskcluster_access_token",
+        "pulse_namespace",
+        "pulse_username",
+        "pulse_password",
+        "ui_login_strategies",
+        "jwt_key"
       ],
       "title": "Configuration options for web-server",
       "type": "object"
     },
     "worker_manager": {
+      "additionalProperties": false,
       "properties": {
         "level": {
           "type": "string"
@@ -1685,7 +1670,12 @@
         }
       },
       "required": [
-        "procs"
+        "procs",
+        "taskcluster_access_token",
+        "pulse_username",
+        "pulse_password",
+        "pulse_namespace",
+        "providers"
       ],
       "title": "Configuration options for worker-manager",
       "type": "object"
@@ -1705,12 +1695,10 @@
     "github",
     "hooks",
     "index",
-    "login",
     "notify",
     "purge_cache",
     "queue",
     "secrets",
-    "treeherder",
     "web_server",
     "worker_manager",
     "ui",
