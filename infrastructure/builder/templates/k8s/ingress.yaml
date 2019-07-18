@@ -7,7 +7,8 @@ metadata:
     'ingress.gcp.kubernetes.io/pre-shared-cert': '{{ .Values.ingressCertName }}'
 spec:
   rules:
-  - http:
+  - host: '{{ substr 8 -1 (trimSuffix "/" .Values.rootUrl) }}' # Turn url into a hostname
+    http:
       paths:
         $map: {$eval: ingresses}
         each(i):

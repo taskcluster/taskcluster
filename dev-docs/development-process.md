@@ -145,7 +145,7 @@ Now follow along:
 5. `yarn dev:install` will use helm to apply all of your kubernetes resources to the cluster. *Note that this will
    create a new namespace in the cluster for you and switch your kubectl context to it*
 6. `yarn dev:upgrade` will update an already installed cluster (once helm fixes things)
-7. `yarn dev:delete` will uninstall your deployment.
+7. `yarn dev:uninstall` will uninstall your deployment.
 
 ## Hacking on Clients
 
