@@ -83,13 +83,24 @@ export default class ClientForm extends Component {
     dialogError: oneOfType([string, object]),
     /**
      * Callback function fired when the DialogAction component throws an error.
+     * Required when viewing an existent client.
      * */
     onDialogActionError: func,
     /**
      * Callback function fired when the DialogAction component runs
-     * successfully.
+     * successfully. Required when viewing an existent client.
      * */
     onDialogActionComplete: func,
+    /**
+     * Callback function fired when the dialog should open.
+     * Required when viewing an existent client.
+     */
+    onDialogActionOpen: func,
+    /**
+     * Callback function fired when the dialog should close.
+     * Required when viewing an existent client.
+     */
+    onDialogActionClose: func,
   };
 
   static defaultProps = {
@@ -101,6 +112,10 @@ export default class ClientForm extends Component {
     onEnableClient: null,
     onResetAccessToken: null,
     dialogError: null,
+    onDialogActionError: null,
+    onDialogActionComplete: null,
+    onDialogActionOpen: null,
+    onDialogActionClose: null,
   };
 
   static getDerivedStateFromProps({ isNewClient, client }, state) {
