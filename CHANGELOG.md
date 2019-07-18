@@ -3,6 +3,10 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v14.3.1
+
+Include generated APIs in python package.
+
 ## v14.3.0
 
 [minor] Pulse messages now include a task's tags for better classification of the messages that are received.
