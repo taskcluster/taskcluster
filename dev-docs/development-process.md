@@ -131,6 +131,19 @@ Once those are all set up, you will need:
 * set up a local iam user; this iam user must be able to configure s3/iam resources
 * `gcloud container clusters get-credentials` for your k8s cluster
 
+Now follow along:
+1. Use [this guide](https://cloud.google.com/kubernetes-engine/docs/how-to/managed-certs) to set up an ip addr and
+   certificate for later use. For now you can do the manually managed option and create a certificate with certbot.
+2. `yarn dev:init` will ask you a bunch of questions and fill out your local config for you (most of it anyway).
+   once it has done this, your `user-config.yml` is filled with secrets so don't leak it. These are dev-only secrets
+   though so don't be too worried. Soon we may work on getting this to be encryped at rest.
+3. Run `yarn dev:template` and see if it complains about any missing values in your configuration
+4. If you want to deploy local changes, run `yarn build --push` and add the resulting image id to your config file with
+   the key `dockerImage`.
+5. `yarn dev:install` will use helm to apply all of your kubernetes resources to the cluster.
+6. `yarn dev:upgrade` will update an already installed cluster (once helm fixes things)
+7. `yarn dev:delete` will uninstall your deployment.
+
 ## Hacking on Clients
 
 The clients are in `clients/`.
