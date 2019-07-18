@@ -3,14 +3,11 @@ package google
 import (
 	"encoding/json"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
 )
 
 func TestGoogleConfigureRun(t *testing.T) {
@@ -88,51 +85,4 @@ func TestGoogleConfigureRun(t *testing.T) {
 	}, run.ProviderMetadata, "providerMetadata is correct")
 
 	assert.Equal(t, true, run.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
-}
-
-func TestCredsExpiration(t *testing.T) {
-	runnercfg := &runner.RunnerConfig{
-		Provider: cfg.ProviderConfig{
-			ProviderType: "google",
-		},
-		WorkerImplementation: cfg.WorkerImplementationConfig{
-			Implementation: "whatever",
-		},
-		WorkerConfig: cfg.NewWorkerConfig(),
-	}
-
-	p, err := new(runnercfg, tc.FakeWorkerManagerClientFactory, nil)
-	assert.NoError(t, err, "creating provider")
-
-	transp := protocol.NewFakeTransport()
-	p.proto = protocol.NewProtocol(transp)
-	p.proto.Capabilities.Add("graceful-termination")
-
-	// send the shutdown message right now
-	p.credsExpire = tcclient.Time(time.Now().Add(30 * time.Second))
-	err = p.WorkerStarted()
-	assert.NoError(t, err)
-
-	// and wait until that happens
-	for {
-		time.Sleep(10 * time.Millisecond)
-
-		haveMessage := len(transp.Messages()) != 0
-
-		if haveMessage {
-			break
-		}
-	}
-
-	assert.Equal(t, []protocol.Message{
-		protocol.Message{
-			Type: "graceful-termination",
-			Properties: map[string]interface{}{
-				"finish-tasks": false,
-			},
-		},
-	}, transp.Messages())
-
-	err = p.WorkerFinished()
-	assert.NoError(t, err)
 }

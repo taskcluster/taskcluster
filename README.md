@@ -19,7 +19,9 @@ Usage:
 	start-worker <runnerConfig>
 
 
-Configuration is in the form of a YAML file with the following fields:
+## Configuration
+
+Configuration for this process is in the form of a YAML file with the following fields:
 
 	provider: (required) information about the provider for this worker
 
@@ -29,25 +31,40 @@ Configuration is in the form of a YAML file with the following fields:
 
 	worker: (required) information about the worker being run
 
-		implementation: (required) the name of the worker implementation
+		implementation: (required) the name of the worker implementation; see below.
 
 	workerConfig: arbitrary data which forms the basics of the config passed to the worker;
 		this will be merged with several other sources of configuration.
 
 
+## Providers
 
 Providers configuration depends on the providerType:
+
+### aws-provisioner
 
 The providerType "aws-provisioner" is intended for workers provisioned with
 the legacy aws-provisioner application.  It requires 
 
 	provider:
-	    providerType: aws-provisioner
+		providerType: aws-provisioner
 
+### google
+
+The providerType "google" is intended for workers provisioned with worker-manager
+providers using providerType "google".  It requires
+
+	provider:
+		providerType: google
+
+### standalone
 
 The providerType "standalone" is intended for workers that have all of their
-configuration pre-loaded.  It requires the following properties be included
-explicitly in the runner configuration:
+configuration pre-loaded.  Such workers do not interact with the worker manager.
+This is not a recommended configuration - prefer to use the static provider.
+
+It requires the following properties be included explicitly in the runner
+configuration:
 
 	provider:
 		providerType: standalone
@@ -58,10 +75,26 @@ explicitly in the runner configuration:
 		workerGroup: ..
 		workerID: ..
 
+### static
 
+The providerType "static" is intended for workers provisioned with worker-manager
+providers using providerType "static".  It requires
+
+	provider:
+		providerType: static
+		rootURL: ...
+		providerID: ...
+		workerPoolID: ...
+		workerGroup: ...
+		workerID: ...
+		identitySecret: ... // shared secret configured for this worker in worker-manager
+
+
+## Workers
 
 The following worker implementations are supported:
 
+### docker-worker
 
 The "docker-worker" worker implementation starts docker-worker
 (https://github.com/taskcluster/docker-worker).  It takes the following
@@ -75,7 +108,7 @@ values in the 'worker' section of the runner configuration:
 		# docker-worker configuration.
 		configPath: ..
 
-
+### dummy
 
 The "dummy" worker implementation does nothing but dump the run instead of
 "starting" anything.  It is intended for debugging.

@@ -33,7 +33,7 @@ func (p *StandaloneProvider) ConfigureRun(run *runner.Run) error {
 	run.WorkerGroup = pc.WorkerGroup
 	run.WorkerID = pc.WorkerID
 
-	run.WorkerConfig = run.WorkerConfig.Merge(nil)
+	run.ProviderMetadata = map[string]string{}
 
 	return nil
 }
@@ -56,8 +56,11 @@ func New(runnercfg *runner.RunnerConfig) (provider.Provider, error) {
 func Usage() string {
 	return `
 The providerType "standalone" is intended for workers that have all of their
-configuration pre-loaded.  It requires the following properties be included
-explicitly in the runner configuration:
+configuration pre-loaded.  Such workers do not interact with the worker manager.
+This is not a recommended configuration - prefer to use the static provider.
+
+It requires the following properties be included explicitly in the runner
+configuration:
 
 	provider:
 		providerType: standalone

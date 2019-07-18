@@ -80,11 +80,17 @@ func StartWorker(runnercfg *runner.RunnerConfig) error {
 	// set up protocol
 
 	proto := protocol.NewProtocol(transp)
+	run.SetProtocol(proto)
 	provider.SetProtocol(proto)
 	worker.SetProtocol(proto)
 
 	// call this before starting the proto so that there are no race conditions
 	// around the capabilities negotiation
+	err = run.WorkerStarted()
+	if err != nil {
+		return err
+	}
+
 	err = provider.WorkerStarted()
 	if err != nil {
 		return err
@@ -100,6 +106,11 @@ func StartWorker(runnercfg *runner.RunnerConfig) error {
 	}
 
 	err = provider.WorkerFinished()
+	if err != nil {
+		return err
+	}
+
+	err = run.WorkerFinished()
 	if err != nil {
 		return err
 	}

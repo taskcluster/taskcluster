@@ -12,16 +12,16 @@ import (
 // plus any additional provider-specific properties.
 type ProviderConfig struct {
 	ProviderType string
-	data         map[string]interface{}
+	Data         map[string]interface{}
 }
 
 func (pc *ProviderConfig) UnmarshalYAML(node *yaml.Node) error {
-	err := node.Decode(&pc.data)
+	err := node.Decode(&pc.Data)
 	if err != nil {
 		return err
 	}
 
-	pt, ok := pc.data["providerType"]
+	pt, ok := pc.Data["providerType"]
 	if !ok {
 		return fmt.Errorf("provider config must have a `providerType` property")
 	}
@@ -30,7 +30,7 @@ func (pc *ProviderConfig) UnmarshalYAML(node *yaml.Node) error {
 	if !ok {
 		return fmt.Errorf("provider config's `providerType` property must be a string")
 	}
-	delete(pc.data, "providerType")
+	delete(pc.Data, "providerType")
 
 	return nil
 }
@@ -63,7 +63,7 @@ func (pc *ProviderConfig) Unpack(out interface{}) error {
 		}
 
 		// get the value
-		val, ok := pc.data[name]
+		val, ok := pc.Data[name]
 		if !ok {
 			return fmt.Errorf("Configuration value `provider.%s` not found", name)
 		}

@@ -53,6 +53,9 @@ func (p *AwsProvisionerProvider) ConfigureRun(run *runner.Run) error {
 	run.Credentials.AccessToken = secToken.Credentials.AccessToken
 	run.Credentials.Certificate = secToken.Credentials.Certificate
 
+	// aws-provisioner always provides 96-hour credentials
+	run.CredentialsExpire = time.Now().Add(96 * time.Hour)
+
 	// aws-provisioner still speaks of provisionerID/workerType
 	run.WorkerPoolID = fmt.Sprintf("%s/%s", userData.ProvisionerID, userData.WorkerType)
 
@@ -169,7 +172,7 @@ The providerType "aws-provisioner" is intended for workers provisioned with
 the legacy aws-provisioner application.  It requires 
 
 	provider:
-	    providerType: aws-provisioner
+		providerType: aws-provisioner
 `
 }
 
