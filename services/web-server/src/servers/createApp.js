@@ -26,14 +26,17 @@ module.exports = async ({ cfg, strategies }) => {
   }).filter(o => o);
   app.use(cors({origin: allowedCORSOrigins}));
 
+  // Use MemoryStore locally (default behavior when a store is not set)
+  const store = process.env.NODE_ENV === 'production' ? AzureTablesStoreFactory.create({
+    table: cfg.azure.tableName,
+    storageAccount: cfg.azure.accountId,
+    accessKey: cfg.azure.accountKey,
+    // Delete expired sessions every 1 hour
+    sessionTimeOut: 60,
+  }) : undefined;
+
   app.use(session({
-    store: AzureTablesStoreFactory.create({
-      table: cfg.azure.tableName,
-      storageAccount: cfg.azure.accountId,
-      accessKey: cfg.azure.accountKey,
-      // Delete expired sessions every 1 hour
-      sessionTimeOut: 60,
-    }),
+    store,
     secret: cfg.login.sessionSecret,
     sameSite: true,
     resave: false,

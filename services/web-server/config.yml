@@ -83,10 +83,6 @@ test:
   app:
     publicUrl: http://localhost:5080
 
-  azure:
-    accountId:  'jungle'
-    tableName:  'SessionsTestTable'
-
   server:
     port: 63821
 
