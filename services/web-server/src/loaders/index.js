@@ -7,11 +7,11 @@ const keys = [
 ];
 const loaders = keys.map(key => importer(key));
 
-module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg, Session) =>
+module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) =>
   loaders.reduce(
     (loaders, loader) => ({
       ...loaders,
-      ...loader(clients, isAuthed, rootUrl, monitor, strategies, req, cfg, Session),
+      ...loader(clients, isAuthed, rootUrl, monitor, strategies, req, cfg),
     }),
     {}
   );

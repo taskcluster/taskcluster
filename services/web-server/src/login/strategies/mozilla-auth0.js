@@ -175,10 +175,10 @@ module.exports = class MozillaAuth0 {
     user.addRole(...groups);
   }
 
-  useStrategy(app, cfg, Session) {
+  useStrategy(app, cfg) {
     const { credentials } = cfg.taskcluster;
     const strategyCfg = cfg.login.strategies['mozilla-auth0'];
-    const loginMiddleware = login(cfg.app.publicUrl, Session);
+    const loginMiddleware = login(cfg.app.publicUrl);
 
     if (!credentials || !credentials.clientId || !credentials.accessToken) {
       throw new Error(

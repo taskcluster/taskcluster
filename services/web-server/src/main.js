@@ -1,4 +1,3 @@
-const debug = require('debug')('app:main');
 const assert = require('assert');
 const depthLimit = require('graphql-depth-limit');
 const { createComplexityLimitRule } = require('graphql-validation-complexity');
@@ -8,8 +7,6 @@ const libReferences = require('taskcluster-lib-references');
 const { createServer } = require('http');
 const { Client, pulseCredentials } = require('taskcluster-lib-pulse');
 const { ApolloServer } = require('apollo-server-express');
-const { sasCredentials } = require('taskcluster-lib-azure');
-const taskcluster = require('taskcluster-client');
 const monitorManager = require('./monitor');
 const createApp = require('./servers/createApp');
 const formatError = require('./servers/formatError');
@@ -20,7 +17,6 @@ const resolvers = require('./resolvers');
 const typeDefs = require('./graphql');
 const PulseEngine = require('./PulseEngine');
 const scanner = require('./login/scanner');
-const Session = require('./entities/Session');
 
 const load = loader(
   {
@@ -82,15 +78,14 @@ const load = loader(
     },
 
     context: {
-      requires: ['cfg', 'pulseEngine', 'strategies', 'monitor', 'Session'],
-      setup: ({ cfg, pulseEngine, strategies, monitor, Session }) =>
+      requires: ['cfg', 'pulseEngine', 'strategies', 'monitor'],
+      setup: ({ cfg, pulseEngine, strategies, monitor }) =>
         createContext({
           pulseEngine,
           rootUrl: cfg.taskcluster.rootUrl,
           strategies,
           cfg,
           monitor: monitor.childMonitor('context'),
-          Session,
         }),
     },
 
@@ -102,8 +97,8 @@ const load = loader(
     },
 
     app: {
-      requires: ['cfg', 'strategies', 'Session'],
-      setup: ({ cfg, strategies, Session }) => createApp({ cfg, strategies, Session }),
+      requires: ['cfg', 'strategies'],
+      setup: ({ cfg, strategies }) => createApp({ cfg, strategies }),
     },
 
     httpServer: {
@@ -142,35 +137,6 @@ const load = loader(
         });
 
         return strategies;
-      },
-    },
-
-    Session: {
-      requires: ['cfg', 'monitor'],
-      setup: ({cfg, monitor}) => Session.setup({
-        tableName: cfg.azure.tableName,
-        monitor: monitor.childMonitor('table.sessions'),
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          accountKey: cfg.azure.accountKey,
-          tableName: cfg.azure.tableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
-      }),
-    },
-
-    'expire-sessions': {
-      requires: ['cfg', 'Session', 'monitor'],
-      setup: ({cfg, Session, monitor}) => {
-        return monitor.oneShot('expire-sessions', async () => {
-          const delay = cfg.app.sessionExpirationDelay;
-          const now = taskcluster.fromNow(delay);
-
-          debug('Expiring sessions');
-          const count = await Session.expire(now);
-          debug('Expired ' + count + ' sessions');
-        });
       },
     },
 

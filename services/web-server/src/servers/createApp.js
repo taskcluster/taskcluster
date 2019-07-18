@@ -1,20 +1,16 @@
 const bodyParser = require('body-parser-graphql');
 const session = require('express-session');
-const MemoryStore = require('memorystore')(session);
 const compression = require('compression');
 const cors = require('cors');
 const express = require('express');
 const playground = require('graphql-playground-middleware-express').default;
 const passport = require('passport');
 const url = require('url');
+const AzureTablesStoreFactory = require('connect-azuretables')(session);
 const credentials = require('./credentials');
 
-module.exports = async ({ cfg, strategies, Session }) => {
+module.exports = async ({ cfg, strategies }) => {
   const app = express();
-  const store = new MemoryStore({
-    // prune expired entries every 24h
-    checkPeriod: 24 * 60 * 60 * 1000,
-  });
 
   app.set('view engine', 'ejs');
   app.set('views', 'src/views');
@@ -31,16 +27,18 @@ module.exports = async ({ cfg, strategies, Session }) => {
   app.use(cors({origin: allowedCORSOrigins}));
 
   app.use(session({
-    store,
+    store: AzureTablesStoreFactory.create({
+      table: cfg.azure.tableName,
+      storageAccount: cfg.azure.accountId,
+      accessKey: cfg.azure.accountKey,
+      // Delete expired sessions every 1 hour
+      sessionTimeOut: 60,
+    }),
     secret: cfg.login.sessionSecret,
     sameSite: true,
     resave: false,
     saveUninitialized: false,
     unset: 'destroy',
-    // Force a session identifier cookie to be set on every response.
-    // The expiration is reset to the original maxAge,
-    // resetting the expiration countdown.
-    rolling: true,
     cookie: {
       secure: url.parse(cfg.app.publicUrl).hostname !== 'localhost',
       httpOnly: true,
@@ -75,7 +73,6 @@ module.exports = async ({ cfg, strategies, Session }) => {
 
     return done(null, {
       identityProviderId,
-      userId: identity.split('/')[1],
       identity,
     });
   });
@@ -92,7 +89,7 @@ module.exports = async ({ cfg, strategies, Session }) => {
   });
 
   Object.values(strategies).forEach(strategy => {
-    strategy.useStrategy(app, cfg, Session);
+    strategy.useStrategy(app, cfg);
   });
 
   return app;

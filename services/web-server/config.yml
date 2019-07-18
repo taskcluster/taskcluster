@@ -4,9 +4,6 @@ defaults:
     publicUrl: !env PUBLIC_URL
     # if true, serve the /playground path
     playground: false
-    # Time delay before expiring sessions, in readable format, see:
-    # taskcluster.fromNow, notice this should be negative!
-    sessionExpirationDelay:        '- 30 seconds'
 
   monitoring:
     level: !env LEVEL
@@ -85,8 +82,6 @@ development:
 test:
   app:
     publicUrl: http://localhost:5080
-    # four days in the future, so sessions are always expired
-    sessionExpirationDelay: '4 days'
 
   azure:
     accountId:  'jungle'
