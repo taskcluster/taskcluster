@@ -151,10 +151,6 @@
         "statsum_base_url": {
           "type": "string"
         },
-        "taskcluster_client_id": {
-          "description": "A clientId for this service.",
-          "type": "string"
-        },
         "test_bucket": {
           "type": "string"
         },
@@ -219,12 +215,12 @@
           "type": "string"
         },
         "taskcluster_client_id": {
-          "description": "A clientId for this service.",
           "type": "string"
         }
       },
       "required": [
         "procs",
+        "taskcluster_client_id",
         "taskcluster_access_token"
       ],
       "title": "Configuration options for built-in-workers",
@@ -343,7 +339,6 @@
           "type": "string"
         },
         "taskcluster_client_id": {
-          "description": "A clientId for this service.",
           "type": "string"
         },
         "webhook_secret": {
@@ -356,6 +351,7 @@
       "required": [
         "procs",
         "bot_username",
+        "taskcluster_client_id",
         "taskcluster_access_token",
         "github_private_pem",
         "github_app_id",
@@ -496,7 +492,6 @@
           "type": "string"
         },
         "taskcluster_client_id": {
-          "description": "A clientId for this service.",
           "type": "string"
         }
       },
@@ -507,6 +502,7 @@
         "queue_table_name",
         "azure_signing_key",
         "azure_crypto_key",
+        "taskcluster_client_id",
         "taskcluster_access_token",
         "pulse_username",
         "pulse_password"
@@ -607,12 +603,12 @@
           "type": "string"
         },
         "taskcluster_client_id": {
-          "description": "A clientId for this service.",
           "type": "string"
         }
       },
       "required": [
         "procs",
+        "taskcluster_client_id",
         "taskcluster_access_token",
         "pulse_username",
         "pulse_password",
@@ -779,7 +775,6 @@
           "type": "string"
         },
         "taskcluster_client_id": {
-          "description": "A clientId for this service.",
           "type": "string"
         }
       },
@@ -787,6 +782,7 @@
         "procs",
         "email_source_address",
         "denylisted_notification_table_name",
+        "taskcluster_client_id",
         "taskcluster_access_token",
         "aws_access_key_id",
         "aws_secret_access_key",
@@ -868,12 +864,12 @@
           "type": "string"
         },
         "taskcluster_client_id": {
-          "description": "A clientId for this service.",
           "type": "string"
         }
       },
       "required": [
         "procs",
+        "taskcluster_client_id",
         "taskcluster_access_token"
       ],
       "title": "Configuration options for purge-cache",
@@ -1194,7 +1190,6 @@
           "type": "string"
         },
         "taskcluster_client_id": {
-          "description": "A clientId for this service.",
           "type": "string"
         },
         "use_cloud_mirror": {
@@ -1208,6 +1203,7 @@
         "blob_artifact_region",
         "public_artifact_bucket",
         "private_artifact_bucket",
+        "taskcluster_client_id",
         "taskcluster_access_token",
         "azure_account_key",
         "azure_table_account_name",
@@ -1253,10 +1249,6 @@
           ],
           "title": "Process settings for this service",
           "type": "object"
-        },
-        "taskcluster_client_id": {
-          "description": "A clientId for this service.",
-          "type": "string"
         }
       },
       "required": [
@@ -1342,12 +1334,12 @@
           "type": "string"
         },
         "taskcluster_client_id": {
-          "description": "A clientId for this service.",
           "type": "string"
         }
       },
       "required": [
         "procs",
+        "taskcluster_client_id",
         "taskcluster_access_token",
         "azure_table_name",
         "azure_crypto_key",
@@ -1395,10 +1387,6 @@
           ],
           "title": "Process settings for this service",
           "type": "object"
-        },
-        "taskcluster_client_id": {
-          "description": "A clientId for this service.",
-          "type": "string"
         }
       },
       "required": [
@@ -1483,7 +1471,6 @@
           "type": "string"
         },
         "taskcluster_client_id": {
-          "description": "A clientId for this service.",
           "type": "string"
         },
         "ui_login_strategies": {
@@ -1502,6 +1489,7 @@
         "procs",
         "public_url",
         "additional_allowed_cors_origin",
+        "taskcluster_client_id",
         "taskcluster_access_token",
         "pulse_namespace",
         "pulse_username",
@@ -1665,12 +1653,12 @@
           "type": "string"
         },
         "taskcluster_client_id": {
-          "description": "A clientId for this service.",
           "type": "string"
         }
       },
       "required": [
         "procs",
+        "taskcluster_client_id",
         "taskcluster_access_token",
         "pulse_username",
         "pulse_password",

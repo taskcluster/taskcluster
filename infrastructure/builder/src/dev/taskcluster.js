@@ -52,7 +52,7 @@ module.exports = async ({userConfig, answer, configTmpl}) => {
   userConfig['notify']['denylisted_notification_table_name'] = 'Denylist';
   userConfig['worker_manager']['providers'] = {};
   // TODO: Figure out what any of these should be set to
-  userConfig['web_server']['public_url'] = (answer.rootUrl || userConfig.rootUrl).replace(/\/$/, '');
+  userConfig['web_server']['public_url'] = answer.rootUrl || userConfig.rootUrl;
   userConfig['web_server']['additional_allowed_cors_origin'] = '';
   userConfig['web_server']['ui_login_strategies'] = {};
   userConfig['web_server']['jwt_key'] = '???';

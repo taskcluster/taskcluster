@@ -51,7 +51,7 @@ spec:
             - containerPort: 80
           readinessProbe:
             httpGet:
-              path: /.well-known/apollo/server-health
+              path: .well-known/apollo/server-health
               port: 80
             timeoutSeconds: 5
             periodSeconds: 10

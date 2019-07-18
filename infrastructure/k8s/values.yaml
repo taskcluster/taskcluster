@@ -11,7 +11,6 @@ auth:
     purgeExpiredClients:
       cpu: 50m
       memory: 100Mi
-  taskcluster_client_id: static/taskcluster/auth
   level: notice
 built_in_workers:
   procs:
@@ -68,8 +67,8 @@ index:
     expire:
       cpu: 50m
       memory: 100Mi
-  taskcluster_client_id: static/taskcluster/index
   level: notice
+  taskcluster_client_id: static/taskcluster/index
 notify:
   procs:
     web:
@@ -95,8 +94,8 @@ purge_cache:
     expireCachePurges:
       cpu: 50m
       memory: 100Mi
-  taskcluster_client_id: static/taskcluster/purge-cache
   level: notice
+  taskcluster_client_id: static/taskcluster/purge-cache
 queue:
   procs:
     web:
@@ -164,8 +163,8 @@ web_server:
     scanner:
       cpu: 50m
       memory: 100Mi
-  taskcluster_client_id: static/taskcluster/web-server
   level: notice
+  taskcluster_client_id: static/taskcluster/web-server
 worker_manager:
   procs:
     web:
@@ -189,19 +188,17 @@ worker_manager:
     expire_errors:
       cpu: 50m
       memory: 100Mi
-  taskcluster_client_id: static/taskcluster/worker-manager
   level: notice
+  taskcluster_client_id: static/taskcluster/worker-manager
 ui:
   procs:
     web:
       replicas: 1
       cpu: 50m
       memory: 100Mi
-  taskcluster_client_id: static/taskcluster/ui
 references:
   procs:
     web:
       replicas: 1
       cpu: 50m
       memory: 100Mi
-  taskcluster_client_id: static/taskcluster/references

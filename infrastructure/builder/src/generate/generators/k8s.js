@@ -15,13 +15,13 @@ const CHART_DIR = path.join('infrastructure', 'k8s');
 const TMPL_DIR = path.join(CHART_DIR, 'templates');
 
 const CLUSTER_DEFAULTS = {
-  level: 'notice',
+  level: () => 'notice',
+  taskcluster_client_id: cfg => `static/taskcluster/${cfg.name}`,
 };
 
 // Things like port that we always set ourselves
 const NON_CONFIGURABLE = [
   'port',
-  'taskcluster_client_id', // Generated for each service
 ];
 
 // Shared across an entire deployment
@@ -43,10 +43,16 @@ const renderTemplates = async (name, vars, procs, templates) => {
   for (const resource of ['role', 'rolebinding', 'serviceaccount', 'secret']) {
     const rendered = jsone(templates[resource], {
       projectName: `taskcluster-${name}`,
-      secrets: vars.map(v => ({
-        key: v,
-        val: SHARED_CONFIG[v.toLowerCase()] || `.Values.${name.replace(/-/g, '_')}.${v.toLowerCase()}`,
-      })),
+      secrets: vars.map(v => {
+        const val = v.toLowerCase();
+        if (NON_CONFIGURABLE.includes(val)) {
+          return null;
+        }
+        return {
+          key: v,
+          val: SHARED_CONFIG[val] || `.Values.${name.replace(/-/g, '_')}.${val}`,
+        };
+      }).filter(x => x !== null),
     });
     const file = `taskcluster-${name}-${resource}.yaml`;
     await writeRepoYAML(path.join(TMPL_DIR, file), rendered);
@@ -334,7 +340,6 @@ exports.tasks.push({
       exampleConfig[confName] = {};
       valuesYAML[confName] = {
         procs: {},
-        taskcluster_client_id: `static/taskcluster/${cfg.name}`,
       };
       schema.required.push(confName);
       schema.properties[confName] = {
@@ -347,10 +352,6 @@ exports.tasks.push({
             properties: {},
             required: [],
             additionalProperties: false,
-          },
-          taskcluster_client_id: {
-            type: 'string',
-            description: 'A clientId for this service.',
           },
         },
         required: ['procs'],
@@ -380,7 +381,7 @@ exports.tasks.push({
           schema.properties[confName].required.push(varName);
         }
         if (Object.keys(CLUSTER_DEFAULTS).includes(varName)) {
-          valuesYAML[confName][varName] = CLUSTER_DEFAULTS[varName];
+          valuesYAML[confName][varName] = CLUSTER_DEFAULTS[varName](cfg);
         } else {
           exampleConfig[confName][varName] = configToExample(v.type);
         }
