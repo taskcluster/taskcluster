@@ -115,7 +115,7 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
         contents.replace(/VersionNumber = .*/, `VersionNumber = "${requirements['release-version']}"`));
       changed.push(shellclient);
 
-      const shellreadme = 'clients/client-shell/cmds/version/version.go';
+      const shellreadme = 'clients/client-shell/cmds/README.md';
       utils.status({message: `Update ${shellreadme}`});
       await modifyRepoFile(shellreadme, contents =>
         contents.replace(/download\/v[0-9.]*\/taskcluster-/, `download/v${requirements['release-version']}/taskcluster-"`));
@@ -209,16 +209,26 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
       'repo-tagged',
     ],
     run: async (requirements, utils) => {
+      const tag = `v${requirements['release-version']}`;
+      // go gets confused by raw tags for a module in a subdirectory, so we
+      // make a tag just for go
+      const goClientTag = `clients/client-go/${tag}`;
       await gitTag({
         dir: REPO_ROOT,
         rev: 'HEAD',
-        tag: `v${requirements['release-version']}`,
+        tag,
+        utils,
+      });
+      await gitTag({
+        dir: REPO_ROOT,
+        rev: 'HEAD',
+        tag: goClientTag,
         utils,
       });
 
       return {
         'build-can-start': true,
-        'repo-tagged': true,
+        'repo-tagged': [tag, goClientTag],
       };
     },
   });
@@ -294,16 +304,16 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
         return utils.skip({});
       }
 
-      const tag = `v${requirements['release-version']}`;
+      const tags = requirements['repo-tagged'];
       await gitPush({
         dir: REPO_ROOT,
         remote: 'git@github.com:taskcluster/taskcluster',
-        ref: tag,
+        refs: [...tags, 'master'],
         utils,
       });
 
       return {
-        'pushed-tag': tag,
+        'pushed-tag': tags[0],
       };
     },
   });
