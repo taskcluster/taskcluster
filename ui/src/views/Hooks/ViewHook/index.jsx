@@ -29,7 +29,7 @@ export default class ViewHook extends Component {
     actionLoading: false,
     error: null,
     dialogError: null,
-    dialogDeleteHook: false,
+    deleteDialogOpen: false,
     dialogOpen: false,
     snackbar: {
       message: '',
@@ -70,20 +70,13 @@ export default class ViewHook extends Component {
   handleDeleteHook = async ({ hookId, hookGroupId }) => {
     this.preRunningAction();
 
-    try {
-      await this.props.client.mutate({
-        mutation: deleteHookQuery,
-        variables: {
-          hookId,
-          hookGroupId,
-        },
-      });
-
-      this.setState({ error: null, actionLoading: false });
-      this.props.history.push('/hooks');
-    } catch (error) {
-      this.setState({ error, actionLoading: false });
-    }
+    return this.props.client.mutate({
+      mutation: deleteHookQuery,
+      variables: {
+        hookId,
+        hookGroupId,
+      },
+    });
   };
 
   handleTriggerHook = async ({ hookGroupId, hookId, payload }) => {
@@ -99,7 +92,7 @@ export default class ViewHook extends Component {
       refetchQueries: ['Hook'],
       awaitRefetchQueries: true,
     });
-    this.handleSnackbarOpen({ message: 'Hook Updated', open: true });
+    this.handleSnackbarOpen({ message: 'Hook Triggered', open: true });
   };
 
   handleUpdateHook = async ({ hookGroupId, hookId, payload }) => {
@@ -128,7 +121,7 @@ export default class ViewHook extends Component {
     this.setState({
       actionLoading: false,
       dialogOpen: false,
-      dialogDeleteHook: false,
+      deleteDialogOpen: false,
       dialogError: null,
       error: null,
     });
@@ -139,7 +132,7 @@ export default class ViewHook extends Component {
   };
 
   handleDeleteDialogHook = () => {
-    this.setState({ dialogDeleteHook: true });
+    this.setState({ deleteDialogOpen: true });
   };
 
   handleDialogActionError = error => {
@@ -160,13 +153,17 @@ export default class ViewHook extends Component {
     });
   };
 
+  handleActionDialogDeleteComplete = () => {
+    this.props.history.push('/hooks');
+  };
+
   render() {
     const { isNewHook, data } = this.props;
     const {
       error: err,
       dialogError,
       actionLoading,
-      dialogDeleteHook,
+      deleteDialogOpen,
       dialogOpen,
       snackbar,
     } = this.state;
@@ -200,11 +197,14 @@ export default class ViewHook extends Component {
                 hook={data.hook}
                 hookLastFires={hookLastFires}
                 dialogOpen={dialogOpen}
-                dialogDeleteHook={dialogDeleteHook}
+                deleteDialogOpen={deleteDialogOpen}
                 onTriggerHook={this.handleTriggerHook}
                 onUpdateHook={this.handleUpdateHook}
                 onDeleteHook={this.handleDeleteHook}
-                onActionDialogClose={this.handleActionDialogClose}
+                onDialogActionDeleteComplete={
+                  this.handleActionDialogDeleteComplete
+                }
+                onDialogActionClose={this.handleActionDialogClose}
                 onDialogActionError={this.handleDialogActionError}
                 onDialogOpen={this.handleDialogOpen}
                 onDialogDeleteHook={this.handleDeleteDialogHook}

@@ -141,24 +141,12 @@ const initialHook = {
 }))
 /** A form to view/edit/create a hook */
 export default class HookForm extends Component {
-  static defaultProps = {
-    isNewHook: false,
-    hook: initialHook,
-    hookLastFires: null,
-    onTriggerHook: null,
-    onCreateHook: null,
-    onUpdateHook: null,
-    onDeleteHook: null,
-    actionLoading: false,
-    dialogError: null,
-  };
-
   static propTypes = {
     /** Part of a GraphQL hook response containing info about that hook.
-    Not needed when creating a new hook */
+     Not needed when creating a new hook */
     hook: hook.isRequired,
     /** Part of the same Grahql hook response as above containing info
-    about some last hook fired attempts */
+     about some last hook fired attempts */
     hookLastFires: array,
     /** Set to `true` when creating a new hook. */
     isNewHook: bool,
@@ -178,6 +166,27 @@ export default class HookForm extends Component {
      * Callback function fired when the DialogAction component throws an error.
      * */
     onDialogActionError: func,
+    /**
+     * Callback function fired when the DialogAction triggers the
+     * onComplete handler after successfully deleting a hook.
+     * */
+    onDialogActionDeleteComplete: func,
+  };
+
+  static defaultProps = {
+    isNewHook: false,
+    hook: initialHook,
+    hookLastFires: null,
+    onTriggerHook: null,
+    onCreateHook: null,
+    onUpdateHook: null,
+    onDeleteHook: null,
+    actionLoading: false,
+    dialogError: null,
+    onDialogActionError: null,
+    onDialogDeleteHook: null,
+    deleteDialogOpen: null,
+    onDialogActionDeleteComplete: null,
   };
 
   state = {
@@ -281,11 +290,12 @@ export default class HookForm extends Component {
       hook: { hookId, hookGroupId },
     } = this.state;
 
-    onDeleteHook &&
-      onDeleteHook({
+    if (onDeleteHook) {
+      return onDeleteHook({
         hookId,
         hookGroupId,
       });
+    }
   };
 
   handleEmailOnErrorChange = () => {
@@ -498,12 +508,13 @@ export default class HookForm extends Component {
     const {
       actionLoading,
       dialogOpen,
-      dialogDeleteHook,
+      deleteDialogOpen,
       dialogError,
       classes,
       isNewHook,
-      onActionDialogClose,
+      onDialogActionClose,
       onDialogActionError,
+      onDialogActionDeleteComplete,
       onDialogDeleteHook,
       onDialogOpen,
     } = this.props;
@@ -821,8 +832,8 @@ export default class HookForm extends Component {
             fullScreen
             open={dialogOpen}
             onSubmit={this.handleTriggerHookSubmit}
-            onComplete={onActionDialogClose}
-            onClose={onActionDialogClose}
+            onComplete={onDialogActionClose}
+            onClose={onDialogActionClose}
             onError={onDialogActionError}
             error={dialogError}
             confirmText="Trigger Hook"
@@ -860,20 +871,20 @@ export default class HookForm extends Component {
             }
           />
         )}
-        {dialogDeleteHook && (
+        {deleteDialogOpen && (
           <DialogAction
-            open={dialogDeleteHook}
+            open={deleteDialogOpen}
             title="Delete?"
             onSubmit={this.handleDeleteHook}
-            onComplete={onActionDialogClose}
-            onClose={onActionDialogClose}
+            onComplete={onDialogActionDeleteComplete}
+            onClose={onDialogActionClose}
             onError={onDialogActionError}
             error={dialogError}
             confirmText="Delete Hook"
             body={
-              <p>
+              <Typography>
                 This will delete {hook.hookGroupId}/{hook.hookId}
-              </p>
+              </Typography>
             }
           />
         )}
