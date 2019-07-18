@@ -9,9 +9,8 @@ Each provider has a `providerType` indicating the class that implements the prov
 
 The service currently includes providers for:
 
-* Static Workers (`static`)
-* Google Cloud (`google`)
-* Testing (`testing`, only used in the service's unit tests)
+* Static Workers ([`static`](/docs/reference/core/worker-manager/static))
+* Google Cloud ([`google`](/docs/reference/core/worker-manager/google))
 
 ## Worker Pools
 
