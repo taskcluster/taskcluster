@@ -17,6 +17,7 @@ suite(testing.suiteName(), function() {
       method: 'get',
       route: '/test/:myparam',
       name: 'noScopeOktestEP',
+      category: 'API Library',
       title: 'Test',
       description: 'Test',
     }, function(req, res) {});
@@ -28,6 +29,7 @@ suite(testing.suiteName(), function() {
       route: '/testString/:myparam',
       scopes: 'test:unit',
       name: 'strScopetestEP',
+      category: 'API Library',
       title: 'Test',
       description: 'Test',
     }, function(req, res) {});
@@ -40,6 +42,7 @@ suite(testing.suiteName(), function() {
         route: '/testArr/:myparam',
         scopes: ['test:unit'],
         name: 'arrayScopeRejectedtestEP',
+        category: 'API Library',
         title: 'Test',
         description: 'Test',
       }, function(req, res) {});
@@ -53,6 +56,7 @@ suite(testing.suiteName(), function() {
         route: '/testArrArr/:myparam',
         scopes: [[]],
         name: 'arrayOfArraytestEP',
+        category: 'API Library',
         title: 'Test',
         description: 'Test',
       }, function(req, res) {});
@@ -65,6 +69,7 @@ suite(testing.suiteName(), function() {
       route: '/testScope/:myparam',
       scopes: {AnyOf: ['something']},
       name: 'expNotRejectedtestEP',
+      category: 'API Library',
       title: 'Test',
       description: 'Test',
     }, function(req, res) {});
@@ -76,6 +81,7 @@ suite(testing.suiteName(), function() {
       route: '/testScope2/:myparam',
       scopes: {AnyOf: [{for: 'foo', in: 'bar', each: '<foo>'}]},
       name: 'expLoopNotRejectedtestEP',
+      category: 'API Library',
       title: 'Test',
       description: 'Test',
     }, function(req, res) {});

@@ -1,0 +1,82 @@
+$let:
+  proc_name:
+    $if: 'proc_name'
+    then: '${proc_name}'
+    else: 'static'
+in:
+  apiVersion: apps/v1beta2
+  kind: Deployment
+  metadata:
+    name: ${project_name}-${lowercase(proc_name)}
+  spec:
+    selector:
+      matchLabels:
+        application: taskcluster
+        taskcluster-service: ${project_name}
+        taskcluster-proc: ${proc_name}
+    replicas: {$eval: number(replicas)}
+    template:
+      metadata:
+        annotations:
+          checksum/secret: ${checksum_calculation}
+        labels:
+          application: taskcluster
+          taskcluster-service: ${project_name}
+          taskcluster-proc: '${proc_name}'
+      spec:
+        serviceAccountName: ${project_name}
+        volumes:
+          $if: 'len(volume_mounts) > 0'
+          then:
+            $map: {$eval: volume_mounts}
+            each(mount):
+              name: ${mount.source}
+              secret:
+                secretName: ${project_name}
+                items:
+                  - key: ${mount.source}
+                    path: ${mount.name}
+        containers:
+        - name: ${project_name}
+          image: ${docker_image}
+          imagePullPolicy: Always
+          args:
+            $if: 'is_monoimage'
+            then: ['${service_name}/${proc_name}']
+            else: ['${proc_name}']
+          resources:
+            requests:
+              cpu: ${cpu}
+              memory: ${memory}
+          env:
+            $flatten:
+              - $if: '! background_job'
+                then:
+                  name: PORT
+                  value: '80'
+              - name: TASKCLUSTER_ROOT_URL
+                value: ${root_url}
+          envFrom:
+              - secretRef:
+                  name: ${project_name}
+          volumeMounts:
+            $if: 'len(volume_mounts) > 0'
+            then:
+              $map: {$eval: volume_mounts}
+              each(mount):
+                name: ${mount.source}
+                mountPath: ${mount.path}
+                readOnly: true
+          ports:
+          - $if: '! background_job'
+            then:
+              containerPort: 80
+          readinessProbe:
+            $if: '! background_job'
+            then:
+              httpGet:
+                path: ${readiness_path}
+                port: 80
+              timeoutSeconds: 5
+              periodSeconds: 10
+              initialDelaySeconds: 3

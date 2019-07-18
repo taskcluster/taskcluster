@@ -1,0 +1,35 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Worker Creation Request
+description: Request to create a worker
+type: object
+properties:
+  expires:
+    title: Expires
+    description: Date and time when this worker will be deleted from the DB
+    type: string
+    format: date-time
+  providerInfo:
+    # note: providerInfo is not required
+    title: Provider Data
+    description: Provider-specific information
+    oneOf:
+      # note: each of these structures should be different, so that `oneOf` can distinguish them
+      # unambiguously
+      - title: static provider type
+        type: object
+        properties:
+          staticSecret:
+            title: Secret
+            type: string
+            pattern: "^[a-zA-Z0-9_-]{44}$"
+            description: |
+              A secret value shared with the worker.  This value must be passed in the `workerIdentityProof` of the `registerWorker` method.
+              The ideal way to generate a secret of this form is `slugid() + slugid()`.
+
+              Secrets are traded for Taskcluster credentials, and should be treated with similar care.
+              Each worker should have a distinct secret.
+        additionalProperties: false
+        required: [staticSecret]
+additionalProperties: false
+required:
+  - expires

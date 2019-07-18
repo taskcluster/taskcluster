@@ -4493,6 +4493,99 @@ await asyncWorkerManager.listWorkerPoolErrors(workerPoolId) # -> result
 await asyncWorkerManager.listWorkerPoolErrors(workerPoolId='value') # -> result
 ```
 
+#### Workers in a specific Worker Group in a Worker Pool
+Get the list of all the existing workers in a given group in a given worker pool.
+
+
+
+Takes the following arguments:
+
+  * `workerPoolId`
+  * `workerGroup`
+
+Has required output schema
+
+```python
+# Sync calls
+workerManager.listWorkersForWorkerGroup(workerPoolId, workerGroup) # -> result
+workerManager.listWorkersForWorkerGroup(workerPoolId='value', workerGroup='value') # -> result
+# Async call
+await asyncWorkerManager.listWorkersForWorkerGroup(workerPoolId, workerGroup) # -> result
+await asyncWorkerManager.listWorkersForWorkerGroup(workerPoolId='value', workerGroup='value') # -> result
+```
+
+#### Get a Worker
+Get a single worker.
+
+
+
+Takes the following arguments:
+
+  * `workerPoolId`
+  * `workerGroup`
+  * `workerId`
+
+Has required output schema
+
+```python
+# Sync calls
+workerManager.worker(workerPoolId, workerGroup, workerId) # -> result
+workerManager.worker(workerPoolId='value', workerGroup='value', workerId='value') # -> result
+# Async call
+await asyncWorkerManager.worker(workerPoolId, workerGroup, workerId) # -> result
+await asyncWorkerManager.worker(workerPoolId='value', workerGroup='value', workerId='value') # -> result
+```
+
+#### Create a Worker
+Create a new worker.  The precise behavior of this method depends
+on the provider implementing the given worker pool.  Some providers
+do not support creating workers at all, and will return a 400 error.
+
+
+
+Takes the following arguments:
+
+  * `workerPoolId`
+  * `workerGroup`
+  * `workerId`
+
+Has required input schema
+
+Has required output schema
+
+```python
+# Sync calls
+workerManager.createWorker(workerPoolId, workerGroup, workerId, payload) # -> result
+workerManager.createWorker(payload, workerPoolId='value', workerGroup='value', workerId='value') # -> result
+# Async call
+await asyncWorkerManager.createWorker(workerPoolId, workerGroup, workerId, payload) # -> result
+await asyncWorkerManager.createWorker(payload, workerPoolId='value', workerGroup='value', workerId='value') # -> result
+```
+
+#### Remove a Worker
+Remove an existing worker.  The precise behavior of this method depends
+on the provider implementing the given worker.  Some providers
+do not support removing workers at all, and will return a 400 error.
+Others may begin removing the worker, but it may remain available via
+the API (perhaps even in state RUNNING) afterward.
+
+
+
+Takes the following arguments:
+
+  * `workerPoolId`
+  * `workerGroup`
+  * `workerId`
+
+```python
+# Sync calls
+workerManager.removeWorker(workerPoolId, workerGroup, workerId) # -> None
+workerManager.removeWorker(workerPoolId='value', workerGroup='value', workerId='value') # -> None
+# Async call
+await asyncWorkerManager.removeWorker(workerPoolId, workerGroup, workerId) # -> None
+await asyncWorkerManager.removeWorker(workerPoolId='value', workerGroup='value', workerId='value') # -> None
+```
+
 #### Workers in a Worker Pool
 Get the list of all the existing workers in a given worker pool.
 
@@ -4513,14 +4606,13 @@ await asyncWorkerManager.listWorkersForWorkerPool(workerPoolId) # -> result
 await asyncWorkerManager.listWorkersForWorkerPool(workerPoolId='value') # -> result
 ```
 
-#### Google Credentials
-Get Taskcluster credentials for a worker given an Instance Identity Token
+#### Register a running worker
+Register a running worker.  Workers call this method on worker start-up.
 
+This call both marks the worker as running and returns the credentials
+the worker will require to perform its work.  The worker must provide
+some proof of its identity, and that proof varies by provider type.
 
-
-Takes the following arguments:
-
-  * `workerPoolId`
 
 Has required input schema
 
@@ -4528,11 +4620,9 @@ Has required output schema
 
 ```python
 # Sync calls
-workerManager.credentialsGoogle(workerPoolId, payload) # -> result
-workerManager.credentialsGoogle(payload, workerPoolId='value') # -> result
+workerManager.registerWorker(payload) # -> result
 # Async call
-await asyncWorkerManager.credentialsGoogle(workerPoolId, payload) # -> result
-await asyncWorkerManager.credentialsGoogle(payload, workerPoolId='value') # -> result
+await asyncWorkerManager.registerWorker(payload) # -> result
 ```
 
 

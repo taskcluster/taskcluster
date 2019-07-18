@@ -61,7 +61,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
     await helper.queue.reportCompleted(taskId, 0);
-    helper.assertPulseMessage('task-completed', m => m.payload.status.runs[0].state === 'completed');
+    helper.assertPulseMessage('task-completed', m => (
+      m.payload.status.runs[0].state === 'completed' &&
+      _.isEqual(m.payload.task.tags, taskDef.tags)));
     helper.clearPulseMessages();
 
     assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-completed'), {
@@ -74,7 +76,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     debug('### Reporting task completed (again)');
     await helper.queue.reportCompleted(taskId, 0);
     // idempotent, but sends the message again..
-    helper.assertPulseMessage('task-completed', m => m.payload.status.runs[0].state === 'completed');
+    helper.assertPulseMessage('task-completed', m => (
+      m.payload.status.runs[0].state === 'completed' &&
+      _.isEqual(m.payload.task.tags, taskDef.tags)));
     helper.clearPulseMessages();
 
     debug('### Reporting task completed (using temp creds)');
@@ -104,7 +108,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
       'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
     await helper.queue.reportFailed(taskId, 0);
-    helper.assertPulseMessage('task-failed', m => m.payload.status.runs[0].state === 'failed');
+    helper.assertPulseMessage('task-failed', m => (
+      m.payload.status.runs[0].state === 'failed' &&
+      _.isEqual(m.payload.task.tags, taskDef.tags)));
     helper.clearPulseMessages();
 
     assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-failed'), {
@@ -116,7 +122,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
 
     debug('### Reporting task failed (again)');
     await helper.queue.reportFailed(taskId, 0);
-    helper.assertPulseMessage('task-failed', m => m.payload.status.runs[0].state === 'failed');
+    helper.assertPulseMessage('task-failed', m => (
+      m.payload.status.runs[0].state === 'failed' &&
+      _.isEqual(m.payload.task.tags, taskDef.tags)));
     helper.clearPulseMessages();
 
     debug('### Reporting task failed (using temp creds)');
@@ -149,7 +157,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     });
     helper.assertPulseMessage('task-exception', m => (
       m.payload.status.runs[0].state === 'exception' &&
-      m.payload.status.runs[0].reasonResolved === 'malformed-payload'));
+      m.payload.status.runs[0].reasonResolved === 'malformed-payload' &&
+      _.isEqual(m.payload.task.tags, taskDef.tags)));
     helper.clearPulseMessages();
 
     assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-exception'), {
@@ -165,7 +174,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
     });
     helper.assertPulseMessage('task-exception', m => (
       m.payload.status.runs[0].state === 'exception' &&
-      m.payload.status.runs[0].reasonResolved === 'malformed-payload'));
+      m.payload.status.runs[0].reasonResolved === 'malformed-payload' &&
+      _.isEqual(m.payload.task.tags, taskDef.tags)));
     helper.clearPulseMessages();
 
     debug('### Check status of task');

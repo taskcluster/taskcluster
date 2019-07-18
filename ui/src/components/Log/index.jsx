@@ -190,7 +190,7 @@ export default class Log extends Component {
   };
 
   handleLineNumberChange = lineNumber => {
-    this.setState({ lineNumber });
+    this.setState({ lineNumber, follow: null });
   };
 
   handleScroll = ({ scrollTop, scrollHeight, clientHeight }) => {

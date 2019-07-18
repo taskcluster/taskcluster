@@ -19,13 +19,13 @@ export default path => [
   },
   {
     component: WorkerManagerViewWorkers,
-    path: `${path}/worker-pools/:workerPool`,
+    path: `${path}/:workerPoolId/workers`,
     description: 'View workers for that specific worker pool',
   },
   {
     component: WMWorkerPoolEditor,
-    path: `${path}/:workerPool/edit`,
-    description: 'Edit the worker pool',
+    path: `${path}/:workerPoolId`,
+    description: 'A view to inspect/edit a worker pool',
   },
   {
     component: WorkerManagerViewWorkers,

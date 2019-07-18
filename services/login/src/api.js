@@ -21,6 +21,7 @@ builder.declare({
   name: 'oidcCredentials',
   idempotent: false,
   output: 'oidc-credentials-response.yml',
+  category: 'Login Service',
   title: 'Get Taskcluster credentials given a suitable `access_token`',
   stability: APIBuilder.stability.experimental,
   description: [

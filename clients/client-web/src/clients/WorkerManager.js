@@ -15,10 +15,14 @@ export default class WorkerManager extends Client {
     this.updateWorkerPool.entry = {"args":["workerPoolId"],"input":true,"method":"post","name":"updateWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":{"AllOf":["worker-manager:update-worker-type:<workerPoolId>","worker-manager:provider:<providerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.workerPool.entry = {"args":["workerPoolId"],"method":"get","name":"workerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkerPools.entry = {"args":[],"method":"get","name":"listWorkerPools","output":true,"query":["continuationToken","limit"],"route":"/worker-pools","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.reportWorkerError.entry = {"args":["workerPoolId"],"input":true,"method":"post","name":"reportWorkerError","output":true,"query":[],"route":"/worker-pools-errors/<workerPoolId>","scopes":{"AllOf":["assume:worker-pool:<workerPoolId>","assume:worker-id:<workerGroup>/<workerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
+    this.reportWorkerError.entry = {"args":["workerPoolId"],"input":true,"method":"post","name":"reportWorkerError","output":true,"query":[],"route":"/worker-pool-errors/<workerPoolId>","scopes":{"AllOf":["assume:worker-pool:<workerPoolId>","assume:worker-id:<workerGroup>/<workerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkerPoolErrors.entry = {"args":["workerPoolId"],"method":"get","name":"listWorkerPoolErrors","output":true,"query":["continuationToken","limit"],"route":"/worker-pool-errors/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.listWorkersForWorkerGroup.entry = {"args":["workerPoolId","workerGroup"],"method":"get","name":"listWorkersForWorkerGroup","output":true,"query":["continuationToken","limit"],"route":"/workers/<workerPoolId>:/<workerGroup>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.worker.entry = {"args":["workerPoolId","workerGroup","workerId"],"method":"get","name":"worker","output":true,"query":[],"route":"/workers/<workerPoolId>:/<workerGroup>/<workerId>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.createWorker.entry = {"args":["workerPoolId","workerGroup","workerId"],"input":true,"method":"put","name":"createWorker","output":true,"query":[],"route":"/workers/<workerPoolId>:/<workerGroup>/<workerId>","scopes":"worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.removeWorker.entry = {"args":["workerPoolId","workerGroup","workerId"],"method":"delete","name":"removeWorker","query":[],"route":"/workers/<workerPoolId>:/<workerGroup>/<workerId>","scopes":"worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkersForWorkerPool.entry = {"args":["workerPoolId"],"method":"get","name":"listWorkersForWorkerPool","output":true,"query":["continuationToken","limit"],"route":"/workers/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.credentialsGoogle.entry = {"args":["workerPoolId"],"input":true,"method":"post","name":"credentialsGoogle","output":true,"query":[],"route":"/credentials/google/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.registerWorker.entry = {"args":[],"input":true,"method":"get","name":"registerWorker","output":true,"query":[],"route":"/worker/register","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -89,6 +93,44 @@ export default class WorkerManager extends Client {
     return this.request(this.listWorkerPoolErrors.entry, args);
   }
   /* eslint-disable max-len */
+  // Get the list of all the existing workers in a given group in a given worker pool.
+  /* eslint-enable max-len */
+  listWorkersForWorkerGroup(...args) {
+    this.validate(this.listWorkersForWorkerGroup.entry, args);
+
+    return this.request(this.listWorkersForWorkerGroup.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Get a single worker.
+  /* eslint-enable max-len */
+  worker(...args) {
+    this.validate(this.worker.entry, args);
+
+    return this.request(this.worker.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Create a new worker.  The precise behavior of this method depends
+  // on the provider implementing the given worker pool.  Some providers
+  // do not support creating workers at all, and will return a 400 error.
+  /* eslint-enable max-len */
+  createWorker(...args) {
+    this.validate(this.createWorker.entry, args);
+
+    return this.request(this.createWorker.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Remove an existing worker.  The precise behavior of this method depends
+  // on the provider implementing the given worker.  Some providers
+  // do not support removing workers at all, and will return a 400 error.
+  // Others may begin removing the worker, but it may remain available via
+  // the API (perhaps even in state RUNNING) afterward.
+  /* eslint-enable max-len */
+  removeWorker(...args) {
+    this.validate(this.removeWorker.entry, args);
+
+    return this.request(this.removeWorker.entry, args);
+  }
+  /* eslint-disable max-len */
   // Get the list of all the existing workers in a given worker pool.
   /* eslint-enable max-len */
   listWorkersForWorkerPool(...args) {
@@ -97,11 +139,14 @@ export default class WorkerManager extends Client {
     return this.request(this.listWorkersForWorkerPool.entry, args);
   }
   /* eslint-disable max-len */
-  // Get Taskcluster credentials for a worker given an Instance Identity Token
+  // Register a running worker.  Workers call this method on worker start-up.
+  // This call both marks the worker as running and returns the credentials
+  // the worker will require to perform its work.  The worker must provide
+  // some proof of its identity, and that proof varies by provider type.
   /* eslint-enable max-len */
-  credentialsGoogle(...args) {
-    this.validate(this.credentialsGoogle.entry, args);
+  registerWorker(...args) {
+    this.validate(this.registerWorker.entry, args);
 
-    return this.request(this.credentialsGoogle.entry, args);
+    return this.request(this.registerWorker.entry, args);
   }
 }

@@ -1,0 +1,45 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Register Worker Request
+description: Request body to `registerWorker`.
+type: object
+properties:
+  workerPoolId: {$ref: "worker-pool-full.json#/properties/workerPoolId"}
+  providerId: {$ref: "worker-full.json#/properties/providerId"}
+  workerGroup: {$ref: "worker-full.json#/properties/workerGroup"}
+  workerId: {$ref: "worker-full.json#/properties/workerId"}
+  workerIdentityProof:
+    title: Worker Identity Proof
+    description: |
+      Proof that this call is coming from the worker identified by the other fields.
+      The form of this proof varies depending on the provider type.
+    oneOf:
+      # note: each of these structures should be different, so that `oneOf` can distinguish them
+      # unambiguously
+      - title: google provider type
+        type: object
+        properties:
+          token:
+            title: Token
+            type: string
+            description: |
+              A JWT token as defined in [this google documentation](https://cloud.google.com/compute/docs/instances/verifying-instance-identity)
+        additionalProperties: false
+        required: [token]
+      - title: static provider type
+        type: object
+        properties:
+          staticSecret:
+            title: Secret
+            type: string
+            pattern: "^[a-zA-Z0-9_-]{44}$"
+            description: |
+              The secret value that was configured when the worker was created (in `createWorker`).
+        additionalProperties: false
+        required: [staticSecret]
+additionalProperties: false
+required:
+  - workerPoolId
+  - providerId
+  - workerGroup
+  - workerId
+  - workerIdentityProof

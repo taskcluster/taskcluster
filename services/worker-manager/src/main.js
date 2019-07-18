@@ -156,6 +156,7 @@ let load = loader({
     }) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {
+        cfg,
         Worker,
         WorkerPool,
         WorkerPoolError,
@@ -234,6 +235,7 @@ let load = loader({
     setup: async ({cfg, monitor, Worker, WorkerPool, providers}) => {
       const workerScanner = new WorkerScanner({
         Worker,
+        WorkerPool,
         providers,
         monitor: monitor.childMonitor('worker-scanner'),
       });

@@ -3837,7 +3837,7 @@ module.exports = {
           "output": "v1/worker-pool-error.json#",
           "query": [
           ],
-          "route": "/worker-pools-errors/<workerPoolId>",
+          "route": "/worker-pool-errors/<workerPoolId>",
           "scopes": {
             "AllOf": [
               "assume:worker-pool:<workerPoolId>",
@@ -3867,6 +3867,77 @@ module.exports = {
         },
         {
           "args": [
+            "workerPoolId",
+            "workerGroup"
+          ],
+          "description": "Get the list of all the existing workers in a given group in a given worker pool.",
+          "method": "get",
+          "name": "listWorkersForWorkerGroup",
+          "output": "v1/worker-list.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/workers/<workerPoolId>:/<workerGroup>",
+          "stability": "experimental",
+          "title": "Workers in a specific Worker Group in a Worker Pool",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId",
+            "workerGroup",
+            "workerId"
+          ],
+          "description": "Get a single worker.",
+          "method": "get",
+          "name": "worker",
+          "output": "v1/worker-full.json#",
+          "query": [
+          ],
+          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Get a Worker",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId",
+            "workerGroup",
+            "workerId"
+          ],
+          "description": "Create a new worker.  The precise behavior of this method depends\non the provider implementing the given worker pool.  Some providers\ndo not support creating workers at all, and will return a 400 error.",
+          "input": "v1/create-worker-request.json#",
+          "method": "put",
+          "name": "createWorker",
+          "output": "v1/worker-full.json#",
+          "query": [
+          ],
+          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "scopes": "worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Create a Worker",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId",
+            "workerGroup",
+            "workerId"
+          ],
+          "description": "Remove an existing worker.  The precise behavior of this method depends\non the provider implementing the given worker.  Some providers\ndo not support removing workers at all, and will return a 400 error.\nOthers may begin removing the worker, but it may remain available via\nthe API (perhaps even in state RUNNING) afterward.",
+          "method": "delete",
+          "name": "removeWorker",
+          "query": [
+          ],
+          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "scopes": "worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Remove a Worker",
+          "type": "function"
+        },
+        {
+          "args": [
             "workerPoolId"
           ],
           "description": "Get the list of all the existing workers in a given worker pool.",
@@ -3884,18 +3955,17 @@ module.exports = {
         },
         {
           "args": [
-            "workerPoolId"
           ],
-          "description": "Get Taskcluster credentials for a worker given an Instance Identity Token",
-          "input": "v1/credentials-google-request.json#",
-          "method": "post",
-          "name": "credentialsGoogle",
-          "output": "v1/temp-creds-response.json#",
+          "description": "Register a running worker.  Workers call this method on worker start-up.\n\nThis call both marks the worker as running and returns the credentials\nthe worker will require to perform its work.  The worker must provide\nsome proof of its identity, and that proof varies by provider type.",
+          "input": "v1/register-worker-request.json#",
+          "method": "get",
+          "name": "registerWorker",
+          "output": "v1/register-worker-response.json#",
           "query": [
           ],
-          "route": "/credentials/google/<workerPoolId>",
+          "route": "/worker/register",
           "stability": "experimental",
-          "title": "Google Credentials",
+          "title": "Register a running worker",
           "type": "function"
         }
       ],

@@ -8,7 +8,7 @@
 
 REPOSITORY_URL=https://test.pypi.org/legacy/
 if [ "$1" = "--real" ]; then
-    REPOSITORY_URL=https://pypi.org/legacy/
+    REPOSITORY_URL=https://upload.pypi.org/legacy/
 fi
 
 # step into directory containing this script

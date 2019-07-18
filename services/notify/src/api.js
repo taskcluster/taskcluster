@@ -28,6 +28,7 @@ builder.declare({
   scopes: 'notify:email:<address>',
   input: 'email-request.yml',
   title: 'Send an Email',
+  category: 'Notify Service',
   description: [
     'Send an email to `address`. The content is markdown and will be rendered',
     'to HTML, but both the HTML and raw markdown text will be sent in the',
@@ -50,6 +51,7 @@ builder.declare({
   route: '/pulse',
   name: 'pulse',
   scopes: 'notify:pulse:<routingKey>',
+  category: 'Notify Service',
   input: 'pulse-request.yml',
   title: 'Publish a Pulse Message',
   description: [
@@ -77,6 +79,7 @@ builder.declare({
   },
   input: 'irc-request.yml',
   title: 'Post IRC Message',
+  category: 'Notify Service',
   description: [
     'Post a message on IRC to a specific channel or user, or a specific user',
     'on a specific channel.',
@@ -115,6 +118,7 @@ builder.declare({
   scopes: 'notify:manage-denylist',
   input: 'notification-address.yml',
   title: 'Denylist Given Address',
+  category: 'Notify Service',
   description: [
     'Add the given address to the notification denylist. The address',
     'can be of either of the three supported address type namely pulse, email',
@@ -145,6 +149,7 @@ builder.declare({
   name: 'deleteDenylistAddress',
   scopes: 'notify:manage-denylist',
   input: 'notification-address.yml',
+  category: 'Notify Service',
   title: 'Delete Denylisted Address',
   description: [
     'Delete the specified address from the notification denylist.',
@@ -174,6 +179,7 @@ builder.declare({
   scopes: 'notify:manage-denylist',
   output: 'notification-address-list.yml',
   title: 'List Denylisted Notifications',
+  category: 'Notify Service',
   query: {
     continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,

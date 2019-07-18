@@ -3,6 +3,38 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v14.3.1
+
+Include generated APIs in python package.
+
+## v14.3.0
+
+[minor] Pulse messages now include a task's tags for better classification of the messages that are received.
+
+[minor] ([bug 1563545](http://bugzil.la/1563545)) The `apiMethod` log structure has been updated so that it now splits out query params into their own field and only logs the useful part of paths for resources.
+
+[minor] ([bug 1558345](http://bugzil.la/1558345)) The experimental `workerManager.credentialsGoogle` API method has been removed and replaced with a similar but more provider-agnostic `workerManager.registerWorker` method.
+
+[minor] ([bug 1523807](http://bugzil.la/1523807)) The taskcluster command-line interface (taskcluster-cli) has been incorporated into the main repository and will be relased with the same version numbers as the Taskcluster services.
+
+[minor] The web-server application now uses CORS headers to limit access to the `/graphql` and `/subscription` endpoints to requests from the root URL origin.
+An additional, optional configuration value, `ADDITIONAL_ALLOWED_CORS_ORIGIN`, provides a way to allow additional origins.
+If it begins and ends with `/`, it is treated as a regular expression, allowing matching e.g., pull-request draft deployments.
+
+[minor] What was previously the `/worker-pools-errors/:workerPoolId` API route is now spelled `/worker-pool-errors/:workerPoolId`.
+This endpoint is still experimental so while this might someday be a breaking change, it is currently considered minor.
+
+[minor] ([bug 1563341](http://bugzil.la/1563341)) Worker-manager now allows getting workers by worker group and singly by worker ID, and creating and removing workers (for some providers).
+The static provider uses this capability to manage static workers, each authoritatively identified by a shared secret.
+
+([bug 1547077](http://bugzil.la/1547077)) Emails now use the modern Taskcluster logo
+
+The `GRAPHQL_SUBSCRIPTION_ENDPOINT` config for taskcluster-ui can now have scheme `http` or `https` instead of `ws`/`wss`.
+This allows easier generation of this configuration as `${TASKCLUSTER_ROOT_URL}/subscription`.
+The existing schemas are still accepted so no configuration change is required.
+
+With the proper scopes, github repositories can now override the default scheduler. Adding custom schedulerId to the task definition while using github's Statuses API might break the status reporting functionality of tc-github in the case of successful build. Therefore, this only works with experimental `checks` status reporting.
+
 ## v14.2.0
 
 [minor] The AWS Provisioner and Provisioner views are no longer available, as the AWS provisioner itself will be removed in favor of the worker manager service.

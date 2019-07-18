@@ -29,6 +29,7 @@ suite(testing.suiteName(), function() {
     name: 'requireSomeScopes',
     title: 'Requre some scopse',
     description: 'Place we can call to test something',
+    category: 'API Library',
     scopes: {
       AnyOf: [
         {AllOf: ['aa', 'bb']},
@@ -45,6 +46,7 @@ suite(testing.suiteName(), function() {
     route: '/require-no-scopes',
     name: 'requireNoScopes',
     title: 'Requre no scopse',
+    category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.reply({});
@@ -56,6 +58,7 @@ suite(testing.suiteName(), function() {
     name: 'sometimesRequireNoScopes',
     title: 'Requre no scopes when private is false',
     description: 'Place we can call to test something',
+    category: 'API Library',
     query: {
       private: /[01]/,
     },
@@ -73,8 +76,23 @@ suite(testing.suiteName(), function() {
     route: '/require-extra-scopes',
     name: 'requireExtraScopes',
     title: 'Requre extra scopse',
+    category: 'API Library',
     description: 'Place we can call to test something',
     scopes: 'XXXX',
+  }, function(req, res) {
+    res.reply({});
+  });
+
+  builder.declare({
+    method: 'get',
+    route: '/bewitiful',
+    name: 'bewitiful',
+    category: 'API Library',
+    query: {
+      foo: /abc*/,
+    },
+    title: 'Bewit having endpoing',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     res.reply({});
   });
@@ -102,7 +120,8 @@ suite(testing.suiteName(), function() {
         hasAuthed: true,
         method: 'GET',
         public: false,
-        resource: '/api/test/v1/require-some-scopes',
+        query: {},
+        resource: '/require-some-scopes',
         satisfyingScopes: ['aa', 'bb', 'dd'],
         sourceIp: '::ffff:127.0.0.1',
         statusCode: 200,
@@ -132,7 +151,8 @@ suite(testing.suiteName(), function() {
         hasAuthed: false,
         method: 'GET',
         public: true,
-        resource: '/api/test/v1/require-no-scopes',
+        query: {},
+        resource: '/require-no-scopes',
         satisfyingScopes: [],
         sourceIp: '::ffff:127.0.0.1',
         statusCode: 200,
@@ -162,7 +182,10 @@ suite(testing.suiteName(), function() {
         hasAuthed: false,
         method: 'GET',
         public: true,
-        resource: '/api/test/v1/sometimes-require-no-scopes?private=0',
+        query: {
+          private: 0,
+        },
+        resource: '/sometimes-require-no-scopes',
         satisfyingScopes: [],
         sourceIp: '::ffff:127.0.0.1',
         statusCode: 200,
@@ -192,7 +215,10 @@ suite(testing.suiteName(), function() {
         hasAuthed: true,
         method: 'GET',
         public: false,
-        resource: '/api/test/v1/sometimes-require-no-scopes?private=1',
+        query: {
+          private: 1,
+        },
+        resource: '/sometimes-require-no-scopes',
         satisfyingScopes: ['aa'],
         sourceIp: '::ffff:127.0.0.1',
         statusCode: 200,
@@ -228,10 +254,119 @@ suite(testing.suiteName(), function() {
         hasAuthed: true,
         method: 'GET',
         public: false,
-        resource: '/api/test/v1/require-extra-scopes',
+        query: {},
+        resource: '/require-extra-scopes',
         satisfyingScopes: [],
         sourceIp: '::ffff:127.0.0.1',
         statusCode: 403,
+        v: 1,
+      },
+      Logger: 'taskcluster.lib-api',
+    });
+  });
+
+  test('bewit is elided', async function() {
+    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/bewitiful?bewit=abc123&foo=abc');
+    const {header} = hawk.client.header(url, 'GET', {
+      credentials: {id: 'client-with-aa-bb-dd', key: 'ignored', algorithm: 'sha256'},
+    });
+    await request.get(url).set('Authorization', header);
+
+    assert.equal(helper.monitorManager.messages.length, 1);
+    delete helper.monitorManager.messages[0].Fields.duration;
+    delete helper.monitorManager.messages[0].Fields.expires;
+    assert.deepEqual(helper.monitorManager.messages[0], {
+      Type: 'monitor.apiMethod',
+      Severity: LEVELS.notice,
+      Fields: {
+        name: 'bewitiful',
+        apiVersion: 'v1',
+        clientId: '',
+        hasAuthed: false,
+        method: 'GET',
+        public: true,
+        query: {
+          foo: 'abc',
+          bewit: '...',
+        },
+        resource: '/bewitiful',
+        satisfyingScopes: [],
+        sourceIp: '::ffff:127.0.0.1',
+        statusCode: 200,
+        v: 1,
+      },
+      Logger: 'taskcluster.lib-api',
+    });
+  });
+
+  test('unknown query params are not logged', async function() {
+    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/bewitiful?bar=abc');
+    const {header} = hawk.client.header(url, 'GET', {
+      credentials: {id: 'client-with-aa-bb-dd', key: 'ignored', algorithm: 'sha256'},
+    });
+    try {
+      await request.get(url).set('Authorization', header);
+    } catch (err) {
+      if (err.status !== 400) {
+        throw err;
+      }
+    }
+
+    assert.equal(helper.monitorManager.messages.length, 1);
+    delete helper.monitorManager.messages[0].Fields.duration;
+    delete helper.monitorManager.messages[0].Fields.expires;
+    assert.deepEqual(helper.monitorManager.messages[0], {
+      Type: 'monitor.apiMethod',
+      Severity: LEVELS.notice,
+      Fields: {
+        name: 'bewitiful',
+        apiVersion: 'v1',
+        clientId: '',
+        hasAuthed: false,
+        method: 'GET',
+        public: true,
+        query: {},
+        resource: '/bewitiful',
+        satisfyingScopes: [],
+        sourceIp: '::ffff:127.0.0.1',
+        statusCode: 400,
+        v: 1,
+      },
+      Logger: 'taskcluster.lib-api',
+    });
+  });
+
+  test('invalid query params are not logged', async function() {
+    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/bewitiful?foo=def');
+    const {header} = hawk.client.header(url, 'GET', {
+      credentials: {id: 'client-with-aa-bb-dd', key: 'ignored', algorithm: 'sha256'},
+    });
+    try {
+      await request.get(url).set('Authorization', header);
+    } catch (err) {
+      if (err.status !== 400) {
+        throw err;
+      }
+    }
+
+    assert.equal(helper.monitorManager.messages.length, 1);
+    delete helper.monitorManager.messages[0].Fields.duration;
+    delete helper.monitorManager.messages[0].Fields.expires;
+    assert.deepEqual(helper.monitorManager.messages[0], {
+      Type: 'monitor.apiMethod',
+      Severity: LEVELS.notice,
+      Fields: {
+        name: 'bewitiful',
+        apiVersion: 'v1',
+        clientId: '',
+        hasAuthed: false,
+        method: 'GET',
+        public: true,
+        query: {},
+        resource: '/bewitiful',
+        satisfyingScopes: [],
+        sourceIp: '::ffff:127.0.0.1',
+        statusCode: 400,
         v: 1,
       },
       Logger: 'taskcluster.lib-api',

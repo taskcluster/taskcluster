@@ -282,8 +282,8 @@ class VersionOne extends TcYaml {
         taskMap[taskId] = {
           taskId,
           task: {
-            ...taskWithoutTaskId,
             schedulerId: cfg.taskcluster.schedulerId,
+            ...taskWithoutTaskId,
           },
         };
       });

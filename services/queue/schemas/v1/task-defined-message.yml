@@ -7,6 +7,7 @@ type:         object
 properties:
   version:    {$const: message-version}
   status:     {$ref: 'task-status.json#'}
+  task: {$ref: 'task-pulse-definition.json#'}
 additionalProperties: false
 required:
   - version

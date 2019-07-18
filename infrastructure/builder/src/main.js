@@ -26,6 +26,7 @@ program.command('build')
 
 program.command('release')
   .option('--base-dir <base-dir>', 'Base directory for build (fast and big!; default /tmp/taskcluster-builder-build)')
+  .option('--gh-token <gh-token>', 'GitHub access token')
   .option('--dry-run', 'Do not run any tasks, but generate the list of tasks')
   .option('-p, --push', 'Push docker image and git commit + tag (without this, changes are purely local)')
   .action((...options) => {

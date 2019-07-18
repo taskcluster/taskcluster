@@ -113,6 +113,56 @@ class WorkerManager(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["listWorkerPoolErrors"], *args, **kwargs)
 
+    async def listWorkersForWorkerGroup(self, *args, **kwargs):
+        """
+        Workers in a specific Worker Group in a Worker Pool
+
+        Get the list of all the existing workers in a given group in a given worker pool.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["listWorkersForWorkerGroup"], *args, **kwargs)
+
+    async def worker(self, *args, **kwargs):
+        """
+        Get a Worker
+
+        Get a single worker.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["worker"], *args, **kwargs)
+
+    async def createWorker(self, *args, **kwargs):
+        """
+        Create a Worker
+
+        Create a new worker.  The precise behavior of this method depends
+        on the provider implementing the given worker pool.  Some providers
+        do not support creating workers at all, and will return a 400 error.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["createWorker"], *args, **kwargs)
+
+    async def removeWorker(self, *args, **kwargs):
+        """
+        Remove a Worker
+
+        Remove an existing worker.  The precise behavior of this method depends
+        on the provider implementing the given worker.  Some providers
+        do not support removing workers at all, and will return a 400 error.
+        Others may begin removing the worker, but it may remain available via
+        the API (perhaps even in state RUNNING) afterward.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["removeWorker"], *args, **kwargs)
+
     async def listWorkersForWorkerPool(self, *args, **kwargs):
         """
         Workers in a Worker Pool
@@ -124,18 +174,31 @@ class WorkerManager(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["listWorkersForWorkerPool"], *args, **kwargs)
 
-    async def credentialsGoogle(self, *args, **kwargs):
+    async def registerWorker(self, *args, **kwargs):
         """
-        Google Credentials
+        Register a running worker
 
-        Get Taskcluster credentials for a worker given an Instance Identity Token
+        Register a running worker.  Workers call this method on worker start-up.
+
+        This call both marks the worker as running and returns the credentials
+        the worker will require to perform its work.  The worker must provide
+        some proof of its identity, and that proof varies by provider type.
 
         This method is ``experimental``
         """
 
-        return await self._makeApiCall(self.funcinfo["credentialsGoogle"], *args, **kwargs)
+        return await self._makeApiCall(self.funcinfo["registerWorker"], *args, **kwargs)
 
     funcinfo = {
+        "createWorker": {
+            'args': ['workerPoolId', 'workerGroup', 'workerId'],
+            'input': 'v1/create-worker-request.json#',
+            'method': 'put',
+            'name': 'createWorker',
+            'output': 'v1/worker-full.json#',
+            'route': '/workers/<workerPoolId>:/<workerGroup>/<workerId>',
+            'stability': 'experimental',
+        },
         "createWorkerPool": {
             'args': ['workerPoolId'],
             'input': 'v1/create-worker-pool-request.json#',
@@ -143,15 +206,6 @@ class WorkerManager(AsyncBaseClient):
             'name': 'createWorkerPool',
             'output': 'v1/worker-pool-full.json#',
             'route': '/worker-pool/<workerPoolId>',
-            'stability': 'experimental',
-        },
-        "credentialsGoogle": {
-            'args': ['workerPoolId'],
-            'input': 'v1/credentials-google-request.json#',
-            'method': 'post',
-            'name': 'credentialsGoogle',
-            'output': 'v1/temp-creds-response.json#',
-            'route': '/credentials/google/<workerPoolId>',
             'stability': 'experimental',
         },
         "listWorkerPoolErrors": {
@@ -172,6 +226,15 @@ class WorkerManager(AsyncBaseClient):
             'route': '/worker-pools',
             'stability': 'experimental',
         },
+        "listWorkersForWorkerGroup": {
+            'args': ['workerPoolId', 'workerGroup'],
+            'method': 'get',
+            'name': 'listWorkersForWorkerGroup',
+            'output': 'v1/worker-list.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/workers/<workerPoolId>:/<workerGroup>',
+            'stability': 'experimental',
+        },
         "listWorkersForWorkerPool": {
             'args': ['workerPoolId'],
             'method': 'get',
@@ -188,13 +251,29 @@ class WorkerManager(AsyncBaseClient):
             'route': '/ping',
             'stability': 'stable',
         },
+        "registerWorker": {
+            'args': [],
+            'input': 'v1/register-worker-request.json#',
+            'method': 'get',
+            'name': 'registerWorker',
+            'output': 'v1/register-worker-response.json#',
+            'route': '/worker/register',
+            'stability': 'experimental',
+        },
+        "removeWorker": {
+            'args': ['workerPoolId', 'workerGroup', 'workerId'],
+            'method': 'delete',
+            'name': 'removeWorker',
+            'route': '/workers/<workerPoolId>:/<workerGroup>/<workerId>',
+            'stability': 'experimental',
+        },
         "reportWorkerError": {
             'args': ['workerPoolId'],
             'input': 'v1/report-worker-error-request.json#',
             'method': 'post',
             'name': 'reportWorkerError',
             'output': 'v1/worker-pool-error.json#',
-            'route': '/worker-pools-errors/<workerPoolId>',
+            'route': '/worker-pool-errors/<workerPoolId>',
             'stability': 'experimental',
         },
         "updateWorkerPool": {
@@ -204,6 +283,14 @@ class WorkerManager(AsyncBaseClient):
             'name': 'updateWorkerPool',
             'output': 'v1/worker-pool-full.json#',
             'route': '/worker-pool/<workerPoolId>',
+            'stability': 'experimental',
+        },
+        "worker": {
+            'args': ['workerPoolId', 'workerGroup', 'workerId'],
+            'method': 'get',
+            'name': 'worker',
+            'output': 'v1/worker-full.json#',
+            'route': '/workers/<workerPoolId>:/<workerGroup>/<workerId>',
             'stability': 'experimental',
         },
         "workerPool": {

@@ -28,9 +28,9 @@ Create it under "Settings" (for yourself or for an org) -> "Developer Settings" 
 
 Set the fields as follows: 
 
-* Homepage URL should link to your Taskcluster instance's UI site. 
-* Setup URL should link to your taskcluster instance's quickstart guide. 
-* Webhook URL should link to your Taskcluster instance's GitHub service's reciever endpoint. 
+* Homepage URL should link to your deployment's root URL
+* Setup URL should link to your taskcluster instance's quickstart guide, `/quickstart` on your deployment's root URL
+* Webhook URL should link to `/api/github/v1/github` on your deployment's root URL
 * Set the secret to an arbitrary value that you also configure in your Taskcluster instance's settings. 
 
 ### How to set up private keys? 

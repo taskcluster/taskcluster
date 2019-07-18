@@ -13,6 +13,7 @@ builder.declare({
   route: '/task/:taskId/runs/:runId/artifacts/:name(*)',
   name: 'createArtifact',
   stability: APIBuilder.stability.stable,
+  category: 'Queue Service',
   scopes: {AnyOf: [
     'queue:create-artifact:<taskId>/<runId>',
     {AllOf: [
@@ -647,6 +648,7 @@ builder.declare({
   route: '/task/:taskId/runs/:runId/artifacts/:name(*)',
   name: 'completeArtifact',
   stability: APIBuilder.stability.experimental,
+  category: 'Queue Service',
   scopes: {AnyOf: [
     'queue:create-artifact:<taskId>/<runId>',
     {AllOf: [
@@ -808,6 +810,7 @@ builder.declare({
   route: '/task/:taskId/runs/:runId/artifacts/:name(*)',
   name: 'getArtifact',
   stability: APIBuilder.stability.stable,
+  category: 'Queue Service',
   scopes: {
     if: 'private',
     then: {
@@ -914,6 +917,7 @@ builder.declare({
   route: '/task/:taskId/artifacts/:name(*)',
   name: 'getLatestArtifact',
   stability: APIBuilder.stability.stable,
+  category: 'Queue Service',
   scopes: {
     if: 'private',
     then: {
@@ -977,6 +981,7 @@ builder.declare({
   },
   name: 'listArtifacts',
   stability: APIBuilder.stability.experimental,
+  category: 'Queue Service',
   output: 'list-artifacts-response.json#',
   title: 'Get Artifacts from Run',
   description: [
@@ -1045,6 +1050,7 @@ builder.declare({
   },
   stability: APIBuilder.stability.experimental,
   output: 'list-artifacts-response.json#',
+  category: 'Queue Service',
   title: 'Get Artifacts from Latest Run',
   description: [
     'Returns a list of artifacts and associated meta-data for the latest run',

@@ -345,36 +345,6 @@
   },
   {
     "content": {
-      "$id": "/schemas/worker-manager/v1/temp-creds-response.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Response for workers that want Taskcluster credentials",
-      "properties": {
-        "accessToken": {
-          "description": "AccessToken used for authenticating requests, you should store this\nyou won't be able to retrive it again!\n",
-          "type": "string"
-        },
-        "certificate": {
-          "description": "Needed to access taskcluster apis using temporary credentials",
-          "type": "string"
-        },
-        "clientId": {
-          "description": "ClientId of the client",
-          "type": "string"
-        }
-      },
-      "required": [
-        "accessToken",
-        "clientId",
-        "certificate"
-      ],
-      "title": "Temporary Credentials Response",
-      "type": "object"
-    },
-    "filename": "schemas/worker-manager/v1/temp-creds-response.json"
-  },
-  {
-    "content": {
       "$id": "/schemas/worker-manager/v1/report-worker-error-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -414,6 +384,120 @@
   },
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/register-worker-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response body to `registerWorker`.",
+      "properties": {
+        "credentials": {
+          "additionalProperties": false,
+          "description": "The credentials the worker\nwill need to perform its work.  Specifically, credentials with scopes\n* `assume:worker-pool:<workerPoolId>`\n* `assume:worker-id:<workerGroup>/<workerId>`\n* `queue:worker-id:<workerGroup>/<workerId>`\n* `secrets:get:worker-pool:<workerPoolId>`\n* `queue:claim-work:<workerPoolId>`\n",
+          "properties": {
+            "accessToken": {
+              "type": "string"
+            },
+            "certificate": {
+              "description": "Note that a certificate may not be provided, if the credentials are not temporary.\n",
+              "type": "string"
+            },
+            "clientId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "accessToken",
+            "clientId"
+          ],
+          "title": "Credentials",
+          "type": "object"
+        },
+        "expires": {
+          "description": "Time at which the included credentials will expire.  Workers must either\nre-register (for static workers) or terminate (for dynamically\nprovisioned workers) before this time.\n",
+          "format": "date-time",
+          "title": "Expires",
+          "type": "string"
+        }
+      },
+      "required": [
+        "expires",
+        "credentials"
+      ],
+      "title": "Register Worker Response",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/register-worker-response.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/register-worker-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Request body to `registerWorker`.",
+      "properties": {
+        "providerId": {
+          "$ref": "worker-full.json#/properties/providerId"
+        },
+        "workerGroup": {
+          "$ref": "worker-full.json#/properties/workerGroup"
+        },
+        "workerId": {
+          "$ref": "worker-full.json#/properties/workerId"
+        },
+        "workerIdentityProof": {
+          "description": "Proof that this call is coming from the worker identified by the other fields.\nThe form of this proof varies depending on the provider type.\n",
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "token": {
+                  "description": "A JWT token as defined in [this google documentation](https://cloud.google.com/compute/docs/instances/verifying-instance-identity)\n",
+                  "title": "Token",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "token"
+              ],
+              "title": "google provider type",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "staticSecret": {
+                  "description": "The secret value that was configured when the worker was created (in `createWorker`).\n",
+                  "pattern": "^[a-zA-Z0-9_-]{44}$",
+                  "title": "Secret",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "staticSecret"
+              ],
+              "title": "static provider type",
+              "type": "object"
+            }
+          ],
+          "title": "Worker Identity Proof"
+        },
+        "workerPoolId": {
+          "$ref": "worker-pool-full.json#/properties/workerPoolId"
+        }
+      },
+      "required": [
+        "workerPoolId",
+        "providerId",
+        "workerGroup",
+        "workerId",
+        "workerIdentityProof"
+      ],
+      "title": "Register Worker Request",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/register-worker-request.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/pulse-worker-pool-message.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -445,24 +529,47 @@
   },
   {
     "content": {
-      "$id": "/schemas/worker-manager/v1/credentials-google-request.json#",
+      "$id": "/schemas/worker-manager/v1/create-worker-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
-      "description": "Called by workers to get Taskcluster credentials",
+      "description": "Request to create a worker",
       "properties": {
-        "token": {
-          "description": "A JWT token as defined in [this google documentation](https://cloud.google.com/compute/docs/instances/verifying-instance-identity)",
-          "title": "Token",
+        "expires": {
+          "description": "Date and time when this worker will be deleted from the DB",
+          "format": "date-time",
+          "title": "Expires",
           "type": "string"
+        },
+        "providerInfo": {
+          "description": "Provider-specific information",
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "staticSecret": {
+                  "description": "A secret value shared with the worker.  This value must be passed in the `workerIdentityProof` of the `registerWorker` method.\nThe ideal way to generate a secret of this form is `slugid() + slugid()`.\n\nSecrets are traded for Taskcluster credentials, and should be treated with similar care.\nEach worker should have a distinct secret.\n",
+                  "pattern": "^[a-zA-Z0-9_-]{44}$",
+                  "title": "Secret",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "staticSecret"
+              ],
+              "title": "static provider type",
+              "type": "object"
+            }
+          ],
+          "title": "Provider Data"
         }
       },
       "required": [
-        "token"
+        "expires"
       ],
-      "title": "Google Credential Request",
+      "title": "Worker Creation Request",
       "type": "object"
     },
-    "filename": "schemas/worker-manager/v1/credentials-google-request.json"
+    "filename": "schemas/worker-manager/v1/create-worker-request.json"
   },
   {
     "content": {
@@ -2138,6 +2245,25 @@
   },
   {
     "content": {
+      "$id": "/schemas/queue/v1/task-pulse-definition.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Subset of a task definition containing values that are useful for determining\nwhether a message is interesting to the receiver. Where the full task\ndefinition is required, the receiver should call queue.task to download that\ndefinition.\n",
+      "properties": {
+        "tags": {
+          "$ref": "task.json#/properties/tags"
+        }
+      },
+      "required": [
+        "tags"
+      ],
+      "title": "Task Definition Structure for Pulse Messages",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/task-pulse-definition.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/queue/v1/task-pending-message.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -2151,6 +2277,19 @@
         },
         "status": {
           "$ref": "task-status.json#"
+        },
+        "task": {
+          "additionalProperties": false,
+          "description": "Subset of a task definition\n",
+          "properties": {
+            "tags": {
+              "$ref": "task.json#/properties/tags"
+            }
+          },
+          "required": [
+            "tags"
+          ],
+          "type": "object"
         },
         "version": {
           "description": "Message version",
@@ -2270,6 +2409,9 @@
         "status": {
           "$ref": "task-status.json#"
         },
+        "task": {
+          "$ref": "task-pulse-definition.json#"
+        },
         "version": {
           "description": "Message version",
           "enum": [
@@ -2348,6 +2490,9 @@
         "status": {
           "$ref": "task-status.json#"
         },
+        "task": {
+          "$ref": "task-pulse-definition.json#"
+        },
         "version": {
           "description": "Message version",
           "enum": [
@@ -2411,6 +2556,9 @@
       "properties": {
         "status": {
           "$ref": "task-status.json#"
+        },
+        "task": {
+          "$ref": "task-pulse-definition.json#"
         },
         "version": {
           "description": "Message version",
@@ -2477,6 +2625,9 @@
         },
         "status": {
           "$ref": "task-status.json#"
+        },
+        "task": {
+          "$ref": "task-pulse-definition.json#"
         },
         "version": {
           "description": "Message version",
@@ -8230,6 +8381,7 @@
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
+            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
             "resource": "The path of the http request.",
             "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "sourceIp": "The API method caller's IP",
@@ -8409,7 +8561,7 @@
           "output": "v1/worker-pool-error.json#",
           "query": [
           ],
-          "route": "/worker-pools-errors/<workerPoolId>",
+          "route": "/worker-pool-errors/<workerPoolId>",
           "scopes": {
             "AllOf": [
               "assume:worker-pool:<workerPoolId>",
@@ -8439,6 +8591,77 @@
         },
         {
           "args": [
+            "workerPoolId",
+            "workerGroup"
+          ],
+          "description": "Get the list of all the existing workers in a given group in a given worker pool.",
+          "method": "get",
+          "name": "listWorkersForWorkerGroup",
+          "output": "v1/worker-list.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/workers/<workerPoolId>:/<workerGroup>",
+          "stability": "experimental",
+          "title": "Workers in a specific Worker Group in a Worker Pool",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId",
+            "workerGroup",
+            "workerId"
+          ],
+          "description": "Get a single worker.",
+          "method": "get",
+          "name": "worker",
+          "output": "v1/worker-full.json#",
+          "query": [
+          ],
+          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Get a Worker",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId",
+            "workerGroup",
+            "workerId"
+          ],
+          "description": "Create a new worker.  The precise behavior of this method depends\non the provider implementing the given worker pool.  Some providers\ndo not support creating workers at all, and will return a 400 error.",
+          "input": "v1/create-worker-request.json#",
+          "method": "put",
+          "name": "createWorker",
+          "output": "v1/worker-full.json#",
+          "query": [
+          ],
+          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "scopes": "worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Create a Worker",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId",
+            "workerGroup",
+            "workerId"
+          ],
+          "description": "Remove an existing worker.  The precise behavior of this method depends\non the provider implementing the given worker.  Some providers\ndo not support removing workers at all, and will return a 400 error.\nOthers may begin removing the worker, but it may remain available via\nthe API (perhaps even in state RUNNING) afterward.",
+          "method": "delete",
+          "name": "removeWorker",
+          "query": [
+          ],
+          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "scopes": "worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Remove a Worker",
+          "type": "function"
+        },
+        {
+          "args": [
             "workerPoolId"
           ],
           "description": "Get the list of all the existing workers in a given worker pool.",
@@ -8456,18 +8679,17 @@
         },
         {
           "args": [
-            "workerPoolId"
           ],
-          "description": "Get Taskcluster credentials for a worker given an Instance Identity Token",
-          "input": "v1/credentials-google-request.json#",
-          "method": "post",
-          "name": "credentialsGoogle",
-          "output": "v1/temp-creds-response.json#",
+          "description": "Register a running worker.  Workers call this method on worker start-up.\n\nThis call both marks the worker as running and returns the credentials\nthe worker will require to perform its work.  The worker must provide\nsome proof of its identity, and that proof varies by provider type.",
+          "input": "v1/register-worker-request.json#",
+          "method": "get",
+          "name": "registerWorker",
+          "output": "v1/register-worker-response.json#",
           "query": [
           ],
-          "route": "/credentials/google/<workerPoolId>",
+          "route": "/worker/register",
           "stability": "experimental",
-          "title": "Google Credentials",
+          "title": "Register a running worker",
           "type": "function"
         }
       ],
@@ -8814,6 +9036,7 @@
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
+            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
             "resource": "The path of the http request.",
             "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "sourceIp": "The API method caller's IP",
@@ -9053,6 +9276,7 @@
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
+            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
             "resource": "The path of the http request.",
             "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "sourceIp": "The API method caller's IP",
@@ -10726,6 +10950,7 @@
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
+            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
             "resource": "The path of the http request.",
             "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "sourceIp": "The API method caller's IP",
@@ -11017,6 +11242,7 @@
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
+            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
             "resource": "The path of the http request.",
             "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "sourceIp": "The API method caller's IP",
@@ -11385,6 +11611,7 @@
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
+            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
             "resource": "The path of the http request.",
             "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "sourceIp": "The API method caller's IP",
@@ -11608,6 +11835,7 @@
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
+            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
             "resource": "The path of the http request.",
             "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "sourceIp": "The API method caller's IP",
@@ -11869,6 +12097,7 @@
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
+            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
             "resource": "The path of the http request.",
             "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "sourceIp": "The API method caller's IP",
@@ -12362,6 +12591,7 @@
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
+            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
             "resource": "The path of the http request.",
             "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "sourceIp": "The API method caller's IP",
@@ -12950,6 +13180,7 @@
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
+            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
             "resource": "The path of the http request.",
             "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
             "sourceIp": "The API method caller's IP",

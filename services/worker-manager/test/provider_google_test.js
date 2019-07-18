@@ -1,3 +1,4 @@
+const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 const helper = require('./helper');
 const {FakeGoogle} = require('./fake-google');
@@ -28,6 +29,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       Worker: helper.Worker,
       WorkerPool: helper.WorkerPool,
       WorkerPoolError: helper.WorkerPoolError,
+      providerConfig: {
+        project: 'testy',
+        instancePermissions: [],
+        creds: '{}',
+      },
     });
     workerPool = await helper.WorkerPool.create({
       workerPoolId,
@@ -83,7 +89,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       return wp;
     });
     await provider.deprovision({workerPool});
-    assert(!workerPool.previousProviderIds.includes('google'));
+    // nothing has changed..
+    assert(workerPool.previousProviderIds.includes('google'));
+  });
+
+  test('removeResources', async function() {
+    await workerPool.modify(wp => {
+      wp.providerData.google = {};
+      return wp;
+    });
+    await provider.removeResources({workerPool});
     assert(!workerPool.providerData.google);
   });
 
@@ -114,5 +129,93 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     assert.equal(workerPool.providerData.google.running, 0);
     worker.reload();
     assert(worker.providerData.operation);
+  });
+
+  suite('registerWorker', function() {
+    const workerGroup = providerId;
+    const workerId = 'abc123';
+
+    const defaultWorker = {
+      workerPoolId,
+      workerGroup,
+      workerId,
+      providerId,
+      created: taskcluster.fromNow('0 seconds'),
+      expires: taskcluster.fromNow('90 seconds'),
+      state: 'requested',
+      providerData: {},
+    };
+
+    test('no token', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+      });
+      const workerIdentityProof = {};
+      await assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Token validation error/);
+    });
+
+    test('invalid token', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+      });
+      const workerIdentityProof = {token: 'invalid'};
+      await assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Token validation error/);
+    });
+
+    test('wrong project', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+      });
+      const workerIdentityProof = {token: 'wrongProject'};
+      await assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Token validation error/);
+    });
+
+    test('wrong project', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+      });
+      const workerIdentityProof = {token: 'wrongSub'};
+      await assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Token validation error/);
+    });
+
+    test('wrong instance ID', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+      });
+      const workerIdentityProof = {token: 'wrongId'};
+      await assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Token validation error/);
+    });
+
+    test('wrong worker state (duplicate call to registerWorker)', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+        state: 'running',
+      });
+      const workerIdentityProof = {token: 'good'};
+      await assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Token validation error/);
+    });
+
+    test('sweet success', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+      });
+      const workerIdentityProof = {token: 'good'};
+      const res = await provider.registerWorker({workerPool, worker, workerIdentityProof});
+      // allow +- 10 seconds since time passes while the test executes
+      assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);
+      assert(res.expires - new Date() - 10000 < 96 * 3600 * 1000, res.expires);
+    });
   });
 });

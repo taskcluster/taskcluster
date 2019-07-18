@@ -5,3 +5,4 @@ user-build-config.yml
 .idea
 user-config.yml
 /artifacts/
+infrastructure/k8s/chart/templates/

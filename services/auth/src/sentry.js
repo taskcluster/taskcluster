@@ -8,6 +8,7 @@ builder.declare({
   input: undefined,
   output: 'sentry-dsn-response.yml',
   stability: 'stable',
+  category: 'Auth Service',
   scopes: 'auth:sentry:<project>',
   title: 'Get DSN for Sentry Project',
   description: [

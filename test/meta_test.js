@@ -20,7 +20,7 @@ suite('Repo Meta Tests', function () {
   const taskclusterYml = yaml.safeLoad(fs.readFileSync(taskclusterYmlFile, 'utf8'));
 
   test('All packages in CI', async function () {
-    const configured = taskclusterYml.tasks.in.$let.packages.map(pkg => pkg.name);
+    const configured = taskclusterYml.tasks.then.in.$let.packages.map(pkg => pkg.name);
 
     const { stdout } = await exec('yarn workspaces info -s');
     const existing = Object.keys(JSON.parse(stdout))
@@ -36,11 +36,11 @@ suite('Repo Meta Tests', function () {
   });
 
   test('Node version in .taskcluster.yml matches that in package.json', function () {
-    assert.equal(taskclusterYml.tasks.$let.node, packageJson.engines.node);
+    assert.equal(taskclusterYml.tasks.then.$let.node, packageJson.engines.node);
   });
 
   test('Node version for UI matches the rest of the repo', function () {
-    assert.equal(taskclusterYml.tasks.$let.node, uiPackageJson.engines.node);
+    assert.equal(taskclusterYml.tasks.then.$let.node, uiPackageJson.engines.node);
   });
 
   test('proper spelling and capitalization of Taskcluster', async function () {
@@ -167,6 +167,60 @@ suite('Repo Meta Tests', function () {
     //if there are any errors found
     if(count_errors>0) {
       throw new Error(errors);
+    }
+  });
+
+  test("no references to tools.taskcluster.net in the repository", async function () {
+    const whitelist = new Set([
+      '.codecov.yml',
+      '.taskcluster.yml',
+      'services/hooks/test/validate_test/create-hook-request.json',
+      'test/meta_test.js',
+      'ui/docs/reference/core/notify/usage.md',
+      'ui/docs/reference/guide.md',
+      'ui/docs/reference/integrations/github/intro.md',
+      'ui/docs/reference/integrations/github/taskcluster-yml-v0.md',
+      'ui/docs/reference/integrations/github/taskcluster-yml-v1.md',
+      'ui/docs/reference/platform/queue/worker-hierarchy.md',
+      'ui/docs/tutorial/authenticate.md',
+      'ui/docs/tutorial/create-task-via-api.md',
+      'ui/docs/tutorial/debug-task.md',
+      'ui/docs/tutorial/download-task-artifacts.md',
+      'ui/docs/tutorial/finding-tasks.md',
+      'ui/docs/tutorial/gecko-decision-task.md',
+      'ui/docs/tutorial/gecko-tasks.md',
+      'ui/docs/tutorial/hello-world.md',
+      'ui/docs/tutorial/monitor-task-status.md',
+      'ui/src/components/HookForm/index.jsx',
+    ]);
+
+    let res;
+    try {
+      res = await exec(`git grep 'tools\\.taskcluster\\.net' -- './*' ':!.yarn'`);
+    } catch (err) {
+      // if the exit status was 1, then git grep found nothing, and the test has passed
+      if (err.code === 1) {
+        return;
+      }
+      throw err;
+    }
+
+    if (res.stderr !== '') {
+      throw new Error(res.stderr);
+    }
+
+    const files = new Set(res.stdout
+      .split('\n')
+      .map(l => l.slice(0, l.indexOf(':')))
+      .filter(f => f !== '')
+      .filter(f => !whitelist.has(f)));
+
+    if (files.size > 0) {
+      let error_string = "The following files have references to tools.taskcluster.net : \n";
+      for (let filename of [...files].sort()) {
+        error_string += filename + "\n";
+      }
+      throw new Error(error_string);
     }
   });
 });

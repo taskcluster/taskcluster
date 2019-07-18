@@ -182,7 +182,7 @@ func (workerManager *WorkerManager) ListWorkerPools(continuationToken, limit str
 // See #reportWorkerError
 func (workerManager *WorkerManager) ReportWorkerError(workerPoolId string, payload *WorkerErrorReport) (*WorkerPoolError, error) {
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/worker-pools-errors/"+url.QueryEscape(workerPoolId), new(WorkerPoolError), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/worker-pool-errors/"+url.QueryEscape(workerPoolId), new(WorkerPoolError), nil)
 	return responseObject.(*WorkerPoolError), err
 }
 
@@ -206,6 +206,69 @@ func (workerManager *WorkerManager) ListWorkerPoolErrors(workerPoolId, continuat
 
 // Stability: *** EXPERIMENTAL ***
 //
+// Get the list of all the existing workers in a given group in a given worker pool.
+//
+// See #listWorkersForWorkerGroup
+func (workerManager *WorkerManager) ListWorkersForWorkerGroup(workerPoolId, workerGroup, continuationToken, limit string) (*WorkerListInAGivenWorkerPool, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*workerManager)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup), new(WorkerListInAGivenWorkerPool), v)
+	return responseObject.(*WorkerListInAGivenWorkerPool), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Get a single worker.
+//
+// See #worker
+func (workerManager *WorkerManager) Worker(workerPoolId, workerGroup, workerId string) (*WorkerFullDefinition, error) {
+	cd := tcclient.Client(*workerManager)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerFullDefinition), nil)
+	return responseObject.(*WorkerFullDefinition), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Create a new worker.  The precise behavior of this method depends
+// on the provider implementing the given worker pool.  Some providers
+// do not support creating workers at all, and will return a 400 error.
+//
+// Required scopes:
+//   worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>
+//
+// See #createWorker
+func (workerManager *WorkerManager) CreateWorker(workerPoolId, workerGroup, workerId string, payload *WorkerCreationRequest) (*WorkerFullDefinition, error) {
+	cd := tcclient.Client(*workerManager)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerFullDefinition), nil)
+	return responseObject.(*WorkerFullDefinition), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Remove an existing worker.  The precise behavior of this method depends
+// on the provider implementing the given worker.  Some providers
+// do not support removing workers at all, and will return a 400 error.
+// Others may begin removing the worker, but it may remain available via
+// the API (perhaps even in state RUNNING) afterward.
+//
+// Required scopes:
+//   worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>
+//
+// See #removeWorker
+func (workerManager *WorkerManager) RemoveWorker(workerPoolId, workerGroup, workerId string) error {
+	cd := tcclient.Client(*workerManager)
+	_, _, err := (&cd).APICall(nil, "DELETE", "/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), nil, nil)
+	return err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
 // Get the list of all the existing workers in a given worker pool.
 //
 // See #listWorkersForWorkerPool
@@ -224,11 +287,15 @@ func (workerManager *WorkerManager) ListWorkersForWorkerPool(workerPoolId, conti
 
 // Stability: *** EXPERIMENTAL ***
 //
-// Get Taskcluster credentials for a worker given an Instance Identity Token
+// Register a running worker.  Workers call this method on worker start-up.
 //
-// See #credentialsGoogle
-func (workerManager *WorkerManager) CredentialsGoogle(workerPoolId string, payload *GoogleCredentialRequest) (*TemporaryCredentialsResponse, error) {
+// This call both marks the worker as running and returns the credentials
+// the worker will require to perform its work.  The worker must provide
+// some proof of its identity, and that proof varies by provider type.
+//
+// See #registerWorker
+func (workerManager *WorkerManager) RegisterWorker(payload *RegisterWorkerRequest) (*RegisterWorkerResponse, error) {
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/credentials/google/"+url.QueryEscape(workerPoolId), new(TemporaryCredentialsResponse), nil)
-	return responseObject.(*TemporaryCredentialsResponse), err
+	responseObject, _, err := (&cd).APICall(payload, "GET", "/worker/register", new(RegisterWorkerResponse), nil)
+	return responseObject.(*RegisterWorkerResponse), err
 }

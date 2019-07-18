@@ -5,7 +5,7 @@ import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import TextField from '@material-ui/core/TextField';
-import PlusIcon from 'mdi-react/PlusIcon';
+import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import Dashboard from '../../../components/Dashboard';
 import Button from '../../../components/Button';
 import ErrorPanel from '../../../components/ErrorPanel';
@@ -14,10 +14,10 @@ import purgeCacheQuery from './purgeCache.graphql';
 @hot(module)
 @withApollo
 @withStyles(theme => ({
-  plusButtonSpan: {
+  contentSaveButtonSpan: {
     ...theme.mixins.fab,
   },
-  plusIcon: {
+  contentSaveIcon: {
     ...theme.mixins.successIcon,
   },
 }))
@@ -107,7 +107,7 @@ export default class CreatePurgeCacheRequest extends Component {
             </ListItem>
           </List>
           <Button
-            spanProps={{ className: classes.plusButtonSpan }}
+            spanProps={{ className: classes.contentSaveButtonSpan }}
             tooltipProps={{
               title: 'Create Request',
               id: 'create-purge-cache-request-tooltip',
@@ -117,8 +117,8 @@ export default class CreatePurgeCacheRequest extends Component {
             disabled={!this.isFormFilled() || actionLoading}
             onClick={this.handleCreate}
             variant="round"
-            classes={{ root: classes.plusIcon }}>
-            <PlusIcon />
+            classes={{ root: classes.contentSaveIcon }}>
+            <ContentSaveIcon />
           </Button>
         </Fragment>
       </Dashboard>
