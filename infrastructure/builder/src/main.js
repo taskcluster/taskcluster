@@ -75,7 +75,8 @@ program.command('changelog')
   });
 
 program.command('dev')
-  .option('--init', 'set up resources and config file')
+  .option('--init', 'Set up resources and configure')
+  .option('--helm-action <action>', 'Run a specific action (install, uninstall, upgrade, template)')
   .action((...options) => {
     if (options.length !== 1) {
       console.error('unexpected command-line arguments');

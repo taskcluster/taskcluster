@@ -18,7 +18,6 @@ const {
   readRepoFile,
   writeRepoFile,
   modifyRepoJSON,
-  modifyRepoYAML,
   writeRepoYAML,
   modifyRepoFile,
   removeRepoFile,

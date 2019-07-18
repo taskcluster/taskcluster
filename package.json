@@ -172,12 +172,11 @@
     "shared-secrets": "node test/shared-secrets.js",
     "heroku-prebuild": "echo {\\\"version\\\"\\: \\\"$SOURCE_VERSION\\\"} > version.json",
     "heroku-postbuild": "if [ $PROCFILE = \"ui/Procfile\" ]; then cd ui && yarn install --frozen-lockfile && yarn build; fi",
-    "COMMENT": "TODO: allow setting own deployment name below",
     "dev:init": "node infrastructure/builder/src/main.js dev --init",
-    "dev:install": "helm install -f ./dev-config.yml taskcluster ./infrastructure/k8s",
-    "dev:upgrade": "helm upgrade -f ./dev-config.yml taskcluster ./infrastructure/k8s --force --recreate-pods",
-    "dev:delete": "helm delete taskcluster",
-    "dev:template": "helm template -f ./dev-config.yml ./infrastructure/k8s"
+    "dev:install": "node infrastructure/builder/src/main.js dev --helm-action install",
+    "dev:uninstall": "node infrastructure/builder/src/main.js dev --helm-action uninstall",
+    "dev:template": "node infrastructure/builder/src/main.js dev --helm-action template",
+    "dev:upgrade": "node infrastructure/builder/src/main.js dev --helm-action upgrade"
   },
   "renovate": {
     "extends": [
