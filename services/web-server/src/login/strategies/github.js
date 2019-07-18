@@ -57,10 +57,10 @@ module.exports = class Github {
     return this.userFromIdentity(identity);
   }
 
-  useStrategy(app, cfg) {
+  useStrategy(app, cfg, Session) {
     const { credentials } = cfg.taskcluster;
     const strategyCfg = cfg.login.strategies['github'];
-    const loginMiddleware = login(cfg.app.publicUrl);
+    const loginMiddleware = login(cfg.app.publicUrl, Session);
 
     if (!strategyCfg.clientId || !strategyCfg.clientSecret) {
       throw new Error(

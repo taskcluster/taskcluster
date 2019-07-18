@@ -9,7 +9,7 @@ const passport = require('passport');
 const url = require('url');
 const credentials = require('./credentials');
 
-module.exports = async ({ cfg, strategies }) => {
+module.exports = async ({ cfg, strategies, Session }) => {
   const app = express();
   const store = new MemoryStore({
     // prune expired entries every 24h
@@ -76,6 +76,7 @@ module.exports = async ({ cfg, strategies }) => {
     return done(null, {
       identityProviderId,
       userId: identity.split('/')[1],
+      identity,
     });
   });
   passport.deserializeUser(async (obj, done) => {
@@ -91,7 +92,7 @@ module.exports = async ({ cfg, strategies }) => {
   });
 
   Object.values(strategies).forEach(strategy => {
-    strategy.useStrategy(app, cfg);
+    strategy.useStrategy(app, cfg, Session);
   });
 
   return app;

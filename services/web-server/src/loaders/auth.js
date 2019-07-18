@@ -1,32 +1,46 @@
 const DataLoader = require('dataloader');
 const Debug = require('debug');
 const WebServerError = require('../utils/WebServerError');
+const regenerateSession = require('../utils/regenerateSession');
 
 const debug = Debug('loaders.auth');
 
-module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => {
+module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg, Session) => {
   const getCredentials = new DataLoader(queries => {
     return Promise.all(
       queries.map(async () => {
+        const sessionId = req.session.id;
+        console.log('get credentials req.user!: ', req.user);
+
         // Don't report much to the user, to avoid revealing sensitive information, although
         // it is likely in the service logs.
         const credentialError = new WebServerError('InputError', 'Could not generate credentials for this user');
+        const unauthorizedError = new WebServerError('Unauthorized', 'Authentication is required to generate credentials');
 
-        if (!req.user) {
-          throw new WebServerError('Unauthorized', 'Authentication is required to generate credentials');
+        if (!sessionId) {
+          throw unauthorizedError;
         }
 
-        const provider = req.user.identityProviderId;
+        const session = await Session.load({ sessionId }, true);
+
+        console.log('session: ', session);
+
+        if (!session) {
+          throw unauthorizedError;
+        }
+
+        const provider = session.sessionValue.identityProviderId;
         const strategy = strategies[provider];
 
         if (!strategy) {
           throw credentialError;
         }
 
-        const user = await strategy.getUser({ userId: req.user.userId });
+        // const user = await strategy.getUser({ userId: req.user.userId });
+        const user = await strategy.userFromIdentity(session.sessionValue.identity);
 
         if (!user) {
-          debug(`Could not find user ${req.user.userId}`);
+          debug(`Could not find identity ${session.sessionValue.identity}`);
           throw credentialError;
         }
 
@@ -36,8 +50,17 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => 
           // issuer
           credentials: issuer,
           startOffset,
-          expiry: '15 minutes',
+          expiry: '2 minutes',
         });
+
+        await Session.remove({ sessionId });
+        await regenerateSession(req);
+        await Session.create({
+          sessionId: req.session.id,
+          sessionValue: session.sessionValue,
+          expires,
+        });
+
         // Move expires back by 30 seconds to ensure the user refreshes well in advance of the
         // actual credential expiration time
         expires.setSeconds(expires.getSeconds() - 30);
