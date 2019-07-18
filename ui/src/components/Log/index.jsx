@@ -136,7 +136,7 @@ export default class Log extends Component {
 
   state = {
     lineNumber: null,
-    follow: null,
+    follow: true,
   };
 
   getHighlightFromHash() {
