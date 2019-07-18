@@ -820,7 +820,8 @@
                 "children": [
                 ],
                 "data": {
-                  "order": 1000
+                  "order": 1000,
+                  "title": "decision-task"
                 },
                 "name": "decision-task",
                 "next": {
@@ -841,7 +842,8 @@
                 "children": [
                 ],
                 "data": {
-                  "order": 1000
+                  "order": 1000,
+                  "title": "task-logs"
                 },
                 "name": "task-logs",
                 "next": {
