@@ -6,15 +6,16 @@ module.exports = ({userConfig, prompts, configTmpl}) => {
     name: 'rootUrl',
     message: 'What is the root url you will use for this deployment?',
     filter: rootUrl => {
-      if (!rootUrl.endsWith('/')) {
-        rootUrl = rootUrl + '/';
-      }
       if (!rootUrl.includes('://')) {
         rootUrl = 'https://' + rootUrl;
       }
       return rootUrl;
     },
     validate: rootUrl => {
+      if (rootUrl.endsWith('/')) {
+        return 'root url must not have trailing slash';
+      }
+
       let url;
       try {
         url = new URL(rootUrl);
