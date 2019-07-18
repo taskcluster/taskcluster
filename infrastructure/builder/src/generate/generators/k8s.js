@@ -327,7 +327,7 @@ exports.tasks.push({
     })));
 
     const staticClients = [];
-    const serviceScopes = await readRepoYAML(path.join('infrastructure', 'builder', 'scopes.yml'));
+    const serviceScopes = await readRepoYAML(path.join('infrastructure', 'builder', 'static-clients.yml'));
 
     configs.forEach(cfg => {
       const confName = cfg.name.replace(/-/g, '_');
