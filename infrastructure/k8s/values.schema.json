@@ -40,6 +40,10 @@
         "client_table_name": {
           "type": "string"
         },
+        "debug": {
+          "title": "node debug env var",
+          "type": "string"
+        },
         "docs_bucket": {
           "type": "string"
         },
@@ -178,6 +182,10 @@
     "built_in_workers": {
       "additionalProperties": false,
       "properties": {
+        "debug": {
+          "title": "node debug env var",
+          "type": "string"
+        },
         "level": {
           "type": "string"
         },
@@ -244,6 +252,10 @@
           "type": "string"
         },
         "bot_username": {
+          "type": "string"
+        },
+        "debug": {
+          "title": "node debug env var",
           "type": "string"
         },
         "github_app_id": {
@@ -376,6 +388,10 @@
           "type": "string"
         },
         "azure_signing_key": {
+          "type": "string"
+        },
+        "debug": {
+          "title": "node debug env var",
           "type": "string"
         },
         "hook_table_name": {
@@ -519,6 +535,10 @@
         "aws_secret_access_key": {
           "type": "string"
         },
+        "debug": {
+          "title": "node debug env var",
+          "type": "string"
+        },
         "level": {
           "type": "string"
         },
@@ -644,6 +664,10 @@
           "type": "string"
         },
         "aws_secret_access_key": {
+          "type": "string"
+        },
+        "debug": {
+          "title": "node debug env var",
           "type": "string"
         },
         "denylisted_notification_table_name": {
@@ -810,6 +834,10 @@
         "aws_secret_access_key": {
           "type": "string"
         },
+        "debug": {
+          "title": "node debug env var",
+          "type": "string"
+        },
         "level": {
           "type": "string"
         },
@@ -900,6 +928,10 @@
           "type": "string"
         },
         "blob_artifact_region": {
+          "type": "string"
+        },
+        "debug": {
+          "title": "node debug env var",
           "type": "string"
         },
         "level": {
@@ -1220,6 +1252,10 @@
     "references": {
       "additionalProperties": false,
       "properties": {
+        "debug": {
+          "title": "node debug env var",
+          "type": "string"
+        },
         "procs": {
           "additionalProperties": false,
           "properties": {
@@ -1278,6 +1314,10 @@
           "type": "string"
         },
         "azure_table_name": {
+          "type": "string"
+        },
+        "debug": {
+          "title": "node debug env var",
           "type": "string"
         },
         "level": {
@@ -1358,6 +1398,10 @@
         "application_name": {
           "type": "string"
         },
+        "debug": {
+          "title": "node debug env var",
+          "type": "string"
+        },
         "procs": {
           "additionalProperties": false,
           "properties": {
@@ -1400,6 +1444,10 @@
       "additionalProperties": false,
       "properties": {
         "additional_allowed_cors_origin": {
+          "type": "string"
+        },
+        "debug": {
+          "title": "node debug env var",
           "type": "string"
         },
         "jwt_key": {
@@ -1503,6 +1551,10 @@
     "worker_manager": {
       "additionalProperties": false,
       "properties": {
+        "debug": {
+          "title": "node debug env var",
+          "type": "string"
+        },
         "level": {
           "type": "string"
         },

@@ -340,6 +340,7 @@ exports.tasks.push({
       exampleConfig[confName] = {};
       valuesYAML[confName] = {
         procs: {},
+        debug: '',
       };
       schema.required.push(confName);
       schema.properties[confName] = {
@@ -352,6 +353,10 @@ exports.tasks.push({
             properties: {},
             required: [],
             additionalProperties: false,
+          },
+          debug: {
+            type: 'string',
+            title: 'node debug env var',
           },
         },
         required: ['procs'],

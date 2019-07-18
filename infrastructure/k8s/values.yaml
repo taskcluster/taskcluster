@@ -11,6 +11,7 @@ auth:
     purgeExpiredClients:
       cpu: 50m
       memory: 100Mi
+  debug: ''
   level: notice
 built_in_workers:
   procs:
@@ -18,6 +19,7 @@ built_in_workers:
       replicas: 1
       cpu: 50m
       memory: 100Mi
+  debug: ''
   taskcluster_client_id: static/taskcluster/built-in-workers
   level: notice
 github:
@@ -33,6 +35,7 @@ github:
     sync:
       cpu: 50m
       memory: 100Mi
+  debug: ''
   taskcluster_client_id: static/taskcluster/github
   level: notice
 hooks:
@@ -52,6 +55,7 @@ hooks:
     expires:
       cpu: 50m
       memory: 100Mi
+  debug: ''
   taskcluster_client_id: static/taskcluster/hooks
   level: notice
 index:
@@ -67,6 +71,7 @@ index:
     expire:
       cpu: 50m
       memory: 100Mi
+  debug: ''
   level: notice
   taskcluster_client_id: static/taskcluster/index
 notify:
@@ -83,6 +88,7 @@ notify:
       replicas: 1
       cpu: 50m
       memory: 100Mi
+  debug: ''
   taskcluster_client_id: static/taskcluster/notify
   level: notice
 purge_cache:
@@ -94,6 +100,7 @@ purge_cache:
     expireCachePurges:
       cpu: 50m
       memory: 100Mi
+  debug: ''
   level: notice
   taskcluster_client_id: static/taskcluster/purge-cache
 queue:
@@ -141,6 +148,7 @@ queue:
     expireWorkerInfo:
       cpu: 50m
       memory: 100Mi
+  debug: ''
   taskcluster_client_id: static/taskcluster/queue
   level: notice
 secrets:
@@ -152,6 +160,7 @@ secrets:
     expire:
       cpu: 50m
       memory: 100Mi
+  debug: ''
   taskcluster_client_id: static/taskcluster/secrets
   level: notice
 web_server:
@@ -163,6 +172,7 @@ web_server:
     scanner:
       cpu: 50m
       memory: 100Mi
+  debug: ''
   level: notice
   taskcluster_client_id: static/taskcluster/web-server
 worker_manager:
@@ -188,6 +198,7 @@ worker_manager:
     expire_errors:
       cpu: 50m
       memory: 100Mi
+  debug: ''
   level: notice
   taskcluster_client_id: static/taskcluster/worker-manager
 ui:
@@ -196,9 +207,11 @@ ui:
       replicas: 1
       cpu: 50m
       memory: 100Mi
+  debug: ''
 references:
   procs:
     web:
       replicas: 1
       cpu: 50m
       memory: 100Mi
+  debug: ''
