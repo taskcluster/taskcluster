@@ -20,7 +20,7 @@ suite('Repo Meta Tests', function () {
   const taskclusterYml = yaml.safeLoad(fs.readFileSync(taskclusterYmlFile, 'utf8'));
 
   test('All packages in CI', async function () {
-    const configured = taskclusterYml.tasks.in.$let.packages.map(pkg => pkg.name);
+    const configured = taskclusterYml.tasks.then.in.$let.packages.map(pkg => pkg.name);
 
     const { stdout } = await exec('yarn workspaces info -s');
     const existing = Object.keys(JSON.parse(stdout))
@@ -36,11 +36,11 @@ suite('Repo Meta Tests', function () {
   });
 
   test('Node version in .taskcluster.yml matches that in package.json', function () {
-    assert.equal(taskclusterYml.tasks.$let.node, packageJson.engines.node);
+    assert.equal(taskclusterYml.tasks.then.$let.node, packageJson.engines.node);
   });
 
   test('Node version for UI matches the rest of the repo', function () {
-    assert.equal(taskclusterYml.tasks.$let.node, uiPackageJson.engines.node);
+    assert.equal(taskclusterYml.tasks.then.$let.node, uiPackageJson.engines.node);
   });
 
   test('proper spelling and capitalization of Taskcluster', async function () {
