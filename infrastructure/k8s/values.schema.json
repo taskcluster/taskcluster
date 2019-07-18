@@ -170,9 +170,7 @@
         "azure_signing_key",
         "azure_crypto_key",
         "pulse_username",
-        "pulse_password",
-        "aws_access_key_id",
-        "aws_secret_access_key"
+        "pulse_password"
       ],
       "title": "Configuration options for auth",
       "type": "object"

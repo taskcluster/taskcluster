@@ -96,10 +96,10 @@ defaults:
     vhost:                    !env PULSE_VHOST
 
   # AWS SDK configuration for delegation of S3 access and publication of
-  # schemas and references
+  # schemas and references and other buckets. only needed if managing buckets
   aws:
-    accessKeyId:              !env AWS_ACCESS_KEY_ID
-    secretAccessKey:          !env AWS_SECRET_ACCESS_KEY
+    accessKeyId:              !env:optional AWS_ACCESS_KEY_ID
+    secretAccessKey:          !env:optional AWS_SECRET_ACCESS_KEY
     # Default AWS region, this is where the S3 bucket lives
     region:                   !env:optional AWS_REGION
     # Lock API version to use the latest API from 2013, this is fuzzy locking,
