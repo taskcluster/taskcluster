@@ -59,7 +59,7 @@ Other users of Taskcluster have built worker implementations as well.
 For example, release engineering has built "scriptworker" which can execute tasks using predefined scripts for higher security.
 
 Workers can run on any host with Internet access - simply install and configure a worker with appropriate credentials.
-Cloud computing platforms are an obvious choice for most task executioni.
+Cloud computing platforms are an obvious choice for most task executions.
 The [AWS provisioner](integrations/aws-provisioner) provides a mechanism to start Amazon EC2 instances as needed.
 
 ### External Integrations
