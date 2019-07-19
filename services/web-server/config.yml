@@ -78,6 +78,9 @@ test:
   app:
     publicUrl: http://localhost:5080
 
+  login:
+    sessionSecret: 'keyboard cat'
+
   server:
     port: 63821
 
