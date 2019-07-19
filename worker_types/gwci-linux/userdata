@@ -1,0 +1,66 @@
+#!/bin/bash
+
+set -exv
+exec &> /var/log/userdata.log
+
+# Version numbers ####################
+GENERIC_WORKER_VERSION='v15.1.2'
+LIVELOG_VERSION='v1.1.0'
+TASKCLUSTER_PROXY_VERSION='v5.1.0'
+######################################
+
+function retry {
+  set +e
+  local n=0
+  local max=3
+  while true; do
+    "$@" && break || {
+      if [[ $n -lt $max ]]; then
+        ((n++))
+        echo "Command failed. Attempt $n/$max:" >&2
+      else
+        echo "Failed after $n attempts." >&2
+        exit 1
+      fi
+    }
+  done
+  set -e
+}
+
+start_time="$(date '+%s')"
+
+# install docker
+retry apt update
+retry apt upgrade -y
+retry apt install -y apt-transport-https ca-certificates curl software-properties-common
+retry curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+retry apt update
+apt-cache policy docker-ce | grep -qF download.docker.com
+retry apt install -y docker-ce
+sleep 5
+systemctl status docker | grep "Started Docker Application Container Engine"
+usermod -aG docker ubuntu
+
+# install generic-worker into /home/ubuntu/generic-worker
+mkdir -p /home/ubuntu/generic-worker
+cd /home/ubuntu/generic-worker
+retry curl -L "https://github.com/taskcluster/generic-worker/releases/download/${GENERIC_WORKER_VERSION}/generic-worker-simple-linux-amd64" > generic-worker
+retry curl -L "https://github.com/taskcluster/livelog/releases/download/${LIVELOG_VERSION}/livelog-linux-amd64" > livelog
+retry curl -L "https://github.com/taskcluster/taskcluster-proxy/releases/download/${TASKCLUSTER_PROXY_VERSION}/taskcluster-proxy-linux-amd64" > taskcluster-proxy
+chmod a+x generic-worker taskcluster-proxy livelog
+chown -R ubuntu:ubuntu /home/ubuntu/generic-worker
+./generic-worker --version
+./generic-worker new-ed25519-keypair --file ed25519.key
+
+# ensure host 'taskcluster' resolves to localhost
+echo 127.0.1.1 taskcluster >> /etc/hosts
+
+# configure generic-worker to run on boot
+echo '@reboot PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /home/ubuntu/generic-worker/generic-worker run --configure-for-aws --config /home/ubuntu/generic-worker/generic-worker.config >> /home/ubuntu/generic-worker/generic-worker.log 2>&1' | crontab -u ubuntu -
+
+end_time="$(date '+%s')"
+echo "UserData execution took: $(($end_time-$start_time)) seconds"
+
+# shutdown so that instance can be snapshotted
+shutdown now
