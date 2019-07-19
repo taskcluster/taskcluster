@@ -725,6 +725,12 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v15.1.3 since v15.1.2
+========================
+
+* [Bug 1563220 - generic-worker: switch to using docker client CLI instead of importing native docker client library](https://bugzil.la/1563220)
+* [Bug 1567073 - generic-worker: consistently log executed commands and output / exit code from failed commands](https://bugzil.la/1567073)
+
 In v15.1.2 since v15.1.1
 ========================
 
