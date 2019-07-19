@@ -25,11 +25,10 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => 
           throw credentialError;
         }
 
-        const userId = req.user.identity.split('/')[1];
-        const user = await strategy.getUser({ userId });
+        const user = await strategy.userFromIdentity(req.user.identity);
 
         if (!user) {
-          debug(`Could not find user ${userId}`);
+          debug(`Could not find user with identity ${req.user.identity}`);
           throw credentialError;
         }
 
