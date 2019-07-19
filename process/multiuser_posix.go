@@ -32,24 +32,24 @@ func TaskUserPlatformData() (pd *PlatformData, err error) {
 		return nil, fmt.Errorf("Could not determine interactive username: %v", err)
 	}
 
-	id := func(idName string, idOpts string) (uint32, error) {
-		out, err := host.CombinedOutput("id", idOpts, user)
+	id := func(description string, command string, args ...string) (uint32, error) {
+		out, err := host.CombinedOutput(command, args...)
 		if err != nil {
-			return 0, fmt.Errorf("Failed to run `id` command to determine %v of user %v: %v", idName, user, err)
+			return 0, fmt.Errorf("Failed to run command to determine %v of user %v: %v", description, user, err)
 		}
 		idString := strings.TrimSpace(out)
 		id, err := strconv.Atoi(idString)
 		if err != nil {
-			return 0, fmt.Errorf("Failed to convert %v %q from a string to an int: %v", idName, idString, err)
+			return 0, fmt.Errorf("Failed to convert %v %q from a string to an int: %v", description, idString, err)
 		}
 		return uint32(id), nil
 	}
 
-	uid, err := id("UID", "-ur")
+	uid, err := id("UID", "id", "-ur", user)
 	if err != nil {
 		return nil, err
 	}
-	gid, err := id("GID", "-gr")
+	gid, err := id("GID", "id", "-gr", user)
 	if err != nil {
 		return nil, err
 	}
