@@ -4525,10 +4525,10 @@ json-edm-parser@0.1.2:
   dependencies:
     jsonparse "~1.2.0"
 
-json-parameterization@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/json-parameterization/-/json-parameterization-1.0.0.tgz#d5afb6611be97cf11fb4fbd9183dd31a4598ecb5"
-  integrity sha512-ChYO6ZyZFlofFcdC5JYaf8ml26ZQEZEK0Y+dOosf6ffm0k1KCsPWN2viIETIj84HXIEhM49Ef1dBja3Zwm9LBw==
+json-parameterization@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/json-parameterization/-/json-parameterization-1.0.1.tgz#1697beeae78d3ca76e557e1bc3d36fc0aaa641c4"
+  integrity sha512-+XewZkjJKTJ4wHSoFsVBQ4gbrM6gc8g73Xjj8VjpoUlehUZSmg5n/QUh7ZuJTRD8TOOr+JgLAeiAE/EBaYCQdQ==
   dependencies:
     debug "4.1.1"
     lodash "4.17.14"
