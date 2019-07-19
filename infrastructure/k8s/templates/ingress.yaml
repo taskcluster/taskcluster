@@ -34,10 +34,6 @@ spec:
             backend:
               servicePort: 80
               serviceName: taskcluster-auth
-          - path: /api/built-in-workers/*
-            backend:
-              servicePort: 80
-              serviceName: taskcluster-built-in-workers
           - path: /api/github/*
             backend:
               servicePort: 80
