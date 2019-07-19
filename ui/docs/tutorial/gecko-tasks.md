@@ -15,7 +15,7 @@ When a developer pushes to a Gecko repository, a long chain of events begins:
  * These tasks are arranged in a "task graph", with some tasks (e.g., tests) depending on others (builds).
    Once its prerequisite tasks complete, a dependent task begins.
  * The result of each task is sent to [TreeHerder](https://treeherder.mozilla.org) where developers and sheriffs can track the status of the push.
- * The outputs from each task -- log files, Firefox installers, and so on -- appear attached to each task (viewable in the [Task Inspector](https://tools.taskcluster.net/task-inspector/)) when it completes.
+ * The outputs from each task -- log files, Firefox installers, and so on -- appear attached to each task (viewable in the [Task Inspector](https://tc.example.com/tasks)) when it completes.
 
 Due to its "self-service" design, very little of this process is actually part of Taskcluster, so we provide only a brief overview and some pointers.
 

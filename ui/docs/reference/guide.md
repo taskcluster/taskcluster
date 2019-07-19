@@ -81,11 +81,3 @@ These services are useful to the Taskcluster team, but probably not as useful to
 The [statsum service](operations/statsum) handles generic, statstically sound aggregation of system metrics.
 The [stats-collector service](operations/stats-collector) performs some very purpose-specific calculations to help the team measure the system against its defined service levels.
 The [diagnostics service](operations/diagnostics) service performs end-to-end diagnostic tests of the Taskcluster system to detect errors.
-
-### Tools Interface
-
-The [tools site](https://tools.taskcluster.net/) provides an extensive UI for interacting with TaskCluser services.
-While the site itself is a static React application, it makes use of several services for its dynamic behavior.
-The [login service](integrations/login) provides a way for users to get Taskcluster credentials.
-The [events service](core/events) connects the web browser to Pulse.
-And the [cors-proxy](core/cors-proxy) service enables secure access to external CORS-protected services.
