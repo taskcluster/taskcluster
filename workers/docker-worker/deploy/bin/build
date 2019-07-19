@@ -49,30 +49,55 @@ cmd_app() {
   local git_rev=$(git rev-parse --verify HEAD)
 
   local hvmSourceAMI
-  case "$AWS_ACCOUNT" in
-      # NOTE: if building a new base AMI, either generate for all of these
-      # accounts, or comment out the accounts you have not updated so that
-      # the next person is not surprised by using an old base
-      mozilla-taskcluster) hvmSourceAMI=ami-04daba9cc36bb86c6;;
-      #taskcluster-aws-staging) hvmSourceAMI=ami-0d04f4da59f322673;;
-      *)
-          echo "No base AMI defined for AWS account $AWS_ACCOUNT; create one" >&2
-          echo "  ./deploy/bin/build base" >&2
-          echo "and then edit 'deploy/bin/base' to include that AMI ID" >&2
-          exit 1;;
-  esac
+  if $BUILD_AWS; then
+      case "$AWS_ACCOUNT" in
+          # NOTE: if building a new base AMI, either generate for all of these
+          # accounts, or comment out the accounts you have not updated so that
+          # the next person is not surprised by using an old base
+          mozilla-taskcluster) hvmSourceAMI=ami-04daba9cc36bb86c6;;
+          #taskcluster-aws-staging) hvmSourceAMI=ami-0d04f4da59f322673;;
+          *)
+              echo "No base AMI defined for AWS account $AWS_ACCOUNT; create one" >&2
+              echo "  ./deploy/bin/build base" >&2
+              echo "and then edit 'deploy/bin/base' to include that AMI ID" >&2
+              exit 1;;
+      esac
+  fi
+
+  local gcpSourceImage
+  if $BUILD_GCP; then
+      case "$GCP_PROJECT_ID" in
+          # NOTE: if building a new base image, either generate for all of these
+          # accounts, or comment out the accounts you have not updated so that
+          # the next person is not surprised by using an old base
+          dustin-dev-3) gcpSourceImage=docker-worker-base-1563484547;;
+          *)
+              echo "No base image defined for GCP project $GCP_PROJECT_ID; create one" >&2
+              echo "  ./deploy/bin/build base" >&2
+              echo "and then edit 'deploy/bin/base' to include that image name" >&2
+              exit 1;;
+      esac
+  fi
 
   # Configure the deployment if needed...
   make -j100 -C deploy
 
+  local only
+  case "$CLOUD" in
+      aws) only=-only=hvm-builder,hvm-builder-trusted;;
+      gcp) only=-only=gcp
+  esac
+
   packer_run \
     build \
-    $@ \
+    $only \
     -var-file $(template_vars app) \
     -var "templateContents=deploy/deploy.tar.gz" \
     -var "npmPackage=docker-worker.tgz" \
     -var "workerRevision=$git_rev" \
     -var "hvmSourceAMI=$hvmSourceAMI" \
+    -var "gcpProjectId=$GCP_PROJECT_ID" \
+    -var "gcpSourceImage=$gcpSourceImage" \
     $(packer_config app)
 }
 
@@ -82,11 +107,18 @@ cmd_base() {
   # build config file
   make target/packer/base.json -C deploy
 
+  local only
+  case "$CLOUD" in
+      aws) only=-only=hvm-builder;;
+      gcp) only=-only=gcp
+  esac
+
   packer_run \
     build \
-    $@ \
+    $only \
     -var-file $(template_vars base) \
     -var "workerRevision=$git_rev" \
+    -var "gcpProjectId=$GCP_PROJECT_ID" \
     $(packer_config base)
 }
 
@@ -123,6 +155,7 @@ esac
 if [ -f packer-artifacts.json ]; then
   jq '
     .builds[]
+    | select(.builder_type == "amazon-ebs")
     | {
       (.name): [
         .artifact_id

@@ -4,7 +4,8 @@
     "papertrail":             "",
     "privateKeyLocation":     "",
     "sslKeyLocation":         "",
-    "workerRevision":         ""
+    "workerRevision":         "",
+    "gcpProjectId":           ""
   },
   "provisioners": [
     { "type": "file",
@@ -65,6 +66,17 @@
         "Release":    "Latest",
         "Revision":   "{{user `workerRevision`}}"
       }
+    },
+    {
+      "type": "googlecompute",
+      "name": "gcp",
+      "project_id": "{{user `gcpProjectId`}}",
+      "source_image_family": "ubuntu-1804-lts",
+      "ssh_username": "ubuntu",
+      "zone": "us-west1-b",
+      "image_family": "docker-worker-base",
+      "image_name": "docker-worker-base-{{timestamp}}",
+      "instance_name": "docker-worker-base-{{uuid}}"
     }
   ]
 }

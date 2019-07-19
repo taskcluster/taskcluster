@@ -52,15 +52,15 @@ EOF
 ## Update to pick up new registries
 sudo apt-get update -y
 
-# Upgrade to the latest aws kernel. If not, a bug in apt-get remove
+# Upgrade to the latest kernel from the base image. If not, a bug in apt-get remove
 # may install a newer kernel after we remove the old one
 sudo apt-get install -yq unattended-upgrades
 sudo unattended-upgrades
 sudo apt-get auto-remove -y
 
-# Uninstall aws kernels
+# Uninstall base-image kernels
 sudo DEBIAN_FRONTEND=noninteractive apt-get remove -yq \
-    $(ls -1 /boot/vmlinuz-*aws | sed -e 's,/boot/vmlinuz,linux-image,')
+    $(ls -1 /boot/vmlinuz-*{aws,gcp} | sed -e 's,/boot/vmlinuz,linux-image,')
 
 # Update kernel
 # We install the generic kernel because it has the V4L2 driver
