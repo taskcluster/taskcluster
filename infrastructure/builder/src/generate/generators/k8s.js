@@ -168,6 +168,8 @@ const extras = {
   ui: {
     vars: [
       {type: '!env', var: 'APPLICATION_NAME'},
+      {type: '!env', var: 'GRAPHQL_SUBSCRIPTION_ENDPOINT'},
+      {type: '!env', var: 'GRAPHQL_ENDPOINT'},
     ],
     procs: {
       web: {

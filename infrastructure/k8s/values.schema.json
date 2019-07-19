@@ -1402,6 +1402,12 @@
           "title": "node debug env var",
           "type": "string"
         },
+        "graphql_endpoint": {
+          "type": "string"
+        },
+        "graphql_subscription_endpoint": {
+          "type": "string"
+        },
         "procs": {
           "additionalProperties": false,
           "properties": {
@@ -1435,7 +1441,9 @@
       },
       "required": [
         "procs",
-        "application_name"
+        "application_name",
+        "graphql_subscription_endpoint",
+        "graphql_endpoint"
       ],
       "title": "Configuration options for ui",
       "type": "object"

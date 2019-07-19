@@ -43,6 +43,7 @@ module.exports = async ({userConfig, answer, configTmpl}) => {
     userConfig[serviceName].taskcluster_access_token = accessToken;
   }
 
+  const rootUrl = answer.rootUrl || userConfig.rootUrl;
   // The following are some hacks for now until we can do all of this in a
   // nicer way (presumably?)
   userConfig['hooks']['hook_table_name'] = 'Hooks';
@@ -52,7 +53,7 @@ module.exports = async ({userConfig, answer, configTmpl}) => {
   userConfig['notify']['denylisted_notification_table_name'] = 'Denylist';
   userConfig['worker_manager']['providers'] = {};
   // TODO: Figure out what any of these should be set to
-  userConfig['web_server']['public_url'] = answer.rootUrl || userConfig.rootUrl;
+  userConfig['web_server']['public_url'] = rootUrl;
   userConfig['web_server']['additional_allowed_cors_origin'] = '';
   userConfig['web_server']['ui_login_strategies'] = {};
   userConfig['web_server']['jwt_key'] = '';
@@ -66,6 +67,10 @@ module.exports = async ({userConfig, answer, configTmpl}) => {
   userConfig['queue']['public_blob_artifact_bucket'] = 'fake_until_needed';
   userConfig['queue']['private_blob_artifact_bucket'] = 'fake_until_needed';
   userConfig['queue']['blob_artifact_region'] = 'fake_until_needed';
+
+  // TODO: This eventually should just build these from rootUrl itself probably
+  userConfig['ui']['graphql_subscription_endpoint'] = `${rootUrl}/subscription`;
+  userConfig['ui']['graphql_endpoint'] = `${rootUrl}/graphql`;
 
   return userConfig;
 };
