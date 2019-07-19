@@ -3,6 +3,7 @@
 
   "variables": {
     "npmPackage":          "",
+    "deployment":          "",
     "templateContents":    "",
     "hvmSourceAMI":        "",
     "gcpSourceImage":      "",
@@ -62,14 +63,14 @@
     {
       "type":           "shell",
       "inline": [
-        "/tmp/deploy.sh /tmp/deploy.tar.gz /tmp/docker-worker.tgz aws"
+        "/tmp/deploy.sh /tmp/deploy.tar.gz /tmp/docker-worker.tgz aws {{user `deployment`}}"
       ],
       "only":           ["hvm-builder-trusted", "hvm-builder"]
     },
     {
       "type":           "shell",
       "inline": [
-        "/tmp/deploy.sh /tmp/deploy.tar.gz /tmp/docker-worker.tgz gcp"
+        "/tmp/deploy.sh /tmp/deploy.tar.gz /tmp/docker-worker.tgz gcp {{user `deployment`}}"
       ],
       "only":           ["gcp"]
     }

@@ -95,6 +95,7 @@ cmd_app() {
     -var "templateContents=deploy/deploy.tar.gz" \
     -var "npmPackage=docker-worker.tgz" \
     -var "workerRevision=$git_rev" \
+    -var "deployment=$DEPLOYMENT" \
     -var "hvmSourceAMI=$hvmSourceAMI" \
     -var "gcpProjectId=$GCP_PROJECT_ID" \
     -var "gcpSourceImage=$gcpSourceImage" \
@@ -118,6 +119,7 @@ cmd_base() {
     $only \
     -var-file $(template_vars base) \
     -var "workerRevision=$git_rev" \
+    -var "deployment=$DEPLOYMENT" \
     -var "gcpProjectId=$GCP_PROJECT_ID" \
     $(packer_config base)
 }

@@ -1,6 +1,7 @@
 {
   "description": "taskcluster worker system dependencies",
   "variables": {
+    "deployment":             "",
     "papertrail":             "",
     "privateKeyLocation":     "",
     "sslKeyLocation":         "",

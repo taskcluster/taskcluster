@@ -1,5 +1,17 @@
 #! /bin/bash -vex
 
+# template source which must override system files.
+template_source=$1
+
+# docker_worker_source that needs to be untar'ed
+docker_worker_source=$2
+
+# the cloud we're in (aws or gcp)
+cloud=$3
+
+# where we're deploying
+deployment=$4
+
 relengapi_proxy_version=2.3.1
 taskcluster_proxy_version=5.1.0
 livelog_version=4
@@ -16,12 +28,6 @@ fi
 
 # pip deps
 sudo pip install python-statsd
-
-# template source which must override system files.
-template_source=$1
-
-# docker_worker_source that needs to be untar'ed
-docker_worker_source=$2
 
 # install the system configuration
 sudo tar xzf $template_source -C / --strip-components=1
@@ -54,14 +60,26 @@ docker pull taskcluster/relengapi-proxy:$relengapi_proxy_version
 # install and configure taskcluster-worker-runner
 sudo curl --fail -L -o /usr/local/bin/start-worker https://github.com/taskcluster/taskcluster-worker-runner/releases/download/v$worker_runner_version/start-worker-linux-amd64
 sudo chmod +x /usr/local/bin/start-worker
-sudo bash -c 'cat > /etc/start-worker.yml <<EOF
+
+if [ "$deployment" = "taskcluster-net" ]; then
+    providerType=aws-provisioner
+elif [ "$cloud" = "aws" ]; then
+    providerType=amazon
+elif [ "$cloud" = "gcp" ]; then
+    providerType=google
+fi
+if [ -z "$providerType" ]; then
+    echo "No provider type for cloud $cloud"
+fi
+
+sudo bash -c "cat > /etc/start-worker.yml <<EOF
 provider:
-    providerType: aws-provisioner
+    providerType: $providerType
 worker:
     implementation: docker-worker
     path: /home/ubuntu/docker_worker
     configPath: /home/ubuntu/worker.cfg
-EOF'
+EOF"
 
 # Reboot the machine on OOM
 # Ref: http://www.oracle.com/technetwork/articles/servers-storage-dev/oom-killer-1911807.html
@@ -85,7 +103,6 @@ After=side-containers.service
 Type=simple
 ExecStart=/usr/local/bin/start-docker-worker
 User=root
-Environment="HOST=aws"
 
 [Install]
 RequiredBy=graphical.target
