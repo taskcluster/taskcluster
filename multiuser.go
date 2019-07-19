@@ -79,8 +79,8 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 		// Make sure task user has full control of task directory. Due to
 		// https://bugzilla.mozilla.org/show_bug.cgi?id=1439588#c38 we can't
 		// assume previous MkdirAll has granted this permission.
-		output, err := makeFileOrDirReadWritableForUser(false, taskContext.TaskDir, taskContext.User)
-		log.Printf("Granting %v control of %v: %v", taskContext.User.Name, taskContext.TaskDir, string(output))
+		log.Printf("Granting %v control of %v", taskContext.User.Name, taskContext.TaskDir)
+		err = makeFileOrDirReadWritableForUser(false, taskContext.TaskDir, taskContext.User)
 		if err != nil {
 			panic(err)
 		}

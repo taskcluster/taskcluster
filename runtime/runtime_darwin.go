@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"strings"
 	"time"
 
+	"github.com/taskcluster/generic-worker/host"
 	"github.com/taskcluster/generic-worker/kc"
 )
 
@@ -38,26 +38,24 @@ func (user *OSUser) CreateNew(okIfExists bool) (err error) {
 		/usr/bin/sudo chown -R "${username}:staff" "${homedir}"
 	`
 
-	out, err := exec.Command("/bin/bash", "-c", createUserScript, user.Name, user.Password).CombinedOutput()
-	log.Print(string(out))
-	return err
+	return host.Run("/bin/bash", "-c", createUserScript, user.Name, user.Password)
 }
 
 func DeleteUser(username string) (err error) {
-	out, err := exec.Command("/bin/bash", "-c", `/usr/bin/sudo dscl . -delete '/Users/`+username+`'`).CombinedOutput()
+	err = host.Run("/bin/bash", "-c", `/usr/bin/sudo dscl . -delete '/Users/`+username+`'`)
 	if err != nil {
-		return fmt.Errorf("Error when trying to delete user account %v: %v: %v", username, err, string(out))
+		return fmt.Errorf("Error when trying to delete user account %v: %v", username, err)
 	}
 	return nil
 }
 
 func ListUserAccounts() (usernames []string, err error) {
-	var out []byte
-	out, err = exec.Command("/usr/bin/dscl", ".", "-list", "/Users").Output()
+	var out string
+	out, err = host.CombinedOutput("/usr/bin/dscl", ".", "-list", "/Users")
 	if err != nil {
 		return
 	}
-	for _, line := range strings.Split(string(out), "\n") {
+	for _, line := range strings.Split(out, "\n") {
 		trimmedLine := strings.Trim(line, "\n ")
 		usernames = append(usernames, trimmedLine)
 	}
@@ -97,14 +95,14 @@ func WaitForLoginCompletion(timeout time.Duration) error {
 }
 
 func InteractiveUsername() (string, error) {
-	output, err := exec.Command("/usr/bin/last", "-t", "console", "-1").CombinedOutput()
+	output, err := host.CombinedOutput("/usr/bin/last", "-t", "console", "-1")
 	if err != nil {
 		return "", err
 	}
-	if strings.Contains(string(output), "logged in") {
-		return string(output)[:strings.Index(string(output), " ")], nil
+	if strings.Contains(output, "logged in") {
+		return output[:strings.Index(output, " ")], nil
 	}
-	return "", fmt.Errorf("Could not parse username from %q", string(output))
+	return "", fmt.Errorf("Could not parse username from %q", output)
 }
 
 func AutoLogonCredentials() (user OSUser) {

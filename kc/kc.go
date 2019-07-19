@@ -7,7 +7,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os/exec"
+
+	"github.com/taskcluster/generic-worker/host"
 )
 
 var (
@@ -39,13 +40,13 @@ func Decode(encoded []byte) []byte {
 }
 
 func SetAutoLogin(user string, password []byte) (err error) {
-	output, err := exec.Command("defaults", "write", "/Library/Preferences/com.apple.loginwindow", "autoLoginUser", "-string", user).CombinedOutput()
+	err = host.Run("defaults", "write", "/Library/Preferences/com.apple.loginwindow", "autoLoginUser", "-string", user)
 	if err != nil {
-		return fmt.Errorf("Error setting autoLoginUser: %v, Output: %v", err, string(output))
+		return fmt.Errorf("Error setting autoLoginUser: %v", err)
 	}
-	output, err = exec.Command("defaults", "write", "/Library/Preferences/com.apple.loginwindow", "autoLoginUserScreenLocked", "-bool", "false").CombinedOutput()
+	err = host.Run("defaults", "write", "/Library/Preferences/com.apple.loginwindow", "autoLoginUserScreenLocked", "-bool", "false")
 	if err != nil {
-		return fmt.Errorf("Error setting autoLoginUserScreenLocked: %v, Output: %v", err, string(output))
+		return fmt.Errorf("Error setting autoLoginUserScreenLocked: %v", err)
 	}
 	encodedPassword := Encode(password)
 	return ioutil.WriteFile("/etc/kcpassword", encodedPassword, 0600)
@@ -61,12 +62,12 @@ func AutoLoginUser() (user string, password []byte, err error) {
 }
 
 func AutoLoginUsername() (user string, err error) {
-	output, err := exec.Command("defaults", "read", "/Library/Preferences/com.apple.loginwindow", "autoLoginUser").CombinedOutput()
+	output, err := host.CombinedOutput("defaults", "read", "/Library/Preferences/com.apple.loginwindow", "autoLoginUser")
 	if err != nil {
-		return "", fmt.Errorf("Error reading autoLoginUser: %v, Output: %v", err, string(output))
+		return "", fmt.Errorf("Error reading autoLoginUser: %v", err)
 	}
 	// remove last char (\n) from string
-	return string(output[:len(output)-1]), nil
+	return output[:len(output)-1], nil
 }
 
 func AutoLoginPassword() (password []byte, err error) {
@@ -79,11 +80,10 @@ func AutoLoginPassword() (password []byte, err error) {
 }
 
 func LoginWindowPList() (data map[string]interface{}, err error) {
-	var loginWindowPListBytes []byte
-	loginWindowPListBytes, err = exec.Command("/usr/bin/sudo", "/usr/bin/plutil", "-convert", "json", "/Library/Preferences/com.apple.loginwindow.plist", "-o", "-").CombinedOutput()
+	loginWindowPListString, err := host.CombinedOutput("/usr/bin/sudo", "/usr/bin/plutil", "-convert", "json", "/Library/Preferences/com.apple.loginwindow.plist", "-o", "-")
 	if err != nil {
-		return
+		return data, err
 	}
-	err = json.Unmarshal(loginWindowPListBytes, &data)
+	err = json.Unmarshal([]byte(loginWindowPListString), &data)
 	return data, err
 }

@@ -99,7 +99,7 @@ if $TEST; then
   fi
 fi
 go get golang.org/x/lint/golint
-golint ./...
+golint $(go list ./...) | sed "s*${PWD}/**"
 go get github.com/gordonklaus/ineffassign
 ineffassign .
 

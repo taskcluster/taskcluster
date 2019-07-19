@@ -3,10 +3,10 @@ package runtime
 import (
 	"fmt"
 	"log"
-	"os/exec"
 	"strings"
 	"time"
 
+	"github.com/taskcluster/generic-worker/host"
 	"github.com/taskcluster/generic-worker/win32"
 	"golang.org/x/sys/windows/registry"
 )
@@ -18,7 +18,7 @@ type OSUser struct {
 
 func (user *OSUser) CreateNew(okIfExists bool) error {
 	log.Print("Creating Windows user " + user.Name + "...")
-	userExisted, err := AllowError(
+	userExisted, err := host.RunIgnoreError(
 		"The account already exists",
 		"net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no", "/y",
 	)
@@ -29,7 +29,7 @@ func (user *OSUser) CreateNew(okIfExists bool) error {
 		return fmt.Errorf("User " + user.Name + " already existed - cannot create")
 	}
 	log.Print("Created new OS user!")
-	err = RunCommands(
+	err = host.RunBatch(
 		userExisted,
 		[]string{"wmic", "useraccount", "where", "name='" + user.Name + "'", "set", "passwordexpires=false"},
 		[]string{"net", "localgroup", "Remote Desktop Users", "/add", user.Name},
@@ -46,21 +46,21 @@ func (user *OSUser) CreateNew(okIfExists bool) error {
 }
 
 func (user *OSUser) MakeAdmin() error {
-	_, err := AllowError("The specified account name is already a member of the group", "net", "localgroup", "administrators", user.Name, "/add")
+	_, err := host.RunIgnoreError("The specified account name is already a member of the group", "net", "localgroup", "administrators", user.Name, "/add")
 	return err
 }
 
 func DeleteUser(username string) (err error) {
-	return RunCommands(false, []string{"net", "user", username, "/delete"})
+	return host.Run("net", "user", username, "/delete")
 }
 
 func ListUserAccounts() (usernames []string, err error) {
-	var out []byte
-	out, err = exec.Command("wmic", "useraccount", "get", "name").Output()
+	var out string
+	out, err = host.CombinedOutput("wmic", "useraccount", "get", "name")
 	if err != nil {
 		return
 	}
-	for _, line := range strings.Split(string(out), "\r\n") {
+	for _, line := range strings.Split(out, "\r\n") {
 		trimmedLine := strings.Trim(line, "\r\n ")
 		usernames = append(usernames, trimmedLine)
 	}

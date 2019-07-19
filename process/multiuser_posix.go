@@ -8,8 +8,10 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 	"syscall"
 
+	"github.com/taskcluster/generic-worker/host"
 	"github.com/taskcluster/generic-worker/runtime"
 )
 
@@ -27,21 +29,36 @@ func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
 func TaskUserPlatformData() (pd *PlatformData, err error) {
 	user, err := runtime.InteractiveUsername()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Could not determine interactive username: %v", err)
 	}
-	uid, err := strconv.Atoi(runtime.CommandOutputOrPanic(`id`, `-ur`, user))
+
+	id := func(description string, command string, args ...string) (uint32, error) {
+		out, err := host.CombinedOutput(command, args...)
+		if err != nil {
+			return 0, fmt.Errorf("Failed to run command to determine %v of user %v: %v", description, user, err)
+		}
+		idString := strings.TrimSpace(out)
+		id, err := strconv.Atoi(idString)
+		if err != nil {
+			return 0, fmt.Errorf("Failed to convert %v %q from a string to an int: %v", description, idString, err)
+		}
+		return uint32(id), nil
+	}
+
+	uid, err := id("UID", "id", "-ur", user)
 	if err != nil {
 		return nil, err
 	}
-	gid, err := strconv.Atoi(runtime.CommandOutputOrPanic(`id`, `-gr`, user))
+	gid, err := id("GID", "id", "-gr", user)
 	if err != nil {
 		return nil, err
 	}
+
 	return &PlatformData{
 		SysProcAttr: &syscall.SysProcAttr{
 			Credential: &syscall.Credential{
-				Uid: uint32(uid),
-				Gid: uint32(gid),
+				Uid: uid,
+				Gid: gid,
 			},
 		},
 	}, nil
@@ -118,16 +135,16 @@ func (c *Command) SetEnv(envVar, value string) {
 	c.Cmd.Env = append(c.Cmd.Env, envVar+"="+value)
 }
 
-func (c *Command) Kill() (killOutput []byte, err error) {
+func (c *Command) Kill() (killOutput string, err error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	if c.Process == nil {
 		// If process hasn't been started yet, nothing to kill
-		return []byte{}, nil
+		return "", nil
 	}
 	close(c.abort)
 	log.Printf("Killing process tree with parent PID %v... (%p)", c.Process.Pid, c)
 	defer log.Printf("Process tree with parent PID %v killed.", c.Process.Pid)
 	// See https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
-	return []byte{}, syscall.Kill(-c.Process.Pid, syscall.SIGKILL)
+	return "", syscall.Kill(-c.Process.Pid, syscall.SIGKILL)
 }
