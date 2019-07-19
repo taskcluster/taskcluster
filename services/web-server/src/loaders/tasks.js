@@ -1,5 +1,5 @@
 const DataLoader = require('dataloader');
-const sift = require('sift').default;
+const sift = require('../utils/sift');
 const fetch = require('../utils/fetch');
 const ConnectionLoader = require('../ConnectionLoader');
 const Task = require('../entities/Task');
@@ -20,7 +20,7 @@ module.exports = ({ queue, index }) => {
   const taskGroup = new ConnectionLoader(
     async ({ taskGroupId, options, filter }) => {
       const raw = await queue.listTaskGroup(taskGroupId, options);
-      const tasks = filter ? sift(filter, raw.tasks) : raw.tasks;
+      const tasks = sift(filter, raw.tasks);
 
       return {
         ...raw,
@@ -49,7 +49,7 @@ module.exports = ({ queue, index }) => {
           return raw.actions
             ? {
               ...raw,
-              actions: filter ? sift(filter, raw.actions) : raw.actions,
+              actions: sift(filter, raw.actions),
             }
             : null;
         } catch (e) {

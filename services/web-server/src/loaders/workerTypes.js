@@ -1,5 +1,5 @@
 const DataLoader = require('dataloader');
-const sift = require('sift').default;
+const sift = require('../utils/sift');
 const ConnectionLoader = require('../ConnectionLoader');
 
 module.exports = ({ queue, awsProvisioner, ec2Manager }) => {
@@ -13,10 +13,7 @@ module.exports = ({ queue, awsProvisioner, ec2Manager }) => {
   const workerTypes = new ConnectionLoader(
     async ({ provisionerId, options, filter }) => {
       const raw = await queue.listWorkerTypes(provisionerId, options);
-      const workerTypes = filter
-        ? sift(filter, raw.workerTypes)
-        : raw.workerTypes;
-
+      const workerTypes = sift(filter, raw.workerTypes);
       return { ...raw, items: workerTypes };
     }
   );
@@ -45,7 +42,7 @@ module.exports = ({ queue, awsProvisioner, ec2Manager }) => {
       queries.map(async ({ filter }) => {
         const summaries = await awsProvisioner.listWorkerTypeSummaries();
 
-        return filter ? sift(filter, summaries) : summaries;
+        return sift(filter, summaries);
       })
     )
   );
@@ -54,7 +51,7 @@ module.exports = ({ queue, awsProvisioner, ec2Manager }) => {
       queries.map(async ({ filter }) => {
         const recentErrors = (await ec2Manager.getRecentErrors()).errors;
 
-        return filter ? sift(filter, recentErrors) : recentErrors;
+        return sift(filter, recentErrors);
       })
     )
   );
@@ -63,7 +60,7 @@ module.exports = ({ queue, awsProvisioner, ec2Manager }) => {
       queries.map(async ({ filter }) => {
         const health = await ec2Manager.getHealth();
 
-        return filter ? sift(filter, health) : health;
+        return sift(filter, health);
       })
     )
   );
@@ -72,7 +69,7 @@ module.exports = ({ queue, awsProvisioner, ec2Manager }) => {
       queries.map(async ({ workerType, filter }) => {
         const health = await ec2Manager.workerTypeHealth(workerType);
 
-        return filter ? sift(filter, health) : health;
+        return sift(filter, health);
       })
     )
   );
@@ -81,7 +78,7 @@ module.exports = ({ queue, awsProvisioner, ec2Manager }) => {
       queries.map(async ({ workerType, filter }) => {
         const { errors } = await ec2Manager.workerTypeErrors(workerType);
 
-        return filter ? sift(filter, errors) : errors;
+        return sift(filter, errors);
       })
     )
   );
