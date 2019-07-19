@@ -29,7 +29,7 @@ module.exports = async ({ cfg, strategies }) => {
   app.use(session({
     store: new MemoryStore({
       // prune expired entries every 1h
-      checkPeriod: 1000 * 60 * 60
+      checkPeriod: 1000 * 60 * 60,
     }),
     secret: cfg.login.sessionSecret,
     sameSite: true,
