@@ -58,7 +58,7 @@
     "iterall": "^1.2.2",
     "js-yaml": "^3.13.1",
     "json-e": "^3.0.0",
-    "json-parameterization": "^1.0.0",
+    "json-parameterization": "^1.0.1",
     "jsonwebtoken": "^8.1.1",
     "jwks-rsa": "^1.2.1",
     "lodash": "4.17.14",
