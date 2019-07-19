@@ -8,7 +8,7 @@ import TableCell from '@material-ui/core/TableCell';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import LinkIcon from 'mdi-react/LinkIcon';
-import InheritMaterialUI  from '../InheritMaterialUI ';
+import InheritMaterialUI from '../InheritMaterialUI';
 import { awsProvisionerWorkerTypeSummary } from '../../utils/prop-types';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
@@ -99,7 +99,7 @@ export default class AwsProvisionerWorkerTypeTable extends Component {
           renderRow={workerType => (
             <TableRow key={workerType.workerType}>
               <TableCell>
-                <InheritMaterialUI 
+                <InheritMaterialUI
                   button
                   component={Link}
                   to={`/aws-provisioner/${workerType.workerType}`}>
@@ -108,7 +108,7 @@ export default class AwsProvisionerWorkerTypeTable extends Component {
                     primary={<Typography>{workerType.workerType}</Typography>}
                   />
                   <LinkIcon size={iconSize} />
-                </InheritMaterialUI >
+                </InheritMaterialUI>
               </TableCell>
               <TableCell>
                 <Typography>{workerType.pendingTasks}</Typography>
