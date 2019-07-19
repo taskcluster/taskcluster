@@ -1,4 +1,4 @@
-const siftUtil = require('../utils/siftUtil');
+const sift = require('../utils/sift');
 const ConnectionLoader = require('../ConnectionLoader');
 
 module.exports = ({ notify }) => {
@@ -13,7 +13,7 @@ module.exports = ({ notify }) => {
 
     return {
       ...raw,
-      items: siftUtil(filter, addresses),
+      items: sift(filter, addresses),
     };
   });
 

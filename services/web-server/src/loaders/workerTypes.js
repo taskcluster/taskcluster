@@ -1,5 +1,5 @@
 const DataLoader = require('dataloader');
-const siftUtil = require('../utils/siftUtil');
+const sift = require('../utils/sift');
 const ConnectionLoader = require('../ConnectionLoader');
 
 module.exports = ({ queue, awsProvisioner, ec2Manager }) => {
@@ -13,7 +13,7 @@ module.exports = ({ queue, awsProvisioner, ec2Manager }) => {
   const workerTypes = new ConnectionLoader(
     async ({ provisionerId, options, filter }) => {
       const raw = await queue.listWorkerTypes(provisionerId, options);
-      const workerTypes = siftUtil(filter, raw.workerTypes);
+      const workerTypes = sift(filter, raw.workerTypes);
       return { ...raw, items: workerTypes };
     }
   );
@@ -42,7 +42,7 @@ module.exports = ({ queue, awsProvisioner, ec2Manager }) => {
       queries.map(async ({ filter }) => {
         const summaries = await awsProvisioner.listWorkerTypeSummaries();
 
-        return siftUtil(filter, summaries);
+        return sift(filter, summaries);
       })
     )
   );
@@ -51,7 +51,7 @@ module.exports = ({ queue, awsProvisioner, ec2Manager }) => {
       queries.map(async ({ filter }) => {
         const recentErrors = (await ec2Manager.getRecentErrors()).errors;
 
-        return siftUtil(filter, recentErrors);
+        return sift(filter, recentErrors);
       })
     )
   );
@@ -60,7 +60,7 @@ module.exports = ({ queue, awsProvisioner, ec2Manager }) => {
       queries.map(async ({ filter }) => {
         const health = await ec2Manager.getHealth();
 
-        return siftUtil(filter, health);
+        return sift(filter, health);
       })
     )
   );
@@ -69,7 +69,7 @@ module.exports = ({ queue, awsProvisioner, ec2Manager }) => {
       queries.map(async ({ workerType, filter }) => {
         const health = await ec2Manager.workerTypeHealth(workerType);
 
-        return siftUtil(filter, health);
+        return sift(filter, health);
       })
     )
   );
@@ -78,7 +78,7 @@ module.exports = ({ queue, awsProvisioner, ec2Manager }) => {
       queries.map(async ({ workerType, filter }) => {
         const { errors } = await ec2Manager.workerTypeErrors(workerType);
 
-        return siftUtil(filter, errors);
+        return sift(filter, errors);
       })
     )
   );

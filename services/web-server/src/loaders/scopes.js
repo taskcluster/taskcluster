@@ -1,5 +1,5 @@
 const DataLoader = require('dataloader');
-const siftUtil = require('../utils/siftUtil');
+const sift = require('../utils/sift');
 
 module.exports = ({ auth }) => {
   const currentScopes = new DataLoader(queries =>
@@ -7,7 +7,7 @@ module.exports = ({ auth }) => {
       queries.map(async ({ filter }) => {
         const { scopes } = await auth.currentScopes();
 
-        return siftUtil(filter, scopes);
+        return sift(filter, scopes);
       })
     )
   );
@@ -16,7 +16,7 @@ module.exports = ({ auth }) => {
       queries.map(async ({ scopes, filter }) => {
         const { scopes: expandedScopes } = await auth.expandScopes({ scopes });
 
-        return siftUtil(filter, expandedScopes);
+        return sift(filter, expandedScopes);
       })
     )
   );

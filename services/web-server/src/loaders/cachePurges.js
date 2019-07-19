@@ -1,4 +1,4 @@
-const siftUtil = require('../utils/siftUtil');
+const sift = require('../utils/sift');
 const ConnectionLoader = require('../ConnectionLoader');
 
 module.exports = ({ purgeCache }) => {
@@ -7,7 +7,7 @@ module.exports = ({ purgeCache }) => {
 
     return {
       ...raw,
-      items: siftUtil(filter, raw.requests),
+      items: sift(filter, raw.requests),
     };
   });
 

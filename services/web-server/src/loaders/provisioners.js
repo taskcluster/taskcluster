@@ -1,5 +1,5 @@
 const DataLoader = require('dataloader');
-const siftUtil = require('../utils/siftUtil');
+const sift = require('../utils/sift');
 const ConnectionLoader = require('../ConnectionLoader');
 
 module.exports = ({ queue }) => {
@@ -12,7 +12,7 @@ module.exports = ({ queue }) => {
   );
   const provisioners = new ConnectionLoader(async ({ options, filter }) => {
     const raw = await queue.listProvisioners(options);
-    const provisioners = siftUtil(filter, raw.provisioners);
+    const provisioners = sift(filter, raw.provisioners);
 
     return { ...raw, items: provisioners };
   });

@@ -1,5 +1,5 @@
 const DataLoader = require('dataloader');
-const siftUtil = require('../utils/siftUtil');
+const sift = require('../utils/sift');
 
 module.exports = ({ workerManager }) => {
   const WorkerManagerWorkerPoolSummaries = new DataLoader(queries =>
@@ -7,7 +7,7 @@ module.exports = ({ workerManager }) => {
       queries.map(async ({ filter }) => {
         const summaries = (await workerManager.listWorkerPools()).workerPools;
 
-        return siftUtil(filter, summaries);
+        return sift(filter, summaries);
       })
     )
   );
@@ -65,7 +65,7 @@ module.exports = ({ workerManager }) => {
           },
         ];
 
-        return Promise.resolve(siftUtil(filter, summaries));
+        return Promise.resolve(sift(filter, summaries));
       })
     );
   });

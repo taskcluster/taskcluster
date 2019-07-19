@@ -1,5 +1,5 @@
 const DataLoader = require('dataloader');
-const siftUtil = require('../utils/siftUtil');
+const sift = require('../utils/sift');
 const { isNil } = require('ramda');
 const { withRootUrl } = require('taskcluster-lib-urls');
 const ConnectionLoader = require('../ConnectionLoader');
@@ -78,7 +78,7 @@ module.exports = ({ queue }, isAuthed, rootUrl) => {
           runId,
         })
       );
-      const artifacts = siftUtil(filter, withUrls);
+      const artifacts = sift(filter, withUrls);
 
       return new Artifacts(taskId, runId, { ...raw, artifacts });
     }
@@ -93,7 +93,7 @@ module.exports = ({ queue }, isAuthed, rootUrl) => {
           artifact,
         })
       );
-      const artifacts = siftUtil(filter, withUrls);
+      const artifacts = sift(filter, withUrls);
 
       return new Artifacts(taskId, null, { ...raw, artifacts });
     }

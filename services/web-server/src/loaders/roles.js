@@ -1,5 +1,5 @@
 const DataLoader = require('dataloader');
-const siftUtil = require('../utils/siftUtil');
+const sift = require('../utils/sift');
 const ConnectionLoader = require('../ConnectionLoader');
 
 module.exports = ({ auth }) => {
@@ -8,14 +8,14 @@ module.exports = ({ auth }) => {
       queries.map(async ({ filter }) => {
         const roles = await auth.listRoles();
 
-        return siftUtil(filter, roles);
+        return sift(filter, roles);
       })
     )
   );
   const roleIds = new ConnectionLoader(async ({ filter, options }) => {
     const raw = await auth.listRoleIds(options);
     const roleIds = raw.roleIds.map(roleId => ({ roleId }));
-    const roles = siftUtil(filter, roleIds);
+    const roles = sift(filter, roleIds);
 
     return {
       ...raw,

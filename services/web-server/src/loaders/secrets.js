@@ -1,5 +1,5 @@
 const DataLoader = require('dataloader');
-const siftUtil = require('../utils/siftUtil');
+const sift = require('../utils/sift');
 const ConnectionLoader = require('../ConnectionLoader');
 
 module.exports = ({ secrets }) => {
@@ -9,7 +9,7 @@ module.exports = ({ secrets }) => {
 
     return {
       ...raw,
-      items: siftUtil(filter, secretsList),
+      items: sift(filter, secretsList),
     };
   });
   const secret = new DataLoader(names =>

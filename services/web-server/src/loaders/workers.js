@@ -1,5 +1,5 @@
 const DataLoader = require('dataloader');
-const siftUtil = require('../utils/siftUtil');
+const sift = require('../utils/sift');
 const ConnectionLoader = require('../ConnectionLoader');
 const WorkerCompact = require('../entities/WorkerCompact');
 
@@ -21,7 +21,7 @@ module.exports = ({ queue }) => {
           ? { ...options, quarantined: isQuarantined }
           : options
       );
-      const workers = siftUtil(filter, raw.workers);
+      const workers = sift(filter, raw.workers);
 
       return {
         ...raw,
