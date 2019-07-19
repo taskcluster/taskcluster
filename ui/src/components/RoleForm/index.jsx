@@ -69,6 +69,16 @@ export default class RoleForm extends Component {
      * successfully.
      * */
     onDialogActionComplete: func,
+    /**
+     * Callback function fired when the dialog should open.
+     * Required when viewing an existent client.
+     */
+    onDialogActionOpen: func,
+    /**
+     * Callback function fired when the dialog should close.
+     * Required when viewing an existent client.
+     */
+    onDialogActionClose: func,
   };
 
   static defaultProps = {
@@ -77,6 +87,10 @@ export default class RoleForm extends Component {
     onRoleDelete: null,
     loading: null,
     dialogError: null,
+    onDialogActionError: null,
+    onDialogActionComplete: null,
+    onDialogActionOpen: null,
+    onDialogActionClose: null,
   };
 
   static getDerivedStateFromProps({ isNewRole, role }, state) {
