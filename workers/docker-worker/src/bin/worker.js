@@ -27,7 +27,7 @@ const typedEnvConfig = require('typed-env-config');
 const SchemaSet = require('taskcluster-lib-validate');
 
 // Available target configurations.
-var allowedHosts = ['aws', 'test', 'packet'];
+var allowedHosts = ['aws', 'test', 'packet', 'taskcluster-worker-runner'];
 let debug = Debug('docker-worker:bin:worker');
 
 // All overridable configuration options from the CLI.
@@ -75,16 +75,7 @@ function o() {
 
 // Usage.
 program.usage(
-  '[options] <profile> \n\n' +
-'  Configuration is loaded in the following order (lower down overrides): ' +
-'\n\n' +
-'      1. docker-worker/config/defaults \n' +
-'      2. docker-worker/config/<profile> \n' +
-'      3. $PWD/docker-worker.conf.json \n' +
-'      4. ~/docker-worker.conf.json \n' +
-'      5. /etc/docker-worker.conf.json \n' +
-'      6. Host specific configuration (userdata, test data, etc..) \n' +
-'      7. Command line flags (capacity, workerId, etc...)'
+  '[options] <profile>'
 );
 
 // CLI Options.
@@ -131,6 +122,10 @@ program.parse(process.argv);
     }
 
     host = require('../lib/host/' + program.host);
+
+    if (host.setup) {
+      host.setup();
+    }
 
     // execute the configuration helper and merge the results
     var targetConfig = await host.configure();

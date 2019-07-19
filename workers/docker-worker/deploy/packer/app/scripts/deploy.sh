@@ -1,5 +1,11 @@
 #! /bin/bash -vex
 
+relengapi_proxy_version=2.3.1
+taskcluster_proxy_version=5.1.0
+livelog_version=4
+dind_service_version=4.0
+worker_runner_version=0.2.1
+
 ## Get recent CA bundle for papertrail
 sudo curl -o /etc/papertrail-bundle.pem https://papertrailapp.com/tools/papertrail-bundle.pem
 md5=`md5sum /etc/papertrail-bundle.pem | awk '{ print $1 }'`
@@ -39,13 +45,23 @@ sudo modprobe snd-aloop
 # Create dependency file
 sudo depmod
 
-relengapi_proxy_version=2.3.1
-
 # Pull images used for sidecar containers
-docker pull taskcluster/taskcluster-proxy:5.1.0
-docker pull taskcluster/livelog:v4
-docker pull taskcluster/dind-service:v4.0
+docker pull taskcluster/taskcluster-proxy:$taskcluster_proxy_version
+docker pull taskcluster/livelog:v$livelog_version
+docker pull taskcluster/dind-service:v$dind_service_version
 docker pull taskcluster/relengapi-proxy:$relengapi_proxy_version
+
+# install and configure taskcluster-worker-runner
+sudo curl --fail -L -o /usr/local/bin/start-worker https://github.com/taskcluster/taskcluster-worker-runner/releases/download/v$worker_runner_version/start-worker-linux-amd64
+sudo chmod +x /usr/local/bin/start-worker
+sudo bash -c 'cat > /etc/start-worker.yml <<EOF
+provider:
+    providerType: aws-provisioner
+worker:
+    implementation: docker-worker
+    path: /home/ubuntu/docker_worker
+    configPath: /home/ubuntu/worker.cfg
+EOF'
 
 # Reboot the machine on OOM
 # Ref: http://www.oracle.com/technetwork/articles/servers-storage-dev/oom-killer-1911807.html
@@ -53,7 +69,12 @@ sudo sh -c 'echo "vm.panic_on_oom=1" >> /etc/sysctl.conf'
 sudo sh -c 'echo "kernel.panic=1" >> /etc/sysctl.conf'
 
 # Export the images as a tarball to load when insances are initialized
-docker save taskcluster/taskcluster-proxy:5.1.0 taskcluster/livelog:v4 taskcluster/dind-service:v4.0 taskcluster/relengapi-proxy:$relengapi_proxy_version > /home/ubuntu/docker_worker/docker_worker_images.tar
+docker save \
+    taskcluster/taskcluster-proxy:$taskcluster_proxy_version \
+    taskcluster/livelog:v$livelog_version \
+    taskcluster/dind-service:v$dind_service_version \
+    taskcluster/relengapi-proxy:$relengapi_proxy_version \
+    > /home/ubuntu/docker_worker/docker_worker_images.tar
 
 sudo bash -c 'cat > /lib/systemd/system/docker-worker.service <<EOF
 [Unit]

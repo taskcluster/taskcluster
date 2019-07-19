@@ -61,6 +61,9 @@ defaults:
 
   alivenessCheckInterval: 30000
 
+  # by default, run one task at a time
+  capacity: 1
+
   capacityManagement:
     diskspaceThreshold: 10000000000
 
