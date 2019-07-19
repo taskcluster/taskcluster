@@ -2871,11 +2871,6 @@ esprima@^4.0.0:
   resolved "https://registry.yarnpkg.com/esprima/-/esprima-4.0.1.tgz#13b04cdb3e6c5d19df91ab6987a8695619b0aa71"
   integrity sha512-eGuFFw7Upda+g4p+QHvnW0RyTX/SVeJBDM/gCtMARO0cLuT2HcEKnTPvhjV6aGeqrCB/sbNop0Kszm0jsaWU4A==
 
-esprima@~1.0:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/esprima/-/esprima-1.0.4.tgz#9f557e08fc3b4d26ece9dd34f8fbf476b62585ad"
-  integrity sha1-n1V+CPw7TSbs6d00+Pv0drYlha0=
-
 esquery@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/esquery/-/esquery-1.0.1.tgz#406c51658b1f5991a5f9b62b1dc25b00e3e5c708"
@@ -3860,11 +3855,6 @@ hoek@6.x.x:
   resolved "https://registry.yarnpkg.com/hoek/-/hoek-6.1.2.tgz#99e6d070561839de74ee427b61aa476bd6bddfd6"
   integrity sha512-6qhh/wahGYZHFSFw12tBbJw5fsAhhwrrG/y3Cs0YMTv2WzMnL0oLPnQJjv1QJvEfylRSOFuP+xCu+tdx0tD16Q==
 
-hoister@~0.0:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/hoister/-/hoister-0.0.2.tgz#0d0d8b1ce0f191553e61afec654f6b180eb96e5d"
-  integrity sha1-DQ2LHODxkVU+Ya/sZU9rGA65bl0=
-
 homedir-polyfill@^1.0.1:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/homedir-polyfill/-/homedir-polyfill-1.0.3.tgz#743298cef4e5af3e194161fbadcc2151d3a058e8"
@@ -4525,14 +4515,13 @@ json-edm-parser@0.1.2:
   dependencies:
     jsonparse "~1.2.0"
 
-json-parameterization@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/json-parameterization/-/json-parameterization-1.0.1.tgz#1697beeae78d3ca76e557e1bc3d36fc0aaa641c4"
-  integrity sha512-+XewZkjJKTJ4wHSoFsVBQ4gbrM6gc8g73Xjj8VjpoUlehUZSmg5n/QUh7ZuJTRD8TOOr+JgLAeiAE/EBaYCQdQ==
+json-parameterization@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/json-parameterization/-/json-parameterization-2.0.0.tgz#44a0b8f58f3696550667062f6c32824de7f6dc04"
+  integrity sha512-UM3Fqs/2uxWXio906lj2qfCjQTL9YjHiisUgyuT5JMXZBtoutzhT8n4ZeneURCny8mlDDj3wBrXHtRxIDdyVkw==
   dependencies:
     debug "4.1.1"
     lodash "4.17.14"
-    notevil "1.3.1"
 
 json-parse-better-errors@^1.0.1:
   version "1.0.2"
@@ -5720,14 +5709,6 @@ normalize-url@^3.1.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/normalize-url/-/normalize-url-3.3.0.tgz#b2e1c4dc4f7c6d57743df733a4f5978d18650559"
   integrity sha512-U+JJi7duF1o+u2pynbp2zXDW2/PADgC30f0GsHZtRh+HOcXHnw137TrNlyxxRvWW5fjKd3bcLHPxofWuCjaeZg==
-
-notevil@1.3.1:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/notevil/-/notevil-1.3.1.tgz#c5f7d689ffab67b4df22f7e07eb33333d998c363"
-  integrity sha512-euoqrKnWmOyp+zVV+xk0lGURWQTRntVf9XlhpkOolfnqV4/4uvZRyFVU983WHgQVsFOUp23PMdbMIfPgYIuiIQ==
-  dependencies:
-    esprima "~1.0"
-    hoister "~0.0"
 
 npm-bundled@^1.0.1:
   version "1.0.6"
