@@ -8,6 +8,7 @@ import (
 
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster-worker-runner/files"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
@@ -60,7 +61,7 @@ func configureRun(runnercfg *runner.RunnerConfig, run *runner.Run, secretsClient
 		// something of the latter shape, we assume that's what we've got, and otherwise make itup
 		var secret struct {
 			Config *cfg.WorkerConfig `yaml:"config"`
-			Files  []interface{}     `yaml:"files"`
+			Files  []files.File      `yaml:"files"`
 		}
 
 		decoder := json.NewDecoder(bytes.NewReader(secResponse.Secret))

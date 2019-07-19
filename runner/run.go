@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster-worker-runner/files"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	taskcluster "github.com/taskcluster/taskcluster/clients/client-go/v14"
 )
@@ -32,8 +33,9 @@ type Run struct {
 	// in worker config as helpful debugging metadata for the user.
 	ProviderMetadata map[string]string
 
-	// the accumulated WorkerConfig for this run
+	// the accumulated WorkerConfig for this run, including files to create
 	WorkerConfig *cfg.WorkerConfig
+	Files        []files.File
 
 	// the protocol (set in SetProtocol)
 	proto *protocol.Protocol

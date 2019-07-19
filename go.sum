@@ -1,3 +1,5 @@
+github.com/Flaque/filet v0.0.0-20190209224823-fc4d33cfcf93 h1:NnAUCP75PRm8yWE7+MZBIAR6PA9iwsBYEc6ZNYOy+AQ=
+github.com/Flaque/filet v0.0.0-20190209224823-fc4d33cfcf93/go.mod h1:TK+jB3mBs+8ZMWhU5BqZKnZWJ1MrLo8etNVg51ueTBo=
 github.com/cenkalti/backoff v2.1.1+incompatible h1:tKJnvO2kl0zmb/jA5UKAt4VoEVw1qxKWjE/Bpp46npY=
 github.com/cenkalti/backoff v2.1.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/cenkalti/backoff/v3 v3.0.0/go.mod h1:cIeZDE3IrqwwJl6VUwCN6trj1oXrTS4rc0ij+ULvLYs=
@@ -21,6 +23,8 @@ github.com/pborman/uuid v1.2.0 h1:J7Q5mO4ysT1dv8hyrUGHb9+ooztCXu1D8MY8DZYsu3g=
 github.com/pborman/uuid v1.2.0/go.mod h1:X/NO0urCmaxf9VXbdlT7C2Yzkj2IKimNn4k+gtPdI/k=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/spf13/afero v1.2.2 h1:5jhuqJyZCZf2JRofRvN/nIFgIWNzPa3/Vz8mYylgbWc=
+github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
 github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0Q=
@@ -36,8 +40,6 @@ github.com/taskcluster/taskcluster-base-go v1.0.0 h1:Jh2R/J7+a23LjtYEHQtkFV04QBx
 github.com/taskcluster/taskcluster-base-go v1.0.0/go.mod h1:ByyzyqqufsfZTrAHUw+0Grp8FwZAizZOKzVE1IpDXxQ=
 github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible h1:57WLzh7B04y6ahTOJ8wjvdkbwYqnyJkwLXQ1Tu4E/DU=
 github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible/go.mod h1:ALqTgi15AmJGEGubRKM0ydlLAFatlQPrQrmal9YZpQs=
-github.com/taskcluster/taskcluster/clients/client-go/v14 v14.0.0-20190715182731-418581dc4b28 h1:+SaMbY+t1ja4mIqcNIevIZZzX/oQzj5P92J7L0qjURI=
-github.com/taskcluster/taskcluster/clients/client-go/v14 v14.0.0-20190715182731-418581dc4b28/go.mod h1:j2i8IR9mTVg981i3Hv1KP6eD9tPQSi1Tr+hg+Ut6Ylo=
 github.com/taskcluster/taskcluster/clients/client-go/v14 v14.3.1 h1:fLkLcb/ICl7L526OozliyoziXiwbalNWK1+2nl8RprE=
 github.com/taskcluster/taskcluster/clients/client-go/v14 v14.3.1/go.mod h1:j2i8IR9mTVg981i3Hv1KP6eD9tPQSi1Tr+hg+Ut6Ylo=
 github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957 h1:6Fre/uvwovW5YY4nfHZk66cAg9HjT9YdFSAJHUUgOyQ=
