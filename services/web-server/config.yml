@@ -35,11 +35,6 @@ defaults:
       # Set the credential to expire after 3 days
       expiry:         '3 days'
 
-  azure:
-    accountId:  !env AZURE_ACCOUNT_ID
-    accountKey: !env AZURE_ACCOUNT_KEY
-    tableName:  !env AZURE_TABLE_NAME
-
   # Pulse credentials
   pulse:
     namespace: !env PULSE_NAMESPACE

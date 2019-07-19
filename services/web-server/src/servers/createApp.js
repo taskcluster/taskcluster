@@ -1,12 +1,12 @@
 const bodyParser = require('body-parser-graphql');
 const session = require('express-session');
+const MemoryStore = require('memorystore')(session);
 const compression = require('compression');
 const cors = require('cors');
 const express = require('express');
 const playground = require('graphql-playground-middleware-express').default;
 const passport = require('passport');
 const url = require('url');
-const AzureTablesStoreFactory = require('connect-azuretables')(session);
 const credentials = require('./credentials');
 
 module.exports = async ({ cfg, strategies }) => {
@@ -26,17 +26,11 @@ module.exports = async ({ cfg, strategies }) => {
   }).filter(o => o);
   app.use(cors({origin: allowedCORSOrigins}));
 
-  // Use MemoryStore locally (default behavior when a store is not set)
-  const store = process.env.NODE_ENV === 'production' ? AzureTablesStoreFactory.create({
-    table: cfg.azure.tableName,
-    storageAccount: cfg.azure.accountId,
-    accessKey: cfg.azure.accountKey,
-    // Delete expired sessions every 1 hour
-    sessionTimeOut: 60,
-  }) : undefined;
-
   app.use(session({
-    store,
+    store: new MemoryStore({
+      // prune expired entries every 1h
+      checkPeriod: 1000 * 60 * 60
+    }),
     secret: cfg.login.sessionSecret,
     sameSite: true,
     resave: false,
