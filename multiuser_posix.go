@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 
+	"github.com/taskcluster/generic-worker/host"
 	"github.com/taskcluster/generic-worker/process"
 	"github.com/taskcluster/generic-worker/runtime"
 	gwruntime "github.com/taskcluster/generic-worker/runtime"
@@ -28,32 +28,11 @@ func platformFeatures() []Feature {
 	}
 }
 
-func immediateReboot() {
-	log.Println("Immediate reboot being issued...")
-	cause := "generic-worker requested reboot"
-	log.Println(cause)
-	cmd := exec.Command("/usr/bin/sudo", "/sbin/shutdown", "-r", "now", cause)
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func immediateShutdown(cause string) {
-	log.Println("Immediate shutdown being issued...")
-	log.Println(cause)
-	cmd := exec.Command("/usr/bin/sudo", "/sbin/shutdown", "-h", "now", cause)
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 func deleteDir(path string) error {
 	log.Print("Removing directory '" + path + "'...")
-	out, err := exec.Command("/usr/bin/sudo", "/bin/rm", "-rf", path).CombinedOutput()
+	err := host.Run("/usr/bin/sudo", "/bin/rm", "-rf", path)
 	if err != nil {
-		log.Print("WARNING: could not delete directory '" + path + "': " + string(out))
+		log.Print("WARNING: could not delete directory '" + path + "'")
 		log.Printf("%v", err)
 		return err
 	}
@@ -174,19 +153,19 @@ func MkdirAllTaskUser(dir string, perms os.FileMode) (err error) {
 	return nil
 }
 
-func makeFileOrDirReadWritableForUser(recurse bool, dir string, user *gwruntime.OSUser) ([]byte, error) {
+func makeFileOrDirReadWritableForUser(recurse bool, dir string, user *gwruntime.OSUser) error {
 	if recurse {
-		return exec.Command("/usr/sbin/chown", "-R", user.Name+":staff", dir).CombinedOutput()
+		return host.Run("/usr/sbin/chown", "-R", user.Name+":staff", dir)
 	}
-	return exec.Command("/usr/sbin/chown", user.Name+":staff", dir).CombinedOutput()
+	return host.Run("/usr/sbin/chown", user.Name+":staff", dir)
 }
 
-func makeDirUnreadableForUser(dir string, user *gwruntime.OSUser) ([]byte, error) {
+func makeDirUnreadableForUser(dir string, user *gwruntime.OSUser) error {
 	// Note, only need to set top directory, not recursively, since without
 	// access to top directory, nothing inside can be read anyway
 	err := os.Chown(dir, 0, 0) // root user / root group
 	if err != nil {
-		return []byte{}, fmt.Errorf("[mounts] Not able to make directory %v owned by root/root in order to prevent %v from having access: %v", dir, user.Name, err)
+		return fmt.Errorf("[mounts] Not able to make directory %v owned by root/root in order to prevent %v from having access: %v", dir, user.Name, err)
 	}
-	return []byte{}, os.Chmod(dir, 0700)
+	return os.Chmod(dir, 0700)
 }

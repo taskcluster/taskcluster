@@ -28,6 +28,7 @@ import (
 	docopt "github.com/docopt/docopt-go"
 	"github.com/taskcluster/generic-worker/expose"
 	"github.com/taskcluster/generic-worker/gwconfig"
+	"github.com/taskcluster/generic-worker/host"
 	"github.com/taskcluster/generic-worker/process"
 	gwruntime "github.com/taskcluster/generic-worker/runtime"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
@@ -154,18 +155,18 @@ func main() {
 		switch exitCode {
 		case REBOOT_REQUIRED:
 			if !config.DisableReboots {
-				immediateReboot()
+				host.ImmediateReboot()
 			}
 		case IDLE_TIMEOUT:
 			if config.ShutdownMachineOnIdle {
-				immediateShutdown("generic-worker idle timeout")
+				host.ImmediateShutdown("generic-worker idle timeout")
 			}
 		case INTERNAL_ERROR:
 			if config.ShutdownMachineOnInternalError {
-				immediateShutdown("generic-worker internal error")
+				host.ImmediateShutdown("generic-worker internal error")
 			}
 		case NONCURRENT_DEPLOYMENT_ID:
-			immediateShutdown("generic-worker deploymentId is not latest")
+			host.ImmediateShutdown("generic-worker deploymentId is not latest")
 		}
 		os.Exit(int(exitCode))
 	case arguments["install"]:

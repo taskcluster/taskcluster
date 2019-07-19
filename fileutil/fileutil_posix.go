@@ -5,9 +5,10 @@ package fileutil
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/taskcluster/generic-worker/host"
 )
 
 // SecureFiles makes the current user/group the owner of all files in
@@ -16,21 +17,21 @@ func SecureFiles(filepaths []string) (err error) {
 	// Use /usr/bin/id rather than user.Current due to https://bugzil.la/1566159
 	// Note, if we enabled CGO in builds, we could use user.Current, but for now
 	// we've decided not to.
-	uidBytes, err := exec.Command("/usr/bin/id", "-u").CombinedOutput()
+	uidString, err := host.CombinedOutput("/usr/bin/id", "-u")
 	if err != nil {
-		return fmt.Errorf("%s: %v", uidBytes, err)
+		return err
 	}
 	// Use /usr/bin/id rather than user.Current due to https://bugzil.la/1566159
-	gidBytes, err := exec.Command("/usr/bin/id", "-g").CombinedOutput()
+	gidString, err := host.CombinedOutput("/usr/bin/id", "-g")
 	if err != nil {
-		return fmt.Errorf("%s: %v", gidBytes, err)
+		return err
 	}
-	uidString := strings.TrimSpace(string(uidBytes))
+	uidString = strings.TrimSpace(uidString)
 	uid, err := strconv.Atoi(uidString)
 	if err != nil {
 		return fmt.Errorf("Could not convert %v to an integer uid: %v", uidString, err)
 	}
-	gidString := strings.TrimSpace(string(gidBytes))
+	gidString = strings.TrimSpace(gidString)
 	gid, err := strconv.Atoi(gidString)
 	if err != nil {
 		return fmt.Errorf("Could not convert %v to an integer gid: %v", gidString, err)

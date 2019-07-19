@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -31,27 +30,6 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 
 func platformFeatures() []Feature {
 	return []Feature{}
-}
-
-func immediateReboot() {
-	log.Println("Immediate reboot being issued...")
-	cause := "generic-worker requested reboot"
-	log.Println(cause)
-	cmd := exec.Command("shutdown", "/r", "now", cause)
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func immediateShutdown(cause string) {
-	log.Println("Immediate shutdown being issued...")
-	log.Println(cause)
-	cmd := exec.Command("shutdown", "now", cause)
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 func deleteDir(path string) error {

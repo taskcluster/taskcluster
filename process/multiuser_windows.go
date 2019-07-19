@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/taskcluster/generic-worker/host"
 	"github.com/taskcluster/generic-worker/win32"
 )
 
@@ -108,12 +109,12 @@ func NewCommand(commandLine []string, workingDirectory string, env []string, pd 
 	}, nil
 }
 
-func (c *Command) Kill() (killOutput []byte, err error) {
+func (c *Command) Kill() (killOutput string, err error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	if c.Process == nil {
 		// If process hasn't been started yet, nothing to kill
-		return []byte{}, nil
+		return "", nil
 	}
 	// Concurrent access to c.ProcessState is not thread safe - so let's not do this.
 	// Need to find a better way to manage this...
@@ -125,9 +126,7 @@ func (c *Command) Kill() (killOutput []byte, err error) {
 	log.Printf("Killing process tree with parent PID %v... (%p)", c.Process.Pid, c)
 	defer log.Printf("taskkill.exe command has completed for PID %v", c.Process.Pid)
 	// here we use taskkill.exe rather than c.Process.Kill() since we want child processes also to be killed
-	bytes, err := exec.Command("taskkill.exe", "/pid", strconv.Itoa(c.Process.Pid), "/f", "/t").CombinedOutput()
-	log.Print("taskkill.exe output:\n" + string(bytes))
-	return bytes, err
+	return host.CombinedOutput("taskkill.exe", "/pid", strconv.Itoa(c.Process.Pid), "/f", "/t")
 }
 
 func (pd *PlatformData) RefreshLoginSession(user, pass string) {

@@ -76,16 +76,16 @@ func (c *Command) SetEnv(envVar, value string) {
 	c.Cmd.Env = append(c.Cmd.Env, envVar+"="+value)
 }
 
-func (c *Command) Kill() (killOutput []byte, err error) {
+func (c *Command) Kill() (killOutput string, err error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	if c.Process == nil {
 		// If process hasn't been started yet, nothing to kill
-		return []byte{}, nil
+		return "", nil
 	}
 	close(c.abort)
 	log.Printf("Killing process tree with parent PID %v... (%p)", c.Process.Pid, c)
 	defer log.Printf("Process tree with parent PID %v killed.", c.Process.Pid)
 	// See https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
-	return []byte{}, syscall.Kill(-c.Process.Pid, syscall.SIGKILL)
+	return "", syscall.Kill(-c.Process.Pid, syscall.SIGKILL)
 }

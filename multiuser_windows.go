@@ -8,13 +8,13 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	stdlibruntime "runtime"
 	"strconv"
 	"strings"
 	"syscall"
 
+	"github.com/taskcluster/generic-worker/host"
 	"github.com/taskcluster/generic-worker/process"
 	"github.com/taskcluster/generic-worker/runtime"
 	gwruntime "github.com/taskcluster/generic-worker/runtime"
@@ -38,25 +38,6 @@ func platformFeatures() []Feature {
 	}
 }
 
-func immediateReboot() {
-	log.Println("Immediate reboot being issued...")
-	cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/r", "/t", "3", "/c", "generic-worker requested reboot")
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func immediateShutdown(cause string) {
-	log.Println("Immediate shutdown being issued...")
-	log.Println(cause)
-	cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/s", "/t", "3", "/c", cause)
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 func deleteDir(path string) error {
 	log.Print("Trying to remove directory '" + path + "' via os.RemoveAll(path) call...")
 	err := os.RemoveAll(path)
@@ -66,12 +47,7 @@ func deleteDir(path string) error {
 	log.Print("WARNING: could not delete directory '" + path + "' with os.RemoveAll(path) method")
 	log.Printf("%v", err)
 	log.Print("Trying to remove directory '" + path + "' via del command...")
-	err = runtime.RunCommands(
-		false,
-		[]string{
-			"cmd", "/c", "del", "/s", "/q", "/f", path,
-		},
-	)
+	err = host.Run("cmd", "/c", "del", "/s", "/q", "/f", path)
 	if err != nil {
 		log.Printf("%#v", err)
 	}
@@ -246,14 +222,14 @@ func install(arguments map[string]interface{}) (err error) {
 	return nil
 }
 
-func makeFileOrDirReadWritableForUser(recurse bool, dir string, user *gwruntime.OSUser) ([]byte, error) {
+func makeFileOrDirReadWritableForUser(recurse bool, dir string, user *gwruntime.OSUser) error {
 	// see http://ss64.com/nt/icacls.html
-	return exec.Command("icacls", dir, "/grant:r", user.Name+":(OI)(CI)F").CombinedOutput()
+	return host.Run("icacls", dir, "/grant:r", user.Name+":(OI)(CI)F")
 }
 
-func makeDirUnreadableForUser(dir string, user *gwruntime.OSUser) ([]byte, error) {
+func makeDirUnreadableForUser(dir string, user *gwruntime.OSUser) error {
 	// see http://ss64.com/nt/icacls.html
-	return exec.Command("icacls", dir, "/remove:g", user.Name).CombinedOutput()
+	return host.Run("icacls", dir, "/remove:g", user.Name)
 }
 
 // The windows implementation of os.Rename(...) doesn't allow renaming files
@@ -325,7 +301,7 @@ func (task *TaskRun) addUserToGroups(groups []string) (updatedGroups []string, n
 		return []string{}, []string{}
 	}
 	for _, group := range groups {
-		err := runtime.RunCommands(false, []string{"net", "localgroup", group, "/add", taskContext.User.Name})
+		err := host.Run("net", "localgroup", group, "/add", taskContext.User.Name)
 		if err == nil {
 			updatedGroups = append(updatedGroups, group)
 		} else {
@@ -340,7 +316,7 @@ func (task *TaskRun) removeUserFromGroups(groups []string) (updatedGroups []stri
 		return []string{}, []string{}
 	}
 	for _, group := range groups {
-		err := runtime.RunCommands(false, []string{"net", "localgroup", group, "/delete", taskContext.User.Name})
+		err := host.Run("net", "localgroup", group, "/delete", taskContext.User.Name)
 		if err == nil {
 			updatedGroups = append(updatedGroups, group)
 		} else {
@@ -448,7 +424,7 @@ func deployService(configFile, nssm, serviceName, exePath, dir string, configure
 	if err != nil {
 		return err
 	}
-	return runtime.RunCommands(
+	return host.RunBatch(
 		false,
 		[]string{nssm, "install", serviceName, targetScript},
 		[]string{nssm, "set", serviceName, "AppDirectory", dir},

@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/taskcluster/shell"
 	"golang.org/x/net/context"
 )
 
@@ -45,7 +46,7 @@ func (c *Command) DirectOutput(writer io.Writer) {
 }
 
 func (c *Command) String() string {
-	return fmt.Sprintf("%q", c.cmd)
+	return shell.Escape(c.cmd...)
 }
 
 func (c *Command) Execute() (r *Result) {
