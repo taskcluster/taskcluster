@@ -838,7 +838,7 @@ func (task *TaskRun) kill() {
 			task.Info(string(output))
 		}
 		if err != nil {
-			log.Printf("WARNING - %v", err)
+			log.Printf("WARNING: %v", err)
 			task.Warnf("%v", err)
 		}
 	}

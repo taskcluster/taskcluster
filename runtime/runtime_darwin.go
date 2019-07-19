@@ -72,6 +72,7 @@ func WaitForLoginCompletion(timeout time.Duration) error {
 	for time.Now().Before(deadline) {
 		username, err := InteractiveUsername()
 		if err != nil {
+			log.Printf("WARNING: Error checking for interactive user: %v", err)
 			time.Sleep(time.Second)
 			continue
 		}
