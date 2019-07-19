@@ -14,7 +14,7 @@ import TableCell from '@material-ui/core/TableCell/TableCell';
 import ListItemText from '@material-ui/core/ListItemText/ListItemText';
 import Typography from '@material-ui/core/Typography/Typography';
 import DataTable from '../DataTable';
-import TableCellListItem from '../TableCellListItem';
+import InheritMaterialUI  from '../InheritMaterialUI ';
 import Link from '../../utils/Link';
 import DateDistance from '../DateDistance';
 import sort from '../../utils/sort';
@@ -93,18 +93,18 @@ export default class WorkerManagerWorkersTable extends Component {
         <TableCell>{workerGroup}</TableCell>
 
         <TableCell>
-          <TableCellListItem button component={Link} to={`${path}/tasks`}>
+          <InheritMaterialUI  button component={Link} to={`${path}/tasks`}>
             <ListItemText
               disableTypography
               primary={<Typography>{workerId}</Typography>}
             />
             <LinkIcon size={iconSize} />
-          </TableCellListItem>
+          </InheritMaterialUI >
         </TableCell>
 
         <CopyToClipboard title={`${workerAge} (Copy)`} text={workerAge}>
           <TableCell>
-            <TableCellListItem button>
+            <InheritMaterialUI  button>
               <ListItemText
                 disableTypography
                 primary={
@@ -114,13 +114,13 @@ export default class WorkerManagerWorkersTable extends Component {
                 }
               />
               <ContentCopyIcon size={iconSize} />
-            </TableCellListItem>
+            </InheritMaterialUI >
           </TableCell>
         </CopyToClipboard>
 
         <TableCell>
           {latestTaskRun ? (
-            <TableCellListItem
+            <InheritMaterialUI 
               button
               component={Link}
               to={`/tasks/${latestTaskRun.taskId}/runs/${latestTaskRun.runId}`}>
@@ -129,7 +129,7 @@ export default class WorkerManagerWorkersTable extends Component {
                 primary={<Typography>{latestTaskRun.taskId}</Typography>}
               />
               <LinkIcon size={iconSize} />
-            </TableCellListItem>
+            </InheritMaterialUI >
           ) : (
             <Typography>n/a</Typography>
           )}
@@ -140,7 +140,7 @@ export default class WorkerManagerWorkersTable extends Component {
             title={`${latestTaskRun.started} (Copy)`}
             text={latestTaskRun.started}>
             <TableCell>
-              <TableCellListItem button>
+              <InheritMaterialUI  button>
                 <ListItemText
                   disableTypography
                   primary={
@@ -150,7 +150,7 @@ export default class WorkerManagerWorkersTable extends Component {
                   }
                 />
                 <ContentCopyIcon size={iconSize} />
-              </TableCellListItem>
+              </InheritMaterialUI >
             </TableCell>
           </CopyToClipboard>
         ) : (
@@ -164,7 +164,7 @@ export default class WorkerManagerWorkersTable extends Component {
             title={`${latestTaskRun.resolved} (Copy)`}
             text={latestTaskRun.resolved}>
             <TableCell>
-              <TableCellListItem button>
+              <InheritMaterialUI  button>
                 <ListItemText
                   disableTypography
                   primary={
@@ -174,7 +174,7 @@ export default class WorkerManagerWorkersTable extends Component {
                   }
                 />
                 <ContentCopyIcon size={iconSize} />
-              </TableCellListItem>
+              </InheritMaterialUI >
             </TableCell>
           </CopyToClipboard>
         ) : (
@@ -184,17 +184,17 @@ export default class WorkerManagerWorkersTable extends Component {
         )}
 
         <TableCell>
-          <TableCellListItem button component={Link} to={`${path}/errors`}>
+          <InheritMaterialUI  button component={Link} to={`${path}/errors`}>
             <ListItemText
               disableTypography
               primary={<Typography>Click to see errors</Typography>}
             />
             <AlertIcon size={iconSize} />
-          </TableCellListItem>
+          </InheritMaterialUI >
         </TableCell>
 
         <TableCell>
-          <TableCellListItem
+          <InheritMaterialUI 
             button
             component={Link}
             to={`${path}/worker-types/${workerPool}/workers/${workerGroup}/${workerId}/resources`}>
@@ -203,7 +203,7 @@ export default class WorkerManagerWorkersTable extends Component {
               primary={<Typography>{`${recentErrors}`}</Typography>}
             />
             <LinkIcon size={iconSize} />
-          </TableCellListItem>
+          </InheritMaterialUI >
         </TableCell>
 
         <TableCell>

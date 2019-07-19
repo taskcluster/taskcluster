@@ -11,7 +11,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
-import TableCellListItem from '../TableCellListItem';
+import InheritMaterialUI  from '../InheritMaterialUI ';
 import { awsProvisionerHealth } from '../../utils/prop-types';
 import sort from '../../utils/sort';
 import DataTable from '../DataTable';
@@ -164,37 +164,37 @@ export default class AwsProvisionerHealthTable extends Component {
           renderRow={item => (
             <TableRow key={`${item.az}-${item.region}-${item.instanceType}`}>
               <TableCell>
-                <TableCellListItem dense>
+                <InheritMaterialUI  dense>
                   <ListItemText primary={item.az} />
-                </TableCellListItem>
+                </InheritMaterialUI >
               </TableCell>
               <TableCell>
-                <TableCellListItem dense>
+                <InheritMaterialUI  dense>
                   <ListItemText primary={item.region} />
-                </TableCellListItem>
+                </InheritMaterialUI >
               </TableCell>
               <TableCell>
-                <TableCellListItem dense>
+                <InheritMaterialUI  dense>
                   <ListItemText primary={item.instanceType} />
-                </TableCellListItem>
+                </InheritMaterialUI >
               </TableCell>
               <TableCell>
-                <TableCellListItem
+                <InheritMaterialUI 
                   button
                   dense
                   onClick={() => this.handleDrawerOpen(item, 'Healthy')}>
                   <ListItemText primary={or0(item.healthy)} />
                   <InformationVariantIcon size={iconSize} />
-                </TableCellListItem>
+                </InheritMaterialUI >
               </TableCell>
               <TableCell>
-                <TableCellListItem
+                <InheritMaterialUI 
                   button
                   dense
                   onClick={() => this.handleDrawerOpen(item, 'Unhealthy')}>
                   <ListItemText primary={or0(item.unhealthy)} />
                   <InformationVariantIcon size={iconSize} />
-                </TableCellListItem>
+                </InheritMaterialUI >
               </TableCell>
             </TableRow>
           )}
