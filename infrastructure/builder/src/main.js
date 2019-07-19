@@ -74,6 +74,23 @@ program.command('changelog')
       });
   });
 
+program.command('dev')
+  .option('--init', 'Set up resources and configure')
+  .option('--helm-action <action>', 'Run a specific action (install, uninstall, upgrade, template)')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {main} = require('./dev');
+    main(options[0]).then(
+      () => {},
+      err => {
+        console.error(err);
+        process.exit(1);
+      });
+  });
+
 program.command('*', {noHelp: true})
   .action(() => program.help(txt => txt));
 

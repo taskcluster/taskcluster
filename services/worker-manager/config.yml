@@ -5,14 +5,14 @@ defaults:
     workerPoolErrorTableName: WMWorkerPoolErrors
     errorsExpirationDelay: '-4 days' # Anything older than a few days goes away
   monitoring:
-    level: !env LEVEL
+    level: !env:optional LEVEL
   taskcluster:
     rootUrl: !env TASKCLUSTER_ROOT_URL
     credentials:
       clientId: !env TASKCLUSTER_CLIENT_ID
       accessToken: !env TASKCLUSTER_ACCESS_TOKEN
   azure:
-    accountId: !env AZURE_ACCOUNT
+    accountId: !env AZURE_ACCOUNT_ID
   server:
     port: !env:number PORT
     env: !env NODE_ENV

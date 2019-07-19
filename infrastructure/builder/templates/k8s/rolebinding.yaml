@@ -1,0 +1,13 @@
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ${projectName}-secrets-read
+subjects:
+- kind: User
+  name: ${projectName}
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: ${projectName}-secrets-read
+  apiGroup: rbac.authorization.k8s.io

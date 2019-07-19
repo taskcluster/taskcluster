@@ -4,4 +4,5 @@ module.exports = {
   ...require('./git'),
   ...require('./docker'),
   ...require('./command'),
+  ...require('./config'),
 };
