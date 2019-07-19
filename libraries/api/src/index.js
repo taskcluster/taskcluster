@@ -14,6 +14,7 @@ const ping = {
   name: 'ping',
   stability: 'stable',
   title: 'Ping Server',
+  category: 'Ping Server',
   description: [
     'Respond without doing anything.',
     'This endpoint is used to check that the service is up.',
@@ -191,6 +192,7 @@ class APIBuilder {
           input: entry.input,
           output: entry.output,
           description: entry.description,
+          category: entry.category,
         };
         if (entry.scopes) {
           retval.scopes = entry.scopes;
