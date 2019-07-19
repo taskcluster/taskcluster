@@ -11,7 +11,7 @@ fi
 shift
 
 export CLOUD
-for arg in "${*}"; do
+for arg in "${@}"; do
     case $arg in
         --cloud=*) CLOUD=${arg#--cloud=};;
         --cloud)
