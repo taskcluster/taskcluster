@@ -127,6 +127,8 @@ highest precedence, these are:
 Providers can supply configuration to the worker via whatever means makes sense.
 For example, an EC2 or GCP provider would read configuration from the instance's userData.
 
+### Secrets
+
 Secrets are stored in the secrets service under a secret named
 `worker-pool:<workerPoolId>`, in the format
 
@@ -138,12 +140,34 @@ files:
 ```
 
 Where `config` is an object that is merged directly into the worker config.
-Files are not yet supported.
 
 Two backward-compatibility measures exist:
 
 1. A secret named `worker-type:<workerPoolId>` is also consulted, as used before [RFC#145](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0145-workerpoolid-taskqueueid.md) landed.
 1. If a secret does not have properties `config` and `files`, then its top-level contents are assumed to be worker configuration, with no files.
+
+### Files
+
+Files can also be stored in the secrets service, under the `files` property described above.
+These can be used to write (small) files to disk on the worker before it starts up.
+For example:
+
+```yaml
+files:
+  - content: U....x8j==
+    description: Secret Data!
+    encoding: base64
+    format: zip
+    path: 'C:\secrets'
+```
+
+This would unzip the zipfile represented by `content` at `C:\secrets`.
+
+The only encoding supported is `base64`.
+The formats supported are:
+
+ * `file` -- the content is decoded and written to the file named by `path`
+ * `zip` -- the content is treated as a ZIP archive and extracted at the directory named by `path`
 
 ## Operation
 

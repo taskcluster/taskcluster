@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/taskcluster/taskcluster-worker-runner/files"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
@@ -65,6 +66,14 @@ func StartWorker(runnercfg *runner.RunnerConfig) error {
 
 	log.Printf("Configuring for worker implementation %s", runnercfg.WorkerImplementation.Implementation)
 	err = worker.ConfigureRun(&run)
+	if err != nil {
+		return err
+	}
+
+	// files
+
+	log.Printf("Writing files")
+	err = files.ExtractAll(run.Files)
 	if err != nil {
 		return err
 	}
