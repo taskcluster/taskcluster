@@ -11,7 +11,7 @@ ENV YARN_CACHE_FOLDER=/base/cache
 COPY / /base/repo
 
 # Clone that to /app
-RUN git clone --depth 1 /base/repo /base/app
+RUN git clone /base/repo /base/app
 
 # set up the /app directory
 WORKDIR /base/app
