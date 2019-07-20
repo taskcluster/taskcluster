@@ -1,7 +1,3 @@
-const fs = require('fs');
-const path = require('path');
-const tar = require('tar-fs');
-const stringify = require('json-stable-stringify');
 const appRootDir = require('app-root-dir');
 const {
   gitIsDirty,
@@ -10,53 +6,10 @@ const {
   dockerImages,
   dockerBuild,
   dockerRegistryCheck,
-  ensureDockerImage,
   ensureTask,
   dockerPush,
+  execCommand,
 } = require('../utils');
-
-const DOCKERFILE = (nodeImage, nodeAlpineImage) => `
-##
-# Build /app
-
-ARG taskcluster_version
-FROM ${nodeImage} as build
-
-RUN mkdir -p /base /base/cache
-ENV YARN_CACHE_FOLDER=/base/cache
-
-# copy the repository into the image, including the entrypoint
-COPY / /base/repo
-
-# Clone that to /app
-RUN git clone --depth 1 /base/repo /base/app
-
-# set up the /app directory
-WORKDIR /base/app
-RUN cp /base/repo/version.json version.json
-RUN chmod +x entrypoint
-RUN yarn install --frozen-lockfile
-
-WORKDIR /base/app/ui
-RUN yarn install --frozen-lockfile
-
-# clean up some unnecessary and potentially large stuff
-WORKDIR /base/app
-RUN rm -rf .git
-RUN rm -rf .node-gyp ui/.node-gyp
-RUN rm -rf clients/client-{go,py,web}
-RUN rm -rf {services,libraries}/*/test
-
-##
-# build the final image
-
-FROM ${nodeAlpineImage} as image
-RUN apk update && apk add nginx && mkdir /run/nginx && apk add bash
-COPY --from=build /base/app /app
-ENV HOME=/app
-WORKDIR /app
-ENTRYPOINT ["/app/entrypoint"]
-`;
 
 /**
  * The "monoimage" is a single docker image containing all tasks.  This build process goes
@@ -71,25 +24,12 @@ ENTRYPOINT ["/app/entrypoint"]
  *  this process by theme.
  */
 const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
-  const packageJson = JSON.parse(fs.readFileSync(path.join(appRootDir.get(), 'package.json')));
-  const nodeVersion = packageJson.engines.node;
-
-  // we need the "full" node image to build (to install buffertools, for example..)
-  const nodeImage = `node:${nodeVersion}`;
-  // but the alpine image can run the services..
-  const nodeAlpineImage = `node:${nodeVersion}-alpine`;
-
   const sourceDir = appRootDir.get();
-
-  ensureDockerImage(tasks, baseDir, nodeImage);
-  ensureDockerImage(tasks, baseDir, nodeAlpineImage);
 
   ensureTask(tasks, {
     title: 'Build Taskcluster Docker Image',
     requires: [
       'build-can-start', // (used to delay building in `yarn release`)
-      `docker-image-${nodeImage}`,
-      `docker-image-${nodeAlpineImage}`,
     ],
     provides: [
       'monoimage-docker-image', // image tag
@@ -144,40 +84,13 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
         return utils.skip({provides});
       }
 
-      utils.step({title: 'Generating Input Tarball'});
-
-      const tarball = tar.pack(sourceDir, {
-        // include the repo as-is, filtering out a few large things.  The Dockerfile
-        // will `git clone` this, so any other unnecessary bits will not appear in
-        // the final tarball.
-        entries: ['.'],
-        ignore: name => (
-          name.match(/\/node_modules\//) ||
-          name.match(/\/user-config.yml/) ||
-          name.match(/\/dev-config.yml/)
-        ),
-        finalize: false,
-        finish: pack => {
-          // include a few generated files
-          pack.entry({name: "Dockerfile"}, DOCKERFILE(nodeImage, nodeAlpineImage));
-          pack.entry({name: "version.json"}, stringify({
-            source: "https://github.com/taskcluster/taskcluster",
-            version: gitDescription,
-            commit: revision,
-            build: 'NONE',
-          }, {space: 2}));
-          pack.finalize();
-        },
-      });
-
       utils.step({title: 'Building Docker Image'});
 
-      await dockerBuild({
-        tarball: tarball,
-        logfile: `${baseDir}/docker-build.log`,
-        tag,
+      await execCommand({
+        command: ['docker', 'build', '--progress=plain', '.'],
+        dir: sourceDir,
         utils,
-        baseDir,
+        env: {DOCKER_BUILDKIT: 1, ...process.env},
       });
 
       return provides;

@@ -15,7 +15,7 @@ RUN git clone --depth 1 /base/repo /base/app
 
 # set up the /app directory
 WORKDIR /base/app
-RUN cp /base/repo/version.json version.json
+RUN yarn run build:onbuild
 RUN chmod +x entrypoint
 RUN yarn install --frozen-lockfile
 

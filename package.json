@@ -166,6 +166,7 @@
     "fetch-coverage": "node test/fetch-coverage.js",
     "test:cleanup": "yarn workspace taskcluster-auth test:cleanup",
     "build": "node infrastructure/builder/src/main.js build",
+    "build:onbuild": "node infrastructure/builder/src/main.js onbuild",
     "release": "node infrastructure/builder/src/main.js release",
     "generate": "node infrastructure/builder/src/main.js generate",
     "changelog": "node infrastructure/builder/src/main.js changelog",

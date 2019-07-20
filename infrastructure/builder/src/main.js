@@ -91,6 +91,21 @@ program.command('dev')
       });
   });
 
+program.command('onbuild')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {main} = require('./onbuild');
+    main(options[0]).then(
+      () => {},
+      err => {
+        console.error(err);
+        process.exit(1);
+      });
+  });
+
 program.command('*', {noHelp: true})
   .action(() => program.help(txt => txt));
 
