@@ -15,9 +15,11 @@ RUN git clone /base/repo /base/app
 
 # set up the /app directory
 WORKDIR /base/app
-RUN yarn run build:onbuild
 RUN chmod +x entrypoint
 RUN yarn install --frozen-lockfile
+
+# Now that node_modules are here, do some generation
+RUN yarn run build:onbuild
 
 WORKDIR /base/app/ui
 RUN yarn install --frozen-lockfile

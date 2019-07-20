@@ -4,7 +4,6 @@ const {
   gitDescribe,
   dockerPull,
   dockerImages,
-  dockerBuild,
   dockerRegistryCheck,
   ensureTask,
   dockerPush,
@@ -54,7 +53,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
         }
       }
 
-      const {gitDescription, revision} = await gitDescribe({
+      const {gitDescription} = await gitDescribe({
         dir: sourceDir,
         utils,
       });
@@ -87,7 +86,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
       utils.step({title: 'Building Docker Image'});
 
       await execCommand({
-        command: ['docker', 'build', '--progress=plain', '.'],
+        command: ['docker', 'build', '--progress', 'plain', '--tag', tag, '.'],
         dir: sourceDir,
         utils,
         env: {DOCKER_BUILDKIT: 1, ...process.env},
