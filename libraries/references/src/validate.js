@@ -149,7 +149,6 @@ exports.validate = (references) => {
         continue;
       }
       if (ajv.errors) {
-        console.log(ajv.errors);
         ajv
           .errorsText(ajv.errors, {separator: '%%/%%', dataVar: 'reference'})
           .split('%%/%%')
