@@ -65,7 +65,6 @@ class RefBuilder {
           name: 'foo',
           title: 'Foo',
           description: 'Foo-bar',
-          category: 'Foo',
           routingKey: [],
           schema: 'v2/message.json#',
         }, content), omitPaths)),
