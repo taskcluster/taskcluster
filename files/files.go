@@ -54,7 +54,7 @@ func (f File) extractFile() error {
 		}
 		log.Printf("Writing %v to path %v", f.Description, f.Path)
 		dir := filepath.Dir(f.Path)
-		err = os.MkdirAll(dir, 0777)
+		err = os.MkdirAll(dir, 0755)
 		if err != nil {
 			return err
 		}
@@ -73,7 +73,7 @@ func (f File) extractZip() error {
 		}
 		log.Printf("Unzipping %v to path %v", f.Description, f.Path)
 		dir := filepath.Dir(f.Path)
-		err = os.MkdirAll(dir, 0777)
+		err = os.MkdirAll(dir, 0755)
 		if err != nil {
 			return err
 		}
@@ -113,7 +113,7 @@ func unzip(b []byte, dest string) error {
 		path := filepath.Join(dest, f.Name)
 
 		dir := filepath.Dir(path)
-		err = os.MkdirAll(dir, 0777)
+		err = os.MkdirAll(dir, 0755)
 		if err != nil {
 			return err
 		}
