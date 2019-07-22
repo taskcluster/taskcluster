@@ -24,7 +24,10 @@ module.exports = async ({ cfg, strategies }) => {
     }
     return o;
   }).filter(o => o);
-  app.use(cors({origin: allowedCORSOrigins}));
+  app.use(cors({
+    origin: allowedCORSOrigins,
+    credentials: true,
+  }));
 
   app.use(session({
     store: new MemoryStore({
