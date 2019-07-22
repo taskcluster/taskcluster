@@ -26,9 +26,9 @@ program.command('build')
 
 program.command('release')
   .option('--base-dir <base-dir>', 'Base directory for build (fast and big!; default /tmp/taskcluster-builder-build)')
-  .option('--gh-token <gh-token>', 'GitHub access token')
+  .option('--gh-token <gh-token>', 'GitHub access token (required unless --no-push)')
   .option('--dry-run', 'Do not run any tasks, but generate the list of tasks')
-  .option('-p, --push', 'Push docker image and git commit + tag (without this, changes are purely local)')
+  .option('--no-push', 'Do not push the docker image and git commit + tags (but your local repo is still modified)')
   .action((...options) => {
     if (options.length !== 1) {
       console.error('unexpected command-line arguments');
@@ -66,6 +66,23 @@ program.command('changelog')
       process.exit(1);
     }
     const {main} = require('./changelog');
+    main(options[0]).then(
+      () => {},
+      err => {
+        console.error(err);
+        process.exit(1);
+      });
+  });
+
+program.command('dev')
+  .option('--init', 'Set up resources and configure')
+  .option('--helm-action <action>', 'Run a specific action (install, uninstall, upgrade, template)')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {main} = require('./dev');
     main(options[0]).then(
       () => {},
       err => {

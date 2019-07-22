@@ -252,7 +252,7 @@ exports.withServers = (mock, skipping) => {
     await exports.load('cfg');
 
     exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
-    exports.rootAccessToken = '-test-access-token-';
+    exports.rootAccessToken = '-test-access-token-that-is-at-least-22-chars-long-';
 
     // First set up the auth service
     exports.AuthClient = taskcluster.createClient(builder.reference());

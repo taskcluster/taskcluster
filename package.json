@@ -58,7 +58,7 @@
     "iterall": "^1.2.2",
     "js-yaml": "^3.13.1",
     "json-e": "^3.0.0",
-    "json-parameterization": "^1.0.0",
+    "json-parameterization": "^2.0.0",
     "jsonwebtoken": "^8.1.1",
     "jwks-rsa": "^1.2.1",
     "lodash": "4.17.14",
@@ -110,6 +110,9 @@
     "walk": "^2.3.9"
   },
   "devDependencies": {
+    "@azure/arm-resources": "^1.1.0",
+    "@azure/arm-storage": "^9.0.1",
+    "@azure/ms-rest-nodeauth": "^2.0.2",
     "@babel/core": "^7.2.2",
     "@babel/plugin-proposal-class-properties": "^7.4.4",
     "assume": "^2.1.0",
@@ -126,6 +129,7 @@
     "eslint": "5.16.0",
     "glob": "^7.1.3",
     "got": "^9.5.0",
+    "inquirer": "^6.5.0",
     "intercept-stdout": "^0.1.2",
     "is-uuid": "^1.0.2",
     "json-stable-stringify": "^1.0.1",
@@ -166,8 +170,13 @@
     "generate": "node infrastructure/builder/src/main.js generate",
     "changelog": "node infrastructure/builder/src/main.js changelog",
     "shared-secrets": "node test/shared-secrets.js",
-    "heroku-prebuild": "echo $SOURCE_VERSION > taskcluster-version",
-    "heroku-postbuild": "if [ $PROCFILE = \"ui/Procfile\" ]; then cd ui && yarn install --frozen-lockfile && yarn build; fi"
+    "heroku-prebuild": "echo {\\\"version\\\"\\: \\\"$SOURCE_VERSION\\\"} > version.json",
+    "heroku-postbuild": "if [ $PROCFILE = \"ui/Procfile\" ]; then cd ui && yarn install --frozen-lockfile && yarn build; fi",
+    "dev:init": "node infrastructure/builder/src/main.js dev --init",
+    "dev:install": "node infrastructure/builder/src/main.js dev --helm-action install",
+    "dev:uninstall": "node infrastructure/builder/src/main.js dev --helm-action uninstall",
+    "dev:template": "node infrastructure/builder/src/main.js dev --helm-action template",
+    "dev:upgrade": "node infrastructure/builder/src/main.js dev --helm-action upgrade"
   },
   "renovate": {
     "extends": [

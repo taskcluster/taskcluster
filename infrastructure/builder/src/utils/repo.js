@@ -97,6 +97,17 @@ exports.modifyRepoJSON = async (filename, modifier) => {
 };
 
 /**
+ * Modify a YAML file in-place in the current working copy, calling `await modifier(contents)`.
+ */
+exports.modifyRepoYAML = async (filename, modifier) => {
+  return exports.modifyRepoFile(filename, async contents => {
+    const data = yaml.safeLoad(contents);
+    await modifier(data);
+    return yaml.safeDump(data, {lineWidth: -1});
+  });
+};
+
+/**
  * Call `git ls-files` in the current working copy
  */
 exports.gitLsFiles = async ({patterns}={}) => {
@@ -112,4 +123,11 @@ exports.gitLsFiles = async ({patterns}={}) => {
  */
 exports.readRepoYAML = async filename => {
   return yaml.safeLoad(await exports.readRepoFile(filename));
+};
+
+/**
+ * Asynchronously write a yaml file to the current working copy
+ */
+exports.writeRepoYAML = async (filename, data) => {
+  return await writeFile(filename, yaml.safeDump(data, {lineWidth: -1}), {encoding: 'utf8'});
 };

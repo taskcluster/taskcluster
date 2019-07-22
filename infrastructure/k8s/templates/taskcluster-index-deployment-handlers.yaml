@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taskcluster-index-handlers
+  labels:
+    app.kubernetes.io/name: taskcluster-index
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-index-handlers
+    app.kubernetes.io/part-of: taskcluster
+    app.kubernetes.io/managed-by: helm
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: taskcluster-index
+      app.kubernetes.io/instance: '{{ .Release.Name }}'
+      app.kubernetes.io/component: taskcluster-index-handlers
+      app.kubernetes.io/part-of: taskcluster
+      app.kubernetes.io/managed-by: helm
+  replicas: {{ int (.Values.index.procs.handlers.replicas) }}
+  template:
+    metadata:
+      annotations:
+        checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-index-secret.yaml") . | sha256sum }}'
+      labels:
+        app.kubernetes.io/name: taskcluster-index
+        app.kubernetes.io/instance: '{{ .Release.Name }}'
+        app.kubernetes.io/component: taskcluster-index-handlers
+        app.kubernetes.io/part-of: taskcluster
+        app.kubernetes.io/managed-by: helm
+    spec:
+      serviceAccountName: taskcluster-index
+      containers:
+        - name: taskcluster-index
+          image: '{{ .Values.dockerImage }}'
+          imagePullPolicy: Always
+          args:
+            - index/handlers
+          resources:
+            requests:
+              cpu: '{{ .Values.index.procs.handlers.cpu }}'
+              memory: '{{ .Values.index.procs.handlers.memory }}'
+          env:
+            - name: TASKCLUSTER_ROOT_URL
+              value: '{{ .Values.rootUrl }}'
+            - name: NODE_ENV
+              value: production
+          envFrom:
+            - secretRef:
+                name: taskcluster-index
+          ports: []

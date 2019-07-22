@@ -11,7 +11,7 @@ class Release {
     this.cmdOptions = cmdOptions;
 
     if (cmdOptions.push && !cmdOptions.ghToken) {
-      throw new Error('Cannot use --push without --gh-token');
+      throw new Error('The --gh-token option is required (unless --no-push)');
     }
 
     this.baseDir = cmdOptions['baseDir'] || '/tmp/taskcluster-builder-build';
@@ -71,7 +71,7 @@ class Release {
     console.log(`Release version: ${context['release-version']}`);
     console.log(`Release docker image: ${context['monoimage-docker-image']}`);
     if (!this.cmdOptions.push) {
-      console.log('NOTE: image and git commit + tag not pushed (use --push)');
+      console.log('NOTE: image and git commit + tags not pushed due to --no-push option');
     } else {
       console.log(`GitHub release: ${context['github-release']}`);
       console.log('** YOUR NEXT STEPS **');

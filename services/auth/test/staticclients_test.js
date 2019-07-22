@@ -29,7 +29,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure', 'gcp'], function(
     await helper.Client.syncStaticClients([
       ...helper.cfg.app.staticClients, {
         clientId: 'static/taskcluster/test-static-client',
-        accessToken: 'test-secret',
+        accessToken: 'test-secret-12345678910',
         description: 'Just testing, you should never see this in production!!!',
         scopes: ['dummy-scope'],
       },

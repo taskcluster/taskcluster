@@ -9,20 +9,20 @@ defaults:
     scheduler:
       pollingDelay:   60000
   influx:
-    connectionString: !env INFLUX_CONNECTION
+    connectionString: !env:optional INFLUX_CONNECTION
     maxDelay:         300
     maxPendingPoints: 300
   azure:
-    accountId:        !env AZURE_ACCOUNT
-    signingKey:       !env TABLE_SIGNING_KEY
-    cryptoKey:        !env TABLE_CRYPTO_KEY
+    accountId:        !env AZURE_ACCOUNT_ID
+    signingKey:       !env AZURE_SIGNING_KEY
+    cryptoKey:        !env AZURE_CRYPTO_KEY
   taskcluster:
     rootUrl:          !env TASKCLUSTER_ROOT_URL
     credentials:
       clientId:       !env TASKCLUSTER_CLIENT_ID
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
   monitoring:
-    level:                      !env LEVEL
+    level:                      !env:optional LEVEL
   server:
     port:             !env:number PORT
     env:              !env NODE_ENV
@@ -31,16 +31,16 @@ defaults:
   aws:
     ses:
       # Credentials with access to SES to send hook failure emails
-      accessKeyId:      !env AWS_ACCESS_KEY_ID
-      secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
+      accessKeyId:      !env:optional AWS_ACCESS_KEY_ID
+      secretAccessKey:  !env:optional AWS_SECRET_ACCESS_KEY
       region:           us-east-1
       params:
         Source:         taskcluster-hooks@mozilla.com
     validator:
       # Credentials with access to references/schemas.taskcluster.net if you wish
       # to publish meta-data
-      accessKeyId:      !env AWS_ACCESS_KEY_ID
-      secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
+      accessKeyId:      !env:optional AWS_ACCESS_KEY_ID
+      secretAccessKey:  !env:optional AWS_SECRET_ACCESS_KEY
       region:           us-west-2
       apiVersion:       2014-01-01
   pulse:
