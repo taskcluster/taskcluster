@@ -1458,9 +1458,6 @@
           "title": "node debug env var",
           "type": "string"
         },
-        "jwt_key": {
-          "type": "string"
-        },
         "level": {
           "type": "string"
         },
@@ -1523,6 +1520,9 @@
         "pulse_username": {
           "type": "string"
         },
+        "session_secret": {
+          "type": "string"
+        },
         "taskcluster_access_token": {
           "type": "string"
         },
@@ -1551,7 +1551,7 @@
         "pulse_username",
         "pulse_password",
         "ui_login_strategies",
-        "jwt_key"
+        "session_secret"
       ],
       "title": "Configuration options for web-server",
       "type": "object"
