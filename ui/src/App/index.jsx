@@ -69,6 +69,7 @@ export default class App extends Component {
 
   httpLink = new HttpLink({
     uri: process.env.GRAPHQL_ENDPOINT,
+    credentials: 'same-origin',
   });
 
   wsLink = new WebSocketLink({
