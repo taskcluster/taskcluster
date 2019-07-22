@@ -14,7 +14,7 @@ COPY /ui/yarn.lock /ui/package.json /base/yarn-ui/
 WORKDIR /base/yarn
 RUN yarn install --production --frozen-lockfile
 WORKDIR /base/yarn-ui
-RUN yarn install --production --frozen-lockfile
+RUN yarn install --frozen-lockfile
 
 RUN mkdir -p /base/app/ui
 RUN cp -r /base/yarn/node_modules /base/app/
