@@ -144,6 +144,10 @@ export default class App extends Component {
   }
 
   handleUserChanged = user => {
+    if (!user) {
+      this.authController.clearSession();
+    }
+
     this.setState({
       auth: {
         ...this.state.auth,

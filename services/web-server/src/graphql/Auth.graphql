@@ -15,10 +15,11 @@ type Credentials {
 }
 
 extend type Query {
-  # Given a Taskcluster token, return a set of Taskcluster credentials
+  # Return a set of Taskcluster credentials
   # for use on behalf of the identified user.
+  # The user session ID is stored in the cookie request.
   #
-  # The Taskcluster token is first verified prior to retrieving the user
+  # The session ID is used to retrieve the user
   # profile. That profile is then used to generate Taskcluster credentials
   # appropriate to the user. Note that the resulting credentials may or may
   # not include a `certificate` property. Callers should be prepared for either
@@ -27,5 +28,5 @@ extend type Query {
   # The given credentials will expire in a relatively short time. Callers should
   # monitor this expiration and refresh the credentials if necessary, by calling
   # this endpoint again, if they have expired.
-  getCredentials(taskclusterToken: ID!): Credentials
+  getCredentials: Credentials
 }
