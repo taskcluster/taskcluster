@@ -18,6 +18,7 @@ const {
   readRepoFile,
   writeRepoFile,
   modifyRepoJSON,
+  writeRepoYAML,
   modifyRepoFile,
   removeRepoFile,
   REPO_ROOT,
@@ -103,6 +104,25 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
         changed.push(file);
       }
 
+      const releaseImage = `taskcluster/taskcluster:v${requirements['release-version']}`;
+
+      const build = 'infrastructure/builder/current-release.yml';
+      utils.status({message: `Update ${build}`});
+      await writeRepoYAML(build, {image: releaseImage});
+      changed.push(build);
+
+      const valuesYaml = 'infrastructure/k8s/values.yaml';
+      utils.status({message: `Update ${valuesYaml}`});
+      await modifyRepoFile(valuesYaml, contents =>
+        contents.replace(/dockerImage: .*/, `dockerImage: '${releaseImage}'`));
+      changed.push(valuesYaml);
+
+      const helmchart = 'infrastructure/k8s/Chart.yaml';
+      utils.status({message: `Update ${helmchart}`});
+      await modifyRepoFile(helmchart, contents =>
+        contents.replace(/appVersion: .*/, `appVersion: '${requirements['release-version']}'`));
+      changed.push(helmchart);
+
       const pyclient = 'clients/client-py/setup.py';
       utils.status({message: `Update ${pyclient}`});
       await modifyRepoFile(pyclient, contents =>
@@ -115,7 +135,7 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
         contents.replace(/VersionNumber = .*/, `VersionNumber = "${requirements['release-version']}"`));
       changed.push(shellclient);
 
-      const shellreadme = 'clients/client-shell/cmds/README.md';
+      const shellreadme = 'clients/client-shell/README.md';
       utils.status({message: `Update ${shellreadme}`});
       await modifyRepoFile(shellreadme, contents =>
         contents.replace(/download\/v[0-9.]*\/taskcluster-/, `download/v${requirements['release-version']}/taskcluster-"`));

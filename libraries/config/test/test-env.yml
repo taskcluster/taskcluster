@@ -5,5 +5,7 @@ defaults:
   soTrue:     !env:bool      ENV_TRUE
   unTrue:     !env:bool      ENV_FALSE
   notThere:   !env:bool      ENV_NOT_SET
+  empty:      !env           ENV_EMPTY
+  optional:   !env:optional  ENV_OPTIONAL
   json:       !env:json      ENV_JSON
   list:       !env:list      ENV_LIST

@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: taskcluster-notify
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: taskcluster-notify
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-notify-web
+    app.kubernetes.io/part-of: taskcluster
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

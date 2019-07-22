@@ -41,6 +41,10 @@ This library has support for the following syntax extensions:
  * `!env:list <NAME>`, load list of space separated strings from env
     variable `<NAME>`.
 
+Each of these is also supported with a trailing `:optional` which does nothing
+during loading of the configuration but does help us generate schemas for
+allowed configuration options for deployments of taskcluster.
+
 Loading Configuration
 ---------------------
 
@@ -67,6 +71,8 @@ var cfg = config({
   ]
   profile:  undefined, // Profile to apply (default to none)
   env:      process.env, // Environment variables (mapping string to strings)
+  getEnvVars: false, // If true, rather than returning configuration, this returns the list
+                        of possible env vars
 });
 ```
 

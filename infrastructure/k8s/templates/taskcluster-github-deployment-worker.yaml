@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taskcluster-github-worker
+  labels:
+    app.kubernetes.io/name: taskcluster-github
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-github-worker
+    app.kubernetes.io/part-of: taskcluster
+    app.kubernetes.io/managed-by: helm
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: taskcluster-github
+      app.kubernetes.io/instance: '{{ .Release.Name }}'
+      app.kubernetes.io/component: taskcluster-github-worker
+      app.kubernetes.io/part-of: taskcluster
+      app.kubernetes.io/managed-by: helm
+  replicas: {{ int (.Values.github.procs.worker.replicas) }}
+  template:
+    metadata:
+      annotations:
+        checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-github-secret.yaml") . | sha256sum }}'
+      labels:
+        app.kubernetes.io/name: taskcluster-github
+        app.kubernetes.io/instance: '{{ .Release.Name }}'
+        app.kubernetes.io/component: taskcluster-github-worker
+        app.kubernetes.io/part-of: taskcluster
+        app.kubernetes.io/managed-by: helm
+    spec:
+      serviceAccountName: taskcluster-github
+      containers:
+        - name: taskcluster-github
+          image: '{{ .Values.dockerImage }}'
+          imagePullPolicy: Always
+          args:
+            - github/worker
+          resources:
+            requests:
+              cpu: '{{ .Values.github.procs.worker.cpu }}'
+              memory: '{{ .Values.github.procs.worker.memory }}'
+          env:
+            - name: TASKCLUSTER_ROOT_URL
+              value: '{{ .Values.rootUrl }}'
+            - name: NODE_ENV
+              value: production
+          envFrom:
+            - secretRef:
+                name: taskcluster-github
+          ports: []

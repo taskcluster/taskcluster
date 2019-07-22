@@ -33,12 +33,11 @@ class MonitorManager {
 
     assert(serviceName, 'Must provide a serviceName to MonitorManager.configure');
     this.serviceName = serviceName;
-
-    // read taskclusterVersionFile, if taskclusterVersion is not set
+    // read dockerflow version file, if taskclusterVersion is not set
     if (this.taskclusterVersion === undefined) {
-      const taskclusterVersionFile = path.resolve(rootdir.get(), '../../taskcluster-version');
+      const taskclusterVersionFile = path.resolve(rootdir.get(), '../../version.json');
       try {
-        this.taskclusterVersion = fs.readFileSync(taskclusterVersionFile).toString().trim();
+        this.taskclusterVersion = JSON.parse(fs.readFileSync(taskclusterVersionFile).toString()).version;
       } catch (err) {
         // Do nothing, will just be undefined
       }

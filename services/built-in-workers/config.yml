@@ -7,7 +7,7 @@ defaults:
       accessToken: !env TASKCLUSTER_ACCESS_TOKEN
 
   monitoring:
-    level: !env LEVEL
+    level: !env:optional LEVEL
 
   worker:
     provisionerId: "built-in"

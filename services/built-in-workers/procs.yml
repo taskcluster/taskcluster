@@ -1,5 +1,5 @@
 server:
-  type: web
+  type: background
   command: node src/main.js server
 write-docs:
   type: build
