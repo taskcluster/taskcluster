@@ -5,13 +5,13 @@ title: Finding Tasks
 # Finding Tasks
 
 The "table of contents" for Taskcluster tasks is the
-[Index](https://tools.taskcluster.net/index/). When a task completes
+[Index](https://tc.example.com/tasks/index). When a task completes
 successfully, it is added to the index at an "index route" given by any
 `task.routes` entries that begin with `index.`. (Actually, the Queue just
 [sends pulse messages to well-known exchanges](/docs/reference/platform/queue/exchanges).
 The Index listens to `index.*` for task completion, and indexes the tasks appropriately).
 
-What that means is, you can use the [Index Browser](https://tools.taskcluster.net/index/)
+What that means is, you can use the [Index Browser](https://tc.example.com/tasks/index)
 to find tasks.  The precise format of the index paths is partially defined in the
 [namespaces](/docs/manual/devel/namespaces) document.
 

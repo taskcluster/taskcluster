@@ -12,10 +12,7 @@ The queue defines a hierarchy of resources that consume tasks from queues:
 [Provisioners](/docs/manual/task-execution/provisioning), identified with a
 `provisionerId`, are responsible for groups of worker types. While some
 provisioners, such as the AWS provisioner, are active software components,
-others are simply identifiers within the Queue service's data structures.  For
-example, there is no active management of the
-[`releng-hardware`](https://tools.taskcluster.net/provisioners/releng-hardware)
-`provisionerId`.
+others are simply identifiers within the Queue service's data structures.
 
 Provisioners can be declared, and metadata associated with them, via the
 [declareProvisioner](/docs/reference/platform/queue/api#declareProvisioner)

@@ -17,7 +17,7 @@ site.
 If you haven't already, try the "[Hello World](hello-world)" tutorial to make
 sure that you can sign in to the tools site.
 
-Open the [client manager](https://tools.taskcluster.net/auth/clients/) and create a new client:
+Open the Clients tool (under Authorization) and create a new client:
 
  * Add `tutorial` to the end of the clientId
  * Set the expiration date to tomorrow, and check "Automatically delete this client when it expires"
@@ -41,7 +41,7 @@ provides a tool that can do all of the above for you.
 $ eval `taskcluster signin --scope queue:create-task:aws-provisioner-v1/tutorial`
 Starting
 Listening for a callback on: http://localhost:37885
-Opening URL: https://tools.taskcluster.net/auth/clients/new?name=cli&description=Temporary+client+for+use+on+the+command+line&scope=*&expires=1d&callback_url=http%3A%2F%2Flocalhost%3A37885
+Opening URL: https://tc.example.com/auth/clients/new?name=cli&description=Temporary+client+for+use+on+the+command+line&scope=*&expires=1d&callback_url=http%3A%2F%2Flocalhost%3A37885
 Credentials output as environment variables
 ```
 
