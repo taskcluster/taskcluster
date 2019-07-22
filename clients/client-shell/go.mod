@@ -11,7 +11,7 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.3.0
-	github.com/taskcluster/go-got v0.0.0-20190124144129-fcbc014b2883
+	github.com/taskcluster/go-got v0.0.0-20190722003521-c63e3293a290
 	github.com/taskcluster/slugid-go v1.1.0
 	github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible
 	github.com/taskcluster/taskcluster/clients/client-go/v14 v14.0.0-20190713182157-1b8e18d76d60
