@@ -124,28 +124,41 @@ You will first need to have
 * a running kubernetes cluster (at the moment this has to be a gke cluster from google)
 * a rabbitmq cluster
 * an azure account
-* an aws account
+* an aws account and an IAM user in that account
 * helm3 installed
-* kubectl installed
+* latest version of kubectl installed
 
 Once those are all set up, you will need:
 
-* set up a local iam user; this iam user must be able to configure s3/iam resources
-* `gcloud container clusters get-credentials` for your k8s cluster
+* Configure CLI access for your AWS user; this iam user must be able to configure s3/iam resources
+* Select a hostname for which you control the DNS; this will be your rootUrl. (hint: <yourname>.taskcluster-dev.net - this domain managed in Route53 in the taskcluster-aws-staging AWS account)
+* Run `gcloud container clusters get-credentials` for your k8s cluster
 
 Now follow along:
-1. Use [this guide](https://cloud.google.com/kubernetes-engine/docs/how-to/managed-certs) to set up an ip addr and
-   certificate for later use. For now you can do the manually managed option and create a certificate with certbot.
-2. `yarn dev:init` will ask you a bunch of questions and fill out your local config for you (most of it anyway).
-   once it has done this, your `dev-config.yml` is filled with secrets so don't leak it. These are dev-only secrets
-   though so don't be too worried. Soon we may work on getting this to be encryped at rest.
-3. Run `yarn dev:template` and see if it complains about any missing values in your configuration
-4. If you want to deploy local changes, run `yarn build --push` and add the resulting image id to your config file with
-   the key `dockerImage`.
-5. `yarn dev:install` will use helm to apply all of your kubernetes resources to the cluster. *Note that this will
-   create a new namespace in the cluster for you and switch your kubectl context to it*
-6. `yarn dev:upgrade` will update an already installed cluster (once helm fixes things)
-7. `yarn dev:uninstall` will uninstall your deployment.
+1. Set up an IP address: `gcloud compute addresses create <yourname>-ingress-ip --global`.
+   You can find the assigned IP in `gcloud compute addresses list`, and put it into DNS as an A record.
+1. Create a certificate: `certbot certonly --manual --preferred-challenges dns`.  This will ask you to add a TXT record to the DNS.
+   Note that certbot is installed with `brew install letsencrypt` on macOS.
+1. Upload the certificate: `gcloud compute ssl-certificates create <yourname>-ingress --certificate <cert> --private-key <key>`
+1. `yarn dev:init` will ask you a bunch of questions and fill out your local
+   config for you (most of it anyway).  Once it has done this, your
+   `dev-config.yml` is filled with secrets so don't leak it. These are dev-only
+   secrets though so don't be too worried. Soon we may work on getting this to
+   be encryped at rest.
+   * SubscriptionId can be found in the Azure console
+   * RabbitMQ account creds are in passwordstore at tc/cloudamqp.com/hip-macaw
+1. Run `yarn dev:template` and see if it complains about any missing values in
+   your configuration
+1. If you want to deploy local changes, run `yarn build --push` and add the
+   resulting image id to your config file with the key `dockerImage`.
+1. `yarn dev:install` will use helm to apply all of your kubernetes resources
+   to the cluster. *Note that this will create a new namespace in the cluster
+   for you and switch your kubectl context to it*
+1. `yarn dev:upgrade` will update an already installed cluster (once helm fixes
+   things).  Note that this isn't able to change lots of things such as the
+   docker image, so you may want to get in the habit of doing `dev:uninstall`
+   followed by `dev:install`, instead.
+1. `yarn dev:uninstall` will uninstall your deployment.
 
 ## Hacking on Clients
 

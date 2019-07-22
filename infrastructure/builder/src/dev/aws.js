@@ -109,7 +109,7 @@ module.exports = async ({userConfig, answer, configTmpl}) => {
     userConfig.queue.aws_secret_access_key = accessKey.SecretAccessKey;
   }
 
-  if (!userConfig.notify.aws_access_key_id) {
+  if (!userConfig.notify || !userConfig.notify.aws_access_key_id) {
     const accessKey = await setupIam({
       iam,
       iamName: `${prefix}-taskcluster-notify`,
@@ -132,6 +132,9 @@ module.exports = async ({userConfig, answer, configTmpl}) => {
       },
     });
 
+    if (!userConfig.notify) {
+      userConfig.notify = {};
+    }
     userConfig.notify.aws_access_key_id = accessKey.AccessKeyId;
     userConfig.notify.aws_secret_access_key = accessKey.SecretAccessKey;
   }
