@@ -37,6 +37,8 @@ github.com/pborman/uuid v1.2.0/go.mod h1:X/NO0urCmaxf9VXbdlT7C2Yzkj2IKimNn4k+gtP
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
 github.com/pkg/browser v0.0.0-20170505125900-c90ca0c84f15 h1:mrI+6Ae64Wjt+uahGe5we/sPS1sXjvfT3YjtawAVgps=
 github.com/pkg/browser v0.0.0-20170505125900-c90ca0c84f15/go.mod h1:4OwLy04Bl9Ef3GJJCoec+30X3LQs/0/m4HFRt/2LUSA=
+github.com/pkg/browser v0.0.0-20190722003412-0a3d74bf9ce4 h1:S2WWbWtp28jaYWBkKOvBjI70ZlQ23qCZCMZmSrHm8rs=
+github.com/pkg/browser v0.0.0-20190722003412-0a3d74bf9ce4/go.mod h1:4OwLy04Bl9Ef3GJJCoec+30X3LQs/0/m4HFRt/2LUSA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/russross/blackfriday v1.5.2/go.mod h1:JO/DiYxRf+HjHt06OyowR9PTA263kcR/rfWxYHBV53g=
@@ -67,6 +69,8 @@ github.com/taskcluster/taskcluster-base-go v1.0.0 h1:Jh2R/J7+a23LjtYEHQtkFV04QBx
 github.com/taskcluster/taskcluster-base-go v1.0.0/go.mod h1:ByyzyqqufsfZTrAHUw+0Grp8FwZAizZOKzVE1IpDXxQ=
 github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible h1:57WLzh7B04y6ahTOJ8wjvdkbwYqnyJkwLXQ1Tu4E/DU=
 github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible/go.mod h1:ALqTgi15AmJGEGubRKM0ydlLAFatlQPrQrmal9YZpQs=
+github.com/taskcluster/taskcluster/clients/client-go/v14 v14.0.0-20190713182157-1b8e18d76d60 h1:cl64SyXMJt3nehwK27C3jfnOotuaIF7VHvhsc7sXetk=
+github.com/taskcluster/taskcluster/clients/client-go/v14 v14.0.0-20190713182157-1b8e18d76d60/go.mod h1:X3RhiqGfN52X/8v0fHb9uNxMqNBroUay5z7Uvcx4oLk=
 github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957 h1:6Fre/uvwovW5YY4nfHZk66cAg9HjT9YdFSAJHUUgOyQ=
 github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957/go.mod h1:dch7ywQEefE1ibFqBG1erFibrdUIwovcwQjksYuHuP4=
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=

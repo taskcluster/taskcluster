@@ -7,7 +7,7 @@ require (
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pborman/uuid v1.2.0
-	github.com/pkg/browser v0.0.0-20170505125900-c90ca0c84f15
+	github.com/pkg/browser v0.0.0-20190722003412-0a3d74bf9ce4
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.3.0
