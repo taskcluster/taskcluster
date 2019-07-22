@@ -14,14 +14,14 @@ const azurePrompts = ({userConfig, prompts, configTmpl}) => {
   });
 
   prompts.push({
-    when: () => !userConfig.meta.azureSubscriptionId,
+    when: () => !userConfig.meta || !userConfig.meta.azureSubscriptionId,
     type: 'input',
     name: 'meta.azureSubscriptionId',
     message: 'What is the azure subscriptionId?',
   });
 
   prompts.push({
-    when: () => !userConfig.meta.azureRegion,
+    when: () => !userConfig.meta || !userConfig.meta.azureRegion,
     type: 'input',
     name: 'meta.azureRegion',
     message: 'Which azure region to use for storage.',
