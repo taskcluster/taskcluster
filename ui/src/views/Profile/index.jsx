@@ -6,6 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import { withStyles } from '@material-ui/core/styles';
 import Dashboard from '../../components/Dashboard';
 import DateDistance from '../../components/DateDistance';
 import { withAuth } from '../../utils/Auth';
@@ -19,10 +20,16 @@ import profileQuery from './profile.graphql';
     fetchPolicy: 'network-only',
   }),
 })
+@withStyles({
+  certificate: {
+    wordBreak: 'break-word',
+  },
+})
 export default class Profile extends Component {
   render() {
     const {
       user,
+      classes,
       data: { currentScopes, loading, error },
     } = this.props;
 
@@ -45,7 +52,7 @@ export default class Profile extends Component {
                   primary="Certificate"
                   secondary={
                     user.credentials.certificate ? (
-                      <code style={{ wordBreak: 'break-word' }}>
+                      <code className={classes.certificate}>
                         {user.credentials.certificate}
                       </code>
                     ) : (
