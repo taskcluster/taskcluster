@@ -130,13 +130,15 @@ You will first need to have
 
 Once those are all set up, you will need:
 
-* configure CLI access for your AWS user; this iam user must be able to configure s3/iam resources
-* a hostname for which you control the DNS (hint: *.taskcluster-dev.net is managed in Route53 in the taskcluster-aws-staging AWS account)
-* `gcloud container clusters get-credentials` for your k8s cluster
+* Configure CLI access for your AWS user; this iam user must be able to configure s3/iam resources
+* Select a hostname for which you control the DNS; this will be your rootUrl. (hint: <yourname>.taskcluster-dev.net - this domain managed in Route53 in the taskcluster-aws-staging AWS account)
+* Run `gcloud container clusters get-credentials` for your k8s cluster
 
 Now follow along:
 1. Set up an IP address: `gcloud compute addresses create <yourname>-ingress-ip --global`.
-1. Create a certificate: `certbot certonly --manual --preferred-challenges dns`
+   You can find the assigned IP in `gcloud compute addresses list`, and put it into DNS as an A record.
+1. Create a certificate: `certbot certonly --manual --preferred-challenges dns`.  This will ask you to add a TXT record to the DNS.
+   Note that certbot is installed with `brew install letsencrypt` on macOS.
 1. Upload the certificate: `gcloud compute ssl-certificates create <yourname>-ingress --certificate <cert> --private-key <key>`
 1. `yarn dev:init` will ask you a bunch of questions and fill out your local
    config for you (most of it anyway).  Once it has done this, your
@@ -153,7 +155,9 @@ Now follow along:
    to the cluster. *Note that this will create a new namespace in the cluster
    for you and switch your kubectl context to it*
 1. `yarn dev:upgrade` will update an already installed cluster (once helm fixes
-   things)
+   things).  Note that this isn't able to change lots of things such as the
+   docker image, so you may want to get in the habit of doing `dev:uninstall`
+   followed by `dev:install`, instead.
 1. `yarn dev:uninstall` will uninstall your deployment.
 
 ## Hacking on Clients
