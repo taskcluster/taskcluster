@@ -45,7 +45,9 @@ export default class Profile extends Component {
                   primary="Certificate"
                   secondary={
                     user.credentials.certificate ? (
-                      <code>{user.credentials.certificate}</code>
+                      <code style={{ wordBreak: 'break-word' }}>
+                        {user.credentials.certificate}
+                      </code>
                     ) : (
                       'n/a'
                     )
