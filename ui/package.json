@@ -100,7 +100,7 @@
     "@babel/preset-react": "^7.0.0",
     "@babel/register": "^7.0.0",
     "@mozilla-frontend-infra/react-lint": "^1.2.1",
-    "@neutrinojs/airbnb": "9.0.0-rc.0",
+    "@neutrinojs/airbnb": "9.0.0-rc.3",
     "@neutrinojs/karma": "9.0.0-rc.0",
     "@neutrinojs/react": "9.0.0-rc.0",
     "babel-loader": "^8.0.5",
