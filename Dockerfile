@@ -1,31 +1,44 @@
 ##
 # Build /app
 
-ARG taskcluster_version
 FROM node:10.16.0 as build
 
-RUN mkdir -p /base /base/cache
+RUN mkdir -p /base/cache
 ENV YARN_CACHE_FOLDER=/base/cache
+
+RUN mkdir -p /base/yarn
+COPY /yarn.lock /package.json /base/yarn/
+RUN mkdir -p /base/yarn-ui
+COPY /ui/yarn.lock /ui/package.json /base/yarn-ui/
+
+WORKDIR /base/yarn
+RUN yarn install --frozen-lockfile
+WORKDIR /base/yarn-ui
+RUN yarn install --frozen-lockfile
+
+RUN mkdir -p /base/app/ui
+RUN cp -r /base/yarn/node_modules /base/app/
+RUN cp -r /base/yarn-ui/node_modules /base/app/ui/
 
 # copy the repository into the image, including the entrypoint
 COPY / /base/repo
 
-# Clone that to /app
-RUN git clone /base/repo /base/app
-
-# set up the /app directory
+# We have to do this rather than git clone because
+# git won't let us clone into a non-empty repo
+# We do this git stuff at all so that we don't
+# make images with things people have in their
+# personal gitignores, etc
 WORKDIR /base/app
+RUN git init
+RUN git remote add origin /base/repo
+RUN git pull origin HEAD
+
 RUN chmod +x entrypoint
-RUN yarn install --frozen-lockfile
 
 # Now that node_modules are here, do some generation
 RUN yarn run build:onbuild
 
-WORKDIR /base/app/ui
-RUN yarn install --frozen-lockfile
-
 # clean up some unnecessary and potentially large stuff
-WORKDIR /base/app
 RUN rm -rf .git
 RUN rm -rf .node-gyp ui/.node-gyp
 RUN rm -rf clients/client-{go,py,web}
@@ -40,4 +53,3 @@ COPY --from=build /base/app /app
 ENV HOME=/app
 WORKDIR /app
 ENTRYPOINT ["/app/entrypoint"]
-
