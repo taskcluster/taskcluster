@@ -11,6 +11,9 @@ type (
 		// Argument that appears in `route` warpped in angle brackets. It must be replaced to call the function.
 		Args []string `json:"args"`
 
+		// Category for the API method
+		Category string `json:"category"`
+
 		// Description (ie. documentation) for the API entry
 		Description string `json:"description"`
 

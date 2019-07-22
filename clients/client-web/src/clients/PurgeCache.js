@@ -10,10 +10,10 @@ export default class PurgeCache extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {"args":[],"method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.purgeCache.entry = {"args":["provisionerId","workerType"],"input":true,"method":"post","name":"purgeCache","query":[],"route":"/purge-cache/<provisionerId>/<workerType>","scopes":"purge-cache:<provisionerId>/<workerType>:<cacheName>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.allPurgeRequests.entry = {"args":[],"method":"get","name":"allPurgeRequests","output":true,"query":["continuationToken","limit"],"route":"/purge-cache/list","stability":"stable","type":"function"}; // eslint-disable-line
-    this.purgeRequests.entry = {"args":["provisionerId","workerType"],"method":"get","name":"purgeRequests","output":true,"query":["since"],"route":"/purge-cache/<provisionerId>/<workerType>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.purgeCache.entry = {"args":["provisionerId","workerType"],"category":"Purge-Cache Service","input":true,"method":"post","name":"purgeCache","query":[],"route":"/purge-cache/<provisionerId>/<workerType>","scopes":"purge-cache:<provisionerId>/<workerType>:<cacheName>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.allPurgeRequests.entry = {"args":[],"category":"Purge-Cache Service","method":"get","name":"allPurgeRequests","output":true,"query":["continuationToken","limit"],"route":"/purge-cache/list","stability":"stable","type":"function"}; // eslint-disable-line
+    this.purgeRequests.entry = {"args":["provisionerId","workerType"],"category":"Purge-Cache Service","method":"get","name":"purgeRequests","output":true,"query":["since"],"route":"/purge-cache/<provisionerId>/<workerType>","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
