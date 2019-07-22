@@ -31,12 +31,13 @@ COPY / /base/repo
 WORKDIR /base/app
 RUN git init
 RUN git remote add origin /base/repo
-RUN git pull origin HEAD
+RUN git pull --tags origin HEAD
 
 RUN chmod +x entrypoint
 
 # Now that node_modules are here, do some generation
-RUN yarn run build:onbuild
+RUN echo \{\"version\": \"$(git describe --tags --always --match v*.*.*)\", \"commit\": \"$(git rev-parse HEAD)\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > version.json
+
 
 # clean up some unnecessary and potentially large stuff
 RUN rm -rf .git
