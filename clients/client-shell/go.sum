@@ -58,6 +58,8 @@ github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/taskcluster/go-got v0.0.0-20190124144129-fcbc014b2883 h1:MIGsS9yus9g/UW1MlB1gYZInDDA0XlRt4L385Xn/p9E=
 github.com/taskcluster/go-got v0.0.0-20190124144129-fcbc014b2883/go.mod h1:HTybyl/tXQVIHGzZDrco0HzB7tixubXMw29q1n8G0Wc=
+github.com/taskcluster/go-got v0.0.0-20190722003521-c63e3293a290 h1:0d95fonGzuVsAsw+3UotqBNb1shDwjI2oo2RMYN3ndQ=
+github.com/taskcluster/go-got v0.0.0-20190722003521-c63e3293a290/go.mod h1:HTybyl/tXQVIHGzZDrco0HzB7tixubXMw29q1n8G0Wc=
 github.com/taskcluster/httpbackoff v1.0.0 h1:bdh5txPv6geBVSEcx7Jy3kqiBaIrCZJwzCotPJKf9DU=
 github.com/taskcluster/httpbackoff v1.0.0/go.mod h1:DEx05B3r52XQRbgzZ5y6XorMjVXBhtoHgc/ap+yLXgY=
 github.com/taskcluster/jsonschema2go v1.0.0 h1:ZEDj2NKh8Sceq36zyLhSV6ann/aNXKZIe9cAXq7CDdk=
