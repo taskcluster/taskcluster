@@ -7,7 +7,7 @@ defaults:
     cacheTime:                   10
 
   monitoring:
-    level: !env LEVEL
+    level: !env:optional LEVEL
 
   server:
     # Port to listen for requests on
@@ -23,7 +23,7 @@ defaults:
     trustProxy:                     !env:bool TRUST_PROXY
 
   azure:
-    accountId:                !env AZURE_ACCOUNT
+    accountId:                !env AZURE_ACCOUNT_ID
 
   taskcluster:
     rootUrl:                     !env TASKCLUSTER_ROOT_URL
@@ -33,8 +33,8 @@ defaults:
 
   # AWS SDK configuration for publication of schemas and references
   aws:
-    accessKeyId:      !env AWS_ACCESS_KEY_ID
-    secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
+    accessKeyId:      !env:optional AWS_ACCESS_KEY_ID
+    secretAccessKey:  !env:optional AWS_SECRET_ACCESS_KEY
     # Default AWS region this is where the S3 bucket lives
     region:                         'us-west-2'
     # Lock API version to use the latest API from 2013 this is fuzzy locking

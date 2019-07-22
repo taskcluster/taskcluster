@@ -6,7 +6,7 @@ defaults:
     playground: false
 
   monitoring:
-    level: !env LEVEL
+    level: !env:optional LEVEL
 
   # Server configuration
   server:

@@ -12,6 +12,7 @@ comment: off
 coverage:
   precision: 0
   status:
+    patch: off
     project:
       default:
         threshold: 1 # This combined with precision 0 should stop us from failing checks randomly

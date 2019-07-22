@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: taskcluster-web-server
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: taskcluster-web-server
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-web-server-web
+    app.kubernetes.io/part-of: taskcluster
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

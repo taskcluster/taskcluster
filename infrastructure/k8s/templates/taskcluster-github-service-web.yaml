@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: taskcluster-github
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: taskcluster-github
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-github-web
+    app.kubernetes.io/part-of: taskcluster
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

@@ -118,6 +118,8 @@ Client.syncStaticClients = async function(clients = []) {
   for (const client of clients) {
     assert(typeof client.clientId === 'string', 'expected clientId to be a string');
     assert(typeof client.accessToken === 'string', 'expected accessToken to be a string');
+    assert(client.accessToken.length >= 22, 'accessToken must have at least 22 chars');
+    assert(client.accessToken.length <= 66, 'accessToken must have at least 66 chars');
     assert(typeof client.description === 'string', 'expected description to be a string');
     assert(client.scopes instanceof Array, 'expected scopes to be an array of strings');
     assert(client.clientId.startsWith('static/'), 'static clients must have clientId = "static/..."');

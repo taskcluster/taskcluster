@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: taskcluster-auth
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: taskcluster-auth
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-auth-web
+    app.kubernetes.io/part-of: taskcluster
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

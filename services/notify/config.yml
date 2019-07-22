@@ -9,7 +9,7 @@ defaults:
     maxMessageCount:              50
     maxMessageTime:               600
     # Email address to blacklist, useful to mitigate temporary misuse
-    emailBlacklist:               !env:json EMAIL_BLACKLIST
+    emailBlacklist:               !env:json:optional EMAIL_BLACKLIST
     denylistedNotificationTableName: !env DENYLISTED_NOTIFICATION_TABLE_NAME
     # ignore tasks with reasonResolved matching something in this list
     ignoreTaskReasonResolved:
@@ -23,10 +23,10 @@ defaults:
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
 
   azure:
-    accountId:                    !env AZURE_ACCOUNT
+    accountId:                    !env AZURE_ACCOUNT_ID
 
   monitoring:
-    level: !env LEVEL
+    level: !env:optional LEVEL
 
   server:
     port:             !env:number PORT
@@ -37,7 +37,7 @@ defaults:
   aws:
     accessKeyId:      !env AWS_ACCESS_KEY_ID
     secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
-    region:           !env AWS_REGION
+    region:           !env:optional AWS_REGION
 
   pulse:
     namespace: !env PULSE_NAMESPACE
@@ -46,15 +46,16 @@ defaults:
     password: !env PULSE_PASSWORD
     vhost: !env PULSE_VHOST
 
+  # All optional. If not specified, irc just won't work
   irc:
-    server:           !env IRC_SERVER
-    nick:             !env IRC_NICK
-    userName:         !env IRC_USER_NAME
-    realName:         !env IRC_REAL_NAME
-    password:         !env IRC_PASSWORD
-    port:             !env IRC_PORT
-    debug:            !env IRC_DEBUG
-    pulseQueueName:   !env IRC_PULSE_QUEUE_NAME
+    server:           !env:optional IRC_SERVER
+    nick:             !env:optional IRC_NICK
+    userName:         !env:optional IRC_USER_NAME
+    realName:         !env:optional IRC_REAL_NAME
+    password:         !env:optional IRC_PASSWORD
+    port:             !env:optional IRC_PORT
+    debug:            !env:optional IRC_DEBUG
+    pulseQueueName:   !env:optional IRC_PULSE_QUEUE_NAME
 
 # Configuration in production
 production:
