@@ -131,7 +131,7 @@ You will first need to have
 Once those are all set up, you will need:
 
 * Configure CLI access for your AWS user; this iam user must be able to configure s3/iam resources
-* Select a hostname for which you control the DNS; this will be your rootUrl. (hint: <yourname>.taskcluster-dev.net - this domain managed in Route53 in the taskcluster-aws-staging AWS account)
+* Think of a hostname for which you control the DNS; this will be your rootUrl. (hint: <yourname>.taskcluster-dev.net - this domain managed in Route53 in the taskcluster-aws-staging AWS account)
 * Run `gcloud container clusters get-credentials` for your k8s cluster
 
 Now follow along:
@@ -139,7 +139,7 @@ Now follow along:
    You can find the assigned IP in `gcloud compute addresses list`, and put it into DNS as an A record.
 1. Create a certificate: `certbot certonly --manual --preferred-challenges dns`.  This will ask you to add a TXT record to the DNS.
    Note that certbot is installed with `brew install letsencrypt` on macOS.
-1. Upload the certificate: `gcloud compute ssl-certificates create <yourname>-ingress --certificate <cert> --private-key <key>`
+1. Upload the certificate: `gcloud compute ssl-certificates create <yourname>-ingress --certificate <path-to-fullchain.pem> --private-key <path-to-key>`
 1. `yarn dev:init` will ask you a bunch of questions and fill out your local
    config for you (most of it anyway).  Once it has done this, your
    `dev-config.yml` is filled with secrets so don't leak it. These are dev-only
@@ -159,6 +159,14 @@ Now follow along:
    docker image, so you may want to get in the habit of doing `dev:uninstall`
    followed by `dev:install`, instead.
 1. `yarn dev:uninstall` will uninstall your deployment.
+
+Troubleshooting:
+* Certbot error `[Errno 13] Permission denied: '/var/log/letsencrypt' Either run as root, or set --config-dir, --work-dir, and --logs-dir to writeable paths.` - do not run as root, but set the directories instead
+* Dev config creation step: `AccessDenied: Access Denied` error with a stack trace pointing at aws-sdk library - make sure to run [this script](https://gist.github.com/djmitche/80353576a0f389bf130bcb439f63d070). Note that you'll be running that script many times, so it's wise to setup the function (see the starting comment in the script) or an alias. This script fetches the temporary credentials for aws and saves them to env variables.
+* Helm error `Error: stat taskcluster: no such file or directory` - make sure you have helm3 installed.
+* Kubectl error: `Error: unknown flag --current` - make sure you run kubectl v1.15.0 or later
+* Helm error: `AssertionError [ERR_ASSERTION]: cryptoKey is required when a property is encrypted in any of the schema versions` - set `dockerImage` to `taskcluster/taskcluster:v14.3.1-106-gdaf0c42ba` in your dev-config (top level)
+
 
 ## Hacking on Clients
 
