@@ -85,7 +85,7 @@ import SkipNavigation from '../SkipNavigation';
     docsDrawerPaper: {
       width: theme.docsDrawerWidth,
       [theme.breakpoints.down('xs')]: {
-        width: '240px',
+        width: theme.spacing.unit * 30,
       },
     },
     helpDrawerPaper: {
