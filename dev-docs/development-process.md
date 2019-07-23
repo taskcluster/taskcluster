@@ -161,11 +161,10 @@ Now follow along:
 1. `yarn dev:uninstall` will uninstall your deployment.
 
 Troubleshooting:
-* Certbot error `[Errno 13] Permission denied: '/var/log/letsencrypt' Either run as root, or set --config-dir, --work-dir, and --logs-dir to writeable paths.` - do not run as root, but set the directories instead
-* Dev config creation step: `AccessDenied: Access Denied` error with a stack trace pointing at aws-sdk library - make sure to run [this script](https://gist.github.com/djmitche/80353576a0f389bf130bcb439f63d070). Note that you'll be running that script many times, so it's wise to setup the function (see the starting comment in the script) or an alias. This script fetches the temporary credentials for aws and saves them to env variables.
+* Certbot error `[Errno 13] Permission denied: '/var/log/letsencrypt' Either run as root, or set --config-dir, --work-dir, and --logs-dir to writeable paths.` - do not run as root, but set the directories instead.
+* Dev config creation step: `AccessDenied: Access Denied` error with a stack trace pointing at aws-sdk library - make sure to have your aws credentials are fetched and stored in environment variables AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_SESSION_TOKEN.
 * Helm error `Error: stat taskcluster: no such file or directory` - make sure you have helm3 installed.
 * Kubectl error: `Error: unknown flag --current` - make sure you run kubectl v1.15.0 or later
-* Helm error: `AssertionError [ERR_ASSERTION]: cryptoKey is required when a property is encrypted in any of the schema versions` - set `dockerImage` to `taskcluster/taskcluster:v14.3.1-106-gdaf0c42ba` in your dev-config (top level)
 
 
 ## Hacking on Clients
