@@ -141,11 +141,17 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
         contents.replace(/download\/v[0-9.]*\/taskcluster-/, `download/v${requirements['release-version']}/taskcluster-"`));
       changed.push(shellreadme);
 
+      const shellgomod = 'clients/client-shell/go.mod';
+      const major = requirements['release-version'].replace(/\..*/, '');
+      utils.status({message: `Update ${shellgomod}`});
+      await modifyRepoFile(shellgomod, contents =>
+        contents.replace(/(\tgithub.com\/taskcluster\/taskcluster\/clients\/client-go\/v)\d+ +v.*/g, `$1${major} v${requirements['release-version']}`));
+      changed.push(shellgomod);
+
       // the go client requires the major version number in its import path, so
       // just about every file needs to be edited.  This matches the full package
       // path to avoid false positives, but that might result in missed changes
       // where the full path is not used.
-      const major = requirements['release-version'].replace(/\..*/, '');
       for (let file of await gitLsFiles({patterns: ['clients/client-go/**', 'clients/client-shell/**']})) {
         await modifyRepoFile(file, contents =>
           contents.replace(/(github.com\/taskcluster\/taskcluster\/clients\/client-go\/v)\d+/g, `$1${major}`));
