@@ -4,7 +4,7 @@ from setuptools import setup
 from setuptools.command.test import test as TestCommand
 import sys
 
-VERSION = '14.3.1'
+VERSION = '15.0.0'
 
 tests_require = [
     'nose',

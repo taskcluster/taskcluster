@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v15"
 	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 )
 

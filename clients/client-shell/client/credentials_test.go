@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v15"
 
 	assert "github.com/stretchr/testify/require"
 )

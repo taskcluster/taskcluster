@@ -5,7 +5,7 @@ package tctreeherderevents
 import (
 	"encoding/json"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v15"
 )
 
 type (

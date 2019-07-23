@@ -14,7 +14,7 @@ require (
 	github.com/taskcluster/go-got v0.0.0-20190722003521-c63e3293a290
 	github.com/taskcluster/slugid-go v1.1.0
 	github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible
-	github.com/taskcluster/taskcluster/clients/client-go/v14 v14.0.0-20190713182157-1b8e18d76d60
+	github.com/taskcluster/taskcluster/clients/client-go/v15 v15.0.0
 	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
 	golang.org/x/net v0.0.0-20190628185345-da137c7871d7 // indirect
 	golang.org/x/text v0.3.2 // indirect
@@ -23,4 +23,4 @@ require (
 	gopkg.in/yaml.v2 v2.2.2
 )
 
-replace github.com/taskcluster/taskcluster/clients/client-go/v14 => ../client-go
+replace github.com/taskcluster/taskcluster/clients/client-go/v15 => ../client-go

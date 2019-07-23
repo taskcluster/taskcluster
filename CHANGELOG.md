@@ -3,6 +3,24 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v15.0.0
+
+[MAJOR] The web-server application no longer generates a JWT when logging in. It uses a sessions to keep track of users.
+The `JWT_KEY` configuration variable in web-server should be replaced with `SESSION_SECRET` which is used to compute
+the session hash.
+
+[MAJOR] ([#1005](https://github.com/taskcluster/taskcluster/issues/1005)) There is now a checked-in helm chart in `infrastructure/k8s`. Using this anyone should
+be able to deploy taskcluster by just setting up the configuration.
+
+To facilitate this, some environment variables for configuring services have changed:
+
+* All services now take `AZURE_ACCOUNT_ID` instead of `AZURE_ACCOUNT` or `AZURE_ACCOUNT_NAME`
+* Hooks takes `AZURE_CRYPTO_KEY` and `AZURE_SIGNING_KEY` instead of `TABLE_CRYPTO_KEY` and `TABLE_SIGNING_KEY`
+
+[minor] ([#1084](https://github.com/taskcluster/taskcluster/issues/1084)) The Dockerfile for the Taskcluster services is now checked-in rather than
+generated at build time. It has been reordered so that changes to things
+other than package.json won't re-install packages.
+
 ## v14.3.1
 
 Include generated APIs in python package.
