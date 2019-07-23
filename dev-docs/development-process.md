@@ -131,7 +131,7 @@ You will first need to have
 Once those are all set up, you will need:
 
 * Configure CLI access for your AWS user; this iam user must be able to configure s3/iam resources
-* Think of a hostname for which you control the DNS; this will be your rootUrl. (hint: <yourname>.taskcluster-dev.net - this domain managed in Route53 in the taskcluster-aws-staging AWS account)
+* Think of a hostname for which you control the DNS; this will be your rootUrl. (hint: <yourname>.taskcluster-dev.net - this domain managed in Route53 in the taskcluster-aws-staging AWS account. You'll have to create a TXT recordset named _acme-challenge.<yourname>.taskcluster-dev.net with the secret that certbot gave you, and after completing the certbot step - IPv4 recordset with your ingress-ip)
 * Run `gcloud container clusters get-credentials` for your k8s cluster
 
 Now follow along:
