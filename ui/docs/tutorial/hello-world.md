@@ -21,7 +21,7 @@ We support sign-in by Mozillians, as well as by developers and employees with LD
 If that doesn't sound familiar to you, head over to [Mozillians](https://mozillians.org) and set up a new account for yourself.
 Now you're a Mozillian -- thanks for rocking the free web with us!
 
-Visit the [Task Creator](https://tools.taskcluster.net/task-creator) and click the "Sign In" link in the upper right corner.
+Visit the [Task Creator](https://tc.example.com/tasks/create) and click the "Sign In" link in the upper right corner.
 Sign in using whatever method best suits you.
 If you just set up a Mozillians account, use that.
 Click the "Grant Permission" button, which will return you to the task creator.
@@ -44,7 +44,7 @@ metadata:
   name: Example Task
   description: Markdown description of **what** this task does
   owner: name@example.com
-  source: 'https://tools.taskcluster.net/task-creator/'
+  source: 'https://github.com/username/repo'
 ```
 
 Happily, this is already set up to print "hello world"!

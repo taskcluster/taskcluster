@@ -20,6 +20,12 @@ exports.tasks = [{
         /^( *node: ')[0-9.]+(')$/m,
         `$1${nodeVersion}$2`));
 
+    utils.status({message: 'Dockerfile'});
+    await modifyRepoFile('Dockerfile',
+      contents => contents.replace(
+        /^FROM node:[0-9.]+(.*)$/gm,
+        `FROM node:${nodeVersion}$1`));
+
     utils.status({message: 'dev-docs/development-process.md'});
     await modifyRepoFile('dev-docs/development-process.md',
       contents => contents.replace(

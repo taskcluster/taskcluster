@@ -70,6 +70,7 @@ suite(testing.suiteName(), function() {
               name: 'foo',
               title: 'Foo',
               description: 'Foo-bar',
+              category: 'Foo',
               method: 'get',
               input: 'sch.json#',
               route: '/foo',

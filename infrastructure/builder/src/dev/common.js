@@ -67,7 +67,7 @@ module.exports = ({userConfig, prompts, configTmpl}) => {
   });
 
   prompts.push({
-    when: () => !userConfig.notify.email_source_address,
+    when: () => !userConfig.notify || !userConfig.notify.email_source_address,
     type: 'input',
     name: 'notify.email_source_address',
     message: 'Email address for notifications to come from (must set up ses manually)',

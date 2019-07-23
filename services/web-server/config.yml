@@ -58,10 +58,8 @@ defaults:
     #   clientId: !env GITHUB_CLIENT_ID
     #   clientSecret: !env GITHUB_CLIENT_SECRET
     strategies: !env:json UI_LOGIN_STRATEGIES
-    jwt:
-      # this should be a random string, and is used as input to the HS256 JWT
-      # signing algorithm
-      key: !env JWT_KEY
+    # this should be a random string, and is used to create the session ID
+    sessionSecret: !env SESSION_SECRET
 
 development:
   app:
@@ -73,8 +71,16 @@ development:
     port: 3050
     # for testing, allow any origin
     allowedCORSOrigins: [true]
+  login:
+    sessionSecret: 'keyboard cat'
 
 test:
+  app:
+    publicUrl: http://localhost:5080
+
+  login:
+    sessionSecret: 'keyboard cat'
+
   server:
     port: 63821
 

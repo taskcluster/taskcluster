@@ -1,7 +1,8 @@
-node_modules
+**/node_modules
 .eslintcache
-user-build-config.yml
-*.log
+**.log
 .idea
-user-config.yml
-/artifacts/
+**/user-config.yml
+dev-config.yml
+artifacts
+**/.nyc_output

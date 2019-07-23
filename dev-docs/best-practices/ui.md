@@ -13,6 +13,7 @@ When we have a good reason to not follow the best practices in the UI, we docume
 * [Color](#color)
 * [Visual Hierarchy](#visual-hierarchy)
 * [Document Header Hierarchy](#document-header-hierarchy)
+* [Styling](#styling)
 * [Tracking Changes](#tracking-changes)
 
 ## Tables
@@ -77,6 +78,9 @@ Hide it behind a menu like a [SpeedDial](https://material-ui.com/components/spee
 ## Document Header Hierarchy
 Document hierarchy should be respected everywhere, especially for documentation pages.
 There should be at most one `h1` tag in a page and it should be the first header in the document.
+
+## Styling
+* Avoid inline styling - use class names instead to separate content from design.
 
 ## Tracking Changes
 Any pull request to the UI should contain a new snippet in the

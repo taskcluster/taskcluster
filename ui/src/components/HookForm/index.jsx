@@ -56,7 +56,7 @@ const initialHook = {
       name: 'Hook Task',
       description: 'Task Description',
       owner: 'name@example.com',
-      source: 'https://tools.taskcluster.net/hooks',
+      source: 'https://tc.example.com/hooks',
     },
     expires: { $fromNow: '3 months' },
     deadline: { $fromNow: '6 hours' },

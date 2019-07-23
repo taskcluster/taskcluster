@@ -9,6 +9,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Ping Server",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -22,6 +23,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Auth Service",
           "description": "Get a list of all clients.  With `prefix`, only clients for which\nit is a prefix of the clientId are returned.\n\nBy default this end-point will try to return up to 1000 clients in one\nrequest. But it **may return less, even none**.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listClients` with the last `continuationToken` until you\nget a result without a `continuationToken`.",
           "method": "get",
           "name": "listClients",
@@ -40,6 +42,7 @@ module.exports = {
           "args": [
             "clientId"
           ],
+          "category": "Auth Service",
           "description": "Get information about a single client.",
           "method": "get",
           "name": "client",
@@ -55,6 +58,7 @@ module.exports = {
           "args": [
             "clientId"
           ],
+          "category": "Auth Service",
           "description": "Create a new client and get the `accessToken` for this client.\nYou should store the `accessToken` from this API call as there is no\nother way to retrieve it.\n\nIf you loose the `accessToken` you can call `resetAccessToken` to reset\nit, and a new `accessToken` will be returned, but you cannot retrieve the\ncurrent `accessToken`.\n\nIf a client with the same `clientId` already exists this operation will\nfail. Use `updateClient` if you wish to update an existing client.\n\nThe caller's scopes must satisfy `scopes`.",
           "input": "v1/create-client-request.json#",
           "method": "put",
@@ -81,6 +85,7 @@ module.exports = {
           "args": [
             "clientId"
           ],
+          "category": "Auth Service",
           "description": "Reset a clients `accessToken`, this will revoke the existing\n`accessToken`, generate a new `accessToken` and return it from this\ncall.\n\nThere is no way to retrieve an existing `accessToken`, so if you loose it\nyou must reset the accessToken to acquire it again.",
           "method": "post",
           "name": "resetAccessToken",
@@ -97,6 +102,7 @@ module.exports = {
           "args": [
             "clientId"
           ],
+          "category": "Auth Service",
           "description": "Update an exisiting client. The `clientId` and `accessToken` cannot be\nupdated, but `scopes` can be modified.  The caller's scopes must\nsatisfy all scopes being added to the client in the update operation.\nIf no scopes are given in the request, the client's scopes remain\nunchanged",
           "input": "v1/create-client-request.json#",
           "method": "post",
@@ -123,6 +129,7 @@ module.exports = {
           "args": [
             "clientId"
           ],
+          "category": "Auth Service",
           "description": "Enable a client that was disabled with `disableClient`.  If the client\nis already enabled, this does nothing.\n\nThis is typically used by identity providers to re-enable clients that\nhad been disabled when the corresponding identity's scopes changed.",
           "method": "post",
           "name": "enableClient",
@@ -139,6 +146,7 @@ module.exports = {
           "args": [
             "clientId"
           ],
+          "category": "Auth Service",
           "description": "Disable a client.  If the client is already disabled, this does nothing.\n\nThis is typically used by identity providers to disable clients when the\ncorresponding identity's scopes no longer satisfy the client's scopes.",
           "method": "post",
           "name": "disableClient",
@@ -155,6 +163,7 @@ module.exports = {
           "args": [
             "clientId"
           ],
+          "category": "Auth Service",
           "description": "Delete a client, please note that any roles related to this client must\nbe deleted independently.",
           "method": "delete",
           "name": "deleteClient",
@@ -169,6 +178,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Auth Service",
           "description": "Get a list of all roles, each role object also includes the list of\nscopes it expands to.",
           "method": "get",
           "name": "listRoles",
@@ -183,6 +193,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Auth Service",
           "description": "If no limit is given, the roleIds of all roles are returned. Since this\nlist may become long, callers can use the `limit` and `continuationToken`\nquery arguments to page through the responses.",
           "method": "get",
           "name": "listRoleIds",
@@ -199,6 +210,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Auth Service",
           "description": "If no limit is given, all roles are returned. Since this\nlist may become long, callers can use the `limit` and `continuationToken`\nquery arguments to page through the responses.",
           "method": "get",
           "name": "listRoles2",
@@ -216,6 +228,7 @@ module.exports = {
           "args": [
             "roleId"
           ],
+          "category": "Auth Service",
           "description": "Get information about a single role, including the set of scopes that the\nrole expands to.",
           "method": "get",
           "name": "role",
@@ -231,6 +244,7 @@ module.exports = {
           "args": [
             "roleId"
           ],
+          "category": "Auth Service",
           "description": "Create a new role.\n\nThe caller's scopes must satisfy the new role's scopes.\n\nIf there already exists a role with the same `roleId` this operation\nwill fail. Use `updateRole` to modify an existing role.\n\nCreation of a role that will generate an infinite expansion will result\nin an error response.",
           "input": "v1/create-role-request.json#",
           "method": "put",
@@ -257,6 +271,7 @@ module.exports = {
           "args": [
             "roleId"
           ],
+          "category": "Auth Service",
           "description": "Update an existing role.\n\nThe caller's scopes must satisfy all of the new scopes being added, but\nneed not satisfy all of the role's existing scopes.\n\nAn update of a role that will generate an infinite expansion will result\nin an error response.",
           "input": "v1/create-role-request.json#",
           "method": "post",
@@ -283,6 +298,7 @@ module.exports = {
           "args": [
             "roleId"
           ],
+          "category": "Auth Service",
           "description": "Delete a role. This operation will succeed regardless of whether or not\nthe role exists.",
           "method": "delete",
           "name": "deleteRole",
@@ -297,6 +313,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Auth Service",
           "description": "Return an expanded copy of the given scopeset, with scopes implied by any\nroles included.\n\nThis call uses the GET method with an HTTP body.  It remains only for\nbackward compatibility.",
           "input": "v1/scopeset.json#",
           "method": "get",
@@ -312,6 +329,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Auth Service",
           "description": "Return an expanded copy of the given scopeset, with scopes implied by any\nroles included.",
           "input": "v1/scopeset.json#",
           "method": "post",
@@ -327,6 +345,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Auth Service",
           "description": "Return the expanded scopes available in the request, taking into account all sources\nof scopes and scope restrictions (temporary credentials, assumeScopes, client scopes,\nand roles).",
           "method": "get",
           "name": "currentScopes",
@@ -344,6 +363,7 @@ module.exports = {
             "bucket",
             "prefix"
           ],
+          "category": "Auth Service",
           "description": "Get temporary AWS credentials for `read-write` or `read-only` access to\na given `bucket` and `prefix` within that bucket.\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned. Please note that the `level`\nparameter is required in the scope guarding access.  The bucket name must\nnot contain `.`, as recommended by Amazon.\n\nThis method can only allow access to a whitelisted set of buckets.  To add\na bucket to that whitelist, contact the Taskcluster team, who will add it to\nthe appropriate IAM policy.  If the bucket is in a different AWS account, you\nwill also need to add a bucket policy allowing access from the Taskcluster\naccount.  That policy should look like this:\n\n```js\n{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"allow-taskcluster-auth-to-delegate-access\",\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"AWS\": \"arn:aws:iam::692406183521:root\"\n      },\n      \"Action\": [\n        \"s3:ListBucket\",\n        \"s3:GetObject\",\n        \"s3:PutObject\",\n        \"s3:DeleteObject\",\n        \"s3:GetBucketLocation\"\n      ],\n      \"Resource\": [\n        \"arn:aws:s3:::<bucket>\",\n        \"arn:aws:s3:::<bucket>/*\"\n      ]\n    }\n  ]\n}\n```\n\nThe credentials are set to expire after an hour, but this behavior is\nsubject to change. Hence, you should always read the `expires` property\nfrom the response, if you intend to maintain active credentials in your\napplication.\n\nPlease note that your `prefix` may not start with slash `/`. Such a prefix\nis allowed on S3, but we forbid it here to discourage bad behavior.\n\nAlso note that if your `prefix` doesn't end in a slash `/`, the STS\ncredentials may allow access to unexpected keys, as S3 does not treat\nslashes specially.  For example, a prefix of `my-folder` will allow\naccess to `my-folder/file.txt` as expected, but also to `my-folder.txt`,\nwhich may not be intended.\n\nFinally, note that the `PutObjectAcl` call is not allowed.  Passing a canned\nACL other than `private` to `PutObject` is treated as a `PutObjectAcl` call, and\nwill result in an access-denied error from AWS.  This limitation is due to a\nsecurity flaw in Amazon S3 which might otherwise allow indefinite access to\nuploaded objects.\n\n**EC2 metadata compatibility**, if the querystring parameter\n`?format=iam-role-compat` is given, the response will be compatible\nwith the JSON exposed by the EC2 metadata service. This aims to ease\ncompatibility for libraries and tools built to auto-refresh credentials.\nFor details on the format returned by EC2 metadata service see:\n[EC2 User Guide](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).",
           "method": "get",
           "name": "awsS3Credentials",
@@ -369,6 +389,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Auth Service",
           "description": "Retrieve a list of all Azure accounts managed by Taskcluster Auth.",
           "method": "get",
           "name": "azureAccounts",
@@ -385,6 +406,7 @@ module.exports = {
           "args": [
             "account"
           ],
+          "category": "Auth Service",
           "description": "Retrieve a list of all tables in an account.",
           "method": "get",
           "name": "azureTables",
@@ -404,6 +426,7 @@ module.exports = {
             "table",
             "level"
           ],
+          "category": "Auth Service",
           "description": "Get a shared access signature (SAS) string for use with a specific Azure\nTable Storage table.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ntable if it doesn't already exist.",
           "method": "get",
           "name": "azureTableSAS",
@@ -429,6 +452,7 @@ module.exports = {
           "args": [
             "account"
           ],
+          "category": "Auth Service",
           "description": "Retrieve a list of all containers in an account.",
           "method": "get",
           "name": "azureContainers",
@@ -448,6 +472,7 @@ module.exports = {
             "container",
             "level"
           ],
+          "category": "Auth Service",
           "description": "Get a shared access signature (SAS) string for use with a specific Azure\nBlob Storage container.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ncontainer if it doesn't already exist.",
           "method": "get",
           "name": "azureContainerSAS",
@@ -473,6 +498,7 @@ module.exports = {
           "args": [
             "project"
           ],
+          "category": "Auth Service",
           "description": "Get temporary DSN (access credentials) for a sentry project.\nThe credentials returned can be used with any Sentry client for up to\n24 hours, after which the credentials will be automatically disabled.\n\nIf the project doesn't exist it will be created, and assigned to the\ninitial team configured for this component. Contact a Sentry admin\nto have the project transferred to a team you have access to if needed",
           "method": "get",
           "name": "sentryDSN",
@@ -489,6 +515,7 @@ module.exports = {
           "args": [
             "project"
           ],
+          "category": "Auth Service",
           "description": "Get temporary `token` and `baseUrl` for sending metrics to statsum.\n\nThe token is valid for 24 hours, clients should refresh after expiration.",
           "method": "get",
           "name": "statsumToken",
@@ -506,6 +533,7 @@ module.exports = {
             "wstAudience",
             "wstClient"
           ],
+          "category": "Auth Service",
           "description": "Get a temporary token suitable for use connecting to a\n[websocktunnel](https://github.com/taskcluster/websocktunnel) server.\n\nThe resulting token will only be accepted by servers with a matching audience\nvalue.  Reaching such a server is the callers responsibility.  In general,\na server URL or set of URLs should be provided to the caller as configuration\nalong with the audience value.\n\nThe token is valid for a limited time (on the scale of hours). Callers should\nrefresh it before expiration.",
           "method": "get",
           "name": "websocktunnelToken",
@@ -523,6 +551,7 @@ module.exports = {
             "projectId",
             "serviceAccount"
           ],
+          "category": "Auth Service",
           "description": "Get temporary GCP credentials for the given serviceAccount in the given project.\n\nOnly preconfigured projects are allowed.  Any serviceAccount in that project may\nbe used.\n\nThe call adds the necessary policy if the serviceAccount doesn't have it.\nThe credentials are set to expire after an hour, but this behavior is\nsubject to change. Hence, you should always read the `expires` property\nfrom the response, if you intend to maintain active credentials in your\napplication.",
           "method": "get",
           "name": "gcpCredentials",
@@ -538,6 +567,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Auth Service",
           "description": "Validate the request signature given on input and return list of scopes\nthat the authenticating client has.\n\nThis method is used by other services that wish rely on Taskcluster\ncredentials for authentication. This way we can use Hawk without having\nthe secret credentials leave this service.",
           "input": "v1/authenticate-hawk-request.json#",
           "method": "post",
@@ -553,6 +583,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Auth Service",
           "description": "Utility method to test client implementations of Taskcluster\nauthentication.\n\nRather than using real credentials, this endpoint accepts requests with\nclientId `tester` and accessToken `no-secret`. That client's scopes are\nbased on `clientScopes` in the request body.\n\nThe request is validated, with any certificate, authorizedScopes, etc.\napplied, and the resulting scopes are checked against `requiredScopes`\nfrom the request body. On success, the response contains the clientId\nand scopes as seen by the API method.",
           "input": "v1/test-authenticate-request.json#",
           "method": "post",
@@ -568,6 +599,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Auth Service",
           "description": "Utility method similar to `testAuthenticate`, but with the GET method,\nso it can be used with signed URLs (bewits).\n\nRather than using real credentials, this endpoint accepts requests with\nclientId `tester` and accessToken `no-secret`. That client's scopes are\n`['test:*', 'auth:create-client:test:*']`.  The call fails if the \n`test:authenticate-get` scope is not available.\n\nThe request is validated, with any certificate, authorizedScopes, etc.\napplied, and the resulting scopes are checked, just like any API call.\nOn success, the response contains the clientId and scopes as seen by\nthe API method.\n\nThis method may later be extended to allow specification of client and\nrequired scopes via query arguments.",
           "method": "get",
           "name": "testAuthenticateGet",
@@ -1286,6 +1318,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Ping Server",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -1299,6 +1332,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Github Service",
           "description": "Capture a GitHub event and publish it via pulse, if it's a push,\nrelease or pull request.",
           "method": "post",
           "name": "githubWebHookConsumer",
@@ -1312,6 +1346,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Github Service",
           "description": "A paginated list of builds that have been run in\nTaskcluster. Can be filtered on various git-specific\nfields.",
           "method": "get",
           "name": "builds",
@@ -1334,6 +1369,7 @@ module.exports = {
             "repo",
             "branch"
           ],
+          "category": "Github Service",
           "description": "Checks the status of the latest build of a given branch\nand returns corresponding badge svg.",
           "method": "get",
           "name": "badge",
@@ -1349,6 +1385,7 @@ module.exports = {
             "owner",
             "repo"
           ],
+          "category": "Github Service",
           "description": "Returns any repository metadata that is\nuseful within Taskcluster related services.",
           "method": "get",
           "name": "repository",
@@ -1366,6 +1403,7 @@ module.exports = {
             "repo",
             "branch"
           ],
+          "category": "Github Service",
           "description": "For a given branch of a repository, this will always point\nto a status page for the most recent task triggered by that\nbranch.\n\nNote: This is a redirect rather than a direct link.",
           "method": "get",
           "name": "latest",
@@ -1382,6 +1420,7 @@ module.exports = {
             "repo",
             "sha"
           ],
+          "category": "Github Service",
           "description": "For a given changeset (SHA) of a repository, this will attach a \"commit status\"\non github. These statuses are links displayed next to each revision.\nThe status is either OK (green check) or FAILURE (red cross), \nmade of a custom title and link.",
           "input": "v1/create-status.json#",
           "method": "post",
@@ -1400,6 +1439,7 @@ module.exports = {
             "repo",
             "number"
           ],
+          "category": "Github Service",
           "description": "For a given Issue or Pull Request of a repository, this will write a new message.",
           "input": "v1/create-comment.json#",
           "method": "post",
@@ -1560,6 +1600,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Ping Server",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -1573,6 +1614,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Hooks Service",
           "description": "This endpoint will return a list of all hook groups with at least one hook.",
           "method": "get",
           "name": "listHookGroups",
@@ -1588,6 +1630,7 @@ module.exports = {
           "args": [
             "hookGroupId"
           ],
+          "category": "Hooks Service",
           "description": "This endpoint will return a list of all the hook definitions within a\ngiven hook group.",
           "method": "get",
           "name": "listHooks",
@@ -1604,6 +1647,7 @@ module.exports = {
             "hookGroupId",
             "hookId"
           ],
+          "category": "Hooks Service",
           "description": "This endpoint will return the hook definition for the given `hookGroupId`\nand hookId.",
           "method": "get",
           "name": "hook",
@@ -1620,6 +1664,7 @@ module.exports = {
             "hookGroupId",
             "hookId"
           ],
+          "category": "Hooks Service",
           "description": "This endpoint will return the current status of the hook.  This represents a\nsnapshot in time and may vary from one call to the next.\n\nThis method is deprecated in favor of listLastFires.",
           "method": "get",
           "name": "getHookStatus",
@@ -1636,6 +1681,7 @@ module.exports = {
             "hookGroupId",
             "hookId"
           ],
+          "category": "Hooks Service",
           "description": "This endpoint will create a new hook.\n\nThe caller's credentials must include the role that will be used to\ncreate the task.  That role must satisfy task.scopes as well as the\nnecessary scopes to add the task to the queue.",
           "input": "v1/create-hook-request.json#",
           "method": "put",
@@ -1659,6 +1705,7 @@ module.exports = {
             "hookGroupId",
             "hookId"
           ],
+          "category": "Hooks Service",
           "description": "This endpoint will update an existing hook.  All fields except\n`hookGroupId` and `hookId` can be modified.",
           "input": "v1/create-hook-request.json#",
           "method": "post",
@@ -1682,6 +1729,7 @@ module.exports = {
             "hookGroupId",
             "hookId"
           ],
+          "category": "Hooks Service",
           "description": "This endpoint will remove a hook definition.",
           "method": "delete",
           "name": "removeHook",
@@ -1698,6 +1746,7 @@ module.exports = {
             "hookGroupId",
             "hookId"
           ],
+          "category": "Hooks Service",
           "description": "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.",
           "input": "v1/trigger-hook.json#",
           "method": "post",
@@ -1716,6 +1765,7 @@ module.exports = {
             "hookGroupId",
             "hookId"
           ],
+          "category": "Hooks Service",
           "description": "Retrieve a unique secret token for triggering the specified hook. This\ntoken can be deactivated with `resetTriggerToken`.",
           "method": "get",
           "name": "getTriggerToken",
@@ -1733,6 +1783,7 @@ module.exports = {
             "hookGroupId",
             "hookId"
           ],
+          "category": "Hooks Service",
           "description": "Reset the token for triggering a given hook. This invalidates token that\nmay have been issued via getTriggerToken with a new token.",
           "method": "post",
           "name": "resetTriggerToken",
@@ -1751,6 +1802,7 @@ module.exports = {
             "hookId",
             "token"
           ],
+          "category": "Hooks Service",
           "description": "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.",
           "input": "v1/trigger-hook.json#",
           "method": "post",
@@ -1768,6 +1820,7 @@ module.exports = {
             "hookGroupId",
             "hookId"
           ],
+          "category": "Hooks Service",
           "description": "This endpoint will return information about the the last few times this hook has been\nfired, including whether the hook was fired successfully or not",
           "method": "get",
           "name": "listLastFires",
@@ -1853,6 +1906,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Ping Server",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -1867,6 +1921,7 @@ module.exports = {
           "args": [
             "indexPath"
           ],
+          "category": "Index Service",
           "description": "Find a task by index path, returning the highest-rank task with that path. If no\ntask exists for the given path, this API end-point will respond with a 404 status.",
           "method": "get",
           "name": "findTask",
@@ -1882,6 +1937,7 @@ module.exports = {
           "args": [
             "namespace"
           ],
+          "category": "Index Service",
           "description": "List the namespaces immediately under a given namespace.\n\nThis endpoint\nlists up to 1000 namespaces. If more namespaces are present, a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.",
           "method": "get",
           "name": "listNamespaces",
@@ -1899,6 +1955,7 @@ module.exports = {
           "args": [
             "namespace"
           ],
+          "category": "Index Service",
           "description": "List the tasks immediately under a given namespace.\n\nThis endpoint\nlists up to 1000 tasks. If more tasks are present, a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.\n\n**Remark**, this end-point is designed for humans browsing for tasks, not\nservices, as that makes little sense.",
           "method": "get",
           "name": "listTasks",
@@ -1916,6 +1973,7 @@ module.exports = {
           "args": [
             "namespace"
           ],
+          "category": "Index Service",
           "description": "Insert a task into the index.  If the new rank is less than the existing rank\nat the given index path, the task is not indexed but the response is still 200 OK.\n\nPlease see the introduction above for information\nabout indexing successfully completed tasks automatically using custom routes.",
           "input": "v1/insert-task-request.json#",
           "method": "put",
@@ -1934,6 +1992,7 @@ module.exports = {
             "indexPath",
             "name"
           ],
+          "category": "Index Service",
           "description": "Find a task by index path and redirect to the artifact on the most recent\nrun with the given `name`.\n\nNote that multiple calls to this endpoint may return artifacts from differen tasks\nif a new task is inserted into the index between calls. Avoid using this method as\na stable link to multiple, connected files if the index path does not contain a\nunique identifier.  For example, the following two links may return unrelated files:\n* https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/installer.exe`\n* https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`\n\nThis problem be remedied by including the revision in the index path or by bundling both\ninstaller and debug symbols into a single artifact.\n\nIf no task exists for the given index path, this API end-point responds with 404.",
           "method": "get",
           "name": "findArtifactFromTask",
@@ -1962,6 +2021,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Ping Server",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -1976,6 +2036,7 @@ module.exports = {
           "args": [
             "provider"
           ],
+          "category": "Login Service",
           "description": "Given an OIDC `access_token` from a trusted OpenID provider, return a\nset of Taskcluster credentials for use on behalf of the identified\nuser.\n\nThis method is typically not called with a Taskcluster client library\nand does not accept Hawk credentials. The `access_token` should be\ngiven in an `Authorization` header:\n```\nAuthorization: Bearer abc.xyz\n```\n\nThe `access_token` is first verified against the named\n:provider, then passed to the provider's APIBuilder to retrieve a user\nprofile. That profile is then used to generate Taskcluster credentials\nappropriate to the user. Note that the resulting credentials may or may\nnot include a `certificate` property. Callers should be prepared for either\nalternative.\n\nThe given credentials will expire in a relatively short time. Callers should\nmonitor this expiration and refresh the credentials if necessary, by calling\nthis endpoint again, if they have expired.",
           "method": "get",
           "name": "oidcCredentials",
@@ -2001,6 +2062,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Ping Server",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -2014,6 +2076,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Notify Service",
           "description": "Send an email to `address`. The content is markdown and will be rendered\nto HTML, but both the HTML and raw markdown text will be sent in the\nemail. If a link is included, it will be rendered to a nice button in the\nHTML version of the email",
           "input": "v1/email-request.json#",
           "method": "post",
@@ -2029,6 +2092,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Notify Service",
           "description": "Publish a message on pulse with the given `routingKey`.",
           "input": "v1/pulse-request.json#",
           "method": "post",
@@ -2044,6 +2108,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Notify Service",
           "description": "Post a message on IRC to a specific channel or user, or a specific user\non a specific channel.\n\nSuccess of this API method does not imply the message was successfully\nposted. This API method merely inserts the IRC message into a queue\nthat will be processed by a background process.\nThis allows us to re-send the message in face of connection issues.\n\nHowever, if the user isn't online the message will be dropped without\nerror. We maybe improve this behavior in the future. For now just keep\nin mind that IRC is a best-effort service.",
           "input": "v1/irc-request.json#",
           "method": "post",
@@ -2063,6 +2128,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Notify Service",
           "description": "Add the given address to the notification denylist. The address\ncan be of either of the three supported address type namely pulse, email\nor IRC(user or channel). Addresses in the denylist will be ignored\nby the notification service.",
           "input": "v1/notification-address.json#",
           "method": "post",
@@ -2078,6 +2144,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Notify Service",
           "description": "Delete the specified address from the notification denylist.",
           "input": "v1/notification-address.json#",
           "method": "delete",
@@ -2093,6 +2160,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Notify Service",
           "description": "Lists all the denylisted addresses.\n\nBy default this end-point will try to return up to 1000 addresses in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `list` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
           "method": "get",
           "name": "listDenylist",
@@ -2179,6 +2247,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Ping Server",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -2194,6 +2263,7 @@ module.exports = {
             "provisionerId",
             "workerType"
           ],
+          "category": "Purge-Cache Service",
           "description": "Publish a request to purge caches named `cacheName` with\non `provisionerId`/`workerType` workers.\n\nIf such a request already exists, its `before` timestamp is updated to\nthe current time.",
           "input": "v1/purge-cache-request.json#",
           "method": "post",
@@ -2209,6 +2279,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Purge-Cache Service",
           "description": "View all active purge requests.\n\nThis is useful mostly for administors to view\nthe set of open purge requests. It should not\nbe used by workers. They should use the purgeRequests\nendpoint that is specific to their workerType and\nprovisionerId.",
           "method": "get",
           "name": "allPurgeRequests",
@@ -2227,6 +2298,7 @@ module.exports = {
             "provisionerId",
             "workerType"
           ],
+          "category": "Purge-Cache Service",
           "description": "List the caches for this `provisionerId`/`workerType` that should to be\npurged if they are from before the time given in the response.\n\nThis is intended to be used by workers to determine which caches to purge.",
           "method": "get",
           "name": "purgeRequests",
@@ -2253,6 +2325,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Ping Server",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -2267,6 +2340,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
+          "category": "Queue Service",
           "description": "This end-point will return the task-definition. Notice that the task\ndefinition may have been modified by queue, if an optional property is\nnot specified the queue may provide a default value.",
           "method": "get",
           "name": "task",
@@ -2282,6 +2356,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
+          "category": "Queue Service",
           "description": "Get task status structure from `taskId`",
           "method": "get",
           "name": "status",
@@ -2297,6 +2372,7 @@ module.exports = {
           "args": [
             "taskGroupId"
           ],
+          "category": "Queue Service",
           "description": "List tasks sharing the same `taskGroupId`.\n\nAs a task-group may contain an unbounded number of tasks, this end-point\nmay return a `continuationToken`. To continue listing tasks you must call\nthe `listTaskGroup` again with the `continuationToken` as the\nquery-string option `continuationToken`.\n\nBy default this end-point will try to return up to 1000 members in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listTaskGroup` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
           "method": "get",
           "name": "listTaskGroup",
@@ -2314,6 +2390,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
+          "category": "Queue Service",
           "description": "List tasks that depend on the given `taskId`.\n\nAs many tasks from different task-groups may dependent on a single tasks,\nthis end-point may return a `continuationToken`. To continue listing\ntasks you must call `listDependentTasks` again with the\n`continuationToken` as the query-string option `continuationToken`.\n\nBy default this end-point will try to return up to 1000 tasks in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listDependentTasks` with the last `continuationToken` until\nyou get a result without a `continuationToken`.\n\nIf you are not interested in listing all the tasks at once, you may\nuse the query-string option `limit` to return fewer.",
           "method": "get",
           "name": "listDependentTasks",
@@ -2331,6 +2408,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
+          "category": "Queue Service",
           "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline`**: the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**: the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**: using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.  The caller must have scope\n`queue:route:<route>` for each route.\n\n**Dependencies**: any tasks referenced in `task.dependencies` must have\nalready been created at the time of this call.\n\n**Scopes**: Note that the scopes required to complete this API call depend\non the content of the `scopes`, `routes`, `schedulerId`, `priority`,\n`provisionerId`, and `workerType` properties of the task definition.\n\n**Legacy Scopes**: The `queue:create-task:..` scope without a priority and\nthe `queue:define-task:..` and `queue:task-group-id:..` scopes are considered\nlegacy and should not be used. Note that the new, non-legacy scopes require\na `queue:scheduler-id:..` scope as well as scopes for the proper priority.",
           "input": "v1/create-task-request.json#",
           "method": "put",
@@ -2394,6 +2472,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
+          "category": "Queue Service",
           "description": "**Deprecated**, this is the same as `createTask` with a **self-dependency**.\nThis is only present for legacy.",
           "input": "v1/create-task-request.json#",
           "method": "post",
@@ -2457,6 +2536,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
+          "category": "Queue Service",
           "description": "scheduleTask will schedule a task to be executed, even if it has\nunresolved dependencies. A task would otherwise only be scheduled if\nits dependencies were resolved.\n\nThis is useful if you have defined a task that depends on itself or on\nsome other task that has not been resolved, but you wish the task to be\nscheduled immediately.\n\nThis will announce the task as pending and workers will be allowed to\nclaim it and resolve the task.\n\n**Note** this operation is **idempotent** and will not fail or complain\nif called with a `taskId` that is already scheduled, or even resolved.\nTo reschedule a task previously resolved, use `rerunTask`.",
           "method": "post",
           "name": "scheduleTask",
@@ -2483,6 +2563,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
+          "category": "Queue Service",
           "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed.\n\nThis method is deprecated in favour of creating a new task with the same\ntask definition (but with a new taskId).\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent, if you try to rerun a task that\nis not either `failed` or `completed`, this operation will just return\nthe current task status.",
           "method": "post",
           "name": "rerunTask",
@@ -2509,6 +2590,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
+          "category": "Queue Service",
           "description": "This method will cancel a task that is either `unscheduled`, `pending` or\n`running`. It will resolve the current run as `exception` with\n`reasonResolved` set to `canceled`. If the task isn't scheduled yet, ie.\nit doesn't have any runs, an initial run will be added and resolved as\ndescribed above. Hence, after canceling a task, it cannot be scheduled\nwith `queue.scheduleTask`, but a new run can be created with\n`queue.rerun`. These semantics is equivalent to calling\n`queue.scheduleTask` immediately followed by `queue.cancelTask`.\n\n**Remark** this operation is idempotent, if you try to cancel a task that\nisn't `unscheduled`, `pending` or `running`, this operation will just\nreturn the current task status.",
           "method": "post",
           "name": "cancelTask",
@@ -2536,6 +2618,7 @@ module.exports = {
             "provisionerId",
             "workerType"
           ],
+          "category": "Queue Service",
           "description": "Claim pending task(s) for the given `provisionerId`/`workerType` queue.\n\nIf any work is available (even if fewer than the requested number of\ntasks, this will return immediately. Otherwise, it will block for tens of\nseconds waiting for work.  If no work appears, it will return an emtpy\nlist of tasks.  Callers should sleep a short while (to avoid denial of\nservice in an error condition) and call the endpoint again.  This is a\nsimple implementation of \"long polling\".",
           "input": "v1/claim-work-request.json#",
           "method": "post",
@@ -2559,6 +2642,7 @@ module.exports = {
             "taskId",
             "runId"
           ],
+          "category": "Queue Service",
           "description": "claim a task - never documented",
           "input": "v1/task-claim-request.json#",
           "method": "post",
@@ -2593,6 +2677,7 @@ module.exports = {
             "taskId",
             "runId"
           ],
+          "category": "Queue Service",
           "description": "Refresh the claim for a specific `runId` for given `taskId`. This updates\nthe `takenUntil` property and returns a new set of temporary credentials\nfor performing requests on behalf of the task. These credentials should\nbe used in-place of the credentials returned by `claimWork`.\n\nThe `reclaimTask` requests serves to:\n * Postpone `takenUntil` preventing the queue from resolving\n   `claim-expired`,\n * Refresh temporary credentials used for processing the task, and\n * Abort execution if the task/run have been resolved.\n\nIf the `takenUntil` timestamp is exceeded the queue will resolve the run\nas _exception_ with reason `claim-expired`, and proceeded to retry to the\ntask. This ensures that tasks are retried, even if workers disappear\nwithout warning.\n\nIf the task is resolved, this end-point will return `409` reporting\n`RequestConflict`. This typically happens if the task have been canceled\nor the `task.deadline` have been exceeded. If reclaiming fails, workers\nshould abort the task and forget about the given `runId`. There is no\nneed to resolve the run or upload artifacts.",
           "method": "post",
           "name": "reclaimTask",
@@ -2620,6 +2705,7 @@ module.exports = {
             "taskId",
             "runId"
           ],
+          "category": "Queue Service",
           "description": "Report a task completed, resolving the run as `completed`.",
           "method": "post",
           "name": "reportCompleted",
@@ -2647,6 +2733,7 @@ module.exports = {
             "taskId",
             "runId"
           ],
+          "category": "Queue Service",
           "description": "Report a run failed, resolving the run as `failed`. Use this to resolve\na run that failed because the task specific code behaved unexpectedly.\nFor example the task exited non-zero, or didn't produce expected output.\n\nDo not use this if the task couldn't be run because if malformed\npayload, or other unexpected condition. In these cases we have a task\nexception, which should be reported with `reportException`.",
           "method": "post",
           "name": "reportFailed",
@@ -2674,6 +2761,7 @@ module.exports = {
             "taskId",
             "runId"
           ],
+          "category": "Queue Service",
           "description": "Resolve a run as _exception_. Generally, you will want to report tasks as\nfailed instead of exception. You should `reportException` if,\n\n  * The `task.payload` is invalid,\n  * Non-existent resources are referenced,\n  * Declared actions cannot be executed due to unavailable resources,\n  * The worker had to shutdown prematurely,\n  * The worker experienced an unknown error, or,\n  * The task explicitly requested a retry.\n\nDo not use this to signal that some user-specified code crashed for any\nreason specific to this code. If user-specific code hits a resource that\nis temporarily unavailable worker should report task _failed_.",
           "input": "v1/task-exception-request.json#",
           "method": "post",
@@ -2703,6 +2791,7 @@ module.exports = {
             "runId",
             "name"
           ],
+          "category": "Queue Service",
           "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support 3 different `storageType`s, each storage type have\nslightly different features and in some cases difference semantics.\nWe also have 2 deprecated `storageType`s which are only maintained for\nbackwards compatiability and should not be used in new implementations\n\n**Blob artifacts**, are useful for storing large files.  Currently, these\nare all stored in S3 but there are facilities for adding support for other\nbackends in futre.  A call for this type of artifact must provide information\nabout the file which will be uploaded.  This includes sha256 sums and sizes.\nThis method will return a list of general form HTTP requests which are signed\nby AWS S3 credentials managed by the Queue.  Once these requests are completed\nthe list of `ETag` values returned by the requests must be passed to the\nqueue `completeArtifact` method\n\n**S3 artifacts**, DEPRECATED is useful for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`.\n\n**Azure artifacts**, DEPRECATED are stored in _Azure Blob Storage_ service\nwhich given the consistency guarantees and API interface offered by Azure\nis more suitable for artifacts that will be modified during the execution\nof the task. For example docker-worker has a feature that persists the\ntask log to Azure Blob Storage every few seconds creating a somewhat\nlive log. A request to create an Azure artifact will return a URL\nfeaturing a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),\nrefer to MSDN for further information on how to use these.\n**Warning: azure artifact is currently an experimental feature subject\nto changes and data-drops.**\n\n**Reference artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts really only have a `url` property and\nwhen the artifact is requested the client will be redirect the URL\nprovided with a `303` (See Other) redirect. Please note that we cannot\ndelete artifacts you upload to other service, we can only delete the\nreference to the artifact, when it expires.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nAs a special case the `url` property on _reference artifacts_ can be\nupdated. You should only use this to update the `url` property for\nreference artifacts your process has created.",
           "input": "v1/post-artifact-request.json#",
           "method": "post",
@@ -2732,6 +2821,7 @@ module.exports = {
             "runId",
             "name"
           ],
+          "category": "Queue Service",
           "description": "This endpoint finalises an upload done through the blob `storageType`.\nThe queue will ensure that the task/run is still allowing artifacts\nto be uploaded.  For single-part S3 blob artifacts, this endpoint\nwill simply ensure the artifact is present in S3.  For multipart S3\nartifacts, the endpoint will perform the commit step of the multipart\nupload flow.  As the final step for both multi and single part artifacts,\nthe `present` entity field will be set to `true` to reflect that the\nartifact is now present and a message published to pulse.  NOTE: This\nendpoint *must* be called for all artifacts of storageType 'blob'",
           "input": "v1/put-artifact-request.json#",
           "method": "put",
@@ -2760,6 +2850,7 @@ module.exports = {
             "runId",
             "name"
           ],
+          "category": "Queue Service",
           "description": "Get artifact by `<name>` from a specific run.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with an HTTP client that can handle responses correctly.\n\n**Downloading artifacts**\nThere are some special considerations for those http clients which download\nartifacts.  This api endpoint is designed to be compatible with an HTTP 1.1\ncompliant client, but has extra features to ensure the download is valid.\nIt is strongly recommend that consumers use either taskcluster-lib-artifact (JS),\ntaskcluster-lib-artifact-go (Go) or the CLI written in Go to interact with\nartifacts.\n\nIn order to download an artifact the following must be done:\n\n1. Obtain queue url.  Building a signed url with a taskcluster client is\nrecommended\n1. Make a GET request which does not follow redirects\n1. In all cases, if specified, the\nx-taskcluster-location-{content,transfer}-{sha256,length} values must be\nvalidated to be equal to the Content-Length and Sha256 checksum of the\nfinal artifact downloaded. as well as any intermediate redirects\n1. If this response is a 500-series error, retry using an exponential\nbackoff.  No more than 5 retries should be attempted\n1. If this response is a 400-series error, treat it appropriately for\nyour context.  This might be an error in responding to this request or\nan Error storage type body.  This request should not be retried.\n1. If this response is a 200-series response, the response body is the artifact.\nIf the x-taskcluster-location-{content,transfer}-{sha256,length} and\nx-taskcluster-location-content-encoding are specified, they should match\nthis response body\n1. If the response type is a 300-series redirect, the artifact will be at the\nlocation specified by the `Location` header.  There are multiple artifact storage\ntypes which use a 300-series redirect.\n1. For all redirects followed, the user must verify that the content-sha256, content-length,\ntransfer-sha256, transfer-length and content-encoding match every further request.  The final\nartifact must also be validated against the values specified in the original queue response\n1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`\nmust not occur\n1. A request which has x-taskcluster-artifact-storage-type value of `blob` and does not\nhave x-taskcluster-location-content-sha256 or x-taskcluster-location-content-length\nmust be treated as an error\n\n**Headers**\nThe following important headers are set on the response to this method:\n\n* location: the url of the artifact if a redirect is to be performed\n* x-taskcluster-artifact-storage-type: the storage type.  Example: blob, s3, error\n\nThe following important headers are set on responses to this method for Blob artifacts\n\n* x-taskcluster-location-content-sha256: the SHA256 of the artifact\n*after* any content-encoding is undone.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})\n* x-taskcluster-location-content-length: the number of bytes *after* any content-encoding\nis undone\n* x-taskcluster-location-transfer-sha256: the SHA256 of the artifact\n*before* any content-encoding is undone.  This is the SHA256 of what is sent over\nthe wire.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})\n* x-taskcluster-location-transfer-length: the number of bytes *after* any content-encoding\nis undone\n* x-taskcluster-location-content-encoding: the content-encoding used.  It will either\nbe `gzip` or `identity` right now.  This is hardcoded to a value set when the artifact\nwas created and no content-negotiation occurs\n* x-taskcluster-location-content-type: the content-type of the artifact\n\n**Caching**, artifacts may be cached in data centers closer to the\nworkers in-order to reduce bandwidth costs. This can lead to longer\nresponse times. Caching can be skipped by setting the header\n`x-taskcluster-skip-cache: true`, this should only be used for resources\nwhere request volume is known to be low, and caching not useful.\n(This feature may be disabled in the future, use is sparingly!)",
           "method": "get",
           "name": "getArtifact",
@@ -2783,6 +2874,7 @@ module.exports = {
             "taskId",
             "name"
           ],
+          "category": "Queue Service",
           "description": "Get artifact by `<name>` from the last run of a task.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just us the most convenient API end-point.",
           "method": "get",
           "name": "getLatestArtifact",
@@ -2806,6 +2898,7 @@ module.exports = {
             "taskId",
             "runId"
           ],
+          "category": "Queue Service",
           "description": "Returns a list of artifacts and associated meta-data for a given run.\n\nAs a task may have many artifacts paging may be necessary. If this\nend-point returns a `continuationToken`, you should call the end-point\nagain with the `continuationToken` as the query-string option:\n`continuationToken`.\n\nBy default this end-point will list up-to 1000 artifacts in a single page\nyou may limit this with the query-string parameter `limit`.",
           "method": "get",
           "name": "listArtifacts",
@@ -2823,6 +2916,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
+          "category": "Queue Service",
           "description": "Returns a list of artifacts and associated meta-data for the latest run\nfrom the given task.\n\nAs a task may have many artifacts paging may be necessary. If this\nend-point returns a `continuationToken`, you should call the end-point\nagain with the `continuationToken` as the query-string option:\n`continuationToken`.\n\nBy default this end-point will list up-to 1000 artifacts in a single page\nyou may limit this with the query-string parameter `limit`.",
           "method": "get",
           "name": "listLatestArtifacts",
@@ -2839,6 +2933,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Queue Service",
           "description": "Get all active provisioners.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 provisioners in a single\npage. You may limit this with the query-string parameter `limit`.",
           "method": "get",
           "name": "listProvisioners",
@@ -2856,6 +2951,7 @@ module.exports = {
           "args": [
             "provisionerId"
           ],
+          "category": "Queue Service",
           "description": "Get an active provisioner.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.",
           "method": "get",
           "name": "getProvisioner",
@@ -2871,6 +2967,7 @@ module.exports = {
           "args": [
             "provisionerId"
           ],
+          "category": "Queue Service",
           "description": "Declare a provisioner, supplying some details about it.\n\n`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are\npossessed. For example, a request to update the `aws-provisioner-v1`\nprovisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope\n`queue:declare-provisioner:aws-provisioner-v1#description`.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.",
           "input": "v1/update-provisioner-request.json#",
           "method": "put",
@@ -2897,6 +2994,7 @@ module.exports = {
             "provisionerId",
             "workerType"
           ],
+          "category": "Queue Service",
           "description": "Get an approximate number of pending tasks for the given `provisionerId`\nand `workerType`.\n\nThe underlying Azure Storage Queues only promises to give us an estimate.\nFurthermore, we cache the result in memory for 20 seconds. So consumers\nshould be no means expect this to be an accurate number.\nIt is, however, a solid estimate of the number of pending tasks.",
           "method": "get",
           "name": "pendingTasks",
@@ -2912,6 +3010,7 @@ module.exports = {
           "args": [
             "provisionerId"
           ],
+          "category": "Queue Service",
           "description": "Get all active worker-types for the given provisioner.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 worker-types in a single\npage. You may limit this with the query-string parameter `limit`.",
           "method": "get",
           "name": "listWorkerTypes",
@@ -2930,6 +3029,7 @@ module.exports = {
             "provisionerId",
             "workerType"
           ],
+          "category": "Queue Service",
           "description": "Get a worker-type from a provisioner.",
           "method": "get",
           "name": "getWorkerType",
@@ -2946,6 +3046,7 @@ module.exports = {
             "provisionerId",
             "workerType"
           ],
+          "category": "Queue Service",
           "description": "Declare a workerType, supplying some details about it.\n\n`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are\npossessed. For example, a request to update the `gecko-b-1-w2008` worker-type within the `aws-provisioner-v1`\nprovisioner with a body `{description: 'This worker type is great'}` would require you to have the scope\n`queue:declare-worker-type:aws-provisioner-v1/gecko-b-1-w2008#description`.",
           "input": "v1/update-workertype-request.json#",
           "method": "put",
@@ -2972,6 +3073,7 @@ module.exports = {
             "provisionerId",
             "workerType"
           ],
+          "category": "Queue Service",
           "description": "Get a list of all active workers of a workerType.\n\n`listWorkers` allows a response to be filtered by quarantined and non quarantined workers.\nTo filter the query, you should call the end-point with `quarantined` as a query-string option with a\ntrue or false value.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 workers in a single\npage. You may limit this with the query-string parameter `limit`.",
           "method": "get",
           "name": "listWorkers",
@@ -2993,6 +3095,7 @@ module.exports = {
             "workerGroup",
             "workerId"
           ],
+          "category": "Queue Service",
           "description": "Get a worker from a worker-type.",
           "method": "get",
           "name": "getWorker",
@@ -3011,6 +3114,7 @@ module.exports = {
             "workerGroup",
             "workerId"
           ],
+          "category": "Queue Service",
           "description": "Quarantine a worker",
           "input": "v1/quarantine-worker-request.json#",
           "method": "put",
@@ -3035,6 +3139,7 @@ module.exports = {
             "workerGroup",
             "workerId"
           ],
+          "category": "Queue Service",
           "description": "Declare a worker, supplying some details about it.\n\n`declareWorker` allows updating one or more properties of a worker as long as the required scopes are\npossessed.",
           "input": "v1/update-worker-request.json#",
           "method": "put",
@@ -3614,6 +3719,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Ping Server",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -3628,6 +3734,7 @@ module.exports = {
           "args": [
             "name"
           ],
+          "category": "Secrets Service",
           "description": "Set the secret associated with some key.  If the secret already exists, it is\nupdated instead.",
           "input": "v1/secret.json#",
           "method": "put",
@@ -3644,6 +3751,7 @@ module.exports = {
           "args": [
             "name"
           ],
+          "category": "Secrets Service",
           "description": "Delete the secret associated with some key.",
           "method": "delete",
           "name": "remove",
@@ -3659,6 +3767,7 @@ module.exports = {
           "args": [
             "name"
           ],
+          "category": "Secrets Service",
           "description": "Read the secret associated with some key.  If the secret has recently\nexpired, the response code 410 is returned.  If the caller lacks the\nscope necessary to get the secret, the call will fail with a 403 code\nregardless of whether the secret exists.",
           "method": "get",
           "name": "get",
@@ -3674,6 +3783,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Secrets Service",
           "description": "List the names of all secrets.\n\nBy default this end-point will try to return up to 1000 secret names in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listTaskGroup` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
           "method": "get",
           "name": "list",
@@ -3741,6 +3851,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Ping Server",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -3755,6 +3866,7 @@ module.exports = {
           "args": [
             "workerPoolId"
           ],
+          "category": "Worker Manager",
           "description": "Create a new worker pool. If the worker pool already exists, this will throw an error.",
           "input": "v1/create-worker-pool-request.json#",
           "method": "put",
@@ -3777,6 +3889,7 @@ module.exports = {
           "args": [
             "workerPoolId"
           ],
+          "category": "Worker Manager",
           "description": "Given an existing worker pool definition, this will modify it and return\nthe new definition.\n\nTo delete a worker pool, set its `providerId` to `\"null-provider\"`.\nAfter any existing workers have exited, a cleanup job will remove the\nworker pool.  During that time, the worker pool can be updated again, such\nas to set its `providerId` to a real provider.",
           "input": "v1/update-worker-pool-request.json#",
           "method": "post",
@@ -3799,6 +3912,7 @@ module.exports = {
           "args": [
             "workerPoolId"
           ],
+          "category": "Worker Manager",
           "description": "Fetch an existing worker pool defition.",
           "method": "get",
           "name": "workerPool",
@@ -3813,6 +3927,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Worker Manager",
           "description": "Get the list of all the existing worker pools.",
           "method": "get",
           "name": "listWorkerPools",
@@ -3830,6 +3945,7 @@ module.exports = {
           "args": [
             "workerPoolId"
           ],
+          "category": "Worker Manager",
           "description": "Report an error that occurred on a worker.  This error will be included\nwith the other errors in `listWorkerPoolErrors(workerPoolId)`.\n\nWorkers can use this endpoint to report startup or configuration errors\nthat might be associated with the worker pool configuration and thus of\ninterest to a worker-pool administrator.\n\nNOTE: errors are publicly visible.  Ensure that none of the content\ncontains secrets or other sensitive information.",
           "input": "v1/report-worker-error-request.json#",
           "method": "post",
@@ -3852,6 +3968,7 @@ module.exports = {
           "args": [
             "workerPoolId"
           ],
+          "category": "Worker Manager",
           "description": "Get the list of worker pool errors.",
           "method": "get",
           "name": "listWorkerPoolErrors",
@@ -3870,6 +3987,7 @@ module.exports = {
             "workerPoolId",
             "workerGroup"
           ],
+          "category": "Worker Manager",
           "description": "Get the list of all the existing workers in a given group in a given worker pool.",
           "method": "get",
           "name": "listWorkersForWorkerGroup",
@@ -3889,6 +4007,7 @@ module.exports = {
             "workerGroup",
             "workerId"
           ],
+          "category": "Worker Manager",
           "description": "Get a single worker.",
           "method": "get",
           "name": "worker",
@@ -3906,6 +4025,7 @@ module.exports = {
             "workerGroup",
             "workerId"
           ],
+          "category": "Worker Manager",
           "description": "Create a new worker.  The precise behavior of this method depends\non the provider implementing the given worker pool.  Some providers\ndo not support creating workers at all, and will return a 400 error.",
           "input": "v1/create-worker-request.json#",
           "method": "put",
@@ -3925,6 +4045,7 @@ module.exports = {
             "workerGroup",
             "workerId"
           ],
+          "category": "Worker Manager",
           "description": "Remove an existing worker.  The precise behavior of this method depends\non the provider implementing the given worker.  Some providers\ndo not support removing workers at all, and will return a 400 error.\nOthers may begin removing the worker, but it may remain available via\nthe API (perhaps even in state RUNNING) afterward.",
           "method": "delete",
           "name": "removeWorker",
@@ -3940,6 +4061,7 @@ module.exports = {
           "args": [
             "workerPoolId"
           ],
+          "category": "Worker Manager",
           "description": "Get the list of all the existing workers in a given worker pool.",
           "method": "get",
           "name": "listWorkersForWorkerPool",
@@ -3956,6 +4078,7 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Worker Manager",
           "description": "Register a running worker.  Workers call this method on worker start-up.\n\nThis call both marks the worker as running and returns the credentials\nthe worker will require to perform its work.  The worker must provide\nsome proof of its identity, and that proof varies by provider type.",
           "input": "v1/register-worker-request.json#",
           "method": "get",

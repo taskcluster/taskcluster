@@ -174,24 +174,7 @@ suite('Repo Meta Tests', function () {
     const whitelist = new Set([
       '.codecov.yml',
       '.taskcluster.yml',
-      'services/hooks/test/validate_test/create-hook-request.json',
       'test/meta_test.js',
-      'ui/docs/reference/core/notify/usage.md',
-      'ui/docs/reference/guide.md',
-      'ui/docs/reference/integrations/github/intro.md',
-      'ui/docs/reference/integrations/github/taskcluster-yml-v0.md',
-      'ui/docs/reference/integrations/github/taskcluster-yml-v1.md',
-      'ui/docs/reference/platform/queue/worker-hierarchy.md',
-      'ui/docs/tutorial/authenticate.md',
-      'ui/docs/tutorial/create-task-via-api.md',
-      'ui/docs/tutorial/debug-task.md',
-      'ui/docs/tutorial/download-task-artifacts.md',
-      'ui/docs/tutorial/finding-tasks.md',
-      'ui/docs/tutorial/gecko-decision-task.md',
-      'ui/docs/tutorial/gecko-tasks.md',
-      'ui/docs/tutorial/hello-world.md',
-      'ui/docs/tutorial/monitor-task-status.md',
-      'ui/src/components/HookForm/index.jsx',
     ]);
 
     let res;

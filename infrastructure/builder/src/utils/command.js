@@ -7,10 +7,12 @@ const {PassThrough} = require('stream');
  * - dir -- directory to run command in
  * - command -- command to run (list of arguments)
  * - utils -- taskgraph utils (waitFor, etc.)
+ * - env -- optional environment variables for the command
  */
-exports.execCommand = async ({dir, command, utils}) => {
+exports.execCommand = async ({dir, command, utils, env = process.env}) => {
   const cp = child_process.spawn(command[0], command.slice(1), {
     cwd: dir,
+    env,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
 
