@@ -189,10 +189,11 @@ func TestProxyHTTPWebsocket(t *testing.T) {
 
 	url := fmt.Sprintf("ws://127.0.0.1:%d", listenPort)
 	dialer := websocket.Dialer{}
-	ws, _, err := dialer.Dial(url, nil)
+	ws, resp, err := dialer.Dial(url, nil)
 	if err != nil {
 		t.Fatalf("client Dial: %s", err)
 	}
+	defer resp.Body.Close()
 	defer ws.Close()
 
 	err = ws.WriteMessage(websocket.BinaryMessage, []byte("ECHO"))
@@ -256,7 +257,11 @@ func TestProxyTCPPortNotRootPath(t *testing.T) {
 
 	url := fmt.Sprintf("ws://127.0.0.1:%d/random/path", listenPort)
 	dialer := websocket.Dialer{}
-	_, _, err = dialer.Dial(url, nil)
+	var resp *http.Response
+	_, resp, err = dialer.Dial(url, nil)
+	if err == nil {
+		resp.Body.Close()
+	}
 	assert.Equal(t, fmt.Errorf("websocket: bad handshake"), err, "should get bad handshake")
 }
 
@@ -291,10 +296,11 @@ func TestProxyTCPPort(t *testing.T) {
 	// connect to that ws proxy
 	url := fmt.Sprintf("ws://127.0.0.1:%d/", listenPort)
 	dialer := websocket.Dialer{}
-	ws, _, err := dialer.Dial(url, nil)
+	ws, resp, err := dialer.Dial(url, nil)
 	if err != nil {
 		t.Fatalf("Dial: %s", err)
 	}
+	defer resp.Body.Close()
 
 	err = ws.WriteMessage(websocket.BinaryMessage, []byte("Hello"))
 	if err != nil {
@@ -351,10 +357,11 @@ func TestProxyTCPPortTCPClose(t *testing.T) {
 	// connect to that ws proxy
 	url := fmt.Sprintf("ws://127.0.0.1:%d/", listenPort)
 	dialer := websocket.Dialer{}
-	ws, _, err := dialer.Dial(url, nil)
+	ws, resp, err := dialer.Dial(url, nil)
 	if err != nil {
 		t.Fatalf("Dial: %s", err)
 	}
+	defer resp.Body.Close()
 
 	messageType, payload, err := ws.ReadMessage()
 	if err != nil {

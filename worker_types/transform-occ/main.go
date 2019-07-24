@@ -219,10 +219,11 @@ func FilenameFromURL(url string, extension string) (filename string) {
 			return nil
 		},
 	}
-	_, err := client.Head(url)
+	resp, err := client.Head(url)
 	if err != nil {
 		log.Fatal("Could not reach URL " + url)
 	}
+	defer resp.Body.Close()
 	if filename == "" {
 		log.Fatalf("FAIL: Got empty filename for content from url %v with extension %v - cannot proceed!", url, extension)
 	}

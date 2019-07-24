@@ -66,7 +66,8 @@ func TestSupersede(t *testing.T) {
 			ensureResolution(t, taskID, "completed", "completed")
 		} else {
 			ensureResolution(t, taskID, "exception", "superseded")
-			x, _, _, _ := getArtifactContent(t, taskID, "public/superseded-by.json")
+			x, resp, _, _ := getArtifactContent(t, taskID, "public/superseded-by.json")
+			defer resp.Body.Close()
 			var actualData interface{}
 			err = json.Unmarshal(x, &actualData)
 			if err != nil {

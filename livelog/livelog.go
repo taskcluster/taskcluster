@@ -139,8 +139,12 @@ func (l *LiveLog) connectInputStream() error {
 		return err
 	}
 	go func() {
-		// ignore any error and response we get back...
-		client.Do(req)
+		// Error only needed to know if we should close request body or not.
+		// Ignore it for all other purposes.
+		resp, err := client.Do(req)
+		if err == nil {
+			defer resp.Body.Close()
+		}
 	}()
 	return nil
 }

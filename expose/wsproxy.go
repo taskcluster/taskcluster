@@ -53,11 +53,12 @@ func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request) error {
 
 	uri := fmt.Sprintf("ws://127.0.0.1:%d", p.targetPort)
 	p.logf("dialing ws at: %s", uri)
-	tunnelConn, _, err := dialer.Dial(uri, reqHeader)
+	tunnelConn, resp, err := dialer.Dial(uri, reqHeader)
 	if err != nil {
 		p.logf("could not dial tunnel: path=%s, error: %v", r.URL.RequestURI(), err)
 		return err
 	}
+	defer resp.Body.Close()
 
 	upgrader := websocket.Upgrader{
 		Subprotocols: websocket.Subprotocols(r),

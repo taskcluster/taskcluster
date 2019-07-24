@@ -321,6 +321,7 @@ func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string,
 			t.Errorf("Artifact '%s' not created", artifact)
 		}
 		b, rawResp, resp, url := getArtifactContent(t, taskID, artifact)
+		defer resp.Body.Close()
 		for _, requiredSubstring := range expected.Extracts {
 			if strings.Index(string(b), requiredSubstring) < 0 {
 				t.Errorf("Artifact '%s': Could not find substring %q in '%s'", artifact, requiredSubstring, string(b))

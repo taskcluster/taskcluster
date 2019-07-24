@@ -105,10 +105,9 @@ func (wtf *WorkerTypeFetcher) fetch(workerType string) (err error) {
 		return
 	}
 	defer func() {
+		err2 := resp.Body.Close()
 		if err == nil {
-			err = resp.Body.Close()
-		} else {
-			resp.Body.Close()
+			err = err2
 		}
 	}()
 	var file *os.File
