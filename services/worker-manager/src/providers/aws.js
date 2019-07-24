@@ -103,7 +103,7 @@ class AwsProvider extends Provider {
       },
     };
     const roleName = `wm-aws-provider-${this.providerId}`;
-    const freshRole = await readModifySet({
+    await readModifySet({
       read: async () => await this.iam.getRole({RoleName: roleName}),
       set: async () => await this.iam.createRole({
         AssumeRolePolicyDocument: JSON.stringify(trustPolicy),
@@ -287,7 +287,7 @@ class AwsProvider extends Provider {
    * @param possibleConfigs Array<Object>
    * @returns Object
    */
-  chooseConfig(possibleConfigs) {
+  chooseConfig({possibleConfigs}) {
     const i = Math.random() * (possibleConfigs.length() - 1);
 
     return possibleConfigs[i];
