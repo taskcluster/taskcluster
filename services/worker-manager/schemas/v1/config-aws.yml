@@ -1,50 +1,16 @@
 $schema: "/schemas/common/metaschema.json#"
 title: AWS Provider Config
-description: |
-  Defines the shape of the config section of a workerpool if the workerPool.providerId is an AWS provider.
-  Much of these fields are documented [here](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/EC2.html#runInstances-property)
-type: object
-properties:
-  minCapacity:
-    title: Minimum Capacity
-    type: integer
-    minimum: 0
-    description: |
-      The minimum amount of capacity that worker-manager should make
-      available at any given time.
-  maxCapacity:
-    title: Maximum Capacity
-    type: integer
-    minimum: 0
-    description: |
-      The maximum amount of capacity that worker-manager should make
-      available at any given time.
-  image:
-    title: AMI
-    type: object
-    description: Map. Defines the AMI (and, therefore, worker implementation/version) for a given region
-      properties:
-        region:
-          title: AWS availability zone
-          type: string
-        imageId:
-          title: AMI ID
-          type: string
-  instanceTypes:
-    title: Instance Types
-    type: array
-    description: Defines the possible types of instances to spin
-    uniqueItems: true
-    items:
-      type: object
-      additionalProperties: false
-      properties:
-        instanceType:
-          title: Instance Type
-          type: string
-          description: Refer to https://aws.amazon.com/ec2/instance-types/
-        capacityPerInstance:
-          title: Capacity Per Instance
-          type: integer
-          minimum: 1
-          description: The number of tasks a single worker can run at any given time on this instance type.
+description: An array of possible options for different regions
+type: array
+uniqueItems: true
+items:
+  type: object
+  description: |
+    An object to be passed in to AWS runInstances method.
+    See the documentation [here](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/EC2.html#runInstances-property)
+    You can configure any properties you need. Note, however, that we disallow passing in arbitrary IAM instance profiles.
+  properties:
+    not:
+      IamInstanceProfile:
+        title: Iam Instance Profile
+        description: The IAM instance profile
