@@ -37,6 +37,7 @@ const taskDefinition = {
       taskId: { $eval: 'as_slugid("pr_task")' },
       provisionerId: 'aws-provisioner-v1',
       workerType: 'github-worker',
+      deadline: { $fromNow: '24 hours' },
       payload: {
         maxRunTime: 3600,
         image: 'node',
@@ -51,96 +52,102 @@ const taskDefinition = {
     },
   },
 };
-const baseCmd = [
-  'git clone {{event.head.repo.url}} repo',
+const baseCmd = ({ gitUrl, sha }) => [
+  `git clone \${${gitUrl}} repo`,
   'cd repo',
   'git config advice.detachedHead false',
-  'git checkout {{event.head.sha}}',
+  `git checkout \${${sha}}`,
 ];
-const getMatchCondition = events => {
-  let condition = '';
-  const eventsJoin = Array.from(events).join(' ');
-
-  if (eventsJoin.includes('pull_request')) {
-    condition = `${condition}(tasks_for == "github-pull-request" && event["action"] in [${[
-      ...events,
-    ].sort()}])`;
-  }
-
-  if (eventsJoin.includes('push')) {
-    if (condition.length > 0) {
-      condition = `${condition} || `;
-    }
-
-    condition = `${condition}(tasks_for == "github-push")`;
-  }
-
-  if (eventsJoin.includes('release')) {
-    if (condition.length > 0) {
-      condition = `${condition} || `;
-    }
-
-    condition = `${condition}(tasks_for == "github-release")`;
-  }
-
-  return condition;
-};
-
-const getTaskDefinition = state => {
-  const {
-    access,
-    commands,
-    condition,
-    image,
-    taskName,
-    taskDescription,
-  } = state;
-
-  return safeDump({
-    ...taskDefinition,
-    policy: {
-      pullRequests: access,
-    },
-    tasks: {
-      $match: {
-        [condition]: {
-          ...taskDefinition.tasks.$match,
-          ...{
-            metadata: {
-              ...taskDefinition.tasks.$match.metadata,
-              name: taskName,
-              description: taskDescription,
-            },
-            payload: {
-              ...taskDefinition.tasks.$match.payload,
-              image,
-              command: commands,
-            },
-          },
+const PULL_REQUEST_EVENTS = ['opened', 'reopened', 'closed', 'synchronize'];
+const getMatchConditions = events =>
+  Array.from(events).reduce((acc, event) => {
+    if (event === 'release') {
+      return {
+        ...acc,
+        release: {
+          condition: '(tasks_for == "github-release")',
         },
-      },
-    },
-  });
-};
+      };
+    }
 
-const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
-  ({
+    if (event === 'push') {
+      return {
+        ...acc,
+        push: {
+          condition: '(tasks_for == "github-push")',
+        },
+      };
+    }
+
+    if (PULL_REQUEST_EVENTS.includes(event)) {
+      const actions =
+        acc.pullRequest && acc.pullRequest.actions
+          ? [...acc.pullRequest.actions, event]
+          : [event];
+      const eventActions = actions
+        .map(action => `"${action}"`)
+        .sort()
+        .join(', ');
+
+      return {
+        ...acc,
+        pullRequest: {
+          actions,
+          condition: `(tasks_for == "github-pull-request" && event["action"] in [${eventActions}])`,
+        },
+      };
+    }
+
+    return acc;
+  }, {});
+const cmdDirectory = ({
+  image,
+  eventGroup = 'pullRequest',
+  commandSelection,
+  org = '<YOUR_ORG>',
+  repo = '<YOUR_REPO>',
+}) => {
+  if (eventGroup === 'release' || commandSelection === 'custom') {
+    return [];
+  }
+
+  const keys = {
+    pullRequest: {
+      gitUrl: 'event.pull_request.head.repo.git_url',
+      branch: 'event.pull_request.head.ref',
+      sha: 'event.pull_request.head.sha',
+    },
+    push: {
+      gitUrl: 'event.repository.git_url',
+      branch: 'event.ref',
+      sha: 'event.after',
+    },
+  };
+  const configKeys = keys[eventGroup];
+
+  return {
     node: [
       '/bin/bash',
       '--login',
       '-c',
-      baseCmd.concat(['npm install .', 'npm test']).join(' && '),
+      baseCmd({ ...configKeys })
+        .concat(['npm install', 'npm test'])
+        .join(' && '),
     ],
     python: [
       '/bin/bash',
       '--login',
       '-c',
-      baseCmd.concat(['pip install tox', 'tox']).join(' && '),
+      baseCmd({ ...configKeys })
+        .concat(['pip install tox', 'tox'])
+        .join(' && '),
     ],
-    'rust:latest': [
+    rust: [
       '/bin/bash',
       '-c',
-      baseCmd.concat(['rustc --test unit_test.rs', './unit_test']).join(' && '),
+      baseCmd({ ...configKeys })
+        .concat(['rustc --test unit_test.rs', './unit_test'])
+        .join(' && '),
     ],
     golang: [
       '/bin/bash',
@@ -150,14 +157,71 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
         `mkdir -p /go/src/github.com/${org}/${repo}`,
         `cd /go/src/github.com/${org}/${repo}`,
         'git init',
-        'git fetch {{ event.head.repo.url }} {{ event.head.ref }}',
+        `git fetch \${${configKeys.gitUrl}} \${${configKeys.branch}}`,
         'git config advice.detachedHead false',
-        'git checkout {{ event.head.sha }}',
+        `git checkout \${${configKeys.sha}}`,
         'go install',
         'go test ./...',
       ].join(' && '),
     ],
-  }[type]);
+  }[image];
+};
+
+const getTaskDefinition = state => {
+  const {
+    access,
+    commandSelection,
+    conditions,
+    image,
+    taskName,
+    taskDescription,
+  } = state;
+  const eventGroups = Object.keys(conditions).sort();
+  const getTaskPayload = ({ condition, eventGroup }) => ({
+    [condition]: {
+      ...taskDefinition.tasks.$match,
+      ...{
+        metadata: {
+          ...taskDefinition.tasks.$match.metadata,
+          name: taskName,
+          description: taskDescription,
+        },
+        payload: {
+          ...taskDefinition.tasks.$match.payload,
+          image,
+          command: cmdDirectory({ image, eventGroup, commandSelection }),
+        },
+      },
+    },
+  });
+  const tasks = eventGroups.reduce(
+    (acc, eventGroup) => ({
+      ...acc,
+      ...getTaskPayload({
+        condition: conditions[eventGroup].condition,
+        eventGroup,
+      }),
+    }),
+    {}
+  );
+
+  return safeDump(
+    {
+      ...taskDefinition,
+      policy: {
+        pullRequests: access,
+      },
+      tasks: {
+        $match: {
+          ...tasks,
+        },
+      },
+    },
+    {
+      noRefs: true,
+    }
+  );
+};
 
 @hot(module)
 @withApollo
@@ -194,20 +258,15 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
   },
 }))
 export default class QuickStart extends Component {
-  initialEvents = new Set([
-    'pull_request.opened',
-    'pull_request.reopened',
-    'pull_request.synchronize',
-  ]);
+  initialEvents = new Set(['opened', 'reopened', 'synchronize']);
 
   initialState = {
     events: this.initialEvents,
-    condition: getMatchCondition(this.initialEvents),
+    conditions: getMatchConditions(this.initialEvents),
     owner: '',
     repo: '',
     access: 'collaborators',
     image: 'node',
-    commands: cmdDirectory('node'),
     commandSelection: 'standard',
     installedState: null,
     taskName: '',
@@ -239,7 +298,6 @@ export default class QuickStart extends Component {
   handleCommandsChange = ({ target: { value } }) => {
     this.setState({
       commandSelection: value,
-      commands: value === 'standard' ? cmdDirectory(this.state.image) : [],
       editorValue: null,
     });
   };
@@ -251,11 +309,11 @@ export default class QuickStart extends Component {
 
     // Note: this should be called after `events` has been modified
     // in the above line
-    const condition = getMatchCondition(events);
+    const conditions = getMatchConditions(events);
 
     this.setState({
       events,
-      condition,
+      conditions,
       editorValue: null,
     });
   };
@@ -281,7 +339,7 @@ export default class QuickStart extends Component {
   handleReset = () => {
     const resetState = {
       ...this.initialState,
-      condition: getMatchCondition(this.initialState.events),
+      conditions: getMatchConditions(this.initialState.events),
     };
 
     this.setState({
@@ -443,9 +501,9 @@ export default class QuickStart extends Component {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={events.has('pull_request.opened')}
+                        checked={events.has('opened')}
                         onChange={this.handleEventsSelection}
-                        value="pull_request.opened"
+                        value="opened"
                       />
                     }
                     label="Pull request opened"
@@ -453,9 +511,9 @@ export default class QuickStart extends Component {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={events.has('pull_request.closed')}
+                        checked={events.has('closed')}
                         onChange={this.handleEventsSelection}
-                        value="pull_request.closed"
+                        value="closed"
                       />
                     }
                     label="Pull request merged or closed"
@@ -463,9 +521,9 @@ export default class QuickStart extends Component {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={events.has('pull_request.synchronize')}
+                        checked={events.has('synchronize')}
                         onChange={this.handleEventsSelection}
-                        value="pull_request.synchronize"
+                        value="synchronize"
                       />
                     }
                     label="New commit made in an opened pull request"
@@ -473,9 +531,9 @@ export default class QuickStart extends Component {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={events.has('pull_request.reopened')}
+                        checked={events.has('reopened')}
                         onChange={this.handleEventsSelection}
-                        value="pull_request.reopened"
+                        value="reopened"
                       />
                     }
                     label="Pull request re-opened"
@@ -530,7 +588,7 @@ export default class QuickStart extends Component {
                 <MenuItem value="node">Node.js</MenuItem>
                 <MenuItem value="python">Python</MenuItem>
                 <MenuItem value="rust">Rust</MenuItem>
-                <MenuItem value="go">Go</MenuItem>
+                <MenuItem value="golang">Go</MenuItem>
               </TextField>
             </ListItem>
             <ListItem>
