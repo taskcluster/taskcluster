@@ -156,9 +156,11 @@ class AwsProvider extends Provider {
       });
     }
 
+    const config = this.chooseConfig(workerPool.config);
+
     const toSpawn = await this.estimator.simple({
       workerPoolId,
-      ...workerPool.config,
+      ...config,
       running: workerPool.providerData[this.providerId].running,
     });
 
@@ -166,14 +168,13 @@ class AwsProvider extends Provider {
 
     try {
       spawned = await this.ec2.runInstances({
+        ...config,
         IamInstanceProfile: {
           Arn: this.instanceProfile.Arn,
           Name: this.instanceProfile.InstanceProfileName,
         },
-        MaxCount: toSpawn,
-        MinCount: toSpawn,
-        ImageId: workerPool.config.image[this.region],
-        InstanceType: workerPool.config.instanceType,
+        MaxCount: config.MaxCount || toSpawn,
+        MinCount: config.MinCount ? Math.min(toSpawn, config.MinCount) : toSpawn,
         Placement: {
           AvailabilityZone: this.region,
         },
@@ -276,6 +277,18 @@ class AwsProvider extends Provider {
         wp.providerData[this.providerId].running = seen;
       });
     }));
+  }
+
+  /**
+   * Method to select instance launch specification. At the moment selects at random
+   *
+   * @param possibleConfigs Array<Object>
+   * @returns Object
+   */
+  chooseConfig(possibleConfigs) {
+    const i = Math.random() * (possibleConfigs.length() - 1);
+
+    return possibleConfigs[i];
   }
 }
 
