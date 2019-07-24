@@ -152,7 +152,7 @@ class AwsProvider extends Provider {
     if (!workerPool.providerData[this.providerId] || workerPool.providerData[this.providerId].running === undefined) {
       await workerPool.modify(wt => {
         wt.providerData[this.providerId] = wt.providerData[this.providerId] || {};
-        wt.providerData[this.providerId].running = wt.providerData[this.providerId].running || 0; // why zero?
+        wt.providerData[this.providerId].running = wt.providerData[this.providerId].running || 0;
       });
     }
 
@@ -208,7 +208,9 @@ class AwsProvider extends Provider {
         created: new Date(),
         expires: taskcluster.fromNow('1 week'),
         state: this.Worker.states.REQUESTED,
-        providerData: { // what do we want to remember, anyways?
+        providerData: {
+          groups: spawned.Groups,
+          amiLaunchIndexes: spawned.Instances.map(i => i.AmiLaunchIndex),
         },
       });
     }));
