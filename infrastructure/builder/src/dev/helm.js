@@ -37,15 +37,15 @@ const actions = [
         ignoreReturn: true, // Helm 2 yells about tiller
         utils,
       });
-      const match = /SemVer:"(v[0-9]+.[0-9]+.[0-9]+)"/g.exec(res);
+      const match = /(SemVer|Version):"(v[0-9]+.[0-9]+.[0-9]+-?[^"]*)"/g.exec(res);
       if (!match) {
         throw new Error(`Could not determine helm version from: ${res}`);
-      } else if (match[1].includes('v3')) {
+      } else if (match[2].includes('v3')) {
         return {'helm-version': 3};
-      } else if (match[1].includes('v2')) {
+      } else if (match[2].includes('v2')) {
         return {'helm-version': 2};
       } else {
-        throw new Error(`Must use supported helm version (2 or 3). You have ${match[1]}`);
+        throw new Error(`Must use supported helm version (2 or 3). You have ${match[2]}`);
       }
     },
   },
