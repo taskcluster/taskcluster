@@ -186,11 +186,12 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	err.add(feature.task.uploadArtifact(
 		&S3Artifact{
 			BaseArtifact: &BaseArtifact{
-				Name:        ed25519SignedCertName,
-				Expires:     feature.task.Definition.Expires,
-				ContentType: "application/octet-stream",
+				Name:    ed25519SignedCertName,
+				Expires: feature.task.Definition.Expires,
 			},
-			Path: ed25519SignedCertPath,
+			ContentType:     "application/octet-stream",
+			ContentEncoding: "gzip",
+			Path:            ed25519SignedCertPath,
 		},
 	))
 }
