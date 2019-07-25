@@ -36,6 +36,13 @@ const SHARED_CONFIG = {
   node_env: '.Values.nodeEnv',
 };
 
+const labels = (projectName, component) => ({
+  'app.kubernetes.io/name': projectName,
+  'app.kubernetes.io/instance': '{{ .Release.Name }}',
+  'app.kubernetes.io/component': `${projectName}-${component.toLowerCase()}`,
+  'app.kubernetes.io/part-of': 'taskcluster',
+});
+
 const renderTemplates = async (name, vars, procs, templates) => {
 
   await rimraf(TMPL_DIR);
@@ -44,6 +51,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
   for (const resource of ['role', 'rolebinding', 'serviceaccount', 'secret']) {
     const rendered = jsone(templates[resource], {
       projectName: `taskcluster-${name}`,
+      labels: labels(`taskcluster-${name}`, 'secrets'),
       secrets: vars.map(v => {
         const val = v.toLowerCase();
         if (NON_CONFIGURABLE.includes(val)) {
@@ -70,6 +78,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
       procName: proc,
       needsService: false,
       readinessPath: conf.readinessPath || `/api/${name}/v1/ping`,
+      labels: labels(`taskcluster-${name}`, proc),
     };
     switch (conf['type']) {
       case 'web': {
@@ -230,7 +239,10 @@ exports.tasks.push({
       }
     }
     const templates = requirements['k8s-templates'];
-    const rendered = jsone(templates['ingress'], {ingresses});
+    const rendered = jsone(templates['ingress'], {
+      ingresses,
+      labels: labels(`taskcluster-ingress`, 'ingress'),
+    });
     await writeRepoYAML(path.join(TMPL_DIR, 'ingress.yaml'), rendered);
   },
 });

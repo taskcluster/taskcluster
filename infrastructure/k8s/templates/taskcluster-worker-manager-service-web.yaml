@@ -2,13 +2,14 @@ kind: Service
 apiVersion: v1
 metadata:
   name: taskcluster-worker-manager
-spec:
-  type: NodePort
-  selector:
+  labels: &ref_0
     app.kubernetes.io/name: taskcluster-worker-manager
     app.kubernetes.io/instance: '{{ .Release.Name }}'
     app.kubernetes.io/component: taskcluster-worker-manager-web
     app.kubernetes.io/part-of: taskcluster
+spec:
+  type: NodePort
+  selector: *ref_0
   ports:
     - protocol: TCP
       port: 80

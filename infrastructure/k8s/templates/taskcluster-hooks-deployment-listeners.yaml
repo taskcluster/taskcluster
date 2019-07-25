@@ -2,31 +2,20 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: taskcluster-hooks-listeners
-  labels:
+  labels: &ref_0
     app.kubernetes.io/name: taskcluster-hooks
     app.kubernetes.io/instance: '{{ .Release.Name }}'
     app.kubernetes.io/component: taskcluster-hooks-listeners
     app.kubernetes.io/part-of: taskcluster
-    app.kubernetes.io/managed-by: helm
 spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: taskcluster-hooks
-      app.kubernetes.io/instance: '{{ .Release.Name }}'
-      app.kubernetes.io/component: taskcluster-hooks-listeners
-      app.kubernetes.io/part-of: taskcluster
-      app.kubernetes.io/managed-by: helm
   replicas: {{ int (.Values.hooks.procs.listeners.replicas) }}
+  selector:
+    matchLabels: *ref_0
   template:
     metadata:
       annotations:
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-hooks-secret.yaml") . | sha256sum }}'
-      labels:
-        app.kubernetes.io/name: taskcluster-hooks
-        app.kubernetes.io/instance: '{{ .Release.Name }}'
-        app.kubernetes.io/component: taskcluster-hooks-listeners
-        app.kubernetes.io/part-of: taskcluster
-        app.kubernetes.io/managed-by: helm
+      labels: *ref_0
     spec:
       serviceAccountName: taskcluster-hooks
       containers:

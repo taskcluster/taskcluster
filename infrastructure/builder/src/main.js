@@ -76,7 +76,7 @@ program.command('changelog')
 
 program.command('dev')
   .option('--init', 'Set up resources and configure')
-  .option('--helm-action <action>', 'Run a specific action (install, uninstall, upgrade, template)')
+  .option('--k8s-action <action>', 'Run a specific action (apply, delete, template)')
   .action((...options) => {
     if (options.length !== 1) {
       console.error('unexpected command-line arguments');

@@ -2,31 +2,20 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: taskcluster-index-web
-  labels:
+  labels: &ref_0
     app.kubernetes.io/name: taskcluster-index
     app.kubernetes.io/instance: '{{ .Release.Name }}'
     app.kubernetes.io/component: taskcluster-index-web
     app.kubernetes.io/part-of: taskcluster
-    app.kubernetes.io/managed-by: helm
 spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: taskcluster-index
-      app.kubernetes.io/instance: '{{ .Release.Name }}'
-      app.kubernetes.io/component: taskcluster-index-web
-      app.kubernetes.io/part-of: taskcluster
-      app.kubernetes.io/managed-by: helm
   replicas: {{ int (.Values.index.procs.web.replicas) }}
+  selector:
+    matchLabels: *ref_0
   template:
     metadata:
       annotations:
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-index-secret.yaml") . | sha256sum }}'
-      labels:
-        app.kubernetes.io/name: taskcluster-index
-        app.kubernetes.io/instance: '{{ .Release.Name }}'
-        app.kubernetes.io/component: taskcluster-index-web
-        app.kubernetes.io/part-of: taskcluster
-        app.kubernetes.io/managed-by: helm
+      labels: *ref_0
     spec:
       serviceAccountName: taskcluster-index
       containers:

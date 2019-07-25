@@ -125,7 +125,7 @@ You will first need to have
 * a rabbitmq cluster
 * an azure account
 * an aws account and an IAM user in that account
-* helm3 installed
+* helm installed
 * latest version of kubectl installed
 
 Once those are all set up, you will need:
@@ -147,18 +147,15 @@ Now follow along:
    be encryped at rest.
    * SubscriptionId can be found in the Azure console
    * RabbitMQ account creds are in passwordstore at tc/cloudamqp.com/hip-macaw
-1. Run `yarn dev:template` and see if it complains about any missing values in
+1. Run `yarn dev:verify` and see if it complains about any missing values in
    your configuration
 1. If you want to deploy local changes, run `yarn build --push` and add the
    resulting image id to your config file with the key `dockerImage`.
-1. `yarn dev:install` will use helm to apply all of your kubernetes resources
+1. `yarn dev:apply` will use helm+kubectl to apply all of your kubernetes resources
    to the cluster. *Note that this will create a new namespace in the cluster
-   for you and switch your kubectl context to it*
-1. `yarn dev:upgrade` will update an already installed cluster (once helm fixes
-   things).  Note that this isn't able to change lots of things such as the
-   docker image, so you may want to get in the habit of doing `dev:uninstall`
-   followed by `dev:install`, instead.
-1. `yarn dev:uninstall` will uninstall your deployment.
+   for you and switch your kubectl context to it*. If you make changes, just apply
+   again. It should change anything you've changed and remove anything you've removed.
+1. `yarn dev:delete` will uninstall your deployment.
 
 Troubleshooting:
 * Certbot error `[Errno 13] Permission denied: '/var/log/letsencrypt' Either run as root, or set --config-dir, --work-dir, and --logs-dir to writeable paths.` - do not run as root, but set the directories instead.

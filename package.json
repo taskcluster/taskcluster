@@ -175,10 +175,9 @@
     "heroku-prebuild": "echo {\\\"version\\\"\\: \\\"$SOURCE_VERSION\\\"} > version.json",
     "heroku-postbuild": "if [ $PROCFILE = \"ui/Procfile\" ]; then cd ui && yarn install --frozen-lockfile && yarn build; fi",
     "dev:init": "node infrastructure/builder/src/main.js dev --init",
-    "dev:install": "node infrastructure/builder/src/main.js dev --helm-action install",
-    "dev:uninstall": "node infrastructure/builder/src/main.js dev --helm-action uninstall",
-    "dev:template": "node infrastructure/builder/src/main.js dev --helm-action template",
-    "dev:upgrade": "node infrastructure/builder/src/main.js dev --helm-action upgrade"
+    "dev:apply": "node infrastructure/builder/src/main.js dev --k8s-action apply",
+    "dev:delete": "node infrastructure/builder/src/main.js dev --k8s-action delete",
+    "dev:verify": "node infrastructure/builder/src/main.js dev --k8s-action verify"
   },
   "renovate": {
     "extends": [

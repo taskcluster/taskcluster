@@ -46,8 +46,8 @@ const main = async (options) => {
     await writeRepoYAML(USER_CONF_FILE, _.merge(userConfig, answer));
   }
 
-  if (options.helmAction) {
-    await helm(options.helmAction);
+  if (options.k8sAction) {
+    await helm(options.k8sAction);
   }
 };
 

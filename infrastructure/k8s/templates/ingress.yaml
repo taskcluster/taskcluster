@@ -2,6 +2,11 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: taskcluster-ingress
+  labels:
+    app.kubernetes.io/name: taskcluster-ingress
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-ingress-ingress
+    app.kubernetes.io/part-of: taskcluster
   annotations:
     kubernetes.io/ingress.global-static-ip-name: '{{ .Values.ingressStaticIpName }}'
     ingress.gcp.kubernetes.io/pre-shared-cert: '{{ .Values.ingressCertName }}'

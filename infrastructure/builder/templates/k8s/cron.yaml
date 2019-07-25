@@ -2,31 +2,16 @@ apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: ${projectName}-${lowercase(procName)}
-  labels:
-    app.kubernetes.io/name: ${projectName}
-    app.kubernetes.io/instance: '{{ .Release.Name }}'
-    app.kubernetes.io/component: ${projectName}-${lowercase(procName)}
-    app.kubernetes.io/part-of: taskcluster
-    app.kubernetes.io/managed-by: helm
+  labels: {$eval: labels}
 spec:
   schedule: ${schedule}
   jobTemplate:
     metadata:
-      labels:
-        app.kubernetes.io/name: ${projectName}
-        app.kubernetes.io/instance: '{{ .Release.Name }}'
-        app.kubernetes.io/component: ${projectName}-${lowercase(procName)}
-        app.kubernetes.io/part-of: taskcluster
-        app.kubernetes.io/managed-by: helm
+      labels: {$eval: labels}
     spec:
       template:
         metadata:
-          labels:
-            app.kubernetes.io/name: ${projectName}
-            app.kubernetes.io/instance: '{{ .Release.Name }}'
-            app.kubernetes.io/component: ${projectName}-${lowercase(procName)}
-            app.kubernetes.io/part-of: taskcluster
-            app.kubernetes.io/managed-by: helm
+          labels: {$eval: labels}
         spec:
           restartPolicy: OnFailure
           activeDeadlineSeconds: {$eval: 'deadlineSeconds'}
