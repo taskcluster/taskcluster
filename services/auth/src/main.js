@@ -17,6 +17,7 @@ const SentryClient = require('sentry-api').Client;
 const SentryManager = require('./sentrymanager');
 const libPulse = require('taskcluster-lib-pulse');
 const {google: googleapis} = require('googleapis');
+const assert = require('assert');
 
 // Create component loader
 const load = Loader({
@@ -186,6 +187,9 @@ const load = Loader({
     requires: ['cfg'],
     setup: ({cfg}) => {
       const credentials = cfg.gcp.credentials;
+      const allowedServiceAccounts = cfg.gcp.allowedServiceAccounts;
+
+      assert(Array.isArray(allowedServiceAccounts));
 
       // note that this service can currently start up correctly without GCP
       // credentials configured.
@@ -204,6 +208,8 @@ const load = Loader({
         auth,
         // and the credentials configuration
         credentials,
+        // service accounts we allow to generate temporary credentials from
+        allowedServiceAccounts,
       };
     },
   },

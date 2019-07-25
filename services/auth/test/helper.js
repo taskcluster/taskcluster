@@ -15,6 +15,10 @@ const {stickyLoader, Secrets, withEntity, withPulse, withMonitor} = require('tas
 exports.load = stickyLoader(load);
 
 suiteSetup(async function() {
+  process.env.GCP_ALLOWED_SERVICE_ACCOUNTS = JSON.stringify([
+    'invalid@mozilla.com',
+  ]);
+
   exports.load.inject('profile', 'test');
   exports.load.inject('process', 'test');
 });
@@ -47,6 +51,7 @@ exports.secrets = new Secrets({
     ],
     gcp: [
       {env: 'GCP_CREDENTIALS', cfg: 'gcp.credentials', name: 'credentials'},
+      {env: 'GCP_ALLOWED_SERVICE_ACCOUNTS', cfg: 'gcp.allowedServiceAccounts', name: 'allowedServiceAccounts', mock: []},
     ],
   },
   load: exports.load,
@@ -398,11 +403,16 @@ exports.withGcp = (mock, skipping) => {
         client_email: 'test_client@example.com',
       };
       const auth = {testCredentials: credentials};
+      const allowedServiceAccounts = [
+        credentials.client_email,
+        'invalid@mozilla.com',
+      ];
 
       exports.load.inject('gcp', {
         auth,
         googleapis: fakeGoogleApis,
         credentials,
+        allowedServiceAccounts,
       });
 
       exports.gcpAccount = {
@@ -411,7 +421,7 @@ exports.withGcp = (mock, skipping) => {
         project_id: credentials.project_id,
       };
     } else {
-      const {credentials, auth, googleapis} = await exports.load('gcp');
+      const {credentials, auth, googleapis, allowedServiceAccounts} = await exports.load('gcp');
       const projectId = credentials.project_id;
 
       iam = googleapis.iam({version: 'v1', auth});
@@ -430,6 +440,8 @@ exports.withGcp = (mock, skipping) => {
           },
         },
       });
+
+      allowedServiceAccounts.push(res.data.email);
 
       exports.gcpAccount = {
         email: res.data.email,

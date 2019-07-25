@@ -25,6 +25,13 @@ builder.declare({
   const serviceAccount = req.params.serviceAccount;
   const projectId = req.params.projectId;
 
+  if (!this.gcp.allowedServiceAccounts.includes(serviceAccount)) {
+    return res.reportError(
+      'InvalidRequestArguments',
+      `The service account ${serviceAccount} isn't allowed`,
+    );
+  }
+
   if (!this.gcp.credentials) {
     return res.reportError('ResourceNotFound', 'GCP credentials are not available');
   }

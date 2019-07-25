@@ -110,6 +110,7 @@ defaults:
   # of the json file you download when you create a key for a service account
   gcp:
     credentials:              !env:json:optional GCP_CREDENTIALS
+    allowedServiceAccounts:   !env:json:optional GCP_ALLOWED_SERVICE_ACCOUNTS
 
 production:
   app:

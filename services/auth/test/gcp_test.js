@@ -23,6 +23,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp', 'azure'], function(
     assert.fail('The call should fail');
   });
 
+  test('gcpCredentials black listed account', async () => {
+    try {
+      await helper.apiClient.gcpCredentials(helper.gcpAccount.project_id, 'noallowed@mozilla.com');
+    } catch (e) {
+      if (e.statusCode !== 400) {
+        throw e;
+      }
+      return;
+    }
+    assert.fail('The call should fail');
+  });
+
   test('gcpCredentials invalid projectId', async () => {
     try {
       await helper.apiClient.gcpCredentials('invalidprojectid', helper.gcpAccount.email);
