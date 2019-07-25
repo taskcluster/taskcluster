@@ -2,13 +2,10 @@ kind: Service
 apiVersion: v1
 metadata:
   name: ${projectName}
+  labels: {$eval: labels}
 spec:
   type: NodePort
-  selector:
-    app.kubernetes.io/name: ${projectName}
-    app.kubernetes.io/instance: '{{ .Release.Name }}'
-    app.kubernetes.io/component: ${projectName}-${lowercase(procName)}
-    app.kubernetes.io/part-of: taskcluster
+  selector: {$eval: labels}
   ports:
   - protocol: TCP
     port: 80

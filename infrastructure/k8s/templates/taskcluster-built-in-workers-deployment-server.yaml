@@ -2,31 +2,20 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: taskcluster-built-in-workers-server
-  labels:
+  labels: &ref_0
     app.kubernetes.io/name: taskcluster-built-in-workers
     app.kubernetes.io/instance: '{{ .Release.Name }}'
     app.kubernetes.io/component: taskcluster-built-in-workers-server
     app.kubernetes.io/part-of: taskcluster
-    app.kubernetes.io/managed-by: helm
 spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: taskcluster-built-in-workers
-      app.kubernetes.io/instance: '{{ .Release.Name }}'
-      app.kubernetes.io/component: taskcluster-built-in-workers-server
-      app.kubernetes.io/part-of: taskcluster
-      app.kubernetes.io/managed-by: helm
   replicas: {{ int (.Values.built_in_workers.procs.server.replicas) }}
+  selector:
+    matchLabels: *ref_0
   template:
     metadata:
       annotations:
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-built-in-workers-secret.yaml") . | sha256sum }}'
-      labels:
-        app.kubernetes.io/name: taskcluster-built-in-workers
-        app.kubernetes.io/instance: '{{ .Release.Name }}'
-        app.kubernetes.io/component: taskcluster-built-in-workers-server
-        app.kubernetes.io/part-of: taskcluster
-        app.kubernetes.io/managed-by: helm
+      labels: *ref_0
     spec:
       serviceAccountName: taskcluster-built-in-workers
       containers:

@@ -2,13 +2,14 @@ kind: Service
 apiVersion: v1
 metadata:
   name: taskcluster-ui
-spec:
-  type: NodePort
-  selector:
+  labels: &ref_0
     app.kubernetes.io/name: taskcluster-ui
     app.kubernetes.io/instance: '{{ .Release.Name }}'
     app.kubernetes.io/component: taskcluster-ui-web
     app.kubernetes.io/part-of: taskcluster
+spec:
+  type: NodePort
+  selector: *ref_0
   ports:
     - protocol: TCP
       port: 80

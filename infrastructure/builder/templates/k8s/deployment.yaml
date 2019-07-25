@@ -2,31 +2,16 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ${projectName}-${lowercase(procName)}
-  labels:
-    app.kubernetes.io/name: ${projectName}
-    app.kubernetes.io/instance: '{{ .Release.Name }}'
-    app.kubernetes.io/component: ${projectName}-${lowercase(procName)}
-    app.kubernetes.io/part-of: taskcluster
-    app.kubernetes.io/managed-by: helm
+  labels: {$eval: labels}
 spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: ${projectName}
-      app.kubernetes.io/instance: '{{ .Release.Name }}'
-      app.kubernetes.io/component: ${projectName}-${lowercase(procName)}
-      app.kubernetes.io/part-of: taskcluster
-      app.kubernetes.io/managed-by: helm
   replicas: REPLICA_CONFIG_STRING
+  selector:
+      matchLabels: {$eval: labels}
   template:
     metadata:
       annotations:
         checksum/secret: '{{ include (print $.Template.BasePath "/${projectName}-secret.yaml") . | sha256sum }}'
-      labels:
-        app.kubernetes.io/name: ${projectName}
-        app.kubernetes.io/instance: '{{ .Release.Name }}'
-        app.kubernetes.io/component: ${projectName}-${lowercase(procName)}
-        app.kubernetes.io/part-of: taskcluster
-        app.kubernetes.io/managed-by: helm
+      labels: {$eval: labels}
     spec:
       serviceAccountName: ${projectName}
       containers:
