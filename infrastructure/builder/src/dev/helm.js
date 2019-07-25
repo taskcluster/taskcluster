@@ -55,10 +55,10 @@ const actions = [
     provides: ['target-templates'],
     run: async (requirements, utils) => {
       let command = ['helm', 'template'];
-      if (requirements['helm-version'] === 3) {
-        command.push('taskcluster');
+      if (requirements['helm-version'] === 2) {
+        command.push('-n');
       }
-      command = command.concat(['-f', './dev-config.yml', 'infrastructure/k8s']);
+      command = command.concat(['taskcluster', '-f', './dev-config.yml', 'infrastructure/k8s']);
       return {
         'target-templates': await execCommand({
           command,
