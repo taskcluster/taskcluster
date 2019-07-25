@@ -125,7 +125,7 @@ You will first need to have
 * a rabbitmq cluster
 * an azure account
 * an aws account and an IAM user in that account
-* helm installed
+* helm installed (either 2 or 3 should Just Work)
 * latest version of kubectl installed
 
 Once those are all set up, you will need:
