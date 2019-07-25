@@ -138,7 +138,7 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
       const shellreadme = 'clients/client-shell/README.md';
       utils.status({message: `Update ${shellreadme}`});
       await modifyRepoFile(shellreadme, contents =>
-        contents.replace(/download\/v[0-9.]*\/taskcluster-/g, `download/v${requirements['release-version']}/taskcluster-"`));
+        contents.replace(/download\/v[0-9.]*\/taskcluster-/g, `download/v${requirements['release-version']}/taskcluster-`));
       changed.push(shellreadme);
 
       const shellgomod = 'clients/client-shell/go.mod';
