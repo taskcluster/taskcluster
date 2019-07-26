@@ -10,9 +10,11 @@ if [ -z "$BUILD_TARGET" ]; then
 fi
 shift
 
+export TEST
 export CLOUD
 for arg in "${@}"; do
     case $arg in
+        --test) TEST=--test;;
         --cloud=*) CLOUD=${arg#--cloud=};;
         --cloud)
             echo "Use --cloud=.."
@@ -129,7 +131,7 @@ trap 'rm -rf /tmp/docker-worker*' EXIT
 deploy/bin/build $BUILD_TARGET
 
 if $UPDATE_WORKER_TYPES; then
-    deploy/bin/update-worker-types.js $*
+    deploy/bin/update-worker-types.js $TEST
 else
     echo "Not deploying worker-types as this is not the AWS / taskcluster-net / app deployment"
 fi
