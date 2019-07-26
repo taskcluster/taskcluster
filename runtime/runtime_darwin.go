@@ -12,6 +12,8 @@ import (
 	"github.com/taskcluster/generic-worker/kc"
 )
 
+var cachedInteractiveUsername string = ""
+
 func (user *OSUser) CreateNew(okIfExists bool) (err error) {
 	if okIfExists {
 		panic("(*(runtime.OSUser)).CreateNew(true) not implemented on darwin")
@@ -96,14 +98,22 @@ func WaitForLoginCompletion(timeout time.Duration) error {
 }
 
 func InteractiveUsername() (string, error) {
+	// The /usr/bin/last call is extremely expensive, and the logged in user
+	// does not change during lifetime of generic-worker process, so we can
+	// cache result. This has huge impact on integration test runtime (see
+	// http://bugzil.la/1567632)
+	if cachedInteractiveUsername != "" {
+		return cachedInteractiveUsername, nil
+	}
 	output, err := host.CombinedOutput("/usr/bin/last", "-t", "console", "-1")
 	if err != nil {
 		return "", err
 	}
-	if strings.Contains(output, "logged in") {
-		return output[:strings.Index(output, " ")], nil
+	if !strings.Contains(output, "logged in") {
+		return "", fmt.Errorf("Could not parse username from %q", output)
 	}
-	return "", fmt.Errorf("Could not parse username from %q", output)
+	cachedInteractiveUsername = output[:strings.Index(output, " ")]
+	return cachedInteractiveUsername, nil
 }
 
 func AutoLogonCredentials() (user OSUser) {
