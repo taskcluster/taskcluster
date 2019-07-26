@@ -70,7 +70,7 @@ cmd_app() {
           # NOTE: if building a new base image, either generate for all of these
           # accounts, or comment out the accounts you have not updated so that
           # the next person is not surprised by using an old base
-          dustin-dev-3) gcpSourceImage=docker-worker-base-1563484547;;
+          taskcluster-dev) gcpSourceImage=docker-worker-base-1564175698;;
           *)
               echo "No base image defined for GCP project $GCP_PROJECT_ID; create one" >&2
               echo "  ./deploy/bin/build base" >&2
