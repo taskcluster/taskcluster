@@ -374,6 +374,9 @@ exports.withGcp = (mock, skipping) => {
         projects: {
           serviceAccounts: {
             generateAccessToken: async ({name, scope, delegates, lifetime}) => {
+              if (name === 'projects/-/serviceAccounts/invalid@mozilla.com') {
+                throw new Error('Invalid account');
+              }
               assert.equal(name, `projects/-/serviceAccounts/${client_email}`);
               assert.deepEqual(scope, ['https://www.googleapis.com/auth/cloud-platform']);
               assert.deepEqual(delegates, []);
@@ -441,7 +444,48 @@ exports.withGcp = (mock, skipping) => {
         },
       });
 
-      allowedServiceAccounts.push(res.data.email);
+      const serviceAccount = res.data.email;
+      allowedServiceAccounts.push(serviceAccount);
+
+      // to understand the {get/set}IamPolicy calls, look at
+      // https://cloud.google.com/iam/docs/creating-short-lived-service-account-credentials
+      //
+      // Notice that might happen that between the getIamPolicy and setIamPolicy calls,
+      // a third party might change the etag, making the call to setIamPolicy fail.
+      const response = await iam.projects.serviceAccounts.getIamPolicy({
+        // NOTE: the `-` here represents the projectId, and uses the projectId
+        // from this.gcp.auth, which is why we verified those match above.
+        resource_: `projects/-/serviceAccounts/${serviceAccount}`,
+      });
+
+      const data = response.data;
+      if (data.bindings === undefined) {
+        data.bindings = [];
+      }
+
+      let binding = data.bindings.find(b => b.role === 'roles/iam.serviceAccountTokenCreator');
+      if (!binding) {
+        binding = {
+          role: 'roles/iam.serviceAccountTokenCreator',
+          members: [],
+        };
+
+        data.bindings.push(binding);
+      }
+
+      const myServiceAccount = credentials.client_email;
+      if (!binding.members.includes(`serviceAccount:${myServiceAccount}`)) {
+        binding.members.push(`serviceAccount:${myServiceAccount}`);
+        await iam.projects.serviceAccounts.setIamPolicy({
+          // NOTE: the `-` here represents the projectId, and uses the projectId
+          // from this.gcp.auth, which is why we verified those match above.
+          resource: `projects/-/serviceAccounts/${serviceAccount}`,
+          requestBody: {
+            policy: data,
+            updateMask: 'bindings',
+          },
+        });
+      }
 
       exports.gcpAccount = {
         email: res.data.email,
