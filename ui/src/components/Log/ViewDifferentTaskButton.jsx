@@ -4,6 +4,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
 import TextField from '@material-ui/core/TextField';
 import FeatureSearchIcon from 'mdi-react/FeatureSearchIcon';
 import SpeedDialAction from '../SpeedDialAction';
@@ -62,6 +63,16 @@ export default class ViewDifferentTaskButton extends Component {
             View Different Task
           </DialogTitle>
           <DialogContent>
+            <DialogContentText>
+              <div>
+                <p>Require to match regular expression:</p>
+                <p>
+                  {
+                    '/^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/'
+                  }
+                </p>
+              </div>
+            </DialogContentText>
             <form onSubmit={this.handleSubmit}>
               <TextField
                 id="text"
