@@ -102,6 +102,7 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 			if err != nil {
 				panic(fmt.Sprintf("Could not PUT to %v: %v", putURL, err))
 			}
+			defer res.Body.Close()
 			if res.StatusCode != 200 {
 				panic(fmt.Sprintf("Got http status code %v when issuing PUT to %v", res.StatusCode, putURL))
 			}

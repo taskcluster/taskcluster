@@ -50,6 +50,7 @@ func TestLiveLog(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not GET livelog from URL %s:\n%s", ll.GetURL, err)
 	}
+	defer resp.Body.Close()
 	ll.LogWriter.Close()
 	rawResp, err := httputil.DumpResponse(resp, true)
 	if err != nil {

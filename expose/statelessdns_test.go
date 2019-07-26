@@ -148,11 +148,12 @@ func TestStatelessDNSExposePort(t *testing.T) {
 	dialer := websocket.Dialer{
 		TLSClientConfig: tlsConfig,
 	}
-	ws, _, err := dialer.Dial(gotURL.String(), nil)
+	ws, resp, err := dialer.Dial(gotURL.String(), nil)
 
 	if err != nil {
 		t.Fatalf("Dial: %s", err)
 	}
+	defer resp.Body.Close()
 
 	err = ws.WriteMessage(websocket.BinaryMessage, []byte("Hello"))
 	if err != nil {

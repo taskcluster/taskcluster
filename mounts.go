@@ -800,11 +800,13 @@ func downloadURLToFile(url, contentSource, file string, task *TaskRun) (sha256 s
 		}
 		return resp, nil, nil
 	}
-	_, _, err = httpbackoff.Retry(retryFunc)
+	var resp *http.Response
+	resp, _, err = httpbackoff.Retry(retryFunc)
 	if err != nil {
 		task.Errorf("[mounts] Could not fetch from %v into file %v: %v", contentSource, file, err)
 		return
 	}
+	defer resp.Body.Close()
 	sha256, err = fileutil.CalculateSHA256(file)
 	if err != nil {
 		task.Infof("[mounts] Downloaded %v bytes from %v to %v but cannot calculate SHA256", contentSize, contentSource, file)

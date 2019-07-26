@@ -189,10 +189,11 @@ func TestWSTExposeHTTPWebsocket(t *testing.T) {
 	dialer := websocket.Dialer{}
 	url := gotURL.String()
 	url = strings.Replace(url, "http:", "ws:", 1)
-	ws, _, err := dialer.Dial(url, nil)
+	ws, resp, err := dialer.Dial(url, nil)
 	if err != nil {
 		t.Fatalf("client Dial: %s", err)
 	}
+	defer resp.Body.Close()
 	defer ws.Close()
 
 	err = ws.WriteMessage(websocket.BinaryMessage, []byte("ECHO"))
@@ -250,10 +251,11 @@ func TestWSTExposeTCPPort(t *testing.T) {
 	url := gotURL.String()
 	url = strings.Replace(url, "http:", "ws:", 1)
 	t.Logf("Dialling wst server at %s", url)
-	ws, _, err := dialer.Dial(url, nil)
+	ws, resp, err := dialer.Dial(url, nil)
 	if err != nil {
 		t.Fatalf("client Dial: %s", err)
 	}
+	defer resp.Body.Close()
 
 	err = ws.WriteMessage(websocket.BinaryMessage, []byte("ECHO"))
 	if err != nil {
