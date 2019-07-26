@@ -9,6 +9,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ArrowDownBoldCircleOutlineIcon from 'mdi-react/ArrowDownBoldCircleOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import GoToLineButton from './GoToLineButton';
+import ViewDifferentTaskButton from './ViewDifferentTaskButton';
 import Loading from './Loading';
 import Button from '../Button';
 import SpeedDial from '../SpeedDial';
@@ -308,6 +309,7 @@ export default class Log extends Component {
             </div>
             {actions}
             <SpeedDial className={classes.logSpeedDial}>
+              <ViewDifferentTaskButton />
               {rawLogButton}
             </SpeedDial>
           </Fragment>
