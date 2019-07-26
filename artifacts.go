@@ -34,28 +34,61 @@ var (
 )
 
 type (
+	// TaskArtifact is the interface that all artifact types implement
+	// (S3Artifact, RedirectArtifact, ErrorArtifact), for publishing artifacts
+	// according to the tcqueue.CreateArtifact docs.
 	TaskArtifact interface {
-		ProcessResponse(response interface{}, task *TaskRun) error
+
+		// RequestObject returns a pointer to a go type containing the data for
+		// marshaling into tcqueue.PostArtifactRequest for passing to
+		// tcqueue.CreateArtifact.
+		//
+		// For example, this is a *tcqueue.S3ArtifactRequest for type
+		// S3Artifact.
 		RequestObject() interface{}
+
+		// ResponseObject returns a pointer to an empty go type for
+		// unmarshaling the result of a tcqueue.CreateArtifact API call into.
+		//
+		// For example, this would be new(tcqueue.RedirectArtifactRequest) for
+		// RedirectArtifact.
 		ResponseObject() interface{}
+
+		// ProcessResponse is a callback for performing actions after
+		// tcqueue.CreateArtifact API is called. response is the object
+		// returned by ResponseObject(), but populated with the result of
+		// tcqueue.CreateArtifact.
+		//
+		// For example, ProcessResponse for S3Artifact uploads the artifact to
+		// S3, since the tcqueue.CreateArtifact API call only informs the Queue
+		// that the artifact exists without uploading it.
+		//
+		// ProcessResponse can be an empty method if no post
+		// tcqueue.CreateArtifact steps are required.
+		ProcessResponse(response interface{}, task *TaskRun) error
+
+		// Base returns a *BaseArtifact which stores the properties common to
+		// all implementations
 		Base() *BaseArtifact
 	}
 
+	// Common properties across all implementations.
 	BaseArtifact struct {
-		Name        string
-		Expires     tcclient.Time
-		ContentType string
+		Name    string
+		Expires tcclient.Time
 	}
 
 	S3Artifact struct {
 		*BaseArtifact
 		Path            string
 		ContentEncoding string
+		ContentType     string
 	}
 
 	RedirectArtifact struct {
 		*BaseArtifact
-		URL string
+		URL         string
+		ContentType string
 	}
 
 	ErrorArtifact struct {
@@ -179,7 +212,6 @@ func (s3Artifact *S3Artifact) ChooseContentEncoding() {
 func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, task *TaskRun) (err error) {
 	response := resp.(*tcqueue.S3ArtifactResponse)
 
-	s3Artifact.ChooseContentEncoding()
 	task.Infof("Uploading artifact %v from file %v with content encoding %q, mime type %q and expiry %v", s3Artifact.Name, s3Artifact.Path, s3Artifact.ContentEncoding, s3Artifact.ContentType, s3Artifact.Expires)
 	transferContentFile := s3Artifact.CreateTempFileForPUTBody()
 	defer os.Remove(transferContentFile)
@@ -205,7 +237,7 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, task *TaskRun) (
 		if permError != nil {
 			return
 		}
-		httpRequest.Header.Set("Content-Type", s3Artifact.ContentType)
+		httpRequest.Header.Set("Content-Type", response.ContentType)
 		httpRequest.ContentLength = transferContentLength
 		if enc := s3Artifact.ContentEncoding; enc != "" {
 			httpRequest.Header.Set("Content-Encoding", enc)
@@ -266,9 +298,8 @@ func (task *TaskRun) PayloadArtifacts() []TaskArtifact {
 	for _, artifact := range task.Payload.Artifacts {
 		basePath := artifact.Path
 		base := &BaseArtifact{
-			Name:        artifact.Name,
-			Expires:     artifact.Expires,
-			ContentType: artifact.ContentType,
+			Name:    artifact.Name,
+			Expires: artifact.Expires,
 		}
 		// if no name given, use canonical path
 		if base.Name == "" {
@@ -280,9 +311,9 @@ func (task *TaskRun) PayloadArtifacts() []TaskArtifact {
 		}
 		switch artifact.Type {
 		case "file":
-			artifacts = append(artifacts, resolve(base, "file", basePath))
+			artifacts = append(artifacts, resolve(base, "file", basePath, artifact.ContentType))
 		case "directory":
-			if errArtifact := resolve(base, "directory", basePath); errArtifact != nil {
+			if errArtifact := resolve(base, "directory", basePath, artifact.ContentType); errArtifact != nil {
 				artifacts = append(artifacts, errArtifact)
 				continue
 			}
@@ -302,17 +333,16 @@ func (task *TaskRun) PayloadArtifacts() []TaskArtifact {
 				}
 				subName := filepath.Join(base.Name, relativePath)
 				b := &BaseArtifact{
-					Name:        canonicalPath(subName),
-					Expires:     base.Expires,
-					ContentType: base.ContentType,
+					Name:    canonicalPath(subName),
+					Expires: base.Expires,
 				}
 				switch {
 				case info.IsDir():
-					if errArtifact := resolve(b, "directory", subPath); errArtifact != nil {
+					if errArtifact := resolve(b, "directory", subPath, artifact.ContentType); errArtifact != nil {
 						artifacts = append(artifacts, errArtifact)
 					}
 				default:
-					artifacts = append(artifacts, resolve(b, "file", subPath))
+					artifacts = append(artifacts, resolve(b, "file", subPath, artifact.ContentType))
 				}
 				return nil
 			}
@@ -331,7 +361,7 @@ func (task *TaskRun) PayloadArtifacts() []TaskArtifact {
 // ErrorArtifact, otherwise if it exists as a file, as
 // "invalid-resource-on-worker" ErrorArtifact
 // TODO: need to also handle "too-large-file-on-worker"
-func resolve(base *BaseArtifact, artifactType string, path string) TaskArtifact {
+func resolve(base *BaseArtifact, artifactType string, path string, contentType string) TaskArtifact {
 	fullPath := filepath.Join(taskContext.TaskDir, path)
 	fileReader, err := os.Open(fullPath)
 	if err != nil {
@@ -373,24 +403,28 @@ func resolve(base *BaseArtifact, artifactType string, path string) TaskArtifact 
 	if artifactType == "directory" {
 		return nil
 	}
-	if base.ContentType == "" {
+	// Is content type specified in task payload?
+	if contentType == "" {
 		extension := filepath.Ext(path)
 		// first look up our own custom mime type mappings
-		base.ContentType = customMimeMappings[strings.ToLower(extension)]
+		contentType = customMimeMappings[strings.ToLower(extension)]
 		// then fall back to system mime type mappings
-		if base.ContentType == "" {
-			base.ContentType = mime.TypeByExtension(extension)
+		if contentType == "" {
+			contentType = mime.TypeByExtension(extension)
 		}
 		// lastly, fall back to application/octet-stream in the absense of any other value
-		if base.ContentType == "" {
+		if contentType == "" {
 			// application/octet-stream is the mime type for "unknown"
-			base.ContentType = "application/octet-stream"
+			contentType = "application/octet-stream"
 		}
 	}
-	return &S3Artifact{
+	s3Artifact := &S3Artifact{
 		BaseArtifact: base,
 		Path:         path,
+		ContentType:  contentType,
 	}
+	s3Artifact.ChooseContentEncoding()
+	return s3Artifact
 }
 
 // The Queue expects paths to use a forward slash, so let's make sure we have a
@@ -408,9 +442,9 @@ func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
 			BaseArtifact: &BaseArtifact{
 				Name: name,
 				// logs expire when task expires
-				Expires:     task.Definition.Expires,
-				ContentType: "text/plain; charset=utf-8",
+				Expires: task.Definition.Expires,
 			},
+			ContentType:     "text/plain; charset=utf-8",
 			Path:            path,
 			ContentEncoding: "gzip",
 		},
@@ -484,9 +518,9 @@ func (task *TaskRun) uploadArtifact(artifact TaskArtifact) *CommandExecutionErro
 		panic(e)
 	}
 	e = artifact.ProcessResponse(resp, task)
-	// note: this only returns an error, if ProcessResponse returns an error...
 	if e != nil {
 		task.Errorf("Error uploading artifact: %v", e)
 	}
+	// note: ResourceUnavailable(nil) returns nil, so this only returns an error if e != nil
 	return ResourceUnavailable(e)
 }

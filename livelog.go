@@ -135,10 +135,10 @@ func (l *LiveLogTask) Stop(err *ExecutionErrors) {
 			BaseArtifact: &BaseArtifact{
 				Name: livelogName,
 				// same expiry as underlying log it points to
-				Expires:     l.task.Definition.Expires,
-				ContentType: "text/plain; charset=utf-8",
+				Expires: l.task.Definition.Expires,
 			},
-			URL: logURL,
+			ContentType: "text/plain; charset=utf-8",
+			URL:         logURL,
 		},
 	))
 
@@ -182,11 +182,11 @@ func (l *LiveLogTask) uploadLiveLogArtifact() error {
 	uploadErr := l.task.uploadArtifact(
 		&RedirectArtifact{
 			BaseArtifact: &BaseArtifact{
-				Name:        livelogName,
-				Expires:     tcclient.Time(expires),
-				ContentType: "text/plain; charset=utf-8",
+				Name:    livelogName,
+				Expires: tcclient.Time(expires),
 			},
-			URL: exposeURL.String(),
+			ContentType: "text/plain; charset=utf-8",
+			URL:         exposeURL.String(),
 		},
 	)
 	if uploadErr != nil {
