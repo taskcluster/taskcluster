@@ -106,7 +106,7 @@
     "babel-loader": "^8.0.5",
     "chai": "^4.2.0",
     "dotenv-cli": "^2.0.0",
-    "eslint": "^5.6.1",
+    "eslint": "^6.0.0",
     "eslint-plugin-react-hooks": "^1.2.0",
     "graphql-tag": "^2.8.0",
     "karma": "^4.0.0",
