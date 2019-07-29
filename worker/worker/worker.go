@@ -12,6 +12,11 @@ type Worker interface {
 	// and worker-information fields, but may modify any part of the state it desires.
 	ConfigureRun(state *run.State) error
 
+	// In a subsequent run with cacheOverRestarts set, this method is called
+	// instead of ConfigureRun.  It should recover any worker state required
+	// from the given Run.
+	UseCachedRun(run *run.State) error
+
 	// Actually start the worker, returning once it has been started.
 	StartWorker(state *run.State) (protocol.Transport, error)
 

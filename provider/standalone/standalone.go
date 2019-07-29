@@ -39,6 +39,10 @@ func (p *StandaloneProvider) ConfigureRun(state *run.State) error {
 	return nil
 }
 
+func (p *StandaloneProvider) UseCachedRun(run *run.State) error {
+	return nil
+}
+
 func (p *StandaloneProvider) SetProtocol(proto *protocol.Protocol) {
 }
 

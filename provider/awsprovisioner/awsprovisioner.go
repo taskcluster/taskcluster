@@ -117,6 +117,10 @@ func (p *AwsProvisionerProvider) ConfigureRun(state *run.State) error {
 	return nil
 }
 
+func (p *AwsProvisionerProvider) UseCachedRun(run *run.State) error {
+	return nil
+}
+
 func (p *AwsProvisionerProvider) SetProtocol(proto *protocol.Protocol) {
 	p.proto = proto
 }

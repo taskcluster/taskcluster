@@ -12,6 +12,11 @@ type Provider interface {
 	// and worker-information fields, but may modify any part of the state it desires.
 	ConfigureRun(state *run.State) error
 
+	// In a subsequent run with cacheOverRestarts set, this method is called
+	// instead of ConfigureRun.  It should recover any provider state required
+	// from the given Run.
+	UseCachedRun(run *run.State) error
+
 	// Set the protocol used for communication with this worker.  This is an appropriate
 	// time to register for interesting messages from the worker.
 	SetProtocol(proto *protocol.Protocol)

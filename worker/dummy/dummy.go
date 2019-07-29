@@ -18,12 +18,16 @@ func (d *dummy) ConfigureRun(state *run.State) error {
 	return nil
 }
 
+func (d *dummy) UseCachedRun(state *run.State) error {
+	return nil
+}
+
 func (d *dummy) StartWorker(state *run.State) (protocol.Transport, error) {
 	out, err := yaml.Marshal(state)
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Run information:\n%s", out)
+	log.Printf("State information:\n%s", out)
 	return protocol.NewNullTransport(), nil
 }
 

@@ -13,6 +13,7 @@ type RunnerConfig struct {
 	WorkerImplementation WorkerImplementationConfig `yaml:"worker"`
 	WorkerConfig         *WorkerConfig              `yaml:"workerConfig"`
 	GetSecrets           *bool                      `yaml:"getSecrets"`
+	CacheOverRestarts    string                     `yaml:"cacheOverRestarts"`
 }
 
 // Load a configuration file

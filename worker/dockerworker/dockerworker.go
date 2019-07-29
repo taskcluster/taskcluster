@@ -78,6 +78,10 @@ func (d *dockerworker) ConfigureRun(state *run.State) error {
 	return nil
 }
 
+func (d *dockerworker) UseCachedRun(state *run.State) error {
+	return nil
+}
+
 func (d *dockerworker) StartWorker(state *run.State) (protocol.Transport, error) {
 	// write out the config file
 	content, err := json.MarshalIndent(state.WorkerConfig, "", "  ")

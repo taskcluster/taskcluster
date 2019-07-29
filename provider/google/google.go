@@ -86,6 +86,10 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 	return nil
 }
 
+func (p *GoogleProvider) UseCachedRun(run *run.State) error {
+	return nil
+}
+
 func (p *GoogleProvider) SetProtocol(proto *protocol.Protocol) {
 	p.proto = proto
 }

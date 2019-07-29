@@ -53,6 +53,10 @@ func (p *StaticProvider) ConfigureRun(state *run.State) error {
 	return nil
 }
 
+func (p *StaticProvider) UseCachedRun(run *run.State) error {
+	return nil
+}
+
 func (p *StaticProvider) SetProtocol(proto *protocol.Protocol) {
 	p.proto = proto
 }

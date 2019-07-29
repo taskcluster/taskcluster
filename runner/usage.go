@@ -22,5 +22,11 @@ Configuration for this process is in the form of a YAML file with the following 
 
 	getSecrets: if true (the default), then configuration is fetched from the secrets service
 		and merged with the worker configuration.  This option is generally only used in testing.
+
+	cacheOverRestarts: if set to a filename, then the runner state is written to this file at
+	    startup.  On subsequent startups, if the file exists, then it is loaded and the worker
+		started directly without consulting worker-manager or any other external resources.
+		This is useful for worker implementations that restart the system as part of their
+		normal operation and expect to start up with the same config after a restart.
 `
 }

@@ -1,8 +1,11 @@
 package runner
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/credexp"
@@ -50,6 +53,22 @@ func Run(configFile string) (state run.State, err error) {
 		return
 	}
 
+	runCached := false
+	if runnercfg.CacheOverRestarts != "" {
+		var encoded []byte
+		encoded, err = ioutil.ReadFile(runnercfg.CacheOverRestarts)
+		if err == nil {
+			log.Printf("Loading cached state from %s", runnercfg.CacheOverRestarts)
+			err = json.Unmarshal(encoded, &state)
+			if err != nil {
+				return
+			}
+			runCached = true
+		} else if !os.IsNotExist(err) {
+			return
+		}
+	}
+
 	state.WorkerConfig = state.WorkerConfig.Merge(runnercfg.WorkerConfig)
 
 	// initialize provider
@@ -59,10 +78,17 @@ func Run(configFile string) (state run.State, err error) {
 		return
 	}
 
-	log.Printf("Configuring with provider %s", runnercfg.Provider.ProviderType)
-	err = provider.ConfigureRun(&state)
-	if err != nil {
-		return
+	if !runCached {
+		log.Printf("Configuring with provider %s", runnercfg.Provider.ProviderType)
+		err = provider.ConfigureRun(&state)
+		if err != nil {
+			return
+		}
+	} else {
+		err = provider.UseCachedRun(&state)
+		if err != nil {
+			return
+		}
 	}
 
 	err = checkProviderResults(&state)
@@ -72,7 +98,7 @@ func Run(configFile string) (state run.State, err error) {
 
 	// fetch secrets
 
-	if runnercfg.GetSecrets == nil || *runnercfg.GetSecrets {
+	if !runCached && (runnercfg.GetSecrets == nil || *runnercfg.GetSecrets) {
 		log.Println("Getting secrets from secrets service")
 		err = secrets.ConfigureRun(runnercfg, &state)
 		if err != nil {
@@ -87,18 +113,42 @@ func Run(configFile string) (state run.State, err error) {
 		return
 	}
 
-	log.Printf("Configuring for worker implementation %s", runnercfg.WorkerImplementation.Implementation)
-	err = worker.ConfigureRun(&state)
-	if err != nil {
-		return
+	if !runCached {
+		log.Printf("Configuring for worker implementation %s", runnercfg.WorkerImplementation.Implementation)
+		err = worker.ConfigureRun(&state)
+		if err != nil {
+			return
+		}
+	} else {
+		err = worker.UseCachedRun(&state)
+		if err != nil {
+			return
+		}
+	}
+
+	// cache the state if we might end up restarting
+
+	if !runCached && runnercfg.CacheOverRestarts != "" {
+		log.Printf("Caching runnercfg at %s", runnercfg.CacheOverRestarts)
+		var encoded []byte
+		encoded, err = json.Marshal(&state)
+		if err != nil {
+			return
+		}
+		err = ioutil.WriteFile(runnercfg.CacheOverRestarts, encoded, 0700)
+		if err != nil {
+			return
+		}
 	}
 
 	// extract files
 
-	log.Printf("Writing files")
-	err = files.ExtractAll(state.Files)
-	if err != nil {
-		return
+	if !runCached {
+		log.Printf("Writing files")
+		err = files.ExtractAll(state.Files)
+		if err != nil {
+			return
+		}
 	}
 
 	// handle credential expiratoin
