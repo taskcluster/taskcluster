@@ -1,4 +1,4 @@
-package runner
+package cfg
 
 import (
 	"path"
@@ -12,7 +12,7 @@ func TestLoadConfig(t *testing.T) {
 	_, sourceFilename, _, _ := runtime.Caller(0)
 	testConfig := path.Join(path.Dir(sourceFilename), "test-config.yml")
 
-	runnercfg, err := Load(testConfig)
+	runnercfg, err := LoadRunnerConfig(testConfig)
 	if err != nil {
 		t.Fatalf("failed to load: %s", err)
 	}

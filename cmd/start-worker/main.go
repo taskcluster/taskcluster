@@ -33,14 +33,7 @@ func main() {
 	}
 
 	filename := opts["<runnerConfig>"].(string)
-	log.Printf("Loading taskcluster-worker-runner configuration from %s", filename)
-	runnercfg, err := runner.Load(filename)
-	if err != nil {
-		log.Printf("Error loading start-worker config: %s", err)
-		os.Exit(1)
-	}
-
-	err = StartWorker(runnercfg)
+	err = runner.Run(filename)
 	if err != nil {
 		log.Printf("%s", err)
 		os.Exit(1)

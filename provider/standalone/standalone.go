@@ -1,9 +1,10 @@
 package standalone
 
 import (
+	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster-worker-runner/runner"
+	"github.com/taskcluster/taskcluster-worker-runner/run"
 )
 
 type standaloneProviderConfig struct {
@@ -16,24 +17,24 @@ type standaloneProviderConfig struct {
 }
 
 type StandaloneProvider struct {
-	runnercfg *runner.RunnerConfig
+	runnercfg *cfg.RunnerConfig
 }
 
-func (p *StandaloneProvider) ConfigureRun(run *runner.Run) error {
+func (p *StandaloneProvider) ConfigureRun(state *run.State) error {
 	var pc standaloneProviderConfig
 	err := p.runnercfg.Provider.Unpack(&pc)
 	if err != nil {
 		return err
 	}
 
-	run.RootURL = pc.RootURL
-	run.Credentials.ClientID = pc.ClientID
-	run.Credentials.AccessToken = pc.AccessToken
-	run.WorkerPoolID = pc.WorkerPoolID
-	run.WorkerGroup = pc.WorkerGroup
-	run.WorkerID = pc.WorkerID
+	state.RootURL = pc.RootURL
+	state.Credentials.ClientID = pc.ClientID
+	state.Credentials.AccessToken = pc.AccessToken
+	state.WorkerPoolID = pc.WorkerPoolID
+	state.WorkerGroup = pc.WorkerGroup
+	state.WorkerID = pc.WorkerID
 
-	run.ProviderMetadata = map[string]string{}
+	state.ProviderMetadata = map[string]string{}
 
 	return nil
 }
@@ -49,7 +50,7 @@ func (p *StandaloneProvider) WorkerFinished() error {
 	return nil
 }
 
-func New(runnercfg *runner.RunnerConfig) (provider.Provider, error) {
+func New(runnercfg *cfg.RunnerConfig) (provider.Provider, error) {
 	return &StandaloneProvider{runnercfg}, nil
 }
 

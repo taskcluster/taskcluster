@@ -5,14 +5,14 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/taskcluster/taskcluster-worker-runner/runner"
+	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/worker/dockerworker"
 	"github.com/taskcluster/taskcluster-worker-runner/worker/dummy"
 	"github.com/taskcluster/taskcluster-worker-runner/worker/worker"
 )
 
 type workerInfo struct {
-	constructor func(*runner.RunnerConfig) (worker.Worker, error)
+	constructor func(*cfg.RunnerConfig) (worker.Worker, error)
 	usage       func() string
 }
 
@@ -21,7 +21,7 @@ var workers map[string]workerInfo = map[string]workerInfo{
 	"docker-worker": workerInfo{dockerworker.New, dockerworker.Usage},
 }
 
-func New(runnercfg *runner.RunnerConfig) (worker.Worker, error) {
+func New(runnercfg *cfg.RunnerConfig) (worker.Worker, error) {
 	if runnercfg.WorkerImplementation.Implementation == "" {
 		return nil, fmt.Errorf("No worker implementation given in configuration")
 	}

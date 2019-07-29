@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
-	"github.com/taskcluster/taskcluster-worker-runner/runner"
+	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
 	"github.com/taskcluster/taskcluster/clients/client-go/v15/tcawsprovisioner"
 )
@@ -17,7 +17,7 @@ func TestAwsProviderConfigureRun(t *testing.T) {
 	assert.NoError(t, err, "setting config")
 	runnerWorkerConfig, err = runnerWorkerConfig.Set("from-runner-cfg", true)
 	assert.NoError(t, err, "setting config")
-	runnercfg := &runner.RunnerConfig{
+	runnercfg := &cfg.RunnerConfig{
 		Provider: cfg.ProviderConfig{
 			ProviderType: "aws-provisioner",
 		},
@@ -63,21 +63,21 @@ func TestAwsProviderConfigureRun(t *testing.T) {
 	p, err := new(runnercfg, tc.FakeAwsProvisionerClientFactory, &fakeMetadataService{nil, userData, metaData})
 	assert.NoError(t, err, "creating provider")
 
-	run := runner.Run{
+	state := run.State{
 		WorkerConfig: runnercfg.WorkerConfig,
 	}
-	err = p.ConfigureRun(&run)
+	err = p.ConfigureRun(&state)
 	assert.NoError(t, err, "ConfigureRun")
 
 	assert.Nil(t, tc.FakeAwsProvisionerGetSecret(token), "secret should have been removed")
 
-	assert.Equal(t, "https://tc.example.com", run.RootURL, "rootURL is correct")
-	assert.Equal(t, "cli", run.Credentials.ClientID, "clientID is correct")
-	assert.Equal(t, "at", run.Credentials.AccessToken, "accessToken is correct")
-	assert.Equal(t, "cert", run.Credentials.Certificate, "cert is correct")
-	assert.Equal(t, "apv1/wt", run.WorkerPoolID, "workerPoolID is correct")
-	assert.Equal(t, "rgn", run.WorkerGroup, "workerGroup is correct")
-	assert.Equal(t, "i-123", run.WorkerID, "workerID is correct")
+	assert.Equal(t, "https://tc.example.com", state.RootURL, "rootURL is correct")
+	assert.Equal(t, "cli", state.Credentials.ClientID, "clientID is correct")
+	assert.Equal(t, "at", state.Credentials.AccessToken, "accessToken is correct")
+	assert.Equal(t, "cert", state.Credentials.Certificate, "cert is correct")
+	assert.Equal(t, "apv1/wt", state.WorkerPoolID, "workerPoolID is correct")
+	assert.Equal(t, "rgn", state.WorkerGroup, "workerGroup is correct")
+	assert.Equal(t, "i-123", state.WorkerID, "workerID is correct")
 	assert.Equal(t, map[string]string{
 		"ami-id":            "ami-123",
 		"instance-id":       "i-123",
@@ -87,10 +87,10 @@ func TestAwsProviderConfigureRun(t *testing.T) {
 		"public-hostname":   "foo.ec2-dns",
 		"local-ipv4":        "192.168.0.1",
 		"region":            "rgn",
-	}, run.ProviderMetadata, "providerMetadata is correct")
+	}, state.ProviderMetadata, "providerMetadata is correct")
 
-	assert.Equal(t, true, run.WorkerConfig.MustGet("from-user-data"), "value for from-user-data")
-	assert.Equal(t, true, run.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
+	assert.Equal(t, true, state.WorkerConfig.MustGet("from-user-data"), "value for from-user-data")
+	assert.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
 }
 
 func TestCheckTerminationTime(t *testing.T) {

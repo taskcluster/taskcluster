@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster-worker-runner/runner"
+	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
 )
 
@@ -14,7 +14,7 @@ func TestConfigureRun(t *testing.T) {
 	runnerWorkerConfig := cfg.NewWorkerConfig()
 	runnerWorkerConfig, err := runnerWorkerConfig.Set("from-runner-cfg", true)
 	assert.NoError(t, err, "setting config")
-	runnercfg := &runner.RunnerConfig{
+	runnercfg := &cfg.RunnerConfig{
 		Provider: cfg.ProviderConfig{
 			ProviderType: "static",
 			Data: map[string]interface{}{
@@ -35,10 +35,10 @@ func TestConfigureRun(t *testing.T) {
 	p, err := new(runnercfg, tc.FakeWorkerManagerClientFactory)
 	assert.NoError(t, err, "creating provider")
 
-	run := runner.Run{
+	state := run.State{
 		WorkerConfig: runnercfg.WorkerConfig,
 	}
-	err = p.ConfigureRun(&run)
+	err = p.ConfigureRun(&state)
 	if !assert.NoError(t, err, "ConfigureRun") {
 		return
 	}
@@ -52,14 +52,14 @@ func TestConfigureRun(t *testing.T) {
 		assert.Equal(t, "w/p", reg.WorkerPoolID)
 	}
 
-	assert.Equal(t, "https://tc.example.com", run.RootURL, "rootURL is correct")
-	assert.Equal(t, "testing", run.Credentials.ClientID, "clientID is correct")
-	assert.Equal(t, "at", run.Credentials.AccessToken, "accessToken is correct")
-	assert.Equal(t, "cert", run.Credentials.Certificate, "cert is correct")
-	assert.Equal(t, "w/p", run.WorkerPoolID, "workerPoolID is correct")
-	assert.Equal(t, "wg", run.WorkerGroup, "workerGroup is correct")
-	assert.Equal(t, "wi", run.WorkerID, "workerID is correct")
-	assert.Equal(t, map[string]string{}, run.ProviderMetadata, "providerMetadata is correct")
+	assert.Equal(t, "https://tc.example.com", state.RootURL, "rootURL is correct")
+	assert.Equal(t, "testing", state.Credentials.ClientID, "clientID is correct")
+	assert.Equal(t, "at", state.Credentials.AccessToken, "accessToken is correct")
+	assert.Equal(t, "cert", state.Credentials.Certificate, "cert is correct")
+	assert.Equal(t, "w/p", state.WorkerPoolID, "workerPoolID is correct")
+	assert.Equal(t, "wg", state.WorkerGroup, "workerGroup is correct")
+	assert.Equal(t, "wi", state.WorkerID, "workerID is correct")
+	assert.Equal(t, map[string]string{}, state.ProviderMetadata, "providerMetadata is correct")
 
-	assert.Equal(t, true, run.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
+	assert.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
 }
