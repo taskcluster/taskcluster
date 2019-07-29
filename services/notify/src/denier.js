@@ -6,7 +6,7 @@ class Denier {
 
   async isDenied(notificationType, notificationAddress) {
     if (notificationType === 'email') {
-      if (this.emailBlacklist.includes(notificationAddress)) {
+      if ((this.emailBlacklist || []).includes(notificationAddress)) {
         return true;
       }
     }
