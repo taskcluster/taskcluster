@@ -11,6 +11,8 @@ import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import GoToLineButton from './GoToLineButton';
 import Loading from './Loading';
 import Button from '../Button';
+import SpeedDial from '../SpeedDial';
+import SpeedDialAction from '../SpeedDialAction';
 
 const LINE_NUMBER_MATCH = /L(\d+)-?(\d+)?/;
 const FOLLOW_STORAGE_KEY = 'follow-log';
@@ -93,6 +95,11 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
   fabIcon: {
     ...theme.mixins.fabIcon,
   },
+  logSpeedDial: {
+    ...theme.mixins.fab,
+    ...theme.mixins.actionButton,
+    bottom: theme.spacing.triple,
+  },
 }))
 /**
  * Render a lazy-loading log viewer.
@@ -102,7 +109,6 @@ export default class Log extends Component {
     stream: false,
     actions: null,
     GoToLineButtonProps: null,
-    RawLogButtonProps: null,
     FollowLogButtonProps: null,
   };
 
@@ -128,10 +134,6 @@ export default class Log extends Component {
      * Specify props for the "Follow log" floating action button.
      */
     FollowLogButtonProps: object,
-    /**
-     * Specify props for the "Raw log" floating action button.
-     */
-    RawLogButtonProps: object,
   };
 
   state = {
@@ -231,10 +233,6 @@ export default class Log extends Component {
       actions,
       GoToLineButtonProps,
       FollowLogButtonProps,
-      RawLogButtonProps: {
-        className: RawLogButtonClassName,
-        ...RawLogButtonPropsRest
-      },
       ...props
     } = this.props;
     const highlight = this.getHighlightFromHash();
@@ -245,18 +243,19 @@ export default class Log extends Component {
       overflow: 'initial',
     };
     const rawLogButton = (
-      <Button
-        spanProps={{ className: RawLogButtonClassName }}
-        tooltipProps={{ title: 'Raw Log' }}
-        component="a"
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        variant="round"
-        color="secondary"
-        {...RawLogButtonPropsRest}>
-        <OpenInNewIcon />
-      </Button>
+      <SpeedDialAction
+        tooltipOpen
+        icon={<OpenInNewIcon />}
+        tooltipTitle="Raw Log"
+        ButtonProps={{
+          component: 'a',
+          href: url,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+          variant: 'round',
+          color: 'secondary',
+        }}
+      />
     );
     const FollowLogButtonRest = omit(['className'], FollowLogButtonProps);
 
@@ -284,7 +283,6 @@ export default class Log extends Component {
               extraLines={5}
               {...props}
             />
-            {rawLogButton}
             <div className={classes.logActions}>
               <GoToLineButton
                 onLineNumberChange={this.handleLineNumberChange}
@@ -309,6 +307,9 @@ export default class Log extends Component {
               </Button>
             </div>
             {actions}
+            <SpeedDial className={classes.logSpeedDial}>
+              {rawLogButton}
+            </SpeedDial>
           </Fragment>
         )}
       />

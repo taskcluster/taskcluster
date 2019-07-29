@@ -16,11 +16,6 @@ import taskQuery from './task.graphql';
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
     bottom: theme.spacing.triple,
-  },
-  rawLogButton: {
-    ...theme.mixins.fab,
-    ...theme.mixins.actionButton,
-    bottom: theme.spacing.triple,
     right: theme.spacing.unit * 12,
   },
 }))
@@ -52,7 +47,6 @@ export default class TaskLog extends Component {
         <Log
           url={url}
           stream={stream}
-          RawLogButtonProps={{ className: classes.rawLogButton }}
           actions={
             <Button
               spanProps={{ className: classes.fab }}
