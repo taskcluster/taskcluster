@@ -1,22 +1,9 @@
-#import "../../../fragments/artifacts.graphql"
-
-query Task($taskId: ID!, $artifactsConnection: PageConnection, $taskActionsFilter: JSON) {
+query Task($taskId: ID!) {
   task(taskId: $taskId) {
-
     status {
-      state
-      retriesLeft
       runs {
-        artifacts(connection: $artifactsConnection) {
-          ...Artifacts
+        state
         }
       }
-    }
-
-    taskActions(filter: $taskActionsFilter) {
-      actions
-      variables
-      version
-    }
   }
 }

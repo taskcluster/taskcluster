@@ -34,14 +34,21 @@ import taskQuery from './task.graphql';
   }),
 })
 export default class TaskLog extends Component {
+  getCurrentRun() {
+    return (
+      this.props.data.task &&
+      this.props.data.task.status.runs[this.props.match.params.runId]
+    );
+  }
+
   render() {
     const { classes, match, stream } = this.props;
-    const { task } = this.props.data;
     const url = decodeURIComponent(match.params.logUrl);
+    const run = this.getCurrentRun();
 
     return (
       <Dashboard title="Log" disablePadding>
-        <Helmet state={task && task.status.state} />
+        <Helmet state={run && run.state} />
         <Log
           url={url}
           stream={stream}
