@@ -3,9 +3,9 @@ package runner
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster-worker-runner/credexp"
 	"github.com/taskcluster/taskcluster-worker-runner/files"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/provider"
@@ -52,7 +52,7 @@ func Run(configFile string) error {
 	var state run.State
 	state.WorkerConfig = state.WorkerConfig.Merge(runnercfg.WorkerConfig)
 
-	// provider
+	// initialize provider
 
 	provider, err := provider.New(runnercfg)
 	if err != nil {
@@ -70,7 +70,7 @@ func Run(configFile string) error {
 		return err
 	}
 
-	// secrets
+	// fetch secrets
 
 	log.Println("Getting secrets from secrets service")
 	err = secrets.ConfigureRun(runnercfg, &state)
@@ -78,7 +78,7 @@ func Run(configFile string) error {
 		return err
 	}
 
-	// worker
+	// initialize worker
 
 	worker, err := worker.New(runnercfg)
 	if err != nil {
@@ -99,6 +99,9 @@ func Run(configFile string) error {
 		return err
 	}
 
+	// handle credential expiratoin
+	ce := credexp.New(&state)
+
 	// start
 
 	log.Printf("Starting worker")
@@ -112,28 +115,15 @@ func Run(configFile string) error {
 	proto := protocol.NewProtocol(transp)
 	provider.SetProtocol(proto)
 	worker.SetProtocol(proto)
+	ce.SetProtocol(proto)
 
-	// gracefully terminate the worker when the credentials expire, if they expire
-	if state.CredentialsExpire.IsZero() {
-		return nil
+	// call the WorkerStarted methods before starting the proto so that there
+	// are no race conditions around the capabilities negotiation
+	err = ce.WorkerStarted()
+	if err != nil {
+		return err
 	}
 
-	untilExpire := time.Until(state.CredentialsExpire)
-	credsExpireTimer := time.AfterFunc(untilExpire-30*time.Second, func() {
-		if proto.Capable("graceful-termination") {
-			log.Println("Taskcluster Credentials are expiring in 30s; stopping worker")
-			proto.Send(protocol.Message{
-				Type: "graceful-termination",
-				Properties: map[string]interface{}{
-					// credentials are expiring, so no time to shut down..
-					"finish-tasks": false,
-				},
-			})
-		}
-	})
-
-	// call this before starting the proto so that there are no race conditions
-	// around the capabilities negotiation
 	err = provider.WorkerStarted()
 	if err != nil {
 		return err
@@ -148,14 +138,16 @@ func Run(configFile string) error {
 		return err
 	}
 
+	// shut things down
+
 	err = provider.WorkerFinished()
 	if err != nil {
 		return err
 	}
 
-	if credsExpireTimer != nil {
-		credsExpireTimer.Stop()
-		credsExpireTimer = nil
+	err = ce.WorkerFinished()
+	if err != nil {
+		return err
 	}
 
 	return nil

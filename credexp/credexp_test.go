@@ -1,18 +1,30 @@
-package runner
+package credexp
 
-/*
+import (
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/taskcluster/taskcluster-worker-runner/protocol"
+	"github.com/taskcluster/taskcluster-worker-runner/run"
+)
+
 func TestCredsExpiration(t *testing.T) {
-	run := &run.Run{
+	state := &run.State{
 		// message is sent 30 seconds before expiration, so set expiration
 		// for 30s from now
 		CredentialsExpire: time.Now().Add(30 * time.Second),
 	}
 
-	transp := protocol.NewFakeTransport()
-	run.proto = protocol.NewProtocol(transp)
-	run.proto.Capabilities.Add("graceful-termination")
+	ce := New(state)
 
-	err := run.WorkerStarted()
+	transp := protocol.NewFakeTransport()
+	proto := protocol.NewProtocol(transp)
+	proto.Capabilities.Add("graceful-termination")
+
+	ce.SetProtocol(proto)
+
+	err := ce.WorkerStarted()
 	assert.NoError(t, err)
 
 	// and wait until that happens
@@ -33,7 +45,6 @@ func TestCredsExpiration(t *testing.T) {
 		},
 	}, transp.Messages())
 
-	err = run.WorkerFinished()
+	err = ce.WorkerFinished()
 	assert.NoError(t, err)
 }
-*/
