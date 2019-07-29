@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import List from '@material-ui/core/List';
-import HexagonMultipleIcon from 'mdi-react/HexagonMultipleIcon';
+import FeatureSearchIcon from 'mdi-react/FeatureSearchIcon';
 import HexagonSlice4 from 'mdi-react/HexagonSlice4Icon';
 import PlusCircleIcon from 'mdi-react/PlusCircleIcon';
 import GroupIcon from 'mdi-react/GroupIcon';
@@ -26,7 +26,7 @@ export default class SidebarList extends Component {
   render() {
     return (
       <List disablePadding>
-        <SidebarListItem to="/tasks" icon={<HexagonMultipleIcon />}>
+        <SidebarListItem to="/tasks" icon={<FeatureSearchIcon />}>
           View Task
         </SidebarListItem>
         <SidebarListItem to="/tasks/create" icon={<PlusCircleIcon />}>
