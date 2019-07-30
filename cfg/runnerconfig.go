@@ -12,6 +12,7 @@ type RunnerConfig struct {
 	Provider             ProviderConfig             `yaml:"provider"`
 	WorkerImplementation WorkerImplementationConfig `yaml:"worker"`
 	WorkerConfig         *WorkerConfig              `yaml:"workerConfig"`
+	GetSecrets           *bool                      `yaml:"getSecrets"`
 }
 
 // Load a configuration file

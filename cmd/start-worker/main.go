@@ -33,7 +33,7 @@ func main() {
 	}
 
 	filename := opts["<runnerConfig>"].(string)
-	err = runner.Run(filename)
+	_, err = runner.Run(filename)
 	if err != nil {
 		log.Printf("%s", err)
 		os.Exit(1)

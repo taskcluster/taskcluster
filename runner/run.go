@@ -40,55 +40,57 @@ func checkProviderResults(state *run.State) error {
 }
 
 // Run the worker.  This embodies the execution of the start-worker command.
-func Run(configFile string) error {
+func Run(configFile string) (state run.State, err error) {
 	// load configuration
 
 	log.Printf("Loading taskcluster-worker-runner configuration from %s", configFile)
 	runnercfg, err := cfg.LoadRunnerConfig(configFile)
 	if err != nil {
-		return fmt.Errorf("Error lading runner config file %s: %s", configFile, err)
+		err = fmt.Errorf("Error loading runner config file %s: %s", configFile, err)
+		return
 	}
 
-	var state run.State
 	state.WorkerConfig = state.WorkerConfig.Merge(runnercfg.WorkerConfig)
 
 	// initialize provider
 
 	provider, err := provider.New(runnercfg)
 	if err != nil {
-		return err
+		return
 	}
 
 	log.Printf("Configuring with provider %s", runnercfg.Provider.ProviderType)
 	err = provider.ConfigureRun(&state)
 	if err != nil {
-		return err
+		return
 	}
 
 	err = checkProviderResults(&state)
 	if err != nil {
-		return err
+		return
 	}
 
 	// fetch secrets
 
-	log.Println("Getting secrets from secrets service")
-	err = secrets.ConfigureRun(runnercfg, &state)
-	if err != nil {
-		return err
+	if runnercfg.GetSecrets == nil || *runnercfg.GetSecrets {
+		log.Println("Getting secrets from secrets service")
+		err = secrets.ConfigureRun(runnercfg, &state)
+		if err != nil {
+			return
+		}
 	}
 
 	// initialize worker
 
 	worker, err := worker.New(runnercfg)
 	if err != nil {
-		return err
+		return
 	}
 
 	log.Printf("Configuring for worker implementation %s", runnercfg.WorkerImplementation.Implementation)
 	err = worker.ConfigureRun(&state)
 	if err != nil {
-		return err
+		return
 	}
 
 	// extract files
@@ -96,7 +98,7 @@ func Run(configFile string) error {
 	log.Printf("Writing files")
 	err = files.ExtractAll(state.Files)
 	if err != nil {
-		return err
+		return
 	}
 
 	// handle credential expiratoin
@@ -107,7 +109,7 @@ func Run(configFile string) error {
 	log.Printf("Starting worker")
 	transp, err := worker.StartWorker(&state)
 	if err != nil {
-		return err
+		return
 	}
 
 	// set up protocol
@@ -121,12 +123,12 @@ func Run(configFile string) error {
 	// are no race conditions around the capabilities negotiation
 	err = ce.WorkerStarted()
 	if err != nil {
-		return err
+		return
 	}
 
 	err = provider.WorkerStarted()
 	if err != nil {
-		return err
+		return
 	}
 
 	proto.Start(false)
@@ -135,20 +137,20 @@ func Run(configFile string) error {
 
 	err = worker.Wait()
 	if err != nil {
-		return err
+		return
 	}
 
 	// shut things down
 
 	err = provider.WorkerFinished()
 	if err != nil {
-		return err
+		return
 	}
 
 	err = ce.WorkerFinished()
 	if err != nil {
-		return err
+		return
 	}
 
-	return nil
+	return
 }

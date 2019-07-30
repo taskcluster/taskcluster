@@ -19,5 +19,8 @@ Configuration for this process is in the form of a YAML file with the following 
 
 	workerConfig: arbitrary data which forms the basics of the config passed to the worker;
 		this will be merged with several other sources of configuration.
+
+	getSecrets: if true (the default), then configuration is fetched from the secrets service
+		and merged with the worker configuration.  This option is generally only used in testing.
 `
 }
