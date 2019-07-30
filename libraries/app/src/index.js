@@ -9,20 +9,6 @@ let hsts = require('hsts');
 let csp = require('content-security-policy');
 let uuidv4 = require('uuid/v4');
 
-/** Notify LocalApp if running under this */
-let notifyLocalAppInParentProcess = function(port) {
-  // If there is a parent process post a message to notify it that the app is
-  // ready and running on specified port. This is useful for automated
-  // testing and hopefully won't cause pain anywhere else.
-  if (process.send) {
-    process.send({
-      ready: true,
-      port: port,
-      appId: process.env.LOCAL_APP_IDENTIFIER,
-    });
-  }
-};
-
 /** Create server from app */
 let createServer = function() {
   let that = this;
@@ -54,9 +40,6 @@ let createServer = function() {
       debug('Server listening on port ' + that.get('port'));
       accept(server);
     });
-  }).then(function(server) {
-    notifyLocalAppInParentProcess(that.get('port'));
-    return server;
   });
 };
 
@@ -154,6 +137,3 @@ let app = async function(options) {
 
 // Export app creation utility
 module.exports = app;
-
-// Export notifyLocalAppInParentProcess for non-app processes to use
-app.notifyLocalAppInParentProcess = notifyLocalAppInParentProcess;
