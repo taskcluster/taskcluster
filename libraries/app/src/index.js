@@ -9,26 +9,25 @@ const hsts = require('hsts');
 const csp = require('content-security-policy');
 const uuidv4 = require('uuid/v4');
 
-/** Create server from app */
+/**
+ * Create server; this becomes a method of the `app` object, so `this`
+ * refers to an Express app.
+ */
 const createServer = function() {
-  const that = this;
-
   // 404 Error handler
-  that.use(function(req, res, next) {
+  this.use((req, res, next) => {
     res.setHeader('Content-Type', 'application/json');
     res.status(404).json({error: 'Not found'});
   });
 
-  return new Promise(function(accept, reject) {
+  return new Promise((accept, reject) => {
     // Launch HTTP server
-    const server = http.createServer(that);
+    const server = http.createServer(this);
 
     // Add a little method to help kill the server
-    server.terminate = function() {
-      return new Promise(function(accept, reject) {
-        server.close(function() {
-          accept();
-        });
+    server.terminate = () => {
+      return new Promise((accept, reject) => {
+        server.close(accept);
       });
     };
 
@@ -36,8 +35,8 @@ const createServer = function() {
     server.once('error', reject);
 
     // Listen
-    server.listen(that.get('port'), function() {
-      debug('Server listening on port ' + that.get('port'));
+    server.listen(this.get('port'), () => {
+      debug('Server listening on port ' + this.get('port'));
       accept(server);
     });
   });
@@ -45,7 +44,7 @@ const createServer = function() {
 
 /** Create express application.  See the README for docs.
  */
-const app = async function(options) {
+const app = async (options) => {
   assert(options, 'options are required');
   _.defaults(options, {
     contentSecurityPolicy: true,
@@ -119,7 +118,7 @@ const app = async function(options) {
   app.use(morganDebug('app:request', format));
 
   if (options.robotsTxt) {
-    app.use('/robots.txt', function(req, res) {
+    app.use('/robots.txt', (req, res) => {
       res.header('Content-Type', 'text/plain');
       res.send('User-Agent: *\nDisallow: /\n');
     });
