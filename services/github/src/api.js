@@ -408,32 +408,42 @@ builder.declare({
 }, async function(req, res) {
   // Extract owner and repo from request into variables
   let {owner, repo} = req.params;
+  const debug = Debug(debugPrefix + ':repositoryInfo');
 
   let instGithub = await installationAuthenticate(owner, this.OwnersDirectory, this.github);
 
   if (instGithub) {
+    debug(`Checking info for ${owner}/${repo}. Authenticated as installation`);
     try {
       let reposList = await instGithub.apps.listRepos({});
+
+      debug(`Checking info for ${owner}/${repo}. Got list of repositories. Iterating...`);
 
       while (true) {
         let installed = reposList.data.repositories.map(repo => repo.name).indexOf(repo);
         if (installed !== -1) {
+          debug(`Checking info for ${owner}/${repo}. Found the repository installed`);
           return res.reply({installed: true});
         }
         if (instGithub.hasNextPage(reposList)) {
+          debug(`Checking info for ${owner}/${repo}. Failed to find repository on current page. Getting next page...`);
           reposList = await instGithub.getNextPage(reposList);
         } else {
+          debug(`Checking info for ${owner}/${repo}. Failed to find repository on all pages.`);
           return res.reply({installed: false});
         }
       }
 
     } catch (e) {
       if (e.code > 400 && e.code < 500) {
+        debug(`Checking info for ${owner}/${repo}. Failed to get list of repositories. Error code (400-500): ${e}`);
         return res.reply({installed: false});
       }
+      debug(`Checking info for ${owner}/${repo}. Failed to get list of repositories. Error code (...400] or [500...): ${e}`);
       throw e;
     }
   }
+  debug(`Checking info for ${owner}/${repo}. Failed to authenticate as installation`);
   return res.reply({installed: false});
 });
 
