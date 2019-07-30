@@ -14,3 +14,13 @@ Instead of using credentials with the scope `*`, the hooks service's credentials
 The exceptions to this rule are the platform services: auth and queue.
 The auth service is the arbiter of all Taskcluster credentials, so it implicitly has all scopes.
 The queue service's credentials must satisfy any values it finds in `task.scopes`, so they have scope `*`.
+
+## Protect the Platform
+
+Where possible, the Taskcluster platform itself should be protected by other mechanisms in addition to scopes.
+For example, the Auth service's `gcpCredentials` method returns credentials for GCP service accounts.
+While the service accounts are limited by scopes, the method also has a list of allowed service accounts, and regardless of scopes will not create credentials for any other service account.
+This means that even a user with `auth:gcp:access-token:*` cannot get credentials for critical service accounts such as those used to run the Taskcluster services deployment itself.
+
+In part, this best-practice aligns with user expectations: operations using the API should not be able to break the Taskcluster deployment in a way that cannot be fixed via other API calls.
+Equally importantly, this is a form of "defense in depth" against attacks that might compromise the Taskcluster services and then pivot to compromise CI processes that depend on the intergrity of those services.
