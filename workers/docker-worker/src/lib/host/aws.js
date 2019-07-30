@@ -113,8 +113,6 @@ module.exports = {
     log('metadata', config);
 
     let userdata = await getJsonData(`${baseUrl}/user-data`);
-    log('read userdata', { text: _.omit(userdata, ['securityToken']) });
-
     let securityToken = userdata.securityToken;
     let rootUrl = userdata.taskclusterRootUrl;
     if (!rootUrl) {
@@ -122,6 +120,8 @@ module.exports = {
       log('[alert-operator] no rootUrl provided');
       spawn('shutdown', ['-h', 'now']);
     }
+
+    log('read userdata', { text: _.omit(userdata, ['securityToken']) });
 
     let credentials;
     if (securityToken) {

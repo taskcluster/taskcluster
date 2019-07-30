@@ -1,5 +1,5 @@
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/bionic64"
+  config.vm.box = "phusion/ubuntu-14.04-amd64"
 
   config.vm.synced_folder ENV['HOME'], ENV['HOME']
 

@@ -31,14 +31,14 @@ sudo pip install python-statsd
 
 # install the system configuration
 sudo tar xzf $template_source -C / --strip-components=1
-sudo npm install -g yarn@1.0.2
 
 # install the node app.
 target=$HOME/docker_worker
 mkdir -p $target
 cd $target
 tar xzf $docker_worker_source -C $target
-sudo chown -R $USER:$USER /home/ubuntu
+sudo npm install -g yarn@1.0.2
+sudo chown -R $USER:$USER /home/ubuntu/
 
 while ! yarn install --frozen-lockfile; do
     rm -rf node_modules
@@ -108,6 +108,6 @@ User=root
 RequiredBy=graphical.target
 EOF'
 
-sudo systemctl enable docker-worker.service
-sudo systemctl enable side-containers.service
-sudo systemctl daemon-reload
+#sudo systemctl enable docker-worker.service
+#sudo systemctl enable side-containers.service
+#sudo systemctl daemon-reload

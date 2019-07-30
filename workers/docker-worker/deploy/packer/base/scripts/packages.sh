@@ -2,9 +2,9 @@
 
 set -e -v
 
-DOCKER_VERSION=5:18.09.5~3-0~ubuntu-bionic
-KERNEL_VER=4.15.0-47-generic
-V4L2LOOPBACK_VERSION=0.12.0
+DOCKER_VERSION=18.06.3~ce~3-0~ubuntu
+KERNEL_VER=4.4.0-1014-aws
+V4L2LOOPBACK_VERSION=0.10.0
 
 lsb_release -a
 
@@ -22,21 +22,17 @@ fi
 
 sudo usermod -a -G docker $user
 
-sudo apt-get install -yq \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    gnupg-agent \
-    software-properties-common
+[ -e /usr/lib/apt/methods/https ] || {
+  apt-get install apt-transport-https
+}
 
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo apt-get install -y software-properties-common
+sudo apt-add-repository -y ppa:taskcluster/ppa
 
-sudo apt-key fingerprint 0EBFCD88
-
-sudo add-apt-repository \
-   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-   $(lsb_release -cs) \
-   stable"
+# Add docker gpg key and update sources
+sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+sudo sh -c 'echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu trusty stable" \
+  > /etc/apt/sources.list.d/docker.list'
 
 # Add kernel debug info for SystemTap
 # Ref: https://wiki.ubuntu.com/Kernel/Systemtap
@@ -56,7 +52,7 @@ sudo apt-get update -y
 # may install a newer kernel after we remove the old one
 sudo apt-get install -yq unattended-upgrades
 sudo unattended-upgrades
-sudo apt-get auto-remove -y
+sudo apt-get autoremove -y
 
 # Uninstall base-image kernels
 sudo DEBIAN_FRONTEND=noninteractive apt-get remove -yq \
@@ -68,9 +64,11 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq \
     linux-image-$KERNEL_VER \
     linux-image-$KERNEL_VER-dbgsym \
     linux-headers-$KERNEL_VER \
-    linux-modules-$KERNEL_VER \
-    linux-modules-extra-$KERNEL_VER \
     dkms
+
+# Clean up old 3.13 kernel.
+sudo apt-get remove -y linux-image-extra-virtual
+sudo apt-get autoremove -y
 
 ## Install all the packages
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq \
@@ -79,21 +77,22 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq \
     curl \
     build-essential \
     git-core \
-    gstreamer1.0-alsa \
-    gstreamer1.0-plugins-bad \
-    gstreamer1.0-plugins-base \
-    gstreamer1.0-plugins-good \
-    gstreamer1.0-plugins-ugly \
-    gstreamer1.0-tools \
+    gstreamer0.10-alsa \
+    gstreamer0.10-plugins-bad \
+    gstreamer0.10-plugins-base \
+    gstreamer0.10-plugins-good \
+    gstreamer0.10-plugins-ugly \
+    gstreamer0.10-tools \
     pbuilder \
     python-mock \
     python-configobj \
-    dh-python \
+    python-support \
     cdbs \
     python-pip \
     jq \
     rsyslog-gnutls \
     openvpn \
+    lxc \
     rng-tools \
     systemtap \
     liblz4-tool
@@ -112,6 +111,10 @@ sudo mv zstd /usr/bin
 cd /
 sudo rm -rf /zstd
 
+if [ -z "${VAGRANT_PROVISION}" ]; then
+    ## Clear mounts created in base image so fstab is empty in other builds...
+    sudo sh -c 'echo "" > /etc/fstab'
+fi
 
 ## Install v4l2loopback
 cd /usr/src

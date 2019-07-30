@@ -18,8 +18,7 @@ if ! lvdisplay | grep instance_storage; then
     elif [ -e /dev/sdb ]; then
         devices=$(ls /dev/sd* | grep -v '/dev/sda')
     else
-        rootdev=$(echo $rootdev | sed -e 's,\(/dev/xvd[a-z]\+\).*,\1,')
-        devices=$(ls /dev/xvd* | grep -v $rootdev)
+        devices=$(ls /dev/xvd* | grep -v '/dev/xvda')
     fi
 
     if [ -z "${devices}" ]; then
