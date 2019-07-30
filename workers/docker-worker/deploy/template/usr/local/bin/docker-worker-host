@@ -7,6 +7,7 @@
 # This script can also output the DELIMITER in "." (period) for things like
 # graphite/statsd.
 
+# NOTE: this only works on AWS, and will go away with bug 1570160
 
 PREFIX='docker-worker'
 DELIMITER='.'
