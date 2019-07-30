@@ -1,17 +1,17 @@
-let express = require('express');
-let _ = require('lodash');
-let debug = require('debug')('base:app');
-let assert = require('assert');
-let morganDebug = require('morgan-debug');
-let http = require('http');
-let sslify = require('express-sslify');
-let hsts = require('hsts');
-let csp = require('content-security-policy');
-let uuidv4 = require('uuid/v4');
+const express = require('express');
+const _ = require('lodash');
+const debug = require('debug')('base:app');
+const assert = require('assert');
+const morganDebug = require('morgan-debug');
+const http = require('http');
+const sslify = require('express-sslify');
+const hsts = require('hsts');
+const csp = require('content-security-policy');
+const uuidv4 = require('uuid/v4');
 
 /** Create server from app */
-let createServer = function() {
-  let that = this;
+const createServer = function() {
+  const that = this;
 
   // 404 Error handler
   that.use(function(req, res, next) {
@@ -21,7 +21,7 @@ let createServer = function() {
 
   return new Promise(function(accept, reject) {
     // Launch HTTP server
-    let server = http.createServer(that);
+    const server = http.createServer(that);
 
     // Add a little method to help kill the server
     server.terminate = function() {
@@ -45,7 +45,7 @@ let createServer = function() {
 
 /** Create express application.  See the README for docs.
  */
-let app = async function(options) {
+const app = async function(options) {
   assert(options, 'options are required');
   _.defaults(options, {
     contentSecurityPolicy: true,
@@ -61,7 +61,7 @@ let app = async function(options) {
   assert(!options.docs, '`docs` is no longer allowed');
 
   // Create application
-  let app = express();
+  const app = express();
   app.set('port', options.port);
   app.set('env', options.env);
   app.set('json spaces', 2);
@@ -107,7 +107,7 @@ let app = async function(options) {
 
   // attach request-id to request object and response
   app.use((req, res, next) => {
-    let reqId = req.headers['x-request-id'] || uuidv4();
+    const reqId = req.headers['x-request-id'] || uuidv4();
     req.requestId = reqId;
     res.setHeader('x-for-request-id', reqId);
     next();
