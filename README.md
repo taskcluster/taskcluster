@@ -725,6 +725,13 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v15.1.4 since v15.1.3
+========================
+
+* [Bug 1567632 - generic-worker: circa 8 second startup cost in CI tasks on darwin multiuser](https://bugzil.la/1567632)
+* [Bug 1568471 - generic-worker: close those http response bodies!](https://bugzil.la/1568471)
+* [Bug 1568782 - generic-worker: error artifacts do not have a contentType](https://bugzil.la/1568782)
+
 In v15.1.3 since v15.1.2
 ========================
 
