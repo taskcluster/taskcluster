@@ -47,18 +47,7 @@
         "docs_bucket": {
           "type": "string"
         },
-        "gcp_allowed_service_accounts": {
-          "oneOf": [
-            {
-              "additionalProperties": true,
-              "type": "object"
-            },
-            {
-              "type": "array"
-            }
-          ]
-        },
-        "gcp_credentials": {
+        "gcp_credentials_allowed_projects": {
           "oneOf": [
             {
               "additionalProperties": true,
