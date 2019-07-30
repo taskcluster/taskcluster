@@ -53,6 +53,7 @@ hooks:
   - queue:create-task:*
 notify:
   - auth:azure-table:read-write:${azureAccountId}/DenylistedNotification
+  - auth:azure-table:read-write:${azureAccountId}/Denylist
 purge-cache:
   - auth:azure-table:read-write:${azureAccountId}/CachePurges
 built-in-workers:
