@@ -94,7 +94,7 @@ if $BUILD_GCP; then
     case "$DEPLOYMENT" in
         taskcluster-net) GCP_PROJECT_ID=linux64-builds;;
         # all *-dev environments use the same project..
-        *-dev) GCP_PROJECT_ID=taskcluster-dev;;
+        *-dev) GCP_PROJECT_ID=taskcluster-dev-workers;;
         *)
             echo "No GCP project defined for this environment" >&2
             exit 1;;
