@@ -74,15 +74,27 @@ func (suite *FakeServerSuite) TestRunCancelCommand() {
 	suite.Equal("cancelled 'cancelled'\n", buf.String())
 }
 
-func (suite *FakeServerSuite) TestRunRerunCommand() {
+func (suite *FakeServerSuite) TestRunRerunCommandForce() {
 	// set up to run a command and capture output
 	buf, cmd := setUpCommand()
+	cmd.Flags().Bool("force", true, "")
 
 	// run the command
 	args := []string{fakeTaskID}
 	assert.NoError(suite.T(), runRerun(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
 	suite.Equal("running 'running'\n", buf.String())
+}
+
+func (suite *FakeServerSuite) TestRunRerunCommandNoForce() {
+	// set up to run a command and capture output
+	_, cmd := setUpCommand()
+
+	// run the command
+	args := []string{fakeTaskID}
+	// this should error out, if we don't have --force on a completed
+	// task
+	assert.Error(suite.T(), runRerun(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 }
 
 func (suite *FakeServerSuite) TestRunCompleteCommand() {
