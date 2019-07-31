@@ -314,22 +314,6 @@ module.exports = {
           "args": [
           ],
           "category": "Auth Service",
-          "description": "Return an expanded copy of the given scopeset, with scopes implied by any\nroles included.\n\nThis call uses the GET method with an HTTP body.  It remains only for\nbackward compatibility.",
-          "input": "v1/scopeset.json#",
-          "method": "get",
-          "name": "expandScopesGet",
-          "output": "v1/scopeset.json#",
-          "query": [
-          ],
-          "route": "/scopes/expand",
-          "stability": "deprecated",
-          "title": "Expand Scopes",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "category": "Auth Service",
           "description": "Return an expanded copy of the given scopeset, with scopes implied by any\nroles included.",
           "input": "v1/scopeset.json#",
           "method": "post",
@@ -4081,7 +4065,7 @@ module.exports = {
           "category": "Worker Manager",
           "description": "Register a running worker.  Workers call this method on worker start-up.\n\nThis call both marks the worker as running and returns the credentials\nthe worker will require to perform its work.  The worker must provide\nsome proof of its identity, and that proof varies by provider type.",
           "input": "v1/register-worker-request.json#",
-          "method": "get",
+          "method": "post",
           "name": "registerWorker",
           "output": "v1/register-worker-response.json#",
           "query": [
