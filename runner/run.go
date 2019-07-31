@@ -71,6 +71,9 @@ func Run(configFile string) (state run.State, err error) {
 		return
 	}
 
+	// log the worker identity; this is useful for finding the worker in logfiles
+	log.Printf("Identified as worker %s/%s", state.WorkerGroup, state.WorkerID)
+
 	// fetch secrets
 
 	if !runCached && runnercfg.GetSecrets {

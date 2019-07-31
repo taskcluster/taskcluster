@@ -13,6 +13,7 @@ require (
 	github.com/stretchr/testify v1.3.0
 	github.com/taskcluster/httpbackoff v1.0.0
 	github.com/taskcluster/slugid-go v1.1.0
+	github.com/taskcluster/taskcluster/clients/client-go/v15 v15.0.0
 	github.com/taskcluster/taskcluster/clients/client-go/v16 v16.0.0
 	golang.org/x/text v0.3.2 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
