@@ -11,7 +11,7 @@ fi
 
 go run util/update-readme.go
 sed -i -e "s/Version = .*/Version = \"$VERSION\"/" version.go
-git add version.go
+git add version.go README.md
 git commit -m "v$VERSION"
 git tag v$VERSION
 
@@ -22,4 +22,4 @@ build() {
 }
 echo "Building:"
 build linux amd64
-echo "Attach the above to a new release in GitHub, please"
+echo "Attach the above to a new release in GitHub, please, and git push --tags to the upstream repo"
