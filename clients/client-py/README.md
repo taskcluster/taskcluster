@@ -681,25 +681,6 @@ await asyncAuth.deleteRole(roleId='value') # -> None
 Return an expanded copy of the given scopeset, with scopes implied by any
 roles included.
 
-This call uses the GET method with an HTTP body.  It remains only for
-backward compatibility.
-
-
-Has required input schema
-
-Has required output schema
-
-```python
-# Sync calls
-auth.expandScopesGet(payload) # -> result
-# Async call
-await asyncAuth.expandScopesGet(payload) # -> result
-```
-
-#### Expand Scopes
-Return an expanded copy of the given scopeset, with scopes implied by any
-roles included.
-
 
 Has required input schema
 

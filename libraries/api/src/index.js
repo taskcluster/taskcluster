@@ -131,6 +131,9 @@ class APIBuilder {
     if (options.scopes && !ScopeExpressionTemplate.validate(options.scopes)) {
       throw new Error(`Invalid scope expression template: ${JSON.stringify(options.scopes, null, 2)}`);
     }
+
+    assert(!(options.method === 'get' && options.input), "Can't have an `input` with method: 'get'");
+
     options.handler = handler;
     if (this.entries.filter(entry => entry.route === options.route && entry.method === options.method).length > 0) {
       throw new Error('Identical route and method declaration.');

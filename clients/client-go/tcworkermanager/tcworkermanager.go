@@ -296,6 +296,6 @@ func (workerManager *WorkerManager) ListWorkersForWorkerPool(workerPoolId, conti
 // See #registerWorker
 func (workerManager *WorkerManager) RegisterWorker(payload *RegisterWorkerRequest) (*RegisterWorkerResponse, error) {
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(payload, "GET", "/worker/register", new(RegisterWorkerResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/worker/register", new(RegisterWorkerResponse), nil)
 	return responseObject.(*RegisterWorkerResponse), err
 }

@@ -26,7 +26,6 @@ export default class Auth extends Client {
     this.createRole.entry = {"args":["roleId"],"category":"Auth Service","input":true,"method":"put","name":"createRole","output":true,"query":[],"route":"/roles/<roleId>","scopes":{"AllOf":["auth:create-role:<roleId>",{"each":"<scope>","for":"scope","in":"scopes"}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.updateRole.entry = {"args":["roleId"],"category":"Auth Service","input":true,"method":"post","name":"updateRole","output":true,"query":[],"route":"/roles/<roleId>","scopes":{"AllOf":["auth:update-role:<roleId>",{"each":"<scope>","for":"scope","in":"scopesAdded"}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.deleteRole.entry = {"args":["roleId"],"category":"Auth Service","method":"delete","name":"deleteRole","query":[],"route":"/roles/<roleId>","scopes":"auth:delete-role:<roleId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.expandScopesGet.entry = {"args":[],"category":"Auth Service","input":true,"method":"get","name":"expandScopesGet","output":true,"query":[],"route":"/scopes/expand","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.expandScopes.entry = {"args":[],"category":"Auth Service","input":true,"method":"post","name":"expandScopes","output":true,"query":[],"route":"/scopes/expand","stability":"stable","type":"function"}; // eslint-disable-line
     this.currentScopes.entry = {"args":[],"category":"Auth Service","method":"get","name":"currentScopes","output":true,"query":[],"route":"/scopes/current","stability":"stable","type":"function"}; // eslint-disable-line
     this.awsS3Credentials.entry = {"args":["level","bucket","prefix"],"category":"Auth Service","method":"get","name":"awsS3Credentials","output":true,"query":["format"],"route":"/aws/s3/<level>/<bucket>/<prefix>","scopes":{"else":"auth:aws-s3:read-write:<bucket>/<prefix>","if":"levelIsReadOnly","then":{"AnyOf":["auth:aws-s3:read-only:<bucket>/<prefix>","auth:aws-s3:read-write:<bucket>/<prefix>"]}},"stability":"stable","type":"function"}; // eslint-disable-line
@@ -216,17 +215,6 @@ export default class Auth extends Client {
     this.validate(this.deleteRole.entry, args);
 
     return this.request(this.deleteRole.entry, args);
-  }
-  /* eslint-disable max-len */
-  // Return an expanded copy of the given scopeset, with scopes implied by any
-  // roles included.
-  // This call uses the GET method with an HTTP body.  It remains only for
-  // backward compatibility.
-  /* eslint-enable max-len */
-  expandScopesGet(...args) {
-    this.validate(this.expandScopesGet.entry, args);
-
-    return this.request(this.expandScopesGet.entry, args);
   }
   /* eslint-disable max-len */
   // Return an expanded copy of the given scopeset, with scopes implied by any

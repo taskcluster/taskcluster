@@ -352,21 +352,6 @@ func (auth *Auth) DeleteRole(roleId string) error {
 	return err
 }
 
-// Stability: *** DEPRECATED ***
-//
-// Return an expanded copy of the given scopeset, with scopes implied by any
-// roles included.
-//
-// This call uses the GET method with an HTTP body.  It remains only for
-// backward compatibility.
-//
-// See #expandScopesGet
-func (auth *Auth) ExpandScopesGet(payload *SetOfScopes) (*SetOfScopes, error) {
-	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(payload, "GET", "/scopes/expand", new(SetOfScopes), nil)
-	return responseObject.(*SetOfScopes), err
-}
-
 // Return an expanded copy of the given scopeset, with scopes implied by any
 // roles included.
 //

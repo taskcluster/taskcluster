@@ -912,27 +912,6 @@ builder.declare({
 
 /** Expand a scopeset */
 builder.declare({
-  method: 'get',
-  route: '/scopes/expand',
-  name: 'expandScopesGet',
-  input: 'scopeset.yml',
-  output: 'scopeset.yml',
-  category: 'Auth Service',
-  stability: 'deprecated',
-  title: 'Expand Scopes',
-  description: [
-    'Return an expanded copy of the given scopeset, with scopes implied by any',
-    'roles included.',
-    '',
-    'This call uses the GET method with an HTTP body.  It remains only for',
-    'backward compatibility.',
-  ].join('\n'),
-}, async function(req, res) {
-  let input = req.body;
-  return res.reply({scopes: this.resolver.resolve(input.scopes)});
-});
-
-builder.declare({
   method: 'post',
   route: '/scopes/expand',
   name: 'expandScopes',

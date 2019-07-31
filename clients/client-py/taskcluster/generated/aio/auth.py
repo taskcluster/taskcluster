@@ -261,21 +261,6 @@ class Auth(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["deleteRole"], *args, **kwargs)
 
-    async def expandScopesGet(self, *args, **kwargs):
-        """
-        Expand Scopes
-
-        Return an expanded copy of the given scopeset, with scopes implied by any
-        roles included.
-
-        This call uses the GET method with an HTTP body.  It remains only for
-        backward compatibility.
-
-        This method is ``deprecated``
-        """
-
-        return await self._makeApiCall(self.funcinfo["expandScopesGet"], *args, **kwargs)
-
     async def expandScopes(self, *args, **kwargs):
         """
         Expand Scopes
@@ -706,15 +691,6 @@ class Auth(AsyncBaseClient):
             'output': 'v1/scopeset.json#',
             'route': '/scopes/expand',
             'stability': 'stable',
-        },
-        "expandScopesGet": {
-            'args': [],
-            'input': 'v1/scopeset.json#',
-            'method': 'get',
-            'name': 'expandScopesGet',
-            'output': 'v1/scopeset.json#',
-            'route': '/scopes/expand',
-            'stability': 'deprecated',
         },
         "gcpCredentials": {
             'args': ['projectId', 'serviceAccount'],

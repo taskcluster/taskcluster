@@ -254,7 +254,7 @@ class WorkerManager(BaseClient):
         "registerWorker": {
             'args': [],
             'input': 'v1/register-worker-request.json#',
-            'method': 'get',
+            'method': 'post',
             'name': 'registerWorker',
             'output': 'v1/register-worker-response.json#',
             'route': '/worker/register',
