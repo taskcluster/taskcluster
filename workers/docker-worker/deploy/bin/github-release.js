@@ -66,7 +66,7 @@ function uploadFile(github, filename) {
 function main() {
   const github = signin();
   createRelease(github)
-    .then(() => uploadFile(github, 'worker-types-backup.json'))
+    .then(() => uploadFile(github, 'docker-worker.tgz'))
     .then(() => uploadFile(github, 'docker-worker-amis.json'))
     .then(() => console.log(RELEASE_NAME))
     .catch(err => {
