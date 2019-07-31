@@ -105,7 +105,7 @@ Pushes, pull requests, and releases all are given access to [scopes](/docs/manua
 * `Release` -- `assume:repo:github.com/<organization>/<repository>:release`
 * `Tag` -- `assume:repo:github.com/<organization>/<repository>:tag:<tag>`
 
-In the Roles tool (under Authorization), you can set up roles however you like. To give permissions to every event in your repository, you can make a role `repo:github.com/<organization>/<repository>:*` or you can give fine-grained permissions to only releases or specific branches, etc. [Read more](/manual/design/apis/hawk/scopes) about how scopes and roles work to see what you can do.
+In the Roles tool (under Authorization), you can set up roles however you like. To give permissions to every event in your repository, you can make a role `repo:github.com/<organization>/<repository>:*` or you can give fine-grained permissions to only releases or specific branches, etc. [Read more](/docs/manual/design/apis/hawk/scopes) about how scopes and roles work to see what you can do.
 
 ### Who Can Trigger Jobs?
 
