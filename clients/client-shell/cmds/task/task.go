@@ -57,6 +57,7 @@ func init() {
 
 	rerunCmd.Flags().BoolP("noop", "n", false, "Using this flag, will tell the command to not actually run, but prints out what it would do.")
 	rerunCmd.Flags().BoolP("confirm", "c", false, "Prompts user with a confirmation (y/n) before performing any changes.")
+	rerunCmd.Flags().BoolP("force", "f", false, "Allows a user to rerun a task not in the exception or failed state.")
 
 	runcancelCmd.Flags().BoolP("noop", "n", false, "Using this flag, will tell the command to not actually run, but prints out what it would do.")
 	runcancelCmd.Flags().BoolP("confirm", "c", false, "Prompts user with a confirmation (y/n) before performing any changes.")
