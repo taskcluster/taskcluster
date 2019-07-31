@@ -104,6 +104,8 @@ tasks:
               fi
         - name: yarn build
           command: yarn build --dry-run
+        - name: yarn changelog
+          command: yarn changelog
         - name: taskcluster-client
           # taskcluster-client tests depend on a "production" install of the rest of the monorepo,
           # but only get devDependencies from the client's package.json

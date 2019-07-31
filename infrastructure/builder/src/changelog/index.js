@@ -67,7 +67,7 @@ class ChangeLog {
         } else if (reference.match(/^bug \d+$/)) {
           reference = `[${reference}](http://bugzil.la/${reference.slice(4)})`;
         } else {
-          throw new Error(`Snippet #{filename}: invalid reference`);
+          throw new Error(`Snippet ${filename}: invalid reference '${reference}'`);
         }
       }
 
