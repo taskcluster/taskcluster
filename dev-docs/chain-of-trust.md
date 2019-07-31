@@ -67,7 +67,9 @@ We currently prefer if the `chain-of-trust.json` artifact is indented for easier
 
 ### Chain of Trust signature
 
-In a subset of cases, we generate a detached ed25519 signature of the Chain of Trust artifact. In our development and CI worker pools, we ignore signature verification, so we don't need to generate the signature, though it isn't harmful to do so. In our trusted release worker pools, we require that the Chain of Trust artifact is signed by a valid ed25519 key.
+In a subset of cases, we generate a detached ed25519 signature of the Chain of Trust artifact. This signature is uploaded as `public/chain-of-trust.json.sig` .
+
+In our development and CI worker pools, we ignore signature verification, so we don't need to generate the signature, though it isn't harmful to do so. In our trusted release worker pools, we require that the Chain of Trust artifact is signed by a valid ed25519 key.
 
 #### Security of the private key
 
