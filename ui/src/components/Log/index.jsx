@@ -267,6 +267,7 @@ export default class Log extends Component {
           <Fragment>
             <LazyLog
               enableSearch
+              caseInsensitive
               containerStyle={containerStyle}
               url={url}
               onScroll={this.handleScroll}
