@@ -7,7 +7,7 @@ import (
 
 	"github.com/taskcluster/taskcluster-worker-runner/runner"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
-	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcworkermanager"
+	"github.com/taskcluster/taskcluster/clients/client-go/v15/tcworkermanager"
 )
 
 // Register this worker with the worker-manager, and update the run with the parameters and the results.

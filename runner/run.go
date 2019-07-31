@@ -7,7 +7,7 @@ import (
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/files"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
-	taskcluster "github.com/taskcluster/taskcluster/clients/client-go/v14"
+	taskcluster "github.com/taskcluster/taskcluster/clients/client-go/v15"
 )
 
 // Run represents all of the information required to run the worker.  Its

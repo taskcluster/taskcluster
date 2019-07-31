@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v14"
-	"github.com/taskcluster/taskcluster/clients/client-go/v14/tcawsprovisioner"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v15"
+	"github.com/taskcluster/taskcluster/clients/client-go/v15/tcawsprovisioner"
 )
 
 var (
