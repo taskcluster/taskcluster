@@ -506,7 +506,7 @@ builder.declare({
 });
 
 builder.declare({
-  method: 'get',
+  method: 'post',
   route: '/worker/register',
   name: 'registerWorker',
   title: 'Register a running worker',

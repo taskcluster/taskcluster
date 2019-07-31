@@ -4081,7 +4081,7 @@ module.exports = {
           "category": "Worker Manager",
           "description": "Register a running worker.  Workers call this method on worker start-up.\n\nThis call both marks the worker as running and returns the credentials\nthe worker will require to perform its work.  The worker must provide\nsome proof of its identity, and that proof varies by provider type.",
           "input": "v1/register-worker-request.json#",
-          "method": "get",
+          "method": "post",
           "name": "registerWorker",
           "output": "v1/register-worker-response.json#",
           "query": [

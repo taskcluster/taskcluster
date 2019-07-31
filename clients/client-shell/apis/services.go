@@ -1744,7 +1744,7 @@ var services = map[string]definitions.Service{
 				Title:       "Register a running worker",
 				Description: "Register a running worker.  Workers call this method on worker start-up.\n\nThis call both marks the worker as running and returns the credentials\nthe worker will require to perform its work.  The worker must provide\nsome proof of its identity, and that proof varies by provider type.",
 				Stability:   "experimental",
-				Method:      "get",
+				Method:      "post",
 				Route:       "/worker/register",
 				Args:        []string{},
 				Query:       []string{},
