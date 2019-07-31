@@ -40,6 +40,8 @@ Details:
 
     We currently support sha256 and sha512 as valid algorithms. We're considering adding both checksums, as well as the filesize, to the Chain of Trust artifact.
 
+    Because we expect `live.log` and `live_backing.log` to change after checksum generation, we exclude them from the artifacts dictionary.
+
 - `task` contains the task definition.
 - `taskId` contains the taskID.
 - `runId` contains the runID.
