@@ -77,6 +77,7 @@ func (suite *FakeServerSuite) TestRunCancelCommand() {
 func (suite *FakeServerSuite) TestRunRerunCommand() {
 	// set up to run a command and capture output
 	buf, cmd := setUpCommand()
+	cmd.Flags().Bool("force", true, "")
 
 	// run the command
 	args := []string{fakeTaskID}
