@@ -12,6 +12,7 @@ const fs = require('mz/fs');
 const child_process = require('mz/child_process');
 const taskcluster = require('taskcluster-client');
 const promiseRetry = require('promise-retry');
+const os = require('os');
 
 const features = require('./features');
 const getHostname = require('./util/hostname');
@@ -440,7 +441,8 @@ class Task extends EventEmitter {
       `Worker Group: ${this.runtime.workerGroup}`,
       `Worker Node Type: ${this.runtime.workerNodeType}`,
       `Worker Type: ${this.runtime.workerType}`,
-      `Public IP: ${this.runtime.publicIp}`
+      `Public IP: ${this.runtime.publicIp}`,
+      `Hostname: ${os.hostname()}`
     ];
     //
     // List caches if used...
