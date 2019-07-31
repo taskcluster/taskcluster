@@ -39,7 +39,7 @@ func TestQueryMetadata(t *testing.T) {
 		if r.Header.Get("Metadata-Flavor") != "Google" {
 			w.WriteHeader(400)
 			fmt.Fprintln(w, "Metadata-Flavor Missing")
-		} else if r.URL.Path == "/computeMetadata/v1/project/id" {
+		} else if r.URL.Path == "/computeMetadata/v1/id" {
 			w.WriteHeader(200)
 			fmt.Fprintln(w, "42")
 		} else {
@@ -49,9 +49,9 @@ func TestQueryMetadata(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	metadataBaseURL = ts.URL + "/computeMetadata/v1/project"
+	metadataBaseURL = ts.URL + "/computeMetadata/v1"
 	defer func() {
-		metadataBaseURL = "http://metadata.google.internal/computeMetadata/v1/project"
+		metadataBaseURL = "http://metadata.google.internal/computeMetadata/v1"
 	}()
 
 	ms := realMetadataService{}
@@ -74,7 +74,7 @@ func TestQueryUserData(t *testing.T) {
 		if r.Header.Get("Metadata-Flavor") != "Google" {
 			w.WriteHeader(400)
 			fmt.Fprintln(w, "Metadata-Flavor Missing")
-		} else if r.URL.Path == "/computeMetadata/v1/project/instance/attributes/taskcluster" {
+		} else if r.URL.Path == "/computeMetadata/v1/instance/attributes/taskcluster" {
 			w.WriteHeader(200)
 			fmt.Fprintln(w, `{"workerPoolId": "w/p"}`)
 		} else {
@@ -84,9 +84,9 @@ func TestQueryUserData(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	metadataBaseURL = ts.URL + "/computeMetadata/v1/project"
+	metadataBaseURL = ts.URL + "/computeMetadata/v1"
 	defer func() {
-		metadataBaseURL = "http://metadata.google.internal/computeMetadata/v1/project"
+		metadataBaseURL = "http://metadata.google.internal/computeMetadata/v1"
 	}()
 
 	ms := realMetadataService{}

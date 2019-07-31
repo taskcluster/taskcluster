@@ -10,7 +10,7 @@ import (
 	"github.com/taskcluster/httpbackoff"
 )
 
-var metadataBaseURL = "http://metadata.google.internal/computeMetadata/v1/project"
+var metadataBaseURL = "http://metadata.google.internal/computeMetadata/v1"
 
 // user-data sent to us from the worker-manager service
 type UserData struct {
