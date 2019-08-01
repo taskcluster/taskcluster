@@ -69,20 +69,14 @@ We currently prefer if the `chain-of-trust.json` artifact is indented for easier
 
 In a subset of cases, we generate a detached ed25519 signature of the Chain of Trust artifact. This signature is uploaded as `public/chain-of-trust.json.sig` .
 
-In our development and CI worker pools, we ignore signature verification, so we don't need to generate the signature, though it isn't harmful to do so. In our trusted release worker pools, we require that the Chain of Trust artifact is signed by a valid ed25519 key.
+Chain of Trust artifacts are not a mandatory behavior of workers, and can be configured off. Furthermore, the signature is an optional piece of the Chain of Trust feature. The signature is only needed to verify that artifacts at rest, including the Chain of Trust artifact itself, have not been tampered with. There may be a class of lower-security-sensitive tasks which can skip signature verification.
 
 #### Security of the private key
 
-Because the ed25519 private key acts as our second factor, we need to safeguard the security of the private key.
+Chain of Trust is only as secure as the private key. (The Chain of Trust signature shows the Chain of Trust artifact has not been tampered with.)
 
-- This is our second factor to help secure Taskcluster scopes. Therefore, maintainers should not be able to access this secret without some credentials other than Taskcluster scopes.
+- This is a second factor to help secure Taskcluster scopes. Therefore, maintainers should not be able to access this secret without some credentials other than Taskcluster scopes.
 - The file should be read-only, and only readable by the worker user.
 - The task user must not be able to read the file.
-- By limiting the release key to release-only workerTypes, and by limiting which users, repos, and tasks have scopes to launch release-only workerTypes, we limit which tasks can run on those pools.
-- We should limit any access to the private key by humans.
-
-## Chain of Trust verification
-
-Chain of Trust verification is currently limited to scriptworkers. However, it would be more secure to verify the chain in each task, rather than just when a scriptworker task runs. In addition, if there is something that breaks Chain of Trust verification in the release taskgraph, we would detect that earlier in the graph, rather than breaking in the first scriptworker task.
-
-At some point we will likely add Chain of Trust verification support to the official taskcluster worker implementations.
+- Restricting access to, and usage of, workers with the private key will reduce the attack surface area.
+- Restricting access to the key by humans will also reduce the attack surface area.
