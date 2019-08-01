@@ -23,7 +23,7 @@ import ListItem from '@material-ui/core/ListItem';
 /**
  * A styled ListItem to be used when placed immediately after a TableCell.
  */
-export default class InheritMaterialUI extends Component {
+export default class TableCellItem extends Component {
   static defaultProps = {
     dense: true,
     className: null,
