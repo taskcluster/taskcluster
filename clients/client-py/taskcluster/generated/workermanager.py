@@ -33,6 +33,17 @@ class WorkerManager(BaseClient):
 
         return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
+    def listProviders(self, *args, **kwargs):
+        """
+        List Providers
+
+        Retrieve a list of providers that are available for worker pools.
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["listProviders"], *args, **kwargs)
+
     def createWorkerPool(self, *args, **kwargs):
         """
         Create Worker Pool
@@ -207,6 +218,14 @@ class WorkerManager(BaseClient):
             'output': 'v1/worker-pool-full.json#',
             'route': '/worker-pool/<workerPoolId>',
             'stability': 'experimental',
+        },
+        "listProviders": {
+            'args': [],
+            'method': 'get',
+            'name': 'listProviders',
+            'output': 'v1/provider-list.json#',
+            'route': '/providers',
+            'stability': 'stable',
         },
         "listWorkerPoolErrors": {
             'args': ['workerPoolId'],

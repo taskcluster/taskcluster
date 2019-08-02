@@ -1,0 +1,28 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Provider List
+description: A list of providers
+type: object
+properties:
+  providers:
+    type: array
+    title: Providers
+    description: List of all providers
+    uniqueItems: true
+    items:
+      type: object
+      properties:
+        providerId:
+          type: string
+          title: Provider ID
+          description: The id of this provider
+        providerType:
+          type: string
+          title: Provider Type
+          description: The provider implementation underlying this provider
+      additionalProperties: false
+      required:
+        - providerId
+        - providerType
+additionalProperties: false
+required:
+  - providers

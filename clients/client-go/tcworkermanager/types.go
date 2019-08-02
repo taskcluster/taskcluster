@@ -33,6 +33,13 @@ type (
 		Token string `json:"token"`
 	}
 
+	// A list of providers
+	ProviderList struct {
+
+		// List of all providers
+		Providers []Var `json:"providers"`
+	}
+
 	// Request body to `registerWorker`.
 	RegisterWorkerRequest struct {
 
@@ -111,6 +118,15 @@ type (
 		//
 		// Syntax:     ^[a-zA-Z0-9_-]{44}$
 		StaticSecret string `json:"staticSecret"`
+	}
+
+	Var struct {
+
+		// The id of this provider
+		ProviderID string `json:"providerId"`
+
+		// The provider implementation underlying this provider
+		ProviderType string `json:"providerType"`
 	}
 
 	// Request to create a worker

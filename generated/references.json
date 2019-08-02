@@ -529,6 +529,48 @@
   },
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/provider-list.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "A list of providers",
+      "properties": {
+        "providers": {
+          "description": "List of all providers",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "providerId": {
+                "description": "The id of this provider",
+                "title": "Provider ID",
+                "type": "string"
+              },
+              "providerType": {
+                "description": "The provider implementation underlying this provider",
+                "title": "Provider Type",
+                "type": "string"
+              }
+            },
+            "required": [
+              "providerId",
+              "providerType"
+            ],
+            "type": "object"
+          },
+          "title": "Providers",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "providers"
+      ],
+      "title": "Provider List",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/provider-list.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/create-worker-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -8479,6 +8521,21 @@
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Worker Manager",
+          "description": "Retrieve a list of providers that are available for worker pools.",
+          "method": "get",
+          "name": "listProviders",
+          "output": "v1/provider-list.json#",
+          "query": [
+          ],
+          "route": "/providers",
+          "stability": "stable",
+          "title": "List Providers",
           "type": "function"
         },
         {

@@ -11,6 +11,7 @@ export default class WorkerManager extends Client {
       ...options,
     });
     this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.listProviders.entry = {"args":[],"category":"Worker Manager","method":"get","name":"listProviders","output":true,"query":[],"route":"/providers","stability":"stable","type":"function"}; // eslint-disable-line
     this.createWorkerPool.entry = {"args":["workerPoolId"],"category":"Worker Manager","input":true,"method":"put","name":"createWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":{"AllOf":["worker-manager:create-worker-type:<workerPoolId>","worker-manager:provider:<providerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.updateWorkerPool.entry = {"args":["workerPoolId"],"category":"Worker Manager","input":true,"method":"post","name":"updateWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":{"AllOf":["worker-manager:update-worker-type:<workerPoolId>","worker-manager:provider:<providerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.workerPool.entry = {"args":["workerPoolId"],"category":"Worker Manager","method":"get","name":"workerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
@@ -32,6 +33,14 @@ export default class WorkerManager extends Client {
     this.validate(this.ping.entry, args);
 
     return this.request(this.ping.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Retrieve a list of providers that are available for worker pools.
+  /* eslint-enable max-len */
+  listProviders(...args) {
+    this.validate(this.listProviders.entry, args);
+
+    return this.request(this.listProviders.entry, args);
   }
   /* eslint-disable max-len */
   // Create a new worker pool. If the worker pool already exists, this will throw an error.
