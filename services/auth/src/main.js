@@ -186,8 +186,21 @@ const load = Loader({
   gcp: {
     requires: ['cfg'],
     setup: ({cfg}) => {
-      const credentials = cfg.gcp.credentials;
-      const allowedServiceAccounts = cfg.gcp.allowedServiceAccounts;
+      const projects = cfg.gcpCredentials.allowedProjects || {};
+      const projectIds = Object.keys(projects);
+
+      // NOTE: this is a temporary limit to avoid more massive refactoring, while
+      // supporting a future-compatible configuration format.  There's no other, hidden
+      // reason for this limitation.
+      assert(projectIds.length <= 1, "at most one GCP project is supported");
+
+      if (projectIds.length === 0) {
+        return {googleapis, auth: {}, credentials: {}, allowedServiceAccounts: []};
+      }
+
+      const project = projects[projectIds[0]];
+      const {credentials, allowedServiceAccounts} = project;
+      assert.equal(projectIds[0], credentials.project_id, "credentials must be for the given project");
 
       assert(Array.isArray(allowedServiceAccounts));
 

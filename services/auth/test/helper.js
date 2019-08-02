@@ -50,8 +50,7 @@ exports.secrets = new Secrets({
       {env: 'SENTRY_HOSTNAME', cfg: 'sentry.hostname'},
     ],
     gcp: [
-      {env: 'GCP_CREDENTIALS', cfg: 'gcp.credentials', name: 'credentials'},
-      {env: 'GCP_ALLOWED_SERVICE_ACCOUNTS', cfg: 'gcp.allowedServiceAccounts', name: 'allowedServiceAccounts', mock: []},
+      {env: 'GCP_CREDENTIALS_ALLOWED_PROJECTS', cfg: 'gcpCredentials.allowedProjects', name: 'allowedProjects', mock: []},
     ],
   },
   load: exports.load,
@@ -330,8 +329,6 @@ exports.withServers = (mock, skipping) => {
  * using real credentials.
  */
 exports.withGcp = (mock, skipping) => {
-  const accountId = slugid.nice().replace(/_/g, '').toLowerCase();
-  let auth, iam;
   let policy = {};
 
   const fakeGoogleApis = {
@@ -420,89 +417,14 @@ exports.withGcp = (mock, skipping) => {
 
       exports.gcpAccount = {
         email: 'test_client@example.com',
-        name: 'testAccount',
         project_id: credentials.project_id,
       };
     } else {
-      const {credentials, auth, googleapis, allowedServiceAccounts} = await exports.load('gcp');
-      const projectId = credentials.project_id;
-
-      iam = googleapis.iam({version: 'v1', auth});
-
-      const res = await iam.projects.serviceAccounts.create({
-        auth,
-        name: `projects/${projectId}`,
-        resource: {
-          accountId,
-          serviceAccount: {
-            // This is a testing account and will be deleted by
-            // the end of the tests. If the test crashes, these
-            // accounts maybe left in IAM. Any account starting
-            // with taskcluster-auth-test- can be safely removed.
-            displayName: `taskcluster-auth-test-${accountId}`,
-          },
-        },
-      });
-
-      const serviceAccount = res.data.email;
-      allowedServiceAccounts.push(serviceAccount);
-
-      // to understand the {get/set}IamPolicy calls, look at
-      // https://cloud.google.com/iam/docs/creating-short-lived-service-account-credentials
-      //
-      // Notice that might happen that between the getIamPolicy and setIamPolicy calls,
-      // a third party might change the etag, making the call to setIamPolicy fail.
-      const response = await iam.projects.serviceAccounts.getIamPolicy({
-        // NOTE: the `-` here represents the projectId, and uses the projectId
-        // from this.gcp.auth, which is why we verified those match above.
-        resource_: `projects/-/serviceAccounts/${serviceAccount}`,
-      });
-
-      const data = response.data;
-      if (data.bindings === undefined) {
-        data.bindings = [];
-      }
-
-      let binding = data.bindings.find(b => b.role === 'roles/iam.serviceAccountTokenCreator');
-      if (!binding) {
-        binding = {
-          role: 'roles/iam.serviceAccountTokenCreator',
-          members: [],
-        };
-
-        data.bindings.push(binding);
-      }
-
-      const myServiceAccount = credentials.client_email;
-      if (!binding.members.includes(`serviceAccount:${myServiceAccount}`)) {
-        binding.members.push(`serviceAccount:${myServiceAccount}`);
-        await iam.projects.serviceAccounts.setIamPolicy({
-          // NOTE: the `-` here represents the projectId, and uses the projectId
-          // from this.gcp.auth, which is why we verified those match above.
-          resource: `projects/-/serviceAccounts/${serviceAccount}`,
-          requestBody: {
-            policy: data,
-            updateMask: 'bindings',
-          },
-        });
-      }
-
+      const {credentials, allowedServiceAccounts} = await exports.load('gcp');
       exports.gcpAccount = {
-        email: res.data.email,
-        name: res.data.name,
+        email: allowedServiceAccounts[0],
         project_id: credentials.project_id,
       };
     }
   });
-
-  suiteTeardown(async () => {
-    if (skipping()) {
-      return;
-    }
-
-    if (!mock) {
-      await iam.projects.serviceAccounts.delete({name: exports.gcpAccount.name, auth});
-    }
-  });
-
 };

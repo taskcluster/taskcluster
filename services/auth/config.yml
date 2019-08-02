@@ -106,11 +106,24 @@ defaults:
     # but it does the trick...
     apiVersion:               '2014-01-01'
 
-  # Google Cloud Platform service account credentials. This is the content
-  # of the json file you download when you create a key for a service account
-  gcp:
-    credentials:              !env:json:optional GCP_CREDENTIALS
-    allowedServiceAccounts:   !env:json:optional GCP_ALLOWED_SERVICE_ACCOUNTS
+  # Configuration for the GCP serviceAccounts to which the `gcpCredentials`
+  # endpoint can grant access.
+  gcpCredentials:
+    # This has the form {
+    #   "projectName": {
+    #     # credentials for a serviceAccount in this project that has
+    #     # roles/iam.serviceAccountTokenCreator.
+    #     "credentials": {
+    #       "type": ..,
+    #       "project_id": ..,
+    #       ..
+    #     },
+    #     # allowed service accounts in this project
+    #     "allowedServiceAccounts": ["accountName1", ..]
+    #   }, ..
+    # }
+    # If omitted, it defaults to {}
+    allowedProjects:          !env:json:optional GCP_CREDENTIALS_ALLOWED_PROJECTS
 
 production:
   app:
