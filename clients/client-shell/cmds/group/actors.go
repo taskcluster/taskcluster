@@ -10,8 +10,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v15"
-	"github.com/taskcluster/taskcluster/clients/client-go/v15/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v16"
+	"github.com/taskcluster/taskcluster/clients/client-go/v16/tcqueue"
 	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 )
 

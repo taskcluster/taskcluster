@@ -3,6 +3,23 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v16.0.0
+
+[MAJOR] ([bug 1552970](http://bugzil.la/1552970)) The `auth.gcpCredentials` method no longer modifies the *granting* service account.
+Instead, that service account must be configured with the "Service Account Token Creator" role prior to deployment of Taskcluster.
+The format of configuration for these credentials has changed as well, now taking `GCP_CREDENTIALS_ALLOWED_PROJECTS`.
+See the deployment documentation for more information.
+
+[MAJOR] ([bug 1570723](http://bugzil.la/1570723)) The deployment configuration value `ui.ui_login_strategy_names` is now required.
+It should be a space-separated list of the names of the strategies in `web_server.ui_login_strategies`.
+
+[minor] ([#1140](https://github.com/taskcluster/taskcluster/issues/1140)) Add Chain of Trust documentation for taskcluster worker implementations and maintenance.
+
+[minor] ([#1062](https://github.com/taskcluster/taskcluster/issues/1062)) The taskcluster cli `rerun` action now takes a `--force` option. It will refuse to rerun non-exception, non-failed tasks without `--force`.
+
+([#1108](https://github.com/taskcluster/taskcluster/issues/1108)) The development process has been improved to use kubectl directly instead of helm.
+Helm is still used to render templates because we need to support it.
+
 ## v15.0.0
 
 [MAJOR] The web-server application no longer generates a JWT when logging in. It uses a sessions to keep track of users.

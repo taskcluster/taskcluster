@@ -12,7 +12,7 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	"github.com/taskcluster/jsonschema2go"
-	"github.com/taskcluster/taskcluster/clients/client-go/v15/codegenerator/model"
+	"github.com/taskcluster/taskcluster/clients/client-go/v16/codegenerator/model"
 )
 
 var (

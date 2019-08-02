@@ -37,7 +37,7 @@
 package tcgceprovider
 
 import (
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v15"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v16"
 )
 
 type GceProvider tcclient.Client

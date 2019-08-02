@@ -13,8 +13,8 @@ import (
 
 	"github.com/spf13/pflag"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v15"
-	"github.com/taskcluster/taskcluster/clients/client-go/v15/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v16"
+	"github.com/taskcluster/taskcluster/clients/client-go/v16/tcqueue"
 	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 )
 
