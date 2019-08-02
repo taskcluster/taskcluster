@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const AWS = require('aws-sdk');
 
 const setupIam = async ({iam, iamName, iamPolicy}) => {
@@ -42,7 +43,7 @@ module.exports = async ({userConfig, answer, configTmpl}) => {
 
   userConfig.queue = userConfig.queue || {};
 
-  // TODO: Add private artifact bucket and both blob buckets
+  // TODO: Add both blob buckets
   // TODO: Also set up auth/notify aws stuff
 
   const publicBucketName = `${prefix}-public-artifacts`;
@@ -54,7 +55,29 @@ module.exports = async ({userConfig, answer, configTmpl}) => {
       ACL: 'public-read',
     }).promise();
     userConfig.queue.public_artifact_bucket = publicBucketName;
-    // TODO: Set up policy that allows for objects in here to be read
+  }
+
+  const publicPolicy = {
+    Version: '2012-10-17',
+    Statement: [
+      {
+        Sid: "PublicReadGetObject",
+        Effect: "Allow",
+        Principal: {
+          AWS: "*",
+        },
+        Action: "s3:GetObject",
+        Resource: `arn:aws:s3:::${publicBucketName}/*`,
+      },
+    ],
+  };
+  if (!userConfig.meta.lastAppliedPublicBucketPolicy ||
+      !_.isEqual(userConfig.meta.lastAppliedPublicBucketPolicy, publicPolicy)) {
+    await s3.putBucketPolicy({
+      Bucket: publicBucketName,
+      Policy: JSON.stringify(publicPolicy),
+    }).promise();
+    userConfig.meta.lastAppliedPublicBucketPolicy = publicPolicy;
   }
 
   if (!userConfig.queue.private_artifact_bucket) {
