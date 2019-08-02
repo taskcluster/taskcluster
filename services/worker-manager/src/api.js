@@ -31,6 +31,10 @@ builder.declare({
   route: '/providers',
   name: 'listProviders',
   input: undefined,
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
   output: 'provider-list.yml',
   stability: 'stable',
   category: 'Worker Manager',
@@ -39,10 +43,12 @@ builder.declare({
     'Retrieve a list of providers that are available for worker pools.',
   ].join('\n'),
 }, function(req, res) {
-  return res.reply({providers: Object.entries(this.cfg.providers).map(([providerId, {providerType}]) => ({
-    providerId,
-    providerType,
-  }))});
+  return res.reply({
+    providers: Object.entries(this.cfg.providers).map(([providerId, {providerType}]) => ({
+      providerId,
+      providerType,
+    })).slice(0, req.query.limit || 100),
+  });
 });
 
 builder.declare({

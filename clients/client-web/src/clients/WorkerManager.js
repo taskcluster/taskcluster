@@ -11,7 +11,7 @@ export default class WorkerManager extends Client {
       ...options,
     });
     this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listProviders.entry = {"args":[],"category":"Worker Manager","method":"get","name":"listProviders","output":true,"query":[],"route":"/providers","stability":"stable","type":"function"}; // eslint-disable-line
+    this.listProviders.entry = {"args":[],"category":"Worker Manager","method":"get","name":"listProviders","output":true,"query":["continuationToken","limit"],"route":"/providers","stability":"stable","type":"function"}; // eslint-disable-line
     this.createWorkerPool.entry = {"args":["workerPoolId"],"category":"Worker Manager","input":true,"method":"put","name":"createWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":{"AllOf":["worker-manager:create-worker-type:<workerPoolId>","worker-manager:provider:<providerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.updateWorkerPool.entry = {"args":["workerPoolId"],"category":"Worker Manager","input":true,"method":"post","name":"updateWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":{"AllOf":["worker-manager:update-worker-type:<workerPoolId>","worker-manager:provider:<providerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.workerPool.entry = {"args":["workerPoolId"],"category":"Worker Manager","method":"get","name":"workerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line

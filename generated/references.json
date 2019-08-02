@@ -534,6 +534,11 @@
       "additionalProperties": false,
       "description": "A list of providers",
       "properties": {
+        "continuationToken": {
+          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of workers in the worker-manager.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called `listWorkerPools` with `continuationToken`\nuntil you get a result without a `continuationToken`.\n",
+          "title": "Continuation Token",
+          "type": "string"
+        },
         "providers": {
           "description": "List of all providers",
           "items": {
@@ -8532,6 +8537,8 @@
           "name": "listProviders",
           "output": "v1/provider-list.json#",
           "query": [
+            "continuationToken",
+            "limit"
           ],
           "route": "/providers",
           "stability": "stable",

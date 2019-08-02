@@ -36,6 +36,15 @@ type (
 	// A list of providers
 	ProviderList struct {
 
+		// Opaque `continuationToken` to be given as query-string option to get the
+		// next set of workers in the worker-manager.
+		// This property is only present if another request is necessary to fetch all
+		// results. In practice the next request with a `continuationToken` may not
+		// return additional results, but it can. Thus, you can only be sure to have
+		// all the results if you've called `listWorkerPools` with `continuationToken`
+		// until you get a result without a `continuationToken`.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
 		// List of all providers
 		Providers []Var `json:"providers"`
 	}

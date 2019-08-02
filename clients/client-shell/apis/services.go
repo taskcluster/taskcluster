@@ -1576,8 +1576,11 @@ var services = map[string]definitions.Service{
 				Method:      "get",
 				Route:       "/providers",
 				Args:        []string{},
-				Query:       []string{},
-				Input:       "",
+				Query: []string{
+					"continuationToken",
+					"limit",
+				},
+				Input: "",
 			},
 			definitions.Entry{
 				Name:        "createWorkerPool",

@@ -3855,6 +3855,8 @@ module.exports = {
           "name": "listProviders",
           "output": "v1/provider-list.json#",
           "query": [
+            "continuationToken",
+            "limit"
           ],
           "route": "/providers",
           "stability": "stable",
