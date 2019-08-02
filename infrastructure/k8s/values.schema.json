@@ -1437,13 +1437,17 @@
           ],
           "title": "Process settings for this service",
           "type": "object"
+        },
+        "ui_login_strategy_names": {
+          "type": "string"
         }
       },
       "required": [
         "procs",
         "application_name",
         "graphql_subscription_endpoint",
-        "graphql_endpoint"
+        "graphql_endpoint",
+        "ui_login_strategy_names"
       ],
       "title": "Configuration options for ui",
       "type": "object"
