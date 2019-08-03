@@ -29,12 +29,12 @@ module.exports = ({ queue }, isAuthed, rootUrl) => {
           ? urls.api(
             'queue',
             'v1',
-            `task/${taskId}/runs/${runId}/artifacts/${artifact.name}`
+            `task/${taskId}/runs/${runId}/artifacts/${encodeURI(artifact.name)}`
           )
           : urls.api(
             'queue',
             'v1',
-            `task/${taskId}/artifacts/${artifact.name}`
+            `task/${taskId}/artifacts/${encodeURI(artifact.name)}`
           ),
       };
     }
