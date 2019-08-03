@@ -845,7 +845,7 @@ export default class ViewTask extends Component {
             </SpeedDial>
             {dialogOpen && (
               <DialogAction
-                {...dialogActionProps || {
+                {...(dialogActionProps || {
                   fullScreen: Boolean(selectedAction.schema),
                   onSubmit: this.handleActionTaskSubmit(selectedAction),
                   onComplete: this.handleActionComplete(selectedAction),
@@ -858,7 +858,7 @@ export default class ViewTask extends Component {
                     />
                   ),
                   confirmText: selectedAction.title,
-                }}
+                })}
                 open={dialogOpen}
                 error={dialogError}
                 onError={this.handleTaskActionError}

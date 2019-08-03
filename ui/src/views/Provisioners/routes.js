@@ -1,10 +1,14 @@
 import lazy from '../../utils/lazy';
 
 const ViewProvisioners = lazy(() =>
-  import(/* webpackChunkName: 'Provisioners.ViewProvisioners' */ './ViewProvisioners')
+  import(
+    /* webpackChunkName: 'Provisioners.ViewProvisioners' */ './ViewProvisioners'
+  )
 );
 const ViewWorkerTypes = lazy(() =>
-  import(/* webpackChunkName: 'Provisioners.ViewWorkerTypes' */ './ViewWorkerTypes')
+  import(
+    /* webpackChunkName: 'Provisioners.ViewWorkerTypes' */ './ViewWorkerTypes'
+  )
 );
 const ViewWorker = lazy(() =>
   import(/* webpackChunkName: 'Provisioners.ViewWorker' */ './ViewWorker')

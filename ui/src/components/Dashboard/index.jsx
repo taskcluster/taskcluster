@@ -247,10 +247,10 @@ export default class Dashboard extends Component {
       <nav className={classes.nav}>
         <div>
           <div
-            {...!process.env.DOCS_ONLY && {
+            {...(!process.env.DOCS_ONLY && {
               component: Link,
               to: '/',
-            }}
+            })}
             className={classes.toolbar}>
             <img
               className={classes.logoStyle}
@@ -259,10 +259,10 @@ export default class Dashboard extends Component {
               src={Logo}
             />
             <Typography
-              {...!process.env.DOCS_ONLY && {
+              {...(!process.env.DOCS_ONLY && {
                 component: Link,
                 to: '/',
-              }}
+              })}
               variant="h6"
               noWrap
               className={classes.title}>

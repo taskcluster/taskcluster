@@ -1,19 +1,29 @@
 import lazy from '../../utils/lazy';
 
 const ViewAwsWorkerTypes = lazy(() =>
-  import(/* webpackChunkName: 'AwsProvisioner.ViewAwsWorkerTypes' */ './ViewAwsWorkerTypes')
+  import(
+    /* webpackChunkName: 'AwsProvisioner.ViewAwsWorkerTypes' */ './ViewAwsWorkerTypes'
+  )
 );
 const ViewAwsWorkerType = lazy(() =>
-  import(/* webpackChunkName: 'AwsProvisioner.ViewAwsWorkerType' */ './ViewAwsWorkerType')
+  import(
+    /* webpackChunkName: 'AwsProvisioner.ViewAwsWorkerType' */ './ViewAwsWorkerType'
+  )
 );
 const ViewAwsHealth = lazy(() =>
-  import(/* webpackChunkName: 'AwsProvisioner.ViewAwsHealth' */ './ViewAwsHealth')
+  import(
+    /* webpackChunkName: 'AwsProvisioner.ViewAwsHealth' */ './ViewAwsHealth'
+  )
 );
 const ViewAwsRecentErrors = lazy(() =>
-  import(/* webpackChunkName: 'AwsProvisioner.ViewAwsRecentErrors' */ './ViewAwsRecentErrors')
+  import(
+    /* webpackChunkName: 'AwsProvisioner.ViewAwsRecentErrors' */ './ViewAwsRecentErrors'
+  )
 );
 const ViewAwsWorkerTypeDefinition = lazy(() =>
-  import(/* webpackChunkName: 'AwsProvisioner.ViewAwsWorkerTypeDefinition' */ './ViewAwsWorkerTypeDefinition')
+  import(
+    /* webpackChunkName: 'AwsProvisioner.ViewAwsWorkerTypeDefinition' */ './ViewAwsWorkerTypeDefinition'
+  )
 );
 
 export default path => [

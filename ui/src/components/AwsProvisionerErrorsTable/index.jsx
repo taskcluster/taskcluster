@@ -117,9 +117,7 @@ export default class AwsProvisionerErrorsTable extends Component {
         noItemsMessage="Errors not available"
         renderRow={(error, index) => (
           <TableRow
-            key={`${index}-${error.az}-${error.instanceType}-${error.type}-${
-              error.time
-            }`}>
+            key={`${index}-${error.az}-${error.instanceType}-${error.type}-${error.time}`}>
             <TableCell>
               <Typography>{error.az}</Typography>
             </TableCell>

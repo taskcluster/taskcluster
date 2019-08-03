@@ -1,10 +1,14 @@
 import lazy from '../../utils/lazy';
 
 const ViewDenylistAddress = lazy(() =>
-  import(/* webpackChunkName: 'Denylist.ViewDenylistAddress' */ './ViewDenylistAddress')
+  import(
+    /* webpackChunkName: 'Denylist.ViewDenylistAddress' */ './ViewDenylistAddress'
+  )
 );
 const ViewDenylistAddresses = lazy(() =>
-  import(/* webpackChunkName: 'Denylist.ViewDenylistAddresses' */ './ViewDenylistAddresses')
+  import(
+    /* webpackChunkName: 'Denylist.ViewDenylistAddresses' */ './ViewDenylistAddresses'
+  )
 );
 
 export default path => [

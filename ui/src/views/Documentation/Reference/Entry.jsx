@@ -458,9 +458,7 @@ export default class Entry extends Component {
                       <TableCell className={classes.routingKeyCell}>
                         {routingKey.constant && (
                           <span
-                            title={`This key always assume the value ${
-                              routingKey.constant
-                            }. Used to allow additional routing key formats.`}>
+                            title={`This key always assume the value ${routingKey.constant}. Used to allow additional routing key formats.`}>
                             <StatusLabel state="CONSTANT_KEY" />
                           </span>
                         )}
