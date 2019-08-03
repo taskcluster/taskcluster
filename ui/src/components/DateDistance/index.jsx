@@ -31,15 +31,12 @@ export default class DateDistance extends Component {
 
   render() {
     const { from, offset } = this.props;
-    const fromNow = formatDistanceStrict(
-      isDate(from) ? from : parseISO(from),
-      new Date(),
-      {
-        addSuffix: true,
-      }
-    );
-    const offsetNow =
-      offset && formatDistance(isDate(from) ? from : parseISO(from), offset);
+    const fromParsed = isDate(from) ? from : parseISO(from);
+    const fromNow = formatDistanceStrict(fromParsed, new Date(), {
+      addSuffix: true,
+    });
+    const offsetParsed = isDate(offset) ? offset : parseISO(offset);
+    const offsetNow = offset && formatDistance(fromParsed, offsetParsed);
 
     return offsetNow ? `${fromNow} (${offsetNow} later)` : fromNow;
   }
