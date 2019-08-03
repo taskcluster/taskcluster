@@ -15,9 +15,7 @@ features, debug with Taskcluster.
 
 You can run a task on any computer with Docker installed.
 
-First, navigate to your task in the [task
-inspector](https://tools.taskcluster.net/groups) and select the "task
-details" tab.
+First, navigate to your task in the Task Inspector and select the "task details" tab.
 
 If the `payload` section of the task details specifies any
 [features](/docs/reference/workers/docker-worker/docs/features)
@@ -38,7 +36,7 @@ Taskcluster has an "interactive" mode with which you can get a terminal and/or
 VNC connection to a running task execution environment.
 
 There are two ways to access this mode. The easiest is to enter the task's ID
-in the [task inspector](https://tools.taskcluster.net/groups). Under
+in the Task Inspector. Under
 "actions", select "Create with SSH/VNC task". If you have permission to create
 tasks directly (rather than by pushing to a version-control server) then you
 can use this option. Some projects also provide

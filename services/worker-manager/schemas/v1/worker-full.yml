@@ -1,0 +1,64 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Worker Full Definition
+description: A complete worker definition.
+type: object
+properties:
+
+  workerPoolId: {$ref: "worker-pool-full.json#/properties/workerPoolId"}
+
+  workerGroup:
+    title: Worker group
+    type: string
+    description: Worker group to which this worker belongs
+    minLength: {$const: identifier-min-length}
+    maxLength: {$const: identifier-max-length}
+    pattern: {$const: identifier-pattern}
+
+  workerId:
+    title: Worker ID
+    type: string
+    description: Worker ID
+    minLength: {$const: identifier-min-length}
+    maxLength: {$const: identifier-max-length}
+    pattern: {$const: identifier-pattern}
+
+  providerId:
+    title: Provider
+    type: string
+    # note that this is typically used as the workerGroup for workers,
+    # so its format should match that for workerGroup.
+    minLength: {$const: identifier-min-length}
+    maxLength: {$const: identifier-max-length}
+    pattern: {$const: identifier-pattern}
+    description: |
+      The provider that had started the worker and responsible for managing it.
+      Can be different from the provider that's currently in the worker pool config.
+
+  created:
+    title: Created
+    description: Date and time when this worker was created
+    type: string
+    format: date-time
+
+  expires:
+    title: Expires
+    description: Date and time when this worker will be deleted from the DB
+    type: string
+    format: date-time
+
+  state:
+    title: State
+    description: |
+      A string specifying the state this worker is in so far as worker-manager knows.
+    type: string
+    enum: ["requested", "running", "stopped"]
+
+additionalProperties: false
+required:
+  - workerPoolId
+  - workerGroup
+  - workerId
+  - providerId
+  - created
+  - expires
+  - state

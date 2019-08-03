@@ -14,6 +14,7 @@ const ping = {
   name: 'ping',
   stability: 'stable',
   title: 'Ping Server',
+  category: 'Ping Server',
   description: [
     'Respond without doing anything.',
     'This endpoint is used to check that the service is up.',
@@ -108,7 +109,7 @@ class APIBuilder {
    * nothing happens.
    */
   declare(options, handler) {
-    ['name', 'method', 'route', 'title', 'description'].forEach(function(key) {
+    ['name', 'method', 'route', 'title', 'description', 'category'].forEach(function(key) {
       assert(options[key], 'Option \'' + key + '\' must be provided');
     });
     // Default to experimental API end-points
@@ -130,6 +131,9 @@ class APIBuilder {
     if (options.scopes && !ScopeExpressionTemplate.validate(options.scopes)) {
       throw new Error(`Invalid scope expression template: ${JSON.stringify(options.scopes, null, 2)}`);
     }
+
+    assert(!(options.method === 'get' && options.input), "Can't have an `input` with method: 'get'");
+
     options.handler = handler;
     if (this.entries.filter(entry => entry.route === options.route && entry.method === options.method).length > 0) {
       throw new Error('Identical route and method declaration.');
@@ -191,6 +195,7 @@ class APIBuilder {
           input: entry.input,
           output: entry.output,
           description: entry.description,
+          category: entry.category,
         };
         if (entry.scopes) {
           retval.scopes = entry.scopes;

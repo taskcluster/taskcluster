@@ -132,7 +132,7 @@ WorkerPool.prototype.reportError = async function({kind, title, description, ext
       `.trim(),
     });
   }
-  await WorkerPoolError.create({
+  return await WorkerPoolError.create({
     workerPoolId: this.workerPoolId,
     errorId: slugid.v4(),
     reported: new Date(),
@@ -225,6 +225,18 @@ const Worker = Entity.configure({
     providerData: Entity.types.JSON,
   },
 });
+
+Worker.prototype.serializable = function() {
+  return {
+    workerPoolId: this.workerPoolId,
+    workerGroup: this.workerGroup,
+    workerId: this.workerId,
+    providerId: this.providerId,
+    created: this.created.toJSON(),
+    expires: this.expires.toJSON(),
+    state: this.state,
+  };
+};
 
 // This is made available to make it slightly less likely that people
 // typo worker states. We can change this if there are new requirements

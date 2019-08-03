@@ -1,0 +1,26 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Worker Pool Error List
+description: A list of worker pool errors
+type: object
+properties:
+  workerPoolErrors:
+    type: array
+    title: "Worker Pool Errors"
+    description: List of worker pool errors
+    uniqueItems: true
+    items: {$ref: 'worker-pool-error.json#'}
+
+  continuationToken:
+    type:               string
+    title:              "Continuation Token"
+    description: |
+      Opaque `continuationToken` to be given as query-string option to get the
+      next set of worker-types in the worker-manager.
+      This property is only present if another request is necessary to fetch all
+      results. In practice the next request with a `continuationToken` may not
+      return additional results, but it can. Thus, you can only be sure to have
+      all the results if you've called `listWorkerPools` with `continuationToken`
+      until you get a result without a `continuationToken`.
+additionalProperties: false
+required:
+  - workerPoolErrors

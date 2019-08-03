@@ -41,6 +41,7 @@ builder.declare({
   scopes: 'purge-cache:<provisionerId>/<workerType>:<cacheName>',
   input: 'purge-cache-request.yml',
   title: 'Purge Worker Cache',
+  category: 'Purge-Cache Service',
   stability: APIBuilder.stability.stable,
   description: [
     'Publish a request to purge caches named `cacheName` with',
@@ -96,6 +97,7 @@ builder.declare({
   output: 'all-purge-cache-request-list.yml',
   title: 'All Open Purge Requests',
   stability: APIBuilder.stability.stable,
+  category: 'Purge-Cache Service',
   description: [
     'View all active purge requests.',
     '',
@@ -132,6 +134,7 @@ builder.declare({
   output: 'purge-cache-request-list.yml',
   title: 'Open Purge Requests for a provisionerId/workerType pair',
   stability: APIBuilder.stability.stable,
+  category: 'Purge-Cache Service',
   description: [
     'List the caches for this `provisionerId`/`workerType` that should to be',
     'purged if they are from before the time given in the response.',

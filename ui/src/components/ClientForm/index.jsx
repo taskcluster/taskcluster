@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { bool, func } from 'prop-types';
+import { oneOfType, object, string, func, bool } from 'prop-types';
 import { addYears } from 'date-fns';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -19,12 +19,14 @@ import PowerIcon from 'mdi-react/PowerIcon';
 import LockResetIcon from 'mdi-react/LockResetIcon';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
+import DialogAction from '../DialogAction';
 import DateDistance from '../DateDistance';
 import DatePicker from '../DatePicker';
 import Button from '../Button';
 import { client } from '../../utils/prop-types';
 import splitLines from '../../utils/splitLines';
 import Link from '../../utils/Link';
+import { formatScope, scopeLink } from '../../utils/scopeUtils';
 
 @withStyles(theme => ({
   fab: {
@@ -77,6 +79,28 @@ export default class ClientForm extends Component {
     onResetAccessToken: func,
     /** If true, form actions will be disabled. */
     loading: bool,
+    /** Error to display when an action dialog is open. */
+    dialogError: oneOfType([string, object]),
+    /**
+     * Callback function fired when the DialogAction component throws an error.
+     * Required when viewing an existent client.
+     * */
+    onDialogActionError: func,
+    /**
+     * Callback function fired when the DialogAction component runs
+     * successfully. Required when viewing an existent client.
+     * */
+    onDialogActionComplete: func,
+    /**
+     * Callback function fired when the dialog should open.
+     * Required when viewing an existent client.
+     */
+    onDialogActionOpen: func,
+    /**
+     * Callback function fired when the dialog should close.
+     * Required when viewing an existent client.
+     */
+    onDialogActionClose: func,
   };
 
   static defaultProps = {
@@ -87,6 +111,11 @@ export default class ClientForm extends Component {
     onDisableClient: null,
     onEnableClient: null,
     onResetAccessToken: null,
+    dialogError: null,
+    onDialogActionError: null,
+    onDialogActionComplete: null,
+    onDialogActionOpen: null,
+    onDialogActionClose: null,
   };
 
   static getDerivedStateFromProps({ isNewClient, client }, state) {
@@ -126,9 +155,7 @@ export default class ClientForm extends Component {
     prevClient: null,
   };
 
-  handleDeleteClient = () => {
-    this.props.onDeleteClient(this.state.clientId);
-  };
+  handleDeleteClient = () => this.props.onDeleteClient(this.state.clientId);
 
   handleDeleteOnExpirationChange = () => {
     this.setState({ deleteOnExpiration: !this.state.deleteOnExpiration });
@@ -176,7 +203,18 @@ export default class ClientForm extends Component {
   };
 
   render() {
-    const { client, classes, isNewClient, loading } = this.props;
+    const {
+      client,
+      classes,
+      isNewClient,
+      loading,
+      dialogOpen,
+      dialogError,
+      onDialogActionClose,
+      onDialogActionError,
+      onDialogActionOpen,
+      onDialogActionComplete,
+    } = this.props;
     const {
       description,
       scopeText,
@@ -219,6 +257,7 @@ export default class ClientForm extends Component {
                 name="clientId"
                 onChange={this.handleInputChange}
                 fullWidth
+                autoFocus
                 value={clientId}
               />
             </ListItem>
@@ -321,9 +360,21 @@ export default class ClientForm extends Component {
                           key={scope}
                           button
                           component={Link}
-                          to={`/auth/scopes/${encodeURIComponent(scope)}`}
+                          to={scopeLink(scope)}
                           className={classes.listItemButton}>
-                          <ListItemText secondary={<code>{scope}</code>} />
+                          <ListItemText
+                            disableTypography
+                            secondary={
+                              <Typography>
+                                <code
+                                  // eslint-disable-next-line react/no-danger
+                                  dangerouslySetInnerHTML={{
+                                    __html: formatScope(scope),
+                                  }}
+                                />
+                              </Typography>
+                            }
+                          />
                           <LinkIcon />
                         </ListItem>
                       ))}
@@ -365,7 +416,7 @@ export default class ClientForm extends Component {
                 requiresAuth
                 tooltipOpen
                 icon={<DeleteIcon />}
-                onClick={this.handleDeleteClient}
+                onClick={onDialogActionOpen}
                 className={classes.deleteIcon}
                 tooltipTitle="Delete"
                 ButtonProps={{ disabled: loading }}
@@ -396,6 +447,21 @@ export default class ClientForm extends Component {
               />
             </SpeedDial>
           </Fragment>
+        )}
+        {dialogOpen && (
+          <DialogAction
+            open={dialogOpen}
+            onSubmit={this.handleDeleteClient}
+            onComplete={onDialogActionComplete}
+            onClose={onDialogActionClose}
+            onError={onDialogActionError}
+            error={dialogError}
+            title="Delete Client?"
+            body={
+              <Typography>This will delete the {clientId} client.</Typography>
+            }
+            confirmText="Delete Client"
+          />
         )}
       </Fragment>
     );

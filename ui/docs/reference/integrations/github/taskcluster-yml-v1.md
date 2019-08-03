@@ -89,7 +89,12 @@ The result looks like this:
 }
 ```
 
-Taskcluster-Github will set the schedulerId of each task, as is required for proper status tracking of the resulting task.
+Taskcluster-Github will set the `schedulerId` of each task, as is required for proper status tracking of the resulting task.
+With the change , it became possible to set a custom `schedulerId` in the task definition, provided you have the scopes
+for using that particular `schedulerId`. However, adding custom schedulerId to the task definition while using github's 
+Statuses API can break the status reporting functionality of tc-github in the case of successful build. 
+Checks API implementation in tc-github is currently in experimental state.
+
 
 The `taskId` and `taskGroupId` properties can be set by the JSON-e template,
 but default values are also available.  If the JSON-e rendering produces only
@@ -195,7 +200,7 @@ tasks:
 
 #### Provisioner ID and Worker Type
 
-You need to know which provisioner and which worker type you want to use to run your tasks. If you plan on using AWS provisioner, you can look up or create a worker type [here](https://tools.taskcluster.net/aws-provisioner/).
+You need to know which provisioner and which worker type you want to use to run your tasks. If you don't know which worker to use, consult the administrators of the Taskcluster deployment. You can see a list of all worker types in the Provisioners tool.
 
 ## Scopes and Roles
 
@@ -205,7 +210,7 @@ You need to know which provisioner and which worker type you want to use to run 
 * `assume:repo:github.com/<owner>/<repo>:release` for a release event
 * `assume:repo:github.com/<organization>/<repository>:tag:<tag>` for a tag event
 
-In the [role manager](https://tools.taskcluster.net/auth/roles/), you can set up roles however you like. To give permissions to every event in your repository, you can make a role `repo:github.com/<organization>/<repository>:*` or you can give fine-grained permissions to specific github events or specific branches.
+In the Roles tool (under Authorization), you can set up roles however you like. To give permissions to every event in your repository, you can make a role `repo:github.com/<organization>/<repository>:*` or you can give fine-grained permissions to specific github events or specific branches.
 
 Careful configuration of these roles and the related tasks can allow powerful behaviors such as binary uploads on push, without allowing pull requests access to those capabilities. There are lots of examples in the role manager for other repositories that have been set up. Look for roles that begin with `repo:github.com/` to see how they work.
 

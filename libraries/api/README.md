@@ -99,6 +99,7 @@ To declare an API method, call `builder.declare(options, handler)` with the foll
  * `title` (required) - short title of the API method
  * `description` (required) - detailed description / documentation of the method, in markdwon
  * `method` (required) - the HTTP method used to invoke this method, lower-cased, e.g., `"post"`
+ * `category` (required) - the category for this API method. API methods with same category will be grouped together in documentation.
  * `route` (required) - the URL pattern, with parameters, e.g., `'/object/:id/action/:param'`
  * `params` - patterns for URL parameters (see below)
  * `query` - patterns for query parameters (see below)
@@ -116,6 +117,12 @@ To declare an API method, call `builder.declare(options, handler)` with the foll
 
 The `handler` parameter is a normal Express request handler, with some extra
 features; see "Request Handlers" below.
+
+The `route` option follows typical Express parameter matching.
+In particular, if the `route`'s last component is a parameter with a trailing `(*)`, then that parameter will be allowed to include multiple slash-separated components.
+For example, `/things/:path(*)` will match `/things/a/b/c` or `/things/a%2Fb%2Fc` with the `path` parameter being `a/b/c` in either case.
+Note that the generated documentation does not reflect this, and that the generated clients will always escape slashes.
+Where it is useful to users to allow unescaped slashes, include that information in the API method documentation.
 
 ### Parameters and Queries
 

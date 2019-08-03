@@ -98,15 +98,22 @@ export default class DialogAction extends Component {
       body,
       confirmText,
       classes,
-      onSubmit: _,
       onClose,
       open,
       error,
+      onSubmit,
+      onComplete,
       ...props
     } = this.props;
+    const withoutBodyProps = !body ? { maxWidth: 'sm', fullWidth: true } : {};
 
     return (
-      <Dialog open={open} onClose={onClose} fullScreen={fullScreen} {...props}>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        fullScreen={fullScreen}
+        {...withoutBodyProps}
+        {...props}>
         <DialogTitle>{title}</DialogTitle>
         <DialogContent>
           {error && (
@@ -117,7 +124,10 @@ export default class DialogAction extends Component {
           <DialogContentText>{body}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button disabled={executing} onClick={onClose}>
+          <Button
+            disabled={executing}
+            onClick={onClose}
+            action={actions => actions.focusVisible()}>
             Cancel
           </Button>
           <div className={classes.executingActionWrapper}>
@@ -125,8 +135,7 @@ export default class DialogAction extends Component {
               disabled={executing}
               onClick={this.handleSubmit}
               color="secondary"
-              variant="outlined"
-              autoFocus>
+              variant="outlined">
               {confirmText}
             </Button>
             {executing && (

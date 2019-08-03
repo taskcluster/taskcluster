@@ -384,6 +384,7 @@ export default class QuickStart extends Component {
               name="owner"
               onChange={this.handleOrgRepoChange}
               value={owner}
+              autoFocus
             />
             <Typography className={classes.separator} variant="h5">
               /
@@ -406,7 +407,6 @@ export default class QuickStart extends Component {
           </div>
           {installedState === 'error' && (
             <ErrorPanel
-              fixed
               className={classes.errorPanels}
               error="The integration has not been set up for this repository. Please
               contact the organization owner to have it set up!"

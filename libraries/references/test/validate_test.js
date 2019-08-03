@@ -38,6 +38,7 @@ class RefBuilder {
           name: 'foo',
           title: 'Foo',
           description: 'Foo-bar',
+          category: 'Foo',
           method: 'get',
           route: '/foo',
           args: [],

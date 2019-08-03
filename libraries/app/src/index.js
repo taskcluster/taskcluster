@@ -1,48 +1,33 @@
-let express = require('express');
-let _ = require('lodash');
-let debug = require('debug')('base:app');
-let assert = require('assert');
-let morganDebug = require('morgan-debug');
-let http = require('http');
-let sslify = require('express-sslify');
-let hsts = require('hsts');
-let csp = require('content-security-policy');
-let uuidv4 = require('uuid/v4');
+const express = require('express');
+const _ = require('lodash');
+const debug = require('debug')('base:app');
+const assert = require('assert');
+const morganDebug = require('morgan-debug');
+const http = require('http');
+const sslify = require('express-sslify');
+const hsts = require('hsts');
+const csp = require('content-security-policy');
+const uuidv4 = require('uuid/v4');
 
-/** Notify LocalApp if running under this */
-let notifyLocalAppInParentProcess = function(port) {
-  // If there is a parent process post a message to notify it that the app is
-  // ready and running on specified port. This is useful for automated
-  // testing and hopefully won't cause pain anywhere else.
-  if (process.send) {
-    process.send({
-      ready: true,
-      port: port,
-      appId: process.env.LOCAL_APP_IDENTIFIER,
-    });
-  }
-};
-
-/** Create server from app */
-let createServer = function() {
-  let that = this;
-
+/**
+ * Create server; this becomes a method of the `app` object, so `this`
+ * refers to an Express app.
+ */
+const createServer = function() {
   // 404 Error handler
-  that.use(function(req, res, next) {
+  this.use((req, res, next) => {
     res.setHeader('Content-Type', 'application/json');
     res.status(404).json({error: 'Not found'});
   });
 
-  return new Promise(function(accept, reject) {
+  return new Promise((accept, reject) => {
     // Launch HTTP server
-    let server = http.createServer(that);
+    const server = http.createServer(this);
 
     // Add a little method to help kill the server
-    server.terminate = function() {
-      return new Promise(function(accept, reject) {
-        server.close(function() {
-          accept();
-        });
+    server.terminate = () => {
+      return new Promise((accept, reject) => {
+        server.close(accept);
       });
     };
 
@@ -50,19 +35,16 @@ let createServer = function() {
     server.once('error', reject);
 
     // Listen
-    server.listen(that.get('port'), function() {
-      debug('Server listening on port ' + that.get('port'));
+    server.listen(this.get('port'), () => {
+      debug('Server listening on port ' + this.get('port'));
       accept(server);
     });
-  }).then(function(server) {
-    notifyLocalAppInParentProcess(that.get('port'));
-    return server;
   });
 };
 
 /** Create express application.  See the README for docs.
  */
-let app = async function(options) {
+const app = async (options) => {
   assert(options, 'options are required');
   _.defaults(options, {
     contentSecurityPolicy: true,
@@ -78,7 +60,7 @@ let app = async function(options) {
   assert(!options.docs, '`docs` is no longer allowed');
 
   // Create application
-  let app = express();
+  const app = express();
   app.set('port', options.port);
   app.set('env', options.env);
   app.set('json spaces', 2);
@@ -124,7 +106,7 @@ let app = async function(options) {
 
   // attach request-id to request object and response
   app.use((req, res, next) => {
-    let reqId = req.headers['x-request-id'] || uuidv4();
+    const reqId = req.headers['x-request-id'] || uuidv4();
     req.requestId = reqId;
     res.setHeader('x-for-request-id', reqId);
     next();
@@ -136,7 +118,7 @@ let app = async function(options) {
   app.use(morganDebug('app:request', format));
 
   if (options.robotsTxt) {
-    app.use('/robots.txt', function(req, res) {
+    app.use('/robots.txt', (req, res) => {
       res.header('Content-Type', 'text/plain');
       res.send('User-Agent: *\nDisallow: /\n');
     });
@@ -154,6 +136,3 @@ let app = async function(options) {
 
 // Export app creation utility
 module.exports = app;
-
-// Export notifyLocalAppInParentProcess for non-app processes to use
-app.notifyLocalAppInParentProcess = notifyLocalAppInParentProcess;

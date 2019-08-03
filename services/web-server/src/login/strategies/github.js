@@ -5,10 +5,9 @@ const { Strategy } = require('passport-github');
 const taskcluster = require('taskcluster-client');
 const User = require('../User');
 const identityFromClientId = require('../../utils/identityFromClientId');
-const { encode } = require('../../utils/codec');
+const { encode, decode } = require('../../utils/codec');
 const login = require('../../utils/login');
-const jwt = require('../../utils/jwt');
-const userIdFromIdentity = require('../../utils/userIdFromIdentity');
+const WebServerError = require('../../utils/WebServerError');
 
 const debug = Debug('strategies.github');
 
@@ -21,7 +20,6 @@ module.exports = class Github {
 
     Object.assign(this, strategyCfg);
 
-    this.jwtConfig = cfg.login.jwt;
     this.rootUrl = cfg.taskcluster.rootUrl;
     this.identityProviderId = 'github';
   }
@@ -43,7 +41,8 @@ module.exports = class Github {
   }
 
   userFromIdentity(identity) {
-    const userId = userIdFromIdentity(identity);
+    const encodedUserId = identity.split('/')[1];
+    const userId = decode(encodedUserId);
 
     return this.getUser({ userId });
   }
@@ -55,7 +54,7 @@ module.exports = class Github {
       return;
     }
 
-    return this.getUser({ userId: userIdFromIdentity(identity) });
+    return this.userFromIdentity(identity);
   }
 
   useStrategy(app, cfg) {
@@ -86,27 +85,28 @@ module.exports = class Github {
         },
         async (accessToken, refreshToken, profile, next) => {
           const user = await this.getUser({ userId: profile.username });
-          const { token: taskclusterToken, expires: providerExpires } = jwt.generate({
-            rootUrl: this.rootUrl,
-            privateKey: this.jwtConfig.privateKey,
-            sub: user.identity,
-            // GitHub tokens don't expire
-            exp: Math.floor(taskcluster.fromNow('1000 year').getTime() / 1000),
-          });
+
+          if (!user) {
+            // Don't report much to the user, to avoid revealing sensitive information, although
+            // it is likely in the service logs.
+            next(new WebServerError('InputError', 'Could not generate credentials for this access token'));
+          }
+
+          const exp = Math.floor(taskcluster.fromNow('30 days').getTime() / 1000);
 
           next(null, {
             profile,
-            providerExpires,
-            taskclusterToken,
+            providerExpires: new Date(exp * 1000),
             identityProviderId: 'github',
+            identity: user.identity,
           });
         }
       )
     );
-    app.get('/login/github', passport.authenticate('github', { session: false }));
+    app.get('/login/github', passport.authenticate('github'));
     app.get(
       callback,
-      passport.authenticate('github', { session: false }),
+      passport.authenticate('github'),
       loginMiddleware
     );
   }

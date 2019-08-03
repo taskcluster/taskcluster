@@ -1,0 +1,12 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: ${projectName}
+  labels: {$eval: labels}
+spec:
+  type: NodePort
+  selector: {$eval: labels}
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80

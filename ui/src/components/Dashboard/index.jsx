@@ -84,6 +84,9 @@ import SkipNavigation from '../SkipNavigation';
     },
     docsDrawerPaper: {
       width: theme.docsDrawerWidth,
+      [theme.breakpoints.down('xs')]: {
+        width: theme.spacing.unit * 30,
+      },
     },
     helpDrawerPaper: {
       width: '40vw',
@@ -211,14 +214,10 @@ export default class Dashboard extends Component {
   }
 
   getDeploymentVersion() {
-    const importer = require.context(
-      '../../../..',
-      false,
-      /taskcluster-version/
-    );
+    const importer = require.context('../../../..', false, /version\.json/);
     const file = importer.keys()[0];
 
-    return file ? importer(file).default : null;
+    return file ? importer(file).version : null;
   }
 
   handleDrawerToggle = () => {

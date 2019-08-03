@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { bool, func, shape, arrayOf, string } from 'prop-types';
 import memoize from 'fast-memoize';
-import { sum, pipe, filter, map, sort as rSort } from 'ramda';
+import { equals, sum, pipe, filter, map, sort as rSort } from 'ramda';
 import { lowerCase, title } from 'change-case';
 import classNames from 'classnames';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
@@ -169,6 +169,8 @@ export default class TaskGroupProgress extends Component {
   static propTypes = {
     /** The selected task state. This will change the card icon. */
     filter: taskState,
+    /** Callback fired when statusCount changes with the statusCount. */
+    onUpdate: func,
     /** Callback fired when the a state card is clicked */
     onStatusClick: func.isRequired,
     /**
@@ -187,6 +189,7 @@ export default class TaskGroupProgress extends Component {
   };
 
   static defaultProps = {
+    onUpdate: null,
     taskGroup: null,
     filter: null,
     taskGroupLoaded: true,
@@ -198,7 +201,7 @@ export default class TaskGroupProgress extends Component {
   };
 
   static getDerivedStateFromProps(props, state) {
-    const { taskGroupId, taskGroup } = props;
+    const { taskGroupId, taskGroup, onUpdate } = props;
 
     if (!taskGroup || state.previousTaskGroupId !== taskGroupId) {
       return {
@@ -210,6 +213,10 @@ export default class TaskGroupProgress extends Component {
     const newStatusCount = taskGroup.edges
       ? getStatusCount(taskGroup.edges)
       : {};
+
+    if (onUpdate && !equals(state.statusCount, newStatusCount)) {
+      onUpdate(newStatusCount);
+    }
 
     return { statusCount: newStatusCount };
   }

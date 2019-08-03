@@ -81,7 +81,7 @@ class API {
     const absoluteSchemas = schemaset.absoluteSchemas(rootUrl);
 
     // Create router
-    const router = express.Router();
+    const router = express.Router({caseSensitive: true});
 
     // Allow CORS requests to the API
     if (allowedCORSOrigin) {

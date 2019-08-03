@@ -1,0 +1,102 @@
+[
+  {
+    "description": "Unnamed Temp Creds with no Authorized Scopes",
+    "expectedTempCreds": {
+      "accessToken": "R4OVHWpIvy6KsqS4AWE51QwbvgLvsstS6e6UW8IfHUY",
+      "authorizedScopes": null,
+      "certificate": "{\"version\":1,\"scopes\":[\"scope/asd:fhjdf/X\",\"scope/asd:fhjdf/XYZ*\"],\"start\":1438964811744,\"expiry\":1439051211744,\"seed\":\"JYR4wzMCTG6XeDS2cDUCMwH0RFUXGfQjK7LgqD-e6lSQ\",\"signature\":\"45AlB/hKZZZz4Tf3NaidutasfgBnr4t2AxwBiGDQF9Q=\"}",
+      "clientId": "def/ghi@XXX"
+    },
+    "expiry": "2015-08-08T16:26:51.744Z",
+    "permCreds": {
+      "accessToken": "tokenABCDEFGH",
+      "authorizedScopes": null,
+      "certificate": "",
+      "clientId": "def/ghi@XXX"
+    },
+    "seed": "JYR4wzMCTG6XeDS2cDUCMwH0RFUXGfQjK7LgqD-e6lSQ",
+    "start": "2015-08-07T16:26:51.744Z",
+    "tempCredsName": "",
+    "tempCredsScopes": [
+      "scope/asd:fhjdf/X",
+      "scope/asd:fhjdf/XYZ*"
+    ]
+  },
+  {
+    "description": "Named Temp Creds with no Authorized Scopes",
+    "expectedTempCreds": {
+      "accessToken": "R4OVHWpIvy6KsqS4AWE51QwbvgLvsstS6e6UW8IfHUY",
+      "authorizedScopes": null,
+      "certificate": "{\"version\":1,\"scopes\":[\"scope/asd:fhjdf/X\",\"scope/asd:fhjdf/XYZ*\"],\"start\":1438964811744,\"expiry\":1439051211744,\"seed\":\"JYR4wzMCTG6XeDS2cDUCMwH0RFUXGfQjK7LgqD-e6lSQ\",\"signature\":\"nNEaLtZMiw627NuDbF5Z8HDFc57MGWCptXBQSYNFgBk=\",\"issuer\":\"def/ghi@XXX\"}",
+      "clientId": "abc/def/ghi"
+    },
+    "expiry": "2015-08-08T16:26:51.744Z",
+    "permCreds": {
+      "accessToken": "tokenABCDEFGH",
+      "authorizedScopes": null,
+      "certificate": "",
+      "clientId": "def/ghi@XXX"
+    },
+    "seed": "JYR4wzMCTG6XeDS2cDUCMwH0RFUXGfQjK7LgqD-e6lSQ",
+    "start": "2015-08-07T16:26:51.744Z",
+    "tempCredsName": "abc/def/ghi",
+    "tempCredsScopes": [
+      "scope/asd:fhjdf/X",
+      "scope/asd:fhjdf/XYZ*"
+    ]
+  },
+  {
+    "description": "Unnamed Temp Creds with Authorized Scopes",
+    "expectedTempCreds": {
+      "accessToken": "R4OVHWpIvy6KsqS4AWE51QwbvgLvsstS6e6UW8IfHUY",
+      "authorizedScopes": [
+        "scope/asd:fhjdf/X"
+      ],
+      "certificate": "{\"version\":1,\"scopes\":[\"scope/asd:fhjdf/X\",\"scope/asd:fhjdf/XYZ*\"],\"start\":1438964811744,\"expiry\":1439051211744,\"seed\":\"JYR4wzMCTG6XeDS2cDUCMwH0RFUXGfQjK7LgqD-e6lSQ\",\"signature\":\"45AlB/hKZZZz4Tf3NaidutasfgBnr4t2AxwBiGDQF9Q=\"}",
+      "clientId": "def/ghi@XXX"
+    },
+    "expiry": "2015-08-08T16:26:51.744Z",
+    "permCreds": {
+      "accessToken": "tokenABCDEFGH",
+      "authorizedScopes": [
+        "scope/asd:fhjdf/X"
+      ],
+      "certificate": "",
+      "clientId": "def/ghi@XXX"
+    },
+    "seed": "JYR4wzMCTG6XeDS2cDUCMwH0RFUXGfQjK7LgqD-e6lSQ",
+    "start": "2015-08-07T16:26:51.744Z",
+    "tempCredsName": "",
+    "tempCredsScopes": [
+      "scope/asd:fhjdf/X",
+      "scope/asd:fhjdf/XYZ*"
+    ]
+  },
+  {
+    "description": "Named Temp Creds with Authorized Scopes",
+    "expectedTempCreds": {
+      "accessToken": "R4OVHWpIvy6KsqS4AWE51QwbvgLvsstS6e6UW8IfHUY",
+      "authorizedScopes": [
+        "scope/asd:fhjdf/X"
+      ],
+      "certificate": "{\"version\":1,\"scopes\":[\"scope/asd:fhjdf/X\",\"scope/asd:fhjdf/XYZ*\"],\"start\":1438964811744,\"expiry\":1439051211744,\"seed\":\"JYR4wzMCTG6XeDS2cDUCMwH0RFUXGfQjK7LgqD-e6lSQ\",\"signature\":\"nNEaLtZMiw627NuDbF5Z8HDFc57MGWCptXBQSYNFgBk=\",\"issuer\":\"def/ghi@XXX\"}",
+      "clientId": "abc/def/ghi"
+    },
+    "expiry": "2015-08-08T16:26:51.744Z",
+    "permCreds": {
+      "accessToken": "tokenABCDEFGH",
+      "authorizedScopes": [
+        "scope/asd:fhjdf/X"
+      ],
+      "certificate": "",
+      "clientId": "def/ghi@XXX"
+    },
+    "seed": "JYR4wzMCTG6XeDS2cDUCMwH0RFUXGfQjK7LgqD-e6lSQ",
+    "start": "2015-08-07T16:26:51.744Z",
+    "tempCredsName": "abc/def/ghi",
+    "tempCredsScopes": [
+      "scope/asd:fhjdf/X",
+      "scope/asd:fhjdf/XYZ*"
+    ]
+  }
+]

@@ -1,11 +1,14 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
+import { graphql } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
 import ArrowRightIcon from 'mdi-react/ArrowRightIcon';
 import Dashboard from '../../../components/Dashboard';
 import Button from '../../../components/Button';
 import Log from '../../../components/Log';
 import Link from '../../../utils/Link';
+import Helmet from '../../../components/Helmet';
+import taskQuery from './task.graphql';
 
 @hot(module)
 @withStyles(theme => ({
@@ -14,37 +17,41 @@ import Link from '../../../utils/Link';
     ...theme.mixins.actionButton,
     bottom: theme.spacing.triple,
   },
-  miniFab: {
-    ...theme.mixins.fab,
-    ...theme.mixins.actionButton,
-    bottom: theme.spacing.triple,
-    right: theme.spacing.unit * 11,
-  },
-  followButton: {
-    ...theme.mixins.fab,
-    ...theme.mixins.actionButton,
-    bottom: theme.spacing.triple,
-    right: theme.spacing.unit * 19,
-  },
   rawLogButton: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
     bottom: theme.spacing.triple,
-    right: theme.spacing.unit * 27,
+    right: theme.spacing.unit * 12,
   },
 }))
+@graphql(taskQuery, {
+  options: props => ({
+    fetchPolicy: 'network-only',
+    errorPolicy: 'all',
+    variables: {
+      taskId: props.match.params.taskId,
+    },
+  }),
+})
 export default class TaskLog extends Component {
+  getCurrentRun() {
+    return (
+      this.props.data.task &&
+      this.props.data.task.status.runs[this.props.match.params.runId]
+    );
+  }
+
   render() {
     const { classes, match, stream } = this.props;
     const url = decodeURIComponent(match.params.logUrl);
+    const run = this.getCurrentRun();
 
     return (
       <Dashboard title="Log" disablePadding>
+        <Helmet state={run && run.state} />
         <Log
           url={url}
           stream={stream}
-          GoToLineButtonProps={{ className: classes.miniFab }}
-          FollowLogButtonProps={{ className: classes.followButton }}
           RawLogButtonProps={{ className: classes.rawLogButton }}
           actions={
             <Button

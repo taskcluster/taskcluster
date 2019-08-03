@@ -24,7 +24,6 @@ suite(testing.suiteName(), function() {
       ],
       profile: 'danish',
     });
-
     assume(cfg).deep.equals({
       text: ['Hej', 'Verden'],
     });
@@ -54,6 +53,7 @@ suite(testing.suiteName(), function() {
         ENV_FALSE: 'false',
         ENV_JSON: '{"test": 42}',
         ENV_LIST: 'abc def "qouted string" \'\'',
+        ENV_EMPTY: '',
       },
     });
 
@@ -64,6 +64,8 @@ suite(testing.suiteName(), function() {
       soTrue: true,
       unTrue: false,
       notThere: undefined,
+      empty: undefined,
+      optional: undefined,
       json: {test: 42},
       list: ['abc', 'def', 'qouted string', ''],
     });
@@ -105,6 +107,7 @@ suite(testing.suiteName(), function() {
         ENV_FALSE: 'false',
         ENV_JSON: '{"test": 42}',
         ENV_LIST: 'abc def "qouted string" \'\'',
+        ENV_EMPTY: '',
       },
     });
 
@@ -115,6 +118,8 @@ suite(testing.suiteName(), function() {
       soTrue: true,
       unTrue: false,
       notThere: undefined,
+      empty: undefined,
+      optional: undefined,
       json: {test: 42},
       list: ['abc', 'def', 'qouted string', ''],
     });
@@ -132,6 +137,7 @@ suite(testing.suiteName(), function() {
         ENV_FALSE: 'false',
         ENV_JSON: '{"test": 42}',
         ENV_LIST: 'abc def "qouted string" \'\'',
+        ENV_EMPTY: '',
       },
     });
 
@@ -142,8 +148,33 @@ suite(testing.suiteName(), function() {
       soTrue: true,
       unTrue: false,
       notThere: undefined,
+      empty: undefined,
+      optional: undefined,
       json: {test: 42},
       list: ['abc', 'def', 'qouted string', ''],
     });
+  });
+
+  test('load !env listing', () => {
+    const vars = config({
+      files: [
+        {path: path.join(__dirname, 'test-env.yml'), required: true},
+      ],
+      env: {}, // Notice they do not need to be in the env to do this
+      getEnvVars: true,
+    });
+
+    assume(vars).deep.equals([
+      { type: '!env', var: 'ENV_VARIABLE', optional: false },
+      { type: '!env:string', var: 'ENV_VARIABLE', optional: false },
+      { type: '!env:number', var: 'ENV_NUMBER', optional: false },
+      { type: '!env:bool', var: 'ENV_TRUE', optional: false },
+      { type: '!env:bool', var: 'ENV_FALSE', optional: false },
+      { type: '!env:bool', var: 'ENV_NOT_SET', optional: false },
+      { type: '!env', var: 'ENV_EMPTY', optional: false },
+      { type: '!env', var: 'ENV_OPTIONAL', optional: true },
+      { type: '!env:json', var: 'ENV_JSON', optional: false },
+      { type: '!env:list', var: 'ENV_LIST', optional: false },
+    ]);
   });
 });

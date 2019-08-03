@@ -16,37 +16,40 @@ service".
 
 ## Worker Groups and Ids
 
-Each individual worker is identified by a `<workerGroup>/<workerId>` pair,
-identified in the task run information.  This information can be useful to
-identify misbehaving workers by examining the runs of failed tasks.
+Each individual worker is identified by a `<workerGroup>/<workerId>` pair.
+When a task is executed, the task run information displays these values.  This
+information can be useful to identify misbehaving workers by examining the runs
+of failed tasks.
 
 You can drill down to a list of currently-running workers, arranged by
-provisioner worker type, at https://tools.taskcluster.net/provisioners.
+provisioner worker type, in the Taskcluster UI.
 
 ## Claiming Tasks
 
 Workers signal their availability for new work by calling the Queue's
 `claimWork` method. If there is a task available, this method returns its
-details and records a "claim" of that task by the calling worker. The claim
-lasts for a short time - a matter of minutes - and must be renewed
-(`reclaimTask`) before it expires.  If a claim does expire, it implies the
-Queue-worker communication has broken down, and so the Queue will resolve the
-task run as exception / claim-expired, and schedule another task run so that
-another worker may claim the task. This will happen up to a maximum number of
-reclaims.
+details and records a "claim" of that task by the calling worker (in fact, the
+method can return multiple tasks in cases where a single worker can execute
+tasks concurrently). The claim lasts for a short time - a matter of minutes -
+and must be renewed (`reclaimTask`) before it expires.  If a claim does expire,
+it implies the Queue-worker communication has broken down, and so the Queue
+will resolve the task run as exception / claim-expired, and will schedule
+another task run so that another worker may claim the task. This will happen up
+to a maximum number of reclaims.
 
-In most cases, multiple workers pull work from the same queue, so the worker
-that executes a particular task is not known in advance.  In practice, this
-does not matter, as all workers with the same `<provisionerId>/<workerType>`
-are typically configured identically, or at least so similar that it will not
-matter which worker executes a particular task. For example, it is common to
-use a variety of similar AWS instance types for a single worker type, allowing
-the AWS provisioner to select the most cost-effective option based on current
-spot prices.
+In most cases, multiple workers (with the same `workerPoolId`) pull work from
+the same queue (with a matching `taskQueueId`), so the worker that executes a
+particular task is not known in advance.  In practice, this does not matter, as
+all workers with the same `workerPoolId` are typically configured identically,
+so that it will not matter which worker executes a particular task. For
+example, it is common to use a variety of similar AWS instance types for a
+single worker type, allowing the provisioning logic in the worker manager
+service to select the most cost-effective option based on current spot prices.
 
-As mentioned previously, the format of the task payload depends on the worker
-executing the task. It is up to the task author to know the payload format a
-particular worker, as identified by its worker type, will expect.
+As mentioned previously, the format of the task payload depends on the
+implementation of the worker executing the task. It is up to the task author to
+know the payload format a particular worker, as identified by its
+`workerPoolId`, will expect.
 
 ## Bring Your Own Worker
 
@@ -57,7 +60,7 @@ with a configuration appropriate to that purpose.
 Those workers may run one of the worker implementations developed by the
 Taskcluster team, or an entirely purpose-specific implementation that uses the
 same APIs. For example, [scriptworker](http://scriptworker.readthedocs.io/) was
-developed by release engineering to run release-related scripts in a limited,
+developed by Mozilla's release engineering to run release-related scripts in a limited,
 secure context.
 
 The Taskcluster-provided worker implementations, including their payload formats, are described in:
@@ -71,7 +74,7 @@ Interaction](/docs/reference/platform/queue/worker-interaction).
 ## Worker Scopes
 
 The Queue APIs used by workers require Taskcluster credentials specific to the
-worker type and ID. This prevents a worker from claiming tasks from other
+worker pool and worker ID. This prevents a worker from claiming tasks from other
 worker types or from misrepresenting its identity.
 
 When a worker claims a task, it gets a set of temporary credentials based on

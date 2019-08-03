@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taskcluster-github-web
+  labels: &ref_0
+    app.kubernetes.io/name: taskcluster-github
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-github-web
+    app.kubernetes.io/part-of: taskcluster
+spec:
+  replicas: {{ int (.Values.github.procs.web.replicas) }}
+  selector:
+    matchLabels: *ref_0
+  template:
+    metadata:
+      annotations:
+        checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-github-secret.yaml") . | sha256sum }}'
+      labels: *ref_0
+    spec:
+      serviceAccountName: taskcluster-github
+      containers:
+        - name: taskcluster-github
+          image: '{{ .Values.dockerImage }}'
+          imagePullPolicy: Always
+          args:
+            - github/web
+          resources:
+            requests:
+              cpu: '{{ .Values.github.procs.web.cpu }}'
+              memory: '{{ .Values.github.procs.web.memory }}'
+          env:
+            - name: PORT
+              value: '80'
+            - name: TASKCLUSTER_ROOT_URL
+              value: '{{ .Values.rootUrl }}'
+            - name: NODE_ENV
+              value: production
+          envFrom:
+            - secretRef:
+                name: taskcluster-github
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /api/github/v1/ping
+              port: 80
+            timeoutSeconds: 5
+            periodSeconds: 10
+            initialDelaySeconds: 3

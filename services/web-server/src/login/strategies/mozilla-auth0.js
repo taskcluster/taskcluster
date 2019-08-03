@@ -6,13 +6,11 @@ const Auth0Strategy = require('passport-auth0');
 const User = require('../User');
 const PersonAPI = require('../clients/PersonAPI');
 const WebServerError = require('../../utils/WebServerError');
-const { encode } = require('../../utils/codec');
+const { encode, decode } = require('../../utils/codec');
 const identityFromClientId = require('../../utils/identityFromClientId');
 const tryCatch = require('../../utils/tryCatch');
 const login = require('../../utils/login');
 const verifyJwtAuth0 = require('../../utils/verifyJwtAuth0');
-const jwt = require('../../utils/jwt');
-const userIdFromIdentity = require('../../utils/userIdFromIdentity');
 
 const debug = Debug('strategies.mozilla-auth0');
 
@@ -26,7 +24,6 @@ module.exports = class MozillaAuth0 {
 
     Object.assign(this, strategyCfg);
 
-    this.jwt = cfg.login.jwt;
     this.rootUrl = cfg.taskcluster.rootUrl;
     this._personApi = null;
     this._personApiExp = null;
@@ -93,8 +90,13 @@ module.exports = class MozillaAuth0 {
   }
 
   userFromIdentity(identity) {
-    const userId = userIdFromIdentity(identity);
+    let encodedUserId = identity.split('/')[1];
 
+    if (encodedUserId.startsWith('github|') || encodedUserId.startsWith('oauth2|firefoxaccounts|')) {
+      encodedUserId = encodedUserId.replace(/\|[^|]*$/, '');
+    }
+
+    const userId = decode(encodedUserId);
     return this.getUser({ userId });
   }
 
@@ -118,7 +120,7 @@ module.exports = class MozillaAuth0 {
       return;
     }
 
-    return this.getUser({ userId: userIdFromIdentity(identity) });
+    return this.userFromIdentity(identity);
   }
 
   identityFromProfile(profile) {
@@ -184,7 +186,7 @@ module.exports = class MozillaAuth0 {
       );
     }
 
-    const callback = '/login/auth0/callback';
+    const callback = '/login/mozilla-auth0/callback';
 
     passport.use(
       new Auth0Strategy(
@@ -210,18 +212,13 @@ module.exports = class MozillaAuth0 {
             done(new WebServerError('InputError', 'Could not generate credentials for this access token'));
           }
 
-          const { token: taskclusterToken, expires: providerExpires } = jwt.generate({
-            rootUrl: this.rootUrl,
-            privateKey: this.jwt.privateKey,
-            sub: user.identity,
-            exp: await this.expFromIdToken(extraParams.id_token),
-          });
+          const exp = await this.expFromIdToken(extraParams.id_token);
 
           done(null, {
             profile,
-            taskclusterToken,
-            providerExpires,
+            providerExpires: new Date(exp * 1000),
             identityProviderId: 'mozilla-auth0',
+            identity: user.identity,
           });
         }
       )
@@ -232,7 +229,7 @@ module.exports = class MozillaAuth0 {
     // Called by the provider
     app.get(
       callback,
-      passport.authenticate('auth0', { session: false }),
+      passport.authenticate('auth0'),
       loginMiddleware
     );
   }

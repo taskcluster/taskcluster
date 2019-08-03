@@ -1,0 +1,39 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: taskcluster-hooks-expires
+  labels: &ref_0
+    app.kubernetes.io/name: taskcluster-hooks
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-hooks-expires
+    app.kubernetes.io/part-of: taskcluster
+spec:
+  schedule: 10 0 * * *
+  jobTemplate:
+    metadata:
+      labels: *ref_0
+    spec:
+      template:
+        metadata:
+          labels: *ref_0
+        spec:
+          restartPolicy: OnFailure
+          activeDeadlineSeconds: 86400
+          containers:
+            - name: taskcluster-hooks-expires
+              image: '{{ .Values.dockerImage }}'
+              imagePullPolicy: Always
+              args:
+                - hooks/expires
+              resources:
+                requests:
+                  cpu: '{{ .Values.hooks.procs.expires.cpu }}'
+                  memory: '{{ .Values.hooks.procs.expires.memory }}'
+              env:
+                - name: TASKCLUSTER_ROOT_URL
+                  value: '{{ .Values.rootUrl }}'
+                - name: NODE_ENV
+                  value: production
+              envFrom:
+                - secretRef:
+                    name: taskcluster-hooks

@@ -1,4 +1,4 @@
-const sift = require('sift').default;
+const sift = require('../utils/sift');
 
 module.exports = {
   TaskState: {
@@ -14,7 +14,7 @@ module.exports = {
       return loaders.task.load(parent.taskId);
     },
     runs(parent, args) {
-      return args.filter ? sift(args.filter, parent.runs) : parent.runs;
+      return sift(args.filter, parent.runs);
     },
   },
   Query: {

@@ -90,7 +90,7 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
     // Validate certificate scopes are subset of client
     if (!utils.scopeMatch(scopes, [cert.scopes])) {
       throw new Error('ext.certificate issuer `' + issuingClientId +
-                      '` doesn\'t satisfiy all certificate scopes ' +
+                      '` doesn\'t satisfy all certificate scopes ' +
                       cert.scopes.join(', ') + '.  The temporary ' +
                       'credentials were not generated correctly.');
     }

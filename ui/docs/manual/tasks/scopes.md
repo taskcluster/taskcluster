@@ -24,3 +24,7 @@ In fact, several scope sets must be satisfieid to create a task:
  * Scopes corresponding to some components of the task definition, such as
    routes, priorities, and `schedulerId`.
  * The task's `scopes` property
+
+*NOTE*: this means that scopes for a task must often be configured in two places.  For example, to use a scope `secrets:get:org-project-test-creds`, a task associated with a github project would need:
+ * the scope satisfied by a role such as `repo:github.com/org/project:branch:master`
+ * the same scope listed in the task's `scopes` property

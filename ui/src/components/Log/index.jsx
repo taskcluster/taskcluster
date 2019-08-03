@@ -82,6 +82,11 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
       backgroundColor: `${theme.palette.action.hover} !important`,
     },
   },
+  logActions: {
+    position: 'absolute',
+    top: 6,
+    right: 340,
+  },
   followButtonFollowing: {
     ...theme.mixins.successIcon,
   },
@@ -131,7 +136,7 @@ export default class Log extends Component {
 
   state = {
     lineNumber: null,
-    follow: null,
+    follow: true,
   };
 
   getHighlightFromHash() {
@@ -185,11 +190,17 @@ export default class Log extends Component {
   };
 
   handleLineNumberChange = lineNumber => {
-    this.setState({ lineNumber });
+    this.setState({ lineNumber, follow: null });
   };
 
   handleScroll = ({ scrollTop, scrollHeight, clientHeight }) => {
-    if (this.state.follow && scrollHeight - scrollTop !== clientHeight) {
+    if (
+      this.state.follow &&
+      scrollHeight - scrollTop !== clientHeight &&
+      // LazyLog triggers `handleScroll` on initial load.
+      // This will make sure it doesn't set follow to false on log load.
+      scrollTop !== 0
+    ) {
       this.setState({ follow: false });
     }
   };
@@ -256,6 +267,7 @@ export default class Log extends Component {
           <Fragment>
             <LazyLog
               enableSearch
+              caseInsensitive
               containerStyle={containerStyle}
               url={url}
               onScroll={this.handleScroll}
@@ -273,27 +285,29 @@ export default class Log extends Component {
               {...props}
             />
             {rawLogButton}
-            <GoToLineButton
-              onLineNumberChange={this.handleLineNumberChange}
-              {...GoToLineButtonProps}
-            />
-            <Button
-              spanProps={{
-                className:
-                  FollowLogButtonProps && FollowLogButtonProps.className,
-              }}
-              tooltipProps={{
-                title: follow && stream ? 'Unfollow Log' : 'Follow Log',
-              }}
-              variant="round"
-              className={classNames({
-                [classes.followButtonFollowing]: follow && stream,
-              })}
-              color={follow && stream ? 'inherit' : 'secondary'}
-              onClick={this.handleFollowClick}
-              {...FollowLogButtonRest}>
-              <ArrowDownBoldCircleOutlineIcon />
-            </Button>
+            <div className={classes.logActions}>
+              <GoToLineButton
+                onLineNumberChange={this.handleLineNumberChange}
+                {...GoToLineButtonProps}
+              />
+              <Button
+                size="small"
+                spanProps={{
+                  className:
+                    FollowLogButtonProps && FollowLogButtonProps.className,
+                }}
+                tooltipProps={{
+                  title: follow && stream ? 'Unfollow Log' : 'Follow Log',
+                }}
+                className={classNames({
+                  [classes.followButtonFollowing]: follow && stream,
+                })}
+                color={follow && stream ? 'inherit' : 'secondary'}
+                onClick={this.handleFollowClick}
+                {...FollowLogButtonRest}>
+                <ArrowDownBoldCircleOutlineIcon size={20} />
+              </Button>
+            </div>
             {actions}
           </Fragment>
         )}

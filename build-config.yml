@@ -1,4 +1,0 @@
----
-defaults:
-  docker:
-    repositoryPrefix: taskcluster/taskcluster-

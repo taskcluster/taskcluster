@@ -1,27 +1,14 @@
-const util = require('util');
-const assert = require('assert');
-const fs = require('fs');
-const path = require('path');
-const rimraf = util.promisify(require('rimraf'));
-const {quote} = require('shell-quote');
-const tar = require('tar-fs');
-const copy = require('recursive-copy');
-const yaml = require('js-yaml');
-const Stamp = require('./stamp');
 const appRootDir = require('app-root-dir');
 const {
-  gitClone,
   gitIsDirty,
-  dockerRun,
+  gitDescribe,
   dockerPull,
   dockerImages,
-  dockerBuild,
   dockerRegistryCheck,
-  ensureDockerImage,
   ensureTask,
-  listServices,
   dockerPush,
-} = require('./utils');
+  execCommand,
+} = require('../utils');
 
 /**
  * The "monoimage" is a single docker image containing all tasks.  This build process goes
@@ -29,141 +16,27 @@ const {
  *
  *  - Clone the monorepo (from the current working copy)
  *  - Build it (install dependencies, transpile, etc.)
- *    - generate an "entrypoint" script to allow things like "docker run <monoimage> service/web"
+ *    - done in a Docker volume to avoid Docker for Mac bugs
  *  - Build the docker image containing the app (/app)
  *
  *  All of this is done using a "hooks" approach to allow segmenting the various oddball bits of
  *  this process by theme.
  */
-const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
-  const packageJson = JSON.parse(fs.readFileSync(path.join(appRootDir.get(), 'package.json')));
-  const nodeVersion = packageJson.engines.node;
-  const workDir = path.join(baseDir, 'monoimage');
-  const appDir = path.join(workDir, 'app');
-
-  // list of all services in the monorepo
-  const services = listServices({repoDir: appRootDir.get()});
-
-  // we need the "full" node image to install buffertools, for example..
-  const nodeImage = `node:${nodeVersion}`;
-  // but the alpine image can run the services..
-  const nodeAlpineImage = `node:${nodeVersion}-alpine`;
-
-  ensureDockerImage(tasks, baseDir, nodeImage);
-  ensureDockerImage(tasks, baseDir, nodeAlpineImage);
-
-  /* Each hook has
-   *  - name -- name for display
-   *  - requires -- requirements for this hook
-   *  - build -- async (requirements, utils) called during the build phase
-   *  - entrypoints -- async (requirements, utils, procs) called to get entrypoint procs
-   * Hooks run in order, so they may depend on results from previous hooks.
-   */
-  const hooks = [];
-  hooks.push({
-    name: 'Set taskcluster-version',
-    requires: ['monorepo-exact-source'],
-    build: async (requirements, utils) => {
-      // let the services learn their git version
-      const revision = requirements['monorepo-exact-source'].split('#')[1];
-      fs.writeFileSync(path.join(appDir, 'taskcluster-version'), revision);
-    },
-  });
-
-  hooks.push({
-    name: 'API Services',
-    build: async (requirements, utils) => {
-      const cacheDir = path.join(workDir, 'cache');
-      if (!fs.existsSync(cacheDir)) {
-        fs.mkdirSync(cacheDir);
-      }
-
-      await dockerRun({
-        image: nodeImage,
-        workingDir: '/app',
-        command: ['yarn', 'install', '--frozen-lockfile'],
-        binds: [
-          `${appDir}:/app`,
-          `${cacheDir}:/cache`,
-        ],
-        env: [
-          'YARN_CACHE_FOLDER=/cache',
-        ],
-        logfile: `${workDir}/yarn-install.log`,
-        utils,
-        baseDir,
-      });
-
-      // remove the junk in .node-gyp
-      await rimraf(path.join(appDir, '.node-gyp'));
-    },
-    entrypoints: async (requirements, utils, procs) => {
-      services.forEach(name => {
-        const procsPath = path.join(appDir, 'services', name, 'procs.yml');
-        if (!fs.existsSync(procsPath)) {
-          throw new Error(`Service ${name} has no procs.yml`);
-        }
-        const processes = yaml.safeLoad(fs.readFileSync(procsPath));
-        Object.entries(processes).forEach(([proc, {command}]) => {
-          procs[`${name}/${proc}`] = `cd services/${name} && ${command}`;
-        });
-      });
-      return procs;
-    },
-  });
-
-  hooks.push({
-    name: 'References',
-    entrypoints: async (requirements, utils, procs) => {
-      // this script:
-      //  - reads the references from generated/ and creates rootUrl-relative output
-      //  - starts nginx to serve that rootUrl-relative output
-      procs['references/web'] = 'exec sh infrastructure/references/references.sh';
-    },
-  });
-
-  hooks.push({
-    name: 'web-ui',
-    build: async (requirements, utils, procs) => {
-      const cacheDir = path.join(workDir, 'cache');
-      if (!fs.existsSync(cacheDir)) {
-        fs.mkdirSync(cacheDir);
-      }
-
-      utils.step({title: 'Run Yarn Install'});
-
-      await dockerRun({
-        image: nodeImage,
-        workingDir: '/app/ui',
-        env: ['YARN_CACHE_FOLDER=/cache'],
-        command: ['bash', '-c', 'yarn install'],
-        logfile: `${workDir}/yarn-ui-install.log`,
-        utils,
-        binds: [
-          `${appDir}:/app`,
-          `${cacheDir}:/cache`,
-        ],
-        baseDir,
-      });
-
-    },
-    entrypoints: async (requirements, utils, procs) => {
-      procs['ui/web'] = 'cd /app/ui && yarn build && ' +
-        ' nginx -c /app/ui/web-ui-nginx-site.conf -g \'daemon off;\'';
-    },
-  });
+const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
+  const sourceDir = appRootDir.get();
 
   ensureTask(tasks, {
-    title: 'Clone Monorepo from Working Copy',
+    title: 'Build Taskcluster Docker Image',
+    requires: [
+      'build-can-start', // (used to delay building in `yarn release`)
+    ],
     provides: [
-      'monorepo-dir', // full path of the repository
-      'monorepo-exact-source', // exact source URL for the repository
-      'monorepo-stamp',
+      'monoimage-docker-image', // image tag
+      'monoimage-image-on-registry', // true if the image is already on registry
     ],
     locks: ['git'],
     run: async (requirements, utils) => {
-      const sourceDir = appRootDir.get();
-      const repoDir = path.join(baseDir, 'monorepo');
+      utils.step({title: 'Check Repository'});
 
       // Clone from the current working copy, rather than anything upstream;
       // this avoids the need to land-and-push changes.  This is a git clone
@@ -179,138 +52,12 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
           ].join(' '));
         }
       }
-      const {exactRev, changed} = await gitClone({
-        dir: repoDir,
-        url: sourceDir + '#HEAD',
+
+      const {gitDescription} = await gitDescribe({
+        dir: sourceDir,
         utils,
       });
-
-      const repoUrl = 'https://github.com/taskcluster/taskcluster';
-      const stamp = new Stamp({step: 'repo-clone', version: 1},
-        `${repoUrl}#${exactRev}`);
-
-      const provides = {
-        'monorepo-dir': repoDir,
-        'monorepo-exact-source': `${repoUrl}#${exactRev}`,
-        'monorepo-stamp': stamp,
-      };
-
-      // we needed to know some information about this repo up-front, so we
-      // got it from the working copy we're running from.  Now, double-check
-      // that the information is still correct in the checked-out copy of
-      // the repo
-      const clonedPackageJson = JSON.parse(fs.readFileSync(path.join(repoDir, 'package.json')));
-      const clonedNodeVersion = clonedPackageJson.engines.node;
-      assert.equal(clonedNodeVersion, nodeVersion,
-        'the local working copy has a different engins.node from the ' +
-        'monorepo revision being built; this is not supported');
-
-      const clonedServices = listServices({repoDir});
-      assert.deepEqual(clonedServices, services,
-        'the local working copy has a different set of services from the ' +
-        'monorepo revision being built; this is not supported');
-
-      if (changed) {
-        return provides;
-      } else {
-        return utils.skip({provides});
-      }
-    },
-  });
-
-  const buildRequires = new Set([
-    'monorepo-dir',
-    'monorepo-exact-source',
-    'monorepo-stamp',
-    `docker-image-${nodeImage}`,
-  ]);
-  hooks.forEach(({requires}) => requires && requires.forEach(req => buildRequires.add(req)));
-
-  ensureTask(tasks, {
-    title: 'Build Monorepo',
-    requires: [...buildRequires],
-    provides: [
-      'monoimage-built-app-dir',
-      'monoimage-stamp',
-    ],
-    locks: ['docker'],
-    run: async (requirements, utils) => {
-      const repoDir = requirements['monorepo-dir'];
-
-      const stamp = new Stamp({step: 'monoimage-build', version: 1},
-        {nodeVersion},
-        ...[...buildRequires]
-          .filter(req => req.endsWith('-stamp'))
-          .map(req => requirements[req]));
-      const provides = {
-        ['monoimage-built-app-dir']: appDir,
-        ['monoimage-stamp']: stamp,
-      };
-
-      // if we've already built this appDir with this revision, we're done.
-      if (stamp.dirStamped(appDir)) {
-        return utils.skip({provides});
-      } else {
-        await rimraf(appDir);
-      }
-
-      utils.step({title: 'Copy Source Repository'});
-      const filter = ['**/*', '!**/node_modules/**', '!**/node_modules', '!**/.git/**', '!**/.git'];
-      await copy(repoDir, appDir, {filter, dot: true});
-
-      for (let {name, build} of hooks) {
-        if (build) {
-          utils.step({title: `Build Hook: ${name}`});
-          await build(requirements, utils);
-        }
-      }
-
-      const procs = {};
-      for (let {name, entrypoints} of hooks) {
-        if (entrypoints) {
-          utils.step({title: `Entrypoint Hook: ${name}`});
-          await entrypoints(requirements, utils, procs);
-        }
-      }
-
-      const entrypointScript = []
-        .concat([
-          '#! /bin/sh', // note that alpine does not have bash
-          'case "${1}" in',
-        ])
-        .concat(Object.entries(procs).map(([process, command]) =>
-          `${process}) exec ${quote(['sh', '-c', command])};;`))
-        .concat([
-          // catch-all to run whatever command the user specified
-          '*) exec "${@}";;',
-          'esac',
-        ]).join('\n');
-      fs.writeFileSync(path.join(appDir, 'entrypoint'), entrypointScript, {mode: 0o777});
-
-      stamp.stampDir(appDir);
-      return provides;
-    },
-  });
-
-  ensureTask(tasks, {
-    title: `Build Monoimage`,
-    requires: [
-      'monoimage-stamp',
-      'monoimage-built-app-dir',
-      `docker-image-${nodeAlpineImage}`,
-    ],
-    provides: [
-      'monoimage-docker-image',
-      'monoimage-image-on-registry',
-    ],
-    locks: ['docker'],
-    run: async (requirements, utils) => {
-
-      // find the requirements ending in '-stamp' that we should depend on
-      const stamp = new Stamp({step: 'build-image', version: 1},
-        {nodeAlpineImage},
-        requirements['monoimage-stamp']);
-      const tag = `${cfg.docker.repositoryPrefix}monoimage:SVC-${stamp.hash()}`;
+      const tag = `taskcluster/taskcluster:${gitDescription}`;
 
       utils.step({title: 'Check for Existing Images'});
 
@@ -323,6 +70,11 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
         'monoimage-image-on-registry': imageOnRegistry,
       };
 
+      if (imageOnRegistry && cmdOptions.noCache) {
+        throw new Error(
+          `Image ${tag} already exists on the registry, but --no-cache was given.`);
+      }
+
       // bail out if we can, pulling the image if it's only available remotely
       if (!imageLocal && imageOnRegistry) {
         await dockerPull({image: tag, utils, baseDir});
@@ -331,32 +83,13 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
         return utils.skip({provides});
       }
 
-      utils.step({title: 'Building'});
+      utils.step({title: 'Building Docker Image'});
 
-      const tarball = tar.pack(workDir, {
-        // include the built app dir as app/
-        entries: ['app', 'Dockerfile'],
-      });
-
-      const dockerfile = [
-        `FROM ${nodeAlpineImage}`,
-        `RUN apk update && \
-          apk add nginx && \
-          mkdir /run/nginx && \
-          apk add bash`,
-        'COPY app /app',
-        'ENV HOME=/app',
-        'WORKDIR /app',
-        'ENTRYPOINT ["/app/entrypoint"]',
-      ].join('\n');
-      fs.writeFileSync(path.join(workDir, 'Dockerfile'), dockerfile);
-
-      await dockerBuild({
-        tarball: tarball,
-        logfile: `${workDir}/docker-build.log`,
-        tag,
+      await execCommand({
+        command: ['docker', 'build', '--progress', 'plain', '--tag', tag, '.'],
+        dir: sourceDir,
         utils,
-        baseDir,
+        env: {DOCKER_BUILDKIT: 1, ...process.env},
       });
 
       return provides;
@@ -385,7 +118,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
       }
 
       await dockerPush({
-        logfile: `${workDir}/docker-push.log`,
+        logfile: `${baseDir}/docker-push.log`,
         tag,
         utils,
         baseDir,

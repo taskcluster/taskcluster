@@ -1,13 +1,11 @@
 terraform {
-  required_version = ">= 0.11.3"
+  required_version = ">= 0.12.0"
 }
 
-provider "random" {
-  version = "~> 1.2.0"
+provider "rabbitmq" {
+  version  = "~> 1.0"
+  endpoint = "https://${var.rabbitmq_hostname}"
 }
-
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
 
 resource "aws_s3_bucket" "private_artifacts" {
   bucket = "${var.prefix}-private-artifacts"
@@ -25,7 +23,7 @@ resource "aws_s3_bucket" "public_artifacts" {
   bucket = "${var.prefix}-public-artifacts"
   acl    = "public-read"
 
-  versioning = {
+  versioning {
     enabled = true
   }
 
@@ -100,7 +98,7 @@ resource "aws_s3_bucket" "backups" {
   bucket = "${var.prefix}-backups"
   acl    = "private"
 
-  versioning = {
+  versioning {
     enabled = true
   }
 
@@ -137,9 +135,15 @@ resource "azurerm_storage_account" "base" {
   location                 = "${var.azure_region}"
   account_tier             = "Standard"
   account_replication_type = "RAGRS"
+  enable_blob_encryption   = "true"
+  enable_file_encryption   = "true"
 
-  tags {
+  tags = {
     environment = "staging"
     managed_by  = "terraform"
   }
+}
+
+resource "rabbitmq_vhost" "vhost" {
+  name = "${var.rabbitmq_vhost}"
 }

@@ -34,8 +34,8 @@ payload:
   command:          ['echo', 'hello world']
 ```
 
-You can use the [task creator](https://tools.taskcluster.net/task-creator) to
-experiment with creating tasks.
+You can use the Task Creator tool in the user interface to experiment with
+creating tasks.
 
 The next few sections describe the many powerful features of tasks, while the
 [next chapter](/docs/manual/task-execution) covers their execution by workers.

@@ -73,6 +73,8 @@ export default class ViewClient extends Component {
   state = {
     loading: false,
     error: null,
+    dialogError: null,
+    dialogOpen: false,
     accessToken: this.props.location.state
       ? this.props.location.state.accessToken
       : null,
@@ -84,20 +86,20 @@ export default class ViewClient extends Component {
   };
 
   handleDeleteClient = async clientId => {
-    this.setState({ error: null, loading: true });
+    this.setState({ dialogError: null, loading: true });
 
-    try {
-      await this.props.client.mutate({
-        mutation: deleteClientQuery,
-        variables: { clientId },
-      });
+    return this.props.client.mutate({
+      mutation: deleteClientQuery,
+      variables: { clientId },
+    });
+  };
 
-      this.setState({ error: null, loading: false });
+  handleDialogActionError = error => {
+    this.setState({ dialogError: error, loading: false });
+  };
 
-      this.props.history.push(`/auth/clients`);
-    } catch (error) {
-      this.setState({ error, loading: false });
-    }
+  handleDialogActionComplete = () => {
+    this.props.history.push(`/auth/clients`);
   };
 
   handleDisableClient = async clientId => {
@@ -197,6 +199,18 @@ export default class ViewClient extends Component {
     }
   };
 
+  handleDialogActionClose = () => {
+    this.setState({
+      dialogOpen: false,
+      dialogError: null,
+      error: null,
+    });
+  };
+
+  handleDialogActionOpen = () => {
+    this.setState({ dialogOpen: true });
+  };
+
   handleSnackbarOpen = ({ message, variant = 'success', open }) => {
     this.setState({ snackbar: { message, variant, open } });
   };
@@ -212,7 +226,14 @@ export default class ViewClient extends Component {
   };
 
   render() {
-    const { error, loading, accessToken, snackbar } = this.state;
+    const {
+      error,
+      loading,
+      accessToken,
+      snackbar,
+      dialogError,
+      dialogOpen,
+    } = this.state;
     const { isNewClient, data, classes, location } = this.props;
 
     if (location.state && location.state.accessToken) {
@@ -271,6 +292,7 @@ export default class ViewClient extends Component {
               <ErrorPanel fixed error={error || data.error} />
               {data && data.client && (
                 <ClientForm
+                  dialogError={dialogError}
                   loading={loading}
                   client={data.client}
                   onResetAccessToken={this.handleResetAccessToken}
@@ -278,6 +300,11 @@ export default class ViewClient extends Component {
                   onDeleteClient={this.handleDeleteClient}
                   onDisableClient={this.handleDisableClient}
                   onEnableClient={this.handleEnableClient}
+                  dialogOpen={dialogOpen}
+                  onDialogActionError={this.handleDialogActionError}
+                  onDialogActionComplete={this.handleDialogActionComplete}
+                  onDialogActionClose={this.handleDialogActionClose}
+                  onDialogActionOpen={this.handleDialogActionOpen}
                 />
               )}
             </Fragment>

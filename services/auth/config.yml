@@ -3,10 +3,10 @@ defaults:
     rootUrl:                  !env TASKCLUSTER_ROOT_URL
   app:
     # Azure table for the client table
-    clientTableName:          !env CLIENT_TABLE_NAME
+    clientTableName:          !env:optional CLIENT_TABLE_NAME
 
     # Azure blob container for the role table
-    rolesContainerName:       !env ROLES_CONTAINER_NAME
+    rolesContainerName:       !env:optional ROLES_CONTAINER_NAME
 
     # Name of component in statistics
     statsComponent:           auth
@@ -30,11 +30,11 @@ defaults:
     # Sentry configuration
     # The authToken _must_ have at least project:{read,write,admin} and org:read
     sentry:
-      organization:             !env SENTRY_ORGANIZATION
-      hostname:                 !env SENTRY_HOST
-      authToken:                !env SENTRY_AUTH_TOKEN
-      initialTeam:              !env SENTRY_TEAM
-      keyPrefix:                !env SENTRY_KEY_PREFIX
+      organization:             !env:optional SENTRY_ORGANIZATION
+      hostname:                 !env:optional SENTRY_HOST
+      authToken:                !env:optional SENTRY_AUTH_TOKEN
+      initialTeam:              !env:optional SENTRY_TEAM
+      keyPrefix:                !env:optional SENTRY_KEY_PREFIX
 
     # Delay before expiring sentry keys, this should be negative!
     sentryExpirationDelay:      '- 15 minutes'
@@ -43,24 +43,24 @@ defaults:
     clientExpirationDelay:      '-1 hour'
 
     statsum:
-      secret:                   !env STATSUM_API_SECRET
-      baseUrl:                  !env STATSUM_BASE_URL
+      secret:                   !env:optional STATSUM_API_SECRET
+      baseUrl:                  !env:optional STATSUM_BASE_URL
 
     websocktunnel:
-      secret:                   !env WEBSOCKTUNNEL_SECRET
+      secret:                   !env:optional WEBSOCKTUNNEL_SECRET
 
     # Overrides of s3 buckets for redeployability
     # Leave unset if running inside Heroku
     buckets:
-      docs:                     !env DOCS_BUCKET
-      schemas:                  !env SCHEMAS_BUCKET
-      references:               !env REFS_BUCKET
+      docs:                     !env:optional DOCS_BUCKET
+      schemas:                  !env:optional SCHEMAS_BUCKET
+      references:               !env:optional REFS_BUCKET
 
     # Name of a kinesis firehose stream to write audit logs to
-    auditLog:                   !env AUDIT_LOG
+    auditLog:                   !env:optional AUDIT_LOG
 
   monitoring:
-    level:                      !env LEVEL
+    level:                      !env:optional LEVEL
 
   server:
 
@@ -78,7 +78,7 @@ defaults:
 
   azure:
     # Azure table storage account name
-    accountId:                !env AZURE_ACCOUNT
+    accountId:               !env AZURE_ACCOUNT_ID
     # Azure table storage account key
     accessKey:               !env AZURE_ACCOUNT_KEY
 
@@ -96,20 +96,34 @@ defaults:
     vhost:                    !env PULSE_VHOST
 
   # AWS SDK configuration for delegation of S3 access and publication of
-  # schemas and references
+  # schemas and references and other buckets. only needed if managing buckets
   aws:
-    accessKeyId:              !env AWS_ACCESS_KEY_ID
-    secretAccessKey:          !env AWS_SECRET_ACCESS_KEY
+    accessKeyId:              !env:optional AWS_ACCESS_KEY_ID
+    secretAccessKey:          !env:optional AWS_SECRET_ACCESS_KEY
     # Default AWS region, this is where the S3 bucket lives
-    region:                   !env AWS_REGION
+    region:                   !env:optional AWS_REGION
     # Lock API version to use the latest API from 2013, this is fuzzy locking,
     # but it does the trick...
     apiVersion:               '2014-01-01'
 
-  # Google Cloud Platform service account credentials. This is the content
-  # of the json file you download when you create a key for a service account
-  gcp:
-    credentials:              !env:json GCP_CREDENTIALS
+  # Configuration for the GCP serviceAccounts to which the `gcpCredentials`
+  # endpoint can grant access.
+  gcpCredentials:
+    # This has the form {
+    #   "projectName": {
+    #     # credentials for a serviceAccount in this project that has
+    #     # roles/iam.serviceAccountTokenCreator.
+    #     "credentials": {
+    #       "type": ..,
+    #       "project_id": ..,
+    #       ..
+    #     },
+    #     # allowed service accounts in this project
+    #     "allowedServiceAccounts": ["accountName1", ..]
+    #   }, ..
+    # }
+    # If omitted, it defaults to {}
+    allowedProjects:          !env:json:optional GCP_CREDENTIALS_ALLOWED_PROJECTS
 
 production:
   app:
@@ -132,7 +146,7 @@ test:
     # hardcoded into helper.js
     staticClients:
     - clientId:     static/taskcluster/root
-      accessToken:  -test-access-token-
+      accessToken:  -test-access-token-that-is-at-least-22-chars-long-
       description: |
         Root client used for creating other clients (bootstrapping).
       scopes:
@@ -155,7 +169,7 @@ test:
     cryptoKey:           AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
   # Test bucket for STS credentials
   test:
-    testBucket:               !env TEST_BUCKET
+    testBucket:               !env:optional TEST_BUCKET
   server:
     forceSSL:                 false
     port:                     60552

@@ -43,10 +43,6 @@ const load = loader(
             process.env.NODE_ENV !== 'production',
             'cfg.pulse.namespace is required'
           );
-          // eslint-disable-next-line no-console
-          console.log(
-            `\n\nNo Pulse namespace defined; no Pulse messages will be received.`
-          );
 
           return null;
         }
@@ -105,7 +101,7 @@ const load = loader(
       setup: ({ cfg, strategies }) => createApp({ cfg, strategies }),
     },
 
-    server: {
+    httpServer: {
       requires: ['app', 'schema', 'context'],
       setup: ({ app, schema, context }) => {
         const server = new ApolloServer({
@@ -152,8 +148,8 @@ const load = loader(
     },
 
     devServer: {
-      requires: ['cfg', 'server'],
-      setup: async ({ cfg, server }) => {
+      requires: ['cfg', 'httpServer'],
+      setup: async ({ cfg, httpServer }) => {
         // apply some sanity-checks
         assert(cfg.server.port, 'config server.port is required');
         assert(
@@ -161,7 +157,7 @@ const load = loader(
           'config taskcluster.rootUrl is required'
         );
 
-        await new Promise(resolve => server.listen(cfg.server.port, resolve));
+        await new Promise(resolve => httpServer.listen(cfg.server.port, resolve));
 
         /* eslint-disable no-console */
         console.log(`\n\nWeb server running on port ${cfg.server.port}.`);
@@ -171,7 +167,19 @@ const load = loader(
           http://localhost:${cfg.server.port}/playground\n`
           );
         }
+        if (!cfg.pulse.namespace) {
+          console.log(
+            `\nNo Pulse namespace defined; no Pulse messages will be received.\n`
+          );
+        }
         /* eslint-enable no-console */
+      },
+    },
+
+    server: {
+      requires: ['cfg', 'httpServer'],
+      setup: async ({ cfg, httpServer }) => {
+        await new Promise(resolve => httpServer.listen(cfg.server.port, resolve));
       },
     },
   },
@@ -186,3 +194,5 @@ const load = loader(
 if (!module.parent) {
   load.crashOnError(process.argv[2] || 'devServer');
 }
+
+module.exports = load;

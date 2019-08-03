@@ -136,6 +136,7 @@ export default class IndexedEntry extends Component {
         </ListItem>
         <ListItem>
           <ListItemText
+            title={created}
             primary="Created"
             secondary={<DateDistance from={created} />}
           />

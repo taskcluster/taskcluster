@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: taskcluster-ingress
+  labels: {$eval: labels}
+  annotations:
+    'kubernetes.io/ingress.global-static-ip-name': '{{ .Values.ingressStaticIpName }}'
+    'ingress.gcp.kubernetes.io/pre-shared-cert': '{{ .Values.ingressCertName }}'
+spec:
+  rules:
+  - host: '{{ substr 8 -1 (trimSuffix "/" .Values.rootUrl) }}' # Turn url into a hostname
+    http:
+      paths:
+        $map: {$eval: ingresses}
+        each(i):
+          path: '${i.path}'
+          backend:
+            servicePort: 80
+            serviceName: ${i.projectName}

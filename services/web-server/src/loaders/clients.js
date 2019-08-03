@@ -1,12 +1,12 @@
 const DataLoader = require('dataloader');
-const sift = require('sift').default;
+const sift = require('../utils/sift');
 const ConnectionLoader = require('../ConnectionLoader');
 
 module.exports = ({ auth }) => {
   const clients = new ConnectionLoader(
     async ({ filter, options, clientOptions }) => {
       const raw = await auth.listClients({ ...clientOptions, ...options });
-      const clients = filter ? sift(filter, raw.clients) : raw.clients;
+      const clients = sift(filter, raw.clients);
 
       return {
         ...raw,

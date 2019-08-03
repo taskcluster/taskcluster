@@ -15,6 +15,10 @@ const {stickyLoader, Secrets, withEntity, withPulse, withMonitor} = require('tas
 exports.load = stickyLoader(load);
 
 suiteSetup(async function() {
+  process.env.GCP_ALLOWED_SERVICE_ACCOUNTS = JSON.stringify([
+    'invalid@mozilla.com',
+  ]);
+
   exports.load.inject('profile', 'test');
   exports.load.inject('process', 'test');
 });
@@ -46,7 +50,7 @@ exports.secrets = new Secrets({
       {env: 'SENTRY_HOSTNAME', cfg: 'sentry.hostname'},
     ],
     gcp: [
-      {env: 'GCP_CREDENTIALS', cfg: 'gcp.credentials', name: 'credentials'},
+      {env: 'GCP_CREDENTIALS_ALLOWED_PROJECTS', cfg: 'gcpCredentials.allowedProjects', name: 'allowedProjects', mock: []},
     ],
   },
   load: exports.load,
@@ -221,6 +225,7 @@ testServiceBuilder.declare({
   name: 'resource',
   scopes: {AllOf: ['myapi:resource']},
   title: 'Get Resource',
+  category: 'Auth Service',
   description: '...',
 }, function(req, res) {
   res.status(200).json({
@@ -251,7 +256,7 @@ exports.withServers = (mock, skipping) => {
     await exports.load('cfg');
 
     exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
-    exports.rootAccessToken = '-test-access-token-';
+    exports.rootAccessToken = '-test-access-token-that-is-at-least-22-chars-long-';
 
     // First set up the auth service
     exports.AuthClient = taskcluster.createClient(builder.reference());
@@ -324,8 +329,6 @@ exports.withServers = (mock, skipping) => {
  * using real credentials.
  */
 exports.withGcp = (mock, skipping) => {
-  const accountId = slugid.nice().replace(/_/g, '').toLowerCase();
-  let auth, iam;
   let policy = {};
 
   const fakeGoogleApis = {
@@ -368,6 +371,9 @@ exports.withGcp = (mock, skipping) => {
         projects: {
           serviceAccounts: {
             generateAccessToken: async ({name, scope, delegates, lifetime}) => {
+              if (name === 'projects/-/serviceAccounts/invalid@mozilla.com') {
+                throw new Error('Invalid account');
+              }
               assert.equal(name, `projects/-/serviceAccounts/${client_email}`);
               assert.deepEqual(scope, ['https://www.googleapis.com/auth/cloud-platform']);
               assert.deepEqual(delegates, []);
@@ -397,55 +403,28 @@ exports.withGcp = (mock, skipping) => {
         client_email: 'test_client@example.com',
       };
       const auth = {testCredentials: credentials};
+      const allowedServiceAccounts = [
+        credentials.client_email,
+        'invalid@mozilla.com',
+      ];
 
       exports.load.inject('gcp', {
         auth,
         googleapis: fakeGoogleApis,
         credentials,
+        allowedServiceAccounts,
       });
 
       exports.gcpAccount = {
         email: 'test_client@example.com',
-        name: 'testAccount',
         project_id: credentials.project_id,
       };
     } else {
-      const {credentials, auth, googleapis} = await exports.load('gcp');
-      const projectId = credentials.project_id;
-
-      iam = googleapis.iam({version: 'v1', auth});
-
-      const res = await iam.projects.serviceAccounts.create({
-        auth,
-        name: `projects/${projectId}`,
-        resource: {
-          accountId,
-          serviceAccount: {
-            // This is a testing account and will be deleted by
-            // the end of the tests. If the test crashes, these
-            // accounts maybe left in IAM. Any account starting
-            // with taskcluster-auth-test- can be safely removed.
-            displayName: `taskcluster-auth-test-${accountId}`,
-          },
-        },
-      });
-
+      const {credentials, allowedServiceAccounts} = await exports.load('gcp');
       exports.gcpAccount = {
-        email: res.data.email,
-        name: res.data.name,
+        email: allowedServiceAccounts[0],
         project_id: credentials.project_id,
       };
     }
   });
-
-  suiteTeardown(async () => {
-    if (skipping()) {
-      return;
-    }
-
-    if (!mock) {
-      await iam.projects.serviceAccounts.delete({name: exports.gcpAccount.name, auth});
-    }
-  });
-
 };

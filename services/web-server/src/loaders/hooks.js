@@ -1,5 +1,5 @@
 const DataLoader = require('dataloader');
-const sift = require('sift').default;
+const sift = require('../utils/sift');
 
 module.exports = ({ hooks }) => {
   const hookGroups = new DataLoader(queries =>
@@ -8,7 +8,7 @@ module.exports = ({ hooks }) => {
         const { groups } = await hooks.listHookGroups();
         const raw = groups.map(hookGroupId => ({ hookGroupId }));
 
-        return filter ? sift(filter, raw) : raw;
+        return sift(filter, raw);
       })
     )
   );
@@ -17,7 +17,7 @@ module.exports = ({ hooks }) => {
       queries.map(async ({ hookGroupId, filter }) => {
         const { hooks: hooksForGroup } = await hooks.listHooks(hookGroupId);
 
-        return filter ? sift(filter, hooksForGroup) : hooksForGroup;
+        return sift(filter, hooksForGroup);
       })
     )
   );
@@ -42,7 +42,7 @@ module.exports = ({ hooks }) => {
         try {
           const { lastFires } = await hooks.listLastFires(hookGroupId, hookId);
 
-          return filter ? sift(filter, lastFires) : lastFires;
+          return sift(filter, lastFires);
         } catch(e) {
           if (e.statusCode === 404 || e.statusCode === 424) {
             return null;

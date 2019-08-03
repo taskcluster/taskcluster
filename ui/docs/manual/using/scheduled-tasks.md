@@ -20,10 +20,8 @@ scopes.
 
 ## Using Hooks
 
-Hooks are named with a `hookGroupId` and a `hookId`. The group IDs follow a
-pattern given in the [namespaces document](/docs/manual/design/namespaces). The
-`hookId` is arbitrary, although it is a good idea to think carefully about the
-names and use long, hierarchical names.
+Hooks are named with a `hookGroupId` and a `hookId`. The [namespaces
+document](/docs/manual/using/namespaces) has some suggestions for naming hooks.
 
 The scopes available to a hook are given by a role. This allows separation of
 hook management from scope management, and the full generality of scope
@@ -34,7 +32,7 @@ role must include all of the scopes required to create the task, including
 The scopes actually used by the hook's task are, of course, defined in
 `task.scopes`, which must be satisfied by the hook's role. These need not
 include `queue:create-task:<provisionerId>/<workerType>` unless the task will
-be creating more tasks (for example, a [decision task](/docs/manual/using/task-graph)).
+be creating more tasks (for example, a [decision task](/docs/manual/conventions/decision-task)).
 
 For the documentation repository, the hook is named `taskcluster/docs-update`.
 The task has scopes
@@ -69,6 +67,6 @@ and run that script. Then any modifications to the cache-refresh process can be
 handled using your usual development processes, instead of an update in the
 hooks API.
 
-For more complex purposes, invoke a [decision task](/docs/manual/using/task-graph)
+For more complex purposes, invoke a [decision task](/docs/manual/conventions/decision-task)
 thad runs within a source checkout and draws the details of what to achieve out
 of that source checkout.

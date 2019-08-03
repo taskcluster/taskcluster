@@ -15,6 +15,3 @@ in a hierarchical naming structure, similar to a directory tree. Careful naming
 allows a more flexible approach. For example, if one of the hierarchy levels is
 the revision ID from version control, then it is simple to find a task given a
 revision ID.
-
-See the [namespaces document](/docs/manual/design/namespaces) for more detail on
-index path names.

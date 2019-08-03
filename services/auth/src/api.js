@@ -143,6 +143,7 @@ builder.declare({
   },
   name: 'listClients',
   output: 'list-clients-response.yml',
+  category: 'Auth Service',
   stability: 'stable',
   title: 'List Clients',
   description: [
@@ -187,6 +188,7 @@ builder.declare({
   route: '/clients/:clientId',
   name: 'client',
   stability: 'stable',
+  category: 'Auth Service',
   output: 'get-client-response.yml',
   title: 'Get Client',
   description: [
@@ -210,6 +212,7 @@ builder.declare({
   method: 'put',
   route: '/clients/:clientId',
   name: 'createClient',
+  category: 'Auth Service',
   input: 'create-client-request.yml',
   output: 'create-client-response.yml',
   scopes: {
@@ -317,6 +320,7 @@ builder.declare({
   method: 'post',
   route: '/clients/:clientId/reset',
   name: 'resetAccessToken',
+  category: 'Auth Service',
   output: 'create-client-response.yml',
   scopes: 'auth:reset-access-token:<clientId>',
   stability: 'stable',
@@ -373,6 +377,7 @@ builder.declare({
   method: 'post',
   route: '/clients/:clientId',
   name: 'updateClient',
+  category: 'Auth Service',
   input: 'create-client-request.yml',
   output: 'get-client-response.yml',
   scopes: {
@@ -446,6 +451,7 @@ builder.declare({
   route: '/clients/:clientId/enable',
   name: 'enableClient',
   input: undefined,
+  category: 'Auth Service',
   output: 'get-client-response.yml',
   scopes: 'auth:enable-client:<clientId>',
   stability: 'stable',
@@ -498,6 +504,7 @@ builder.declare({
   route: '/clients/:clientId/disable',
   name: 'disableClient',
   input: undefined,
+  category: 'Auth Service',
   output: 'get-client-response.yml',
   scopes: 'auth:disable-client:<clientId>',
   stability: 'stable',
@@ -550,6 +557,7 @@ builder.declare({
   name: 'deleteClient',
   scopes: 'auth:delete-client:<clientId>',
   stability: 'stable',
+  category: 'Auth Service',
   title: 'Delete Client',
   description: [
     'Delete a client, please note that any roles related to this client must',
@@ -587,6 +595,7 @@ builder.declare({
   name: 'listRoles',
   input: undefined,
   output: 'list-roles-response.yml',
+  category: 'Auth Service',
   stability: 'stable',
   title: 'List Roles',
   description: [
@@ -609,6 +618,7 @@ builder.declare({
   },
   name: 'listRoleIds',
   input: undefined,
+  category: 'Auth Service',
   output: 'list-role-ids-response.yml',
   stability: 'stable',
   title: 'List Role IDs',
@@ -640,6 +650,7 @@ builder.declare({
   },
   name: 'listRoles2',
   input: undefined,
+  category: 'Auth Service',
   output: 'list-roles2-response.yml',
   stability: 'stable',
   title: 'List Roles',
@@ -664,6 +675,7 @@ builder.declare({
   route: '/roles/:roleId',
   name: 'role',
   input: undefined,
+  category: 'Auth Service',
   output: 'get-role-response.yml',
   stability: 'stable',
   title: 'Get Role',
@@ -690,6 +702,7 @@ builder.declare({
   method: 'put',
   route: '/roles/:roleId',
   name: 'createRole',
+  category: 'Auth Service',
   input: 'create-role-request.yml',
   output: 'get-role-response.yml',
   scopes: {
@@ -784,6 +797,7 @@ builder.declare({
   route: '/roles/:roleId',
   name: 'updateRole',
   input: 'create-role-request.yml',
+  category: 'Auth Service',
   output: 'get-role-response.yml',
   scopes: {
     AllOf: [
@@ -867,6 +881,7 @@ builder.declare({
   method: 'delete',
   route: '/roles/:roleId',
   name: 'deleteRole',
+  category: 'Auth Service',
   scopes: 'auth:delete-role:<roleId>',
   stability: 'stable',
   title: 'Delete Role',
@@ -897,31 +912,12 @@ builder.declare({
 
 /** Expand a scopeset */
 builder.declare({
-  method: 'get',
-  route: '/scopes/expand',
-  name: 'expandScopesGet',
-  input: 'scopeset.yml',
-  output: 'scopeset.yml',
-  stability: 'deprecated',
-  title: 'Expand Scopes',
-  description: [
-    'Return an expanded copy of the given scopeset, with scopes implied by any',
-    'roles included.',
-    '',
-    'This call uses the GET method with an HTTP body.  It remains only for',
-    'backward compatibility.',
-  ].join('\n'),
-}, async function(req, res) {
-  let input = req.body;
-  return res.reply({scopes: this.resolver.resolve(input.scopes)});
-});
-
-builder.declare({
   method: 'post',
   route: '/scopes/expand',
   name: 'expandScopes',
   input: 'scopeset.yml',
   output: 'scopeset.yml',
+  category: 'Auth Service',
   stability: 'stable',
   title: 'Expand Scopes',
   description: [
@@ -939,6 +935,7 @@ builder.declare({
   route: '/scopes/current',
   name: 'currentScopes',
   output: 'scopeset.yml',
+  category: 'Auth Service',
   stability: 'stable',
   title: 'Get Current Scopes',
   description: [
@@ -965,6 +962,7 @@ builder.declare({
   route: '/authenticate-hawk',
   name: 'authenticateHawk',
   input: 'authenticate-hawk-request.yml',
+  category: 'Auth Service',
   output: 'authenticate-hawk-response.yml',
   stability: 'stable',
   title: 'Authenticate Hawk Request',
@@ -989,6 +987,7 @@ builder.declare({
   method: 'post',
   route: '/test-authenticate',
   name: 'testAuthenticate',
+  category: 'Auth Service',
   input: 'test-authenticate-request.yml',
   output: 'test-authenticate-response.yml',
   stability: 'stable',
@@ -1040,6 +1039,7 @@ builder.declare({
   method: 'get',
   route: '/test-authenticate-get/',
   name: 'testAuthenticateGet',
+  category: 'Auth Service',
   output: 'test-authenticate-response.yml',
   stability: 'stable',
   title: 'Test Authentication (GET)',

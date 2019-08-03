@@ -26,6 +26,8 @@ The `taskcluster.rootUrl` configuration setting is required. Either set
 to `user-config.yml` and edit it to include the `rootUrl` for the Taskcluster
 instance you are accessing; for example `https://taskcluster.net`.
 
+The Taskcluster team has a series of [best practices](../../dev-docs/best-practices/microservices.md#taskcluster-web-server)
+for this service which may help guide you in modifying the source code and making a pull request.
 That is enough to run the service, so if that's all you need, skip down to "Starting".
 
 ### Taskcluster Credentials
@@ -73,7 +75,7 @@ The `taskcluster-ui` service expects this service to run on port 3050.
 
 To pass credentials to the server from the GraphQL Playground, click the "HTTP Headers"
 section, and paste a JSON object with a key of "Authorization" with a value of
-"Bearer YOUR_ACCESS_TOKEN", such as:
+"Bearer YOUR_TC_TOKEN", such as:
 
 ```json
 {
@@ -83,57 +85,23 @@ section, and paste a JSON object with a key of "Authorization" with a value of
 
 <img src="https://cldup.com/XDpBc-qY5Q.png" alt="authorization header" height="75%" width="75%" />
 
+You can find your TC token in localStorage after signing into the UI.
+
 ## Login Strategies
 
 Taskcluster supports the following strategies:
 * GitHub
 * Mozilla Auth0
 
-### GitHub
-
-In order to enable the GitHub login strategy, specify the GitHub client ID and secret for an OAuth application created
-for use against this service and its web UI:
+All login strategies require configuration of the `login.jwt.key` configuration value, which is a secret used for HMAC signatures.
+For development, it can be anything.
 
 ```sh
-UI_LOGIN_STRATEGIES='{"github": {"clientId": "..", "clientSecret": ".."}}'
+JWT_KEY=this-is-a-secret-value-be-very-careful-with-it
 ```
 
-or in `user-config.yml` as
-* `login.strategies.github.clientId`
-* `login.strategies.github.clientSecret`
-
-Now, start the service as you normally would.
-
-**Note: be sure to not commit these environment variables to source control,
-and use a separate client ID and secret for production than used in
-development.**
-
-
-### Mozilla Auth0
-
-In order to enable the Mozilla Auth0 login strategy, specify the GitHub client ID and secret for an OAuth application created
-for use against this service and its web UI, either as an environment variable:
-
-```sh
-UI_LOGIN_STRATEGIES='{
-    "mozilla-auth0": {
-        "domain": "<auth0 subdomain>",
-        "clientId": "<clientId from registration of client>",
-        "clientSecret": "<clientSecret from registration of client>"
-    }
-}'
-```
-
-or in `user-config.yml` as
-* `login.strategies.mozilla-auth0.domain`
-* `login.strategies.mozilla-auth0.clientId`
-* `login.strategies.mozilla-auth0.clientSecret`
-
-Now, start the service as you normally would.
-
-**Note: be sure to not commit these environment variables to source control,
-and use a separate client ID and secret for production than used in
-development.**
+See the [deployment documentation](../../deployment-docs/login-strategies.md) for information on how to set up and configure these strategies.
+Note that in many cases such setup is not required for development of this service.
 
 ## Sample Queries
 

@@ -7,6 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import Typography from '@material-ui/core/Typography';
 import ArrowExpandVerticalIcon from 'mdi-react/ArrowExpandVerticalIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import HelpView from '../../../components/HelpView';
@@ -16,6 +17,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import splitLines from '../../../utils/splitLines';
 import Link from '../../../utils/Link';
 import scopesetQuery from './scopeset.graphql';
+import { formatScope, scopeLink } from '../../../utils/scopeUtils';
 
 @hot(module)
 @withStyles(theme => ({
@@ -84,9 +86,21 @@ export default class ScopesetExpander extends Component {
                           key={scope}
                           button
                           component={Link}
-                          to={`/auth/scopes/${encodeURIComponent(scope)}`}
+                          to={scopeLink(scope)}
                           className={classes.listItemButton}>
-                          <ListItemText secondary={scope} />
+                          <ListItemText
+                            disableTypography
+                            secondary={
+                              <Typography>
+                                <code
+                                  // eslint-disable-next-line react/no-danger
+                                  dangerouslySetInnerHTML={{
+                                    __html: formatScope(scope),
+                                  }}
+                                />
+                              </Typography>
+                            }
+                          />
                           <LinkIcon size={16} />
                         </ListItem>
                       ))}

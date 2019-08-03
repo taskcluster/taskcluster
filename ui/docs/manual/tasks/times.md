@@ -9,9 +9,9 @@ Each task has three associated times:
 * `deadline` is the time by which the task must be completed; and
 * `expires` is the time after which all record of the task and its runs will be deleted.
 
-The deadline exists to ensure that tasks do not remain pending forever. It is
-usually set to one day after `created`, on the assumption that running the task
-more than a day later is not useful.
+The deadline exists to ensure that tasks do not remain pending forever, and
+eventually become immutable. It is usually set to one day after `created`, on
+the assumption that running the task more than a day later is not useful.
 
 Task expiration ensures that tasks are not stored indefinitely, thereby
 controlling storage costs. Expiration is often set to one year after creation,

@@ -10,8 +10,8 @@ export default class Login extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {"args":[],"method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.oidcCredentials.entry = {"args":["provider"],"method":"get","name":"oidcCredentials","output":true,"query":[],"route":"/oidc-credentials/<provider>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.oidcCredentials.entry = {"args":["provider"],"category":"Login Service","method":"get","name":"oidcCredentials","output":true,"query":[],"route":"/oidc-credentials/<provider>","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.

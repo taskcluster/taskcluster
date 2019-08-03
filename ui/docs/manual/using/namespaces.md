@@ -1,0 +1,264 @@
+---
+title: Namespaces
+order: 30
+---
+
+# Namespaces
+
+Names for things in Taskcluster are organized with the least-specific information on the left and the most-specific on the right.
+For example, an Index namespace for a release build might look like `mobile-apps.boldr.releases.android.9.v13-7-1`.
+Here the left-most component, `mobile-apps`, is the most general, with the app name being more specific.
+
+The use of kleene stars in scopes and roles makes it easy to express powerful concepts using this pattern.
+For example, the `boldr` app team can be issued scope `queue:route:mobile-apps.boldr.*`, allowing them to define any index routes with that prefix.
+That team might further delegate `queue:route:mobile-apps.boldr.releases.*` only to release builds, so that pull-requests cannot accidentally or maliciously create a release.
+
+A deployment of Taskcluster will typically depend on conventions and carefully designed role configurations to enforce deployment-specific security constraints.
+We recommend writing these conventions and configurations down, both in prose and -- for more complex deployments -- in code that enforces them.
+
+What follows are conventions incorporated into the platform itself, and some recommended best practices.
+
+---
+
+## Scopes
+
+Many scopes reflect the namespaces given elsewhere in this document, as described in the API documentation for the service.
+
+* `<service>:<action>:<details>` -
+   Scopes for most Taskcluster services follow this pattern.
+   For example, the `queue.defineTask` call is governed by a scope beginning with `queue:define-task:<details>`, where the details describe a hierarchy of task attributes.
+   In cases where an action may be limited along any of several dimensions, each of those dimensions should be a separate scope.
+
+---
+
+## Clients
+
+Client names describe the entity making an API call.
+They are used for logging and auditing, but not for access control -- all access control is performed with scopes.
+Taskcluster treats the following client IDs specially:
+
+ * `static/*` -
+   Clients with names prefixed `static/` are statically configured in the taskcluster deployment.
+   They cannot be created, modified or deleted at runtime. These are used for bootstrapping services and creating
+   initial clients and roles.
+
+ * `static/taskcluster/*` -
+   Clients with the prefix `static/taskcluster/` are reserved for taskcluster services.
+
+ * `<identityProvider>/<identity>` -
+   The Taskcluster UI creates client IDs of the form `<identityProvider>/<identity>` when users login.
+   For example, a github login might result in a clientId of `github/octocat|1234`.
+   Each logged-in user is given permission to manage clients matching `<clientId>/*`.
+   Thus `octocat` would be able to create a client named `github/octocat|1234/testing`.
+   Such per-user clients are scanned regularly and automatically disabled if their scopes are not satisfied by the user's scopes.
+
+ * `task-client/<taskId>/<runId>/on/<workerGroup>/<workerId>/until/<expiration>` -
+   Clients of this form represent specific tasks, and are issued by the queue in the form of temporary credentials.
+
+---
+
+## Roles
+
+Some roles are defined by some kind of automatic usage in a Taskcluster service, as documented in the [reference section](/docs/reference).
+Some are defined by convention.
+Taskcluster deployments are free to define other roles that do not conflict with the namespaces here.
+
+The taskcluster UI defines the following roles:
+
+* `everybody` -
+   This role is granted to anyone who authenticates via the UI.
+
+* `login-identity:<identityProvider>/<identity>`
+   This role is granted to the given user only.
+
+* `<groupKind>:<groupName>`
+  This role is granted to all users who are members of the given access group, as defined by the login strategy.
+  This is the preferred method of granting scopes to users, instead of adding scopes to `login-identity:..` roles, as it means that access will track membership in the external group, even if the specific person's membership changes.
+  See the documentation of login strategies in the web-server service for more information.
+
+* `hook-id:<hookGroupId>/<hookId>` -
+   Roles of this form give the scopes used to create tasks on behalf of hooks.
+
+* `repo:<host>/<path>:…`,
+  `repo:<host>/<path>:branch:<branch>`,
+  `repo:<host>/<path>:pull-request` -
+   Roles of this form represent scopes available to version-control pushes and pull requests.
+   The `host` and `path` are modeled on the URL for the repository, allowing the first version of this pattern to apply to all version-control systems.
+   The `branch` and `pull-request` forms are specific to version-control systems supporting those concepts.
+   This pattern can be extended, too.
+   For example, given a system to schedule periodic tasks from a repository, those tasks could be granted `assume:repo:<host>/<path>:cron:<name>`.
+
+* `worker-type:<workerPoolId>`,
+  `worker-pool:<workerPoolId>` -
+   Roles of this form represent scopes available to workers in the given pool.
+   In general, however, workers are given the scopes they require by the worker-manager, and roles of this form are not needed.
+   The second form is preferred, with the former maintained for compatibility.
+
+---
+
+## Artifacts
+
+Artifacts are named objects attached to tasks, and available from the queue service.
+Artifact names are, by convention, slash-separated.
+
+* `public/…` -
+   The queue allows access to any artifact that begins with `public/` without any kind of authentication.
+   Public names are not further namespaced: tasks can create any public artifacts they like.
+   As such, users should not assume that an artifact with this prefix was created by a known process.
+   In other words, any task can create an artifact named `public/build/firefox.exe` , so do not trust such a file without verifying the trustworthiness of the task.
+
+* `private/…` -
+   Artifact names with this prefix are considered non-public, but access to them is otherwise quite broadly allowed (e.g., to all Mozilla employees, contractors and community members under NDA).
+   In general, users with narrower requirements than "not public" should select a different prefix and add it to this document.
+
+* `private/docker-worker/…`,
+  `private/interactive/…` -
+   Artifact names with these prefixes are considered non-public, but required for access to the interactive features of the named workers.
+* `login-identity/<identity>/…`
+   Artifact names with this prefix are conventionally the responsibility of the user with the given [login identity](/docs/reference/core/login).
+   This namespace enables tasks to persist data that is only readable by a single user (typically the user that submitted it), such as loaner credentials.
+   Access to such artifacts is not automatically granted, but such a grant could be accomplished by adding scope `queue:get-artifact:login-identity/<..>` to role `login-identity:*`.
+
+Note, highly confidential data should not be stored in unencrpyted taskcluster
+artifacts, since they are only protected by a single (fallible) system. If
+highly sensitive data needs to be persisted, it is recommended to encrypt data
+using the public key of a key-pair whose private key has been highly secured,
+in order that at least two independent systems protect the data.
+
+---
+
+## Hooks
+
+Hooks are named using the two-part identifier `<hookGroupId>/<hookId>`.
+While the Taskcluster platform assigns no particular meaning to these identifiers, the user interface does allow expanding each hook group independently.
+A best practice is to include any set of similar, auto-generated hooks, such as hooks for specific repositories, under a single `hookGroupId`.
+
+---
+
+## Worker Pools and Task Queues
+
+The `workerPoolId` and `taskQueueId` namespaces are closely linked: workers in worker pool `workerPoolId` will claim task from queue `taskQueueId` with `taskQueueId = workerPoolId`.
+
+Scopes of the form `queue:create-task:<workerPoolId>` are the primary means of controlling access to workers, so deployments should carefully consider the order of components in the names.
+For example, if release workers are segregated from CI workers as a security boundary, then access to `queue:create-task:relase-*` might be more strictly controlled than access to `queue:create-task:ci-*`.
+
+---
+
+## Worker IDs
+
+Workers are identified by the two-level name `<workerGroup>/<workerId>`.
+Worker-Manager providers are responsible for defining these identifiers.
+Typically the `workerId` is taken from the underlying cloud provider, and `workerGroup` is chosen to correspond to the uniqueness boundary provided by that cloud provider.
+For example, in AWS EC2, the region is used as the `workerGroup`.
+
+---
+
+## Scheduler IDs
+
+Scheduler IDs are limited to 22 characters.
+We do not subdivide namespaces; instead, they are enumerated here:
+
+ * `tc-diagnostics` -- the Taskcluster diagnostics tool
+ * `taskcluster-github` -- the Taskcluster Github integration
+
+---
+
+## Worker Caches
+
+For workers that share the same worker pool, a secondary security boundary can be provided by cache names, preventing tasks in one security context from accessing (and potentially poisoning) caches in another security boundary.
+For example, caches for CI tasks might match `ci-*`, while caches for releases match `release-*`.
+Then, even if release and CI tasks share the same workers, the two classes of tasks will not share caches.
+
+---
+
+## Secrets
+
+Secrets provide key-value storage governed by scopes.
+As such, it's very important that secrets not be unexpectedly made accessible to users who should not see them.
+
+A best practice for secrets is to deeply namespace them with clear names, and restrict user access as much as possible.
+This avoids the risk that an overly-helpful administrator will accidentally grant access to some critical data.
+
+Additionally, it is a best practice for secret-related scopes in `task.scopes` to specify secrets individually, rather than use `*` notation.
+This ensures that a new secret is not unintentionally readable by existing tasks.
+
+The worker-manager defines the following secrets:
+
+* `worker-type:<workerPoolId>`,
+  `worker-pool:<workerPoolId>` -
+  Workers are given scopes to read these secrets at startup, allowing them to be configured with secret values.
+  The format of such secrets is `{"config": .., "files": ..}`.
+  See [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) for more on how this is interpreted.
+  The second form is preferred, but scopes are provided for both forms.
+
+The following convention is recommended for repository-specific secrets:
+
+* Names like `repo:<host>/<path>:..`, matching the format of simiarly named roles, are used for secrets available to tasks for the given repository.
+  Since `*` does not expand in a secret name, absolute names such as `repo:<host>/<path>` are used for shared secrets.
+
+---
+
+## Indexes
+
+The index provides a nice, dot-separated hierarchy of names. When using these as AMQP routes, they are prefixed with `index.`, so for example the project 'foo' might route messages about its level 3 repository tasks to routes starting with `index.project.foo.level-3.…`
+
+---
+
+## Projects
+
+For Taskcluster deployments which support a variety of related projects, Taskcluster recommends establishing "project" namespaces.
+These provide a nice organizational boundary, isolating unrelated projects while still allowing resource-sharing where desired.
+Select a short, consistent name for each project, without punctuation.
+
+The "owners" of each project are granted `project-admin:<project>`, typically via one of the group-related routes described above.
+The `project-admin:*` parameterized role then grants the following scopes:
+
+ * `assume:hook-id:project-<..>/*`
+ * `assume:project:<..>:*`
+ * `assume:worker-type:proj-<..>/*`
+ * `auth:create-client:project/<..>/*`
+ * `auth:create-role:hook-id:project-<..>/*`
+ * `auth:create-role:project:<..>:*`
+ * `auth:delete-client:project/<..>/*`
+ * `auth:delete-role:hook-id:project-<..>/*`
+ * `auth:delete-role:project:<..>:*`
+ * `auth:disable-client:project/<..>/*`
+ * `auth:enable-client:project/<..>/*`
+ * `auth:reset-access-token:project/<..>/*`
+ * `auth:update-client:project/<..>/*`
+ * `auth:update-role:hook-id:project-<..>/*`
+ * `auth:update-role:project:<..>:*`
+ * `hooks:modify-hook:project-<..>/*`
+ * `hooks:trigger-hook:project-<..>/*`
+ * `index:insert-task:project.<..>.*`
+ * `project:<..>:*`
+ * `queue:claim-work:proj-<..>/*`
+ * `queue:create-task:highest:proj-<..>/*`
+ * `queue:create-task:high:proj-<..>/*`
+ * `queue:create-task:lowest:proj-<..>/*`
+ * `queue:create-task:low:proj-<..>/*`
+ * `queue:create-task:medium:proj-<..>/*`
+ * `queue:create-task:very-high:proj-<..>/*`
+ * `queue:create-task:very-low:proj-<..>/*`
+ * `queue:get-artifact:project/<..>/*`
+ * `queue:quarantine-worker:proj-<..>/*`
+ * `queue:route:index.project.<..>.*`
+ * `queue:worker-id:proj-<..>/*`
+ * `secrets:get:project/<..>/*`
+ * `secrets:set:project/<..>/*`
+
+Project admins may then delegate portions of these scopes as desired.
+The scopes cover:
+
+* scopes `project:<project>:…`
+* clients `project/<project>/*`
+* roles `project:<project>:*`
+* artifacts `project/<project/*`
+* hooks `project-<project>/*`
+* worker pools `project-<project>/*`
+* secrets `project/<project>/*`
+* index namespaces `project.<project>.*`
+
+In some cases, projects need additional scopes.
+To do so, create a role `project:<project>:grants/<grantName` containing the desired scopes.
+This role can then be assumed where necessary, or project admins can use it to grant specific scopes as desired.

@@ -1,6 +1,9 @@
 const merge = require('deepmerge');
 const { join, resolve } = require('path');
 
+const DEFAULT_PORT = 5080;
+const port = process.env.PORT || DEFAULT_PORT;
+
 require('@babel/register')({
   presets: [require.resolve('@babel/preset-env')],
   cache: false,
@@ -35,7 +38,7 @@ module.exports = {
         title: process.env.APPLICATION_NAME
       },
       devServer: {
-        port: process.env.PORT,
+        port,
         historyApiFallback: {
           disableDotRule: true,
           rewrites: [
@@ -61,7 +64,7 @@ module.exports = {
         UI_LOGIN_STRATEGY_NAMES: '',
         PORT: 5080,
         TASKCLUSTER_ROOT_URL: 'https://taskcluster.net',
-        GRAPHQL_SUBSCRIPTION_ENDPOINT: 'ws://localhost:5080/subscription',
+        GRAPHQL_SUBSCRIPTION_ENDPOINT: 'http://localhost:5080/subscription',
         GRAPHQL_ENDPOINT: 'http://localhost:5080/graphql',
         GA_TRACKING_ID: '',
         SENTRY_DSN: '',

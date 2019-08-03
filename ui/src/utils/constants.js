@@ -111,6 +111,10 @@ export const INTERACTIVE_CONNECT_TASK_POLL_INTERVAL = 10000; // 10 seconds
 export const TASK_POLL_INTERVAL = 30000; // 30 seconds
 export const VNC_DISPLAYS_POLLING_INTERVAL = 10000; // 10 seconds
 export const INITIAL_CURSOR = '$$FIRST$$';
+export const INITIAL_TASK_GROUP_NOTIFICATION_PREFERENCES = {
+  groupNotifyTaskFailed: false,
+  groupNotifySuccess: false,
+};
 export const MIMETYPE_ICONS = [
   [FilePdfIcon, ['application/pdf', 'application/postscript']],
   [
@@ -223,3 +227,33 @@ export const AUTH_STORE = '@@TASKCLUSTER_WEB_AUTH';
 // The delay (in milliseconds) for `setTimeout` is a 32 bit signed quantity,
 // which limits it to 2^31-1 ms (2147483647 ms) or 24.855 days.
 export const MAX_SET_TIMEOUT_DELAY = 2 ** 31 - 1;
+export const GROUP_NOTIFY_TASK_FAILED_KEY = 'group-notify-task-failed';
+export const GROUP_NOTIFY_SUCCESS_KEY = 'group-notify-success';
+
+// Worker Manager constants
+export const NULL_PROVIDER = 'null-provider';
+export const GCP = 'GCP';
+export const PROVIDERS = new Map([[`${GCP}`, 'google']]);
+export const PROVIDER_CONFIGS = new Map([
+  [
+    `${GCP}`,
+    {
+      minCapacity: 0,
+      maxCapacity: 0,
+      capacityPerInstance: 1,
+      machineType: 'n1-highcpu-8',
+      regions: ['us-west2'],
+      userData: {},
+      scheduling: {},
+      networkInterfaces: [{}],
+      disks: [{}],
+    },
+  ],
+]);
+export const NULL_WORKER_POOL = {
+  workerPoolId: '/',
+  description: '',
+  owner: '',
+  emailOnError: false,
+  config: PROVIDER_CONFIGS.get(GCP),
+};

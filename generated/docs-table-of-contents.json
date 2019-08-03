@@ -6,6 +6,8 @@
       "noAnchors": true,
       "order": 1000
     },
+    "excerpt": "",
+    "isEmpty": false,
     "name": "README",
     "path": "README"
   },
@@ -299,8 +301,8 @@
             },
             "name": "workers",
             "next": {
-              "path": "manual/task-execution/worker-types",
-              "title": "Worker Types"
+              "path": "manual/task-execution/worker-pools",
+              "title": "Worker Pools"
             },
             "path": "manual/task-execution/workers",
             "prev": {
@@ -316,16 +318,15 @@
             "children": [
             ],
             "data": {
-              "filename": "task-execution/worker-types.md",
               "order": 30,
-              "title": "Worker Types"
+              "title": "Worker Pools"
             },
-            "name": "worker-types",
+            "name": "worker-pools",
             "next": {
               "path": "manual/task-execution/provisioning",
               "title": "Provisioning"
             },
-            "path": "manual/task-execution/worker-types",
+            "path": "manual/task-execution/worker-pools",
             "prev": {
               "path": "manual/task-execution/workers",
               "title": "Workers"
@@ -350,8 +351,8 @@
             },
             "path": "manual/task-execution/provisioning",
             "prev": {
-              "path": "manual/task-execution/worker-types",
-              "title": "Worker Types"
+              "path": "manual/task-execution/worker-pools",
+              "title": "Worker Pools"
             },
             "up": {
               "path": "manual/task-execution",
@@ -712,8 +713,8 @@
             },
             "name": "env-vars",
             "next": {
-              "path": "manual/design/namespaces",
-              "title": "Namespaces"
+              "path": "manual/design/conventions",
+              "title": "Conventions"
             },
             "path": "manual/design/env-vars",
             "prev": {
@@ -727,18 +728,149 @@
           },
           {
             "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                    ],
+                    "data": {
+                      "order": 10,
+                      "title": "Implementation Guidelines"
+                    },
+                    "name": "guidelines",
+                    "next": {
+                      "path": "manual/design/conventions/actions/spec",
+                      "title": "Action Specification"
+                    },
+                    "path": "manual/design/conventions/actions/guidelines",
+                    "prev": {
+                      "path": "manual/design/conventions/actions",
+                      "title": "Action Tasks"
+                    },
+                    "up": {
+                      "path": "manual/design/conventions/actions",
+                      "title": "Action Tasks"
+                    }
+                  },
+                  {
+                    "children": [
+                    ],
+                    "data": {
+                      "order": 20,
+                      "title": "Action Specification"
+                    },
+                    "name": "spec",
+                    "next": {
+                      "path": "manual/design/conventions/actions/ui",
+                      "title": "User Interface Considerations"
+                    },
+                    "path": "manual/design/conventions/actions/spec",
+                    "prev": {
+                      "path": "manual/design/conventions/actions/guidelines",
+                      "title": "Implementation Guidelines"
+                    },
+                    "up": {
+                      "path": "manual/design/conventions/actions",
+                      "title": "Action Tasks"
+                    }
+                  },
+                  {
+                    "children": [
+                    ],
+                    "data": {
+                      "order": 30,
+                      "title": "User Interface Considerations"
+                    },
+                    "name": "ui",
+                    "next": {
+                      "path": "manual/design/conventions/decision-task",
+                      "title": "Decision Tasks"
+                    },
+                    "path": "manual/design/conventions/actions/ui",
+                    "prev": {
+                      "path": "manual/design/conventions/actions/spec",
+                      "title": "Action Specification"
+                    },
+                    "up": {
+                      "path": "manual/design/conventions/actions",
+                      "title": "Action Tasks"
+                    }
+                  }
+                ],
+                "data": {
+                  "order": 1000,
+                  "title": "Action Tasks"
+                },
+                "name": "actions",
+                "next": {
+                  "path": "manual/design/conventions/actions/guidelines",
+                  "title": "Implementation Guidelines"
+                },
+                "path": "manual/design/conventions/actions",
+                "prev": {
+                  "path": "manual/design/conventions",
+                  "title": "Conventions"
+                },
+                "up": {
+                  "path": "manual/design/conventions",
+                  "title": "Conventions"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000,
+                  "title": "Decision Tasks"
+                },
+                "name": "decision-task",
+                "next": {
+                  "path": "manual/design/conventions/task-logs",
+                  "title": "Task Logs"
+                },
+                "path": "manual/design/conventions/decision-task",
+                "prev": {
+                  "path": "manual/design/conventions/actions/ui",
+                  "title": "User Interface Considerations"
+                },
+                "up": {
+                  "path": "manual/design/conventions",
+                  "title": "Conventions"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000,
+                  "title": "Task Logs"
+                },
+                "name": "task-logs",
+                "next": {
+                  "path": "manual/using",
+                  "title": "Using Taskcluster"
+                },
+                "path": "manual/design/conventions/task-logs",
+                "prev": {
+                  "path": "manual/design/conventions/decision-task",
+                  "title": "Decision Tasks"
+                },
+                "up": {
+                  "path": "manual/design/conventions",
+                  "title": "Conventions"
+                }
+              }
             ],
             "data": {
-              "filename": "design/namespaces.md",
-              "order": 30,
-              "title": "Namespaces"
+              "order": 1000,
+              "title": "Conventions"
             },
-            "name": "namespaces",
+            "name": "conventions",
             "next": {
-              "path": "manual/using",
-              "title": "Using Taskcluster"
+              "path": "manual/design/conventions/actions",
+              "title": "Action Tasks"
             },
-            "path": "manual/design/namespaces",
+            "path": "manual/design/conventions",
             "prev": {
               "path": "manual/design/env-vars",
               "title": "Standard Environment Variables"
@@ -827,13 +959,35 @@
             },
             "name": "indexing",
             "next": {
-              "path": "manual/using/scheduled-tasks",
-              "title": "Running Periodic Tasks"
+              "path": "manual/using/namespaces",
+              "title": "Namespaces"
             },
             "path": "manual/using/indexing",
             "prev": {
               "path": "manual/using/secrets",
               "title": "Handling Secrets"
+            },
+            "up": {
+              "path": "manual/using",
+              "title": "Using Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 30,
+              "title": "Namespaces"
+            },
+            "name": "namespaces",
+            "next": {
+              "path": "manual/using/scheduled-tasks",
+              "title": "Running Periodic Tasks"
+            },
+            "path": "manual/using/namespaces",
+            "prev": {
+              "path": "manual/using/indexing",
+              "title": "Indexing Tasks"
             },
             "up": {
               "path": "manual/using",
@@ -855,8 +1009,8 @@
             },
             "path": "manual/using/scheduled-tasks",
             "prev": {
-              "path": "manual/using/indexing",
-              "title": "Indexing Tasks"
+              "path": "manual/using/namespaces",
+              "title": "Namespaces"
             },
             "up": {
               "path": "manual/using",
@@ -1096,7 +1250,6 @@
                 "children": [
                 ],
                 "data": {
-                  "filename": "using/integration/libraries.md",
                   "order": 50,
                   "title": "Client Libraries"
                 },
@@ -1138,72 +1291,6 @@
           },
           {
             "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 10,
-                  "title": "Implementation Guidelines"
-                },
-                "name": "guidelines",
-                "next": {
-                  "path": "manual/using/actions/spec",
-                  "title": "Action Specification"
-                },
-                "path": "manual/using/actions/guidelines",
-                "prev": {
-                  "path": "manual/using/actions",
-                  "title": "Defining User Actions on Existing Tasks"
-                },
-                "up": {
-                  "path": "manual/using/actions",
-                  "title": "Defining User Actions on Existing Tasks"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 20,
-                  "title": "Action Specification"
-                },
-                "name": "spec",
-                "next": {
-                  "path": "manual/using/actions/ui",
-                  "title": "User Interface Considerations"
-                },
-                "path": "manual/using/actions/spec",
-                "prev": {
-                  "path": "manual/using/actions/guidelines",
-                  "title": "Implementation Guidelines"
-                },
-                "up": {
-                  "path": "manual/using/actions",
-                  "title": "Defining User Actions on Existing Tasks"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 30,
-                  "title": "User Interface Considerations"
-                },
-                "name": "ui",
-                "next": {
-                  "path": "manual/using/handling-high-load",
-                  "title": "Handling High Load"
-                },
-                "path": "manual/using/actions/ui",
-                "prev": {
-                  "path": "manual/using/actions/spec",
-                  "title": "Action Specification"
-                },
-                "up": {
-                  "path": "manual/using/actions",
-                  "title": "Defining User Actions on Existing Tasks"
-                }
-              }
             ],
             "data": {
               "order": 1000,
@@ -1211,8 +1298,8 @@
             },
             "name": "actions",
             "next": {
-              "path": "manual/using/actions/guidelines",
-              "title": "Implementation Guidelines"
+              "path": "manual/using/handling-high-load",
+              "title": "Handling High Load"
             },
             "path": "manual/using/actions",
             "prev": {
@@ -1238,8 +1325,8 @@
             },
             "path": "manual/using/handling-high-load",
             "prev": {
-              "path": "manual/using/actions/ui",
-              "title": "User Interface Considerations"
+              "path": "manual/using/actions",
+              "title": "Defining User Actions on Existing Tasks"
             },
             "up": {
               "path": "manual/using",
@@ -1259,8 +1346,8 @@
         },
         "path": "manual/using",
         "prev": {
-          "path": "manual/design/namespaces",
-          "title": "Namespaces"
+          "path": "manual/design/conventions/task-logs",
+          "title": "Task Logs"
         },
         "up": {
           "path": "manual",
@@ -1286,6 +1373,8 @@
       "order": 1000,
       "title": "People"
     },
+    "excerpt": "",
+    "isEmpty": false,
     "name": "people",
     "path": "people"
   },
@@ -2274,13 +2363,79 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/integrations/README",
-                  "title": "Integrations"
+                  "path": "reference/core/worker-manager/google",
+                  "title": "Google Provider Type"
                 },
                 "path": "reference/core/worker-manager/logs",
                 "prev": {
                   "path": "reference/core/worker-manager/api",
                   "title": "api"
+                },
+                "up": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 10,
+                  "title": "Google Provider Type"
+                },
+                "name": "google",
+                "next": {
+                  "path": "reference/core/worker-manager/static",
+                  "title": "Static Provider Type"
+                },
+                "path": "reference/core/worker-manager/google",
+                "prev": {
+                  "path": "reference/core/worker-manager/logs",
+                  "title": "logs"
+                },
+                "up": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 11,
+                  "title": "Static Provider Type"
+                },
+                "name": "static",
+                "next": {
+                  "path": "reference/core/worker-manager/worker-interaction",
+                  "title": "Worker-Manager - Worker Interaction"
+                },
+                "path": "reference/core/worker-manager/static",
+                "prev": {
+                  "path": "reference/core/worker-manager/google",
+                  "title": "Google Provider Type"
+                },
+                "up": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 100,
+                  "title": "Worker-Manager - Worker Interaction"
+                },
+                "name": "worker-interaction",
+                "next": {
+                  "path": "reference/integrations/README",
+                  "title": "Integrations"
+                },
+                "path": "reference/core/worker-manager/worker-interaction",
+                "prev": {
+                  "path": "reference/core/worker-manager/static",
+                  "title": "Static Provider Type"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",
@@ -2699,8 +2854,8 @@
         },
         "path": "reference/integrations/README",
         "prev": {
-          "path": "reference/core/worker-manager/logs",
-          "title": "logs"
+          "path": "reference/core/worker-manager/worker-interaction",
+          "title": "Worker-Manager - Worker Interaction"
         },
         "up": {
           "path": "reference/README",
@@ -2730,6 +2885,8 @@
       "order": 1000,
       "title": "Resources"
     },
+    "excerpt": "",
+    "isEmpty": false,
     "name": "resources",
     "path": "resources"
   },

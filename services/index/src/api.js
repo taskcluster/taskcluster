@@ -39,6 +39,7 @@ builder.declare({
   route: '/task/:indexPath',
   name: 'findTask',
   stability: APIBuilder.stability.stable,
+  category: 'Index Service',
   output: 'indexed-task-response.yml',
   title: 'Find Indexed Task',
   description: [
@@ -88,6 +89,7 @@ builder.declare({
   name: 'listNamespaces',
   stability: APIBuilder.stability.stable,
   output: 'list-namespaces-response.yml',
+  category: 'Index Service',
   title: 'List Namespaces',
   description: [
     'List the namespaces immediately under a given namespace.',
@@ -129,6 +131,7 @@ builder.declare({
   noPublish: true,
   input: 'list-namespaces-request.yml',
   output: 'list-namespaces-response.yml',
+  category: 'Index Service',
   title: 'List Namespaces',
   description: [
     'List the namespaces immediately under a given namespace.',
@@ -171,6 +174,7 @@ builder.declare({
   },
   name: 'listTasks',
   stability: APIBuilder.stability.stable,
+  category: 'Index Service',
   output: 'list-tasks-response.yml',
   title: 'List Tasks',
   description: [
@@ -215,6 +219,7 @@ builder.declare({
   noPublish: true,
   output: 'list-tasks-response.yml',
   title: 'List Tasks',
+  category: 'Index Service',
   description: [
     '(a version of listTasks with POST for backward compatibility; do not use)',
   ].join('\n'),
@@ -249,6 +254,7 @@ builder.declare({
   scopes: 'index:insert-task:<namespace>',
   input: 'insert-task-request.yml',
   output: 'indexed-task-response.yml',
+  category: 'Index Service',
   title: 'Insert Task into Index',
   description: [
     'Insert a task into the index.  If the new rank is less than the existing rank',
@@ -284,6 +290,7 @@ builder.declare({
   route: '/task/:indexPath/artifacts/:name(*)',
   name: 'findArtifactFromTask',
   stability: APIBuilder.stability.stable,
+  category: 'Index Service',
   scopes: {if: 'private', then: 'queue:get-artifact:<name>'},
   title: 'Get Artifact From Indexed Task',
   description: [

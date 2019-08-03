@@ -1,4 +1,7 @@
+const taskcluster = require('taskcluster-client');
 const APIBuilder = require('taskcluster-lib-api');
+const assert = require('assert');
+const {ApiError} = require('./providers/provider');
 
 let builder = new APIBuilder({
   title: 'Taskcluster Worker Manager',
@@ -11,9 +14,13 @@ let builder = new APIBuilder({
     workerPoolId: /^[a-zA-Z0-9-_]{1,38}\/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$/,
   },
   context: [
+    'cfg',
+    'Worker',
     'WorkerPool',
+    'WorkerPoolError',
     'providers',
     'publisher',
+    'notify',
   ],
 });
 
@@ -21,9 +28,10 @@ module.exports = builder;
 
 builder.declare({
   method: 'put',
-  route: '/worker-pool/:workerPoolId',
+  route: '/worker-pool/:workerPoolId(*)',
   name: 'createWorkerPool',
   title: 'Create Worker Pool',
+  category: 'Worker Manager',
   stability: APIBuilder.stability.experimental,
   input: 'create-worker-pool-request.yml',
   output: 'worker-pool-full.yml',
@@ -91,11 +99,12 @@ builder.declare({
 
 builder.declare({
   method: 'post',
-  route: '/worker-pool/:workerPoolId',
+  route: '/worker-pool/:workerPoolId(*)',
   name: 'updateWorkerPool',
   title: 'Update Worker Pool',
   stability: APIBuilder.stability.experimental,
-  input: 'create-worker-pool-request.yml',
+  category: 'Worker Manager',
+  input: 'update-worker-pool-request.yml',
   output: 'worker-pool-full.yml',
   scopes: {AllOf: [
     'worker-manager:update-worker-type:<workerPoolId>',
@@ -130,6 +139,10 @@ builder.declare({
     return res.reportError('InputValidationError', error);
   }
 
+  if (input.workerPoolId && input.workerPoolId !== workerPoolId) {
+    return res.reportError('InputError', 'Incorrect workerPoolId in request body', {});
+  }
+
   const workerPool = await this.WorkerPool.load({
     workerPoolId,
   }, true);
@@ -158,9 +171,10 @@ builder.declare({
 
 builder.declare({
   method: 'get',
-  route: '/worker-pool/:workerPoolId',
+  route: '/worker-pool/:workerPoolId(*)',
   name: 'workerPool',
   title: 'Get Worker Pool',
+  category: 'Worker Manager',
   stability: APIBuilder.stability.experimental,
   output: 'worker-pool-full.yml',
   description: [
@@ -188,6 +202,7 @@ builder.declare({
   name: 'listWorkerPools',
   title: 'List All Worker Pools',
   stability: APIBuilder.stability.experimental,
+  category: 'Worker Manager',
   output: 'worker-pool-list.yml',
   description: [
     'Get the list of all the existing worker pools.',
@@ -211,45 +226,362 @@ builder.declare({
   return res.reply(result);
 });
 
-/*
- * ************** BELOW HERE LIVE PROVIDER ENDPOINTS **************
- */
-
 builder.declare({
   method: 'post',
-  route: '/credentials/google/:workerPoolId',
-  name: 'credentialsGoogle',
-  title: 'Google Credentials',
+  route: '/worker-pool-errors/:workerPoolId(*)',
+  name: 'reportWorkerError',
+  title: 'Report an error from a worker',
+  input: 'report-worker-error-request.yml',
+  category: 'Worker Manager',
+  output: 'worker-pool-error.yml',
+  scopes: {AllOf: [
+    'assume:worker-pool:<workerPoolId>',
+    'assume:worker-id:<workerGroup>/<workerId>',
+  ]},
   stability: APIBuilder.stability.experimental,
-  input: 'credentials-google-request.yml',
-  output: 'temp-creds-response.yml',
   description: [
-    'Get Taskcluster credentials for a worker given an Instance Identity Token',
+    'Report an error that occurred on a worker.  This error will be included',
+    'with the other errors in `listWorkerPoolErrors(workerPoolId)`.',
+    '',
+    'Workers can use this endpoint to report startup or configuration errors',
+    'that might be associated with the worker pool configuration and thus of',
+    'interest to a worker-pool administrator.',
+    '',
+    'NOTE: errors are publicly visible.  Ensure that none of the content',
+    'contains secrets or other sensitive information.',
   ].join('\n'),
 }, async function(req, res) {
   const {workerPoolId} = req.params;
+  const input = req.body;
+  const {workerGroup, workerId} = input;
 
-  try {
-    const workerPool = await this.WorkerPool.load({workerPoolId});
-    const provider = this.providers.get(workerPool.providerId);
+  await req.authorize({workerPoolId, workerGroup, workerId});
 
-    if (!provider) {
-      return res.reportError('InputError', 'Invalid Provider', {
-        providerId: workerPool.providerId,
-      });
-    }
-
-    return res.reply(await provider.verifyIdToken({
-      token: req.body.token,
-      workerPool,
-    }));
-  } catch (err) {
-    // We will internally record what went wrong and report back something generic
-    this.monitor.reportError(err, 'warning');
-    return res.reportError('InputError', 'Invalid Token', {});
+  const workerPool = await this.WorkerPool.load({workerPoolId}, true);
+  if (!workerPool) {
+    return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
+
+  const wpe = await workerPool.reportError({
+    kind: input.kind,
+    title: input.title,
+    description: input.description,
+    extra: {...input.extra, workerGroup, workerId},
+    notify: this.notify,
+    WorkerPoolError: this.WorkerPoolError,
+  });
+
+  res.reply(wpe.serializable());
 });
 
-/*
- * ************** THIS SECTION FOR PROVIDER ENDPOINTS **************
- */
+builder.declare({
+  method: 'get',
+  route: '/worker-pool-errors/:workerPoolId(*)',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
+  name: 'listWorkerPoolErrors',
+  title: 'List Worker Pool Errors',
+  category: 'Worker Manager',
+  stability: APIBuilder.stability.experimental,
+  output: 'worker-pool-error-list.yml',
+  description: [
+    'Get the list of worker pool errors.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { continuationToken } = req.query;
+  const limit = parseInt(req.query.limit || 100, 10);
+  const scanOptions = {
+    continuation: continuationToken,
+    limit,
+    matchPartition: 'exact',
+  };
+
+  const data = await this.WorkerPoolError.scan({
+    workerPoolId: req.params.workerPoolId,
+  }, scanOptions);
+  const result = {
+    workerPoolErrors: data.entries.map(e => e.serializable()),
+  };
+
+  if (data.continuation) {
+    result.continuationToken = data.continuation;
+  }
+  return res.reply(result);
+});
+
+builder.declare({
+  method: 'get',
+  route: '/workers/:workerPoolId:/:workerGroup',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
+  name: 'listWorkersForWorkerGroup',
+  title: 'Workers in a specific Worker Group in a Worker Pool',
+  stability: APIBuilder.stability.experimental,
+  output: 'worker-list.yml',
+  category: 'Worker Manager',
+  description: [
+    'Get the list of all the existing workers in a given group in a given worker pool.',
+  ].join('\n'),
+}, async function(req, res) {
+  const scanOptions = {
+    continuation: req.query.continuationToken,
+    limit: parseInt(req.query.limit || 100, 10),
+    matchPartition: 'exact',
+  };
+
+  const data = await this.Worker.scan({
+    workerPoolId: req.params.workerPoolId,
+    workerGroup: req.params.workerGroup,
+  }, scanOptions);
+
+  const result = {
+    workers: data.entries.map(e => e.serializable()),
+  };
+
+  if (data.continuation) {
+    result.continuationToken = data.continuation;
+  }
+  return res.reply(result);
+});
+
+builder.declare({
+  method: 'get',
+  route: '/workers/:workerPoolId:/:workerGroup/:workerId',
+  name: 'worker',
+  title: 'Get a Worker',
+  stability: APIBuilder.stability.experimental,
+  output: 'worker-full.yml',
+  category: 'Worker Manager',
+  description: [
+    'Get a single worker.',
+  ].join('\n'),
+}, async function(req, res) {
+  const data = await this.Worker.load({
+    workerPoolId: req.params.workerPoolId,
+    workerGroup: req.params.workerGroup,
+    workerId: req.params.workerId,
+  }, true);
+
+  if (!data) {
+    return res.reportError('ResourceNotFound', 'Worker not found', {});
+  }
+
+  return res.reply(data.serializable());
+});
+
+builder.declare({
+  method: 'put',
+  route: '/workers/:workerPoolId:/:workerGroup/:workerId',
+  name: 'createWorker',
+  title: 'Create a Worker',
+  category: 'Worker Manager',
+  stability: APIBuilder.stability.experimental,
+  input: 'create-worker-request.yml',
+  output: 'worker-full.yml',
+  // note that this pattern relies on workerGroup and workerId not containing `/`
+  scopes: 'worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>',
+  description: [
+    'Create a new worker.  The precise behavior of this method depends',
+    'on the provider implementing the given worker pool.  Some providers',
+    'do not support creating workers at all, and will return a 400 error.',
+  ].join('\n'),
+}, async function(req, res) {
+  const {workerPoolId, workerGroup, workerId} = req.params;
+  const workerPool = await this.WorkerPool.load({workerPoolId}, true);
+  if (!workerPool) {
+    return res.reportError('ResourceNotFound',
+      `Worker pool ${workerPoolId} does not exist`, {});
+  }
+
+  if (new Date(req.body.expires) < new Date()) {
+    return res.reportError('InputError', 'worker.expires must be in the future', {});
+  }
+
+  const provider = this.providers.get(workerPool.providerId);
+  if (!provider) {
+    return res.reportError('ResourceNotFound',
+      `Provider ${workerPool.providerId} for worker pool ${workerPoolId} does not exist`, {});
+  }
+
+  let worker;
+
+  try {
+    worker = await provider.createWorker({
+      workerPool,
+      workerGroup,
+      workerId,
+      input: req.body,
+    });
+  } catch (err) {
+    if (!(err instanceof ApiError)) {
+      throw err;
+    }
+    return res.reportError('InputError', err.message, {});
+  }
+  assert(worker, 'Provider createWorker did not return a worker');
+
+  return res.reply(worker.serializable());
+});
+
+builder.declare({
+  method: 'delete',
+  route: '/workers/:workerPoolId:/:workerGroup/:workerId',
+  name: 'removeWorker',
+  title: 'Remove a Worker',
+  category: 'Worker Manager',
+  stability: APIBuilder.stability.experimental,
+  // note that this pattern relies on workerGroup and workerId not containing `/`
+  scopes: 'worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>',
+  description: [
+    'Remove an existing worker.  The precise behavior of this method depends',
+    'on the provider implementing the given worker.  Some providers',
+    'do not support removing workers at all, and will return a 400 error.',
+    'Others may begin removing the worker, but it may remain available via',
+    'the API (perhaps even in state RUNNING) afterward.',
+  ].join('\n'),
+}, async function(req, res) {
+  const {workerPoolId, workerGroup, workerId} = req.params;
+  const worker = await this.Worker.load({workerPoolId, workerGroup, workerId}, true);
+
+  if (!worker) {
+    return res.reportError('ResourceNotFound', 'Worker not found', {});
+  }
+
+  const provider = this.providers.get(worker.providerId);
+  if (!provider) {
+    return res.reportError('ResourceNotFound',
+      `Provider ${worker.providerId} for this worker does not exist`, {});
+  }
+
+  try {
+    await provider.removeWorker(worker);
+  } catch (err) {
+    if (!(err instanceof ApiError)) {
+      throw err;
+    }
+    return res.reportError('InputError', err.message, {});
+  }
+
+  return res.reply({});
+});
+
+builder.declare({
+  method: 'get',
+  route: '/workers/:workerPoolId(*)',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
+  name: 'listWorkersForWorkerPool',
+  title: 'Workers in a Worker Pool',
+  category: 'Worker Manager',
+  stability: APIBuilder.stability.experimental,
+  output: 'worker-list.yml',
+  description: [
+    'Get the list of all the existing workers in a given worker pool.',
+  ].join('\n'),
+}, async function(req, res) {
+  const scanOptions = {
+    continuation: req.query.continuationToken,
+    limit: parseInt(req.query.limit || 100, 10),
+    matchPartition: 'exact',
+  };
+
+  const data = await this.Worker.scan({
+    workerPoolId: req.params.workerPoolId,
+  }, scanOptions);
+
+  const result = {
+    workers: data.entries.map(e => e.serializable()),
+  };
+
+  if (data.continuation) {
+    result.continuationToken = data.continuation;
+  }
+  return res.reply(result);
+});
+
+builder.declare({
+  method: 'post',
+  route: '/worker/register',
+  name: 'registerWorker',
+  title: 'Register a running worker',
+  stability: APIBuilder.stability.experimental,
+  category: 'Worker Manager',
+  input: 'register-worker-request.yml',
+  output: 'register-worker-response.yml',
+  description: [
+    'Register a running worker.  Workers call this method on worker start-up.',
+    '',
+    'This call both marks the worker as running and returns the credentials',
+    'the worker will require to perform its work.  The worker must provide',
+    'some proof of its identity, and that proof varies by provider type.',
+  ].join('\n'),
+}, async function(req, res) {
+  const {workerPoolId, providerId, workerGroup, workerId, workerIdentityProof} = req.body;
+
+  // carefully check each value provided, since we have not yet validated the
+  // worker's "proof"
+
+  const workerPool = await this.WorkerPool.load({workerPoolId}, true);
+  if (!workerPool) {
+    return res.reportError('ResourceNotFound',
+      `Worker pool ${workerPoolId} does not exist`, {});
+  }
+
+  const provider = this.providers.get(providerId);
+  if (!provider) {
+    return res.reportError('ResourceNotFound',
+      `Provider ${providerId} does not exist`, {});
+  }
+
+  if (workerPool.providerId !== providerId && !workerPool.previousProviderIds.includes(providerId)) {
+    return res.reportError('InputError',
+      `Worker pool ${workerPoolId} not associated with provider ${providerId}`, {});
+  }
+
+  const worker = await this.Worker.load({workerPoolId, workerGroup, workerId}, true);
+  if (!worker) {
+    return res.reportError('ResourceNotFound',
+      `Worker ${workerGroup}/${workerId} in worker pool ${workerPoolId} does not exist`, {});
+  }
+
+  if (worker.providerId !== providerId) {
+    return res.reportError('InputError',
+      `Worker ${workerGroup}/${workerId} does not have provider ${providerId}`, {});
+  }
+
+  let expires;
+  try {
+    const reg = await provider.registerWorker({worker, workerPool, workerIdentityProof});
+    expires = reg.expires;
+  } catch (err) {
+    if (!(err instanceof ApiError)) {
+      throw err;
+    }
+    return res.reportError('InputError', err.message, {});
+  }
+  assert(expires, 'registerWorker did not return expires');
+
+  const credentials = taskcluster.createTemporaryCredentials({
+    clientId: `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`,
+    scopes: [
+      `assume:worker-type:${workerPoolId}`, // deprecated role
+      `assume:worker-pool:${workerPoolId}`,
+      `assume:worker-id:${workerGroup}/${workerId}`,
+      `queue:worker-id:${workerGroup}/${workerId}`,
+      `secrets:get:worker-type:${workerPoolId}`, // deprecated secret name
+      `secrets:get:worker-pool:${workerPoolId}`,
+      `queue:claim-work:${workerPoolId}`,
+    ],
+    start: taskcluster.fromNow('-15 minutes'),
+    expiry: expires,
+    credentials: this.cfg.taskcluster.credentials,
+  });
+
+  return res.reply({expires: expires.toJSON(), credentials});
+});

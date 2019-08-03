@@ -8,14 +8,13 @@ order: 60
 
 ## Creating Artifacts
 
-Most workers automatically produce a `public/logs/live.log` artifact containing
-the main log of the artifact.
+Most workers automatically produce a conventional `public/logs/live.log`
+artifact containing the main log of the artifact.
 
 Workers also generally provide a way to specify, in the task description, the
 files and directories that should be uploaded as artifacts after the task
 completes. For a worker running
-[Generic-Worker](/docs/reference/workers/generic-worker/docs/payload) or
-[Taskcluster-Worker](https://github.com/taskcluster/taskcluster-worker/blob/master/plugins/artifacts/payloadschema.go), that looks like:
+[Generic-Worker](/docs/reference/workers/generic-worker/docs/payload), that looks like
 
 ```yaml
 artifacts:
@@ -35,10 +34,12 @@ artifacts:
     type: directory
 ```
 
-In either case will upload all files in the `workspace/results` directory as
+In either case the worker will upload all files in the `workspace/results` directory as
 artifacts named `public/results/<filename>`. Note that Docker-Worker requires
-an absolute path, while Generic-Worker requires a relative path, and for
-Taskcluster-Worker the path format depends on the engine in use.
+an absolute path, while Generic-Worker requires a relative path.
+
+Both worker implementations support a `path` that points to a specific file.
+However, a task executed by generic-worker will fail if this file does not exist.
 
 It is also possible, although unusual, to create artifacts using the [Queue
 API](/docs/reference/platform/queue/api#createArtifact).
@@ -55,10 +56,10 @@ resulting artifact on task A using a URL to the
 [Queue.getLatestArtifact](/docs/reference/platform/queue/api#getLatestArtifact)
 endpoint. That will generally look like this:
 
-    https://queue.taskcluster.net/v1/task/URFDBjl5RtSNz_NJEH3hlw/artifacts/public/build.zip
+    https://tc.example.com/api/queue/v1/task/URFDBjl5RtSNz_NJEH3hlw/artifacts/public/build.zip
 
 where `URFDBjl5RtSNz_NJEH3hlw` is the taskId assigned to task A. This URL can
-be calculated before the task runs - for example, by a decision task.  The URL
+be calculated before the task runs - for example, by a [decision task](/docs/manual/design/conventions/decision-task).  The URL
 comes with all the cautions about client robustness in the
 [Artifacts](/docs/manual/tasks/artifacts) section, above.
 
@@ -97,7 +98,7 @@ This link could be embedded in the Amazing Cats README or documentation site
 for download.
 
 _Note:_ A path like this might point to a new task at any moment. While it is
-safe to download a single artifact like this, if your use-case involves
+safe to download a single artifact using this pattern, if your use-case involves
 downloading a collection of related artifacts, it may be problematic. Suppose
 the Linux version of Amazing-Cats contains both an executable binary and an
 associated file containing debug symbols. Downloading those two files via the

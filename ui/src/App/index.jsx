@@ -69,10 +69,12 @@ export default class App extends Component {
 
   httpLink = new HttpLink({
     uri: process.env.GRAPHQL_ENDPOINT,
+    credentials: 'same-origin',
   });
 
   wsLink = new WebSocketLink({
-    uri: process.env.GRAPHQL_SUBSCRIPTION_ENDPOINT,
+    // allow configuration of https:// or http:// and translate to ws:// or wss://
+    uri: process.env.GRAPHQL_SUBSCRIPTION_ENDPOINT.replace(/^http/, 'ws'),
     options: {
       reconnect: true,
       lazy: true,
@@ -143,6 +145,10 @@ export default class App extends Component {
   }
 
   handleUserChanged = user => {
+    if (!user) {
+      this.authController.clearSession();
+    }
+
     this.setState({
       auth: {
         ...this.state.auth,

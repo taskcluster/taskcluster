@@ -9,9 +9,16 @@
   NODE_VERSION = "10.16.0"
   APPLICATION_NAME = "Taskcluster"
   GRAPHQL_ENDPOINT = "https://taskcluster-web-server.herokuapp.com/graphql"
-  GRAPHQL_SUBSCRIPTION_ENDPOINT = "wss://taskcluster-web-server.herokuapp.com/subscription"
+  GRAPHQL_SUBSCRIPTION_ENDPOINT = "https://taskcluster-web-server.herokuapp.com/subscription"
   UI_LOGIN_STRATEGY_NAMES = ""
   TASKCLUSTER_ROOT_URL = "https://taskcluster.net"
+
+# Rule for redirecting master branch to the heroku app
+[[redirects]]
+  from = "https://taskcluster-web.netlify.com/*"
+  to = "https://taskcluster-ui.herokuapp.com/:splat"
+  status = 301
+  force = true
 
 # Rule for Single Page Applications (docs)
 [[redirects]]

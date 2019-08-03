@@ -142,13 +142,27 @@ let load = loader({
   },
 
   api: {
-    requires: ['cfg', 'schemaset', 'monitor', 'WorkerPool', 'providers', 'publisher'],
-    setup: async ({cfg, schemaset, monitor, WorkerPool, providers, publisher}) => builder.build({
+    requires: ['cfg', 'schemaset', 'monitor', 'Worker', 'WorkerPool', 'WorkerPoolError', 'providers', 'publisher', 'notify'],
+    setup: async ({
+      cfg,
+      schemaset,
+      monitor,
+      Worker,
+      WorkerPool,
+      WorkerPoolError,
+      providers,
+      publisher,
+      notify,
+    }) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {
+        cfg,
+        Worker,
         WorkerPool,
+        WorkerPoolError,
         providers,
         publisher,
+        notify,
       },
       monitor: monitor.childMonitor('api'),
       schemaset,
@@ -181,11 +195,17 @@ let load = loader({
     }),
   },
 
+  // This is used in testing to inject provider fakes
+  fakeCloudApis: {
+    requires: [],
+    setup: () => {},
+  },
+
   providers: {
-    requires: ['cfg', 'monitor', 'notify', 'estimator', 'Worker', 'WorkerPool', 'WorkerPoolError', 'schemaset'],
-    setup: async ({cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError, schemaset}) =>
+    requires: ['cfg', 'monitor', 'notify', 'estimator', 'Worker', 'WorkerPool', 'WorkerPoolError', 'schemaset', 'fakeCloudApis'],
+    setup: async ({cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError, schemaset, fakeCloudApis}) =>
       new Providers().setup({
-        cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError,
+        cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError, fakeCloudApis,
         validator: await schemaset.validator(cfg.taskcluster.rootUrl),
       }),
   },
@@ -215,6 +235,7 @@ let load = loader({
     setup: async ({cfg, monitor, Worker, WorkerPool, providers}) => {
       const workerScanner = new WorkerScanner({
         Worker,
+        WorkerPool,
         providers,
         monitor: monitor.childMonitor('worker-scanner'),
       });

@@ -66,8 +66,8 @@ credentials while debugging.
 
 ## Secret Setup
 
-Set up a new secret using the [secret
-tool](https://tools.taskcluster.net/secrets), named after the repository from
+Set up a new secret using the Secret tool in the Taskcluster UI.
+As suggested in the [namespaces page](/docs/manual/using/namespaces), this secret is typically named after the repository from
 which the task runs, e.g., `repo:github.com/myblog/myblog.com`. Add the
 credentials:
 
@@ -78,8 +78,8 @@ credentials:
 }
 ```
 
-Note that you may need some help from the Taskcluster team to get permission to
-do this.
+Note that you may need some help from the administrators of your deployment to
+get permission to do this.
 
 Then, add the scopes to read that secret to the appropriate repository role.
 Keep in mind that, for Github repositories at least, it is possible to

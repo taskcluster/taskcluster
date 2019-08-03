@@ -25,6 +25,7 @@ suite(testing.suiteName(), function() {
       route: '/context/',
       name: 'getContext',
       title: 'Test End-Point',
+      category: 'API Library',
       description: 'Place we can call to test something',
     }, function(req, res) {
       res.status(200).json({myProp: this.myProp});

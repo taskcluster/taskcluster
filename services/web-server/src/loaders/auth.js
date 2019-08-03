@@ -1,49 +1,34 @@
 const DataLoader = require('dataloader');
 const Debug = require('debug');
 const WebServerError = require('../utils/WebServerError');
-const tryCatch = require('../utils/tryCatch');
-const jwt = require('../utils/jwt');
+const regenerateSession = require('../utils/regenerateSession');
 
 const debug = Debug('loaders.auth');
 
 module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => {
   const getCredentials = new DataLoader(queries => {
     return Promise.all(
-      queries.map(async taskclusterToken => {
+      queries.map(async () => {
         // Don't report much to the user, to avoid revealing sensitive information, although
         // it is likely in the service logs.
-        const credentialError = new WebServerError('InputError', 'Could not generate credentials for this access token');
-        const [jwtError, jwtResponse] = await tryCatch(
-          jwt.verify({
-            publicKey: cfg.login.jwt.publicKey,
-            token: taskclusterToken,
-            options: {
-              audience: rootUrl,
-              issuer: rootUrl,
-            },
-          })
-        );
+        const credentialError = new WebServerError('InputError', 'Could not generate credentials for this user');
+        const unauthorizedError = new WebServerError('Unauthorized', 'Authentication is required to generate credentials');
 
-        if (jwtError) {
-          debug(`error validating jwt: ${jwtError}`);
-          // Don't report much to the user, to avoid revealing sensitive information, although
-          // it is likely in the service logs.
-          throw credentialError;
+        if (!req.user) {
+          throw unauthorizedError;
         }
 
-        debug(`received valid access_token for subject ${jwtResponse.sub}`);
-
-        const provider = jwtResponse.sub.split('/')[0];
+        const provider = req.user.identityProviderId;
         const strategy = strategies[provider];
 
         if (!strategy) {
           throw credentialError;
         }
 
-        const user = await strategy.userFromIdentity(jwtResponse.sub);
+        const user = await strategy.userFromIdentity(req.user.identity);
 
         if (!user) {
-          debug(`Could not find user with identity ${jwtResponse.sub}`);
+          debug(`Could not find user with identity ${req.user.identity}`);
           throw credentialError;
         }
 
@@ -55,6 +40,9 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => 
           startOffset,
           expiry: '15 minutes',
         });
+
+        await regenerateSession(req);
+
         // Move expires back by 30 seconds to ensure the user refreshes well in advance of the
         // actual credential expiration time
         expires.setSeconds(expires.getSeconds() - 30);

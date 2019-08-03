@@ -4,7 +4,7 @@ from setuptools import setup
 from setuptools.command.test import test as TestCommand
 import sys
 
-VERSION = '7.0.1'
+VERSION = '16.0.0'
 
 tests_require = [
     'nose',
@@ -78,8 +78,13 @@ if __name__ == '__main__':
         long_description_content_type="text/markdown",
         author='Mozilla Taskcluster and Release Engineering',
         author_email='release+python@mozilla.com',
-        url='https://github.com/taskcluster/taskcluster-client.py',
-        packages=['taskcluster', 'taskcluster.aio'],
+        url='https://github.com/taskcluster/taskcluster',
+        packages=[
+            "taskcluster",
+            "taskcluster.aio",
+            "taskcluster.generated",
+            "taskcluster.generated.aio",
+        ],
         install_requires=install_requires,
         test_suite="nose.collector",
         tests_require=tests_require,

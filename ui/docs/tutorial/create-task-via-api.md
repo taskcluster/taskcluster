@@ -236,7 +236,7 @@ let runTask = async () => {
 
   console.log("Created task:\n" + JSON.stringify(result.status, null, 2));
   console.log("Inspect it at:");
-  console.log("https://tools.taskcluster.net/task-inspector/#" + taskId);
+  console.log("https://tc.example.com/tasks/" + taskId);
 }
 
 runTask().catch(console.error);

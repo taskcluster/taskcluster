@@ -1,6 +1,7 @@
 const path = require('path');
 const {fork} = require('child_process');
 const {registerBuiltins} = require('../src/builtins');
+const mockFs = require('mock-fs');
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
 const MonitorManager = require('../src/monitormanager');
@@ -28,6 +29,7 @@ suite(testing.suiteName(), function() {
 
   teardown(function() {
     monitorManager.reset();
+    mockFs.restore();
   });
 
   suite('timer', function() {
@@ -437,5 +439,14 @@ suite(testing.suiteName(), function() {
       assert.equal(monitorManager.messages[0].Fields.region, 'us-west-2');
       assert(monitorManager.messages[0].Fields.duration > 0);
     });
+  });
+
+  test('dockerflow version file', async () => {
+    mockFs({
+      '../../version.json': JSON.stringify({version: 'whatever'}),
+    });
+    const mm = new MonitorManager();
+    mm.configure({serviceName: 'foo'});
+    assert.equal(mm.taskclusterVersion, 'whatever');
   });
 });

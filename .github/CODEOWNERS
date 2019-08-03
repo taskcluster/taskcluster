@@ -1,5 +1,24 @@
+# see http://code.v.igoro.us/posts/2019/07/codeowners.html
+
 * @taskcluster/services-reviewers
 
+# frontend stuff
 services/web-server @taskcluster/frontend-reviewers
 clients/client-web @taskcluster/frontend-reviewers
 ui @taskcluster/frontend-reviewers
+
+# python
+clients/client-py @taskcluster/python-reviewers
+
+# exceptions to the above
+ui/docs @taskcluster/services-reviewers
+
+# generated stuff that does not need review (this is similar to /.gitattributes)
+generated/**
+clients/client-web/src/clients/**
+clients/client-py/taskcluster/generated/**
+clients/client/src/apis.js
+services/*/Procfile
+infrastructure/k8s/templates/**
+clients/client-shell/apis/services.go
+clients/client-go/tc*/**

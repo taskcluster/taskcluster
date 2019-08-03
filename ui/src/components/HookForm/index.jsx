@@ -31,6 +31,7 @@ import SpeedDialAction from '../SpeedDialAction';
 import DialogAction from '../DialogAction';
 import DateDistance from '../DateDistance';
 import HookLastFiredTable from '../HookLastFiredTable';
+import PulseBindings from '../PulseBindings';
 import { hook } from '../../utils/prop-types';
 import removeKeys from '../../utils/removeKeys';
 
@@ -42,6 +43,7 @@ const initialHook = {
     emailOnError: true,
   },
   schedule: [],
+  bindings: [],
   task: {
     provisionerId: 'aws-provisioner-v1',
     workerType: 'tutorial',
@@ -54,7 +56,7 @@ const initialHook = {
       name: 'Hook Task',
       description: 'Task Description',
       owner: 'name@example.com',
-      source: 'https://tools.taskcluster.net/hooks',
+      source: 'https://tc.example.com/hooks',
     },
     expires: { $fromNow: '3 months' },
     deadline: { $fromNow: '6 hours' },
@@ -139,24 +141,12 @@ const initialHook = {
 }))
 /** A form to view/edit/create a hook */
 export default class HookForm extends Component {
-  static defaultProps = {
-    isNewHook: false,
-    hook: initialHook,
-    hookLastFires: null,
-    onTriggerHook: null,
-    onCreateHook: null,
-    onUpdateHook: null,
-    onDeleteHook: null,
-    actionLoading: false,
-    dialogError: null,
-  };
-
   static propTypes = {
     /** Part of a GraphQL hook response containing info about that hook.
-    Not needed when creating a new hook */
+     Not needed when creating a new hook */
     hook: hook.isRequired,
     /** Part of the same Grahql hook response as above containing info
-    about some last hook fired attempts */
+     about some last hook fired attempts */
     hookLastFires: array,
     /** Set to `true` when creating a new hook. */
     isNewHook: bool,
@@ -176,11 +166,34 @@ export default class HookForm extends Component {
      * Callback function fired when the DialogAction component throws an error.
      * */
     onDialogActionError: func,
+    /**
+     * Callback function fired when the DialogAction triggers the
+     * onComplete handler after successfully deleting a hook.
+     * */
+    onDialogActionDeleteComplete: func,
+  };
+
+  static defaultProps = {
+    isNewHook: false,
+    hook: initialHook,
+    hookLastFires: null,
+    onTriggerHook: null,
+    onCreateHook: null,
+    onUpdateHook: null,
+    onDeleteHook: null,
+    actionLoading: false,
+    dialogError: null,
+    onDialogActionError: null,
+    onDialogDeleteHook: null,
+    deleteDialogOpen: null,
+    onDialogActionDeleteComplete: null,
   };
 
   state = {
     hook: null,
     hookLastFires: null,
+    routingKeyPattern: '#',
+    pulseExchange: '',
     // eslint-disable-next-line react/no-unused-state
     previousHook: null,
     taskInput: '',
@@ -236,6 +249,7 @@ export default class HookForm extends Component {
         owner: hook.metadata.owner,
         emailOnError: hook.metadata.emailOnError,
       },
+      bindings: hook.bindings,
       schedule: hook.schedule,
       task: hook.task,
       triggerSchema: hook.triggerSchema,
@@ -276,11 +290,12 @@ export default class HookForm extends Component {
       hook: { hookId, hookGroupId },
     } = this.state;
 
-    onDeleteHook &&
-      onDeleteHook({
+    if (onDeleteHook) {
+      return onDeleteHook({
         hookId,
         hookGroupId,
       });
+    }
   };
 
   handleEmailOnErrorChange = () => {
@@ -387,6 +402,7 @@ export default class HookForm extends Component {
       hook.hookId &&
       hook.metadata.name &&
       hook.metadata.owner &&
+      hook.bindings &&
       !validation.owner.error &&
       taskValidJson &&
       triggerSchemaValidJson
@@ -446,18 +462,65 @@ export default class HookForm extends Component {
     });
   };
 
+  handleRoutingKeyPatternChange = ({ target: { value } }) => {
+    this.setState({ routingKeyPattern: value });
+  };
+
+  handlePulseExchangeChange = ({ target: { name, value } }) => {
+    this.setState({ [name]: value });
+  };
+
+  handleAddBinding = () => {
+    const { pulseExchange, routingKeyPattern } = this.state;
+    const bindings = this.state.hook.bindings.concat([
+      {
+        exchange: pulseExchange,
+        routingKeyPattern,
+      },
+    ]);
+
+    this.setState({
+      pulseExchange: '',
+      routingKeyPattern: '#',
+      hook: {
+        ...this.state.hook,
+        bindings,
+      },
+    });
+  };
+
+  handleDeleteBinding = ({ exchange, routingKeyPattern }) => {
+    const bindings = this.state.hook.bindings.filter(
+      binding =>
+        binding.exchange !== exchange ||
+        binding.routingKeyPattern !== routingKeyPattern
+    );
+
+    this.setState({
+      hook: {
+        ...this.state.hook,
+        bindings,
+      },
+    });
+  };
+
   render() {
     const {
       actionLoading,
       dialogOpen,
+      deleteDialogOpen,
       dialogError,
       classes,
       isNewHook,
-      onActionDialogClose,
+      onDialogActionClose,
       onDialogActionError,
+      onDialogActionDeleteComplete,
+      onDialogDeleteHook,
       onDialogOpen,
     } = this.props;
     const {
+      routingKeyPattern,
+      pulseExchange,
       scheduleTextField,
       taskInput,
       triggerSchemaInput,
@@ -482,6 +545,7 @@ export default class HookForm extends Component {
                   name="hookGroupId"
                   onChange={this.handleHookGroupIdChange}
                   fullWidth
+                  autoFocus
                   value={hook.hookGroupId}
                 />
               </ListItem>
@@ -594,7 +658,21 @@ export default class HookForm extends Component {
               </ListItem>
             </Fragment>
           )}
-          <List>
+          <PulseBindings
+            bindings={hook.bindings}
+            onBindingAdd={this.handleAddBinding}
+            onBindingRemove={this.handleDeleteBinding}
+            onRoutingKeyPatternChange={this.handleRoutingKeyPatternChange}
+            onPulseExchangeChange={this.handlePulseExchangeChange}
+            pulseExchange={pulseExchange}
+            pattern={routingKeyPattern}
+          />
+          <List
+            subheader={
+              <ListSubheader className={classes.subheader}>
+                Schedule
+              </ListSubheader>
+            }>
             <ListItem>
               <ListItemText
                 primary={
@@ -611,7 +689,6 @@ export default class HookForm extends Component {
                         for format information. Times are in UTC.
                       </span>
                     }
-                    label="Schedule"
                     name="scheduleTextField"
                     placeholder="* * * * * *"
                     fullWidth
@@ -729,7 +806,7 @@ export default class HookForm extends Component {
                 requiresAuth
                 tooltipOpen
                 icon={<DeleteIcon />}
-                onClick={this.handleDeleteHook}
+                onClick={onDialogDeleteHook}
                 className={classes.deleteIcon}
                 ButtonProps={{
                   disabled: actionLoading,
@@ -755,8 +832,8 @@ export default class HookForm extends Component {
             fullScreen
             open={dialogOpen}
             onSubmit={this.handleTriggerHookSubmit}
-            onComplete={onActionDialogClose}
-            onClose={onActionDialogClose}
+            onComplete={onDialogActionClose}
+            onClose={onDialogActionClose}
             onError={onDialogActionError}
             error={dialogError}
             confirmText="Trigger Hook"
@@ -791,6 +868,23 @@ export default class HookForm extends Component {
                   </Grid>
                 </Grid>
               </Fragment>
+            }
+          />
+        )}
+        {deleteDialogOpen && (
+          <DialogAction
+            open={deleteDialogOpen}
+            title="Delete?"
+            onSubmit={this.handleDeleteHook}
+            onComplete={onDialogActionDeleteComplete}
+            onClose={onDialogActionClose}
+            onError={onDialogActionError}
+            error={dialogError}
+            confirmText="Delete Hook"
+            body={
+              <Typography>
+                This will delete {hook.hookGroupId}/{hook.hookId}
+              </Typography>
             }
           />
         )}

@@ -6,12 +6,21 @@ defaults:
     playground: false
 
   monitoring:
-    level: !env LEVEL
+    level: !env:optional LEVEL
 
   # Server configuration
   server:
     # Port to listen for requests on
     port: !env:number PORT
+
+    # The CORS allowed origins (passed to https://yarnpkg.com/en/package/cors);
+    # typically this is the root URL, but in testing it may have other values.
+    # The legacy root URL is special-cased.  Values beginning with `/` are
+    # treated as regular expressions.  ADDITIONAL_ALLOWED_CORS_ORIGIN is used
+    # to allow UI deploy previews to access a running deployment.
+    allowedCORSOrigins:
+      - !env TASKCLUSTER_ROOT_URL
+      - !env ADDITIONAL_ALLOWED_CORS_ORIGIN
 
   # Configuration of access to other taskcluster components
   taskcluster:
@@ -49,9 +58,8 @@ defaults:
     #   clientId: !env GITHUB_CLIENT_ID
     #   clientSecret: !env GITHUB_CLIENT_SECRET
     strategies: !env:json UI_LOGIN_STRATEGIES
-    jwt:
-      publicKey: !env JWT_PUBLIC_KEY
-      privateKey: !env JWT_PRIVATE_KEY
+    # this should be a random string, and is used to create the session ID
+    sessionSecret: !env SESSION_SECRET
 
 development:
   app:
@@ -61,6 +69,20 @@ development:
   server:
     # taskcluster-ui's dev server assumes port 3050
     port: 3050
+    # for testing, allow any origin
+    allowedCORSOrigins: [true]
+  login:
+    sessionSecret: 'keyboard cat'
+
+test:
+  app:
+    publicUrl: http://localhost:5080
+
+  login:
+    sessionSecret: 'keyboard cat'
+
+  server:
+    port: 63821
 
 production:
   pulse:
