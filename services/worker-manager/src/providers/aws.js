@@ -1,7 +1,8 @@
-const {Provider} = require('./provider');
+const {ApiError, Provider} = require('./provider');
 const aws = require('aws-sdk');
 const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
+const verify = require('iid-verify');
 
 class AwsProvider extends Provider {
   constructor({
@@ -17,6 +18,7 @@ class AwsProvider extends Provider {
     estimator,
     validator,
     notify,
+    ec2iid_DSA_SHA1_cert,
   }) {
     super({
       providerId,
@@ -33,6 +35,7 @@ class AwsProvider extends Provider {
     this.instancePermissions = instancePermissions;
     this.apiVersion = apiVersion;
     this.region = region;
+    this.ec2iid_DSA_SHA1_cert = ec2iid_DSA_SHA1_cert;
 
     aws.config.update({region});
     this.iam = new aws.IAM({apiVersion});
@@ -211,15 +214,27 @@ class AwsProvider extends Provider {
         providerData: {
           groups: spawned.Groups,
           amiLaunchIndexes: spawned.Instances.map(i => i.AmiLaunchIndex),
+          imageId: i.ImageId,
+          instanceType: i.InstanceType,
+          architecture: i.Architecture,
+          availabilityZone: i.Placement.AvailabilityZone,
+          privateIp: i.PrivateIpAddress,
+          owner: spawned.OwnerId,
         },
       });
     }));
   }
 
   async registerWorker({worker, workerPool, workerIdentityProof}) {
-    // check worker's identity -
-    // The way AWS works, workers will be getting temporary creds for accessing AWS APIs
-    // automatically. There's no token back-and-forth
+    const {document, pkcs7} = workerIdentityProof;
+    if (!document || !pkcs7) {
+      throw new ApiError('Token validation error');
+    }
+
+    if (!this.verifyInstanceIdentityDocument({document, signature: pkcs7})) {
+      throw new ApiError('Token validation error');
+    }
+    this.verifyWorkerInstance({document, worker});
 
     // mark it as running
     await worker.modify(w => {
@@ -291,6 +306,47 @@ class AwsProvider extends Provider {
     const i = Math.random() * (possibleConfigs.length() - 1);
 
     return possibleConfigs[i];
+  }
+
+  /**
+   * Method to verify the instance identity document against the signature and public key
+   * The signature is the one that is obtained by
+   *
+   * Temporary function in case other method of verification are found
+   * (otherwise it's not needed, verify can be called directly)
+   *
+   * @param document
+   * @param signature
+   * @returns boolean (true if verification is successful)
+   */
+  verifyInstanceIdentityDocument({document, signature}) {
+    return verify(this.ec2iid_DSA_SHA1_cert, document, signature);
+  }
+
+  /**
+   * Method to verify the data from the instance identity document against the data on instance
+   * with that id that we already have in the DB
+   *
+   * @param document
+   * @returns void if everything checks out
+   * @throws an error if there's any difference
+   */
+  verifyWorkerInstance({document, worker}) {
+    const providerData = {worker};
+
+    if (
+      providerData.privateIp !== document.privateIp ||
+      providerData.owner !== document.accountId ||
+      providerData.availabilityZone !== document.availabilityZone ||
+      providerData.architecture !== document.architecture ||
+      providerData.imageId !== document.imageId ||
+      worker.workerId !== document.instanceId ||
+      providerData.instanceType !== document.instanceType
+    ) {
+      throw new ApiError('Token validation error');
+    }
+
+    return;
   }
 }
 
