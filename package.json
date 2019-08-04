@@ -184,7 +184,8 @@
       "config:base",
       ":preserveSemverRanges",
       "schedule:weekly"
-    ]
+    ],
+    "postUpdateOptions": ["gomodTidy"]
   },
   "eslintIgnore": [
     "**/node_modules/**",

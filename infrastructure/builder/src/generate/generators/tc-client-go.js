@@ -35,6 +35,7 @@ exports.tasks = [{
     await execCommand({
       dir: path.join(REPO_ROOT, 'clients', 'client-go'),
       command: ['go', 'mod', 'tidy'],
+      utils,
     });
   },
 }];

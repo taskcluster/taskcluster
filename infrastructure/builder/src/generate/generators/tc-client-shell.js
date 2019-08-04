@@ -13,7 +13,8 @@ exports.tasks = [{
     });
     await execCommand({
       dir: path.join(REPO_ROOT, 'clients', 'client-shell'),
-      command: ['go', 'mod', 'tidu'],
+      command: ['go', 'mod', 'tidy'],
+      utils,
     });
   },
 }];
