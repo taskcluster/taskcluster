@@ -21,6 +21,11 @@ require (
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/tylerb/graceful.v1 v1.2.15
 	gopkg.in/yaml.v2 v2.2.2
+	launchpad.net/gocheck v0.0.0-00010101000000-000000000000 // indirect
 )
 
 replace github.com/taskcluster/taskcluster/clients/client-go/v16 => ../client-go
+
+// launchpad.net is a bzr repo, and we do not want to require bzr to be installed just for
+// a test requirement of an outdated dependency, so rewrite this to a github repo.
+replace launchpad.net/gocheck => github.com/go-check/check v0.0.0-20140401040844-163297374fe1

@@ -16,4 +16,9 @@ require (
 	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
 	golang.org/x/tools v0.0.0-20190722020823-e377ae9d6386
 	gopkg.in/yaml.v2 v2.2.2 // indirect
+	launchpad.net/gocheck v0.0.0-00010101000000-000000000000 // indirect
 )
+
+// launchpad.net is a bzr repo, and we do not want to require bzr to be installed just for
+// a test requirement of an outdated dependency, so rewrite this to a github repo.
+replace launchpad.net/gocheck => github.com/go-check/check v0.0.0-20140401040844-163297374fe1
