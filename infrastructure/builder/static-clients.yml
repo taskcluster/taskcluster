@@ -49,7 +49,7 @@ github:
 hooks:
   - auth:azure-table:read-write:${azureAccountId}/Hooks
   - auth:azure-table:read-write:${azureAccountId}/Queue
-  - auth:azure-table:read-write:${azureAccountId}/LastFire2
+  - auth:azure-table:read-write:${azureAccountId}/LastFire
   - assume:hook-id:*
   - notify:email:*
   - queue:create-task:*
