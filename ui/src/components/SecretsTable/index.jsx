@@ -8,7 +8,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import TableRow from '@material-ui/core/TableRow';
 import LinkIcon from 'mdi-react/LinkIcon';
-import TableCellListItem from '../TableCellListItem';
+import TableCellList from '../TableCellList';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_SECRETS_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
@@ -112,7 +112,7 @@ export default class SecretsTable extends Component {
         renderRow={({ node: { name } }) => (
           <TableRow key={name}>
             <TableCell>
-              <TableCellListItem
+              <TableCellList
                 className={classes.listItemCell}
                 dense
                 button
@@ -123,7 +123,7 @@ export default class SecretsTable extends Component {
                   primary={<Typography>{name}</Typography>}
                 />
                 <LinkIcon size={iconSize} />
-              </TableCellListItem>
+              </TableCellList>
             </TableCell>
           </TableRow>
         )}
