@@ -6201,6 +6201,11 @@ javascript-stringify@^1.6.0:
   resolved "https://registry.yarnpkg.com/javascript-stringify/-/javascript-stringify-1.6.0.tgz#142d111f3a6e3dae8f4a9afd77d45855b5a9cce3"
   integrity sha1-FC0RHzpuPa6PSpr9d9RYVbWpzOM=
 
+javascript-stringify@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/javascript-stringify/-/javascript-stringify-2.0.0.tgz#ef750216ae66504ffd670b68c8b8aa07bdf7b588"
+  integrity sha512-zzK8+ByrzvOL6N92hRewwUKL0wN0TOaIuUjX0Jj8lraxWvr5wHYs2YTjaj2lstF+8qMv5cmPPef47va8NT8lDw==
+
 joi-to-json-schema@^3.0.0:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/joi-to-json-schema/-/joi-to-json-schema-3.5.0.tgz#dccc97b48e4a1004cce7dccb7bfe572aeace758f"
@@ -7448,16 +7453,15 @@ neo-async@^2.5.0:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.0.tgz#b9d15e4d71c6762908654b5183ed38b753340835"
   integrity sha512-MFh0d/Wa7vkKO3Y3LlacqAEeHK0mckVqzDieUKTT+KGxi+zIpeVsFxymkIiRpbpDziHc290Xr9A1O4Om7otoRA==
 
-neutrino@9.0.0-rc.0:
-  version "9.0.0-rc.0"
-  resolved "https://registry.yarnpkg.com/neutrino/-/neutrino-9.0.0-rc.0.tgz#7fc5d1c55779778f2f9e46ee4c7fd9fa356fc789"
-  integrity sha512-2CvArWrHLgmLTPVY4GIjWpmzPXqb/YWyDISwJ7uwA9X38zzaIRuSxtdPSMLJWk6CskiLM2qGBXUY5L1NKGBzdg==
+neutrino@9.0.0-rc.3:
+  version "9.0.0-rc.3"
+  resolved "https://registry.yarnpkg.com/neutrino/-/neutrino-9.0.0-rc.3.tgz#3428c0f3c0e77d121a43d6cecb2da2cd70712990"
+  integrity sha512-B6F0I8jttqMb45o9xGq8Iue11RG3oWXHDF6/5iCDYfocHIQ4PrcChnyKnriL7xyrYq0pVzcWINIEahp55VAsYQ==
   dependencies:
-    deepmerge "^1.5.2"
-    is-plain-object "^2.0.4"
     lodash.clonedeep "^4.5.0"
-    webpack-chain "^5.0.1"
-    yargs-parser "^11.1.1"
+    semver "^6.0.0"
+    webpack-chain "^6.0.0"
+    yargs-parser "^13.0.0"
 
 nice-try@^1.0.4:
   version "1.0.5"
@@ -10778,8 +10782,7 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-lib-scopes@link:../libraries/scopes":
-  version "0.0.0"
-  uid ""
+  version "16.0.0"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -11561,13 +11564,13 @@ web-namespaces@^1.0.0, web-namespaces@^1.1.2:
   resolved "https://registry.yarnpkg.com/web-namespaces/-/web-namespaces-1.1.2.tgz#c8dc267ab639505276bae19e129dbd6ae72b22b4"
   integrity sha512-II+n2ms4mPxK+RnIxRPOw3zwF2jRscdJIUE9BfkKHm4FYEg9+biIoTMnaZF5MpemE3T+VhMLrhbyD4ilkPCSbg==
 
-webpack-chain@^5.0.1:
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/webpack-chain/-/webpack-chain-5.2.0.tgz#752c01e42752412610b27e3dbd6e0781146a465a"
-  integrity sha512-JXz9YgEkTqx8hvnES2VMRyWHNFlqJfLmA5QTyuJOXalkGg+MVdOgB0UaYtc4iDadEmzJLe8UyCl4wyDq3wWZDg==
+webpack-chain@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/webpack-chain/-/webpack-chain-6.0.0.tgz#9c36525a1271a54e7bfd1791199b395f400ae4f1"
+  integrity sha512-NK62XgJOOSmYs4kaXFIKKeClpuOVHY7m6e4XwxbVX/2HAUboH6xFCTVXMVv8+jB6K8o/UGjlo1Cv3XXOyNAAGw==
   dependencies:
     deepmerge "^1.5.2"
-    javascript-stringify "^1.6.0"
+    javascript-stringify "^2.0.0"
 
 webpack-cli@^3.3.1:
   version "3.3.1"
@@ -11920,6 +11923,14 @@ yargs-parser@11.1.1, yargs-parser@^11.1.1:
   version "11.1.1"
   resolved "https://registry.yarnpkg.com/yargs-parser/-/yargs-parser-11.1.1.tgz#879a0865973bca9f6bab5cbdf3b1c67ec7d3bcf4"
   integrity sha512-C6kB/WJDiaxONLJQnF8ccx9SEeoTTLek8RVbaOIsrAUS8VrBEXfmeSnCZxygc+XC2sNMBIwOOnfcxiynjHsVSQ==
+  dependencies:
+    camelcase "^5.0.0"
+    decamelize "^1.2.0"
+
+yargs-parser@^13.0.0:
+  version "13.1.1"
+  resolved "https://registry.yarnpkg.com/yargs-parser/-/yargs-parser-13.1.1.tgz#d26058532aa06d365fe091f6a1fc06b2f7e5eca0"
+  integrity sha512-oVAVsHz6uFrg3XQheFII8ESO2ssAf9luWuAd6Wexsu4F3OtIW0o8IribPXYrD4WC24LWtPrJlGy87y5udK+dxQ==
   dependencies:
     camelcase "^5.0.0"
     decamelize "^1.2.0"
