@@ -13,6 +13,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     await helper.workerManager.ping();
   });
 
+  test('list providers', async function() {
+    const {providers} = await helper.workerManager.listProviders();
+    assert.deepStrictEqual(providers.sort(), [
+      {providerId: 'testing1', providerType: 'testing'},
+      {providerId: 'testing2', providerType: 'testing'},
+      {providerId: 'static', providerType: 'static'},
+      {providerId: 'google', providerType: 'google'},
+    ].sort());
+  });
+
   const workerPoolCompare = (workerPoolId, input, result) => {
     const {created, lastModified, ...definition} = result;
     assert(created);

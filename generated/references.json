@@ -529,6 +529,53 @@
   },
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/provider-list.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "A list of providers",
+      "properties": {
+        "continuationToken": {
+          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of workers in the worker-manager.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called `listWorkerPools` with `continuationToken`\nuntil you get a result without a `continuationToken`.\n",
+          "title": "Continuation Token",
+          "type": "string"
+        },
+        "providers": {
+          "description": "List of all providers",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "providerId": {
+                "description": "The id of this provider",
+                "title": "Provider ID",
+                "type": "string"
+              },
+              "providerType": {
+                "description": "The provider implementation underlying this provider",
+                "title": "Provider Type",
+                "type": "string"
+              }
+            },
+            "required": [
+              "providerId",
+              "providerType"
+            ],
+            "type": "object"
+          },
+          "title": "Providers",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "providers"
+      ],
+      "title": "Provider List",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/provider-list.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/create-worker-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -8479,6 +8526,23 @@
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Worker Manager",
+          "description": "Retrieve a list of providers that are available for worker pools.",
+          "method": "get",
+          "name": "listProviders",
+          "output": "v1/provider-list.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/providers",
+          "stability": "stable",
+          "title": "List Providers",
           "type": "function"
         },
         {

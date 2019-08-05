@@ -1569,6 +1569,20 @@ var services = map[string]definitions.Service{
 				Input:       "",
 			},
 			definitions.Entry{
+				Name:        "listProviders",
+				Title:       "List Providers",
+				Description: "Retrieve a list of providers that are available for worker pools.",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/providers",
+				Args:        []string{},
+				Query: []string{
+					"continuationToken",
+					"limit",
+				},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "createWorkerPool",
 				Title:       "Create Worker Pool",
 				Description: "Create a new worker pool. If the worker pool already exists, this will throw an error.",
