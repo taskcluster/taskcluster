@@ -54,7 +54,6 @@
     "hashids": "^1.2.2",
     "hawk": "^7.0.10",
     "hsts": "^2.1.0",
-    "iid-verify": "^1.1.0",
     "immutable": "^3.8.2",
     "irc-upd": "^0.10.0",
     "iterall": "^1.2.2",
