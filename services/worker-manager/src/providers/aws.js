@@ -2,7 +2,7 @@ const {ApiError, Provider} = require('./provider');
 const aws = require('aws-sdk');
 const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
-const verify = require('iid-verify');
+const crypto = require('crypto');
 
 class AwsProvider extends Provider {
   constructor({
@@ -18,7 +18,7 @@ class AwsProvider extends Provider {
     estimator,
     validator,
     notify,
-    ec2iid_DSA_SHA1_cert,
+    ec2iid_RSA_key,
   }) {
     super({
       providerId,
@@ -35,7 +35,7 @@ class AwsProvider extends Provider {
     this.instancePermissions = instancePermissions;
     this.apiVersion = apiVersion;
     this.region = region;
-    this.ec2iid_DSA_SHA1_cert = ec2iid_DSA_SHA1_cert;
+    this.ec2iid_RSA_key = ec2iid_RSA_key;
 
     aws.config.update({region});
     this.iam = new aws.IAM({apiVersion});
@@ -226,12 +226,12 @@ class AwsProvider extends Provider {
   }
 
   async registerWorker({worker, workerPool, workerIdentityProof}) {
-    const {document, pkcs7} = workerIdentityProof;
-    if (!document || !pkcs7) {
+    const {document, signature} = workerIdentityProof;
+    if (!document || !signature) {
       throw new ApiError('Token validation error');
     }
 
-    if (!this.verifyInstanceIdentityDocument({document, signature: pkcs7})) {
+    if (!this.verifyInstanceIdentityDocument({document, signature})) {
       throw new ApiError('Token validation error');
     }
     this.verifyWorkerInstance({document, worker});
@@ -310,17 +310,20 @@ class AwsProvider extends Provider {
 
   /**
    * Method to verify the instance identity document against the signature and public key
-   * The signature is the one that is obtained by
+   * The signature is the one that is obtained by calling
+   * http://169.254.169.254/latest/dynamic/instance-identity/signature
+   * endpoint. The endpoint produces base64-encoded data, so no conversions
+   * are necessary prior to sending
    *
-   * Temporary function in case other method of verification are found
-   * (otherwise it's not needed, verify can be called directly)
-   *
-   * @param document
-   * @param signature
+   * @param document - a string or a buffer
+   * @param signature - base64-encoded data (can be a string or buffer)
    * @returns boolean (true if verification is successful)
    */
   verifyInstanceIdentityDocument({document, signature}) {
-    return verify(this.ec2iid_DSA_SHA1_cert, document, signature);
+    const verifier = crypto.createVerify('sha256');
+
+    verifier.update(document.toString());
+    return verifier.verify(this.ec2iid_RSA_key.toString(), signature.toString(), 'base64');
   }
 
   /**
