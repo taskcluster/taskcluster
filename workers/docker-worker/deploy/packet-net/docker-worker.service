@@ -1,13 +1,12 @@
 [Unit]
 Description=Taskcluster docker worker
-Wants=device-drivers
-After=docker.service device-drivers
+Wants=device-drivers.service tc-w-runner-config.service
+After=docker.service device-drivers.service tc-w-runner-config.service
 
 [Service]
 Type=simple
 ExecStart=/usr/local/bin/start-docker-worker
 User=root
-Environment="HOST=packet"
 
 [Install]
 RequiredBy=graphical.target

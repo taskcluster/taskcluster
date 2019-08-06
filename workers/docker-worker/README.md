@@ -11,6 +11,7 @@
   - [Deployment](#deployment)
     - [Requirements](#requirements-1)
     - [Building AMI's](#building-amis)
+    - [Packet.net deployment](#packetnet-deployment)
     - [Block-Device Mapping](#block-device-mapping)
     - [Updating Schema](#updating-schema)
     - [Post-Deployment Verification](#post-deployment-verification)
@@ -291,8 +292,20 @@ folders.
 
 ### Packet.net deployment
 
-To generate the packet.net image, you need the `ubuntu_18_04-base` docker
-image. You obtain this image, clone the
+To generate a new custom image, just type from the docker-worker repo root
+directory:
+
+```
+deploy/bin/build packet
+```
+
+You can find information on how to deploy the custom image in the
+[packet website](https://support.packet.com/kb/articles/custom-images).
+
+#### Base image
+
+To generate the packet.net image, you need the `taskcluster/ubuntu_18_04-base:latest` docker
+image. If you need to build this image, clone the
 [packet-images](https://github.com/packethost/packet-images), and run (you may
 need to run the command twice):
 
@@ -302,14 +315,11 @@ $ sudo ./tools/build.sh -d ubuntu_18_04 -p t1.small.x86 -a x86_64 -b ubuntu_18_0
 
 You will need a valid Github ssh key in the root/.ssh directory.
 
-Then, run:
+Then just tag it with the `taskcluster/` prefix:
 
 ```
-deploy/bin/build packet
+$ docker tag ubuntu_18_04-base:latest taskcluster/ubuntu_18_04-base:latest
 ```
-
-You can find information on how to deploy the custom image in the
-[packet website](https://support.packet.com/kb/articles/custom-images).
 
 ### Block-Device Mapping
 

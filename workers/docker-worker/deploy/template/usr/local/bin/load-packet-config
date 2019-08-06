@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+
+import requests
+import systemd.daemon
+import taskcluster
+
+
+def main():
+    udf = '/var/lib/cloud/instance/user-data.txt'
+
+    r = requests.get('https://metadata.packet.net/metadata')
+    # We probably aren't in packet if we don't get a 200
+    if r.status_code != 200:
+        return
+    metadata = r.json()
+
+    userdata = filter(
+        lambda x: len(x) == 2,
+        (x[1:].rstrip().split('=') for x in open(udf).readlines())
+    )
+    userdata = {a: b for a, b in userdata}
+
+    with open('/etc/start-worker.yml', 'w') as f:
+        f.write(
+            f'''
+provider:
+    providerType: standalone
+    rootURL: {userdata['taskclusterRootUrl']}
+    clientID: {userdata['clientId']}
+    accessToken: {userdata['accessToken']}
+    workerPoolID: {userdata['workerPoolId']}
+    workerGroup: packet-{metadata['facility']}
+    workerID: {metadata['id']}
+workerConfig:
+    dockerConfig:
+        allowPrivileged: true
+worker:
+    implementation: docker-worker
+    path: /home/ubuntu/docker_worker
+    configPath: /home/ubuntu/worker.cfg
+'''
+        )
+
+    secrets = taskcluster.Secrets({
+        'rootUrl': userdata['taskclusterRootUrl'],
+        'credentials': {
+            'clientId': userdata['clientId'],
+            'accessToken': userdata['accessToken'],
+        },
+    })
+
+    cert_key = secrets.get(
+        'project/taskcluster/docker-worker/certificate-key'
+    )
+
+    with open('/etc/star_taskcluster-worker_net.key', 'w') as f:
+        f.write(cert_key['secret']['key'])
+
+
+if __name__ == '__main__':
+    main()
+    systemd.daemon.notify('READY=1')

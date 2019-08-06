@@ -1,4 +1,4 @@
-FROM ubuntu_18_04-base
+FROM taskcluster/ubuntu_18_04-base
 MAINTAINER Wander Lairson Costa <wcosta@mozilla.com>
 LABEL Description="docker-worker packet.net image" Vendor="Mozilla"
 
@@ -35,14 +35,18 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \
 	&& add-apt-repository \
    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
    $(lsb_release -cs) \
-   stable" \
-	&& apt-get update
+   stable"
 
+RUN apt-get update
 RUN apt-get install -yq \
-    unattended-upgrades \
-    docker-ce=18.06.0~ce~3-0~ubuntu \
-    lvm2 \
+    dh-python \
+    dkms \
+    linux-headers-generic \
+    linux-image-generic \
+    python3-systemd \
     build-essential \
+    cdbs \
+    docker-ce=18.06.0~ce~3-0~ubuntu \
     git-core \
     gstreamer1.0-alsa \
     gstreamer1.0-plugins-bad \
@@ -50,20 +54,22 @@ RUN apt-get install -yq \
     gstreamer1.0-plugins-good \
     gstreamer1.0-plugins-ugly \
     gstreamer1.0-tools \
-    pbuilder \
-    python-mock \
-    python-configobj \
-	dh-python \
-    cdbs \
-    python-pip \
     jq \
-    rsyslog-gnutls \
-    openvpn \
-    rng-tools \
     liblz4-tool \
-	linux-image-generic \
-	linux-headers-generic \
-	dkms
+    lvm2 \
+    openvpn \
+    pbuilder \
+    python-configobj \
+    python-dev \
+    python-mock \
+    python-pip \
+    python3-dev \
+    python3-pip \
+    rng-tools \
+    rsyslog-gnutls
+
+RUN pip install zstandard
+RUN pip3 install zstandard taskcluster
 
 RUN apt-get purge -yq apport
 
@@ -95,7 +101,7 @@ RUN chmod +x /etc/rc.local
 RUN echo net.ipv4.tcp_challenge_ack_limit = 999999999 >> /etc/sysctl.conf
 
 RUN apt-get autoremove -y
-RUN unattended-upgrade
+RUN apt-get upgrade -yq
 
 RUN /tmp/node.sh
 
@@ -113,11 +119,20 @@ RUN apt-get install -y python-statsd
 
 RUN tar xzf /tmp/deploy.tar.gz -C / --strip-components=1
 
+RUN mkdir -p /mnt/docker-tmp
+
 RUN mkdir -p /home/ubuntu/docker_worker
 RUN npm i -g yarn
 RUN cd /home/ubuntu/docker_worker && tar xzf /tmp/docker-worker.tgz -C . && yarn install --frozen-lockfile
 
+# install and configure taskcluster-worker-runner
+RUN curl --fail -L -o /usr/local/bin/start-worker https://github.com/taskcluster/taskcluster-worker-runner/releases/download/v0.6.0/start-worker-linux-amd64
+RUN chmod +x /usr/local/bin/start-worker
+
 COPY ./deploy/packet-net/docker-worker.service /lib/systemd/system/docker-worker.service
+COPY ./deploy/packet-net/tc-w-runner-config.service /lib/systemd/system/tc-w-runner-config.service
 RUN systemctl enable docker-worker
 RUN systemctl enable device-drivers
+RUN systemctl enable tc-w-runner-config.service
+
 # END OF APP IMAGE

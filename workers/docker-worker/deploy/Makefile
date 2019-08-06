@@ -9,6 +9,7 @@ $(DEPLOY_TAR): all
 all: $(TARGETS)
 
 packet: $(DEPLOY_TAR)
+	-docker images -f "dangling=true" -q | xargs docker rmi -f
 	bin/build-packet.sh
 
 .PHONY: packet

@@ -48,6 +48,10 @@ defaults:
   # Run test only teardown and logging events.
   testMode: false
 
+  workerNodeType: 'standalone'
+  instanceId: 'standalone'
+  region: 'none'
+
   # Run each container in as restrict fashion as possible (one core per container)
   # When this is true the capacity is always overriden to the number of cores.
   restrictCPU: false
