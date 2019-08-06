@@ -21,9 +21,11 @@ import ListItem from '@material-ui/core/ListItem';
   },
 }))
 /**
- * A styled ListItem to be used when placed immediately after a TableCell.
+ * A table cell item with styles inherited from List and ListItem to be used
+ * when placed immediately after a TableCell. Useful for cells that
+ * have a text label and an icon.
  */
-export default class TableCellList extends Component {
+export default class TableCellItem extends Component {
   static defaultProps = {
     dense: true,
     className: null,

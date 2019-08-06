@@ -12,7 +12,7 @@ import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import StatusLabel from '../StatusLabel';
 import DateDistance from '../DateDistance';
-import TableCellList from '../TableCellList';
+import TableCellItem from '../TableCellItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_WORKERS_PAGE_SIZE } from '../../utils/constants';
 import { workers } from '../../utils/prop-types';
@@ -139,7 +139,7 @@ export default class WorkersTable extends Component {
           <TableRow key={workerId}>
             <TableCell>{workerGroup}</TableCell>
             <TableCell>
-              <TableCellList
+              <TableCellItem
                 button
                 component={Link}
                 to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${workerGroup}/${workerId}`}>
@@ -148,11 +148,11 @@ export default class WorkersTable extends Component {
                   primary={<Typography>{workerId}</Typography>}
                 />
                 <LinkIcon size={iconSize} />
-              </TableCellList>
+              </TableCellItem>
             </TableCell>
             <CopyToClipboard title={`${firstClaim} (Copy)`} text={firstClaim}>
               <TableCell>
-                <TableCellList button>
+                <TableCellItem button>
                   <ListItemText
                     disableTypography
                     primary={
@@ -162,12 +162,12 @@ export default class WorkersTable extends Component {
                     }
                   />
                   <ContentCopyIcon size={iconSize} />
-                </TableCellList>
+                </TableCellItem>
               </TableCell>
             </CopyToClipboard>
             <TableCell>
               {latestTask ? (
-                <TableCellList
+                <TableCellItem
                   button
                   component={Link}
                   to={`/tasks/${latestTask.run.taskId}/runs/${
@@ -178,7 +178,7 @@ export default class WorkersTable extends Component {
                     primary={<Typography>{latestTask.run.taskId}</Typography>}
                   />
                   <LinkIcon size={iconSize} />
-                </TableCellList>
+                </TableCellItem>
               ) : (
                 <Typography>n/a</Typography>
               )}
@@ -195,7 +195,7 @@ export default class WorkersTable extends Component {
                 title={`${latestTask.run.started} (Copy)`}
                 text={latestTask.run.started}>
                 <TableCell>
-                  <TableCellList button>
+                  <TableCellItem button>
                     <ListItemText
                       disableTypography
                       primary={
@@ -205,7 +205,7 @@ export default class WorkersTable extends Component {
                       }
                     />
                     <ContentCopyIcon size={iconSize} />
-                  </TableCellList>
+                  </TableCellItem>
                 </TableCell>
               </CopyToClipboard>
             ) : (
@@ -218,7 +218,7 @@ export default class WorkersTable extends Component {
                 title={`${latestTask.run.resolved} (Copy)`}
                 text={latestTask.run.resolved}>
                 <TableCell>
-                  <TableCellList button>
+                  <TableCellItem button>
                     <ListItemText
                       disableTypography
                       primary={
@@ -228,7 +228,7 @@ export default class WorkersTable extends Component {
                       }
                     />
                     <ContentCopyIcon size={iconSize} />
-                  </TableCellList>
+                  </TableCellItem>
                 </TableCell>
               </CopyToClipboard>
             ) : (

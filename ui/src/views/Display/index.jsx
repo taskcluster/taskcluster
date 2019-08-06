@@ -5,7 +5,7 @@ import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
 import VncDisplay from '../../components/VncDisplay';
-import TableCellList from '../../components/TableCellList';
+import TableCellItem from '../../components/TableCellItem';
 import Dashboard from '../../components/Dashboard';
 import DataTable from '../../components/DataTable';
 import { VNC_DISPLAYS_POLLING_INTERVAL } from '../../utils/constants';
@@ -94,12 +94,12 @@ export default class Display extends Component {
             renderRow={({ display }) => (
               <TableRow key={display}>
                 <TableCell>
-                  <TableCellList
+                  <TableCellItem
                     button
                     onClick={() => this.handleDisplayClick(display)}>
                     <span className={classes.displayText}>{display}</span>
                     <LinkIcon size={iconSize} />
-                  </TableCellList>
+                  </TableCellItem>
                 </TableCell>
               </TableRow>
             )}

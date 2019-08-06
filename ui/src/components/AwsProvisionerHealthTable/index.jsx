@@ -11,7 +11,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
-import TableCellList from '../TableCellList';
+import TableCellItem from '../TableCellItem';
 import { awsProvisionerHealth } from '../../utils/prop-types';
 import sort from '../../utils/sort';
 import DataTable from '../DataTable';
@@ -164,37 +164,37 @@ export default class AwsProvisionerHealthTable extends Component {
           renderRow={item => (
             <TableRow key={`${item.az}-${item.region}-${item.instanceType}`}>
               <TableCell>
-                <TableCellList dense>
+                <TableCellItem dense>
                   <ListItemText primary={item.az} />
-                </TableCellList>
+                </TableCellItem>
               </TableCell>
               <TableCell>
-                <TableCellList dense>
+                <TableCellItem dense>
                   <ListItemText primary={item.region} />
-                </TableCellList>
+                </TableCellItem>
               </TableCell>
               <TableCell>
-                <TableCellList dense>
+                <TableCellItem dense>
                   <ListItemText primary={item.instanceType} />
-                </TableCellList>
+                </TableCellItem>
               </TableCell>
               <TableCell>
-                <TableCellList
+                <TableCellItem
                   button
                   dense
                   onClick={() => this.handleDrawerOpen(item, 'Healthy')}>
                   <ListItemText primary={or0(item.healthy)} />
                   <InformationVariantIcon size={iconSize} />
-                </TableCellList>
+                </TableCellItem>
               </TableCell>
               <TableCell>
-                <TableCellList
+                <TableCellItem
                   button
                   dense
                   onClick={() => this.handleDrawerOpen(item, 'Unhealthy')}>
                   <ListItemText primary={or0(item.unhealthy)} />
                   <InformationVariantIcon size={iconSize} />
-                </TableCellList>
+                </TableCellItem>
               </TableCell>
             </TableRow>
           )}

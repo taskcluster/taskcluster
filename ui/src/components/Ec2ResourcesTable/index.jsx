@@ -14,7 +14,7 @@ import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 // import { awsProvisionerWorkerType } from '../../utils/prop-types';
 import sort from '../../utils/sort';
 import DataTable from '../DataTable';
-import TableCellList from '../TableCellList';
+import TableCellItem from '../TableCellItem';
 import StatusLabel from '../StatusLabel';
 import DateDistance from '../DateDistance';
 
@@ -131,7 +131,7 @@ export default class Ec2ResourcesTable extends Component {
         renderRow={instance => (
           <TableRow key={instance.id}>
             <TableCell>
-              <TableCellList
+              <TableCellItem
                 button
                 component="a"
                 target="_blank"
@@ -143,7 +143,7 @@ export default class Ec2ResourcesTable extends Component {
                 };sort=name`}>
                 <ListItemText primary={instance.id} />
                 <OpenInNewIcon size={iconSize} />
-              </TableCellList>
+              </TableCellItem>
             </TableCell>
             <TableCell>
               <StatusLabel state={upper(instance.state)} />
