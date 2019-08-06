@@ -73,7 +73,7 @@ func Run(configFile string) (state run.State, err error) {
 
 	// fetch secrets
 
-	if !runCached && (runnercfg.GetSecrets == nil || *runnercfg.GetSecrets) {
+	if !runCached && runnercfg.GetSecrets {
 		log.Println("Getting secrets from secrets service")
 		err = secrets.ConfigureRun(runnercfg, &state)
 		if err != nil {

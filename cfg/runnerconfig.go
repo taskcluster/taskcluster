@@ -12,7 +12,7 @@ type RunnerConfig struct {
 	Provider             ProviderConfig             `yaml:"provider"`
 	WorkerImplementation WorkerImplementationConfig `yaml:"worker"`
 	WorkerConfig         *WorkerConfig              `yaml:"workerConfig"`
-	GetSecrets           *bool                      `yaml:"getSecrets"`
+	GetSecrets           bool                       `yaml:"getSecrets"`
 	CacheOverRestarts    string                     `yaml:"cacheOverRestarts"`
 }
 
@@ -23,6 +23,10 @@ func LoadRunnerConfig(filename string) (*RunnerConfig, error) {
 		return nil, err
 	}
 	var runnercfg RunnerConfig
+
+	// set nonzero defaults
+	runnercfg.GetSecrets = true
+
 	err = yaml.Unmarshal(data, &runnercfg)
 	if err != nil {
 		return nil, err
