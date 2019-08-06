@@ -184,7 +184,12 @@
       "config:base",
       ":preserveSemverRanges",
       "schedule:weekly"
-    ]
+    ],
+    "gomod": {
+      "ignoreDeps": [
+        "golang.org/x/tools"
+      ]
+    }
   },
   "eslintIgnore": [
     "**/node_modules/**",
