@@ -17,31 +17,6 @@ import (
 	"github.com/taskcluster/taskcluster-worker-runner/worker"
 )
 
-// Check that the provider filled the state fields it was expected to.
-func checkProviderResults(state *run.State) error {
-	if state.RootURL == "" {
-		return fmt.Errorf("provider did not set RootURL")
-	}
-
-	if state.Credentials.ClientID == "" {
-		return fmt.Errorf("provider did not set Credentials.ClientID")
-	}
-
-	if state.WorkerPoolID == "" {
-		return fmt.Errorf("provider did not set WorkerPoolID")
-	}
-
-	if state.WorkerGroup == "" {
-		return fmt.Errorf("provider did not set WorkerGroup")
-	}
-
-	if state.WorkerID == "" {
-		return fmt.Errorf("provider did not set WorkerID")
-	}
-
-	return nil
-}
-
 // Run the worker.  This embodies the execution of the start-worker command.
 func Run(configFile string) (state run.State, err error) {
 	// load configuration
@@ -91,7 +66,7 @@ func Run(configFile string) (state run.State, err error) {
 		}
 	}
 
-	err = checkProviderResults(&state)
+	err = state.CheckProviderResults()
 	if err != nil {
 		return
 	}

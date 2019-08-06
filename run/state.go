@@ -1,6 +1,7 @@
 package run
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
@@ -34,4 +35,29 @@ type State struct {
 	// the accumulated WorkerConfig for this run, including files to create
 	WorkerConfig *cfg.WorkerConfig
 	Files        []files.File
+}
+
+// Check that the provided provided the information it was supposed to.
+func (state *State) CheckProviderResults() error {
+	if state.RootURL == "" {
+		return fmt.Errorf("provider did not set RootURL")
+	}
+
+	if state.Credentials.ClientID == "" {
+		return fmt.Errorf("provider did not set Credentials.ClientID")
+	}
+
+	if state.WorkerPoolID == "" {
+		return fmt.Errorf("provider did not set WorkerPoolID")
+	}
+
+	if state.WorkerGroup == "" {
+		return fmt.Errorf("provider did not set WorkerGroup")
+	}
+
+	if state.WorkerID == "" {
+		return fmt.Errorf("provider did not set WorkerID")
+	}
+
+	return nil
 }
