@@ -12,7 +12,7 @@ import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import DateDistance from '../DateDistance';
-import TableCellListItem from '../TableCellListItem';
+import TableCellItem from '../TableCellItem';
 import StatusLabel from '../StatusLabel';
 import DataTable from '../DataTable';
 import Link from '../../utils/Link';
@@ -35,7 +35,7 @@ function HookLastFiredTable({ classes, ...props }) {
         <TableRow key={hookFire.taskId}>
           <TableCell>
             {(hookFire.result === 'SUCCESS' && (
-              <TableCellListItem
+              <TableCellItem
                 button
                 component={Link}
                 to={`/tasks/${hookFire.taskId}`}>
@@ -44,7 +44,7 @@ function HookLastFiredTable({ classes, ...props }) {
                   primary={<Typography>{hookFire.taskId}</Typography>}
                 />
                 <LinkIcon size={iconSize} />
-              </TableCellListItem>
+              </TableCellItem>
             )) || <Typography>{hookFire.taskId}</Typography>}
           </TableCell>
           <TableCell>
@@ -65,7 +65,7 @@ function HookLastFiredTable({ classes, ...props }) {
             title={`${hookFire.taskCreateTime} (Copy)`}
             text={hookFire.taskCreateTime}>
             <TableCell>
-              <TableCellListItem button>
+              <TableCellItem button>
                 <ListItemText
                   disableTypography
                   primary={
@@ -75,7 +75,7 @@ function HookLastFiredTable({ classes, ...props }) {
                   }
                 />
                 <ContentCopyIcon size={iconSize} />
-              </TableCellListItem>
+              </TableCellItem>
             </TableCell>
           </CopyToClipboard>
         </TableRow>

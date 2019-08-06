@@ -8,7 +8,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import TableRow from '@material-ui/core/TableRow';
 import LinkIcon from 'mdi-react/LinkIcon';
-import TableCellListItem from '../TableCellListItem';
+import TableCellItem from '../TableCellItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_NAMESPACES_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
@@ -114,7 +114,7 @@ export default class IndexTaskNamespaceTable extends Component {
         renderRow={({ node: { namespace } }) => (
           <TableRow key={namespace}>
             <TableCell>
-              <TableCellListItem
+              <TableCellItem
                 className={classes.listItemCell}
                 dense
                 button
@@ -132,7 +132,7 @@ export default class IndexTaskNamespaceTable extends Component {
                   }
                 />
                 <LinkIcon size={iconSize} />
-              </TableCellListItem>
+              </TableCellItem>
             </TableCell>
           </TableRow>
         )}

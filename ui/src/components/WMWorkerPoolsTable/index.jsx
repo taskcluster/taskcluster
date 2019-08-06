@@ -19,7 +19,7 @@ import DataTable from '../DataTable';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
 import Button from '../Button';
-import TableCellListItem from '../TableCellListItem';
+import TableCellItem from '../TableCellItem';
 import ErrorPanel from '../ErrorPanel';
 import formatError from '../../utils/formatError';
 import { NULL_PROVIDER } from '../../utils/constants';
@@ -148,7 +148,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       <TableRow key={workerPool.workerPoolId}>
         <TableCell>
           {workerPool.providerId !== NULL_PROVIDER ? (
-            <TableCellListItem
+            <TableCellItem
               button
               component={Link}
               to={`${path}/${encodeURIComponent(workerPool.workerPoolId)}`}>
@@ -157,7 +157,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
                 primary={<Typography>{workerPool.workerPoolId}</Typography>}
               />
               <LinkIcon size={iconSize} />
-            </TableCellListItem>
+            </TableCellItem>
           ) : (
             <Typography>{workerPool.workerPoolId}</Typography>
           )}

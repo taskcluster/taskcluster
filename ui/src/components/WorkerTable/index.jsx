@@ -9,7 +9,7 @@ import memoize from 'fast-memoize';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { withStyles } from '@material-ui/core/styles';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
-import TableCellListItem from '../TableCellListItem';
+import TableCellItem from '../TableCellItem';
 import DateDistance from '../DateDistance';
 import DataTable from '../DataTable';
 import StatusLabel from '../StatusLabel';
@@ -111,18 +111,18 @@ export default class WorkerTable extends Component {
               <StatusLabel state={task.state} />
             </TableCell>
             <TableCell>
-              <TableCellListItem
+              <TableCellItem
                 button
                 component={Link}
                 to={`/tasks/${task.taskId}/runs/${task.runId}`}>
                 <div className={classes.taskName}>{task.name}</div>
                 <LinkIcon size={iconSize} />
-              </TableCellListItem>
+              </TableCellItem>
             </TableCell>
             <TableCell>{task.taskId}</TableCell>
             <CopyToClipboard title={task.started} text={task.started}>
               <TableCell>
-                <TableCellListItem button>
+                <TableCellItem button>
                   <ListItemText
                     disableTypography
                     primary={
@@ -132,13 +132,13 @@ export default class WorkerTable extends Component {
                     }
                   />
                   <ContentCopyIcon size={iconSize} />
-                </TableCellListItem>
+                </TableCellItem>
               </TableCell>
             </CopyToClipboard>
             <CopyToClipboard title={task.resolved} text={task.resolved}>
               <TableCell>
                 {task.resolved ? (
-                  <TableCellListItem button>
+                  <TableCellItem button>
                     <ListItemText
                       disableTypography
                       primary={
@@ -148,7 +148,7 @@ export default class WorkerTable extends Component {
                       }
                     />
                     <ContentCopyIcon size={iconSize} />
-                  </TableCellListItem>
+                  </TableCellItem>
                 ) : (
                   <Typography>n/a</Typography>
                 )}
