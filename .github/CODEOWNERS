@@ -17,6 +17,7 @@ ui/docs @taskcluster/services-reviewers
 generated/**
 clients/client-web/src/clients/**
 clients/client-py/taskcluster/generated/**
+clients/client-py/README.md
 clients/client/src/apis.js
 services/*/Procfile
 infrastructure/k8s/templates/**
