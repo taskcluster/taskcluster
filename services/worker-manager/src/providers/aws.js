@@ -232,7 +232,7 @@ class AwsProvider extends Provider {
     }
 
     if (!this.verifyInstanceIdentityDocument({document, signature})) {
-      throw new ApiError('Token validation error');
+      throw new ApiError('Instance identity document validation error');
     }
     this.verifyWorkerInstance({document, worker});
 
