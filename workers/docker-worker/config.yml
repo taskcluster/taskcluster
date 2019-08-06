@@ -206,7 +206,7 @@ test:
     volumeCachePath: '/tmp/test-cache'
 
   capacityManagement:
-    diskspaceThreshold: 1000000000
+    diskspaceThreshold: 3000000000
 
   dockerVolume: '/tmp'
 
