@@ -38,7 +38,7 @@ suite('Docker custom private registry', () => {
 
   setup(() => {
     // For interfacing with the docker registry.
-    worker = new TestWorker(DockerWorker, slugid.v4(), slugid.v4());
+    worker = new TestWorker(DockerWorker);
   });
 
   teardown(async () => {

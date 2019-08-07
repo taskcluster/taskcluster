@@ -26,6 +26,10 @@ const PROVISIONER_ID = 'no-provisioning-nope';
 const DEFAULT_WORKER_PREFIX = 'dummy-worker';
 
 class TestWorker extends EventEmitter {
+  static workerTypeName() {
+    return `test-${slugid.v4().replace(/[_-]/g, '').toLowerCase()}-a`;
+  }
+
   constructor(Worker, workerType, workerId) {
     super();
 
@@ -43,9 +47,7 @@ class TestWorker extends EventEmitter {
     });
 
     this.provisionerId = PROVISIONER_ID;
-    // Use worker_test_ prefix so ci worker scopes can be more restrictive for
-    // claiming/creating work
-    this.workerType = workerType || `dummy-type-${slugid.v4()}`.substring(0, 22);
+    this.workerType = workerType || TestWorker.workerTypeName();
     // remove leading underscores because workerId could be used as container name
     // and container names must start with an alphanumeric character.
     this.workerId = workerId || `dummy-worker-${slugid.v4()}`.substring(0, 22);

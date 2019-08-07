@@ -14,7 +14,7 @@ suite('Parallel workers', () => {
 
   setup(async () => {
     // Each worker should use the same worker type but a unique worker id.
-    var workerType = `dummy-type-${slugid.v4()}`.substring(0,22);
+    var workerType = TestWorker.workerTypeName();
     workerA = new TestWorker(DockerWorker, workerType);
     workerB = new TestWorker(DockerWorker, workerType);
     await [workerA.launch(), workerB.launch()];
