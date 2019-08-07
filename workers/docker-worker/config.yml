@@ -65,7 +65,7 @@ defaults:
   capacity: 1
 
   capacityManagement:
-    diskspaceThreshold: 10000000000
+    diskspaceThreshold: 30000000000
 
   dockerVolume: '/mnt'
 
@@ -206,7 +206,7 @@ test:
     volumeCachePath: '/tmp/test-cache'
 
   capacityManagement:
-    diskspaceThreshold: 3000000000
+    diskspaceThreshold: 1000000000
 
   dockerVolume: '/tmp'
 
