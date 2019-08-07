@@ -324,18 +324,15 @@ type (
 		// Mininum:    0
 		PendingTasks int64 `json:"pendingTasks"`
 
-		// Unique identifier for the provisioner
+		// Unique identifier for a provisioner, that can supply specified
+		// `workerType`
 		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
 
-		// Identifier for worker type within the specified provisioner
+		// Unique identifier for a worker-type within a specific provisioner
 		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
+		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
 	}
 
@@ -560,9 +557,10 @@ type (
 		// Date and time where the provisioner was last seen active
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
+		// Unique identifier for a provisioner, that can supply specified
+		// `workerType`
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
 
 		// This is the stability of the provisioner. Accepted values:
@@ -620,9 +618,10 @@ type (
 		// of when the provisioner was last seen active.
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
+		// Unique identifier for a provisioner, that can supply specified
+		// `workerType`
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
 
 		// This is the stability of the provisioner. Accepted values:
@@ -1070,9 +1069,7 @@ type (
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
 
 		// The tasks relation to its dependencies. This property specifies the
@@ -1160,9 +1157,7 @@ type (
 
 		// Unique identifier for a worker-type within a specific provisioner
 		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
+		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
 	}
 
@@ -1242,9 +1237,7 @@ type (
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
 
 		// The tasks relation to its dependencies. This property specifies the
@@ -1332,9 +1325,7 @@ type (
 
 		// Unique identifier for a worker-type within a specific provisioner
 		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
+		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
 	}
 
@@ -1506,9 +1497,7 @@ type (
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`
 		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
 
 		// Number of retries left for the task in case of infrastructure issues
@@ -1567,9 +1556,7 @@ type (
 
 		// Unique identifier for a worker-type within a specific provisioner
 		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
+		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
 	}
 
@@ -1689,9 +1676,10 @@ type (
 		// Date of the first time this worker claimed a task.
 		FirstClaim tcclient.Time `json:"firstClaim"`
 
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
+		// Unique identifier for a provisioner, that can supply specified
+		// `workerType`
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
 
 		// Quarantining a worker allows the machine to remain alive but not accept jobs.
@@ -1719,11 +1707,9 @@ type (
 		// Max length: 38
 		WorkerID string `json:"workerId"`
 
-		// WorkerType name.
+		// Unique identifier for a worker-type within a specific provisioner
 		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
+		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
 	}
 
@@ -1739,9 +1725,10 @@ type (
 		// Date and time where the worker-type was last seen active
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
+		// Unique identifier for a provisioner, that can supply specified
+		// `workerType`
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
 
 		// This is the stability of the worker-type. Accepted values:
@@ -1755,11 +1742,9 @@ type (
 		//   * "deprecated"
 		Stability string `json:"stability"`
 
-		// WorkerType name.
+		// Unique identifier for a worker-type within a specific provisioner
 		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
+		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
 	}
 
@@ -1869,9 +1854,10 @@ type (
 		// of when the worker-type was last seen active.
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
+		// Unique identifier for a provisioner, that can supply specified
+		// `workerType`
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
 
 		// This is the stability of the worker-type. Accepted values:
@@ -1885,11 +1871,9 @@ type (
 		//   * "deprecated"
 		Stability string `json:"stability"`
 
-		// WorkerType name.
+		// Unique identifier for a worker-type within a specific provisioner
 		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
+		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
 	}
 )

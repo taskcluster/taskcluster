@@ -18,7 +18,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
   helper.withServer(mock, skipping);
 
   // Generate random workerType id to use for this test
-  const workerType = slugid.v4();
+  const workerType = helper.makeWorkerType();
 
   const makeTask = (retries) => {
     return {

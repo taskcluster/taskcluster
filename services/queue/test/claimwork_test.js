@@ -18,7 +18,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
   helper.withServer(mock, skipping);
 
   // Generate random workerType id to use for this test
-  const workerType = slugid.v4();
+  const workerType = helper.makeWorkerType();
 
   const makeTask = (priority, workerType) => {
     return {
@@ -263,7 +263,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], f
   });
 
   test('createTask twice, claimWork, reportCompleted', async () => {
-    let workerType = slugid.v4(); // need a fresh workerType
+    let workerType = helper.makeWorkerType();
     let taskId = slugid.v4();
     let task = makeTask('normal', workerType);
 

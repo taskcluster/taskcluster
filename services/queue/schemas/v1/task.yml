@@ -10,17 +10,13 @@ properties:
       Unique identifier for a provisioner, that can supply specified
       `workerType`
     type:           string
-    minLength:      {$const: identifier-min-length}
-    maxLength:      {$const: identifier-max-length}
-    pattern:        {$const: identifier-pattern}
+    pattern:        {$const: provisionerid-pattern}
   workerType:
     title:          "Worker Type"
     description: |
       Unique identifier for a worker-type within a specific provisioner
     type:           string
-    minLength:      {$const: identifier-min-length}
-    maxLength:      {$const: identifier-max-length}
-    pattern:        {$const: identifier-pattern}
+    pattern:        {$const: workertype-pattern}
   schedulerId:
     title:          "Scheduler Identifier"
     description: |
