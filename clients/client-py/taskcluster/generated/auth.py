@@ -165,32 +165,26 @@ class Auth(BaseClient):
 
     def listRoles(self, *args, **kwargs):
         """
-        List Roles
+        List Roles (no pagination)
 
-        Get a list of all roles, each role object also includes the list of
-        scopes it expands to.
+        Get a list of all roles. Each role object also includes the list of
+        scopes it expands to.  This always returns all roles in a single HTTP
+        request.
+
+        To get paginated results, use `listRoles2`.
 
         This method is ``stable``
         """
 
         return self._makeApiCall(self.funcinfo["listRoles"], *args, **kwargs)
 
-    def listRoleIds(self, *args, **kwargs):
-        """
-        List Role IDs
-
-        If no limit is given, the roleIds of all roles are returned. Since this
-        list may become long, callers can use the `limit` and `continuationToken`
-        query arguments to page through the responses.
-
-        This method is ``stable``
-        """
-
-        return self._makeApiCall(self.funcinfo["listRoleIds"], *args, **kwargs)
-
     def listRoles2(self, *args, **kwargs):
         """
         List Roles
+
+        Get a list of all roles. Each role object also includes the list of
+        scopes it expands to.  This is similar to `listRoles` but differs in the
+        format of the response.
 
         If no limit is given, all roles are returned. Since this
         list may become long, callers can use the `limit` and `continuationToken`
@@ -200,6 +194,21 @@ class Auth(BaseClient):
         """
 
         return self._makeApiCall(self.funcinfo["listRoles2"], *args, **kwargs)
+
+    def listRoleIds(self, *args, **kwargs):
+        """
+        List Role IDs
+
+        Get a list of all role IDs.
+
+        If no limit is given, the roleIds of all roles are returned. Since this
+        list may become long, callers can use the `limit` and `continuationToken`
+        query arguments to page through the responses.
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["listRoleIds"], *args, **kwargs)
 
     def role(self, *args, **kwargs):
         """
