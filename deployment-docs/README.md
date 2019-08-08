@@ -15,7 +15,6 @@ A Taskcluster "release" is a semantically versioned docker image along with the 
 
 ## Contents
 
-* [Terraform](terraform.md)
 * [Clouds](clouds.md)
 * [GitHub Service](github.md)
 * [Login Strategies](login-strategies.md)
