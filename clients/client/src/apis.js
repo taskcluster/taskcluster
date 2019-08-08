@@ -179,7 +179,7 @@ module.exports = {
           "args": [
           ],
           "category": "Auth Service",
-          "description": "Get a list of all roles, each role object also includes the list of\nscopes it expands to.",
+          "description": "Get a list of all roles. Each role object also includes the list of\nscopes it expands to.  This always returns all roles in a single HTTP\nrequest.\n\nTo get paginated results, use `listRoles2`.",
           "method": "get",
           "name": "listRoles",
           "output": "v1/list-roles-response.json#",
@@ -187,31 +187,14 @@ module.exports = {
           ],
           "route": "/roles/",
           "stability": "stable",
-          "title": "List Roles",
+          "title": "List Roles (no pagination)",
           "type": "function"
         },
         {
           "args": [
           ],
           "category": "Auth Service",
-          "description": "If no limit is given, the roleIds of all roles are returned. Since this\nlist may become long, callers can use the `limit` and `continuationToken`\nquery arguments to page through the responses.",
-          "method": "get",
-          "name": "listRoleIds",
-          "output": "v1/list-role-ids-response.json#",
-          "query": [
-            "continuationToken",
-            "limit"
-          ],
-          "route": "/roleids/",
-          "stability": "stable",
-          "title": "List Role IDs",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "category": "Auth Service",
-          "description": "If no limit is given, all roles are returned. Since this\nlist may become long, callers can use the `limit` and `continuationToken`\nquery arguments to page through the responses.",
+          "description": "Get a list of all roles. Each role object also includes the list of\nscopes it expands to.  This is similar to `listRoles` but differs in the\nformat of the response.\n\nIf no limit is given, all roles are returned. Since this\nlist may become long, callers can use the `limit` and `continuationToken`\nquery arguments to page through the responses.",
           "method": "get",
           "name": "listRoles2",
           "output": "v1/list-roles2-response.json#",
@@ -222,6 +205,23 @@ module.exports = {
           "route": "/roles2/",
           "stability": "stable",
           "title": "List Roles",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Auth Service",
+          "description": "Get a list of all role IDs.\n\nIf no limit is given, the roleIds of all roles are returned. Since this\nlist may become long, callers can use the `limit` and `continuationToken`\nquery arguments to page through the responses.",
+          "method": "get",
+          "name": "listRoleIds",
+          "output": "v1/list-role-ids-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/roleids/",
+          "stability": "stable",
+          "title": "List Role IDs",
           "type": "function"
         },
         {

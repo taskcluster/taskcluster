@@ -241,8 +241,11 @@ func (auth *Auth) DeleteClient(clientId string) error {
 	return err
 }
 
-// Get a list of all roles, each role object also includes the list of
-// scopes it expands to.
+// Get a list of all roles. Each role object also includes the list of
+// scopes it expands to.  This always returns all roles in a single HTTP
+// request.
+//
+// To get paginated results, use `listRoles2`.
 //
 // See #listRoles
 func (auth *Auth) ListRoles() (*GetAllRolesNoPagination, error) {
@@ -251,24 +254,10 @@ func (auth *Auth) ListRoles() (*GetAllRolesNoPagination, error) {
 	return responseObject.(*GetAllRolesNoPagination), err
 }
 
-// If no limit is given, the roleIds of all roles are returned. Since this
-// list may become long, callers can use the `limit` and `continuationToken`
-// query arguments to page through the responses.
+// Get a list of all roles. Each role object also includes the list of
+// scopes it expands to.  This is similar to `listRoles` but differs in the
+// format of the response.
 //
-// See #listRoleIds
-func (auth *Auth) ListRoleIds(continuationToken, limit string) (*GetRoleIdsResponse, error) {
-	v := url.Values{}
-	if continuationToken != "" {
-		v.Add("continuationToken", continuationToken)
-	}
-	if limit != "" {
-		v.Add("limit", limit)
-	}
-	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/roleids/", new(GetRoleIdsResponse), v)
-	return responseObject.(*GetRoleIdsResponse), err
-}
-
 // If no limit is given, all roles are returned. Since this
 // list may become long, callers can use the `limit` and `continuationToken`
 // query arguments to page through the responses.
@@ -285,6 +274,26 @@ func (auth *Auth) ListRoles2(continuationToken, limit string) (*GetAllRolesRespo
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/roles2/", new(GetAllRolesResponse), v)
 	return responseObject.(*GetAllRolesResponse), err
+}
+
+// Get a list of all role IDs.
+//
+// If no limit is given, the roleIds of all roles are returned. Since this
+// list may become long, callers can use the `limit` and `continuationToken`
+// query arguments to page through the responses.
+//
+// See #listRoleIds
+func (auth *Auth) ListRoleIds(continuationToken, limit string) (*GetRoleIdsResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*auth)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/roleids/", new(GetRoleIdsResponse), v)
+	return responseObject.(*GetRoleIdsResponse), err
 }
 
 // Get information about a single role, including the set of scopes that the

@@ -597,15 +597,50 @@ builder.declare({
   output: 'list-roles-response.yml',
   category: 'Auth Service',
   stability: 'stable',
-  title: 'List Roles',
+  title: 'List Roles (no pagination)',
   description: [
-    'Get a list of all roles, each role object also includes the list of',
-    'scopes it expands to.',
+    'Get a list of all roles. Each role object also includes the list of',
+    'scopes it expands to.  This always returns all roles in a single HTTP',
+    'request.',
+    '',
+    'To get paginated results, use `listRoles2`.',
   ].join('\n'),
 }, async function(req, res) {
   // Load all roles
   let roles = await this.Roles.get();
   res.reply(roles.map(r => roleToJson(r, this)));
+});
+
+builder.declare({
+  method: 'get',
+  route: '/roles2/',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
+  name: 'listRoles2',
+  input: undefined,
+  category: 'Auth Service',
+  output: 'list-roles2-response.yml',
+  stability: 'stable',
+  title: 'List Roles',
+  description: [
+    'Get a list of all roles. Each role object also includes the list of',
+    'scopes it expands to.  This is similar to `listRoles` but differs in the',
+    'format of the response.',
+    '',
+    'If no limit is given, all roles are returned. Since this',
+    'list may become long, callers can use the `limit` and `continuationToken`',
+    'query arguments to page through the responses.',
+  ].join('\n'),
+}, async function(req, res) {
+
+  // Fetch roles and build response
+  const { response, roles } = await rolesResponseBuilder(this, req, res);
+
+  response.roles = roles.map(r => roleToJson(r, this));
+
+  res.reply(response);
 });
 
 /** List role Ids **/
@@ -623,6 +658,8 @@ builder.declare({
   stability: 'stable',
   title: 'List Role IDs',
   description: [
+    'Get a list of all role IDs.',
+    '',
     'If no limit is given, the roleIds of all roles are returned. Since this',
     'list may become long, callers can use the `limit` and `continuationToken`',
     'query arguments to page through the responses.',
@@ -636,35 +673,6 @@ builder.declare({
   let roleIds = roles.map(r => r.roleId);
 
   response.roleIds = roleIds;
-
-  res.reply(response);
-});
-
-/** List roles **/
-builder.declare({
-  method: 'get',
-  route: '/roles2/',
-  query: {
-    continuationToken: /./,
-    limit: /^[0-9]+$/,
-  },
-  name: 'listRoles2',
-  input: undefined,
-  category: 'Auth Service',
-  output: 'list-roles2-response.yml',
-  stability: 'stable',
-  title: 'List Roles',
-  description: [
-    'If no limit is given, all roles are returned. Since this',
-    'list may become long, callers can use the `limit` and `continuationToken`',
-    'query arguments to page through the responses.',
-  ].join('\n'),
-}, async function(req, res) {
-
-  // Fetch roles and build response
-  const { response, roles } = await rolesResponseBuilder(this, req, res);
-
-  response.roles = roles.map(r => roleToJson(r, this));
 
   res.reply(response);
 });

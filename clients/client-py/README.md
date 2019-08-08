@@ -535,9 +535,12 @@ await asyncAuth.deleteClient(clientId) # -> None
 await asyncAuth.deleteClient(clientId='value') # -> None
 ```
 
-#### List Roles
-Get a list of all roles, each role object also includes the list of
-scopes it expands to.
+#### List Roles (no pagination)
+Get a list of all roles. Each role object also includes the list of
+scopes it expands to.  This always returns all roles in a single HTTP
+request.
+
+To get paginated results, use `listRoles2`.
 
 
 Has required output schema
@@ -549,22 +552,11 @@ auth.listRoles() # -> result
 await asyncAuth.listRoles() # -> result
 ```
 
-#### List Role IDs
-If no limit is given, the roleIds of all roles are returned. Since this
-list may become long, callers can use the `limit` and `continuationToken`
-query arguments to page through the responses.
-
-
-Has required output schema
-
-```python
-# Sync calls
-auth.listRoleIds() # -> result
-# Async call
-await asyncAuth.listRoleIds() # -> result
-```
-
 #### List Roles
+Get a list of all roles. Each role object also includes the list of
+scopes it expands to.  This is similar to `listRoles` but differs in the
+format of the response.
+
 If no limit is given, all roles are returned. Since this
 list may become long, callers can use the `limit` and `continuationToken`
 query arguments to page through the responses.
@@ -577,6 +569,23 @@ Has required output schema
 auth.listRoles2() # -> result
 # Async call
 await asyncAuth.listRoles2() # -> result
+```
+
+#### List Role IDs
+Get a list of all role IDs.
+
+If no limit is given, the roleIds of all roles are returned. Since this
+list may become long, callers can use the `limit` and `continuationToken`
+query arguments to page through the responses.
+
+
+Has required output schema
+
+```python
+# Sync calls
+auth.listRoleIds() # -> result
+# Async call
+await asyncAuth.listRoleIds() # -> result
 ```
 
 #### Get Role
