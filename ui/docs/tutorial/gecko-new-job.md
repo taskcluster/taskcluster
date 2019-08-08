@@ -20,9 +20,6 @@ If a tree is built in the forest, and nobody is around to herd it, did it really
 
 If your new job isn't in TreeHerder, it's like it never happened.
 Gecko tasks carry a number of fields in `task.extra.treeherder` that describe how the task should be represented in TreeHerder.
-The schema for this information is as follows:
-
-<SchemaTable schema="/schemas/taskcluster-treeherder/v1/task-treeherder-config.json" />
 
 ---
 

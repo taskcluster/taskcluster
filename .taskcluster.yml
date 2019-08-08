@@ -75,7 +75,6 @@ tasks:
         - name: taskcluster-queue
         - name: taskcluster-worker-manager
         - name: taskcluster-secrets
-        - name: taskcluster-treeherder
         - name: taskcluster-web-server
         others:
         - name: lint

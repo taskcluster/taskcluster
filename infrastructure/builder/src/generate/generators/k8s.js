@@ -9,8 +9,8 @@ const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const {listServices, writeRepoFile, readRepoYAML, writeRepoYAML, writeRepoJSON, REPO_ROOT, configToSchema, configToExample} = require('../../utils');
 
-// We're not going to deploy login/treeherder into k8s
-const SERVICES = listServices().filter(s => !['login', 'treeherder'].includes(s));
+// We're not going to deploy login into k8s
+const SERVICES = listServices().filter(s => !['login'].includes(s));
 const CHART_DIR = path.join('infrastructure', 'k8s');
 const TMPL_DIR = path.join(CHART_DIR, 'templates');
 

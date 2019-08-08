@@ -29,7 +29,6 @@ This library provides the following packages to interface with Taskcluster:
 * http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v16/tcgithubevents
 * http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v16/tcpurgecacheevents
 * http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v16/tcqueueevents
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v16/tctreeherderevents
 
 ## Example programs
 

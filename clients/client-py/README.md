@@ -4292,29 +4292,6 @@ await asyncSecrets.list() # -> result
 
 
 
-### Exchanges in `taskcluster.TreeherderEvents`
-```python
-import taskcluster
-
-# Create TreeherderEvents client instance
-treeherderEvents = taskcluster.TreeherderEvents(options)
-```
-The taskcluster-treeherder service is responsible for processing
-task events published by Taskcluster Queue and producing job messages
-that are consumable by Treeherder.
-
-This exchange provides that job messages to be consumed by any queue that
-attached to the exchange.  This could be a production Treeheder instance,
-a local development environment, or a custom dashboard.
-#### Job Messages
- * `treeherderEvents.jobs(routingKeyPattern) -> routingKey`
-   * `destination` is required  Description: destination
-   * `project` is required  Description: project
-   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-
-
-
-
 ### Methods in `taskcluster.WorkerManager`
 ```python
 import asyncio # Only for async 
