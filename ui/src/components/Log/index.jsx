@@ -253,8 +253,6 @@ export default class Log extends Component {
           href: url,
           target: '_blank',
           rel: 'noopener noreferrer',
-          variant: 'round',
-          color: 'secondary',
         }}
       />
     );
