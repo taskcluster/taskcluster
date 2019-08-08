@@ -111,47 +111,6 @@ The set of API entries is generated from the built-in references.
 Detailed documentation with description, payload and result format details is
 available in the reference section of the Taskcluster documentation.
 
-## Fake API Methods
-
-In testing, it is useful to be able to "fake out" client methods so that they
-do not try to communicate with an actual, external service. The normal client
-argument checking still takes place, and a function of your design will be called
-instead of calling the external service.
-
-This is set up when constructing the client. Typically, this occurs in a
-`taskcluster-lib-loader` entry.
-
-```javascript
-setup(function () {
-  // inject the dependency with a stickyLoader from taskcluster-lib-testing
-  helper.load.inject('secrets', new taskcluster.Secrets({
-    fake: {
-      get: (name) => 'my-hardcoded-secret',
-    },
-  });
-});
-
-test('test the thing', async function() {
-  // Get secrets from injection above
-  let secrets = await helper.load('secrets');
-
-  // Do something with the secrets object
-  let s = await secrets.get('thing-to-read');
-  assume(s).is.a('string');
-
-  // Make assertions over recorded calls
-  assume(secrets.fakeCalls.get).deep.contains({
-    name: 'thing-to-read',
-  });
-
-  try {
-    await secrets.remove('...', {}); // throws and error because we didn't fake it
-  } catch (err) {
-    // pass
-  }
-});
-```
-
 ## Providing Options
 Some API end-points may take query-string, this is indicated in the signature
 above as `[options]`. These options are always _optional_, commonly used for
@@ -440,24 +399,46 @@ var taskId = taskcluster.slugid();
 
 The generates _nice_ random slugids, refer to slugid module for further details.
 
-## Taskcluster client for the browser
+## Fake API Methods
 
-**Not recommended**: Run the script `bin/update-apis.js browserify` to generate
-`taskcluster-client.js` using browserify. This does not contain any listener,
-but all the API logic and references is present. To get AMQP events in the
-browser use
-[events.taskcluster.net](https://github.com/taskcluster/taskcluster-events).
+In testing, it is useful to be able to "fake out" client methods so that they
+do not try to communicate with an actual, external service. The normal client
+argument checking still takes place, and a function of your design will be called
+instead of calling the external service.
 
-**Recommended**: Use the [`taskcluster-client-web`](https://www.npmjs.com/package/taskcluster-client-web)
-library. The latter differs from `taskcluster-client` by providing a version
-that is compatible with the browser out of the box and does not require a
-build step to use.
+This is set up when constructing the client. Typically, this occurs in a
+`taskcluster-lib-loader` entry.
 
-## Updating Builtin APIs
-When releasing a new version of the `taskcluster-client` library, we should
-always update the builtin references using `bin/update-apis.js update`. This
-maintenance script can be used to list, show, add, remove and update builtin
-API definitions.
+```javascript
+setup(function () {
+  // inject the dependency with a stickyLoader from taskcluster-lib-testing
+  helper.load.inject('secrets', new taskcluster.Secrets({
+    fake: {
+      get: (name) => 'my-hardcoded-secret',
+    },
+  });
+});
+
+test('test the thing', async function() {
+  // Get secrets from injection above
+  let secrets = await helper.load('secrets');
+
+  // Do something with the secrets object
+  let s = await secrets.get('thing-to-read');
+  assume(s).is.a('string');
+
+  // Make assertions over recorded calls
+  assume(secrets.fakeCalls.get).deep.contains({
+    name: 'thing-to-read',
+  });
+
+  try {
+    await secrets.remove('...', {}); // throws and error because we didn't fake it
+  } catch (err) {
+    // pass
+  }
+});
+```
 
 ##License
 The taskcluster client library is released on [MPL 2.0](http://mozilla.org/MPL/2.0/).
