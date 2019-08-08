@@ -23,6 +23,7 @@ import TableCellItem from '../TableCellItem';
 import ErrorPanel from '../ErrorPanel';
 import formatError from '../../utils/formatError';
 import { NULL_PROVIDER } from '../../utils/constants';
+import { splitWorkerPoolId } from '../../utils/workerPool';
 
 @withRouter
 @withStyles(theme => ({
@@ -143,6 +144,9 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     } = this.props;
     const { actionLoading } = this.state;
     const iconSize = 16;
+    const { provisionerId, workerType } = splitWorkerPoolId(
+      workerPool.workerPoolId
+    );
 
     return (
       <TableRow key={workerPool.workerPoolId}>
@@ -186,9 +190,9 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
                 className={classes.viewWorkersButton}
                 variant="outlined"
                 component={Link}
-                to={`${this.props.match.path}/${encodeURIComponent(
-                  workerPool.workerPoolId
-                )}/workers`}
+                to={`/provisioners/${encodeURIComponent(
+                  provisionerId
+                )}/worker-types/${encodeURIComponent(workerType)}`}
                 disabled={actionLoading}
                 size="small">
                 <WorkerIcon className={classes.workerIcon} size={iconSize} />
