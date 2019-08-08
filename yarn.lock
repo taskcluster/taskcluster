@@ -5062,6 +5062,11 @@ lodash@4.17.14, lodash@^4.17.12, lodash@^4.17.14:
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.14.tgz#9ce487ae66c96254fe20b599f21b6816028078ba"
   integrity sha512-mmKYbW3GLuJeX+iGP+Y7Gp1AiGHGbXHCOh/jZmrawMmsE7MS4znI3RL2FsjbqOyMayHInjOeykW7PEajUk1/xw==
 
+lodash@4.17.15:
+  version "4.17.15"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
+  integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
+
 lodash@^3.10.1:
   version "3.10.1"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-3.10.1.tgz#5bf45e8e49ba4189e17d482789dfd15bd140b7b6"
@@ -7737,7 +7742,7 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-client@link:clients/client":
-  version "15.0.0"
+  version "16.0.0"
   dependencies:
     debug "^4.0.0"
     hawk "^7.0.10"
@@ -7747,37 +7752,37 @@ tar@^4:
     taskcluster-lib-urls "^12.0.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "15.0.0"
+  version "16.0.0"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "15.0.0"
+  version "16.0.0"
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "15.0.0"
+  version "16.0.0"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "15.0.0"
+  version "16.0.0"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "15.0.0"
+  version "16.0.0"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "15.0.0"
+  version "16.0.0"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "15.0.0"
+  version "16.0.0"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "15.0.0"
+  version "16.0.0"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "15.0.0"
+  version "16.0.0"
 
 "taskcluster-lib-scopes@link:libraries/scopes":
-  version "15.0.0"
+  version "16.0.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "15.0.0"
+  version "16.0.0"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -7785,7 +7790,7 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "15.0.0"
+  version "16.0.0"
 
 taskgroup@^4.0.5, taskgroup@^4.2.0:
   version "4.3.1"

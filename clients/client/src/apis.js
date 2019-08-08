@@ -3848,6 +3848,23 @@ module.exports = {
         },
         {
           "args": [
+          ],
+          "category": "Worker Manager",
+          "description": "Retrieve a list of providers that are available for worker pools.",
+          "method": "get",
+          "name": "listProviders",
+          "output": "v1/provider-list.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/providers",
+          "stability": "stable",
+          "title": "List Providers",
+          "type": "function"
+        },
+        {
+          "args": [
             "workerPoolId"
           ],
           "category": "Worker Manager",

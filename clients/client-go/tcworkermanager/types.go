@@ -33,6 +33,22 @@ type (
 		Token string `json:"token"`
 	}
 
+	// A list of providers
+	ProviderList struct {
+
+		// Opaque `continuationToken` to be given as query-string option to get the
+		// next set of workers in the worker-manager.
+		// This property is only present if another request is necessary to fetch all
+		// results. In practice the next request with a `continuationToken` may not
+		// return additional results, but it can. Thus, you can only be sure to have
+		// all the results if you've called `listWorkerPools` with `continuationToken`
+		// until you get a result without a `continuationToken`.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		// List of all providers
+		Providers []Var `json:"providers"`
+	}
+
 	// Request body to `registerWorker`.
 	RegisterWorkerRequest struct {
 
@@ -111,6 +127,15 @@ type (
 		//
 		// Syntax:     ^[a-zA-Z0-9_-]{44}$
 		StaticSecret string `json:"staticSecret"`
+	}
+
+	Var struct {
+
+		// The id of this provider
+		ProviderID string `json:"providerId"`
+
+		// The provider implementation underlying this provider
+		ProviderType string `json:"providerType"`
 	}
 
 	// Request to create a worker

@@ -30,14 +30,30 @@ A google-based provider is be configured in `providers` with the following struc
 }
 ```
 
+### GCP Project
+
 The `project` configuration names the project in which instances will be created.
 It is the project *ID* and not the human-readable project name.
 
-The `instancePermissions` configuration defines the permissions granted to the GCP role assumed by the workers.
-Each string in this array is a GCP IAM permission string.
-Typically, this will include permissions to write to StackDriver, such as `logging.logEntries.create`.
+The project will need the following APIs enabled:
 
-The GCP credentials are provided either in string form (`creds`) or in a file (`credsFile`).
+* Compute Engine API
+* Identity and Access Management (IAM) API
+* Cloud Resource Manager API
+
+### Service Account Credentials
+
+The provider requires a service account in the designated project, with the following roles:
+
+* `roles/iam.serviceAccountAdmin` ("Service Account Admin")
+* `roles/iam.roleAdmin` ("Role Administrator")
+* `roles/resourcemanager.projectIamAdmin` ("Project IAM Admin")
+* `roles/compute.admin` ("Compute Admin")
+
+These roles confer almost total control over the GCP project.
+See the note above about using a dedicated project.
+
+The GCP credentials for this service account are provided either in string form (`creds`) or in a file (`credsFile`).
 In either case, the data is the large JSON object containing a service account's keys. The object looks something like this:
 
 ```
@@ -56,15 +72,11 @@ In either case, the data is the large JSON object containing a service account's
 ```
 and will need to be included as a single string in the `creds` property.
 
-The service account for which you provide these GCP credentials must carry the roles
+### Instance Permissions
 
-* `roles/iam.serviceAccountAdmin`
-* `roles/iam.roleAdmin`
-* `roles/resourcemanager.projectIamAdmin`
-* `roles/compute.admin`
-
-These roles confer almost total control over the GCP project.
-See the note above about using a dedicated project.
+The `instancePermissions` configuration defines the permissions granted to the GCP role assumed by the workers.
+Each string in this array is a GCP IAM permission string.
+Typically, this will include permissions to write to StackDriver, such as `logging.logEntries.create`.
 
 ## Worker-Pool Configuration
 

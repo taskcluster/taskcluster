@@ -19,7 +19,7 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import StatusLabel from '../StatusLabel';
 import DateDistance from '../DateDistance';
 import Markdown from '../Markdown';
-import TableCellListItem from '../TableCellListItem';
+import TableCellItem from '../TableCellItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_WORKER_TYPES_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
@@ -215,7 +215,7 @@ export default class WorkerTypesTable extends Component {
                   onClick={this.handleDrawerOpen}>
                   <InformationVariantIcon size={iconSize} />
                 </IconButton>
-                <TableCellListItem
+                <TableCellItem
                   button
                   component={Link}
                   to={`/provisioners/${workerType.provisionerId}/worker-types/${
@@ -226,7 +226,7 @@ export default class WorkerTypesTable extends Component {
                     primary={<Typography>{workerType.workerType}</Typography>}
                   />
                   <LinkIcon size={iconSize} />
-                </TableCellListItem>
+                </TableCellItem>
               </TableCell>
               <TableCell>
                 <StatusLabel state={workerType.stability} />
@@ -235,7 +235,7 @@ export default class WorkerTypesTable extends Component {
                 title={`${workerType.lastDateActive} (Copy)`}
                 text={workerType.lastDateActive}>
                 <TableCell>
-                  <TableCellListItem button>
+                  <TableCellItem button>
                     <ListItemText
                       disableTypography
                       primary={
@@ -245,7 +245,7 @@ export default class WorkerTypesTable extends Component {
                       }
                     />
                     <ContentCopyIcon size={iconSize} />
-                  </TableCellListItem>
+                  </TableCellItem>
                 </TableCell>
               </CopyToClipboard>
               <TableCell>{workerType.pendingTasks}</TableCell>

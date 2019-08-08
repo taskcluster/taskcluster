@@ -1,15 +1,28 @@
 $schema: "/schemas/common/metaschema.json#"
-title: Worker List in a Given Worker Pool
-description: A list of workers in a given worker pool
+title: Provider List
+description: A list of providers
 type: object
 properties:
-  workers:
+  providers:
     type: array
-    title: "Workers"
-    description: List of all workers in a given worker pool
+    title: Providers
+    description: List of all providers
     uniqueItems: true
-    items: {$ref: 'worker-full.json#'}
-
+    items:
+      type: object
+      properties:
+        providerId:
+          type: string
+          title: Provider ID
+          description: The id of this provider
+        providerType:
+          type: string
+          title: Provider Type
+          description: The provider implementation underlying this provider
+      additionalProperties: false
+      required:
+        - providerId
+        - providerType
   continuationToken:
     type:               string
     title:              "Continuation Token"
@@ -23,4 +36,4 @@ properties:
       until you get a result without a `continuationToken`.
 additionalProperties: false
 required:
-  - workers
+  - providers

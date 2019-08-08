@@ -95,6 +95,22 @@ func (workerManager *WorkerManager) Ping() error {
 	return err
 }
 
+// Retrieve a list of providers that are available for worker pools.
+//
+// See #listProviders
+func (workerManager *WorkerManager) ListProviders(continuationToken, limit string) (*ProviderList, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*workerManager)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/providers", new(ProviderList), v)
+	return responseObject.(*ProviderList), err
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // Create a new worker pool. If the worker pool already exists, this will throw an error.

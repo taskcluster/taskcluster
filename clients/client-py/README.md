@@ -4341,6 +4341,19 @@ workerManager.ping() # -> None
 await asyncWorkerManager.ping() # -> None
 ```
 
+#### List Providers
+Retrieve a list of providers that are available for worker pools.
+
+
+Has required output schema
+
+```python
+# Sync calls
+workerManager.listProviders() # -> result
+# Async call
+await asyncWorkerManager.listProviders() # -> result
+```
+
 #### Create Worker Pool
 Create a new worker pool. If the worker pool already exists, this will throw an error.
 
