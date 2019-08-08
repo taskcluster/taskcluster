@@ -445,14 +445,6 @@ var queueEvents = new taskcluster.QueueEvents(options);
  * `queueEvents.taskException(routingKeyPattern) : binding-info`
  * `queueEvents.taskGroupResolved(routingKeyPattern) : binding-info`
 
-### Exchanges in `taskcluster.TreeherderEvents`
-```js
-// Create TreeherderEvents client instance:
-//  - exchange/taskcluster-treeherder/v1/
-var treeherderEvents = new taskcluster.TreeherderEvents(options);
-```
- * `treeherderEvents.jobs(routingKeyPattern) : binding-info`
-
 <!-- END OF GENERATED DOCS -->
 
 ## Providing Options

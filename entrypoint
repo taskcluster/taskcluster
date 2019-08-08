@@ -49,8 +49,6 @@ queue/expireWorkerInfo) exec sh -c 'cd services/queue && node src/main expire-wo
 secrets/web) exec sh -c 'cd services/secrets && node src/main.js server';;
 secrets/expire) exec sh -c 'cd services/secrets && node src/main.js expire';;
 secrets/write-docs) exec sh -c 'cd services/secrets && node src/main.js writeDocs';;
-treeherder/handlers) exec sh -c 'cd services/treeherder && node src/main.js server';;
-treeherder/write-docs) exec sh -c 'cd services/treeherder && node src/main writeDocs';;
 web-server/web) exec sh -c 'cd services/web-server && node src/main.js server';;
 web-server/scanner) exec sh -c 'cd services/web-server && node src/main.js scanner';;
 web-server/write-docs) exec sh -c 'cd services/web-server && node src/main.js writeDocs';;

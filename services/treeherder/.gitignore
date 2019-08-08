@@ -1,5 +1,0 @@
-/taskcluster-treeherder.conf.json
-/node_modules/
-/lib
-/.test
-user-config.yml
