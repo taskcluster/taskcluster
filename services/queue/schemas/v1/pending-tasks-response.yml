@@ -5,22 +5,8 @@ description: |
   `provisionerId` and `workerType`.
 type:               object
 properties:
-  provisionerId:
-    title:          "Provisioner Id"
-    description: |
-      Unique identifier for the provisioner
-    type:           string
-    minLength:      {$const: identifier-min-length}
-    maxLength:      {$const: identifier-max-length}
-    pattern:        {$const: identifier-pattern}
-  workerType:
-    title:          "Worker Type"
-    description: |
-      Identifier for worker type within the specified provisioner
-    type:           string
-    minLength:      {$const: identifier-min-length}
-    maxLength:      {$const: identifier-max-length}
-    pattern:        {$const: identifier-pattern}
+  provisionerId: {$ref: "task.json#/properties/provisionerId"}
+  workerType: {$ref: "task.json#/properties/workerType"}
   pendingTasks:
     type:           integer
     minimum:        0

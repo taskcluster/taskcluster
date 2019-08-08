@@ -1490,11 +1490,7 @@
           "type": "string"
         },
         "provisionerId": {
-          "maxLength": 38,
-          "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_]*)$",
-          "title": "Provisioner ID",
-          "type": "string"
+          "$ref": "task.json#/properties/provisionerId"
         },
         "stability": {
           "description": "This is the stability of the worker-type. Accepted values:\n  * `experimental`\n  * `stable`\n  * `deprecated`\n",
@@ -1507,12 +1503,7 @@
           "type": "string"
         },
         "workerType": {
-          "description": "WorkerType name.\n",
-          "maxLength": 38,
-          "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_]*)$",
-          "title": "Worker-type Name",
-          "type": "string"
+          "$ref": "task.json#/properties/workerType"
         }
       },
       "required": [
@@ -1608,11 +1599,7 @@
           "type": "string"
         },
         "provisionerId": {
-          "maxLength": 38,
-          "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_]*)$",
-          "title": "Provisioner ID",
-          "type": "string"
+          "$ref": "task.json#/properties/provisionerId"
         },
         "quarantineUntil": {
           "description": "Quarantining a worker allows the machine to remain alive but not accept jobs.\nOnce the quarantineUntil time has elapsed, the worker resumes accepting jobs.\nNote that a quarantine can be lifted by setting `quarantineUntil` to the present time (or\nsomewhere in the past).\n",
@@ -1646,12 +1633,7 @@
           "type": "string"
         },
         "workerType": {
-          "description": "WorkerType name.\n",
-          "maxLength": 38,
-          "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_]*)$",
-          "title": "WorkerType name",
-          "type": "string"
+          "$ref": "task.json#/properties/workerType"
         }
       },
       "required": [
@@ -1838,9 +1820,7 @@
         },
         "provisionerId": {
           "description": "Unique identifier for a provisioner, that can supply specified\n`workerType`\n",
-          "maxLength": 38,
-          "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "pattern": "^[a-zA-Z0-9-_]{1,38}$",
           "title": "Provisioner Id",
           "type": "string"
         },
@@ -1918,9 +1898,7 @@
         },
         "workerType": {
           "description": "Unique identifier for a worker-type within a specific provisioner\n",
-          "maxLength": 38,
-          "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "pattern": "^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
           "title": "Worker Type",
           "type": "string"
         }
@@ -2871,11 +2849,7 @@
           "type": "string"
         },
         "provisionerId": {
-          "maxLength": 38,
-          "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_]*)$",
-          "title": "Provisioner ID",
-          "type": "string"
+          "$ref": "task.json#/properties/provisionerId"
         },
         "stability": {
           "description": "This is the stability of the provisioner. Accepted values:\n  * `experimental`\n  * `stable`\n  * `deprecated`\n",
@@ -3386,20 +3360,10 @@
           "type": "integer"
         },
         "provisionerId": {
-          "description": "Unique identifier for the provisioner\n",
-          "maxLength": 38,
-          "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_]*)$",
-          "title": "Provisioner Id",
-          "type": "string"
+          "$ref": "task.json#/properties/provisionerId"
         },
         "workerType": {
-          "description": "Identifier for worker type within the specified provisioner\n",
-          "maxLength": 38,
-          "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_]*)$",
-          "title": "Worker Type",
-          "type": "string"
+          "$ref": "task.json#/properties/workerType"
         }
       },
       "required": [
@@ -3447,11 +3411,7 @@
                 "type": "string"
               },
               "provisionerId": {
-                "maxLength": 38,
-                "minLength": 1,
-                "pattern": "^([a-zA-Z0-9-_]*)$",
-                "title": "Provisioner ID",
-                "type": "string"
+                "$ref": "task.json#/properties/provisionerId"
               },
               "stability": {
                 "description": "This is the stability of the worker-type. Accepted values:\n * `experimental`\n * `stable`\n * `deprecated`\n",
@@ -3464,12 +3424,7 @@
                 "type": "string"
               },
               "workerType": {
-                "description": "WorkerType name.\n",
-                "maxLength": 38,
-                "minLength": 1,
-                "pattern": "^([a-zA-Z0-9-_]*)$",
-                "title": "WorkerType name",
-                "type": "string"
+                "$ref": "task.json#/properties/workerType"
               }
             },
             "required": [
@@ -3639,11 +3594,7 @@
                 "type": "string"
               },
               "provisionerId": {
-                "maxLength": 38,
-                "minLength": 1,
-                "pattern": "^([a-zA-Z0-9-_]*)$",
-                "title": "Provisioner ID",
-                "type": "string"
+                "$ref": "task.json#/properties/provisionerId"
               },
               "stability": {
                 "description": "This is the stability of the provisioner. Accepted values:\n * `experimental`\n * `stable`\n * `deprecated`\n",

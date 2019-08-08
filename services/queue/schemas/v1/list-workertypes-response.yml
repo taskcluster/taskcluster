@@ -14,20 +14,8 @@ properties:
       type:         object
       title:        "Worker Type"
       properties:
-        workerType:
-          type:           string
-          title:          "WorkerType name"
-          description: |
-            WorkerType name.
-          minLength:    {$const: identifier-min-length}
-          maxLength:    {$const: identifier-max-length}
-          pattern:      {$const: identifier-pattern}
-        provisionerId:
-          title:        "Provisioner ID"
-          type:         string
-          minLength:    {$const: identifier-min-length}
-          maxLength:    {$const: identifier-max-length}
-          pattern:      {$const: identifier-pattern}
+        provisionerId: {$ref: "task.json#/properties/provisionerId"}
+        workerType: {$ref: "task.json#/properties/workerType"}
         stability:
           title:        "Stability"
           description: |

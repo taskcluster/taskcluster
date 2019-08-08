@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
 const libUrls = require('taskcluster-lib-urls');
 const builder = require('../src/api');
@@ -331,3 +332,8 @@ helper.runExpiration = async component => {
     helper.load.restore();
   }
 };
+
+/**
+ * Make a random workerType name
+ */
+exports.makeWorkerType = () => `test-${slugid.v4().replace(/[_-]/g, '').toLowerCase()}-a`;
