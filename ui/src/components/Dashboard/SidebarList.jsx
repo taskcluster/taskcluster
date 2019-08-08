@@ -26,11 +26,11 @@ export default class SidebarList extends Component {
   render() {
     return (
       <List disablePadding>
-        <SidebarListItem to="/tasks" icon={<FeatureSearchIcon />}>
-          View Task
-        </SidebarListItem>
         <SidebarListItem to="/tasks/create" icon={<PlusCircleIcon />}>
           Create task
+        </SidebarListItem>
+        <SidebarListItem to="/tasks" icon={<FeatureSearchIcon />}>
+          View Task
         </SidebarListItem>
         <SidebarListItem to="/tasks/groups" icon={<GroupIcon />}>
           Task Groups
