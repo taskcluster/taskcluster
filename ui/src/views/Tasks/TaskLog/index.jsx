@@ -2,7 +2,7 @@ import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
-import ArrowRightIcon from 'mdi-react/ArrowRightIcon';
+import ArrowLeftIcon from 'mdi-react/ArrowLeftIcon';
 import Dashboard from '../../../components/Dashboard';
 import Button from '../../../components/Button';
 import Log from '../../../components/Log';
@@ -13,11 +13,6 @@ import taskQuery from './task.graphql';
 @hot(module)
 @withStyles(theme => ({
   fab: {
-    ...theme.mixins.fab,
-    ...theme.mixins.actionButton,
-    bottom: theme.spacing.triple,
-  },
-  rawLogButton: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
     bottom: theme.spacing.triple,
@@ -52,7 +47,6 @@ export default class TaskLog extends Component {
         <Log
           url={url}
           stream={stream}
-          RawLogButtonProps={{ className: classes.rawLogButton }}
           actions={
             <Button
               spanProps={{ className: classes.fab }}
@@ -61,7 +55,7 @@ export default class TaskLog extends Component {
               to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}
               variant="round"
               color="secondary">
-              <ArrowRightIcon />
+              <ArrowLeftIcon />
             </Button>
           }
         />
