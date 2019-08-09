@@ -3,6 +3,7 @@ const aws = require('aws-sdk');
 const taskcluster = require('taskcluster-client');
 const crypto = require('crypto');
 const fs = require('fs');
+const path = require("path");
 const {AWS_API_VERSION} = require('../constants');
 
 class AwsProvider extends Provider {
@@ -29,7 +30,7 @@ class AwsProvider extends Provider {
       notify,
     });
     this.configSchema = 'config-aws';
-    this.ec2iid_RSA_key = fs.readFileSync('./aws-keys/RSA-key-forSignature').toString();
+    this.ec2iid_RSA_key = fs.readFileSync(path.resolve(__dirname, 'aws-keys/RSA-key-forSignature')).toString();
   }
 
   /*
