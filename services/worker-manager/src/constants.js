@@ -1,1 +1,3 @@
-export const AWS_API_VERSION = '2016-11-15';
+module.exports = {
+  AWS_API_VERSION: '2016-11-15',
+};
