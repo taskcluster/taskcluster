@@ -62,7 +62,7 @@ func (p *AwsProvisionerProvider) ConfigureRun(state *run.State) error {
 
 	state.WorkerGroup = userData.Region
 
-	state.WorkerConfig = state.WorkerConfig.Merge(userData.Data.Config)
+	state.WorkerConfig = state.WorkerConfig.Merge(userData.Data)
 
 	// aws-provisioner includes capacity in the userdata, but we would like to reflect
 	// that as worker config instead.  For compatibility, we just do this when it is

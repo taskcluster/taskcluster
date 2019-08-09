@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/httpbackoff"
 )
 
@@ -54,14 +54,14 @@ func TestQueryMetadata(t *testing.T) {
 	ms := realMetadataService{}
 
 	rv, err := ms.queryMetadata("/meta-data/some-data")
-	assert.NoError(t, err)
-	assert.Equal(t, "42\n", rv)
+	require.NoError(t, err)
+	require.Equal(t, "42\n", rv)
 
 	_, err = ms.queryMetadata("/meta-data/NOSUCH")
-	if assert.Error(t, err) {
+	if err != nil {
 		httperr, ok := err.(httpbackoff.BadHttpResponseCode)
-		assert.True(t, ok)
-		assert.Equal(t, 404, httperr.HttpResponseCode)
+		require.True(t, ok)
+		require.Equal(t, 404, httperr.HttpResponseCode)
 	}
 }
 
@@ -69,7 +69,7 @@ func TestQueryUserData(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/latest/user-data" {
 			w.WriteHeader(200)
-			fmt.Fprintln(w, `{"region": "aa-central-2"}`)
+			fmt.Fprintln(w, `{"region": "aa-central-2", "data": {"dockerConfig": {"privileged": true}}}`)
 		} else {
 			w.WriteHeader(404)
 			fmt.Fprintf(w, "Not Found: %s", r.URL.Path)
@@ -85,6 +85,10 @@ func TestQueryUserData(t *testing.T) {
 	ms := realMetadataService{}
 
 	ud, err := ms.queryUserData()
-	assert.NoError(t, err)
-	assert.Equal(t, "aa-central-2", ud.Region)
+	require.NoError(t, err)
+	require.Equal(t, "aa-central-2", ud.Region)
+
+	privileged, err := ud.Data.Get("dockerConfig.privileged")
+	require.NoError(t, err)
+	require.Equal(t, privileged, true)
 }

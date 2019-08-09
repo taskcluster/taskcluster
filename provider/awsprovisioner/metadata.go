@@ -10,19 +10,15 @@ import (
 
 var EC2MetadataBaseURL = "http://169.254.169.254/latest"
 
-type userDataData struct {
-	Config *cfg.WorkerConfig `json:"config"`
-}
-
 // taken from https://github.com/taskcluster/aws-provisioner/blob/5a2bc7c57b20df00f9c4357e0daeb7967e6f5ee8/lib/worker-type.js#L607-L624
 type UserData struct {
-	Data               userDataData `json:"data"`
-	WorkerType         string       `json:"workerType"`
-	ProvisionerID      string       `json:"provisionerId"`
-	Region             string       `json:"region"`
-	TaskclusterRootURL string       `json:"taskclusterRootUrl"`
-	SecurityToken      string       `json:"securityToken"`
-	Capacity           int          `json:"capacity"`
+	Data               *cfg.WorkerConfig `json:"data"`
+	WorkerType         string            `json:"workerType"`
+	ProvisionerID      string            `json:"provisionerId"`
+	Region             string            `json:"region"`
+	TaskclusterRootURL string            `json:"taskclusterRootUrl"`
+	SecurityToken      string            `json:"securityToken"`
+	Capacity           int               `json:"capacity"`
 }
 
 type MetadataService interface {

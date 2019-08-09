@@ -40,9 +40,7 @@ func TestAwsProviderConfigureRun(t *testing.T) {
 	userDataWorkerConfig, err = userDataWorkerConfig.Set("from-user-data", true)
 	assert.NoError(t, err, "setting config")
 	userData := &UserData{
-		Data: userDataData{
-			Config: userDataWorkerConfig,
-		},
+		Data:               userDataWorkerConfig,
 		WorkerType:         "wt",
 		ProvisionerID:      "apv1",
 		Region:             "rgn",
