@@ -3,6 +3,7 @@ const aws = require('aws-sdk');
 const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
 const crypto = require('crypto');
+const {AWS_API_VERSION} = require('../constants');
 
 class AwsProvider extends Provider {
   constructor({
@@ -13,7 +14,6 @@ class AwsProvider extends Provider {
     WorkerPool,
     WorkerPoolError,
     instancePermissions,
-    apiVersion,
     region,
     estimator,
     validator,
@@ -33,13 +33,11 @@ class AwsProvider extends Provider {
     });
     this.configSchema = 'config-aws';
     this.instancePermissions = instancePermissions;
-    this.apiVersion = apiVersion;
     this.region = region;
     this.ec2iid_RSA_key = ec2iid_RSA_key;
 
     aws.config.update({region});
-    this.iam = new aws.IAM({apiVersion});
-    this.ec2 = new aws.EC2({apiVersion});
+    this.iam = new aws.IAM({apiVersion: AWS_API_VERSION});
   }
 
   /*
@@ -161,6 +159,9 @@ class AwsProvider extends Provider {
 
     const config = this.chooseConfig(workerPool.config);
 
+    aws.config.update({region: config.region});
+    const ec2 = new aws.EC2({apiVersion: AWS_API_VERSION});
+
     const toSpawn = await this.estimator.simple({
       workerPoolId,
       ...config,
@@ -170,8 +171,8 @@ class AwsProvider extends Provider {
     let spawned;
 
     try {
-      spawned = await this.ec2.runInstances({
-        ...config,
+      spawned = await ec2.runInstances({
+        ...config.launchConfig,
         IamInstanceProfile: {
           Arn: this.instanceProfile.Arn,
           Name: this.instanceProfile.InstanceProfileName,
@@ -196,7 +197,7 @@ class AwsProvider extends Provider {
       return await workerPool.reportError({
         kind: 'creation-error',
         title: 'Instance Creation Error',
-        description: e.message, // TODO: Make sure we clear exposing this with security folks
+        description: 'Error creating instances in AWS',
         notify: this.notify,
         WorkerPoolError: this.WorkerPoolError,
       });
@@ -212,6 +213,7 @@ class AwsProvider extends Provider {
         expires: taskcluster.fromNow('1 week'),
         state: this.Worker.states.REQUESTED,
         providerData: {
+          region: config.region,
           groups: spawned.Groups,
           amiLaunchIndexes: spawned.Instances.map(i => i.AmiLaunchIndex),
           imageId: i.ImageId,
@@ -248,7 +250,9 @@ class AwsProvider extends Provider {
   async checkWorker({worker}) {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
 
-    let instanceStatuses = (await this.ec2.describeInstanceStatus({
+    aws.config.update({region: worker.providerData.region});
+    const ec2 = new aws.EC2({apiVersion: AWS_API_VERSION});
+    let instanceStatuses = (await ec2.describeInstanceStatus({
       InstanceIds: [worker.workerId.toString()],
     })).data;
 
@@ -303,7 +307,7 @@ class AwsProvider extends Provider {
    * @returns Object
    */
   chooseConfig({possibleConfigs}) {
-    const i = Math.random() * (possibleConfigs.length() - 1);
+    const i = Math.random() * (possibleConfigs.length());
 
     return possibleConfigs[i];
   }
