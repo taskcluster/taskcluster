@@ -1,0 +1,1 @@
+export const AWS_API_VERSION = '2016-11-15';
