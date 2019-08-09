@@ -2,6 +2,7 @@ const {ApiError, Provider} = require('./provider');
 const aws = require('aws-sdk');
 const taskcluster = require('taskcluster-client');
 const crypto = require('crypto');
+const fs = require('fs');
 const {AWS_API_VERSION} = require('../constants');
 
 class AwsProvider extends Provider {
@@ -15,9 +16,6 @@ class AwsProvider extends Provider {
     estimator,
     validator,
     notify,
-    instancePermissions,
-    region,
-    ec2iid_RSA_key,
   }) {
     super({
       providerId,
@@ -31,8 +29,7 @@ class AwsProvider extends Provider {
       notify,
     });
     this.configSchema = 'config-aws';
-    this.region = region;
-    this.ec2iid_RSA_key = ec2iid_RSA_key;
+    this.ec2iid_RSA_key = fs.readFileSync('./aws-keys/RSA-key-forSignature').toString();
   }
 
   /*
