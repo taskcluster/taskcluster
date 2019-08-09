@@ -240,3 +240,7 @@ class AwsProvider extends Provider {
     return;
   }
 }
+
+module.exports = {
+  AwsProvider,
+};

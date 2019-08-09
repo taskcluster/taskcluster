@@ -2,12 +2,14 @@ const {NullProvider} = require('./null');
 const {TestingProvider} = require('./testing');
 const {StaticProvider} = require('./static');
 const {GoogleProvider} = require('./google');
+const {AwsProvider} = require('./aws');
 
 const PROVIDER_TYPES = {
   null: NullProvider,
   testing: TestingProvider,
   static: StaticProvider,
   google: GoogleProvider,
+  aws: AwsProvider,
 };
 
 /**
