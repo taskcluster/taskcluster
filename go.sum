@@ -42,6 +42,8 @@ github.com/taskcluster/taskcluster-base-go v1.0.0 h1:Jh2R/J7+a23LjtYEHQtkFV04QBx
 github.com/taskcluster/taskcluster-base-go v1.0.0/go.mod h1:ByyzyqqufsfZTrAHUw+0Grp8FwZAizZOKzVE1IpDXxQ=
 github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible h1:57WLzh7B04y6ahTOJ8wjvdkbwYqnyJkwLXQ1Tu4E/DU=
 github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible/go.mod h1:ALqTgi15AmJGEGubRKM0ydlLAFatlQPrQrmal9YZpQs=
+github.com/taskcluster/taskcluster/clients/client-go/v15 v15.0.0 h1:Aa5ZTubKcHJcmtWD8GzYqVbf/Mtxta7XnaKf3u4los8=
+github.com/taskcluster/taskcluster/clients/client-go/v15 v15.0.0/go.mod h1:NlBIs6gMDA5LGl6Q33bvAyIz3Dk+MtTdpVxcRLoVgtE=
 github.com/taskcluster/taskcluster/clients/client-go/v15 v15.0.1-0.20190731014247-6cfb37c91ad9 h1:yTa8nqgjX94knKdCfxefCHWP2jVa3VPeiYPtBos3haM=
 github.com/taskcluster/taskcluster/clients/client-go/v15 v15.0.1-0.20190731014247-6cfb37c91ad9/go.mod h1:gwrOEPmy7altG4AdYk8S7xJTeyB09ChVe6uItMOvCAo=
 github.com/taskcluster/taskcluster/clients/client-go/v16 v16.0.0/go.mod h1:X8jVUUThNdOwqhkvi3GImsq0/Jq1GMdt/gvl74ktX64=
@@ -59,6 +61,7 @@ golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.2 h1:tW2bmiBqwgJj/UpqtC8EpXEZVYOwU0yG4iWbprSVAcs=
 golang.org/x/text v0.3.2/go.mod h1:bEr9sfX3Q8Zfm5fL9x+3itogRgK3+ptLWKqgva+5dAk=
 golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
+golang.org/x/tools v0.0.0-20190715045107-607ca053a137/go.mod h1:jcCCGcm9btYwXyDqrUWc6MKQKKGJCWEQ3AfLSRIbEuI=
 golang.org/x/tools v0.0.0-20190722020823-e377ae9d6386/go.mod h1:jcCCGcm9btYwXyDqrUWc6MKQKKGJCWEQ3AfLSRIbEuI=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
