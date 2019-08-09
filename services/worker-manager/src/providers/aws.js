@@ -12,11 +12,11 @@ class AwsProvider extends Provider {
     Worker,
     WorkerPool,
     WorkerPoolError,
-    instancePermissions,
-    region,
     estimator,
     validator,
     notify,
+    instancePermissions,
+    region,
     ec2iid_RSA_key,
   }) {
     super({
@@ -31,7 +31,6 @@ class AwsProvider extends Provider {
       notify,
     });
     this.configSchema = 'config-aws';
-    this.instancePermissions = instancePermissions;
     this.region = region;
     this.ec2iid_RSA_key = ec2iid_RSA_key;
   }
@@ -68,15 +67,8 @@ class AwsProvider extends Provider {
     try {
       spawned = await ec2.runInstances({
         ...config.launchConfig,
-        IamInstanceProfile: {
-          Arn: this.instanceProfile.Arn,
-          Name: this.instanceProfile.InstanceProfileName,
-        },
         MaxCount: config.MaxCount || toSpawn,
         MinCount: config.MinCount ? Math.min(toSpawn, config.MinCount) : toSpawn,
-        Placement: {
-          AvailabilityZone: this.region,
-        },
         TagSpecifications: {
           ResourceType: 'instance',
           Tags: [{
