@@ -6,33 +6,34 @@ import (
 	"strings"
 	"time"
 
+	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster-worker-runner/runner"
+	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v15"
 	"github.com/taskcluster/taskcluster/clients/client-go/v15/tcawsprovisioner"
 )
 
 type AwsProvisionerProvider struct {
-	runnercfg                   *runner.RunnerConfig
+	runnercfg                   *cfg.RunnerConfig
 	awsProvisionerClientFactory tc.AwsProvisionerClientFactory
 	metadataService             MetadataService
 	proto                       *protocol.Protocol
 	terminationTicker           *time.Ticker
 }
 
-func (p *AwsProvisionerProvider) ConfigureRun(run *runner.Run) error {
+func (p *AwsProvisionerProvider) ConfigureRun(state *run.State) error {
 	userData, err := p.metadataService.queryUserData()
 	if err != nil {
 		// if we can't read user data, this is a serious problem
 		return fmt.Errorf("Could not query user data: %v", err)
 	}
-	run.RootURL = userData.TaskclusterRootURL
+	state.RootURL = userData.TaskclusterRootURL
 
 	// We need an AWS Provisioner client for fetching taskcluster credentials.
 	// Ensure auth is disabled in client, since we don't have credentials yet.
-	awsprov, err := p.awsProvisionerClientFactory(run.RootURL, nil)
+	awsprov, err := p.awsProvisionerClientFactory(state.RootURL, nil)
 	if err != nil {
 		return fmt.Errorf("Could not create AWS provisioner client: %v", err)
 	}
@@ -49,25 +50,25 @@ func (p *AwsProvisionerProvider) ConfigureRun(run *runner.Run) error {
 		return fmt.Errorf("Could not delete credentials for worker in AWS Provisioner: %v", removeErr)
 	}
 
-	run.Credentials.ClientID = secToken.Credentials.ClientID
-	run.Credentials.AccessToken = secToken.Credentials.AccessToken
-	run.Credentials.Certificate = secToken.Credentials.Certificate
+	state.Credentials.ClientID = secToken.Credentials.ClientID
+	state.Credentials.AccessToken = secToken.Credentials.AccessToken
+	state.Credentials.Certificate = secToken.Credentials.Certificate
 
 	// aws-provisioner always provides 96-hour credentials
-	run.CredentialsExpire = time.Now().Add(96 * time.Hour)
+	state.CredentialsExpire = time.Now().Add(96 * time.Hour)
 
 	// aws-provisioner still speaks of provisionerID/workerType
-	run.WorkerPoolID = fmt.Sprintf("%s/%s", userData.ProvisionerID, userData.WorkerType)
+	state.WorkerPoolID = fmt.Sprintf("%s/%s", userData.ProvisionerID, userData.WorkerType)
 
-	run.WorkerGroup = userData.Region
+	state.WorkerGroup = userData.Region
 
-	run.WorkerConfig = run.WorkerConfig.Merge(userData.Data.Config)
+	state.WorkerConfig = state.WorkerConfig.Merge(userData.Data.Config)
 
 	// aws-provisioner includes capacity in the userdata, but we would like to reflect
 	// that as worker config instead.  For compatibility, we just do this when it is
 	// not 1
 	if userData.Capacity != 1 {
-		run.WorkerConfig, err = run.WorkerConfig.Set("capacity", userData.Capacity)
+		state.WorkerConfig, err = state.WorkerConfig.Set("capacity", userData.Capacity)
 		if err != nil {
 			return fmt.Errorf("Could not set workerConfig capacity: %v", err)
 		}
@@ -96,23 +97,27 @@ func (p *AwsProvisionerProvider) ConfigureRun(run *runner.Run) error {
 	az := awsMetadata["availability-zone"]
 	awsMetadata["region"] = az[:len(az)-1]
 
-	run.WorkerID = awsMetadata["instance-id"]
-	run.ProviderMetadata = awsMetadata
+	state.WorkerID = awsMetadata["instance-id"]
+	state.ProviderMetadata = awsMetadata
 
 	// As a special case, set the shutdown behavior configuration specifically
 	// for docker-worker on AWS.  In future this should be set in the worker
 	// pool config.
 	if p.runnercfg.WorkerImplementation.Implementation == "docker-worker" {
-		run.WorkerConfig, err = run.WorkerConfig.Set("shutdown.enabled", true)
+		state.WorkerConfig, err = state.WorkerConfig.Set("shutdown.enabled", true)
 		if err != nil {
 			return fmt.Errorf("Could not set shutdown.enabled: %v", err)
 		}
-		run.WorkerConfig, err = run.WorkerConfig.Set("shutdown.afterIdleSeconds", 15*60)
+		state.WorkerConfig, err = state.WorkerConfig.Set("shutdown.afterIdleSeconds", 15*60)
 		if err != nil {
 			return fmt.Errorf("Could not set shutdown.afterIdleSeconds: %v", err)
 		}
 	}
 
+	return nil
+}
+
+func (p *AwsProvisionerProvider) UseCachedRun(run *run.State) error {
 	return nil
 }
 
@@ -162,7 +167,7 @@ func clientFactory(rootURL string, credentials *tcclient.Credentials) (tc.AwsPro
 	return prov, nil
 }
 
-func New(runnercfg *runner.RunnerConfig) (provider.Provider, error) {
+func New(runnercfg *cfg.RunnerConfig) (provider.Provider, error) {
 	return new(runnercfg, nil, nil)
 }
 
@@ -177,7 +182,7 @@ the legacy aws-provisioner application.  It requires
 }
 
 // New takes its dependencies as optional arguments, allowing injection of fake dependencies for testing.
-func new(runnercfg *runner.RunnerConfig, awsProvisionerClientFactory tc.AwsProvisionerClientFactory, metadataService MetadataService) (*AwsProvisionerProvider, error) {
+func new(runnercfg *cfg.RunnerConfig, awsProvisionerClientFactory tc.AwsProvisionerClientFactory, metadataService MetadataService) (*AwsProvisionerProvider, error) {
 	if awsProvisionerClientFactory == nil {
 		awsProvisionerClientFactory = clientFactory
 	}

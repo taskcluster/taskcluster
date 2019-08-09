@@ -5,16 +5,16 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/awsprovisioner"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/google"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/standalone"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/static"
-	"github.com/taskcluster/taskcluster-worker-runner/runner"
 )
 
 type providerInfo struct {
-	constructor func(*runner.RunnerConfig) (provider.Provider, error)
+	constructor func(*cfg.RunnerConfig) (provider.Provider, error)
 	usage       func() string
 }
 
@@ -25,7 +25,7 @@ var providers map[string]providerInfo = map[string]providerInfo{
 	"static":          providerInfo{static.New, static.Usage},
 }
 
-func New(runnercfg *runner.RunnerConfig) (provider.Provider, error) {
+func New(runnercfg *cfg.RunnerConfig) (provider.Provider, error) {
 	if runnercfg.Provider.ProviderType == "" {
 		return nil, fmt.Errorf("No provider given in configuration")
 	}

@@ -4,22 +4,23 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster-worker-runner/runner"
+	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v15"
 	"github.com/taskcluster/taskcluster/clients/client-go/v15/tcworkermanager"
 )
 
 type GoogleProvider struct {
-	runnercfg                  *runner.RunnerConfig
+	runnercfg                  *cfg.RunnerConfig
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	metadataService            MetadataService
 	proto                      *protocol.Protocol
 }
 
-func (p *GoogleProvider) ConfigureRun(run *runner.Run) error {
+func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 	workerID, err := p.metadataService.queryMetadata("/instance/id")
 	if err != nil {
 		return fmt.Errorf("Could not query metadata: %v", err)
@@ -30,7 +31,7 @@ func (p *GoogleProvider) ConfigureRun(run *runner.Run) error {
 		return fmt.Errorf("Could not query user data: %v", err)
 	}
 
-	run.RootURL = userData.RootURL
+	state.RootURL = userData.RootURL
 
 	// the worker identity
 	proofPath := fmt.Sprintf("/instance/service-accounts/default/identity?audience=%s&format=full", userData.RootURL)
@@ -41,12 +42,12 @@ func (p *GoogleProvider) ConfigureRun(run *runner.Run) error {
 
 	// We need a worker manager client for fetching taskcluster credentials.
 	// Ensure auth is disabled in client, since we don't have credentials yet.
-	wm, err := p.workerManagerClientFactory(run.RootURL, nil)
+	wm, err := p.workerManagerClientFactory(state.RootURL, nil)
 	if err != nil {
 		return fmt.Errorf("Could not create worker manager client: %v", err)
 	}
 
-	err = provider.RegisterWorker(run, wm, userData.WorkerPoolID, userData.ProviderID, userData.WorkerGroup, workerID, "token", proofToken)
+	err = provider.RegisterWorker(state, wm, userData.WorkerPoolID, userData.ProviderID, userData.WorkerGroup, workerID, "token", proofToken)
 	if err != nil {
 		return err
 	}
@@ -80,8 +81,12 @@ func (p *GoogleProvider) ConfigureRun(run *runner.Run) error {
 	providerMetadata["zone"] = zone
 	providerMetadata["region"] = zone[:len(zone)-1]
 
-	run.ProviderMetadata = providerMetadata
+	state.ProviderMetadata = providerMetadata
 
+	return nil
+}
+
+func (p *GoogleProvider) UseCachedRun(run *run.State) error {
 	return nil
 }
 
@@ -102,7 +107,7 @@ func clientFactory(rootURL string, credentials *tcclient.Credentials) (tc.Worker
 	return prov, nil
 }
 
-func New(runnercfg *runner.RunnerConfig) (provider.Provider, error) {
+func New(runnercfg *cfg.RunnerConfig) (provider.Provider, error) {
 	return new(runnercfg, nil, nil)
 }
 
@@ -117,7 +122,7 @@ providers using providerType "google".  It requires
 }
 
 // New takes its dependencies as optional arguments, allowing injection of fake dependencies for testing.
-func new(runnercfg *runner.RunnerConfig, workerManagerClientFactory tc.WorkerManagerClientFactory, metadataService MetadataService) (*GoogleProvider, error) {
+func new(runnercfg *cfg.RunnerConfig, workerManagerClientFactory tc.WorkerManagerClientFactory, metadataService MetadataService) (*GoogleProvider, error) {
 	if workerManagerClientFactory == nil {
 		workerManagerClientFactory = clientFactory
 	}

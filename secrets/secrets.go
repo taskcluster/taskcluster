@@ -9,7 +9,7 @@ import (
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/files"
-	"github.com/taskcluster/taskcluster-worker-runner/runner"
+	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v15"
 	"github.com/taskcluster/taskcluster/clients/client-go/v15/tcsecrets"
@@ -19,12 +19,12 @@ func clientFactory(rootURL string, credentials *tcclient.Credentials) (tc.Secret
 	return tcsecrets.New(credentials, rootURL), nil
 }
 
-func ConfigureRun(runnercfg *runner.RunnerConfig, run *runner.Run) error {
-	return configureRun(runnercfg, run, clientFactory)
+func ConfigureRun(runnercfg *cfg.RunnerConfig, state *run.State) error {
+	return configureRun(runnercfg, state, clientFactory)
 }
 
-func configureRun(runnercfg *runner.RunnerConfig, run *runner.Run, secretsClientFactory tc.SecretsClientFactory) error {
-	secretsClient, err := secretsClientFactory(run.RootURL, &run.Credentials)
+func configureRun(runnercfg *cfg.RunnerConfig, state *run.State, secretsClientFactory tc.SecretsClientFactory) error {
+	secretsClient, err := secretsClientFactory(state.RootURL, &state.Credentials)
 	if err != nil {
 		return err
 	}
@@ -32,7 +32,7 @@ func configureRun(runnercfg *runner.RunnerConfig, run *runner.Run, secretsClient
 	// Consult secrets named both `worker-type:..` and (preferred) `worker-pool:..`.
 	found := false
 	for _, prefix := range []string{"worker-type:", "worker-pool:"} {
-		secretName := prefix + run.WorkerPoolID
+		secretName := prefix + state.WorkerPoolID
 		secResponse, err := secretsClient.Get(secretName)
 		if err != nil {
 			if apiCallException, isAPICallException := err.(*tcclient.APICallException); isAPICallException {
@@ -76,7 +76,7 @@ func configureRun(runnercfg *runner.RunnerConfig, run *runner.Run, secretsClient
 		}
 
 		found = true
-		run.WorkerConfig = run.WorkerConfig.Merge(secret.Config)
+		state.WorkerConfig = state.WorkerConfig.Merge(secret.Config)
 
 		if len(secret.Files) != 0 {
 			return fmt.Errorf("secret files are nonempty - files are not supported yet")
@@ -84,7 +84,7 @@ func configureRun(runnercfg *runner.RunnerConfig, run *runner.Run, secretsClient
 	}
 
 	if !found {
-		log.Printf("WARNING: No worker secrets for worker pool %v.", run.WorkerPoolID)
+		log.Printf("WARNING: No worker secrets for worker pool %v.", state.WorkerPoolID)
 	}
 	return nil
 }

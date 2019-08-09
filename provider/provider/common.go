@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/taskcluster/taskcluster-worker-runner/runner"
+	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
 	"github.com/taskcluster/taskcluster/clients/client-go/v15/tcworkermanager"
 )
 
-// Register this worker with the worker-manager, and update the run with the parameters and the results.
-func RegisterWorker(run *runner.Run, wm tc.WorkerManager, workerPoolID, providerID, workerGroup, workerID, workerIdentityKey, workerIdentityValue string) error {
+// Register this worker with the worker-manager, and update the state with the parameters and the results.
+func RegisterWorker(state *run.State, wm tc.WorkerManager, workerPoolID, providerID, workerGroup, workerID, workerIdentityKey, workerIdentityValue string) error {
 	workerIdentityProofMap := map[string]interface{}{workerIdentityKey: interface{}(workerIdentityValue)}
 	workerIdentityProof, err := json.Marshal(workerIdentityProofMap)
 	if err != nil {
@@ -29,15 +29,15 @@ func RegisterWorker(run *runner.Run, wm tc.WorkerManager, workerPoolID, provider
 		return fmt.Errorf("Could not register worker: %v", err)
 	}
 
-	run.WorkerPoolID = workerPoolID
-	run.WorkerID = workerID
-	run.WorkerGroup = workerGroup
+	state.WorkerPoolID = workerPoolID
+	state.WorkerID = workerID
+	state.WorkerGroup = workerGroup
 
-	run.Credentials.ClientID = reg.Credentials.ClientID
-	run.Credentials.AccessToken = reg.Credentials.AccessToken
-	run.Credentials.Certificate = reg.Credentials.Certificate
+	state.Credentials.ClientID = reg.Credentials.ClientID
+	state.Credentials.AccessToken = reg.Credentials.AccessToken
+	state.Credentials.Certificate = reg.Credentials.Certificate
 
-	run.CredentialsExpire = time.Time(reg.Expires)
+	state.CredentialsExpire = time.Time(reg.Expires)
 
 	return nil
 }

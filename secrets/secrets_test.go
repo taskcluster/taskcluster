@@ -5,13 +5,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster-worker-runner/runner"
+	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v15"
 	"github.com/taskcluster/taskcluster/clients/client-go/v15/tcsecrets"
 )
 
-func setup(t *testing.T) (*runner.RunnerConfig, *runner.Run) {
+func setup(t *testing.T) (*cfg.RunnerConfig, *run.State) {
 	tc.FakeSecretsReset()
 
 	runnerWorkerConfig := cfg.NewWorkerConfig()
@@ -19,7 +19,7 @@ func setup(t *testing.T) (*runner.RunnerConfig, *runner.Run) {
 	assert.NoError(t, err, "setting config")
 	runnerWorkerConfig, err = runnerWorkerConfig.Set("from-runner-cfg", true)
 	assert.NoError(t, err, "setting config")
-	runnercfg := &runner.RunnerConfig{
+	runnercfg := &cfg.RunnerConfig{
 		Provider: cfg.ProviderConfig{
 			ProviderType: "dummy",
 		},
@@ -28,70 +28,70 @@ func setup(t *testing.T) (*runner.RunnerConfig, *runner.Run) {
 		},
 		WorkerConfig: runnerWorkerConfig,
 	}
-	run := &runner.Run{
+	state := &run.State{
 		RootURL:      "https://tc.example.com",
 		Credentials:  tcclient.Credentials{ClientID: "cli"},
 		WorkerPoolID: "pp/wt",
 		WorkerConfig: runnercfg.WorkerConfig,
 	}
-	return runnercfg, run
+	return runnercfg, state
 }
 
 func TestGetSecretLegacyFormat(t *testing.T) {
-	runnercfg, run := setup(t)
+	runnercfg, state := setup(t)
 
 	tc.FakeSecretsCreateSecret("worker-pool:pp/wt", &tcsecrets.Secret{
 		Secret: []byte(`{"from-secret": true}`),
 	})
 
-	err := configureRun(runnercfg, run, tc.FakeSecretsClientFactory)
+	err := configureRun(runnercfg, state, tc.FakeSecretsClientFactory)
 	assert.NoError(t, err, "expected great success")
-	assert.Equal(t, true, run.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
-	assert.Equal(t, true, run.WorkerConfig.MustGet("from-secret"), "value for from-secret")
+	assert.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
+	assert.Equal(t, true, state.WorkerConfig.MustGet("from-secret"), "value for from-secret")
 }
 
 func TestGetSecretLegacyInsuffScopes(t *testing.T) {
-	runnercfg, run := setup(t)
+	runnercfg, state := setup(t)
 
 	tc.FakeSecretsCreateSecret("worker-type:pp/wt", nil) // meaning 403
 
-	err := configureRun(runnercfg, run, tc.FakeSecretsClientFactory)
+	err := configureRun(runnercfg, state, tc.FakeSecretsClientFactory)
 	assert.NoError(t, err, "expected great success")
-	assert.Equal(t, true, run.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
-	assert.Equal(t, false, run.WorkerConfig.MustGet("from-secret"), "value for from-secret")
+	assert.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
+	assert.Equal(t, false, state.WorkerConfig.MustGet("from-secret"), "value for from-secret")
 }
 
 func TestGetSecretLegacyName(t *testing.T) {
-	runnercfg, run := setup(t)
+	runnercfg, state := setup(t)
 
 	tc.FakeSecretsCreateSecret("worker-type:pp/wt", &tcsecrets.Secret{
 		Secret: []byte(`{"config": {"from-secret": true}}`),
 	})
 
-	err := configureRun(runnercfg, run, tc.FakeSecretsClientFactory)
+	err := configureRun(runnercfg, state, tc.FakeSecretsClientFactory)
 	assert.NoError(t, err, "expected great success")
-	assert.Equal(t, true, run.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
-	assert.Equal(t, true, run.WorkerConfig.MustGet("from-secret"), "value for from-secret")
+	assert.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
+	assert.Equal(t, true, state.WorkerConfig.MustGet("from-secret"), "value for from-secret")
 }
 
 func TestGetSecretConfigFilesFormat(t *testing.T) {
-	runnercfg, run := setup(t)
+	runnercfg, state := setup(t)
 
 	tc.FakeSecretsCreateSecret("worker-pool:pp/wt", &tcsecrets.Secret{
 		Secret: []byte(`{"config": {"from-secret": true}}`),
 	})
 
-	err := configureRun(runnercfg, run, tc.FakeSecretsClientFactory)
+	err := configureRun(runnercfg, state, tc.FakeSecretsClientFactory)
 	assert.NoError(t, err, "expected great success")
-	assert.Equal(t, true, run.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
-	assert.Equal(t, true, run.WorkerConfig.MustGet("from-secret"), "value for from-secret")
+	assert.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
+	assert.Equal(t, true, state.WorkerConfig.MustGet("from-secret"), "value for from-secret")
 }
 
 func TestGetSecretNotFound(t *testing.T) {
-	runnercfg, run := setup(t)
+	runnercfg, state := setup(t)
 
-	err := configureRun(runnercfg, run, tc.FakeSecretsClientFactory)
+	err := configureRun(runnercfg, state, tc.FakeSecretsClientFactory)
 	assert.NoError(t, err, "expected great success")
-	assert.Equal(t, true, run.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
-	assert.Equal(t, false, run.WorkerConfig.MustGet("from-secret"), "value for from-secret (not found)")
+	assert.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
+	assert.Equal(t, false, state.WorkerConfig.MustGet("from-secret"), "value for from-secret (not found)")
 }

@@ -1,45 +1,105 @@
 package runner
 
 import (
+	"fmt"
+	"io/ioutil"
+	"path/filepath"
 	"testing"
-	"time"
 
+	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 )
 
-func TestCredsExpiration(t *testing.T) {
-	run := &Run{
-		// message is sent 30 seconds before expiration, so set expiration
-		// for 30s from now
-		CredentialsExpire: time.Now().Add(30 * time.Second),
+func TestDummy(t *testing.T) {
+	defer filet.CleanUp(t)
+	dir := filet.TmpDir(t, "")
+	configPath := filepath.Join(dir, "runner.yaml")
+
+	err := ioutil.WriteFile(configPath, []byte(`
+provider:
+  providerType: standalone
+  rootURL: https://tc.example.com
+  clientID: fake
+  accessToken: fake
+  workerPoolID: pp/ww
+  workerGroup: wg
+  workerID: wi
+getSecrets: false
+worker:
+  implementation: dummy
+`), 0755)
+	if !assert.NoError(t, err) {
+		return
 	}
 
-	transp := protocol.NewFakeTransport()
-	run.proto = protocol.NewProtocol(transp)
-	run.proto.Capabilities.Add("graceful-termination")
-
-	err := run.WorkerStarted()
-	assert.NoError(t, err)
-
-	// and wait until that happens
-	for {
-		time.Sleep(10 * time.Millisecond)
-		haveMessage := len(transp.Messages()) != 0
-		if haveMessage {
-			break
-		}
+	run, err := Run(configPath)
+	if !assert.NoError(t, err) {
+		return
 	}
 
-	assert.Equal(t, []protocol.Message{
-		protocol.Message{
-			Type: "graceful-termination",
-			Properties: map[string]interface{}{
-				"finish-tasks": false,
-			},
-		},
-	}, transp.Messages())
+	// spot-check some run values; the main point here is that
+	// an error does not occur
+	assert.Equal(t, "https://tc.example.com", run.RootURL)
+	assert.Equal(t, "fake", run.Credentials.ClientID)
+	assert.Equal(t, "pp/ww", run.WorkerPoolID)
+}
 
-	err = run.WorkerFinished()
-	assert.NoError(t, err)
+func TestDummyCached(t *testing.T) {
+	defer filet.CleanUp(t)
+	dir := filet.TmpDir(t, "")
+	configPath := filepath.Join(dir, "runner.yaml")
+	cachePath := filepath.Join(dir, "cache.json")
+
+	err := ioutil.WriteFile(configPath, []byte(fmt.Sprintf(`
+provider:
+  providerType: standalone
+  rootURL: https://tc.example.com
+  clientID: fake
+  accessToken: fake
+  workerPoolID: pp/ww
+  workerGroup: wg
+  workerID: wi
+getSecrets: false
+cacheOverRestarts: %s
+workerConfig:
+  fromFirstRun: true
+worker:
+  implementation: dummy
+`, cachePath)), 0755)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	run, err := Run(configPath)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	assert.Equal(t, true, run.WorkerConfig.MustGet("fromFirstRun"))
+
+	// slightly different config this time, omitting `fromFirstRun`:
+	err = ioutil.WriteFile(configPath, []byte(fmt.Sprintf(`
+provider:
+  providerType: standalone
+  rootURL: https://tc.example.com
+  clientID: fake
+  accessToken: fake
+  workerPoolID: pp/ww
+  workerGroup: wg
+  workerID: wi
+getSecrets: false
+cacheOverRestarts: %s
+worker:
+  implementation: dummy
+`, cachePath)), 0755)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	run, err = Run(configPath)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	assert.Equal(t, true, run.WorkerConfig.MustGet("fromFirstRun"))
 }
