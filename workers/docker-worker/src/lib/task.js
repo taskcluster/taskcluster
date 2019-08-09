@@ -893,7 +893,7 @@ class Task extends EventEmitter {
     } catch (e) {
       let error = fmtErrorLog('Docker configuration could not be ' +
         'created.  This may indicate an authentication error when validating ' +
-        'scopes necessary for running the task. \n %s', e);
+        'scopes necessary for running the task. \n %s', e.stack);
       return await this.abortRun(error);
     }
 
