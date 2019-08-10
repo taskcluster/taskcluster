@@ -31,7 +31,7 @@ class Providers {
       }
       const Provider = PROVIDER_TYPES[providerConfig.providerType];
       if (!Provider) {
-        throw new Error(`Unkown providerType ${providerConfig.providerType} selected for providerId ${providerId}.`);
+        throw new Error(`Unknown providerType ${providerConfig.providerType} selected for providerId ${providerId}.`);
       }
       const provider = new Provider({
         providerId,
@@ -72,7 +72,7 @@ class Providers {
    * Return true if this providerId is defined
    */
   has(providerId) {
-    return !!this._providers[providerId];
+    return Boolean(this._providers[providerId]);
   }
 
   /**
