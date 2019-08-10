@@ -1,27 +1,32 @@
 $schema: "/schemas/common/metaschema.json#"
 title: AWS Provider Config
-description: An array of possible options for different regions
-type: array
-uniqueItems: true
-items:
-  type: object
-  properties:
-    region:
-      type: string
-      description: AWS region (not to be confused with AZ)
-    launchConfig:
+description: Object with an array of possible options for different regions
+type: object
+properties:
+  launchConfigs:
+    title: Launch Configurations
+    type: array
+    uniqueItems: true
+    items:
       type: object
-      description: |
-        An object to be passed in to AWS runInstances method.
-        See the documentation [here](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/EC2.html#runInstances-property)
-        You can configure any properties you need. Note, however, that we disallow passing in arbitrary IAM instance profiles.
       properties:
-        not:
-          IamInstanceProfile:
-            title: Iam Instance Profile
-            description: The IAM instance profile
+        region:
+          type: string
+          description: AWS region (not to be confused with AZ)
+        launchConfig:
+          type: object
+          description: |
+            An object to be passed in to AWS runInstances method.
+            See the documentation [here](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/EC2.html#runInstances-property)
+            You can configure any properties you need. Note, however, that we disallow passing in arbitrary IAM instance profiles.
+          not:
+            required:
+              - IamInstanceProfile
+      additionalProperties: false
+      required:
+        - region
+        - launchConfig
 additionalProperties: false
 required:
-  - region
-  - launchConfig
+  - launchConfigs
   

@@ -49,7 +49,7 @@ class AwsProvider extends Provider {
       });
     }
 
-    const config = this.chooseConfig(workerPool.config);
+    const config = this.chooseConfig(workerPool.config.launchConfigs);
 
     aws.config.update({region: config.region});
     const ec2 = new aws.EC2({apiVersion: AWS_API_VERSION});
@@ -69,13 +69,15 @@ class AwsProvider extends Provider {
         MinCount: config.MinCount ? Math.min(toSpawn, config.MinCount) : toSpawn,
         TagSpecifications: {
           ResourceType: 'instance',
-          Tags: [{
-            Key: 'Provider',
-            Value: `wm-${this.providerId}`,
-          }, {
-            Key: 'Owner',
-            Value: workerPool.owner,
-          }],
+          Tags: [
+            ...config.launchConfig.TagSpecifications.Tags,
+            {
+              Key: 'Provider',
+              Value: `wm-${this.providerId}`,
+            }, {
+              Key: 'Owner',
+              Value: workerPool.owner,
+            }],
         },
       });
     } catch (e) {
