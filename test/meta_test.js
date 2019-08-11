@@ -125,7 +125,7 @@ suite('Repo Meta Tests', function () {
       { cwd: ROOT_DIR });
 
     let errors = "";
-    let count_errors = 0;
+    let countErrors = 0;
 
     for (let filename of markdowns) {
       const data = fs.readFileSync(filename, 'utf8');
@@ -157,7 +157,7 @@ suite('Repo Meta Tests', function () {
       // check if there is a single top-level heading
       if (topLevelHd < 7) {
         if (hd[topLevelHd].length > 1) {
-          count_errors++;
+          countErrors++;
           errors+=`${filename} does not have a single top level heading\n`;
           console.log(errors);
         }
@@ -165,7 +165,7 @@ suite('Repo Meta Tests', function () {
     }
 
     //if there are any errors found
-    if(count_errors>0) {
+    if(countErrors > 0) {
       throw new Error(errors);
     }
   });
@@ -199,11 +199,11 @@ suite('Repo Meta Tests', function () {
       .filter(f => !whitelist.has(f)));
 
     if (files.size > 0) {
-      let error_string = "The following files have references to tools.taskcluster.net : \n";
+      let errorString = "The following files have references to tools.taskcluster.net : \n";
       for (let filename of [...files].sort()) {
-        error_string += filename + "\n";
+        errorString += filename + "\n";
       }
-      throw new Error(error_string);
+      throw new Error(errorString);
     }
   });
 });
