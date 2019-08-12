@@ -229,8 +229,8 @@ const load = Loader({
 
   'expire-sentry': {
     requires: ['cfg', 'sentryManager', 'monitor'],
-    setup: async ({cfg, sentryManager, monitor}) => {
-      return monitor.oneShot('expire-sentry', async () => {
+    setup: async ({cfg, sentryManager, monitor}, ownName) => {
+      return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.sentryExpirationDelay);
         debug('Expiring sentry keys');
         await sentryManager.purgeExpiredKeys(now);
@@ -241,8 +241,8 @@ const load = Loader({
 
   'purge-expired-clients': {
     requires: ['cfg', 'Client', 'monitor'],
-    setup: ({cfg, Client, monitor}) => {
-      return monitor.oneShot('purge-expired-clients', async () => {
+    setup: ({cfg, Client, monitor}, ownName) => {
+      return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.clientExpirationDelay);
         debug('Purging expired clients');
         await Client.purgeExpired(now);

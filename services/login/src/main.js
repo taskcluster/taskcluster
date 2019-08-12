@@ -74,8 +74,8 @@ let load = loader({
 
   scanner: {
     requires: ['cfg', 'handlers', 'monitor'],
-    setup: ({cfg, handlers, monitor}) => {
-      return monitor.oneShot('scanner', () => scanner(cfg, handlers));
+    setup: ({cfg, handlers, monitor}, ownName) => {
+      return monitor.oneShot(ownName, () => scanner(cfg, handlers));
     },
   },
 }, {
