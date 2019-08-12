@@ -57,7 +57,9 @@ class AwsProvider extends Provider {
 
     const toSpawn = await this.estimator.simple({
       workerPoolId,
-      ...config,
+      minCapacity: 1, // todo
+      maxCapacity: 2, // todo
+      capacityPerInstance: 1, //todo
       running: workerPool.providerData[this.providerId].running,
     });
 
@@ -68,8 +70,8 @@ class AwsProvider extends Provider {
     try {
       spawned = await ec2.runInstances({
         ...config.launchConfig,
-        MaxCount: 1, //config.MaxCount || toSpawn,
-        MinCount: 1, //config.MinCount ? Math.min(toSpawn, config.MinCount) : toSpawn,
+        MaxCount: config.MaxCount || toSpawn,
+        MinCount: config.MinCount ? Math.min(toSpawn, config.MinCount) : toSpawn,
         TagSpecifications: {
           ResourceType: 'instance',
           Tags: [
@@ -94,7 +96,7 @@ class AwsProvider extends Provider {
       });
     }
 
-    console.log('🐣', JSON.stringify(spawned, null, 2));
+    console.log('🐣', JSON.stringify(spawned.Instances, null, 2));
 
     Promise.all(spawned.Instances.map(i => {
       return this.Worker.create({
