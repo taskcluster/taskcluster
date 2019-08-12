@@ -146,7 +146,7 @@ function loader(componentDirectory, virtualComponents = {}) {
           }
           return new Promise((resolve, reject) => {
             try {
-              resolve(def.setup.call(null, ctx));
+              resolve(def.setup.call(null, ctx, target));
             } catch (err) {
               reject(err);
             }
