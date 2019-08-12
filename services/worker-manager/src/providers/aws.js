@@ -50,7 +50,7 @@ class AwsProvider extends Provider {
     }
 
     console.log('🎱', JSON.stringify(workerPool, null, 2));
-    const config = this.chooseConfig(workerPool.config.launchConfigs);
+    const config = this.chooseConfig({possibleConfigs: workerPool.config.launchConfigs});
 
     aws.config.update({region: config.region});
     const ec2 = new aws.EC2({apiVersion: AWS_API_VERSION});
@@ -61,13 +61,15 @@ class AwsProvider extends Provider {
       running: workerPool.providerData[this.providerId].running,
     });
 
+    console.log('🌀', toSpawn);
+
     let spawned;
 
     try {
       spawned = await ec2.runInstances({
         ...config.launchConfig,
-        MaxCount: config.MaxCount || toSpawn,
-        MinCount: config.MinCount ? Math.min(toSpawn, config.MinCount) : toSpawn,
+        MaxCount: 1, //config.MaxCount || toSpawn,
+        MinCount: 1, //config.MinCount ? Math.min(toSpawn, config.MinCount) : toSpawn,
         TagSpecifications: {
           ResourceType: 'instance',
           Tags: [
