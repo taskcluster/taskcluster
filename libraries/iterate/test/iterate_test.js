@@ -84,7 +84,6 @@ suite(testing.suiteName(), () => {
         iterations++;
         return 1;
       },
-      monitor,
     });
 
     let err = null;
