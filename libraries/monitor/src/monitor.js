@@ -181,18 +181,24 @@ class Monitor {
    */
   async oneShot(name, fn) {
     let exitStatus = 0;
-
+    let error = undefined;
+    const start = process.hrtime();
     try {
-      try {
-        assert.equal(typeof name, 'string');
-        assert.equal(typeof fn, 'function');
+      assert.equal(typeof name, 'string');
+      assert.equal(typeof fn, 'function');
 
-        await this.timer(name, fn);
-      } catch (err) {
-        this.reportError(err);
-        exitStatus = 1;
-      }
+      await fn();
+    } catch (err) {
+      error = err;
+      exitStatus = 1;
     } finally {
+      const d = process.hrtime(start);
+      this.log.periodic({
+        name,
+        duration: d[0] * 1000 + d[1] / 1000000,
+        status: error ? 'exception' : 'success',
+        error: error ? serializeError(error) : undefined,
+      }, {level: error ? 'err' : 'notice'});
       if (!this.fake || this.fake.allowExit) {
         process.exit(exitStatus);
       }

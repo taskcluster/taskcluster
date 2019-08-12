@@ -115,24 +115,26 @@ suite(testing.suiteName(), function() {
       assert.equal(exitStatus, 0);
       assert.equal(monitorManager.messages.length, 1);
       assert.equal(monitorManager.messages[0].Logger, 'taskcluster.testing-service');
-      assert(monitorManager.messages[0].Fields.key);
+      assert.equal(monitorManager.messages[0].Fields.name, 'expire');
       assert(monitorManager.messages[0].Fields.duration);
+      assert.equal(monitorManager.messages[0].Fields.status, 'success');
+      assert(!monitorManager.messages[0].Fields.error);
     });
 
     test('unsuccessful async function', async function() {
       await monitor.oneShot('expire', async () => { throw new Error('uhoh'); });
       assert.equal(exitStatus, 1);
-      assert.equal(monitorManager.messages.length, 2);
-      assert(monitorManager.messages[0].Fields.key);
+      assert.equal(monitorManager.messages.length, 1);
+      assert.equal(monitorManager.messages[0].Fields.name, 'expire');
       assert(monitorManager.messages[0].Fields.duration);
-      assert.equal(monitorManager.messages[1].Fields.name, 'Error');
-      assert.equal(monitorManager.messages[1].Fields.message, 'uhoh');
+      assert.equal(monitorManager.messages[0].Fields.status, 'exception');
+      assert(monitorManager.messages[0].Fields.error);
     });
 
     test('missing name', async function() {
       await monitor.oneShot(async () => { throw new Error('uhoh'); });
       assert.equal(exitStatus, 1);
-      assert(monitorManager.messages[0].Fields.name.startsWith('AssertionError'));
+      assert.equal(monitorManager.messages[0].Fields.error.code, 'ERR_ASSERTION');
     });
   });
 
