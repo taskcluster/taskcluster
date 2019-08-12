@@ -1,4 +1,5 @@
 const WatchDog = require('./watchdog');
+const serializeError = require('serialize-error');
 const debug = require('debug')('iterate');
 const events = require('events');
 
@@ -18,6 +19,11 @@ class Iterate extends events.EventEmitter {
       maxIterations: 0,
       minIterationTime: 0,
     }, opts);
+
+    if (!opts.name) {
+      throw new Error('Must provide a name to iterate');
+    }
+    this.name = opts.name;
 
     if (typeof opts.maxIterations !== 'number') {
       throw new Error('maxIterations must be number');
@@ -54,8 +60,8 @@ class Iterate extends events.EventEmitter {
     }
     this.handler = opts.handler;
 
-    if (opts.monitor && typeof opts.monitor !== 'object') {
-      throw new Error('monitor should be an object from taskcluster-lib-monitor if given');
+    if (!opts.monitor || typeof opts.monitor !== 'object') {
+      throw new Error('monitor is required and must be an object from taskcluster-lib-monitor');
     }
     this.monitor = opts.monitor;
 
@@ -133,19 +139,15 @@ class Iterate extends events.EventEmitter {
       const duration = d[0] * 1000 + d[1] / 1000000;
 
       this.emit(iterError ? 'iteration-failure' : 'iteration-success');
-      if (this.monitor) {
-        this.monitor.info('iteration', {
-          status: iterError ? 'failed' : 'success',
-          duration,
-        });
-      }
+
+      this.monitor.log.periodic({
+        name: this.name,
+        duration,
+        status: iterError ? 'exception': 'success',
+        error: iterError ? serializeError(iterError) : undefined,
+      }, {level: iterError ? 'err' : 'notice'});
 
       if (iterError) {
-        if (this.monitor) {
-          this.monitor.reportError(iterError, 'warning', {
-            consecutiveErrors: failures.length,
-          });
-        }
         failures.push(iterError);
       } else {
         failures = [];
