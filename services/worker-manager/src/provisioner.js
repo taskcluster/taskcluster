@@ -6,7 +6,7 @@ const {consume} = require('taskcluster-lib-pulse');
  * Run all provisioning logic
  */
 class Provisioner {
-  constructor({providers, iterateConf, WorkerPool, monitor, notify, pulseClient, reference, rootUrl}) {
+  constructor({providers, iterateConf, WorkerPool, monitor, notify, pulseClient, reference, rootUrl, ownName}) {
     this.providers = providers;
     this.WorkerPool = WorkerPool;
     this.monitor = monitor;
@@ -20,7 +20,7 @@ class Provisioner {
     ];
 
     this.iterate = new Iterate({
-      name: 'Provisioner',
+      name: ownName,
       handler: async () => {
         await this.provision();
       },

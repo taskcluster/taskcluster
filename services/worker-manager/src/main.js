@@ -212,8 +212,9 @@ let load = loader({
 
   provisioner: {
     requires: ['cfg', 'monitor', 'WorkerPool', 'providers', 'notify', 'pulseClient', 'reference'],
-    setup: async ({cfg, monitor, WorkerPool, providers, notify, pulseClient, reference}) => {
+    setup: async ({cfg, monitor, WorkerPool, providers, notify, pulseClient, reference}, ownName) => {
       return new Provisioner({
+        ownName,
         monitor: monitor.childMonitor('provisioner'),
         WorkerPool,
         providers,
@@ -232,8 +233,9 @@ let load = loader({
 
   workerScanner: {
     requires: ['cfg', 'monitor', 'Worker', 'WorkerPool', 'providers'],
-    setup: async ({cfg, monitor, Worker, WorkerPool, providers}) => {
+    setup: async ({cfg, monitor, Worker, WorkerPool, providers}, ownName) => {
       const workerScanner = new WorkerScanner({
+        ownName,
         Worker,
         WorkerPool,
         providers,

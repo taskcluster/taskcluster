@@ -28,6 +28,7 @@ class DependencyResolver {
     assert(typeof options.parallelism === 'number',
       'Expected parallelism to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
+    assert(options.ownName, 'Must provide a name');
 
     // Remember options
     this.dependencyTracker = options.dependencyTracker;
@@ -40,7 +41,7 @@ class DependencyResolver {
 
     // do iteration
     this.iterator = new Iterate({
-      name: 'DependencyResolver',
+      name: options.ownName,
       maxFailures: 10,
       waitTime: this._pollingDelay,
       monitor: this.monitor,

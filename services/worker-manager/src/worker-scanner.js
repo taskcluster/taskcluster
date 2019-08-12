@@ -7,6 +7,7 @@ const Iterate = require('taskcluster-lib-iterate');
  */
 class WorkerScanner {
   constructor({
+    ownName,
     Worker,
     WorkerPool,
     providers,
@@ -18,7 +19,7 @@ class WorkerScanner {
     this.providers = providers;
     this.monitor = monitor;
     this.iterate = new Iterate({
-      name: 'WorkerScanner',
+      name: ownName,
       handler: async () => {
         await this.scan();
       },

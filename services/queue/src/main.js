@@ -479,8 +479,9 @@ let load = loader({
     ],
     setup: async ({
       cfg, Task, queueService, publisher, dependencyTracker, monitor,
-    }) => {
+    }, ownName) => {
       let resolver = new ClaimResolver({
+        ownName,
         Task, queueService, publisher, dependencyTracker,
         pollingDelay: cfg.app.claimResolver.pollingDelay,
         parallelism: cfg.app.claimResolver.parallelism,
@@ -499,8 +500,9 @@ let load = loader({
     ],
     setup: async ({
       cfg, Task, queueService, publisher, dependencyTracker, monitor,
-    }) => {
+    }, ownName) => {
       let resolver = new DeadlineResolver({
+        ownName,
         Task, queueService, publisher, dependencyTracker,
         pollingDelay: cfg.app.deadlineResolver.pollingDelay,
         parallelism: cfg.app.deadlineResolver.parallelism,
@@ -514,8 +516,9 @@ let load = loader({
   // Create the dependency-resolver process
   'dependency-resolver': {
     requires: ['cfg', 'queueService', 'dependencyTracker', 'monitor'],
-    setup: async ({cfg, queueService, dependencyTracker, monitor}) => {
+    setup: async ({cfg, queueService, dependencyTracker, monitor}, ownName) => {
       let resolver = new DependencyResolver({
+        ownName,
         queueService, dependencyTracker,
         pollingDelay: cfg.app.dependencyResolver.pollingDelay,
         parallelism: cfg.app.dependencyResolver.parallelism,
