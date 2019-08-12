@@ -84,6 +84,7 @@ class AwsProvider extends Provider {
         },
       });
     } catch (e) {
+      console.log('🚨', e);
       return await workerPool.reportError({
         kind: 'creation-error',
         title: 'Instance Creation Error',
@@ -92,6 +93,8 @@ class AwsProvider extends Provider {
         WorkerPoolError: this.WorkerPoolError,
       });
     }
+
+    console.log('🐣', JSON.stringify(spawned, null, 2));
 
     Promise.all(spawned.Instances.map(i => {
       return this.Worker.create({
