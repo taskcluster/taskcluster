@@ -3,7 +3,7 @@ module github.com/taskcluster/taskcluster/clients/client-go/v16
 go 1.12
 
 require (
-	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
+	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cenkalti/backoff/v3 v3.0.0 // indirect
 	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
