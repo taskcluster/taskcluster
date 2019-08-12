@@ -201,7 +201,9 @@ class AwsProvider extends Provider {
       throw new Error('possible configs is not an array');
     }
 
-    const i = Math.random() * (possibleConfigs.length);
+    const i = Math.floor(Math.random() * possibleConfigs.length);
+
+    console.log('🎲', i);
 
     return possibleConfigs[i];
   }
