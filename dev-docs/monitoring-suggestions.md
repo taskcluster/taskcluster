@@ -6,7 +6,7 @@ of the form:
 ```json
 {
   "Type": "monitor.periodic",
-  "Logger" "<Logger>",
+  "Logger": "<Logger>",
   "Fields": {
     "name": "<Name>"
   }
@@ -14,6 +14,9 @@ of the form:
 ```
 
 They will also have Fields for `status`, `duration`, and a serialized `error` if an error occured.
+
+The processes that have `continuous` for their dedaline and schedule run every few minutes and should complete fairly quickly. The rest
+have their schedules and maximum allowed duration defined here.
 
 | Service        | Name                   | Logger                     | Deadline (seconds) | Schedule    |
 | -------------- | ---------------------- | -------------------------- | ------------------ | ----------- |
