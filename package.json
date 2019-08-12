@@ -114,7 +114,7 @@
   "devDependencies": {
     "@azure/arm-resources": "^1.1.0",
     "@azure/arm-storage": "^9.0.1",
-    "@azure/ms-rest-nodeauth": "^2.0.2",
+    "@azure/ms-rest-nodeauth": "^3.0.0",
     "@babel/core": "^7.2.2",
     "@babel/plugin-proposal-class-properties": "^7.4.4",
     "assume": "^2.1.0",
