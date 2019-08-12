@@ -54,6 +54,7 @@ class ClaimResolver {
     this.monitor = options.monitor;
 
     this.iterator = new Iterate({
+      name: 'ClaimResolver',
       maxFailures: 10,
       waitTime: this.pollingDelay,
       monitor: this.monitor,

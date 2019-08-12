@@ -20,6 +20,7 @@ class Provisioner {
     ];
 
     this.iterate = new Iterate({
+      name: 'Provisioner',
       handler: async () => {
         await this.provision();
       },

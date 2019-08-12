@@ -65,6 +65,7 @@ class DeadlineResolver {
     this.monitor = options.monitor;
 
     this.iterator = new Iterate({
+      name: 'DeadlineResolver',
       maxFailures: 10,
       waitTime: this.pollingDelay,
       monitor: this.monitor,

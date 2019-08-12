@@ -18,6 +18,7 @@ class WorkerScanner {
     this.providers = providers;
     this.monitor = monitor;
     this.iterate = new Iterate({
+      name: 'WorkerScanner',
       handler: async () => {
         await this.scan();
       },

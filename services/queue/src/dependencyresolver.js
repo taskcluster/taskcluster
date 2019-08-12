@@ -40,6 +40,7 @@ class DependencyResolver {
 
     // do iteration
     this.iterator = new Iterate({
+      name: 'DependencyResolver',
       maxFailures: 10,
       waitTime: this._pollingDelay,
       monitor: this.monitor,
