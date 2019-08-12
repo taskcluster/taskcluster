@@ -37,8 +37,8 @@ type StdioTransport struct {
 	outBuffer []byte
 }
 
-// Create a new StdioTransport and attach it to the given Cmd object
-// by setting cmd.Stdin and cmd.Stdout appropriately.
+// Create a new StdioTransport.  The result implements both io.Reader and
+// io.Writer so it can be specified as a cmd's Stdin and Stdout.
 func NewStdioTransport() *StdioTransport {
 	return &StdioTransport{
 		In:           make(chan Message, 5),
