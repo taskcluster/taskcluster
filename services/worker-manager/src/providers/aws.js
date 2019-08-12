@@ -73,7 +73,7 @@ class AwsProvider extends Provider {
         TagSpecifications: {
           ResourceType: 'instance',
           Tags: [
-            ...config.launchConfig.TagSpecifications.Tags,
+            ...(config.launchConfig.TagSpecifications ? config.launchConfig.TagSpecifications.Tags : []),
             {
               Key: 'Provider',
               Value: `wm-${this.providerId}`,
