@@ -49,6 +49,7 @@ class AwsProvider extends Provider {
       });
     }
 
+    console.log('🎱', JSON.stringify(workerPool, null, 2));
     const config = this.chooseConfig(workerPool.config.launchConfigs);
 
     aws.config.update({region: config.region});
@@ -194,7 +195,11 @@ class AwsProvider extends Provider {
    * @returns Object
    */
   chooseConfig({possibleConfigs}) {
-    const i = Math.random() * (possibleConfigs.length());
+    if (!Array.isArray(possibleConfigs)) {
+      throw new Error('possible configs is not an array');
+    }
+
+    const i = Math.random() * (possibleConfigs.length);
 
     return possibleConfigs[i];
   }
