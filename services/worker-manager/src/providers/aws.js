@@ -49,10 +49,10 @@ class AwsProvider extends Provider {
       });
     }
 
-    console.log('🎱', JSON.stringify(workerPool, null, 2));
     const config = this.chooseConfig({possibleConfigs: workerPool.config.launchConfigs});
 
     aws.config.update({region: config.region});
+    aws.config.logger = console;
     const ec2 = new aws.EC2({apiVersion: AWS_API_VERSION});
 
     const toSpawn = await this.estimator.simple({
@@ -62,8 +62,6 @@ class AwsProvider extends Provider {
       capacityPerInstance: 1, //todo
       running: workerPool.providerData[this.providerId].running,
     });
-
-    console.log('🌀', toSpawn);
 
     let spawned;
 
@@ -96,7 +94,7 @@ class AwsProvider extends Provider {
       });
     }
 
-    console.log('🐣', spawned);
+    console.log('💩', spawned);
 
     Promise.all(spawned.Instances.map(i => {
       return this.Worker.create({
@@ -207,8 +205,6 @@ class AwsProvider extends Provider {
     }
 
     const i = Math.floor(Math.random() * possibleConfigs.length);
-
-    console.log('🎲', i);
 
     return possibleConfigs[i];
   }
