@@ -179,7 +179,7 @@ module.exports = {
           "args": [
           ],
           "category": "Auth Service",
-          "description": "Get a list of all roles, each role object also includes the list of\nscopes it expands to.",
+          "description": "Get a list of all roles. Each role object also includes the list of\nscopes it expands to.  This always returns all roles in a single HTTP\nrequest.\n\nTo get paginated results, use `listRoles2`.",
           "method": "get",
           "name": "listRoles",
           "output": "v1/list-roles-response.json#",
@@ -187,31 +187,14 @@ module.exports = {
           ],
           "route": "/roles/",
           "stability": "stable",
-          "title": "List Roles",
+          "title": "List Roles (no pagination)",
           "type": "function"
         },
         {
           "args": [
           ],
           "category": "Auth Service",
-          "description": "If no limit is given, the roleIds of all roles are returned. Since this\nlist may become long, callers can use the `limit` and `continuationToken`\nquery arguments to page through the responses.",
-          "method": "get",
-          "name": "listRoleIds",
-          "output": "v1/list-role-ids-response.json#",
-          "query": [
-            "continuationToken",
-            "limit"
-          ],
-          "route": "/roleids/",
-          "stability": "stable",
-          "title": "List Role IDs",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "category": "Auth Service",
-          "description": "If no limit is given, all roles are returned. Since this\nlist may become long, callers can use the `limit` and `continuationToken`\nquery arguments to page through the responses.",
+          "description": "Get a list of all roles. Each role object also includes the list of\nscopes it expands to.  This is similar to `listRoles` but differs in the\nformat of the response.\n\nIf no limit is given, all roles are returned. Since this\nlist may become long, callers can use the `limit` and `continuationToken`\nquery arguments to page through the responses.",
           "method": "get",
           "name": "listRoles2",
           "output": "v1/list-roles2-response.json#",
@@ -222,6 +205,23 @@ module.exports = {
           "route": "/roles2/",
           "stability": "stable",
           "title": "List Roles",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Auth Service",
+          "description": "Get a list of all role IDs.\n\nIf no limit is given, the roleIds of all roles are returned. Since this\nlist may become long, callers can use the `limit` and `continuationToken`\nquery arguments to page through the responses.",
+          "method": "get",
+          "name": "listRoleIds",
+          "output": "v1/list-role-ids-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/roleids/",
+          "stability": "stable",
+          "title": "List Role IDs",
           "type": "function"
         },
         {
@@ -3784,46 +3784,6 @@ module.exports = {
       ],
       "serviceName": "secrets",
       "title": "Taskcluster Secrets API Documentation"
-    }
-  },
-  "TreeherderEvents": {
-    "reference": {
-      "$schema": "/schemas/common/exchanges-reference-v0.json#",
-      "apiVersion": "v1",
-      "description": "The taskcluster-treeherder service is responsible for processing\ntask events published by Taskcluster Queue and producing job messages\nthat are consumable by Treeherder.\n\nThis exchange provides that job messages to be consumed by any queue that\nattached to the exchange.  This could be a production Treeheder instance,\na local development environment, or a custom dashboard.",
-      "entries": [
-        {
-          "description": "When a task run is scheduled or resolved, a message is posted to\nthis exchange in a Treeherder consumable format.",
-          "exchange": "jobs",
-          "name": "jobs",
-          "routingKey": [
-            {
-              "multipleWords": false,
-              "name": "destination",
-              "required": true,
-              "summary": "destination"
-            },
-            {
-              "multipleWords": false,
-              "name": "project",
-              "required": true,
-              "summary": "project"
-            },
-            {
-              "multipleWords": true,
-              "name": "reserved",
-              "required": false,
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
-            }
-          ],
-          "schema": "v1/pulse-job.json#",
-          "title": "Job Messages",
-          "type": "topic-exchange"
-        }
-      ],
-      "exchangePrefix": "exchange/taskcluster-treeherder/v1/",
-      "serviceName": "treeherder",
-      "title": "Taskcluster-treeherder Pulse Exchange"
     }
   },
   "WorkerManager": {

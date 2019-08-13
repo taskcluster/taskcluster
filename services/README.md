@@ -15,7 +15,6 @@ These are any packages that are run as part of a deployment of Taskcluster.
 * [Purge-Cache Service](purge-cache#readme)
 * [Queue Service](queue#readme)
 * [Secrets Service](secrets#readme)
-* [Treeherder Service](treeherder#readme)
 * [Web-Server Service](web-server#readme)
 * [Worker Manager](worker-manager#readme)
 <!-- TOC END -->

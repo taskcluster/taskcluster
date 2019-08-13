@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import List from '@material-ui/core/List';
-import HexagonMultipleIcon from 'mdi-react/HexagonMultipleIcon';
+import FeatureSearchIcon from 'mdi-react/FeatureSearchIcon';
 import HexagonSlice4 from 'mdi-react/HexagonSlice4Icon';
 import PlusCircleIcon from 'mdi-react/PlusCircleIcon';
 import GroupIcon from 'mdi-react/GroupIcon';
@@ -26,11 +26,11 @@ export default class SidebarList extends Component {
   render() {
     return (
       <List disablePadding>
-        <SidebarListItem to="/tasks" icon={<HexagonMultipleIcon />}>
-          View Task
-        </SidebarListItem>
         <SidebarListItem to="/tasks/create" icon={<PlusCircleIcon />}>
           Create task
+        </SidebarListItem>
+        <SidebarListItem to="/tasks" icon={<FeatureSearchIcon />}>
+          View Task
         </SidebarListItem>
         <SidebarListItem to="/tasks/groups" icon={<GroupIcon />}>
           Task Groups
@@ -69,11 +69,9 @@ export default class SidebarList extends Component {
           AWS Provisioner
         </SidebarListItem>
 
-        {process.env.SHOW_WORKER_MANAGER && (
-          <SidebarListItem to="/worker-manager" icon={<HexagonSlice4 />}>
-            Worker Manager
-          </SidebarListItem>
-        )}
+        <SidebarListItem to="/worker-manager" icon={<HexagonSlice4 />}>
+          Worker Manager
+        </SidebarListItem>
 
         <SidebarListItem to="/provisioners" icon={<MixcloudIcon />}>
           Provisioners

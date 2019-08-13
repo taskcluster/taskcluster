@@ -4,7 +4,7 @@
   "private": true,
   "license": "MPL-2.0",
   "engines": {
-    "node": "10.16.1",
+    "node": "10.16.2",
     "yarn": ">=1.10.0"
   },
   "scripts": {
@@ -89,7 +89,7 @@
     "subscriptions-transport-ws": "^0.9.16",
     "taskcluster-lib-scopes": "link:../libraries/scopes",
     "taskcluster-lib-urls": "^12.0.0",
-    "typeface-roboto": "^0.0.54",
+    "typeface-roboto": "^0.0.75",
     "ws-shell": "^0.1.5"
   },
   "devDependencies": {

@@ -20,8 +20,8 @@ export default class Auth extends Client {
     this.disableClient.entry = {"args":["clientId"],"category":"Auth Service","method":"post","name":"disableClient","output":true,"query":[],"route":"/clients/<clientId>/disable","scopes":"auth:disable-client:<clientId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.deleteClient.entry = {"args":["clientId"],"category":"Auth Service","method":"delete","name":"deleteClient","query":[],"route":"/clients/<clientId>","scopes":"auth:delete-client:<clientId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listRoles.entry = {"args":[],"category":"Auth Service","method":"get","name":"listRoles","output":true,"query":[],"route":"/roles/","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listRoleIds.entry = {"args":[],"category":"Auth Service","method":"get","name":"listRoleIds","output":true,"query":["continuationToken","limit"],"route":"/roleids/","stability":"stable","type":"function"}; // eslint-disable-line
     this.listRoles2.entry = {"args":[],"category":"Auth Service","method":"get","name":"listRoles2","output":true,"query":["continuationToken","limit"],"route":"/roles2/","stability":"stable","type":"function"}; // eslint-disable-line
+    this.listRoleIds.entry = {"args":[],"category":"Auth Service","method":"get","name":"listRoleIds","output":true,"query":["continuationToken","limit"],"route":"/roleids/","stability":"stable","type":"function"}; // eslint-disable-line
     this.role.entry = {"args":["roleId"],"category":"Auth Service","method":"get","name":"role","output":true,"query":[],"route":"/roles/<roleId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.createRole.entry = {"args":["roleId"],"category":"Auth Service","input":true,"method":"put","name":"createRole","output":true,"query":[],"route":"/roles/<roleId>","scopes":{"AllOf":["auth:create-role:<roleId>",{"each":"<scope>","for":"scope","in":"scopes"}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.updateRole.entry = {"args":["roleId"],"category":"Auth Service","input":true,"method":"post","name":"updateRole","output":true,"query":[],"route":"/roles/<roleId>","scopes":{"AllOf":["auth:update-role:<roleId>",{"each":"<scope>","for":"scope","in":"scopesAdded"}]},"stability":"stable","type":"function"}; // eslint-disable-line
@@ -145,8 +145,10 @@ export default class Auth extends Client {
     return this.request(this.deleteClient.entry, args);
   }
   /* eslint-disable max-len */
-  // Get a list of all roles, each role object also includes the list of
-  // scopes it expands to.
+  // Get a list of all roles. Each role object also includes the list of
+  // scopes it expands to.  This always returns all roles in a single HTTP
+  // request.
+  // To get paginated results, use `listRoles2`.
   /* eslint-enable max-len */
   listRoles(...args) {
     this.validate(this.listRoles.entry, args);
@@ -154,16 +156,9 @@ export default class Auth extends Client {
     return this.request(this.listRoles.entry, args);
   }
   /* eslint-disable max-len */
-  // If no limit is given, the roleIds of all roles are returned. Since this
-  // list may become long, callers can use the `limit` and `continuationToken`
-  // query arguments to page through the responses.
-  /* eslint-enable max-len */
-  listRoleIds(...args) {
-    this.validate(this.listRoleIds.entry, args);
-
-    return this.request(this.listRoleIds.entry, args);
-  }
-  /* eslint-disable max-len */
+  // Get a list of all roles. Each role object also includes the list of
+  // scopes it expands to.  This is similar to `listRoles` but differs in the
+  // format of the response.
   // If no limit is given, all roles are returned. Since this
   // list may become long, callers can use the `limit` and `continuationToken`
   // query arguments to page through the responses.
@@ -172,6 +167,17 @@ export default class Auth extends Client {
     this.validate(this.listRoles2.entry, args);
 
     return this.request(this.listRoles2.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Get a list of all role IDs.
+  // If no limit is given, the roleIds of all roles are returned. Since this
+  // list may become long, callers can use the `limit` and `continuationToken`
+  // query arguments to page through the responses.
+  /* eslint-enable max-len */
+  listRoleIds(...args) {
+    this.validate(this.listRoleIds.entry, args);
+
+    return this.request(this.listRoleIds.entry, args);
   }
   /* eslint-disable max-len */
   // Get information about a single role, including the set of scopes that the

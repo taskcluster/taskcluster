@@ -73,7 +73,6 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [Purge-Cache Service](services/purge-cache#readme)
     * [Queue Service](services/queue#readme)
     * [Secrets Service](services/secrets#readme)
-    * [Treeherder Service](services/treeherder#readme)
     * [Web-Server Service](services/web-server#readme)
     * [Worker Manager](services/worker-manager#readme)
 * [Taskcluster UI](ui#readme)

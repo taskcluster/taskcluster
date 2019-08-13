@@ -10,7 +10,6 @@ const UNREFERENCED_SCHEMAS = [
   // schemas used in documentation
   {service: 'github', schema: 'v1/taskcluster-github-config.json#'},
   {service: 'github', schema: 'v1/taskcluster-github-config.v1.json#'},
-  {service: 'treeherder', schema: 'v1/task-treeherder-config.json#'},
 
   // schemas for an unpublished, deprecated API methods
   {service: 'index', schema: 'v1/list-namespaces-request.json#'},

@@ -2717,10 +2717,6 @@
                   "title": "Mozilla-Auth0 logins"
                 },
                 "name": "mozilla-auth0",
-                "next": {
-                  "path": "reference/integrations/treeherder/README",
-                  "title": "treeherder"
-                },
                 "path": "reference/integrations/login/mozilla-auth0",
                 "prev": {
                   "path": "reference/integrations/login/getting-user-creds",
@@ -2744,98 +2740,6 @@
             "prev": {
               "path": "reference/integrations/github/taskcluster-yml-v0",
               "title": ".taskcluster.yml version 0"
-            },
-            "up": {
-              "path": "reference/integrations/README",
-              "title": "Integrations"
-            }
-          },
-          {
-            "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 2,
-                  "title": "exchanges"
-                },
-                "name": "exchanges",
-                "next": {
-                  "path": "reference/integrations/treeherder/logs",
-                  "title": "logs"
-                },
-                "path": "reference/integrations/treeherder/exchanges",
-                "prev": {
-                  "path": "reference/integrations/treeherder/README",
-                  "title": "treeherder"
-                },
-                "up": {
-                  "path": "reference/integrations/treeherder/README",
-                  "title": "treeherder"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 2,
-                  "title": "logs"
-                },
-                "name": "logs",
-                "next": {
-                  "path": "reference/integrations/treeherder/task-treeherder-config",
-                  "title": "Task Schema"
-                },
-                "path": "reference/integrations/treeherder/logs",
-                "prev": {
-                  "path": "reference/integrations/treeherder/exchanges",
-                  "title": "exchanges"
-                },
-                "up": {
-                  "path": "reference/integrations/treeherder/README",
-                  "title": "treeherder"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "class": "html",
-                  "docref": true,
-                  "docson": true,
-                  "ejs": true,
-                  "layout": "default",
-                  "marked": true,
-                  "order": 1000,
-                  "superagent": true,
-                  "title": "Task Schema"
-                },
-                "name": "task-treeherder-config",
-                "path": "reference/integrations/treeherder/task-treeherder-config",
-                "prev": {
-                  "path": "reference/integrations/treeherder/logs",
-                  "title": "logs"
-                },
-                "up": {
-                  "path": "reference/integrations/treeherder/README",
-                  "title": "treeherder"
-                }
-              }
-            ],
-            "data": {
-              "order": 1000
-            },
-            "name": "treeherder",
-            "next": {
-              "path": "reference/integrations/treeherder/exchanges",
-              "title": "exchanges"
-            },
-            "path": "reference/integrations/treeherder/README",
-            "prev": {
-              "path": "reference/integrations/login/mozilla-auth0",
-              "title": "Mozilla-Auth0 logins"
             },
             "up": {
               "path": "reference/integrations/README",

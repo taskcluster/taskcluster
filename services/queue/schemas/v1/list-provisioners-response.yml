@@ -9,12 +9,7 @@ properties:
       title:      "Provisioner Information"
       type:       object
       properties:
-        provisionerId:
-          title:        "Provisioner ID"
-          type:         string
-          minLength:    {$const: identifier-min-length}
-          maxLength:    {$const: identifier-max-length}
-          pattern:      {$const: identifier-pattern}
+        provisionerId: {$ref: "task.json#/properties/provisionerId"}
         stability:
           title:        "Stability"
           description: |

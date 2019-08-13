@@ -2,47 +2,6 @@
 
 Tools and packages that are used to run a deployment of Taskcluster.
 
-## Terraform
-
-A simple module to set up some requirements for a Taskcluster deployment.
-
-To use this module, you must have configured the following terraform providers
-in your module:
-
-- aws
-- azurerm
-- rabbitmq
-
-### Requirements not managed here
-
-- A kubernetes cluster
-- Any objects in a kubernetes cluster (see K8s section below)
-- Any secrets (e.g. AWS access tokens)
-- A rabbitmq cluster with the RabbitMQ management plugin enabled
-- An SES email address set up in AWS. This cannot be created automatically by Terraform.
-
-### Usage
-
-First set the `RABBITMQ_USERNAME` and `RABBITMQ_PASSWORD` environment variables.
-
-Next, run `bin/create-rabbitmq-users.sh` to do just that. This will create the users and write their credentials to disk for you to load into k8s later.
-
-Next include this module in your terraform.
-
-```hcl
-module "taskcluster" {
-  source                    = "github.com/taskcluster/taskcluster-terraform"
-  prefix                    = "tc"
-  azure_region              = "${var.azure_region}"
-  rabbitmq_hostname         = "${var.rabbitmq_hostname}"
-  rabbitmq_vhost            = "${var.rabbitmq_vhost}"
-}
-```
-
-Then, authenticate to AWS and Azure before applying. How to do this will vary depending on what methods you use to store their credentials (e.g. `aws-vault`). For RabbitMQ, be sure to have `RABBITMQ_USERNAME` and `RABBITMQ_PASSWORD` set.
-
-Finally, run `create-aws-access-keys.sh` and `create-random-secrets.sh`. This will perform those operatiosn and write the output to disk for you to load into k8s later.
-
 ## Kubernetes
 
 ### Using

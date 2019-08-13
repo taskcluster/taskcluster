@@ -6,7 +6,7 @@ tasks:
   $if: 'tasks_for in ["github-push", "github-pull-request"]'
   then:
     $let:
-      node: '10.16.1'
+      node: '10.16.2'
       go: '1.12.6'
       artifactsDir:
         public:
@@ -75,7 +75,6 @@ tasks:
         - name: taskcluster-queue
         - name: taskcluster-worker-manager
         - name: taskcluster-secrets
-        - name: taskcluster-treeherder
         - name: taskcluster-web-server
         others:
         - name: lint

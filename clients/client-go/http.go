@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 
 	// "net/http/httputil"
@@ -19,6 +20,14 @@ import (
 	"github.com/taskcluster/httpbackoff"
 	hawk "github.com/tent/hawk-go"
 )
+
+var debug = false
+
+func init() {
+	if _, ok := os.LookupEnv("TASKCLUSTER_DEBUG"); ok {
+		debug = true
+	}
+}
 
 // CallSummary provides information about the underlying http request and
 // response issued for a given API call.
@@ -48,14 +57,20 @@ func (cs *CallSummary) String() string {
 	s := "\nCALL SUMMARY\n============\n"
 	if req := cs.HTTPRequest; req != nil {
 		s += fmt.Sprintf("Method: %v\n", req.Method)
-		if req.URL != nil {
-			s += fmt.Sprintf("URL: %v\n", req.URL)
+		if debug {
+			if req.URL != nil {
+				s += fmt.Sprintf("URL: %v\n", req.URL)
+			}
+			s += fmt.Sprintf("Request Headers:\n%#v\n", req.Header)
+			s += fmt.Sprintf("Request Body:\n%v\n", cs.HTTPRequestBody)
+			if resp := cs.HTTPResponse; resp != nil {
+				s += fmt.Sprintf("Response Headers:\n%#v\n", cs.HTTPResponse.Header)
+			}
+		} else {
+			if req.URL != nil {
+				s += fmt.Sprintf("Service: %s:%s\n", req.URL.Hostname(), req.URL.Port())
+			}
 		}
-		s += fmt.Sprintf("Request Headers:\n%#v\n", req.Header)
-	}
-	s += fmt.Sprintf("Request Body:\n%v\n", cs.HTTPRequestBody)
-	if resp := cs.HTTPResponse; resp != nil {
-		s += fmt.Sprintf("Response Headers:\n%#v\n", cs.HTTPResponse.Header)
 	}
 	s += fmt.Sprintf("Response Body:\n%v\n", cs.HTTPResponseBody)
 	s += fmt.Sprintf("Attempts: %v", cs.Attempts)

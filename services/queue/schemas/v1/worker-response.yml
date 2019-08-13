@@ -4,20 +4,8 @@ description: |
   Response containing information about a worker.
 type:           object
 properties:
-  provisionerId:
-    title:        "Provisioner ID"
-    type:         string
-    minLength:    {$const: identifier-min-length}
-    maxLength:    {$const: identifier-max-length}
-    pattern:      {$const: identifier-pattern}
-  workerType:
-    type:         string
-    title:        "WorkerType name"
-    description: |
-      WorkerType name.
-    minLength:    {$const: identifier-min-length}
-    maxLength:    {$const: identifier-max-length}
-    pattern:      {$const: identifier-pattern}
+  provisionerId: {$ref: "task.json#/properties/provisionerId"}
+  workerType: {$ref: "task.json#/properties/workerType"}
   workerGroup:
     title:        "Worker Group"
     description: |

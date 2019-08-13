@@ -66,14 +66,6 @@ The [AWS provisioner](integrations/aws-provisioner) provides a mechanism to star
 
 The [taskcluster-github service](integrations/github) integrates with Github, supporting creation of tasks in response to pushes, pull requests, and so on; and updates status indications in Github to represent the results of those tasks.
 
-Within Mozilla, the *mozilla-taskcluster service* monitors pushes to https://hg.mozilla.org and creates tasks for them.
-It does not handle task status, though -- that is the business of the [taskcluster-treeherder](integrations/treeherder) service, which relays task results to [Treeherder](https://treeherder.mozilla.org).
-
-The [taskcluster-pulse service](integrations/pulse) provides temporary Pulse credentials for consuming or publishing Pulse messages.
-It functions like the auth service in that it allows applications to be configured with Taskcluster credentials only but still have managed access to Pulse.
-
-The [cloud-mirror service](integrations/cloud-mirror) automatically copies task artifacts between cloud-storage regions to ensure that data close to where it is required.
-
 ### Team Operations
 
 These services are useful to the Taskcluster team, but probably not as useful to Taskcluster users!
