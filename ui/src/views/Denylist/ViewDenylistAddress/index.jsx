@@ -98,10 +98,11 @@ export default class ViewDenylistAddress extends Component {
       data,
       match: { params },
     } = this.props;
-    const hasDenylistAddresses =
-      Boolean(data &&
-      data.listDenylistAddresses &&
-      data.listDenylistAddresses.edges.length);
+    const hasDenylistAddresses = Boolean(
+      data &&
+        data.listDenylistAddresses &&
+        data.listDenylistAddresses.edges.length
+    );
 
     return (
       <Dashboard

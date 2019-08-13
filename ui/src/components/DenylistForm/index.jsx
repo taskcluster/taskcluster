@@ -274,7 +274,9 @@ export default class DenylistForm extends Component {
             error={dialogError}
             title="Delete Address?"
             body={
-              <Typography>This will delete {address.notificationAddress}.</Typography>
+              <Typography>
+                This will delete {address.notificationAddress}.
+              </Typography>
             }
             confirmText="Delete Address"
           />
