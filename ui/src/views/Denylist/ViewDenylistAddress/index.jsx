@@ -28,28 +28,30 @@ export default class ViewDenylistAddress extends Component {
     loading: false,
     // Mutation errors
     error: null,
+    dialogError: null,
+    dialogOpen: false,
   };
 
   handleAddressDelete = async (notificationType, notificationAddress) => {
-    this.setState({ error: null, loading: true });
+    this.setState({ dialogError: null, loading: true });
 
-    try {
-      await this.props.client.mutate({
-        mutation: deleteAddressQuery,
-        variables: {
-          address: {
-            notificationAddress,
-            notificationType,
-          },
+    return this.props.client.mutate({
+      mutation: deleteAddressQuery,
+      variables: {
+        address: {
+          notificationAddress,
+          notificationType,
         },
-      });
+      },
+    });
+  };
 
-      this.setState({ error: null, loading: false });
+  handleDialogActionError = error => {
+    this.setState({ dialogError: error, loading: false });
+  };
 
-      this.props.history.push(`/notify/denylist`);
-    } catch (error) {
-      this.setState({ error, loading: false });
-    }
+  handleDialogActionComplete = () => {
+    this.props.history.push(`/auth/clients`);
   };
 
   handleAddressAdd = async (notificationType, notificationAddress) => {
@@ -76,8 +78,20 @@ export default class ViewDenylistAddress extends Component {
     }
   };
 
+  handleDialogActionClose = () => {
+    this.setState({
+      dialogOpen: false,
+      dialogError: null,
+      error: null,
+    });
+  };
+
+  handleDialogActionOpen = () => {
+    this.setState({ dialogOpen: true });
+  };
+
   render() {
-    const { loading, error } = this.state;
+    const { loading, error, dialogError, dialogOpen } = this.state;
     const {
       isNewAddress,
       data,
@@ -105,6 +119,12 @@ export default class ViewDenylistAddress extends Component {
             {hasDenylistAddresses && (
               <DenylistForm
                 loading={loading}
+                dialogError={dialogError}
+                dialogOpen={dialogOpen}
+                onDialogActionError={this.handleDialogActionError}
+                onDialogActionComplete={this.handleDialogActionComplete}
+                onDialogActionClose={this.handleDialogActionClose}
+                onDialogActionOpen={this.handleDialogActionOpen}
                 address={data.listDenylistAddresses.edges[0].node}
                 onAddressDelete={this.handleAddressDelete}
               />

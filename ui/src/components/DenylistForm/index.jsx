@@ -1,13 +1,15 @@
 import React, { Component, Fragment } from 'react';
-import { bool, func } from 'prop-types';
+import { oneOfType, object, string, func, bool } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
+import Typography from '@material-ui/core/Typography';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
+import DialogAction from '../DialogAction';
 import { notificationAddress as address } from '../../utils/prop-types';
 import { DENYLIST_NOTIFICATION_TYPES } from '../../utils/constants';
 import titleCase from '../../utils/titleCase';
@@ -48,6 +50,28 @@ export default class DenylistForm extends Component {
     onAddressDelete: func,
     /** If true, form actions will be disabled. */
     loading: bool,
+    /** Error to display when an action dialog is open. */
+    dialogError: oneOfType([string, object]),
+    /**
+     * Callback function fired when the DialogAction component throws an error.
+     * Required when viewing an existent client.
+     * */
+    onDialogActionError: func,
+    /**
+     * Callback function fired when the DialogAction component runs
+     * successfully. Required when viewing an existent client.
+     * */
+    onDialogActionComplete: func,
+    /**
+     * Callback function fired when the dialog should open.
+     * Required when viewing an existent client.
+     */
+    onDialogActionOpen: func,
+    /**
+     * Callback function fired when the dialog should close.
+     * Required when viewing an existent client.
+     */
+    onDialogActionClose: func,
   };
 
   static defaultProps = {
@@ -56,6 +80,11 @@ export default class DenylistForm extends Component {
     onAddressAdd: null,
     address: null,
     loading: false,
+    dialogError: null,
+    onDialogActionError: null,
+    onDialogActionComplete: null,
+    onDialogActionOpen: null,
+    onDialogActionClose: null,
   };
 
   state = {
@@ -145,7 +174,18 @@ export default class DenylistForm extends Component {
   };
 
   render() {
-    const { address, classes, isNewAddress, loading } = this.props;
+    const {
+      address,
+      classes,
+      isNewAddress,
+      loading,
+      dialogOpen,
+      dialogError,
+      onDialogActionClose,
+      onDialogActionError,
+      onDialogActionOpen,
+      onDialogActionComplete,
+    } = this.props;
     const { notificationType, notificationAddress, validation } = this.state;
 
     return (
@@ -219,10 +259,25 @@ export default class DenylistForm extends Component {
             requiresAuth
             disabled={loading}
             variant="round"
-            onClick={this.handleAddressDelete}
+            onClick={onDialogActionOpen}
             classes={{ root: classes.deleteIcon }}>
             <DeleteIcon />
           </Button>
+        )}
+        {dialogOpen && (
+          <DialogAction
+            open={dialogOpen}
+            onSubmit={this.handleAddressDelete}
+            onComplete={onDialogActionComplete}
+            onClose={onDialogActionClose}
+            onError={onDialogActionError}
+            error={dialogError}
+            title="Delete Address?"
+            body={
+              <Typography>This will delete the {address} client.</Typography>
+            }
+            confirmText="Delete Address"
+          />
         )}
       </Fragment>
     );
