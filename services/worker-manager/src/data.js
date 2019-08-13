@@ -20,6 +20,14 @@ const WorkerPool = Entity.configure({
     emailOnError: Entity.types.Boolean,
     providerData: Entity.types.JSON,
   },
+  context: [
+    // Monitor instance
+    'monitor',
+    // Notify client instance
+    'notify',
+    // set-up WorkerPoolError Entity instance
+    'WorkerPoolError',
+  ],
 }).configure({
   version: 2,
   properties: {
@@ -61,6 +69,14 @@ const WorkerPool = Entity.configure({
   migrate(item) {
     delete item.scheduledForDeletion;
   },
+  context: [
+    // Monitor instance
+    'monitor',
+    // Notify client instance
+    'notify',
+    // set-up WorkerPoolError Entity instance
+    'WorkerPoolError',
+  ],
 });
 
 WorkerPool.prototype.serializable = function() {
@@ -104,7 +120,9 @@ WorkerPool.expire = async function(monitor) {
   });
 };
 
-WorkerPool.prototype.reportError = async function({kind, title, description, extra={}, notify, WorkerPoolError}) {
+WorkerPool.prototype.reportError = async function({kind, title, description, extra={}}) {
+  const errorId = slugid.v4();
+
   if (this.emailOnError) {
     let extraInfo = '';
     if (Object.keys(extra).length) {
@@ -116,7 +134,7 @@ WorkerPool.prototype.reportError = async function({kind, title, description, ext
         \`\`\`
       `.trim();
     }
-    await notify.email({
+    await this.notify.email({
       address: this.owner,
       subject: `Taskcluster Worker Manager Error: ${title}`,
       content: `
@@ -128,13 +146,25 @@ WorkerPool.prototype.reportError = async function({kind, title, description, ext
 
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+  ErrorId: ${errorId}
+
   ${extraInfo}
       `.trim(),
     });
   }
-  return await WorkerPoolError.create({
+
+  await this.monitor.log.workerError({
     workerPoolId: this.workerPoolId,
-    errorId: slugid.v4(),
+    errorId,
+    reported: new Date(),
+    kind,
+    title,
+    description,
+  });
+
+  return await this.WorkerPoolError.create({
+    workerPoolId: this.workerPoolId,
+    errorId,
     reported: new Date(),
     kind,
     title,

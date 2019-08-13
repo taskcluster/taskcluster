@@ -7767,6 +7767,21 @@
           "version": 1
         },
         {
+          "description": "An error was reported regarding the given worker pool.  Such errors are generally\nthe responsibility of the owner of the worker pool, but may also indicate issues\nwith the Taskcluster deployment and as such are reported in the service logs as\nwell.  Note that the 'extra' data associated with such a report is not included\nhere.  To see that, use the UI or API to view the worker pool errors directly.",
+          "fields": {
+            "description": "Description of the error",
+            "errorId": "The unique id of this error report",
+            "kind": "The error kind",
+            "title": "The error title",
+            "workerPoolId": "The workerPool where the error occurred"
+          },
+          "level": "warning",
+          "name": "workerError",
+          "title": "Worker Error",
+          "type": "worker-error",
+          "version": 1
+        },
+        {
           "description": "A connection to Pulse has been established.  Taskcluster services\nautomatically reconnect to Pulse periodically and in the event of\nan error, but rapid reconnections may signal a Pulse failure.",
           "fields": {
           },
