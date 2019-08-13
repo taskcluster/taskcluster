@@ -50,6 +50,7 @@ class AwsProvider extends Provider {
     }
 
     const config = this.chooseConfig({possibleConfigs: workerPool.config.launchConfigs});
+    console.log('🎁', config.launchConfig);
 
     aws.config.update({region: config.region});
     aws.config.logger = console;
@@ -82,7 +83,7 @@ class AwsProvider extends Provider {
               Value: workerPool.owner,
             }],
         },
-      });
+      }).promise();
     } catch (e) {
       console.log('🚨', e);
       return await workerPool.reportError({
