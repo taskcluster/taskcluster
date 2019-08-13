@@ -213,7 +213,7 @@ export default class WorkersTable extends Component {
                 <Typography>n/a</Typography>
               </TableCell>
             )}
-            {latestTask ? (
+            {latestTask && latestTask.run.resolved ? (
               <CopyToClipboard
                 title={`${latestTask.run.resolved} (Copy)`}
                 text={latestTask.run.resolved}>
