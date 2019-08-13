@@ -54,22 +54,22 @@ export default class DenylistForm extends Component {
     dialogError: oneOfType([string, object]),
     /**
      * Callback function fired when the DialogAction component throws an error.
-     * Required when viewing an existent client.
+     * Required when viewing an existent address.
      * */
     onDialogActionError: func,
     /**
      * Callback function fired when the DialogAction component runs
-     * successfully. Required when viewing an existent client.
+     * successfully. Required when viewing an existent address.
      * */
     onDialogActionComplete: func,
     /**
      * Callback function fired when the dialog should open.
-     * Required when viewing an existent client.
+     * Required when viewing an existent address.
      */
     onDialogActionOpen: func,
     /**
      * Callback function fired when the dialog should close.
-     * Required when viewing an existent client.
+     * Required when viewing an existent address.
      */
     onDialogActionClose: func,
   };
@@ -124,7 +124,7 @@ export default class DenylistForm extends Component {
   handleAddressDelete = () => {
     const { notificationType, notificationAddress } = this.state;
 
-    this.props.onAddressDelete(notificationType, notificationAddress);
+    return this.props.onAddressDelete(notificationType, notificationAddress);
   };
 
   handleInputChange = ({ target: { name, value } }) => {
@@ -274,7 +274,7 @@ export default class DenylistForm extends Component {
             error={dialogError}
             title="Delete Address?"
             body={
-              <Typography>This will delete the {address} client.</Typography>
+              <Typography>This will delete {address.notificationAddress}.</Typography>
             }
             confirmText="Delete Address"
           />

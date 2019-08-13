@@ -16,6 +16,7 @@ import deleteAddressQuery from './deleteAddress.graphql';
 @graphql(denylistAddressQuery, {
   skip: ({ match: { params } }) => !params.notificationAddress,
   options: ({ match: { params } }) => ({
+    fetchPolicy: 'network-only',
     variables: {
       filter: {
         notificationAddress: decodeURIComponent(params.notificationAddress),
@@ -32,7 +33,7 @@ export default class ViewDenylistAddress extends Component {
     dialogOpen: false,
   };
 
-  handleAddressDelete = async (notificationType, notificationAddress) => {
+  handleAddressDelete = (notificationType, notificationAddress) => {
     this.setState({ dialogError: null, loading: true });
 
     return this.props.client.mutate({
@@ -51,7 +52,7 @@ export default class ViewDenylistAddress extends Component {
   };
 
   handleDialogActionComplete = () => {
-    this.props.history.push(`/auth/clients`);
+    this.props.history.push(`/notify/denylist`);
   };
 
   handleAddressAdd = async (notificationType, notificationAddress) => {
@@ -98,9 +99,9 @@ export default class ViewDenylistAddress extends Component {
       match: { params },
     } = this.props;
     const hasDenylistAddresses =
-      data &&
+      Boolean(data &&
       data.listDenylistAddresses &&
-      data.listDenylistAddresses.edges.length;
+      data.listDenylistAddresses.edges.length);
 
     return (
       <Dashboard
