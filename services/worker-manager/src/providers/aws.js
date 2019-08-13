@@ -96,7 +96,7 @@ class AwsProvider extends Provider {
       });
     }
 
-    console.log('🐣', JSON.stringify(spawned.Instances, null, 2));
+    console.log('🐣', spawned);
 
     Promise.all(spawned.Instances.map(i => {
       return this.Worker.create({
