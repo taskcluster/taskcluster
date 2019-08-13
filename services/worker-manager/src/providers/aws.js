@@ -17,6 +17,7 @@ class AwsProvider extends Provider {
     estimator,
     validator,
     notify,
+    providerConfig,
   }) {
     super({
       providerId,
@@ -31,6 +32,8 @@ class AwsProvider extends Provider {
     });
     this.configSchema = 'config-aws';
     this.ec2iid_RSA_key = fs.readFileSync(path.resolve(__dirname, 'aws-keys/RSA-key-forSignature')).toString();
+
+    this.providerConfig = providerConfig;
   }
 
   /*
@@ -54,7 +57,10 @@ class AwsProvider extends Provider {
 
     aws.config.update({region: config.region});
     aws.config.logger = console;
-    const ec2 = new aws.EC2({apiVersion: AWS_API_VERSION});
+    const ec2 = new aws.EC2({
+      apiVersion: AWS_API_VERSION,
+      credentials: this.providerConfig.credentials
+    });
 
     const toSpawn = await this.estimator.simple({
       workerPoolId,
@@ -147,7 +153,10 @@ class AwsProvider extends Provider {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
 
     aws.config.update({region: worker.providerData.region});
-    const ec2 = new aws.EC2({apiVersion: AWS_API_VERSION});
+    const ec2 = new aws.EC2({
+      apiVersion: AWS_API_VERSION,
+      credentials: this.providerConfig.credentials,
+    });
     let instanceStatuses = (await ec2.describeInstanceStatus({
       InstanceIds: [worker.workerId.toString()],
     })).data;
