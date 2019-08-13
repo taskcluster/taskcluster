@@ -71,18 +71,20 @@ class AwsProvider extends Provider {
         ...config.launchConfig,
         MaxCount: config.MaxCount || toSpawn,
         MinCount: config.MinCount ? Math.min(toSpawn, config.MinCount) : toSpawn,
-        TagSpecifications: {
-          ResourceType: 'instance',
-          Tags: [
-            ...(config.launchConfig.TagSpecifications ? config.launchConfig.TagSpecifications.Tags : []),
-            {
-              Key: 'Provider',
-              Value: `wm-${this.providerId}`,
-            }, {
-              Key: 'Owner',
-              Value: workerPool.owner,
-            }],
-        },
+        TagSpecifications: [
+          ...(config.launchConfig.TagSpecifications ? config.launchConfig.TagSpecifications : []),
+          {
+            ResourceType: 'instance',
+            Tags: [
+              {
+                Key: 'Provider',
+                Value: `wm-${this.providerId}`,
+              }, {
+                Key: 'Owner',
+                Value: workerPool.owner,
+              }],
+          },
+        ],
       }).promise();
     } catch (e) {
       console.log('🚨', e);
