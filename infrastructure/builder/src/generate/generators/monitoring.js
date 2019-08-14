@@ -60,7 +60,7 @@ of the form:
 They will also have Fields for \`status\`, \`duration\`, and a serialized \`error\` if an error occured.
 
 The processes that have \`continuous\` for their dedaline and schedule run every few minutes and should complete fairly quickly. The rest
-have their schedules and maximum allowed duration defined here.
+have their schedules and maximum allowed duration defined here. All times are relative to the timezone of the k8s master.
 
 ${table(res)}
     `.trim();
