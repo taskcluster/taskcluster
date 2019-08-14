@@ -19,6 +19,8 @@ properties:
             An object to be passed in to AWS runInstances method.
             See the documentation [here](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/EC2.html#runInstances-property)
             You can configure any properties you need. Note, however, that we disallow passing in arbitrary IAM instance profiles.
+          required:
+            - ImageId
           not:
             required:
               - IamInstanceProfile
