@@ -41,6 +41,7 @@ exports.tasks.push({
     });
 
     const doc = `
+<!-- GENERATED DOCUMENTATION DO NOT EDIT -->
 # Monitoring Suggestions
 
 Taskcluster has several background processes that you should ensure are running on a schedule. Any of the following will generate messages
