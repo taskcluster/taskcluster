@@ -32,7 +32,6 @@ class AwsProvider extends Provider {
     });
     this.configSchema = 'config-aws';
     this.ec2iid_RSA_key = fs.readFileSync(path.resolve(__dirname, 'aws-keys/RSA-key-forSignature')).toString();
-
     this.providerConfig = providerConfig;
   }
 
@@ -59,7 +58,7 @@ class AwsProvider extends Provider {
     aws.config.logger = console;
     const ec2 = new aws.EC2({
       apiVersion: AWS_API_VERSION,
-      credentials: this.providerConfig.credentials
+      credentials: this.providerConfig.credentials,
     });
 
     const toSpawn = await this.estimator.simple({
@@ -94,10 +93,10 @@ class AwsProvider extends Provider {
       }).promise();
     } catch (e) {
       console.log('🚨', e);
-      return await workerPool.reportError({
+      await workerPool.reportError({
         kind: 'creation-error',
         title: 'Instance Creation Error',
-        description: 'Error creating instances in AWS',
+        description: e.message,
         notify: this.notify,
         WorkerPoolError: this.WorkerPoolError,
       });
@@ -105,7 +104,7 @@ class AwsProvider extends Provider {
 
     console.log('💩', spawned);
 
-    Promise.all(spawned.Instances.map(i => {
+    return Promise.all(spawned.Instances.map(i => {
       return this.Worker.create({
         workerPoolId,
         providerId: this.providerId,
