@@ -3,6 +3,7 @@ import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
+import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
@@ -10,6 +11,8 @@ import WorkerTypesTable from '../../../components/WorkerTypesTable';
 import Dashboard from '../../../components/Dashboard';
 import { VIEW_WORKER_TYPES_PAGE_SIZE } from '../../../utils/constants';
 import ErrorPanel from '../../../components/ErrorPanel';
+import Breadcrumbs from '../../../components/Breadcrumbs';
+import Link from '../../../utils/Link';
 import workerTypesQuery from './workerTypes.graphql';
 
 @hot(module)
@@ -21,6 +24,9 @@ import workerTypesQuery from './workerTypes.graphql';
   dropdown: {
     minWidth: 200,
     marginBottom: theme.spacing.double,
+  },
+  link: {
+    ...theme.mixins.link,
   },
 }))
 @graphql(workerTypesQuery, {
@@ -108,6 +114,18 @@ export default class ViewWorkerTypes extends Component {
           <ErrorPanel fixed error={error} />
           {provisioners && workerTypes && (
             <Fragment>
+              <Breadcrumbs>
+                <Typography
+                  className={classes.link}
+                  component={Link}
+                  to="/provisioners">
+                  Provisioners
+                </Typography>
+
+                <Typography color="textSecondary">
+                  {`${provisionerId}`}
+                </Typography>
+              </Breadcrumbs>
               <div className={classes.actionBar}>
                 <TextField
                   disabled={loading}

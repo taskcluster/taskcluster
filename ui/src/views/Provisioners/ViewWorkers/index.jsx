@@ -3,6 +3,7 @@ import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
+import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
@@ -15,6 +16,8 @@ import Dashboard from '../../../components/Dashboard';
 import { VIEW_WORKERS_PAGE_SIZE } from '../../../utils/constants';
 import { withAuth } from '../../../utils/Auth';
 import ErrorPanel from '../../../components/ErrorPanel';
+import Breadcrumbs from '../../../components/Breadcrumbs';
+import Link from '../../../utils/Link';
 import workersQuery from './workers.graphql';
 
 @hot(module)
@@ -39,6 +42,9 @@ import workersQuery from './workers.graphql';
   dropdown: {
     minWidth: 200,
     marginBottom: theme.spacing.double,
+  },
+  link: {
+    ...theme.mixins.link,
   },
 }))
 export default class ViewWorkers extends Component {
@@ -162,6 +168,24 @@ export default class ViewWorkers extends Component {
           <ErrorPanel fixed error={this.state.error || error} />
           {workers && workerType && (
             <Fragment>
+              <Breadcrumbs>
+                <Typography
+                  className={classes.link}
+                  component={Link}
+                  to="/provisioners">
+                  Provisioners
+                </Typography>
+                <Typography
+                  className={classes.link}
+                  component={Link}
+                  to={`/provisioners/${params.provisionerId}`}>
+                  {params.provisionerId}
+                </Typography>
+
+                <Typography color="textSecondary">
+                  {`${params.workerType}`}
+                </Typography>
+              </Breadcrumbs>
               <div className={classes.actionBar}>
                 <TextField
                   disabled={loading}
