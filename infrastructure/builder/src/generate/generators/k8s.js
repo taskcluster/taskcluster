@@ -404,7 +404,7 @@ exports.tasks.push({
         if (Object.keys(CLUSTER_DEFAULTS).includes(varName)) {
           valuesYAML[confName][varName] = CLUSTER_DEFAULTS[varName](cfg);
         } else {
-          exampleConfig[confName][varName] = configToExample(v.type);
+          exampleConfig[confName][varName] = configToExample(v.type, v.optional);
         }
       });
 

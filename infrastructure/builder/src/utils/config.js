@@ -48,14 +48,15 @@ exports.configToSchema = type => {
 /**
  * Convert lib-config !env types into example values
  */
-exports.configToExample = type => {
+exports.configToExample = (type, optional) => {
+  let expl = optional ? '(optional) ' : '';
   switch (type) {
-    case '!env': return '...';
-    case '!env:string': return '...';
-    case '!env:number': return '...';
-    case '!env:bool': return 'true/false';
-    case '!env:json': return {};
-    case '!env:list': return [];
+    case '!env': return `${expl}...`;
+    case '!env:string': return `${expl}...`;
+    case '!env:number': return `${expl}...`;
+    case '!env:bool': return `${expl}true/false`;
+    case '!env:json': return `${expl}{}`;
+    case '!env:list': return `${expl}[]`;
     default: throw new Error(`Unknown config type ${type}`);
   }
 };
