@@ -72,7 +72,7 @@ func (pc *WorkerImplementationConfig) Unpack(out interface{}) error {
 		destfield := destval.Field(i)
 		gotval := reflect.ValueOf(val)
 		if destfield.Type() != gotval.Type() {
-			return fmt.Errorf("Configuration value `worker.%s` should have type %s", name, destfield.Type())
+			return fmt.Errorf("Configuration value `worker.%s` should have type %s, got %s", name, destfield.Type(), gotval.Type())
 		}
 		destfield.Set(gotval)
 	}

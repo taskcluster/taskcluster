@@ -3,6 +3,7 @@ package awsprovisioner
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"strings"
 	"time"
 
@@ -63,6 +64,29 @@ func (p *AwsProvisionerProvider) ConfigureRun(state *run.State) error {
 	state.WorkerGroup = userData.Region
 
 	state.WorkerConfig = state.WorkerConfig.Merge(userData.Data)
+
+	// genericWorker.config will overwrite existing values
+	// config from userData.Data.genericWorker.config
+	if p.runnercfg.WorkerImplementation.Implementation == "generic-worker" {
+		maybeConfig, err := userData.Data.Get("genericWorker.config")
+		// userData JSON has a genericWorker.config key
+		if err == nil {
+			// verify that genericWorker.config is a JSON object
+			configMap, ok := maybeConfig.(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("UserData key `genericWorker.config` must be map[string]interface{}, got %v",
+					reflect.TypeOf(maybeConfig))
+			}
+			genericWorkerConfig := cfg.NewWorkerConfig()
+			for k, v := range configMap {
+				genericWorkerConfig, err = genericWorkerConfig.Set(k, v)
+				if err != nil {
+					return fmt.Errorf("Could not set %q to %v in `genericWorkerConfig` %#v", k, v, genericWorkerConfig)
+				}
+			}
+			state.WorkerConfig = state.WorkerConfig.Merge(genericWorkerConfig)
+		}
+	}
 
 	// aws-provisioner includes capacity in the userdata, but we would like to reflect
 	// that as worker config instead.  For compatibility, we just do this when it is

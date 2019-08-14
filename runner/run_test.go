@@ -10,6 +10,43 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestFakeGenericWorker(t *testing.T) {
+	defer filet.CleanUp(t)
+	dir := filet.TmpDir(t, "")
+	configPath := filepath.Join(dir, "runner.yaml")
+	workerConfigPath := filepath.Join(dir, "worker.yaml")
+
+	// fake.sh just exits 0
+	fakeWorker := "../worker/genericworker/fake/fake.sh"
+
+	configData := fmt.Sprintf(`
+provider:
+  providerType: standalone
+  rootURL: https://tc.example.com
+  clientID: fake
+  accessToken: fake
+  workerPoolID: pp/ww
+  workerGroup: wg
+  workerID: wi
+getSecrets: false
+worker:
+  implementation: generic-worker
+  configPath: %s
+  path: %s
+`, workerConfigPath, fakeWorker)
+
+	err := ioutil.WriteFile(configPath, []byte(configData), 0755)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	// checks exit code of running fake worker
+	_, err = Run(configPath)
+	if !assert.NoError(t, err) {
+		return
+	}
+}
+
 func TestDummy(t *testing.T) {
 	defer filet.CleanUp(t)
 	dir := filet.TmpDir(t, "")

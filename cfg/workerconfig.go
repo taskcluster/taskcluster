@@ -69,8 +69,8 @@ func (wc *WorkerConfig) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func (wc *WorkerConfig) MarshalYAML() (interface{}, error) {
-	return wc.data, nil
+func (wc *WorkerConfig) MarshalYAML() ([]byte, error) {
+	return yaml.Marshal(wc.data)
 }
 
 func (wc *WorkerConfig) MarshalJSON() ([]byte, error) {

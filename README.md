@@ -272,6 +272,21 @@ The "dummy" worker implementation does nothing but dump the state instead of
 worker:
     implementation: dummy
 ```
+
+### generic-worker
+
+The "generic-worker" worker implementation starts generic-worker
+(https://github.com/taskcluster/generic-worker).  It takes the following
+values in the 'worker' section of the runner configuration:
+
+    worker:
+        implementation: generic-worker
+        # path to the root of the generic-worker executable
+        # can also be a wrapper script to which args will be passed
+        path: /usr/local/bin/generic-worker
+        # path where taskcluster-worker-runner should write the generated
+        # generic-worker configuration.
+        configPath: /etc/taskcluster/generic-worker/config.yaml
 <!-- end-usage -->
 
 # Development
