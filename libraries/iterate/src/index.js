@@ -1,5 +1,4 @@
 const WatchDog = require('./watchdog');
-const serializeError = require('serialize-error');
 const debug = require('debug')('iterate');
 const events = require('events');
 

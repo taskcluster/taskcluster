@@ -7622,7 +7622,7 @@
           "fields": {
             "duration": "The duration in ms of the process.",
             "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome. If this is exception, the level will be error and there will be an error field containing the serialized error."
+            "status": "Either success, or exception depending on the outcome."
           },
           "level": "any",
           "name": "periodic",
@@ -8179,7 +8179,7 @@
           "fields": {
             "duration": "The duration in ms of the process.",
             "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome. If this is exception, the level will be error and there will be an error field containing the serialized error."
+            "status": "Either success, or exception depending on the outcome."
           },
           "level": "any",
           "name": "periodic",
@@ -8437,7 +8437,7 @@
           "fields": {
             "duration": "The duration in ms of the process.",
             "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome. If this is exception, the level will be error and there will be an error field containing the serialized error."
+            "status": "Either success, or exception depending on the outcome."
           },
           "level": "any",
           "name": "periodic",
@@ -10157,7 +10157,7 @@
           "fields": {
             "duration": "The duration in ms of the process.",
             "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome. If this is exception, the level will be error and there will be an error field containing the serialized error."
+            "status": "Either success, or exception depending on the outcome."
           },
           "level": "any",
           "name": "periodic",
@@ -10401,7 +10401,7 @@
           "fields": {
             "duration": "The duration in ms of the process.",
             "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome. If this is exception, the level will be error and there will be an error field containing the serialized error."
+            "status": "Either success, or exception depending on the outcome."
           },
           "level": "any",
           "name": "periodic",
@@ -10853,7 +10853,7 @@
           "fields": {
             "duration": "The duration in ms of the process.",
             "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome. If this is exception, the level will be error and there will be an error field containing the serialized error."
+            "status": "Either success, or exception depending on the outcome."
           },
           "level": "any",
           "name": "periodic",
@@ -11060,7 +11060,7 @@
           "fields": {
             "duration": "The duration in ms of the process.",
             "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome. If this is exception, the level will be error and there will be an error field containing the serialized error."
+            "status": "Either success, or exception depending on the outcome."
           },
           "level": "any",
           "name": "periodic",
@@ -11373,7 +11373,7 @@
           "fields": {
             "duration": "The duration in ms of the process.",
             "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome. If this is exception, the level will be error and there will be an error field containing the serialized error."
+            "status": "Either success, or exception depending on the outcome."
           },
           "level": "any",
           "name": "periodic",
@@ -11893,7 +11893,7 @@
           "fields": {
             "duration": "The duration in ms of the process.",
             "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome. If this is exception, the level will be error and there will be an error field containing the serialized error."
+            "status": "Either success, or exception depending on the outcome."
           },
           "level": "any",
           "name": "periodic",
@@ -12374,7 +12374,7 @@
           "fields": {
             "duration": "The duration in ms of the process.",
             "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome. If this is exception, the level will be error and there will be an error field containing the serialized error."
+            "status": "Either success, or exception depending on the outcome."
           },
           "level": "any",
           "name": "periodic",
@@ -12516,7 +12516,7 @@
           "fields": {
             "duration": "The duration in ms of the process.",
             "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome. If this is exception, the level will be error and there will be an error field containing the serialized error."
+            "status": "Either success, or exception depending on the outcome."
           },
           "level": "any",
           "name": "periodic",
