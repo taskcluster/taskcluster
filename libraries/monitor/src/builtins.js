@@ -9,7 +9,7 @@ const BUILTINS = [
     fields: {
       name: 'The name of this process.',
       duration: 'The duration in ms of the process.',
-      status: 'Either success, or exception depending on the outcome. If this is exception, the level will be error and there will be an error field containing the serialized error.',
+      status: 'Either success, or exception depending on the outcome.',
     },
   },
   {

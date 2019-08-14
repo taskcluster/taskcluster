@@ -124,17 +124,20 @@ suite(testing.suiteName(), function() {
     test('unsuccessful async function', async function() {
       await monitor.oneShot('expire', async () => { throw new Error('uhoh'); });
       assert.equal(exitStatus, 1);
-      assert.equal(monitorManager.messages.length, 1);
-      assert.equal(monitorManager.messages[0].Fields.name, 'expire');
-      assert(monitorManager.messages[0].Fields.duration);
-      assert.equal(monitorManager.messages[0].Fields.status, 'exception');
-      assert(monitorManager.messages[0].Fields.error);
+      assert.equal(monitorManager.messages.length, 2);
+      assert.equal(monitorManager.messages[0].Type, 'monitor.error');
+      assert.equal(monitorManager.messages[0].Fields.message, 'uhoh');
+      assert.equal(monitorManager.messages[1].Fields.name, 'expire');
+      assert(monitorManager.messages[1].Fields.duration);
+      assert.equal(monitorManager.messages[1].Fields.status, 'exception');
     });
 
     test('missing name', async function() {
       await monitor.oneShot(async () => { throw new Error('uhoh'); });
       assert.equal(exitStatus, 1);
-      assert.equal(monitorManager.messages[0].Fields.error.code, 'ERR_ASSERTION');
+      assert.equal(monitorManager.messages.length, 2);
+      assert.equal(monitorManager.messages[0].Type, 'monitor.error');
+      assert.equal(monitorManager.messages[0].Fields.code, 'ERR_ASSERTION');
     });
   });
 

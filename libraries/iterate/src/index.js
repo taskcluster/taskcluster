@@ -144,10 +144,12 @@ class Iterate extends events.EventEmitter {
         name: this.name,
         duration,
         status: iterError ? 'exception': 'success',
-        error: iterError ? serializeError(iterError) : undefined,
       }, {level: iterError ? 'err' : 'notice'});
 
       if (iterError) {
+        this.monitor.reportError(iterError, 'warning', {
+          consecutiveErrors: failures.length,
+        });
         failures.push(iterError);
       } else {
         failures = [];
