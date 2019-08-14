@@ -11,23 +11,44 @@ properties:
       type: object
       properties:
         region:
+          title: Region
           type: string
-          description: AWS region (not to be confused with AZ)
+          description: AWS region (not to be confused with AZ) to launch the instances in
         launchConfig:
+          title: Launch Configuration
           type: object
           description: |
             An object to be passed in to AWS runInstances method.
             See the documentation [here](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/EC2.html#runInstances-property)
             You can configure any properties you need. Note, however, that we disallow passing in arbitrary IAM instance profiles.
+          properties:
+            ImageId:
+              type: string
+              description: The ID of the AMI to launch an instance from.
+            MinCount:
+              type: integer
+              description: Minimum amount of instances to run.
+            MaxCount:
+              type: integer
+              description: Maximum amount of instances to run.
           required:
             - ImageId
+            - MinCount
+            - MaxCount
           not:
             required:
               - IamInstanceProfile
+          additionalProperties: true
+        capacityPerInstance:
+          title: Capacity Per Instance
+          type: integer
+          minimum: 1
+          description: The number of tasks a single worker of this type can run at any given time.
       additionalProperties: false
       required:
         - region
         - launchConfig
+        - capacityPerInstance
 additionalProperties: false
 required:
   - launchConfigs
