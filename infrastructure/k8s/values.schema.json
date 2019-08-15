@@ -245,12 +245,6 @@
     "github": {
       "additionalProperties": false,
       "properties": {
-        "aws_access_key": {
-          "type": "string"
-        },
-        "aws_secret_key": {
-          "type": "string"
-        },
         "bot_username": {
           "type": "string"
         },
@@ -338,9 +332,6 @@
         "provisioner_id": {
           "type": "string"
         },
-        "pulse_namespace": {
-          "type": "string"
-        },
         "pulse_password": {
           "type": "string"
         },
@@ -369,8 +360,7 @@
         "github_app_id",
         "webhook_secret",
         "pulse_username",
-        "pulse_password",
-        "pulse_namespace"
+        "pulse_password"
       ],
       "title": "Configuration options for github",
       "type": "object"
@@ -378,12 +368,6 @@
     "hooks": {
       "additionalProperties": false,
       "properties": {
-        "aws_access_key_id": {
-          "type": "string"
-        },
-        "aws_secret_access_key": {
-          "type": "string"
-        },
         "azure_crypto_key": {
           "type": "string"
         },
@@ -529,12 +513,6 @@
     "index": {
       "additionalProperties": false,
       "properties": {
-        "aws_access_key_id": {
-          "type": "string"
-        },
-        "aws_secret_access_key": {
-          "type": "string"
-        },
         "debug": {
           "title": "node debug env var",
           "type": "string"
@@ -610,9 +588,6 @@
           "title": "Process settings for this service",
           "type": "object"
         },
-        "pulse_namespace": {
-          "type": "string"
-        },
         "pulse_password": {
           "type": "string"
         },
@@ -631,8 +606,7 @@
         "taskcluster_client_id",
         "taskcluster_access_token",
         "pulse_username",
-        "pulse_password",
-        "pulse_namespace"
+        "pulse_password"
       ],
       "title": "Configuration options for index",
       "type": "object"
@@ -786,9 +760,6 @@
           "title": "Process settings for this service",
           "type": "object"
         },
-        "pulse_namespace": {
-          "type": "string"
-        },
         "pulse_password": {
           "type": "string"
         },
@@ -810,7 +781,6 @@
         "taskcluster_access_token",
         "aws_access_key_id",
         "aws_secret_access_key",
-        "pulse_namespace",
         "pulse_username",
         "pulse_password"
       ],
@@ -828,12 +798,6 @@
     "purge_cache": {
       "additionalProperties": false,
       "properties": {
-        "aws_access_key_id": {
-          "type": "string"
-        },
-        "aws_secret_access_key": {
-          "type": "string"
-        },
         "debug": {
           "title": "node debug env var",
           "type": "string"
@@ -923,9 +887,6 @@
         },
         "azure_report_threshold": {
           "type": "number"
-        },
-        "azure_table_account_name": {
-          "type": "string"
         },
         "blob_artifact_region": {
           "type": "string"
@@ -1209,9 +1170,6 @@
         "public_blob_artifact_bucket": {
           "type": "string"
         },
-        "pulse_namespace": {
-          "type": "string"
-        },
         "pulse_password": {
           "type": "string"
         },
@@ -1238,8 +1196,6 @@
         "taskcluster_client_id",
         "taskcluster_access_token",
         "azure_account_key",
-        "azure_table_account_name",
-        "pulse_namespace",
         "pulse_username",
         "pulse_password",
         "aws_access_key_id",
@@ -1301,12 +1257,6 @@
     "secrets": {
       "additionalProperties": false,
       "properties": {
-        "aws_access_key_id": {
-          "type": "string"
-        },
-        "aws_secret_access_key": {
-          "type": "string"
-        },
         "azure_crypto_key": {
           "type": "string"
         },
@@ -1515,9 +1465,6 @@
         "public_url": {
           "type": "string"
         },
-        "pulse_namespace": {
-          "type": "string"
-        },
         "pulse_password": {
           "type": "string"
         },
@@ -1551,7 +1498,6 @@
         "additional_allowed_cors_origin",
         "taskcluster_client_id",
         "taskcluster_access_token",
-        "pulse_namespace",
         "pulse_username",
         "pulse_password",
         "ui_login_strategies",
@@ -1704,9 +1650,6 @@
             }
           ]
         },
-        "pulse_namespace": {
-          "type": "string"
-        },
         "pulse_password": {
           "type": "string"
         },
@@ -1726,7 +1669,6 @@
         "taskcluster_access_token",
         "pulse_username",
         "pulse_password",
-        "pulse_namespace",
         "providers"
       ],
       "title": "Configuration options for worker-manager",
