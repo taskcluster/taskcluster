@@ -2,9 +2,9 @@ defaults:
   # defaults outlining all configuration options and some sane defaults
   app:
     component:        hooks
-    hookTableName:     !env HOOK_TABLE_NAME
-    lastFireTableName: !env LASTFIRE_TABLE_NAME
-    queuesTableName:  !env QUEUE_TABLE_NAME
+    hookTableName: Hooks
+    lastFireTableName: LastFire3
+    queuesTableName: Queues
     lastFiresExpirationDelay: '- 1 day'
     scheduler:
       pollingDelay:   60000
