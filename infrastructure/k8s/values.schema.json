@@ -378,13 +378,7 @@
           "title": "node debug env var",
           "type": "string"
         },
-        "hook_table_name": {
-          "type": "string"
-        },
         "influx_connection": {
-          "type": "string"
-        },
-        "lastfire_table_name": {
           "type": "string"
         },
         "level": {
@@ -485,9 +479,6 @@
         "pulse_username": {
           "type": "string"
         },
-        "queue_table_name": {
-          "type": "string"
-        },
         "taskcluster_access_token": {
           "type": "string"
         },
@@ -497,9 +488,6 @@
       },
       "required": [
         "procs",
-        "hook_table_name",
-        "lastfire_table_name",
-        "queue_table_name",
         "azure_signing_key",
         "azure_crypto_key",
         "taskcluster_client_id",
@@ -644,9 +632,6 @@
           "title": "node debug env var",
           "type": "string"
         },
-        "denylisted_notification_table_name": {
-          "type": "string"
-        },
         "email_blacklist": {
           "oneOf": [
             {
@@ -776,7 +761,6 @@
       "required": [
         "procs",
         "email_source_address",
-        "denylisted_notification_table_name",
         "taskcluster_client_id",
         "taskcluster_access_token",
         "aws_access_key_id",
@@ -1263,9 +1247,6 @@
         "azure_signing_key": {
           "type": "string"
         },
-        "azure_table_name": {
-          "type": "string"
-        },
         "debug": {
           "title": "node debug env var",
           "type": "string"
@@ -1331,7 +1312,6 @@
         "procs",
         "taskcluster_client_id",
         "taskcluster_access_token",
-        "azure_table_name",
         "azure_crypto_key",
         "azure_signing_key"
       ],
