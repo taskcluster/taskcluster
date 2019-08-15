@@ -128,6 +128,15 @@ class AwsProvider extends Provider {
     }));
   }
 
+  /**
+   * This method checks instance identity document authenticity
+   * If it's authentic it checks whether the data in it corresponds to the worker
+   *
+   * @param worker string
+   * @param workerPool string
+   * @param workerIdentityProof {document: string, signature: string}
+   * @returns {Promise<{expires: *}>}
+   */
   async registerWorker({worker, workerPool, workerIdentityProof}) {
     const {document, signature} = workerIdentityProof;
     if (!document || !signature) {
