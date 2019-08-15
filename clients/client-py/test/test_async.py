@@ -1,7 +1,8 @@
 from __future__ import division, print_function, absolute_import
-import unittest
 import datetime
 import os
+import sys
+import pytest
 
 import asyncio
 
@@ -9,7 +10,7 @@ import base
 import taskcluster.aio.auth as subjectAsync
 
 
-@unittest.skipIf(os.environ.get('NO_TESTS_OVER_WIRE'), "Skipping tests over wire")
+@pytest.mark.skipif(os.environ.get('NO_TESTS_OVER_WIRE'), reason ="Skipping tests over wire")
 class TestAuthenticationAsync(base.TCTest):
 
     def test_async_works_with_permanent_credentials(self):
@@ -31,7 +32,7 @@ class TestAuthenticationAsync(base.TCTest):
                     'clientScopes': ['test:a'],
                     'requiredScopes': ['test:a'],
                 })
-                self.assertEqual(result, {'scopes': ['test:a'], 'clientId': 'tester'})
+                assert result == {'scopes': ['test:a'], 'clientId': 'tester'}
 
         loop.run_until_complete(x())
 
@@ -58,6 +59,6 @@ class TestAuthenticationAsync(base.TCTest):
                     'clientScopes': ['test:*'],
                     'requiredScopes': ['test:xyz'],
                 })
-                self.assertEqual(result, {'scopes': ['test:xyz'], 'clientId': 'tester'})
+                assert result == {'scopes': ['test:xyz'], 'clientId': 'tester'}
 
         loop.run_until_complete(x())
