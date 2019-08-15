@@ -10,7 +10,7 @@ require (
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/spf13/afero v1.2.2 // indirect
-	github.com/stretchr/testify v1.3.0
+	github.com/stretchr/testify v1.4.0
 	github.com/taskcluster/httpbackoff v1.0.0
 	github.com/taskcluster/slugid-go v1.1.0
 	github.com/taskcluster/taskcluster/clients/client-go/v15 v15.0.0
