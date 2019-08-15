@@ -118,7 +118,7 @@ let load = loader({
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => {
       return new Client({
-        namespace: cfg.pulse.namespace,
+        namespace: 'takslcuster-index',
         monitor: monitor.childMonitor('pulse-client'),
         credentials: pulseCredentials(cfg.pulse),
       });

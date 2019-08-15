@@ -58,7 +58,7 @@ const load = loader({
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => {
       return new Client({
-        namespace: cfg.pulse.namespace,
+        namespace: 'taskcluster-github',
         monitor: monitor.childMonitor('pulse-client'),
         credentials: pulseCredentials(cfg.pulse),
       });

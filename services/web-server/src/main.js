@@ -49,7 +49,7 @@ const load = loader(
 
         return new Client({
           monitor: monitor.childMonitor('pulse-client'),
-          namespace: cfg.pulse.namespace,
+          namespace: 'taskcluster-web-server',
           credentials: pulseCredentials(cfg.pulse),
         });
       },

@@ -52,7 +52,6 @@ defaults:
     username: !env PULSE_USERNAME
     password: !env PULSE_PASSWORD
     vhost: !env PULSE_VHOST
-    namespace: !env PULSE_NAMESPACE
 
 production:
   pulse:

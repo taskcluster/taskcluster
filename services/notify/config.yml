@@ -40,7 +40,6 @@ defaults:
     region:           !env:optional AWS_REGION
 
   pulse:
-    namespace: !env PULSE_NAMESPACE
     hostname: !env PULSE_HOSTNAME
     username: !env PULSE_USERNAME
     password: !env PULSE_PASSWORD
