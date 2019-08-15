@@ -140,7 +140,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         description: 'WHO KNOWS',
         v: 1,
       },
-      Severity: LEVELS.warning,
+      Severity: LEVELS.notice,
     });
   });
 });

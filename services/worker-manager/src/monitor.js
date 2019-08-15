@@ -39,7 +39,7 @@ monitorManager.register({
   name: 'workerError',
   type: 'worker-error',
   title: 'Worker Error',
-  level: 'warning',
+  level: 'notice',
   version: 1,
   description: `
     An error was reported regarding the given worker pool.  Such errors are generally

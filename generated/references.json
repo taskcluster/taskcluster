@@ -7775,7 +7775,7 @@
             "title": "The error title",
             "workerPoolId": "The workerPool where the error occurred"
           },
-          "level": "warning",
+          "level": "notice",
           "name": "workerError",
           "title": "Worker Error",
           "type": "worker-error",
