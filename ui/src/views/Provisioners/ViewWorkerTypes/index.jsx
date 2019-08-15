@@ -17,13 +17,16 @@ import workerTypesQuery from './workerTypes.graphql';
 
 @hot(module)
 @withStyles(theme => ({
-  actionBar: {
+  bar: {
     display: 'flex',
-    flexDirection: 'row-reverse',
+    alignItems: 'center',
+  },
+  breadcrumbsPaper: {
+    marginRight: theme.spacing.unit * 4,
+    flex: 1,
   },
   dropdown: {
     minWidth: 200,
-    marginBottom: theme.spacing.double,
   },
   link: {
     ...theme.mixins.link,
@@ -114,19 +117,19 @@ export default class ViewWorkerTypes extends Component {
           <ErrorPanel fixed error={error} />
           {provisioners && workerTypes && (
             <Fragment>
-              <Breadcrumbs>
-                <Typography
-                  className={classes.link}
-                  component={Link}
-                  to="/provisioners">
-                  Provisioners
-                </Typography>
+              <div className={classes.bar}>
+                <Breadcrumbs classes={{ paper: classes.breadcrumbsPaper }}>
+                  <Typography
+                    className={classes.link}
+                    component={Link}
+                    to="/provisioners">
+                    Provisioners
+                  </Typography>
 
-                <Typography color="textSecondary">
-                  {`${provisionerId}`}
-                </Typography>
-              </Breadcrumbs>
-              <div className={classes.actionBar}>
+                  <Typography color="textSecondary">
+                    {`${provisionerId}`}
+                  </Typography>
+                </Breadcrumbs>
                 <TextField
                   disabled={loading}
                   className={classes.dropdown}
@@ -146,6 +149,7 @@ export default class ViewWorkerTypes extends Component {
                   ))}
                 </TextField>
               </div>
+              <br />
               <WorkerTypesTable
                 workerTypesConnection={workerTypes}
                 provisionerId={provisionerId}

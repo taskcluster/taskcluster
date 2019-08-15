@@ -35,13 +35,16 @@ import workersQuery from './workers.graphql';
   }),
 })
 @withStyles(theme => ({
-  actionBar: {
+  bar: {
     display: 'flex',
-    flexDirection: 'row-reverse',
+    alignItems: 'center',
+  },
+  breadcrumbsPaper: {
+    marginRight: theme.spacing.unit * 4,
+    flex: 1,
   },
   dropdown: {
     minWidth: 200,
-    marginBottom: theme.spacing.double,
   },
   link: {
     ...theme.mixins.link,
@@ -168,25 +171,25 @@ export default class ViewWorkers extends Component {
           <ErrorPanel fixed error={this.state.error || error} />
           {workers && workerType && (
             <Fragment>
-              <Breadcrumbs>
-                <Typography
-                  className={classes.link}
-                  component={Link}
-                  to="/provisioners">
-                  Provisioners
-                </Typography>
-                <Typography
-                  className={classes.link}
-                  component={Link}
-                  to={`/provisioners/${params.provisionerId}`}>
-                  {params.provisionerId}
-                </Typography>
+              <div className={classes.bar}>
+                <Breadcrumbs classes={{ paper: classes.breadcrumbsPaper }}>
+                  <Typography
+                    className={classes.link}
+                    component={Link}
+                    to="/provisioners">
+                    Provisioners
+                  </Typography>
+                  <Typography
+                    className={classes.link}
+                    component={Link}
+                    to={`/provisioners/${params.provisionerId}`}>
+                    {params.provisionerId}
+                  </Typography>
 
-                <Typography color="textSecondary">
-                  {`${params.workerType}`}
-                </Typography>
-              </Breadcrumbs>
-              <div className={classes.actionBar}>
+                  <Typography color="textSecondary">
+                    {`${params.workerType}`}
+                  </Typography>
+                </Breadcrumbs>
                 <TextField
                   disabled={loading}
                   className={classes.dropdown}
