@@ -3,7 +3,8 @@ const aws = require('aws-sdk');
 const taskcluster = require('taskcluster-client');
 const crypto = require('crypto');
 const fs = require('fs');
-const path = require("path");
+const path = require('path');
+const assert = require('assert');
 const {AWS_API_VERSION} = require('../constants');
 
 class AwsProvider extends Provider {
@@ -52,7 +53,6 @@ class AwsProvider extends Provider {
     }
 
     const config = this.chooseConfig({possibleConfigs: workerPool.config.launchConfigs});
-    console.log('🎁', config.launchConfig);
 
     aws.config.update({region: config.region});
     aws.config.logger = console;
@@ -63,19 +63,18 @@ class AwsProvider extends Provider {
 
     const toSpawn = await this.estimator.simple({
       workerPoolId,
-      minCapacity: 1, // todo
-      maxCapacity: 2, // todo
-      capacityPerInstance: 1, //todo
+      minCapacity: config.launchConfig.MinCount,
+      maxCapacity: config.launchConfig.MaxCount,
+      capacityPerInstance: config.capacityPerInstance,
       running: workerPool.providerData[this.providerId].running,
     });
 
     let spawned;
-
     try {
       spawned = await ec2.runInstances({
         ...config.launchConfig,
-        MaxCount: config.MaxCount || toSpawn,
-        MinCount: config.MinCount ? Math.min(toSpawn, config.MinCount) : toSpawn,
+        MaxCount: config.launchConfig.MaxCount ? Math.max(toSpawn, config.launchConfig.MaxCount) : toSpawn,
+        MinCount: config.launchConfig.MinCount ? Math.min(toSpawn, config.launchConfig.MinCount) : toSpawn,
         TagSpecifications: [
           ...(config.launchConfig.TagSpecifications ? config.launchConfig.TagSpecifications : []),
           {
@@ -92,8 +91,9 @@ class AwsProvider extends Provider {
         ],
       }).promise();
     } catch (e) {
-      console.log('🚨', e);
-      await workerPool.reportError({
+      this.monitor.err(`🚨 Error calling AWS API: ${e}`);
+
+      return await workerPool.reportError({
         kind: 'creation-error',
         title: 'Instance Creation Error',
         description: e.message,
@@ -101,8 +101,6 @@ class AwsProvider extends Provider {
         WorkerPoolError: this.WorkerPoolError,
       });
     }
-
-    console.log('💩', spawned);
 
     return Promise.all(spawned.Instances.map(i => {
       return this.Worker.create({
@@ -123,6 +121,8 @@ class AwsProvider extends Provider {
           availabilityZone: i.Placement.AvailabilityZone,
           privateIp: i.PrivateIpAddress,
           owner: spawned.OwnerId,
+          state: i.State.Name,
+          stateReason: i.StateReason.Message,
         },
       });
     }));
@@ -205,15 +205,13 @@ class AwsProvider extends Provider {
   }
 
   /**
-   * Method to select instance launch specification. At the moment selects at random
+   * Method to select instance launch specification. At the moment selects at random, which is temporary
    *
    * @param possibleConfigs Array<Object>
    * @returns Object
    */
   chooseConfig({possibleConfigs}) {
-    if (!Array.isArray(possibleConfigs)) {
-      throw new Error('possible configs is not an array');
-    }
+    assert(Array.isArray(possibleConfigs), 'possible configs is not an array');
 
     const i = Math.floor(Math.random() * possibleConfigs.length);
 
