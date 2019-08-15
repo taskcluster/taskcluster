@@ -37,10 +37,10 @@ let load = loader({
   Secret: {
     requires: ['cfg', 'monitor', 'process'],
     setup: ({cfg, monitor, process}) => data.Secret.setup({
-      tableName: cfg.azure.tableName,
+      tableName: cfg.app.secretsTableName,
       credentials: sasCredentials({
         accountId: cfg.azure.accountId,
-        tableName: cfg.azure.tableName,
+        tableName: cfg.app.secretsTableName,
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
       }),
