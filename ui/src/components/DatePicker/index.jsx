@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import { func } from 'prop-types';
 import classNames from 'classnames';
-import { DatePicker as MuiDatePicker } from 'material-ui-pickers';
+import {
+  DatePicker as MuiDatePicker,
+  MuiPickersUtilsProvider,
+} from 'material-ui-pickers';
 import { withStyles } from '@material-ui/core/styles';
-import DateFnsUtils from 'material-ui-pickers/utils/date-fns-utils';
-import MuiPickersUtilsProvider from 'material-ui-pickers/utils/MuiPickersUtilsProvider';
+import DateFnsUtils from '@date-io/date-fns';
 import ChevronRightIcon from 'mdi-react/ChevronRightIcon';
 import CalendarIcon from 'mdi-react/CalendarIcon';
 import ChevronLeftIcon from 'mdi-react/ChevronLeftIcon';
