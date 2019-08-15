@@ -31,16 +31,6 @@ defaults:
       clientId:                   !env TASKCLUSTER_CLIENT_ID
       accessToken:                !env TASKCLUSTER_ACCESS_TOKEN
 
-  # AWS SDK configuration for publication of schemas and references
-  aws:
-    accessKeyId:      !env:optional AWS_ACCESS_KEY_ID
-    secretAccessKey:  !env:optional AWS_SECRET_ACCESS_KEY
-    # Default AWS region this is where the S3 bucket lives
-    region:                         'us-west-2'
-    # Lock API version to use the latest API from 2013 this is fuzzy locking
-    # but it does the trick...
-    apiVersion:                     '2014-01-01'
-
 production:
   server:
     env:                          'production'

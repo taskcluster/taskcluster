@@ -52,12 +52,6 @@ defaults:
     vhost: !env PULSE_VHOST
     namespace: !env PULSE_NAMESPACE
 
-  aws:
-    accessKeyId: !env:optional AWS_ACCESS_KEY
-    secretAccessKey: !env:optional AWS_SECRET_KEY
-    region: 'us-west-2' # TODO: This probably shouldn't be set here #1567016
-    apiVersion: '2014-01-01'
-
 production:
   app:
     jobQueue: 'jobs'
