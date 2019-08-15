@@ -41,7 +41,6 @@ properties:
         properties:
           document:
             title: Document
-            type: string
             description: |
               Instance identity document that is obtained by
               curl http://169.254.169.254/latest/dynamic/instance-identity/document on the instance

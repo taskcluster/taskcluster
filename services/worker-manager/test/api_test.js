@@ -786,9 +786,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     const workerGroup = 'wg';
     const workerId = 'wi';
     const workerIdentityProof = {'token': 'tok'};
+    const aws_workerIdentityProof = {
+      "document": '{\n  "accountId" : "710952102342",\n  "availabilityZone" : "us-west-2a",\n  "ramdiskId" : null,\n  "kernelId" : null,\n  "pendingTime" : "2019-08-15T18:19:47Z",\n  "architecture" : "x86_64",\n  "privateIp" : "172.31.23.159",\n  "devpayProductCodes" : null,\n  "marketplaceProductCodes" : null,\n  "version" : "2017-09-30",\n  "region" : "us-west-2",\n  "imageId" : "ami-082b5a644766e0e6f",\n  "billingProducts" : null,\n  "instanceId" : "i-02312cd4f06c990ca",\n  "instanceType" : "t2.micro"\n}',
+      "signature": "gCB6UdLEc8np0UsBtT2OfRRvi7BW0qQ9nz/hAD4puflRu6PZBkgCGdYFWN5CVbg+c4VgjnNDiMjT\nk0qFGoV18sMJVsPEVN33HbTr0nYmDbY9rWy3NssmuOg5+SUiSRfci0LgqdTtdTOcen9KLk5peh/h\n58rdSJZbqCgadrDhOqA=",
+    };
 
     const defaultRegisterWorker = {
-      workerPoolId, providerId, workerGroup, workerId, workerIdentityProof};
+      workerPoolId, providerId, workerGroup, workerId, workerIdentityProof,
+    };
 
     const defaultWorkerPool = {
       workerPoolId,
@@ -917,6 +922,43 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
 
       assert.equal(res.credentials.clientId,
         `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
+    });
+
+    test.only('AWS instance identity verification', async function() {
+      await helper.WorkerPool.create({
+        ...defaultWorkerPool,
+        providerId: 'aws',
+      });
+      await helper.Worker.create({
+        ...defaultWorker,
+        workerId: 'i-02312cd4f06c990ca',
+        providerId: 'aws',
+        providerData: {
+          region: 'us-west-2',
+          imageId: 'ami-082b5a644766e0e6f',
+          instanceType: 't2.micro',
+          architecture: 'x86_64',
+          availabilityZone: 'us-west-2a',
+          privateIp: '172.31.23.159',
+          owner: '710952102342',
+        },
+      });
+
+      const res = await helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+        workerId: 'i-02312cd4f06c990ca',
+        providerId: 'aws',
+        workerIdentityProof: aws_workerIdentityProof,
+      });
+
+      assert.equal(res.credentials.clientId, `worker/aws/${workerPoolId}/${workerGroup}/i-02312cd4f06c990ca`);
+
+      const scopes = new Set(JSON.parse(res.credentials.certificate).scopes);
+      const msg = `got scopes ${[...scopes].join(', ')}`;
+      assert(scopes.has(`assume:worker-pool:${workerPoolId}`), msg);
+      assert(scopes.has(`assume:worker-id:${workerGroup}/i-02312cd4f06c990ca`), msg);
+      assert(scopes.has(`secrets:get:worker-pool:${workerPoolId}`), msg);
+      assert(scopes.has(`queue:claim-work:${workerPoolId}`), msg);
     });
   });
 });
