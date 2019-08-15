@@ -1,7 +1,7 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
-import { format, addYears, isAfter } from 'date-fns';
+import { format, parseISO, addYears, isAfter } from 'date-fns';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import TextField from '@material-ui/core/TextField';
 import HomeLockIcon from 'mdi-react/HomeLockIcon';
@@ -36,7 +36,7 @@ export default class ViewWorker extends Component {
       dialogOpen: false,
       quarantineUntilInput:
         props.worker && props.worker.quarantineUntil
-          ? props.worker.quarantineUntil
+          ? parseISO(props.worker.quarantineUntil)
           : addYears(new Date(), 1000),
     };
   }
@@ -66,7 +66,7 @@ export default class ViewWorker extends Component {
   };
 
   handleQuarantineChange = ({ target }) => {
-    this.setState({ quarantineUntilInput: target.value });
+    this.setState({ quarantineUntilInput: parseISO(target.value) });
   };
 
   handleQuarantineDialogSubmit = async () => {
@@ -213,7 +213,7 @@ export default class ViewWorker extends Component {
                           id="date"
                           label="Quarantine Until"
                           type="date"
-                          value={format(quarantineUntilInput, 'YYYY-MM-DD')}
+                          value={format(quarantineUntilInput, 'yyyy-MM-dd')}
                           onChange={this.handleQuarantineChange}
                         />
                       </Fragment>

@@ -298,7 +298,7 @@ const createTheme = isDarkTheme => {
         },
       },
       MuiPickersYear: {
-        year: {
+        root: {
           '&:focus': {
             color: isDarkTheme ? 'white' : '#000',
           },
@@ -307,14 +307,20 @@ const createTheme = isDarkTheme => {
           },
         },
       },
+      MuiPickersCalendarHeader: {
+        iconButton: {
+          backgroundColor: 'transparent',
+          '& span': {
+            backgroundColor: 'transparent',
+          },
+        },
+      },
       MuiPickersDay: {
-        day: {
-          '&$selected': {
-            backgroundColor: THEME.SECONDARY,
-          },
-          current: {
-            color: isDarkTheme ? 'white' : '#000',
-          },
+        isSelected: {
+          backgroundColor: THEME.SECONDARY,
+        },
+        current: {
+          color: isDarkTheme ? 'white' : '#000',
         },
       },
       MuiPickersModal: {
