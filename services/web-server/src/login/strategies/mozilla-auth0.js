@@ -165,8 +165,8 @@ module.exports = class MozillaAuth0 {
 
     const groups = [
       ...(ldap && ldap.values ? Object.keys(ldap.values).map(group => `mozilla-group:${group}`) : []),
-      ...(hris && hris.values ? Object.keys(hris.values).map(group => `hris_${group}`) : []),
-      ...(mozilliansorg && mozilliansorg.values ? Object.keys(mozilliansorg.values).map(group => `mozilliansorg_${group}`) : []),
+      ...(hris && hris.values ? Object.keys(hris.values).map(group => `mozilla-hris:${group}`) : []),
+      ...(mozilliansorg && mozilliansorg.values ? Object.keys(mozilliansorg.values).map(group => `mozillians-group:${group}`) : []),
     ];
 
     user.addRole(...groups);
