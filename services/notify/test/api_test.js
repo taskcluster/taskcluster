@@ -56,11 +56,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(m
     await helper.apiClient.email({
       address: 'success@simulator.amazonses.com',
       subject: 'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is Complete',
-      content: 'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is finished. It took 124 minutes.',
+      content: 'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is finished. It took 124 minutes. <img src=x onerror=alert(1)//>',
       link: {text: 'Inspect Task', href: 'https://taskcluster.net/task-inspector/#Z-tDsP4jQ3OUTjN0Q6LNKQ'},
     });
     helper.checkEmails(email => {
       assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
+
+      // We "parse" the mime tree here and check that we've sanitized the html version.
+      const boundary = /boundary="(.*)"/.exec(email.data)[1];
+      for (const part of email.data.split(boundary)) {
+        if (part.includes('Content-Type: text/html')) {
+          assert(!part.includes('alert(1)'));
+        }
+      }
     });
   });
 

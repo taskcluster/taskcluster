@@ -67,6 +67,7 @@ class MockSES {
   sendRawEmail(c, callback) {
     this.emails.push({
       delivery: {recipients: c.Destinations},
+      data: c.RawMessage.Data.toString(),
     });
     callback(null, {});
   }
