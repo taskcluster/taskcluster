@@ -45,8 +45,8 @@ let load = loader({
   },
 
   WorkerPool: {
-    requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) => data.WorkerPool.setup({
+    requires: ['cfg', 'monitor', 'notify', 'WorkerPoolError'],
+    setup: ({cfg, monitor, notify, WorkerPoolError}) => data.WorkerPool.setup({
       tableName: cfg.app.workerPoolTableName,
       credentials: sasCredentials({
         accountId: cfg.azure.accountId,
@@ -55,6 +55,11 @@ let load = loader({
         credentials: cfg.taskcluster.credentials,
       }),
       monitor: monitor.childMonitor('table.workerPools'),
+      context: {
+        monitor,
+        notify,
+        WorkerPoolError,
+      },
     }),
   },
 
@@ -142,7 +147,7 @@ let load = loader({
   },
 
   api: {
-    requires: ['cfg', 'schemaset', 'monitor', 'Worker', 'WorkerPool', 'WorkerPoolError', 'providers', 'publisher', 'notify'],
+    requires: ['cfg', 'schemaset', 'monitor', 'Worker', 'WorkerPool', 'WorkerPoolError', 'providers', 'publisher'],
     setup: async ({
       cfg,
       schemaset,
@@ -152,7 +157,6 @@ let load = loader({
       WorkerPoolError,
       providers,
       publisher,
-      notify,
     }) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {
@@ -162,7 +166,6 @@ let load = loader({
         WorkerPoolError,
         providers,
         publisher,
-        notify,
       },
       monitor: monitor.childMonitor('api'),
       schemaset,

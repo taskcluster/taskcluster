@@ -325,8 +325,6 @@ class GoogleProvider extends Provider {
             kind: 'creation-error',
             title: 'Instance Creation Error',
             description: error.message, // TODO: Make sure we clear exposing this with security folks
-            notify: this.notify,
-            WorkerPoolError: this.WorkerPoolError,
           });
         }
         return;

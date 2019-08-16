@@ -20,7 +20,6 @@ let builder = new APIBuilder({
     'WorkerPoolError',
     'providers',
     'publisher',
-    'notify',
   ],
 });
 
@@ -292,8 +291,6 @@ builder.declare({
     title: input.title,
     description: input.description,
     extra: {...input.extra, workerGroup, workerId},
-    notify: this.notify,
-    WorkerPoolError: this.WorkerPoolError,
   });
 
   res.reply(wpe.serializable());
