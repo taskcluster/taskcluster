@@ -1,3 +1,5 @@
 #!/bin/bash -vex
 
 /usr/local/bin/start-worker /etc/start-worker.yml 2>&1 | logger --tag docker-worker
+echo "Worker exited. Shutting down..." | logger --tag docker-worker
+shutdown -h now
