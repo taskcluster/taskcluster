@@ -11,8 +11,7 @@ import (
 )
 
 // Register this worker with the worker-manager, and update the state with the parameters and the results.
-func RegisterWorker(state *run.State, wm tc.WorkerManager, workerPoolID, providerID, workerGroup, workerID, workerIdentityKey, workerIdentityValue string) error {
-	workerIdentityProofMap := map[string]interface{}{workerIdentityKey: interface{}(workerIdentityValue)}
+func RegisterWorker(state *run.State, wm tc.WorkerManager, workerPoolID, providerID, workerGroup, workerID string, workerIdentityProofMap map[string]interface{}) error {
 	workerIdentityProof, err := json.Marshal(workerIdentityProofMap)
 	if err != nil {
 		return err
