@@ -52,7 +52,7 @@ let load = loader({
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => {
       return new pulse.Client({
-        namespace: cfg.pulse.namespace,
+        namespace: 'taskcluster-queue',
         monitor: monitor.childMonitor('pulse-client'),
         credentials: pulse.pulseCredentials(cfg.pulse),
       });

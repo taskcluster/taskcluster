@@ -2,9 +2,9 @@ defaults:
   # defaults outlining all configuration options and some sane defaults
   app:
     component:        hooks
-    hookTableName:     !env HOOK_TABLE_NAME
-    lastFireTableName: !env LASTFIRE_TABLE_NAME
-    queuesTableName:  !env QUEUE_TABLE_NAME
+    hookTableName: Hooks
+    lastFireTableName: LastFire3
+    queuesTableName: Queues
     lastFiresExpirationDelay: '- 1 day'
     scheduler:
       pollingDelay:   60000
@@ -28,21 +28,6 @@ defaults:
     env:              !env NODE_ENV
     forceSSL:         !env:bool FORCE_SSL
     trustProxy:       !env:bool TRUST_PROXY
-  aws:
-    ses:
-      # Credentials with access to SES to send hook failure emails
-      accessKeyId:      !env:optional AWS_ACCESS_KEY_ID
-      secretAccessKey:  !env:optional AWS_SECRET_ACCESS_KEY
-      region:           us-east-1
-      params:
-        Source:         taskcluster-hooks@mozilla.com
-    validator:
-      # Credentials with access to references/schemas.taskcluster.net if you wish
-      # to publish meta-data
-      accessKeyId:      !env:optional AWS_ACCESS_KEY_ID
-      secretAccessKey:  !env:optional AWS_SECRET_ACCESS_KEY
-      region:           us-west-2
-      apiVersion:       2014-01-01
   pulse:
     username:       !env PULSE_USERNAME
     password:       !env PULSE_PASSWORD

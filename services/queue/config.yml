@@ -121,11 +121,7 @@ defaults:
     accountId:                !env AZURE_ACCOUNT_ID
     accountKey:               !env AZURE_ACCOUNT_KEY
 
-  # Azure account (for table storage which uses auth for access)
-  azureTableAccount:          !env AZURE_TABLE_ACCOUNT_NAME
-
   pulse:
-    namespace:                !env PULSE_NAMESPACE
     username:                 !env PULSE_USERNAME
     password:                 !env PULSE_PASSWORD
     hostname:                 !env PULSE_HOSTNAME
@@ -158,8 +154,6 @@ production:
       - us-east-2
       - us-west-1
       - eu-central-1
-  pulse:
-    namespace: taskcluster-queue
   server:
     env:              production
     trustProxy:       true
@@ -197,7 +191,6 @@ test:
     port:             60401
     env:              development
     forceSSL:         false
-  azureTableAccount:  inMemory
 load-test:
   app:
     publicArtifactBucket:         'test-bucket-for-any-garbage'

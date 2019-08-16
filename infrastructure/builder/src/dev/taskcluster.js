@@ -56,14 +56,6 @@ module.exports = async ({userConfig, answer, configTmpl}) => {
   // The following are some hacks for now until we can do all of this in a
   // nicer way (presumably?)
 
-  setDefault('hooks.hook_table_name', 'Hooks');
-  setDefault('hooks.lastfire_table_name', 'LastFire');
-  setDefault('hooks.queue_table_name', 'HooksQueue');
-
-  setDefault('secrets.azure_table_name', 'Secrets');
-
-  setDefault('notify.denylisted_notification_table_name', 'Denylist');
-
   setDefault('worker_manager.providers', {});
 
   // TODO: Figure out what any of these should be set to

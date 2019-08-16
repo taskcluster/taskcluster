@@ -37,7 +37,6 @@ defaults:
 
   # Pulse credentials
   pulse:
-    namespace: !env PULSE_NAMESPACE
     username: !env PULSE_USERNAME
     password: !env PULSE_PASSWORD
     hostname: !env PULSE_HOSTNAME
