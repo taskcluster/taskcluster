@@ -3,6 +3,38 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v16.1.0
+
+[minor] ([bug 1572775](http://bugzil.la/1572775)) * All lib-loader `setup` functions now get passed their own
+  name to allow logging more usefully.
+* There is now a document in dev-docs explaining recommended
+  monitoring practices.
+
+[minor] ([bug 1553953](http://bugzil.la/1553953)) The `workerType` identifier now has a more restrictive pattern:
+ * consisting of lower-case alphanumeric plus dash (`-`)
+ * from 1 to 38 characters long
+ * beginning with a lower-case alphabetic character
+ * ending with a lower-case alphanumeric character (not a dash)
+Any worker types not matching this pattern will no longer function as of this version.
+
+This is considered a minor change because no known workerTypes (aside from some
+internal testing workerTypes) violate this pattern.
+
+[minor] ([bug 1572764](http://bugzil.la/1572764)) The go client doesn't log the full request in case of an error anymore.
+It logs only the method, hostname, port and response body. It logs the
+full request when the environment variable `TASKCLUSTER_DEBUG` is
+defined.
+
+[minor] ([#1190](https://github.com/taskcluster/taskcluster/issues/1190)) Updates a number of config variables including:
+
+* Setting `pulse-namespace` per service is no longer supported
+* Services that no longer use aws directly no longer take credentials
+* Setting table names for secrets, notify, and hooks services is no longer supported
+
+The name of the hooks last fires table has changed so you must update your static
+client scopes in your deployment from including `auth:azure-table:read-write:${azureAccountId}/LastFire`
+to `auth:azure-table:read-write:${azureAccountId}/LastFire3`.
+
 ## v16.0.0
 
 [MAJOR] ([bug 1552970](http://bugzil.la/1552970)) The `auth.gcpCredentials` method no longer modifies the *granting* service account.
