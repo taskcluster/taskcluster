@@ -198,7 +198,7 @@ class Monitor {
         status: exitStatus ? 'exception' : 'success',
       }, {level: exitStatus ? 'err' : 'notice'});
       if (!this.fake || this.fake.allowExit) {
-        process.exit(exitStatus);
+        await this._exit(exitStatus);
       }
     }
   }
@@ -251,13 +251,16 @@ class Monitor {
       level = 'err';
     }
     const serialized = serializeError(err);
+    if (this.manager._reporter) {
+      extra['reportId'] = this.manager._reporter.report(err);
+    }
     this.log.errorReport({...serialized, ...extra}, {level});
   }
 
   /**
    * Shut down this monitor (stop monitoring resources, in particular)
    */
-  terminate() {
+  async terminate() {
     if (this._resourceInterval) {
       clearInterval(this._resourceInterval);
       this._resourceInterval = null;
@@ -266,6 +269,10 @@ class Monitor {
     if (this.patchGlobal) {
       process.removeListener('uncaughtException', this._uncaughtExceptionHandler);
       process.removeListener('unhandledRejection', this._unhandledRejectionHandler);
+    }
+
+    if (this.manager._reporter) {
+      await this.manager._reporter.flush();
     }
   }
 
@@ -294,17 +301,24 @@ class Monitor {
     process.on('unhandledRejection', this._unhandledRejectionHandler);
   }
 
-  _uncaughtExceptionHandler(err) {
+  async _uncaughtExceptionHandler(err) {
     this.reportError(err);
-    process.exit(1);
+    await this._exit(1);
   }
 
-  _unhandledRejectionHandler(reason, p) {
+  async _unhandledRejectionHandler(reason, p) {
     this.reportError(reason);
     if (!this.bailOnUnhandledRejection) {
       return;
     }
-    process.exit(1);
+    await this._exit(1);
+  }
+
+  async _exit(code) {
+    if (this.manager._reporter) {
+      await this.manager._reporter.flush();
+    }
+    process.exit(code);
   }
 
   /**

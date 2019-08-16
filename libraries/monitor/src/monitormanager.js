@@ -7,6 +7,7 @@ const {LEVELS} = require('./logger');
 const Monitor = require('./monitor');
 const chalk = require('chalk');
 const Debug = require('debug');
+const plugins = require('./plugins');
 
 const LEVELS_REVERSE_COLOR = [
   chalk.red.bold('EMERGENCY'),
@@ -99,6 +100,7 @@ class MonitorManager {
     debug = false,
     destination = null,
     verify = false,
+    errorConfig = null,
   }) {
     assert(this._configured, 'must call configure(..) before setup(..)');
     assert(!this._setup, 'must not call setup(..) more than once');
@@ -108,6 +110,10 @@ class MonitorManager {
     if (fake) {
       patchGlobal = false;
       processName = null;
+    }
+
+    if (errorConfig) {
+      this._reporter = new plugins.errorPlugins[errorConfig.reporter](errorConfig);
     }
 
     const levels = {};

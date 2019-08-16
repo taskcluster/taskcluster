@@ -5,6 +5,10 @@ const options = {
   shouldUnhandle: false,
   patchGlobal: false,
   bailOnUnhandledRejection: false,
+  errorConfig: {
+    reporter: 'TestReporter',
+    log: true,
+  },
 };
 
 process.argv.slice(2).forEach(arg => {
