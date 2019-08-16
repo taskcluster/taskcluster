@@ -2186,6 +2186,11 @@ cron-parser@2.13.0:
     is-nan "^1.2.1"
     moment-timezone "^0.5.25"
 
+cronstrue@^1.82.0:
+  version "1.82.0"
+  resolved "https://registry.yarnpkg.com/cronstrue/-/cronstrue-1.82.0.tgz#47c262a627ff8bf255e22489a2e049186beac9f8"
+  integrity sha512-Ng4L774TJ5DYLACxySXCXLUTHs9PDCCBnIm4hYqVZJbJimCrlMEQcfOnjX+ukjxw0fO52eBAWmy1AdXb/b/n6w==
+
 cross-spawn@^4:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-4.0.2.tgz#7b9247621c23adfdd3856004a823cbe397424d41"
@@ -5277,6 +5282,11 @@ map-visit@^1.0.0:
   integrity sha1-7Nyo8TFE5mDxtb1B8S80edmN+48=
   dependencies:
     object-visit "^1.0.0"
+
+markdown-table@^1.1.3:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/markdown-table/-/markdown-table-1.1.3.tgz#9fcb69bcfdb8717bfd0398c6ec2d93036ef8de60"
+  integrity sha512-1RUZVgQlpJSPWYbFSpmudq5nHY1doEIv89gBtF0s4gW1GF2XorxcA/70M5vq7rLv0a6mhOUccRsqkwhwLCIQ2Q==
 
 marked@^0.7.0:
   version "0.7.0"

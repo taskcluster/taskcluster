@@ -149,8 +149,8 @@ let load = loader({
 
   expire: {
     requires: ['cfg', 'monitor', 'IndexedTask', 'Namespace'],
-    setup: ({cfg, monitor, IndexedTask, Namespace}) => {
-      return monitor.oneShot('expire', async () => {
+    setup: ({cfg, monitor, IndexedTask, Namespace}, ownName) => {
+      return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.expirationDelay);
 
         debug('Expiring namespaces');

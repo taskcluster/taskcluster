@@ -7618,6 +7618,19 @@
       "serviceName": "worker-manager",
       "types": [
         {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
           "description": "The most basic timer.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",
@@ -8162,6 +8175,19 @@
       "serviceName": "secrets",
       "types": [
         {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
           "description": "The most basic timer.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",
@@ -8406,6 +8432,19 @@
       "$schema": "/schemas/common/logs-reference-v0.json#",
       "serviceName": "queue",
       "types": [
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
         {
           "description": "The most basic timer.",
           "fields": {
@@ -10114,6 +10153,19 @@
       "serviceName": "purge-cache",
       "types": [
         {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
           "description": "The most basic timer.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",
@@ -10344,6 +10396,19 @@
       "$schema": "/schemas/common/logs-reference-v0.json#",
       "serviceName": "notify",
       "types": [
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
         {
           "description": "The most basic timer.",
           "fields": {
@@ -10784,6 +10849,19 @@
       "serviceName": "login",
       "types": [
         {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
           "description": "The most basic timer.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",
@@ -10977,6 +11055,19 @@
       "$schema": "/schemas/common/logs-reference-v0.json#",
       "serviceName": "index",
       "types": [
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
         {
           "description": "The most basic timer.",
           "fields": {
@@ -11277,6 +11368,19 @@
       "$schema": "/schemas/common/logs-reference-v0.json#",
       "serviceName": "hooks",
       "types": [
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
         {
           "description": "The most basic timer.",
           "fields": {
@@ -11785,6 +11889,19 @@
       "serviceName": "github",
       "types": [
         {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
           "description": "The most basic timer.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",
@@ -12253,6 +12370,19 @@
       "serviceName": "built-in-workers",
       "types": [
         {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
           "description": "The most basic timer.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",
@@ -12381,6 +12511,19 @@
       "$schema": "/schemas/common/logs-reference-v0.json#",
       "serviceName": "auth",
       "types": [
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
         {
           "description": "The most basic timer.",
           "fields": {

@@ -81,8 +81,8 @@ let load = loader({
 
   expire: {
     requires: ['cfg', 'Secret', 'monitor'],
-    setup: ({cfg, Secret, monitor}) => {
-      return monitor.oneShot('expire', async () => {
+    setup: ({cfg, Secret, monitor}, ownName) => {
+      return monitor.oneShot(ownName, async () => {
         const delay = cfg.app.secretExpirationDelay;
         const now = taskcluster.fromNow(delay);
 

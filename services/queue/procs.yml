@@ -6,12 +6,15 @@ write-docs:
   command: node src/main writeDocs
 claimResolver:
   type: background
+  subType: 'iterate'
   command: node src/main claim-resolver
 deadlineResolver:
   type: background
+  subType: 'iterate'
   command: node src/main deadline-resolver
 dependencyResolver:
   type: background
+  subType: 'iterate'
   command: node src/main dependency-resolver
 expireArtifacts:
   type: cron

@@ -527,4 +527,12 @@ suite('component loader', () => {
     assert.throws( function() { load.crashOnError(true); }, false);
   });
 
+  test('should pass own name to setup', async () => {
+    let load = subject({
+      testName: {setup: (_, ownName) => ownName},
+    });
+
+    assume(await load('testName')).equals('testName');
+  });
+
 });

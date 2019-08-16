@@ -479,8 +479,9 @@ let load = loader({
     ],
     setup: async ({
       cfg, Task, queueService, publisher, dependencyTracker, monitor,
-    }) => {
+    }, ownName) => {
       let resolver = new ClaimResolver({
+        ownName,
         Task, queueService, publisher, dependencyTracker,
         pollingDelay: cfg.app.claimResolver.pollingDelay,
         parallelism: cfg.app.claimResolver.parallelism,
@@ -499,8 +500,9 @@ let load = loader({
     ],
     setup: async ({
       cfg, Task, queueService, publisher, dependencyTracker, monitor,
-    }) => {
+    }, ownName) => {
       let resolver = new DeadlineResolver({
+        ownName,
         Task, queueService, publisher, dependencyTracker,
         pollingDelay: cfg.app.deadlineResolver.pollingDelay,
         parallelism: cfg.app.deadlineResolver.parallelism,
@@ -514,8 +516,9 @@ let load = loader({
   // Create the dependency-resolver process
   'dependency-resolver': {
     requires: ['cfg', 'queueService', 'dependencyTracker', 'monitor'],
-    setup: async ({cfg, queueService, dependencyTracker, monitor}) => {
+    setup: async ({cfg, queueService, dependencyTracker, monitor}, ownName) => {
       let resolver = new DependencyResolver({
+        ownName,
         queueService, dependencyTracker,
         pollingDelay: cfg.app.dependencyResolver.pollingDelay,
         parallelism: cfg.app.dependencyResolver.parallelism,
@@ -529,8 +532,8 @@ let load = loader({
   // Create the artifact expiration process (periodic job)
   'expire-artifacts': {
     requires: ['cfg', 'Artifact', 'monitor'],
-    setup: ({cfg, Artifact, monitor}) => {
-      return monitor.oneShot('expire-artifacts', async () => {
+    setup: ({cfg, Artifact, monitor}, ownName) => {
+      return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.artifactExpirationDelay);
         debug('Expiring artifacts at: %s, from before %s', new Date(), now);
         const count = await Artifact.expire(now);
@@ -542,8 +545,8 @@ let load = loader({
   // Create the queue expiration process (periodic job)
   'expire-queues': {
     requires: ['cfg', 'queueService', 'monitor'],
-    setup: ({cfg, queueService, monitor}) => {
-      return monitor.oneShot('expire-queues', async () => {
+    setup: ({cfg, queueService, monitor}, ownName) => {
+      return monitor.oneShot(ownName, async () => {
         debug('Expiring queues at: %s', new Date());
         const count = await queueService.deleteUnusedWorkerQueues();
         debug('Expired %s queues', count);
@@ -554,8 +557,8 @@ let load = loader({
   // Create the task expiration process (periodic job)
   'expire-tasks': {
     requires: ['cfg', 'Task', 'monitor'],
-    setup: ({cfg, Task, monitor}) => {
-      return monitor.oneShot('expire-tasks', async () => {
+    setup: ({cfg, Task, monitor}, ownName) => {
+      return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring tasks at: %s, from before %s', new Date(), now);
         const count = await Task.expire(now);
@@ -567,8 +570,8 @@ let load = loader({
   // Create the task-group expiration process (periodic job)
   'expire-task-groups': {
     requires: ['cfg', 'TaskGroup', 'monitor'],
-    setup: ({cfg, TaskGroup, monitor}) => {
-      return monitor.oneShot('expire-task-groups', async () => {
+    setup: ({cfg, TaskGroup, monitor}, ownName) => {
+      return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring task-groups at: %s, from before %s', new Date(), now);
         const count = await TaskGroup.expire(now);
@@ -580,8 +583,8 @@ let load = loader({
   // Create the task-group membership expiration process (periodic job)
   'expire-task-group-members': {
     requires: ['cfg', 'TaskGroupMember', 'monitor'],
-    setup: ({cfg, TaskGroupMember, monitor}) => {
-      return monitor.oneShot('expire-task-group-members', async () => {
+    setup: ({cfg, TaskGroupMember, monitor}, ownName) => {
+      return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring task-group members at: %s, from before %s',
           new Date(), now);
@@ -594,8 +597,8 @@ let load = loader({
   // Create the task-group size expiration process (periodic job)
   'expire-task-group-sizes': {
     requires: ['cfg', 'TaskGroupActiveSet', 'monitor'],
-    setup: ({cfg, TaskGroupActiveSet, monitor}) => {
-      return monitor.oneShot('expire-task-group-sizes', async () => {
+    setup: ({cfg, TaskGroupActiveSet, monitor}, ownName) => {
+      return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring task-group sizes at: %s, from before %s',
           new Date(), now);
@@ -608,8 +611,8 @@ let load = loader({
   // Create the task-dependency expiration process (periodic job)
   'expire-task-dependency': {
     requires: ['cfg', 'TaskDependency', 'monitor'],
-    setup: ({cfg, TaskDependency, monitor}) => {
-      return monitor.oneShot('expire-task-dependency', async () => {
+    setup: ({cfg, TaskDependency, monitor}, ownName) => {
+      return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring task-dependency at: %s, from before %s', new Date(), now);
         const count = await TaskDependency.expire(now);
@@ -621,8 +624,8 @@ let load = loader({
   // Create the task-requirement expiration process (periodic job)
   'expire-task-requirement': {
     requires: ['cfg', 'TaskRequirement', 'monitor'],
-    setup: ({cfg, TaskRequirement, monitor}) => {
-      return monitor.oneShot('expire-task-dependency', async () => {
+    setup: ({cfg, TaskRequirement, monitor}, ownName) => {
+      return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring task-requirement at: %s, from before %s', new Date(), now);
         const count = await TaskRequirement.expire(now);
@@ -634,8 +637,8 @@ let load = loader({
   // Create the worker-info expiration process (periodic job)
   'expire-worker-info': {
     requires: ['cfg', 'workerInfo', 'monitor'],
-    setup: ({cfg, workerInfo, monitor}) => {
-      return monitor.oneShot('expire-worker-info', async () => {
+    setup: ({cfg, workerInfo, monitor}, ownName) => {
+      return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.workerInfoExpirationDelay);
         debug('Expiring worker-info at: %s, from before %s', new Date(), now);
         const count = await workerInfo.expire(now);

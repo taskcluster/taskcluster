@@ -142,8 +142,8 @@ const load = loader(
 
     scanner: {
       requires: ['cfg', 'strategies', 'monitor'],
-      setup: async ({ cfg, strategies, monitor }) => {
-        return monitor.oneShot('scanner', () => scanner(cfg, strategies));
+      setup: async ({ cfg, strategies, monitor}, ownName) => {
+        return monitor.oneShot(ownName, () => scanner(cfg, strategies));
       },
     },
 

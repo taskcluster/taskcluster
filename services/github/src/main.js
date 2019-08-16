@@ -174,8 +174,8 @@ const load = loader({
 
   syncInstallations: {
     requires: ['github', 'OwnersDirectory', 'monitor'],
-    setup: ({github, OwnersDirectory, monitor}) => {
-      return monitor.oneShot('syncInstallations', async () => {
+    setup: ({github, OwnersDirectory, monitor}, ownName) => {
+      return monitor.oneShot(ownName, async () => {
         const gh = await github.getAppGithub();
         const installations = (await gh.apps.getInstallations({})).data;
         await Promise.all(installations.map(inst => {

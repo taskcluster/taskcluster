@@ -12,7 +12,9 @@ Each component definition specifies:
 
   * Name of the component,
   * Required components to be instantiated first, and,
-  * How to asynchronously load the component.
+  * How to asynchronously load the component via the `setup` method which is passed
+    context containing all requirements as the first argument and the name of itself
+    in the second.
 
 All of this is specified as properties of the components object.  A server
 component might be defined like this:
@@ -22,7 +24,8 @@ component might be defined like this:
   // `required` are destructured in the argument to `setup`.
   server: {
     required: ['port'],
-    setup: async ({port}) => {
+    setup: async ({port}, ownName) => {
+      debug(`${ownName} is running.`);
       let server = http.createServer();
       await new Promise((accept, reject) => {
         server.once('error', reject);

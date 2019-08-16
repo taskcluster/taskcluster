@@ -74,8 +74,8 @@ let load = loader({
 
   expireWorkerPools: {
     requires: ['cfg', 'WorkerPool', 'monitor'],
-    setup: ({cfg, WorkerPool, monitor}) => {
-      return monitor.childMonitor('expireWorkerPools').oneShot('expire worker pools', async () => {
+    setup: ({cfg, WorkerPool, monitor}, ownName) => {
+      return monitor.childMonitor('expireWorkerPools').oneShot(ownName, async () => {
         await WorkerPool.expire(monitor);
       });
     },
@@ -83,8 +83,8 @@ let load = loader({
 
   expireWorkers: {
     requires: ['cfg', 'Worker', 'monitor'],
-    setup: ({cfg, Worker, monitor}) => {
-      return monitor.childMonitor('expireWorkers').oneShot('expire workers', async () => {
+    setup: ({cfg, Worker, monitor}, ownName) => {
+      return monitor.childMonitor('expireWorkers').oneShot(ownName, async () => {
         await Worker.expire(monitor);
       });
     },
@@ -92,8 +92,8 @@ let load = loader({
 
   expireErrors: {
     requires: ['cfg', 'WorkerPoolError', 'monitor'],
-    setup: ({cfg, WorkerPoolError, monitor}) => {
-      return monitor.childMonitor('expireErrors').oneShot('expire workerPoolErrors', async () => {
+    setup: ({cfg, WorkerPoolError, monitor}, ownName) => {
+      return monitor.childMonitor('expireErrors').oneShot(ownName, async () => {
         const threshold = taskcluster.fromNow(cfg.app.errorsExpirationDelay);
         await WorkerPoolError.expire(threshold);
       });
@@ -212,8 +212,9 @@ let load = loader({
 
   provisioner: {
     requires: ['cfg', 'monitor', 'WorkerPool', 'providers', 'notify', 'pulseClient', 'reference'],
-    setup: async ({cfg, monitor, WorkerPool, providers, notify, pulseClient, reference}) => {
+    setup: async ({cfg, monitor, WorkerPool, providers, notify, pulseClient, reference}, ownName) => {
       return new Provisioner({
+        ownName,
         monitor: monitor.childMonitor('provisioner'),
         WorkerPool,
         providers,
@@ -232,8 +233,9 @@ let load = loader({
 
   workerScanner: {
     requires: ['cfg', 'monitor', 'Worker', 'WorkerPool', 'providers'],
-    setup: async ({cfg, monitor, Worker, WorkerPool, providers}) => {
+    setup: async ({cfg, monitor, Worker, WorkerPool, providers}, ownName) => {
       const workerScanner = new WorkerScanner({
+        ownName,
         Worker,
         WorkerPool,
         providers,
