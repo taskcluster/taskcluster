@@ -246,44 +246,6 @@ builder.declare({
 });
 
 /** Insert new task into the index */
-builder.declare({
-  method: 'put',
-  route: '/task/:namespace',
-  name: 'insertTask',
-  stability: APIBuilder.stability.stable,
-  scopes: 'index:insert-task:<namespace>',
-  input: 'insert-task-request.yml',
-  output: 'indexed-task-response.yml',
-  category: 'Index Service',
-  title: 'Insert Task into Index',
-  description: [
-    'Insert a task into the index.  If the new rank is less than the existing rank',
-    'at the given index path, the task is not indexed but the response is still 200 OK.',
-    '',
-    'Please see the introduction above for information',
-    'about indexing successfully completed tasks automatically using custom routes.',
-  ].join('\n'),
-}, async function(req, res) {
-  let that = this;
-  let input = req.body;
-  let namespace = req.params.namespace || '';
-
-  // Authenticate request by providing parameters
-  await req.authorize({namespace});
-
-  // Parse date string
-  input.expires = new Date(input.expires);
-
-  // Insert task
-  return helpers.insertTask(
-    namespace,
-    input,
-    that
-  ).then(function(task) {
-    res.reply(task.json());
-  });
-});
-
 /** Get artifact from indexed task */
 builder.declare({
   method: 'get',
