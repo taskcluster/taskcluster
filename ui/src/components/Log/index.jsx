@@ -14,94 +14,118 @@ import Loading from './Loading';
 import Button from '../Button';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
+import { THEME } from '../../utils/constants';
 
 const LINE_NUMBER_MATCH = /L(\d+)-?(\d+)?/;
 const FOLLOW_STORAGE_KEY = 'follow-log';
 
 @withRouter
-@withStyles(theme => ({
-  '@global': {
-    'div.react-lazylog': {
-      backgroundColor: theme.palette.background.default,
-      fontFamily: 'Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace',
-      fontSize: 13,
-      paddingTop: 4,
-      paddingBottom: theme.spacing.unit,
-      color: theme.palette.text.primary,
-      '-webkit-font-smoothing': 'auto',
+@withStyles(theme => {
+  const filterStyles = {
+    borderRadius: 4,
+    padding: '4px 8px',
+    lineHeight: 1,
+    '&.active': {
+      ...theme.mixins.successIcon,
+      fill: THEME.PRIMARY_TEXT_DARK,
     },
-    'div.react-lazylog-searchbar': {
-      backgroundColor: theme.palette.background.default,
-      fontFamily: 'Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace',
-      fontSize: 13,
-      padding: 10,
-      ...(theme.palette.type === 'light'
-        ? {
-            '& > .react-lazylog-searchbar-input': {
-              height: theme.spacing.triple,
-              backgroundColor: theme.palette.grey['300'],
-              color: theme.palette.common.black,
-              borderColor: theme.palette.grey['300'],
-            },
-            '& > .react-lazylog-searchbar-filter': {
-              '&.active': {
-                fill: theme.palette.text.active,
+  };
+
+  return {
+    '@global': {
+      'div.react-lazylog': {
+        backgroundColor: theme.palette.background.default,
+        fontFamily: 'Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace',
+        fontSize: 13,
+        paddingTop: 4,
+        paddingBottom: theme.spacing.unit,
+        color: theme.palette.text.primary,
+        '-webkit-font-smoothing': 'auto',
+      },
+      'div.react-lazylog-searchbar': {
+        backgroundColor: theme.palette.background.default,
+        fontFamily: 'Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace',
+        fontSize: 13,
+        padding: 10,
+        ...(theme.palette.type === 'light'
+          ? {
+              '& > .react-lazylog-searchbar-input': {
+                height: theme.spacing.triple,
+                backgroundColor: theme.palette.grey['300'],
+                color: theme.palette.common.black,
+                borderColor: theme.palette.grey['300'],
               },
-              '&.inactive': {
-                fill: theme.palette.text.disabled,
+              '& > .react-lazylog-searchbar-filter': {
+                ...filterStyles,
+                '&.inactive': {
+                  fill: theme.palette.text.disabled,
+                },
               },
-            },
-            '& > .react-lazylog-searchbar-matches': {
-              '&.active': {
-                color: theme.palette.text.active,
+              '& > .react-lazylog-searchbar-matches': {
+                '&.active': {
+                  color: theme.palette.text.active,
+                },
+                '&.inactive': {
+                  color: theme.palette.text.disabled,
+                },
               },
-              '&.inactive': {
-                color: theme.palette.text.disabled,
+            }
+          : {
+              '& > .react-lazylog-searchbar-input': {
+                height: theme.spacing.triple,
               },
-            },
-          }
-        : {
-            '& > .react-lazylog-searchbar-input': {
-              height: theme.spacing.triple,
-            },
-          }),
+              '& > .react-lazylog-searchbar-filter': filterStyles,
+            }),
+      },
     },
-  },
-  highlight: {
-    backgroundColor: `${theme.palette.action.selected} !important`,
-  },
-  line: {
-    '& > a': {
-      transition: theme.transitions.create('color'),
-      color: theme.palette.text.inactive,
+    highlight: {
+      backgroundColor: `${theme.palette.action.selected} !important`,
     },
-    '&:hover > a': {
-      color: `${theme.palette.text.primary} !important`,
+    line: {
+      '& > a': {
+        transition: theme.transitions.create('color'),
+        color: theme.palette.text.inactive,
+      },
+      '&:hover > a': {
+        color: `${theme.palette.text.primary} !important`,
+      },
+      '&$highlight > a': {
+        color: theme.palette.text.primary,
+      },
+      '&:hover': {
+        backgroundColor: `${theme.palette.action.hover} !important`,
+      },
     },
-    '&$highlight > a': {
-      color: theme.palette.text.primary,
+    logActions: {
+      position: 'absolute',
+      top: 8,
+      right: 380,
     },
-    '&:hover': {
-      backgroundColor: `${theme.palette.action.hover} !important`,
+    followButtonFollowing: {
+      ...theme.mixins.successIcon,
     },
-  },
-  logActions: {
-    position: 'absolute',
-    top: 6,
-    right: 340,
-  },
-  followButtonFollowing: {
-    ...theme.mixins.successIcon,
-  },
-  fabIcon: {
-    ...theme.mixins.fabIcon,
-  },
-  logSpeedDial: {
-    ...theme.mixins.fab,
-    ...theme.mixins.actionButton,
-    bottom: theme.spacing.triple,
-  },
-}))
+    followLogIconFollowing: {
+      fill: THEME.PRIMARY_TEXT_DARK,
+    },
+    fabIcon: {
+      ...theme.mixins.fabIcon,
+    },
+    logSpeedDial: {
+      ...theme.mixins.fab,
+      ...theme.mixins.actionButton,
+      bottom: theme.spacing.triple,
+    },
+    logToolbarButton: {
+      width: 31,
+      height: 25,
+      minWidth: 'unset',
+      padding: '0 6px',
+    },
+    goToLineButton: {
+      marginRight: theme.spacing.unit,
+    },
+  };
+})
 /**
  * Render a lazy-loading log viewer.
  */
@@ -246,7 +270,7 @@ export default class Log extends Component {
     const rawLogButton = (
       <SpeedDialAction
         tooltipOpen
-        icon={<OpenInNewIcon />}
+        icon={<OpenInNewIcon size={20} />}
         tooltipTitle="Raw Log"
         ButtonProps={{
           component: 'a',
@@ -285,6 +309,10 @@ export default class Log extends Component {
             <div className={classes.logActions}>
               <GoToLineButton
                 onLineNumberChange={this.handleLineNumberChange}
+                className={classNames(
+                  classes.logToolbarButton,
+                  classes.goToLineButton
+                )}
                 {...GoToLineButtonProps}
               />
               <Button
@@ -296,13 +324,17 @@ export default class Log extends Component {
                 tooltipProps={{
                   title: follow && stream ? 'Unfollow Log' : 'Follow Log',
                 }}
-                className={classNames({
+                className={classNames(classes.logToolbarButton, {
                   [classes.followButtonFollowing]: follow && stream,
                 })}
                 color={follow && stream ? 'inherit' : 'secondary'}
                 onClick={this.handleFollowClick}
                 {...FollowLogButtonRest}>
-                <ArrowDownBoldCircleOutlineIcon size={20} />
+                <ArrowDownBoldCircleOutlineIcon
+                  className={classNames({
+                    [classes.followLogIconFollowing]: follow && stream,
+                  })}
+                />
               </Button>
             </div>
             {actions}
