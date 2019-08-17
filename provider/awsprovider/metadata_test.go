@@ -69,7 +69,7 @@ func TestQueryUserData(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/latest/user-data" {
 			w.WriteHeader(200)
-			fmt.Fprintln(w, `{"region": "aa-central-2", "data": {"dockerConfig": {"privileged": true}}}`)
+			fmt.Fprintln(w, `{"rootUrl": "taskcluster-dev.net", "workerPoolId": "banana"}`)
 		} else {
 			w.WriteHeader(404)
 			fmt.Fprintf(w, "Not Found: %s", r.URL.Path)
@@ -86,9 +86,6 @@ func TestQueryUserData(t *testing.T) {
 
 	ud, err := ms.queryUserData()
 	require.NoError(t, err)
-	require.Equal(t, "aa-central-2", ud.Region)
-
-	privileged, err := ud.Data.Get("dockerConfig.privileged")
-	require.NoError(t, err)
-	require.Equal(t, privileged, true)
+	require.Equal(t, "taskcluster-dev.net", ud.RootURL)
+	require.Equal(t, "banana", ud.WorkerPoolId)
 }
