@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { bool, func } from 'prop-types';
+import { oneOfType, object, string, func, bool } from 'prop-types';
 import classNames from 'classnames';
 import { addYears } from 'date-fns';
 import { safeDump, safeLoad } from 'js-yaml';
@@ -7,6 +7,7 @@ import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import Typography from '@material-ui/core/Typography';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import TextField from '@material-ui/core/TextField';
@@ -14,6 +15,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
+import DialogAction from '../DialogAction';
 import Button from '../Button';
 import SpeedDial from '../SpeedDial';
 import DatePicker from '../DatePicker';
@@ -62,6 +64,28 @@ export default class SecretForm extends Component {
     onDeleteSecret: func,
     /** If true, form actions will be disabled. */
     loading: bool,
+    /** Error to display when an action dialog is open. */
+    dialogError: oneOfType([string, object]),
+    /**
+     * Callback function fired when the DialogAction component throws an error.
+     * Required when viewing an existent address.
+     * */
+    onDialogActionError: func,
+    /**
+     * Callback function fired when the DialogAction component runs
+     * successfully. Required when viewing an existent address.
+     * */
+    onDialogActionComplete: func,
+    /**
+     * Callback function fired when the dialog should open.
+     * Required when viewing an existent address.
+     */
+    onDialogActionOpen: func,
+    /**
+     * Callback function fired when the dialog should close.
+     * Required when viewing an existent address.
+     */
+    onDialogActionClose: func,
   };
 
   static defaultProps = {
@@ -69,6 +93,11 @@ export default class SecretForm extends Component {
     isNewSecret: false,
     secret: null,
     onDeleteSecret: null,
+    dialogError: null,
+    onDialogActionError: null,
+    onDialogActionComplete: null,
+    onDialogActionOpen: null,
+    onDialogActionClose: null,
   };
 
   state = {
@@ -84,9 +113,7 @@ export default class SecretForm extends Component {
     showSecret: this.props.isNewSecret,
   };
 
-  handleDeleteSecret = () => {
-    this.props.onDeleteSecret(this.state.secretName);
-  };
+  handleDeleteSecret = () => this.props.onDeleteSecret(this.state.secretName);
 
   handleEditorChange = editorValue => {
     this.setState({
@@ -130,7 +157,18 @@ export default class SecretForm extends Component {
   };
 
   render() {
-    const { secret, classes, isNewSecret, loading } = this.props;
+    const {
+      secret,
+      classes,
+      isNewSecret,
+      loading,
+      dialogOpen,
+      dialogError,
+      onDialogActionClose,
+      onDialogActionError,
+      onDialogActionOpen,
+      onDialogActionComplete,
+    } = this.props;
     const { secretName, editorValue, expires, showSecret } = this.state;
     const isSecretDirty =
       isNewSecret ||
@@ -163,7 +201,7 @@ export default class SecretForm extends Component {
             <DatePicker
               value={expires}
               onChange={this.handleExpirationChange}
-              format="yyyy/MM/dd"
+              format="YYYY/MM/DD"
               maxDate={addYears(new Date(), 1001)}
             />
           </ListItem>
@@ -229,7 +267,7 @@ export default class SecretForm extends Component {
                 requiresAuth
                 tooltipOpen
                 icon={<DeleteIcon />}
-                onClick={this.handleDeleteSecret}
+                onClick={onDialogActionOpen}
                 className={classes.deleteIcon}
                 tooltipTitle="Delete Secret"
                 ButtonProps={{
@@ -238,6 +276,19 @@ export default class SecretForm extends Component {
               />
             </SpeedDial>
           </Fragment>
+        )}
+        {dialogOpen && (
+          <DialogAction
+            open={dialogOpen}
+            onSubmit={this.handleDeleteSecret}
+            onComplete={onDialogActionComplete}
+            onClose={onDialogActionClose}
+            onError={onDialogActionError}
+            error={dialogError}
+            title="Delete Secret?"
+            body={<Typography>This will delete the {secretName}.</Typography>}
+            confirmText="Delete Secret"
+          />
         )}
       </Fragment>
     );
