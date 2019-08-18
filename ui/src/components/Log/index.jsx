@@ -3,6 +3,7 @@ import { arrayOf, bool, node, object, oneOfType, string } from 'prop-types';
 import classNames from 'classnames';
 import { withRouter } from 'react-router-dom';
 import { LazyLog, ScrollFollow } from 'react-lazylog';
+import { WindowScroller } from 'react-virtualized';
 import storage from 'localforage';
 import { omit } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
@@ -124,6 +125,9 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
     goToLineButton: {
       marginRight: theme.spacing.unit,
     },
+    windowScrollerOverride: {
+      height: '100% !important',
+    },
   };
 })
 /**
@@ -164,6 +168,7 @@ export default class Log extends Component {
   state = {
     lineNumber: null,
     follow: true,
+    logOffsetY: 0,
   };
 
   getHighlightFromHash() {
@@ -230,6 +235,12 @@ export default class Log extends Component {
     ) {
       this.setState({ follow: false });
     }
+
+    this.setState({ logOffsetY: scrollTop });
+  };
+
+  handleListRef = component => {
+    this.list = component;
   };
 
   shouldStartFollowing() {
@@ -287,12 +298,18 @@ export default class Log extends Component {
         startFollowing={this.shouldStartFollowing()}
         render={({ follow }) => (
           <Fragment>
+            <WindowScroller onScroll={this.handleScroll}>
+              {() => null}
+            </WindowScroller>
             <LazyLog
+              scrollTop={this.state.logOffsetY}
+              className={classes.windowScrollerOverride}
+              ref={this.handleListRef}
+              height={window.innerHeight}
               enableSearch
               caseInsensitive
               containerStyle={containerStyle}
               url={url}
-              onScroll={this.handleScroll}
               stream={stream}
               selectableLines
               follow={follow}
