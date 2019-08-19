@@ -286,7 +286,9 @@ export default class SecretForm extends Component {
             onError={onDialogActionError}
             error={dialogError}
             title="Delete Secret?"
-            body={<Typography>This will delete the {secretName}.</Typography>}
+            body={
+              <Typography>This will delete the secret {secretName}.</Typography>
+            }
             confirmText="Delete Secret"
           />
         )}
