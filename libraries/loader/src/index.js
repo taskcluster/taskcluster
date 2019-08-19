@@ -1,4 +1,3 @@
-const util = require('util');
 const assert = require('assert');
 const TopoSort = require('topo-sort');
 const debug = require('debug')('taskcluster-lib-loader');
@@ -26,30 +25,6 @@ function validateComponent(def, name) {
       throw new Error(e + ' all items in requires must be strings');
     }
   }
-}
-
-/**
- * Render componentDirectory to dot format for graphviz given a
- * topologically sorted list of components
- */
-function renderGraph(componentDirectory, sortedComponents) {
-  let dot = [
-    '// This graph shows all dependencies for this loader.',
-    '// You might find http://www.webgraphviz.com/ useful!',
-    '',
-    'digraph G {',
-  ];
-
-  for (let component of sortedComponents) {
-    dot.push(util.format('  "%s"', component));
-    let def = componentDirectory[component] || {};
-    for (let dep of def.requires || []) {
-      dot.push(util.format('  "%s" -> "%s" [dir=back]', dep, component));
-    }
-  }
-  dot.push('}');
-
-  return dot.join('\n');
 }
 
 /*
@@ -87,22 +62,7 @@ function loader(componentDirectory, virtualComponents = {}) {
   for (let name of Object.keys(virtualComponents)) {
     tsort.add(name, []);
   }
-  let topoSorted = tsort.sort();
-
-  // Add graphviz target
-  if (componentDirectory.graphviz || virtualComponents.graphviz) {
-    throw new Error('graphviz is reserved for an internal component');
-  }
-  componentDirectory.graphviz = {
-    setup: () => renderGraph(componentDirectory, topoSorted),
-  };
-  // Add dump-dot target, which will print to terminal (useful for debugging)
-  if (componentDirectory['dump-dot'] || virtualComponents['dump-dot']) {
-    throw new Error('dump-dot is reserved for an internal component');
-  }
-  componentDirectory['dump-dot'] = {
-    setup: () => console.log(renderGraph(componentDirectory, topoSorted)),
-  };
+  tsort.sort();
 
   let load = function(target, options = {}) {
     options = Object.assign({}, options);

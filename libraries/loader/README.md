@@ -142,10 +142,6 @@ let load = loader({
 let server = await load('express', {port: 80});
 ```
 
-As a neat little treat, the load has a default target `graphviz` which returns
-a representation of the dependency graph in graphviz's dot format. This
-representation can be rendered using the graphviz tool.
-
 **Remark** the `load` function doesn't have any side-effects on its own, which
 means that if you call `load('server')` twice you'll get two different
 instantiations of the `server` component and all of its dependencies. This is
