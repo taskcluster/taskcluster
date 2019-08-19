@@ -163,6 +163,14 @@ module.exports = class MozillaAuth0 {
     user.addRole(...groups);
   }
 
+  async hasValidAccessToken(accessToken) {
+    const [jwtError, profile] = await tryCatch(
+      verifyJwtAuth0({ token: accessToken, domain: this.domain, audience: this.clientId })
+    );
+
+    return Boolean(!jwtError && profile);
+  }
+
   useStrategy(app, cfg) {
     const { credentials } = cfg.taskcluster;
     const strategyCfg = cfg.login.strategies['mozilla-auth0'];
@@ -203,6 +211,7 @@ module.exports = class MozillaAuth0 {
           const exp = await this.expFromIdToken(extraParams.id_token);
 
           done(null, {
+            accessToken: extraParams.id_token,
             profile,
             providerExpires: new Date(exp * 1000),
             identityProviderId: 'mozilla-auth0',

@@ -96,6 +96,7 @@ module.exports = class Github {
 
           next(null, {
             profile,
+            accessToken,
             providerExpires: new Date(exp * 1000),
             identityProviderId: 'github',
             identity: user.identity,
