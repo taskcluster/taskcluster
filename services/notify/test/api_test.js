@@ -57,7 +57,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(m
       address: 'success@simulator.amazonses.com',
       subject: 'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is Complete',
       content: 'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is finished. It took 124 minutes. <img src=x onerror=alert(1)//>',
-      link: {text: 'Inspect Task', href: 'https://taskcluster.net/task-inspector/#Z-tDsP4jQ3OUTjN0Q6LNKQ'},
+      link: {text: 'Inspect Task', href: 'https://taskcluster.net/task-inspector/Z-tDsP4jQ3OUTjN0Q6LNKQ&foo=bar'},
     });
     helper.checkEmails(email => {
       assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
