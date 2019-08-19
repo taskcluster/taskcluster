@@ -1753,6 +1753,13 @@
     "@babel/core" "^7.1.6"
     babel-loader "^8.0.4"
 
+"@neutrinojs/copy@9.0.0-rc.0":
+  version "9.0.0-rc.0"
+  resolved "https://registry.yarnpkg.com/@neutrinojs/copy/-/copy-9.0.0-rc.0.tgz#9463e6557338a8433afff58fbaba206d38f2039b"
+  integrity sha512-/Ucrl+jHi1lCbVtQ9tVPijLgP/vEjxWSORjTE9DF22BsyVv0HUPcWiWBj+Ahv3ZFS7B2gmMx6CK056OK+uqMmg==
+  dependencies:
+    copy-webpack-plugin "^4.6.0"
+
 "@neutrinojs/dev-server@9.0.0-rc.0":
   version "9.0.0-rc.0"
   resolved "https://registry.yarnpkg.com/@neutrinojs/dev-server/-/dev-server-9.0.0-rc.0.tgz#398033327fe7ec8d16a43ab7d3659ccb791a0acc"
@@ -4282,7 +4289,7 @@ copy-to-clipboard@^3:
   dependencies:
     toggle-selection "^1.0.3"
 
-copy-webpack-plugin@^4.5.2:
+copy-webpack-plugin@^4.5.2, copy-webpack-plugin@^4.6.0:
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/copy-webpack-plugin/-/copy-webpack-plugin-4.6.0.tgz#e7f40dd8a68477d405dd1b7a854aae324b158bae"
   integrity sha512-Y+SQCF+0NoWQryez2zXn5J5knmr9z/9qSQt7fbL78u83rxmigOy8X5+BFn8CFSuX+nKT8gpYwJX68ekqtQt6ZA==
@@ -13133,7 +13140,8 @@ tar@^4.4.10, tar@^4.4.8:
     yallist "^3.0.3"
 
 "taskcluster-lib-scopes@link:../libraries/scopes":
-  version "16.1.0"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"

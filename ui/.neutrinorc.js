@@ -1,4 +1,5 @@
 const merge = require('deepmerge');
+const copy = require('@neutrinojs/copy');
 const { join, resolve } = require('path');
 
 const DEFAULT_PORT = 5080;
@@ -35,7 +36,7 @@ module.exports = {
     }],
     ['@neutrinojs/react', {
       html: {
-        title: process.env.APPLICATION_NAME
+        template: './src/index.html',
       },
       devServer: {
         port,
@@ -158,6 +159,11 @@ module.exports = {
           .use('raw-loader')
             .loader('raw-loader');
 
+      neutrino.use(copy, {
+        patterns: [
+          { from: './src/static/env.js', to: 'static/env.js' },
+        ],
+      });
     },
     (neutrino) => {
       neutrino.config.resolve
