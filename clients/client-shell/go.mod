@@ -16,7 +16,7 @@ require (
 	github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible
 	github.com/taskcluster/taskcluster/clients/client-go/v16 v16.1.0
 	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
-	golang.org/x/net v0.0.0-20190729004031-ca1201d0de80 // indirect
+	golang.org/x/net v0.0.0-20190819003631-74dc4d7220e7 // indirect
 	golang.org/x/text v0.3.2 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/tylerb/graceful.v1 v1.2.15
