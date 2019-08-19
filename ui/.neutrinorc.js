@@ -161,7 +161,17 @@ module.exports = {
 
       neutrino.use(copy, {
         patterns: [
-          { from: './src/static/env.js', to: 'static/env.js' },
+          {
+            context: 'src/static',
+            from: '**/*',
+            to: 'static',
+            ignore: ['**/env.*']
+          },
+          {
+            context: 'src/static',
+            from: process.env.NODE_ENV === 'production' ? 'env.prod.js' : 'env.js',
+            to: 'static/env.js'
+          },
         ],
       });
     },
