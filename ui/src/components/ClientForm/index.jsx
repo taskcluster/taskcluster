@@ -1,6 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import { oneOfType, object, string, func, bool } from 'prop-types';
+import { parse } from 'qs';
 import { addYears } from 'date-fns';
+import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import classNames from 'classnames';
@@ -28,6 +30,7 @@ import splitLines from '../../utils/splitLines';
 import Link from '../../utils/Link';
 import { formatScope, scopeLink } from '../../utils/scopeUtils';
 
+@withRouter
 @withStyles(theme => ({
   fab: {
     ...theme.mixins.fab,
@@ -101,6 +104,8 @@ export default class ClientForm extends Component {
      * Required when viewing an existent client.
      */
     onDialogActionClose: func,
+    /** Initial client to use for third party login */
+    initialThirdPartyClient: client,
   };
 
   static defaultProps = {
@@ -116,6 +121,7 @@ export default class ClientForm extends Component {
     onDialogActionComplete: null,
     onDialogActionOpen: null,
     onDialogActionClose: null,
+    initialThirdPartyClient: null,
   };
 
   static getDerivedStateFromProps({ isNewClient, client }, state) {
@@ -139,15 +145,21 @@ export default class ClientForm extends Component {
     };
   }
 
+  query = parse(this.props.location.search.slice(1));
+
   state = {
-    description: '',
-    scopeText: '',
-    clientId: '',
+    description: this.props.initialThirdPartyClient.description || '',
+    scopeText: this.props.initialThirdPartyClient.scopes
+      ? this.props.initialThirdPartyClient.scopes.join('\n')
+      : '',
+    clientId: this.props.initialThirdPartyClient.clientId || '',
     created: null,
     lastModified: null,
     lastDateUsed: null,
     lastRotated: null,
-    expires: addYears(new Date(), 1000),
+    expires: this.props.initialThirdPartyClient.expires
+      ? new Date(this.props.initialThirdPartyClient.expires)
+      : addYears(new Date(), 1000),
     deleteOnExpiration: true,
     expandedScopes: null,
     disabled: null,
