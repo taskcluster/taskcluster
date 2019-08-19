@@ -89,3 +89,28 @@ func TestQueryUserData(t *testing.T) {
 	require.Equal(t, "taskcluster-dev.net", ud.RootURL)
 	require.Equal(t, "banana", ud.WorkerPoolId)
 }
+
+func TestQueryInstanceIdentityDocument(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/latest/dynamic/instance-identity/document" {
+			w.WriteHeader(200)
+			fmt.Fprintf(w, "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-east-2\"\n}")
+		} else {
+			w.WriteHeader(404)
+			fmt.Fprintln(w, "Not Found")
+		}
+	}))
+	defer ts.Close()
+
+	EC2MetadataBaseURL = ts.URL + "/latest"
+	defer func() {
+		EC2MetadataBaseURL = "http://169.254.169.254/latest"
+	}()
+
+	ms := realMetadataService{}
+
+	iid_string, iid_json, err := ms.queryInstanceIdentityDocument()
+	require.NoError(t, err)
+	require.Equal(t, "i-55555nonesense5", iid_json.InstanceId)
+	require.Equal(t, "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-east-2\"\n}", iid_string)
+}
