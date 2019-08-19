@@ -1,3 +1,4 @@
+const debug = require('debug')('app:main');
 const assert = require('assert');
 const depthLimit = require('graphql-depth-limit');
 const { createComplexityLimitRule } = require('graphql-validation-complexity');
@@ -7,6 +8,8 @@ const libReferences = require('taskcluster-lib-references');
 const { createServer } = require('http');
 const { Client, pulseCredentials } = require('taskcluster-lib-pulse');
 const { ApolloServer } = require('apollo-server-express');
+const { sasCredentials } = require('taskcluster-lib-azure');
+const taskcluster = require('taskcluster-client');
 const monitorManager = require('./monitor');
 const createApp = require('./servers/createApp');
 const formatError = require('./servers/formatError');
@@ -16,6 +19,9 @@ const createSubscriptionServer = require('./servers/createSubscriptionServer');
 const resolvers = require('./resolvers');
 const typeDefs = require('./graphql');
 const PulseEngine = require('./PulseEngine');
+const AuthorizationCode = require('./entities/AuthorizationCode');
+const AccessToken = require('./entities/AccessToken');
+const ThirdPartyConsent = require('./entities/ThirdPartyConsent');
 const scanner = require('./login/scanner');
 const { Auth } = require('taskcluster-client');
 
@@ -98,8 +104,9 @@ const load = loader(
     },
 
     app: {
-      requires: ['cfg', 'strategies'],
-      setup: ({ cfg, strategies }) => createApp({ cfg, strategies }),
+      requires: ['cfg', 'strategies', 'AuthorizationCode', 'AccessToken', 'ThirdPartyConsent', 'auth', 'monitor'],
+      setup: ({ cfg, strategies, AuthorizationCode, AccessToken, ThirdPartyConsent, auth, monitor }) =>
+        createApp({ cfg, strategies, AuthorizationCode, AccessToken, ThirdPartyConsent, auth, monitor }),
     },
 
     httpServer: {
@@ -153,6 +160,95 @@ const load = loader(
           rootUrl: cfg.taskcluster.rootUrl,
         });
         return monitor.oneShot(ownName, () => scanner(auth, strategies));
+      },
+    },
+
+    auth: {
+      requires: ['cfg'],
+      setup: ({ cfg }) => new taskcluster.Auth(cfg.taskcluster),
+    },
+
+    AuthorizationCode: {
+      requires: ['cfg', 'monitor'],
+      setup: ({cfg, monitor}) => AuthorizationCode.setup({
+        tableName: cfg.azure.authorizationCodeTableName,
+        monitor: monitor.childMonitor('table.authorizationCodes'),
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: cfg.azure.authorizationCodeTableName,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
+      }),
+    },
+
+    AccessToken: {
+      requires: ['cfg', 'monitor'],
+      setup: ({cfg, monitor}) => AccessToken.setup({
+        tableName: cfg.azure.accessTokenTableName,
+        monitor: monitor.childMonitor('table.accessTokenTable'),
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: cfg.azure.accessTokenTableName,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
+      }),
+    },
+
+    ThirdPartyConsent: {
+      requires: ['cfg', 'monitor'],
+      setup: ({cfg, monitor}) => ThirdPartyConsent.setup({
+        tableName: cfg.azure.thirdPartyConsentTableName,
+        monitor: monitor.childMonitor('table.thirdPartyConsentTableName'),
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: cfg.azure.thirdPartyConsentTableName,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
+      }),
+    },
+
+    'expire-authorization-codes': {
+      requires: ['cfg', 'AuthorizationCode', 'monitor'],
+      setup: ({cfg, AuthorizationCode, monitor}) => {
+        return monitor.oneShot('expire-authorization-codes', async () => {
+          const delay = cfg.app.authorizationCodeExpirationDelay;
+          const now = taskcluster.fromNow(delay);
+
+          debug('Expiring authorization codes');
+          const count = await AuthorizationCode.expire(now);
+          debug('Expired ' + count + ' authorization codes');
+        });
+      },
+    },
+
+    'expire-access-tokens': {
+      requires: ['cfg', 'AccessToken', 'monitor'],
+      setup: ({cfg, AccessToken, monitor}) => {
+        return monitor.oneShot('expire-access-tokens', async () => {
+          const delay = cfg.app.authorizationCodeExpirationDelay;
+          const now = taskcluster.fromNow(delay);
+
+          debug('Expiring access tokens');
+          const count = await AccessToken.expire(now);
+          debug('Expired ' + count + ' access tokens');
+        });
+      },
+    },
+
+    'expire-third-party-consents': {
+      requires: ['cfg', 'ThirdPartyConsent', 'monitor'],
+      setup: ({cfg, ThirdPartyConsent, monitor}) => {
+        return monitor.oneShot('expire-third-party-consents', async () => {
+          const delay = cfg.app.thirdPartyConsentExpirationDelay;
+          const now = taskcluster.fromNow(delay);
+
+          debug('Expiring third party consents');
+          const count = await ThirdPartyConsent.expire(now);
+          debug('Expired ' + count + ' third party consents');
+        });
       },
     },
 

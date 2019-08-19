@@ -1,4 +1,5 @@
-const bodyParser = require('body-parser-graphql');
+const bodyParser = require('body-parser');
+const bodyParserGraphql = require('body-parser-graphql');
 const session = require('express-session');
 const MemoryStore = require('memorystore')(session);
 const compression = require('compression');
@@ -8,8 +9,9 @@ const playground = require('graphql-playground-middleware-express').default;
 const passport = require('passport');
 const url = require('url');
 const credentials = require('./credentials');
+const oauth2 = require('./oauth2');
 
-module.exports = async ({ cfg, strategies }) => {
+module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, ThirdPartyConsent, auth, monitor }) => {
   const app = express();
 
   app.set('trust proxy', cfg.server.trustProxy);
@@ -52,9 +54,11 @@ module.exports = async ({ cfg, strategies }) => {
   app.use(passport.session());
   app.use(credentials());
   app.use(compression());
+  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(bodyParser.json());
   app.post(
     '/graphql',
-    bodyParser.graphql({
+    bodyParserGraphql.graphql({
       limit: '1mb',
     })
   );
@@ -70,11 +74,12 @@ module.exports = async ({ cfg, strategies }) => {
   }
 
   passport.serializeUser((user, done) => {
-    const { identityProviderId, identity } = user;
+    const { accessToken, identityProviderId, identity } = user;
 
     return done(null, {
       identityProviderId,
       identity,
+      accessToken,
     });
   });
   passport.deserializeUser(async (obj, done) => {
@@ -92,6 +97,22 @@ module.exports = async ({ cfg, strategies }) => {
   Object.values(strategies).forEach(strategy => {
     strategy.useStrategy(app, cfg);
   });
+
+  const {
+    authorization,
+    decision,
+    token,
+    getCredentials,
+  } = oauth2(cfg, AuthorizationCode, AccessToken, ThirdPartyConsent, strategies, auth, monitor);
+
+  // 1. Render a dialog asking the user to grant access
+  app.get('/login/oauth/authorize', authorization);
+  // 2. Process the dialog submission (skipped if redirectUri is whitelisted)
+  app.post('/login/oauth/authorize/decision', decision);
+  // 3. Exchange code for an OAuth2 token
+  app.post('/login/oauth/token', token);
+  // 4. Get Taskcluster credentials
+  app.get('/login/oauth/credentials/:provider', getCredentials);
 
   return app;
 };
