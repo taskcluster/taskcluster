@@ -1,6 +1,7 @@
 package awsprovider
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -12,8 +13,9 @@ import (
 
 type fakeMetadataService struct {
 	UserDataError error
-	UserData      *UserData
-	Metadata      map[string]string
+	UserData *UserData
+	Metadata map[string]string
+	InstanceIdentityDocument string
 }
 
 func (mds *fakeMetadataService) queryUserData() (*UserData, error) {
@@ -32,6 +34,18 @@ func (mds *fakeMetadataService) queryMetadata(path string) (string, error) {
 		return "", fmt.Errorf("not found")
 	}
 	return res, nil
+}
+
+func (mds *fakeMetadataService) queryInstanceIdentityDocument() (string, *InstanceIdentityDocument, error) {
+	identityDocumentJSON := &InstanceIdentityDocument{}
+	err := json.Unmarshal([]byte(mds.InstanceIdentityDocument), identityDocumentJSON)
+	if err != nil {
+		return "", nil, err
+	}
+
+	res := identityDocumentJSON
+
+	return mds.InstanceIdentityDocument, res, nil
 }
 
 func TestQueryMetadata(t *testing.T) {
@@ -94,7 +108,7 @@ func TestQueryInstanceIdentityDocument(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/latest/dynamic/instance-identity/document" {
 			w.WriteHeader(200)
-			fmt.Fprintf(w, "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-east-2\"\n}")
+			fmt.Fprintf(w, "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n}")
 		} else {
 			w.WriteHeader(404)
 			fmt.Fprintln(w, "Not Found")
@@ -112,5 +126,9 @@ func TestQueryInstanceIdentityDocument(t *testing.T) {
 	iid_string, iid_json, err := ms.queryInstanceIdentityDocument()
 	require.NoError(t, err)
 	require.Equal(t, "i-55555nonesense5", iid_json.InstanceId)
-	require.Equal(t, "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-east-2\"\n}", iid_string)
+	require.Equal(t, "banana", iid_json.ImageId)
+	require.Equal(t, "t2.micro", iid_json.InstanceType)
+	require.Equal(t, "us-west-2", iid_json.Region)
+	require.Equal(t, "us-west-2a", iid_json.AvailabilityZone)
+	require.Equal(t, "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n}", iid_string)
 }

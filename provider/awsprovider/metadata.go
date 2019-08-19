@@ -18,6 +18,10 @@ type UserData struct {
 
 type InstanceIdentityDocument struct {
 	InstanceId string `json:"instanceId"`
+	ImageId string `json:"imageId"`
+	InstanceType string `json:"instanceType"`
+	Region string `json:"region"`
+	AvailabilityZone string `json:"availabilityZone"`
 }
 
 type MetadataService interface {

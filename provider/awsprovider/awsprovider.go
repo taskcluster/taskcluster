@@ -59,6 +59,16 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 		return err
 	}
 
+	providerMetadata := map[string]string{
+		"instance-id": instanceIdentityDocument_json.InstanceId,
+		"image": instanceIdentityDocument_json.ImageId,
+		"instance-type": instanceIdentityDocument_json.InstanceType,
+		"region": instanceIdentityDocument_json.Region,
+		"availability-zone": instanceIdentityDocument_json.AvailabilityZone,
+	}
+
+	state.ProviderMetadata = providerMetadata
+
 	return nil
 }
 
