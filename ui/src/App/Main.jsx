@@ -7,6 +7,7 @@ import RouteWithProps from '../components/RouteWithProps';
 import ErrorPanel from '../components/ErrorPanel';
 import { route } from '../utils/prop-types';
 import { withAuth } from '../utils/Auth';
+import isThirdPartyLogin from '../utils/isThirdPartyLogin';
 import isLoggedInQuery from './isLoggedIn.graphql';
 
 @withApollo
@@ -64,6 +65,7 @@ export default class Main extends Component {
       query: isLoggedInQuery,
       fetchPolicy: 'network-only',
     });
+    const thirdPartyLogin = isThirdPartyLogin();
 
     if (
       user &&
@@ -72,6 +74,18 @@ export default class Main extends Component {
       data.isLoggedIn === false
     ) {
       onUnauthorize();
+    }
+
+    // Users who were logged in earlier manually will be logged out in order to
+    // be able to complete the third party login flow.
+    if (user && user.identityProviderId === 'manual' && thirdPartyLogin()) {
+      onUnauthorize();
+    }
+
+    if (user && thirdPartyLogin) {
+      window.location.href = `${window.location.origin}/login/oauth/authorize${
+        window.location.search
+      }`;
     }
   }
 

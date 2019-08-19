@@ -135,8 +135,6 @@ module.exports = (cfg, AuthorizationCode, AccessToken, ThirdPartyConsent, strate
 
   const authorization = [
     ensureLoggedIn,
-    // Note on specifying multipe scopes: they should be separated by an encoded space
-    // when sent in the request (e.g., ?scope=first-scope%20second-scope)
     server.authorization((clientID, redirectURI, scope, done) => {
       const client = findRegisteredClient(clientID);
 

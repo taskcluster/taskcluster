@@ -174,9 +174,7 @@ export default class App extends Component {
     }
   }
 
-  authorize = async user => {
-    this.authController.renew(user);
-  };
+  authorize = user => this.authController.renew(user);
 
   unauthorize = () => {
     this.authController.setUser(null);
