@@ -106,6 +106,14 @@ test:
     thirdPartyConsentTableName: 'ThirdPartyConsentTable'
 
   login:
+    strategies: {test: true}
+    registeredClients:
+    - clientId: test-token
+      responseType: "token"
+      scope: ["tags:get:*"]
+      redirectUri: 
+      - 'https://test.example.com/cb'
+      whitelisted: false
     sessionSecret: 'keyboard cat'
 
   server:

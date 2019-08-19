@@ -1,5 +1,10 @@
 const load = require('../src/main');
-const {stickyLoader, withMonitor} = require('taskcluster-lib-testing');
+const {Secrets, stickyLoader, withMonitor, withEntity} = require('taskcluster-lib-testing');
+const AuthorizationCode = require('../src/entities/AuthorizationCode');
+const AccessToken = require('../src/entities/AccessToken');
+const ThirdPartyConsent = require('../src/entities/ThirdPartyConsent');
+const libUrls = require('taskcluster-lib-urls');
+const request = require('superagent');
 
 exports.load = stickyLoader(load);
 
@@ -10,8 +15,35 @@ suiteSetup(async function() {
 
 withMonitor(exports);
 
+// set up the testing secrets
+exports.secrets = new Secrets({
+  secretName: 'project/taskcluster/testing/taskcluster-web-server',
+  secrets: {
+    taskcluster: [
+      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl',
+        mock: libUrls.testRootUrl()},
+      {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId'},
+      {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
+    ],
+  },
+  load: exports.load,
+});
+
+exports.withEntities = (mock, skipping) => {
+  withEntity(mock, skipping, exports, 'AuthorizationCode', AuthorizationCode);
+  withEntity(mock, skipping, exports, 'AccessToken', AccessToken);
+  withEntity(mock, skipping, exports, 'ThirdPartyConsent', ThirdPartyConsent);
+};
+
 exports.withServer = (mock, skipping) => {
   let webServer;
+
+  // return a signed-in Superagent agent
+  const signedInAgent = async () => {
+    const agent = request.agent();
+    await agent.get(`http://127.0.0.1:${exports.serverPort}/login/test`);
+    return agent;
+  };
 
   suiteSetup('withServer', async function() {
     if (skipping()) {
@@ -28,6 +60,9 @@ exports.withServer = (mock, skipping) => {
     });
 
     exports.serverPort = cfg.server.port;
+    exports.signedInAgent = signedInAgent;
+
+    exports.load.cfg('app.publicUrl', `http://127.0.0.1:${exports.serverPort}`);
   });
 
   suiteTeardown(async function() {
