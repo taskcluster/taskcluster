@@ -7,7 +7,7 @@ require (
 	github.com/cenkalti/backoff/v3 v3.0.0 // indirect
 	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
-	github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94
+	github.com/streadway/amqp v0.0.0-20190819003559-eade30b20f1d
 	github.com/taskcluster/httpbackoff v1.0.0
 	github.com/taskcluster/jsonschema2go v1.0.0
 	github.com/taskcluster/pulse-go v1.0.0
