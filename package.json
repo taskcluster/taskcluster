@@ -128,7 +128,6 @@
     "cronstrue": "^1.82.0",
     "depcheck": "^0.8.0",
     "dockerode": "^2.5.8",
-    "dot": "^1.1.2",
     "error-stack-parser": "^2.0.2",
     "eslint": "5.16.0",
     "glob": "^7.1.3",
