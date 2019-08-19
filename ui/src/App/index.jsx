@@ -68,13 +68,13 @@ export default class App extends Component {
   });
 
   httpLink = new HttpLink({
-    uri: process.env.GRAPHQL_ENDPOINT,
+    uri: window.env.GRAPHQL_ENDPOINT,
     credentials: 'same-origin',
   });
 
   wsLink = new WebSocketLink({
     // allow configuration of https:// or http:// and translate to ws:// or wss://
-    uri: process.env.GRAPHQL_SUBSCRIPTION_ENDPOINT.replace(/^http/, 'ws'),
+    uri: window.env.GRAPHQL_SUBSCRIPTION_ENDPOINT.replace(/^http/, 'ws'),
     options: {
       reconnect: true,
       lazy: true,
@@ -127,14 +127,14 @@ export default class App extends Component {
       },
     };
 
-    if (process.env.GA_TRACKING_ID) {
+    if (window.env.GA_TRACKING_ID) {
       // Unique Google Analytics tracking number
-      ReactGA.initialize(`UA-${process.env.GA_TRACKING_ID}`);
+      ReactGA.initialize(`UA-${window.env.GA_TRACKING_ID}`);
     }
 
-    if (process.env.SENTRY_DSN) {
+    if (window.env.SENTRY_DSN) {
       // Data Source Name (DSN), a configuration required by the Sentry SDK
-      initSentry({ dsn: process.env.SENTRY_DSN });
+      initSentry({ dsn: window.env.SENTRY_DSN });
     }
 
     this.state = state;

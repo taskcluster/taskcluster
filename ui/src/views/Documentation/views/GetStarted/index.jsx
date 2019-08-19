@@ -20,7 +20,7 @@ const cards = [
   {
     title: 'Manual',
     description: `A comprehensive description of ${
-      process.env.APPLICATION_NAME
+      window.env.APPLICATION_NAME
     }'s design and operation`,
     icon: <BookOpenVariantIcon />,
     to: '/docs/manual',
@@ -34,7 +34,7 @@ const cards = [
   {
     title: 'Resources',
     description: `Presentations, external services, and useful links used by and for ${
-      process.env.APPLICATION_NAME
+      window.env.APPLICATION_NAME
     }`,
     icon: <OpenInNewIcon />,
     to: '/docs/resources',
