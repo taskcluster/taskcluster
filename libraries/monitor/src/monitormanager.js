@@ -101,6 +101,7 @@ class MonitorManager {
     destination = null,
     verify = false,
     errorConfig = null,
+    versionOverride = null,
   }) {
     assert(this._configured, 'must call configure(..) before setup(..)');
     assert(!this._setup, 'must not call setup(..) more than once');
@@ -112,8 +113,16 @@ class MonitorManager {
       processName = null;
     }
 
+    if (versionOverride) {
+      this.taskclusterVersion = versionOverride;
+    }
+
     if (errorConfig) {
-      this._reporter = new plugins.errorPlugins[errorConfig.reporter](errorConfig);
+      this._reporter = new plugins.errorPlugins[errorConfig.reporter]({
+        ...errorConfig,
+        serviceName: this.serviceName,
+        taskclusterVersion: this.taskclusterVersion,
+      });
     }
 
     const levels = {};

@@ -7,11 +7,11 @@ const MonitorManager = require('../src/monitormanager');
 suite(testing.suiteName(), function() {
 
   suite('sentry', function() {
-    let monitorManager, monitor, scope;
+    let monitorManager, monitor, scope, reported;
     suiteSetup(function() {
       scope = nock('https://sentry.example.com')
         .post('/api/448/store/')
-        .reply(200);
+        .reply(200, (_, report)=> {reported = report;});
 
       monitorManager = new MonitorManager();
       registerBuiltins(monitorManager);
@@ -22,6 +22,7 @@ suite(testing.suiteName(), function() {
         debug: true,
         fake: true,
         verify: true,
+        versionOverride: '123:foo',
         errorConfig: {
           reporter: 'SentryReporter',
           dsn: 'https://fake123@sentry.example.com/448',
@@ -31,11 +32,15 @@ suite(testing.suiteName(), function() {
 
     teardown(async function() {
       await monitor.terminate();
+      reported = null;
       assert(scope.isDone());
     });
 
     test('simple error report', async function() {
       monitor.reportError(new Error('hi'));
+      await monitor.terminate();
+      assert.equal(reported.tags.service, 'testing-service');
+      assert.equal(reported.release, '123:foo');
     });
   });
 });
