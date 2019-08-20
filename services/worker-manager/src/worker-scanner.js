@@ -65,6 +65,7 @@ class WorkerScanner {
         seen(worker.providerId, worker.workerPoolId);
         const provider = this.providers.get(worker.providerId);
         if (provider) {
+          console.log('GOT PROVIDER. CHECKING...');
           await provider.checkWorker({worker});
         } else {
           this.monitor.info(

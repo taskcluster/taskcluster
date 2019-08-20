@@ -178,9 +178,19 @@ class AwsProvider extends Provider {
       apiVersion: AWS_API_VERSION,
       credentials: this.providerConfig.credentials,
     });
-    let instanceStatuses = (await ec2.describeInstanceStatus({
-      InstanceIds: [worker.workerId.toString()],
-    })).data;
+
+    let instanceStatuses;
+    try {
+      instanceStatuses = (await ec2.describeInstanceStatus({
+        InstanceIds: [worker.workerId.toString()],
+        IncludeAllInstances: true,
+      }).promise()).InstanceStatuses;
+    } catch (e) {
+      if (e.code === 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too
+        return worker.modify(w => {w.state = this.Worker.states.STOPPED;});
+      }
+      throw e;
+    }
 
     Promise.all(instanceStatuses.map(is => {
       switch (is.InstanceState.Name) {
