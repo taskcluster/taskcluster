@@ -7,7 +7,7 @@ const baseUrl = 'https://api.github.com';
 module.exports = class GithubClient {
   async userFromUsername(username) {
     const { body } = await request
-      .get(`${baseUrl}/user/${username}`);
+      .get(`${baseUrl}/users/${username}`);
 
     if (!body) {
       debug(`profile for user ${username} not found`);
