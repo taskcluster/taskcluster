@@ -1,13 +1,14 @@
 const Sentry = require('@sentry/node');
 
 class SentryReporter {
-  constructor({dsn, taskclusterVersion, serviceName}) {
+  constructor({dsn, taskclusterVersion, serviceName, processName}) {
     Sentry.init({
       dsn,
       release: taskclusterVersion,
     });
     Sentry.configureScope(scope => {
       scope.setTag('service', serviceName);
+      scope.setTag('proc', processName);
     });
   }
 

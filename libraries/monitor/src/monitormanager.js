@@ -93,6 +93,7 @@ class MonitorManager {
     level = 'info',
     patchGlobal = true,
     processName = null,
+    monitorProcess = false,
     resourceInterval = 60,
     bailOnUnhandledRejection = true,
     fake = false,
@@ -110,7 +111,7 @@ class MonitorManager {
     // in fake mode, don't monitor resources and errors
     if (fake) {
       patchGlobal = false;
-      processName = null;
+      monitorProcess = false;
     }
 
     if (versionOverride) {
@@ -122,6 +123,7 @@ class MonitorManager {
         ...errorConfig,
         serviceName: this.serviceName,
         taskclusterVersion: this.taskclusterVersion,
+        processName,
       });
     }
 
@@ -166,6 +168,7 @@ class MonitorManager {
       bailOnUnhandledRejection,
       resourceInterval,
       processName,
+      monitorProcess,
     });
   }
 

@@ -19,6 +19,7 @@ suite(testing.suiteName(), function() {
         serviceName: 'testing-service',
       }).setup({
         level: 'debug',
+        processName: 'foo',
         debug: true,
         fake: true,
         verify: true,
@@ -40,6 +41,7 @@ suite(testing.suiteName(), function() {
       monitor.reportError(new Error('hi'));
       await monitor.terminate();
       assert.equal(reported.tags.service, 'testing-service');
+      assert.equal(reported.tags.proc, 'foo');
       assert.equal(reported.release, '123:foo');
     });
   });

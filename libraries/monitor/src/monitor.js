@@ -14,6 +14,7 @@ class Monitor {
     bailOnUnhandledRejection,
     resourceInterval,
     processName,
+    monitorProcess,
   }) {
     this.manager = manager;
     this.name = name;
@@ -40,7 +41,7 @@ class Monitor {
       this._patchGlobal();
     }
 
-    if (processName) {
+    if (monitorProcess) {
       this._resources(processName, resourceInterval);
     }
   }
@@ -93,7 +94,8 @@ class Monitor {
       patchGlobal: false,
       bailOnUnhandledRejection: false,
       resourceInterval: 0,
-      processName: false,
+      processName: this.processName,
+      monitorProcess: false,
     });
   }
 
