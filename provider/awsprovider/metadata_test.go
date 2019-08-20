@@ -12,9 +12,9 @@ import (
 )
 
 type fakeMetadataService struct {
-	UserDataError error
-	UserData *UserData
-	Metadata map[string]string
+	UserDataError            error
+	UserData                 *UserData
+	Metadata                 map[string]string
 	InstanceIdentityDocument string
 }
 

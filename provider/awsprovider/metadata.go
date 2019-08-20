@@ -11,18 +11,18 @@ var EC2MetadataBaseURL = "http://169.254.169.254/latest"
 
 type UserData struct {
 	WorkerPoolId string `json:"workerPoolId"`
-	ProviderId string `json:"providerId"`
-	RootURL string `json:"rootUrl"`
-	WorkerGroup string `json:"workerGroup"`
+	ProviderId   string `json:"providerId"`
+	RootURL      string `json:"rootUrl"`
+	WorkerGroup  string `json:"workerGroup"`
 }
 
 type InstanceIdentityDocument struct {
-	InstanceId string `json:"instanceId"`
-	ImageId string `json:"imageId"`
-	InstanceType string `json:"instanceType"`
-	Region string `json:"region"`
+	InstanceId       string `json:"instanceId"`
+	ImageId          string `json:"imageId"`
+	InstanceType     string `json:"instanceType"`
+	Region           string `json:"region"`
 	AvailabilityZone string `json:"availabilityZone"`
-	PrivateIp string `json:"privateIp"`
+	PrivateIp        string `json:"privateIp"`
 }
 
 type MetadataService interface {

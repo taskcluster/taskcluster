@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster-worker-runner/tc"
+	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster-worker-runner/tc"
 )
 
 func TestAWSConfigureRun(t *testing.T) {
@@ -33,12 +33,11 @@ func TestAWSConfigureRun(t *testing.T) {
 
 	metaData := map[string]string{
 		"/dynamic/instance-identity/signature": "thisisasignature",
-		"/meta-data/public-hostname": "hostname",
-		"/meta-data/public-ipv4": "2.2.2.2",
+		"/meta-data/public-hostname":           "hostname",
+		"/meta-data/public-ipv4":               "2.2.2.2",
 	}
 
 	instanceIdentityDocument := "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n,  \"privateIp\" : \"1.1.1.1\"\n}"
-
 
 	mds := &fakeMetadataService{nil, userData, metaData, instanceIdentityDocument}
 
@@ -71,14 +70,14 @@ func TestAWSConfigureRun(t *testing.T) {
 	assert.Equal(t, "i-55555nonesense5", state.WorkerID, "workerID is correct")
 
 	assert.Equal(t, map[string]string{
-		"instance-id": "i-55555nonesense5",
-		"image": "banana",
-		"instance-type": "t2.micro",
+		"instance-id":       "i-55555nonesense5",
+		"image":             "banana",
+		"instance-type":     "t2.micro",
 		"availability-zone": "us-west-2a",
-		"region": "us-west-2",
-		"local-ipv4": "1.1.1.1",
-		"public-hostname": "hostname",
-		"public-ipv4": "2.2.2.2",
+		"region":            "us-west-2",
+		"local-ipv4":        "1.1.1.1",
+		"public-hostname":   "hostname",
+		"public-ipv4":       "2.2.2.2",
 	}, state.ProviderMetadata, "providerMetadata is correct")
 
 	assert.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")

@@ -1,22 +1,22 @@
 package awsprovider
 
-import(
+import (
 	"fmt"
 
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster-worker-runner/tc"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
-	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster-worker-runner/tc"
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v15"
 	"github.com/taskcluster/taskcluster/clients/client-go/v15/tcworkermanager"
-	)
+)
 
 type AWSProvider struct {
-	runnercfg *cfg.RunnerConfig
+	runnercfg                  *cfg.RunnerConfig
 	workerManagerClientFactory tc.WorkerManagerClientFactory
-	metadataService MetadataService
-	proto *protocol.Protocol
+	metadataService            MetadataService
+	proto                      *protocol.Protocol
 }
 
 func (p *AWSProvider) ConfigureRun(state *run.State) error {
@@ -43,7 +43,7 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 	}
 
 	workerIdentityProofMap := map[string]interface{}{
-		"document": interface{}(instanceIdentityDocument_string),
+		"document":  interface{}(instanceIdentityDocument_string),
 		"signature": interface{}(instanceIdentityDocumentSignature),
 	}
 
@@ -70,14 +70,14 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 	}
 
 	providerMetadata := map[string]string{
-		"instance-id": instanceIdentityDocument_json.InstanceId,
-		"image": instanceIdentityDocument_json.ImageId,
-		"instance-type": instanceIdentityDocument_json.InstanceType,
-		"region": instanceIdentityDocument_json.Region,
+		"instance-id":       instanceIdentityDocument_json.InstanceId,
+		"image":             instanceIdentityDocument_json.ImageId,
+		"instance-type":     instanceIdentityDocument_json.InstanceType,
+		"region":            instanceIdentityDocument_json.Region,
 		"availability-zone": instanceIdentityDocument_json.AvailabilityZone,
-		"local-ipv4": instanceIdentityDocument_json.PrivateIp,
-		"public-hostname": publicHostname,
-		"public-ipv4": publicIp,
+		"local-ipv4":        instanceIdentityDocument_json.PrivateIp,
+		"public-hostname":   publicHostname,
+		"public-ipv4":       publicIp,
 	}
 
 	state.ProviderMetadata = providerMetadata
@@ -124,7 +124,7 @@ providers using providerType "aws".  It requires
 func new(
 	runnercfg *cfg.RunnerConfig,
 	workerManagerClientFactory tc.WorkerManagerClientFactory,
-	metadataService MetadataService)(*AWSProvider, error) {
+	metadataService MetadataService) (*AWSProvider, error) {
 
 	if workerManagerClientFactory == nil {
 		workerManagerClientFactory = clientFactory
@@ -135,9 +135,9 @@ func new(
 	}
 
 	return &AWSProvider{
-		runnercfg: runnercfg,
+		runnercfg:                  runnercfg,
 		workerManagerClientFactory: workerManagerClientFactory,
-		metadataService: metadataService,
-		proto: nil,
+		metadataService:            metadataService,
+		proto:                      nil,
 	}, nil
 }
