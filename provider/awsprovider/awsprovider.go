@@ -25,7 +25,7 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 		return fmt.Errorf("Could not query user data: %v", err)
 	}
 
-	instanceIdentityDocument_string, instanceIdentityDocument_json, err := p.metadataService.queryInstanceIdentityDocument()
+	iid_string, iid_json, err := p.metadataService.queryInstanceIdentityDocument()
 	if err != nil {
 		return fmt.Errorf("Could not query instance identity document: %v", err)
 	}
@@ -43,7 +43,7 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 	}
 
 	workerIdentityProofMap := map[string]interface{}{
-		"document":  interface{}(instanceIdentityDocument_string),
+		"document":  interface{}(iid_string),
 		"signature": interface{}(instanceIdentityDocumentSignature),
 	}
 
@@ -53,7 +53,7 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 		userData.WorkerPoolId,
 		userData.ProviderId,
 		userData.WorkerGroup,
-		instanceIdentityDocument_json.InstanceId,
+		iid_json.InstanceId,
 		workerIdentityProofMap)
 	if err != nil {
 		return err
@@ -70,12 +70,12 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 	}
 
 	providerMetadata := map[string]string{
-		"instance-id":       instanceIdentityDocument_json.InstanceId,
-		"image":             instanceIdentityDocument_json.ImageId,
-		"instance-type":     instanceIdentityDocument_json.InstanceType,
-		"region":            instanceIdentityDocument_json.Region,
-		"availability-zone": instanceIdentityDocument_json.AvailabilityZone,
-		"local-ipv4":        instanceIdentityDocument_json.PrivateIp,
+		"instance-id":       iid_json.InstanceId,
+		"image":             iid_json.ImageId,
+		"instance-type":     iid_json.InstanceType,
+		"region":            iid_json.Region,
+		"availability-zone": iid_json.AvailabilityZone,
+		"local-ipv4":        iid_json.PrivateIp,
 		"public-hostname":   publicHostname,
 		"public-ipv4":       publicIp,
 	}
