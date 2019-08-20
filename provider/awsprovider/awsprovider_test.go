@@ -33,9 +33,11 @@ func TestAWSConfigureRun(t *testing.T) {
 
 	metaData := map[string]string{
 		"/dynamic/instance-identity/signature": "thisisasignature",
+		"/meta-data/public-hostname": "hostname",
+		"/meta-data/public-ipv4": "2.2.2.2",
 	}
 
-	instanceIdentityDocument := "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n}"
+	instanceIdentityDocument := "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n,  \"privateIp\" : \"1.1.1.1\"\n}"
 
 
 	mds := &fakeMetadataService{nil, userData, metaData, instanceIdentityDocument}
@@ -56,7 +58,7 @@ func TestAWSConfigureRun(t *testing.T) {
 		assert.Equal(t, userData.ProviderId, reg.ProviderID)
 		assert.Equal(t, userData.WorkerGroup, reg.WorkerGroup)
 		assert.Equal(t, "i-55555nonesense5", reg.WorkerID)
-		assert.Equal(t, json.RawMessage(`{"document":"{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n}","signature":"thisisasignature"}`), reg.WorkerIdentityProof)
+		assert.Equal(t, json.RawMessage(`{"document":"{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n,  \"privateIp\" : \"1.1.1.1\"\n}","signature":"thisisasignature"}`), reg.WorkerIdentityProof)
 		assert.Equal(t, "w/p", reg.WorkerPoolID)
 	}
 
@@ -74,6 +76,9 @@ func TestAWSConfigureRun(t *testing.T) {
 		"instance-type": "t2.micro",
 		"availability-zone": "us-west-2a",
 		"region": "us-west-2",
+		"local-ipv4": "1.1.1.1",
+		"public-hostname": "hostname",
+		"public-ipv4": "2.2.2.2",
 	}, state.ProviderMetadata, "providerMetadata is correct")
 
 	assert.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")

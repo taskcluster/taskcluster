@@ -22,6 +22,7 @@ type InstanceIdentityDocument struct {
 	InstanceType string `json:"instanceType"`
 	Region string `json:"region"`
 	AvailabilityZone string `json:"availabilityZone"`
+	PrivateIp string `json:"privateIp"`
 }
 
 type MetadataService interface {

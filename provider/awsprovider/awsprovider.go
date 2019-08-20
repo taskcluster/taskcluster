@@ -59,12 +59,25 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 		return err
 	}
 
+	publicHostname, err := p.metadataService.queryMetadata("/meta-data/public-hostname")
+	if err != nil {
+		return err
+	}
+
+	publicIp, err := p.metadataService.queryMetadata("/meta-data/public-ipv4")
+	if err != nil {
+		return err
+	}
+
 	providerMetadata := map[string]string{
 		"instance-id": instanceIdentityDocument_json.InstanceId,
 		"image": instanceIdentityDocument_json.ImageId,
 		"instance-type": instanceIdentityDocument_json.InstanceType,
 		"region": instanceIdentityDocument_json.Region,
 		"availability-zone": instanceIdentityDocument_json.AvailabilityZone,
+		"local-ipv4": instanceIdentityDocument_json.PrivateIp,
+		"public-hostname": publicHostname,
+		"public-ipv4": publicIp,
 	}
 
 	state.ProviderMetadata = providerMetadata

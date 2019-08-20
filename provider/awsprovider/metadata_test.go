@@ -108,7 +108,7 @@ func TestQueryInstanceIdentityDocument(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/latest/dynamic/instance-identity/document" {
 			w.WriteHeader(200)
-			fmt.Fprintf(w, "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n}")
+			fmt.Fprintf(w, "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n,  \"privateIp\" : \"1.1.1.1\"\n}")
 		} else {
 			w.WriteHeader(404)
 			fmt.Fprintln(w, "Not Found")
@@ -130,5 +130,6 @@ func TestQueryInstanceIdentityDocument(t *testing.T) {
 	require.Equal(t, "t2.micro", iid_json.InstanceType)
 	require.Equal(t, "us-west-2", iid_json.Region)
 	require.Equal(t, "us-west-2a", iid_json.AvailabilityZone)
-	require.Equal(t, "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n}", iid_string)
+	require.Equal(t, "1.1.1.1", iid_json.PrivateIp)
+	require.Equal(t, "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n,  \"privateIp\" : \"1.1.1.1\"\n}", iid_string)
 }
