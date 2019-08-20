@@ -5,10 +5,10 @@ const { Strategy } = require('passport-github');
 const taskcluster = require('taskcluster-client');
 const User = require('../User');
 const identityFromClientId = require('../../utils/identityFromClientId');
-const { encode, decode } = require('../../utils/codec');
 const login = require('../../utils/login');
 const WebServerError = require('../../utils/WebServerError');
 const tryCatch = require('../../utils/tryCatch');
+const { encode, decode } = require('../../utils/codec');
 const GithubClient = require('../clients/GithubClient');
 
 const debug = Debug('strategies.github');
@@ -24,12 +24,31 @@ module.exports = class Github {
 
     this.rootUrl = cfg.taskcluster.rootUrl;
     this.identityProviderId = 'github';
+    this.githubClient = new GithubClient();
   }
 
-  async getUser({ userId }) {
+  async getUser({ username, userId }) {
     const user = new User();
 
-    user.identity = `${this.identityProviderId}/${userId}`;
+    if (!username) {
+      return;
+    }
+
+    const [githubErr, githubUser] = await tryCatch(this.githubClient.userFromUsername(username));
+
+    if (githubErr) {
+      debug(`error retrieving user data from Github: ${githubErr}\n${githubErr.stack}`);
+
+      return;
+    }
+
+    if (githubUser.id !== userId) {
+      debug(`Github user id ${githubUser.id} does not match userId ${userId} from the identity.`);
+
+      return;
+    }
+
+    user.identity = `${this.identityProviderId}/${userId}|${encode(username)}`;
 
     if (!user.identity) {
       debug('No recognized identity providers');
@@ -43,28 +62,9 @@ module.exports = class Github {
   }
 
   userFromIdentity(identity) {
-    const encodedUserId = identity.split('/')[1];
-    const userId = decode(encodedUserId);
+    const [userId, username = ''] = identity.split('/')[1].split('|');
 
-    return this.getUser({ userId });
-  }
-
-  async userFromToken(accessToken) {
-    const githubClient = new GithubClient();
-    const [githubErr, githubUser] = await tryCatch(githubClient.userFromToken(accessToken));
-
-    if (githubErr) {
-      debug(`error retrieving user data from Github: ${githubErr}\n${githubErr.stack}`);
-    }
-
-    const [err, user] = await tryCatch(this.getUser({ userId: githubUser.id }));
-
-    if (err) {
-      debug(`error retrieving user profile from the username: ${err}\n${err.stack}`);
-      return;
-    }
-
-    return user;
+    return this.getUser({ username: decode(username), userId: Number(userId) });
   }
 
   userFromClientId(clientId) {
@@ -104,7 +104,7 @@ module.exports = class Github {
           callbackURL: `${cfg.app.publicUrl}${callback}`,
         },
         async (accessToken, refreshToken, profile, next) => {
-          const user = await this.getUser({ userId: profile.username });
+          const user = await this.getUser({ username: profile.username, userId: Number(profile.id) });
 
           if (!user) {
             // Don't report much to the user, to avoid revealing sensitive information, although
