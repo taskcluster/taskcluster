@@ -29,11 +29,6 @@ module.exports = class Github {
 
   async getUser({ username, userId }) {
     const user = new User();
-
-    if (!username) {
-      return;
-    }
-
     const [githubErr, githubUser] = await tryCatch(this.githubClient.userFromUsername(username));
 
     if (githubErr) {
