@@ -69,10 +69,22 @@ class AwsProvider extends Provider {
       running: workerPool.providerData[this.providerId].running,
     });
 
+    const userData = {
+      rootUrl: this.rootUrl,
+      workerPoolId,
+      providerId: this.providerId,
+      workerGroup: this.providerId,
+    };
+
     let spawned;
     try {
       spawned = await ec2.runInstances({
         ...config.launchConfig,
+
+        // please make sure this string is no more than 1024 chars long
+        // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-add-user-data
+        UserData: JSON.stringify(userData).toString('base64'),
+
         MaxCount: config.launchConfig.MaxCount ? Math.max(toSpawn, config.launchConfig.MaxCount) : toSpawn,
         MinCount: config.launchConfig.MinCount ? Math.min(toSpawn, config.launchConfig.MinCount) : toSpawn,
         TagSpecifications: [
@@ -146,6 +158,7 @@ class AwsProvider extends Provider {
     if (!this.verifyInstanceIdentityDocument({document, signature})) {
       throw new ApiError('Instance identity document validation error');
     }
+
     this.verifyWorkerInstance({document, worker});
 
     // mark it as running
@@ -241,17 +254,11 @@ class AwsProvider extends Provider {
   verifyInstanceIdentityDocument({document, signature}) {
     const verifier = crypto.createVerify('sha256');
 
-    verifier.update(document.toString());
-    console.log('🧾', document);
-    console.log('🔏', signature);
-    console.log('🔖', this.ec2iid_RSA_key.toString());
+    verifier.update(document);
     let result;
 
-    try {
-      result = verifier.verify(this.ec2iid_RSA_key.toString(), signature.toString(), 'base64');
-    } catch (e) {
-      console.log('💣', e);
-    }
+    result = verifier.verify(this.ec2iid_RSA_key.toString(), signature.toString(), 'base64');
+
     return result;
   }
 
@@ -264,16 +271,18 @@ class AwsProvider extends Provider {
    * @throws an error if there's any difference
    */
   verifyWorkerInstance({document, worker}) {
-    const providerData = {worker};
+    const {providerData} = worker;
+    const parsedDocument = JSON.parse(document);
 
     if (
-      providerData.privateIp !== document.privateIp ||
-      providerData.owner !== document.accountId ||
-      providerData.availabilityZone !== document.availabilityZone ||
-      providerData.architecture !== document.architecture ||
-      providerData.imageId !== document.imageId ||
-      worker.workerId !== document.instanceId ||
-      providerData.instanceType !== document.instanceType
+      providerData.privateIp !== parsedDocument.privateIp ||
+      providerData.owner !== parsedDocument.accountId ||
+      providerData.availabilityZone !== parsedDocument.availabilityZone ||
+      providerData.architecture !== parsedDocument.architecture ||
+      providerData.imageId !== parsedDocument.imageId ||
+      worker.workerId !== parsedDocument.instanceId ||
+      providerData.instanceType !== parsedDocument.instanceType ||
+      providerData.region !== parsedDocument.region
     ) {
       throw new ApiError('Token validation error');
     }

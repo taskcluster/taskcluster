@@ -38,6 +38,7 @@ properties:
           not:
             required:
               - IamInstanceProfile
+              - UserData
           additionalProperties: true
         capacityPerInstance:
           title: Capacity Per Instance
