@@ -156,12 +156,26 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
       return done(null, false);
     }),
     (req, res) => {
+      const client = findRegisteredClient(req.query.client_id);
+      let expires = client.maxExpires;
+
+      if (req.query.expires) {
+        try {
+          if (new Date(taskcluster.fromNow(req.query.expires)) > new Date(taskcluster.fromNow(client.maxExpires))) {
+            expires = client.maxExpires;
+          } else {
+            expires = req.query.expires;
+          }
+        } catch (e) {
+          // req.query.expires was probably an invalid date.
+          // We default to the max expiration time defined by the client.
+        }
+      }
+
       const query = new URLSearchParams({
         transactionID: req.oauth2.transactionID,
         client_id: req.query.client_id,
-        expires: req.query.expires
-          ? req.query.expires
-          : taskcluster.fromNow('1000 years'),
+        expires,
         scope: req.query.scope,
       });
 
