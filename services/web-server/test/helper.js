@@ -1,7 +1,7 @@
 const load = require('../src/main');
 const {Secrets, stickyLoader, withMonitor, withEntity} = require('taskcluster-lib-testing');
-const AuthorizationCode = require('../src/entities/AuthorizationCode');
-const AccessToken = require('../src/entities/AccessToken');
+const AuthorizationCode = require('../src/data/AuthorizationCode');
+const AccessToken = require('../src/data/AccessToken');
 const libUrls = require('taskcluster-lib-urls');
 const request = require('superagent');
 

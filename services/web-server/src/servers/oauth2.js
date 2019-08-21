@@ -100,10 +100,10 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
    * authorized the code.
    */
   server.exchange(oauth2orize.exchange.code(async (client, code, redirectURI, done) => {
-    const [error, entry] = await tryCatch(AuthorizationCode.load({ code }));
+    const entry = AuthorizationCode.load({ code }, true);
 
-    if (error) {
-      return done(error);
+    if (!entry) {
+      return done(null, false);
     }
 
     if (redirectURI !== entry.redirectUri) {

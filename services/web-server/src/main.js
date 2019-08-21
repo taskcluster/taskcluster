@@ -19,8 +19,8 @@ const createSubscriptionServer = require('./servers/createSubscriptionServer');
 const resolvers = require('./resolvers');
 const typeDefs = require('./graphql');
 const PulseEngine = require('./PulseEngine');
-const AuthorizationCode = require('./entities/AuthorizationCode');
-const AccessToken = require('./entities/AccessToken');
+const AuthorizationCode = require('./data/AuthorizationCode');
+const AccessToken = require('./data/AccessToken');
 const scanner = require('./login/scanner');
 const { Auth } = require('taskcluster-client');
 
