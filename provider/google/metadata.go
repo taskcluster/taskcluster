@@ -8,16 +8,18 @@ import (
 	"net/http"
 
 	"github.com/taskcluster/httpbackoff"
+	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 )
 
 var metadataBaseURL = "http://metadata.google.internal/computeMetadata/v1"
 
 // user-data sent to us from the worker-manager service
 type UserData struct {
-	WorkerPoolID string `json:"workerPoolId"`
-	ProviderID   string `json:"providerId"`
-	WorkerGroup  string `json:"workerGroup"`
-	RootURL      string `json:"rootUrl"`
+	WorkerPoolID string            `json:"workerPoolId"`
+	ProviderID   string            `json:"providerId"`
+	WorkerGroup  string            `json:"workerGroup"`
+	RootURL      string            `json:"rootUrl"`
+	WorkerConfig *cfg.WorkerConfig `json:"workerConfig"`
 }
 
 type MetadataService interface {

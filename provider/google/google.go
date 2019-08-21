@@ -83,6 +83,8 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 
 	state.ProviderMetadata = providerMetadata
 
+	state.WorkerConfig = state.WorkerConfig.Merge(userData.WorkerConfig)
+
 	return nil
 }
 
