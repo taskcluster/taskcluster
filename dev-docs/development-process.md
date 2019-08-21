@@ -163,6 +163,17 @@ Troubleshooting:
 * Helm error `Error: stat taskcluster: no such file or directory` - make sure you have helm3 installed.
 * Kubectl error: `Error: unknown flag --current` - make sure you run kubectl v1.15.0 or later
 
+### Optional configuration
+
+You can add a `errorConfig` to the top-level of your config containing
+
+```
+errorConfig:
+  reporter: SentryReporter
+  dsn: ...
+```
+
+in order to report your errors to a sentry project.
 
 ## Hacking on Clients
 
