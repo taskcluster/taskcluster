@@ -76,7 +76,7 @@ func TestQueryUserData(t *testing.T) {
 			fmt.Fprintln(w, "Metadata-Flavor Missing")
 		} else if r.URL.Path == "/computeMetadata/v1/instance/attributes/taskcluster" {
 			w.WriteHeader(200)
-			fmt.Fprintln(w, `{"workerPoolId": "w/p"}`)
+			fmt.Fprintln(w, `{"workerPoolId": "w/p", "workerConfig": {"from-worker-config": true}}`)
 		} else {
 			w.WriteHeader(404)
 			fmt.Fprintf(w, "Not Found: %s", r.URL.Path)
@@ -94,5 +94,6 @@ func TestQueryUserData(t *testing.T) {
 	ud, err := ms.queryUserData()
 	if assert.NoError(t, err) {
 		assert.Equal(t, "w/p", ud.WorkerPoolID)
+		assert.Equal(t, true, ud.WorkerConfig.MustGet("from-worker-config"))
 	}
 }
