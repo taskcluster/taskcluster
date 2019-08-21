@@ -12,6 +12,16 @@ scanner:
   schedule: '0 0 * * *'
   deadline: 86400
   command: node src/main.js scanner
+expire-authorization-codes:
+  type: cron
+  schedule: '0 0 * * *'
+  deadline: 86400
+  command: node src/main.js expire-authorization-codes
+expire-access-tokens:
+  type: cron
+  schedule: '0 0 * * *'
+  deadline: 86400
+  command: node src/main.js expire-access-tokens
 write-docs:
   type: build
   command: node src/main.js writeDocs

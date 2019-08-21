@@ -5,7 +5,7 @@ defaults:
     # if true, serve the /playground path
     playground: false
     # Delete expired entries in both the access token and authorization code tables
-    authorizationCodeExpirationDelay: '- 15 minutes'
+    authorizationCodeExpirationDelay: '- 10 minutes'
 
   monitoring:
     level: !env:optional LEVEL
