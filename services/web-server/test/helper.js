@@ -2,7 +2,6 @@ const load = require('../src/main');
 const {Secrets, stickyLoader, withMonitor, withEntity} = require('taskcluster-lib-testing');
 const AuthorizationCode = require('../src/entities/AuthorizationCode');
 const AccessToken = require('../src/entities/AccessToken');
-const ThirdPartyConsent = require('../src/entities/ThirdPartyConsent');
 const libUrls = require('taskcluster-lib-urls');
 const request = require('superagent');
 
@@ -32,7 +31,6 @@ exports.secrets = new Secrets({
 exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'AuthorizationCode', AuthorizationCode);
   withEntity(mock, skipping, exports, 'AccessToken', AccessToken);
-  withEntity(mock, skipping, exports, 'ThirdPartyConsent', ThirdPartyConsent);
 };
 
 exports.withServer = (mock, skipping) => {

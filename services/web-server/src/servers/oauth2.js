@@ -6,7 +6,7 @@ const generateCredentials = require('../utils/generateCredentials');
 const tryCatch = require('../utils/tryCatch');
 const ensureLoggedIn = require('../utils/ensureLoggedIn');
 
-module.exports = (cfg, AuthorizationCode, AccessToken, ThirdPartyConsent, strategies, auth, monitor) => {
+module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor) => {
   // Create OAuth 2.0 server
   const server = oauth2orize.createServer();
 
@@ -87,15 +87,6 @@ module.exports = (cfg, AuthorizationCode, AccessToken, ThirdPartyConsent, strate
       expires: taskcluster.fromNow('10 minutes'),
     }, true);
 
-    if (client.whitelisted) {
-      await ThirdPartyConsent.create({
-        clientId: client.clientId,
-        identity: user.identity,
-        // Require users to re-consent on a yearly basis
-        expires: taskcluster.fromNow('1 year'),
-      }, true);
-    }
-
     return done(null, code);
   }));
 
@@ -154,13 +145,6 @@ module.exports = (cfg, AuthorizationCode, AccessToken, ThirdPartyConsent, strate
     }, async (client, user, scope, done) => {
       // Skip consent form if the client is whitelisted
       if (client.whitelisted && user && _.isEqual(client.scope.sort(), scope.sort())) {
-        const [error] = await tryCatch(ThirdPartyConsent.load({ identity: user.identity }));
-
-        // Do not skip consent form if the user has not previously consented even if the client is whitelisted
-        if (error) {
-          return done(null, false);
-        }
-
         // Resetting the access token is the default behavior for whitelisted clients.
         // One less click in the UI.
         await auth.resetAccessToken(user.identity);

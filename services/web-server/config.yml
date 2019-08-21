@@ -6,8 +6,6 @@ defaults:
     playground: false
     # Delete expired entries in both the access token and authorization code tables
     authorizationCodeExpirationDelay: '- 15 minutes'
-    # Delete expired entries in the third party consent table
-    thirdPartyConsentExpirationDelay: '- 1 day'
 
   monitoring:
     level: !env:optional LEVEL
@@ -45,7 +43,6 @@ defaults:
     accountId: !env AZURE_ACCOUNT_ID
     authorizationCodeTableName: !env AZURE_AUTHORIZATION_CODE_TABLE_NAME
     accessTokenTableName: !env AZURE_ACCESS_TOKEN_TABLE_NAME
-    thirdPartyConsentTableName: !env AZURE_THIRD_PARTY_CONSENT_TABLE_NAME
 
   # Pulse credentials
   pulse:
@@ -90,7 +87,6 @@ development:
     accountId: 'jungle'
     authorizationCodeTableName: 'AuthorizationCodesTable'
     accessTokenTableName: 'AccessTokenTable'
-    thirdPartyConsentTableName: 'ThirdPartyConsentTable'
 
   login:
     sessionSecret: 'keyboard cat'
@@ -103,7 +99,6 @@ test:
     accountId: 'jungle'
     authorizationCodeTableName: 'AuthorizationCodesTable'
     accessTokenTableName: 'AccessTokenTable'
-    thirdPartyConsentTableName: 'ThirdPartyConsentTable'
 
   login:
     strategies: {test: true}
@@ -111,7 +106,7 @@ test:
     - clientId: test-token
       responseType: "token"
       scope: ["tags:get:*"]
-      redirectUri: 
+      redirectUri:
       - 'https://test.example.com/cb'
       whitelisted: false
     sessionSecret: 'keyboard cat'

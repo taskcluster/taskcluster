@@ -21,7 +21,6 @@ const typeDefs = require('./graphql');
 const PulseEngine = require('./PulseEngine');
 const AuthorizationCode = require('./entities/AuthorizationCode');
 const AccessToken = require('./entities/AccessToken');
-const ThirdPartyConsent = require('./entities/ThirdPartyConsent');
 const scanner = require('./login/scanner');
 const { Auth } = require('taskcluster-client');
 
@@ -104,9 +103,9 @@ const load = loader(
     },
 
     app: {
-      requires: ['cfg', 'strategies', 'AuthorizationCode', 'AccessToken', 'ThirdPartyConsent', 'auth', 'monitor'],
-      setup: ({ cfg, strategies, AuthorizationCode, AccessToken, ThirdPartyConsent, auth, monitor }) =>
-        createApp({ cfg, strategies, AuthorizationCode, AccessToken, ThirdPartyConsent, auth, monitor }),
+      requires: ['cfg', 'strategies', 'AuthorizationCode', 'AccessToken', 'auth', 'monitor'],
+      setup: ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor }) =>
+        createApp({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor }),
     },
 
     httpServer: {
@@ -196,20 +195,6 @@ const load = loader(
       }),
     },
 
-    ThirdPartyConsent: {
-      requires: ['cfg', 'monitor'],
-      setup: ({cfg, monitor}) => ThirdPartyConsent.setup({
-        tableName: cfg.azure.thirdPartyConsentTableName,
-        monitor: monitor.childMonitor('table.thirdPartyConsentTableName'),
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          tableName: cfg.azure.thirdPartyConsentTableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
-      }),
-    },
-
     'expire-authorization-codes': {
       requires: ['cfg', 'AuthorizationCode', 'monitor'],
       setup: ({cfg, AuthorizationCode, monitor}) => {
@@ -234,20 +219,6 @@ const load = loader(
           debug('Expiring access tokens');
           const count = await AccessToken.expire(now);
           debug('Expired ' + count + ' access tokens');
-        });
-      },
-    },
-
-    'expire-third-party-consents': {
-      requires: ['cfg', 'ThirdPartyConsent', 'monitor'],
-      setup: ({cfg, ThirdPartyConsent, monitor}) => {
-        return monitor.oneShot('expire-third-party-consents', async () => {
-          const delay = cfg.app.thirdPartyConsentExpirationDelay;
-          const now = taskcluster.fromNow(delay);
-
-          debug('Expiring third party consents');
-          const count = await ThirdPartyConsent.expire(now);
-          debug('Expired ' + count + ' third party consents');
         });
       },
     },

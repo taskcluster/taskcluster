@@ -11,7 +11,7 @@ const url = require('url');
 const credentials = require('./credentials');
 const oauth2 = require('./oauth2');
 
-module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, ThirdPartyConsent, auth, monitor }) => {
+module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor }) => {
   const app = express();
 
   app.set('trust proxy', cfg.server.trustProxy);
@@ -103,7 +103,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, Third
     decision,
     token,
     getCredentials,
-  } = oauth2(cfg, AuthorizationCode, AccessToken, ThirdPartyConsent, strategies, auth, monitor);
+  } = oauth2(cfg, AuthorizationCode, AccessToken, strategies, auth, monitor);
 
   // 1. Render a dialog asking the user to grant access
   app.get('/login/oauth/authorize', authorization);
