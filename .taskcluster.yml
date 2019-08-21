@@ -20,7 +20,13 @@ tasks:
             cd taskcluster-worker-runner &&
             git config advice.detachedHead false &&
             git checkout ${event.pull_request.head.sha} &&
-            go test -v -race ./...
+            go test -v -race ./... &&
+            go run util/update-readme.go &&
+            if ! output=$(git status --porcelain) || [ -n "$output" ]; then
+              echo "*** 'go run util/update-readme.go' produced changes to the repository; these changes should be checked in ***";
+              git --no-pager diff;
+              exit 1;
+            fi
       metadata:
         name: taskcluster-worker-runner-tests
         description: runs tests for taskcluster-worker-runner components
