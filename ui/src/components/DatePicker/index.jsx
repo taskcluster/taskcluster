@@ -15,6 +15,7 @@ import { date } from '../../utils/prop-types';
     '& > div': {
       alignItems: 'center',
     },
+    color: 'black',
   },
 })
 /**
