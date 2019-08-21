@@ -47,7 +47,9 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 		return fmt.Errorf("Could not create worker manager client: %v", err)
 	}
 
-	err = provider.RegisterWorker(state, wm, userData.WorkerPoolID, userData.ProviderID, userData.WorkerGroup, workerID, "token", proofToken)
+	workerIdentityProofMap := map[string]interface{}{"token": interface{}(proofToken)}
+
+	err = provider.RegisterWorker(state, wm, userData.WorkerPoolID, userData.ProviderID, userData.WorkerGroup, workerID, workerIdentityProofMap)
 	if err != nil {
 		return err
 	}

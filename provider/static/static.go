@@ -43,7 +43,9 @@ func (p *StaticProvider) ConfigureRun(state *run.State) error {
 		return fmt.Errorf("Could not create worker manager client: %v", err)
 	}
 
-	err = provider.RegisterWorker(state, wm, pc.WorkerPoolID, pc.ProviderID, pc.WorkerGroup, pc.WorkerID, "staticSecret", pc.StaticSecret)
+	workerIdentityProofMap := map[string]interface{}{"staticSecret": interface{}(pc.StaticSecret)}
+
+	err = provider.RegisterWorker(state, wm, pc.WorkerPoolID, pc.ProviderID, pc.WorkerGroup, pc.WorkerID, workerIdentityProofMap)
 	if err != nil {
 		return err
 	}

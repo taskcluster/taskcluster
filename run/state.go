@@ -27,9 +27,11 @@ type State struct {
 	WorkerID     string
 
 	// metadata from the provider (useful to display to the user for
-	// debugging).  Workers should not *require* any data to exist
-	// in this map, and where possible should just pass it along as-is
-	// in worker config as helpful debugging metadata for the user.
+	// debugging).  This is also a public API for docker-worker,
+	// which doesn't, strictly speaking, require these fields,
+	// but may fall onto undesirable defaults if these are not provided
+	// A bit more info on that here
+	// https://github.com/taskcluster/taskcluster-worker-runner/pull/30#pullrequestreview-277378260
 	ProviderMetadata map[string]string
 
 	// the accumulated WorkerConfig for this run, including files to create
