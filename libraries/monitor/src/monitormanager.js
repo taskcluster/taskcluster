@@ -7,6 +7,7 @@ const {LEVELS} = require('./logger');
 const Monitor = require('./monitor');
 const chalk = require('chalk');
 const Debug = require('debug');
+const plugins = require('./plugins');
 
 const LEVELS_REVERSE_COLOR = [
   chalk.red.bold('EMERGENCY'),
@@ -92,6 +93,7 @@ class MonitorManager {
     level = 'info',
     patchGlobal = true,
     processName = null,
+    monitorProcess = false,
     resourceInterval = 60,
     bailOnUnhandledRejection = true,
     fake = false,
@@ -99,6 +101,8 @@ class MonitorManager {
     debug = false,
     destination = null,
     verify = false,
+    errorConfig = null,
+    versionOverride = null,
   }) {
     assert(this._configured, 'must call configure(..) before setup(..)');
     assert(!this._setup, 'must not call setup(..) more than once');
@@ -107,7 +111,23 @@ class MonitorManager {
     // in fake mode, don't monitor resources and errors
     if (fake) {
       patchGlobal = false;
-      processName = null;
+      monitorProcess = false;
+    }
+
+    if (versionOverride) {
+      this.taskclusterVersion = versionOverride;
+    }
+
+    if (errorConfig) {
+      if (!Object.keys(plugins.errorPlugins).includes(errorConfig.reporter)) {
+        throw new Error(`Error reporter plugin ${errorConfig.reporter} does not exist.`);
+      }
+      this._reporter = new plugins.errorPlugins[errorConfig.reporter]({
+        ...errorConfig,
+        serviceName: this.serviceName,
+        taskclusterVersion: this.taskclusterVersion,
+        processName,
+      });
     }
 
     const levels = {};
@@ -151,6 +171,7 @@ class MonitorManager {
       bailOnUnhandledRejection,
       resourceInterval,
       processName,
+      monitorProcess,
     });
   }
 

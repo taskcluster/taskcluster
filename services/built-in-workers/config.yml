@@ -8,6 +8,7 @@ defaults:
 
   monitoring:
     level: !env:optional LEVEL
+    errorConfig: !env:json:optional ERROR_CONFIG
 
   worker:
     provisionerId: "built-in"

@@ -130,6 +130,20 @@ The available options to the setup function are:
  * `debug` - If true, logging output will be sent to the `debug` log in a human-readable format
  * `destination` - A stream to which formatted logs should be written.
  * `verify` - If this is true, log messages that have been registered will be verified to define all of the required fields.
+ * `errorConfig` - An optional object containing a `reporter` field and any arguments to pass to a reporter. See below.
+
+### Error Configuration
+
+This library supports pluggable error reporting. At the current time, the only supported plugin is `SentryReporter`. This will
+send any errors reported through `monitor.reportError()` (including crashes and unhandled rejections) to a sentry instance. It
+takes a single configration value of `dsn` which must be supplied.
+
+```
+errorConfig: {
+  reporter: 'SentryReporter',
+  dsn: '...',
+},
+```
 
 ## Monitor objects
 

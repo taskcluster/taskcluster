@@ -491,7 +491,7 @@ module.exports = {
           ],
           "route": "/sentry/<project>/dsn",
           "scopes": "auth:sentry:<project>",
-          "stability": "stable",
+          "stability": "deprecated",
           "title": "Get DSN for Sentry Project",
           "type": "function"
         },

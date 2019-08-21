@@ -38,6 +38,7 @@ defaults:
 
   monitoring:
     level: !env:optional LEVEL
+    errorConfig: !env:json:optional ERROR_CONFIG
 
   server:
     port: !env:number PORT

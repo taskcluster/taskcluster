@@ -22,7 +22,8 @@ defaults:
       clientId:       !env TASKCLUSTER_CLIENT_ID
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
   monitoring:
-    level:                      !env:optional LEVEL
+    level: !env:optional LEVEL
+    errorConfig: !env:json:optional ERROR_CONFIG
   server:
     port:             !env:number PORT
     env:              !env NODE_ENV

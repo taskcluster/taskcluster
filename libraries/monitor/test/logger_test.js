@@ -24,8 +24,8 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  teardown(function() {
-    monitor.terminate();
+  teardown(async function() {
+    await monitor.terminate();
   });
 
   test('logger conforms to schema', function() {

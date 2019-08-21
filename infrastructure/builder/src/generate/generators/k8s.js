@@ -34,6 +34,7 @@ const SHARED_CONFIG = {
   force_ssl: '.Values.forceSSL',
   trust_proxy: '.Values.trustProxy',
   node_env: '.Values.nodeEnv',
+  error_config: '.Values.errorConfig',
 };
 
 const labels = (projectName, component) => ({
@@ -309,6 +310,18 @@ exports.tasks.push({
           description: 'Metadata about a deployment. Automatically generated in deploy configs.',
           additionalProperties: true,
         },
+        errorConfig: {
+          type: 'object',
+          description: 'Error reporting configuration for lib-monitor.',
+          properties: {
+            reporter: {
+              type: 'string',
+              description: 'Which reporter to use.',
+            },
+          },
+          required: ['reporter'],
+          additionalProperties: true,
+        },
       },
       required: ['rootUrl', 'dockerImage', 'pulseHostname', 'pulseVhost', 'azureAccountId', 'forceSSL', 'trustProxy', 'nodeEnv'],
       aditionalProperties: false,
@@ -320,13 +333,14 @@ exports.tasks.push({
       dockerImage: '...',
       ingressStaticIpName: '...',
       ingressCertName: '...',
-      pulstHostname: '...',
+      pulseHostname: '...',
       pulseVhost: '...',
       azureAccountId: '...',
       forceSSL: false,
       trustProxy: true,
       nodeEnv: 'production',
       meta: {},
+      errorConfig: {},
     };
 
     const currentRelease = await readRepoYAML(path.join('infrastructure', 'builder', 'current-release.yml'));
