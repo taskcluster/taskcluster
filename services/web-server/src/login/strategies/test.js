@@ -37,13 +37,6 @@ module.exports = class Test {
     return this.userFromIdentity(identity);
   }
 
-  async hasValidAccessToken(accessToken) {
-    // TODO: this method should be removed, as our 3rd party oauth2
-    // access_token should have *no* relationship to the access token from the
-    // login strategy
-    return true;
-  }
-
   useStrategy(app, cfg) {
     // unconditionally log in the user 'test'
     app.get('/login/test', (req, res, next) => {
