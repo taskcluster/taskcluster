@@ -58,7 +58,6 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
    */
   server.grant(oauth2orize.grant.code(async (client, redirectURI, user, ares, areq, done) => {
     const code = taskcluster.slugid();
-    const accessToken = taskcluster.slugid();
 
     if (!_.isEqual(client.scope.sort(), ares.scope.sort())) {
       return done(new oauth2orize.AuthorizationError(null, 'invalid_scope'));
@@ -83,7 +82,7 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
       redirectUri: redirectURI,
       identity: user.identity,
       identityProviderId: user.identityProviderId,
-      accessToken,
+      accessToken: taskcluster.slugid(),
       // A maximum of 10 minutes is recommended in https://tools.ietf.org/html/rfc6749#section-4.1.2
       expires: taskcluster.fromNow('10 minutes'),
     }, true);

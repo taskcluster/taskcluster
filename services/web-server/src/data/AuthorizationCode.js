@@ -5,13 +5,14 @@ const AuthorizationCode = Entity.configure({
   version: 1,
   partitionKey: Entity.keys.ConstantKey('authorizationCodes'),
   rowKey: Entity.keys.StringKey('code'),
+  signEntities: true,
   properties: {
     code: Entity.types.String,
     clientId: Entity.types.String,
     redirectUri: Entity.types.String,
     identity: Entity.types.String,
     identityProviderId: Entity.types.String,
-    accessToken: Entity.types.String,
+    accessToken: Entity.types.EncryptedText,
     expires: Entity.types.Date,
   },
 });

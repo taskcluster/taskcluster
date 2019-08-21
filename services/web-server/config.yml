@@ -41,6 +41,8 @@ defaults:
 
   azure:
     accountId: !env AZURE_ACCOUNT_ID
+    signingKey: !env AZURE_SIGNING_KEY
+    cryptoKey: !env TABLE_CRYPTO_KEY
 
   # Pulse credentials
   pulse:
@@ -83,6 +85,8 @@ development:
 
   azure:
     accountId: 'jungle'
+    signingKey: 'REALULTIMATEPOWER.NET'
+    cryptoKey: 'CNcj2aOozdo7Pn+HEkAIixwninIwKnbYc6JPS9mNxZk='
 
   login:
     sessionSecret: 'keyboard cat'
@@ -93,6 +97,8 @@ test:
 
   azure:
     accountId: 'jungle'
+    signingKey: 'REALULTIMATEPOWER.NET'
+    cryptoKey: 'CNcj2aOozdo7Pn+HEkAIixwninIwKnbYc6JPS9mNxZk='
 
   login:
     strategies: {test: true}

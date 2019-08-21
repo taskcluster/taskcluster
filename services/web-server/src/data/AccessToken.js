@@ -5,6 +5,7 @@ const AccessToken = Entity.configure({
   version: 1,
   partitionKey: Entity.keys.ConstantKey('accessTokens'),
   rowKey: Entity.keys.HashKey('accessToken'),
+  signEntities: true,
   properties: {
     accessToken: Entity.types.String,
     clientId: Entity.types.String,
