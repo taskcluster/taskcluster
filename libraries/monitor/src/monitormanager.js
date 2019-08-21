@@ -119,6 +119,9 @@ class MonitorManager {
     }
 
     if (errorConfig) {
+      if (!plugins.errorPlugins.includes(errorConfig.reporter)) {
+        throw new Error(`Error reporter plugin ${errorConfig.reporter} does not exist.`);
+      }
       this._reporter = new plugins.errorPlugins[errorConfig.reporter]({
         ...errorConfig,
         serviceName: this.serviceName,
