@@ -170,11 +170,11 @@ const load = loader(
     AuthorizationCode: {
       requires: ['cfg', 'monitor'],
       setup: ({cfg, monitor}) => AuthorizationCode.setup({
-        tableName: cfg.azure.authorizationCodeTableName,
+        tableName: 'AuthorizationCodesTable',
         monitor: monitor.childMonitor('table.authorizationCodes'),
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
-          tableName: cfg.azure.authorizationCodeTableName,
+          tableName: 'AuthorizationCodesTable',
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
@@ -184,11 +184,11 @@ const load = loader(
     AccessToken: {
       requires: ['cfg', 'monitor'],
       setup: ({cfg, monitor}) => AccessToken.setup({
-        tableName: cfg.azure.accessTokenTableName,
+        tableName: 'AccessTokenTable',
         monitor: monitor.childMonitor('table.accessTokenTable'),
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
-          tableName: cfg.azure.accessTokenTableName,
+          tableName: 'AccessTokenTable',
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),

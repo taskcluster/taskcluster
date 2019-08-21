@@ -41,8 +41,6 @@ defaults:
 
   azure:
     accountId: !env AZURE_ACCOUNT_ID
-    authorizationCodeTableName: !env AZURE_AUTHORIZATION_CODE_TABLE_NAME
-    accessTokenTableName: !env AZURE_ACCESS_TOKEN_TABLE_NAME
 
   # Pulse credentials
   pulse:
@@ -85,8 +83,6 @@ development:
 
   azure:
     accountId: 'jungle'
-    authorizationCodeTableName: 'AuthorizationCodesTable'
-    accessTokenTableName: 'AccessTokenTable'
 
   login:
     sessionSecret: 'keyboard cat'
@@ -97,8 +93,6 @@ test:
 
   azure:
     accountId: 'jungle'
-    authorizationCodeTableName: 'AuthorizationCodesTable'
-    accessTokenTableName: 'AccessTokenTable'
 
   login:
     strategies: {test: true}
