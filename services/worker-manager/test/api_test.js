@@ -765,7 +765,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       capacityPerInstance: 1,
       machineType: 'n1-standard-2',
       regions: ['us-east1'],
-      userData: {},
+      workerConfig: {},
       scheduling: {},
       networkInterfaces: [],
       disks: [],
