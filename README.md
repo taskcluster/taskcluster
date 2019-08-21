@@ -50,6 +50,14 @@ Configuration for this process is in the form of a YAML file with the following 
 
 Providers configuration depends on the providerType:
 
+### aws
+
+The providerType "aws" is intended for workers provisioned with worker-manager
+providers using providerType "aws".  It requires
+
+	provider:
+		providerType: aws
+
 ### aws-provisioner
 
 The providerType "aws-provisioner" is intended for workers provisioned with
