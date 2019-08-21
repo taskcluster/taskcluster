@@ -1,10 +1,7 @@
-const Debug = require('debug');
 const User = require('../User');
 const identityFromClientId = require('../../utils/identityFromClientId');
 const taskcluster = require('taskcluster-client');
 const { encode, decode } = require('../../utils/codec');
-
-const debug = Debug('strategies.test');
 
 module.exports = class Test {
   constructor() {
@@ -20,7 +17,6 @@ module.exports = class Test {
   }
 
   userFromIdentity(identity) {
-    console.log(identity);
     const encodedUserId = identity.split('/')[1];
     const userId = decode(encodedUserId);
 
