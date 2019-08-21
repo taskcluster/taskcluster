@@ -28,6 +28,7 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/spf13/afero v1.2.2 h1:5jhuqJyZCZf2JRofRvN/nIFgIWNzPa3/Vz8mYylgbWc=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
 github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
+github.com/streadway/amqp v0.0.0-20190819003559-eade30b20f1d/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0Q=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
@@ -50,6 +51,7 @@ github.com/taskcluster/taskcluster/clients/client-go/v15 v15.0.1-0.2019073101424
 github.com/taskcluster/taskcluster/clients/client-go/v15 v15.0.1-0.20190731014247-6cfb37c91ad9/go.mod h1:gwrOEPmy7altG4AdYk8S7xJTeyB09ChVe6uItMOvCAo=
 github.com/taskcluster/taskcluster/clients/client-go/v16 v16.0.0/go.mod h1:X8jVUUThNdOwqhkvi3GImsq0/Jq1GMdt/gvl74ktX64=
 github.com/taskcluster/taskcluster/clients/client-go/v16 v16.1.0/go.mod h1:MhrGgUxD/x0Tf68VcezQNy/IeQn7urCAtJhSdjpj1gg=
+github.com/taskcluster/taskcluster/clients/client-go/v16 v16.2.0/go.mod h1:XVuJuVfKWpJx0Gh5WgFYxM1r4n8sQ4vM7idgC0gQroY=
 github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957 h1:6Fre/uvwovW5YY4nfHZk66cAg9HjT9YdFSAJHUUgOyQ=
 github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957/go.mod h1:dch7ywQEefE1ibFqBG1erFibrdUIwovcwQjksYuHuP4=
 github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f/go.mod h1:N2zxlSyiKSe5eX1tZViRH5QA0qijqEDrYZiPEAiq3wU=
