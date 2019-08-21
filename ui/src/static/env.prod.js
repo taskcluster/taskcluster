@@ -1,6 +1,6 @@
 window.env = {
   APPLICATION_NAME: 'Taskcluster',
-  TASKCLUSTER_ROOT_URL: 'https://taskcluster.net',
+  TASKCLUSTER_ROOT_URL: 'https://tc.example.com',
   GRAPHQL_ENDPOINT: '/graphql',
   GRAPHQL_SUBSCRIPTION_ENDPOINT: '/subscription',
   DOCS_ONLY: 'false',
