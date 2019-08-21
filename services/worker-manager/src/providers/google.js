@@ -308,6 +308,7 @@ class GoogleProvider extends Provider {
                     providerId: this.providerId,
                     workerGroup: this.providerId,
                     rootUrl: this.rootUrl,
+                    workerConfig: workerPool.config.workerConfig || {},
                     userData: workerPool.config.userData,
                   }),
                 },
