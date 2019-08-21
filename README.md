@@ -65,6 +65,14 @@ providers using providerType "google".  It requires
 
 	provider:
 		providerType: google
+		
+### aws
+
+The providerType "aws" is intended for workers provisioned with worker-manager
+providers using providerType "aws".  It requires
+
+	provider:
+		providerType: aws
 
 ### standalone
 
