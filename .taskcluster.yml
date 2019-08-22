@@ -86,11 +86,6 @@ tasks:
           then:
             name: test:cleanup
             command: yarn test:cleanup
-        - name: taskcluster-terraform
-          image: 'jonatanblue/gitlab-ci-terraform:latest'
-          cache: {} # nothing to cache
-          install: ":"  # nothing to do
-          command: 'cd infrastructure/terraform; terraform fmt -check'
         - name: yarn generate
           image: taskcluster/node-and-go:node${node}-go${go}
           command: >-
