@@ -1,11 +1,15 @@
 import React, { Component, Fragment } from 'react';
 import { BrowserRouter, Switch } from 'react-router-dom';
+import { withApollo } from 'react-apollo';
 import { object, arrayOf } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import RouteWithProps from '../components/RouteWithProps';
 import ErrorPanel from '../components/ErrorPanel';
 import { route } from '../utils/prop-types';
+import { withAuth } from '../utils/Auth';
+import isLoggedInQuery from './isLoggedIn.graphql';
 
+@withApollo
 @withStyles(theme => ({
   '@global': {
     [[
@@ -42,6 +46,7 @@ import { route } from '../utils/prop-types';
     },
   },
 }))
+@withAuth
 export default class Main extends Component {
   static propTypes = {
     error: object,
@@ -51,6 +56,24 @@ export default class Main extends Component {
   static defaultProps = {
     error: null,
   };
+
+  // Called on user change because of <App key={auth.user} ... />
+  async componentDidMount() {
+    const { user, onUnauthorize } = this.props;
+    const { data } = await this.props.client.query({
+      query: isLoggedInQuery,
+      fetchPolicy: 'network-only',
+    });
+
+    if (
+      user &&
+      user.identityProviderId !== 'manual' &&
+      data &&
+      data.isLoggedIn === false
+    ) {
+      onUnauthorize();
+    }
+  }
 
   render() {
     const { error, routes } = this.props;
