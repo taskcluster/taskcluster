@@ -1,8 +1,20 @@
 const merge = require('deepmerge');
 const copy = require('@neutrinojs/copy');
 const { join, resolve } = require('path');
+const fs = require('fs');
 
 const DEFAULT_PORT = 5080;
+const STATIC_DIR = join(__dirname, 'src/static');
+const ENV_DEFAULTS = {
+  APPLICATION_NAME: 'Taskcluster',
+  TASKCLUSTER_ROOT_URL: 'https://tc.example.com',
+  GRAPHQL_ENDPOINT: '/graphql',
+  GRAPHQL_SUBSCRIPTION_ENDPOINT: '/subscription',
+  DOCS_ONLY: false,
+  UI_LOGIN_STRATEGY_NAMES: '',
+  GA_TRACKING_ID: '',
+  SENTRY_DSN: '',
+};
 const port = process.env.PORT || DEFAULT_PORT;
 
 require('@babel/register')({
@@ -59,17 +71,6 @@ module.exports = {
             target: 'ws://localhost:3050',
           },
         },
-      },
-      env: {
-        APPLICATION_NAME: 'Application Name',
-        UI_LOGIN_STRATEGY_NAMES: '',
-        PORT: 5080,
-        TASKCLUSTER_ROOT_URL: 'https://taskcluster.net',
-        GRAPHQL_SUBSCRIPTION_ENDPOINT: 'http://localhost:5080/subscription',
-        GRAPHQL_ENDPOINT: 'http://localhost:5080/graphql',
-        GA_TRACKING_ID: '',
-        SENTRY_DSN: '',
-        DOCS_ONLY: false,
       },
     }],
     (neutrino) => {
@@ -158,26 +159,41 @@ module.exports = {
           .test(/taskcluster-version$/)
           .use('raw-loader')
             .loader('raw-loader');
-
+    },
+    (neutrino) => {
+      neutrino.config.resolve
+        .alias.set('taskcluster-ui', resolve(__dirname, 'src/'));
+    },
+    (neutrino) => {
       neutrino.use(copy, {
         patterns: [
           {
             context: 'src/static',
             from: '**/*',
             to: 'static',
-            ignore: ['**/env.*']
-          },
-          {
-            context: 'src/static',
-            from: process.env.NODE_ENV === 'production' ? 'env.prod.js' : 'env.js',
-            to: 'static/env.js'
           },
         ],
       });
-    },
-    (neutrino) => {
-      neutrino.config.resolve
-        .alias.set('taskcluster-ui', resolve(__dirname, 'src/'));
+
+      // Generate env.js if it doesn't exist
+      if (process.env.GENERATE_ENV_JS) {
+        const envJs = `window.env = ${
+          JSON.stringify(
+            Object.keys(ENV_DEFAULTS).reduce((acc, curr) => {
+              acc[curr] = process.env[curr] || ENV_DEFAULTS[curr];
+
+              return acc;
+            }, {}), null, 2)
+        };`;
+
+        if (!fs.existsSync(STATIC_DIR)){
+          fs.mkdirSync(STATIC_DIR);
+        }
+
+        if (!fs.existsSync(join(STATIC_DIR, 'env.js'))){
+          fs.writeFileSync(join(STATIC_DIR, 'env.js'), envJs, 'utf8');
+        }
+      }
     },
     ['@neutrinojs/karma', {
       plugins: [
