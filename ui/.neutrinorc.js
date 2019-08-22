@@ -193,6 +193,12 @@ module.exports = {
         if (!fs.existsSync(join(STATIC_DIR, 'env.js'))){
           fs.writeFileSync(join(STATIC_DIR, 'env.js'), envJs, 'utf8');
         }
+      } else {
+        // just so that we never end up accidentally including something
+        // in a production build
+        if (fs.existsSync(join(STATIC_DIR, 'env.js'))) {
+          fs.unlinkSync(join(STATIC_DIR, 'env.js'));
+        }
       }
     },
     ['@neutrinojs/karma', {
