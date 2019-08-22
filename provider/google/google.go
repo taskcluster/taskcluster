@@ -83,6 +83,12 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 	providerMetadata["zone"] = zone
 	providerMetadata["region"] = zone[:len(zone)-1]
 
+	state.WorkerLocation = map[string]string{
+		"cloud":  "google",
+		"region": providerMetadata["region"],
+		"zone":   providerMetadata["zone"],
+	}
+
 	state.ProviderMetadata = providerMetadata
 
 	state.WorkerConfig = state.WorkerConfig.Merge(userData.WorkerConfig)
@@ -122,6 +128,12 @@ providers using providerType "google".  It requires
 
 	provider:
 		providerType: google
+
+The TASKCLUSTER_WORKER_LOCATION of this provider has the following fields:
+
+- cloud: aws
+- region
+- zone
 `
 }
 

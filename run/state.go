@@ -13,7 +13,7 @@ import (
 // bit-by-bit during the start-worker process.
 type State struct {
 	// Information about the Taskcluster deployment where this
-	// worker is runing
+	// worker is running
 	RootURL string
 
 	// Credentials for the worker, and their expiration time.  Shortly before
@@ -37,6 +37,9 @@ type State struct {
 	// the accumulated WorkerConfig for this run, including files to create
 	WorkerConfig *cfg.WorkerConfig
 	Files        []files.File
+
+	// The worker location configuration
+	WorkerLocation map[string]string
 }
 
 // Check that the provided provided the information it was supposed to.
@@ -59,6 +62,10 @@ func (state *State) CheckProviderResults() error {
 
 	if state.WorkerID == "" {
 		return fmt.Errorf("provider did not set WorkerID")
+	}
+
+	if state.WorkerLocation["cloud"] == "" {
+		return fmt.Errorf("provider did not set the cloud name")
 	}
 
 	return nil

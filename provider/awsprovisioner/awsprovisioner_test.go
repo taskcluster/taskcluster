@@ -3,7 +3,7 @@ package awsprovisioner
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/run"
@@ -14,9 +14,9 @@ import (
 func TestAwsProviderConfigureRun(t *testing.T) {
 	runnerWorkerConfig := cfg.NewWorkerConfig()
 	runnerWorkerConfig, err := runnerWorkerConfig.Set("from-user-data", false) // overridden
-	assert.NoError(t, err, "setting config")
+	require.NoError(t, err, "setting config")
 	runnerWorkerConfig, err = runnerWorkerConfig.Set("from-runner-cfg", true)
-	assert.NoError(t, err, "setting config")
+	require.NoError(t, err, "setting config")
 	runnercfg := &cfg.RunnerConfig{
 		Provider: cfg.ProviderConfig{
 			ProviderType: "aws-provisioner",
@@ -38,7 +38,7 @@ func TestAwsProviderConfigureRun(t *testing.T) {
 
 	userDataWorkerConfig := cfg.NewWorkerConfig()
 	userDataWorkerConfig, err = userDataWorkerConfig.Set("from-user-data", true)
-	assert.NoError(t, err, "setting config")
+	require.NoError(t, err, "setting config")
 	userData := &UserData{
 		Data:               userDataWorkerConfig,
 		WorkerType:         "wt",
@@ -59,24 +59,24 @@ func TestAwsProviderConfigureRun(t *testing.T) {
 	}
 
 	p, err := new(runnercfg, tc.FakeAwsProvisionerClientFactory, &fakeMetadataService{nil, userData, metaData})
-	assert.NoError(t, err, "creating provider")
+	require.NoError(t, err, "creating provider")
 
 	state := run.State{
 		WorkerConfig: runnercfg.WorkerConfig,
 	}
 	err = p.ConfigureRun(&state)
-	assert.NoError(t, err, "ConfigureRun")
+	require.NoError(t, err, "ConfigureRun")
 
-	assert.Nil(t, tc.FakeAwsProvisionerGetSecret(token), "secret should have been removed")
+	require.Nil(t, tc.FakeAwsProvisionerGetSecret(token), "secret should have been removed")
 
-	assert.Equal(t, "https://tc.example.com", state.RootURL, "rootURL is correct")
-	assert.Equal(t, "cli", state.Credentials.ClientID, "clientID is correct")
-	assert.Equal(t, "at", state.Credentials.AccessToken, "accessToken is correct")
-	assert.Equal(t, "cert", state.Credentials.Certificate, "cert is correct")
-	assert.Equal(t, "apv1/wt", state.WorkerPoolID, "workerPoolID is correct")
-	assert.Equal(t, "rgn", state.WorkerGroup, "workerGroup is correct")
-	assert.Equal(t, "i-123", state.WorkerID, "workerID is correct")
-	assert.Equal(t, map[string]string{
+	require.Equal(t, "https://tc.example.com", state.RootURL, "rootURL is correct")
+	require.Equal(t, "cli", state.Credentials.ClientID, "clientID is correct")
+	require.Equal(t, "at", state.Credentials.AccessToken, "accessToken is correct")
+	require.Equal(t, "cert", state.Credentials.Certificate, "cert is correct")
+	require.Equal(t, "apv1/wt", state.WorkerPoolID, "workerPoolID is correct")
+	require.Equal(t, "rgn", state.WorkerGroup, "workerGroup is correct")
+	require.Equal(t, "i-123", state.WorkerID, "workerID is correct")
+	require.Equal(t, map[string]string{
 		"ami-id":            "ami-123",
 		"instance-id":       "i-123",
 		"instance-type":     "g12.128xlarge",
@@ -87,8 +87,12 @@ func TestAwsProviderConfigureRun(t *testing.T) {
 		"region":            "rgn",
 	}, state.ProviderMetadata, "providerMetadata is correct")
 
-	assert.Equal(t, true, state.WorkerConfig.MustGet("from-user-data"), "value for from-user-data")
-	assert.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
+	require.Equal(t, true, state.WorkerConfig.MustGet("from-user-data"), "value for from-user-data")
+	require.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
+
+	require.Equal(t, "aws", state.WorkerLocation["cloud"])
+	require.Equal(t, "rgn", state.WorkerLocation["region"])
+	require.Equal(t, "rgna", state.WorkerLocation["availabilityZone"])
 }
 
 func TestCheckTerminationTime(t *testing.T) {
@@ -107,19 +111,19 @@ func TestCheckTerminationTime(t *testing.T) {
 	p.checkTerminationTime()
 
 	// not time yet..
-	assert.Equal(t, []protocol.Message{}, transp.Messages())
+	require.Equal(t, []protocol.Message{}, transp.Messages())
 
 	metaData["/meta-data/spot/termination-time"] = "now!"
 	p.checkTerminationTime()
 
 	// protocol does not have the capability set..
-	assert.Equal(t, []protocol.Message{}, transp.Messages())
+	require.Equal(t, []protocol.Message{}, transp.Messages())
 
 	proto.Capabilities.Add("graceful-termination")
 	p.checkTerminationTime()
 
 	// now we send a message..
-	assert.Equal(t, []protocol.Message{
+	require.Equal(t, []protocol.Message{
 		protocol.Message{
 			Type: "graceful-termination",
 			Properties: map[string]interface{}{

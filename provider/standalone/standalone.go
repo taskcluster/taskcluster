@@ -33,8 +33,17 @@ func (p *StandaloneProvider) ConfigureRun(state *run.State) error {
 	state.WorkerPoolID = pc.WorkerPoolID
 	state.WorkerGroup = pc.WorkerGroup
 	state.WorkerID = pc.WorkerID
+	state.WorkerLocation = map[string]string{
+		"cloud": "standalone",
+	}
 
 	state.ProviderMetadata = map[string]string{}
+
+	if workerLocation, ok := p.runnercfg.Provider.Data["workerLocation"]; ok {
+		for k, v := range workerLocation.(map[string]string) {
+			state.WorkerLocation[k] = v
+		}
+	}
 
 	return nil
 }
@@ -75,5 +84,10 @@ configuration:
 		workerPoolID: ..
 		workerGroup: ..
 		workerID: ..
+		workerLocation:
+			customLocationInfo1: ...
+			customLocationInfo2: ...
+			...
+			customLocationInfoN: ...
 `
 }

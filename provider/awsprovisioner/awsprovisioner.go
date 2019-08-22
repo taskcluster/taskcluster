@@ -99,6 +99,11 @@ func (p *AwsProvisionerProvider) ConfigureRun(state *run.State) error {
 
 	state.WorkerID = awsMetadata["instance-id"]
 	state.ProviderMetadata = awsMetadata
+	state.WorkerLocation = map[string]string{
+		"cloud":            "aws",
+		"region":           awsMetadata["region"],
+		"availabilityZone": awsMetadata["availability-zone"],
+	}
 
 	// As a special case, set the shutdown behavior configuration specifically
 	// for docker-worker on AWS.  In future this should be set in the worker
@@ -178,6 +183,12 @@ the legacy aws-provisioner application.  It requires
 
 	provider:
 		providerType: aws-provisioner
+
+The TASKCLUSTER_WORKER_LOCATION of this provider has the following fields:
+
+- cloud: aws
+- region
+- availabilityZone
 `
 }
 

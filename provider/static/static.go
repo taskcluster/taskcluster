@@ -51,6 +51,15 @@ func (p *StaticProvider) ConfigureRun(state *run.State) error {
 	}
 
 	state.ProviderMetadata = map[string]string{}
+	state.WorkerLocation = map[string]string{
+		"cloud": "static",
+	}
+
+	if workerLocation, ok := p.runnercfg.Provider.Data["workerLocation"]; ok {
+		for k, v := range workerLocation.(map[string]string) {
+			state.WorkerLocation[k] = v
+		}
+	}
 
 	return nil
 }
@@ -93,6 +102,11 @@ providers using providerType "static".  It requires
 		workerGroup: ...
 		workerID: ...
 		staticSecret: ... // shared secret configured for this worker in worker-manager
+		workerLocation:
+			customLocationInfo1: ...
+			customLocationInfo2: ...
+			...
+			customLocationInfoN: ...
 `
 }
 

@@ -36,6 +36,11 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 	}
 
 	state.RootURL = userData.RootURL
+	state.WorkerLocation = map[string]string{
+		"cloud":            "aws",
+		"availabilityZone": iid_json.AvailabilityZone,
+		"region":           iid_json.Region,
+	}
 
 	wm, err := p.workerManagerClientFactory(state.RootURL, nil)
 	if err != nil {
@@ -117,6 +122,12 @@ providers using providerType "aws".  It requires
 
 	provider:
 		providerType: aws
+
+The TASKCLUSTER_WORKER_LOCATION of this provider has the following fields:
+
+- cloud: aws
+- region
+- availabilityZone
 `
 }
 
