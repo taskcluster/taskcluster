@@ -180,7 +180,8 @@
     "dev:init": "node infrastructure/tooling/src/main.js dev --init",
     "dev:apply": "node infrastructure/tooling/src/main.js dev --k8s-action apply",
     "dev:delete": "node infrastructure/tooling/src/main.js dev --k8s-action delete",
-    "dev:verify": "node infrastructure/tooling/src/main.js dev --k8s-action verify"
+    "dev:verify": "node infrastructure/tooling/src/main.js dev --k8s-action verify",
+    "smoketest": "node infrastructure/tooling/src/main.js smoketest"
   },
   "renovate": {
     "extends": [
