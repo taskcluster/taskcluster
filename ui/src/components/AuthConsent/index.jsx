@@ -117,6 +117,7 @@ export default class AuthConsent extends Component {
                     primary="Expires"
                     secondary={
                       <DatePicker
+                        name="expires"
                         value={expires}
                         onChange={onExpirationChange}
                         format="YYYY/MM/DD"

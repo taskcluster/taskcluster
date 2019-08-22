@@ -13,6 +13,19 @@ const AccessToken = Entity.configure({
     identity: Entity.types.String,
     identityProviderId: Entity.types.String,
     expires: Entity.types.Date,
+    clientDetails: Entity.types.Schema({
+      type: 'object',
+      properties: {
+        clientId: { type: 'string' },
+        description: { type: 'string' },
+        scopes: { type: 'array' },
+        expires: {type: 'string', format: 'date-time'},
+        deleteOnExpiration: { type: 'boolean' },
+      },
+      required: [
+        'clientId', 'description', 'scopes', 'expires',
+      ],
+    }),
   },
 });
 

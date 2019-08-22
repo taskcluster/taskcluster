@@ -14,6 +14,19 @@ const AuthorizationCode = Entity.configure({
     identityProviderId: Entity.types.String,
     accessToken: Entity.types.EncryptedText,
     expires: Entity.types.Date,
+    clientDetails: Entity.types.Schema({
+      type: 'object',
+      properties: {
+        clientId: { type: 'string' },
+        description: { type: 'string' },
+        scopes: { type: 'array' },
+        expires: { type: 'string', format: 'date-time' },
+        deleteOnExpiration: { type: 'boolean' },
+      },
+      required: [
+        'clientId', 'description', 'scopes', 'expires',
+      ],
+    }),
   },
 });
 

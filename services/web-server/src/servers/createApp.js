@@ -112,7 +112,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
   // 3. Exchange code for an OAuth2 token
   app.post('/login/oauth/token', token);
   // 4. Get Taskcluster credentials
-  app.get('/login/oauth/credentials/:provider', getCredentials);
+  app.get('/login/oauth/credentials', getCredentials);
 
   return app;
 };
