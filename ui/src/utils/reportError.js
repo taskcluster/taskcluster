@@ -6,7 +6,7 @@ import { withScope, captureException } from '@sentry/browser';
  * @param errorInfo:  An object with extra information to send.
  */
 export default (error, errorInfo) => {
-  if (!process.env.SENTRY_DSN) {
+  if (!window.env.SENTRY_DSN) {
     return;
   }
 

@@ -53,7 +53,7 @@ export default class Button extends Component {
   handleButtonClick = e => {
     const { onClick, track } = this.props;
 
-    if (track && process.env.GA_TRACKING_ID) {
+    if (track && window.env.GA_TRACKING_ID) {
       const trackingEvent = { ...defaultTrack, ...track };
 
       ReactGA.event(trackingEvent);
