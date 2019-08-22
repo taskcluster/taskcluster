@@ -29,4 +29,6 @@ extend type Query {
   # monitor this expiration and refresh the credentials if necessary, by calling
   # this endpoint again, if they have expired.
   getCredentials: Credentials
+  # Return true if the user is logged in.
+  isLoggedIn: Boolean!
 }
