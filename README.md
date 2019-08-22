@@ -66,6 +66,12 @@ the legacy aws-provisioner application.  It requires
 	provider:
 		providerType: aws-provisioner
 
+The TASKCLUSTER_WORKER_LOCATION of this provider has the following fields:
+
+- cloud: aws
+- region
+- availabilityZone
+
 ### google
 
 The providerType "google" is intended for workers provisioned with worker-manager
@@ -73,6 +79,12 @@ providers using providerType "google".  It requires
 
 	provider:
 		providerType: google
+
+The TASKCLUSTER_WORKER_LOCATION of this provider has the following fields:
+
+- cloud: aws
+- region
+- zone
 
 ### standalone
 
@@ -91,6 +103,17 @@ configuration:
 		workerPoolID: ..
 		workerGroup: ..
 		workerID: ..
+		workerLocation: // custom fields for TASKCLUSTER_WORKER_LOCATION
+			customLocationInfo1: ...
+			customLocationInfo2: ...
+			...
+			customLocationInfoN: ...
+
+The TASKCLUSTER_WORKER_LOCATION of this provider has the following fields:
+
+- cloud: standalone
+- customLocationInfo1: ...
+- ...
 
 ### static
 
@@ -105,6 +128,17 @@ providers using providerType "static".  It requires
 		workerGroup: ...
 		workerID: ...
 		staticSecret: ... // shared secret configured for this worker in worker-manager
+		workerLocation:   // custom fields for TASKCLUSTER_WORKER_LOCATION
+			customLocationInfo1: ...
+			customLocationInfo2: ...
+			...
+			customLocationInfoN: ...
+
+The TASKCLUSTER_WORKER_LOCATION of this provider has the following fields:
+
+- cloud: static
+- customLocationInfo1: ...
+- ...
 
 
 ## Workers

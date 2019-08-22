@@ -33,8 +33,17 @@ func (p *StandaloneProvider) ConfigureRun(state *run.State) error {
 	state.WorkerPoolID = pc.WorkerPoolID
 	state.WorkerGroup = pc.WorkerGroup
 	state.WorkerID = pc.WorkerID
+	state.WorkerLocation = map[string]string{
+		"cloud": "standalone",
+	}
 
 	state.ProviderMetadata = map[string]string{}
+
+	if workerLocation, ok := p.runnercfg.Provider.Data["workerLocation"]; ok {
+		for k, v := range workerLocation.(map[string]string) {
+			state.WorkerLocation[k] = v
+		}
+	}
 
 	return nil
 }
@@ -75,5 +84,16 @@ configuration:
 		workerPoolID: ..
 		workerGroup: ..
 		workerID: ..
+		workerLocation: // custom fields for TASKCLUSTER_WORKER_LOCATION
+			customLocationInfo1: ...
+			customLocationInfo2: ...
+			...
+			customLocationInfoN: ...
+
+The TASKCLUSTER_WORKER_LOCATION of this provider has the following fields:
+
+- cloud: standalone
+- customLocationInfo1: ...
+- ...
 `
 }

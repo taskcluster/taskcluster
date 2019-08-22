@@ -90,4 +90,8 @@ func TestGoogleConfigureRun(t *testing.T) {
 
 	require.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
 	require.Equal(t, true, state.WorkerConfig.MustGet("from-ud"), true)
+
+	require.Equal(t, "google", state.WorkerLocation["cloud"])
+	require.Equal(t, "in-central-1", state.WorkerLocation["region"])
+	require.Equal(t, "in-central-1b", state.WorkerLocation["zone"])
 }

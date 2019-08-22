@@ -53,6 +53,16 @@ func (d *dockerworker) ConfigureRun(state *run.State) error {
 		}
 	}
 
+	workerLocationJson, err := json.Marshal(state.WorkerLocation)
+	if err != nil {
+		return fmt.Errorf("Error encoding worker location: %v", err)
+	}
+
+	state.WorkerConfig, err = state.WorkerConfig.Set("workerLocation", string(workerLocationJson))
+	if err != nil {
+		return fmt.Errorf("Could not set worker location in the worker config: %v", err)
+	}
+
 	set := func(key, value string) {
 		var err error
 		// only programming errors can cause this to fail
