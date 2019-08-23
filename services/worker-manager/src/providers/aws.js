@@ -126,7 +126,7 @@ class AwsProvider extends Provider {
         providerData: {
           region: config.region,
           groups: spawned.Groups,
-          amiLaunchIndexes: spawned.Instances.map(i => i.AmiLaunchIndex),
+          amiLaunchIndex: i.AmiLaunchIndex,
           imageId: i.ImageId,
           instanceType: i.InstanceType,
           architecture: i.Architecture,
