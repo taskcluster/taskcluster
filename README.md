@@ -74,7 +74,7 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [Queue Service](services/queue#readme)
     * [Secrets Service](services/secrets#readme)
     * [Web-Server Service](services/web-server#readme)
-    * [Worker Manager](services/worker-manager#readme)
+    * [Worker Manager Service](services/worker-manager#readme)
 * [Taskcluster UI](ui#readme)
     * [ui/src/components/DateDistance](ui/src/components/DateDistance#readme)
     * [ui/src/components/Search](ui/src/components/Search#readme)

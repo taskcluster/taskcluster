@@ -1,4 +1,4 @@
-# Worker Manager
+# Worker Manager Service
 
 The worker manager service manages workers, including interacting with cloud services to create new workers on demand.
 
@@ -14,4 +14,4 @@ Using [taskcluster-cli](https://github.com/taskcluster/taskcluster-cli), run `ev
 
 ## Implementing Providers
 
-See [providers.md](providers.md) for details on implementing providers.
+See [docs/providers.md](docs/providers.md) for details on implementing providers.
