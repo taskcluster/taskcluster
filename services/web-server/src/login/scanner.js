@@ -45,6 +45,8 @@ module.exports = async (auth, strategies) => {
         user = await strategy.userFromClientId(client.clientId);
 
         if (!user) {
+          // this user has been deleted, so disable the client
+          await auth.disableClient(client.clientId);
           continue;
         }
 

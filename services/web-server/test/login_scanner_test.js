@@ -98,7 +98,7 @@ suite(testing.suiteName(), () => {
     addClient('test/NOSUCH/hi', ['assume:NOSUCH']);
     await scan(auth, strategies);
     assert.equal(clients['test/user1/x'].disabled, false);
-    assert.equal(clients['test/NOSUCH/hi'].disabled, false); // XXX this doesn't seem right
+    assert.equal(clients['test/NOSUCH/hi'].disabled, true);
   });
 
   test('test strategy with valid but disabled client', async function() {
