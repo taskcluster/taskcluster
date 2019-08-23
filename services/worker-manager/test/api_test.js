@@ -2,6 +2,8 @@ const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
+const fs = require('fs');
+const path = require('path');
 
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
@@ -20,6 +22,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       {providerId: 'testing2', providerType: 'testing'},
       {providerId: 'static', providerType: 'static'},
       {providerId: 'google', providerType: 'google'},
+      {providerId: 'aws', providerType: 'aws'},
     ].sort());
   });
 
@@ -786,10 +789,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     const workerGroup = 'wg';
     const workerId = 'wi';
     const workerIdentityProof = {'token': 'tok'};
-    const aws_workerIdentityProof = {
-      "document": '{\n  "accountId" : "710952102342",\n  "availabilityZone" : "us-west-2a",\n  "ramdiskId" : null,\n  "kernelId" : null,\n  "pendingTime" : "2019-08-15T18:19:47Z",\n  "architecture" : "x86_64",\n  "privateIp" : "172.31.23.159",\n  "devpayProductCodes" : null,\n  "marketplaceProductCodes" : null,\n  "version" : "2017-09-30",\n  "region" : "us-west-2",\n  "imageId" : "ami-082b5a644766e0e6f",\n  "billingProducts" : null,\n  "instanceId" : "i-02312cd4f06c990ca",\n  "instanceType" : "t2.micro"\n}',
-      "signature": "gCB6UdLEc8np0UsBtT2OfRRvi7BW0qQ9nz/hAD4puflRu6PZBkgCGdYFWN5CVbg+c4VgjnNDiMjT\nk0qFGoV18sMJVsPEVN33HbTr0nYmDbY9rWy3NssmuOg5+SUiSRfci0LgqdTtdTOcen9KLk5peh/h\n58rdSJZbqCgadrDhOqA=",
-    };
 
     const defaultRegisterWorker = {
       workerPoolId, providerId, workerGroup, workerId, workerIdentityProof,
@@ -924,39 +923,48 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
     });
 
-    test.only('AWS instance identity verification', async function() {
+    test('AWS instance identity verification', async function() {
+      const awsProviderId = 'aws';
+      const awsWorkerIdentityProof = {
+        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
+      };
+      const awsWorkerIdentityProofParsed = JSON.parse(awsWorkerIdentityProof.document);
+
       await helper.WorkerPool.create({
         ...defaultWorkerPool,
-        providerId: 'aws',
+        providerId: awsProviderId,
       });
       await helper.Worker.create({
         ...defaultWorker,
-        workerId: 'i-02312cd4f06c990ca',
-        providerId: 'aws',
+        workerId: awsWorkerIdentityProofParsed.instanceId,
+        providerId: awsProviderId,
         providerData: {
-          region: 'us-west-2',
-          imageId: 'ami-082b5a644766e0e6f',
-          instanceType: 't2.micro',
-          architecture: 'x86_64',
-          availabilityZone: 'us-west-2a',
-          privateIp: '172.31.23.159',
-          owner: '710952102342',
+          region: awsWorkerIdentityProofParsed.region,
+          imageId: awsWorkerIdentityProofParsed.imageId,
+          instanceType: awsWorkerIdentityProofParsed.instanceType,
+          architecture: awsWorkerIdentityProofParsed.architecture,
+          availabilityZone: awsWorkerIdentityProofParsed.availabilityZone,
+          privateIp: awsWorkerIdentityProofParsed.privateIp,
+          owner: awsWorkerIdentityProofParsed.accountId,
         },
       });
 
       const res = await helper.workerManager.registerWorker({
         ...defaultRegisterWorker,
-        workerId: 'i-02312cd4f06c990ca',
-        providerId: 'aws',
-        workerIdentityProof: aws_workerIdentityProof,
+        workerId: awsWorkerIdentityProofParsed.instanceId,
+        providerId: awsProviderId,
+        workerIdentityProof: awsWorkerIdentityProof,
       });
 
-      assert.equal(res.credentials.clientId, `worker/aws/${workerPoolId}/${workerGroup}/i-02312cd4f06c990ca`);
+      assert.equal(res.credentials.clientId,
+        `worker/${awsProviderId}/${workerPoolId}/${workerGroup}/${awsWorkerIdentityProofParsed.instanceId}`
+      );
 
       const scopes = new Set(JSON.parse(res.credentials.certificate).scopes);
       const msg = `got scopes ${[...scopes].join(', ')}`;
       assert(scopes.has(`assume:worker-pool:${workerPoolId}`), msg);
-      assert(scopes.has(`assume:worker-id:${workerGroup}/i-02312cd4f06c990ca`), msg);
+      assert(scopes.has(`assume:worker-id:${workerGroup}/${awsWorkerIdentityProofParsed.instanceId}`), msg);
       assert(scopes.has(`secrets:get:worker-pool:${workerPoolId}`), msg);
       assert(scopes.has(`queue:claim-work:${workerPoolId}`), msg);
     });
