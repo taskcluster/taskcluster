@@ -12,7 +12,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-client-go/tcpurgecache"
 	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
@@ -178,7 +177,7 @@ func (m *MockAWSProvisionedEnvironment) PrivateHostSetup(t *testing.T) interface
 
 func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), err error) {
 	td := setupEnvironment(t)
-	workerType := slugid.Nice()
+	workerType := testWorkerType()
 	configureForAWS = true
 	oldEC2MetadataBaseURL := EC2MetadataBaseURL
 	EC2MetadataBaseURL = "http://localhost:13243/latest"

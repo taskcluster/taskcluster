@@ -146,7 +146,7 @@ func setup(t *testing.T) (teardown func()) {
 			TasksDir:                       testDir,
 			WorkerGroup:                    "test-worker-group",
 			WorkerID:                       "test-worker-id",
-			WorkerType:                     slugid.Nice(),
+			WorkerType:                     testWorkerType(),
 			WorkerTypeMetadata: map[string]interface{}{
 				"aws": map[string]string{
 					"ami-id":            "test-ami",
@@ -172,6 +172,14 @@ func setup(t *testing.T) (teardown func()) {
 	}
 	setConfigRunTasksAsCurrentUser()
 	return teardown
+}
+
+// testWorkerType returns a fake workerType identifier that conforms to
+// workerType naming restrictions.
+//
+// See https://bugzil.la/1553953
+func testWorkerType() string {
+	return "test-" + strings.ToLower(strings.Replace(slugid.Nice(), "_", "", -1)) + "-a"
 }
 
 func NewQueue(t *testing.T) *tcqueue.Queue {
