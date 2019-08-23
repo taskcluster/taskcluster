@@ -730,6 +730,28 @@
             "children": [
               {
                 "children": [
+                ],
+                "data": {
+                  "order": 20,
+                  "title": "Login Identities"
+                },
+                "name": "login-identities",
+                "next": {
+                  "path": "manual/design/conventions/actions",
+                  "title": "Action Tasks"
+                },
+                "path": "manual/design/conventions/login-identities",
+                "prev": {
+                  "path": "manual/design/conventions",
+                  "title": "Conventions"
+                },
+                "up": {
+                  "path": "manual/design/conventions",
+                  "title": "Conventions"
+                }
+              },
+              {
+                "children": [
                   {
                     "children": [
                     ],
@@ -808,8 +830,8 @@
                 },
                 "path": "manual/design/conventions/actions",
                 "prev": {
-                  "path": "manual/design/conventions",
-                  "title": "Conventions"
+                  "path": "manual/design/conventions/login-identities",
+                  "title": "Login Identities"
                 },
                 "up": {
                   "path": "manual/design/conventions",
@@ -867,8 +889,8 @@
             },
             "name": "conventions",
             "next": {
-              "path": "manual/design/conventions/actions",
-              "title": "Action Tasks"
+              "path": "manual/design/conventions/login-identities",
+              "title": "Login Identities"
             },
             "path": "manual/design/conventions",
             "prev": {
@@ -1320,8 +1342,8 @@
             },
             "name": "handling-high-load",
             "next": {
-              "path": "reference/README",
-              "title": "Taskcluster Reference"
+              "path": "manual/access-control",
+              "title": "Access Control"
             },
             "path": "manual/using/handling-high-load",
             "prev": {
@@ -1348,6 +1370,94 @@
         "prev": {
           "path": "manual/design/conventions/task-logs",
           "title": "Task Logs"
+        },
+        "up": {
+          "path": "manual",
+          "title": "Taskcluster Manual"
+        }
+      },
+      {
+        "children": [
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 10,
+              "title": "API Access Control"
+            },
+            "name": "api",
+            "next": {
+              "path": "manual/access-control/user-signin",
+              "title": "User Sign-In"
+            },
+            "path": "manual/access-control/api",
+            "prev": {
+              "path": "manual/access-control",
+              "title": "Access Control"
+            },
+            "up": {
+              "path": "manual/access-control",
+              "title": "Access Control"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 20,
+              "title": "User Sign-In"
+            },
+            "name": "user-signin",
+            "next": {
+              "path": "manual/access-control/third-party",
+              "title": "Third-Party Sign-In"
+            },
+            "path": "manual/access-control/user-signin",
+            "prev": {
+              "path": "manual/access-control/api",
+              "title": "API Access Control"
+            },
+            "up": {
+              "path": "manual/access-control",
+              "title": "Access Control"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 30,
+              "title": "Third-Party Sign-In"
+            },
+            "name": "third-party",
+            "next": {
+              "path": "reference/README",
+              "title": "Taskcluster Reference"
+            },
+            "path": "manual/access-control/third-party",
+            "prev": {
+              "path": "manual/access-control/user-signin",
+              "title": "User Sign-In"
+            },
+            "up": {
+              "path": "manual/access-control",
+              "title": "Access Control"
+            }
+          }
+        ],
+        "data": {
+          "order": 1000,
+          "title": "Access Control"
+        },
+        "name": "access-control",
+        "next": {
+          "path": "manual/access-control/api",
+          "title": "API Access Control"
+        },
+        "path": "manual/access-control",
+        "prev": {
+          "path": "manual/using/handling-high-load",
+          "title": "Handling High Load"
         },
         "up": {
           "path": "manual",
@@ -2296,8 +2406,8 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/worker-manager/README",
-                  "title": "worker-manager"
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
                 },
                 "path": "reference/core/secrets/logs",
                 "prev": {
@@ -2321,6 +2431,71 @@
             "path": "reference/core/secrets/README",
             "prev": {
               "path": "reference/core/purge-cache/logs",
+              "title": "logs"
+            },
+            "up": {
+              "path": "reference/core/README",
+              "title": "Core Services"
+            }
+          },
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 10,
+                  "title": "GitHub Login Strategy"
+                },
+                "name": "github-login-strategy",
+                "next": {
+                  "path": "reference/core/web-server/mozilla-auth0-login-strategy",
+                  "title": "Mozilla-Auth0 Login Strategy"
+                },
+                "path": "reference/core/web-server/github-login-strategy",
+                "prev": {
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
+                },
+                "up": {
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 20,
+                  "title": "Mozilla-Auth0 Login Strategy"
+                },
+                "name": "mozilla-auth0-login-strategy",
+                "next": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                },
+                "path": "reference/core/web-server/mozilla-auth0-login-strategy",
+                "prev": {
+                  "path": "reference/core/web-server/github-login-strategy",
+                  "title": "GitHub Login Strategy"
+                },
+                "up": {
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
+                }
+              }
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "web-server",
+            "next": {
+              "path": "reference/core/web-server/github-login-strategy",
+              "title": "GitHub Login Strategy"
+            },
+            "path": "reference/core/web-server/README",
+            "prev": {
+              "path": "reference/core/secrets/logs",
               "title": "logs"
             },
             "up": {
@@ -2453,8 +2628,8 @@
             },
             "path": "reference/core/worker-manager/README",
             "prev": {
-              "path": "reference/core/secrets/logs",
-              "title": "logs"
+              "path": "reference/core/web-server/mozilla-auth0-login-strategy",
+              "title": "Mozilla-Auth0 Login Strategy"
             },
             "up": {
               "path": "reference/core/README",
@@ -2777,8 +2952,8 @@
     },
     "path": "reference/README",
     "prev": {
-      "path": "manual/using/handling-high-load",
-      "title": "Handling High Load"
+      "path": "manual/access-control/third-party",
+      "title": "Third-Party Sign-In"
     }
   },
   "resources": {
