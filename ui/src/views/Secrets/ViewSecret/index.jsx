@@ -28,6 +28,8 @@ export default class ViewSecret extends Component {
     loading: false,
     // Mutation errors
     error: null,
+    dialogError: null,
+    dialogOpen: false,
     snackbar: {
       message: '',
       variant: 'success',
@@ -35,21 +37,21 @@ export default class ViewSecret extends Component {
     },
   };
 
-  handleDeleteSecret = async name => {
-    this.setState({ error: null, loading: true });
+  handleDeleteSecret = name => {
+    this.setState({ dialogError: null, loading: true });
 
-    try {
-      await this.props.client.mutate({
-        mutation: deleteSecretQuery,
-        variables: { name },
-      });
+    return this.props.client.mutate({
+      mutation: deleteSecretQuery,
+      variables: { name },
+    });
+  };
 
-      this.setState({ error: null, loading: false });
+  handleDialogActionError = error => {
+    this.setState({ dialogError: error, loading: false });
+  };
 
-      this.props.history.push(`/secrets`);
-    } catch (error) {
-      this.setState({ error, loading: false });
-    }
+  handleDialogActionComplete = () => {
+    this.props.history.push(`/secrets`);
   };
 
   handleSaveSecret = async (name, secret) => {
@@ -92,8 +94,20 @@ export default class ViewSecret extends Component {
     });
   };
 
+  handleDialogActionClose = () => {
+    this.setState({
+      dialogOpen: false,
+      dialogError: null,
+      error: null,
+    });
+  };
+
+  handleDialogActionOpen = () => {
+    this.setState({ dialogOpen: true });
+  };
+
   render() {
-    const { loading, error, snackbar } = this.state;
+    const { loading, error, snackbar, dialogError, dialogOpen } = this.state;
     const { description, isNewSecret, data } = this.props;
 
     return (
@@ -117,6 +131,12 @@ export default class ViewSecret extends Component {
                 secret={data.secret}
                 onSaveSecret={this.handleSaveSecret}
                 onDeleteSecret={this.handleDeleteSecret}
+                dialogError={dialogError}
+                dialogOpen={dialogOpen}
+                onDialogActionError={this.handleDialogActionError}
+                onDialogActionComplete={this.handleDialogActionComplete}
+                onDialogActionClose={this.handleDialogActionClose}
+                onDialogActionOpen={this.handleDialogActionOpen}
               />
             )}
           </Fragment>

@@ -74,6 +74,8 @@ suite(testing.suiteName(), () => {
     let iterations = 0;
 
     const i = new subject({
+      name: 'foo',
+      monitor,
       maxIterationTime: 3000,
       waitTime: 1000,
       watchDog: 0,
@@ -82,7 +84,6 @@ suite(testing.suiteName(), () => {
         iterations++;
         return 1;
       },
-      monitor,
     });
 
     let err = null;
@@ -106,6 +107,8 @@ suite(testing.suiteName(), () => {
 
   test('should stop after current iteration completes', runWithFakeTime(async function() {
     const i = new subject({
+      name: 'foo',
+      monitor,
       maxIterationTime: 3000,
       waitTime: 10,
       maxIterations: 5,
@@ -118,11 +121,16 @@ suite(testing.suiteName(), () => {
     i.start();
     await i.stop();
 
+    assume(defaultMonitorManager.messages.length).atleast(5);
+    assume(defaultMonitorManager.messages[0].Type).equals('monitor.periodic');
+
     assume(+new Date()).atleast(500);
   }));
 
   test('should stop in the midst of waitTime', runWithFakeTime(async function() {
     const i = new subject({
+      name: 'foo',
+      monitor,
       maxIterationTime: 3000,
       waitTime: 1000,
       maxIterations: 2,
@@ -143,6 +151,8 @@ suite(testing.suiteName(), () => {
     let iterations = 0;
 
     const i = new subject({
+      name: 'foo',
+      monitor,
       maxIterationTime: 3000,
       waitTime: 10,
       maxIterations: 5,
@@ -166,6 +176,8 @@ suite(testing.suiteName(), () => {
 
   test('should emit error when iteration watchdog expires', runWithFakeTime(async function() {
     const i = new subject({
+      name: 'foo',
+      monitor,
       maxIterationTime: 5000,
       watchdogTime: 1000,
       waitTime: 1000,
@@ -188,6 +200,8 @@ suite(testing.suiteName(), () => {
 
   test('should emit error when overall iteration limit is hit', runWithFakeTime(async function() {
     const i = new subject({
+      name: 'foo',
+      monitor,
       maxIterationTime: 1000,
       waitTime: 1000,
       maxFailures: 1,
@@ -214,6 +228,8 @@ suite(testing.suiteName(), () => {
 
   test('should emit iteration-failure when async handler fails', runWithFakeTime(async function() {
     const i = new subject({
+      name: 'foo',
+      monitor,
       maxIterationTime: 1000,
       waitTime: 1000,
       maxFailures: 100,
@@ -235,6 +251,8 @@ suite(testing.suiteName(), () => {
 
   test('should emit iteration-failure when sync handler fails', runWithFakeTime(async function() {
     const i = new subject({
+      name: 'foo',
+      monitor,
       maxIterationTime: 1000,
       waitTime: 1000,
       maxFailures: 100,
@@ -256,6 +274,8 @@ suite(testing.suiteName(), () => {
 
   test('should emit iteration-failure when iteration is too quick', runWithFakeTime(async function() {
     const i = new subject({
+      name: 'foo',
+      monitor,
       maxIterationTime: 12000,
       minIterationTime: 10000,
       waitTime: 1000,
@@ -277,6 +297,8 @@ suite(testing.suiteName(), () => {
 
   test('should emit error after too many failures', runWithFakeTime(async function() {
     const i = new subject({
+      name: 'foo',
+      monitor,
       maxIterationTime: 12000,
       maxFailures: 1,
       waitTime: 1000,
@@ -298,6 +320,8 @@ suite(testing.suiteName(), () => {
 
   test('should emit correct events for single iteration', runWithFakeTime(async function() {
     const i = new subject({
+      name: 'foo',
+      monitor,
       maxIterationTime: 3000,
       waitTime: 1000,
       handler: async watchdog => {
@@ -321,6 +345,8 @@ suite(testing.suiteName(), () => {
 
   test('should emit correct events with maxIterations', runWithFakeTime(async function() {
     const i = new subject({
+      name: 'foo',
+      monitor,
       maxIterationTime: 3000,
       maxIterations: 1,
       waitTime: 1000,
@@ -348,6 +374,8 @@ suite(testing.suiteName(), () => {
 
     test('should be correct with maxFailures and maxIterations', runWithFakeTime(async function() {
       const i = new subject({
+        name: 'foo',
+        monitor,
         maxIterationTime: 3000,
         maxIterations: 1,
         maxFailures: 1,
@@ -375,6 +403,8 @@ suite(testing.suiteName(), () => {
 
     test('should be correct with maxFailures only', runWithFakeTime(async function() {
       const i = new subject({
+        name: 'foo',
+        monitor,
         maxIterationTime: 3000,
         maxFailures: 1,
         waitTime: 1000,
@@ -401,6 +431,8 @@ suite(testing.suiteName(), () => {
 
     test('should be correct when handler takes too little time', runWithFakeTime(async function() {
       const i = new subject({
+        name: 'foo',
+        monitor,
         maxIterationTime: 3000,
         minIterationTime: 100000,
         maxFailures: 1,
@@ -427,6 +459,8 @@ suite(testing.suiteName(), () => {
 
     test('should be correct when handler takes too long (incremental watchdog)', runWithFakeTime(async function() {
       const i = new subject({
+        name: 'foo',
+        monitor,
         maxIterationTime: 5000,
         maxFailures: 1,
         watchdogTime: 100,
@@ -453,6 +487,8 @@ suite(testing.suiteName(), () => {
 
     test('should be correct when handler takes too long (overall time)', runWithFakeTime(async function() {
       const i = new subject({
+        name: 'foo',
+        monitor,
         maxIterationTime: 3000,
         maxFailures: 1,
         waitTime: 1000,
@@ -480,6 +516,8 @@ suite(testing.suiteName(), () => {
       let iterations = 0;
 
       const i = new subject({
+        name: 'foo',
+        monitor,
         maxIterationTime: 3000,
         maxIterations: 6,
         maxFailures: 5,

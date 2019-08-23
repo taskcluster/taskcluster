@@ -7,6 +7,7 @@ defaults:
 
   monitoring:
     level: !env:optional LEVEL
+    errorConfig: !env:json:optional ERROR_CONFIG
 
   # Server configuration
   server:
@@ -37,7 +38,6 @@ defaults:
 
   # Pulse credentials
   pulse:
-    namespace: !env PULSE_NAMESPACE
     username: !env PULSE_USERNAME
     password: !env PULSE_PASSWORD
     hostname: !env PULSE_HOSTNAME

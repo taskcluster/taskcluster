@@ -46,9 +46,9 @@ It is not possible to run a full Taskcluster deployment directly from this repos
 * [Deployment Documentation](deployment-docs#readme)
 * [Development Documentation](dev-docs#readme)
 * [Infrastructure](infrastructure#readme)
-    * [Taskcluster Builder](infrastructure/builder#readme)
     * [Docker Images](infrastructure/docker-images#readme)
     * [References](infrastructure/references#readme)
+    * [Taskcluster Builder](infrastructure/tooling#readme)
 * [Libraries](libraries#readme)
     * [API Library](libraries/api#readme)
     * [App Library](libraries/app#readme)
@@ -170,6 +170,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="http://edunham.net/"><img src="https://avatars2.githubusercontent.com/u/812892?v=4" width="100px;" alt="E. Dunham"/><br /><sub><b>E. Dunham</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=edunham" title="Code">💻</a></td>
     <td align="center"><a href="https://www.linkedin.com/in/shubham-chinda-a0754713b/"><img src="https://avatars2.githubusercontent.com/u/21038543?v=4" width="100px;" alt="Shubham Chinda"/><br /><sub><b>Shubham Chinda</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Shubhamchinda" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/patrickkang"><img src="https://avatars1.githubusercontent.com/u/1489148?v=4" width="100px;" alt="Patrick Kang"/><br /><sub><b>Patrick Kang</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=patrickkang" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/rbrishabh"><img src="https://avatars3.githubusercontent.com/u/22501334?v=4" width="100px;" alt="Rishabh Budhiraja "/><br /><sub><b>Rishabh Budhiraja </b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=rbrishabh" title="Code">💻</a></td>
   </tr>
 </table>
 

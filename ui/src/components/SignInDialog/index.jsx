@@ -77,8 +77,8 @@ export default class SignInDialog extends Component {
   render() {
     const { onClose, open } = this.props;
     const { credentialsDialogOpen } = this.state;
-    const strategies = process.env.UI_LOGIN_STRATEGY_NAMES
-      ? process.env.UI_LOGIN_STRATEGY_NAMES.split(' ')
+    const strategies = window.env.UI_LOGIN_STRATEGY_NAMES
+      ? window.env.UI_LOGIN_STRATEGY_NAMES.split(' ')
       : [];
 
     return strategies.length > 0 ? (

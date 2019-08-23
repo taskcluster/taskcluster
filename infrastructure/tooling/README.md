@@ -10,7 +10,7 @@ Both commands have `--help` output that describes the available options.
 
 # Code Generation Process
 
-The build process is implemented in `infrastructure/builder/src/generate`, with individual generation tasks defined in `generators/`.
+The build process is implemented in `infrastructure/tooling/src/generate`, with individual generation tasks defined in `generators/`.
 Generation uses [console-taskgraph](https://github.com/djmitche/console-taskgraph) to structure the process.
 This package constructs a graph of tasks, based on dependencies between those tasks, and executes them in order.
 
@@ -22,7 +22,7 @@ This ensure that a `yarn generate` run will not create spurious differences whic
 
 # Build Process
 
-The build process is implemented in `infrastructure/builder/src/build`.
+The build process is implemented in `infrastructure/tooling/src/build`.
 Its ultimate result is a docker image capable of running any Taskcluster service.
 The build process displays the name of this image on successful completion.
 

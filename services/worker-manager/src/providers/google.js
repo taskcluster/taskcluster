@@ -308,6 +308,7 @@ class GoogleProvider extends Provider {
                     providerId: this.providerId,
                     workerGroup: this.providerId,
                     rootUrl: this.rootUrl,
+                    workerConfig: workerPool.config.workerConfig || {},
                     userData: workerPool.config.userData,
                   }),
                 },
@@ -325,8 +326,6 @@ class GoogleProvider extends Provider {
             kind: 'creation-error',
             title: 'Instance Creation Error',
             description: error.message, // TODO: Make sure we clear exposing this with security folks
-            notify: this.notify,
-            WorkerPoolError: this.WorkerPoolError,
           });
         }
         return;

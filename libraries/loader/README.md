@@ -12,7 +12,9 @@ Each component definition specifies:
 
   * Name of the component,
   * Required components to be instantiated first, and,
-  * How to asynchronously load the component.
+  * How to asynchronously load the component via the `setup` method which is passed
+    context containing all requirements as the first argument and the name of itself
+    in the second.
 
 All of this is specified as properties of the components object.  A server
 component might be defined like this:
@@ -22,7 +24,8 @@ component might be defined like this:
   // `required` are destructured in the argument to `setup`.
   server: {
     required: ['port'],
-    setup: async ({port}) => {
+    setup: async ({port}, ownName) => {
+      debug(`${ownName} is running.`);
       let server = http.createServer();
       await new Promise((accept, reject) => {
         server.once('error', reject);
@@ -138,10 +141,6 @@ let load = loader({
 // Create express (here we specify a port)
 let server = await load('express', {port: 80});
 ```
-
-As a neat little treat, the load has a default target `graphviz` which returns
-a representation of the dependency graph in graphviz's dot format. This
-representation can be rendered using the graphviz tool.
 
 **Remark** the `load` function doesn't have any side-effects on its own, which
 means that if you call `load('server')` twice you'll get two different

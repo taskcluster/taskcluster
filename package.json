@@ -1,10 +1,10 @@
 {
   "name": "taskcluster",
-  "version": "16.0.0",
+  "version": "16.2.0",
   "private": true,
   "engine-strict": true,
   "engines": {
-    "node": "10.16.2",
+    "node": "10.16.3",
     "yarn": "^1.0.0"
   },
   "workspaces": [
@@ -14,6 +14,7 @@
   ],
   "dependencies": {
     "@octokit/rest": "^16.15.0",
+    "@sentry/node": "^5.6.1",
     "ajv": "^6.10.0",
     "amqplib": "^0.5.2",
     "apollo-server-express": "^2.3.1",
@@ -63,7 +64,7 @@
     "jsonwebtoken": "^8.1.1",
     "jwks-rsa": "^1.2.1",
     "lodash": "4.17.15",
-    "marked": "^0.6.0",
+    "marked": "^0.7.0",
     "memorystore": "^1.6.1",
     "mkdirp": "^0.5.1",
     "moment": "^2.22.2",
@@ -84,6 +85,7 @@
     "remotely-signed-s3": "^4.0.0",
     "request-ip": "^2.0.2",
     "rimraf": "^2.6.2",
+    "sanitize-html": "^1.20.1",
     "sentry-api": "^0.1.1",
     "serialize-error": "^4.0.0",
     "sift": "^8.0.0",
@@ -124,9 +126,9 @@
     "cliff": "^0.1.10",
     "commander": "^2.19.0",
     "console-taskgraph": "^1.6.0",
+    "cronstrue": "^1.82.0",
     "depcheck": "^0.8.0",
     "dockerode": "^2.5.8",
-    "dot": "^1.1.2",
     "error-stack-parser": "^2.0.2",
     "eslint": "5.16.0",
     "glob": "^7.1.3",
@@ -136,6 +138,7 @@
     "is-uuid": "^1.0.2",
     "json-stable-stringify": "^1.0.1",
     "listr": "^0.14.3",
+    "markdown-table": "^1.1.3",
     "md-directory": "^1.0.2",
     "memory-streams": "^0.1.3",
     "mocha": "^6.0.0",
@@ -167,17 +170,18 @@
     "test:meta": "mocha test/*_test.js",
     "fetch-coverage": "node test/fetch-coverage.js",
     "test:cleanup": "yarn workspace taskcluster-auth test:cleanup",
-    "build": "node infrastructure/builder/src/main.js build",
-    "release": "node infrastructure/builder/src/main.js release",
-    "generate": "node infrastructure/builder/src/main.js generate",
-    "changelog": "node infrastructure/builder/src/main.js changelog",
+    "build": "node infrastructure/tooling/src/main.js build",
+    "release": "node infrastructure/tooling/src/main.js release",
+    "generate": "node infrastructure/tooling/src/main.js generate",
+    "changelog": "node infrastructure/tooling/src/main.js changelog",
     "shared-secrets": "node test/shared-secrets.js",
     "heroku-prebuild": "echo {\\\"version\\\"\\: \\\"$SOURCE_VERSION\\\"} > version.json",
     "heroku-postbuild": "if [ $PROCFILE = \"ui/Procfile\" ]; then cd ui && yarn install --frozen-lockfile && yarn build; fi",
-    "dev:init": "node infrastructure/builder/src/main.js dev --init",
-    "dev:apply": "node infrastructure/builder/src/main.js dev --k8s-action apply",
-    "dev:delete": "node infrastructure/builder/src/main.js dev --k8s-action delete",
-    "dev:verify": "node infrastructure/builder/src/main.js dev --k8s-action verify"
+    "dev:init": "node infrastructure/tooling/src/main.js dev --init",
+    "dev:apply": "node infrastructure/tooling/src/main.js dev --k8s-action apply",
+    "dev:delete": "node infrastructure/tooling/src/main.js dev --k8s-action delete",
+    "dev:verify": "node infrastructure/tooling/src/main.js dev --k8s-action verify",
+    "smoketest": "node infrastructure/tooling/src/main.js smoketest"
   },
   "renovate": {
     "extends": [

@@ -2,6 +2,7 @@ const debug = require('debug')('notify');
 const _ = require('lodash');
 const path = require('path');
 const crypto = require('crypto');
+const sanitizeHtml = require('sanitize-html');
 const marked = require('marked');
 const Email = require('email-templates');
 const nodemailer = require('nodemailer');
@@ -77,10 +78,10 @@ class Notifier {
       tables: true,
       breaks: true,
       pedantic: false,
-      sanitize: true,
       smartLists: true,
       smartypants: false,
     });
+    formatted = sanitizeHtml(formatted);
 
     const res = await this.emailer.send({
       message: {

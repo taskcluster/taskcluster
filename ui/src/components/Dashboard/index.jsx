@@ -250,7 +250,7 @@ export default class Dashboard extends Component {
       <nav className={classes.nav}>
         <div>
           <div
-            {...!process.env.DOCS_ONLY && {
+            {...!window.env.DOCS_ONLY && {
               component: Link,
               to: '/',
             }}
@@ -262,14 +262,14 @@ export default class Dashboard extends Component {
               src={Logo}
             />
             <Typography
-              {...!process.env.DOCS_ONLY && {
+              {...!window.env.DOCS_ONLY && {
                 component: Link,
                 to: '/',
               }}
               variant="h6"
               noWrap
               className={classes.title}>
-              {process.env.APPLICATION_NAME}
+              {window.env.APPLICATION_NAME}
             </Typography>
           </div>
           <Divider />

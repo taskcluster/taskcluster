@@ -1,5 +1,18 @@
 const BUILTINS = [
   {
+    name: 'periodic',
+    title: 'Periodic Process',
+    type: 'monitor.periodic',
+    level: 'any',
+    version: 1,
+    description: 'Status and duration of a periodic background process.',
+    fields: {
+      name: 'The name of this process.',
+      duration: 'The duration in ms of the process.',
+      status: 'Either success, or exception depending on the outcome.',
+    },
+  },
+  {
     name: 'basicTimer',
     title: 'Basic Timer',
     type: 'monitor.timer',

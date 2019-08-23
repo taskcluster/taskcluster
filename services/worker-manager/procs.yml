@@ -3,9 +3,11 @@ web:
   command: node src/main.js server
 provisioner:
   type: background
+  subType: 'iterate'
   command: node src/main.js runProvisioner
 workerscanner:
   type: background
+  subType: 'iterate'
   command: node src/main.js workerScanner
 expire-workers:
   type: cron

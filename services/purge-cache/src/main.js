@@ -48,8 +48,8 @@ const load = loader({
 
   'expire-cache-purges': {
     requires: ['cfg', 'CachePurge', 'monitor'],
-    setup: ({cfg, CachePurge, monitor}) => {
-      return monitor.oneShot('expire-purge-caches', async () => {
+    setup: ({cfg, CachePurge, monitor}, ownName) => {
+      return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.cachePurgeExpirationDelay);
         debug('Expiring cache-purges at: %s, from before %s', new Date(), now);
         const count = await CachePurge.expire(now);

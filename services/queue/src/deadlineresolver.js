@@ -56,6 +56,7 @@ class DeadlineResolver {
     assert(typeof options.parallelism === 'number',
       'Expected parallelism to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
+    assert(options.ownName, 'Must provide a name');
     this.Task = options.Task;
     this.queueService = options.queueService;
     this.dependencyTracker = options.dependencyTracker;
@@ -65,6 +66,7 @@ class DeadlineResolver {
     this.monitor = options.monitor;
 
     this.iterator = new Iterate({
+      name: options.ownName,
       maxFailures: 10,
       waitTime: this.pollingDelay,
       monitor: this.monitor,

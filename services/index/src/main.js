@@ -118,7 +118,7 @@ let load = loader({
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => {
       return new Client({
-        namespace: cfg.pulse.namespace,
+        namespace: 'taskcluster-index',
         monitor: monitor.childMonitor('pulse-client'),
         credentials: pulseCredentials(cfg.pulse),
       });
@@ -149,8 +149,8 @@ let load = loader({
 
   expire: {
     requires: ['cfg', 'monitor', 'IndexedTask', 'Namespace'],
-    setup: ({cfg, monitor, IndexedTask, Namespace}) => {
-      return monitor.oneShot('expire', async () => {
+    setup: ({cfg, monitor, IndexedTask, Namespace}, ownName) => {
+      return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.expirationDelay);
 
         debug('Expiring namespaces');
