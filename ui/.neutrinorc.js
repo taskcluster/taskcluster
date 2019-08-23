@@ -156,16 +156,6 @@ module.exports = {
         .alias.set('taskcluster-ui', resolve(__dirname, 'src/'));
     },
     (neutrino) => {
-      neutrino.use(copy, {
-        patterns: [
-          {
-            context: 'src/static',
-            from: '**/*',
-            to: 'static',
-          },
-        ],
-      });
-
       // Generate env.js, combining env vars into the build, when
       // GENERATE_ENV_JS is set
       const envJs = join(STATIC_DIR, 'env.js');
@@ -178,6 +168,16 @@ module.exports = {
           fs.unlinkSync(envJs);
         }
       }
+
+      neutrino.use(copy, {
+        patterns: [
+          {
+            context: 'src/static',
+            from: '**/*',
+            to: 'static',
+          },
+        ],
+      });
     },
     ['@neutrinojs/karma', {
       plugins: [
