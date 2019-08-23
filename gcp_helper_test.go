@@ -8,8 +8,6 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
-
-	"github.com/taskcluster/slugid-go/slugid"
 )
 
 type MockGCPProvisionedEnvironment struct {
@@ -17,7 +15,7 @@ type MockGCPProvisionedEnvironment struct {
 
 func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 	teardown := setupEnvironment(t)
-	workerType := slugid.Nice()
+	workerType := testWorkerType()
 	configureForGCP = true
 	oldGCPMetadataBaseURL := GCPMetadataBaseURL
 	GCPMetadataBaseURL = "http://localhost:13243/computeMetadata/v1/"
