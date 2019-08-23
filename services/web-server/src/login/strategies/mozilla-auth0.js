@@ -23,7 +23,6 @@ module.exports = class MozillaAuth0 {
 
     Object.assign(this, strategyCfg);
 
-    this.rootUrl = cfg.taskcluster.rootUrl;
     this._personApi = null;
     this._personApiExp = null;
     this.identityProviderId = 'mozilla-auth0';
@@ -88,7 +87,7 @@ module.exports = class MozillaAuth0 {
     return user;
   }
 
-  userFromIdentity(identity) {
+  async userFromIdentity(identity) {
     let encodedUserId = identity.split('/')[1];
 
     if (encodedUserId.startsWith('github|') || encodedUserId.startsWith('oauth2|firefoxaccounts|')) {
@@ -96,7 +95,15 @@ module.exports = class MozillaAuth0 {
     }
 
     const userId = decode(encodedUserId);
-    return this.getUser({ userId });
+    const user = await this.getUser({ userId });
+
+    // catch cases where the calculated identity differs, such as when we add a
+    // GitHub username, and return no user in that case.
+    if (user && user.identity !== identity) {
+      return;
+    }
+
+    return user;
   }
 
   async expFromIdToken(idToken) {
