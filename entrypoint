@@ -60,6 +60,6 @@ worker-manager/expire-worker-pools) exec sh -c 'cd services/worker-manager && no
 worker-manager/expire-errors) exec sh -c 'cd services/worker-manager && node src/main.js expireErrors';;
 worker-manager/write-docs) exec sh -c 'cd services/worker-manager && node src/main.js writeDocs';;
 references/web) exec sh -c 'exec sh infrastructure/references/references.sh';;
-ui/web) exec sh -c "cd /app/ui && GENERATE_ENV_JS=1 yarn build &&  nginx -c /app/ui/web-ui-nginx-site.conf -g 'daemon off;'";;
+ui/web) exec sh -c "node /app/ui/generate-env-js.js /app/ui/build/static/env.js && nginx -c /app/ui/web-ui-nginx-site.conf -g 'daemon off;'";;
 *) exec "${@}";;
 esac
