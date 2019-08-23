@@ -1,6 +1,7 @@
 const path = require('path');
 const {quote} = require('shell-quote');
 const {listServices, readRepoYAML, writeRepoFile} = require('../../utils');
+const packageJson = require('../../../../../package.json');
 
 const SERVICES = listServices();
 
@@ -22,6 +23,11 @@ exports.tasks.push({
       Object.entries(processes).forEach(([proc, {command}]) => {
         procs[`${name}/${proc}`] = `cd services/${name} && ${command}`;
       });
+    }
+
+    // Export all yarn scripts to be callable via a container
+    for (const script of Object.keys(packageJson.scripts)) {
+      procs[`script/${script}`] = `yarn run ${script}`;
     }
 
     // this script:
