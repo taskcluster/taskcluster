@@ -1,21 +1,12 @@
 const scopeUtils = require('taskcluster-lib-scopes');
 const Debug = require('debug');
-const { Auth } = require('taskcluster-client');
 const identityFromClientId = require('../utils/identityFromClientId');
 
 const debug = Debug('scanner');
 
-module.exports = async (cfg, strategies) => {
-  // NOTE: this function performs once auth operation at a time.  It is better
-  // for scans to take longer than for the auth service to be overloaded.
-  const auth = new Auth({
-    credentials: cfg.taskcluster.credentials,
-    rootUrl: cfg.taskcluster.rootUrl,
-  });
-
-  async function scan(h) {
+module.exports = async (auth, strategies) => {
+  async function scan(strategy) {
     const clients = [];
-    const strategy = strategies[h];
     const query = {prefix: `${strategy.identityProviderId}/`};
 
     // Get all clients
@@ -72,7 +63,7 @@ module.exports = async (cfg, strategies) => {
 
   await Promise.all(
     Object
-      .keys(cfg.login.strategies)
+      .values(strategies)
       .map(scan)
   );
 };
