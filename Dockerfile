@@ -38,12 +38,17 @@ RUN chmod +x entrypoint
 # Now that node_modules are here, do some generation
 RUN echo \{\"version\": \"$(git describe --tags --always --match v*.*.*)\", \"commit\": \"$(git rev-parse HEAD)\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > version.json
 
+# Build the UI and discard everything else in that directory
+WORKDIR /base/app/ui
+RUN yarn build
+WORKDIR /base/app
 
 # clean up some unnecessary and potentially large stuff
 RUN rm -rf .git
 RUN rm -rf .node-gyp ui/.node-gyp
 RUN rm -rf clients/client-{go,py,web}
 RUN rm -rf {services,libraries}/*/test
+RUN rm -rf ui/node_modules ui/src
 
 ##
 # build the final image
