@@ -31,10 +31,12 @@ module.exports = class Github {
     const user = new User();
     const [githubErr, githubUser] = await tryCatch(this.githubClient.userFromUsername(username));
 
+    // 404 means the user doesn't exist; otherwise, throw the error up the chain
     if (githubErr) {
-      debug(`error retrieving user data from Github: ${githubErr}\n${githubErr.stack}`);
-
-      return;
+      if (githubErr.status === 404) {
+        return;
+      }
+      throw githubErr;
     }
 
     if (githubUser.id !== userId) {
