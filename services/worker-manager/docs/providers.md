@@ -56,6 +56,7 @@ The API method first verifies that the given worker exists in the Azure table an
 
 The provider should verify the supplied identity proof and, if it is valid, modify the worker entry as appropriate (at least setting its state to RUNNING).
 Providers that wish to limit registration to once per worker should return an error message from this function if the worker is already RUNNING.
+A successful return value should be an object with property `expires` giving the appropriate expiration time for the resulting credentials.
 If the method returns sucessfully, then the caller will be given Taskcluster credentials appropriate to the worker.
 
 This API method is not scope-protected, and implements an access-control mechanism based on the identity proof.
