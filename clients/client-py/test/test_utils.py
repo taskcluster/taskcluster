@@ -171,11 +171,12 @@ def test_success_put_file():
         class FakeResp:
             status_code = 200
 
-            def raise_for_status():
+            def raise_for_status(*args):
                 pass
 
         p.return_value = FakeResp()
-        subject.putFile('setup.py', 'http://www.example.com', 'text/plain')
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'setup.py')
+        subject.putFile(path, 'http://www.example.com', 'text/plain')
         p.assert_called_once_with('put', 'http://www.example.com', mock.ANY, mock.ANY, mock.ANY)
 
 
