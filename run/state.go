@@ -27,8 +27,18 @@ type State struct {
 	WorkerID     string
 
 	// metadata from the provider (useful to display to the user for
-	// debugging).  This is also a public API for docker-worker,
-	// which doesn't, strictly speaking, require these fields,
+	// debugging).
+	//
+	// Docker-worker currently expects the following properties:
+	//
+	//  * public-hostname
+	//  * public-ipv4
+	//  * local-ipv4
+	//  * instance-type
+	//  * instance-id
+	//  * region
+	//
+	// It doesn't, strictly speaking, require these fields,
 	// but may fall onto undesirable defaults if these are not provided
 	// A bit more info on that here
 	// https://github.com/taskcluster/taskcluster-worker-runner/pull/30#pullrequestreview-277378260
