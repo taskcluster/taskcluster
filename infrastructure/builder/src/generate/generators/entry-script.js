@@ -31,7 +31,7 @@ exports.tasks.push({
 
     // the ui/web process runs `yarn build` before starting nginx to serve
     // the resulting, built content
-    procs['ui/web'] = 'cd /app/ui && yarn build && ' +
+    procs['ui/web'] = 'cd /app/ui && GENERATE_ENV_JS=1 yarn build && ' +
       ' nginx -c /app/ui/web-ui-nginx-site.conf -g \'daemon off;\'';
 
     const entrypointScript = []

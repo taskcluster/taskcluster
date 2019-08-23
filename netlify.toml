@@ -1,6 +1,6 @@
 [build]
   base    = "ui"
-  command = "yarn build"
+  command = "GENERATE_ENV_JS=1 yarn build"
   publish = "ui/build"
 
 [build.environment]

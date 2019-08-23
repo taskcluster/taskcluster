@@ -23,8 +23,8 @@ export default class PageTitle extends PureComponent {
       <Helmet>
         <title>
           {this.props.children
-            ? `${this.props.children} - ${process.env.APPLICATION_NAME}`
-            : process.env.APPLICATION_NAME}
+            ? `${this.props.children} - ${window.env.APPLICATION_NAME}`
+            : window.env.APPLICATION_NAME}
         </title>
       </Helmet>
     );
