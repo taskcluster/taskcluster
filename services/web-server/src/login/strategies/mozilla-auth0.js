@@ -76,11 +76,6 @@ module.exports = class MozillaAuth0 {
 
     user.identity = this.identityFromProfile(userProfile);
 
-    if (!user.identity) {
-      debug('No recognized identity providers');
-      return;
-    }
-
     // take a user and attach roles to it
     this.addRoles(userProfile, user);
 

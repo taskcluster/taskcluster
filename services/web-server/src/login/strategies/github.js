@@ -45,11 +45,6 @@ module.exports = class Github {
 
     user.identity = `${this.identityProviderId}/${userId}|${encode(username)}`;
 
-    if (!user.identity) {
-      debug('No recognized identity providers');
-      return;
-    }
-
     // take a user and attach roles to it
     // this.addRoles(userProfile, user);
 
