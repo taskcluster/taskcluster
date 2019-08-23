@@ -35,7 +35,6 @@ The class must implement the following methods and properties:
 * `identityProviderId` - used to find the strategy to handle an identity
 * `userFromIdentity(identity)` - given an identity for this strategy, return a suitable User object, or undefined if there is no such user.
   Only throw errors for failures to look up the given user.
-* `userFromClientId(clientId)` - given a clientId, return a suitable User object
 * `useStrategy(app, cfg)` - set up the strategy to actually sign users in.
   `app` is the Express app for the service, and the method can manipulate it in whatever way necessary.
   The `/login` route is directed to the web-server app, so all added routes should have that prefix.

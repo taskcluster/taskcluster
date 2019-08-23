@@ -7,7 +7,6 @@ const User = require('../User');
 const PersonAPI = require('../clients/PersonAPI');
 const WebServerError = require('../../utils/WebServerError');
 const { encode, decode } = require('../../utils/codec');
-const identityFromClientId = require('../../utils/identityFromClientId');
 const tryCatch = require('../../utils/tryCatch');
 const login = require('../../utils/login');
 const verifyJwtAuth0 = require('../../utils/verifyJwtAuth0');
@@ -111,16 +110,6 @@ module.exports = class MozillaAuth0 {
     }
 
     return profile.exp;
-  }
-
-  userFromClientId(clientId) {
-    const identity = identityFromClientId(clientId);
-
-    if (!identity) {
-      return;
-    }
-
-    return this.userFromIdentity(identity);
   }
 
   identityFromProfile(profile) {

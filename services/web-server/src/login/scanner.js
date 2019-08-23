@@ -42,7 +42,7 @@ module.exports = async (auth, strategies) => {
       }
 
       if (!user || user.identity !== identity) {
-        user = await strategy.userFromClientId(client.clientId);
+        user = await strategy.userFromIdentity(identity);
 
         if (!user) {
           // this user has been deleted, so disable the client
