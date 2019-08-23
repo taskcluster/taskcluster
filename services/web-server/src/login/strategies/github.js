@@ -22,7 +22,6 @@ module.exports = class Github {
 
     Object.assign(this, strategyCfg);
 
-    this.rootUrl = cfg.taskcluster.rootUrl;
     this.identityProviderId = 'github';
     this.githubClient = new GithubClient();
   }
