@@ -1,4 +1,6 @@
-# GitHub Service
+---
+title: GitHub Integration
+---
 
 The GitHub service requires a GitHub App in order to interact with GitHub.
 

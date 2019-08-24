@@ -1,5 +1,6 @@
 ---
 title: Access Control
+order: 25
 ---
 
 Taskcluster has a sophisticated access-control system allowing fine-grained control of access to resources.

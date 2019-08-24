@@ -43,7 +43,6 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [Taskcluster Client for Python](clients/client-py#readme)
     * [Taskcluster Shell Client](clients/client-shell#readme)
     * [Taskcluster Client Web](clients/client-web#readme)
-* [Deployment Documentation](deployment-docs#readme)
 * [Development Documentation](dev-docs#readme)
 * [Infrastructure](infrastructure#readme)
     * [Docker Images](infrastructure/docker-images#readme)
