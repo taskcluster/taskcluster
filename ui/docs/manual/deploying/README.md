@@ -18,3 +18,19 @@ A Taskcluster "release" is a semantically versioned docker image along with the 
 
 This section is incomplete, as we iterate to find a suitable approach to deployment.
 The following pages document some of the more complex aspects of Taskcluster deployment.
+
+## Clouds
+
+Taskcluster is a multi-cloud system, and as such expects credentials for several cloud providers.
+
+The services' Kubernetes deployment can run anywhere; at Mozilla it is deployed in GKE, Google Cloud's Kubernetes offering.
+Task artifacts are stored in Amazon S3, so AWS credentials will be required.
+Services' data is stored in Azure Table Storage, so Azure credentials will be required.
+
+Taskcluster can also dynamically provision workers in a variety of clouds; see the [workers](./workers) page for for details.
+
+## GitHub
+
+Taskcluster can integrate with GitHub in two complementary ways:
+* The taskcluster-github service provides a GitHub App which can create tasks in response to events in GitHub repositories.  See [Github Integration](./github) for more details.
+* The web-server service supports user logins via GitHub.  See [Login Strategies](./login-strategies) for more details.

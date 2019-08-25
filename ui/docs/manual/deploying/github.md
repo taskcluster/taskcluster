@@ -4,11 +4,9 @@ title: GitHub Integration
 
 The GitHub service requires a GitHub App in order to interact with GitHub.
 
-NOTE: This may be obsoleted when bstack lands manifest stuff. First spin up your Taskcluster instance in order to get the URLs required at app creation and an arbitrary secret. Then follow these steps to set the app up. 
-
 ## Why are there 2 apps? 
 
-This App is not to be confused with the OAuth App used for the [GitHub login strategy](login-strategies.md).
+This App is not to be confused with the OAuth App used for the [GitHub login strategy](./login-strategies).
 GitHub does not help this confusion by using the phrases "GitHub App" and "OAuth App"!
 
 Taskcluster uses this App to get notified of changes on GitHub and update GitHub with the results of tasks.

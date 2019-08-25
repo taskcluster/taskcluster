@@ -1470,15 +1470,15 @@
             "children": [
             ],
             "data": {
-              "order": 1000,
-              "title": "Clouds"
+              "order": 20,
+              "title": "Workers"
             },
-            "name": "clouds",
+            "name": "workers",
             "next": {
               "path": "manual/deploying/gcp-credentials",
               "title": "GCP Credentials"
             },
-            "path": "manual/deploying/clouds",
+            "path": "manual/deploying/workers",
             "prev": {
               "path": "manual/deploying",
               "title": "Deploying Taskcluster"
@@ -1502,8 +1502,8 @@
             },
             "path": "manual/deploying/gcp-credentials",
             "prev": {
-              "path": "manual/deploying/clouds",
-              "title": "Clouds"
+              "path": "manual/deploying/workers",
+              "title": "Workers"
             },
             "up": {
               "path": "manual/deploying",
@@ -1605,8 +1605,8 @@
         },
         "name": "deploying",
         "next": {
-          "path": "manual/deploying/clouds",
-          "title": "Clouds"
+          "path": "manual/deploying/workers",
+          "title": "Workers"
         },
         "path": "manual/deploying",
         "prev": {
