@@ -1541,13 +1541,35 @@
             },
             "name": "login-strategies",
             "next": {
-              "path": "manual/deploying/pulse",
-              "title": "Pulse"
+              "path": "manual/deploying/monitoring",
+              "title": "Monitoring Services"
             },
             "path": "manual/deploying/login-strategies",
             "prev": {
               "path": "manual/deploying/github",
               "title": "GitHub Integration"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "Monitoring Services"
+            },
+            "name": "monitoring",
+            "next": {
+              "path": "manual/deploying/pulse",
+              "title": "Pulse"
+            },
+            "path": "manual/deploying/monitoring",
+            "prev": {
+              "path": "manual/deploying/login-strategies",
+              "title": "Login Strategies"
             },
             "up": {
               "path": "manual/deploying",
@@ -1568,8 +1590,8 @@
             },
             "path": "manual/deploying/pulse",
             "prev": {
-              "path": "manual/deploying/login-strategies",
-              "title": "Login Strategies"
+              "path": "manual/deploying/monitoring",
+              "title": "Monitoring Services"
             },
             "up": {
               "path": "manual/deploying",
