@@ -44,9 +44,6 @@ import { formatScope, scopeLink } from '../../utils/scopeUtils';
   expandedScopesWrapper: {
     paddingRight: 0,
   },
-  datePickerTextColor: {
-    color: 'black',
-  },
   listItemButton: {
     ...theme.mixins.listItemButton,
   },
@@ -306,7 +303,6 @@ export default class ClientForm extends Component {
               }
               secondary={
                 <DatePicker
-                  className={classes.datePickerTextColor}
                   value={expires}
                   onChange={this.handleExpirationChange}
                   format="YYYY/MM/DD"
