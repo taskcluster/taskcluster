@@ -8712,10 +8712,10 @@ markdown-to-jsx@^6.6.8:
     prop-types "^15.6.2"
     unquote "^1.1.0"
 
-material-ui-pickers@2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/material-ui-pickers/-/material-ui-pickers-2.2.0.tgz#5c522e065060041dccefbe627bb9c5dc0c47b95d"
-  integrity sha512-5Zx22a4X3kr3//S8bPIkpmHXVv8oW38ub8dWzlcQKws7yjzjvMxm5fxHWW8c3JSHxcjUQqgtw70mac6KEZxiNw==
+material-ui-pickers@2.2.4:
+  version "2.2.4"
+  resolved "https://registry.yarnpkg.com/material-ui-pickers/-/material-ui-pickers-2.2.4.tgz#8b33cfc55cbc5b2d520db45abf4b3dc94090dd3c"
+  integrity sha512-QCQh08Ylmnt+o4laW+rPs92QRAcESv3sPXl50YadLm++rAZAXAOh3K8lreGdynCMYFgZfdyu81Oz9xzTlAZNfw==
   dependencies:
     "@types/react-text-mask" "^5.4.3"
     clsx "^1.0.2"
