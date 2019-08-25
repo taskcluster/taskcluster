@@ -1,7 +1,7 @@
 ##
 # Build /app
 
-FROM node:10.16.2 as build
+FROM node:10.16.3 as build
 
 RUN mkdir -p /base/cache
 ENV YARN_CACHE_FOLDER=/base/cache
@@ -38,17 +38,22 @@ RUN chmod +x entrypoint
 # Now that node_modules are here, do some generation
 RUN echo \{\"version\": \"$(git describe --tags --always --match v*.*.*)\", \"commit\": \"$(git rev-parse HEAD)\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > version.json
 
+# Build the UI and discard everything else in that directory
+WORKDIR /base/app/ui
+RUN yarn build
+WORKDIR /base/app
 
 # clean up some unnecessary and potentially large stuff
 RUN rm -rf .git
 RUN rm -rf .node-gyp ui/.node-gyp
 RUN rm -rf clients/client-{go,py,web}
 RUN rm -rf {services,libraries}/*/test
+RUN rm -rf ui/node_modules ui/src
 
 ##
 # build the final image
 
-FROM node:10.16.2-alpine as image
+FROM node:10.16.3-alpine as image
 RUN apk update && apk add nginx && mkdir /run/nginx && apk add bash
 COPY --from=build /base/app /app
 ENV HOME=/app

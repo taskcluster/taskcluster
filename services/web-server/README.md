@@ -1,13 +1,9 @@
 # Web-Server Service
 
-A web server for supporting the taskcluster-ui repository. Serves as a
-GraphQL gateway to the Taskcluster REST APIs, and should eventually support and
-improve user preferences and authentication flows.
-Helps make Taskcluster API communication consistent and offloads client refreshing
-to the gateway instead of putting extra logic on the web consumer.
+A web server for supporting the taskcluster-ui repository.
+This service acts as a GraphQL gateway to the Taskcluster REST APIs, and supports user authentication flows.
 
-Supports the queries, mutations, and subscriptions of Taskcluster APIs used
-by the web application.
+It supports the queries, mutations, and subscriptions of Taskcluster APIs used by the web application.
 
 ## Configuration
 

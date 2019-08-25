@@ -8,6 +8,7 @@ const MonitorManager = require('../src/monitormanager');
 
 suite(testing.suiteName(), function() {
   let monitorManager, monitor;
+  let errorBucket = [];
 
   suiteSetup(function() {
     monitorManager = new MonitorManager();
@@ -24,10 +25,15 @@ suite(testing.suiteName(), function() {
         allowExit: true,
       },
       verify: true,
+      errorConfig: {
+        reporter: 'TestReporter',
+        bucket: errorBucket,
+      },
     });
   });
 
   teardown(function() {
+    errorBucket.splice(0);
     monitorManager.reset();
     mockFs.restore();
   });
@@ -115,24 +121,32 @@ suite(testing.suiteName(), function() {
       assert.equal(exitStatus, 0);
       assert.equal(monitorManager.messages.length, 1);
       assert.equal(monitorManager.messages[0].Logger, 'taskcluster.testing-service');
-      assert(monitorManager.messages[0].Fields.key);
+      assert.equal(monitorManager.messages[0].Fields.name, 'expire');
       assert(monitorManager.messages[0].Fields.duration);
+      assert.equal(monitorManager.messages[0].Fields.status, 'success');
+      assert(!monitorManager.messages[0].Fields.error);
+      assert.equal(errorBucket.length, 0);
     });
 
     test('unsuccessful async function', async function() {
       await monitor.oneShot('expire', async () => { throw new Error('uhoh'); });
       assert.equal(exitStatus, 1);
       assert.equal(monitorManager.messages.length, 2);
-      assert(monitorManager.messages[0].Fields.key);
-      assert(monitorManager.messages[0].Fields.duration);
-      assert.equal(monitorManager.messages[1].Fields.name, 'Error');
-      assert.equal(monitorManager.messages[1].Fields.message, 'uhoh');
+      assert.equal(monitorManager.messages[0].Type, 'monitor.error');
+      assert.equal(monitorManager.messages[0].Fields.message, 'uhoh');
+      assert.equal(monitorManager.messages[1].Fields.name, 'expire');
+      assert(monitorManager.messages[1].Fields.duration);
+      assert.equal(monitorManager.messages[1].Fields.status, 'exception');
+      assert.equal(errorBucket.length, 1);
     });
 
     test('missing name', async function() {
       await monitor.oneShot(async () => { throw new Error('uhoh'); });
       assert.equal(exitStatus, 1);
-      assert(monitorManager.messages[0].Fields.name.startsWith('AssertionError'));
+      assert.equal(monitorManager.messages.length, 2);
+      assert.equal(monitorManager.messages[0].Type, 'monitor.error');
+      assert.equal(monitorManager.messages[0].Fields.code, 'ERR_ASSERTION');
+      assert.equal(errorBucket.length, 2); // One for normal error and one for missing name
     });
   });
 
@@ -255,7 +269,8 @@ suite(testing.suiteName(), function() {
       ], (done, code, output) => {
         assert.equal(code, 1);
         assert(output.includes('Error: hello there'));
-        assert(JSON.parse(output));
+        assert(JSON.parse(output.split('\n')[0]));
+        assert.equal(output.split('\n')[1], 'REPORTED ERROR');
         done();
       });
     });
@@ -279,7 +294,8 @@ suite(testing.suiteName(), function() {
       ], (done, code, output) => {
         assert.equal(code, 1);
         assert(output.includes('whaaa'));
-        assert(JSON.parse(output));
+        assert(JSON.parse(output.split('\n')[0]));
+        assert.equal(output.split('\n')[1], 'REPORTED ERROR');
         done();
       });
     });

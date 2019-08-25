@@ -159,17 +159,14 @@ module.exports = class MozillaAuth0 {
   }
 
   addRoles(profile, user) {
+    // see https://auth.mozilla.com/.well-known/profile.schema
     const accessInformation = profile.access_information;
     const { ldap, mozilliansorg, hris } = accessInformation;
 
-    // Non-prefixed groups are what is known as Mozilla LDAP groups. Groups prefixed by a provider
-    // name and underscore are provided by a specific group engine. For example,
-    // `providername_groupone` is provided by `providername`. Per https://goo.gl/bwWjvE.
-    // For our own purposes, if the prefix is not mozilliansorg. then we treat it as an ldap group
     const groups = [
       ...(ldap && ldap.values ? Object.keys(ldap.values).map(group => `mozilla-group:${group}`) : []),
-      ...(hris && hris.values ? Object.keys(hris.values).map(group => `hris_${group}`) : []),
-      ...(mozilliansorg && mozilliansorg.values ? Object.keys(mozilliansorg.values).map(group => `mozilliansorg_${group}`) : []),
+      ...(hris && hris.values ? Object.keys(hris.values).map(group => `mozilla-hris:${group}`) : []),
+      ...(mozilliansorg && mozilliansorg.values ? Object.keys(mozilliansorg.values).map(group => `mozillians-group:${group}`) : []),
     ];
 
     user.addRole(...groups);

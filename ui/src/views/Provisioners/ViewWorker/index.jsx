@@ -1,9 +1,11 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
-import { format, addYears, isAfter } from 'date-fns';
+import { format, parseISO, addYears, isAfter } from 'date-fns';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
+import { withStyles } from '@material-ui/core/styles';
 import HomeLockIcon from 'mdi-react/HomeLockIcon';
 import HammerIcon from 'mdi-react/HammerIcon';
 import HomeLockOpenIcon from 'mdi-react/HomeLockOpenIcon';
@@ -13,6 +15,8 @@ import DialogAction from '../../../components/DialogAction';
 import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
 import WorkerTable from '../../../components/WorkerTable';
+import Breadcrumbs from '../../../components/Breadcrumbs';
+import Link from '../../../utils/Link';
 import { withAuth } from '../../../utils/Auth';
 import ErrorPanel from '../../../components/ErrorPanel';
 import workerQuery from './worker.graphql';
@@ -27,6 +31,11 @@ import quarantineWorkerQuery from './quarantineWorker.graphql';
     variables: params,
   }),
 })
+@withStyles(theme => ({
+  link: {
+    ...theme.mixins.link,
+  },
+}))
 export default class ViewWorker extends Component {
   constructor(props) {
     super(props);
@@ -36,7 +45,7 @@ export default class ViewWorker extends Component {
       dialogOpen: false,
       quarantineUntilInput:
         props.worker && props.worker.quarantineUntil
-          ? props.worker.quarantineUntil
+          ? parseISO(props.worker.quarantineUntil)
           : addYears(new Date(), 1000),
     };
   }
@@ -66,7 +75,7 @@ export default class ViewWorker extends Component {
   };
 
   handleQuarantineChange = ({ target }) => {
-    this.setState({ quarantineUntilInput: target.value });
+    this.setState({ quarantineUntilInput: parseISO(target.value) });
   };
 
   handleQuarantineDialogSubmit = async () => {
@@ -126,7 +135,9 @@ export default class ViewWorker extends Component {
 
   render() {
     const {
+      classes,
       data: { loading, error, worker },
+      match: { params },
     } = this.props;
     const {
       dialogOpen,
@@ -143,6 +154,36 @@ export default class ViewWorker extends Component {
           <ErrorPanel fixed error={error} />
           {worker && (
             <Fragment>
+              <Breadcrumbs>
+                <Typography
+                  className={classes.link}
+                  component={Link}
+                  to="/provisioners">
+                  Provisioners
+                </Typography>
+                <Typography
+                  className={classes.link}
+                  component={Link}
+                  to={`/provisioners/${params.provisionerId}`}>
+                  {params.provisionerId}
+                </Typography>
+                <Typography
+                  className={classes.link}
+                  component={Link}
+                  to={`/provisioners/${params.provisionerId}/worker-types/${
+                    params.workerType
+                  }`}>
+                  {params.workerType}
+                </Typography>
+
+                <Typography color="textSecondary">
+                  {`${params.workerGroup}`}
+                </Typography>
+                <Typography color="textSecondary">
+                  {`${params.workerId}`}
+                </Typography>
+              </Breadcrumbs>
+              <br />
               <WorkerDetailsCard worker={worker} />
               <br />
               <WorkerTable worker={worker} />
@@ -213,7 +254,7 @@ export default class ViewWorker extends Component {
                           id="date"
                           label="Quarantine Until"
                           type="date"
-                          value={format(quarantineUntilInput, 'YYYY-MM-DD')}
+                          value={format(quarantineUntilInput, 'yyyy-MM-dd')}
                           onChange={this.handleQuarantineChange}
                         />
                       </Fragment>

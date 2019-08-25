@@ -34,6 +34,7 @@ const SHARED_CONFIG = {
   force_ssl: '.Values.forceSSL',
   trust_proxy: '.Values.trustProxy',
   node_env: '.Values.nodeEnv',
+  error_config: '.Values.errorConfig',
 };
 
 const labels = (projectName, component) => ({
@@ -127,7 +128,7 @@ exports.tasks.push({
   provides: ['k8s-templates'],
   run: async (requirements, utils) => {
 
-    const templateFiles = glob.sync('infrastructure/builder/templates/k8s/*.yaml', {cwd: REPO_ROOT});
+    const templateFiles = glob.sync('infrastructure/tooling/templates/k8s/*.yaml', {cwd: REPO_ROOT});
     const templates = {};
     for (const f of templateFiles) {
       templates[path.basename(f, '.yaml')] = await readRepoYAML(f);
@@ -309,6 +310,18 @@ exports.tasks.push({
           description: 'Metadata about a deployment. Automatically generated in deploy configs.',
           additionalProperties: true,
         },
+        errorConfig: {
+          type: 'object',
+          description: 'Error reporting configuration for lib-monitor.',
+          properties: {
+            reporter: {
+              type: 'string',
+              description: 'Which reporter to use.',
+            },
+          },
+          required: ['reporter'],
+          additionalProperties: true,
+        },
       },
       required: ['rootUrl', 'dockerImage', 'pulseHostname', 'pulseVhost', 'azureAccountId', 'forceSSL', 'trustProxy', 'nodeEnv'],
       aditionalProperties: false,
@@ -320,16 +333,17 @@ exports.tasks.push({
       dockerImage: '...',
       ingressStaticIpName: '...',
       ingressCertName: '...',
-      pulstHostname: '...',
+      pulseHostname: '...',
       pulseVhost: '...',
       azureAccountId: '...',
       forceSSL: false,
       trustProxy: true,
       nodeEnv: 'production',
       meta: {},
+      errorConfig: {},
     };
 
-    const currentRelease = await readRepoYAML(path.join('infrastructure', 'builder', 'current-release.yml'));
+    const currentRelease = await readRepoYAML(path.join('infrastructure', 'tooling', 'current-release.yml'));
     // Defaults that people can override
     const valuesYAML = {
       dockerImage: currentRelease.image,
@@ -349,7 +363,7 @@ exports.tasks.push({
     })));
 
     const staticClients = [];
-    const serviceScopes = await readRepoYAML(path.join('infrastructure', 'builder', 'static-clients.yml'));
+    const serviceScopes = await readRepoYAML(path.join('infrastructure', 'tooling', 'static-clients.yml'));
 
     configs.forEach(cfg => {
       const confName = cfg.name.replace(/-/g, '_');

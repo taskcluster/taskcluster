@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -31,7 +31,9 @@ export default class WorkerDetailsCard extends Component {
         <ListItem>
           <ListItemText
             primary="Quarantine Until"
-            secondary={quarantineUntil ? format(quarantineUntil, 'LL') : 'n/a'}
+            secondary={
+              quarantineUntil ? format(parseISO(quarantineUntil), 'LL') : 'n/a'
+            }
           />
         </ListItem>
       </List>

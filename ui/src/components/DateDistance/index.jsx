@@ -1,5 +1,10 @@
 import { Component } from 'react';
-import { formatDistance, formatDistanceStrict } from 'date-fns';
+import {
+  isDate,
+  formatDistance,
+  formatDistanceStrict,
+  parseISO,
+} from 'date-fns';
 import { date } from '../../utils/prop-types';
 
 /**
@@ -26,8 +31,12 @@ export default class DateDistance extends Component {
 
   render() {
     const { from, offset } = this.props;
-    const fromNow = formatDistanceStrict(from, new Date(), { addSuffix: true });
-    const offsetNow = offset && formatDistance(from, offset);
+    const fromParsed = isDate(from) ? from : parseISO(from);
+    const fromNow = formatDistanceStrict(fromParsed, new Date(), {
+      addSuffix: true,
+    });
+    const offsetParsed = isDate(offset) ? offset : parseISO(offset);
+    const offsetNow = offset && formatDistance(fromParsed, offsetParsed);
 
     return offsetNow ? `${fromNow} (${offsetNow} later)` : fromNow;
   }

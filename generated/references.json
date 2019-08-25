@@ -753,8 +753,14 @@
         },
         "userData": {
           "additionalProperties": true,
-          "description": "Arbitrary configuration that Worker Manager will make available to the worker\non start up via instance metadata.\n",
-          "title": "User Data",
+          "description": "Supplied as a `userData` property in the `taskcluster` instance metadata attribute.\n[Taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) ignores this field.\nPrefer to use the `workerConfig` property.\n",
+          "title": "User Data (deprecated)",
+          "type": "object"
+        },
+        "workerConfig": {
+          "additionalProperties": true,
+          "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).\n",
+          "title": "Worker Config",
           "type": "object"
         }
       },
@@ -764,7 +770,6 @@
         "capacityPerInstance",
         "machineType",
         "regions",
-        "userData",
         "scheduling",
         "networkInterfaces",
         "disks"
@@ -7618,6 +7623,19 @@
       "serviceName": "worker-manager",
       "types": [
         {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
           "description": "The most basic timer.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",
@@ -7764,6 +7782,21 @@
           "name": "simpleEstimate",
           "title": "Simple Estimate Provided",
           "type": "simple-estimate",
+          "version": 1
+        },
+        {
+          "description": "An error was reported regarding the given worker pool.  Such errors are generally\nthe responsibility of the owner of the worker pool, but may also indicate issues\nwith the Taskcluster deployment and as such are reported in the service logs as\nwell.  Note that the 'extra' data associated with such a report is not included\nhere.  To see that, use the UI or API to view the worker pool errors directly.",
+          "fields": {
+            "description": "Description of the error",
+            "errorId": "The unique id of this error report",
+            "kind": "The error kind",
+            "title": "The error title",
+            "workerPoolId": "The workerPool where the error occurred"
+          },
+          "level": "notice",
+          "name": "workerError",
+          "title": "Worker Error",
+          "type": "worker-error",
           "version": 1
         },
         {
@@ -8162,6 +8195,19 @@
       "serviceName": "secrets",
       "types": [
         {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
           "description": "The most basic timer.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",
@@ -8406,6 +8452,19 @@
       "$schema": "/schemas/common/logs-reference-v0.json#",
       "serviceName": "queue",
       "types": [
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
         {
           "description": "The most basic timer.",
           "fields": {
@@ -10114,6 +10173,19 @@
       "serviceName": "purge-cache",
       "types": [
         {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
           "description": "The most basic timer.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",
@@ -10344,6 +10416,19 @@
       "$schema": "/schemas/common/logs-reference-v0.json#",
       "serviceName": "notify",
       "types": [
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
         {
           "description": "The most basic timer.",
           "fields": {
@@ -10784,6 +10869,19 @@
       "serviceName": "login",
       "types": [
         {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
           "description": "The most basic timer.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",
@@ -10977,6 +11075,19 @@
       "$schema": "/schemas/common/logs-reference-v0.json#",
       "serviceName": "index",
       "types": [
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
         {
           "description": "The most basic timer.",
           "fields": {
@@ -11277,6 +11388,19 @@
       "$schema": "/schemas/common/logs-reference-v0.json#",
       "serviceName": "hooks",
       "types": [
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
         {
           "description": "The most basic timer.",
           "fields": {
@@ -11785,6 +11909,19 @@
       "serviceName": "github",
       "types": [
         {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
           "description": "The most basic timer.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",
@@ -12253,6 +12390,19 @@
       "serviceName": "built-in-workers",
       "types": [
         {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
           "description": "The most basic timer.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",
@@ -12381,6 +12531,19 @@
       "$schema": "/schemas/common/logs-reference-v0.json#",
       "serviceName": "auth",
       "types": [
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
         {
           "description": "The most basic timer.",
           "fields": {
@@ -13160,7 +13323,7 @@
           ],
           "route": "/sentry/<project>/dsn",
           "scopes": "auth:sentry:<project>",
-          "stability": "stable",
+          "stability": "deprecated",
           "title": "Get DSN for Sentry Project",
           "type": "function"
         },

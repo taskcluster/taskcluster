@@ -1,7 +1,11 @@
 const merge = require('deepmerge');
+const copy = require('@neutrinojs/copy');
 const { join, resolve } = require('path');
+const fs = require('fs');
+const generateEnvJs = require('./generate-env-js');
 
 const DEFAULT_PORT = 5080;
+const STATIC_DIR = join(__dirname, 'src/static');
 const port = process.env.PORT || DEFAULT_PORT;
 
 require('@babel/register')({
@@ -35,7 +39,7 @@ module.exports = {
     }],
     ['@neutrinojs/react', {
       html: {
-        title: process.env.APPLICATION_NAME
+        template: './src/index.html',
       },
       devServer: {
         port,
@@ -58,17 +62,6 @@ module.exports = {
             target: 'ws://localhost:3050',
           },
         },
-      },
-      env: {
-        APPLICATION_NAME: 'Application Name',
-        UI_LOGIN_STRATEGY_NAMES: '',
-        PORT: 5080,
-        TASKCLUSTER_ROOT_URL: 'https://taskcluster.net',
-        GRAPHQL_SUBSCRIPTION_ENDPOINT: 'http://localhost:5080/subscription',
-        GRAPHQL_ENDPOINT: 'http://localhost:5080/graphql',
-        GA_TRACKING_ID: '',
-        SENTRY_DSN: '',
-        DOCS_ONLY: false,
       },
     }],
     (neutrino) => {
@@ -157,11 +150,34 @@ module.exports = {
           .test(/taskcluster-version$/)
           .use('raw-loader')
             .loader('raw-loader');
-
     },
     (neutrino) => {
       neutrino.config.resolve
         .alias.set('taskcluster-ui', resolve(__dirname, 'src/'));
+    },
+    (neutrino) => {
+      // Generate env.js, combining env vars into the build, when
+      // GENERATE_ENV_JS is set
+      const envJs = join(STATIC_DIR, 'env.js');
+      if (process.env.GENERATE_ENV_JS) {
+        generateEnvJs(envJs);
+      } else {
+        // just so that we never end up accidentally including something
+        // in a production build
+        if (fs.existsSync(envJs)) {
+          fs.unlinkSync(envJs);
+        }
+      }
+
+      neutrino.use(copy, {
+        patterns: [
+          {
+            context: 'src/static',
+            from: '**/*',
+            to: 'static',
+          },
+        ],
+      });
     },
     ['@neutrinojs/karma', {
       plugins: [

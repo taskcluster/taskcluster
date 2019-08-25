@@ -37,10 +37,10 @@ let load = loader({
   Secret: {
     requires: ['cfg', 'monitor', 'process'],
     setup: ({cfg, monitor, process}) => data.Secret.setup({
-      tableName: cfg.azure.tableName,
+      tableName: cfg.app.secretsTableName,
       credentials: sasCredentials({
         accountId: cfg.azure.accountId,
-        tableName: cfg.azure.tableName,
+        tableName: cfg.app.secretsTableName,
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
       }),
@@ -81,8 +81,8 @@ let load = loader({
 
   expire: {
     requires: ['cfg', 'Secret', 'monitor'],
-    setup: ({cfg, Secret, monitor}) => {
-      return monitor.oneShot('expire', async () => {
+    setup: ({cfg, Secret, monitor}, ownName) => {
+      return monitor.oneShot(ownName, async () => {
         const delay = cfg.app.secretExpirationDelay;
         const now = taskcluster.fromNow(delay);
 

@@ -23,7 +23,7 @@ module.exports = async ({ cfg, strategies }) => {
       o = 'https://taskcluster-ui.herokuapp.com';
     }
     return o;
-  }).filter(o => o);
+  }).filter(o => o && o !== "");
   app.use(cors({
     origin: allowedCORSOrigins,
     credentials: true,

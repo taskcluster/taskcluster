@@ -33,7 +33,7 @@ const taskGroupDescription =
 const taskDescription =
   'Inspect the state, runs, public and private artifacts, definition, and logs of a task.';
 const createTaskDescription = `Write and submit a task to ${
-  process.env.APPLICATION_NAME
+  window.env.APPLICATION_NAME
 }.`;
 const taskIndexDescription =
   'The generic index browser lets you browse through the hierarchy of namespaces in the index, and discover indexed tasks.';

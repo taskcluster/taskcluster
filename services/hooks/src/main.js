@@ -195,8 +195,8 @@ const load = loader({
 
   expires: {
     requires: ['cfg', 'Hook', 'LastFire', 'monitor'],
-    setup: ({cfg, Hook, LastFire, monitor}) => {
-      return monitor.oneShot('expire LastFires', async () => {
+    setup: ({cfg, Hook, LastFire, monitor}, ownName) => {
+      return monitor.oneShot(ownName, async () => {
         const expirationTime = taskcluster.fromNow(cfg.app.lastFiresExpirationDelay);
         debug('Expiring lastFires rows');
         const count = await LastFire.expires(Hook, expirationTime);

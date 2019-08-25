@@ -13,7 +13,9 @@ Here is a simple example of this library:
 var Iterate = require(`taskcluster-lib-iterate`);
 
 i = new Iterate({
+  name: 'something',
   maxFailures: 5,
+  monitor,
   maxIterationTime: 10000,
   watchdogTime: 5000,
   waitTime: 2000,
@@ -39,6 +41,8 @@ i.on(`stopped`, () => {
 The constructor for the `Iterate` class takes an options object, with the following properties.
 All times are in milliseconds.
 
+* `name`: A name used for reporting
+* `monitor`: An instance of taskcluster-lib-monitor
 * `handler`: the async function to call repeatedly, called as `await handler(watchdog)`.
   See details below.
 * `monitor` (optional): instance of a `taskcluster-lib-monitor` instance with a name appropriate for this iterate instance.

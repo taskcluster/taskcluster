@@ -10,7 +10,7 @@ defaults:
     maxMessageTime:               600
     # Email address to blacklist, useful to mitigate temporary misuse
     emailBlacklist:               !env:json:optional EMAIL_BLACKLIST
-    denylistedNotificationTableName: !env DENYLISTED_NOTIFICATION_TABLE_NAME
+    denylistedNotificationTableName: DenylistedNotification
     # ignore tasks with reasonResolved matching something in this list
     ignoreTaskReasonResolved:
         - canceled
@@ -27,6 +27,7 @@ defaults:
 
   monitoring:
     level: !env:optional LEVEL
+    errorConfig: !env:json:optional ERROR_CONFIG
 
   server:
     port:             !env:number PORT
@@ -40,7 +41,6 @@ defaults:
     region:           !env:optional AWS_REGION
 
   pulse:
-    namespace: !env PULSE_NAMESPACE
     hostname: !env PULSE_HOSTNAME
     username: !env PULSE_USERNAME
     password: !env PULSE_PASSWORD

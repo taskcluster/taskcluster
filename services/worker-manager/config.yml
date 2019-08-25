@@ -6,6 +6,7 @@ defaults:
     errorsExpirationDelay: '-4 days' # Anything older than a few days goes away
   monitoring:
     level: !env:optional LEVEL
+    errorConfig: !env:json:optional ERROR_CONFIG
   taskcluster:
     rootUrl: !env TASKCLUSTER_ROOT_URL
     credentials:
@@ -23,7 +24,6 @@ defaults:
     username: !env PULSE_USERNAME
     password: !env PULSE_PASSWORD
     vhost: !env PULSE_VHOST
-    namespace: !env PULSE_NAMESPACE
   providers: !env:json PROVIDERS
 
 

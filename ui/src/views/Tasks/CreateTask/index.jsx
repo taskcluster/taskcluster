@@ -7,6 +7,7 @@ import { safeLoad, safeDump } from 'js-yaml';
 import { bool } from 'prop-types';
 import {
   toDate,
+  parseISO,
   differenceInMilliseconds,
   addMilliseconds,
   addHours,
@@ -207,7 +208,7 @@ export default class CreateTask extends Component {
     });
 
   parameterizeTask(task) {
-    const offset = differenceInMilliseconds(new Date(), task.created);
+    const offset = differenceInMilliseconds(new Date(), parseISO(task.created));
     // Increment all timestamps in the task by offset
     const iter = obj => {
       if (!obj) {
@@ -225,7 +226,7 @@ export default class CreateTask extends Component {
 
         case 'string':
           return ISO_8601_REGEX.test(obj)
-            ? toDate(addMilliseconds(obj, offset)).toISOString()
+            ? toDate(addMilliseconds(parseISO(obj), offset)).toISOString()
             : obj;
 
         default:
