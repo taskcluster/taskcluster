@@ -265,11 +265,8 @@ class AwsProvider extends Provider {
     const verifier = crypto.createVerify('sha256');
 
     verifier.update(document);
-    let result;
 
-    result = verifier.verify(this.ec2iid_RSA_key.toString(), signature.toString(), 'base64');
-
-    return result;
+    return verifier.verify(this.ec2iid_RSA_key.toString(), signature.toString(), 'base64');
   }
 
   /**
