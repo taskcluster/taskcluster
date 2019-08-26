@@ -923,7 +923,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
     });
 
-    test('AWS instance identity verification', async function() {
+    test('[Integration] Successful registering an AWS worker', async function() {
       const awsProviderId = 'aws';
       const awsWorkerIdentityProof = {
         "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),

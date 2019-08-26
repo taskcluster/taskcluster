@@ -9,7 +9,7 @@ module.exports = {
           MinCount: launchConfig.MinCount, // this is estimator's functionality, no need to test this here
           MaxCount: launchConfig.MaxCount,
           TagSpecifications,
-          UserData: JSON.stringify(UserData).toString('base64'),
+          UserData: Buffer.from(JSON.stringify(UserData)).toString('base64'),
         }
       );
 

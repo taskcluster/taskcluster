@@ -88,7 +88,7 @@ class AwsProvider extends Provider {
 
         // please make sure this string is no more than 1024 chars long
         // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-add-user-data
-        UserData: JSON.stringify(userData).toString('base64'),
+        UserData: Buffer.from(JSON.stringify(userData)).toString('base64'),
 
         MaxCount: toSpawn,
         MinCount: toSpawn,
