@@ -6383,7 +6383,6 @@
           "type": "string"
         },
         "schema": {
-          "$ref": "http://json-schema.org/schema",
           "description": "JSON schema for user input to the action.  If this property is omitted,\nthen the input is `null`.\n"
         },
         "title": {
