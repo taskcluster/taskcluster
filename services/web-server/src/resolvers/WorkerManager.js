@@ -20,6 +20,9 @@ module.exports = {
     WorkerPool(parent, { workerPoolId }, { loaders }) {
       return loaders.WorkerPool.load({ workerPoolId });
     },
+    WorkerManagerProviders(parent, _, { loaders }) {
+      return loaders.WorkerManagerProviders.load({});
+    },
   },
   Mutation: {
     createWorkerPool(parent, { workerPoolId, payload }, { clients} ) {
