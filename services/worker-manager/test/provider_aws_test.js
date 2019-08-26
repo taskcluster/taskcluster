@@ -5,6 +5,7 @@ const helper = require('./helper');
 const {AwsProvider} = require('../src/providers/aws');
 const testing = require('taskcluster-lib-testing');
 const aws = require('aws-sdk');
+const fakeAWS = require('./fake-aws');
 
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
@@ -54,7 +55,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         }],
     },
   ];
-  const userData = {
+  const UserData = {
     rootUrl: helper.rootUrl,
     workerPoolId,
     providerId,
@@ -92,46 +93,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         credentials: provider.providerConfig.credentials,
         region: defaultLaunchConfig.region,
       }).returns({
-        runInstances: launchConfig => {
-          assert.deepStrictEqual(launchConfig,
-            {
-              ...defaultLaunchConfig.launchConfig,
-              MinCount: launchConfig.MinCount, // this is estimator's functionality, no need to test this here
-              MaxCount: launchConfig.MaxCount,
-              TagSpecifications,
-              UserData: JSON.stringify(userData).toString('base64'),
-            }
-          );
-
-          let Instances = [];
-          for (let i = 0; i < launchConfig.MinCount; i++) {
-            Instances.push({
-              InstanceId: `i-${i}`,
-              AmiLaunchIndex: '',
-              ImageId: launchConfig.ImageId,
-              InstanceType: launchConfig.InstanceType || 'm2.micro',
-              Architecture: 'x86',
-              Placement: {
-                AvailabilityZone: 'someregion',
-              },
-              PrivateIpAddress: '1.1.1.1',
-              OwnerId: '123123123',
-              State: {
-                Name: 'running',
-              },
-              StateReason: {
-                Message: 'yOu LaunCHed iT!!!1',
-              },
-            });
-          }
-          return {
-            promise: () => ({
-              Instances,
-              Groups: [],
-              OwnerId: '123123123',
-            }),
-          };
-        },
+        runInstances: fakeAWS.EC2.runInstances({defaultLaunchConfig, TagSpecifications, UserData}),
       });
 
     await provider.provision({workerPool});
