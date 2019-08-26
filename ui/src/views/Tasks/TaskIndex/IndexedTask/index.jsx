@@ -5,6 +5,7 @@ import dotProp from 'dot-prop-immutable';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../../components/Dashboard';
 import HelpView from '../../../../components/HelpView';
+import Search from '../../../../components/Search';
 import IndexedEntry from '../../../../components/IndexedEntry';
 import { ARTIFACTS_PAGE_SIZE } from '../../../../utils/constants';
 import ErrorPanel from '../../../../components/ErrorPanel';
@@ -90,6 +91,21 @@ export default class IndexedTask extends Component {
     });
   };
 
+  handleTaskNamespaceSearchSubmit = taskNamespaceSearch => {
+    const searchText = taskNamespaceSearch.replace(/\s+/g, '');
+    const namespace = searchText
+      .split('.')
+      .slice(0, -1)
+      .join('.');
+    const taskFromNamespace = searchText.split('.').slice(-1)[0];
+
+    if (namespace && taskFromNamespace) {
+      this.props.history.push(
+        `/tasks/index/${encodeURIComponent(namespace)}/${taskFromNamespace}`
+      );
+    }
+  };
+
   render() {
     const {
       latestArtifactsData: {
@@ -110,7 +126,14 @@ export default class IndexedTask extends Component {
     return (
       <Dashboard
         title="Index Browser"
-        helpView={<HelpView description={description} />}>
+        helpView={<HelpView description={description} />}
+        search={
+          <Search
+            disabled={loading}
+            onSubmit={this.handleTaskNamespaceSearchSubmit}
+            placeholder="Search"
+          />
+        }>
         {loading && <Spinner loading />}
         {!loading && (
           <ErrorPanel fixed error={indexedTaskError || latestArtifactsError} />
