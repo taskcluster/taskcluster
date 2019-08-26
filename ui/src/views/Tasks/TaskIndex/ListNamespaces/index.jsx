@@ -158,7 +158,6 @@ export default class ListNamespaces extends Component {
             <Fragment>
               <Typography variant="subtitle1">Indexed Tasks</Typography>
               <IndexTaskNamespaceTable
-                onTaskNamespaceClick={this.handleTaskNamespaceClick}
                 onPageChange={this.handleTaskNamespacePageChange}
                 connection={taskNamespace}
               />
