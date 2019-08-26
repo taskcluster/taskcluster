@@ -155,6 +155,10 @@ class AwsProvider extends Provider {
    * @returns {Promise<{expires: *}>}
    */
   async registerWorker({worker, workerPool, workerIdentityProof}) {
+    if (worker.state !== this.Worker.states.REQUESTED) {
+      throw new ApiError('This worker is either stopped or running. No need to register');
+    }
+
     const {document, signature} = workerIdentityProof;
     if (!document || !signature) {
       throw new ApiError('Token validation error');
