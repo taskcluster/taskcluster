@@ -23,6 +23,26 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     ].sort());
   });
 
+  test('list providers pagination', async function() {
+    let pages = 0;
+    let providerIds = [];
+    let query = {limit: 1};
+    while (true) {
+      const res = await helper.workerManager.listProviders(query);
+      pages += 1;
+      res.providers.forEach(({providerId}) => providerIds.push(providerId));
+      if (res.continuationToken) {
+        query.continuationToken = res.continuationToken;
+      } else {
+        break;
+      }
+    }
+
+    assert.equal(pages, 4);
+    assert.deepStrictEqual(providerIds.sort(),
+      ['testing1', 'testing2', 'static', 'google'].sort());
+  });
+
   const workerPoolCompare = (workerPoolId, input, result) => {
     const {created, lastModified, ...definition} = result;
     assert(created);
