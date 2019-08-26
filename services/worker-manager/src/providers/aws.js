@@ -34,6 +34,8 @@ class AwsProvider extends Provider {
     this.configSchema = 'config-aws';
     this.ec2iid_RSA_key = fs.readFileSync(path.resolve(__dirname, 'aws-keys/RSA-key-forSignature')).toString();
     this.providerConfig = providerConfig;
+
+    aws.config.logger = console;
   }
 
   /*
@@ -54,11 +56,10 @@ class AwsProvider extends Provider {
 
     const config = this.chooseConfig({possibleConfigs: workerPool.config.launchConfigs});
 
-    aws.config.update({region: config.region});
-    aws.config.logger = console;
     const ec2 = new aws.EC2({
       apiVersion: AWS_API_VERSION,
       credentials: this.providerConfig.credentials,
+      region: config.region,
     });
 
     const toSpawn = await this.estimator.simple({
@@ -175,10 +176,10 @@ class AwsProvider extends Provider {
   async checkWorker({worker}) {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
 
-    aws.config.update({region: worker.providerData.region});
     const ec2 = new aws.EC2({
       apiVersion: AWS_API_VERSION,
       credentials: this.providerConfig.credentials,
+      region: worker.providerData.region,
     });
 
     let instanceStatuses;
@@ -276,8 +277,7 @@ class AwsProvider extends Provider {
    * with that id that we already have in the DB
    *
    * @param document
-   * @returns void if everything checks out
-   * @throws an error if there's any difference
+   * @returns boolean if everything checks out
    */
   verifyWorkerInstance({document, worker}) {
     const {providerData} = worker;
