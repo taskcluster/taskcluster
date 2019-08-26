@@ -20,9 +20,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     capacityPerInstance: 1,
     launchConfig: {
       ImageId: 'banana-123',
-      MinCount: 1,
-      MaxCount: 2,
     },
+    minCapacity: 1,
+    maxCapacity: 2,
   };
   let workerPool = {
     workerPoolId,
@@ -96,6 +96,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
           assert.deepStrictEqual(launchConfig,
             {
               ...defaultLaunchConfig.launchConfig,
+              MinCount: launchConfig.MinCount, // this is estimator's functionality, no need to test this here
+              MaxCount: launchConfig.MaxCount,
               TagSpecifications,
               UserData: JSON.stringify(userData).toString('base64'),
             }

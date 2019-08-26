@@ -25,31 +25,35 @@ properties:
             ImageId:
               type: string
               description: The ID of the AMI to launch an instance from.
-            MinCount:
-              type: integer
-              description: Minimum amount of instances to run.
-            MaxCount:
-              type: integer
-              description: Maximum amount of instances to run.
           required:
             - ImageId
-            - MinCount
-            - MaxCount
           not:
             required:
               - IamInstanceProfile
               - UserData
+              - MinCount
+              - MaxCount
           additionalProperties: true
         capacityPerInstance:
           title: Capacity Per Instance
           type: integer
           minimum: 1
           description: The number of tasks a single worker of this type can run at any given time.
+        minCapacity:
+          title: Minimum Capacity
+          type: integer
+          description: Minimum capacity necessary to maintain at any given time
+        maxCapacity:
+          title: Maximum Capacity
+          type: integer
+          description: Maximum capacity that should not be exceeded at any given time
       additionalProperties: false
       required:
         - region
         - launchConfig
         - capacityPerInstance
+        - minCapacity
+        - maxCapacity
 additionalProperties: false
 required:
   - launchConfigs

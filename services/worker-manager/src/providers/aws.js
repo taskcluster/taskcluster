@@ -64,11 +64,15 @@ class AwsProvider extends Provider {
 
     const toSpawn = await this.estimator.simple({
       workerPoolId,
-      minCapacity: config.launchConfig.MinCount,
-      maxCapacity: config.launchConfig.MaxCount,
+      minCapacity: config.minCapacity,
+      maxCapacity: config.maxCapacity,
       capacityPerInstance: config.capacityPerInstance,
       running: workerPool.providerData[this.providerId].running,
     });
+    if (toSpawn === 0) {
+      this.monitor.alert('Calculated amount of workers to spawn is 0. Exiting');
+      return;
+    }
 
     const userData = {
       rootUrl: this.rootUrl,
@@ -86,8 +90,8 @@ class AwsProvider extends Provider {
         // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-add-user-data
         UserData: JSON.stringify(userData).toString('base64'),
 
-        MaxCount: config.launchConfig.MaxCount ? Math.max(toSpawn, config.launchConfig.MaxCount) : toSpawn,
-        MinCount: config.launchConfig.MinCount ? Math.min(toSpawn, config.launchConfig.MinCount) : toSpawn,
+        MaxCount: toSpawn,
+        MinCount: toSpawn,
         TagSpecifications: [
           ...(config.launchConfig.TagSpecifications ? config.launchConfig.TagSpecifications : []),
           {
