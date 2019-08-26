@@ -159,7 +159,9 @@ class AwsProvider extends Provider {
       throw new ApiError('Instance identity document validation error');
     }
 
-    this.verifyWorkerInstance({document, worker});
+    if (!this.verifyWorkerInstance({document, worker})) {
+      throw new ApiError('Instance validation error');
+    }
 
     // mark it as running
     await worker.modify(w => {
@@ -281,20 +283,14 @@ class AwsProvider extends Provider {
     const {providerData} = worker;
     const parsedDocument = JSON.parse(document);
 
-    if (
-      providerData.privateIp !== parsedDocument.privateIp ||
+    return providerData.privateIp !== parsedDocument.privateIp ||
       providerData.owner !== parsedDocument.accountId ||
       providerData.availabilityZone !== parsedDocument.availabilityZone ||
       providerData.architecture !== parsedDocument.architecture ||
       providerData.imageId !== parsedDocument.imageId ||
       worker.workerId !== parsedDocument.instanceId ||
       providerData.instanceType !== parsedDocument.instanceType ||
-      providerData.region !== parsedDocument.region
-    ) {
-      throw new ApiError('Token validation error');
-    }
-
-    return;
+      providerData.region !== parsedDocument.region;
   }
 }
 
