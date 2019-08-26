@@ -96,7 +96,7 @@ For development, it can be anything.
 JWT_KEY=this-is-a-secret-value-be-very-careful-with-it
 ```
 
-See the [deployment documentation](../../deployment-docs/login-strategies.md) for information on how to set up and configure these strategies.
+See the [deployment documentation](https://docs.taskcluster.net/docs/manual/deploying) for information on how to set up and configure these strategies.
 Note that in many cases such setup is not required for development of this service.
 
 ## Sample Queries

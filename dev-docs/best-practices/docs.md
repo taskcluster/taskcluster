@@ -43,7 +43,7 @@ Developer documentation can be found at:
 
 ## Deployment-Docs
 
-Deployment docs are in the [`/deployment-docs`](../../deployment-docs) directory in the Taskcluster Git repository.
+Deployment docs are located in a section of the manual chapter.
 They are intended for people deploying Taskcluster.
 They cover topics such as:
 

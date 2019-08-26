@@ -1,4 +1,6 @@
-# Login Strategies
+---
+title: Login Strategies
+---
 
 The taskcluster-ui and taskcluster-web-server services work together to support configurable login strategies for the Taskcluster UI.
 These are configured with the `ui_login_strategies` and `ui_login_strategy_names` Terraform variables.
