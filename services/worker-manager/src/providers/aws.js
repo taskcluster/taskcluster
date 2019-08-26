@@ -283,14 +283,14 @@ class AwsProvider extends Provider {
     const {providerData} = worker;
     const parsedDocument = JSON.parse(document);
 
-    return providerData.privateIp !== parsedDocument.privateIp ||
-      providerData.owner !== parsedDocument.accountId ||
-      providerData.availabilityZone !== parsedDocument.availabilityZone ||
-      providerData.architecture !== parsedDocument.architecture ||
-      providerData.imageId !== parsedDocument.imageId ||
-      worker.workerId !== parsedDocument.instanceId ||
-      providerData.instanceType !== parsedDocument.instanceType ||
-      providerData.region !== parsedDocument.region;
+    return providerData.privateIp === parsedDocument.privateIp ||
+      providerData.owner === parsedDocument.accountId ||
+      providerData.availabilityZone === parsedDocument.availabilityZone ||
+      providerData.architecture === parsedDocument.architecture ||
+      providerData.imageId === parsedDocument.imageId ||
+      worker.workerId === parsedDocument.instanceId ||
+      providerData.instanceType === parsedDocument.instanceType ||
+      providerData.region === parsedDocument.region;
   }
 }
 

@@ -90,6 +90,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       .withArgs({
         apiVersion: AWS_API_VERSION,
         credentials: provider.providerConfig.credentials,
+        region: defaultLaunchConfig.region,
       }).returns({
         runInstances: launchConfig => {
           assert.deepStrictEqual(launchConfig,
