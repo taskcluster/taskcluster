@@ -7,6 +7,7 @@ import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../../../components/Dashboard';
 import HelpView from '../../../../components/HelpView';
+import Search from '../../../../components/Search';
 import IndexNamespacesTable from '../../../../components/IndexNamespacesTable';
 import IndexTaskNamespaceTable from '../../../../components/IndexTaskNamespaceTable';
 import { VIEW_NAMESPACES_PAGE_SIZE } from '../../../../utils/constants';
@@ -115,6 +116,21 @@ export default class ListNamespaces extends Component {
     });
   };
 
+  handleTaskNamespaceSearchSubmit = taskNamespaceSearch => {
+    const searchText = taskNamespaceSearch.replace(/\s+/g, '');
+    const namespace = searchText
+      .split('.')
+      .slice(0, -1)
+      .join('.');
+    const taskFromNamespace = searchText.split('.').slice(-1)[0];
+
+    if (namespace && taskFromNamespace) {
+      this.props.history.push(
+        `/tasks/index/${encodeURIComponent(namespace)}/${taskFromNamespace}`
+      );
+    }
+  };
+
   render() {
     const {
       namespacesData: {
@@ -138,7 +154,14 @@ export default class ListNamespaces extends Component {
     return (
       <Dashboard
         title="Index Browser"
-        helpView={<HelpView description={description} />}>
+        helpView={<HelpView description={description} />}
+        search={
+          <Search
+            disabled={loading}
+            onSubmit={this.handleTaskNamespaceSearchSubmit}
+            placeholder="Search"
+          />
+        }>
         <Fragment>
           {loading && <Spinner loading />}
           <ErrorPanel fixed error={namespacesError || taskNamespaceError} />
