@@ -45,7 +45,7 @@ class FakeGoogle {
 
     // For now we only support creating one of these per project
     // in this fake. We can support multiples later if needed
-    this.serviceAccount = null;
+    this.serviceAccount = 12345;
     this.role = null;
 
     this.iamPolicy = {
@@ -98,6 +98,24 @@ class FakeGoogle {
       zoneOperations: {
         get: async () => opStub(),
         delete: async () => {},
+      },
+    };
+  }
+
+  iam() {
+    return {
+      projects: {
+        serviceAccounts: {
+          get: async () => {
+            if (this.serviceAccount) {
+              return {
+                data: this.serviceAccount,
+              };
+            } else {
+              throw this.error(404);
+            }
+          },
+        },
       },
     };
   }

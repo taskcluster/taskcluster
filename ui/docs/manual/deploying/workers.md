@@ -49,12 +49,8 @@ A google-based provider is be configured in `providers` with the following struc
   "myProvider": {
     "providerType": "google",
     "project": "<gcp project identifier>",
-    "instancePermissions": [
-      "<instance permission>",
-      "<instance permission>"
-    ],
-    "creds": "<google credentials>",
-    "credsFile": "<filename containing google credentials>"
+    "workerServiceAccountId": "<uniqueId of a service account in this project that workers will use>",
+    "creds": "<google credentials>"
   },
   ...
 }
@@ -69,21 +65,22 @@ The project will need the following APIs enabled:
 
 * Compute Engine API
 * Identity and Access Management (IAM) API
-* Cloud Resource Manager API
 
 #### Service Account Credentials
 
-The provider requires a service account in the designated project, with the following roles:
+The provider requires *two* service accounts in the designated project.
 
-* `roles/iam.serviceAccountAdmin` ("Service Account Admin")
-* `roles/iam.roleAdmin` ("Role Administrator")
-* `roles/resourcemanager.projectIamAdmin` ("Project IAM Admin")
-* `roles/compute.admin` ("Compute Admin")
+The first is the service account that worker-manager will assign to workers
+it starts. Give this service account whatever google permissions you wish your
+workers to have. This could be something like writing to stackdriver for example.
+You provide the `uniqueId` of this service account in the `workerServiceAccountId` field.
 
-These roles confer almost total control over the GCP project.
-See the note above about using a dedicated project.
+The second is for worker-manager to run as itself with the following roles:
 
-The GCP credentials for this service account are provided either in string form (`creds`) or in a file (`credsFile`).
+* `roles/compute.instanceAdmin` ("Compute Instance Admin (beta)")
+* `roles/iam.serviceAccountUser` ("Service Account User")
+
+The GCP credentials for this service account are provided in string form (`creds`).
 In either case, the data is the large JSON object containing a service account's keys. The object looks something like this:
 
 ```
@@ -100,14 +97,7 @@ In either case, the data is the large JSON object containing a service account's
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/thisthing%40something.iam.gserviceaccount.com"
 }
 ```
-and will need to be included as a single string in the `creds` property.
-
-#### Instance Permissions
-
-The `instancePermissions` configuration defines the permissions granted to the GCP role assumed by the workers.
-Each string in this array is a GCP IAM permission string.
-Typically, this will include permissions to write to StackDriver, such as `logging.logEntries.create`.
-
+and will need to be included either as a string, base64'd string, or just json/yaml in the `creds` property.
 
 ### AWS
 

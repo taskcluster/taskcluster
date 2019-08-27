@@ -44,5 +44,8 @@ test:
       providerType: static
     google:
       providerType: google
+      project: foo
+      creds: {}
+      workerServiceAccountId: 12345
     aws:
       providerType: aws

@@ -1,3 +1,4 @@
+const assert = require('assert');
 const slugid = require('slugid');
 const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
@@ -16,36 +17,56 @@ class GoogleProvider extends Provider {
     let {project, creds, workerServiceAccountId} = providerConfig;
     this.configSchema = 'config-google';
 
+    assert(project, 'Must provide a project to google providers');
+    assert(creds, 'Must provide creds to google providers');
+    assert(workerServiceAccountId, 'Must provide a workerServiceAccountId to google providers');
+
     this.project = project;
     this.zonesByRegion = {};
     this.workerServiceAccountId = workerServiceAccountId;
-    this.workerServiceAccountEmail = `${workerServiceAccountId}@${project}.iam.gserviceaccount.com`;
 
     if (fakeCloudApis && fakeCloudApis.google) {
       this.ownClientEmail = 'whatever@example.com';
       this.compute = fakeCloudApis.google.compute();
+      this.iam = fakeCloudApis.google.iam();
       this.oauth2 = new fakeCloudApis.google.OAuth2({project});
       return;
     }
 
-    try {
-      creds = JSON.parse(creds);
-    } catch (err) {
-      if (err.name !== 'SyntaxError') {
-        throw err;
+    // If creds are a string or a base64d string, parse them
+    if (_.isString(creds)) {
+      try {
+        creds = JSON.parse(creds);
+      } catch (err) {
+        if (err.name !== 'SyntaxError') {
+          throw err;
+        }
+        creds = JSON.parse(Buffer.from(creds, 'base64'));
       }
-      creds = JSON.parse(Buffer.from(creds, 'base64'));
     }
+
     this.ownClientEmail = creds.client_email;
     const client = google.auth.fromJSON(creds);
     client.scopes = [
       'https://www.googleapis.com/auth/compute', // For configuring instance templates, groups, etc
+      'https://www.googleapis.com/auth/iam', // For fetching service account name
     ];
     this.compute = google.compute({
       version: 'v1',
       auth: client,
     });
+    this.iam = google.iam({
+      version: 'v1',
+      auth: client,
+    });
     this.oauth2 = new google.auth.OAuth2();
+  }
+
+  async setup() {
+    const workerServiceAccount = (await this.iam.projects.serviceAccounts.get({
+      name: `projects/${this.project}/serviceAccounts/${this.workerServiceAccountId}`,
+    })).data;
+    this.workerServiceAccountEmail = workerServiceAccount.email;
   }
 
   async registerWorker({worker, workerPool, workerIdentityProof}) {
