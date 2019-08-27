@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { withApollo, graphql } from 'react-apollo';
 import { bool } from 'prop-types';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
@@ -7,12 +7,16 @@ import Dashboard from '../../../components/Dashboard';
 import createWorkerPoolQuery from './createWorkerPool.graphql';
 import updateWorkerPoolQuery from './updateWorkerPool.graphql';
 import workerPoolQuery from './workerPool.graphql';
+import providersQuery from './providers.graphql';
 import WMWorkerPoolEditor from '../../../components/WMWorkerPoolEditor';
-import { findKeyInMap } from '../../../utils/mapUtils';
-import { PROVIDERS, NULL_PROVIDER } from '../../../utils/constants';
+import ErrorPanel from '../../../components/ErrorPanel';
+import { NULL_PROVIDER } from '../../../utils/constants';
 
 @hot(module)
 @withApollo
+@graphql(providersQuery, {
+  name: 'providersData',
+})
 @graphql(workerPoolQuery, {
   skip: props => !props.match.params.workerPoolId || props.isNewWorkerPool,
   options: ({ match: { params } }) => ({
@@ -65,31 +69,50 @@ export default class WMEditWorkerPool extends Component {
   };
 
   render() {
-    const { isNewWorkerPool, data } = this.props;
+    const { isNewWorkerPool, data, providersData } = this.props;
+
+    // detect a ridiculous number of providers and let the user know
+    if (
+      providersData.WorkerManagerProviders &&
+      providersData.WorkerManagerProviders.pageInfo.hasNextPage
+    ) {
+      const err = new Error(
+        'This deployment has a lot of providers; not all can be displayed here.'
+      );
+
+      return <ErrorPanel fixed error={err} />;
+    }
+
+    const providers = providersData.WorkerManagerProviders
+      ? providersData.WorkerManagerProviders.edges.map(({ node }) => node)
+      : [];
+    const loading =
+      !providersData ||
+      !providersData.WorkerManagerProviders ||
+      providersData.loading ||
+      (!isNewWorkerPool && (!data || !data.WorkerPool || data.loading));
+    const error =
+      (providersData && providersData.error) || (data && data.error);
 
     return (
       <Dashboard title={isNewWorkerPool ? 'Create Worker Pool' : 'Worker Pool'}>
-        {isNewWorkerPool ? (
-          <WMWorkerPoolEditor
-            saveRequest={this.createWorkerPoolRequest}
-            isNewWorkerPool
-          />
-        ) : (
-          <Fragment>
-            {!data.WorkerPool && data.loading && <Spinner loading />}
-            {data.WorkerPool && (
-              <WMWorkerPoolEditor
-                workerPool={data.WorkerPool}
-                providerType={findKeyInMap({
-                  map: PROVIDERS,
-                  value: data.WorkerPool.providerId,
-                })}
-                saveRequest={this.updateWorkerPoolRequest}
-                deleteRequest={this.deleteRequest}
-              />
-            )}
-          </Fragment>
-        )}
+        <ErrorPanel fixed error={error} />
+        {loading && <Spinner loading />}
+        {!loading &&
+          (isNewWorkerPool ? (
+            <WMWorkerPoolEditor
+              saveRequest={this.createWorkerPoolRequest}
+              providers={providers}
+              isNewWorkerPool
+            />
+          ) : (
+            <WMWorkerPoolEditor
+              workerPool={data.WorkerPool}
+              providers={providers}
+              saveRequest={this.updateWorkerPoolRequest}
+              deleteRequest={this.deleteRequest}
+            />
+          ))}
       </Dashboard>
     );
   }
