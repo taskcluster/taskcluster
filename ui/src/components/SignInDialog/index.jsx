@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { withApollo } from 'react-apollo';
 import { bool, func } from 'prop-types';
-import { parse } from 'qs';
 import Avatar from '@material-ui/core/Avatar';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
@@ -29,26 +28,8 @@ export default class SignInDialog extends Component {
     credentialsDialogOpen: false,
   };
 
-  shouldStartOauth2LoginFlow() {
-    const query = parse(window.location.search.slice(1));
-
-    if (
-      query.client_id &&
-      query.response_type &&
-      query.scope &&
-      query.redirect_uri
-    ) {
-      return true;
-    }
-
-    return false;
-  }
-
   componentDidMount() {
-    const {
-      shouldStartOauth2LoginFlow,
-      props: { onAuthorize, onClose },
-    } = this;
+    const { onAuthorize } = this.props;
 
     window.addEventListener(
       'message',
@@ -59,14 +40,6 @@ export default class SignInDialog extends Component {
 
         window.removeEventListener('message', handler);
         await onAuthorize(UserSession.create(e.data));
-
-        if (shouldStartOauth2LoginFlow()) {
-          window.location.href = `${
-            window.location.origin
-          }/login/oauth/authorize${window.location.search}`;
-        }
-
-        onClose();
       },
       false
     );

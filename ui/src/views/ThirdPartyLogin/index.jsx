@@ -89,15 +89,9 @@ export default class ThirdPartyLogin extends Component {
     }
 
     if (data.error) {
-      if (isClientNotFound(data.error)) {
+      if (isClientNotFound(data.error) && !state.displayConsentForm) {
         Object.assign(newState, {
           displayClientCreatorForm: true,
-          displayConsentForm: false,
-        });
-      } else {
-        Object.assign(newState, {
-          displayConsentForm: true,
-          displayClientCreatorForm: false,
         });
       }
     }
