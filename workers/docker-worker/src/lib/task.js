@@ -339,6 +339,7 @@ class Task extends EventEmitter {
     env.TASKCLUSTER_WORKER_GROUP = this.runtime.workerGroup;
     env.TASKCLUSTER_PUBLIC_IP = this.runtime.publicIp;
     env.TASKCLUSTER_ROOT_URL = this.runtime.rootUrl;
+    env.TASKCLUSTER_WORKER_LOCATION = this.runtime.workerLocation;
 
     let privilegedTask = runAsPrivileged(
       this.task, this.runtime.dockerConfig.allowPrivileged
