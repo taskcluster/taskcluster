@@ -58,6 +58,12 @@ providers using providerType "aws".  It requires
 	provider:
 		providerType: aws
 
+The TASKCLUSTER_WORKER_LOCATION of this provider has the following fields:
+
+- cloud: aws
+- region
+- availabilityZone
+
 ### aws-provisioner
 
 The providerType "aws-provisioner" is intended for workers provisioned with
