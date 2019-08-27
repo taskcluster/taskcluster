@@ -2,6 +2,7 @@
 title: Roles and Role Expansion
 order: 30
 ---
+import ErrorPanel from '../../../../src/components/ErrorPanel/'
 
 # Roles and Role Expansion
 
@@ -91,8 +92,7 @@ a scope-set containing `"assume:project-admin:zap"` would expand to include
 
 ### Stars in Parameters
 
-*WARNING*: be careful using `*` in scopes that will be expanded with a
-parameterization, as results may not be what you expect.
+<ErrorPanel warning error="Be careful using `*` in scopes that will be expanded with a parameterization, as results may not be what you expect." onClose={false}/>
 
 As a special case, if there is a `*` in the input suffixed matched by the
 role's `*`, then anything following the first `<..>` in the scope will be
