@@ -5,6 +5,7 @@ const _ = require('lodash');
 const WebServerError = require('../utils/WebServerError');
 const tryCatch = require('../utils/tryCatch');
 const ensureLoggedIn = require('../utils/ensureLoggedIn');
+const expressWrapAsync = require('../utils/expressWrapAsync');
 
 module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor) => {
   // Create OAuth 2.0 server
@@ -259,14 +260,14 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
    *
    *
    */
-  const getCredentials = async (req, res, next) => {
+  const getCredentials = expressWrapAsync(async (req, res) => {
     // Don't report much to the user, to avoid revealing sensitive information, although
     // it is likely in the service logs.
     const inputError = new WebServerError('InputError', 'Could not generate credentials for this access token');
     const [tokenError, entry] = await tryCatch(AccessToken.load({ accessToken: req.accessToken }));
 
     if (tokenError) {
-      return next(inputError);
+      throw inputError;
     }
 
     const { clientId, ...data } = entry.clientDetails;
@@ -280,7 +281,7 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
     }));
 
     if (clientError) {
-      return next(inputError);
+      throw inputError;
     }
 
     res.send({
@@ -290,7 +291,7 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
         accessToken: client.accessToken,
       },
     });
-  };
+  });
 
   return {
     authorization,

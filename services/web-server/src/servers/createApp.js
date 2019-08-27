@@ -114,5 +114,10 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
   // 4. Get Taskcluster credentials
   app.get('/login/oauth/credentials', getCredentials);
 
+  // Error handling middleware
+  app.use((err, req, res, next) => {
+    res.status(500).json(err);
+  });
+
   return app;
 };
