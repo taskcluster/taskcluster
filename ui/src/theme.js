@@ -297,6 +297,11 @@ const createTheme = isDarkTheme => {
           whiteSpace: 'nowrap',
         },
       },
+      MuiPickersToolbar: {
+        toolbar: {
+          backgroundColor: THEME.SECONDARY,
+        },
+      },
       MuiPickersYear: {
         root: {
           '&:focus': {
