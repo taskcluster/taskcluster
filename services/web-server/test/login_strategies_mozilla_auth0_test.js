@@ -14,10 +14,6 @@ suite(testing.suiteName(), () => {
             clientSecret: 'efgh',
           },
         },
-        jwt: {
-          publicKey: '',
-          privateKey: '',
-        },
       },
     },
   });

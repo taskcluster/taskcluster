@@ -92,8 +92,8 @@ module.exports = class MozillaAuth0 {
     const userId = decode(encodedUserId);
     const user = await this.getUser({ userId });
 
-    // catch cases where the calculated identity differs, such as when we add a
-    // GitHub username, and return no user in that case.
+    // catch cases where the calculated identity differs, such as when the github username
+    // doesn't match the provided identity, and return no user in that case.
     if (user && user.identity !== identity) {
       return;
     }

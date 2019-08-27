@@ -25,7 +25,7 @@ The service then uses the `createCredentials` method to create temporary credent
 
 ## Strategy Classes
 
-Strategies are implemented in files under [`services/web-server/src/login/strategies`](../src/login/strategies), in files named afte the strategy.
+Strategies are implemented in files under [`services/web-server/src/login/strategies`](../src/login/strategies), in files named after the strategy.
 Each file exports a class which is instantiated at service start-up if that strategy is configured.
 Strategies not mentioned in the configuration are not even loaded, saving memory in the Node process.
 
