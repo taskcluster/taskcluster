@@ -2,7 +2,6 @@ import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { arrayOf } from 'prop-types';
 import storage from 'localforage';
-import { parse } from 'qs';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloClient } from 'apollo-client';
 import { WebSocketLink } from 'apollo-link-ws';
@@ -148,30 +147,9 @@ export default class App extends Component {
     return { error };
   }
 
-  shouldStartOauth2LoginFlow() {
-    const query = parse(window.location.search.slice(1));
-
-    if (
-      query.client_id &&
-      query.response_type &&
-      query.scope &&
-      query.redirect_uri
-    ) {
-      return true;
-    }
-
-    return false;
-  }
-
   handleUserChanged = user => {
     if (!user) {
       this.authController.clearSession();
-    }
-
-    if (user && this.shouldStartOauth2LoginFlow()) {
-      window.location.href = `${window.location.origin}/login/oauth/authorize${
-        window.location.search
-      }`;
     }
 
     this.setState({

@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { BrowserRouter, Switch } from 'react-router-dom';
 import { withApollo } from 'react-apollo';
-import { parse } from 'qs';
 import { object, arrayOf } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import RouteWithProps from '../components/RouteWithProps';
@@ -59,21 +58,6 @@ export default class Main extends Component {
     error: null,
   };
 
-  shouldStartOauth2LoginFlow() {
-    const query = parse(window.location.search.slice(1));
-
-    if (
-      query.client_id &&
-      query.response_type &&
-      query.scope &&
-      query.redirect_uri
-    ) {
-      return true;
-    }
-
-    return false;
-  }
-
   // Called on user change because of <App key={auth.user} ... />
   async componentDidMount() {
     const { user, onUnauthorize } = this.props;
@@ -94,7 +78,7 @@ export default class Main extends Component {
 
     // Users who were logged in earlier manually will be logged out in order to
     // be able to complete the third party login flow.
-    if (user && user.identityProviderId === 'manual' && thirdPartyLogin()) {
+    if (user && user.identityProviderId === 'manual' && thirdPartyLogin) {
       onUnauthorize();
     }
 
