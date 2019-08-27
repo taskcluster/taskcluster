@@ -4,7 +4,6 @@ const passport = require('passport');
 const { Strategy } = require('passport-github');
 const taskcluster = require('taskcluster-client');
 const User = require('../User');
-const identityFromClientId = require('../../utils/identityFromClientId');
 const login = require('../../utils/login');
 const WebServerError = require('../../utils/WebServerError');
 const tryCatch = require('../../utils/tryCatch');
@@ -22,7 +21,6 @@ module.exports = class Github {
 
     Object.assign(this, strategyCfg);
 
-    this.rootUrl = cfg.taskcluster.rootUrl;
     this.identityProviderId = 'github';
     this.githubClient = new GithubClient();
   }
@@ -31,10 +29,12 @@ module.exports = class Github {
     const user = new User();
     const [githubErr, githubUser] = await tryCatch(this.githubClient.userFromUsername(username));
 
+    // 404 means the user doesn't exist; otherwise, throw the error up the chain
     if (githubErr) {
-      debug(`error retrieving user data from Github: ${githubErr}\n${githubErr.stack}`);
-
-      return;
+      if (githubErr.status === 404) {
+        return;
+      }
+      throw githubErr;
     }
 
     if (githubUser.id !== userId) {
@@ -44,11 +44,6 @@ module.exports = class Github {
     }
 
     user.identity = `${this.identityProviderId}/${userId}|${encode(username)}`;
-
-    if (!user.identity) {
-      debug('No recognized identity providers');
-      return;
-    }
 
     // take a user and attach roles to it
     // this.addRoles(userProfile, user);
@@ -60,16 +55,6 @@ module.exports = class Github {
     const [userId, username = ''] = identity.split('/')[1].split('|');
 
     return this.getUser({ username: decode(username), userId: Number(userId) });
-  }
-
-  userFromClientId(clientId) {
-    const identity = identityFromClientId(clientId);
-
-    if (!identity) {
-      return;
-    }
-
-    return this.userFromIdentity(identity);
   }
 
   useStrategy(app, cfg) {

@@ -7,7 +7,6 @@ const User = require('../User');
 const PersonAPI = require('../clients/PersonAPI');
 const WebServerError = require('../../utils/WebServerError');
 const { encode, decode } = require('../../utils/codec');
-const identityFromClientId = require('../../utils/identityFromClientId');
 const tryCatch = require('../../utils/tryCatch');
 const login = require('../../utils/login');
 const verifyJwtAuth0 = require('../../utils/verifyJwtAuth0');
@@ -24,7 +23,6 @@ module.exports = class MozillaAuth0 {
 
     Object.assign(this, strategyCfg);
 
-    this.rootUrl = cfg.taskcluster.rootUrl;
     this._personApi = null;
     this._personApiExp = null;
     this.identityProviderId = 'mozilla-auth0';
@@ -78,18 +76,13 @@ module.exports = class MozillaAuth0 {
 
     user.identity = this.identityFromProfile(userProfile);
 
-    if (!user.identity) {
-      debug('No recognized identity providers');
-      return;
-    }
-
     // take a user and attach roles to it
     this.addRoles(userProfile, user);
 
     return user;
   }
 
-  userFromIdentity(identity) {
+  async userFromIdentity(identity) {
     let encodedUserId = identity.split('/')[1];
 
     if (encodedUserId.startsWith('github|') || encodedUserId.startsWith('oauth2|firefoxaccounts|')) {
@@ -97,7 +90,15 @@ module.exports = class MozillaAuth0 {
     }
 
     const userId = decode(encodedUserId);
-    return this.getUser({ userId });
+    const user = await this.getUser({ userId });
+
+    // catch cases where the calculated identity differs, such as when the github username
+    // doesn't match the provided identity, and return no user in that case.
+    if (user && user.identity !== identity) {
+      return;
+    }
+
+    return user;
   }
 
   async expFromIdToken(idToken) {
@@ -111,16 +112,6 @@ module.exports = class MozillaAuth0 {
     }
 
     return profile.exp;
-  }
-
-  userFromClientId(clientId) {
-    const identity = identityFromClientId(clientId);
-
-    if (!identity) {
-      return;
-    }
-
-    return this.userFromIdentity(identity);
   }
 
   identityFromProfile(profile) {

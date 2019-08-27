@@ -17,6 +17,7 @@ const resolvers = require('./resolvers');
 const typeDefs = require('./graphql');
 const PulseEngine = require('./PulseEngine');
 const scanner = require('./login/scanner');
+const { Auth } = require('taskcluster-client');
 
 const load = loader(
   {
@@ -142,8 +143,12 @@ const load = loader(
 
     scanner: {
       requires: ['cfg', 'strategies', 'monitor'],
-      setup: async ({ cfg, strategies, monitor}, ownName) => {
-        return monitor.oneShot(ownName, () => scanner(cfg, strategies));
+      setup: async ({ cfg, strategies, monitor }, ownName) => {
+        const auth = new Auth({
+          credentials: cfg.taskcluster.credentials,
+          rootUrl: cfg.taskcluster.rootUrl,
+        });
+        return monitor.oneShot(ownName, () => scanner(auth, strategies));
       },
     },
 

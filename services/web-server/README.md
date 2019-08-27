@@ -33,7 +33,7 @@ receiving pulse messages, but this is not required for development of most
 features.
 
 To set up Taskcluster credentials, use
-[taskcluster-cli](https://github.com/taskcluster/taskcluster-cli) to set
+the [`taskcluster` tool](../../clients/client-shell) to set
 `TASKCLUSTER_ROOT_URL`, `TASKCLUSTER_CLIENT_ID`, and `TASKCLUSTER_ACCESS_TOKEN`
 in your shell:
 
@@ -85,19 +85,9 @@ You can find your TC token in localStorage after signing into the UI.
 
 ## Login Strategies
 
-Taskcluster supports the following strategies:
-* GitHub
-* Mozilla Auth0
-
-All login strategies require configuration of the `login.jwt.key` configuration value, which is a secret used for HMAC signatures.
-For development, it can be anything.
-
-```sh
-JWT_KEY=this-is-a-secret-value-be-very-careful-with-it
-```
-
-See the [deployment documentation](https://docs.taskcluster.net/docs/manual/deploying) for information on how to set up and configure these strategies.
-Note that in many cases such setup is not required for development of this service.
+Taskcluster supports a number of "login strategies" to support users logging into the UI.
+See [`docs/login-strategies.md`](./docs/login-strategies.md) for more information.
+Note that in most cases setup of login strategies is not required for development of this service.
 
 ## Sample Queries
 
