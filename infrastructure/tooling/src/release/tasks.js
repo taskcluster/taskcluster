@@ -106,7 +106,7 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
 
       const releaseImage = `taskcluster/taskcluster:v${requirements['release-version']}`;
 
-      const build = 'infrastructure/builder/current-release.yml';
+      const build = 'infrastructure/tooling/current-release.yml';
       utils.status({message: `Update ${build}`});
       await writeRepoYAML(build, {image: releaseImage});
       changed.push(build);

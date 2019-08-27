@@ -21,19 +21,6 @@ The secret for each worker should be different, to ensure that worker identities
 The same secret must be provided by the worker when it calls `registerWorker` to get its credentials.
 [Taskcluster-Worker-Runner](https://github.com/taskcluster/taskcluster-worker-runner) supports making such a call for you.
 
-## Provider Configuration
-
-A static provider is be configured in `providers` with the following structure:
-
-```json
-{
-  "myProvider": {
-    "providerType": "static"
-  },
-  ...
-}
-```
-
 ## Worker-Pool Configuration
 
 Worker-pool configuration for a worker-pool using this provider type must match the following schema.

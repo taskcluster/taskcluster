@@ -128,7 +128,7 @@ exports.tasks.push({
   provides: ['k8s-templates'],
   run: async (requirements, utils) => {
 
-    const templateFiles = glob.sync('infrastructure/builder/templates/k8s/*.yaml', {cwd: REPO_ROOT});
+    const templateFiles = glob.sync('infrastructure/tooling/templates/k8s/*.yaml', {cwd: REPO_ROOT});
     const templates = {};
     for (const f of templateFiles) {
       templates[path.basename(f, '.yaml')] = await readRepoYAML(f);
@@ -343,7 +343,7 @@ exports.tasks.push({
       errorConfig: {},
     };
 
-    const currentRelease = await readRepoYAML(path.join('infrastructure', 'builder', 'current-release.yml'));
+    const currentRelease = await readRepoYAML(path.join('infrastructure', 'tooling', 'current-release.yml'));
     // Defaults that people can override
     const valuesYAML = {
       dockerImage: currentRelease.image,
@@ -363,7 +363,7 @@ exports.tasks.push({
     })));
 
     const staticClients = [];
-    const serviceScopes = await readRepoYAML(path.join('infrastructure', 'builder', 'static-clients.yml'));
+    const serviceScopes = await readRepoYAML(path.join('infrastructure', 'tooling', 'static-clients.yml'));
 
     configs.forEach(cfg => {
       const confName = cfg.name.replace(/-/g, '_');

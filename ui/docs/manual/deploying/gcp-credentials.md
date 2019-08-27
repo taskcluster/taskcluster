@@ -1,4 +1,6 @@
-# GCP Credentials
+---
+title: GCP Credentials
+---
 
 The Auth service's `auth.gcpCredentials` method distributes credentials for GCP service accounts to callers, governed by scopes.
 It takes a GCP project and a service account email.

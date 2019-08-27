@@ -11,4 +11,4 @@ In general, these credentials have a number of `assume:..` scopes corresponding 
 By managing the corresponding roles, Taskcluster administrators can control the user's access.
 
 The [web-server reference](/docs/reference/core/web-server) has more detail on how login strategies work.
-The [deployment documentation](https://github.com/taskcluster/taskcluster/blob/master/deployment-docs/login-strategies.md) has more detail on how login strategies are configured, which will determine what strategies are available in a deployment.
+The [deployment documentation](/docs/manual/deploying) has more detail on how login strategies are configured, which will determine what strategies are available in a deployment.

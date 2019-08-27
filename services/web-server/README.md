@@ -87,6 +87,7 @@ You can find your TC token in localStorage after signing into the UI.
 
 Taskcluster supports a number of "login strategies" to support users logging into the UI.
 See [`docs/login-strategies.md`](./docs/login-strategies.md) for more information.
+Note that in most cases setup of login strategies is not required for development of this service.
 
 ## Sample Queries
 

@@ -1,5 +1,6 @@
-<!-- GENERATED DOCUMENTATION DO NOT EDIT -->
-# Monitoring Suggestions
+---
+title: Monitoring Services
+---
 
 Taskcluster has several background processes that you should ensure are running on a schedule. Any of the following will generate messages
 of the form:
@@ -19,6 +20,7 @@ They will also have Fields for `status`, `duration`, and a serialized `error` if
 The processes that have `continuous` for their dedaline and schedule run every few minutes and should complete fairly quickly. The rest
 have their schedules and maximum allowed duration defined here. All times are relative to the timezone of the k8s master.
 
+<!-- GENERATED; DO NOT EDIT -->
 | Service        | Name                   | Logger                     | Deadline (seconds) | Schedule    |
 | -------------- | ---------------------- | -------------------------- | ------------------ | ----------- |
 | auth           | purgeExpiredClients    | taskcluster.auth           | 86400              | At 12:00 AM |
