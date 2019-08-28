@@ -387,6 +387,9 @@ New-NetFirewallRule -DisplayName "KmsIn (TCP 1688 Inbound): Allow" -Direction In
 # KmsOut
 New-NetFirewallRule -DisplayName "KmsOut (TCP 1688 Outbound): Allow" -Direction Outbound -LocalPort 1688 -Protocol TCP -Action Allow
 
+# jqInstall
+$client.DownloadFile("https://github.com/stedolan/jq/releases/download/jq-1.6/jq-win32.exe", "C:\Windows\System32\jq.exe")
+
 # nircmd
 $client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/nircmd/nircmd.exe", "C:\Windows\System32\nircmd.exe")
 
