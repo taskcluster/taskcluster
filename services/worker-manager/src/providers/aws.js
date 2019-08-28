@@ -115,6 +115,10 @@ class AwsProvider extends Provider {
               {
                 Key: 'ManagedBy',
                 Value: 'taskcluster',
+              },
+              {
+                Key: 'Name',
+                Value: `${workerPoolId}`,
               }],
           },
         ],

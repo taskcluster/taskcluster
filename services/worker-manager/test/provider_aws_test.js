@@ -55,6 +55,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         {
           Key: 'ManagedBy',
           Value: 'taskcluster',
+        },
+        {
+          Key: 'Name',
+          Value: `${workerPoolId}`,
         }],
     },
   ];
