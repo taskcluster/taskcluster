@@ -64,7 +64,7 @@ sudo chmod +x /usr/local/bin/start-worker
 if [ "$deployment" = "taskcluster-net" ]; then
     providerType=aws-provisioner
 elif [ "$cloud" = "aws" ]; then
-    providerType=amazon
+    providerType=aws
 elif [ "$cloud" = "gcp" ]; then
     providerType=google
 fi
