@@ -6,7 +6,7 @@ import (
 
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/files"
-	taskcluster "github.com/taskcluster/taskcluster/clients/client-go/v15"
+	taskcluster "github.com/taskcluster/taskcluster/clients/client-go/v16"
 )
 
 // State represents the state of the worker run.  Its contents are built up
