@@ -822,30 +822,32 @@
                 "not": {
                   "required": [
                     "IamInstanceProfile",
-                    "UserData"
+                    "UserData",
+                    "MinCount",
+                    "MaxCount"
                   ]
                 },
                 "properties": {
                   "ImageId": {
                     "description": "The ID of the AMI to launch an instance from.",
                     "type": "string"
-                  },
-                  "MaxCount": {
-                    "description": "Maximum amount of instances to run.",
-                    "type": "integer"
-                  },
-                  "MinCount": {
-                    "description": "Minimum amount of instances to run.",
-                    "type": "integer"
                   }
                 },
                 "required": [
-                  "ImageId",
-                  "MinCount",
-                  "MaxCount"
+                  "ImageId"
                 ],
                 "title": "Launch Configuration",
                 "type": "object"
+              },
+              "maxCapacity": {
+                "description": "Maximum capacity that should not be exceeded at any given time",
+                "title": "Maximum Capacity",
+                "type": "integer"
+              },
+              "minCapacity": {
+                "description": "Minimum capacity necessary to maintain at any given time",
+                "title": "Minimum Capacity",
+                "type": "integer"
               },
               "region": {
                 "description": "AWS region (not to be confused with AZ) to launch the instances in",
@@ -856,7 +858,9 @@
             "required": [
               "region",
               "launchConfig",
-              "capacityPerInstance"
+              "capacityPerInstance",
+              "minCapacity",
+              "maxCapacity"
             ],
             "type": "object"
           },
