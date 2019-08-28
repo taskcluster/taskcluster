@@ -109,6 +109,14 @@ test:
       redirectUri:
       - 'https://test.example.com/cb'
       whitelisted: false
+      maxExpires: '1 year'
+    - clientId: test-token-code
+      responseType: "code"
+      scope: ["tags:get:*"]
+      redirectUri:
+        - 'https://test.example.com/cb'
+      whitelisted: false
+      maxExpires: '1 year'
     sessionSecret: 'keyboard cat'
 
   server:
