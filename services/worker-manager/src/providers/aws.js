@@ -5,7 +5,6 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
-const {AWS_API_VERSION} = require('../constants');
 
 class AwsProvider extends Provider {
   constructor({
@@ -49,7 +48,6 @@ class AwsProvider extends Provider {
     const config = this.chooseConfig({possibleConfigs: workerPool.config.launchConfigs});
 
     const ec2 = new aws.EC2({
-      apiVersion: AWS_API_VERSION,
       credentials: this.providerConfig.credentials,
       region: config.region,
     });
@@ -199,7 +197,6 @@ class AwsProvider extends Provider {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
 
     const ec2 = new aws.EC2({
-      apiVersion: AWS_API_VERSION,
       credentials: this.providerConfig.credentials,
       region: worker.providerData.region,
     });

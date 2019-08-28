@@ -1,4 +1,3 @@
-const {AWS_API_VERSION} = require('../src/constants');
 const assert = require('assert');
 const sinon = require('sinon');
 const helper = require('./helper');
@@ -93,7 +92,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
   test('provisioning loop', async function() {
     sinon.stub(aws, 'EC2')
       .withArgs({
-        apiVersion: AWS_API_VERSION,
         credentials: provider.providerConfig.credentials,
         region: defaultLaunchConfig.region,
       }).returns({
