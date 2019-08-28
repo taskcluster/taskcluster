@@ -108,7 +108,7 @@ class AwsProvider extends Provider {
         ],
       }).promise();
     } catch (e) {
-      this.monitor.err(`🚨 Error calling AWS API: ${e}`);
+      this.monitor.err(`Error calling AWS API: ${e}`);
 
       return await workerPool.reportError({
         kind: 'creation-error',
