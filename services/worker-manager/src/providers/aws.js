@@ -74,21 +74,31 @@ class AwsProvider extends Provider {
       return;
     }
 
-    const userData = {
+    const userData = Buffer.from(JSON.stringify({
       rootUrl: this.rootUrl,
       workerPoolId,
       providerId: this.providerId,
       workerGroup: this.providerId,
-    };
+    }));
+
+    // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-add-user-data
+    // The raw data should be 16KB maximum
+    if (userData.length > 16384) {
+      return await workerPool.reportError({
+        kind: 'creation-error',
+        title: 'User Data is too long',
+        description: 'Try a shorter workerPoolId and/or a shorter rootUrl',
+        notify: this.notify,
+        WorkerPoolError: this.WorkerPoolError,
+      });
+    }
 
     let spawned;
     try {
       spawned = await ec2.runInstances({
         ...config.launchConfig,
 
-        // please make sure this string is no more than 1024 chars long
-        // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-add-user-data
-        UserData: Buffer.from(JSON.stringify(userData)).toString('base64'),
+        UserData: userData.toString('base64'), // The string needs to be base64-encoded. See the docs above
 
         MaxCount: toSpawn,
         MinCount: toSpawn,
