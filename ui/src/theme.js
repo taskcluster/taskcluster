@@ -302,6 +302,23 @@ const createTheme = isDarkTheme => {
           backgroundColor: THEME.SECONDARY,
         },
       },
+      MuiPickersToolbarButton: {
+        toolbarBtn: {
+          '&:hover, &:focus': {
+            textDecoration: 'none',
+            backgroundColor: fade(textPrimary, 0.08),
+            // Reset on touch devices, it doesn't add specificity
+            '@media (hover: none)': {
+              backgroundColor: 'transparent',
+            },
+            '&:disabled': {
+              backgroundColor: 'transparent',
+            },
+            // Rely on background color instead
+            outline: 'none',
+          },
+        },
+      },
       MuiPickersYear: {
         root: {
           '&:focus': {
