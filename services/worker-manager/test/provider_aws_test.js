@@ -47,11 +47,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       ResourceType: 'instance',
       Tags: [
         {
-          Key: 'Provider',
-          Value: `wm-${providerId}`,
+          Key: 'CreatedBy',
+          Value: `taskcluster-wm-${providerId}`,
         }, {
           Key: 'Owner',
           Value: workerPool.owner,
+        },
+        {
+          Key: 'ManagedBy',
+          Value: 'taskcluster',
         }],
     },
   ];

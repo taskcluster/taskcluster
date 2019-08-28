@@ -34,14 +34,6 @@ class AwsProvider extends Provider {
     this.configSchema = 'config-aws';
     this.ec2iid_RSA_key = fs.readFileSync(path.resolve(__dirname, 'aws-keys/RSA-key-forSignature')).toString();
     this.providerConfig = providerConfig;
-
-    aws.config.logger = console;
-  }
-
-  /*
-   This method is used to setup permissions for the EC2 instances
-   */
-  async setup() {
   }
 
   async provision({workerPool}) {
@@ -70,7 +62,6 @@ class AwsProvider extends Provider {
       running: workerPool.providerData[this.providerId].running,
     });
     if (toSpawn === 0) {
-      this.monitor.alert('Calculated amount of workers to spawn is 0. Exiting');
       return;
     }
 
@@ -93,6 +84,14 @@ class AwsProvider extends Provider {
       });
     }
 
+    // Make sure we don't get "The same resource type may not be specified more than once in tag specifications" errors
+    const TagSpecifications = config.launchConfig.TagSpecifications ? config.launchConfig.TagSpecifications : [];
+    const instanceTags = [];
+    const otherTagSpecs = [];
+    TagSpecifications.forEach(ts =>
+      ts.ResourceType === 'instance' ? instanceTags.concat(ts.Tags) : otherTagSpecs.push(ts)
+    );
+
     let spawned;
     try {
       spawned = await ec2.runInstances({
@@ -103,16 +102,21 @@ class AwsProvider extends Provider {
         MaxCount: toSpawn,
         MinCount: toSpawn,
         TagSpecifications: [
-          ...(config.launchConfig.TagSpecifications ? config.launchConfig.TagSpecifications : []),
+          ...otherTagSpecs,
           {
             ResourceType: 'instance',
             Tags: [
+              ...instanceTags,
               {
-                Key: 'Provider',
-                Value: `wm-${this.providerId}`,
+                Key: 'CreatedBy',
+                Value: `taskcluster-wm-${this.providerId}`,
               }, {
                 Key: 'Owner',
                 Value: workerPool.owner,
+              },
+              {
+                Key: 'ManagedBy',
+                Value: 'taskcluster',
               }],
           },
         ],
