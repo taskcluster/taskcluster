@@ -51,6 +51,7 @@ github.com/taskcluster/taskcluster/clients/client-go/v15 v15.0.1-0.2019073101424
 github.com/taskcluster/taskcluster/clients/client-go/v15 v15.0.1-0.20190731014247-6cfb37c91ad9/go.mod h1:gwrOEPmy7altG4AdYk8S7xJTeyB09ChVe6uItMOvCAo=
 github.com/taskcluster/taskcluster/clients/client-go/v16 v16.0.0/go.mod h1:X8jVUUThNdOwqhkvi3GImsq0/Jq1GMdt/gvl74ktX64=
 github.com/taskcluster/taskcluster/clients/client-go/v16 v16.1.0/go.mod h1:MhrGgUxD/x0Tf68VcezQNy/IeQn7urCAtJhSdjpj1gg=
+github.com/taskcluster/taskcluster/clients/client-go/v16 v16.2.0 h1:h/vAGikMa6RedCSH5VV084QQKGG9HDCz3dfTwftCtyc=
 github.com/taskcluster/taskcluster/clients/client-go/v16 v16.2.0/go.mod h1:XVuJuVfKWpJx0Gh5WgFYxM1r4n8sQ4vM7idgC0gQroY=
 github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957 h1:6Fre/uvwovW5YY4nfHZk66cAg9HjT9YdFSAJHUUgOyQ=
 github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957/go.mod h1:dch7ywQEefE1ibFqBG1erFibrdUIwovcwQjksYuHuP4=

@@ -8,7 +8,7 @@ import (
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
-	"github.com/taskcluster/taskcluster/clients/client-go/v15/tcawsprovisioner"
+	"github.com/taskcluster/taskcluster/clients/client-go/v16/tcawsprovisioner"
 )
 
 func TestAwsProviderConfigureRun(t *testing.T) {
