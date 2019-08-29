@@ -5,6 +5,9 @@ const {AwsProvider} = require('../src/providers/aws');
 const testing = require('taskcluster-lib-testing');
 const aws = require('aws-sdk');
 const fakeAWS = require('./fake-aws');
+const fs = require('fs');
+const path = require('path');
+const taskcluster = require('taskcluster-client');
 
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
@@ -68,6 +71,29 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     providerId,
     workerGroup: providerId,
   };
+  const defaultWorker = {
+    workerPoolId,
+    workerGroup: providerId,
+    providerId,
+    created: taskcluster.fromNow('0 seconds'),
+    expires: taskcluster.fromNow('90 seconds'),
+    state: 'requested',
+    providerData: {},
+  };
+  const actualWorkerIid = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString());
+  const workerInDB = {
+    ...defaultWorker,
+    workerId: actualWorkerIid.instanceId,
+    providerData: {
+      region: actualWorkerIid.region,
+      imageId: actualWorkerIid.imageId,
+      instanceType: actualWorkerIid.instanceType,
+      architecture: actualWorkerIid.architecture,
+      availabilityZone: actualWorkerIid.availabilityZone,
+      privateIp: actualWorkerIid.privateIp,
+      owner: actualWorkerIid.accountId,
+    },
+  };
 
   setup(async function() {
     provider = new AwsProvider({
@@ -93,7 +119,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     await provider.setup();
   });
 
-  test('provisioning loop', async function() {
+  test('provisioning loop - ', async function() {
     sinon.stub(aws, 'EC2')
       .withArgs({
         credentials: provider.providerConfig.credentials,
@@ -113,4 +139,74 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     });
     sinon.restore();
   });
+
+  suite('[UNIT] AWS provider - registerWorker - negative test cases', function() {
+
+    test('registerWorker - verifyInstanceIdentityDocument - bad document', async function() {
+      const workerIdentityProof = {
+        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT_bad')).toString(),
+        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
+      };
+
+      await assert.rejects(() => provider.registerWorker({
+        worker: workerInDB,
+        workerPool,
+        workerIdentityProof,
+      }), 'Should fail to verify iid (the document has been edited)');
+    });
+
+    test('registerWorker - verifyInstanceIdentityDocument - signature was produced with a wrong key', async function() {
+      const workerIdentityProof = {
+        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE_badKey')).toString(),
+      };
+
+      await assert.rejects(() => provider.registerWorker({
+        worker: workerInDB,
+        workerPool,
+        workerIdentityProof,
+      }), 'Should fail to verify iid (the signature was produced with a wrong key)');
+    });
+
+    test('registerWorker - verifyInstanceIdentityDocument - signature is wrong', async function() {
+      const workerIdentityProof = {
+        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE_badSignature')).toString(),
+      };
+
+      await assert.rejects(() => provider.registerWorker({
+        worker: workerInDB,
+        workerPool,
+        workerIdentityProof,
+      }), 'Should fail to verify iid (the signature is wrong)');
+    });
+
+    test('registerWorker - verifyWorkerInstance - document is legit but differs from what we know about the instance', async function() {
+      const differentWorkerInDB = {
+        ...defaultWorker,
+        workerId: actualWorkerIid.instanceId,
+        providerData: {
+          region: 'eu-central-2',
+          imageId: actualWorkerIid.imageId,
+          instanceType: actualWorkerIid.instanceType,
+          architecture: actualWorkerIid.architecture,
+          availabilityZone: 'eu-central-2a',
+          privateIp: '4.45.67.2',
+          owner: actualWorkerIid.accountId,
+        },
+      };
+
+      const workerIdentityProof = {
+        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
+      };
+
+      await assert.rejects(() => provider.registerWorker({
+        worker: differentWorkerInDB,
+        workerPool,
+        workerIdentityProof,
+      }), 'Should fail to verify worker (info from the signature and info from our DB differ)');
+    });
+  });
+
 });
