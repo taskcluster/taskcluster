@@ -476,6 +476,26 @@
               ],
               "title": "static provider type",
               "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "document": {
+                  "description": "Instance identity document that is obtained by\ncurl http://169.254.169.254/latest/dynamic/instance-identity/document on the instance\n",
+                  "title": "Document"
+                },
+                "signature": {
+                  "description": "The signature for instance identity document. Can be obtained by\ncurl http://169.254.169.254/latest/dynamic/instance-identity/signature on the instance\n",
+                  "title": "Signature",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "document",
+                "signature"
+              ],
+              "title": "aws provider type",
+              "type": "object"
             }
           ],
           "title": "Worker Identity Proof"
@@ -778,6 +798,84 @@
       "type": "object"
     },
     "filename": "schemas/worker-manager/v1/config-google.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/config-aws.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Object with an array of possible options for different regions",
+      "properties": {
+        "launchConfigs": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "capacityPerInstance": {
+                "description": "The number of tasks a single worker of this type can run at any given time.",
+                "minimum": 1,
+                "title": "Capacity Per Instance",
+                "type": "integer"
+              },
+              "launchConfig": {
+                "additionalProperties": true,
+                "description": "An object to be passed in to AWS runInstances method.\nSee the documentation [here](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/EC2.html#runInstances-property)\nYou can configure any properties you need. Note, however, that we disallow passing in arbitrary IAM instance profiles.\n",
+                "not": {
+                  "required": [
+                    "IamInstanceProfile",
+                    "UserData",
+                    "MinCount",
+                    "MaxCount"
+                  ]
+                },
+                "properties": {
+                  "ImageId": {
+                    "description": "The ID of the AMI to launch an instance from.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "ImageId"
+                ],
+                "title": "Launch Configuration",
+                "type": "object"
+              },
+              "maxCapacity": {
+                "description": "Maximum capacity that should not be exceeded at any given time",
+                "title": "Maximum Capacity",
+                "type": "integer"
+              },
+              "minCapacity": {
+                "description": "Minimum capacity necessary to maintain at any given time",
+                "title": "Minimum Capacity",
+                "type": "integer"
+              },
+              "region": {
+                "description": "AWS region (not to be confused with AZ) to launch the instances in",
+                "title": "Region",
+                "type": "string"
+              }
+            },
+            "required": [
+              "region",
+              "launchConfig",
+              "capacityPerInstance",
+              "minCapacity",
+              "maxCapacity"
+            ],
+            "type": "object"
+          },
+          "title": "Launch Configurations",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "launchConfigs"
+      ],
+      "title": "AWS Provider Config",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/config-aws.json"
   },
   {
     "content": {

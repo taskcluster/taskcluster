@@ -2,6 +2,8 @@ const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
+const fs = require('fs');
+const path = require('path');
 
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
@@ -20,6 +22,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       {providerId: 'testing2', providerType: 'testing'},
       {providerId: 'static', providerType: 'static'},
       {providerId: 'google', providerType: 'google'},
+      {providerId: 'aws', providerType: 'aws'},
     ].sort());
   });
 
@@ -788,7 +791,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     const workerIdentityProof = {'token': 'tok'};
 
     const defaultRegisterWorker = {
-      workerPoolId, providerId, workerGroup, workerId, workerIdentityProof};
+      workerPoolId, providerId, workerGroup, workerId, workerIdentityProof,
+    };
 
     const defaultWorkerPool = {
       workerPoolId,
@@ -917,6 +921,52 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
 
       assert.equal(res.credentials.clientId,
         `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
+    });
+
+    test('[Integration] Successful registering an AWS worker', async function() {
+      const awsProviderId = 'aws';
+      const awsWorkerIdentityProof = {
+        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
+      };
+      const awsWorkerIdentityProofParsed = JSON.parse(awsWorkerIdentityProof.document);
+
+      await helper.WorkerPool.create({
+        ...defaultWorkerPool,
+        providerId: awsProviderId,
+      });
+      await helper.Worker.create({
+        ...defaultWorker,
+        workerId: awsWorkerIdentityProofParsed.instanceId,
+        providerId: awsProviderId,
+        providerData: {
+          region: awsWorkerIdentityProofParsed.region,
+          imageId: awsWorkerIdentityProofParsed.imageId,
+          instanceType: awsWorkerIdentityProofParsed.instanceType,
+          architecture: awsWorkerIdentityProofParsed.architecture,
+          availabilityZone: awsWorkerIdentityProofParsed.availabilityZone,
+          privateIp: awsWorkerIdentityProofParsed.privateIp,
+          owner: awsWorkerIdentityProofParsed.accountId,
+        },
+      });
+
+      const res = await helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+        workerId: awsWorkerIdentityProofParsed.instanceId,
+        providerId: awsProviderId,
+        workerIdentityProof: awsWorkerIdentityProof,
+      });
+
+      assert.equal(res.credentials.clientId,
+        `worker/${awsProviderId}/${workerPoolId}/${workerGroup}/${awsWorkerIdentityProofParsed.instanceId}`
+      );
+
+      const scopes = new Set(JSON.parse(res.credentials.certificate).scopes);
+      const msg = `got scopes ${[...scopes].join(', ')}`;
+      assert(scopes.has(`assume:worker-pool:${workerPoolId}`), msg);
+      assert(scopes.has(`assume:worker-id:${workerGroup}/${awsWorkerIdentityProofParsed.instanceId}`), msg);
+      assert(scopes.has(`secrets:get:worker-pool:${workerPoolId}`), msg);
+      assert(scopes.has(`queue:claim-work:${workerPoolId}`), msg);
     });
   });
 });

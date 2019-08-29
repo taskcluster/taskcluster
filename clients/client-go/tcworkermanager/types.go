@@ -9,6 +9,19 @@ import (
 )
 
 type (
+	// Proof that this call is coming from the worker identified by the other fields.
+	// The form of this proof varies depending on the provider type.
+	AwsProviderType struct {
+
+		// Instance identity document that is obtained by
+		// curl http://169.254.169.254/latest/dynamic/instance-identity/document on the instance
+		Document json.RawMessage `json:"document"`
+
+		// The signature for instance identity document. Can be obtained by
+		// curl http://169.254.169.254/latest/dynamic/instance-identity/signature on the instance
+		Signature string `json:"signature"`
+	}
+
 	// The credentials the worker
 	// will need to perform its work.  Specifically, credentials with scopes
 	// * `assume:worker-pool:<workerPoolId>`
@@ -80,6 +93,7 @@ type (
 		// One of:
 		//   * GoogleProviderType
 		//   * StaticProviderType1
+		//   * AwsProviderType
 		WorkerIdentityProof json.RawMessage `json:"workerIdentityProof"`
 
 		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
