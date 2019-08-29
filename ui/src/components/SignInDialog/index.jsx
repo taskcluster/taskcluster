@@ -13,6 +13,7 @@ import GithubCircleIcon from 'mdi-react/GithubCircleIcon';
 import LoginVariantIcon from 'mdi-react/LoginVariantIcon';
 import KeyboardOutlineIcon from 'mdi-react/KeyboardOutlineIcon';
 import { withAuth } from '../../utils/Auth';
+import isThirdPartyLogin from '../../utils/isThirdPartyLogin';
 import CredentialsDialog from './CredentialsDialog';
 import UserSession from '../../auth/UserSession';
 
@@ -79,6 +80,7 @@ export default class SignInDialog extends Component {
     const strategies = window.env.UI_LOGIN_STRATEGY_NAMES
       ? window.env.UI_LOGIN_STRATEGY_NAMES.split(' ')
       : [];
+    const thirdPartyLogin = isThirdPartyLogin();
 
     return strategies.length > 0 ? (
       <Dialog
@@ -116,7 +118,10 @@ export default class SignInDialog extends Component {
                 <ListItemText primary="Sign in with GitHub" />
               </ListItem>
             )}
-            <ListItem button onClick={this.handleCredentialsDialogOpen}>
+            <ListItem
+              disabled={thirdPartyLogin}
+              button
+              onClick={this.handleCredentialsDialogOpen}>
               <ListItemAvatar>
                 <Avatar>
                   <KeyboardOutlineIcon />
