@@ -41,9 +41,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       }
     }
 
-    assert.equal(pages, 4);
+    assert.equal(pages, 5);
     assert.deepStrictEqual(providerIds.sort(),
-      ['testing1', 'testing2', 'static', 'google'].sort());
+      ['testing1', 'testing2', 'static', 'google', 'aws'].sort());
   });
 
   const workerPoolCompare = (workerPoolId, input, result) => {
