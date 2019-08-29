@@ -102,6 +102,7 @@ test:
 
   login:
     strategies: {test: true}
+    sessionSecret: 'keyboard cat'
     registeredClients:
     - clientId: test-token
       responseType: "token"
@@ -110,14 +111,20 @@ test:
       - 'https://test.example.com/cb'
       whitelisted: false
       maxExpires: '1 year'
-    - clientId: test-token-code
+    - clientId: test-code
       responseType: "code"
       scope: ["tags:get:*"]
       redirectUri:
         - 'https://test.example.com/cb'
       whitelisted: false
       maxExpires: '1 year'
-    sessionSecret: 'keyboard cat'
+    - clientId: test-code-whitelisted
+      responseType: "code"
+      scope: ["tags:get:*"]
+      redirectUri:
+        - 'https://test.example.com/cb'
+      whitelisted: true
+      maxExpires: '1 year'
 
   server:
     port: 63821
