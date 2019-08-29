@@ -114,12 +114,12 @@ suite('interactive vnc', () => {
           if (/^RFB \d\d\d\.\d\d\d\n$/.test(protocolVersion)) {
             accept();
           } else {
-            reject();
+            reject(new Error(`Unexpected protocolVersion ${protocolVersion}`));
           }
         }
       });
       socket.on('error', reject);
-      socket.on('close', reject);
+      socket.on('close', accept);
     });
     socket.close();
   });
