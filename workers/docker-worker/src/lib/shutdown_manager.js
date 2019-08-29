@@ -14,6 +14,22 @@ class ShutdownManager extends EventEmitter {
     this.nodeTerminationPoll = config.shutdown.nodeTerminationPoll || 5000;
     this.onIdle = this.onIdle.bind(this);
     this.onWorking = this.onWorking.bind(this);
+    this.exit = false;
+
+    process.on('SIGTERM', () => {
+      this.config.log('Terminating worker due to SIGTERM');
+      this.config.capacity = 0;
+      this.exit = true;
+      this.emit('nodeTermination', true);
+    });
+  }
+
+  // Should we exit the process if we can
+  // The flag is set to true on SIGTERM. We cannot
+  // perform the exit in the signal handler because we
+  // need to cleanup the running tasks first.
+  shouldExit() {
+    return this.exit;
   }
 
   async shutdown() {

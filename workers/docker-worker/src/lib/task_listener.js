@@ -144,7 +144,7 @@ class TaskListener extends EventEmitter {
     let claims = await this.taskQueue.claimWork(availableCapacity);
     let tasksets = await Promise.all(claims.map(this.applySuperseding.bind(this)));
     // call runTaskset for each taskset, but do not wait for it to complete
-    tasksets.forEach(this.runTaskset.bind(this));
+    await Promise.all(tasksets.map(this.runTaskset.bind(this)));
   }
 
   scheduleTaskPoll(nextPoll=this.taskPollInterval) {
@@ -157,6 +157,9 @@ class TaskListener extends EventEmitter {
           err: e,
           stack: e.stack
         });
+      }
+      if (this.runtime.shutdownManager.shouldExit()) {
+        process.exit();
       }
       this.scheduleTaskPoll();
     }, nextPoll);
