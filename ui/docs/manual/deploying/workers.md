@@ -77,7 +77,7 @@ You provide the `uniqueId` of this service account in the `workerServiceAccountI
 
 The second is for worker-manager to run as itself with the following roles:
 
-* `roles/compute.instanceAdmin` ("Compute Instance Admin (beta)")
+* `roles/compute.admin` ("Compute Admin")
 * `roles/iam.serviceAccountUser` ("Service Account User")
 
 The GCP credentials for this service account are provided in string form (`creds`).
