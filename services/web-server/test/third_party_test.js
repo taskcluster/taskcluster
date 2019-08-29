@@ -5,6 +5,7 @@ const debug = require('debug')('third_party_test');
 
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
+  helper.withFakeAuth(mock, skipping);
   helper.withServer(mock, skipping);
 
   const getQuery = (url, sep='?') => {
@@ -69,10 +70,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
 
       // user calls /login/oauth/credentials to get TC credentials
 
-      // TODO: the credentials endpoint calls auth.createClient which fails in testing
-      // res = await agent.get(url('/login/oauth/credentials'))
-      //   .set('authorization', `${query.get('token_type')} ${query.get('access_token')}`);
+      res = await agent.get(url('/login/oauth/credentials'))
+        .set('authorization', `${query.get('token_type')} ${query.get('access_token')}`);
 
+      assert.deepEqual(Object.keys(res.body).sort(), ['expires', 'credentials'].sort());
+      assert.deepEqual(Object.keys(res.body.credentials).sort(), ['clientId', 'accessToken'].sort());
+      assert.equal(res.body.expires, new Date('3019/04/01').toISOString());
+      assert(res.body.credentials.clientId.startsWith(`test/test/${registeredClientId}-`));
     });
 
     test('authorization code flow', async function() {
@@ -139,9 +143,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
 
       // user calls /login/oauth/credentials to get TC credentials
 
-      // TODO: the credentials endpoint calls auth.createClient which fails in testing
-      // res = await agent.get(url('/login/oauth/credentials'))
-      //   .set('authorization', `${query.get('token_type')} ${query.get('access_token')}`);
+      res = await agent.get(url('/login/oauth/credentials'))
+        .set('authorization', `${res.body.token_type} ${res.body.access_token}`);
+
+      assert.deepEqual(Object.keys(res.body).sort(), ['expires', 'credentials'].sort());
+      assert.deepEqual(Object.keys(res.body.credentials).sort(), ['clientId', 'accessToken'].sort());
+      assert.equal(res.body.expires, new Date('3019/04/01').toISOString());
+      assert(res.body.credentials.clientId.startsWith(`test/test/${registeredClientId}-`));
     });
   });
 });
