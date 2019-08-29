@@ -31,7 +31,7 @@ builder.declare({
   name: 'listProviders',
   input: undefined,
   query: {
-    continuationToken: /./,
+    continuationToken: /^[0-9]+$/,
     limit: /^[0-9]+$/,
   },
   output: 'provider-list.yml',
@@ -42,11 +42,19 @@ builder.declare({
     'Retrieve a list of providers that are available for worker pools.',
   ].join('\n'),
 }, function(req, res) {
+  const start = req.query.continuationToken ? parseInt(req.query.continuationToken) : 0;
+  const limit = req.query.limit ? parseInt(req.query.limit) : 100;
+
+  const providers = Object.entries(this.cfg.providers).map(([providerId, {providerType}]) => ({
+    providerId,
+    providerType,
+  }));
+
+  const end = start + limit < providers.length ? start + limit : undefined;
+
   return res.reply({
-    providers: Object.entries(this.cfg.providers).map(([providerId, {providerType}]) => ({
-      providerId,
-      providerType,
-    })).slice(0, req.query.limit || 100),
+    providers: providers.slice(start, end),
+    continuationToken: end ? end.toString() : undefined,
   });
 });
 
