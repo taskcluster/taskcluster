@@ -28,7 +28,7 @@ To get started local development, just:
 * install the dependencies with `yarn`
 * start the UI server with `yarn start`
 
-## Configuraiton
+## Configuration
 
 You can customize the settings if you'd like, but this is not required for most development.
 To pass one of these values during development, specify it in the environment, e.g.,
