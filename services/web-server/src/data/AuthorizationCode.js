@@ -7,13 +7,28 @@ const AuthorizationCode = Entity.configure({
   rowKey: Entity.keys.StringKey('code'),
   signEntities: true,
   properties: {
+    // The authorization code received from the authorization server
     code: Entity.types.String,
+    // The client identifier issued to the client during the registration process
     clientId: Entity.types.String,
+    // The redirection endpoint URI after completing interaction with the resource owner
     redirectUri: Entity.types.String,
+    // The login identity assigned by the login strategy used
     identity: Entity.types.String,
+    // The name of the login strategy used
     identityProviderId: Entity.types.String,
+    // The access token we give to third parties required to get Taskcluster credentials
     accessToken: Entity.types.EncryptedText,
+    // The expiration time of the table entry
     expires: Entity.types.Date,
+    /**
+     * Client details object with properties:
+     * - clientId           // The client ID
+     * - description        // The client description
+     * - scopes             // List of scopes
+     * - expires            // Date time when the client expires
+     * - deleteOnExpiration // if true, can be deleted after expiration
+     */
     clientDetails: Entity.types.Schema({
       type: 'object',
       properties: {

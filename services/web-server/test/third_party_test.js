@@ -54,9 +54,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       // /login/oauth/authorize/decision
 
       const res = await request.post(url('/login/oauth/authorize/decision'))
-            .send(formData)
-            .redirects(0)
-            .ok(res => res.status === 302);
+        .send(formData)
+        .redirects(0)
+        .ok(res => res.status === 302);
 
       assert.equal(res.header.location, '/');
     });
@@ -310,7 +310,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
 
       // user sent to /login/oauth/authorize with query args
 
-      let res = await agent.get(url('/login/oauth/authorize' +
+      await agent.get(url('/login/oauth/authorize' +
         '?response_type=code' +
         `&client_id=${registeredClientId}` +
         '&redirect_uri=' + encodeURIComponent('https://test.example.com/cb') +
