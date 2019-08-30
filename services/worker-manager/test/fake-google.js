@@ -45,7 +45,7 @@ class FakeGoogle {
 
     // For now we only support creating one of these per project
     // in this fake. We can support multiples later if needed
-    this.serviceAccount = null;
+    this.serviceAccount = 12345;
     this.role = null;
 
     this.iamPolicy = {
@@ -115,49 +115,7 @@ class FakeGoogle {
               throw this.error(404);
             }
           },
-          create: async ({requestBody}) => {
-            if (this.serviceAccount) {
-              throw this.error(409);
-            } else {
-              this.serviceAccount = {uniqueId: WORKER_SERVICE_ACCOUNT_ID, ...requestBody.serviceAccount};
-              return {data: this.serviceAccount};
-            }
-          },
-          setIamPolicy: async () => {},
         },
-        roles: {
-          get: async () => {
-            if (this.role) {
-              return {data: this.role};
-            } else {
-              throw this.error(404);
-            }
-          },
-          patch: async ({requestBody}) => {
-            if (!this.role) {
-              throw this.error(404);
-            } else {
-              this.role = requestBody;
-            }
-          },
-          create: async ({requestBody}) => {
-            if (this.role) {
-              throw this.error(409);
-            } else {
-              this.role = requestBody.role;
-              return {data: this.role};
-            }
-          },
-        },
-      },
-    };
-  }
-
-  cloudresourcemanager() {
-    return {
-      projects: {
-        getIamPolicy: async () => ({data: this.iamPolicy}),
-        setIamPolicy: async ({requestBody}) => this.iamPolicy = requestBody.policy,
       },
     };
   }

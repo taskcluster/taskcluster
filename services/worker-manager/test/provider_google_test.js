@@ -33,6 +33,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         project: 'testy',
         instancePermissions: [],
         creds: '{}',
+        workerServiceAccountId: '12345',
       },
     });
     workerPool = await helper.WorkerPool.create({
