@@ -1,3 +1,4 @@
+const {ApiError} = require('../src/providers/provider');
 const assert = require('assert');
 const sinon = require('sinon');
 const helper = require('./helper');
@@ -158,11 +159,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
       };
 
-      await assert.rejects(() => provider.registerWorker({
-        worker: workerInDB,
-        workerPool,
-        workerIdentityProof,
-      }), 'Should fail to verify iid (the document has been edited)');
+      await assert.rejects(
+        () => provider.registerWorker({worker: workerInDB, workerPool, workerIdentityProof}),
+        new ApiError('Instance identity document validation error'),
+        'Should fail to verify iid (the document has been edited)'
+      );
     });
 
     test('registerWorker - verifyInstanceIdentityDocument - signature was produced with a wrong key', async function() {
@@ -171,11 +172,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE_badKey')).toString(),
       };
 
-      await assert.rejects(() => provider.registerWorker({
-        worker: workerInDB,
-        workerPool,
-        workerIdentityProof,
-      }), 'Should fail to verify iid (the signature was produced with a wrong key)');
+      await assert.rejects(() => provider.registerWorker({worker: workerInDB, workerPool, workerIdentityProof}),
+        new ApiError('Instance identity document validation error'),
+        'Should fail to verify iid (the signature was produced with a wrong key)'
+      );
     });
 
     test('registerWorker - verifyInstanceIdentityDocument - signature is wrong', async function() {
@@ -184,11 +184,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE_badSignature')).toString(),
       };
 
-      await assert.rejects(() => provider.registerWorker({
-        worker: workerInDB,
-        workerPool,
-        workerIdentityProof,
-      }), 'Should fail to verify iid (the signature is wrong)');
+      await assert.rejects(() => provider.registerWorker({worker: workerInDB, workerPool, workerIdentityProof}),
+        new ApiError('Instance identity document validation error'),
+        'Should fail to verify iid (the signature is wrong)'
+      );
     });
 
     test('registerWorker - verifyWorkerInstance - document is legit but differs from what we know about the instance', async function() {
@@ -211,11 +210,43 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
       };
 
-      await assert.rejects(() => provider.registerWorker({
-        worker: differentWorkerInDB,
-        workerPool,
-        workerIdentityProof,
-      }), 'Should fail to verify worker (info from the signature and info from our DB differ)');
+      await assert.rejects(
+        () => provider.registerWorker({worker: differentWorkerInDB, workerPool, workerIdentityProof}),
+        new ApiError('Instance validation error'),
+        'Should fail to verify worker (info from the signature and info from our DB differ)'
+      );
+    });
+
+    test('registerWorker - no signature', async function() {
+      const workerIdentityProof = {
+        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_EMPTYFILE')).toString(),
+      };
+
+      await assert.rejects(() => provider.registerWorker({worker: workerInDB, workerPool, workerIdentityProof}),
+        new ApiError('Token validation error'),
+        'Should fail because there is no signature'
+      );
+
+    });
+
+    test('registerWorker - worker is already running', async function() {
+      const runningWorker = {
+        ...workerInDB,
+        state: 'running',
+      };
+
+      const workerIdentityProof = {
+        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
+      };
+
+      await assert.rejects(
+        () => provider.registerWorker({worker: runningWorker, workerPool, workerIdentityProof}),
+        new ApiError('This worker is either stopped or running. No need to register'),
+        'Should fail because the worker is already running'
+      );
+
     });
   });
 
@@ -229,6 +260,5 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
 
     test('instance terminated by hand - should be marked as STOPPED in DB; should not reject', async function() {});
   });
-
 
 });
