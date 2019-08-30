@@ -119,28 +119,38 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     await provider.setup();
   });
 
-  test('provisioning loop - ', async function() {
-    sinon.stub(aws, 'EC2')
-      .withArgs({
-        credentials: provider.providerConfig.credentials,
-        region: defaultLaunchConfig.region,
-      }).returns({
-        runInstances: fakeAWS.EC2.runInstances({defaultLaunchConfig, TagSpecifications, UserData}),
+  suite('AWS provider - provision', function() {
+
+    test('positive test', async function() {
+      sinon.stub(aws, 'EC2')
+        .withArgs({
+          credentials: provider.providerConfig.credentials,
+          region: defaultLaunchConfig.region,
+        }).returns({
+          runInstances: fakeAWS.EC2.runInstances({defaultLaunchConfig, TagSpecifications, UserData}),
+        });
+
+      await provider.provision({workerPool});
+      const workers = await helper.Worker.scan({}, {});
+
+      workers.entries.forEach(w => {
+        assert.strictEqual(w.workerPoolId, workerPoolId, 'Worker was created for a wrong worker pool');
+        assert.strictEqual(w.workerGroup, providerId, 'Worker group id should be the same as provider id');
+        assert.strictEqual(w.state, helper.Worker.states.REQUESTED, 'Worker should be marked as requested');
+        assert.strictEqual(w.providerData.region, defaultLaunchConfig.region, 'Region should come from the chosen config');
       });
-
-    await provider.provision({workerPool});
-    const workers = await helper.Worker.scan({}, {});
-
-    workers.entries.forEach(w => {
-      assert.strictEqual(w.workerPoolId, workerPoolId, 'Worker was created for a wrong worker pool');
-      assert.strictEqual(w.workerGroup, providerId, 'Worker group id should be the same as provider id');
-      assert.strictEqual(w.state, helper.Worker.states.REQUESTED, 'Worker should be marked as requested');
-      assert.strictEqual(w.providerData.region, defaultLaunchConfig.region, 'Region should come from the chosen config');
+      sinon.restore();
     });
-    sinon.restore();
+
+    test('instance tags in launch spec - should merge them with our instance tags', async function() {});
+
+    test('no instance tags in launch spec, but other tags - should have 1 object per resource type', async function() {});
+
+    test('UserData should be base64 encoded', async function() {});
   });
 
   suite('[UNIT] AWS provider - registerWorker - negative test cases', function() {
+    // For the positive integration test, see api_test.js, registerWorker endpoint
 
     test('registerWorker - verifyInstanceIdentityDocument - bad document', async function() {
       const workerIdentityProof = {
@@ -208,5 +218,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
       }), 'Should fail to verify worker (info from the signature and info from our DB differ)');
     });
   });
+
+  suite('AWS provider - checkWorker', function() {
+
+    test('stopped and terminated instances - should be marked as STOPPED in DB', async function() {});
+
+    test('pending/running,/shutting-down/stopping instances - should not reject', async function() {});
+
+    test('some strange status - should reject', async function() {});
+
+    test('instance terminated by hand - should be marked as STOPPED in DB; should not reject', async function() {});
+  });
+
 
 });
