@@ -9,8 +9,9 @@ import asyncio
 import base
 import taskcluster.aio.auth as subjectAsync
 
-
-@pytest.mark.skipif(os.environ.get('NO_TESTS_OVER_WIRE'), reason ="Skipping tests over wire")
+pytestmark = [
+    pytest.mark.skipif(os.environ.get("NO_TESTS_OVER_WIRE"), reason="Skipping tests over wire")
+]
 
 def test_async_works_with_permanent_credentials():
     """we can call methods which require authentication with valid
@@ -35,7 +36,6 @@ def test_async_works_with_permanent_credentials():
 
     loop.run_until_complete(x())
 
-@pytest.mark.skipif(os.environ.get('NO_TESTS_OVER_WIRE'), reason ="Skipping tests over wire")
 
 def test_async_works_with_temporary_credentials():
     """we can call methods which require authentication with temporary

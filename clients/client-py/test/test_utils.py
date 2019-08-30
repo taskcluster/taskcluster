@@ -14,7 +14,9 @@ from hypothesis import given
 import hypothesis.strategies as st
 import pytest
 
-@pytest.mark.skipif(os.environ.get('NO_TESTS_OVER_WIRE'), reason ="Skipping tests over wire")
+pytestmark = [
+    pytest.mark.skipif(os.environ.get("NO_TESTS_OVER_WIRE"), reason="Skipping tests over wire")
+]
 
 # https://docs.python.org/2/library/datetime.html#tzinfo-objects
 class UTC(datetime.tzinfo):
