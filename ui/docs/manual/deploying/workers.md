@@ -42,7 +42,7 @@ Since there is usually no reason to have multiple static providers, the provider
 
 ### Google
 
-A google-based provider is be configured in `providers` with the following structure:
+A google-based provider is configured in `providers` with the following structure:
 
 ```json
 {
@@ -111,4 +111,42 @@ Typically, this will include permissions to write to StackDriver, such as `loggi
 
 ### AWS
 
-Coming Soon!
+An AWS-based provider is configured in `providers` with the following structure:
+
+```json
+{
+  "myProvider": {
+    "providerType": "aws",
+    "credentials": {
+      "accessKeyId": "...",
+      "secretAccessKey": "..."
+    }
+  },
+  ...
+}
+```
+
+The credentials must correspond to an IAM user with the following permissions:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "WorkerManager",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:DescribeInstances",
+                "ec2:TerminateInstances",
+                "ec2:CreateTags",
+                "ec2:RunInstances",
+                "ec2:DescribeInstanceStatus"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+We recommend a dedicated AWS account for workers, but understand that this is difficult to set up for small deployments.
+If the AWS account is shared with other uses, it is possible to make a more restrictive policy limiting, for example, the security groups or subnets in which the provider can create instances.

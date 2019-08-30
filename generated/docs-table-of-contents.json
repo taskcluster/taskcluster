@@ -2714,13 +2714,35 @@
                 },
                 "name": "google",
                 "next": {
-                  "path": "reference/core/worker-manager/static",
-                  "title": "Static Provider Type"
+                  "path": "reference/core/worker-manager/aws",
+                  "title": "AWS Provider Type"
                 },
                 "path": "reference/core/worker-manager/google",
                 "prev": {
                   "path": "reference/core/worker-manager/logs",
                   "title": "logs"
+                },
+                "up": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 11,
+                  "title": "AWS Provider Type"
+                },
+                "name": "aws",
+                "next": {
+                  "path": "reference/core/worker-manager/static",
+                  "title": "Static Provider Type"
+                },
+                "path": "reference/core/worker-manager/aws",
+                "prev": {
+                  "path": "reference/core/worker-manager/google",
+                  "title": "Google Provider Type"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",
@@ -2741,8 +2763,8 @@
                 },
                 "path": "reference/core/worker-manager/static",
                 "prev": {
-                  "path": "reference/core/worker-manager/google",
-                  "title": "Google Provider Type"
+                  "path": "reference/core/worker-manager/aws",
+                  "title": "AWS Provider Type"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",

@@ -11,6 +11,7 @@ The service currently includes providers for:
 
 * Static Workers ([`static`](/docs/reference/core/worker-manager/static))
 * Google Cloud ([`google`](/docs/reference/core/worker-manager/google))
+* AWS EC2 ([`aws`](/docs/reference/core/worker-manager/aws))
 
 ## Worker Pools
 
