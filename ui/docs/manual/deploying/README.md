@@ -32,5 +32,9 @@ Taskcluster can also dynamically provision workers in a variety of clouds; see t
 ## GitHub
 
 Taskcluster can integrate with GitHub in two complementary ways:
-* The taskcluster-github service provides a GitHub App which can create tasks in response to events in GitHub repositories.  See [Github Integration](./github) for more details.
+* The taskcluster-github service provides a GitHub App which can create tasks in response to events in GitHub repositories. See [Github Integration](./github) for more details.
 * The web-server service supports user logins via GitHub.  See [Login Strategies](./login-strategies) for more details.
+
+## Third Party
+
+Third party sites can fetch Taskcluster credentials for their users. See [Third Party](./third-party.md) for more details.
