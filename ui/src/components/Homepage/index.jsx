@@ -56,12 +56,12 @@ export default class HomePage extends Component {
       <Landing className={classes.root}>
         <Hidden xsDown implementation="css">
           <Typography variant="h1" className={classes.headline}>
-            {process.env.APPLICATION_NAME}
+            {window.env.APPLICATION_NAME}
           </Typography>
         </Hidden>
         <Hidden smUp implementation="css">
           <Typography variant="h2" className={classes.headline}>
-            {process.env.APPLICATION_NAME}
+            {window.env.APPLICATION_NAME}
           </Typography>
         </Hidden>
         <Typography variant="h5">
