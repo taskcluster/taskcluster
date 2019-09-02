@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
-import { func, bool } from 'prop-types';
+import { oneOfType, object, string, func, bool } from 'prop-types';
 import { equals } from 'ramda';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import ListItem from '@material-ui/core/ListItem';
@@ -13,6 +13,7 @@ import { withStyles } from '@material-ui/core';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
+import DialogAction from '../DialogAction';
 import List from '../../views/Documentation/components/List';
 import Button from '../Button';
 import isWorkerTypeNameValid from '../../utils/isWorkerTypeNameValid';
@@ -74,6 +75,11 @@ export default class WMWorkerPoolEditor extends Component {
   static defaultProps = {
     isNewWorkerPool: false,
     workerPool: NULL_WORKER_POOL,
+    dialogError: null,
+    onDialogActionError: null,
+    onDialogActionComplete: null,
+    onDialogActionOpen: null,
+    onDialogActionClose: null,
   };
 
   static propTypes = {
@@ -82,6 +88,28 @@ export default class WMWorkerPoolEditor extends Component {
     saveRequest: func.isRequired,
     isNewWorkerPool: bool,
     deleteRequest: func,
+    /** Error to display when an action dialog is open. */
+    dialogError: oneOfType([string, object]),
+    /**
+     * Callback function fired when the DialogAction component throws an error.
+     * Required when viewing an existent address.
+     * */
+    onDialogActionError: func,
+    /**
+     * Callback function fired when the DialogAction component runs
+     * successfully. Required when viewing an existent address.
+     * */
+    onDialogActionComplete: func,
+    /**
+     * Callback function fired when the dialog should open.
+     * Required when viewing an existent address.
+     */
+    onDialogActionOpen: func,
+    /**
+     * Callback function fired when the dialog should close.
+     * Required when viewing an existent address.
+     */
+    onDialogActionClose: func,
   };
 
   state = {
@@ -247,7 +275,17 @@ export default class WMWorkerPoolEditor extends Component {
   };
 
   render() {
-    const { classes, isNewWorkerPool, providers } = this.props;
+    const {
+      classes,
+      isNewWorkerPool,
+      providers,
+      dialogOpen,
+      dialogError,
+      onDialogActionClose,
+      onDialogActionError,
+      onDialogActionOpen,
+      onDialogActionComplete,
+    } = this.props;
     const { workerPool, error, actionLoading, validation } = this.state;
 
     return (
@@ -377,12 +415,25 @@ export default class WMWorkerPoolEditor extends Component {
                 requiresAuth
                 tooltipOpen
                 icon={<DeleteIcon />}
-                onClick={this.handleOnClick}
+                onClick={onDialogActionOpen}
                 tooltipTitle="Delete"
                 className={classes.deleteIcon}
                 disabled={actionLoading}
               />
             </SpeedDial>
+          )}
+          {dialogOpen && (
+            <DialogAction
+              open={dialogOpen}
+              onSubmit={this.handleOnClick}
+              onComplete={onDialogActionComplete}
+              onClose={onDialogActionClose}
+              onError={onDialogActionError}
+              error={dialogError}
+              title="Delete Worker Pool?"
+              body={<Typography>This will delete the Worker Pool.</Typography>}
+              confirmText="Delete Worker Pool"
+            />
           )}
         </List>
       </Fragment>
