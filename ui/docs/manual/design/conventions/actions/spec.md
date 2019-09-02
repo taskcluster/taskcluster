@@ -2,6 +2,7 @@
 title: Action Specification
 order: 20
 ---
+import SchemaTable from 'taskcluster-ui/components/SchemaTable'
 
 # Action Specification
 
@@ -311,6 +312,4 @@ two operations!
 
 ## Formal Specification
 
-The JSON Schema for `actions.json` is available from the
-`taskcluster-references` repository in [this
-directory](https://github.com/taskcluster/taskcluster-references/tree/master/schemas).
+<SchemaTable schema="/schemas/common/action-schema-v1.json" />

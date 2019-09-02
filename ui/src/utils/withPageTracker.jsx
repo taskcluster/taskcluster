@@ -14,7 +14,7 @@ export default WrappedComponent =>
     }
 
     trackPage(page) {
-      if (process.env.GA_TRACKING_ID && currentPage !== page) {
+      if (window.env.GA_TRACKING_ID && currentPage !== page) {
         currentPage = page;
         ReactGA.pageview(page);
       }

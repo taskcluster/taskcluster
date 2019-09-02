@@ -328,13 +328,13 @@ export default class QuickStart extends Component {
                 This tool lets you easily generate a simple generic{' '}
                 <code>.taskcluster.yml</code> file, which should live in the
                 root of your repository. It defines tasks that you want{' '}
-                {process.env.APPLICATION_NAME} to run for you. The tasks will
-                run when certain GitHub events happen. You will choose the
-                events you are interested in while creating the file.
+                {window.env.APPLICATION_NAME} to run for you. The tasks will run
+                when certain GitHub events happen. You will choose the events
+                you are interested in while creating the file.
               </Typography>
               <Typography paragraph>
                 For independent developers and organization owners: How to set
-                up your repository with {process.env.APPLICATION_NAME}
+                up your repository with {window.env.APPLICATION_NAME}
               </Typography>
               <Typography paragraph>
                 <ul>

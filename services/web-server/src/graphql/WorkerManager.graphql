@@ -22,6 +22,21 @@ type WorkerManagerWorker {
     workerPool: String!
 }
 
+type WorkerManagerProvider {
+    providerId: String!
+    providerType: String!
+}
+
+type WorkerManagerProvidersConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [WorkerManagerProvidersEdge]
+}
+
+type WorkerManagerProvidersEdge implements Edge {
+  cursor: String
+  node: WorkerManagerProvider
+}
+
 input WorkerPoolInput {
     providerId: String!
     description: String!
@@ -36,6 +51,8 @@ extend type Query {
     WorkerManagerWorkers(workerPool: String, provider: String, isQuarantined: Boolean): [WorkerManagerWorker]
 
     WorkerPool(workerPoolId: String!): WorkerManagerWorkerPoolSummary
+
+    WorkerManagerProviders(connection: PageConnection, filter: JSON): WorkerManagerProvidersConnection!
 }
 
 extend type Mutation {

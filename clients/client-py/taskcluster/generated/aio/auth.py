@@ -447,7 +447,7 @@ class Auth(AsyncBaseClient):
         initial team configured for this component. Contact a Sentry admin
         to have the project transferred to a team you have access to if needed
 
-        This method is ``stable``
+        This method is ``deprecated``
         """
 
         return await self._makeApiCall(self.funcinfo["sentryDSN"], *args, **kwargs)
@@ -773,7 +773,7 @@ class Auth(AsyncBaseClient):
             'name': 'sentryDSN',
             'output': 'v1/sentry-dsn-response.json#',
             'route': '/sentry/<project>/dsn',
-            'stability': 'stable',
+            'stability': 'deprecated',
         },
         "statsumToken": {
             'args': ['project'],

@@ -3,6 +3,24 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v16.2.0
+
+[minor] ([bug 1561320](http://bugzil.la/1561320)) Taskcluster deployments now support sentry error reporting. You can configure this option by setting
+an `errorConfig` at the top-level of your config:
+
+```
+rootUrl: ...
+errorConfig:
+  reporter: SentryReporter
+  dsn: <your sentry dsn>
+```
+
+Errors will be reported to this project and tagged with service/process names in addition to taskcluster
+release version.
+
+([bug 1574656](http://bugzil.la/1574656)) Worker-pool configurations for google-based providers now accept a `workerConfig` property, which is passed to new workers.
+The existing `userData` property is deprecated.
+
 ## v16.1.0
 
 [minor] ([bug 1572775](http://bugzil.la/1572775)) * All lib-loader `setup` functions now get passed their own

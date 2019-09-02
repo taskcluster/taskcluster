@@ -1,13 +1,14 @@
 import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
-import { func, bool, string } from 'prop-types';
+import { func, bool } from 'prop-types';
+import { equals } from 'ramda';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import ListItem from '@material-ui/core/ListItem';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography/Typography';
+import MenuItem from '@material-ui/core/MenuItem';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
-import MenuItem from '@material-ui/core/MenuItem';
 import { withStyles } from '@material-ui/core';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
@@ -15,7 +16,10 @@ import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import List from '../../views/Documentation/components/List';
 import Button from '../Button';
 import isWorkerTypeNameValid from '../../utils/isWorkerTypeNameValid';
-import { WorkerManagerWorkerPoolSummary } from '../../utils/prop-types';
+import {
+  WorkerManagerWorkerPoolSummary,
+  providersArray,
+} from '../../utils/prop-types';
 import ErrorPanel from '../ErrorPanel';
 import {
   joinWorkerPoolId,
@@ -25,9 +29,7 @@ import {
 import formatError from '../../utils/formatError';
 import {
   NULL_WORKER_POOL,
-  PROVIDER_CONFIGS,
-  PROVIDERS,
-  GCP,
+  PROVIDER_DEFAULT_CONFIGS,
 } from '../../utils/constants';
 import SpeedDialAction from '../SpeedDialAction';
 import SpeedDial from '../SpeedDial';
@@ -71,14 +73,13 @@ import SpeedDial from '../SpeedDial';
 export default class WMWorkerPoolEditor extends Component {
   static defaultProps = {
     isNewWorkerPool: false,
-    providerType: GCP,
     workerPool: NULL_WORKER_POOL,
   };
 
   static propTypes = {
     workerPool: WorkerManagerWorkerPoolSummary.isRequired,
+    providers: providersArray.isRequired,
     saveRequest: func.isRequired,
-    providerType: string.isRequired,
     isNewWorkerPool: bool,
     deleteRequest: func,
   };
@@ -89,12 +90,12 @@ export default class WMWorkerPoolEditor extends Component {
         .provisionerId,
       workerPoolId2: splitWorkerPoolId(this.props.workerPool.workerPoolId)
         .workerType,
+      providerId: this.props.workerPool.providerId,
       description: this.props.workerPool.description,
       owner: this.props.workerPool.owner,
       emailOnError: this.props.workerPool.emailOnError,
       config: this.props.workerPool.config,
     },
-    providerType: this.props.providerType,
     invalidProviderConfig: false,
     actionLoading: false,
     error: null,
@@ -153,6 +154,19 @@ export default class WMWorkerPoolEditor extends Component {
     this.setState(newState);
   };
 
+  isValid() {
+    const {
+      workerPool: { providerId },
+      validation,
+    } = this.state;
+
+    return (
+      !this.state.invalidProviderConfig &&
+      !Object.values(validation).some(({ error }) => Boolean(error)) &&
+      providerId !== ''
+    );
+  }
+
   handleSwitchChange = event => {
     const {
       target: { value },
@@ -166,16 +180,30 @@ export default class WMWorkerPoolEditor extends Component {
     });
   };
 
-  handleProviderTypeChange = event => {
+  handleProviderChange = event => {
     const {
-      target: { value },
+      target: { value: providerId },
     } = event;
+    const { providers } = this.props;
+    const {
+      workerPool: { config: oldConfig },
+    } = this.state;
+    const providerInfo = providers.find(i => i.providerId === providerId);
+
+    if (!providerInfo) {
+      return;
+    }
+
+    // update config to default for this providerType only if not already set
+    const config = equals(oldConfig, {})
+      ? PROVIDER_DEFAULT_CONFIGS.get(providerInfo.providerType)
+      : oldConfig;
 
     this.setState({
-      providerType: value,
       workerPool: {
         ...this.state.workerPool,
-        config: PROVIDER_CONFIGS.get(value),
+        config,
+        providerId: providerInfo.providerId,
       },
     });
   };
@@ -204,8 +232,6 @@ export default class WMWorkerPoolEditor extends Component {
     const { workerPoolId1, workerPoolId2, ...payload } = this.state.workerPool;
     const { name: requestName } = event.currentTarget;
 
-    payload.providerId = PROVIDERS.get(this.state.providerType);
-
     this.setState({ error: null, actionLoading: true });
 
     try {
@@ -221,15 +247,8 @@ export default class WMWorkerPoolEditor extends Component {
   };
 
   render() {
-    const { classes, isNewWorkerPool } = this.props;
-    const {
-      workerPool,
-      providerType,
-      invalidProviderConfig,
-      error,
-      actionLoading,
-      validation,
-    } = this.state;
+    const { classes, isNewWorkerPool, providers } = this.props;
+    const { workerPool, error, actionLoading, validation } = this.state;
 
     return (
       <Fragment>
@@ -309,17 +328,16 @@ export default class WMWorkerPoolEditor extends Component {
           <ListSubheader>Provider</ListSubheader>
           <ListItem>
             <TextField
+              select
+              required
               id="select-provider-type"
               className={classes.dropdown}
-              select
               helperText="Which cloud do you want to run your tasks in?"
-              value={providerType}
-              name="providerType"
-              onChange={this.handleProviderTypeChange}
-              margin="normal">
-              {Array.from(PROVIDERS.keys()).map(p => (
-                <MenuItem key={p} value={p}>
-                  {p}
+              value={workerPool.providerId}
+              onChange={this.handleProviderChange}>
+              {providers.map(({ providerId }) => (
+                <MenuItem key={providerId} value={providerId}>
+                  {providerId}
                 </MenuItem>
               ))}
             </TextField>
@@ -343,7 +361,7 @@ export default class WMWorkerPoolEditor extends Component {
                 : classes.saveIconSpan,
             }}
             name="saveRequest"
-            disabled={invalidProviderConfig || actionLoading}
+            disabled={!this.isValid()}
             requiresAuth
             tooltipProps={{ title: 'Save Worker Pool' }}
             onClick={this.handleOnClick}

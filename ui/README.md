@@ -19,7 +19,7 @@ http://localhost:3050, but otherwise need not be publicly accessible. The
 development server for this repo will proxy requests as necessary to
 http://localhost:3050.
 
-## Environment
+## Development
 
 To get started local development, just:
 
@@ -28,8 +28,25 @@ To get started local development, just:
 * install the dependencies with `yarn`
 * start the UI server with `yarn start`
 
+## Configuration
+
 You can customize the settings if you'd like, but this is not required for most development.
-Create a file in the `ui/` directory named `.env` with the following content:
+To pass one of these values during development, specify it in the environment, e.g.,
+```bash
+export APPLICATION_NAME="My UI"
+yarn start
+```
+
+_IMPORTANT_: All configuration for the UI is passed to the browser of every user.
+Do not send secret data!
+
+### Implementation
+
+The frontend reads configuraiton variables from relative URL `./static/env.js` on page load.
+This file is written during `yarn start`, based on environment variables.
+In a real deployment, this file is written during the docker-container startup process, based on deployment configuration.
+
+### Application Name
 
 ```bash
 APPLICATION_NAME="Taskcluster"
@@ -37,11 +54,15 @@ APPLICATION_NAME="Taskcluster"
 
 _Note: The `APPLICATION_NAME` can be whatever you wish it to be._
 
+### Port
+
 You can optionally specify the port on which the development server serves with
 
 ```bash
 PORT=9000
 ```
+
+### GraphQL Endpoints
 
 If you are not running the web service on your local machine, you will also need to set
 
@@ -53,7 +74,7 @@ GRAPHQL_ENDPOINT=https://mydomain.com/graphql
 The Taskcluster team has a series of [best practices](../dev-docs/best-practices/ui.md) for the UI which may help
 guide you in modifying the source code and making a pull request.
 
-### Deployments
+### Docs Only
 
 If you are only looking to deploy the docs site, configure `DOCS_ONLY` to be `true`.
 
@@ -92,6 +113,10 @@ the Button's `track` property.
 ### Reporting Errors
 
 The `SENTRY_DSN` environment variable can be used to set up Sentry to monitor and fix crashes.
+
+### Configuration Implementation
+
+
 
 ## Icons
 

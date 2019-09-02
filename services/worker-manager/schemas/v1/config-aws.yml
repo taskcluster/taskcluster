@@ -1,0 +1,60 @@
+$schema: "/schemas/common/metaschema.json#"
+title: AWS Provider Config
+description: Object with an array of possible options for different regions
+type: object
+properties:
+  launchConfigs:
+    title: Launch Configurations
+    type: array
+    uniqueItems: true
+    items:
+      type: object
+      properties:
+        region:
+          title: Region
+          type: string
+          description: AWS region (not to be confused with AZ) to launch the instances in
+        launchConfig:
+          title: Launch Configuration
+          type: object
+          description: |
+            An object to be passed in to AWS runInstances method.
+            See the documentation [here](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/EC2.html#runInstances-property)
+            You can configure any properties you need. Note, however, that we disallow passing in arbitrary IAM instance profiles.
+          properties:
+            ImageId:
+              type: string
+              description: The ID of the AMI to launch an instance from.
+          required:
+            - ImageId
+          not:
+            required:
+              - IamInstanceProfile
+              - UserData
+              - MinCount
+              - MaxCount
+          additionalProperties: true
+        capacityPerInstance:
+          title: Capacity Per Instance
+          type: integer
+          minimum: 1
+          description: The number of tasks a single worker of this type can run at any given time.
+        minCapacity:
+          title: Minimum Capacity
+          type: integer
+          description: Minimum capacity necessary to maintain at any given time
+        maxCapacity:
+          title: Maximum Capacity
+          type: integer
+          description: Maximum capacity that should not be exceeded at any given time
+      additionalProperties: false
+      required:
+        - region
+        - launchConfig
+        - capacityPerInstance
+        - minCapacity
+        - maxCapacity
+additionalProperties: false
+required:
+  - launchConfigs
+  

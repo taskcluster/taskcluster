@@ -265,6 +265,13 @@ export const WorkerManagerWorkerPoolSummary = shape({
   pendingTasks: number,
 });
 
+export const providersArray = arrayOf(
+  shape({
+    providerId: string,
+    providerType: string,
+  })
+);
+
 export const awsProvisionerWorkerTypeSummary = shape({
   workerType: string,
   minCapacity: number,

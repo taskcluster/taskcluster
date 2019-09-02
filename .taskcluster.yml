@@ -6,8 +6,8 @@ tasks:
   $if: 'tasks_for in ["github-push", "github-pull-request"]'
   then:
     $let:
-      node: '10.16.2'
-      go: '1.12.6'
+      node: '10.16.3'
+      go: '1.12.9'
       artifactsDir:
         public:
           # This is not used at the moment other than by the trailer task to upload results. Feel free to bump later
@@ -86,11 +86,6 @@ tasks:
           then:
             name: test:cleanup
             command: yarn test:cleanup
-        - name: taskcluster-terraform
-          image: 'jonatanblue/gitlab-ci-terraform:latest'
-          cache: {} # nothing to cache
-          install: ":"  # nothing to do
-          command: 'cd infrastructure/terraform; terraform fmt -check'
         - name: yarn generate
           image: taskcluster/node-and-go:node${node}-go${go}
           command: >-

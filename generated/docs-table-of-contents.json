@@ -346,8 +346,8 @@
             },
             "name": "provisioning",
             "next": {
-              "path": "manual/design",
-              "title": "System Design"
+              "path": "manual/access-control",
+              "title": "Access Control"
             },
             "path": "manual/task-execution/provisioning",
             "prev": {
@@ -374,6 +374,94 @@
         "prev": {
           "path": "manual/tasks/messages",
           "title": "Messages"
+        },
+        "up": {
+          "path": "manual",
+          "title": "Taskcluster Manual"
+        }
+      },
+      {
+        "children": [
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 10,
+              "title": "API Access Control"
+            },
+            "name": "api",
+            "next": {
+              "path": "manual/access-control/user-signin",
+              "title": "User Sign-In"
+            },
+            "path": "manual/access-control/api",
+            "prev": {
+              "path": "manual/access-control",
+              "title": "Access Control"
+            },
+            "up": {
+              "path": "manual/access-control",
+              "title": "Access Control"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 20,
+              "title": "User Sign-In"
+            },
+            "name": "user-signin",
+            "next": {
+              "path": "manual/access-control/third-party",
+              "title": "Third-Party Sign-In"
+            },
+            "path": "manual/access-control/user-signin",
+            "prev": {
+              "path": "manual/access-control/api",
+              "title": "API Access Control"
+            },
+            "up": {
+              "path": "manual/access-control",
+              "title": "Access Control"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 30,
+              "title": "Third-Party Sign-In"
+            },
+            "name": "third-party",
+            "next": {
+              "path": "manual/design",
+              "title": "System Design"
+            },
+            "path": "manual/access-control/third-party",
+            "prev": {
+              "path": "manual/access-control/user-signin",
+              "title": "User Sign-In"
+            },
+            "up": {
+              "path": "manual/access-control",
+              "title": "Access Control"
+            }
+          }
+        ],
+        "data": {
+          "order": 25,
+          "title": "Access Control"
+        },
+        "name": "access-control",
+        "next": {
+          "path": "manual/access-control/api",
+          "title": "API Access Control"
+        },
+        "path": "manual/access-control",
+        "prev": {
+          "path": "manual/task-execution/provisioning",
+          "title": "Provisioning"
         },
         "up": {
           "path": "manual",
@@ -730,6 +818,28 @@
             "children": [
               {
                 "children": [
+                ],
+                "data": {
+                  "order": 20,
+                  "title": "Login Identities"
+                },
+                "name": "login-identities",
+                "next": {
+                  "path": "manual/design/conventions/actions",
+                  "title": "Action Tasks"
+                },
+                "path": "manual/design/conventions/login-identities",
+                "prev": {
+                  "path": "manual/design/conventions",
+                  "title": "Conventions"
+                },
+                "up": {
+                  "path": "manual/design/conventions",
+                  "title": "Conventions"
+                }
+              },
+              {
+                "children": [
                   {
                     "children": [
                     ],
@@ -808,8 +918,8 @@
                 },
                 "path": "manual/design/conventions/actions",
                 "prev": {
-                  "path": "manual/design/conventions",
-                  "title": "Conventions"
+                  "path": "manual/design/conventions/login-identities",
+                  "title": "Login Identities"
                 },
                 "up": {
                   "path": "manual/design/conventions",
@@ -867,8 +977,8 @@
             },
             "name": "conventions",
             "next": {
-              "path": "manual/design/conventions/actions",
-              "title": "Action Tasks"
+              "path": "manual/design/conventions/login-identities",
+              "title": "Login Identities"
             },
             "path": "manual/design/conventions",
             "prev": {
@@ -893,8 +1003,8 @@
         },
         "path": "manual/design",
         "prev": {
-          "path": "manual/task-execution/provisioning",
-          "title": "Provisioning"
+          "path": "manual/access-control/third-party",
+          "title": "Third-Party Sign-In"
         },
         "up": {
           "path": "manual",
@@ -1320,8 +1430,8 @@
             },
             "name": "handling-high-load",
             "next": {
-              "path": "reference/README",
-              "title": "Taskcluster Reference"
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
             },
             "path": "manual/using/handling-high-load",
             "prev": {
@@ -1348,6 +1458,160 @@
         "prev": {
           "path": "manual/design/conventions/task-logs",
           "title": "Task Logs"
+        },
+        "up": {
+          "path": "manual",
+          "title": "Taskcluster Manual"
+        }
+      },
+      {
+        "children": [
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 20,
+              "title": "Workers"
+            },
+            "name": "workers",
+            "next": {
+              "path": "manual/deploying/gcp-credentials",
+              "title": "GCP Credentials"
+            },
+            "path": "manual/deploying/workers",
+            "prev": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "GCP Credentials"
+            },
+            "name": "gcp-credentials",
+            "next": {
+              "path": "manual/deploying/github",
+              "title": "GitHub Integration"
+            },
+            "path": "manual/deploying/gcp-credentials",
+            "prev": {
+              "path": "manual/deploying/workers",
+              "title": "Workers"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "GitHub Integration"
+            },
+            "name": "github",
+            "next": {
+              "path": "manual/deploying/login-strategies",
+              "title": "Login Strategies"
+            },
+            "path": "manual/deploying/github",
+            "prev": {
+              "path": "manual/deploying/gcp-credentials",
+              "title": "GCP Credentials"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "Login Strategies"
+            },
+            "name": "login-strategies",
+            "next": {
+              "path": "manual/deploying/monitoring",
+              "title": "Monitoring Services"
+            },
+            "path": "manual/deploying/login-strategies",
+            "prev": {
+              "path": "manual/deploying/github",
+              "title": "GitHub Integration"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "Monitoring Services"
+            },
+            "name": "monitoring",
+            "next": {
+              "path": "manual/deploying/pulse",
+              "title": "Pulse"
+            },
+            "path": "manual/deploying/monitoring",
+            "prev": {
+              "path": "manual/deploying/login-strategies",
+              "title": "Login Strategies"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "Pulse"
+            },
+            "name": "pulse",
+            "next": {
+              "path": "reference/README",
+              "title": "Taskcluster Reference"
+            },
+            "path": "manual/deploying/pulse",
+            "prev": {
+              "path": "manual/deploying/monitoring",
+              "title": "Monitoring Services"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          }
+        ],
+        "data": {
+          "order": 60,
+          "title": "Deploying Taskcluster"
+        },
+        "name": "deploying",
+        "next": {
+          "path": "manual/deploying/workers",
+          "title": "Workers"
+        },
+        "path": "manual/deploying",
+        "prev": {
+          "path": "manual/using/handling-high-load",
+          "title": "Handling High Load"
         },
         "up": {
           "path": "manual",
@@ -2296,8 +2560,8 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/worker-manager/README",
-                  "title": "worker-manager"
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
                 },
                 "path": "reference/core/secrets/logs",
                 "prev": {
@@ -2321,6 +2585,71 @@
             "path": "reference/core/secrets/README",
             "prev": {
               "path": "reference/core/purge-cache/logs",
+              "title": "logs"
+            },
+            "up": {
+              "path": "reference/core/README",
+              "title": "Core Services"
+            }
+          },
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 10,
+                  "title": "GitHub Login Strategy"
+                },
+                "name": "github-login-strategy",
+                "next": {
+                  "path": "reference/core/web-server/mozilla-auth0-login-strategy",
+                  "title": "Mozilla-Auth0 Login Strategy"
+                },
+                "path": "reference/core/web-server/github-login-strategy",
+                "prev": {
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
+                },
+                "up": {
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 20,
+                  "title": "Mozilla-Auth0 Login Strategy"
+                },
+                "name": "mozilla-auth0-login-strategy",
+                "next": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                },
+                "path": "reference/core/web-server/mozilla-auth0-login-strategy",
+                "prev": {
+                  "path": "reference/core/web-server/github-login-strategy",
+                  "title": "GitHub Login Strategy"
+                },
+                "up": {
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
+                }
+              }
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "web-server",
+            "next": {
+              "path": "reference/core/web-server/github-login-strategy",
+              "title": "GitHub Login Strategy"
+            },
+            "path": "reference/core/web-server/README",
+            "prev": {
+              "path": "reference/core/secrets/logs",
               "title": "logs"
             },
             "up": {
@@ -2385,13 +2714,35 @@
                 },
                 "name": "google",
                 "next": {
-                  "path": "reference/core/worker-manager/static",
-                  "title": "Static Provider Type"
+                  "path": "reference/core/worker-manager/aws",
+                  "title": "AWS Provider Type"
                 },
                 "path": "reference/core/worker-manager/google",
                 "prev": {
                   "path": "reference/core/worker-manager/logs",
                   "title": "logs"
+                },
+                "up": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 11,
+                  "title": "AWS Provider Type"
+                },
+                "name": "aws",
+                "next": {
+                  "path": "reference/core/worker-manager/static",
+                  "title": "Static Provider Type"
+                },
+                "path": "reference/core/worker-manager/aws",
+                "prev": {
+                  "path": "reference/core/worker-manager/google",
+                  "title": "Google Provider Type"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",
@@ -2412,8 +2763,8 @@
                 },
                 "path": "reference/core/worker-manager/static",
                 "prev": {
-                  "path": "reference/core/worker-manager/google",
-                  "title": "Google Provider Type"
+                  "path": "reference/core/worker-manager/aws",
+                  "title": "AWS Provider Type"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",
@@ -2453,8 +2804,8 @@
             },
             "path": "reference/core/worker-manager/README",
             "prev": {
-              "path": "reference/core/secrets/logs",
-              "title": "logs"
+              "path": "reference/core/web-server/mozilla-auth0-login-strategy",
+              "title": "Mozilla-Auth0 Login Strategy"
             },
             "up": {
               "path": "reference/core/README",
@@ -2777,8 +3128,8 @@
     },
     "path": "reference/README",
     "prev": {
-      "path": "manual/using/handling-high-load",
-      "title": "Handling High Load"
+      "path": "manual/deploying/pulse",
+      "title": "Pulse"
     }
   },
   "resources": {

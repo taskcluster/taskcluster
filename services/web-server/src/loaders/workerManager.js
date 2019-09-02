@@ -1,5 +1,6 @@
 const DataLoader = require('dataloader');
 const sift = require('../utils/sift');
+const ConnectionLoader = require('../ConnectionLoader');
 
 module.exports = ({ workerManager }) => {
   const WorkerManagerWorkerPoolSummaries = new DataLoader(queries =>
@@ -70,9 +71,22 @@ module.exports = ({ workerManager }) => {
     );
   });
 
+  const WorkerManagerProviders = new ConnectionLoader(
+    async ({ filter, options }) => {
+      const raw = await workerManager.listProviders(options);
+      const providers = sift(filter, raw.providers);
+
+      return {
+        ...raw,
+        items: providers,
+      };
+    }
+  );
+
   return {
     WorkerManagerWorkerPoolSummaries,
     WorkerManagerWorkers,
     WorkerPool,
+    WorkerManagerProviders,
   };
 };

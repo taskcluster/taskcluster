@@ -61,7 +61,14 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => 
     );
   });
 
+  const isLoggedIn = new DataLoader(queries =>
+    Promise.all(
+      queries.map(() => Boolean(req.user))
+    )
+  );
+
   return {
     getCredentials,
+    isLoggedIn,
   };
 };

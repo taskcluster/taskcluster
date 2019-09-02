@@ -111,7 +111,7 @@ export default class UserMenu extends Component {
             Account
           </MenuItem>
           <MenuItem
-            title={`Sign Out of ${process.env.APPLICATION_NAME}`}
+            title={`Sign Out of ${window.env.APPLICATION_NAME}`}
             onClick={this.handleSignOutClick}>
             <HandPeaceIcon className={classes.leftIcon} />
             Sign Out

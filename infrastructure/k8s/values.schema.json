@@ -238,6 +238,20 @@
       "description": "The docker image containing taskcluster.",
       "type": "string"
     },
+    "errorConfig": {
+      "additionalProperties": true,
+      "description": "Error reporting configuration for lib-monitor.",
+      "properties": {
+        "reporter": {
+          "description": "Which reporter to use.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reporter"
+      ],
+      "type": "object"
+    },
     "forceSSL": {
       "description": "If true, all connections must use ssl",
       "type": "boolean"

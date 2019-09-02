@@ -1,6 +1,6 @@
+const assert = require('assert');
 const slugid = require('slugid');
 const _ = require('lodash');
-const fs = require('fs');
 const taskcluster = require('taskcluster-client');
 const uuid = require('uuid');
 const {google} = require('googleapis');
@@ -14,39 +14,42 @@ class GoogleProvider extends Provider {
     ...conf
   }) {
     super(conf);
-    let {project, instancePermissions, creds, credsFile} = providerConfig;
+    let {project, creds, workerServiceAccountId} = providerConfig;
     this.configSchema = 'config-google';
 
-    this.instancePermissions = instancePermissions;
+    assert(project, 'Must provide a project to google providers');
+    assert(creds, 'Must provide creds to google providers');
+    assert(workerServiceAccountId, 'Must provide a workerServiceAccountId to google providers');
+
     this.project = project;
     this.zonesByRegion = {};
+    this.workerServiceAccountId = workerServiceAccountId;
 
     if (fakeCloudApis && fakeCloudApis.google) {
       this.ownClientEmail = 'whatever@example.com';
       this.compute = fakeCloudApis.google.compute();
       this.iam = fakeCloudApis.google.iam();
-      this.crm = fakeCloudApis.google.cloudresourcemanager();
       this.oauth2 = new fakeCloudApis.google.OAuth2({project});
       return;
     }
 
-    if (!creds && credsFile) {
-      creds = JSON.parse(fs.readFileSync(credsFile));
-    }
-    try {
-      creds = JSON.parse(creds);
-    } catch (err) {
-      if (err.name !== 'SyntaxError') {
-        throw err;
+    // If creds are a string or a base64d string, parse them
+    if (_.isString(creds)) {
+      try {
+        creds = JSON.parse(creds);
+      } catch (err) {
+        if (err.name !== 'SyntaxError') {
+          throw err;
+        }
+        creds = JSON.parse(Buffer.from(creds, 'base64'));
       }
-      creds = JSON.parse(Buffer.from(creds, 'base64'));
     }
+
     this.ownClientEmail = creds.client_email;
     const client = google.auth.fromJSON(creds);
     client.scopes = [
       'https://www.googleapis.com/auth/compute', // For configuring instance templates, groups, etc
-      'https://www.googleapis.com/auth/iam', // For setting up service accounts for each WorkerPool
-      'https://www.googleapis.com/auth/cloud-platform', // To set roles for service accounts
+      'https://www.googleapis.com/auth/iam', // For fetching service account name
     ];
     this.compute = google.compute({
       version: 'v1',
@@ -56,111 +59,14 @@ class GoogleProvider extends Provider {
       version: 'v1',
       auth: client,
     });
-    this.crm = google.cloudresourcemanager({
-      version: 'v1',
-      auth: client,
-    });
-
     this.oauth2 = new google.auth.OAuth2();
   }
 
-  /*
-   * We will first set up a service account and role for each worker to use
-   * since the default service account workers get is not very restricted
-   */
   async setup() {
-    const accountId = 'taskcluster-workers';
-    this.workerAccountEmail = `${accountId}@${this.project}.iam.gserviceaccount.com`;
-    const accountRef = `projects/${this.project}/serviceAccounts/${this.workerAccountEmail}`;
-    const roleId = 'taskcluster_workers';
-    const roleName =`projects/${this.project}/roles/${roleId}`;
-
-    // First we set up the service account
-    const serviceAccount = await this.readModifySet({
-      read: async () => (await this.iam.projects.serviceAccounts.get({
-        name: accountRef,
-      })).data,
-      compare: () => true, // We do not modify this resource
-      modify: () => {}, // Not needed due to no modifications
-      set: async () => (await this.iam.projects.serviceAccounts.create({
-        name: `projects/${this.project}`,
-        accountId,
-        requestBody: {
-          serviceAccount: {
-            displayName: 'Taskcluster Workers',
-            description: 'A service account shared by all Taskcluster workers.',
-          },
-        },
-      })).data,
-    });
-    this.workerAccountId = serviceAccount.uniqueId;
-
-    // Next we ensure that worker-manager can create instances with
-    // this service account
-    // If this is not the first time this has been set up, it will
-    // simply overwrite the values in there now. This will undo manual changes.
-    await this.iam.projects.serviceAccounts.setIamPolicy({
-      resource: `projects/${this.project}/serviceAccounts/${this.workerAccountEmail}`,
-      requestBody: {
-        policy: {
-          bindings: [{
-            role: 'roles/iam.serviceAccountUser',
-            members: [`serviceAccount:${this.ownClientEmail}`],
-          }],
-        },
-      },
-    });
-
-    // Now we create a role or update it with whatever permissions we've configured
-    // for this provider
-    await this.readModifySet({
-      read: async () => (await this.iam.projects.roles.get({
-        name: roleName,
-      })).data,
-      compare: role => _.isEqual(role.includedPermissions, this.instancePermissions),
-      modify: async role => {
-        role.includedPermissions = this.instancePermissions;
-        await this.iam.projects.roles.patch({
-          name: roleName,
-          updateMask: 'includedPermissions',
-          requestBody: role,
-        });
-      },
-      set: async () => this.iam.projects.roles.create({
-        parent: `projects/${this.project}`,
-        requestBody: {
-          roleId,
-          role: {
-            title: 'Taskcluster Workers',
-            description: 'Role shared by all Taskcluster workers.',
-            includedPermissions: this.instancePermissions,
-          },
-        },
-      }),
-    });
-
-    // Assign the role to the serviceAccount and we're good to go!
-    // Projects always have these policies so no need for set()
-    const binding = {
-      role: `projects/${this.project}/roles/${roleId}`,
-      members: [`serviceAccount:${this.workerAccountEmail}`],
-    };
-    await this.readModifySet({
-      read: async () => (await this.crm.projects.getIamPolicy({
-        resource: this.project,
-        requestBody: {},
-      })).data,
-      compare: policy => policy.bindings.some(b => _.isEqual(b, binding)),
-      modify: async policy => {
-        policy.bindings.push(binding);
-        await this.crm.projects.setIamPolicy({
-          resource: this.project,
-          requestBody: {
-            policy,
-          },
-        });
-      },
-    });
+    const workerServiceAccount = (await this.iam.projects.serviceAccounts.get({
+      name: `projects/${this.project}/serviceAccounts/${this.workerServiceAccountId}`,
+    })).data;
+    this.workerServiceAccountEmail = workerServiceAccount.email;
   }
 
   async registerWorker({worker, workerPool, workerIdentityProof}) {
@@ -198,7 +104,7 @@ class GoogleProvider extends Provider {
     // Now check to make sure that the serviceAccount that the worker has is the
     // serviceAccount that we have configured that worker to use. Nobody else in the project
     // should have permissions to create instances with this serviceAccount.
-    if (payload.sub !== this.workerAccountId) {
+    if (payload.sub !== this.workerServiceAccountId) {
       throw error();
     }
 
@@ -284,7 +190,7 @@ class GoogleProvider extends Provider {
             networkInterfaces: workerPool.config.networkInterfaces,
             disks: workerPool.config.disks,
             serviceAccounts: [{
-              email: this.workerAccountEmail,
+              email: this.workerServiceAccountEmail,
               scopes: [
                 /*
                  * This looks scary but is ok. According to
@@ -308,6 +214,7 @@ class GoogleProvider extends Provider {
                     providerId: this.providerId,
                     workerGroup: this.providerId,
                     rootUrl: this.rootUrl,
+                    workerConfig: workerPool.config.workerConfig || {},
                     userData: workerPool.config.userData,
                   }),
                 },
@@ -505,55 +412,6 @@ class GoogleProvider extends Provider {
     }
     await obj.delete(args);
     return false;
-  }
-
-  /*
-   * A useful wrapper for interacting with resources
-   * that google wants you to use read-modify-set semantics with
-   * Example: https://cloud.google.com/iam/docs/creating-custom-roles#read-modify-write
-   */
-  async readModifySet({
-    compare,
-    read,
-    modify,
-    set,
-    tries = 0,
-  }) {
-    let resource;
-    try {
-      // First try to get the resource
-      resource = await read();
-    } catch (err) {
-      if (err.code !== 404) {
-        throw err;
-      }
-    }
-
-    try {
-      if (resource) {
-        // If the value in google is different
-        // from the one we want it to be, we try to update it
-        if (!compare(resource)) {
-          resource = await modify(resource);
-        }
-        return resource;
-      } else {
-        // If the resource was never there in the first place, create it
-        return await set();
-      }
-    } catch (err) {
-      if (err.code !== 409 && tries < 5) {
-        throw err;
-      }
-      await new Promise(accept => setTimeout(accept, Math.pow(2, tries) * 100));
-      return await this.readModifySet({
-        compare,
-        read,
-        modify,
-        set,
-        tries: tries++,
-      });
-    }
   }
 }
 

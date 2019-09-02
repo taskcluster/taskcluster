@@ -6,6 +6,7 @@ defaults:
     errorsExpirationDelay: '-4 days' # Anything older than a few days goes away
   monitoring:
     level: !env:optional LEVEL
+    errorConfig: !env:json:optional ERROR_CONFIG
   taskcluster:
     rootUrl: !env TASKCLUSTER_ROOT_URL
     credentials:
@@ -43,3 +44,8 @@ test:
       providerType: static
     google:
       providerType: google
+      project: foo
+      creds: {}
+      workerServiceAccountId: 12345
+    aws:
+      providerType: aws

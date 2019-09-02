@@ -1,0 +1,13 @@
+query Providers($providersConnection: PageConnection, $filter: JSON) {
+    WorkerManagerProviders(connection: $providersConnection, filter: $filter) {
+        pageInfo {
+          hasNextPage
+        }
+        edges {
+            node {
+                providerId
+                providerType
+            }
+        }
+    }
+}

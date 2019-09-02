@@ -46,7 +46,6 @@ definitions:
       relevant. Thus, what context the action should be presented to the
       end-user.
   schema:
-    $ref: http://json-schema.org/schema
     description: |
       JSON schema for user input to the action.  If this property is omitted,
       then the input is `null`.

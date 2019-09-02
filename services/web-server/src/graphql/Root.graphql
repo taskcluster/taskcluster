@@ -31,7 +31,8 @@ union Node =
   SecretListItem |
   Client |
   RoleCompact |
-  NotificationAddress
+  NotificationAddress |
+  WorkerManagerProvider
 
 interface Edge {
   cursor: String

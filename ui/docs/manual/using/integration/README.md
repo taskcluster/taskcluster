@@ -8,7 +8,7 @@ Taskcluster is built to mix in with other applications in a larger CI
 environment. Aside from the platform services, no Taskcluster component is
 privileged and other implementations are always possible.
 
-For example, the Taskcluster tools site is built to be generally useful and to
+For example, the Taskcluster UI site is built to be generally useful and to
 provide a clear view of the Taskcluster system, but may not be suited to
 providing the information your developers need. It's easy to write a new
 frontend that uses the Taskcluster services to generate a dashboard specific to

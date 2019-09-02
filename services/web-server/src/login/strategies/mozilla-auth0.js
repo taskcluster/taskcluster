@@ -7,7 +7,6 @@ const User = require('../User');
 const PersonAPI = require('../clients/PersonAPI');
 const WebServerError = require('../../utils/WebServerError');
 const { encode, decode } = require('../../utils/codec');
-const identityFromClientId = require('../../utils/identityFromClientId');
 const tryCatch = require('../../utils/tryCatch');
 const login = require('../../utils/login');
 const verifyJwtAuth0 = require('../../utils/verifyJwtAuth0');
@@ -24,7 +23,6 @@ module.exports = class MozillaAuth0 {
 
     Object.assign(this, strategyCfg);
 
-    this.rootUrl = cfg.taskcluster.rootUrl;
     this._personApi = null;
     this._personApiExp = null;
     this.identityProviderId = 'mozilla-auth0';
@@ -78,18 +76,13 @@ module.exports = class MozillaAuth0 {
 
     user.identity = this.identityFromProfile(userProfile);
 
-    if (!user.identity) {
-      debug('No recognized identity providers');
-      return;
-    }
-
     // take a user and attach roles to it
     this.addRoles(userProfile, user);
 
     return user;
   }
 
-  userFromIdentity(identity) {
+  async userFromIdentity(identity) {
     let encodedUserId = identity.split('/')[1];
 
     if (encodedUserId.startsWith('github|') || encodedUserId.startsWith('oauth2|firefoxaccounts|')) {
@@ -97,7 +90,15 @@ module.exports = class MozillaAuth0 {
     }
 
     const userId = decode(encodedUserId);
-    return this.getUser({ userId });
+    const user = await this.getUser({ userId });
+
+    // catch cases where the calculated identity differs, such as when the github username
+    // doesn't match the provided identity, and return no user in that case.
+    if (user && user.identity !== identity) {
+      return;
+    }
+
+    return user;
   }
 
   async expFromIdToken(idToken) {
@@ -111,16 +112,6 @@ module.exports = class MozillaAuth0 {
     }
 
     return profile.exp;
-  }
-
-  userFromClientId(clientId) {
-    const identity = identityFromClientId(clientId);
-
-    if (!identity) {
-      return;
-    }
-
-    return this.userFromIdentity(identity);
   }
 
   identityFromProfile(profile) {
@@ -159,17 +150,14 @@ module.exports = class MozillaAuth0 {
   }
 
   addRoles(profile, user) {
+    // see https://auth.mozilla.com/.well-known/profile.schema
     const accessInformation = profile.access_information;
     const { ldap, mozilliansorg, hris } = accessInformation;
 
-    // Non-prefixed groups are what is known as Mozilla LDAP groups. Groups prefixed by a provider
-    // name and underscore are provided by a specific group engine. For example,
-    // `providername_groupone` is provided by `providername`. Per https://goo.gl/bwWjvE.
-    // For our own purposes, if the prefix is not mozilliansorg. then we treat it as an ldap group
     const groups = [
       ...(ldap && ldap.values ? Object.keys(ldap.values).map(group => `mozilla-group:${group}`) : []),
-      ...(hris && hris.values ? Object.keys(hris.values).map(group => `hris_${group}`) : []),
-      ...(mozilliansorg && mozilliansorg.values ? Object.keys(mozilliansorg.values).map(group => `mozilliansorg_${group}`) : []),
+      ...(hris && hris.values ? Object.keys(hris.values).map(group => `mozilla-hris:${group}`) : []),
+      ...(mozilliansorg && mozilliansorg.values ? Object.keys(mozilliansorg.values).map(group => `mozillians-group:${group}`) : []),
     ];
 
     user.addRole(...groups);

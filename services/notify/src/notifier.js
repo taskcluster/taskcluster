@@ -83,14 +83,6 @@ class Notifier {
     });
     formatted = sanitizeHtml(formatted);
 
-    // Also get these because they shouldn't have any html anyway
-    content = sanitizeHtml(content);
-    subject = sanitizeHtml(subject);
-    if (link) {
-      link.text = sanitizeHtml(link.text);
-      link.href = sanitizeHtml(link.href);
-    }
-
     const res = await this.emailer.send({
       message: {
         from: this.sender,
