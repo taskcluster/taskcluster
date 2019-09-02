@@ -96,6 +96,7 @@ func initialiseFeatures() (err error) {
 
 // Entry point into the generic worker...
 func main() {
+	InitialiseLogger()
 	versionName := "generic-worker (" + engine + " engine) " + version
 	if revision != "" {
 		versionName += " [ revision: https://github.com/taskcluster/generic-worker/commits/" + revision + " ]"
