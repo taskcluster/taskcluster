@@ -3951,10 +3951,10 @@ hash-base@^3.0.0:
     inherits "^2.0.1"
     safe-buffer "^5.0.1"
 
-hashids@^1.2.2:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/hashids/-/hashids-1.2.2.tgz#28635c7f2f7360ba463686078eee837479e8eafb"
-  integrity sha512-dEHCG2LraR6PNvSGxosZHIRgxF5sNLOIBFEHbj8lfP9WWmu/PWPMzsip1drdVSOFi51N2pU7gZavrgn7sbGFuw==
+hashids@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/hashids/-/hashids-2.0.0.tgz#8a3ad77598233e399594b73ad5fdb3c2c880528e"
+  integrity sha512-URg7dQlk6wQS9WqhQwKBC0cT/G0JMaEcwlHTvtRNB45JcIrr6mxY7dXiCUJwESf+tXnyaFdz7C8ETDYrQsyY1A==
 
 hawk@^7.0.10:
   version "7.0.10"
