@@ -166,5 +166,44 @@ suite('Spot Node Termination', () => {
 
     assert.ok(!claimedTask, 'Task should not have been claimed');
   });
+
+  test('termination with one task pending and another running', async () => {
+    settings.configure({
+      capacity: 1,
+      shutdown: {
+        enabled: true,
+        nodeTerminationPoll: 1,
+      }
+    });
+
+    const task = {
+      payload: {
+        image: IMAGE,
+        command: [
+          '/bin/bash', '-c', 'echo "Hello"; sleep 600; echo "done";',
+        ],
+        maxRunTime: 600,
+      }
+    };
+
+    const taskIds = [slugid.v4(), slugid.v4()];
+    worker = new TestWorker(DockerWorker);
+    worker.on('task run', () => { settings.nodeTermination(); });
+    await worker.launch();
+    await Promise.race(taskIds.map(taskId => worker.postToQueue(task, taskId)));
+    const taskStatus = await Promise.all(taskIds.map(taskId => worker.queue.status(taskId)));
+    await sleep(10000);
+
+    const status = taskStatus.map(stat => stat.status.runs[0].state);
+    assert.equal(status.length, 2);
+    assert.ok(status.includes('exception'), `One of the tasks should have state "exception". Status found: ${status.join(',')}`);
+    assert.ok(status.includes('pending'), `One of the tasks should have state "pending". Status found: ${status.join(',')}`);
+
+    await Promise.all(
+      status
+        .filter(stat => ['pending', 'running'].includes(stat.state))
+        .map(stat => worker.queue.cancelTask(stat.taskId))
+    );
+  });
 });
 

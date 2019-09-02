@@ -19,7 +19,6 @@ class TaskListener extends EventEmitter {
   constructor(runtime) {
     super();
     this.runtime = runtime;
-    this.capacity = runtime.capacity;
     this.runningTasks = [];
     this.taskQueue = new TaskQueue(this.runtime);
     this.taskPollInterval = this.runtime.taskQueue.pollInterval;
@@ -102,7 +101,7 @@ class TaskListener extends EventEmitter {
       deviceCapacity = 0;
     }
 
-    let runningCapacity = Math.max(this.capacity - this.runningTasks.length, 0);
+    let runningCapacity = Math.max(this.runtime.capacity - this.runningTasks.length, 0);
     let hostCapacity = Math.min(runningCapacity, deviceCapacity);
     this.lastKnownCapacity = hostCapacity;
 
@@ -326,7 +325,7 @@ class TaskListener extends EventEmitter {
     });
 
     let uptime = this.host.billingCycleUptime();
-    let efficiency = (totalRunTime / (this.capacity * (uptime * 1000))) * 100;
+    let efficiency = (totalRunTime / (this.runtime.capacity * (uptime * 1000))) * 100;
     this.runtime.log(
       'reporting efficiency',
       {efficiency, uptime, totalRunTime, capacity: this.capcity});
