@@ -333,7 +333,7 @@ class GoogleProvider extends Provider {
       }
 
       if (this.errors[workerPoolId].length) {
-        await Promise.all(this.errors.map(error => workerPool.reportError(error)));
+        await Promise.all(this.errors[workerPoolId].map(error => workerPool.reportError(error)));
       }
 
       await workerPool.modify(wt => {
