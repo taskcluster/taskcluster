@@ -329,6 +329,19 @@ const createTheme = isDarkTheme => {
           },
         },
       },
+      MuiListItem: {
+        root: {
+          userSelect: 'text',
+        },
+      },
+      MuiChip: {
+        label: {
+          userSelect: 'text',
+        },
+        root: {
+          userSelect: 'text',
+        },
+      },
       MuiPickersCalendarHeader: {
         iconButton: {
           backgroundColor: 'transparent',
