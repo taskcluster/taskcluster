@@ -48,7 +48,7 @@ import SpeedDial from '../SpeedDial';
     ...theme.mixins.actionButton,
   },
   saveIconSpan: {
-    position: 'fixed',
+    ...theme.mixins.fab,
     bottom: theme.spacing.double,
     right: theme.spacing.unit * 11,
     ...theme.mixins.actionButton,
