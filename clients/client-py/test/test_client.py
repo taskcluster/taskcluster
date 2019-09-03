@@ -643,7 +643,7 @@ args"""
 def fakeResponse(fakeResponse):
     yield fakeResponse
 
-@pytest.fixture(scope='function')
+@pytest.yield_fixture(scope='function')
 def fakeSite(url, request, fakeResponse):
     gotUrl = urllib.parse.urlunsplit(url)
     gotRequest = request
