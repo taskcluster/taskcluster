@@ -25,6 +25,7 @@ const uploadToS3 = require('./upload_to_s3');
 const _ = require('lodash');
 const EventEmitter = require('events');
 const libUrls = require('taskcluster-lib-urls');
+const promiseTry = require('promise-retry');
 
 let debug = new Debug('runTask');
 
@@ -869,10 +870,21 @@ class Task extends EventEmitter {
     let imageId;
     try {
       let im = this.runtime.imageManager;
-      imageId = await im.ensureImage(this.task.payload.image,
-        this.stream,
-        this,
-        this.task.scopes);
+
+      imageId = await promiseRetry(retry => {
+        return im.ensureImage(
+          this.task.payload.image,
+          this.stream,
+          this,
+          this.task.scopes).catch(retry);
+      }, {
+        maxTimeout: 1000,
+        minTimeout: 10,
+        factor: 1.2,
+        randomize: true,
+        retries: 3,
+      });
+
       this.imageHash = imageId;
       this.runtime.gc.markImage(imageId);
     } catch (e) {
