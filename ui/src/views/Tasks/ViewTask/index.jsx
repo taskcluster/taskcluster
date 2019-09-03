@@ -5,7 +5,6 @@ import { omit, pathOr } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
-import Chip from '@material-ui/core/Chip';
 import Divider from '@material-ui/core/Divider';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
@@ -27,6 +26,7 @@ import RestartIcon from 'mdi-react/RestartIcon';
 import Dashboard from '../../../components/Dashboard';
 import Markdown from '../../../components/Markdown';
 import TaskDetailsCard from '../../../components/TaskDetailsCard';
+import ChipComponent from '../../../components/ChipComponent';
 import TaskRunsCard from '../../../components/TaskRunsCard';
 import Helmet from '../../../components/Helmet';
 import HelpView from '../../../components/HelpView';
@@ -725,7 +725,7 @@ export default class ViewTask extends Component {
             <Typography variant="subtitle1">
               <Markdown>{task.metadata.description}</Markdown>
             </Typography>
-            <Chip
+            <ChipComponent
               className={classes.tag}
               label={
                 <Fragment>
@@ -735,7 +735,7 @@ export default class ViewTask extends Component {
               }
             />
             {tags.map(([key, value]) => (
-              <Chip
+              <ChipComponent
                 className={classes.tag}
                 key={key}
                 label={
