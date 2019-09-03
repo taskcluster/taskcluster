@@ -65,8 +65,8 @@ suite('volume cache tests', () => {
     const failureInfo = `log:\n${result.log}`;
     assert.equal(result.run.state, 'completed', failureInfo);
     assert.equal(result.run.reasonResolved, 'completed', failureInfo);
-    assert.ok(result.log.indexOf(cacheName) !== -1, 'lists cache', failureInfo);
-    assert.ok(result.log.indexOf(cacheName) !== -1, '/tmp-obj-dir', failureInfo);
+    assert.notEqual(result.log.indexOf(cacheName), -1, 'lists cache', failureInfo);
+    assert.notEqual(result.log.indexOf(cacheName), -1, '/tmp-obj-dir', failureInfo);
 
     var objDir = fs.readdirSync(fullCacheDir);
     assert.ok(fs.existsSync(path.join(fullCacheDir, objDir[0], 'foo.txt')), failureInfo);
@@ -107,8 +107,8 @@ suite('volume cache tests', () => {
     const failureInfo = `log:\n${result.log}`;
     assert.equal(result.run.state, 'completed', failureInfo);
     assert.equal(result.run.reasonResolved, 'completed', failureInfo);
-    assert.ok(result.log.indexOf(cacheName) !== -1, 'lists cache', failureInfo);
-    assert.ok(result.log.indexOf(cacheName) !== -1, '/tmp-obj-dir', failureInfo);
+    assert.notEqual(result.log.indexOf(cacheName), -1, 'lists cache', failureInfo);
+    assert.notEqual(result.log.indexOf(cacheName), -1, '/tmp-obj-dir', failureInfo);
 
     var objDir = fs.readdirSync(fullCacheDir);
     assert.ok(fs.existsSync(path.join(fullCacheDir, objDir[0], 'foo.txt')), failureInfo);
@@ -157,11 +157,11 @@ suite('volume cache tests', () => {
     var results = await Promise.all(tasks);
     await worker.terminate();
 
-    assert.ok(results.length === 2);
-    assert.ok(results[0].log.indexOf('file0.txt') !== -1);
-    assert.ok(results[0].log.indexOf('file1.txt') === -1);
-    assert.ok(results[1].log.indexOf('file1.txt') !== -1);
-    assert.ok(results[1].log.indexOf('file0.txt') === -1);
+    assert.equal(results.length, 2);
+    assert.notEqual(results[0].log.indexOf('file0.txt'), -1);
+    assert.equal(results[0].log.indexOf('file1.txt'), -1);
+    assert.notEqual(results[1].log.indexOf('file1.txt'), -1);
+    assert.equal(results[1].log.indexOf('file0.txt'), -1);
   });
 
   test('cached volumes can be reused between tasks', async () => {
