@@ -52,7 +52,7 @@
     "graphql-playground-middleware-express": "^1.7.8",
     "graphql-type-json": "^0.3.0",
     "graphql-validation-complexity": "^0.2.3",
-    "hashids": "^1.2.2",
+    "hashids": "^2.0.0",
     "hawk": "^7.0.10",
     "hsts": "^2.1.0",
     "immutable": "^3.8.2",
