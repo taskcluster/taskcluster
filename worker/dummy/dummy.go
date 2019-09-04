@@ -46,5 +46,10 @@ func Usage() string {
 	return `
 The "dummy" worker implementation does nothing but dump the state instead of
 "starting" anything.  It is intended for debugging.
+
+` + "```yaml" + `
+worker:
+    implementation: dummy
+` + "```" + `
 `
 }

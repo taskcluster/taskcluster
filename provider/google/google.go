@@ -126,14 +126,16 @@ func Usage() string {
 The providerType "google" is intended for workers provisioned with worker-manager
 providers using providerType "google".  It requires
 
-	provider:
-		providerType: google
+` + "```yaml" + `
+provider:
+    providerType: google
+` + "```" + `
 
 The TASKCLUSTER_WORKER_LOCATION of this provider has the following fields:
 
-- cloud: aws
-- region
-- zone
+* cloud: aws
+* region
+* zone
 `
 }
 

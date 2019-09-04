@@ -181,14 +181,16 @@ func Usage() string {
 The providerType "aws-provisioner" is intended for workers provisioned with
 the legacy aws-provisioner application.  It requires 
 
-	provider:
-		providerType: aws-provisioner
+` + "```yaml" + `
+provider:
+    providerType: aws-provisioner
+` + "```" + `
 
 The TASKCLUSTER_WORKER_LOCATION of this provider has the following fields:
 
-- cloud: aws
-- region
-- availabilityZone
+* cloud: aws
+* region
+* availabilityZone
 `
 }
 
