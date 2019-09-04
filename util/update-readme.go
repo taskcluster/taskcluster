@@ -13,10 +13,12 @@ import (
 // copy of Usage from `cmd/startworker/main.go` since go won't allow importing that
 func usage() string {
 	return `
-start-worker starts Taskcluster workers.
+This binary is configured to run at instance start up, getting a configuration
+file as its argument.  It logs to its stdout.
 
-Usage:
-	start-worker <runnerConfig>
+` + "```" + `
+start-worker <runnerConfig>
+` + "```" + `
 
 ` + runner.Usage() + `
 
@@ -46,8 +48,8 @@ func main() {
 	}
 
 	readme = string(readme[:start]) +
-		prefix + "\n```\n" +
-		strings.Trim(usage(), "\n") + "\n```\n" +
+		prefix + "\n" +
+		strings.ReplaceAll(strings.Trim(usage(), "\n"), "\t", "    ") + "\n" +
 		string(readme[end:])
 
 	err = ioutil.WriteFile("README.md", []byte(readme), 0644)

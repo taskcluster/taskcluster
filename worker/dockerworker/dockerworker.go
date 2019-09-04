@@ -164,13 +164,14 @@ The "docker-worker" worker implementation starts docker-worker
 (https://github.com/taskcluster/docker-worker).  It takes the following
 values in the 'worker' section of the runner configuration:
 
-	worker:
-		implementation: docker-worker
-		# path to the root of the docker-worker repo clone
-		path: /path/to/docker-worker/repo
-		# path where taskcluster-worker-runner should write the generated
-		# docker-worker configuration.
-		configPath: ..
-
+` + "```yaml" + `
+worker:
+    implementation: docker-worker
+    # path to the root of the docker-worker repo clone
+    path: /path/to/docker-worker/repo
+    # path where taskcluster-worker-runner should write the generated
+    # docker-worker configuration.
+    configPath: ..
+` + "```" + `
 `
 }

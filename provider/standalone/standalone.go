@@ -76,24 +76,24 @@ This is not a recommended configuration - prefer to use the static provider.
 It requires the following properties be included explicitly in the runner
 configuration:
 
-	provider:
-		providerType: standalone
-		rootURL: ..
-		clientID: ..
-		accessToken: ..
-		workerPoolID: ..
-		workerGroup: ..
-		workerID: ..
-		workerLocation: // custom fields for TASKCLUSTER_WORKER_LOCATION
-			customLocationInfo1: ...
-			customLocationInfo2: ...
-			...
-			customLocationInfoN: ...
+` + "```yaml" + `
+provider:
+    providerType: standalone
+    rootURL: ..  # note the Golang spelling with capitalized "URL"
+    clientID: .. # ..and similarly capitalized ID
+    accessToken: ..
+    workerPoolID: ..
+    workerGroup: ..
+    workerID: ..
+    # custom properties for TASKCLUSTER_WORKER_LOCATION
+    workerLocation:  {prop: val, ..}
+` + "```" + `
 
-The TASKCLUSTER_WORKER_LOCATION of this provider has the following fields:
+The [$TASKCLUSTER_WORKER_LOCATION](https://docs.taskcluster.net/docs/reference/core/worker-manager/)
+defined by this provider has the following fields:
 
-- cloud: standalone
-- customLocationInfo1: ...
-- ...
+* cloud: standalone
+
+as well as any worker location values from the configuration.
 `
 }
