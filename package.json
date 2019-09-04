@@ -186,9 +186,11 @@
   "renovate": {
     "extends": [
       "config:base",
-      ":preserveSemverRanges",
-      "schedule:weekly"
+      ":preserveSemverRanges"
     ],
+    "schedule": "at any time",
+    "prHourlyLimit": 5,
+    "prConcurrentLimit": 10,
     "gomod": {
       "ignoreDeps": [
         "golang.org/x/tools"
