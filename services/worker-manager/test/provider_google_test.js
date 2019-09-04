@@ -34,6 +34,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
         instancePermissions: [],
         creds: '{}',
         workerServiceAccountId: '12345',
+        _backoffDelay: 1,
       },
     });
     workerPool = await helper.WorkerPool.create({
@@ -79,6 +80,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function
     assert.equal(errors.entries[0].description, 'something went wrong');
     const workers = await helper.Worker.scan({}, {});
     assert.equal(workers.entries.length, 1); // second loop should not have created one
+  });
+
+  test('provisioning loop with rate limiting', async function() {
+    // Notice this is only three loops, but instance insert fails on third try before succeeding on 4th
+    await provider.provision({workerPool});
+    await provider.provision({workerPool});
+    await provider.provision({workerPool});
+
+    const workers = await helper.Worker.scan({}, {});
+    assert.equal(workers.entries.length, 2);
   });
 
   test('de-provisioning loop', async function() {

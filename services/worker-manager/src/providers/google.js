@@ -15,7 +15,7 @@ class GoogleProvider extends Provider {
     ...conf
   }) {
     super(conf);
-    let {project, creds, workerServiceAccountId, apiRateLimits = {}} = providerConfig;
+    let {project, creds, workerServiceAccountId, apiRateLimits = {}, _backoffDelay = 1000} = providerConfig;
     this.configSchema = 'config-google';
 
     assert(project, 'Must provide a project to google providers');
@@ -29,6 +29,7 @@ class GoogleProvider extends Provider {
     // There are different rate limits per type of request
     // as documented here: https://cloud.google.com/compute/docs/api-rate-limits
     this.queues = {};
+    this._backoffDelay = _backoffDelay;
     for (const type of ['query', 'get', 'list', 'opRead']) {
       const {interval, intervalCap} = (apiRateLimits[type] || {});
       this.queues[type] = new PQueue({
@@ -74,12 +75,34 @@ class GoogleProvider extends Provider {
     this.oauth2 = new google.auth.OAuth2();
   }
 
-  async _enqueue(type, func) {
-    return await this.queues[type].add(async () => {
-      const result = await func();
-      return result;
-      // TODO: Pause if google says to pause
-    });
+  async _enqueue(type, func, tries = 0) {
+    const queue = this.queues[type];
+    try {
+      return await queue.add(func, {priority: tries});
+    } catch (err) {
+      let backoff = this._backoffDelay;
+      if (err.code === 403) { // google hands out 403 for rate limiting; back off significantly
+        // google's interval is 100 seconds so let's try once optimistically and a second time to get it for sure
+        backoff *= 50;
+      } else if (err.code === 403 || err.code >= 500) { // For 500s, let's take a shorter backoff
+        backoff *= Math.pow(2, tries); // Longest backoff here is half a minute
+      } else {
+        // If we don't want to do anything special here, just throw and let the
+        // calling code figure out what to do
+        throw err;
+      }
+
+      if (!queue.isPaused) {
+        queue.pause();
+        setTimeout(() => queue.start(), backoff);
+      }
+
+      if (tries > 4) {
+        throw err;
+      }
+
+      return await this._enqueue(type, func, tries++);
+    }
   }
 
   async setup() {
@@ -167,8 +190,6 @@ class GoogleProvider extends Provider {
     }
     const regions = workerPool.config.regions;
 
-    // TODO: Use p-queue for all operations against google
-
     const toSpawn = await this.estimator.simple({
       workerPoolId,
       ...workerPool.config,
@@ -251,7 +272,7 @@ class GoogleProvider extends Provider {
           await workerPool.reportError({
             kind: 'creation-error',
             title: 'Instance Creation Error',
-            description: error.message, // TODO: Make sure we clear exposing this with security folks
+            description: error.message,
           });
         }
         return;
@@ -421,7 +442,7 @@ class GoogleProvider extends Provider {
         errors.push({
           kind: 'operation-error',
           title: 'Operation Error',
-          description: err.message, // TODO: Make sure we clear exposing this with security folks
+          description: err.message,
           extra: {
             code: err.code,
           },
