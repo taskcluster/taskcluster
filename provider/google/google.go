@@ -131,7 +131,8 @@ provider:
     providerType: google
 ` + "```" + `
 
-The TASKCLUSTER_WORKER_LOCATION of this provider has the following fields:
+The [$TASKCLUSTER_WORKER_LOCATION](https://docs.taskcluster.net/docs/reference/core/worker-manager/)
+defined by this provider has the following fields:
 
 * cloud: aws
 * region

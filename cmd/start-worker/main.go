@@ -13,7 +13,8 @@ import (
 
 func Usage() string {
 	return `
-start-worker starts Taskcluster workers.
+The start-worker command starts Taskcluster workers.  It is typically invoked
+during instance startup.
 
 Usage:
 	start-worker <runnerConfig>

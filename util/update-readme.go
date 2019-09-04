@@ -13,7 +13,9 @@ import (
 // copy of Usage from `cmd/startworker/main.go` since go won't allow importing that
 func usage() string {
 	return `
-Usage:
+This binary is configured to run at instance start up, getting a configuration
+file as its argument.  It logs to its stdout.
+
 ` + "```" + `
 start-worker <runnerConfig>
 ` + "```" + `
