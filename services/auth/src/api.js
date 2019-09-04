@@ -4,7 +4,7 @@ const slugid = require('slugid');
 const _ = require('lodash');
 const signaturevalidator = require('./signaturevalidator');
 const ScopeResolver = require('./scoperesolver');
-const Hashids = require('hashids');
+const Hashids = require('hashids/cjs');
 
 /**
  * Helper to return a role as defined in the blob to one suitable for return.
