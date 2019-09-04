@@ -22,6 +22,6 @@ build() {
 }
 echo "Building:"
 build linux amd64
-echo "* Git push with --tags to the upstream repo"
+echo "* Git push with --follow-tags to the upstream repo"
 echo "* Create a new release from the tag"
 echo "* Attach the above built binary to the release"
