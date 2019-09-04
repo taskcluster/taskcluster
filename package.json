@@ -84,7 +84,7 @@
     "regex-escape": "^3.4.8",
     "remotely-signed-s3": "^4.0.0",
     "request-ip": "^2.0.2",
-    "rimraf": "^2.6.2",
+    "rimraf": "^3.0.0",
     "sanitize-html": "^1.20.1",
     "sentry-api": "^0.1.1",
     "serialize-error": "^4.0.0",
