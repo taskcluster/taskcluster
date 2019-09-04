@@ -1,8 +1,13 @@
 import React from 'react';
+import { string } from 'prop-types';
 import ErrorPanel from '../../../../components/ErrorPanel';
 
-const Warning = ({ msg, keepOpen }) => (
-  <ErrorPanel warning error={msg} onClose={keepOpen} />
+const Warning = ({ children }) => (
+  <ErrorPanel warning error={children} onClose={null} />
 );
+
+Warning.propTypes = {
+  children: string.isRequired,
+};
 
 export default Warning;
