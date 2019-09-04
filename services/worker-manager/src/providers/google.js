@@ -175,7 +175,7 @@ class GoogleProvider extends Provider {
       running: workerPool.providerData[this.providerId].running,
     });
 
-    for (let i = 0; i < toSpawn; i++) {
+    await Promise.all(new Array(toSpawn).fill(null).map(async _ => {
       const region = regions[Math.floor(Math.random() * regions.length)];
       if (!this.zonesByRegion[region]) {
         this.zonesByRegion[region] = (await this._enqueue('get', () => this.compute.regions.get({
@@ -274,7 +274,7 @@ class GoogleProvider extends Provider {
           },
         },
       });
-    }
+    }));
   }
 
   /*
