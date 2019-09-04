@@ -9,8 +9,7 @@
   },
   "workspaces": [
     "libraries/*",
-    "services/*",
-    "clients/client"
+    "services/*"
   ],
   "dependencies": {
     "@octokit/rest": "^16.15.0",
