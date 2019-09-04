@@ -7,7 +7,7 @@ import TextField from '@material-ui/core/TextField';
 import { withStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import { ReactGhLikeDiff } from 'react-gh-like-diff';
-import './index.css';
+import 'react-gh-like-diff/lib/diff2html.css';
 
 @withStyles(theme => {
   const borderColor =
@@ -29,6 +29,9 @@ import './index.css';
       borderWidth: 1,
       borderRadius: theme.shape.borderRadius,
       borderStyle: 'solid',
+    },
+    diffView: {
+      color: theme.palette.type === 'dark' ? '#000' : 'black',
     },
   };
 })
@@ -116,7 +119,7 @@ export default class DiffTextArea extends Component {
         </Tabs>
         <div
           style={isViewDiff ? { minHeight: rows * 20 } : null}
-          className={classNames(classes.tabContent, {
+          className={classNames(classes.tabContent, classes.diffView, {
             [classes.diffContainer]: isViewDiff,
           })}>
           {!isViewDiff && (
