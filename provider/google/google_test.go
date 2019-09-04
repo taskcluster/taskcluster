@@ -43,7 +43,7 @@ func TestGoogleConfigureRun(t *testing.T) {
 		"/project/project-id":    "proj-1234",
 		"/instance/image":        "img-123",
 		"/instance/machine-type": "most-of-the-cloud",
-		"/instance/zone":         "/project/1234/zone/in-central-1b",
+		"/instance/zone":         "/project/1234/zone/in-central1-b",
 		"/instance/hostname":     "my-worker.example.com",
 		"/instance/network-interfaces/0/access-configs/0/external-ip": "1.2.3.4",
 		"/instance/network-interfaces/0/ip":                           "192.168.0.1",
@@ -81,8 +81,8 @@ func TestGoogleConfigureRun(t *testing.T) {
 		"image":           "img-123",
 		"instance-type":   "most-of-the-cloud",
 		"instance-id":     "i-123",
-		"zone":            "in-central-1b",
-		"region":          "in-central-1",
+		"zone":            "in-central1-b",
+		"region":          "in-central1",
 		"public-ipv4":     "1.2.3.4",
 		"public-hostname": "my-worker.example.com",
 		"local-ipv4":      "192.168.0.1",
@@ -92,6 +92,6 @@ func TestGoogleConfigureRun(t *testing.T) {
 	require.Equal(t, true, state.WorkerConfig.MustGet("from-ud"), true)
 
 	require.Equal(t, "google", state.WorkerLocation["cloud"])
-	require.Equal(t, "in-central-1", state.WorkerLocation["region"])
-	require.Equal(t, "in-central-1b", state.WorkerLocation["zone"])
+	require.Equal(t, "in-central1", state.WorkerLocation["region"])
+	require.Equal(t, "in-central1-b", state.WorkerLocation["zone"])
 }

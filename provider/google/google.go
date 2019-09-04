@@ -81,7 +81,7 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 	zone := providerMetadata["zone"]
 	zone = zone[strings.LastIndexByte(zone, byte('/'))+1:]
 	providerMetadata["zone"] = zone
-	providerMetadata["region"] = zone[:len(zone)-1]
+	providerMetadata["region"] = zone[:len(zone)-2]
 
 	state.WorkerLocation = map[string]string{
 		"cloud":  "google",
