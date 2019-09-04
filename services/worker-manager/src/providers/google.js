@@ -5,6 +5,7 @@ const taskcluster = require('taskcluster-client');
 const uuid = require('uuid');
 const {google} = require('googleapis');
 const {ApiError, Provider} = require('./provider');
+const {default: PQueue} = require('p-queue');
 
 class GoogleProvider extends Provider {
 
@@ -14,7 +15,7 @@ class GoogleProvider extends Provider {
     ...conf
   }) {
     super(conf);
-    let {project, creds, workerServiceAccountId} = providerConfig;
+    let {project, creds, workerServiceAccountId, apiRateLimits = {}} = providerConfig;
     this.configSchema = 'config-google';
 
     assert(project, 'Must provide a project to google providers');
@@ -24,6 +25,17 @@ class GoogleProvider extends Provider {
     this.project = project;
     this.zonesByRegion = {};
     this.workerServiceAccountId = workerServiceAccountId;
+
+    // There are different rate limits per type of request
+    // as documented here: https://cloud.google.com/compute/docs/api-rate-limits
+    this.queues = {};
+    for (const type of ['query', 'get', 'list', 'opRead']) {
+      const {interval, intervalCap} = (apiRateLimits[type] || {});
+      this.queues[type] = new PQueue({
+        interval: interval || 100 * 1000, // Intervals are enforced every 100 seconds
+        intervalCap: intervalCap || 2000, // The calls we make are all limited 20/sec so 20 * 100 are allowed
+      });
+    }
 
     if (fakeCloudApis && fakeCloudApis.google) {
       this.ownClientEmail = 'whatever@example.com';
@@ -60,6 +72,14 @@ class GoogleProvider extends Provider {
       auth: client,
     });
     this.oauth2 = new google.auth.OAuth2();
+  }
+
+  async _enqueue(type, func) {
+    return await this.queues[type].add(async () => {
+      const result = await func();
+      return result;
+      // TODO: Pause if google says to pause
+    });
   }
 
   async setup() {
@@ -158,10 +178,10 @@ class GoogleProvider extends Provider {
     for (let i = 0; i < toSpawn; i++) {
       const region = regions[Math.floor(Math.random() * regions.length)];
       if (!this.zonesByRegion[region]) {
-        this.zonesByRegion[region] = (await this.compute.regions.get({
+        this.zonesByRegion[region] = (await this._enqueue('get', () => this.compute.regions.get({
           project: this.project,
           region,
-        })).data.zones;
+        }))).data.zones;
       }
       const zones = this.zonesByRegion[region];
       const zone = zones[Math.floor(Math.random() * zones.length)].split('/').slice(-1)[0];
@@ -175,7 +195,7 @@ class GoogleProvider extends Provider {
       let op;
 
       try {
-        const res = await this.compute.instances.insert({
+        const res = await this._enqueue('query', () => this.compute.instances.insert({
           project: this.project,
           zone,
           requestId: uuid.v4(), // This is just for idempotency
@@ -221,7 +241,7 @@ class GoogleProvider extends Provider {
               ],
             },
           },
-        });
+        }));
         op = res.data;
       } catch (err) {
         if (!err.errors) {
@@ -284,11 +304,11 @@ class GoogleProvider extends Provider {
 
     let res;
     try {
-      res = await this.compute.instances.get({
+      res = await this._enqueue('get', () => this.compute.instances.get({
         project: worker.providerData.project,
         zone: worker.providerData.zone,
         instance: worker.workerId,
-      });
+      }));
     } catch (err) {
       if (err.code !== 404) {
         throw err;
@@ -305,11 +325,11 @@ class GoogleProvider extends Provider {
     if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
       this.seen[worker.workerPoolId] += 1;
     } else if (['TERMINATED', 'STOPPED'].includes(status)) {
-      await this.compute.instances.delete({
+      await this._enqueue('query', () => this.compute.instances.delete({
         project: worker.providerData.project,
         zone: worker.providerData.zone,
         instance: worker.workerId,
-      });
+      }));
       await worker.modify(w => {
         w.state = states.STOPPED;
         if (deleteOp) {
@@ -382,7 +402,7 @@ class GoogleProvider extends Provider {
     }
 
     try {
-      operation = (await obj.get(args)).data;
+      operation = (await this._enqueue('opRead', () => obj.get(args))).data;
     } catch (err) {
       if (err.code !== 404) {
         throw err;
