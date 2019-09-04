@@ -101,10 +101,10 @@ tasks:
         - name: yarn changelog
           command: yarn changelog
         - name: taskcluster-client
-          # taskcluster-client tests depend on a "production" install of the rest of the monorepo,
-          # but only get devDependencies from the client's package.json
+          # taskcluster-client tests use taskcluster-lib-*, including taskcluster-lib-testing,
+          # and thus require a full install at the monorepo root (including devDependencies)
           install: >-
-              { yarn --frozen-lockfile --production || exit 99; } &&
+              { yarn --frozen-lockfile || exit 99; } &&
               cd clients/client &&
               { yarn --frozen-lockfile || exit 99; }
           command: >-
