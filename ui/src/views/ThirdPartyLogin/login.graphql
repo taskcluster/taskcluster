@@ -1,8 +1,0 @@
-query Client($clientId: ID!) {
-  client(clientId: $clientId) {
-    clientId
-    deleteOnExpiration
-  }
-
-  currentScopes
-}

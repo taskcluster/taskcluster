@@ -74,6 +74,7 @@ export default class AuthConsent extends Component {
       <form action="/login/oauth/authorize/decision" method="post">
         <input name="transaction_id" type="hidden" value={transactionID} />
         <input name="scope" type="hidden" value={scopes.join(' ')} />
+        <input name="clientId" type="hidden" value={clientId} />
         <div>
           <CardHeader
             className={classes.header}

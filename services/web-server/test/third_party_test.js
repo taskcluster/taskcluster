@@ -44,6 +44,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     });
     test('decision endpoint redirects to the third party page if user is not logged in', async function() {
       const formData = new URLSearchParams({
+        clientId: `test/test/test`,
         transaction_id: '123',
         scope: 'tags:get:*',
         expires: '3019/04/01',
@@ -150,6 +151,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
 
       let query = getQuery(res.header.location);
       const formData = new URLSearchParams({
+        clientId: query.get('clientId'),
         transaction_id: query.get('transactionID'),
         scope: query.get('scope'),
         expires: '3019/04/01',
@@ -264,14 +266,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         .ok(res => res.status === 302);
 
       let query = getQuery(res.header.location);
-      const scope = query.get('scope');
 
       // user consents and UI dialog POSTs back to
       // /login/oauth/authorize/decision
 
       res = await agent.post(url('/login/oauth/authorize/decision'))
+        .send(`clientId=${query.get('clientId')}`)
         .send(`transaction_id=${query.get('transactionID')}`)
-        .send(`scope=${scope}`)
+        .send(`scope=${query.get('scope')}`)
         .send(`description='test'`)
         .send('expires=3019/04/01')
         .redirects(0)
@@ -353,6 +355,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       // /login/oauth/authorize/decision
 
       res = await agent.post(url('/login/oauth/authorize/decision'))
+        .send(`clientId=${query.get('clientId')}`)
         .send(`transaction_id=${query.get('transactionID')}`)
         .send(`scope=${scope}`)
         .send(`description='test'`)
@@ -392,9 +395,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       let query = getQuery(res.header.location);
       const scope = query.get('scope');
       const expires = query.get('expires');
+      const clientId = query.get('clientId');
       assert.equal(query.get('client_id'), registeredClientId);
       assert.equal(expires, '3 days');
       assert.equal(scope, 'tags:get:*');
+      assert(clientId.startsWith(`test/test/${registeredClientId}-`));
       const transactionId = query.get('transactionID');
 
       // user consents and UI dialog POSTs back to
@@ -403,6 +408,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       const expiry = moment(new Date()).startOf('day').add(3, 'days').format('YYYY/MM/DD');
 
       res = await agent.post(url('/login/oauth/authorize/decision'))
+        .send(`clientId=${clientId}`)
         .send(`transaction_id=${transactionId}`)
         .send(`scope=${scope}`)
         .send(`description='test'`)
@@ -472,6 +478,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       // /login/oauth/authorize/decision
 
       res = await agent.post(url('/login/oauth/authorize/decision'))
+        .send(`clientId=${query.get('clientId')}`)
         .send(`transaction_id=${transactionId}`)
         .send(`scope=${scope}`)
         .send(`description='test'`)
