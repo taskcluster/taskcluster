@@ -152,6 +152,12 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
       return done(null, false);
     }
 
+    // Although we eventually delete expired rows, that only happens once per day
+    // so we need to check that the accessToken is not expired.
+    if (new Date(entry.clientDetails.expires) < new Date()) {
+      return done(null, false);
+    }
+
     const accessToken = new Buffer.from(taskcluster.slugid()).toString('base64');
 
     await AccessToken.create({
