@@ -331,6 +331,45 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       assert.equal(error.response.body.error, 'invalid_grant');
       assert(!response);
     });
+    test('InputError when trying to get credentials of an expired client', async function() {
+      const agent = await helper.signedInAgent();
+      const registeredClientId = 'test-token';
+
+      // user sent to /login/oauth/authorize with query arg
+
+      let res = await agent.get(url('/login/oauth/authorize' +
+        '?response_type=token' +
+        `&client_id=${registeredClientId}` +
+        '&redirect_uri=' + encodeURIComponent('https://test.example.com/cb') +
+        '&scope=tags:get:*' +
+        '&state=abc123'))
+        .redirects(0)
+        .ok(res => res.status === 302);
+
+      let query = getQuery(res.header.location);
+      const scope = query.get('scope');
+
+      // user consents and UI dialog POSTs back to
+      // /login/oauth/authorize/decision
+
+      console.log('hello!');
+
+      res = await agent.post(url('/login/oauth/authorize/decision'))
+        .send(`transaction_id=${query.get('transactionID')}`)
+        .send(`scope=${scope}`)
+        .send(`description='test'`)
+        .send('expires=2018/04/01')
+        .redirects(0)
+        .ok(res => res.status === 302);
+
+      query = getQuery(res.header.location, '#');
+
+      const [error] = await tryCatch(agent.get(url('/login/oauth/credentials'))
+        .set('authorization', `${query.get('token_type')} ${query.get('access_token')}`));
+
+      assert.equal(error.response.body.name, 'InputError');
+      assert.equal(error.response.body.message, 'Could not generate credentials for this access token');
+    });
   });
   suite('integration', function() {
     test('implicit flow', async function() {
@@ -398,7 +437,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     });
 
     test('authorization code flow', async function() {
-      const url = path => `http://127.0.0.1:${helper.serverPort}${path}`;
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-code';
       const redirectUri = 'https://test.example.com/cb';

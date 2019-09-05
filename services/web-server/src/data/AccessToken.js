@@ -33,7 +33,7 @@ const AccessToken = Entity.configure({
         clientId: { type: 'string' },
         description: { type: 'string' },
         scopes: { type: 'array' },
-        expires: {type: 'string', format: 'date-time'},
+        expires: { type: 'string', format: 'date-time' },
         deleteOnExpiration: { type: 'boolean' },
       },
       required: [

@@ -268,9 +268,15 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
     // Don't report much to the user, to avoid revealing sensitive information, although
     // it is likely in the service logs.
     const inputError = new WebServerError('InputError', 'Could not generate credentials for this access token');
-    const [tokenError, entry] = await tryCatch(AccessToken.load({ accessToken: req.accessToken }));
+    const entry = await AccessToken.load({ accessToken: req.accessToken }, true);
 
-    if (tokenError) {
+    if (!entry) {
+      throw inputError;
+    }
+
+    // Although we eventually delete expired rows, that only happens once per day
+    // so we need to check that the accessToken is not expired.
+    if (new Date(entry.clientDetails.expires) < new Date()) {
       throw inputError;
     }
 
