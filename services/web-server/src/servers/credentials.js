@@ -6,20 +6,14 @@ module.exports = () => async (request, response, next) => {
     return next();
   }
 
-  const accessToken = request.headers.authorization ? request.headers.authorization.replace('Bearer ', '') : '';
+  const credentials = JSON.parse(
+    Buffer.from(
+      request.headers.authorization.replace('Bearer ', ''),
+      'base64'
+    ).toString()
+  );
 
-  try {
-    const credentials = JSON.parse(
-      Buffer.from(
-        accessToken,
-        'base64'
-      ).toString()
-    );
-
-    Object.assign(request, { credentials, accessToken });
-  } catch (e) {
-    Object.assign(request, { accessToken });
-  }
+  Object.assign(request, { credentials });
 
   return next();
 };

@@ -9,6 +9,7 @@ const playground = require('graphql-playground-middleware-express').default;
 const passport = require('passport');
 const url = require('url');
 const credentials = require('./credentials');
+const oauth2AccessToken = require('./oauth2AccessToken');
 const oauth2 = require('./oauth2');
 
 module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor }) => {
@@ -52,12 +53,12 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
 
   app.use(passport.initialize());
   app.use(passport.session());
-  app.use(credentials());
   app.use(compression());
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(bodyParser.json());
   app.post(
     '/graphql',
+    credentials(),
     bodyParserGraphql.graphql({
       limit: '1mb',
     })
@@ -111,7 +112,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
   // 3. Exchange code for an OAuth2 token
   app.post('/login/oauth/token', token);
   // 4. Get Taskcluster credentials
-  app.get('/login/oauth/credentials', getCredentials);
+  app.get('/login/oauth/credentials', oauth2AccessToken(), getCredentials);
 
   // Error handling middleware
   app.use((err, req, res, next) => {
