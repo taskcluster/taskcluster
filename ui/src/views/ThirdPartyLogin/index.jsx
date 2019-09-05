@@ -42,7 +42,8 @@ export default class ThirdPartyLogin extends Component {
     const registeredClientId = query.client_id;
 
     if (
-      (state.formData && !data) ||
+      !data ||
+      state.formData ||
       !(data.currentScopes instanceof Array) ||
       !query.transactionID
     ) {

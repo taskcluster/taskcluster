@@ -283,7 +283,7 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
     }
 
     const { clientId, ...data } = entry.clientDetails;
-    const currentUser = await strategies[req.user.identityProviderId].userFromIdentity(req.user.identity);
+    const currentUser = await strategies[entry.identityProviderId].userFromIdentity(entry.identity);
 
     // Create permacreds to give admins the ability to audit and revoke
     // the access at any time and that the client scanner process will
