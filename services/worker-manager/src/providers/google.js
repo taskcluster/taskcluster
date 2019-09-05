@@ -81,11 +81,16 @@ class GoogleProvider extends Provider {
       return await queue.add(func, {priority: tries});
     } catch (err) {
       let backoff = this._backoffDelay;
+      let level = 'notice';
+      let reason = 'unknown';
       if (err.code === 403) { // google hands out 403 for rate limiting; back off significantly
         // google's interval is 100 seconds so let's try once optimistically and a second time to get it for sure
         backoff *= 50;
+        reason = 'rateLimit';
       } else if (err.code === 403 || err.code >= 500) { // For 500s, let's take a shorter backoff
         backoff *= Math.pow(2, tries); // Longest backoff here is half a minute
+        level = 'warning';
+        reason = 'errors';
       } else {
         // If we don't want to do anything special here, just throw and let the
         // calling code figure out what to do
@@ -93,8 +98,21 @@ class GoogleProvider extends Provider {
       }
 
       if (!queue.isPaused) {
+        this.monitor.log.googleProviderPaused({
+          providerId: this.providerId,
+          queueName: type,
+          reason,
+          queueSize: queue.size,
+          duration: backoff,
+        }, {level});
         queue.pause();
-        setTimeout(() => queue.start(), backoff);
+        setTimeout(() => {
+          this.monitor.log.googleProviderResumed({
+            providerId: this.providerId,
+            queueName: type,
+          });
+          queue.start();
+        }, backoff);
       }
 
       if (tries > 4) {

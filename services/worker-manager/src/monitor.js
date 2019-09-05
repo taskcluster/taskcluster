@@ -56,4 +56,33 @@ monitorManager.register({
   },
 });
 
+monitorManager.register({
+  name: 'googleProviderPaused',
+  title: 'Google Provider Paused',
+  type: 'google-provider-paused',
+  version: 1,
+  level: 'any',
+  description: 'We have either hit an api rate limit or 500s from google.',
+  fields: {
+    providerId: 'Which provider has hit a limit (each provider manages a single project)',
+    queueName: 'Which queue is paused -- there is one for each class of api request',
+    reason: 'Either `errors` or `rateLimit`.',
+    queueSize: 'Number of requests remaining in the queue when it is paused.',
+    duration: 'Length of time the queue is paused for in ms.',
+  },
+});
+
+monitorManager.register({
+  name: 'googleProviderResumed',
+  title: 'Google Provider Resumed',
+  type: 'google-provider-resumed',
+  version: 1,
+  level: 'notice',
+  description: 'A google provider has resumed api requests to google.',
+  fields: {
+    providerId: 'Which provider has hit a limit (each provider manages a single project)',
+    queueName: 'Which queue is paused -- there is one for each class of api request',
+  },
+});
+
 module.exports = monitorManager;
