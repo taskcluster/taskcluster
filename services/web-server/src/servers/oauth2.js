@@ -294,6 +294,16 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
       throw inputError;
     }
 
+    // Move expires back by 30 seconds to ensure the user refreshes well in advance of the
+    // actual credential expiration time
+    client.expires.setSeconds(client.expires.getSeconds() - 30);
+
+    monitor.log.createCredentials({
+      clientId: client.clientId,
+      expires: client.expires,
+      userIdentity: req.user.identity,
+    });
+
     res.send({
       expires: client.expires,
       credentials: {
