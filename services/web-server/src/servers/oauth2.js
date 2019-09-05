@@ -181,10 +181,9 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
     }, async (client, user, scope, done) => {
       // Skip consent form if the client is whitelisted
       if (client.whitelisted && user && _.isEqual(client.scope.sort(), scope.sort())) {
-        // Resetting the access token is the default behavior for whitelisted clients.
-        // One less click in the UI.
-        await auth.resetAccessToken(user.identity);
-
+        // If you return `true` in the second argument (the `immediate` argument) it will skip the dialog,
+        // automatically authorizing the decision.
+        // It's called to decide whether to immediately approve the request and return a redirect to the `redirect_uri`.
         return done(null, true, { scope });
       }
 
@@ -282,14 +281,19 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
     }
 
     const { clientId, ...data } = entry.clientDetails;
+    const currentUser = await strategies[req.user.identityProviderId].userFromIdentity(req.user.identity);
 
     // Create permacreds to give admins the ability to audit and revoke
     // the access at any time and that the client scanner process will
     // automatically disable any clients that have too many scopes
-    const [clientError, client] = await tryCatch(auth.createClient(clientId, {
-      ...data,
-      expires: new Date(data.expires),
-    }));
+    const [clientError, client] = await tryCatch(
+      auth
+        .use({ authorizedScopes: currentUser.scopes() })
+        .createClient(clientId, {
+          ...data,
+          expires: new Date(data.expires),
+        })
+    );
 
     if (clientError) {
       throw inputError;
