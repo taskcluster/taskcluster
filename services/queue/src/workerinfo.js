@@ -238,13 +238,9 @@ class WorkerInfo {
     let result;
 
     if (worker) {
-      try {
-        result = await worker.modify((entity) => {
-          entity.expires = new Date(expires || entity.expires);
-        });
-      } catch (err) {
-        throw err;
-      }
+      result = await worker.modify((entity) => {
+        entity.expires = new Date(expires || entity.expires);
+      });
     } else {
       result = await this.Worker.create({
         provisionerId,

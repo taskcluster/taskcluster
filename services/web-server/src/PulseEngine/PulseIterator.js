@@ -13,8 +13,8 @@ module.exports = class PulseIterator {
    */
   constructor(pulseEngine, subscriptions) {
     this.pulseEngine = pulseEngine;
-    this.pullQueue = List(); // eslint-disable-line babel/new-cap
-    this.pushQueue = List(); // eslint-disable-line babel/new-cap
+    this.pullQueue = List();
+    this.pushQueue = List();
     this.listening = true;
     this.subscriptionId = this.pulseEngine.subscribe(
       subscriptions,

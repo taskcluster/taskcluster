@@ -77,7 +77,7 @@ const expressError = ({errorCodes, entry, monitor}) => {
     };
 
     message = message.replace(/{{([a-zA-Z0-9_-]+)}}/g, (text, key) => {
-      let value = details.hasOwnProperty(key) ? details[key] : text;
+      let value = key in details ? details[key] : text;
       if (typeof value !== 'string') {
         value = JSON.stringify(value, null, 2);
       }

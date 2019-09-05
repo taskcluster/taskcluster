@@ -97,7 +97,12 @@ class PulseConsumer {
     this.stopHandlingConnections();
 
     // and drain the channel..
-    return this._drainChannel();
+    await this._drainChannel();
+
+    // (for testing)
+    if (this._stoppedCallback) {
+      this._stoppedCallback();
+    }
   }
 
   /**

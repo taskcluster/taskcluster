@@ -6,9 +6,7 @@
   require('./normalize'),
   require('./expressions'),
 ].forEach(submodule => {
-  for (const key in submodule) {
-    if (submodule.hasOwnProperty(key)) {
-      exports[key] = submodule[key];
-    }
+  for (const key of Object.keys(submodule)) {
+    exports[key] = submodule[key];
   }
 });
