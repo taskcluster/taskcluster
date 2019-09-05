@@ -7897,6 +7897,33 @@
           "version": 1
         },
         {
+          "description": "We have either hit an api rate limit or 500s from google.",
+          "fields": {
+            "duration": "Length of time the queue is paused for in ms.",
+            "providerId": "Which provider has hit a limit (each provider manages a single project)",
+            "queueName": "Which queue is paused -- there is one for each class of api request",
+            "queueSize": "Number of requests remaining in the queue when it is paused.",
+            "reason": "Either `errors` or `rateLimit`."
+          },
+          "level": "any",
+          "name": "googleProviderPaused",
+          "title": "Google Provider Paused",
+          "type": "google-provider-paused",
+          "version": 1
+        },
+        {
+          "description": "A google provider has resumed api requests to google.",
+          "fields": {
+            "providerId": "Which provider has hit a limit (each provider manages a single project)",
+            "queueName": "Which queue is paused -- there is one for each class of api request"
+          },
+          "level": "notice",
+          "name": "googleProviderResumed",
+          "title": "Google Provider Resumed",
+          "type": "google-provider-resumed",
+          "version": 1
+        },
+        {
           "description": "A connection to Pulse has been established.  Taskcluster services\nautomatically reconnect to Pulse periodically and in the event of\nan error, but rapid reconnections may signal a Pulse failure.",
           "fields": {
           },
