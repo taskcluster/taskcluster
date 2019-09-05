@@ -15,7 +15,7 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => 
           throw unauthorizedError;
         }
 
-        const credentials = await generateCredentials({
+        const credsResponse = await generateCredentials({
           cfg,
           strategy: strategies[req.user.identityProviderId],
           identity: req.user.identity,
@@ -24,7 +24,7 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => 
 
         await regenerateSession(req);
 
-        return credentials;
+        return credsResponse;
       })
     );
   });
