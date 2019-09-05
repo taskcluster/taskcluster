@@ -1,5 +1,4 @@
 const containers = require('../src/containers');
-const uuid = require('uuid');
 const assert = require('assert');
 const helper = require('./helper');
 const azure = require('fast-azure-storage');
@@ -11,11 +10,13 @@ const sorted = (arr) => {
 };
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+  helper.withCfg(mock, skipping);
+
   if (mock) {
     return; // This test file only works on real things apparently
   }
 
-  const containerName = `auth-test-${uuid.v4()}`;
+  const containerName = helper.containerName;
   let credentials;
   let roles;
 
@@ -47,7 +48,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
         // already deleted, so nothing to do
         // NOTE: really, this doesn't work -- the container doesn't register as existing
         // before the tests are complete, so we "leak" containers despite this effort to
-        // clean them up.
+        // clean them up.  test/cleanup.js cleans up after us.
       }
     }
   });

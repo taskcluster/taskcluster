@@ -24,6 +24,7 @@ suiteSetup(async function() {
 });
 
 exports.rootUrl = `http://localhost:60552`;
+exports.containerName = `auth-test-${uuid.v4()}`;
 
 withMonitor(exports);
 
@@ -50,7 +51,7 @@ exports.secrets = new Secrets({
       {env: 'SENTRY_HOSTNAME', cfg: 'sentry.hostname'},
     ],
     gcp: [
-      {env: 'GCP_CREDENTIALS_ALLOWED_PROJECTS', cfg: 'gcpCredentials.allowedProjects', name: 'allowedProjects', mock: []},
+      {env: 'GCP_CREDENTIALS_ALLOWED_PROJECTS', cfg: 'gcpCredentials.allowedProjects', name: 'allowedProjects', mock: {}},
     ],
   },
   load: exports.load,
@@ -115,7 +116,6 @@ exports.withRoles = (mock, skipping, options={}) => {
     }
 
     await exports.load('cfg');
-    exports.containerName = `auth-test-${uuid.v4()}`;
     exports.load.cfg('app.rolesContainerName', exports.containerName);
 
     if (mock) {
@@ -147,7 +147,7 @@ exports.withRoles = (mock, skipping, options={}) => {
         // already deleted, so nothing to do
         // NOTE: really, this doesn't work -- the container doesn't register as existing
         // before the tests are complete, so we "leak" containers despite this effort to
-        // clean them up.
+        // clean them up.  test/cleanup.js cleans up after us.
       }
     }
   };
