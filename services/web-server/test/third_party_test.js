@@ -352,8 +352,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       // user consents and UI dialog POSTs back to
       // /login/oauth/authorize/decision
 
-      console.log('hello!');
-
       res = await agent.post(url('/login/oauth/authorize/decision'))
         .send(`transaction_id=${query.get('transactionID')}`)
         .send(`scope=${scope}`)
@@ -429,10 +427,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       res = await agent.get(url('/login/oauth/credentials'))
         .set('authorization', `${query.get('token_type')} ${query.get('access_token')}`);
 
+      const thirtySecondsBefore = new Date(expiry).setSeconds(new Date(expiry).getSeconds() - 30);
+
       assert.deepEqual(Object.keys(res.body).sort(), ['expires', 'credentials'].sort());
       assert.deepEqual(Object.keys(res.body.credentials).sort(), ['clientId', 'accessToken'].sort());
-
-      assert.equal(res.body.expires, new Date(expiry).toISOString());
+      assert.equal(res.body.expires, new Date(thirtySecondsBefore).toISOString());
       assert(res.body.credentials.clientId.startsWith(`test/test/${registeredClientId}-`));
     });
 
@@ -507,9 +506,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       res = await agent.get(url('/login/oauth/credentials'))
         .set('authorization', `${res.body.token_type} ${res.body.access_token}`);
 
+      const thirtySecondsBefore = new Date(expiry).setSeconds(new Date(expiry).getSeconds() - 30);
+
       assert.deepEqual(Object.keys(res.body).sort(), ['expires', 'credentials'].sort());
       assert.deepEqual(Object.keys(res.body.credentials).sort(), ['clientId', 'accessToken'].sort());
-      assert.equal(res.body.expires, new Date(expiry).toISOString());
+      assert.equal(res.body.expires, new Date(thirtySecondsBefore).toISOString());
       assert(res.body.credentials.clientId.startsWith(`test/test/${registeredClientId}-`));
     });
   });
