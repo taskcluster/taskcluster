@@ -6,7 +6,6 @@ const builder = require('../src/api');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
 const slugid = require('slugid');
-const azure = require('fast-azure-storage');
 const uuid = require('uuid');
 const Builder = require('taskcluster-lib-api');
 const SchemaSet = require('taskcluster-lib-validate');
@@ -130,25 +129,12 @@ exports.withRoles = (mock, skipping, options={}) => {
     if (skipping()) {
       return;
     }
+
+    // zero out the roles for each suite
     if (mock) {
       exports.Roles.roles = [];
     } else {
-      const cfg = await exports.load('cfg');
-      const blobService = new azure.Blob({
-        accountId: cfg.azure.accountId,
-        accountKey: cfg.azure.accountKey,
-      });
-      try {
-        await blobService.deleteContainer(exports.containerName);
-      } catch (e) {
-        if (e.code !== 'ResourceNotFound') {
-          throw e;
-        }
-        // already deleted, so nothing to do
-        // NOTE: really, this doesn't work -- the container doesn't register as existing
-        // before the tests are complete, so we "leak" containers despite this effort to
-        // clean them up.  test/cleanup.js cleans up after us.
-      }
+      await exports.Roles.modify(() => ([]));
     }
   };
   if (!options.orderedTests) {
