@@ -87,10 +87,6 @@ exports.withServer = (mock, skipping) => {
   });
 };
 
-/**
- * make a queue object with the `task` method stubbed out, and with
- * an `addTask` method to add fake tasks.
- */
 const stubbedAuth = () => {
   const auth = new taskcluster.Auth({
     rootUrl: exports.rootUrl,

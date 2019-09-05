@@ -37,4 +37,4 @@ Taskcluster can integrate with GitHub in two complementary ways:
 
 ## Third Party
 
-Third party sites can fetch Taskcluster credentials for their users. See [Third Party](./third-party.md) for more details.
+Third party sites can fetch Taskcluster credentials for their users. See [Third Party](./third-party) for more details.

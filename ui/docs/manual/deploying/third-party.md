@@ -10,7 +10,7 @@ This is an array of clients where each client has the following properties:
 --- | --- | --- |
 | `clientId` | ✓ | The client's ID. |
 | `responseType` | ✓ | The value MUST be one of `code` for requesting an authorization code or `token` for requesting an access token (implicit grant). |
-| `scope` | ✓ | An array of Taskcluser scopes the client is authorized to grant. This can end with `*`. |
+| `scope` | ✓ | An array of Taskcluser scopes the client is authorized to receive. This can end with `*`. |
 | `redirectUri` | ✓ | An array of URIs to which the server is allowed to redirect the user.  |
-| `whitelisted` | | A boolean whxpires:ere if `true`, the redirect flow won't require user interaction. Note that user interaction will always be requested when `responseType=token`. |
+| `whitelisted` | | A boolean where if `true`, the redirect flow won't require user interaction. Note that user interaction will always be requested when `responseType=token`. |
 | `maxExpires` | ✓ | The maximum expiration time for issued Taskcluster credentials in a format that `taskcluster-client`'s [`fromNow`](../../../clients/client#relative-date-time-utilities) method understands. That will prevent anyone from requesting a client with a very long expiration time. |
