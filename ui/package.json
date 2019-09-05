@@ -118,7 +118,7 @@
     "neutrino": "9.0.0-rc.0",
     "node-fetch": "^2.2.0",
     "raw-loader": "^3.0.0",
-    "react-styleguidist": "^7.3.11",
+    "react-styleguidist": "^9.0.0",
     "webpack": "^4.30.0",
     "webpack-cli": "^3.3.1",
     "webpack-dev-server": "^3.3.1"
