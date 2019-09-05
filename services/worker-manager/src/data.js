@@ -123,54 +123,59 @@ WorkerPool.expire = async function(monitor) {
 WorkerPool.prototype.reportError = async function({kind, title, description, extra={}}) {
   const errorId = slugid.v4();
 
-  if (this.emailOnError) {
-    let extraInfo = '';
-    if (Object.keys(extra).length) {
-      extraInfo = `
-It includes the extra information:
+  try {
+    if (this.emailOnError) {
+      let extraInfo = '';
+      if (Object.keys(extra).length) {
+        extraInfo = `
+            It includes the extra information:
+            
+            \`\`\`
+            ${yaml.safeDump(extra)}
+            \`\`\`
+                  `.trim();
+      }
 
-\`\`\`
-${yaml.safeDump(extra)}
-\`\`\`
-      `.trim();
-    }
-    await this.notify.email({
-      address: this.owner,
-      subject: `Taskcluster Worker Manager Error: ${title}`,
-      content: `
-Worker Manager has encountered an error while trying to provision the worker pool ${this.workerPoolId}:
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-${description}
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-ErrorId: ${errorId}
-
-${extraInfo}
+      await this.notify.email({
+        address: this.owner,
+        subject: `Taskcluster Worker Manager Error: ${title}`,
+        content: `
+            Worker Manager has encountered an error while trying to provision the worker pool ${this.workerPoolId}:
+            
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            
+            ${description}
+            
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            
+            ErrorId: ${errorId}
+            
+            ${extraInfo}
       `.trim(),
+      });
+    }
+
+    await this.monitor.log.workerError({
+      workerPoolId: this.workerPoolId,
+      errorId,
+      reported: new Date(),
+      kind,
+      title,
+      description,
+    });
+
+  } finally {
+    // eslint-disable-next-line no-unsafe-finally
+    return await this.WorkerPoolError.create({
+      workerPoolId: this.workerPoolId,
+      errorId,
+      reported: new Date(),
+      kind,
+      title,
+      description,
+      extra,
     });
   }
-
-  await this.monitor.log.workerError({
-    workerPoolId: this.workerPoolId,
-    errorId,
-    reported: new Date(),
-    kind,
-    title,
-    description,
-  });
-
-  return await this.WorkerPoolError.create({
-    workerPoolId: this.workerPoolId,
-    errorId,
-    reported: new Date(),
-    kind,
-    title,
-    description,
-    extra,
-  });
 };
 
 const WorkerPoolError = Entity.configure({
