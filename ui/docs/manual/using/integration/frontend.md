@@ -47,7 +47,6 @@ container to show the results of our actions.
 To start, let's add a few library dependencies before the closing body tag:
 
 ```html
-<script src="http://cdn.auth0.com/js/auth0/8.9.3/auth0.min.js"></script>
 <script src="https://unpkg.com/hawk/lib/browser.js"></script>
 <script>window.hawk = hawk; /* hawk's "browser" client doesn't expose itself on window */</script>
 <script src="https://wzrd.in/standalone/query-string"></script>
