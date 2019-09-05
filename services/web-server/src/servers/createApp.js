@@ -74,12 +74,11 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
   }
 
   passport.serializeUser((user, done) => {
-    const { accessToken, identityProviderId, identity } = user;
+    const { identityProviderId, identity } = user;
 
     return done(null, {
       identityProviderId,
       identity,
-      accessToken,
     });
   });
   passport.deserializeUser(async (obj, done) => {

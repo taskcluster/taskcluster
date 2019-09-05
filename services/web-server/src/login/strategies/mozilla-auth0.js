@@ -203,7 +203,6 @@ module.exports = class MozillaAuth0 {
           const exp = await this.expFromIdToken(extraParams.id_token);
 
           done(null, {
-            accessToken: extraParams.id_token,
             profile,
             providerExpires: new Date(exp * 1000),
             identityProviderId: 'mozilla-auth0',
