@@ -184,12 +184,12 @@
   },
   "renovate": {
     "extends": [
-      "config:base",
-      ":preserveSemverRanges"
+      "config:base"
     ],
     "schedule": "at any time",
     "prHourlyLimit": 5,
     "prConcurrentLimit": 10,
+    "rangeStrategy": "update-lockfile",
     "gomod": {
       "ignoreDeps": [
         "golang.org/x/tools"
