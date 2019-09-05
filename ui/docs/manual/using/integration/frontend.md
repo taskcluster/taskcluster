@@ -13,7 +13,7 @@ Taskcluster implements the [OAuth2 protocol](https://tools.ietf.org/html/rfc6749
 supporting both the "Implicit" and "Authorization Code" flows.
 The "Resource Owner Password Credentials" and "Client Credentials" flows are not supported.
 
-Clients are pre-defined, and each pre-defined client indicates which flow it uses (and cannot use both).
+Clients are [pre-defined](/docs/manual/deploying/third-party), and each pre-defined client indicates which flow it uses (and cannot use both).
 Some clients are whitelisted, meaning that user consent is not required.
 
 The Taskcluster credentials will eventually expire, but can be requested
@@ -24,9 +24,9 @@ Taskcluster API and refresh when necessary.
 
 Let’s begin working on a simple login page. For brevity and demonstration purposes, we will
 be using a single HTML file for this, but you can adapt these techniques into any more complex
-application, including those using ES imports. We will also pretend the root URL of the
+application, including those using ES imports. We will also pretend the rootUrl of the
 Taskcluster deployment and the HTML demo file are hosted on
-`http://localhost:5080` and `http://localhost:4000` respectively. Here is the base page markup
+`https://tc.example.com` and `http://localhost:4000` respectively. Here is the base page markup
 we are working with:
 
 ```html
@@ -34,7 +34,7 @@ we are working with:
 <html>
   <head><title>Taskcluster Third Party Login Demo</title></head>
   <body>
-    <a id="action-link" href="http://localhost:5080/login/oauth/authorize?client_id=treeherder&redirect_uri=http%3A%2F%2Flocalhost%3A4000&response_type=code&scope=tags%3Aget%3A*&state=99&expires=1+week">Login</a><br />
+    <a id="action-link" href="https://tc.example.com/login/oauth/authorize?client_id=demo-app&redirect_uri=http%3A%2F%2Flocalhost%3A4000&response_type=code&scope=tags%3Aget%3A*&state=99&expires=1+week">Login</a><br />
     <pre id="status"></pre>
   </body>
 </html>
@@ -72,13 +72,17 @@ The URL takes the following query parameters:
 
 | Parameter | Required | Description |
 | --- | --- | --- |
-| response_type |✓ |The value MUST be "code" for requesting an authorization code, or "token” for requesting an access token. |
+| response_type |✓ |The value must be "code" for requesting an authorization code, or "token” for requesting an access token. |
 | client_id | ✓ | The registered OAuth client. |
 | redirect_uri | ✓ | The URL to which the browser should be redirected after authorization. |
-| scope | ✓ | | An array of URIs to which the server is allowed to redirect the user. |
-| state | Optional (strongly recommended) | An opaque value used by the client to maintain state between the request and callback.  The authorization server includes this value when redirecting the user-agent back to the client.  The parameter SHOULD be used for preventing cross-site request forgery. |
-| expires | Optional | The requested lifetime of the resulting Taskcluster credentials, in a format understood by [`fromNow`](), defaulting to the registered OAuth client `maxExpires` value. |
+| scope | ✓ | Taskcluser scopes the client is authorized to receive. |
+| state | | An opaque value used by the client to maintain state between the request and callback. |
+| expires | | The requested lifetime of the resulting Taskcluster credentials, in a format understood by [`fromNow`](../../../../clients/client#relative-date-time-utilities). |
 
+Remarks:
+* `scope` can end with `*`. Scopes are space delimited (e.g., `scope=scopeA+scopeB&...`).
+* `state` is **strongly recommended**. The authorization server includes this value when redirecting the user-agent back to the client. The parameter should be used for preventing cross-site request forgery.
+* `expires` defaults to the registered OAuth client `maxExpires` value if the parameter is not provided.
 
 Once the sign in is complete, Taskcluster will
 redirect back to the `redirect_uri` you specified in the URL.
@@ -95,6 +99,8 @@ Next, the client requests an access token from the authorization server’s toke
 including the authorization code received in the previous step.
 The token endpoint is `<rootUrl>/login/oauth/token`.
 
+_Note: A third party Taskcluster access token is different than the access token property of the resulting Taskcluster credentials. The former cannot be used to access protected Taskcluster endpoints._
+
 ```js
 if (window.location.search) {
   const qs = parseQuery(window.location.search);
@@ -104,6 +110,7 @@ if (window.location.search) {
     // The list of error codes can be found in https://tools.ietf.org/html/rfc6749#section-4.1.2.1
     status.innerText = qs.error;
   } else if (qs.state === '99') {
+    // See below for the implementation of `fetchToken`
     fetchToken(qs.code).then(data => {
       const thirdPartyAccessToken = data.access_token;
     });
@@ -124,9 +131,11 @@ if (window.location.search) {
     // The list of error codes can be found in https://tools.ietf.org/html/rfc6749#section-4.1.2.1
     status.innerText = qs.error;
   } else if (qs.state === '99') {
+    // See below for the implementation of `fetchToken`
     fetchToken(qs.code).then(data => {
       const thirdPartyAccessToken = data.access_token;
       // Exchange the third party token for Taskcluster credentials
+      // See below for the implementation of `fetchCredentials`
       fetchCredentials(thirdPartyAccessToken).then(data => {
         // Let’s save the Taskcluster credentials, update the UI
         // and tell the user
@@ -194,7 +203,7 @@ here is the full code we wrote in order to make this happen:
 <html>
   <head><title>Taskcluster Login Demo</title></head>
   <body>
-    <a id="action-link" href="http://localhost:5080/login/oauth/authorize?client_id=treeherder&redirect_uri=http%3A%2F%2Flocalhost%3A4000&response_type=code&scope=tasgs%3Aget%3A*&state=99&expires=1+week">Login</a><br />
+    <a id="action-link" href="https://tc.example.com/login/oauth/authorize?client_id=demo-app&redirect_uri=http%3A%2F%2Flocalhost%3A4000&response_type=code&scope=tasgs%3Aget%3A*&state=99&expires=1+week">Login</a><br />
     <pre id="status"></pre>
     <script src="https://unpkg.com/hawk/lib/browser.js"></script>
     <script>
@@ -208,7 +217,7 @@ here is the full code we wrote in order to make this happen:
     const link = document.getElementById('action-link');
     const status = document.getElementById('status');
     // `rootUrl` should be pointing to the deployment target
-    const rootUrl = 'http://localhost:5080';
+    const rootUrl = 'https://tc.example.com';
     let credentials;
 
 
@@ -227,7 +236,7 @@ here is the full code we wrote in order to make this happen:
     function fetchToken(code) {
       return request(`${rootUrl}/login/oauth/token`, {
         method: 'POST',
-        body: `grant_type=authorization_code&code=${code}&redirect_uri=${encodeURIComponent(window.origin)}&client_id=treeherder`,
+        body: `grant_type=authorization_code&code=${code}&redirect_uri=${encodeURIComponent(window.origin)}&client_id=demo-app`,
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       })
     }
