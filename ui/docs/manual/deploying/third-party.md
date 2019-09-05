@@ -13,4 +13,4 @@ This is an array of clients where each client has the following properties:
 | `scope` | ✓ | An array of Taskcluser scopes the client is authorized to receive. This can end with `*`. |
 | `redirectUri` | ✓ | An array of URIs to which the server is allowed to redirect the user.  |
 | `whitelisted` | | A boolean where if `true`, the redirect flow won't require user interaction. Note that user interaction will always be requested when `responseType=token`. |
-| `maxExpires` | ✓ | The maximum expiration time for issued Taskcluster credentials in a format that `taskcluster-client`'s [`fromNow`](../../../clients/client#relative-date-time-utilities) method understands. That will prevent anyone from requesting a client with a very long expiration time. |
+| `maxExpires` | ✓ | The maximum expiration time for issued Taskcluster credentials in a format that `taskcluster-client`'s [`fromNow`](../../../clients/client#relative-date-time-utilities) method understands. |

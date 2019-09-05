@@ -116,7 +116,14 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
 
   // Error handling middleware
   app.use((err, req, res, next) => {
-    res.status(500).json(err);
+    // Minimize the amount of information we disclose. The err could potentially disclose something to an attacker.
+    const error = { code: err.code, name: err.name };
+
+    if (err.name === 'InputError') {
+      Object.assign(error, { message: err.message });
+    }
+
+    res.status(500).json(error);
   });
 
   return app;

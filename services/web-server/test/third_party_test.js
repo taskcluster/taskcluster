@@ -248,7 +248,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         .ok(res => res.status === 302));
 
       assert.equal(error.response.body.name, 'ForbiddenError');
-      assert.equal(error.response.body.status, 403);
     });
     test('maxExpires is respected', async function() {
       const agent = await helper.signedInAgent();

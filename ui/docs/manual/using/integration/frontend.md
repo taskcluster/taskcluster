@@ -71,7 +71,7 @@ The URL takes the following query parameters:
 
 | Parameter | Required | Description |
 | --- | --- | --- |
-| response_type |✓ |The value must be "code" for requesting an authorization code, or "token” for requesting an access token. |
+| response_type | ✓ |The value must be "code" for requesting an authorization code, or "token” for requesting an access token. |
 | client_id | ✓ | The registered OAuth client. |
 | redirect_uri | ✓ | The URL to which the browser should be redirected after authorization. |
 | scope | ✓ | Taskcluser scopes the client is authorized to receive. |
