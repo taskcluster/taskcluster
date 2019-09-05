@@ -22,7 +22,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
   };
 
   suite('unit', function() {
-    test('authorization endpoint redirects to the root page if user is not logged in', async function() {
+    test('authorization endpoint redirects to the third party page if user is not logged in', async function() {
       const registeredClientId = 'test-code';
       const query = new URLSearchParams({
         response_type: 'token',
@@ -40,9 +40,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         .redirects(0)
         .ok(res => res.status === 302);
 
-      assert.equal(res.header.location, `/?${query}`);
+      assert.equal(res.header.location, `/third-party?${query}`);
     });
-    test('decision endpoint redirects to the root page if user is not logged in', async function() {
+    test('decision endpoint redirects to the third party page if user is not logged in', async function() {
       const formData = new URLSearchParams({
         transaction_id: '123',
         scope: 'tags:get:*',
@@ -58,7 +58,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         .redirects(0)
         .ok(res => res.status === 302);
 
-      assert.equal(res.header.location, '/');
+      assert.equal(res.header.location, '/third-party');
     });
     test('unauthorized_client when mismatch in redirect_uri', async function() {
       const agent = await helper.signedInAgent();

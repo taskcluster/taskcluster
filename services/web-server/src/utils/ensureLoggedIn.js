@@ -1,12 +1,11 @@
 const parseurl = require('parseurl');
-const path = require('path');
 
 /**
- * Redirect user to login page if not authenticated.
+ * Redirect user to a path if not authenticated. Defaults to /third-party.
  */
-module.exports = (req, res, next) => {
+module.exports = (path = '/third-party') => (req, res, next) => {
   if (!req.user) {
-    res.redirect(path.join('/', parseurl(req).search || ''));
+    res.redirect(`${path}${parseurl(req).search || ''}`);
   } else {
     next();
   }

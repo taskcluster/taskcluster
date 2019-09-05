@@ -165,7 +165,7 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
   }));
 
   const authorization = [
-    ensureLoggedIn,
+    ensureLoggedIn(),
     server.authorization((clientID, redirectURI, scope, done) => {
       const client = findRegisteredClient(clientID);
 
@@ -219,7 +219,7 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
   ];
 
   const decision = [
-    ensureLoggedIn,
+    ensureLoggedIn(),
     server.decision((req, done) => {
       const { scope, description, expires } = req.body;
 
