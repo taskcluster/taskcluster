@@ -17,8 +17,6 @@ const AuthorizationCode = Entity.configure({
     identity: Entity.types.String,
     // The name of the login strategy used
     identityProviderId: Entity.types.String,
-    // The access token we give to third parties required to get Taskcluster credentials
-    accessToken: Entity.types.EncryptedText,
     // The expiration time of the table entry
     expires: Entity.types.Date,
     /**

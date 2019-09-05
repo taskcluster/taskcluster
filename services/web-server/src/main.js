@@ -179,7 +179,6 @@ const load = loader(
           credentials: cfg.taskcluster.credentials,
         }),
         signingKey: cfg.azure.signingKey,
-        cryptoKey: cfg.azure.cryptoKey,
       }),
     },
 
@@ -195,6 +194,7 @@ const load = loader(
           credentials: cfg.taskcluster.credentials,
         }),
         signingKey: cfg.azure.signingKey,
+        cryptoKey: cfg.azure.cryptoKey,
       }),
     },
 

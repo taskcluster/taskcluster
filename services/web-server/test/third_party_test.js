@@ -484,6 +484,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       query = getQuery(res.header.location);
 
       assert.equal(query.get('state'), 'abc123');
+
       if (query.has('error')) {
         throw new Error(query.get('error'));
       }

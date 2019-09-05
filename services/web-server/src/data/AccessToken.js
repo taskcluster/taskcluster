@@ -8,7 +8,7 @@ const AccessToken = Entity.configure({
   signEntities: true,
   properties: {
     // The access token we give to third parties required to get Taskcluster credentials
-    accessToken: Entity.types.String,
+    accessToken: Entity.types.EncryptedText,
     // The client identifier issued to the client during the registration process
     clientId: Entity.types.String,
     // The redirection endpoint URI after completing interaction with the resource owner

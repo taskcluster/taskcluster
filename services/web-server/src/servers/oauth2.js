@@ -108,8 +108,6 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
       redirectUri: redirectURI,
       identity: user.identity,
       identityProviderId: user.identityProviderId,
-      // The access token we give to third parties
-      accessToken: new Buffer.from(taskcluster.slugid()).toString('base64'),
       // A maximum of 10 minutes is recommended in https://tools.ietf.org/html/rfc6749#section-4.1.2
       expires: taskcluster.fromNow('10 minutes'),
       clientDetails: {
@@ -148,19 +146,22 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
       return done(null, false);
     }
 
+    const accessToken = new Buffer.from(taskcluster.slugid()).toString('base64');
+
     await AccessToken.create({
       // OAuth2 client
       clientId: entry.clientId,
       redirectUri: redirectURI,
       identity: entry.identity,
       identityProviderId: entry.identityProviderId,
-      accessToken: entry.accessToken,
+      // The access token we give to third parties
+      accessToken,
       // This table is used alongside the AuthorizationCode table which has a 10 minute recommended expiration
       expires: taskcluster.fromNow('10 minutes'),
       clientDetails: entry.clientDetails,
     }, true);
 
-    return done(null, entry.accessToken);
+    return done(null, accessToken);
   }));
 
   const authorization = [
