@@ -5268,10 +5268,10 @@ tar@^4:
     safe-buffer "^5.1.2"
     yallist "^3.0.2"
 
-taskcluster-lib-urls@^10.0.0:
-  version "10.1.1"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-urls/-/taskcluster-lib-urls-10.1.1.tgz#67d5b9449b947e5234eafdd15c46267dde29bf74"
-  integrity sha512-tdrK++rCX73FMXk/cXwS6RLTjA3pX8hJlxg1ECLs3L3llCOPMNhQ4wi6lb6yMgHc/s5on/Edj6AlAH7gkxzgPg==
+taskcluster-lib-urls@^12.0.0:
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-urls/-/taskcluster-lib-urls-12.0.0.tgz#f56190eec9e9597d37a42ad0e7f461e8e0e6732b"
+  integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 teamwork@3.x.x:
   version "3.1.0"
