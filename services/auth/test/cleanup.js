@@ -56,6 +56,8 @@ suite('Test Cleanup', function() {
   });
 
   test('cleanup testing tables (for all services)', async function() {
+    this.timeout(0);
+
     const {accountId, accountKey: accessKey} = helper.secrets.get('azure');
     const table = new azure.Table({accountId, accessKey});
 
