@@ -431,7 +431,11 @@ export default class WMWorkerPoolEditor extends Component {
               onError={onDialogActionError}
               error={dialogError}
               title="Delete Worker Pool?"
-              body={<Typography>This will delete the Worker Pool.</Typography>}
+              body={
+                <Typography>
+                  This will delete the Worker Pool {workerPool.workerPoolId1}.
+                </Typography>
+              }
               confirmText="Delete Worker Pool"
             />
           )}
