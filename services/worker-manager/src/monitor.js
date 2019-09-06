@@ -57,14 +57,14 @@ monitorManager.register({
 });
 
 monitorManager.register({
-  name: 'googleProviderPaused',
-  title: 'Google Provider Paused',
-  type: 'google-provider-paused',
+  name: 'cloudApiPaused',
+  title: 'Cloud API Paused',
+  type: 'cloud-api-paused',
   version: 1,
   level: 'any',
-  description: 'We have either hit an api rate limit or 500s from google.',
+  description: 'Rate limiting engaged for a cloud api',
   fields: {
-    providerId: 'Which provider has hit a limit (each provider manages a single project)',
+    providerId: 'Which provider has hit a limit',
     queueName: 'Which queue is paused -- there is one for each class of api request',
     reason: 'Either `errors` or `rateLimit`.',
     queueSize: 'Number of requests remaining in the queue when it is paused.',
@@ -73,12 +73,12 @@ monitorManager.register({
 });
 
 monitorManager.register({
-  name: 'googleProviderResumed',
-  title: 'Google Provider Resumed',
-  type: 'google-provider-resumed',
+  name: 'cloudApiResumed',
+  title: 'Cloud API Resumed',
+  type: 'cloud-api-resumed',
   version: 1,
   level: 'notice',
-  description: 'A google provider has resumed api requests to google.',
+  description: 'A provider has resumed api requests.',
   fields: {
     providerId: 'Which provider has hit a limit (each provider manages a single project)',
     queueName: 'Which queue is paused -- there is one for each class of api request',

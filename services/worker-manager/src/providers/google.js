@@ -98,7 +98,7 @@ class GoogleProvider extends Provider {
       }
 
       if (!queue.isPaused) {
-        this.monitor.log.googleProviderPaused({
+        this.monitor.log.cloudApiPaused({
           providerId: this.providerId,
           queueName: type,
           reason,
@@ -107,7 +107,7 @@ class GoogleProvider extends Provider {
         }, {level});
         queue.pause();
         setTimeout(() => {
-          this.monitor.log.googleProviderResumed({
+          this.monitor.log.cloudApiResumed({
             providerId: this.providerId,
             queueName: type,
           });
