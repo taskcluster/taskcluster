@@ -725,6 +725,11 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v15.1.5 since v15.1.4
+========================
+
+* [Bug 1565215 - generic-worker: include timezone in log messages, and make sure it is UTC](https://bugzil.la/1565215)
+
 In v15.1.4 since v15.1.3
 ========================
 
