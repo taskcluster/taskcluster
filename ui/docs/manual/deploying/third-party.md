@@ -8,7 +8,7 @@ This is an array of clients where each client has the following properties:
 
 | Property | Required | Description |
 --- | --- | --- |
-| `clientId` | ✓ | The client's ID. |
+| `clientId` | ✓ | The Oauth2 client ID (this is not a Taskcluster clientId). |
 | `responseType` | ✓ | The value MUST be one of `code` for requesting an authorization code or `token` for requesting an access token (implicit grant). |
 | `scope` | ✓ | An array of Taskcluser scopes the client is authorized to receive. This can end with `*`. |
 | `redirectUri` | ✓ | An array of URIs to which the server is allowed to redirect the user.  |
