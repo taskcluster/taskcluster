@@ -6,7 +6,6 @@ const builder = require('../src/api');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
 const slugid = require('slugid');
-const azure = require('fast-azure-storage');
 const uuid = require('uuid');
 const Builder = require('taskcluster-lib-api');
 const SchemaSet = require('taskcluster-lib-validate');
@@ -24,6 +23,7 @@ suiteSetup(async function() {
 });
 
 exports.rootUrl = `http://localhost:60552`;
+exports.containerName = `auth-test-${uuid.v4()}`;
 
 withMonitor(exports);
 
@@ -50,7 +50,7 @@ exports.secrets = new Secrets({
       {env: 'SENTRY_HOSTNAME', cfg: 'sentry.hostname'},
     ],
     gcp: [
-      {env: 'GCP_CREDENTIALS_ALLOWED_PROJECTS', cfg: 'gcpCredentials.allowedProjects', name: 'allowedProjects', mock: []},
+      {env: 'GCP_CREDENTIALS_ALLOWED_PROJECTS', cfg: 'gcpCredentials.allowedProjects', name: 'allowedProjects', mock: {}},
     ],
   },
   load: exports.load,
@@ -115,7 +115,6 @@ exports.withRoles = (mock, skipping, options={}) => {
     }
 
     await exports.load('cfg');
-    exports.containerName = `auth-test-${uuid.v4()}`;
     exports.load.cfg('app.rolesContainerName', exports.containerName);
 
     if (mock) {
@@ -130,25 +129,12 @@ exports.withRoles = (mock, skipping, options={}) => {
     if (skipping()) {
       return;
     }
+
+    // zero out the roles for each suite
     if (mock) {
       exports.Roles.roles = [];
     } else {
-      const cfg = await exports.load('cfg');
-      const blobService = new azure.Blob({
-        accountId: cfg.azure.accountId,
-        accountKey: cfg.azure.accountKey,
-      });
-      try {
-        await blobService.deleteContainer(exports.containerName);
-      } catch (e) {
-        if (e.code !== 'ResourceNotFound') {
-          throw e;
-        }
-        // already deleted, so nothing to do
-        // NOTE: really, this doesn't work -- the container doesn't register as existing
-        // before the tests are complete, so we "leak" containers despite this effort to
-        // clean them up.
-      }
+      await exports.Roles.modify(() => ([]));
     }
   };
   if (!options.orderedTests) {

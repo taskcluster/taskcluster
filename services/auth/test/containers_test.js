@@ -1,9 +1,8 @@
 const containers = require('../src/containers');
-const uuid = require('uuid');
 const assert = require('assert');
 const helper = require('./helper');
-const azure = require('fast-azure-storage');
 const testing = require('taskcluster-lib-testing');
+const azure = require('fast-azure-storage');
 
 const sorted = (arr) => {
   arr.sort();
@@ -11,11 +10,13 @@ const sorted = (arr) => {
 };
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+  helper.withCfg(mock, skipping);
+
   if (mock) {
     return; // This test file only works on real things apparently
   }
 
-  const containerName = `auth-test-${uuid.v4()}`;
+  const containerName = helper.containerName;
   let credentials;
   let roles;
 
@@ -28,27 +29,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       });
 
       await roles.setup();
-    }
-  });
 
-  // clean up the container manually at the end
-  suiteTeardown(async function() {
-    if (!mock && !skipping()) {
-      const blobService = new azure.Blob({
-        accountId: credentials.accountId,
-        accountKey: credentials.accountKey,
-      });
-      try {
-        await blobService.deleteContainer(containerName);
-      } catch (e) {
-        if (e.code !== 'ResourceNotFound') {
-          throw e;
-        }
-        // already deleted, so nothing to do
-        // NOTE: really, this doesn't work -- the container doesn't register as existing
-        // before the tests are complete, so we "leak" containers despite this effort to
-        // clean them up.
-      }
+      // zero out the container
+      const blobService = new azure.Blob(credentials);
+      blobService.deleteBlob(containerName, "Roles", {});
     }
   });
 
