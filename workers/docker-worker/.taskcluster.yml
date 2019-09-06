@@ -115,7 +115,6 @@ tasks:
           loopbackVideo: true
       env:
         WORKER_CI: '1'
-        DEBUG: '*docker-worker*'
         TASKCLUSTER_ROOT_URL: https://taskcluster.net
       features:
         taskclusterProxy: true
@@ -159,7 +158,6 @@ tasks:
           loopbackVideo: true
       env:
         WORKER_CI: '1'
-        DEBUG: '*docker-worker*'
         TASKCLUSTER_ROOT_URL: https://taskcluster.net
       features:
         taskclusterProxy: true
@@ -203,7 +201,6 @@ tasks:
           loopbackVideo: true
       env:
         WORKER_CI: '1'
-        DEBUG: '*docker-worker*'
         TASKCLUSTER_ROOT_URL: https://taskcluster.net
       features:
         taskclusterProxy: true
@@ -247,7 +244,6 @@ tasks:
           loopbackVideo: true
       env:
         WORKER_CI: '1'
-        DEBUG: '*docker-worker*'
         TASKCLUSTER_ROOT_URL: https://taskcluster.net
       features:
         taskclusterProxy: true
@@ -291,7 +287,6 @@ tasks:
           loopbackVideo: true
       env:
         WORKER_CI: '1'
-        DEBUG: '*docker-worker*'
         TASKCLUSTER_ROOT_URL: https://taskcluster.net
       features:
         taskclusterProxy: true
