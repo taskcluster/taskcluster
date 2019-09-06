@@ -1,10 +1,9 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
-import { graphql, withApollo } from 'react-apollo';
+import { graphql } from 'react-apollo';
 import { scopeIntersection } from 'taskcluster-lib-scopes';
 import { parse } from 'qs';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
-import ErrorPanel from '../../components/ErrorPanel';
 import Homepage from '../../components/Homepage';
 import AuthConsent from '../../components/AuthConsent';
 import Dashboard from '../../components/Dashboard';
@@ -14,11 +13,9 @@ import thirdPartyLoginQuery from './thirdPartyLogin.graphql';
 
 @hot(module)
 @withAuth
-@withApollo
 @graphql(thirdPartyLoginQuery, {
   skip: ({ user }) => !user,
   options: () => ({
-    errorPolicy: 'all',
     fetchPolicy: 'network-only',
   }),
 })
@@ -96,7 +93,6 @@ export default class ThirdPartyLogin extends Component {
     return (
       <Dashboard title="Third Party Login">
         {data && data.loading && <Spinner loading />}
-        {data && data.error && <ErrorPanel error={data.error} />}
         {formData && (
           <AuthConsent
             transactionID={this.parsedQuery.transactionID}

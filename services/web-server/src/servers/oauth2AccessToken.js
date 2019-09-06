@@ -1,4 +1,4 @@
-module.exports = () => async (request, response, next) => {
+module.exports = () => (request, response, next) => {
   if (
     (!request.accessToken && !request.headers.authorization) ||
     !request.headers.authorization.startsWith('Bearer')
