@@ -92,21 +92,16 @@ func InteractiveUsername() (string, error) {
 	return account, nil
 }
 
-func AutoLogonCredentials() (user OSUser) {
+func AutoLogonUser() (username string) {
 	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`, registry.QUERY_VALUE)
 	if err != nil {
 		log.Printf("Hit error reading Winlogon registry key - assume no autologon set: %v", err)
 		return
 	}
 	defer k.Close()
-	user.Name, _, err = k.GetStringValue("DefaultUserName")
+	username, _, err = k.GetStringValue("DefaultUserName")
 	if err != nil {
 		log.Printf("Hit error reading winlogon DefaultUserName registry value - assume no autologon set: %v", err)
-		return
-	}
-	user.Password, _, err = k.GetStringValue("DefaultPassword")
-	if err != nil {
-		log.Printf("Hit error reading winlogon DefaultPassword registry value - assume no autologon set: %v", err)
 		return
 	}
 	return

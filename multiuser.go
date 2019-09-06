@@ -169,8 +169,8 @@ func purgeOldTasks() error {
 		log.Printf("WARNING: Not purging previous task directories/users since config setting cleanUpTaskDirs is false")
 		return nil
 	}
-	deleteTaskDirs(runtime.UserHomeDirectoriesParent(), taskContext.User.Name, runtime.AutoLogonCredentials().Name)
-	deleteTaskDirs(config.TasksDir, taskContext.User.Name, runtime.AutoLogonCredentials().Name)
+	deleteTaskDirs(runtime.UserHomeDirectoriesParent(), taskContext.User.Name, runtime.AutoLogonUser())
+	deleteTaskDirs(config.TasksDir, taskContext.User.Name, runtime.AutoLogonUser())
 	// regardless of whether we are running as current user or not, we should purge old task users
 	err := deleteExistingOSUsers()
 	if err != nil {
@@ -187,7 +187,7 @@ func deleteExistingOSUsers() (err error) {
 	}
 	allErrors := []string{}
 	for _, username := range userAccounts {
-		if strings.HasPrefix(username, "task_") && username != taskContext.User.Name && username != runtime.AutoLogonCredentials().Name {
+		if strings.HasPrefix(username, "task_") && username != taskContext.User.Name && username != runtime.AutoLogonUser() {
 			log.Print("Attempting to remove user " + username + "...")
 			err2 := runtime.DeleteUser(username)
 			if err2 != nil {

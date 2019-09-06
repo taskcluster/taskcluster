@@ -7,10 +7,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/taskcluster/generic-worker/host"
 	"github.com/taskcluster/generic-worker/process"
-	"github.com/taskcluster/generic-worker/runtime"
 	gwruntime "github.com/taskcluster/generic-worker/runtime"
 	"github.com/taskcluster/shell"
 )
@@ -116,7 +116,7 @@ func (task *TaskRun) EnvVars() []string {
 	taskEnvArray := []string{}
 
 	// Defaults that can be overwritten by task payload env
-	taskEnv["HOME"] = filepath.Join(runtime.UserHomeDirectoriesParent(), taskContext.User.Name)
+	taskEnv["HOME"] = filepath.Join(gwruntime.UserHomeDirectoriesParent(), taskContext.User.Name)
 	taskEnv["PATH"] = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 	taskEnv["USER"] = taskContext.User.Name
 
@@ -130,6 +130,9 @@ func (task *TaskRun) EnvVars() []string {
 	if config.RunTasksAsCurrentUser {
 		taskEnv["TASK_USER_CREDENTIALS"] = filepath.Join(cwd, "current-task-user.json")
 	}
+	if runtime.GOOS == "linux" {
+		taskEnv["DISPLAY"] = ":0"
+	}
 
 	for i, j := range taskEnv {
 		taskEnvArray = append(taskEnvArray, i+"="+j)
@@ -138,7 +141,7 @@ func (task *TaskRun) EnvVars() []string {
 	return taskEnvArray
 }
 
-func PreRebootSetup(nextTaskUser *runtime.OSUser) {
+func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
 }
 
 func MkdirAllTaskUser(dir string, perms os.FileMode) (err error) {
@@ -153,11 +156,31 @@ func MkdirAllTaskUser(dir string, perms os.FileMode) (err error) {
 	return nil
 }
 
-func makeFileOrDirReadWritableForUser(recurse bool, dir string, user *gwruntime.OSUser) error {
+func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwruntime.OSUser) error {
+	// We'll use chown binary rather that os.Chown here since:
+	// 1) we have user/group names not ids, and can avoid extra code to look up
+	//    their values
+	// 2) Perhaps we would need a CGO_ENABLED build to call user.Lookup and
+	//    user.LookupGroup.
+	// 3) os.Chown doesn't have a recursive option; maybe a third party library
+	//    does, but that's more bloat to import/maintain
+	// 4) we get logging of commands run for free
 	if recurse {
-		return host.Run("/usr/sbin/chown", "-R", user.Name+":staff", dir)
+		switch runtime.GOOS {
+		case "darwin":
+			return host.Run("/usr/sbin/chown", "-R", user.Name+":staff", fileOrDir)
+		case "linux":
+			return host.Run("/bin/chown", "-R", user.Name+":"+user.Name, fileOrDir)
+		}
+		return fmt.Errorf("Unknown platform: %v", runtime.GOOS)
 	}
-	return host.Run("/usr/sbin/chown", user.Name+":staff", dir)
+	switch runtime.GOOS {
+	case "darwin":
+		return host.Run("/usr/sbin/chown", user.Name+":staff", fileOrDir)
+	case "linux":
+		return host.Run("/bin/chown", user.Name+":"+user.Name, fileOrDir)
+	}
+	return fmt.Errorf("Unknown platform: %v", runtime.GOOS)
 }
 
 func makeDirUnreadableForUser(dir string, user *gwruntime.OSUser) error {
