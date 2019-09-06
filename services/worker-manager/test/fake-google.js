@@ -81,6 +81,16 @@ class FakeGoogle {
       {message: 'something went wrong'},
     ];
     instanceInsertStub.onCall(1).throws(googleError);
+    const limitError = new Error('whatever');
+    limitError.code = 403;
+    instanceInsertStub.onCall(2).throws(limitError);
+    instanceInsertStub.onCall(3).returns({
+      data: {
+        targetId: '456', // This is the instanceId
+        name: 'foo',
+        zone: 'whatever/a',
+      },
+    });
 
     return {
       regions: {

@@ -50,6 +50,12 @@ A google-based provider is configured in `providers` with the following structur
     "providerType": "google",
     "project": "<gcp project identifier>",
     "workerServiceAccountId": "<uniqueId of a service account in this project that workers will use>",
+    "apiRateLimits": {
+      "get": {"interval": 1000, "intervalCap": 20000},
+      "query": {"interval": 1000, "intervalCap": 40000},
+      "list": {"interval": 1000, "intervalCap": 20000},
+      "opRead": {"interval": 1000, "intervalCap": 20000}
+    },
     "creds": "<google credentials>"
   },
   ...
@@ -66,7 +72,15 @@ The project will need the following APIs enabled:
 * Compute Engine API
 * Identity and Access Management (IAM) API
 
-#### Service Account Credentials
+#### API Rate Limit Overrides
+
+By default worker-manager will limit its interactions with a GCP project to the
+[documented api rate limits](https://cloud.google.com/compute/docs/api-rate-limits). You
+can optionally override this for the categories `get`, `query`, `list`, and `opRead` which
+cover the entirety of calls that worker-manager makes. This could be useful if you get
+your limits raised by google.
+
+#### Service Accounts
 
 The provider requires *two* service accounts in the designated project.
 

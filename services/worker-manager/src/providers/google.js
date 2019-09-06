@@ -5,6 +5,7 @@ const taskcluster = require('taskcluster-client');
 const uuid = require('uuid');
 const {google} = require('googleapis');
 const {ApiError, Provider} = require('./provider');
+const {default: PQueue} = require('p-queue');
 
 class GoogleProvider extends Provider {
 
@@ -14,7 +15,7 @@ class GoogleProvider extends Provider {
     ...conf
   }) {
     super(conf);
-    let {project, creds, workerServiceAccountId} = providerConfig;
+    let {project, creds, workerServiceAccountId, apiRateLimits = {}, _backoffDelay = 1000} = providerConfig;
     this.configSchema = 'config-google';
 
     assert(project, 'Must provide a project to google providers');
@@ -24,6 +25,18 @@ class GoogleProvider extends Provider {
     this.project = project;
     this.zonesByRegion = {};
     this.workerServiceAccountId = workerServiceAccountId;
+
+    // There are different rate limits per type of request
+    // as documented here: https://cloud.google.com/compute/docs/api-rate-limits
+    this.queues = {};
+    this._backoffDelay = _backoffDelay;
+    for (const type of ['query', 'get', 'list', 'opRead']) {
+      const {interval, intervalCap} = (apiRateLimits[type] || {});
+      this.queues[type] = new PQueue({
+        interval: interval || 100 * 1000, // Intervals are enforced every 100 seconds
+        intervalCap: intervalCap || 2000, // The calls we make are all limited 20/sec so 20 * 100 are allowed
+      });
+    }
 
     if (fakeCloudApis && fakeCloudApis.google) {
       this.ownClientEmail = 'whatever@example.com';
@@ -60,6 +73,54 @@ class GoogleProvider extends Provider {
       auth: client,
     });
     this.oauth2 = new google.auth.OAuth2();
+  }
+
+  async _enqueue(type, func, tries = 0) {
+    const queue = this.queues[type];
+    try {
+      return await queue.add(func, {priority: tries});
+    } catch (err) {
+      let backoff = this._backoffDelay;
+      let level = 'notice';
+      let reason = 'unknown';
+      if (err.code === 403) { // google hands out 403 for rate limiting; back off significantly
+        // google's interval is 100 seconds so let's try once optimistically and a second time to get it for sure
+        backoff *= 50;
+        reason = 'rateLimit';
+      } else if (err.code === 403 || err.code >= 500) { // For 500s, let's take a shorter backoff
+        backoff *= Math.pow(2, tries); // Longest backoff here is half a minute
+        level = 'warning';
+        reason = 'errors';
+      } else {
+        // If we don't want to do anything special here, just throw and let the
+        // calling code figure out what to do
+        throw err;
+      }
+
+      if (!queue.isPaused) {
+        this.monitor.log.cloudApiPaused({
+          providerId: this.providerId,
+          queueName: type,
+          reason,
+          queueSize: queue.size,
+          duration: backoff,
+        }, {level});
+        queue.pause();
+        setTimeout(() => {
+          this.monitor.log.cloudApiResumed({
+            providerId: this.providerId,
+            queueName: type,
+          });
+          queue.start();
+        }, backoff);
+      }
+
+      if (tries > 4) {
+        throw err;
+      }
+
+      return await this._enqueue(type, func, tries++);
+    }
   }
 
   async setup() {
@@ -147,21 +208,19 @@ class GoogleProvider extends Provider {
     }
     const regions = workerPool.config.regions;
 
-    // TODO: Use p-queue for all operations against google
-
     const toSpawn = await this.estimator.simple({
       workerPoolId,
       ...workerPool.config,
       running: workerPool.providerData[this.providerId].running,
     });
 
-    for (let i = 0; i < toSpawn; i++) {
+    await Promise.all(new Array(toSpawn).fill(null).map(async _ => {
       const region = regions[Math.floor(Math.random() * regions.length)];
       if (!this.zonesByRegion[region]) {
-        this.zonesByRegion[region] = (await this.compute.regions.get({
+        this.zonesByRegion[region] = (await this._enqueue('get', () => this.compute.regions.get({
           project: this.project,
           region,
-        })).data.zones;
+        }))).data.zones;
       }
       const zones = this.zonesByRegion[region];
       const zone = zones[Math.floor(Math.random() * zones.length)].split('/').slice(-1)[0];
@@ -175,7 +234,7 @@ class GoogleProvider extends Provider {
       let op;
 
       try {
-        const res = await this.compute.instances.insert({
+        const res = await this._enqueue('query', () => this.compute.instances.insert({
           project: this.project,
           zone,
           requestId: uuid.v4(), // This is just for idempotency
@@ -221,7 +280,7 @@ class GoogleProvider extends Provider {
               ],
             },
           },
-        });
+        }));
         op = res.data;
       } catch (err) {
         if (!err.errors) {
@@ -231,7 +290,7 @@ class GoogleProvider extends Provider {
           await workerPool.reportError({
             kind: 'creation-error',
             title: 'Instance Creation Error',
-            description: error.message, // TODO: Make sure we clear exposing this with security folks
+            description: error.message,
           });
         }
         return;
@@ -254,7 +313,7 @@ class GoogleProvider extends Provider {
           },
         },
       });
-    }
+    }));
   }
 
   /*
@@ -284,11 +343,11 @@ class GoogleProvider extends Provider {
 
     let res;
     try {
-      res = await this.compute.instances.get({
+      res = await this._enqueue('get', () => this.compute.instances.get({
         project: worker.providerData.project,
         zone: worker.providerData.zone,
         instance: worker.workerId,
-      });
+      }));
     } catch (err) {
       if (err.code !== 404) {
         throw err;
@@ -305,11 +364,11 @@ class GoogleProvider extends Provider {
     if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
       this.seen[worker.workerPoolId] += 1;
     } else if (['TERMINATED', 'STOPPED'].includes(status)) {
-      await this.compute.instances.delete({
+      await this._enqueue('query', () => this.compute.instances.delete({
         project: worker.providerData.project,
         zone: worker.providerData.zone,
         instance: worker.workerId,
-      });
+      }));
       await worker.modify(w => {
         w.state = states.STOPPED;
         if (deleteOp) {
@@ -382,7 +441,7 @@ class GoogleProvider extends Provider {
     }
 
     try {
-      operation = (await obj.get(args)).data;
+      operation = (await this._enqueue('opRead', () => obj.get(args))).data;
     } catch (err) {
       if (err.code !== 404) {
         throw err;
@@ -401,7 +460,7 @@ class GoogleProvider extends Provider {
         errors.push({
           kind: 'operation-error',
           title: 'Operation Error',
-          description: err.message, // TODO: Make sure we clear exposing this with security folks
+          description: err.message,
           extra: {
             code: err.code,
           },
