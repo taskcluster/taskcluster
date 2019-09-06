@@ -3,6 +3,7 @@ filename: design/apis/hawk/clients.md
 title: Clients
 order: 23
 ---
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
 
 Taskcluster authentication begins with "clients". Each client has a name
 (`clientId`) and a secret access token. These can be used together to make API
@@ -19,6 +20,6 @@ and the "expanded scopes" that result after all roles are expanded. Note that,
 in keeping with the open nature of Taskcluster, anyone can see the full list of
 clients.
 
-**NOTE** Taskcluster does not identify users. All API calls are made with
+<Warning>Taskcluster does not identify users. All API calls are made with
 Taskcluster credentials, which include a `clientId`, but that identifier does
-not necessarily relate to a specific person or "user account" of any sort.
+not necessarily relate to a specific person or "user account" of any sort.</Warning>

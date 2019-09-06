@@ -1,3 +1,5 @@
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
+
 # Notify Service
 
 No longer will you need to keep going back to the task-inspector page to know if your task is complete!
@@ -14,5 +16,8 @@ Example routes:
   "notify.pulse.<a-pulse-routing-key>.on-exception"
 ]
 ```
-**Note**: However all notifications are transmitted via pulse and should not be considered private.
-Further specification of this is contained in the [usage docs](/docs/reference/core/notify/usage). **Note: The channel should have the # preceeding it.**
+
+<Warning>However all notifications are transmitted via pulse and should not be considered private.
+Further specification of this is contained in the [usage docs](/docs/reference/core/notify/usage).</Warning>
+
+<Warning>The channel should have the # preceeding it.</Warning>
