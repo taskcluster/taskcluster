@@ -128,29 +128,29 @@ WorkerPool.prototype.reportError = async function({kind, title, description, ext
       let extraInfo = '';
       if (Object.keys(extra).length) {
         extraInfo = `
-            It includes the extra information:
-            
-            \`\`\`
-            ${yaml.safeDump(extra)}
-            \`\`\`
-                  `.trim();
+It includes the extra information:
+
+\`\`\`
+${yaml.safeDump(extra)}
+\`\`\`
+      `.trim();
       }
 
       await this.notify.email({
         address: this.owner,
         subject: `Taskcluster Worker Manager Error: ${title}`,
         content: `
-            Worker Manager has encountered an error while trying to provision the worker pool ${this.workerPoolId}:
-            
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            
-            ${description}
-            
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            
-            ErrorId: ${errorId}
-            
-            ${extraInfo}
+Worker Manager has encountered an error while trying to provision the worker pool ${this.workerPoolId}:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+${description}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ErrorId: ${errorId}
+
+${extraInfo}
       `.trim(),
       });
     }
