@@ -397,7 +397,7 @@ func handleWorkerShutdown(abort func()) func() {
 				log.Printf("WARNING: error when calling AWS EC2 spot termination endpoint: %v", err)
 				continue
 			}
-			defer resp.Body.Close()
+			resp.Body.Close()
 			if resp.StatusCode == 200 {
 				abort()
 				break
