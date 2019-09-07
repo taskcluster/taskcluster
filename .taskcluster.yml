@@ -382,6 +382,8 @@ tasks:
             # output of wc command can contain spaces on darwin, so no quotes around expression
             test $(git status --porcelain | wc -l) == 0
             cp "${TASK_USER_CREDENTIALS}" next-task-user.json
+            # IMPORTANT - run go test with GW_TESTS_RUN_AS_CURRENT_USER=true *before* running it without
+            # otherwise tests that call `go run ....` will write go object files to .cache as root
             GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race
             GORACE=history_size=7 CGO_ENABLED=1 go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race ./...
             ineffassign .
@@ -464,8 +466,8 @@ tasks:
   #         expires: "{{ '2 weeks' | $fromNow }}"
   #         type: file
   #     mounts:
-  #       - cacheName: generic-worker-checkout
-  #         directory: gopath1.10.8/src
+  ##      - cacheName: generic-worker-checkout
+  ##        directory: gopath1.10.8/src
   #       - content:
   #           url: https://storage.googleapis.com/golang/go1.10.8.linux-armv6l.tar.gz
   #           sha256: 6fdbc67524fc4c15fc87014869dddce9ecda7958b78f3cb1bbc5b0a9b61bfb95
@@ -478,7 +480,7 @@ tasks:
   ##########################################################
 
   - provisionerId: aws-provisioner-v1
-    workerType: gwci-linux
+    workerType: gwci-linux-beta
     metadata:
       name: "Build/test 64 bit generic-worker (multiuser engine) on Ubuntu 17.04 VM"
       description: "This builds the 64 bit linux version of generic-worker (multiuser engine)"
@@ -527,9 +529,11 @@ tasks:
             go generate
             go install -tags multiuser -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
             test "$(git status --porcelain | wc -l)" == 0
-            # These lines should be enabled in bug 1499054:
-            # GORACE=history_size=7 CGO_ENABLED=1 go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race ./...
-            # GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -v
+            cp "${TASK_USER_CREDENTIALS}" next-task-user.json
+            # IMPORTANT - run go test with GW_TESTS_RUN_AS_CURRENT_USER=true *before* running it without
+            # otherwise tests that call `go run ....` will write go object files to .cache as root
+            GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race
+            GORACE=history_size=7 CGO_ENABLED=1 go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race ./...
             "${GOPATH}/bin/ineffassign" .
       artifacts:
         - name: public/build/generic-worker-linux-amd64
@@ -537,8 +541,8 @@ tasks:
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
       mounts:
-        - cacheName: generic-worker-checkout
-          directory: gopath1.10.8/src
+#       - cacheName: generic-worker-checkout
+#         directory: gopath1.10.8/src
         - content:
             url: https://storage.googleapis.com/golang/go1.10.8.linux-amd64.tar.gz
             sha256: d8626fb6f9a3ab397d88c483b576be41fa81eefcec2fd18562c87626dbb3c39e
@@ -551,7 +555,7 @@ tasks:
   ##########################################################
 
   - provisionerId: aws-provisioner-v1
-    workerType: gwci-linux
+    workerType: gwci-linux-beta
     metadata:
       name: "Build/test 64 bit generic-worker (simple engine) on Ubuntu 17.04 VM"
       description: "This builds the 64 bit linux version of generic-worker (simple engine)"
@@ -608,8 +612,8 @@ tasks:
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
       mounts:
-        - cacheName: generic-worker-checkout
-          directory: gopath1.10.8/src
+#       - cacheName: generic-worker-checkout
+#         directory: gopath1.10.8/src
         - content:
             url: https://storage.googleapis.com/golang/go1.10.8.linux-amd64.tar.gz
             sha256: d8626fb6f9a3ab397d88c483b576be41fa81eefcec2fd18562c87626dbb3c39e
@@ -622,7 +626,7 @@ tasks:
   ##########################################################
 
   - provisionerId: aws-provisioner-v1
-    workerType: gwci-linux
+    workerType: gwci-linux-beta
     metadata:
       name: "Build/test 64 bit generic-worker (docker engine) on Ubuntu 17.04 VM"
       description: "This builds the 64 bit linux version of generic-worker (docker engine)"
@@ -679,8 +683,8 @@ tasks:
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
       mounts:
-        - cacheName: generic-worker-checkout
-          directory: gopath1.10.8/src
+#       - cacheName: generic-worker-checkout
+#         directory: gopath1.10.8/src
         - content:
             url: https://storage.googleapis.com/golang/go1.10.8.linux-amd64.tar.gz
             sha256: d8626fb6f9a3ab397d88c483b576be41fa81eefcec2fd18562c87626dbb3c39e

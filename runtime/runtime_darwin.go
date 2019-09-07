@@ -26,8 +26,6 @@ func (user *OSUser) CreateNew(okIfExists bool) (err error) {
 		fullname="${0}"
 		password="${1}"
 		echo "Creating user '${username}' with home directory '${homedir}' and password '${password}'..."
-		maxid=$(dscl . -list '/Users' 'UniqueID' | awk '{print $2}' | sort -ug | tail -1)
-		uid=$((maxid+1))
 		/usr/bin/sudo dscl . -create "/Users/${username}"
 		/usr/bin/sudo dscl . -create "/Users/${username}" 'UserShell' '/bin/bash'
 		/usr/bin/sudo dscl . -create "/Users/${username}" 'RealName' "${fullname}"
@@ -116,17 +114,13 @@ func InteractiveUsername() (string, error) {
 	return cachedInteractiveUsername, nil
 }
 
-func AutoLogonCredentials() (user OSUser) {
-	username, password, err := kc.AutoLoginUser()
+func AutoLogonUser() (username string) {
+	var err error
+	username, err = kc.AutoLoginUsername()
 	if err != nil {
-		log.Print("Error fetching auto-logon credentials: " + err.Error())
-		return
+		log.Print("Error fetching auto-logon username: " + err.Error())
 	}
-	log.Print("Auto logon user: " + username)
-	return OSUser{
-		Name:     username,
-		Password: string(password),
-	}
+	return
 }
 
 func SetAutoLogin(user *OSUser) error {
