@@ -68,15 +68,6 @@ func install(arguments map[string]interface{}) (err error) {
 	return nil
 }
 
-func ChownR(path string, uid, gid int) error {
-	return filepath.Walk(path, func(name string, info os.FileInfo, err error) error {
-		if err == nil {
-			err = os.Chown(name, uid, gid)
-		}
-		return err
-	})
-}
-
 func RenameCrossDevice(oldpath, newpath string) (err error) {
 	// TODO: here we should be able to rename when oldpath and newpath are on
 	// different partitions - for now this will cover 99% of cases.
@@ -161,9 +152,10 @@ func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwru
 	// 1) we have user/group names not ids, and can avoid extra code to look up
 	//    their values
 	// 2) Perhaps we would need a CGO_ENABLED build to call user.Lookup and
-	//    user.LookupGroup.
+	//    user.LookupGroup (see https://bugzil.la/1566159)
 	// 3) os.Chown doesn't have a recursive option; maybe a third party library
-	//    does, but that's more bloat to import/maintain
+	//    does, but that's more bloat to import/maintain, or we'd need to write
+	//    our own
 	// 4) we get logging of commands run for free
 	if recurse {
 		switch runtime.GOOS {
