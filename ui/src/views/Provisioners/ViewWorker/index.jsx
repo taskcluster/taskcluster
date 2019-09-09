@@ -170,9 +170,7 @@ export default class ViewWorker extends Component {
                 <Typography
                   className={classes.link}
                   component={Link}
-                  to={`/provisioners/${params.provisionerId}/worker-types/${
-                    params.workerType
-                  }`}>
+                  to={`/provisioners/${params.provisionerId}/worker-types/${params.workerType}`}>
                   {params.workerType}
                 </Typography>
 

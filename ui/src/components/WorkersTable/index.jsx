@@ -170,9 +170,7 @@ export default class WorkersTable extends Component {
                 <TableCellItem
                   button
                   component={Link}
-                  to={`/tasks/${latestTask.run.taskId}/runs/${
-                    latestTask.run.runId
-                  }`}>
+                  to={`/tasks/${latestTask.run.taskId}/runs/${latestTask.run.runId}`}>
                   <ListItemText
                     disableTypography
                     primary={<Typography>{latestTask.run.taskId}</Typography>}
