@@ -274,6 +274,15 @@ export default class WMWorkerPoolEditor extends Component {
     }
   };
 
+  handleDeleteWorkerPool = () => {
+    const { workerPoolId1, workerPoolId2, ...payload } = this.state.workerPool;
+
+    return this.props.deleteRequest({
+      workerPoolId: joinWorkerPoolId(workerPoolId1, workerPoolId2),
+      payload,
+    });
+  };
+
   render() {
     const {
       classes,
@@ -411,7 +420,6 @@ export default class WMWorkerPoolEditor extends Component {
           {!isNewWorkerPool && (
             <SpeedDial>
               <SpeedDialAction
-                name="deleteRequest"
                 requiresAuth
                 tooltipOpen
                 icon={<DeleteIcon />}
@@ -425,7 +433,7 @@ export default class WMWorkerPoolEditor extends Component {
           {dialogOpen && (
             <DialogAction
               open={dialogOpen}
-              onSubmit={this.handleOnClick}
+              onSubmit={this.handleDeleteWorkerPool}
               onComplete={onDialogActionComplete}
               onClose={onDialogActionClose}
               onError={onDialogActionError}
@@ -433,7 +441,11 @@ export default class WMWorkerPoolEditor extends Component {
               title="Delete Worker Pool?"
               body={
                 <Typography>
-                  This will delete the Worker Pool {workerPool.workerPoolId1}.
+                  This will delete the worker pool{' '}
+                  {joinWorkerPoolId(
+                    workerPool.workerPoolId1,
+                    workerPool.workerPoolId2
+                  )}{' '}
                 </Typography>
               }
               confirmText="Delete Worker Pool"
