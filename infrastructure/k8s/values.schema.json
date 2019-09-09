@@ -1402,6 +1402,9 @@
         "additional_allowed_cors_origin": {
           "type": "string"
         },
+        "azure_signing_key": {
+          "type": "string"
+        },
         "debug": {
           "title": "node debug env var",
           "type": "string"
@@ -1412,6 +1415,38 @@
         "procs": {
           "additionalProperties": false,
           "properties": {
+            "expire_access_tokens": {
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "memory",
+                "cpu"
+              ],
+              "type": "object"
+            },
+            "expire_authorization_codes": {
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "memory",
+                "cpu"
+              ],
+              "type": "object"
+            },
             "scanner": {
               "additionalProperties": false,
               "properties": {
@@ -1451,7 +1486,9 @@
           },
           "required": [
             "web",
-            "scanner"
+            "scanner",
+            "expire_authorization_codes",
+            "expire_access_tokens"
           ],
           "title": "Process settings for this service",
           "type": "object"
@@ -1465,7 +1502,21 @@
         "pulse_username": {
           "type": "string"
         },
+        "registered_clients": {
+          "oneOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
         "session_secret": {
+          "type": "string"
+        },
+        "table_crypto_key": {
           "type": "string"
         },
         "taskcluster_access_token": {
@@ -1492,8 +1543,11 @@
         "additional_allowed_cors_origin",
         "taskcluster_client_id",
         "taskcluster_access_token",
+        "azure_signing_key",
+        "table_crypto_key",
         "pulse_username",
         "pulse_password",
+        "registered_clients",
         "ui_login_strategies",
         "session_secret"
       ],
