@@ -275,13 +275,116 @@ __These instructions require macOS Mojave version 10.14.x__
 13. Watch for logs in `/var/log/generic-worker/`.
 
 
-## Linux simple/docker build
+## Linux simple/multiuser/docker build
 
-See
-https://github.com/mozilla-releng/build-puppet/tree/531513eae6109d9baca2675f013f9c61b770af19/modules/generic_worker
-and
-https://github.com/mozilla-releng/build-puppet/blob/master/modules/packages/manifests/mozilla/generic_worker.pp
-for inspiration.
+ 1. Make sure your system is up-to-date. For example, on ubuntu:
+
+    ```
+    apt update
+    DEBIAN_FRONTEND=noninteractive apt upgrade -yq
+    ```
+
+ 2. Install curl (needed for later). For example, on ubuntu:
+
+    ```
+    apt install -y curl
+    ```
+
+ 3. For _multiuser_ ensure Gnome Desktop 3 is installed:
+
+    ```
+    apt install -y ubuntu-desktop ubuntu-gnome-desktop
+    ```
+
+ 4. For _docker_ engine, _or_ if tasks require Docker, install it. For example,
+	on ubuntu bionic:
+
+    ```
+    apt install -y apt-transport-https ca-certificates software-properties-common
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+    apt update
+    apt-cache policy docker-ce | grep -qF download.docker.com
+    apt install -y docker-ce
+    sleep 5
+    systemctl status docker | grep "Started Docker Application Container Engine"
+    usermod -aG docker ubuntu
+    ```
+
+ 5. Download `generic-worker`, `taskcluster-proxy` and `livelog` to `/usr/local/bin`:
+
+    ```
+    cd /usr/local/bin
+    curl -L "https://github.com/taskcluster/generic-worker/releases/download/<GENERIC_WORKER_VERSION>/generic-worker-multiuser-linux-amd64" > generic-worker
+    curl -L "https://github.com/taskcluster/livelog/releases/download/<LIVELOG_VERSION>/livelog-linux-amd64" > livelog
+    curl -L "https://github.com/taskcluster/taskcluster-proxy/releases/download/<TASKCLUSTER_PROXY_VERSION>/taskcluster-proxy-linux-amd64" > taskcluster-proxy
+    ```
+
+ 6. Make binaries executable:
+
+    ```
+    chmod a+x /usr/local/bin/{generic-worker,taskcluster-proxy,livelog}
+    ```
+
+ 7. Create directories required by generic-worker:
+
+    ```
+    mkdir -p /etc/generic-worker /var/local/generic-worker
+    ```
+
+ 8. Check generic-worker works and has correct version:
+
+    ```
+    /usr/local/bin/generic-worker --version
+    ```
+
+ 9. Generate a key for signing artifacts:
+
+    ```
+    /usr/local/bin/generic-worker new-ed25519-keypair --file /etc/generic-worker/ed25519_key
+    ```
+
+    The private key will be written to the file
+    `/etc/generic-worker/ed25519_key`, and the public key will be written to
+    standard out. Keep a copy of the public key if you wish to validate artifact
+    signatures.
+
+10. Ensure host 'taskcluster' resolves to localhost:
+
+    ```
+    echo 127.0.1.1 taskcluster >> /etc/hosts
+    ```
+
+11. __AWS workers only__: configure generic-worker to run on boot with
+	dynamically provided config from AWS Provisioner:
+
+    ```
+    echo '@reboot cd /var/local/generic-worker && PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /usr/local/bin/generic-worker run --configure-for-aws --config /etc/generic-worker/config >> /var/log/generic-worker.log 2>&1' | crontab -
+    ```
+
+	Make sure netplan network renderer takes precendence over eni network
+	renderer. See [bug 1499054 comment
+    12](https://bugzilla.mozilla.org/show_bug.cgi?id=1499054#c12) for an
+    explanation.
+
+    ```
+    cat > /etc/cloud/cloud.cfg.d/01_network_renderer_policy.cfg << EOF
+    system_info:
+        network:
+          renderers: [ 'netplan', 'eni', 'sysconfig' ]
+    EOF
+    ```
+
+12. __Non-AWS workers only__: configure generic-worker to run on boot with
+	a static local config file:
+
+    ```
+    echo '@reboot cd /var/local/generic-worker && PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /usr/local/bin/generic-worker run --config /etc/generic-worker/config >> /var/log/generic-worker.log 2>&1' | crontab -
+    ```
+
+    Create `/etc/generic-worker/config` with appropriate configuration settings
+    (see `generic-worker --help` for details).
+
 
 # Acquire taskcluster credentials for running tests
 
