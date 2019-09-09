@@ -1415,7 +1415,7 @@
         "procs": {
           "additionalProperties": false,
           "properties": {
-            "expire_access_tokens": {
+            "cleanup_expire_access_tokens": {
               "additionalProperties": false,
               "properties": {
                 "cpu": {
@@ -1431,7 +1431,7 @@
               ],
               "type": "object"
             },
-            "expire_authorization_codes": {
+            "cleanup_expire_authorization_codes": {
               "additionalProperties": false,
               "properties": {
                 "cpu": {
@@ -1487,8 +1487,8 @@
           "required": [
             "web",
             "scanner",
-            "expire_authorization_codes",
-            "expire_access_tokens"
+            "cleanup_expire_authorization_codes",
+            "cleanup_expire_access_tokens"
           ],
           "title": "Process settings for this service",
           "type": "object"

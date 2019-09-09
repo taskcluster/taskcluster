@@ -2,6 +2,6 @@
 
 web: cd services/web-server && node src/main.js server
 scanner: cd services/web-server && node src/main.js scanner
-expire-authorization-codes: cd services/web-server && node src/main.js expire-authorization-codes
-expire-access-tokens: cd services/web-server && node src/main.js expire-access-tokens
+cleanup-expire-authorization-codes: cd services/web-server && node src/main.js cleanup-expire-authorization-codes
+cleanup-expire-access-tokens: cd services/web-server && node src/main.js cleanup-expire-access-tokens
 write-docs: cd services/web-server && node src/main.js writeDocs
