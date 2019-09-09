@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	"github.com/taskcluster/httpbackoff"
+	"github.com/taskcluster/httpbackoff/v3"
 )
 
 var EC2MetadataBaseURL = "http://169.254.169.254/latest"

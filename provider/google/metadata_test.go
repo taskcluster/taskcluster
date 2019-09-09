@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/httpbackoff"
+	"github.com/taskcluster/httpbackoff/v3"
 )
 
 type fakeMetadataService struct {

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	"github.com/taskcluster/httpbackoff"
+	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 )
 
