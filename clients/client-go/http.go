@@ -17,7 +17,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/taskcluster/httpbackoff"
+	"github.com/taskcluster/httpbackoff/v3"
 	hawk "github.com/tent/hawk-go"
 )
 
