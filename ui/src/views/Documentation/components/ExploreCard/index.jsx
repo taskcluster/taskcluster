@@ -7,7 +7,7 @@ import CardContent from '@material-ui/core/CardContent';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import Anchor from '../Anchor';
 
-const useStyles = withStyles(theme => ({
+const styles = theme => ({
   root: {
     position: 'relative',
     height: theme.spacing.unit * 25,
@@ -22,7 +22,7 @@ const useStyles = withStyles(theme => ({
   title: {
     marginLeft: theme.spacing.unit,
   },
-}));
+});
 
 function ExploreCard({ classes, to, title, description, icon, ...props }) {
   return (
@@ -56,4 +56,4 @@ ExploreCard.propTypes = {
   to: string.isRequired,
 };
 
-export default useStyles(ExploreCard);
+export default withStyles(styles)(ExploreCard);

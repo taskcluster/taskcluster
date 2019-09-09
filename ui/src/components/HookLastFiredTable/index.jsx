@@ -17,11 +17,11 @@ import StatusLabel from '../StatusLabel';
 import DataTable from '../DataTable';
 import Link from '../../utils/Link';
 
-const useStyles = withStyles(theme => ({
+const styles = theme => ({
   informationIcon: {
     marginLeft: theme.spacing.unit,
   },
-}));
+});
 
 function HookLastFiredTable({ classes, ...props }) {
   const { items, onErrorClick, ...rest } = props;
@@ -92,4 +92,4 @@ HookLastFiredTable.propTypes = {
   onErrorClick: func.isRequired,
 };
 
-export default useStyles(HookLastFiredTable);
+export default withStyles(styles)(HookLastFiredTable);

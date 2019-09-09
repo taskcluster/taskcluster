@@ -2,7 +2,7 @@ import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { THEME } from '../../../../utils/constants';
 
-const useStyles = withStyles(theme => ({
+const styles = theme => ({
   pre: {
     width: '100%',
     fontSize: theme.typography.fontSize,
@@ -30,10 +30,10 @@ const useStyles = withStyles(theme => ({
       background: 'none',
     },
   },
-}));
+});
 
 function Pre({ classes, ...props }) {
   return <pre className={classes.pre} {...props} />;
 }
 
-export default useStyles(Pre);
+export default withStyles(styles)(Pre);
