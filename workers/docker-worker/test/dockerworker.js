@@ -71,6 +71,10 @@ class DockerWorker {
           'securityfs',
           '/sys/kernel/security',
           '&&',
+          // the umask setting is for we to be able to write inside shared folders
+          'umask',
+          '0000',
+          '&&',
           'node',
           global.asyncDump ? '--require /worker/src/lib/async-dump' : '',
           '/worker/src/bin/worker.js',

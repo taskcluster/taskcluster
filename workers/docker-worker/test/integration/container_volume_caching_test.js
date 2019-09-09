@@ -10,10 +10,12 @@ const TestWorker = require('../testworker');
 const waitForEvent = require('../../src/lib/wait_for_event');
 const taskcluster = require('taskcluster-client');
 const slugid = require('slugid');
+const util = require('util');
+const sleep = require('../../src/lib/util/sleep');
 
 suite('volume cache tests', () => {
 
-  var localCacheDir = path.join(__dirname, '..', 'tmp');
+  var localCacheDir = '/tmp';
   var volumeCacheDir = path.join('/', 'worker', '.test', 'tmp');
 
   var purgeCache;
@@ -130,14 +132,43 @@ suite('volume cache tests', () => {
 
     var tasks = [];
 
+    // Wait for at least one task to start running
+    const taskBarrier = waitForEvent(worker, 'task run')
+      .then(async () => {
+        const readdir = util.promisify(fs.readdir);
+        const stat = util.promisify(fs.stat);
+        const writeFile = util.promisify(fs.writeFile);
+
+        const cachePath = path.join('/tmp', cacheName);
+        let entries;
+
+        // To make sure both tasks are running, we wait for
+        // two cache entries to be created
+        do {
+          await sleep(500);
+          entries = await readdir(cachePath);
+        } while (entries.length !== 2);
+
+        // Once the two tasks are running, we create a file
+        // inside each cache to notify the tasks they can proceed
+        return await Promise.all(entries.map(async (f) => {
+          const cacheDir = path.join(cachePath, f);
+          const fstat = await stat(cacheDir);
+
+          if (fstat.isDirectory()) {
+            await writeFile(path.join(cacheDir, 'flag'), '1');
+          }
+        }));
+      });
+
     for (var i = 0; i < 2; i++) {
       var fileName = 'file' + i.toString() + '.txt';
       var task = {
         payload: {
           image: 'taskcluster/test-ubuntu',
           command: cmd(
+            '(while ! test -f /tmp-obj-dir/flag; do sleep 1; done)',
             'echo "foo" > /tmp-obj-dir/' + fileName,
-            'sleep 10',
             'ls -lah /tmp-obj-dir'
           ),
           features: {
@@ -154,6 +185,7 @@ suite('volume cache tests', () => {
       tasks.push(worker.postToQueue(task));
     }
 
+    await taskBarrier;
     var results = await Promise.all(tasks);
     await worker.terminate();
 
