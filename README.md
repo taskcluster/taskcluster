@@ -828,6 +828,18 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v16.0.0 since v15.1.5
+========================
+
+This major release includes support for multiuser on linux. There are no
+changes to the other platforms.
+
+[Installation
+instructions](https://github.com/taskcluster/generic-worker#linux-simplemultiuserdocker-build)
+for multiuser engine on linux have been added.
+
+* [Bug 1499054 - Run tasks under unique OS user accounts on Linux](https://bugzil.la/1499054)
+
 In v15.1.5 since v15.1.4
 ========================
 
