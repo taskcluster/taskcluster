@@ -198,10 +198,10 @@ const load = loader(
       }),
     },
 
-    'expire-authorization-codes': {
+    'cleanup-expire-authorization-codes': {
       requires: ['cfg', 'AuthorizationCode', 'monitor'],
       setup: ({cfg, AuthorizationCode, monitor}) => {
-        return monitor.oneShot('expire-authorization-codes', async () => {
+        return monitor.oneShot('cleanup-expire-authorization-codes', async () => {
           const delay = cfg.app.authorizationCodeExpirationDelay;
           const now = taskcluster.fromNow(delay);
 
@@ -212,10 +212,10 @@ const load = loader(
       },
     },
 
-    'expire-access-tokens': {
+    'cleanup-expire-access-tokens': {
       requires: ['cfg', 'AccessToken', 'monitor'],
       setup: ({cfg, AccessToken, monitor}) => {
-        return monitor.oneShot('expire-access-tokens', async () => {
+        return monitor.oneShot('cleanup-expire-access-tokens', async () => {
           const delay = cfg.app.authorizationCodeExpirationDelay;
           const now = taskcluster.fromNow(delay);
 
