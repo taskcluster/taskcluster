@@ -125,33 +125,10 @@ WorkerPool.prototype.reportError = async function({kind, title, description, ext
 
   try {
     if (this.emailOnError) {
-      let extraInfo = '';
-      if (Object.keys(extra).length) {
-        extraInfo = `
-It includes the extra information:
-
-\`\`\`
-${yaml.safeDump(extra)}
-\`\`\`
-      `.trim();
-      }
-
       await this.notify.email({
         address: this.owner,
         subject: `Taskcluster Worker Manager Error: ${title}`,
-        content: `
-Worker Manager has encountered an error while trying to provision the worker pool ${this.workerPoolId}:
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-${description}
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-ErrorId: ${errorId}
-
-${extraInfo}
-      `.trim(),
+        content: getExtraInfo({extra, description, workerPoolId: this.workerPoolId, errorId}),
       });
     }
 
@@ -299,4 +276,29 @@ module.exports = {
   Worker,
   WorkerPool,
   WorkerPoolError,
+};
+
+const getExtraInfo = ({extra, workerPoolId, description, errorId}) => {
+  let extraInfo = '';
+  if (Object.keys(extra).length) {
+    extraInfo = `
+It includes the extra information:
+
+\`\`\`
+${yaml.safeDump(extra)}
+\`\`\`
+      `.trim();
+  }
+
+  return `Worker Manager has encountered an error while trying to provision the worker pool ${workerPoolId}:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+${description}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ErrorId: ${errorId}
+
+${extraInfo}`.trim();
 };
