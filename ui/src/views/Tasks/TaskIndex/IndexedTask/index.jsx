@@ -1,6 +1,6 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
-import { graphql, compose } from 'react-apollo';
+import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../../components/Dashboard';
@@ -12,31 +12,28 @@ import artifactsQuery from './artifacts.graphql';
 import indexedTaskQuery from './indexedTask.graphql';
 
 @hot(module)
-@compose(
-  graphql(indexedTaskQuery, {
-    name: 'indexedTaskData',
-    options: props => ({
-      variables: {
-        indexPath: `${props.match.params.namespace}.${
-          props.match.params.namespaceTaskId
-        }`,
-      },
-    }),
+@graphql(indexedTaskQuery, {
+  name: 'indexedTaskData',
+  options: props => ({
+    variables: {
+      indexPath: `${props.match.params.namespace}.${
+        props.match.params.namespaceTaskId
+      }`,
+    },
   }),
-  graphql(artifactsQuery, {
-    name: 'latestArtifactsData',
-    options: ({ indexedTaskData }) => ({
-      variables: {
-        skip: !indexedTaskData.indexedTask,
-        taskId:
-          indexedTaskData.indexedTask && indexedTaskData.indexedTask.taskId,
-        entryConnection: {
-          limit: ARTIFACTS_PAGE_SIZE,
-        },
+})
+@graphql(artifactsQuery, {
+  name: 'latestArtifactsData',
+  options: ({ indexedTaskData }) => ({
+    variables: {
+      skip: !indexedTaskData.indexedTask,
+      taskId: indexedTaskData.indexedTask && indexedTaskData.indexedTask.taskId,
+      entryConnection: {
+        limit: ARTIFACTS_PAGE_SIZE,
       },
-    }),
-  })
-)
+    },
+  }),
+})
 export default class IndexedTask extends Component {
   componentDidUpdate(prevProps) {
     if (

@@ -1,6 +1,6 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
-import { graphql, compose, withApollo } from 'react-apollo';
+import { graphql, withApollo } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import { defaultTo } from 'ramda';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
@@ -18,30 +18,28 @@ const defaultEmpty = defaultTo('');
 
 @hot(module)
 @withApollo
-@compose(
-  graphql(namespacesQuery, {
-    name: 'namespacesData',
-    options: props => ({
-      variables: {
-        namespace: defaultEmpty(props.match.params.namespace),
-        namespaceConnection: {
-          limit: VIEW_NAMESPACES_PAGE_SIZE,
-        },
+@graphql(namespacesQuery, {
+  name: 'namespacesData',
+  options: props => ({
+    variables: {
+      namespace: defaultEmpty(props.match.params.namespace),
+      namespaceConnection: {
+        limit: VIEW_NAMESPACES_PAGE_SIZE,
       },
-    }),
+    },
   }),
-  graphql(taskNamespaceQuery, {
-    name: 'taskNamespaceData',
-    options: props => ({
-      variables: {
-        namespace: defaultEmpty(props.match.params.namespace),
-        taskConnection: {
-          limit: VIEW_NAMESPACES_PAGE_SIZE,
-        },
+})
+@graphql(taskNamespaceQuery, {
+  name: 'taskNamespaceData',
+  options: props => ({
+    variables: {
+      namespace: defaultEmpty(props.match.params.namespace),
+      taskConnection: {
+        limit: VIEW_NAMESPACES_PAGE_SIZE,
       },
-    }),
-  })
-)
+    },
+  }),
+})
 export default class ListNamespaces extends Component {
   handleNamespacesPageChange = ({ cursor, previousCursor }) => {
     const {
