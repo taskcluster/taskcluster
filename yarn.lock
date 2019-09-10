@@ -1416,9 +1416,9 @@ axios@^0.19.0:
     is-buffer "^2.0.2"
 
 azure-blob-storage@^4.2.1:
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/azure-blob-storage/-/azure-blob-storage-4.2.1.tgz#91f24c18f73b29e8b4671903b3c5b8fb2d6b38dd"
-  integrity sha512-y1gNvhsCR1/ATxHt/cDn+f5xW6CheM65Mggl99/dd+jsHTLzJLywip75M4PKex/JqPbAWQyd+yOI7quNXgnXOA==
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/azure-blob-storage/-/azure-blob-storage-4.2.2.tgz#8594bbcc66af1ccacf85a7743d348f67160266bb"
+  integrity sha512-3XZX2IJvvCP+JzqjutTwN6y5L0HL1SedJHecx5Z80rL2HKP1LH+nrrQwLVbmLmTXw5+5KeDGZttx6tQgM6PojQ==
   dependencies:
     ajv "^6.10.0"
     debug "^4.1.1"
