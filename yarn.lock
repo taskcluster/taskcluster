@@ -883,7 +883,7 @@ ajv-keywords@^3.1.0:
   resolved "https://registry.yarnpkg.com/ajv-keywords/-/ajv-keywords-3.4.0.tgz#4b831e7b531415a7cc518cd404e73f6193c6349d"
   integrity sha512-aUjdRFISbuFOl0EIZc+9e4FfZp0bDZgAdOOf30bJmw8VM9v84SHyVyxDfbWxpGYbdZD/9XoKxfHVNmxPkhwyGw==
 
-ajv@^6.1.0, ajv@^6.9.1, ajv@^6.9.2:
+ajv@^6.1.0, ajv@^6.9.1:
   version "6.10.0"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.10.0.tgz#90d0d54439da587cd7e843bfb7045f50bd22bdf1"
   integrity sha512-nffhOpkymDECQyR0mnsUtoCE8RlX38G0rYP+wgLWFyZuUyuuojSSvi/+euOiQBIn63whYwYVIIH1TvE3tu4OEg==
@@ -893,7 +893,7 @@ ajv@^6.1.0, ajv@^6.9.1, ajv@^6.9.2:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-ajv@^6.10.0, ajv@^6.5.5:
+ajv@^6.10.0, ajv@^6.5.5, ajv@^6.9.2:
   version "6.10.2"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.10.2.tgz#d3cea04d6b017b2894ad69040fec8b623eb4bd52"
   integrity sha512-TXtUUEYHuaTEbLZWIKUr5pmBuhDLy+8KYtPYdcV8qC+pOZL+NKqYwvWSRrVXHn+ZmRRAu8vJTAznH7Oag6RVRw==
@@ -1427,9 +1427,9 @@ azure-blob-storage@^4.2.1:
     uuid "^3.3.2"
 
 azure-entities@^5.5.1:
-  version "5.5.1"
-  resolved "https://registry.yarnpkg.com/azure-entities/-/azure-entities-5.5.1.tgz#9449d1a1b8c024d020403d8a825955fd9de891b7"
-  integrity sha512-R20U7K9v7pyS6F254sY7iSM7rRUDpwRRfvkyGF5vjwyKXdzVGGmPGW5nYoXIR02qLaq/Qh7BE7oIlc4vbTZa7Q==
+  version "5.5.2"
+  resolved "https://registry.yarnpkg.com/azure-entities/-/azure-entities-5.5.2.tgz#b7843636bd8bd61df704d2dde55f1d9473e85a05"
+  integrity sha512-QpuHDN99rIb0f8aSxpdESUPHPenrgoT6GHByJEaSTElu49NSrSAT7g7uFMb2RWLZRxjr0JdWWqYrjMDnfNuVig==
   dependencies:
     ajv "^6.9.2"
     debug "^4.1.1"
