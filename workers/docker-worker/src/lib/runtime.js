@@ -67,11 +67,6 @@ Runtime.prototype = {
   provisionerId: null,
 
   /**
-  Used to decrypt secure environment variables
-  */
-  privateKey: null,
-
-  /**
   Host instance
   */
   hostManager: null

@@ -54,7 +54,6 @@
     "mocha": "^3.1.0",
     "mz": "^2.0.0",
     "nock": "^8.1.0",
-    "openpgp": "^2.3.2",
     "promise": "^7.0.3",
     "promise-retry": "^1.1.1",
     "promisepipe": "^3.0.0",

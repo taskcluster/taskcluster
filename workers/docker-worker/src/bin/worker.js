@@ -21,7 +21,6 @@ const TaskListener = require('../lib/task_listener');
 const ShutdownManager = require('../lib/shutdown_manager');
 const GarbageCollector = require('../lib/gc');
 const VolumeCache = require('../lib/volume_cache');
-const PrivateKey = require('../lib/private_key');
 const ImageManager = require('../lib/docker/image_manager');
 const typedEnvConfig = require('typed-env-config');
 const SchemaSet = require('taskcluster-lib-validate');
@@ -224,14 +223,6 @@ program.parse(process.argv);
 
   runtime.hostManager = host;
   runtime.imageManager = new ImageManager(runtime);
-
-  // Instantiate PrivateKey object for decrypting secure data
-  // (currently encrypted environment variables)
-  try {
-    runtime.privateKey = new PrivateKey(runtime.dockerWorkerPrivateKey);
-  } catch (err) {
-    runtime.log(`Running with no support for encrypted environment variables: ${err}`);
-  }
 
   // Billing cycle logic is host specific so we cannot handle shutdowns without
   // both the host and the configuration to shutdown.

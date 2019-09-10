@@ -3,16 +3,11 @@
   "variables": {
     "deployment":             "",
     "papertrail":             "",
-    "privateKeyLocation":     "",
     "sslKeyLocation":         "",
     "workerRevision":         "",
     "gcpProjectId":           ""
   },
   "provisioners": [
-    { "type": "file",
-      "source": "{{user `privateKeyLocation`}}",
-      "destination": "/tmp/docker-worker-priv.pem"
-    },
     { "type": "file",
       "source": "{{user `sslKeyLocation`}}",
       "destination": "/tmp/star_taskcluster-worker_net.key"
@@ -20,11 +15,8 @@
     {
       "type": "shell",
       "inline": [
-        "sudo mv /tmp/docker-worker-priv.pem /etc/",
         "sudo mv /tmp/star_taskcluster-worker_net.key /etc/",
-        "sudo chown root:root /etc/docker-worker-priv.pem",
         "sudo chown root:root /etc/star_taskcluster*",
-        "sudo chmod 600 /etc/docker-worker-priv.pem",
         "sudo chmod 600 /etc/star_taskcluster*"
       ]
     },

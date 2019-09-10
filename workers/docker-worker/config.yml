@@ -145,7 +145,6 @@ defaults:
     username: !env TESTDROID_USERNAME
     password: !env TESTDROID_PASSWORD
 
-  dockerWorkerPrivateKey: '/etc/docker-worker-priv.pem'
   ed25519SigningKeyLocation: '/etc/docker-worker-ed25519-cot-signing-key.key'
 
   dockerSave:
@@ -210,7 +209,6 @@ test:
 
   dockerVolume: '/tmp'
 
-  dockerWorkerPrivateKey: '/worker/test/docker-worker-priv.pem'
   ed25519SigningKeyLocation: '/worker/test/fixtures/ed25519_private_key'
 
   interactive:
