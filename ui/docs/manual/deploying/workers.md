@@ -87,7 +87,7 @@ The provider requires *two* service accounts in the designated project.
 The first is the service account that worker-manager will assign to workers
 it starts. Give this service account whatever google permissions you wish your
 workers to have. This could be something like writing to stackdriver for example.
-You provide the `uniqueId` of this service account in the `workerServiceAccountId` field.
+You provide the numeric `uniqueId` of this service account in the `workerServiceAccountId` field.
 
 The second is for worker-manager to run as itself with the following roles:
 
