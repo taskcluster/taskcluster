@@ -1,0 +1,22 @@
+---
+filename: tasks/messages.mdx
+title: Messages
+order: 70
+---
+
+The Taskcluster Queue service publishes pulse messages when tasks change state.
+[Pulse](/docs/manual/design/apis/pulse) is a message bus with a publish /
+subscribe model.  These messages are sent by default with a route containing
+several of the task's ID's, but can be "copied" (using the AMQP `Cc` header) to
+arbitrary routes listed in the task's `routes` property.
+
+This provides a powerful extension point for integrations with Taskcluster.
+Taskcluster itself includes a few such integrations:
+
+* The Index service listens for messages about task completion on routes
+  beginning with `index`, storing the relevant taskIds for later retrieval.
+  [More information..](/docs/reference/core/index)
+
+* The Notify service listens for messages beginning with `notify` and
+  translates them into user notifications via email or irc.  [More
+  information..](/docs/reference/core/notify)

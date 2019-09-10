@@ -1,0 +1,17 @@
+---
+filename: design/apis/hawk/signed-urls.mdx
+title: Pre-signed URLs
+order: 27
+---
+
+Hawk allows you to generate a
+[_bewit_](https://github.com/hapijs/hawk#single-uri-authorization) signature
+for any `GET` request. Including this _bewit_ signature in your request will
+then authenticate and authorize the request. All Taskcluster APIs support
+authentication of `GET` requests using these bewit signatures.  This is most
+commonly used to generate URLs to download private artifacts, such as
+`https://taskcluster.example.com/task/<taskId>/artifacts/<name>?bewit=..`.
+
+You'll find that the supported [Taskcluster
+clients](/docs/manual/using/integration/libraries) offer APIs for generating
+signed URLs.

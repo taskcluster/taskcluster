@@ -3,7 +3,7 @@ const debug = require('debug')('iterate');
 const events = require('events');
 
 /**
- * The Iterate Class.  See README.md for explanation of constructor
+ * The Iterate Class.  See README.mdx for explanation of constructor
  * arguments and events that are emitted
  */
 class Iterate extends events.EventEmitter {

@@ -1,0 +1,23 @@
+---
+title: People
+---
+
+import People from 'taskcluster-ui/views/Documentation/People';
+
+# People of Taskcluster
+
+Thanks goes to these wonderful people for their hard work on Taskcluster.
+Your name [could be here, too](https://github.com/taskcluster/taskcluster/blob/master/CONTRIBUTING.mdx)!
+
+## Staff
+
+These folks are currently working on Taskcluster full-time.
+They are all happy to help answer questions and help you make your first contribution.
+
+<People filter={contrib => contrib.contributions.includes('staff')} />
+<br />
+
+## Everyone
+
+<br />
+<People filter={contrib => !contrib.contributions.includes('staff')} />

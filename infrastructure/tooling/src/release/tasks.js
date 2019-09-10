@@ -135,7 +135,7 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
         contents.replace(/VersionNumber = .*/, `VersionNumber = "${requirements['release-version']}"`));
       changed.push(shellclient);
 
-      const shellreadme = 'clients/client-shell/README.md';
+      const shellreadme = 'clients/client-shell/README.mdx';
       utils.status({message: `Update ${shellreadme}`});
       await modifyRepoFile(shellreadme, contents =>
         contents.replace(/download\/v[0-9.]*\/taskcluster-/g, `download/v${requirements['release-version']}/taskcluster-`));
@@ -175,21 +175,21 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
       const changed = [];
 
       const marker = '<!-- NEXT RELEASE HERE -->\n';
-      const oldCL = await readRepoFile('CHANGELOG.md');
+      const oldCL = await readRepoFile('CHANGELOG.mdx');
 
       const markerIdx = oldCL.indexOf(marker);
       const breakpoint = markerIdx + marker.length;
       if (markerIdx === -1) {
-        throw new Error('CHANGELOG.md does not contain the appropriate marker');
+        throw new Error('CHANGELOG.mdx does not contain the appropriate marker');
       }
 
-      await writeRepoFile('CHANGELOG.md',
+      await writeRepoFile('CHANGELOG.mdx',
         oldCL.slice(0, breakpoint) +
           `\n## v${requirements['release-version']}\n\n` +
           requirements['changelog'].format() +
           '\n' +
           oldCL.slice(breakpoint));
-      changed.push('CHANGELOG.md');
+      changed.push('CHANGELOG.mdx');
 
       for (let filename of requirements['changelog'].filenames()) {
         await removeRepoFile(filename);

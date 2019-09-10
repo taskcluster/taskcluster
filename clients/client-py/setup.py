@@ -66,7 +66,7 @@ elif sys.version_info[:2] >= (3, 5):
         'async_timeout>=2.0.0',
     ])
 
-with open('README.md') as f:
+with open('README.mdx') as f:
     long_description = f.read()
 
 if __name__ == '__main__':

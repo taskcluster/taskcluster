@@ -1,0 +1,30 @@
+---
+filename: tasks/scopes.mdx
+title: Task Scopes
+order: 60
+---
+
+Taskcluster permissions are represented by "scopes", covered in more detail in
+[the design section](/docs/manual/design/apis/hawk/scopes). For this section, it
+is enough to know that a scope is a permission to perform a particular action.
+
+A task has a set of scopes that determine what the task can do.  These scopes
+are validated by the worker.  For example, a worker may limit access to
+features based on whether the running task has a corresponding scope. It is
+also possible for a task to make arbitrary API calls using its scopes via an
+authenticating proxy.
+
+Taskcluster avoids "scope escalation", where a user might gain use of scopes
+they do not have, by requiring that the creator of a task have all of the
+scopes associated with the task. Thus a task's scopes must be satisfied by the
+scopes its creator has.
+
+In fact, several scope sets must be satisfieid to create a task:
+ * Scopes to create a task for the given worker type
+ * Scopes corresponding to some components of the task definition, such as
+   routes, priorities, and `schedulerId`.
+ * The task's `scopes` property
+
+*NOTE*: this means that scopes for a task must often be configured in two places.  For example, to use a scope `secrets:get:org-project-test-creds`, a task associated with a github project would need:
+ * the scope satisfied by a role such as `repo:github.com/org/project:branch:master`
+ * the same scope listed in the task's `scopes` property

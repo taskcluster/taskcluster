@@ -39,8 +39,8 @@ class ChangeLog {
   }
 
   async load() {
-    const snippetFiles = glob.sync('changelog/*.md', {cwd: appRootDir.get()})
-      .filter(filename => filename !== 'changelog/README.md');
+    const snippetFiles = glob.sync('changelog/*.mdx', {cwd: appRootDir.get()})
+      .filter(filename => filename !== 'changelog/README.mdx');
 
     this.snippets = await Promise.all(snippetFiles.map(async filename => {
       const snippetContent = await readRepoFile(filename);

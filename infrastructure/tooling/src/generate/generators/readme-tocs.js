@@ -7,7 +7,7 @@ exports.tasks = [{
   run: async (requirements, utils) => {
     utils.status({message: 'gathering READMEs'});
     let readmes = (await gitLsFiles())
-      .filter(file => file.endsWith('README.md'))
+      .filter(file => file.endsWith('README.mdx'))
       // ignore generated output
       .filter(file => !file.startsWith('ui/docs/'))
       // some test directories have READMEs
@@ -17,7 +17,7 @@ exports.tasks = [{
     // read each README and extract titles where available
     const firstLine = /^# (.*)\n/;
     for (let readme of readmes) {
-      readme.content = await readRepoFile(path.join(readme.dir, 'README.md'));
+      readme.content = await readRepoFile(path.join(readme.dir, 'README.mdx'));
       const match = firstLine.exec(readme.content);
       if (match) {
         readme.title = match[1];
@@ -54,12 +54,12 @@ exports.tasks = [{
     const rewrite = async ({content, dir, title, children}) => {
       const lines = tocLines([], '', dir, children);
       if (lines.length > 0) {
-        utils.status({message: `rewriting ${path.join(dir, 'README.md')}`});
+        utils.status({message: `rewriting ${path.join(dir, 'README.mdx')}`});
         const newContent = content.replace(
           /(<!-- TOC BEGIN -->)(?:.|\n)*(<!-- TOC END -->)/m,
           `$1\n${lines.join('\n')}\n$2`);
         if (content !== newContent) {
-          await writeRepoFile(path.join(dir, 'README.md'), newContent);
+          await writeRepoFile(path.join(dir, 'README.mdx'), newContent);
         }
       }
 

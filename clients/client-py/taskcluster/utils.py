@@ -63,7 +63,7 @@ def toStr(obj, encoding='utf-8'):
 def fromNow(offset, dateObj=None):
     """
     Generate a `datetime.datetime` instance which is offset using a string.
-    See the README.md for a full example, but offset could be '1 day' for
+    See the README.mdx for a full example, but offset could be '1 day' for
     a datetime object one day in the future
     """
 

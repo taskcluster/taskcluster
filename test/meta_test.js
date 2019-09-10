@@ -121,7 +121,7 @@ suite('Repo Meta Tests', function () {
   });
   test('headings in docs files match expectations', async function () {
     const markdowns = glob.sync(
-      'ui/docs/**/*.md',
+      'ui/docs/**/*.mdx',
       { cwd: ROOT_DIR });
 
     let errors = "";
@@ -132,7 +132,7 @@ suite('Repo Meta Tests', function () {
       let md = data.toString();
 
       //remove the markdown code blocks which may include python # comment
-      // which can be confused with # markdown heading, as in, ui/docs/manual/using/s3-uploads.md
+      // which can be confused with # markdown heading, as in, ui/docs/manual/using/s3-uploads.mdx
       md = md.replace(/```[a-z]*[\s\S]*?\```/g, "");
       const hd = [];
 

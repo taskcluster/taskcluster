@@ -3,7 +3,7 @@
 generated/** linguist-generated=true
 clients/client-web/src/clients/** linguist-generated=true
 clients/client-py/taskcluster/generated/** linguist-generated=true
-clients/client-py/README.md linguist-generated=true
+clients/client-py/README.mdx linguist-generated=true
 clients/client/src/apis.js linguist-generated=true
 services/*/Procfile linguist-generated=true
 /.yarn/** linguist-generated=true

@@ -4,7 +4,7 @@ const libUrls = require('taskcluster-lib-urls');
 /**
  * The parent class for all providers.
  *
- * See ../../providers.md for information on writing providers.
+ * See ../../providers.mdx for information on writing providers.
  */
 class Provider {
   constructor({

@@ -1,0 +1,19 @@
+---
+filename: tasks/times.mdx
+title: Times
+order: 10
+---
+
+Each task has three associated times:
+* `created` is the time the task was created;
+* `deadline` is the time by which the task must be completed; and
+* `expires` is the time after which all record of the task and its runs will be deleted.
+
+The deadline exists to ensure that tasks do not remain pending forever, and
+eventually become immutable. It is usually set to one day after `created`, on
+the assumption that running the task more than a day later is not useful.
+
+Task expiration ensures that tasks are not stored indefinitely, thereby
+controlling storage costs. Expiration is often set to one year after creation,
+but for common tasks, tasks which produce large artifacts, or tasks which are
+unlikely to be useful later, a much shorter expiration is appropriate.

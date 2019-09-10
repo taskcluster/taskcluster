@@ -1,0 +1,33 @@
+---
+filename: design/apis/hawk/roles.mdx
+title: Roles
+order: 24
+---
+
+# Roles
+
+A _role_ consists of a `roleId`, a set of scopes, and a description. Each role
+constitutes a simple _expansion rule_ that says if you have the scope
+`assume:<roleId>` you get the set of scopes associated with the role named
+`roleId`. Roles can refer to other roles in the same way.
+
+See [the taskcluster-auth
+docs](/docs/reference/platform/auth/roles) for more detailed
+information on roles and role expansion.
+
+## In Practice
+
+In practice, roles are used in a few ways within Taskcluster:
+
+ * As a shorthand for a commonly-used set of scopes
+ * As a means of associating scopes with external things such as source-code repositories or users
+ * As a way to configure scopes for Taskcluster resources like hooks or worker pools
+ * As a scope allowing the bearer to "assume" the named role.
+
+See the [namespaces](/docs/manual/using/namespaces) document for more information.
+
+The set of defined roles is visible in the Taskcluster UI.  This interface
+helpfully shows both the scopes configured for the role, and the "expanded
+scopes" for that role. The latter value can be a little misleading for
+`*`-suffixed roles, so be careful and if in doubt, create a throwaway client to
+test your assumptions.

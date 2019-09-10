@@ -1,0 +1,41 @@
+---
+filename: tasks/README.mdx
+title: Tasks
+order: 10
+---
+
+This chapter focuses on Taskcluster's core concept: tasks.
+
+At the highest level, Taskcluster executes tasks. New tasks are added to one of
+several queues, and workers consume tasks from those queues and execute them.
+In the process, services send [Pulse](/docs/manual/design/apis/pulse) messages
+about task status, and attach the results of the task -- including logs and
+output artifacts -- to the task itself.
+
+A task is described by a task definition, which is a simple data structure
+usually encoded in JSON or YAML.  Each task has a unique `taskId`, assigned
+randomly by the caller when the task is created.  The full schema for the task
+definition is given in [the reference
+documentation](/docs/reference/platform/queue/task-schema), but a
+simple task might look like this:
+
+```yaml
+provisionerId:      aws-provisioner-v1
+workerType:         tutorial
+created:            2020-01-04T04:18.084Z
+deadline:           2020-01-05T04:18.084Z
+metadata:
+  name:             Example Task
+  description:      Eample from TC Manual
+  owner:            nobody@taskcluster.net
+  source:           https://github.com/taskcluster/taskcluster-docs
+payload:
+  image:            ubuntu:16.04
+  command:          ['echo', 'hello world']
+```
+
+You can use the Task Creator tool in the user interface to experiment with
+creating tasks.
+
+The next few sections describe the many powerful features of tasks, while the
+[next chapter](/docs/manual/task-execution) covers their execution by workers.

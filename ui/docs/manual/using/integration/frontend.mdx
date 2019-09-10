@@ -1,0 +1,330 @@
+---
+filename: using/integration/frontend.mdx
+title: Frontend Applications
+order: 10
+---
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
+
+# Frontend Applications
+
+A frontend application -- one which executes in the browser -- can easily make
+calls to Taskcluster APIs using the user's credentials.
+
+Taskcluster implements the [OAuth2 protocol](https://tools.ietf.org/html/rfc6749),
+supporting both the "Implicit" and "Authorization Code" flows.
+The "Resource Owner Password Credentials" and "Client Credentials" flows are not supported.
+
+Clients are [pre-defined](/docs/manual/deploying/third-party), and each pre-defined client indicates which flow it uses (and cannot use both).
+Some clients are whitelisted, meaning that user consent is not required.
+
+The Taskcluster credentials will eventually expire, but can be requested
+again when required. Callers should check the expiration before every call to a
+Taskcluster API and refresh when necessary.
+
+## Creating a simple login integration
+
+Let’s begin working on a simple login page. For brevity and demonstration purposes, we will
+be using a single HTML file for this, but you can adapt these techniques into any more complex
+application, including those using ES imports. We will also pretend the rootUrl of the
+Taskcluster deployment and the HTML demo file are hosted on
+`https://tc.example.com` and `http://localhost:4000` respectively. Here is the base page markup
+we are working with:
+
+```html
+<!doctype html>
+<html>
+  <head><title>Taskcluster Third Party Login Demo</title></head>
+  <body>
+    <a id="action-link" href="https://tc.example.com/login/oauth/authorize?client_id=demo-app&redirect_uri=http%3A%2F%2Flocalhost%3A4000&response_type=code&scope=tags%3Aget%3A*&state=99&expires=1+week">Login</a><br />
+    <pre id="status"></pre>
+  </body>
+</html>
+```
+
+The important parts of this page are an action link and a status container.
+We will use the action link to trigger interaction on the page, and the status
+container to show the results of our actions.
+
+To start, let's add a few library dependencies before the closing body tag:
+
+```html
+<script src="https://unpkg.com/hawk/lib/browser.js"></script>
+<script>window.hawk = hawk; /* hawk's "browser" client doesn't expose itself on window */</script>
+<script src="https://wzrd.in/standalone/query-string"></script>
+<script src="https://unpkg.com/taskcluster-client-web"></script>
+```
+
+Next, let's add an empty script tag to contain our custom functionality,
+and capture a reference to our action link and status container:
+
+```html
+<script>
+'use strict';
+
+const link = document.getElementById('action-link');
+const status = document.getElementById('status');
+</script>
+```
+
+Loading our page up to this point you will see our action link, and clicking
+it will navigate you to the familiar Taskcluster user interface to sign in.
+The URL takes the following query parameters:
+
+| Parameter | Required | Description |
+| --- | --- | --- |
+| response_type | ✓ |The value must be "code" for requesting an authorization code, or "token” for requesting an access token. |
+| client_id | ✓ | The registered OAuth2 client (this is not a Taskcluster clientId). |
+| redirect_uri | ✓ | The URL to which the browser should be redirected after authorization. |
+| scope | ✓ | Taskcluser scopes the client is authorized to receive. |
+| state | | An opaque value used by the client to maintain state between the request and callback. |
+| expires | | The requested lifetime of the resulting Taskcluster credentials, in a format understood by [`fromNow`](../../../../clients/client#relative-date-time-utilities). |
+
+Remarks:
+* `scope` can end with `*`. Scopes are space delimited (e.g., `scope=scopeA+scopeB&...`).
+* `state` is **strongly recommended**. The authorization server includes this value when redirecting the user-agent back to the client. The parameter should be used for preventing cross-site request forgery.
+* `expires` defaults to the registered OAuth client `maxExpires` value if the parameter is not provided.
+
+Once the sign in is complete, Taskcluster will
+redirect back to the `redirect_uri` you specified in the URL.
+The redirect URI will have the authorization `code` in the
+query parameter which will then be used to grab a third party access token.
+In the case of an implicit grant (i.e., `response_type=“token”`) the query
+parameter will instead have the access token so you can safely skip the next
+section and continue at [Exchanging a Third Party token for
+Taskcluster Credentials](#exchanging-a-third-party-token-for-taskcluster-credentials) section.
+
+### Exchanging a code for a third-party access token
+
+Next, the client requests an access token from the authorization server’s token endpoint by
+including the authorization code received in the previous step.
+The token endpoint is `<rootUrl>/login/oauth/token`.
+
+<Warning>
+A third party Taskcluster access token is different than the access token property of the resulting Taskcluster credentials. The former cannot be used to access protected Taskcluster endpoints.
+</Warning>
+
+```js
+if (window.location.search) {
+  const qs = parseQuery(window.location.search);
+
+  if (qs.error) {
+    // The authorization server responded with an error.
+    // The list of error codes can be found in https://tools.ietf.org/html/rfc6749#section-4.1.2.1
+    status.innerText = qs.error;
+  } else if (qs.state === '99') {
+    // See below for the implementation of `fetchToken`
+    fetchToken(qs.code).then(data => {
+      const thirdPartyAccessToken = data.access_token;
+    });
+  }
+}
+```
+
+### Exchanging a third-party token for Taskcluster credentials
+
+We can now fetch Taskcluster credentials using the acquired third party access token.
+
+```js
+if (window.location.search) {
+  const qs = parseQuery(window.location.search);
+
+  if (qs.error) {
+    // The authorization server responded with an error.
+    // The list of error codes can be found in https://tools.ietf.org/html/rfc6749#section-4.1.2.1
+    status.innerText = qs.error;
+  } else if (qs.state === '99') {
+    // See below for the implementation of `fetchToken`
+    fetchToken(qs.code).then(data => {
+      const thirdPartyAccessToken = data.access_token;
+      // Exchange the third party token for Taskcluster credentials
+      // See below for the implementation of `fetchCredentials`
+      fetchCredentials(thirdPartyAccessToken).then(data => {
+        // Let’s save the Taskcluster credentials, update the UI
+        // and tell the user
+        credentials = data.credentials;
+        status.innerText = 'Received Taskcluster credentials';
+        link.innerText = 'Call Taskcluster API';
+      })
+    });
+  }
+}
+```
+
+Great, now that we have credentials to identify a user,
+we can now call Taskcluster API methods; we will call `auth.currentScopes`
+in our example. In the previous step we changed the action link to say
+"Call Taskcluster API". Our next step will be to perform this work using
+taskcluster-client-web. Let's add a click handler to the action link:
+
+```js
+link.addEventListener('click', (e) => {
+  // Ignore event listener if we haven't fetched Taskcluster credentials yet
+  if (!credentials) {
+    return;
+  }
+
+  // Make sure the page doesn't redirect on click
+  e.preventDefault();
+
+  // Create an instance of the taskcluster.Auth client,
+  // using the Taskcluster credentials and the root URL of the target deployment.
+  const client = new window.taskcluster.Auth({
+    credentials: {
+      clientId: credentials.clientId,
+      accessToken: credentials.accessToken,
+    },
+    rootUrl: 'https://taskcluster.net',
+  });
+
+  // Let's update the UI and tell the user we are working
+  status.innerText = 'Waiting for scopes...';
+
+  // With our Taskcluster Auth client, we can request the
+  // current user's scopes, and format them for display
+  client
+    .currentScopes()
+    .then(({ scopes }) => {
+      status.innerText = scopes
+        .map(scope => `- ${scope}`)
+        .join('\n');
+    })
+    .catch(err => {
+      // If something went wrong talking to Taskcluster,
+      // let's tell the user what happened
+      status.innerText = err.message;
+    });
+});
+```
+
+Loading the page now, you have a completely functioning simple authentication site
+which can also fetch data and interact with Taskcluster! For completeness,
+here is the full code we wrote in order to make this happen:
+
+```html
+<!doctype html>
+<html>
+  <head><title>Taskcluster Login Demo</title></head>
+  <body>
+    <a id="action-link" href="https://tc.example.com/login/oauth/authorize?client_id=demo-app&redirect_uri=http%3A%2F%2Flocalhost%3A4000&response_type=code&scope=tasgs%3Aget%3A*&state=99&expires=1+week">Login</a><br />
+    <pre id="status"></pre>
+    <script src="https://unpkg.com/hawk/lib/browser.js"></script>
+    <script>
+    // hawk's "browser" client doesn't expose itself on window
+    window.hawk = hawk;
+    </script>
+    <script src="https://unpkg.com/taskcluster-client-web@8.1.1"></script>
+    <script>
+    'use strict';
+
+    const link = document.getElementById('action-link');
+    const status = document.getElementById('status');
+    // `rootUrl` should be pointing to the deployment target
+    const rootUrl = 'https://tc.example.com';
+    let credentials;
+
+
+    function request(url, options) {
+      return fetch(url, options)
+      .then(response => {
+        if (!response.ok) {
+          status.innerText = response.statusText;
+          throw new Error(response.statusText);
+        }
+
+        return response.json();
+      })
+    }
+
+    function fetchToken(code) {
+      return request(`${rootUrl}/login/oauth/token`, {
+        method: 'POST',
+        body: `grant_type=authorization_code&code=${code}&redirect_uri=${encodeURIComponent(window.origin)}&client_id=demo-app`,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      })
+    }
+
+    function fetchCredentials(token) {
+      return request(`${rootUrl}/login/oauth/credentials`, {
+        mode: 'cors',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+    }
+
+    function parseQuery(q) {
+      const qs = q.replace('?', '').split('&');
+
+      return qs.reduce((acc, curr) => {
+        const [parameter, value] = curr.split('=');
+
+        acc[parameter] = value;
+
+        return acc;
+      }, {});
+    }
+
+    link.addEventListener('click', (e) => {
+      // Ignore event listener if we haven't fetched Taskcluster credentials yet
+      if (!credentials) {
+        return;
+      }
+
+      // Make sure the page doesn't redirect on click
+      e.preventDefault();
+
+      // Create an instance of the taskcluster.Auth client,
+      // using the Taskcluster credentials and the root URL of the target deployment.
+      const client = new window.taskcluster.Auth({
+        credentials: {
+          clientId: credentials.clientId,
+          accessToken: credentials.accessToken,
+        },
+        rootUrl: 'https://taskcluster.net',
+      });
+
+      // Let's update the UI and tell the user we are working
+      status.innerText = 'Waiting for scopes...';
+      
+      // With our Taskcluster Auth client, we can request the
+      // current user's scopes, and format them for display
+      client
+        .currentScopes()
+        .then(({ scopes }) => {
+          status.innerText = scopes
+            .map(scope => `- ${scope}`)
+            .join('\n');
+        })
+        .catch(err => {
+          // If something went wrong talking to Taskcluster,
+          // let's tell the user what happened
+          status.innerText = err.message;
+        });
+    });
+
+    if (window.location.search) {
+      const qs = parseQuery(window.location.search);
+
+      if (qs.error) {
+        // The authorization server responded with an error.
+        // The list of error codes can be found in https://tools.ietf.org/html/rfc6749#section-4.1.2.1
+        status.innerText = qs.error;
+      } else if (qs.state === '99') {
+        fetchToken(qs.code).then(data => {
+          const thirdPartyAccessToken = data.access_token;
+          // Exchange the third party token for Taskcluster credentials
+          fetchCredentials(thirdPartyAccessToken).then(data => {
+            // Let’s save the Taskcluster credentials, update the UI
+            // and tell the user
+            credentials = data.credentials;
+            status.innerText = 'Received Taskcluster credentials';
+            link.innerText = 'Call Taskcluster API';
+          })
+        });
+      }
+    }
+    </script>
+  </body>
+</html>
+```

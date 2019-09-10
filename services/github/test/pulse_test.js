@@ -85,7 +85,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       'event.pullNumber': 36,
       'event.type': 'pull_request.opened',
       'event.head.user.email': 'anotheruser@github.com',
-      'event.title': 'Update README.md',
+      'event.title': 'Update README.mdx',
     },
     jsonFile: 'webhook.pull_request.open.json',
     tasks_for: 'github-pull-request',

@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	// See https://github.com/taskcluster/slugid-go/blob/master/README.md for
+	// See https://github.com/taskcluster/slugid-go/blob/master/README.mdx for
 	// an explanation of these regular expressions. Note, compiling once is
 	// more performant than compiling with each decode/encode call. We can use
 	// regexp.MustCompile rather than regexp.Compile since these are constant
