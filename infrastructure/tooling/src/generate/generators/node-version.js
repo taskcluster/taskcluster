@@ -26,8 +26,8 @@ exports.tasks = [{
         /^FROM node:[0-9.]+(.*)$/gm,
         `FROM node:${nodeVersion}$1`));
 
-    utils.status({message: 'dev-docs/development-process.md'});
-    await modifyRepoFile('dev-docs/development-process.md',
+    utils.status({message: 'dev-docs/development-process.mdx'});
+    await modifyRepoFile('dev-docs/development-process.mdx',
       contents => contents.replace(
         /Node version [0-9.]+/,
         `Node version ${nodeVersion}`));

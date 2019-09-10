@@ -362,7 +362,7 @@ exports.tasks = [{
     await writePyFile(path.join(moduleDir, 'aio', '_client_importer.py'), clientImporterString);
 
     utils.status({message: 'README'});
-    await modifyRepoFile(path.join('clients', 'client-py', 'README.md'),
+    await modifyRepoFile(path.join('clients', 'client-py', 'README.mdx'),
       contents => modifyReadme(apis, contents));
   },
 }];

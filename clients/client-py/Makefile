@@ -22,7 +22,7 @@ clean:
 .PHONY: docs
 docs: devel
 	$(PYTHON) -m pip install grip
-	$(VENV)/bin/grip --export README.md
+	$(VENV)/bin/grip --export README.mdx
 	@echo "Now, upload README.html wherever docs go!"
 
 .PHONY: devel
