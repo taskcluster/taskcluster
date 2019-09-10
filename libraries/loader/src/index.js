@@ -48,7 +48,7 @@ function loader(componentDirectory, virtualComponents = {}) {
   Object.entries(componentDirectory).forEach(([name, def]) => {
     validateComponent(def, name);
     for (let dep of def.requires || []) {
-      if (!componentDirectory.hasOwnProperty(dep) && !virtualComponents.hasOwnProperty(dep)) {
+      if (!(dep in componentDirectory) && !(dep in virtualComponents)) {
         throw new Error('Cannot require undefined component: ' + dep);
       }
     }

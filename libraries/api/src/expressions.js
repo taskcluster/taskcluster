@@ -3,9 +3,9 @@ const _ = require('lodash');
 const validRootTemplate = (template) =>
   validateTemplate(template) && (
     typeof template === 'string' ||
-    template.hasOwnProperty('AllOf') ||
-    template.hasOwnProperty('AnyOf') ||
-    template.hasOwnProperty('if')
+    'AllOf' in template ||
+    'AnyOf' in template ||
+    'if' in template
   )
 ;
 
@@ -52,21 +52,21 @@ const compileTemplate = (template) => {
     // All the even entries are parameters
     return template.split(/<([a-zA-Z][a-zA-Z0-9_]*)>/g);
   }
-  if (template.hasOwnProperty('AllOf')) {
+  if ('AllOf' in template) {
     return {AllOf: template.AllOf.map(compileTemplate)};
   }
-  if (template.hasOwnProperty('AnyOf')) {
+  if ('AnyOf' in template) {
     return {AnyOf: template.AnyOf.map(compileTemplate)};
   }
-  if (template.hasOwnProperty('for')) {
+  if ('for' in template) {
     return {
       for: template.for,
       in: template.in,
       each: compileTemplate(template.each),
     };
   }
-  if (template.hasOwnProperty('if')) {
-    if (!template.hasOwnProperty('else')) {
+  if ('if' in template) {
+    if (!('else' in template)) {
       return {
         if: template.if,
         then: compileTemplate(template.then),
@@ -108,24 +108,24 @@ const extractParams = (compiledTemplate) => {
       .map(p => ({[p]: 'string'}))
       .reduce(mergeParams, {});
   }
-  if (ctmpl.hasOwnProperty('AllOf')) {
+  if ('AllOf' in ctmpl) {
     return ctmpl.AllOf.map(extractParams).reduce(mergeParams, {});
   }
-  if (ctmpl.hasOwnProperty('AnyOf')) {
+  if ('AnyOf' in ctmpl) {
     return ctmpl.AnyOf.map(extractParams).reduce(mergeParams, {});
   }
-  if (ctmpl.hasOwnProperty('for')) {
+  if ('for' in ctmpl) {
     return _.omit(mergeParams({
       [ctmpl.in]: 'array',
       [ctmpl.for]: 'string', // require that result from 'each' can be merged with 'for' being a string
     }, extractParams(ctmpl.each)), ctmpl.for); // omit 'for' as it's declared here
   }
-  if (ctmpl.hasOwnProperty('if')) {
+  if ('if' in ctmpl) {
     return mergeParams({
       [ctmpl.if]: 'boolean',
     }, mergeParams(
       extractParams(ctmpl.then),
-      ctmpl.hasOwnProperty('else') ? extractParams(ctmpl.else) : {},
+      'else' in ctmpl ? extractParams(ctmpl.else) : {},
     ));
   }
   throw new Error('extractParams expects a compiled scope expression templates');
@@ -145,7 +145,7 @@ const render = (compiledTemplate, params) => {
       return value;
     }).join('');
   }
-  if (ctmpl.hasOwnProperty('AllOf')) {
+  if ('AllOf' in ctmpl) {
     const AllOf = [];
     ctmpl.AllOf.forEach(t => {
       const result = render(t, params);
@@ -159,7 +159,7 @@ const render = (compiledTemplate, params) => {
     });
     return {AllOf};
   }
-  if (ctmpl.hasOwnProperty('AnyOf')) {
+  if ('AnyOf' in ctmpl) {
     const AnyOf = [];
     ctmpl.AnyOf.forEach(t => {
       const result = render(t, params);
@@ -173,7 +173,7 @@ const render = (compiledTemplate, params) => {
     });
     return {AnyOf};
   }
-  if (ctmpl.hasOwnProperty('for')) {
+  if ('for' in ctmpl) {
     const value = params[ctmpl.in];
     if (value instanceof Array) {
       const nestedParams = _.assign({}, params);
@@ -184,13 +184,13 @@ const render = (compiledTemplate, params) => {
     }
     throw new Error(`Scope expression template expected parameter '${ctmpl.in}' to be a array`);
   }
-  if (ctmpl.hasOwnProperty('if')) {
+  if ('if' in ctmpl) {
     const value = params[ctmpl.if];
     if (value === true) {
       return render(ctmpl.then, params);
     }
     if (value === false) {
-      if (ctmpl.hasOwnProperty('else')) {
+      if ('else' in ctmpl) {
         return render(ctmpl.else, params);
       }
       return null;

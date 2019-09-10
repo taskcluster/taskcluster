@@ -83,7 +83,7 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
         throw new Error('ext.certificate issuer `' + issuingClientId +
                         '` doesn\'t have `' + createScope + '` for supplied clientId.');
       }
-    } else if (cert.hasOwnProperty('clientId')) {
+    } else if ('clientId' in cert) {
       throw new Error('ext.certificate.clientId must only be used with ext.certificate.issuer');
     }
 

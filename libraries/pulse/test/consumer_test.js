@@ -55,6 +55,14 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       await conn.close();
     };
 
+    // publish messages and wait until the pq stops
+    const publishUntilStopped = pq => {
+      return new Promise((resolve, reject) => {
+        pq._stoppedCallback = resolve;
+        publishMessages().catch(reject);
+      });
+    };
+
     test('consume messages', async function() {
       const client = new Client({
         credentials: connectionStringCredentials(connectionString),
@@ -65,44 +73,38 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       });
       const got = [];
 
-      await new Promise(async (resolve, reject) => {
-        try {
-          const pq = await consume({
-            client,
-            queueName: unique,
-            bindings: [{
-              exchange: exchangeName,
-              routingKeyPattern: '#',
-              routingKeyReference,
-            }],
-            prefetch: 2,
-          }, async message => {
-            debug(`handling message ${message.payload.i}`);
-            // message three gets retried once and then discarded.
-            if (message.payload.i === 3) {
-              // inject an error to test retrying
-              throw new Error('uhoh');
-            }
+      const pq = await consume({
+        client,
+        queueName: unique,
+        bindings: [{
+          exchange: exchangeName,
+          routingKeyPattern: '#',
+          routingKeyReference,
+        }],
+        prefetch: 2,
+      }, async message => {
+        debug(`handling message ${message.payload.i}`);
+        // message three gets retried once and then discarded.
+        if (message.payload.i === 3) {
+          // inject an error to test retrying
+          throw new Error('uhoh');
+        }
 
-            // recycle the client after we've had a few messages, just for exercise.
-            // Note that we continue to process this message here
-            if (got.length === 4) {
-              client.recycle();
-            }
-            got.push(message);
-            if (got.length === 9) {
-              // stop the PulseConsumer first, to exercise that code
-              // (this isn't how pq.stop would normally be called!)
-              pq.stop().then(resolve, reject);
-            }
-          });
-
-          // queue is bound by now, so it's safe to send messages
-          await publishMessages();
-        } catch (err) {
-          reject(err);
+        // recycle the client after we've had a few messages, just for exercise.
+        // Note that we continue to process this message here
+        if (got.length === 4) {
+          client.recycle();
+        }
+        got.push(message);
+        if (got.length === 9) {
+          // stop the pq, but don't wait for its Promise to resolve; this exercises
+          // the code that waits for message handling to finish before closing.  If
+          // there is an issue, Mocha will catch the unhandled rejection.
+          pq.stop();
         }
       });
+
+      await publishUntilStopped(pq);
 
       await client.stop();
 
@@ -141,41 +143,34 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       });
       const got = [];
 
-      await new Promise(async (resolve, reject) => {
-        try {
-          await consume({
-            client,
-            queueName: unique,
-            bindings: [{
-              exchange: exchangeName,
-              routingKeyPattern: '#',
-              routingKeyReference,
-            }],
-            prefetch: 1,
-          }, async message => {
-            debug(`handling message ${message.payload.i}`);
+      const pq = await consume({
+        client,
+        queueName: unique,
+        bindings: [{
+          exchange: exchangeName,
+          routingKeyPattern: '#',
+          routingKeyReference,
+        }],
+        prefetch: 1,
+      }, async message => {
+        debug(`handling message ${message.payload.i}`);
 
-            // Foricibly kill the connection after the first message
-            if (got.length === 1) {
-              // This is not pretty, but works for now.  If this breaks, try to find
-              // another way to access the file descriptor for a socket.
-              const fd = client.connections[0].amqp.connection.stream._handle.fd;
-              debug(`closing pulse socket, file descriptor ${fd}`);
-              fs.closeSync(fd);
-            }
+        // Foricibly kill the connection after the first message
+        if (got.length === 1) {
+          // This is not pretty, but works for now.  If this breaks, try to find
+          // another way to access the file descriptor for a socket.
+          const fd = client.connections[0].amqp.connection.stream._handle.fd;
+          debug(`closing pulse socket, file descriptor ${fd}`);
+          fs.closeSync(fd);
+        }
 
-            got.push(message);
-            if (got.length === 11) {
-              resolve();
-            }
-          });
-
-          // queue is bound by now, so it's safe to send messages
-          await publishMessages();
-        } catch (err) {
-          reject(err);
+        got.push(message);
+        if (got.length === 11) {
+          pq.stop();
         }
       });
+
+      await publishUntilStopped(pq);
 
       await client.stop();
 
@@ -194,55 +189,48 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       });
       const got = [];
 
-      await new Promise(async (resolve, reject) => {
-        try {
-          const pq = await consume({
-            ephemeral: true,
-            client,
-            bindings: [{
-              exchange: exchangeName,
-              routingKeyPattern: '#',
-              routingKeyReference,
-            }],
-            prefetch: 1,
-            onConnected: async () => {
-              debug('onConnected');
-              got.push({connected: true});
-              // if this is the second reconnection, then we're done -- no further
-              // messages are expected, as they were lost when we reconnected
-              if (got.filter(x => x.connected).length === 2) {
-                // stop the PulseConsumer in a tenth-second, to exercise that code
-                // (this isn't how pq.stop would normally be called!). The delay
-                // is to allow any further message deliveries (but we expect none)
-                setTimeout(() => pq.stop().then(resolve, reject), 100);
-              }
-            },
-            handleMessage: async message => {
-              debug(`handling message ${message.payload.i}`);
-              // message three gets retried once and then discarded.
-              if (message.payload.i === 3) {
-                // inject an error to test retrying
-                debug(`throwing error`);
-                throw new Error('uhoh');
-              }
+      const pq = await consume({
+        ephemeral: true,
+        client,
+        bindings: [{
+          exchange: exchangeName,
+          routingKeyPattern: '#',
+          routingKeyReference,
+        }],
+        prefetch: 1,
+        onConnected: async () => {
+          debug('onConnected');
+          got.push({connected: true});
+          // if this is the second reconnection, then we're done -- no further
+          // messages are expected, as they were lost when we reconnected
+          if (got.filter(x => x.connected).length === 2) {
+            // stop the PulseConsumer in a tenth-second, to exercise that code
+            // (this isn't how pq.stop would normally be called!). The delay
+            // is to allow any further message deliveries (but we expect none)
+            setTimeout(() => pq.stop(), 100);
+          }
+        },
+        handleMessage: async message => {
+          debug(`handling message ${message.payload.i}`);
+          // message three gets retried once and then discarded.
+          if (message.payload.i === 3) {
+            // inject an error to test retrying
+            debug(`throwing error`);
+            throw new Error('uhoh');
+          }
 
-              // recycle the client after we've had a few messages, just for exercise.
-              // Note that we continue to process this message here.  We will lose any
-              // remaining messages ("ephemeral", right?), so onConnected will resolve
-              // the promise once this occurs.
-              if (got.length === 4) {
-                client.recycle();
-              }
-              got.push(message);
-            },
-          });
-
-          // queue is bound by now, so it's safe to send messages
-          await publishMessages();
-        } catch (err) {
-          reject(err);
-        }
+          // recycle the client after we've had a few messages, just for exercise.
+          // Note that we continue to process this message here.  We will lose any
+          // remaining messages ("ephemeral", right?), so onConnected will resolve
+          // the promise once this occurs.
+          if (got.length === 4) {
+            client.recycle();
+          }
+          got.push(message);
+        },
       });
+
+      await publishUntilStopped(pq);
 
       await client.stop();
 
