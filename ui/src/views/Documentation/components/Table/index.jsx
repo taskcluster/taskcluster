@@ -2,7 +2,7 @@ import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { THEME } from '../../../../utils/constants';
 
-const useStyles = withStyles(theme => ({
+const styles = theme => ({
   container: {
     width: '100%',
     overflow: 'auto',
@@ -65,7 +65,7 @@ const useStyles = withStyles(theme => ({
       verticalAlign: 'middle',
     },
   },
-}));
+});
 
 function Table({ classes, ...props }) {
   return (
@@ -75,4 +75,4 @@ function Table({ classes, ...props }) {
   );
 }
 
-export default useStyles(Table);
+export default withStyles(styles)(Table);

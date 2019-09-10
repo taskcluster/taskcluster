@@ -4,11 +4,11 @@ import { string, node } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import resolve from 'resolve-pathname';
 
-const useStyles = withStyles(theme => ({
+const styles = theme => ({
   link: {
     ...theme.mixins.link,
   },
-}));
+});
 
 function Anchor({ classes, href, children, ...props }) {
   if (href.startsWith('http')) {
@@ -38,4 +38,4 @@ Anchor.propTypes = {
   children: node.isRequired,
 };
 
-export default useStyles(Anchor);
+export default withStyles(styles)(Anchor);
