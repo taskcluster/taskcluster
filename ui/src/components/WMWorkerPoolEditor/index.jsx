@@ -92,22 +92,18 @@ export default class WMWorkerPoolEditor extends Component {
     dialogError: oneOfType([string, object]),
     /**
      * Callback function fired when the DialogAction component throws an error.
-     * Required when viewing an existent address.
      * */
     onDialogActionError: func,
     /**
      * Callback function fired when the DialogAction component runs
-     * successfully. Required when viewing an existent address.
      * */
     onDialogActionComplete: func,
     /**
      * Callback function fired when the dialog should open.
-     * Required when viewing an existent address.
      */
     onDialogActionOpen: func,
     /**
      * Callback function fired when the dialog should close.
-     * Required when viewing an existent address.
      */
     onDialogActionClose: func,
   };
@@ -445,7 +441,8 @@ export default class WMWorkerPoolEditor extends Component {
                   {joinWorkerPoolId(
                     workerPool.workerPoolId1,
                     workerPool.workerPoolId2
-                  )}{' '}
+                  )}
+                  .
                 </Typography>
               }
               confirmText="Delete Worker Pool"
