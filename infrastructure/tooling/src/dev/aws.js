@@ -42,6 +42,7 @@ module.exports = async ({userConfig, answer, configTmpl}) => {
   const prefix = (answer.meta || {}).deploymentPrefix || (userConfig.meta || {}).deploymentPrefix;
 
   userConfig.queue = userConfig.queue || {};
+  userConfig.meta = userConfig.meta || {};
 
   // TODO: Add both blob buckets
   // TODO: Also set up auth/notify aws stuff
