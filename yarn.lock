@@ -1282,9 +1282,9 @@ assertion-error@^1.1.0:
   integrity sha512-jgsaNduz+ndvGyFt3uSuWqvy4lCnIJiovtouQN5JZHOKCS2QuhEdbcQHFhVksz2N2U9hXJo8odG7ETyWlEeuDw==
 
 assume@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/assume/-/assume-2.1.0.tgz#16939464de8a4bfdfe3d5ab5256c5ae08a1ddf62"
-  integrity sha512-ugye6y85HyKkMe1GOprT9eGImzGDJ/Yci7/beHE0M63osWljUoiQ7ix6WwxWK5gvEVFnP7b65/ZS7jf1Um17MQ==
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/assume/-/assume-2.2.0.tgz#53146f801fb3d0ac64534dcb31e2659cc985a062"
+  integrity sha512-R4SMWjVwnwKtd1W3rt7h/Csd6+CxGBG+w7Cd93TBWBUqOOG5rt364LeXPjfntkx5np2zp+d+fc5KrdgvIuCJuw==
   dependencies:
     deep-eql "^3.0.1"
     fn.name "^1.0.1"
