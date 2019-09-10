@@ -8,9 +8,9 @@ class StaticProvider extends Provider {
   }
 
   async createWorker({workerPool, workerGroup, workerId, input}) {
-    const {secret} = input.providerInfo || {};
-    if (!secret) {
-      throw new ApiError('no worker secret provided');
+    const {staticSecret} = input.providerInfo || {};
+    if (!staticSecret) {
+      throw new ApiError('no worker staticSecret provided');
     }
 
     const {workerPoolId, providerId} = workerPool;
@@ -22,7 +22,7 @@ class StaticProvider extends Provider {
       created: new Date(),
       expires: new Date(input.expires),
       state: Worker.states.RUNNING,
-      providerData: {secret},
+      providerData: {staticSecret},
     };
 
     let worker;
@@ -33,7 +33,7 @@ class StaticProvider extends Provider {
         throw err;
       }
       const existing = await this.Worker.load({workerPoolId, workerGroup, workerId}, true);
-      if (existing.providerId !== providerId || existing.providerData.secret !== secret) {
+      if (existing.providerId !== providerId || existing.providerData.staticSecret !== staticSecret) {
         throw new ApiError('worker already exists');
       }
       worker = existing;
@@ -47,12 +47,12 @@ class StaticProvider extends Provider {
   }
 
   async registerWorker({worker, workerPool, workerIdentityProof}) {
-    const {secret} = workerIdentityProof;
+    const {staticSecret} = workerIdentityProof;
 
     // note that this can be called multiple times for the same worker..
 
-    if (!worker.providerData.secret || secret !== worker.providerData.secret) {
-      throw new ApiError('bad secret');
+    if (!worker.providerData.staticSecret || staticSecret !== worker.providerData.staticSecret) {
+      throw new ApiError('bad staticSecret');
     }
   }
 }
