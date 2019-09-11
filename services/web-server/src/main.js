@@ -198,7 +198,7 @@ const load = loader(
       }),
     },
 
-    'cleanup-expire-authorization-codes': {
+    'cleanup-expire-auth-codes': {
       requires: ['cfg', 'AuthorizationCode', 'monitor'],
       setup: ({cfg, AuthorizationCode, monitor}) => {
         return monitor.oneShot('cleanup-expire-authorization-codes', async () => {

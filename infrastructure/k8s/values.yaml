@@ -172,7 +172,7 @@ web_server:
     scanner:
       cpu: 50m
       memory: 100Mi
-    cleanup_expire_authorization_codes:
+    cleanup_expire_auth_codes:
       cpu: 50m
       memory: 100Mi
     cleanup_expire_access_tokens:

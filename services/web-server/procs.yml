@@ -12,11 +12,11 @@ scanner:
   schedule: '0 0 * * *'
   deadline: 86400
   command: node src/main.js scanner
-cleanup-expire-authorization-codes:
+cleanup-expire-auth-codes:
   type: cron
   schedule: '0 0 * * *'
   deadline: 86400
-  command: node src/main.js cleanup-expire-authorization-codes
+  command: node src/main.js cleanup-expire-auth-codes
 cleanup-expire-access-tokens:
   type: cron
   schedule: '0 0 * * *'
