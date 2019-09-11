@@ -87,6 +87,7 @@ class ShutdownManager extends EventEmitter {
       let terminated = await this.host.getTerminationTime();
 
       if (terminated) {
+        this.exit = true;
         this.config.capacity = 0;
         this.emit('nodeTermination', terminated);
       }

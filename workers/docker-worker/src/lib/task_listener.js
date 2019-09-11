@@ -232,7 +232,8 @@ class TaskListener extends EventEmitter {
     this.runningTasks.push(runningState);
 
     // After going from an idle to a working state issue a 'working' event.
-    if (this.runningTasks.length === 1) {
+    // unless we receive a notification of worker shutdown
+    if (this.runningTasks.length === 1 && !this.runtime.shutdownManager.shouldExit()) {
       this.emit('working', this);
     }
   }
@@ -487,6 +488,10 @@ class TaskListener extends EventEmitter {
       runningState.handler = taskHandler;
 
       this.addRunningTask(runningState);
+
+      if (this.runtime.shutdownManager.shouldExit()) {
+        runningState.handler.abort('worker-shutdown');
+      }
 
       // Run the task and collect runtime metrics.
       await taskHandler.start();

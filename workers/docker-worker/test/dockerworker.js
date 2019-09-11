@@ -6,6 +6,9 @@ var dockerOpts = require('dockerode-options');
 var DockerProc = require('dockerode-process');
 var dockerUtils = require('dockerode-process/utils');
 var pipe = require('promisepipe');
+var Debug = require('debug');
+
+const debug = Debug('dockerworker');
 
 const IMAGE = 'taskcluster/docker-worker-test:latest';
 
@@ -133,7 +136,11 @@ class DockerWorker {
     if (this.process) {
       var proc = this.process;
       // Ensure the container is killed and removed.
-      await proc.container.kill();
+      try {
+        await proc.container.kill();
+      } catch (e) {
+        debug(e.message);
+      }
       await proc.container.remove();
       this.process = null;
     }
