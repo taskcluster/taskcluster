@@ -7,7 +7,7 @@ import { ApolloClient } from 'apollo-client';
 import { WebSocketLink } from 'apollo-link-ws';
 import { getMainDefinition } from 'apollo-utilities';
 import { from, split } from 'apollo-link';
-import { HttpLink } from 'apollo-link-http';
+import { createHttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
 import {
   InMemoryCache,
@@ -67,9 +67,12 @@ export default class App extends Component {
     storage,
   });
 
-  httpLink = new HttpLink({
+  httpLink = createHttpLink({
     uri: window.env.GRAPHQL_ENDPOINT,
-    credentials: 'same-origin',
+    credentials:
+      window.env.TASKCLUSTER_ROOT_URL === 'https://taskcluster.net'
+        ? 'include'
+        : 'same-origin',
   });
 
   wsLink = new WebSocketLink({
