@@ -1,3 +1,4 @@
+const taskcluster = require('taskcluster-client');
 const {ApiError, Provider} = require('./provider');
 const {Worker} = require('../data');
 
@@ -54,6 +55,8 @@ class StaticProvider extends Provider {
     if (!worker.providerData.staticSecret || staticSecret !== worker.providerData.staticSecret) {
       throw new ApiError('bad staticSecret');
     }
+
+    return {expires: worker.expires};
   }
 }
 
