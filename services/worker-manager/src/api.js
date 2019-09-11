@@ -403,6 +403,13 @@ builder.declare({
   return res.reply(data.serializable());
 });
 
+let cleanCreatePayload = payload => {
+  if (payload.providerInfo && payload.providerInfo.staticSecret) {
+    payload.providerInfo.staticSecret = '(OMITTED)';
+  }
+  return payload;
+};
+
 builder.declare({
   method: 'put',
   route: '/workers/:workerPoolId:/:workerGroup/:workerId',
@@ -414,6 +421,7 @@ builder.declare({
   output: 'worker-full.yml',
   // note that this pattern relies on workerGroup and workerId not containing `/`
   scopes: 'worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>',
+  cleanPayload: cleanCreatePayload,
   description: [
     'Create a new worker.  The precise behavior of this method depends',
     'on the provider implementing the given worker pool.  Some providers',
@@ -535,6 +543,11 @@ builder.declare({
   return res.reply(result);
 });
 
+let cleanPayload = payload => {
+  payload = '(OMITTED)';
+  return payload;
+};
+
 builder.declare({
   method: 'post',
   route: '/worker/register',
@@ -544,6 +557,7 @@ builder.declare({
   category: 'Worker Manager',
   input: 'register-worker-request.yml',
   output: 'register-worker-response.yml',
+  cleanPayload,
   description: [
     'Register a running worker.  Workers call this method on worker start-up.',
     '',
