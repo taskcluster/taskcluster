@@ -4,7 +4,7 @@ import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
 
 No longer will you need to keep going back to the task-inspector page to know if your task is complete!
 Merely add some routes and we will tell you when your task is done!
-Note: You'll need to have the appropriate scopes to add these routes.
+<Warning>You'll need to have the appropriate scopes to add these routes.</Warning>
 
 Example routes:
 
