@@ -36,5 +36,7 @@ support for this functionality.
 certificate used temporary credentials. Just include both fields in the JSON
 object before base64 encoding into the `ext` property.
 
-<Warning>The way Hawk works, the `ext` property is covered by the HMAC
-signature. So it's not possible to modify this property on-the-fly.  </Warning>
+<Warning>
+  The way Hawk works, the `ext` property is covered by the HMAC signature. So 
+  it's not possible to modify this property on-the-fly.
+</Warning>

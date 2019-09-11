@@ -92,7 +92,9 @@ a scope-set containing `"assume:project-admin:zap"` would expand to include
 
 ### Stars in Parameters
 
-<Warning>Be careful using `*` in scopes that will be expanded with a parameterization, as results may not be what you expect. </Warning>
+<Warning>
+  Be careful using `*` in scopes that will be expanded with a parameterization, as results may not be what you expect. 
+</Warning>
 
 As a special case, if there is a `*` in the input suffixed matched by the
 role's `*`, then anything following the first `<..>` in the scope will be

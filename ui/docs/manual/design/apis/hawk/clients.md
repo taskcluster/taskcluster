@@ -20,6 +20,8 @@ and the "expanded scopes" that result after all roles are expanded. Note that,
 in keeping with the open nature of Taskcluster, anyone can see the full list of
 clients.
 
-<Warning>Taskcluster does not identify users. All API calls are made with
-Taskcluster credentials, which include a `clientId`, but that identifier does
-not necessarily relate to a specific person or "user account" of any sort.</Warning>
+<Warning>
+    Taskcluster does not identify users. All API calls are made with
+    Taskcluster credentials, which include a `clientId`, but that identifier does
+    not necessarily relate to a specific person or "user account" of any sort.
+</Warning>
