@@ -19,3 +19,8 @@ require (
 	golang.org/x/tools v0.0.0-20190722020823-e377ae9d6386
 	gopkg.in/yaml.v2 v2.2.2 // indirect
 )
+
+// https://bugzilla.mozilla.org/show_bug.cgi?id=1580513
+replace gopkg.in/yaml.v2 => github.com/go-yaml/yaml v0.0.0-20181115110504-51d6538a90f8
+
+replace gopkg.in/check.v1 => github.com/go-check/check v0.0.0-20161208181325-20d25e280405
