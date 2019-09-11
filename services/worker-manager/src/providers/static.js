@@ -1,4 +1,3 @@
-const taskcluster = require('taskcluster-client');
 const {ApiError, Provider} = require('./provider');
 const {Worker} = require('../data');
 
