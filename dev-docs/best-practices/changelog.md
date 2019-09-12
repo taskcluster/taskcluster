@@ -5,8 +5,8 @@ This directory contains "snippets" that will be combined into the Changelog of t
 
 ## File Format
 
-Filenames should end in `.mdx` but are otherwise arbitrary.
-To avoid conflicts, it's generally easiest to use a bug or issue identifier, e.g., `1849342.mdx`.
+Filenames should end in `.md` but are otherwise arbitrary.
+To avoid conflicts, it's generally easiest to use a bug or issue identifier, e.g., `1849342.md`.
 
 Each file is a markdown file with the following format:
 
