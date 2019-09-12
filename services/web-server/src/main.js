@@ -113,7 +113,11 @@ const load = loader(
         });
         const httpServer = createServer(app);
 
-        server.applyMiddleware({ app });
+        server.applyMiddleware({
+          app,
+          // Prevent apollo server to overwrite what we already have for cors
+          cors: false,
+        });
 
         createSubscriptionServer({
           server: httpServer, // this attaches itself directly to the server

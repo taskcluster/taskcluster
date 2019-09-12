@@ -12,6 +12,7 @@ const credentials = require('./credentials');
 module.exports = async ({ cfg, strategies }) => {
   const app = express();
 
+  app.set('trust proxy', cfg.server.trustProxy);
   app.set('view engine', 'ejs');
   app.set('views', 'src/views');
 
