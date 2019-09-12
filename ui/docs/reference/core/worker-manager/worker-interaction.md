@@ -67,6 +67,6 @@ Workers should *only* use this method to report errors that might be related to 
 This could include worker start-up issues, but does not include failed tasks or transient issues like network errors.
 
 <Warning>
-    Errors are publicly visible.
-    Workers should not include any secrets or other sensitive information in the error report.
+Errors are publicly visible.
+Workers should not include any secrets or other sensitive information in the error report.
 </Warning>

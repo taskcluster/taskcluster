@@ -5,7 +5,7 @@ This service monitors all of the repositories associated with an organization fo
 The goal of this project is to provide project owners a method for scheduling jobs in Taskcluster which is quick and straight forward.
 
 <Warning>
-    This project used to provide a base docker image for convenience's sake, but it has been deprecated due to not being that useful and not being kept up-to-date. The image will continue existing, but we recommend migrating to another image.
+This project used to provide a base docker image for convenience's sake, but it has been deprecated due to not being that useful and not being kept up-to-date. The image will continue existing, but we recommend migrating to another image.
 </Warning>
 
 ### Adding status badges to your project's README:

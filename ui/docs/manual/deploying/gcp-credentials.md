@@ -30,6 +30,6 @@ The recommended approach is to isolate work into dedicated projects such that th
 It is possible to create more narrowly-focused IAM policies, but this is not currently supported by the GCP console and must be done with manual calls to the GCP `setIamPolicy` API endpoint.
 
 <Warning>
-    The current implementation only supports one project, with any number of allowed service accounts.
-    Future work will allow multiple projects.
+The current implementation only supports one project, with any number of allowed service accounts.
+Future work will allow multiple projects.
 </Warning>

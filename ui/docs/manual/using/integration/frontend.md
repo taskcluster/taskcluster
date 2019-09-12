@@ -100,7 +100,7 @@ including the authorization code received in the previous step.
 The token endpoint is `<rootUrl>/login/oauth/token`.
 
 <Warning>
-  A third party Taskcluster access token is different than the access token property of the resulting Taskcluster credentials. The former cannot be used to access protected Taskcluster endpoints.
+A third party Taskcluster access token is different than the access token property of the resulting Taskcluster credentials. The former cannot be used to access protected Taskcluster endpoints.
 </Warning>
 
 ```js

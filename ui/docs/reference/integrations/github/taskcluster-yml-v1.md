@@ -130,7 +130,7 @@ tasks:
       ...
 ```
 <Warning>
-  A well-designed template should produce `tasks: []` for any unrecognized `tasks_for` values; this allows later expansion of this service to handle more events.
+A well-designed template should produce `tasks: []` for any unrecognized `tasks_for` values; this allows later expansion of this service to handle more events.
 </Warning>
 
 #### Custom routes for notifications and other things
@@ -169,7 +169,7 @@ Note that it is wise to always check `tasks_for` first in a conditional like thi
 Other event types do not have `event.ref`, which would lead to a template error if not for the `tasks_for` check.
 
 <Warning>
-  Once JSON-e supports [short-circuit boolean operators](https://github.com/taskcluster/json-e/issues/244), these conditionals can be collapsed into one.
+Once JSON-e supports [short-circuit boolean operators](https://github.com/taskcluster/json-e/issues/244), these conditionals can be collapsed into one.
 </Warning>
 
 #### Tags

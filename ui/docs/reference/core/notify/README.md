@@ -18,8 +18,8 @@ Example routes:
 ```
 
 <Warning>
-  However all notifications are transmitted via pulse and should not be considered private.
-  Further specification of this is contained in the [usage docs](/docs/reference/core/notify/usage).
+However all notifications are transmitted via pulse and should not be considered private.
+Further specification of this is contained in the [usage docs](/docs/reference/core/notify/usage).
 </Warning>
 
 <Warning>The channel should have the # preceeding it.</Warning>

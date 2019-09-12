@@ -99,12 +99,12 @@ This link could be embedded in the Amazing Cats README or documentation site
 for download.
 
 <Warning>
-  A path like this might point to a new task at any moment. While it is
-  safe to download a single artifact using this pattern, if your use-case involves
-  downloading a collection of related artifacts, it may be problematic. Suppose
-  the Linux version of Amazing-Cats contains both an executable binary and an
-  associated file containing debug symbols. Downloading those two files via the
-  index path may result in binary and symbols from different tasks if a task
+A path like this might point to a new task at any moment. While it is
+safe to download a single artifact using this pattern, if your use-case involves
+downloading a collection of related artifacts, it may be problematic. Suppose
+the Linux version of Amazing-Cats contains both an executable binary and an
+associated file containing debug symbols. Downloading those two files via the
+index path may result in binary and symbols from different tasks if a task
 completes during the download process.
 </Warning>
 

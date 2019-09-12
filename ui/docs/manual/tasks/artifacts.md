@@ -17,11 +17,11 @@ authentication -- any sufficiently robust HTTP client can download an artifact
 directly.
 
 <Warning>
-    Not all clients are "sufficiently robust"! The artifact interface
-    makes heavy use of redirects, and artifacts may make use of other web-standard
-    features such as content encoding.  Like any distributed system, requests may
-    fail, too, and a robust client should retry. Out of the box, `curl` and `wget`
-    do not handle most of these cases.
+Not all clients are "sufficiently robust"! The artifact interface
+makes heavy use of redirects, and artifacts may make use of other web-standard
+features such as content encoding.  Like any distributed system, requests may
+fail, too, and a robust client should retry. Out of the box, `curl` and `wget`
+do not handle most of these cases.
 </Warning>
 
 Taskcluster's Queue service supports a number of artifact types, including
