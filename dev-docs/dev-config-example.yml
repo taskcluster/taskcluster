@@ -94,8 +94,8 @@ auth:
         - 'auth:enable-client:github/*'
         - 'auth:reset-access-token:github/*'
         - 'auth:update-client:github/*'
-        - 'auth:azure-table:read-write:${azureAccountId}/AccessToken'
-        - 'auth:azure-table:read-write:${azureAccountId}/AuthorizationCode'
+        - 'auth:azure-table:read-write:${azureAccountId}/AccessTokenTable'
+        - 'auth:azure-table:read-write:${azureAccountId}/AuthorizationCodesTable'
         - 'assume:login-identity:*'
       accessToken: ...
     - clientId: static/taskcluster/worker-manager
