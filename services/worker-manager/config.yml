@@ -33,6 +33,8 @@ test:
     env: 'development'
     forceSSL: false
     trustProxy: false
+  azure:
+    accountId: "pamplemousse"
   app:
     errorsExpirationDelay: '-1 hour'
   providers:

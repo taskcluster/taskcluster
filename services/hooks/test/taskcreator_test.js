@@ -20,7 +20,7 @@ suite(testing.suiteName(), function() {
     /* Note that this requires the following set up in production TC:
      *  - TC credentials given in cfg.get('taskcluster:credentials') with
      *    - assume:hook-id:tc-hooks-tests/tc-test-hook
-     *    - auth:azure-table-access:jungle/*
+     *    - auth:azure-table-access:pamplemousse/*
      *  - a role `hook-id:tc-hooks-tests/tc-test-hook` with scopes
      *    - queue:create-task:no-provisioner/test-worker
      *    - project:taskcluster:tests:tc-hooks:scope/required/for/task/1

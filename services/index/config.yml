@@ -84,7 +84,7 @@ test:
     region: 'us-west-2'
 
   azure:
-    accountId: 'jungle'
+    accountId: 'pamplemousse'
 
   pulse:
     namespace: 'taskcluster-fake'

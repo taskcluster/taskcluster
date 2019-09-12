@@ -5,7 +5,7 @@ const testing = require('taskcluster-lib-testing');
 const fs = require('fs');
 const path = require('path');
 
-helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withProviders(mock, skipping);

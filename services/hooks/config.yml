@@ -57,7 +57,7 @@ test:
     scheduler:
       pollingDelay:   5000
   azure:
-    accountId:        'jungle'
+    accountId:        'pamplemousse'
     signingKey:       'not a secret'
     cryptoKey:        'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
   server:

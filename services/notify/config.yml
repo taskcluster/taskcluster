@@ -78,7 +78,7 @@ test:
     denylistedNotificationTableName: TestDenylistedNotification
     emailBlacklist: []
   azure:
-    accountId:        'jungle'
+    accountId:        'pamplemousse'
   server:
     port:             60401
     env:              development
