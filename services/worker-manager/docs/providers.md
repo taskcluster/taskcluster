@@ -44,7 +44,7 @@ In some cases, `removeWorker` may be interpreted as a request to terminate a dyn
 The provider's `createWorker` method is called with `workerPool` (an instance of the WorkerPool Azure entity class), `workerGroup`, `workerId`, and `input`.
 The `input` matches the `create-worker-request.yml` schema, and that schema can be adjusted to allow provider-specific parameters.
 The return value should be an instance of the Worker azure entity class.
-[Idempotency](../../dev-docs/idempotency.mdx) of this method is the responsibilty of the provider.
+[Idempotency](../../dev-docs/idempotency.md) of this method is the responsibilty of the provider.
 
 The provider's `removeWorker` method is called with an instance of the Worker Azure entity class.
 There are no restrictions on the state of that instance on return: it may still exist, and even have state RUNNING.

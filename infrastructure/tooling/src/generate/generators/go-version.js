@@ -17,8 +17,8 @@ exports.tasks = [{
         /^( *go: ')[0-9.]+(')$/m,
         `$1${goVersion.slice(2)}$2`));
 
-    utils.status({message: 'dev-docs/development-process.mdx'});
-    modifyRepoFile('dev-docs/development-process.mdx',
+    utils.status({message: 'dev-docs/development-process.md'});
+    modifyRepoFile('dev-docs/development-process.md',
       contents => contents.replace(
         /Go version go[0-9.]+/,
         `Go version ${goVersion}`));

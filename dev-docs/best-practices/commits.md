@@ -24,9 +24,9 @@ Message Footer
 
 ```
 # Bad
-❯ I added a README.mdx to the project
+❯ I added a README.md to the project
 # Good
-❯ Add README.mdx to the project
+❯ Add README.md to the project
 ```
 
 * No dot at the end

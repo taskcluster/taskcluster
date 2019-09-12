@@ -5,7 +5,7 @@ It should be used in concert with the READMEs for the services and libraries, an
 
 The [Taskcluster monorepo](https://github.com/taskcluster/taskcluster) on Github contains the source code for all of the microservices, a collection of supporting libraries, and more.
 
-See the [development process](development-process.mdx) for help getting started developing with the monorepo.
+See the [development process](development-process.md) for help getting started developing with the monorepo.
 
 ## RFCs
 
@@ -24,6 +24,6 @@ Developers should be familiar with the incidents that have occurred in the past 
 
 # Further Reading
 
-* [Design Principles](principles.mdx)
-* [Idempotency](idempotency.mdx)
+* [Design Principles](principles.md)
+* [Idempotency](idempotency.md)
 * [Best Practices](best-practices)
