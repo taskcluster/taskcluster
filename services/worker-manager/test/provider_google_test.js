@@ -5,7 +5,7 @@ const {FakeGoogle} = require('./fake-google');
 const {GoogleProvider} = require('../src/providers/google');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withFakeQueue(mock, skipping);

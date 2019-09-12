@@ -12,7 +12,7 @@ defaults:
     privateBlobArtifactBucket: ...
     blobArtifactRegion: us-west-2
   azure:
-    accountName:        jungle
+    accountName:        pamplemousse
     accountKey:         '...'
   pulse:
     username:           '...'

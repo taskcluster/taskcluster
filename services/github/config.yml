@@ -116,7 +116,7 @@ test:
     secret: ['abc123', 'def456']
 
   azure:
-    accountId: 'jungle'
+    accountId: "pamplemousse"
 
   server:
     port: 60415

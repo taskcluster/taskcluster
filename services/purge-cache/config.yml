@@ -41,7 +41,7 @@ test:
     cachePurgeExpirationDelay:   '7 days'
 
   azure:
-    accountId:                    'jungle'
+    accountId:                    'pamplemousse'
 
   server:
     port:                         60415
