@@ -2,6 +2,7 @@
 title: .taskcluster.yml version 1
 order: 20
 ---
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
 
 # Taskcluster Yml Version 1
 
@@ -128,8 +129,9 @@ tasks:
       ...
       ...
 ```
-
-NOTE: A well-designed template should produce `tasks: []` for any unrecognized `tasks_for` values; this allows later expansion of this service to handle more events.
+<Warning>
+A well-designed template should produce `tasks: []` for any unrecognized `tasks_for` values; this allows later expansion of this service to handle more events.
+</Warning>
 
 #### Custom routes for notifications and other things
 
@@ -166,7 +168,9 @@ tasks:
 Note that it is wise to always check `tasks_for` first in a conditional like this.
 Other event types do not have `event.ref`, which would lead to a template error if not for the `tasks_for` check.
 
-NOTE: Once JSON-e supports [short-circuit boolean operators](https://github.com/taskcluster/json-e/issues/244), these conditionals can be collapsed into one.
+<Warning>
+Once JSON-e supports [short-circuit boolean operators](https://github.com/taskcluster/json-e/issues/244), these conditionals can be collapsed into one.
+</Warning>
 
 #### Tags
 

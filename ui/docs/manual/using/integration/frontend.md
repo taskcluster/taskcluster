@@ -3,6 +3,7 @@ filename: using/integration/frontend.md
 title: Frontend Applications
 order: 10
 ---
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
 
 # Frontend Applications
 
@@ -98,7 +99,9 @@ Next, the client requests an access token from the authorization server’s toke
 including the authorization code received in the previous step.
 The token endpoint is `<rootUrl>/login/oauth/token`.
 
-_Note: A third party Taskcluster access token is different than the access token property of the resulting Taskcluster credentials. The former cannot be used to access protected Taskcluster endpoints._
+<Warning>
+A third party Taskcluster access token is different than the access token property of the resulting Taskcluster credentials. The former cannot be used to access protected Taskcluster endpoints.
+</Warning>
 
 ```js
 if (window.location.search) {

@@ -3,6 +3,7 @@ filename: tasks/artifacts.md
 title: Artifacts
 order: 35
 ---
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
 
 # Artifacts
 
@@ -15,11 +16,13 @@ redirects. This means that -- at least for public artifacts which require no
 authentication -- any sufficiently robust HTTP client can download an artifact
 directly.
 
-**NOTE**: Not all clients are "sufficiently robust"! The artifact interface
+<Warning>
+Not all clients are "sufficiently robust"! The artifact interface
 makes heavy use of redirects, and artifacts may make use of other web-standard
 features such as content encoding.  Like any distributed system, requests may
 fail, too, and a robust client should retry. Out of the box, `curl` and `wget`
 do not handle most of these cases.
+</Warning>
 
 Taskcluster's Queue service supports a number of artifact types, including
 several cloud data-storage back-ends as well as two special types: errors and

@@ -4,6 +4,8 @@ title: Authorized Scopes
 order: 25
 ---
 
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning'
+
 If you are making API requests on behalf of a less-trusted entity that you only
 know to possess a subset of your [scopes](scopes), you can specify the scopes a
 given request is authorized to rely on. If the request cannot be authorized
@@ -34,5 +36,7 @@ support for this functionality.
 certificate used temporary credentials. Just include both fields in the JSON
 object before base64 encoding into the `ext` property.
 
-**Note** the way Hawk works, the `ext` property is covered by the HMAC
-signature. So it's not possible to modify this property on-the-fly.
+<Warning>
+The way Hawk works, the `ext` property is covered by the HMAC signature. So
+it's not possible to modify this property on-the-fly.
+</Warning>
