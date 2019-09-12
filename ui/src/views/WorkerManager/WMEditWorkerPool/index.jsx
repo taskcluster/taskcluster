@@ -80,7 +80,7 @@ export default class WMEditWorkerPool extends Component {
   };
 
   handleDialogActionComplete = () => {
-    this.props.history.push(`worker-manager`);
+    this.props.history.push('/worker-manager');
   };
 
   handleDialogActionClose = () => {
