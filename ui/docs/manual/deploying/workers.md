@@ -84,18 +84,22 @@ your limits raised by google.
 
 The provider requires *two* service accounts in the designated project.
 
-The first is the service account that worker-manager will assign to workers
+The first, typically named `taskcluster-workers`, is the service account that worker-manager will assign to workers
 it starts. Give this service account whatever google permissions you wish your
 workers to have. This could be something like writing to stackdriver for example.
 You provide the numeric `uniqueId` of this service account in the `workerServiceAccountId` field.
 
-The second is for worker-manager to run as itself with the following roles:
+*NOTE*: in its infinite wisdom, Google has made the `uniqueId` field of service accounts un-selectable in the UI, and thus impossible to copy.
+Rather than typing this number yourself, or firing up an OCR tool, right-click to "inspect" the element, remove the "disabled" property, and then copy from the element.
+
+The second service account, typically named `taskcluster-worker-manager`, is for worker-manager itself and is used to create workers.
+It should have the following roles:
 
 * `roles/compute.admin` ("Compute Admin")
 * `roles/iam.serviceAccountUser` ("Service Account User")
 
-The GCP credentials for this service account are provided in string form (`creds`).
-In either case, the data is the large JSON object containing a service account's keys. The object looks something like this:
+The GCP key for this service account must be provided in `creds`.
+This key is the large JSON object containing a service account's keys, and looks something like this:
 
 ```
 {
@@ -111,7 +115,7 @@ In either case, the data is the large JSON object containing a service account's
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/thisthing%40something.iam.gserviceaccount.com"
 }
 ```
-and will need to be included either as a string, base64'd string, or just json/yaml in the `creds` property.
+This will need to be included either as a string, base64'd string, or just json/yaml in the `creds` property.
 
 ### AWS
 
