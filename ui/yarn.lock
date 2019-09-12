@@ -6505,9 +6505,9 @@ json-schema-defaults@^0.4.0:
     argparse "^1.0.9"
 
 json-schema-ref-parser@^7.0.0:
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/json-schema-ref-parser/-/json-schema-ref-parser-7.0.1.tgz#aba71c99c3559e4f87c70a764a444376733260c3"
-  integrity sha512-dyKV6n/x9oyRoXrPYckbPu4P3ldcWz7ecI7zMR6AG3fNAQqdn79YFnJ/wwINXsQLgtc0LnYTkulUiTKbWZ6TTg==
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/json-schema-ref-parser/-/json-schema-ref-parser-7.1.1.tgz#16896f5af14560233e24bd0c6ed581f6a94fb315"
+  integrity sha512-5DGfOTuTAMFzjNw56kwEQ9YqjCvRPHRbEmPkPSNPuK4DR4TmLQrZ1k0UdO8EJ9DKjOPqtyBjtlSnvzAC6kwUsg==
   dependencies:
     call-me-maybe "^1.0.1"
     js-yaml "^3.13.1"
@@ -8075,9 +8075,9 @@ onetime@^2.0.0:
     mimic-fn "^1.0.0"
 
 ono@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/ono/-/ono-5.0.1.tgz#a39e0af7ab2c2a143a06f08ad9d187e61f9da0c8"
-  integrity sha512-4/4BPGHX8OuDDNx1SrOqTOI7zajPjvBvrG1jDG3hDq4qBpoKlzG2d83Vdz26hvv0FFWYsLdHf+1Vu/k2d8Ww9w==
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/ono/-/ono-5.1.0.tgz#8cafa7e56afa2211ad63dd2eb798427e64f1a070"
+  integrity sha512-GgqRIUWErLX4l9Up0khRtbrlH8Fyj59A0nKv8V6pWEto38aUgnOGOOF7UmgFFLzFnDSc8REzaTXOc0hqEe7yIw==
 
 opn@5.2.0:
   version "5.2.0"
