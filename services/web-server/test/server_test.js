@@ -3,7 +3,8 @@ const helper = require('./helper');
 const request = require('superagent');
 const testing = require('taskcluster-lib-testing');
 
-suite(testing.suiteName(), () => {
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
+  helper.withEntities(mock, skipping);
   const makeSuite = (allowedCORSOrigins, requestOrigin, responseOrigin) => {
     suite(`with ${JSON.stringify(allowedCORSOrigins)}, request origin = ${requestOrigin}`, function() {
       suiteSetup(async function() {
@@ -16,7 +17,7 @@ suite(testing.suiteName(), () => {
         helper.load.restore();
       });
 
-      helper.withServer(false, () => false);
+      helper.withServer(mock, skipping);
 
       test('request', async function() {
         const res = await request

@@ -4,6 +4,8 @@ defaults:
     publicUrl: !env PUBLIC_URL
     # if true, serve the /playground path
     playground: false
+    # Delete expired entries in both the access token and authorization code tables
+    authorizationCodeExpirationDelay: '- 10 minutes'
 
   monitoring:
     level: !env:optional LEVEL
@@ -37,6 +39,11 @@ defaults:
       # Set the credential to expire after 3 days
       expiry:         '3 days'
 
+  azure:
+    accountId: !env AZURE_ACCOUNT_ID
+    signingKey: !env AZURE_SIGNING_KEY
+    cryptoKey: !env TABLE_CRYPTO_KEY
+
   # Pulse credentials
   pulse:
     username: !env PULSE_USERNAME
@@ -45,6 +52,7 @@ defaults:
     vhost: !env PULSE_VHOST
 
   login:
+    registeredClients: !env:json REGISTERED_CLIENTS
     # This is an object containing {strategy-name: config}.  It can be empty
     # or can include any of the below:
     #
@@ -67,12 +75,19 @@ development:
     # this assumes that taskcluster-ui's dev server is running on port 5080
     publicUrl: http://localhost:5080
     playground: true
+
   server:
     # taskcluster-ui's dev server assumes port 3050
     port: 3050
     trustProxy: false
     # for testing, allow any origin
     allowedCORSOrigins: [true]
+
+  azure:
+    accountId: 'jungle'
+    signingKey: 'REALULTIMATEPOWER.NET'
+    cryptoKey: 'CNcj2aOozdo7Pn+HEkAIixwninIwKnbYc6JPS9mNxZk='
+
   login:
     sessionSecret: 'keyboard cat'
 
@@ -80,8 +95,36 @@ test:
   app:
     publicUrl: http://localhost:5080
 
+  azure:
+    accountId: 'jungle'
+    signingKey: 'REALULTIMATEPOWER.NET'
+    cryptoKey: 'CNcj2aOozdo7Pn+HEkAIixwninIwKnbYc6JPS9mNxZk='
+
   login:
+    strategies: {test: true}
     sessionSecret: 'keyboard cat'
+    registeredClients:
+    - clientId: test-token
+      responseType: "token"
+      scope: ["tags:get:*"]
+      redirectUri:
+      - 'https://test.example.com/cb'
+      whitelisted: false
+      maxExpires: '1 year'
+    - clientId: test-code
+      responseType: "code"
+      scope: ["tags:get:*"]
+      redirectUri:
+        - 'https://test.example.com/cb'
+      whitelisted: false
+      maxExpires: '1 year'
+    - clientId: test-code-whitelisted
+      responseType: "code"
+      scope: ["tags:get:*"]
+      redirectUri:
+        - 'https://test.example.com/cb'
+      whitelisted: true
+      maxExpires: '1 year'
 
   server:
     port: 63821

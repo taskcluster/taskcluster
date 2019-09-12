@@ -1,4 +1,5 @@
-const bodyParser = require('body-parser-graphql');
+const bodyParser = require('body-parser');
+const bodyParserGraphql = require('body-parser-graphql');
 const session = require('express-session');
 const MemoryStore = require('memorystore')(session);
 const compression = require('compression');
@@ -8,8 +9,10 @@ const playground = require('graphql-playground-middleware-express').default;
 const passport = require('passport');
 const url = require('url');
 const credentials = require('./credentials');
+const oauth2AccessToken = require('./oauth2AccessToken');
+const oauth2 = require('./oauth2');
 
-module.exports = async ({ cfg, strategies }) => {
+module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor }) => {
   const app = express();
 
   app.set('trust proxy', cfg.server.trustProxy);
@@ -50,11 +53,13 @@ module.exports = async ({ cfg, strategies }) => {
 
   app.use(passport.initialize());
   app.use(passport.session());
-  app.use(credentials());
   app.use(compression());
+  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(bodyParser.json());
   app.post(
     '/graphql',
-    bodyParser.graphql({
+    credentials(),
+    bodyParserGraphql.graphql({
       limit: '1mb',
     })
   );
@@ -91,6 +96,34 @@ module.exports = async ({ cfg, strategies }) => {
 
   Object.values(strategies).forEach(strategy => {
     strategy.useStrategy(app, cfg);
+  });
+
+  const {
+    authorization,
+    decision,
+    token,
+    getCredentials,
+  } = oauth2(cfg, AuthorizationCode, AccessToken, strategies, auth, monitor);
+
+  // 1. Render a dialog asking the user to grant access
+  app.get('/login/oauth/authorize', authorization);
+  // 2. Process the dialog submission (skipped if redirectUri is whitelisted)
+  app.post('/login/oauth/authorize/decision', decision);
+  // 3. Exchange code for an OAuth2 token
+  app.post('/login/oauth/token', token);
+  // 4. Get Taskcluster credentials
+  app.get('/login/oauth/credentials', oauth2AccessToken(), getCredentials);
+
+  // Error handling middleware
+  app.use((err, req, res, next) => {
+    // Minimize the amount of information we disclose. The err could potentially disclose something to an attacker.
+    const error = { code: err.code, name: err.name };
+
+    if (err.name === 'InputError') {
+      Object.assign(error, { message: err.message });
+    }
+
+    res.status(500).json(error);
   });
 
   return app;

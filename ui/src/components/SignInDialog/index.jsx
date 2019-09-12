@@ -29,18 +29,17 @@ export default class SignInDialog extends Component {
   };
 
   componentDidMount() {
-    const { onAuthorize, onClose } = this.props;
+    const { onAuthorize } = this.props;
 
     window.addEventListener(
       'message',
-      function handler(e) {
+      async function handler(e) {
         if (e.origin !== window.origin || !e.data || e.data.type !== 'login') {
           return;
         }
 
-        onAuthorize(UserSession.create(e.data));
         window.removeEventListener('message', handler);
-        onClose();
+        await onAuthorize(UserSession.create(e.data));
       },
       false
     );
@@ -117,7 +116,10 @@ export default class SignInDialog extends Component {
                 <ListItemText primary="Sign in with GitHub" />
               </ListItem>
             )}
-            <ListItem button onClick={this.handleCredentialsDialogOpen}>
+            <ListItem
+              disabled={window.location.pathname === '/third-party'}
+              button
+              onClick={this.handleCredentialsDialogOpen}>
               <ListItemAvatar>
                 <Avatar>
                   <KeyboardOutlineIcon />

@@ -4,16 +4,9 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const credentialsQuery = require('./fixtures/credentials.graphql');
 
-suite(testing.suiteName(), () => {
-  suiteSetup(async function() {
-    helper.load.save();
-  });
-
-  suiteTeardown(function() {
-    helper.load.restore();
-  });
-
-  helper.withServer(false, () => false);
+helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
+  helper.withEntities(mock, skipping);
+  helper.withServer(mock, skipping);
 
   test('Unauthorized', async function() {
     const res = await request

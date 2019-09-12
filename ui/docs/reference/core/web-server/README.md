@@ -26,6 +26,12 @@ The following login strategies are supported:
 * [GitHub](github-login-strategy.md)
 * [Mozilla-Auth0](mozilla-auth0-login-strategy.md)
 
+## Third Party Login
+
+If you are building a web application that will interact with Taskcluster on behalf of your user,
+you will need your users' Taskcluster credentials. The [Third Party Login](./third-party-login)
+reference document contains more information on that.
+
 ## Identity
 
 Login strategies assign each user an `identity` in the form `<identityProviderId>/<identityId>`.

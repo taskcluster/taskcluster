@@ -172,6 +172,12 @@ web_server:
     scanner:
       cpu: 50m
       memory: 100Mi
+    cleanup_expire_auth_codes:
+      cpu: 50m
+      memory: 100Mi
+    cleanup_expire_access_tokens:
+      cpu: 50m
+      memory: 100Mi
   debug: ''
   level: notice
   taskcluster_client_id: static/taskcluster/web-server

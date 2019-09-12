@@ -67,6 +67,9 @@ const HomeOrDashboard = lazy(() =>
 const Denylist = lazy(() =>
   import(/* webpackChunkName: 'Denylist' */ '../views/Denylist')
 );
+const ThirdPartyLogin = lazy(() =>
+  import(/* webpackChunkName: 'ThirdPartyLogin' */ '../views/ThirdPartyLogin')
+);
 const NotFound = lazy(() =>
   import(/* webpackChunkName: 'NotFound' */ '../views/NotFound')
 );
@@ -150,6 +153,10 @@ export default [
   {
     component: Display,
     path: '/display',
+  },
+  {
+    component: ThirdPartyLogin,
+    path: '/third-party',
   },
   {
     component: HomeOrDashboard,
