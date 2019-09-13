@@ -1585,35 +1585,13 @@
             },
             "name": "pulse",
             "next": {
-              "path": "manual/deploying/third-party",
-              "title": "Third Party"
+              "path": "reference/README",
+              "title": "Taskcluster Reference"
             },
             "path": "manual/deploying/pulse",
             "prev": {
               "path": "manual/deploying/monitoring",
               "title": "Monitoring Services"
-            },
-            "up": {
-              "path": "manual/deploying",
-              "title": "Deploying Taskcluster"
-            }
-          },
-          {
-            "children": [
-            ],
-            "data": {
-              "order": 1000,
-              "title": "Third Party"
-            },
-            "name": "third-party",
-            "next": {
-              "path": "reference/README",
-              "title": "Taskcluster Reference"
-            },
-            "path": "manual/deploying/third-party",
-            "prev": {
-              "path": "manual/deploying/pulse",
-              "title": "Pulse"
             },
             "up": {
               "path": "manual/deploying",
@@ -2647,35 +2625,13 @@
                 },
                 "name": "mozilla-auth0-login-strategy",
                 "next": {
-                  "path": "reference/core/web-server/third-party-login",
-                  "title": "Third Party Login"
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
                 },
                 "path": "reference/core/web-server/mozilla-auth0-login-strategy",
                 "prev": {
                   "path": "reference/core/web-server/github-login-strategy",
                   "title": "GitHub Login Strategy"
-                },
-                "up": {
-                  "path": "reference/core/web-server/README",
-                  "title": "web-server"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 30,
-                  "title": "Third Party Login"
-                },
-                "name": "third-party-login",
-                "next": {
-                  "path": "reference/core/worker-manager/README",
-                  "title": "worker-manager"
-                },
-                "path": "reference/core/web-server/third-party-login",
-                "prev": {
-                  "path": "reference/core/web-server/mozilla-auth0-login-strategy",
-                  "title": "Mozilla-Auth0 Login Strategy"
                 },
                 "up": {
                   "path": "reference/core/web-server/README",
@@ -2848,8 +2804,8 @@
             },
             "path": "reference/core/worker-manager/README",
             "prev": {
-              "path": "reference/core/web-server/third-party-login",
-              "title": "Third Party Login"
+              "path": "reference/core/web-server/mozilla-auth0-login-strategy",
+              "title": "Mozilla-Auth0 Login Strategy"
             },
             "up": {
               "path": "reference/core/README",
@@ -3172,8 +3128,8 @@
     },
     "path": "reference/README",
     "prev": {
-      "path": "manual/deploying/third-party",
-      "title": "Third Party"
+      "path": "manual/deploying/pulse",
+      "title": "Pulse"
     }
   },
   "resources": {
