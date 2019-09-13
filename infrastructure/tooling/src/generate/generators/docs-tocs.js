@@ -160,8 +160,8 @@ exports.tasks = [{
     const files = Object.assign({},
       ...Object.entries(filesWithExtensions)
         .map(([filename, value]) => ({[filename.replace(/\.mdx?/, '')]: value})));
-    const [gettingStarted, resources, people] = ['README', 'resources', 'people'].map(fileName => {
-      return Object.assign(files[fileName], {
+    const [gettingStarted, resources, people] = ['README', 'resources', 'people'].map(fileName => 
+      Object.assign(files[fileName], {
         name: fileName,
         path: fileName,
         children: [],
@@ -169,8 +169,8 @@ exports.tasks = [{
         data: Object.assign(files[fileName].data || {}, {
           order: files[fileName].data.order || 1000,
         }),
-      });
-    });
+      })
+    );
     const docsToc = {
       gettingStarted,
       manual: makeToc({ rootPath: 'manual/', files }),

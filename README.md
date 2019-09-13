@@ -75,12 +75,11 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [Web-Server Service](services/web-server#readme)
     * [Worker Manager Service](services/worker-manager#readme)
         * [About the Keys in this  Directory](services/worker-manager/src/providers/aws-keys#readme)
-* [Taskcluster UI](ui#readme)
-    * [ui/src/components/DateDistance](ui/src/components/DateDistance#readme)
-    * [ui/src/components/Search](ui/src/components/Search#readme)
-    * [ui/src/components/Snackbar](ui/src/components/Snackbar#readme)
-    * [ui/src/components/SpeedDial](ui/src/components/SpeedDial#readme)
-    * [ui/src/components/StatusLabel](ui/src/components/StatusLabel#readme)
+* [ui/src/components/DateDistance](ui/src/components/DateDistance#readme)
+* [ui/src/components/Search](ui/src/components/Search#readme)
+* [ui/src/components/Snackbar](ui/src/components/Snackbar#readme)
+* [ui/src/components/SpeedDial](ui/src/components/SpeedDial#readme)
+* [ui/src/components/StatusLabel](ui/src/components/StatusLabel#readme)
 <!-- TOC END -->
 
 ## Team Mentions
