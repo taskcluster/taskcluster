@@ -729,6 +729,22 @@
           "type": "array",
           "uniqueItems": false
         },
+        "displayDevice": {
+          "additionalProperties": false,
+          "description": "Enables display device for the instance",
+          "properties": {
+            "enableDisplay": {
+              "description": "If true, the instance will have a display device enabled",
+              "title": "Enable Display",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enableDisplay"
+          ],
+          "title": "Display Device",
+          "type": "object"
+        },
         "machineType": {
           "description": "'The google machine type to use to run this instance. This refers to\n[these types](https://cloud.google.com/compute/docs/machine-types)'\n",
           "title": "Machine Type",

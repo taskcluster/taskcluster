@@ -75,6 +75,18 @@ properties:
     items:
       type: object
       additionalProperties: true
+  displayDevice:
+    title: Display Device
+    type: object
+    description: Enables display device for the instance
+    properties:
+      enableDisplay:
+        type: boolean
+        title: Enable Display
+        description: 'If true, the instance will have a display device enabled'
+    required:
+      - enableDisplay
+    additionalProperties: false
   userData:
     title: User Data (deprecated)
     type: object
