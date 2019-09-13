@@ -24,3 +24,10 @@ require (
 )
 
 replace github.com/taskcluster/taskcluster/clients/client-go/v16 => ../client-go
+
+// https://bugzilla.mozilla.org/show_bug.cgi?id=1580513
+replace gopkg.in/yaml.v2 => github.com/go-yaml/yaml v0.0.0-20181115110504-51d6538a90f8
+
+replace gopkg.in/check.v1 => github.com/go-check/check v1.0.0-20180628173108-788fd7840127
+
+replace gopkg.in/tylerb/graceful.v1 => github.com/tylerb/graceful v1.2.15
