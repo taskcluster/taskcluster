@@ -2,6 +2,7 @@
 title: Worker-Manager - Worker Interaction
 order: 100
 ---
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
 
 # Worker-Manager - Worker Interaction
 
@@ -65,5 +66,7 @@ In such cases, the worker can call [`workerManager.reportWorkerError`](/docs/ref
 Workers should *only* use this method to report errors that might be related to the worker-pool configuration.
 This could include worker start-up issues, but does not include failed tasks or transient issues like network errors.
 
-*NOTE*: errors are publicly visible.
+<Warning>
+Errors are publicly visible.
 Workers should not include any secrets or other sensitive information in the error report.
+</Warning>

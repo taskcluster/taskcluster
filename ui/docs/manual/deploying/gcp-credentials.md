@@ -1,6 +1,7 @@
 ---
 title: GCP Credentials
 ---
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
 
 The Auth service's `auth.gcpCredentials` method distributes credentials for GCP service accounts to callers, governed by scopes.
 It takes a GCP project and a service account email.
@@ -28,7 +29,7 @@ The "Service Account Token Creator" role allows a service account to create toke
 The recommended approach is to isolate work into dedicated projects such that this restriction isn't problematic.
 It is possible to create more narrowly-focused IAM policies, but this is not currently supported by the GCP console and must be done with manual calls to the GCP `setIamPolicy` API endpoint.
 
-*NOTE*: 
-
+<Warning>
 The current implementation only supports one project, with any number of allowed service accounts.
 Future work will allow multiple projects.
+</Warning>

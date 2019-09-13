@@ -2,12 +2,15 @@
 title: .taskcluster.yml version 0
 order: 100
 ---
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
 
 # Taskcluster Yml Version 0
 
-**NOTE**: version-0 `.taskcluster.yml` files are deprecated. For any new
+<Warning>
+version-0 `.taskcluster.yml` files are deprecated. For any new
 projects, and to take full advantage of Taskcluster-Github features, use a
 [version 1](taskcluster-yml-v1) file.
+</Warning>
 
 Your main interface to Taskcluster-Github is via `.taskcluster.yml` in the root
 of your project. This is a YAML file that specifies the tasks to run on

@@ -3,6 +3,7 @@ filename: using/artifacts.md
 title: Working With Artifacts
 order: 60
 ---
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
 
 # Working with Artifacts
 
@@ -97,13 +98,15 @@ service, we can construct a URL to the artifact:
 This link could be embedded in the Amazing Cats README or documentation site
 for download.
 
-_Note:_ A path like this might point to a new task at any moment. While it is
+<Warning>
+A path like this might point to a new task at any moment. While it is
 safe to download a single artifact using this pattern, if your use-case involves
 downloading a collection of related artifacts, it may be problematic. Suppose
 the Linux version of Amazing-Cats contains both an executable binary and an
 associated file containing debug symbols. Downloading those two files via the
 index path may result in binary and symbols from different tasks if a task
 completes during the download process.
+</Warning>
 
 There are two ways to avoid this issue. The simplest is to bundle all important
 results into a single artifact, but for large artifacts this can be wasteful.
