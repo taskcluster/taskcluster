@@ -288,4 +288,3 @@ tasks:
               # We can skip this if pushed to our own repo since push event will get it
               $if: 'event.pull_request.base.repo.id != event.pull_request.head.repo.id'
               then: {$eval: allTasks}
-
