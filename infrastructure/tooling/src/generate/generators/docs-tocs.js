@@ -160,7 +160,7 @@ exports.tasks = [{
     const files = Object.assign({},
       ...Object.entries(filesWithExtensions)
         .map(([filename, value]) => ({[filename.replace(/\.mdx?/, '')]: value})));
-    const [gettingStarted, resources, people] = ['README', 'resources', 'people'].map(fileName => 
+    const [gettingStarted, resources, people] = ['README', 'resources', 'people'].map(fileName =>
       Object.assign(files[fileName], {
         name: fileName,
         path: fileName,
