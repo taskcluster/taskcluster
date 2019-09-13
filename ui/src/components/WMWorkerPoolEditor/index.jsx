@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
-import { func, bool } from 'prop-types';
+import { oneOfType, object, string, func, bool } from 'prop-types';
 import { equals } from 'ramda';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import ListItem from '@material-ui/core/ListItem';
@@ -13,6 +13,7 @@ import { withStyles } from '@material-ui/core';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
+import DialogAction from '../DialogAction';
 import List from '../../views/Documentation/components/List';
 import Button from '../Button';
 import isWorkerTypeNameValid from '../../utils/isWorkerTypeNameValid';
@@ -47,7 +48,7 @@ import SpeedDial from '../SpeedDial';
     ...theme.mixins.actionButton,
   },
   saveIconSpan: {
-    position: 'fixed',
+    ...theme.mixins.fab,
     bottom: theme.spacing.double,
     right: theme.spacing.unit * 11,
     ...theme.mixins.actionButton,
@@ -74,6 +75,11 @@ export default class WMWorkerPoolEditor extends Component {
   static defaultProps = {
     isNewWorkerPool: false,
     workerPool: NULL_WORKER_POOL,
+    dialogError: null,
+    onDialogActionError: null,
+    onDialogActionComplete: null,
+    onDialogActionOpen: null,
+    onDialogActionClose: null,
   };
 
   static propTypes = {
@@ -82,6 +88,24 @@ export default class WMWorkerPoolEditor extends Component {
     saveRequest: func.isRequired,
     isNewWorkerPool: bool,
     deleteRequest: func,
+    /** Error to display when an action dialog is open. */
+    dialogError: oneOfType([string, object]),
+    /**
+     * Callback function fired when the DialogAction component throws an error.
+     * */
+    onDialogActionError: func,
+    /**
+     * Callback function fired when the DialogAction component runs
+     * */
+    onDialogActionComplete: func,
+    /**
+     * Callback function fired when the dialog should open.
+     */
+    onDialogActionOpen: func,
+    /**
+     * Callback function fired when the dialog should close.
+     */
+    onDialogActionClose: func,
   };
 
   state = {
@@ -246,8 +270,27 @@ export default class WMWorkerPoolEditor extends Component {
     }
   };
 
+  handleDeleteWorkerPool = () => {
+    const { workerPoolId1, workerPoolId2, ...payload } = this.state.workerPool;
+
+    return this.props.deleteRequest({
+      workerPoolId: joinWorkerPoolId(workerPoolId1, workerPoolId2),
+      payload,
+    });
+  };
+
   render() {
-    const { classes, isNewWorkerPool, providers } = this.props;
+    const {
+      classes,
+      isNewWorkerPool,
+      providers,
+      dialogOpen,
+      dialogError,
+      onDialogActionClose,
+      onDialogActionError,
+      onDialogActionOpen,
+      onDialogActionComplete,
+    } = this.props;
     const { workerPool, error, actionLoading, validation } = this.state;
 
     return (
@@ -373,16 +416,37 @@ export default class WMWorkerPoolEditor extends Component {
           {!isNewWorkerPool && (
             <SpeedDial>
               <SpeedDialAction
-                name="deleteRequest"
                 requiresAuth
                 tooltipOpen
                 icon={<DeleteIcon />}
-                onClick={this.handleOnClick}
+                onClick={onDialogActionOpen}
                 tooltipTitle="Delete"
                 className={classes.deleteIcon}
                 disabled={actionLoading}
               />
             </SpeedDial>
+          )}
+          {dialogOpen && (
+            <DialogAction
+              open={dialogOpen}
+              onSubmit={this.handleDeleteWorkerPool}
+              onComplete={onDialogActionComplete}
+              onClose={onDialogActionClose}
+              onError={onDialogActionError}
+              error={dialogError}
+              title="Delete Worker Pool?"
+              body={
+                <Typography>
+                  This will delete the worker pool{' '}
+                  {joinWorkerPoolId(
+                    workerPool.workerPoolId1,
+                    workerPool.workerPoolId2
+                  )}
+                  .
+                </Typography>
+              }
+              confirmText="Delete Worker Pool"
+            />
           )}
         </List>
       </Fragment>

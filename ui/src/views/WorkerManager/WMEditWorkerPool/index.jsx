@@ -27,6 +27,11 @@ import { NULL_PROVIDER } from '../../../utils/constants';
   }),
 })
 export default class WMEditWorkerPool extends Component {
+  state = {
+    dialogError: null,
+    dialogOpen: false,
+  };
+
   static defaultProps = {
     isNewWorkerPool: false,
   };
@@ -55,8 +60,10 @@ export default class WMEditWorkerPool extends Component {
     });
   };
 
-  deleteRequest = async ({ workerPoolId, payload }) => {
-    await this.props.client.mutate({
+  deleteRequest = ({ workerPoolId, payload }) => {
+    this.setState({ dialogError: null });
+
+    return this.props.client.mutate({
       mutation: updateWorkerPoolQuery,
       variables: {
         workerPoolId,
@@ -68,7 +75,27 @@ export default class WMEditWorkerPool extends Component {
     });
   };
 
+  handleDialogActionError = error => {
+    this.setState({ dialogError: error });
+  };
+
+  handleDialogActionComplete = () => {
+    this.props.history.push('/worker-manager');
+  };
+
+  handleDialogActionClose = () => {
+    this.setState({
+      dialogOpen: false,
+      dialogError: null,
+    });
+  };
+
+  handleDialogActionOpen = () => {
+    this.setState({ dialogOpen: true });
+  };
+
   render() {
+    const { dialogError, dialogOpen } = this.state;
     const { isNewWorkerPool, data, providersData } = this.props;
 
     // detect a ridiculous number of providers and let the user know
@@ -111,6 +138,12 @@ export default class WMEditWorkerPool extends Component {
               providers={providers}
               saveRequest={this.updateWorkerPoolRequest}
               deleteRequest={this.deleteRequest}
+              dialogError={dialogError}
+              dialogOpen={dialogOpen}
+              onDialogActionError={this.handleDialogActionError}
+              onDialogActionComplete={this.handleDialogActionComplete}
+              onDialogActionClose={this.handleDialogActionClose}
+              onDialogActionOpen={this.handleDialogActionOpen}
             />
           ))}
       </Dashboard>
