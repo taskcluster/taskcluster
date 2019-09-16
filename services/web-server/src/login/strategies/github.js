@@ -22,7 +22,7 @@ module.exports = class Github {
     Object.assign(this, strategyCfg);
 
     this.identityProviderId = 'github';
-    this.githubClient = new GithubClient();
+    this.githubClient = null;
   }
 
   async getUser({ username, userId }) {
@@ -46,9 +46,33 @@ module.exports = class Github {
     user.identity = `${this.identityProviderId}/${userId}|${encode(username)}`;
 
     // take a user and attach roles to it
-    // this.addRoles(userProfile, user);
+    await this.addRoles(username, userId, user);
 
     return user;
+  }
+
+  async addRoles(username, userId, user) {
+    const [orgsErr, orgs] = await tryCatch(this.githubClient.orgsFromUsername(username));
+
+    if (orgsErr) {
+      throw orgsErr;
+    }
+
+    const roles = [].concat(
+      ...(
+        await Promise.all(orgs.map(async ({ login: org }) => {
+          const [reposErr, repos] = await tryCatch(this.githubClient.reposFromOrg(org));
+
+          if (reposErr) {
+            throw reposErr;
+          }
+
+          return repos.map(repo => `github-group:${org}/${repo.name}`);
+        }))
+      )
+    );
+
+    user.addRole(...roles);
   }
 
   userFromIdentity(identity) {
@@ -84,6 +108,7 @@ module.exports = class Github {
           callbackURL: `${cfg.app.publicUrl}${callback}`,
         },
         async (accessToken, refreshToken, profile, next) => {
+          this.githubClient = new GithubClient({ accessToken });
           const user = await this.getUser({ username: profile.username, userId: Number(profile.id) });
 
           if (!user) {
