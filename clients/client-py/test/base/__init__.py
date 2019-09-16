@@ -19,12 +19,6 @@ if os.environ.get('DEBUG_TASKCLUSTER_CLIENT'):
     log.addHandler(logging.StreamHandler())
 
 
-class TCTest(unittest.TestCase):
-    """ Let's have a common base class for all Taskcluster-client tests."""
-    test_root_url = 'https://tc-tests.example.com'
-    # rootUrl of a real deployment (that needs no pre-configuration)
-    real_root_url = 'https://taskcluster.net'
-
 
 def createApiRef(**kwargs):
     default = {

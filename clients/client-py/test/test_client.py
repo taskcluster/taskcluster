@@ -18,6 +18,7 @@ import taskcluster.exceptions as exc
 import taskcluster.utils as utils
 import taskcluster_urls as liburls
 import pytest
+import pytest-mock
 
 pytestmark = [
     pytest.mark.skipif(os.environ.get("NO_TESTS_OVER_WIRE"), reason="Skipping tests over wire")
@@ -51,10 +52,11 @@ def apiRef():
     clientClass = subject.createApiClient('testApi', apiRef)
     client = clientClass({'rootUrl': base.TEST_ROOT_URL})
     # Patch time.sleep so that we don't delay tests
-    sleepPatcher = mock.patch('time.sleep')
-    sleepSleep = sleepPatcher.start()
-    sleepSleep.return_value = None
+    # sleepPatcher = mock.patch('time.sleep')
+    # sleepSleep = sleepPatcher.start()
+    # sleepSleep.return_value = None
     patcher = mock.patch.object(client, 'NEVER_CALL_ME')
+    # mocker.patch('time.sleep')
     never_call = patcher.start()
     never_call.side_effect = AssertionError
     fakeResponse = ''
