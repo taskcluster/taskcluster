@@ -121,7 +121,7 @@ export default class ClientForm extends Component {
     onDialogActionComplete: null,
     onDialogActionOpen: null,
     onDialogActionClose: null,
-    initialThirdPartyClient: null,
+    initialThirdPartyClient: {},
   };
 
   static getDerivedStateFromProps({ isNewClient, client }, state) {
