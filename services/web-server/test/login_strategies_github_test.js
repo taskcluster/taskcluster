@@ -9,6 +9,22 @@ suite(testing.suiteName(), () => {
     'taskcluster': 20,
     'a/c': 30,
   };
+  const orgs = {
+    'octocat': [
+      { login: 'taskcluster' },
+      { login: 'neutrinojs' },
+    ],
+    'taskcluster': [
+      { login: 'taskcluster' },
+    ],
+    'a/c': [],
+  };
+  const taskclusterRepos = ['taskcluster-client', 'taskcluster-queue', 'docker-worker'];
+  const neutrinojsRepos = ['neutrino', 'webpack-chain'];
+  const repos = {
+    'taskcluster': taskclusterRepos.map(repo => ({ name: repo })),
+    'neutrinojs': neutrinojsRepos.map(repo => ({ name: repo })),
+  };
   class FakeGithubClient {
     async userFromUsername(username) {
       if (username === 'FAIL') {
@@ -21,6 +37,34 @@ suite(testing.suiteName(), () => {
         throw err;
       }
       return {id: user_id};
+    }
+
+    async orgsFromUsername(username) {
+      if (username === 'FAIL') {
+        throw new Error('uhoh');
+      }
+
+      const organizations = orgs[username];
+
+      if (!organizations) {
+        throw new Error(`orgs for user ${username} not found`);
+      }
+
+      return organizations;
+    }
+
+    async reposFromOrg(org) {
+      if (org === 'FAIL') {
+        throw new Error('uhoh');
+      }
+
+      const repositories = repos[org];
+
+      if (!repositories) {
+        throw new Error(`repos for org ${org} not found`);
+      }
+
+      return repositories;
     }
   }
 
@@ -61,5 +105,15 @@ suite(testing.suiteName(), () => {
 
   test('userFromIdentity with GitHub failure', async function() {
     assert.rejects(() => strategy.userFromIdentity('github/20|FAIL'), /uhoh/);
+  });
+
+  test('userFromIdentity roles with known user', async function() {
+    const user = await strategy.userFromIdentity('github/10|octocat');
+    assert.deepEqual(user.roles, [...taskclusterRepos.map(repo => `github-group:taskcluster/${repo}`), ...neutrinojsRepos.map(repo => `github-group:neutrinojs/${repo}`)]);
+  });
+
+  test('userFromIdentity user with empty roles', async function() {
+    const user = await strategy.userFromIdentity('github/30|a!2Fc');
+    assert.deepEqual(user.roles, []);
   });
 });
