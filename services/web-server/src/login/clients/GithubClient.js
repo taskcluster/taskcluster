@@ -7,7 +7,7 @@ const baseUrl = 'https://api.github.com';
 
 module.exports = class GithubClient {
   constructor({ accessToken }) {
-    assert(accessToken, 'An access token is required to access Github endpoints');
+    assert(accessToken, 'An OAuth access token is required to access Github endpoints');
 
     this.accessToken = accessToken;
   }
@@ -24,13 +24,13 @@ module.exports = class GithubClient {
     return body;
   }
 
-  async listTeams(org) {
+  async listTeams() {
     const { body } = await request
       .get(`${baseUrl}/user/teams`)
-      .set('Authorization', `token ${this.accessToken}`);
+      .set('Authorization', `Bearer ${this.accessToken}`);
 
     if (!body) {
-      debug(`repos for org ${org} not found`);
+      debug(`teams not found`);
     }
 
     return body;
@@ -39,7 +39,7 @@ module.exports = class GithubClient {
   async userMembershipsOrgs() {
     const { body } = await request
       .get(`${baseUrl}/user/memberships/orgs`)
-      .set('Authorization', `token ${this.accessToken}`);
+      .set('Authorization', `Bearer ${this.accessToken}`);
 
     if (!body) {
       debug(`membership orgs not found`);

@@ -11,41 +11,27 @@ suite(testing.suiteName(), () => {
   };
   const orgs = {
     'octocat': [
-      { login: 'taskcluster' },
-      { login: 'neutrinojs' },
+      { role: 'admin', organization: { login: 'taskcluster' } },
+      { role: 'member', organization: { login: 'neutrinojs' } },
     ],
     'taskcluster': [
-      { login: 'taskcluster' },
-      { login: 'neutrinojs' },
+      { role: 'admin', organization: { login: 'taskcluster' } },
+      { role: 'admin', organization: { login: 'neutrinojs' } },
     ],
     'a/c': [],
   };
-  const repos = {
-    'taskcluster': [{ name: 'taskcluster-client' }, { name: 'taskcluster-queue' }],
-    'neutrinojs': [{ name: 'neutrino' }, { name: 'webpack-chain' }],
+  const teams = {
+    'octocat': [
+      { slug: 'team-1' },
+      { slug: 'team-2' },
+    ],
+    'taskcluster': [
+      { slug: 'team-3' },
+      { slug: 'team-1' },
+    ],
+    'a/c': [],
   };
-  const userOrgPermissionLevel = {
-    'taskcluster': {
-      'taskcluster-client': {
-        'octocat': { permission: 'admin' },
-        'taskcluster': { permission: 'read' },
-      },
-      'taskcluster-queue': {
-        'octocat': { permission: 'none' },
-        'taskcluster': { permission: 'write' },
-      },
-    },
-    'neutrinojs': {
-      'neutrino': {
-        'octocat': { permission: 'admin' },
-        'taskcluster': { permission: 'admin' },
-      },
-      'webpack-chain': {
-        'octocat': { permission: 'none' },
-        'taskcluster': { permission: 'none' },
-      },
-    },
-  };
+
   class FakeGithubClient {
     constructor() {
       this.currentUsername = null;
@@ -69,39 +55,24 @@ suite(testing.suiteName(), () => {
       return {id: user_id};
     }
 
-    async listOrgs() {
+    async userMembershipsOrgs() {
       const organizations = orgs[this.currentUsername];
 
       if (!organizations) {
-        throw new Error(`orgs for user ${this.currentUsername} not found`);
+        throw new Error(`memberships orgs for user ${this.currentUsername} not found`);
       }
 
       return organizations;
     }
 
-    async reposFromOrg(org) {
-      if (org === 'FAIL') {
-        throw new Error('uhoh');
+    async listTeams() {
+      const userTeams = teams[this.currentUsername];
+
+      if (!userTeams) {
+        throw new Error(`orgs for user ${this.currentUsername} not found`);
       }
 
-      const repositories = repos[org];
-
-      if (!repositories) {
-        throw new Error(`repos for org ${org} not found`);
-      }
-
-      return repositories;
-    }
-
-    async readPermissionLevel(org, repo, username) {
-      const userPermissionLevel = userOrgPermissionLevel[org][repo][username];
-
-      if (!userPermissionLevel) {
-        throw new Error(`permission level for ${username} in ${org}/${repo} not found`);
-      }
-
-      // User has write access if permission is `admin` or `write`
-      return userPermissionLevel;
+      return userTeams;
     }
   }
 
@@ -145,9 +116,12 @@ suite(testing.suiteName(), () => {
   });
 
   test('userFromIdentity roles with known user', async function() {
-    const user = await strategy.userFromIdentity('github/10|octocat');
+    console.log('before!');
+    const user = await strategy.userFromIdentity('github/20|taskcluster');
 
-    assert.deepEqual(user.roles, ['github-group:taskcluster/taskcluster-client', 'github-group:neutrinojs/neutrino']);
+    console.log('user: ', user);
+
+    assert.deepEqual(user.roles.sort(), ['github-team:team-1', 'github-team:team-3', 'github-org-admin:taskcluster', 'github-org-admin:neutrinojs'].sort());
   });
 
   test('userFromIdentity user with empty roles', async function() {
@@ -155,9 +129,11 @@ suite(testing.suiteName(), () => {
     assert.deepEqual(user.roles, []);
   });
 
-  test('userFromIdentity only has roles with write access', async function() {
-    const user = await strategy.userFromIdentity('github/20|taskcluster');
+  test('userFromIdentity only has org roles in which they are admin', async function() {
+    const user = await strategy.userFromIdentity('github/10|octocat');
 
-    assert.deepEqual(user.roles, ['github-group:taskcluster/taskcluster-queue', 'github-group:neutrinojs/neutrino']);
+    // First make sure the user is not an admin in all of the orgs they are apart of
+    assert(orgs['octocat'].some(org => org.role !== 'admin'));
+    assert.deepEqual(user.roles.filter(role => role.startsWith('github-org-')), ['github-org-admin:taskcluster'].sort());
   });
 });

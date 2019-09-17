@@ -68,7 +68,7 @@ module.exports = class Github {
       ...teams.map(({ slug: team }) => `github-team:${team}`),
       ...userMembershipsOrgs
         .filter(({ role }) => role === 'admin')
-        .map(({ organization }) => `github-org-admin:${organization.login}`)
+        .map(({ organization }) => `github-org-admin:${organization.login}`),
     ];
 
     user.addRole(...roles);
