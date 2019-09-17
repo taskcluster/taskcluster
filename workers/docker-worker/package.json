@@ -37,7 +37,7 @@
     "dockerode-process": "^0.6.1",
     "dockerode-promise": "0.1.0",
     "eslint": "^4.16.0",
-    "express": "^4.9.0",
+    "express": "^4.17.1",
     "fs-ext": "^0.5.0",
     "got": "^8.0.0",
     "got-promise": "^5.0.0",
