@@ -52,37 +52,24 @@ module.exports = class Github {
   }
 
   async addRoles(username, userId, user) {
-    // List of organizations of the logged in user which have allowed our
-    // GitHub Oauth application to access authorized scopes.
-    const [orgsErr, orgs] = await tryCatch(this.githubClient.listOrgs());
+    const [teamsErr, teams] = await tryCatch(this.githubClient.listTeams());
 
-    if (orgsErr) {
-      throw orgsErr;
+    if (teamsErr) {
+      throw teamsErr;
     }
 
-    const roles = [].concat(
-      ...(
-        await Promise.all(orgs.map(async ({ login: org }) => {
-          const [reposErr, repos] = await tryCatch(this.githubClient.reposFromOrg(org));
+    const [userMembershipsOrgsErr, userMembershipsOrgs] = await tryCatch(this.githubClient.userMembershipsOrgs());
 
-          if (reposErr) {
-            throw reposErr;
-          }
+    if (userMembershipsOrgsErr) {
+      throw userMembershipsOrgsErr;
+    }
 
-          return Promise.all(repos.map(async ({ name: repo }) => {
-            const [repoPermissionLevelErr, repoPermissionLevel] = await tryCatch(
-              this.githubClient.readPermissionLevel(org, repo, username)
-            );
-
-            if (repoPermissionLevelErr) {
-              throw repoPermissionLevelErr;
-            }
-
-            return repoPermissionLevel.permission === 'admin' || repoPermissionLevel.permission === 'write' ? `github-group:${org}/${repo}` : null;
-          }));
-        }))
-      )
-    ).filter(Boolean);
+    const roles = [
+      ...teams.map(({ slug: team }) => `github-team:${team}`),
+      ...userMembershipsOrgs
+        .filter(({ role }) => role === 'admin')
+        .map(({ organization }) => `github-org-admin:${organization.login}`)
+    ];
 
     user.addRole(...roles);
   }

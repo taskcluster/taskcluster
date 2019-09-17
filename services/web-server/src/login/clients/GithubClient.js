@@ -24,38 +24,25 @@ module.exports = class GithubClient {
     return body;
   }
 
-  // List organizations of the current user which have allowed our GitHub application to access authorized scopes.
-  async listOrgs() {
+  async listTeams(org) {
     const { body } = await request
-      .get(`${baseUrl}/user/orgs`)
-      .set('Authorization', `Bearer ${this.accessToken}`);
-
-    if (!body) {
-      debug(`orgs for logged in user not found`);
-    }
-
-    return body;
-  }
-
-  async readPermissionLevel(org, repo, username) {
-    const { body } = await request
-      .get(`${baseUrl}/repos/${org}/${repo}/collaborators/${username}/permission`)
-      .set('Authorization', `Bearer ${this.accessToken}`);
-
-    if (!body) {
-      debug(`permission level for ${username} in ${org}/${repo} not found`);
-    }
-
-    return body;
-  }
-
-  async reposFromOrg(org) {
-    const { body } = await request
-      .get(`${baseUrl}/orgs/${org}/repos`)
+      .get(`${baseUrl}/user/teams`)
       .set('Authorization', `token ${this.accessToken}`);
 
     if (!body) {
       debug(`repos for org ${org} not found`);
+    }
+
+    return body;
+  }
+
+  async userMembershipsOrgs() {
+    const { body } = await request
+      .get(`${baseUrl}/user/memberships/orgs`)
+      .set('Authorization', `token ${this.accessToken}`);
+
+    if (!body) {
+      debug(`membership orgs not found`);
     }
 
     return body;
