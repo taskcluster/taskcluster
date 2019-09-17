@@ -82,6 +82,9 @@ class AwsProvider extends Provider {
       });
     }
 
+    const azs = await ec2.describeAvailabilityZones().promise();
+    console.log('🥦', azs);
+
     // Make sure we don't get "The same resource type may not be specified more than once in tag specifications" errors
     const TagSpecifications = config.launchConfig.TagSpecifications ? config.launchConfig.TagSpecifications : [];
     const instanceTags = [];
