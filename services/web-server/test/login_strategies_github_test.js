@@ -43,7 +43,7 @@ suite(testing.suiteName(), () => {
       'webpack-chain': {
         'octocat': { permission: 'none' },
         'taskcluster': { permission: 'none' },
-      }
+      },
     },
   };
   class FakeGithubClient {
@@ -73,7 +73,7 @@ suite(testing.suiteName(), () => {
       const organizations = orgs[this.currentUsername];
 
       if (!organizations) {
-        throw new Error(`orgs for user ${username} not found`);
+        throw new Error(`orgs for user ${this.currentUsername} not found`);
       }
 
       return organizations;

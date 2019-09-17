@@ -52,7 +52,8 @@ module.exports = class Github {
   }
 
   async addRoles(username, userId, user) {
-    // List of organizations of the logged in user which have allowed our GitHub application to access authorized scopes.
+    // List of organizations of the logged in user which have allowed our
+    // GitHub Oauth application to access authorized scopes.
     const [orgsErr, orgs] = await tryCatch(this.githubClient.listOrgs());
 
     if (orgsErr) {
@@ -69,7 +70,9 @@ module.exports = class Github {
           }
 
           return Promise.all(repos.map(async ({ name: repo }) => {
-            const [repoPermissionLevelErr, repoPermissionLevel] = await tryCatch(this.githubClient.readPermissionLevel(org, repo, username));
+            const [repoPermissionLevelErr, repoPermissionLevel] = await tryCatch(
+              this.githubClient.readPermissionLevel(org, repo, username)
+            );
 
             if (repoPermissionLevelErr) {
               throw repoPermissionLevelErr;
