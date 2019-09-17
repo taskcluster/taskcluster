@@ -24,13 +24,26 @@ module.exports = class GithubClient {
     return body;
   }
 
-  async orgsFromUsername(username) {
+  // List organizations of the current user which have allowed our GitHub application to access authorized scopes.
+  async listOrgs() {
     const { body } = await request
-      .get(`${baseUrl}/users/${username}/orgs`)
+      .get(`${baseUrl}/user/orgs`)
       .set('Authorization', `Bearer ${this.accessToken}`);
 
     if (!body) {
-      debug(`orgs for user ${username} not found`);
+      debug(`orgs for logged in user not found`);
+    }
+
+    return body;
+  }
+
+  async readPermissionLevel(org, repo, username) {
+    const { body } = await request
+      .get(`${baseUrl}/repos/${org}/${repo}/collaborators/${username}/permission`)
+      .set('Authorization', `Bearer ${this.accessToken}`);
+
+    if (!body) {
+      debug(`permission level for ${username} in ${org}/${repo} not found`);
     }
 
     return body;
@@ -39,7 +52,7 @@ module.exports = class GithubClient {
   async reposFromOrg(org) {
     const { body } = await request
       .get(`${baseUrl}/orgs/${org}/repos`)
-      .set('Authorization', `Bearer ${this.accessToken}`);
+      .set('Authorization', `token ${this.accessToken}`);
 
     if (!body) {
       debug(`repos for org ${org} not found`);

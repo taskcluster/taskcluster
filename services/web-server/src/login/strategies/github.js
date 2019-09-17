@@ -52,7 +52,8 @@ module.exports = class Github {
   }
 
   async addRoles(username, userId, user) {
-    const [orgsErr, orgs] = await tryCatch(this.githubClient.orgsFromUsername(username));
+    // List of organizations of the logged in user which have allowed our GitHub application to access authorized scopes.
+    const [orgsErr, orgs] = await tryCatch(this.githubClient.listOrgs());
 
     if (orgsErr) {
       throw orgsErr;
@@ -67,10 +68,18 @@ module.exports = class Github {
             throw reposErr;
           }
 
-          return repos.map(repo => `github-group:${org}/${repo.name}`);
+          return Promise.all(repos.map(async ({ name: repo }) => {
+            const [repoPermissionLevelErr, repoPermissionLevel] = await tryCatch(this.githubClient.readPermissionLevel(org, repo, username));
+
+            if (repoPermissionLevelErr) {
+              throw repoPermissionLevelErr;
+            }
+
+            return repoPermissionLevel.permission === 'admin' || repoPermissionLevel.permission === 'write' ? `github-group:${org}/${repo}` : null;
+          }));
         }))
       )
-    );
+    ).filter(Boolean);
 
     user.addRole(...roles);
   }
@@ -106,6 +115,7 @@ module.exports = class Github {
           clientID: strategyCfg.clientId,
           clientSecret: strategyCfg.clientSecret,
           callbackURL: `${cfg.app.publicUrl}${callback}`,
+          scope: 'repo',
         },
         async (accessToken, refreshToken, profile, next) => {
           this.githubClient = new GithubClient({ accessToken });
