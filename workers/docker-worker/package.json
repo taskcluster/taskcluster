@@ -65,7 +65,7 @@
     "source-map-support": "^0.4.0",
     "split2": "^2.1.0",
     "stateless-dns-server": "^0.1.0",
-    "tar-fs": "^1.7.0",
+    "tar-fs": "^1.16.2",
     "tar-stream": "^1.2.1",
     "taskcluster-client": "^11.0.4",
     "taskcluster-lib-monitor": "^10.0.0",
