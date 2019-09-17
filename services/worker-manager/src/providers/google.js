@@ -248,6 +248,7 @@ class GoogleProvider extends Provider {
             scheduling: workerPool.config.scheduling,
             networkInterfaces: workerPool.config.networkInterfaces,
             disks: workerPool.config.disks,
+            displayDevice: workerPool.config.displayDevice,
             serviceAccounts: [{
               email: this.workerServiceAccountEmail,
               scopes: [
