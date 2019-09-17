@@ -1,6 +1,7 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { withApollo, graphql } from 'react-apollo';
+import { parse, stringify } from 'qs';
 import PlusIcon from 'mdi-react/PlusIcon';
 import { withStyles } from '@material-ui/core/styles';
 import Switch from '@material-ui/core/Switch';
@@ -34,7 +35,6 @@ import updateWorkerPoolQuery from '../WMEditWorkerPool/updateWorkerPool.graphql'
 export default class WorkerManagerWorkerPoolsView extends Component {
   state = {
     workerPoolSearch: '',
-    includeDeleted: false,
   };
 
   handleWorkerPoolSearchSubmit = workerPoolSearch => {
@@ -61,7 +61,14 @@ export default class WorkerManagerWorkerPoolsView extends Component {
   };
 
   handleSwitchChange = ({ target: { checked } }) => {
-    this.setState({ includeDeleted: checked });
+    const query = {
+      ...parse(this.props.history.location.search.slice(1)),
+      include_deleted: checked,
+    };
+
+    this.props.history.replace(
+      `${this.props.match.path}${stringify(query, { addQueryPrefix: true })}`
+    );
   };
 
   render() {
@@ -69,7 +76,10 @@ export default class WorkerManagerWorkerPoolsView extends Component {
       data: { loading, error, WorkerManagerWorkerPoolSummaries },
       classes,
     } = this.props;
-    const { workerPoolSearch, includeDeleted } = this.state;
+    const { workerPoolSearch } = this.state;
+    const includeDeleted =
+      parse(this.props.history.location.search.slice(1)).include_deleted ===
+      'true';
 
     return (
       <Dashboard
