@@ -246,32 +246,36 @@ export default class Dashboard extends Component {
       ...props
     } = this.props;
     const { error, navOpen, showHelpView, deploymentVersion } = this.state;
-    const drawer = (
-      <nav className={classes.nav}>
-        <div>
-          <div
+    const logoWithApplicationName = (
+      <>
+        <div className={classes.toolbar}>
+          <img
+            className={classes.logoStyle}
+            height={30}
+            alt="logo"
+            src={Logo}
+          />
+          <Typography
             {...!window.env.DOCS_ONLY && {
               component: Link,
               to: '/',
             }}
-            className={classes.toolbar}>
-            <img
-              className={classes.logoStyle}
-              height={30}
-              alt="logo"
-              src={Logo}
-            />
-            <Typography
-              {...!window.env.DOCS_ONLY && {
-                component: Link,
-                to: '/',
-              }}
-              variant="h6"
-              noWrap
-              className={classes.title}>
-              {window.env.APPLICATION_NAME}
-            </Typography>
-          </div>
+            variant="h6"
+            noWrap
+            className={classes.title}>
+            {window.env.APPLICATION_NAME}
+          </Typography>
+        </div>
+      </>
+    );
+    const drawer = (
+      <nav className={classes.nav}>
+        <div>
+          {window.env.DOCS_ONLY ? (
+            <Link to="/">{logoWithApplicationName}</Link>
+          ) : (
+            <div>{logoWithApplicationName}</div>
+          )}
           <Divider />
           <UserMenu />
           <Divider />
