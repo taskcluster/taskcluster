@@ -47,10 +47,10 @@ class AwsProvider extends Provider {
 
     const config = this.chooseConfig({possibleConfigs: workerPool.config.launchConfigs});
 
-    const ec2 = new aws.EC2({
+    const ec2s = workerPool.config.regions.map(region => new aws.EC2({
       credentials: this.providerConfig.credentials,
-      region: config.region,
-    });
+      region,
+    }));
 
     const toSpawn = await this.estimator.simple({
       workerPoolId,
@@ -82,9 +82,6 @@ class AwsProvider extends Provider {
       });
     }
 
-    const azs = await ec2.describeAvailabilityZones().promise();
-    console.log('🥦', azs);
-
     // Make sure we don't get "The same resource type may not be specified more than once in tag specifications" errors
     const TagSpecifications = config.launchConfig.TagSpecifications ? config.launchConfig.TagSpecifications : [];
     const instanceTags = [];
@@ -93,75 +90,110 @@ class AwsProvider extends Provider {
       ts.ResourceType === 'instance' ? instanceTags.concat(ts.Tags) : otherTagSpecs.push(ts)
     );
 
-    let spawned;
-    try {
-      spawned = await ec2.runInstances({
-        ...config.launchConfig,
+    let toSpawnCounter = toSpawn;
+    const toSpawnInARegion = Math.ceil(toSpawn / ec2s.length);
+    for await (let ec2 of ec2s) {
+      let spawned = [];
+      try {
+        spawned = await ec2.runInstances({
+          ...config.launchConfig,
 
-        UserData: userData.toString('base64'), // The string needs to be base64-encoded. See the docs above
+          UserData: userData.toString('base64'), // The string needs to be base64-encoded. See the docs above
 
-        MaxCount: toSpawn,
-        MinCount: toSpawn,
-        TagSpecifications: [
-          ...otherTagSpecs,
-          {
-            ResourceType: 'instance',
-            Tags: [
-              ...instanceTags,
-              {
-                Key: 'CreatedBy',
-                Value: `taskcluster-wm-${this.providerId}`,
-              }, {
-                Key: 'Owner',
-                Value: workerPool.owner,
-              },
-              {
-                Key: 'ManagedBy',
-                Value: 'taskcluster',
-              },
-              {
-                Key: 'Name',
-                Value: `${workerPoolId}`,
-              }],
+          MaxCount: Math.min(toSpawnCounter, toSpawnInARegion),
+          MinCount: Math.min(toSpawnCounter, toSpawnInARegion),
+          TagSpecifications: [
+            ...otherTagSpecs,
+            {
+              ResourceType: 'instance',
+              Tags: [
+                ...instanceTags,
+                {
+                  Key: 'CreatedBy',
+                  Value: `taskcluster-wm-${this.providerId}`,
+                }, {
+                  Key: 'Owner',
+                  Value: workerPool.owner,
+                },
+                {
+                  Key: 'ManagedBy',
+                  Value: 'taskcluster',
+                },
+                {
+                  Key: 'Name',
+                  Value: `${workerPoolId}`,
+                }],
+            },
+          ],
+        }).promise();
+      } catch (e) {
+        this.monitor.err(`Error calling AWS API: ${e}`);
+
+        await workerPool.reportError({
+          kind: 'creation-error',
+          title: 'Instance Creation Error',
+          description: e.message,
+          notify: this.notify,
+          WorkerPoolError: this.WorkerPoolError,
+        });
+
+        return;
+      }
+
+      toSpawnCounter -= toSpawnInARegion;
+
+      for await (let i of spawned.Instances) {
+        this.Worker.create({
+          workerPoolId,
+          providerId: this.providerId,
+          workerGroup: this.providerId,
+          workerId: i.InstanceId,
+          created: new Date(),
+          expires: taskcluster.fromNow('1 week'),
+          state: this.Worker.states.REQUESTED,
+          providerData: {
+            region: ec2.config.region,
+            groups: spawned.Groups,
+            amiLaunchIndex: i.AmiLaunchIndex,
+            imageId: i.ImageId,
+            instanceType: i.InstanceType,
+            architecture: i.Architecture,
+            availabilityZone: i.Placement.AvailabilityZone,
+            privateIp: i.PrivateIpAddress,
+            owner: spawned.OwnerId,
+            state: i.State.Name,
+            stateReason: i.StateReason.Message,
           },
-        ],
-      }).promise();
-    } catch (e) {
-      this.monitor.err(`Error calling AWS API: ${e}`);
+        });
+      }
 
-      return await workerPool.reportError({
-        kind: 'creation-error',
-        title: 'Instance Creation Error',
-        description: e.message,
-        notify: this.notify,
-        WorkerPoolError: this.WorkerPoolError,
-      });
+      // await Promise.all(spawned.Instances.map(i => {
+      //   return this.Worker.create({
+      //     workerPoolId,
+      //     providerId: this.providerId,
+      //     workerGroup: this.providerId,
+      //     workerId: i.InstanceId,
+      //     created: new Date(),
+      //     expires: taskcluster.fromNow('1 week'),
+      //     state: this.Worker.states.REQUESTED,
+      //     providerData: {
+      //       region: config.region,
+      //       groups: spawned.Groups,
+      //       amiLaunchIndex: i.AmiLaunchIndex,
+      //       imageId: i.ImageId,
+      //       instanceType: i.InstanceType,
+      //       architecture: i.Architecture,
+      //       availabilityZone: i.Placement.AvailabilityZone,
+      //       privateIp: i.PrivateIpAddress,
+      //       owner: spawned.OwnerId,
+      //       state: i.State.Name,
+      //       stateReason: i.StateReason.Message,
+      //     },
+      //   });
+      // }));
     }
 
-    return Promise.all(spawned.Instances.map(i => {
-      return this.Worker.create({
-        workerPoolId,
-        providerId: this.providerId,
-        workerGroup: this.providerId,
-        workerId: i.InstanceId,
-        created: new Date(),
-        expires: taskcluster.fromNow('1 week'),
-        state: this.Worker.states.REQUESTED,
-        providerData: {
-          region: config.region,
-          groups: spawned.Groups,
-          amiLaunchIndex: i.AmiLaunchIndex,
-          imageId: i.ImageId,
-          instanceType: i.InstanceType,
-          architecture: i.Architecture,
-          availabilityZone: i.Placement.AvailabilityZone,
-          privateIp: i.PrivateIpAddress,
-          owner: spawned.OwnerId,
-          state: i.State.Name,
-          stateReason: i.StateReason.Message,
-        },
-      });
-    }));
+    return;
   }
 
   /**
