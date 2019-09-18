@@ -247,7 +247,7 @@ export default class Dashboard extends Component {
     } = this.props;
     const { error, navOpen, showHelpView, deploymentVersion } = this.state;
     const logoWithApplicationName = (
-      <>
+      <Fragment>
         <div className={classes.toolbar}>
           <img
             className={classes.logoStyle}
@@ -266,7 +266,7 @@ export default class Dashboard extends Component {
             {window.env.APPLICATION_NAME}
           </Typography>
         </div>
-      </>
+      <Fragment/>
     );
     const drawer = (
       <nav className={classes.nav}>
