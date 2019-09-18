@@ -184,29 +184,27 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         </TableCell>
 
         <TableCell>
+          <Button
+            className={classes.viewWorkersButton}
+            variant="outlined"
+            component={Link}
+            to={`/provisioners/${encodeURIComponent(
+              provisionerId
+            )}/worker-types/${encodeURIComponent(workerType)}`}
+            disabled={actionLoading}
+            size="small">
+            <WorkerIcon className={classes.workerIcon} size={iconSize} />
+            View Workers
+          </Button>
           {workerPool.providerId !== NULL_PROVIDER ? (
-            <Fragment>
-              <Button
-                className={classes.viewWorkersButton}
-                variant="outlined"
-                component={Link}
-                to={`/provisioners/${encodeURIComponent(
-                  provisionerId
-                )}/worker-types/${encodeURIComponent(workerType)}`}
-                disabled={actionLoading}
-                size="small">
-                <WorkerIcon className={classes.workerIcon} size={iconSize} />
-                View Workers
-              </Button>
-              <IconButton
-                title="Delete Worker Pool ID"
-                className={classes.button}
-                name={`${workerPool.workerPoolId}`}
-                onClick={this.handleDeleteClick}
-                disabled={actionLoading}>
-                <DeleteIcon size={iconSize} />
-              </IconButton>
-            </Fragment>
+            <IconButton
+              title="Delete Worker Pool ID"
+              className={classes.button}
+              name={`${workerPool.workerPoolId}`}
+              onClick={this.handleDeleteClick}
+              disabled={actionLoading}>
+              <DeleteIcon size={iconSize} />
+            </IconButton>
           ) : (
             <Label mini status="warning" className={classes.button}>
               Scheduled for deletion
