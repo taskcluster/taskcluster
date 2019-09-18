@@ -3,6 +3,49 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v17.0.0
+
+[MAJOR] ([bug 1561905](http://bugzil.la/1561905)) 1. Static clients need to be updated in deployments.
+2. The web-server service now requires azure credentials configured for login to work properly, namely
+`AZURE_ACCOUNT_ID`, `AZURE_SIGNING_KEY`, and `AZURE_CRYPTO_KEY`.
+3. For a third party to get TC credentials, it first needs to have a client registered in the deployment of the
+web-server service. This is governed by the `REGISTERED_CLIENTS` configuration.
+See https://docs.taskcluster.net/docs/manual/deploying/third-party for the shape of a client.
+
+[MAJOR] ([#1260](https://github.com/taskcluster/taskcluster/issues/1260)) Google provider in worker-manager now requires you to manually set up
+a service account for your workers to run under. If you are migrating
+from a previously deployed worker-runner, you can just use the account
+we created for you automatically before. It always had the name
+`taskcluster-workers`.
+
+Your config will changein the following way:
+
+```yaml
+# Old
+providers:
+  google-project:
+    providerType: google
+    project: ...
+    creds: ...
+    instancePermissions:
+      - ...
+      - ...
+
+# New
+providers:
+  google-project:
+    providerType: google
+    project: ...
+    creds: ...
+    workerServiceAccountId: ...
+```
+
+([#778](https://github.com/taskcluster/taskcluster/issues/778)) User-created clients are regularly scanned, and disabled if the owning user no longer has the relevant scopes.
+Such users are now also disabled if the owning user has been removed from the identity provider.
+
+([#1216](https://github.com/taskcluster/taskcluster/issues/1216)) Users of taskcluster-ui are now logged out if they are not logged-in in the eyes of web-server.
+This would avoid having web-server be out-of-sync when restarted for example.
+
 ## v16.2.0
 
 [minor] ([bug 1561320](http://bugzil.la/1561320)) Taskcluster deployments now support sentry error reporting. You can configure this option by setting
