@@ -1,7 +1,7 @@
 # Pulse Library
 
 Library for interacting with Pulse and Taskcluster-Pulse.  See [the
-docs](../../ui/docs/manual/design/apis/pulse.md) for more
+docs](../../ui/docs/manual/design/apis/pulse.mdx) for more
 information on Pulse.
 
 This library is designed for use in Taskcluster services, both for producing

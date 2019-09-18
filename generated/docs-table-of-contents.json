@@ -19,7 +19,7 @@
             "children": [
             ],
             "data": {
-              "filename": "tasks/times.md",
+              "filename": "tasks/times.mdx",
               "order": 10,
               "title": "Times"
             },
@@ -42,7 +42,7 @@
             "children": [
             ],
             "data": {
-              "filename": "tasks/workertypes.md",
+              "filename": "tasks/workertypes.mdx",
               "order": 20,
               "title": "Worker Types"
             },
@@ -65,7 +65,7 @@
             "children": [
             ],
             "data": {
-              "filename": "tasks/priority.md",
+              "filename": "tasks/priority.mdx",
               "order": 25,
               "title": "Priority"
             },
@@ -88,7 +88,7 @@
             "children": [
             ],
             "data": {
-              "filename": "tasks/runs.md",
+              "filename": "tasks/runs.mdx",
               "order": 30,
               "title": "Runs"
             },
@@ -111,7 +111,7 @@
             "children": [
             ],
             "data": {
-              "filename": "tasks/artifacts.md",
+              "filename": "tasks/artifacts.mdx",
               "order": 35,
               "title": "Artifacts"
             },
@@ -134,7 +134,7 @@
             "children": [
             ],
             "data": {
-              "filename": "tasks/dependencies.md",
+              "filename": "tasks/dependencies.mdx",
               "order": 40,
               "title": "Dependencies and Task Graphs"
             },
@@ -157,7 +157,7 @@
             "children": [
             ],
             "data": {
-              "filename": "tasks/taskgroupid-schedulerid.md",
+              "filename": "tasks/taskgroupid-schedulerid.mdx",
               "order": 45,
               "title": "The taskGroupId and schedulerId properties"
             },
@@ -180,7 +180,7 @@
             "children": [
             ],
             "data": {
-              "filename": "tasks/manipulating.md",
+              "filename": "tasks/manipulating.mdx",
               "order": 50,
               "title": "Manipulating Tasks"
             },
@@ -203,7 +203,7 @@
             "children": [
             ],
             "data": {
-              "filename": "tasks/scopes.md",
+              "filename": "tasks/scopes.mdx",
               "order": 60,
               "title": "Task Scopes"
             },
@@ -226,7 +226,7 @@
             "children": [
             ],
             "data": {
-              "filename": "tasks/messages.md",
+              "filename": "tasks/messages.mdx",
               "order": 70,
               "title": "Messages"
             },
@@ -247,7 +247,7 @@
           }
         ],
         "data": {
-          "filename": "tasks/README.md",
+          "filename": "tasks/README.mdx",
           "order": 10,
           "title": "Tasks"
         },
@@ -272,7 +272,7 @@
             "children": [
             ],
             "data": {
-              "filename": "task-execution/queues.md",
+              "filename": "task-execution/queues.mdx",
               "order": 10,
               "title": "Queues"
             },
@@ -295,7 +295,7 @@
             "children": [
             ],
             "data": {
-              "filename": "task-execution/workers.md",
+              "filename": "task-execution/workers.mdx",
               "order": 20,
               "title": "Workers"
             },
@@ -340,7 +340,7 @@
             "children": [
             ],
             "data": {
-              "filename": "task-execution/provisioning.md",
+              "filename": "task-execution/provisioning.mdx",
               "order": 40,
               "title": "Provisioning"
             },
@@ -361,7 +361,7 @@
           }
         ],
         "data": {
-          "filename": "task-execution/README.md",
+          "filename": "task-execution/README.mdx",
           "order": 20,
           "title": "Task Execution"
         },
@@ -478,7 +478,7 @@
                     "children": [
                     ],
                     "data": {
-                      "filename": "design/apis/hawk/authn.md",
+                      "filename": "design/apis/hawk/authn.mdx",
                       "order": 21,
                       "title": "Authentication"
                     },
@@ -501,7 +501,7 @@
                     "children": [
                     ],
                     "data": {
-                      "filename": "design/apis/hawk/scopes.md",
+                      "filename": "design/apis/hawk/scopes.mdx",
                       "order": 22,
                       "title": "Scopes"
                     },
@@ -524,7 +524,7 @@
                     "children": [
                     ],
                     "data": {
-                      "filename": "design/apis/hawk/clients.md",
+                      "filename": "design/apis/hawk/clients.mdx",
                       "order": 23,
                       "title": "Clients"
                     },
@@ -547,7 +547,7 @@
                     "children": [
                     ],
                     "data": {
-                      "filename": "design/apis/hawk/roles.md",
+                      "filename": "design/apis/hawk/roles.mdx",
                       "order": 24,
                       "title": "Roles"
                     },
@@ -570,7 +570,7 @@
                     "children": [
                     ],
                     "data": {
-                      "filename": "design/apis/hawk/authorized-scopes.md",
+                      "filename": "design/apis/hawk/authorized-scopes.mdx",
                       "order": 25,
                       "title": "Authorized Scopes"
                     },
@@ -593,7 +593,7 @@
                     "children": [
                     ],
                     "data": {
-                      "filename": "design/apis/hawk/temporary-credentials.md",
+                      "filename": "design/apis/hawk/temporary-credentials.mdx",
                       "order": 26,
                       "title": "Temporary Credentials"
                     },
@@ -616,7 +616,7 @@
                     "children": [
                     ],
                     "data": {
-                      "filename": "design/apis/hawk/signed-urls.md",
+                      "filename": "design/apis/hawk/signed-urls.mdx",
                       "order": 27,
                       "title": "Pre-signed URLs"
                     },
@@ -639,7 +639,7 @@
                     "children": [
                     ],
                     "data": {
-                      "filename": "design/apis/hawk/troubleshooting.md",
+                      "filename": "design/apis/hawk/troubleshooting.mdx",
                       "order": 30,
                       "title": "Troubleshooting"
                     },
@@ -660,7 +660,7 @@
                   }
                 ],
                 "data": {
-                  "filename": "design/apis/hawk/README.md",
+                  "filename": "design/apis/hawk/README.mdx",
                   "order": 10,
                   "title": "API Authentication and Authorization"
                 },
@@ -683,7 +683,7 @@
                 "children": [
                 ],
                 "data": {
-                  "filename": "design/apis/errors.md",
+                  "filename": "design/apis/errors.mdx",
                   "order": 20,
                   "title": "API Errors"
                 },
@@ -706,7 +706,7 @@
                 "children": [
                 ],
                 "data": {
-                  "filename": "design/apis/pulse.md",
+                  "filename": "design/apis/pulse.mdx",
                   "order": 30,
                   "title": "Pulse"
                 },
@@ -729,7 +729,7 @@
                 "children": [
                 ],
                 "data": {
-                  "filename": "design/apis/reference-format.md",
+                  "filename": "design/apis/reference-format.mdx",
                   "order": 40,
                   "title": "Reference Formats"
                 },
@@ -750,7 +750,7 @@
               }
             ],
             "data": {
-              "filename": "design/apis/README.md",
+              "filename": "design/apis/README.mdx",
               "order": 10,
               "title": "Microservice APIs"
             },
@@ -773,7 +773,7 @@
             "children": [
             ],
             "data": {
-              "filename": "design/logs/README.md",
+              "filename": "design/logs/README.mdx",
               "order": 10,
               "title": "Structured Logs"
             },
@@ -992,7 +992,7 @@
           }
         ],
         "data": {
-          "filename": "design/README.md",
+          "filename": "design/README.mdx",
           "order": 30,
           "title": "System Design"
         },
@@ -1017,7 +1017,7 @@
             "children": [
             ],
             "data": {
-              "filename": "using/github.md",
+              "filename": "using/github.mdx",
               "order": 10,
               "title": "Integrating with Github"
             },
@@ -1040,7 +1040,7 @@
             "children": [
             ],
             "data": {
-              "filename": "using/secrets.md",
+              "filename": "using/secrets.mdx",
               "order": 20,
               "title": "Handling Secrets"
             },
@@ -1063,7 +1063,7 @@
             "children": [
             ],
             "data": {
-              "filename": "using/indexing.md",
+              "filename": "using/indexing.mdx",
               "order": 30,
               "title": "Indexing Tasks"
             },
@@ -1108,7 +1108,7 @@
             "children": [
             ],
             "data": {
-              "filename": "using/scheduled-tasks.md",
+              "filename": "using/scheduled-tasks.mdx",
               "order": 40,
               "title": "Running Periodic Tasks"
             },
@@ -1131,7 +1131,7 @@
             "children": [
             ],
             "data": {
-              "filename": "using/task-graph.md",
+              "filename": "using/task-graph.mdx",
               "order": 50,
               "title": "Building Task Graphs"
             },
@@ -1154,7 +1154,7 @@
             "children": [
             ],
             "data": {
-              "filename": "using/artifacts.md",
+              "filename": "using/artifacts.mdx",
               "order": 60,
               "title": "Working With Artifacts"
             },
@@ -1221,7 +1221,7 @@
             "children": [
             ],
             "data": {
-              "filename": "using/task-notifications.md",
+              "filename": "using/task-notifications.mdx",
               "order": 80,
               "title": "Task Notifications"
             },
@@ -1244,7 +1244,7 @@
             "children": [
             ],
             "data": {
-              "filename": "using/administration.md",
+              "filename": "using/administration.mdx",
               "order": 90,
               "title": "Project Administration"
             },
@@ -1291,7 +1291,7 @@
                 "children": [
                 ],
                 "data": {
-                  "filename": "using/integration/frontend.md",
+                  "filename": "using/integration/frontend.mdx",
                   "order": 10,
                   "title": "Frontend Applications"
                 },
@@ -1314,7 +1314,7 @@
                 "children": [
                 ],
                 "data": {
-                  "filename": "using/integration/backend.md",
+                  "filename": "using/integration/backend.mdx",
                   "order": 20,
                   "title": "Backend Services"
                 },
@@ -1337,7 +1337,7 @@
                 "children": [
                 ],
                 "data": {
-                  "filename": "using/integration/pulse.md",
+                  "filename": "using/integration/pulse.mdx",
                   "order": 40,
                   "title": "Pulse Integrations"
                 },
@@ -1380,7 +1380,7 @@
               }
             ],
             "data": {
-              "filename": "using/integration/README.md",
+              "filename": "using/integration/README.mdx",
               "order": 200,
               "title": "Integration with Other Applications"
             },
@@ -1445,7 +1445,7 @@
           }
         ],
         "data": {
-          "filename": "using/README.md",
+          "filename": "using/README.mdx",
           "order": 50,
           "title": "Using Taskcluster"
         },
@@ -1585,35 +1585,13 @@
             },
             "name": "pulse",
             "next": {
-              "path": "manual/deploying/third-party",
-              "title": "Third Party"
+              "path": "reference/README",
+              "title": "Taskcluster Reference"
             },
             "path": "manual/deploying/pulse",
             "prev": {
               "path": "manual/deploying/monitoring",
               "title": "Monitoring Services"
-            },
-            "up": {
-              "path": "manual/deploying",
-              "title": "Deploying Taskcluster"
-            }
-          },
-          {
-            "children": [
-            ],
-            "data": {
-              "order": 1000,
-              "title": "Third Party"
-            },
-            "name": "third-party",
-            "next": {
-              "path": "reference/README",
-              "title": "Taskcluster Reference"
-            },
-            "path": "manual/deploying/third-party",
-            "prev": {
-              "path": "manual/deploying/pulse",
-              "title": "Pulse"
             },
             "up": {
               "path": "manual/deploying",
@@ -1642,7 +1620,7 @@
       }
     ],
     "data": {
-      "filename": "README.md",
+      "filename": "README.mdx",
       "order": 1000,
       "title": "Taskcluster Manual"
     },
@@ -2647,35 +2625,13 @@
                 },
                 "name": "mozilla-auth0-login-strategy",
                 "next": {
-                  "path": "reference/core/web-server/third-party-login",
-                  "title": "Third Party Login"
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
                 },
                 "path": "reference/core/web-server/mozilla-auth0-login-strategy",
                 "prev": {
                   "path": "reference/core/web-server/github-login-strategy",
                   "title": "GitHub Login Strategy"
-                },
-                "up": {
-                  "path": "reference/core/web-server/README",
-                  "title": "web-server"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 30,
-                  "title": "Third Party Login"
-                },
-                "name": "third-party-login",
-                "next": {
-                  "path": "reference/core/worker-manager/README",
-                  "title": "worker-manager"
-                },
-                "path": "reference/core/web-server/third-party-login",
-                "prev": {
-                  "path": "reference/core/web-server/mozilla-auth0-login-strategy",
-                  "title": "Mozilla-Auth0 Login Strategy"
                 },
                 "up": {
                   "path": "reference/core/web-server/README",
@@ -2848,8 +2804,8 @@
             },
             "path": "reference/core/worker-manager/README",
             "prev": {
-              "path": "reference/core/web-server/third-party-login",
-              "title": "Third Party Login"
+              "path": "reference/core/web-server/mozilla-auth0-login-strategy",
+              "title": "Mozilla-Auth0 Login Strategy"
             },
             "up": {
               "path": "reference/core/README",
@@ -3172,8 +3128,8 @@
     },
     "path": "reference/README",
     "prev": {
-      "path": "manual/deploying/third-party",
-      "title": "Third Party"
+      "path": "manual/deploying/pulse",
+      "title": "Pulse"
     }
   },
   "resources": {

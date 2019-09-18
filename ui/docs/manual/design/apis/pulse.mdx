@@ -1,0 +1,108 @@
+---
+filename: design/apis/pulse.mdx
+title: Pulse
+order: 30
+---
+
+# Pulse
+
+Pulse is a message bus: it allows participants to publish messages and other
+participants to subscribe to those messages. Taskcluster uses this bus to
+communicate between microservices, notifying interested parties when specific
+events have occurred. The system is based on AMQP in a publish-subscribe
+configuration.
+
+Pulse is a publicly accessible service, and the pulse message schemas are a
+part of Taskcluster's published API, so they make a nicely decoupled
+integration point for external services.
+
+## Background
+
+Mozilla, where Taskcluster began, has an organization-wide "message bus" called
+"pulse". The idea is that systems within Mozilla should publish events to this
+bus, and other systems can then consume those events. This has enabled
+development of lots of interesting pieces of automation. It was a natural
+choice to publish Taskcluster-related events to this message bus, and to also
+consume such events from the bus.
+
+That said, Taskcluster does not consume events from other Mozilla services, and
+can use any other RabbitMQ service just as easily.  It does use some
+RabbitMQ-specific extensions. It follows the [pulse
+specification](https://wiki.mozilla.org/Auto-tools/Projects/Pulse#Specification),
+so any RabbitMQ service configured in a manner compatible with that specification
+should work.
+
+Consider the use of the term "pulse" within Taskcluster to mean
+"pulse-compatible RabbitMQ".
+
+### Pulse Specficiation, Abbreviated
+
+The pulse specification is summarized here for posterity:
+
+---
+
+Pulse (the server):
+
+* MUST support AMQP 0-9-1 and these RabbitMQ extensions:
+
+  * Confirms
+  * Consumer Prefetch
+  * Queue Length Limit
+  * Sender-selected Distribution
+
+* SHOULD exhibit deliver-at-least-once semantics
+* MAY delete queues that grows beyond Pulse defined limits
+* SHALL notify owner by email when a queue grows close to Pulse-defined limits.
+
+Publishers:
+
+* SHOULD use confirm-publish channels
+
+Exchanges:
+
+* MUST be named `exchange/<clientId>/<name>`
+* MUST be topic exchanges
+* MUST be durable
+
+Messages:
+
+* MUST be UTF-8-encoded JSON
+* MUST carry application/json as Content-Type
+* SHOULD be durable
+* SHOULD be less than 8 KiB (for good performance)
+* MAY be CC'ed to multiple routing keys
+* MUST NOT contain private or sensitive information
+* SHOULD have a routing key where fields have a fixed index from the left
+
+Subscribers:
+
+* SHOULD specify a consumer prefetch limit
+
+Queues:
+
+* MUST be named `queue/<clientId>/<name>`
+* MAY have a limited length
+* MUST not grow unbounded
+
+---
+
+## Taskcluster Pulse Resources
+
+In accordance with the specification, Taskcluster names its queues with the
+prefix `queue/<namespace>/`, and exchanges with the prefix
+`exchange/<namespace>/`. This guarantees that messages on an exchange named,
+for example, `exchange/taskcluster-queue/v1/task-defined`, came from the
+Taskcluster queue service.
+
+All Taskcluster AMQP exchanges are `topic` exchanges (as per the
+specification). Message bodies are always JSON, and messages are "copied" to
+multiple routing keys using the AMQP `Cc` header.
+
+For routing keys Taskcluster always has the same format for all messages on a
+given exchange, and uses `-` if no value makes sense for the given routing key
+entry with a specific message.
+
+Each service's reference documentation describes the events the service sends
+(if any). Each kind of event is sent on a different exchange, and each event
+has a routing key containing characteristics of the event on which consumers
+might like to filter.

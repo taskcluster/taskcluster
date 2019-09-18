@@ -1,0 +1,23 @@
+---
+filename: tasks/dependencies.mdx
+title: Dependencies and Task Graphs
+order: 40
+---
+
+Tasks can be linked together such that a dependent task does not start until
+its prerequisites are complete. This functionality enables the creation of
+"task graphs" containing multi-task dependency chains. For example, a task
+graph to build and test an application might start with a set of library build
+tasks (one for each platform), followed by application build tasks depending on
+those library builds, and culminating in test tasks that depend on the
+application build tasks.
+
+Dependencies are defined by listing prerequisite taskIds in the `dependencies`
+property of each task. When a new task is submitted to the Queue service, any
+tasks listed as a dependency must have already been submitted to the Queue
+service. The `requires` task property controls whether the dependent task
+should execute if any of its prerequisites fail.
+
+A task can depend on itself -- this is called a "self-dependency". Such a task
+will not run automatically, but can be force-scheduled as described in
+[Manipulating Tasks](manipulating).

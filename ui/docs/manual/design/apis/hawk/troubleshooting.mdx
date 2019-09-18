@@ -1,0 +1,15 @@
+---
+filename: design/apis/hawk/troubleshooting.mdx
+title: Troubleshooting
+order: 30
+---
+
+In order to avoid disclosing information to a potential hacker, a number of
+errors result in the rather terse "Bad Mac" error. Fundamentally, this means
+that the credentials supplied were invalid for some reason. Errors regarding
+scopes will use more informative error messages.
+
+The most common error is forgetting to include the certificate in addition to
+the clientId and accessToken.  There is no need to interpret the certificate
+(please don't!); just treat it as an opaque string.  Omitting the certificate
+when it is required will generally result in "Bad Mac" errors.

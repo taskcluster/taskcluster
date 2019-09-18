@@ -1,0 +1,57 @@
+# Web Server
+
+The "web-server" service provides the backend for the Taskcluster UI.
+
+## GraphQL
+
+The UI and web-server communicate via GraphQL.
+GraphQL requests to the web-server service are translated into REST API calls to other services.
+This allows flexible queries from the UI and makes room for optimizations in the backend.
+
+*IMPORTANT*: the GraphQL interface is intended *only* for use by the Taskcluster UI service.
+It is not a general-purpose interface to Taskcluster and will change incompatibly and without warning from version to version of the Taskcluster services.
+All external integrations with Taskcluster should use the documented REST API.
+
+## User Login
+
+This service provides the backend for secure user authentication using pluggable login strategies.
+Each relies on a different upstream identity provider to identify users.
+
+These strategies are used to generate user sessions that are tracked with session cookies.
+The Taskcluster UI then uses the `getCredentials` query periodically to fetch fresh Taskcluster credentials corresponding to the signed-in user.
+Again, this approach is intended only for use by the Taskcluster UI.
+
+The following login strategies are supported:
+
+* [GitHub](github-login-strategy)
+* [Mozilla-Auth0](mozilla-auth0-login-strategy)
+
+## Third Party Login
+
+If you are building a web application that will interact with Taskcluster on behalf of your user,
+you will need your users' Taskcluster credentials. The [Third Party Login](./third-party-login)
+reference document contains more information on that.
+
+## Identity
+
+Login strategies assign each user an `identity` in the form `<identityProviderId>/<identityId>`.
+The `identityProviderId` portion is the name of the login strategy, while the second uniquely identifies the user within that strategy.
+
+## Scopes
+
+Each login strategy defines a way of calculating the scopes afforded to a particular user, based on that user's profile in the user-authentication system on which it relies.
+For example, the GitHub login strategy defines scopes according to a user's team membership.
+See the documentation linked above for details.
+
+In all cases, a user's scopes include `assume:login-identity:<identity>`.
+This role can be modified to grant scopes to a specific user, although best practice is to grant scopes to named groups or teams instead.
+[Conventionally](/docs/manual/design/conventions/login-identities), a parameterized role is used to allow all users to create clients.
+
+### Client Scanning
+
+Periodically, a background job in the web-server service scans all clients with names matching `<identityProviderId>/<identity>*` for all users.
+These are the clientIds permitted by the [conventional](/docs/manual/design/conventions/login-identities) parameterized role.
+
+For each client, it extracts the identity, verifies the scopes available to that identity, and checks whether those scopes satisfy the client's scopes.
+If not, the client is disabled.
+This scan ensures that when a user is removed from a team or group, that user cannot make use of previously-created clients with scopes from that team or group.

@@ -40,7 +40,7 @@ exports.tasks.push({
       res = res.concat(requirements[`monitoring-hints-${name}`]);
     });
 
-    const docFile = path.join('ui', 'docs', 'manual', 'deploying', 'monitoring.md');
+    const docFile = path.join('ui', 'docs', 'manual', 'deploying', 'monitoring.mdx');
     await modifyRepoFile(docFile,
       content => content.replace(/(<!-- GENERATED; DO NOT EDIT -->).*/ms, `$1\n${table(res)}`));
   },
