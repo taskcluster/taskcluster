@@ -19,6 +19,7 @@ import 'react-gh-like-diff/lib/diff2html.css';
     tab: {
       flexGrow: 1,
       color: theme.palette.text.primary,
+      width: '100%',
     },
     tabContent: {
       marginTop: theme.spacing.unit,
