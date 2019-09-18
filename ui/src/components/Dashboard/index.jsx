@@ -266,7 +266,7 @@ export default class Dashboard extends Component {
             {window.env.APPLICATION_NAME}
           </Typography>
         </div>
-      <Fragment/>
+      </Fragment>
     );
     const drawer = (
       <nav className={classes.nav}>
