@@ -13,7 +13,7 @@ const GithubClient = require('../clients/GithubClient');
 const debug = Debug('strategies.github');
 
 module.exports = class Github {
-  constructor({ name, cfg }) {
+  constructor({ name, cfg, GithubAccessToken }) {
     const strategyCfg = cfg.login.strategies[name];
 
     assert(strategyCfg.clientId, `${name}.clientId is required`);
@@ -22,12 +22,22 @@ module.exports = class Github {
     Object.assign(this, strategyCfg);
 
     this.identityProviderId = 'github';
-    this.githubClient = null;
+    this.GithubAccessToken = GithubAccessToken;
+    this.clients = new Map();
   }
 
   async getUser({ username, userId }) {
     const user = new User();
-    const [githubErr, githubUser] = await tryCatch(this.githubClient.userFromUsername(username));
+    const githubEntry = await this.GithubAccessToken.load({ userId: String(userId) }, true);
+
+    if (!githubEntry) {
+      debug(`Github user id ${userId} could not be found in the database.`);
+
+      return;
+    }
+
+    const githubClient = this.clients.get(userId);
+    const [githubErr, githubUser] = await tryCatch(githubClient.userFromUsername(username));
 
     // 404 means the user doesn't exist; otherwise, throw the error up the chain
     if (githubErr) {
@@ -52,13 +62,21 @@ module.exports = class Github {
   }
 
   async addRoles(username, userId, user) {
-    const [teamsErr, teams] = await tryCatch(this.githubClient.listTeams());
+    const githubEntry = await this.GithubAccessToken.load({ userId: String(userId) }, true);
+
+    if (!githubEntry) {
+      debug(`Github user id ${userId} could not be found in the database.`);
+      return;
+    }
+
+    const githubClient = this.clients.get(userId);
+    const [teamsErr, teams] = await tryCatch(githubClient.listTeams());
 
     if (teamsErr) {
       throw teamsErr;
     }
 
-    const [userMembershipsOrgsErr, userMembershipsOrgs] = await tryCatch(this.githubClient.userMembershipsOrgs());
+    const [userMembershipsOrgsErr, userMembershipsOrgs] = await tryCatch(githubClient.userMembershipsOrgs());
 
     if (userMembershipsOrgsErr) {
       throw userMembershipsOrgsErr;
@@ -108,7 +126,12 @@ module.exports = class Github {
           scope: 'repo',
         },
         async (accessToken, refreshToken, profile, next) => {
-          this.githubClient = new GithubClient({ accessToken });
+          this.clients.set(Number(profile.id), new GithubClient({ accessToken }));
+          await this.GithubAccessToken.create({
+            userId: profile.id,
+            accessToken,
+            expires: taskcluster.fromNow('10 minutes'),
+          }, true);
           const user = await this.getUser({ username: profile.username, userId: Number(profile.id) });
 
           if (!user) {

@@ -116,11 +116,7 @@ suite(testing.suiteName(), () => {
   });
 
   test('userFromIdentity roles with known user', async function() {
-    console.log('before!');
     const user = await strategy.userFromIdentity('github/20|taskcluster');
-
-    console.log('user: ', user);
-
     assert.deepEqual(user.roles.sort(), ['github-team:team-1', 'github-team:team-3', 'github-org-admin:taskcluster', 'github-org-admin:neutrinojs'].sort());
   });
 

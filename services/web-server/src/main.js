@@ -10,6 +10,7 @@ const { Client, pulseCredentials } = require('taskcluster-lib-pulse');
 const { ApolloServer } = require('apollo-server-express');
 const { sasCredentials } = require('taskcluster-lib-azure');
 const taskcluster = require('taskcluster-client');
+const { Auth } = require('taskcluster-client');
 const monitorManager = require('./monitor');
 const createApp = require('./servers/createApp');
 const formatError = require('./servers/formatError');
@@ -21,8 +22,8 @@ const typeDefs = require('./graphql');
 const PulseEngine = require('./PulseEngine');
 const AuthorizationCode = require('./data/AuthorizationCode');
 const AccessToken = require('./data/AccessToken');
+const GithubAccessToken = require('./data/GithubAccessToken');
 const scanner = require('./login/scanner');
-const { Auth } = require('taskcluster-client');
 
 const load = loader(
   {
@@ -138,13 +139,19 @@ const load = loader(
 
     // Login strategies
     strategies: {
-      requires: ['cfg'],
-      setup: ({ cfg }) => {
+      requires: ['cfg', 'GithubAccessToken'],
+      setup: ({ cfg, GithubAccessToken }) => {
         const strategies = {};
 
         Object.keys(cfg.login.strategies || {}).forEach((name) => {
           const Strategy = require('./login/strategies/' + name);
-          strategies[name] = new Strategy({ name, cfg });
+          const options = { name, cfg };
+
+          if (name === 'github') {
+            Object.assign(options, { GithubAccessToken });
+          }
+
+          strategies[name] = new Strategy(options);
         });
 
         return strategies;
@@ -198,6 +205,22 @@ const load = loader(
       }),
     },
 
+    GithubAccessToken: {
+      requires: ['cfg', 'monitor'],
+      setup: ({cfg, monitor}) => GithubAccessToken.setup({
+        tableName: 'GithubAccessTokenTable',
+        monitor: monitor.childMonitor('table.githubAccessTokenTable'),
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: 'GithubAccessTokenTable',
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
+        signingKey: cfg.azure.signingKey,
+        cryptoKey: cfg.azure.cryptoKey,
+      }),
+    },
+
     'cleanup-expire-auth-codes': {
       requires: ['cfg', 'AuthorizationCode', 'monitor'],
       setup: ({cfg, AuthorizationCode, monitor}) => {
@@ -221,6 +244,20 @@ const load = loader(
 
           debug('Expiring access tokens');
           const count = await AccessToken.expire(now);
+          debug('Expired ' + count + ' access tokens');
+        });
+      },
+    },
+
+    'cleanup-expire-github-access-tokens': {
+      requires: ['cfg', 'GithubAccessToken', 'monitor'],
+      setup: ({cfg, GithubAccessToken, monitor}) => {
+        return monitor.oneShot('cleanup-expire-github-access-tokens', async () => {
+          const delay = cfg.app.githubAccessTokenExpirationDelay;
+          const now = taskcluster.fromNow(delay);
+
+          debug('Expiring github access tokens');
+          const count = await GithubAccessToken.expire(now);
           debug('Expired ' + count + ' access tokens');
         });
       },
