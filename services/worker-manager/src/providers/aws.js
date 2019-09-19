@@ -45,24 +45,6 @@ class AwsProvider extends Provider {
       });
     }
 
-    const config = this.chooseConfig({possibleConfigs: workerPool.config.launchConfigs});
-
-    const ec2s = workerPool.config.regions.map(region => new aws.EC2({
-      credentials: this.providerConfig.credentials,
-      region,
-    }));
-
-    const toSpawn = await this.estimator.simple({
-      workerPoolId,
-      minCapacity: config.minCapacity,
-      maxCapacity: config.maxCapacity,
-      capacityPerInstance: config.capacityPerInstance,
-      running: workerPool.providerData[this.providerId].running,
-    });
-    if (toSpawn === 0) {
-      return;
-    }
-
     const userData = Buffer.from(JSON.stringify({
       rootUrl: this.rootUrl,
       workerPoolId,
@@ -82,26 +64,42 @@ class AwsProvider extends Provider {
       });
     }
 
-    // Make sure we don't get "The same resource type may not be specified more than once in tag specifications" errors
-    const TagSpecifications = config.launchConfig.TagSpecifications ? config.launchConfig.TagSpecifications : [];
-    const instanceTags = [];
-    const otherTagSpecs = [];
-    TagSpecifications.forEach(ts =>
-      ts.ResourceType === 'instance' ? instanceTags.concat(ts.Tags) : otherTagSpecs.push(ts)
-    );
+    const uniqueRegions = new Set(workerPool.config.launchConfigs.map(lc => lc.region));
+    let ec2s = {};
+    uniqueRegions.forEach(region => {
+      ec2s[region] = new aws.EC2({credentials: this.providerConfig.credentials, region});
+    });
 
-    let toSpawnCounter = toSpawn;
-    const toSpawnInARegion = Math.ceil(toSpawn / ec2s.length);
-    for await (let ec2 of ec2s) {
+    for await (let config of workerPool.config.launchConfigs) {
+
+      const toSpawn = await this.estimator.simple({
+        workerPoolId,
+        minCapacity: config.minCapacity,
+        maxCapacity: config.maxCapacity,
+        capacityPerInstance: config.capacityPerInstance,
+        running: workerPool.providerData[this.providerId].running, // todo: if this is per config now, do we need a config id?
+      });
+      if (toSpawn === 0) {
+        continue;
+      }
+
+      // Make sure we don't get "The same resource type may not be specified more than once in tag specifications" errors
+      const TagSpecifications = config.launchConfig.TagSpecifications ? config.launchConfig.TagSpecifications : [];
+      const instanceTags = [];
+      const otherTagSpecs = [];
+      TagSpecifications.forEach(ts =>
+        ts.ResourceType === 'instance' ? instanceTags.concat(ts.Tags) : otherTagSpecs.push(ts)
+      );
+
       let spawned = [];
       try {
-        spawned = await ec2.runInstances({
+        spawned = await ec2s[config.region].runInstances({
           ...config.launchConfig,
 
           UserData: userData.toString('base64'), // The string needs to be base64-encoded. See the docs above
 
-          MaxCount: Math.min(toSpawnCounter, toSpawnInARegion),
-          MinCount: Math.min(toSpawnCounter, toSpawnInARegion),
+          MaxCount: toSpawn,
+          MinCount: toSpawn,
           TagSpecifications: [
             ...otherTagSpecs,
             {
@@ -140,8 +138,6 @@ class AwsProvider extends Provider {
         return;
       }
 
-      toSpawnCounter -= toSpawnInARegion;
-
       for await (let i of spawned.Instances) {
         this.Worker.create({
           workerPoolId,
@@ -152,7 +148,7 @@ class AwsProvider extends Provider {
           expires: taskcluster.fromNow('1 week'),
           state: this.Worker.states.REQUESTED,
           providerData: {
-            region: ec2.config.region,
+            region: config.region,
             groups: spawned.Groups,
             amiLaunchIndex: i.AmiLaunchIndex,
             imageId: i.ImageId,
@@ -167,30 +163,6 @@ class AwsProvider extends Provider {
         });
       }
 
-      // await Promise.all(spawned.Instances.map(i => {
-      //   return this.Worker.create({
-      //     workerPoolId,
-      //     providerId: this.providerId,
-      //     workerGroup: this.providerId,
-      //     workerId: i.InstanceId,
-      //     created: new Date(),
-      //     expires: taskcluster.fromNow('1 week'),
-      //     state: this.Worker.states.REQUESTED,
-      //     providerData: {
-      //       region: config.region,
-      //       groups: spawned.Groups,
-      //       amiLaunchIndex: i.AmiLaunchIndex,
-      //       imageId: i.ImageId,
-      //       instanceType: i.InstanceType,
-      //       architecture: i.Architecture,
-      //       availabilityZone: i.Placement.AvailabilityZone,
-      //       privateIp: i.PrivateIpAddress,
-      //       owner: spawned.OwnerId,
-      //       state: i.State.Name,
-      //       stateReason: i.StateReason.Message,
-      //     },
-      //   });
-      // }));
     }
 
     return;

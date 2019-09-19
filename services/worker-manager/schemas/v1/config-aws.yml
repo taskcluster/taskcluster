@@ -10,6 +10,12 @@ properties:
     items:
       type: object
       properties:
+        region:
+          title: Region
+          type: string
+          description: |
+            AWS region (not to be confused with AZ) to launch this config in
+            https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions
         launchConfig:
           title: Launch Configuration
           type: object
@@ -45,22 +51,12 @@ properties:
           description: Maximum capacity that should not be exceeded at any given time
       additionalProperties: false
       required:
+        - region
         - launchConfig
         - capacityPerInstance
         - minCapacity
         - maxCapacity
-  regions:
-    title: Regions
-    type: array
-    description: |
-      AWS region (not to be confused with AZ) to launch the instances in. See here:
-      https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions
-      The instances will be uniformly distributed over all of the regions set here.
-    uniqueItems: true
-    items:
-      type: string
 additionalProperties: false
 required:
   - launchConfigs
-  - regions
   
