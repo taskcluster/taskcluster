@@ -321,19 +321,35 @@ class PulsePublisher {
     // the returned boolean.
 
     // calculate the time after which we will not start a new send operation
-    const deadline = new Date(new Date().getTime() + this.sendDeadline);
+    let deadlinePassed = false;
+    let deadlineTimeout;
+    const failAtDeadline = async () => {
+      await new Promise(resolve => {
+        deadlineTimeout = setTimeout(resolve, this.sendDeadline);
+      });
+      deadlinePassed = true;
+      const err = lastError || new Error('PulsePublisher.sendDeadline exceeded');
+      err.retries = tries;
+      err.exchange = exchange;
+      err.routingKey = routingKey;
+      throw err;
+    };
+
     let lastError = null;
     let tries = 0;
 
     // retry repeatedly until deadline; this getes rate-limited by the Client's
     // reconnection logic in the event of a server error
     const retry = async () => {
-      while (new Date() < deadline) {
+      while (true) {
         try {
           const channel = await this.channelPromise;
 
+          if (deadlinePassed) {
+            return;
+          }
           debug('%s message on exchange %s, routing key %s',
-            tries++ ? 'Republishing' : 'Publishing', exchange, routingKey);
+            tries++ ? `Republishing (${tries})` : 'Publishing', exchange, routingKey);
           await new Promise((resolve, reject) => {
             channel.publish(exchange, routingKey, payload, {
               persistent: true,
@@ -361,18 +377,6 @@ class PulsePublisher {
           this._setChannel(null);
         }
       }
-    };
-
-    let deadlineTimeout;
-    const failAtDeadline = async () => {
-      await new Promise(resolve => {
-        deadlineTimeout = setTimeout(resolve, this.sendDeadline);
-      });
-      const err = lastError || new Error('PulsePublisher.sendDeadline exceeded');
-      err.retries = tries;
-      err.exchange = exchange;
-      err.routingKey = routingKey;
-      throw err;
     };
 
     await Promise.race([retry(), failAtDeadline()]);
