@@ -71,6 +71,18 @@ module.exports = ({ workerManager }) => {
     );
   });
 
+  const WorkerManagerErrors = new ConnectionLoader(
+    async ({ workerPoolId, filter, options }) => {
+      const raw = await workerManager.listWorkerPoolErrors(workerPoolId, options);
+      const errors = sift(filter, raw.workerPoolErrors);
+
+      return {
+        ...raw,
+        items: errors,
+      };
+    }
+  );
+
   const WorkerManagerProviders = new ConnectionLoader(
     async ({ filter, options }) => {
       const raw = await workerManager.listProviders(options);
@@ -86,6 +98,7 @@ module.exports = ({ workerManager }) => {
   return {
     WorkerManagerWorkerPoolSummaries,
     WorkerManagerWorkers,
+    WorkerManagerErrors,
     WorkerPool,
     WorkerManagerProviders,
   };

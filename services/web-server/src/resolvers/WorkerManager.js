@@ -17,6 +17,9 @@ module.exports = {
     WorkerManagerWorkers(parent, { workerPool, provider, isQuarantined, filter }, { loaders }) {
       return loaders.WorkerManagerWorkers.load({ workerPool, provider, isQuarantined, filter });
     },
+    WorkerManagerErrors(parent, { workerPoolId, connection, filter }, { loaders }) {
+      return loaders.WorkerManagerErrors.load({ workerPoolId, connection, filter });
+    },
     WorkerPool(parent, { workerPoolId }, { loaders }) {
       return loaders.WorkerPool.load({ workerPoolId });
     },
