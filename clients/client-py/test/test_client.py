@@ -18,7 +18,7 @@ import taskcluster.exceptions as exc
 import taskcluster.utils as utils
 import taskcluster_urls as liburls
 import pytest
-import pytest-mock
+import functools
 
 pytestmark = [
     pytest.mark.skipif(os.environ.get("NO_TESTS_OVER_WIRE"), reason="Skipping tests over wire")
@@ -27,7 +27,7 @@ pytestmark = [
 REAL_TIME_SLEEP = time.sleep
 
 @pytest.yield_fixture(scope='function')
-def apiRef():
+def apiRef(mocker):
     subject.config['credentials'] = {
         'clientId': 'clientId',
         'accessToken': 'accessToken',
@@ -47,25 +47,16 @@ def apiRef():
         base.createApiEntryFunction('two_args_with_input', 2, True),
         base.createApiEntryFunction('NEVER_CALL_ME', 0, False),
         topicEntry
-    ]
+    ]   
     apiRef = base.createApiRef(entries=entries)
     clientClass = subject.createApiClient('testApi', apiRef)
     client = clientClass({'rootUrl': base.TEST_ROOT_URL})
     # Patch time.sleep so that we don't delay tests
-    # sleepPatcher = mock.patch('time.sleep')
-    # sleepSleep = sleepPatcher.start()
-    # sleepSleep.return_value = None
+
     patcher = mock.patch.object(client, 'NEVER_CALL_ME')
-    # mocker.patch('time.sleep')
+    mocker.patch('time.sleep')
     never_call = patcher.start()
     never_call.side_effect = AssertionError
-    fakeResponse = ''
-
-    def fakeSite(url, request):
-        gotUrl = urllib.parse.urlunsplit(url)
-        gotRequest = request
-        return fakeResponse
-    fakeSite = fakeSite
 
     yield apiRef
 
@@ -83,10 +74,6 @@ def client(clientClass):
 def patcher(client):
     patcher = mock.patch.object(client, 'NEVER_CALL_ME')
     yield patcher
-
-
-def tearDown():
-    time.sleep = REAL_TIME_SLEEP
 
 
 def test_baseUrl_not_allowed(clientClass):
@@ -111,7 +98,6 @@ def test_apiVersion_set_correctly_default(apiRef):
 def test_serviceName_set_correctly(clientClass):
     client = clientClass({'rootUrl': base.TEST_ROOT_URL})
     assert client.serviceName == 'fake'
-
 
 
 def test_valid_no_subs(client):
@@ -635,57 +621,75 @@ def test_builds_surl_keyword(client, apiPath_3):
     assert apiPath_3 + '?bewit=X' == actual
 
 
-
-"""Test entire calls down to the requests layer, ensuring they have
-well-formed URLs and handle request and response bodies properly.  This
-verifies that we can call real methods with both position and keyword
-args"""
-
-@pytest.yield_fixture(scope='function')
-def fakeResponse(fakeResponse):
-    yield fakeResponse
-
-@pytest.yield_fixture(scope='function')
-def fakeSite(url, request, fakeResponse):
-    gotUrl = urllib.parse.urlunsplit(url)
-    gotRequest = request
-    return fakeResponse
+def fakeSite(url, request, expected_url=None, expected_body=None):
+    if expected_url is not None:
+        assert urllib.parse.urlunsplit(url) == expected_url
+    if expected_body is not None:
+        assert json.loads(request.body) == expected_body
+    return ""
 
 
-def test_no_args_no_input(client, fakeSite):
-    with httmock.HTTMock(fakeSite):
+def test_no_args_no_input(client):
+    site = functools.partial(
+        fakeSite,
+        expected_url='https://tc-tests.example.com/api/fake/v1/no_args_no_input',
+        # if we have an expected body, also pass `expected_body={...},`
+    )
+    with httmock.HTTMock(site):
         client.no_args_no_input()
-    assert fakeSite.gotUrl == 'https://tc-tests.example.com/api/fake/v1/no_args_no_input'
 
-def test_two_args_no_input(client, fakeSite):
-    with httmock.HTTMock(fakeSite):
+def test_two_args_no_input(client):
+    site = functools.partial(
+        fakeSite,
+        expected_url='https://tc-tests.example.com/api/fake/v1/two_args_no_input/1/2',
+        # if we have an expected body, also pass `expected_body={...},`
+    )
+    with httmock.HTTMock(site):
         client.two_args_no_input('1', '2')
-    assert gotUrl == 'https://tc-tests.example.com/api/fake/v1/two_args_no_input/1/2'
 
-def test_no_args_with_input(client, fakeSite):
-    with httmock.HTTMock(fakeSite):
+def test_no_args_with_input(client):
+    site = functools.partial(
+        fakeSite,
+        expected_url='https://tc-tests.example.com/api/fake/v1/no_args_with_input',
+        # if we have an expected body, also pass `expected_body={...},`
+        expected_body ={"x": 1}
+    )
+    with httmock.HTTMock(site):
         client.no_args_with_input({'x': 1})
-    assert gotUrl == 'https://tc-tests.example.com/api/fake/v1/no_args_with_input'
-    assert json.loads(gotRequest.body) == {"x": 1}
+    
 
-def test_no_args_with_empty_input(client, fakeSite):
-    with httmock.HTTMock(fakeSite):
+def test_no_args_with_empty_input(client):
+    site = functools.partial(
+        fakeSite,
+        expected_url='https://tc-tests.example.com/api/fake/v1/no_args_with_input',
+        # if we have an expected body, also pass `expected_body={...},`
+        expected_body ={}
+    )
+    with httmock.HTTMock(site):
         client.no_args_with_input({})
-    assert gotUrl == 'https://tc-tests.example.com/api/fake/v1/no_args_with_input'
-    assert json.loads(gotRequest.body) == {}
+    
 
-def test_two_args_with_input(client, fakeSite):
-    with httmock.HTTMock(fakeSite):
+def test_two_args_with_input(client):
+    site = functools.partial(
+        fakeSite,
+        expected_url='https://tc-tests.example.com/api/fake/v1/two_args_with_input/a/b',
+        # if we have an expected body, also pass `expected_body={...},`
+        expected_body ={"x": 1}
+    )
+    with httmock.HTTMock(site):
         client.two_args_with_input('a', 'b', {'x': 1})
-    assert gotUrl == 'https://tc-tests.example.com/api/fake/v1/two_args_with_input/a/b'
-    assert json.loads(gotRequest.body) == {"x": 1}
 
-def test_kwargs(client, fakeSite):
-    with httmock.HTTMock(fakeSite):
+
+def test_kwargs(client):
+    site = functools.partial(
+        fakeSite,
+        expected_url='https://tc-tests.example.com/api/fake/v1/two_args_with_input/a/b',
+        # if we have an expected body, also pass `expected_body={...},`
+        expected_body ={"x": 1}
+    )
+    with httmock.HTTMock(site):
         client.two_args_with_input(
             {'x': 1}, arg0='a', arg1='b')   
-    assert gotUrl == 'https://tc-tests.example.com/api/fake/v1/two_args_with_input/a/b'
-    assert json.loads(gotRequest.body) == {"x": 1}
 
 
 @pytest.mark.skipif(os.environ.get('NO_TESTS_OVER_WIRE'), reason = "Skipping tests over wire")
