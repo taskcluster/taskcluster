@@ -12,8 +12,8 @@ import (
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v16"
-	"github.com/taskcluster/taskcluster/clients/client-go/v16/tcawsprovisioner"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v17"
+	"github.com/taskcluster/taskcluster/clients/client-go/v17/tcawsprovisioner"
 )
 
 type AwsProvisionerProvider struct {
