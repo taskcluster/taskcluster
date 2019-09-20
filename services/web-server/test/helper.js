@@ -3,6 +3,7 @@ const taskcluster = require('taskcluster-client');
 const {Secrets, stickyLoader, withMonitor, withEntity} = require('taskcluster-lib-testing');
 const AuthorizationCode = require('../src/data/AuthorizationCode');
 const AccessToken = require('../src/data/AccessToken');
+const GithubAccessToken = require('../src/data/GithubAccessToken');
 const libUrls = require('taskcluster-lib-urls');
 const request = require('superagent');
 
@@ -34,6 +35,7 @@ exports.secrets = new Secrets({
 exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'AuthorizationCode', AuthorizationCode);
   withEntity(mock, skipping, exports, 'AccessToken', AccessToken);
+  withEntity(mock, skipping, exports, 'GithubAccessToken', GithubAccessToken);
 };
 
 exports.withFakeAuth = (mock, skipping) => {
