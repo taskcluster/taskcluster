@@ -94,7 +94,7 @@ const updateTaskGroupIdHistory = id => {
     '&:hover': {
       background: fade(theme.palette.primary.main, 0.9),
     },
-    '& $input': {
+    '& input': {
       transition: 'unset !important',
       width: 'unset !important',
       color: fade(theme.palette.text.primary, 0.5),
