@@ -188,6 +188,7 @@ class GoogleProvider extends Provider {
 
   async deprovision({workerPool}) {
     // nothing to do: we just wait for workers to terminate themselves
+    // TODO: Probably actually do something
   }
 
   async removeResources({workerPool}) {
@@ -197,22 +198,59 @@ class GoogleProvider extends Provider {
     });
   }
 
+  /**
+   * Attempt to know how many "pending" instances total there
+   * are. There are a couple cases:
+   * 1. We have run a complete scanWorker loop since the last time we spun up
+   *    instances and therefore have an authoritative count on how many instances
+   *    are in a pending state. Just return that
+   * 2. We have not run a complete scanWorker loop since we last requested instances
+   *    so we have to return the sum of the authoritative pending instances from
+   *    the last loop and the number we think we've asked for since then.
+   * Note that since these two loops are not in-sync, this is not 100% accurate but
+   * this should do good enough of a job estimating for us to reliably have enough
+   * instances on hand but not over-commit.
+   */
+  _estimatePending({requested, pending}) {
+    if (pending.time >= requested.time) {
+      return pending.count;
+    }
+    return pending.count + requested.count;
+  }
+
   async provision({workerPool}) {
     const {workerPoolId} = workerPool;
 
-    if (!workerPool.providerData[this.providerId] || workerPool.providerData[this.providerId].running === undefined) {
-      await workerPool.modify(wt => {
-        wt.providerData[this.providerId] = wt.providerData[this.providerId] || {};
-        wt.providerData[this.providerId].running = wt.providerData[this.providerId].running || 0;
-      });
+    let providerData = workerPool.providerData[this.providerId] || {};
+
+    // Migrate old workerpools to new config
+    if (typeof providerData.running === 'number') {
+      providerData.running = {count: providerData.running, time: new Date()};
     }
+
+    providerData.running = providerData.running || {count: 0, time: new Date()};
+    providerData.pending = providerData.pending || {count: 0, time: new Date()};
+    providerData.requested = providerData.requested || {count: 0, time: new Date()};
+
+    // TODO: Probably something to do with multiple configs and networks?
+    // TODO: And also multiple possible instance types :/
     const regions = workerPool.config.regions;
 
-    const toSpawn = await this.estimator.simple({
+    const toSpawn = Math.ceil((await this.estimator.simple({
       workerPoolId,
       ...workerPool.config,
-      running: workerPool.providerData[this.providerId].running,
-    });
+      runningCapacity: providerData.running.count,
+      pendingCapacity: this._estimatePending(providerData),
+    })) / workerPool.config.capacityPerInstance);
+
+    if (toSpawn > 0) {
+      // We keep adding up here until we get an authoratative answer then reset
+      providerData.requested.count = providerData.requested.count + toSpawn;
+      providerData.requested.time = new Date();
+      await workerPool.modify(wp => {
+        wp.providerData[this.providerId] = providerData;
+      });
+    }
 
     await Promise.all(new Array(toSpawn).fill(null).map(async _ => {
       const region = regions[Math.floor(Math.random() * regions.length)];
@@ -228,7 +266,8 @@ class GoogleProvider extends Provider {
       // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
       // The lost entropy from downcasing, etc should be ok due to the fact that
       // only running instances need not be identical. We do not use this name to identify
-      // workers in taskcluster.
+      // workers in taskcluster. This is also only allowed to be 61 chars long. We
+      // try to fit it all into this space but keep it recognizable
       const poolName = workerPoolId.replace(/\//g, '-').slice(0, 38);
       const instanceName = `${poolName}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
 
@@ -308,6 +347,7 @@ class GoogleProvider extends Provider {
         state: this.Worker.states.REQUESTED,
         providerData: {
           project: this.project,
+          instanceCapacity: workerPool.config.capacityPerInstance,
           zone,
           operation: {
             name: op.name,
@@ -332,7 +372,7 @@ class GoogleProvider extends Provider {
    */
   async checkWorker({worker}) {
     const states = this.Worker.states;
-    this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
+    this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || {running: 0, pending: 0};
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
 
     let deleteOp = false;
@@ -364,7 +404,7 @@ class GoogleProvider extends Provider {
     }
     const {status} = res.data;
     if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
-      this.seen[worker.workerPoolId] += 1;
+      this.seen[worker.workerPoolId][status === 'RUNNING' ? 'running' : 'pending'] += worker.providerData.instanceCapacity;
       // If the worker will be expired soon but it still exists,
       // update it to stick around a while longer. Ff this doesn't happen,
       // long-lived instances become orphaned from the provider. We don't update
@@ -410,7 +450,13 @@ class GoogleProvider extends Provider {
         if (!wt.providerData[this.providerId]) {
           wt.providerData[this.providerId] = {};
         }
-        wt.providerData[this.providerId].running = seen;
+        wt.providerData[this.providerId].running = {count: seen.running, time: new Date()};
+        wt.providerData[this.providerId].pending = {count: seen.pending, time: new Date()};
+        // Reset the requested list now, but do not update the timestamp unless
+        // it doesn't exist already due to this being an older workerpool from
+        // before this was an object
+        wt.providerData[this.providerId].requested = wt.providerData[this.providerId].requested || {time: new Date()};
+        wt.providerData[this.providerId].requested.count = 0;
       });
     }));
   }
