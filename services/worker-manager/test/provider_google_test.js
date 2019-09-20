@@ -46,7 +46,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       lastModified: new Date(),
       config: {
         minCapacity: 1,
-        maxCapacity: 1,
+        maxCapacity: 5,
         capacityPerInstance: 1,
         machineType: 'n1-standard-2',
         regions: ['us-east1'],
@@ -74,6 +74,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
   test('provisioning loop with failure', async function() {
     // The fake throws an error on the second call
     await provider.provision({workerPool});
+    helper.queue.setPending('foo', 'bar', 2);
     await provider.provision({workerPool});
     const errors = await helper.WorkerPoolError.scan({}, {});
     assert.equal(errors.entries.length, 1);
@@ -85,7 +86,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
   test('provisioning loop with rate limiting', async function() {
     // Notice this is only three loops, but instance insert fails on third try before succeeding on 4th
     await provider.provision({workerPool});
+    helper.queue.setPending('foo', 'bar', 2);
     await provider.provision({workerPool});
+    helper.queue.setPending('foo', 'bar', 3);
     await provider.provision({workerPool});
 
     const workers = await helper.Worker.scan({}, {});
@@ -129,7 +132,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     await provider.checkWorker({worker});
     await provider.scanCleanup();
     await workerPool.reload();
-    assert.equal(workerPool.providerData.google.running, 1);
+    assert.equal(workerPool.providerData.google.running.count, 1);
     worker.reload();
     assert(worker.providerData.operation);
 
@@ -138,7 +141,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     await provider.checkWorker({worker});
     await provider.scanCleanup();
     await workerPool.reload();
-    assert.equal(workerPool.providerData.google.running, 0);
+    assert.equal(workerPool.providerData.google.running.count, 0);
     worker.reload();
     assert(worker.providerData.operation);
   });

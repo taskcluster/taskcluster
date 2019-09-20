@@ -21,17 +21,18 @@ monitorManager.register({
   name: 'simpleEstimate',
   title: 'Simple Estimate Provided',
   type: 'simple-estimate',
-  version: 1,
+  version: 2,
   level: 'notice',
-  description: 'The simple estimator has decided that we need some number of instances.',
+  description: 'The simple estimator has decided that we need some amount of capacity.',
   fields: {
     workerPoolId: 'The worker pool name (provisionerId/workerType)',
     pendingTasks: 'The number of tasks the queue reports are pending for this worker pool',
     minCapacity: 'The minimum amount of capacity that should be running',
     maxCapacity: 'The maximum amount of capacity that should be running',
-    capacityPerInstance: 'Amount of capacity a single instance provides',
-    running: 'Number of currently requested and running instances',
-    desiredSize: 'Number that this estimator thinks we should have',
+    runningCapacity: 'Amount of capacity the provider believes exists currently',
+    pendingCapacity: 'Amount of capacity the provider believes is coming online currently',
+    desiredCapacity: 'Amount of capacity the estimator believes is needed',
+    requestingCapacity: 'Amount of capacity the estimator is asking the provider to add',
   },
 });
 
