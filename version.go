@@ -1,3 +1,3 @@
 package tcworkerrunner
 
-var Version = "0.5.6"
+var Version = "0.5.7"
