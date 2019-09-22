@@ -269,7 +269,7 @@ export default class WMWorkerPoolEditor extends Component {
     } catch (error) {
       this.setState({ error: formatError(error), actionLoading: false });
     }
-  };
+  }; s
 
   handleDeleteWorkerPool = () => {
     const { workerPoolId1, workerPoolId2, ...payload } = this.state.workerPool;
@@ -334,6 +334,7 @@ export default class WMWorkerPoolEditor extends Component {
               name="description"
               onChange={this.handleInputChange}
               value={workerPool.description}
+              defaultTabIndex={1}
             />
           </ListItem>
 
