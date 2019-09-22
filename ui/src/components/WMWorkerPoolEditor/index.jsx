@@ -269,7 +269,7 @@ export default class WMWorkerPoolEditor extends Component {
     } catch (error) {
       this.setState({ error: formatError(error), actionLoading: false });
     }
-  }; s
+  };
 
   handleDeleteWorkerPool = () => {
     const { workerPoolId1, workerPoolId2, ...payload } = this.state.workerPool;
