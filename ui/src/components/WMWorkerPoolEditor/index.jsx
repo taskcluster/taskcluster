@@ -6,6 +6,7 @@ import ListSubheader from '@material-ui/core/ListSubheader';
 import ListItem from '@material-ui/core/ListItem';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography/Typography';
+import MarkdownTextArea from '@mozilla-frontend-infra/components/MarkdownTextArea';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
@@ -328,13 +329,11 @@ export default class WMWorkerPoolEditor extends Component {
 
         <List className={classes.list}>
           <ListItem>
-            <TextField
+            <MarkdownTextArea
               label="Description"
               name="description"
               onChange={this.handleInputChange}
-              fullWidth
               value={workerPool.description}
-              margin="normal"
             />
           </ListItem>
 
