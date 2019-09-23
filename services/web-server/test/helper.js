@@ -1,9 +1,11 @@
 const load = require('../src/main');
 const taskcluster = require('taskcluster-client');
 const {Secrets, stickyLoader, withMonitor, withEntity} = require('taskcluster-lib-testing');
+const sinon = require('sinon');
 const AuthorizationCode = require('../src/data/AuthorizationCode');
 const AccessToken = require('../src/data/AccessToken');
 const GithubAccessToken = require('../src/data/GithubAccessToken');
+const GithubClient = require('../src/login/clients/GithubClient');
 const libUrls = require('taskcluster-lib-urls');
 const request = require('superagent');
 
@@ -86,6 +88,92 @@ exports.withServer = (mock, skipping) => {
       await new Promise(resolve => webServer.close(resolve));
       webServer = null;
     }
+  });
+};
+
+exports.githubFixtures = {
+  users: {
+    'octocat': 10,
+    'taskcluster': 20,
+    'a/c': 30,
+  },
+  teams: {
+    'octocat': [
+      { slug: 'team-1' },
+      { slug: 'team-2' },
+    ],
+    'taskcluster': [
+      { slug: 'team-3' },
+      { slug: 'team-1' },
+    ],
+    'a/c': [],
+  },
+  orgs: {
+    'octocat': [
+      { role: 'admin', organization: { login: 'taskcluster' } },
+      { role: 'member', organization: { login: 'neutrinojs' } },
+    ],
+    'taskcluster': [
+      { role: 'admin', organization: { login: 'taskcluster' } },
+      { role: 'admin', organization: { login: 'neutrinojs' } },
+    ],
+    'a/c': [],
+  },
+};
+
+exports.withGithubClient = () => {
+  function githubClient() {
+    let currentUsername = null;
+
+    return {
+      async userFromUsername(username) {
+        currentUsername = username;
+
+        if (username === 'FAIL') {
+          throw new Error('uhoh');
+        }
+
+        const user_id = exports.githubFixtures.users[username];
+
+        if (!user_id) {
+          const err = new Error('No such user');
+          err.status = 404;
+          throw err;
+        }
+
+        return {id: user_id};
+      },
+      async userMembershipsOrgs() {
+        const organizations = exports.githubFixtures.orgs[currentUsername];
+
+        if (!organizations) {
+          throw new Error(`memberships orgs for user ${currentUsername} not found`);
+        }
+
+        return organizations;
+      },
+      async listTeams() {
+        const userTeams = exports.githubFixtures.teams[currentUsername];
+
+        if (!userTeams) {
+          throw new Error(`orgs for user ${currentUsername} not found`);
+        }
+
+        return userTeams;
+      },
+    };
+  }
+
+  suiteSetup(function() {
+    this.stubbedGithuClient = {};
+
+    Object.entries(githubClient()).forEach(([name, value]) => {
+      this.stubbedGithuClient[name] = sinon.stub(GithubClient.prototype, name).callsFake(value);
+    });
+  });
+
+  suiteTeardown(function() {
+    Object.values(this.stubbedGithuClient).map(stub => stub.restore());
   });
 };
 
