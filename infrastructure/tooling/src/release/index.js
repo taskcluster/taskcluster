@@ -76,7 +76,7 @@ class Release {
       console.log(`GitHub release: ${context['github-release']}`);
       console.log('** YOUR NEXT STEPS **');
       console.log(' * run `npm publish` in clients/client');
-      console.log(' * run `npm publish` in clients/client-web');
+      console.log(' * run `yarn` and `npm publish` in clients/client-web');
       console.log(' * run `./release.sh --real` in clients/client-py');
     }
   }
