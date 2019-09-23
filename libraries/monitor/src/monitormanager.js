@@ -249,7 +249,7 @@ class MonitorManager {
     if (this.debug) {
       message = message ? message.toString().replace(/\n/g, '\\n') : '';
       const extra = Object.keys(Fields).reduce((s, f) =>
-        s + chalk`\n\t{gray ${f}:} ${Fields[f].toString().replace(/\n/g, '\\n')}`, '');
+        s + chalk`\n\t{gray ${f}:} ${String(Fields[f]).replace(/\n/g, '\\n')}`, '');
       const line = chalk`${LEVELS_REVERSE_COLOR[Severity]}: {gray ${Type}}: ${message}${extra}`;
       Debug(Logger)(line);
     }
