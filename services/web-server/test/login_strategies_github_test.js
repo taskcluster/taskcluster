@@ -1,6 +1,5 @@
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
-const taskcluster = require('taskcluster-client');
 const helper = require('./helper');
 const Github = require('../src/login/strategies/github');
 
