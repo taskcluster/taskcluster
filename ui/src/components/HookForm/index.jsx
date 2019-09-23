@@ -601,14 +601,6 @@ export default class HookForm extends Component {
             />
           </ListItem>
           <ListItem>
-            <MarkdownTextArea
-              onChange={this.handleDescriptionChange}
-              value={hook.metadata.description}
-              placeholder="Hook description (markdown)"
-              defaultTabIndex={1}
-            />
-          </ListItem>
-          <ListItem>
             <FormGroup row>
               <FormControlLabel
                 control={
@@ -620,6 +612,14 @@ export default class HookForm extends Component {
                 label="Email on Error"
               />
             </FormGroup>
+          </ListItem>
+          <ListItem>
+            <MarkdownTextArea
+              onChange={this.handleDescriptionChange}
+              value={hook.metadata.description}
+              placeholder="Hook description (markdown)"
+              defaultTabIndex={isNewHook ? 0 : 1}
+            />
           </ListItem>
           {!isNewHook && (
             <Fragment>

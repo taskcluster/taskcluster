@@ -6,6 +6,7 @@ import ListSubheader from '@material-ui/core/ListSubheader';
 import ListItem from '@material-ui/core/ListItem';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography/Typography';
+import MarkdownTextArea from '@mozilla-frontend-infra/components/MarkdownTextArea';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
@@ -69,6 +70,9 @@ import SpeedDial from '../SpeedDial';
   separator: {
     padding: theme.spacing.double,
     paddingBottom: 0,
+  },
+  workerPoolDescriptionListItem: {
+    marginBottom: theme.spacing.quad,
   },
 }))
 export default class WMWorkerPoolEditor extends Component {
@@ -327,14 +331,13 @@ export default class WMWorkerPoolEditor extends Component {
         </List>
 
         <List className={classes.list}>
-          <ListItem>
-            <TextField
-              label="Description"
+          <ListItem className={classes.workerPoolDescriptionListItem}>
+            <MarkdownTextArea
               name="description"
+              placeholder="Worker pool description (markdown)"
               onChange={this.handleInputChange}
-              fullWidth
               value={workerPool.description}
-              margin="normal"
+              defaultTabIndex={isNewWorkerPool ? 0 : 1}
             />
           </ListItem>
 
@@ -388,7 +391,7 @@ export default class WMWorkerPoolEditor extends Component {
         </List>
 
         <List className={classes.list}>
-          <ListSubheader>Configuration:</ListSubheader>
+          <ListSubheader>Configuration</ListSubheader>
           <ListItem>
             <CodeEditor
               value={JSON.stringify(workerPool.config, null, 2)}
