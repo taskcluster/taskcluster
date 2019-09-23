@@ -71,6 +71,9 @@ import SpeedDial from '../SpeedDial';
     padding: theme.spacing.double,
     paddingBottom: 0,
   },
+  workerPoolDescriptionListItem: {
+    marginBottom: theme.spacing.quad,
+  },
 }))
 export default class WMWorkerPoolEditor extends Component {
   static defaultProps = {
@@ -328,13 +331,13 @@ export default class WMWorkerPoolEditor extends Component {
         </List>
 
         <List className={classes.list}>
-          <ListItem>
+          <ListItem className={classes.workerPoolDescriptionListItem}>
             <MarkdownTextArea
-              label="Description"
               name="description"
+              placeholder="Worker pool description (markdown)"
               onChange={this.handleInputChange}
               value={workerPool.description}
-              defaultTabIndex={1}
+              defaultTabIndex={isNewWorkerPool ? 0 : 1}
             />
           </ListItem>
 
@@ -388,7 +391,7 @@ export default class WMWorkerPoolEditor extends Component {
         </List>
 
         <List className={classes.list}>
-          <ListSubheader>Configuration:</ListSubheader>
+          <ListSubheader>Configuration</ListSubheader>
           <ListItem>
             <CodeEditor
               value={JSON.stringify(workerPool.config, null, 2)}

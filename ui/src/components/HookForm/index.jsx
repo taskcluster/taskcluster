@@ -605,7 +605,7 @@ export default class HookForm extends Component {
               onChange={this.handleDescriptionChange}
               value={hook.metadata.description}
               placeholder="Hook description (markdown)"
-              defaultTabIndex={1}
+              defaultTabIndex={isNewHook ? 0 : 1}
             />
           </ListItem>
           <ListItem>
