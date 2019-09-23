@@ -1389,7 +1389,7 @@
         "routes": {
           "default": [
           ],
-          "description": "List of task-specific routes. Pulse messages about the task will be CC'ed to\n`route.<value>` for each `<value>` in this array.\n",
+          "description": "List of task-specific routes. Pulse messages about the task will be CC'ed to\n`route.<value>` for each `<value>` in this array.\n\nThis array has a maximum size due to a limitation of the AMQP protocol,\nover which Pulse runs.  All routes must fit in the same \"frame\" of this\nprotocol, and the frames have a fixed maximum size (typically 128k).\n",
           "items": {
             "description": "A task specific route.\n",
             "maxLength": 249,

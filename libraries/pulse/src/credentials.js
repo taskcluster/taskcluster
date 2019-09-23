@@ -29,6 +29,8 @@ const pulseCredentials = ({username, password, hostname, vhost}) => {
         5671, // Port for SSL
         '/',
         encodeURIComponent(vhost),
+        // don't artificially limit frame size (https://bugzilla.mozilla.org/show_bug.cgi?id=1582376)
+        '?frameMax=0',
       ].join(''),
     };
   };

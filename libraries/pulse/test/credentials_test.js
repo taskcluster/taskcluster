@@ -25,7 +25,7 @@ suite(testing.suiteName(), function() {
 
     assert.equal(
       credentials.connectionString,
-      'amqps://me:letmein@pulse.abc.com:5671/%2F');
+      'amqps://me:letmein@pulse.abc.com:5671/%2F?frameMax=0');
   });
 
   test('builds a connection string with urlencoded values', async function() {
@@ -38,6 +38,6 @@ suite(testing.suiteName(), function() {
 
     assert.equal(
       credentials.connectionString,
-      'amqps://ali-escaper:/@%5C%7C()%3C%3E&:bobby-tables:/@%5C%7C()%3C%3E&@pulse.abc.com:5671/%2F');
+      'amqps://ali-escaper:/@%5C%7C()%3C%3E&:bobby-tables:/@%5C%7C()%3C%3E&@pulse.abc.com:5671/%2F?frameMax=0');
   });
 });

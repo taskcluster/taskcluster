@@ -1097,6 +1097,10 @@ type (
 		// List of task-specific routes. Pulse messages about the task will be CC'ed to
 		// `route.<value>` for each `<value>` in this array.
 		//
+		// This array has a maximum size due to a limitation of the AMQP protocol,
+		// over which Pulse runs.  All routes must fit in the same "frame" of this
+		// protocol, and the frames have a fixed maximum size (typically 128k).
+		//
 		// Default:    []
 		//
 		// Array items:
@@ -1263,6 +1267,10 @@ type (
 
 		// List of task-specific routes. Pulse messages about the task will be CC'ed to
 		// `route.<value>` for each `<value>` in this array.
+		//
+		// This array has a maximum size due to a limitation of the AMQP protocol,
+		// over which Pulse runs.  All routes must fit in the same "frame" of this
+		// protocol, and the frames have a fixed maximum size (typically 128k).
 		//
 		// Default:    []
 		//
