@@ -444,7 +444,7 @@ Once you have been granted the above scope:
 To see a full description of all the config options available to you, run `generic-worker --help`:
 
 ```
-generic-worker (multiuser engine) 16.0.0
+generic-worker (multiuser engine) 16.1.0
 
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -680,6 +680,11 @@ and reports back results to the queue.
                                             identifier to uniquely identify which pool of
                                             workers this worker logically belongs to.
                                             [default: test-worker-group]
+          workerManagerBaseURL              The base URL for taskcluster worker-manager API calls.
+                                            If not provided, the base URL for API calls is
+                                            instead derived from rootURL setting as follows:
+                                              * https://worker-manager.taskcluster.net/v1 for rootURL https://taskcluster.net
+                                              * <rootURL>/api/worker-manager/v1 for all other rootURLs
           workerTypeMetaData                This arbitrary json blob will be included at the
                                             top of each task log. Providing information here,
                                             such as a URL to the code/config used to set up the
@@ -817,7 +822,7 @@ worker.
 Run the `release.sh` script like so:
 
 ```
-$ ./release.sh 16.0.0
+$ ./release.sh 16.1.0
 ```
 
 This will perform some checks, tag the repo, push the tag to github, which will then trigger travis-ci to run tests, and publish the new release.
