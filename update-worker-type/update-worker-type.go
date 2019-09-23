@@ -61,7 +61,11 @@ func main() {
 
 	delete(wt, "lastModified")
 	delete(wt, "workerType")
+	scriptName := ""
 	for _, f := range files {
+		if !f.IsDir() && strings.HasPrefix(f.Name(), "bootstrap.") {
+			scriptName = f.Name()
+		}
 		if !f.IsDir() && strings.HasSuffix(f.Name(), ".id_rsa") {
 			region := f.Name()[:len(f.Name())-7]
 			bytes, err := ioutil.ReadFile(filepath.Join(workerTypeDir, f.Name()))
@@ -112,7 +116,7 @@ func main() {
 	oldMetadata := config["workerTypeMetadata"].(map[string]interface{})
 	oldMachineSetup := oldMetadata["machine-setup"].(map[string]interface{})
 	oldScript := oldMachineSetup["script"].(string)
-	newScript := "https://raw.githubusercontent.com/taskcluster/generic-worker/" + gitRevision(workerTypeDir) + "/worker_types/" + workerType + "/userdata"
+	newScript := "https://raw.githubusercontent.com/taskcluster/generic-worker/" + gitRevision(workerTypeDir) + "/worker_types/" + workerType + "/" + scriptName
 	oldMachineSetup["script"] = newScript
 
 	log.Print("Old machine setup script: " + oldScript)

@@ -13,6 +13,7 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/tcpurgecache"
 	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 	"github.com/taskcluster/taskcluster-client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster-client-go/tcworkermanager"
 )
 
 type (
@@ -63,6 +64,7 @@ type (
 		TasksDir                       string                 `json:"tasksDir"`
 		WorkerGroup                    string                 `json:"workerGroup"`
 		WorkerID                       string                 `json:"workerId"`
+		WorkerManagerBaseURL           string                 `json:"workerManagerBaseURL"`
 		WorkerType                     string                 `json:"workerType"`
 		WorkerTypeMetadata             map[string]interface{} `json:"workerTypeMetadata"`
 		WSTAudience                    string                 `json:"wstAudience"`
@@ -206,4 +208,13 @@ func (c *Config) Secrets() *tcsecrets.Secrets {
 		secrets.BaseURL = c.SecretsBaseURL
 	}
 	return secrets
+}
+
+func (c *Config) WorkerManager() *tcworkermanager.WorkerManager {
+	workerManager := tcworkermanager.New(c.Credentials(), c.RootURL)
+	// If workerManagerBaseURL provided, it should take precedence over rootURL
+	if c.WorkerManagerBaseURL != "" {
+		workerManager.BaseURL = c.WorkerManagerBaseURL
+	}
+	return workerManager
 }

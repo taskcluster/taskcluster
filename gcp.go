@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -12,49 +11,37 @@ import (
 
 	"github.com/taskcluster/generic-worker/gwconfig"
 	"github.com/taskcluster/httpbackoff"
+	"github.com/taskcluster/taskcluster-client-go/tcworkermanager"
 )
 
 var (
 	// not a const, because in testing we swap this out
-	GCPMetadataBaseURL = "http://metadata.google.internal/computeMetadata/v1/"
+	GCPMetadataBaseURL = "http://metadata.google.internal/computeMetadata/v1"
 )
 
 type GCPUserData struct {
-	WorkerType                string `json:"workerType"`
-	WorkerGroup               string `json:"workerGroup"`
-	ProvisionerID             string `json:"provisionerId"`
-	CredentialURL             string `json:"credentialURL"`
-	Audience                  string `json:"audience"`
-	Ed25519SigningKeyLocation string `json:"ed25519SigningKeyLocation"`
-	RootURL                   string `json:"rootURL"`
+	WorkerPoolID string                       `json:"workerPoolId"`
+	ProviderID   string                       `json:"providerId"`
+	WorkerGroup  string                       `json:"workerGroup"`
+	RootURL      string                       `json:"rootURL"`
+	WorkerConfig WorkerTypeDefinitionUserData `json:"workerConfig"`
 }
 
-type CredentialRequestData struct {
-	Token string `json:"token"`
-}
-
-type TaskclusterCreds struct {
-	AccessToken string `json:"accessToken"`
-	ClientID    string `json:"clientId"`
-	Certificate string `json:"certificate"`
-}
-
-func queryGCPMetaData(client *http.Client, path string) (string, error) {
+func queryGCPMetaData(client *http.Client, path string) ([]byte, error) {
 	req, err := http.NewRequest("GET", GCPMetadataBaseURL+path, nil)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	req.Header.Add("Metadata-Flavor", "Google")
 
 	resp, _, err := httpbackoff.ClientDo(client, req)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
-	content, err := ioutil.ReadAll(resp.Body)
-	return string(content), err
+	return ioutil.ReadAll(resp.Body)
 }
 
 func updateConfigWithGCPSettings(c *gwconfig.Config) error {
@@ -64,84 +51,87 @@ func updateConfigWithGCPSettings(c *gwconfig.Config) error {
 	c.ShutdownMachineOnIdle = true
 
 	client := &http.Client{}
-	userDataString, err := queryGCPMetaData(client, "instance/attributes/config")
+
+	workerID, err := queryGCPMetaData(client, "/instance/id")
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not query instance ID: %v", err)
+	}
+	c.WorkerID = string(workerID)
+
+	taskclusterConfig, err := queryGCPMetaData(client, "/instance/attributes/taskcluster")
+	if err != nil {
+		return fmt.Errorf("Could not query taskcluster configuration: %v", err)
 	}
 
 	var userData GCPUserData
-	err = json.Unmarshal([]byte(userDataString), &userData)
+	err = json.Unmarshal(taskclusterConfig, &userData)
 	if err != nil {
 		return err
 	}
 
-	c.ProvisionerID = userData.ProvisionerID
-	c.WorkerType = userData.WorkerType
+	wp := strings.SplitN(userData.WorkerPoolID, "/", -1)
+	if len(wp) != 2 {
+		return fmt.Errorf("Was expecting WorkerPoolID to have syntax <provisionerId>/<workerType> but was %q", userData.WorkerPoolID)
+	}
+
+	c.ProvisionerID = wp[0]
+	c.WorkerType = wp[1]
 	c.WorkerGroup = userData.WorkerGroup
-
 	c.RootURL = userData.RootURL
-	c.Ed25519SigningKeyLocation = userData.Ed25519SigningKeyLocation
 
-	// Now we get taskcluster credentials via instance identity
-	// TODO: Disable getting instance identity after first run
-	audience := userData.Audience
-	instanceIDPath := fmt.Sprintf("instance/service-accounts/default/identity?audience=%s&format=full", audience)
-	instanceIDToken, err := queryGCPMetaData(client, instanceIDPath)
+	// We need a worker manager client for fetching taskcluster credentials.
+	// Ensure auth is disabled in client, since we don't have credentials yet.
+	wm := c.WorkerManager()
+	wm.Authenticate = false
+	wm.Credentials = nil
+
+	identity, err := queryGCPMetaData(client, "/instance/service-accounts/default/identity?audience="+userData.RootURL+"&format=full")
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not query google indentity token: %v", err)
+	}
+	providerType := tcworkermanager.GoogleProviderType{
+		Token: string(identity),
 	}
 
-	data := CredentialRequestData{Token: instanceIDToken}
-	reqData, err := json.Marshal(data)
+	workerIdentityProof, err := json.Marshal(providerType)
 	if err != nil {
-		return err
-	}
-	dataBuffer := bytes.NewBuffer(reqData)
-
-	credentialURL := userData.CredentialURL
-	req, err := http.NewRequest("POST", credentialURL, dataBuffer)
-	if err != nil {
-		return err
+		return fmt.Errorf("Could not marshal google provider type %#v: %v", providerType, err)
 	}
 
-	req.Header.Add("Content-Type", "application/json")
+	reg, err := wm.RegisterWorker(&tcworkermanager.RegisterWorkerRequest{
+		WorkerPoolID:        userData.WorkerPoolID,
+		ProviderID:          userData.ProviderID,
+		WorkerGroup:         userData.WorkerGroup,
+		WorkerID:            c.WorkerID,
+		WorkerIdentityProof: json.RawMessage(workerIdentityProof),
+	})
 
-	resp, _, err := httpbackoff.ClientDo(client, req)
 	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	content, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	var creds TaskclusterCreds
-	err = json.Unmarshal([]byte(content), &creds)
-	if err != nil {
-		return err
+		return fmt.Errorf("Could not register worker: %v", err)
 	}
 
-	c.AccessToken = creds.AccessToken
-	c.ClientID = creds.ClientID
-	c.Certificate = creds.Certificate
+	c.AccessToken = reg.Credentials.AccessToken
+	c.Certificate = reg.Credentials.Certificate
+	c.ClientID = reg.Credentials.ClientID
+
+	// TODO: process reg.Expires
 
 	gcpMetadata := map[string]interface{}{}
 	for _, path := range []string{
-		"instance/image",
-		"instance/id",
-		"instance/machine-type",
-		"instance/network-interfaces/0/access-configs/0/external-ip",
-		"instance/zone",
-		"instance/hostname",
-		"instance/network-interfaces/0/ip",
+		"/instance/image",
+		"/instance/id",
+		"/instance/machine-type",
+		"/instance/network-interfaces/0/access-configs/0/external-ip",
+		"/instance/zone",
+		"/instance/hostname",
+		"/instance/network-interfaces/0/ip",
 	} {
 		key := path[strings.LastIndex(path, "/")+1:]
 		value, err := queryGCPMetaData(client, path)
 		if err != nil {
 			return err
 		}
-		gcpMetadata[key] = value
+		gcpMetadata[key] = string(value)
 	}
 	c.WorkerTypeMetadata["gcp"] = gcpMetadata
 	c.WorkerID = gcpMetadata["id"].(string)
@@ -151,8 +141,26 @@ func updateConfigWithGCPSettings(c *gwconfig.Config) error {
 	c.InstanceType = gcpMetadata["machine-type"].(string)
 	c.AvailabilityZone = gcpMetadata["zone"].(string)
 
-	// TODO: Fetch these from secrets
-	c.LiveLogSecret = "foobar"
+	// Parse the config before applying it, to ensure that no disallowed fields
+	// are included.
+	_, err = userData.WorkerConfig.PublicHostSetup()
+	if err != nil {
+		return fmt.Errorf("Error retrieving/interpreting host setup from GCP metadata: %v", err)
+	}
+
+	err = c.MergeInJSON(userData.WorkerConfig.GenericWorker, func(a map[string]interface{}) map[string]interface{} {
+		if config, exists := a["config"]; exists {
+			return config.(map[string]interface{})
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("Error applying /workerConfig/genericWorker/config of workerpool from metadata to config: %v", err)
+	}
+
+	if c.IdleTimeoutSecs == 0 {
+		c.IdleTimeoutSecs = 3600
+	}
 
 	return nil
 }

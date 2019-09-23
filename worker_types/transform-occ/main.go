@@ -104,8 +104,6 @@ func main() {
 		log.Fatalf("%v", err)
 	}
 
-	fmt.Println(`<powershell>`)
-	fmt.Println(``)
 	fmt.Println(`###################################################################################`)
 	fmt.Println(`# Note, this powershell script is an *APPROXIMATION ONLY* to the steps that are run`)
 	fmt.Println(`# to build the AMIs for aws-provisioner-v1/` + workerType + `.`)
@@ -153,13 +151,13 @@ func main() {
 		case "CommandRun":
 			switch cc := c.Arguments.(type) {
 			case string:
-				fmt.Printf(`Start-Process "%s" -ArgumentList "%s" -Wait -NoNewWindow`+"\n", c.Command, PSEscape(cc))
+				fmt.Println(strings.Replace(`Start-Process "`+c.Command+`" -ArgumentList "`+PSEscape(cc)+`" -Wait -NoNewWindow`, "--configure-for-aws", "--configure-for-%MY_CLOUD%", -1))
 			case []interface{}:
 				a := []string{}
 				for _, x := range cc {
 					a = append(a, x.(string))
 				}
-				fmt.Printf(`Start-Process "%s" -ArgumentList "%s" -Wait -NoNewWindow`+"\n", c.Command, PSEscape(strings.Join(a, " ")))
+				fmt.Println(strings.Replace(`Start-Process "`+c.Command+`" -ArgumentList "`+PSEscape(strings.Join(a, " "))+`" -Wait -NoNewWindow`, "--configure-for-aws", "--configure-for-%MY_CLOUD%", -1))
 			default:
 				log.Printf("Got type %T", cc)
 			}
@@ -227,8 +225,6 @@ func main() {
 	fmt.Println("#   * https://support.microsoft.com/en-in/help/4014551/description-of-the-security-and-quality-rollup-for-the-net-framework-4")
 	fmt.Println("#   * https://support.microsoft.com/en-us/help/4020459")
 	fmt.Println("shutdown -s")
-	fmt.Println("")
-	fmt.Println("</powershell>")
 }
 
 func FilenameFromURL(url string, extension string) (filename string) {
