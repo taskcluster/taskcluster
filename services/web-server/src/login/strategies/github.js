@@ -23,7 +23,6 @@ module.exports = class Github {
 
     this.identityProviderId = 'github';
     this.GithubAccessToken = GithubAccessToken;
-    this.clients = new Map();
   }
 
   async getUser({ username, userId }) {
@@ -36,13 +35,7 @@ module.exports = class Github {
       return;
     }
 
-    const githubClient = this.clients.get(userId);
-
-    if (!githubClient) {
-      debug(`Github client for user id ${userId} could not be found.`);
-      return;
-    }
-
+    const githubClient = new GithubClient({ accessToken: githubEntry.accessToken });
     const [githubErr, githubUser] = await tryCatch(githubClient.userFromUsername(username));
 
     // 404 means the user doesn't exist; otherwise, throw the error up the chain
@@ -75,13 +68,7 @@ module.exports = class Github {
       return;
     }
 
-    const githubClient = this.clients.get(userId);
-
-    if (!githubClient) {
-      debug(`Github client for user id ${userId} could not be found.`);
-      return;
-    }
-
+    const githubClient = new GithubClient({ accessToken: githubEntry.accessToken });
     const [teamsErr, teams] = await tryCatch(githubClient.listTeams());
 
     if (teamsErr) {
@@ -138,7 +125,6 @@ module.exports = class Github {
           scope: 'repo',
         },
         async (accessToken, refreshToken, profile, next) => {
-          this.clients.set(Number(profile.id), new GithubClient({ accessToken }));
           await this.GithubAccessToken.create({
             userId: profile.id,
             accessToken,
