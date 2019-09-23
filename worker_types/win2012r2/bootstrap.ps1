@@ -82,8 +82,7 @@ Expand-ZIPFile -File "C:\nssm-2.24.zip" -Destination "C:\" -Url "http://www.nssm
 
 # download generic-worker
 md C:\generic-worker
-$client.DownloadFile("https://taskcluster-artifacts.net/FnDaYpolQMqxtRSgkPXLYA/0/public/build/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe.gz")
-Start-Process "C:\mozilla-build\msys\bin\bash.exe" -ArgumentList "-l gunzip /c/generic-worker/generic-worker.exe.gz" -Wait -PassThru
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v16.1.0/generic-worker-multiuser-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
 
 # download livelog
 $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")

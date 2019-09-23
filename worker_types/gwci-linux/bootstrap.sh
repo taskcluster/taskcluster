@@ -48,7 +48,7 @@ systemctl status docker | grep "Started Docker Application Container Engine"
 usermod -aG docker ubuntu
 
 cd /usr/local/bin
-retry curl -L "https://queue.taskcluster.net/v1/task/BqhGTiUtQmiGuEanuMMJfg/runs/0/artifacts/public/build/generic-worker-linux-amd64" | gunzip > generic-worker
+retry curl -L "https://github.com/taskcluster/generic-worker/releases/download/${GENERIC_WORKER_VERSION}/generic-worker-multiuser-linux-amd64" > generic-worker
 retry curl -L "https://github.com/taskcluster/livelog/releases/download/${LIVELOG_VERSION}/livelog-linux-amd64" > livelog
 retry curl -L "https://github.com/taskcluster/taskcluster-proxy/releases/download/${TASKCLUSTER_PROXY_VERSION}/taskcluster-proxy-linux-amd64" > taskcluster-proxy
 chmod a+x generic-worker taskcluster-proxy livelog
