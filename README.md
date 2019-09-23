@@ -833,6 +833,11 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v16.1.0 since v16.0.0
+========================
+
+* [Bug 1578264 - Support deployments in GCP](https://bugzil.la/1578264)
+
 In v16.0.0 since v15.1.5
 ========================
 
