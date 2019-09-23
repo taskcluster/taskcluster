@@ -150,7 +150,7 @@ Expand-ZIPFile -File "C:\go1.11.5.windows-amd64.zip" -Destination "C:\" -Url "ht
 
 # install git
 $client.DownloadFile("https://github.com/git-for-windows/git/releases/download/v2.16.2.windows.1/Git-2.16.2-64-bit.exe", "C:\Git-2.16.2-64-bit.exe")
-Start-Process "C:\Git-2.16.2-64-bit.exe" -ArgumentList "/SILENT" -Wait -PassThru
+Start-Process "C:\Git-2.16.2-64-bit.exe" -ArgumentList "/VERYSILENT /LOG=C:\git_install.log /NORESTART /SUPPRESSMSGBOXES" -Wait -NoNewWindow
 
 # install AZCopy (azure table storage backup utility - for bstack)
 $client.DownloadFile("http://aka.ms/downloadazcopy", "C:\AZCopy.msi")

@@ -109,7 +109,7 @@ Expand-ZIPFile -File "C:\go1.11.5.windows-386.zip" -Destination "C:\" -Url "http
 
 # install git
 # $client.DownloadFile("https://github.com/git-for-windows/git/releases/download/v2.16.2.windows.1/Git-2.16.2-32-bit.exe", "C:\Git-2.16.2-32-bit.exe")
-# Start-Process "C:\Git-2.16.2-32-bit.exe" -ArgumentList "/SILENT" -Wait -PassThru
+# Start-Process "C:\Git-2.16.2-64-bit.exe" -ArgumentList "/VERYSILENT /LOG=C:\git_install.log /NORESTART /SUPPRESSMSGBOXES" -Wait -NoNewWindow
 
 # install node
 # $client.DownloadFile("https://nodejs.org/dist/v6.6.0/node-v6.6.0-x64.msi", "C:\NodeSetup.msi")
