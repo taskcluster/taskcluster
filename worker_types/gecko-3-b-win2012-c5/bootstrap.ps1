@@ -1,12 +1,10 @@
-<powershell>
-
 ###################################################################################
 # Note, this powershell script is an *APPROXIMATION ONLY* to the steps that are run
-# to build the AMIs for aws-provisioner-v1/gecko-3-b-win2012-c4.
+# to build the AMIs for aws-provisioner-v1/gecko-3-b-win2012-c5.
 #
 # The authoratative host definition can be found at:
 #
-#   * https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/gecko-3-b-win2012-c4.json
+#   * https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/gecko-3-b-win2012-c5.json
 #
 ###################################################################################
 
@@ -241,7 +239,7 @@ $client.DownloadFile("https://nssm.cc/ci/nssm-2.24-103-gdee49fc.zip", "C:\Window
 Start-Process "C:\Program Files\7-Zip\7z.exe" -ArgumentList "x -oC:\ C:\Windows\Temp\NSSMInstall.zip" -Wait -NoNewWindow
 
 # GenericWorkerInstall
-Start-Process "C:\generic-worker\generic-worker.exe" -ArgumentList "install service --nssm C:\nssm-2.24-103-gdee49fc\win64\nssm.exe --config C:\generic-worker\generic-worker.config --configure-for-aws" -Wait -NoNewWindow
+Start-Process "C:\generic-worker\generic-worker.exe" -ArgumentList "install service --nssm C:\nssm-2.24-103-gdee49fc\win64\nssm.exe --config C:\generic-worker\generic-worker.config --configure-for-%MY_CLOUD%" -Wait -NoNewWindow
 
 # GenericWorkerStateWait
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/run-generic-worker-and-reboot.bat", "C:\generic-worker\run-generic-worker.bat")
@@ -299,5 +297,3 @@ $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloud
 #   * https://support.microsoft.com/en-in/help/4014551/description-of-the-security-and-quality-rollup-for-the-net-framework-4
 #   * https://support.microsoft.com/en-us/help/4020459
 shutdown -s
-
-</powershell>

@@ -1,12 +1,10 @@
-<powershell>
-
 ###################################################################################
 # Note, this powershell script is an *APPROXIMATION ONLY* to the steps that are run
-# to build the AMIs for aws-provisioner-v1/gecko-t-win7-32-gpu-b.
+# to build the AMIs for aws-provisioner-v1/gecko-t-win10-64.
 #
 # The authoratative host definition can be found at:
 #
-#   * https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/gecko-t-win7-32-gpu-b.json
+#   * https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/gecko-t-win10-64.json
 #
 ###################################################################################
 
@@ -34,12 +32,6 @@ function Extract-ZIPFile($file, $destination, $url)
 md C:\logs
 md C:\binaries
 
-# KillXenDPriv.exe: See https://bugzilla.mozilla.org/show_bug.cgi?id=1399401#c43 and https://bugzilla.mozilla.org/show_bug.cgi?id=1394757
-Start-Process "taskkill" -ArgumentList "/im XenDPriv.exe /f" -Wait -NoNewWindow
-
-# DeleteXenDPriv.exe: See https://bugzilla.mozilla.org/show_bug.cgi?id=1399401#c43 and https://bugzilla.mozilla.org/show_bug.cgi?id=1394757
-Start-Process "cmd.exe" -ArgumentList "/c del /f /q `"C:\Program Files\Citrix\XenTools\XenDPriv.exe`"" -Wait -NoNewWindow
-
 # LogDirectory: Required by OpenCloudConfig for DSC logging
 md "C:\log"
 
@@ -48,10 +40,10 @@ $client.DownloadFile("https://nxlog.co/system/files/products/files/348/nxlog-ce-
 Start-Process "msiexec" -ArgumentList "/i C:\binaries\nxlog-ce-2.10.2150.msi /quiet" -Wait -NoNewWindow
 
 # PaperTrailEncryptionCertificate: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/papertrail-bundle.pem", "C:\Program Files\nxlog\cert\papertrail-bundle.pem")
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/papertrail-bundle.pem", "C:\Program Files (x86)\nxlog\cert\papertrail-bundle.pem")
 
 # NxLogPaperTrailConfiguration: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/win7.conf", "C:\Program Files\nxlog\conf\nxlog.conf")
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/win10.conf", "C:\Program Files (x86)\nxlog\conf\nxlog.conf")
 
 # Start_nxlog: Maintenance Toolchain - not essential for building firefox
 Set-Service "nxlog" -StartupType Automatic -Status Running
@@ -69,12 +61,12 @@ $client.DownloadFile("http://files.gpg4win.org/gpg4win-2.3.0.exe", "C:\binaries\
 Start-Process "C:\binaries\gpg4win-2.3.0.exe" -ArgumentList "/S" -Wait -NoNewWindow
 
 # SevenZip: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("http://7-zip.org/a/7z1602.exe", "C:\binaries\7z1602.exe")
-Start-Process "C:\binaries\7z1602.exe" -ArgumentList "/S" -Wait -NoNewWindow
+$client.DownloadFile("http://7-zip.org/a/7z1514-x64.exe", "C:\binaries\7z1514-x64.exe")
+Start-Process "C:\binaries\7z1514-x64.exe" -ArgumentList "/S" -Wait -NoNewWindow
 
 # SublimeText3: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("https://download.sublimetext.com/Sublime%20Text%20Build%203114%20Setup.exe", "C:\binaries\Sublime Text Build 3114 Setup.exe")
-Start-Process "C:\binaries\Sublime Text Build 3114 Setup.exe" -ArgumentList "/VERYSILENT /NORESTART /TASKS=`"contextentry`"" -Wait -NoNewWindow
+$client.DownloadFile("https://download.sublimetext.com/Sublime%20Text%20Build%203114%20x64%20Setup.exe", "C:\binaries\Sublime Text Build 3114 x64 Setup.exe")
+Start-Process "C:\binaries\Sublime Text Build 3114 x64 Setup.exe" -ArgumentList "/VERYSILENT /NORESTART /TASKS=`"contextentry`"" -Wait -NoNewWindow
 
 # SublimeText3_PackagesFolder: Maintenance Toolchain - not essential for building firefox
 md "C:\Users\Administrator\AppData\Roaming\Sublime Text 3\Packages"
@@ -94,120 +86,22 @@ Start-Process "fsutil.exe" -ArgumentList "behavior set disablelastaccess 1" -Wai
 # home: Maintenance Toolchain - not essential for building firefox
 cmd /c mklink "C:\home" "C:\Users"
 
-# MozillaBuildSetup: Base Firefox on Windows build requirement
-$client.DownloadFile("http://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-2.2.0.exe", "C:\binaries\MozillaBuildSetup-2.2.0.exe")
-Start-Process "C:\binaries\MozillaBuildSetup-2.2.0.exe" -ArgumentList "/S /D=C:\mozilla-build" -Wait -NoNewWindow
+# MozillaBuildSetup: https://bugzilla.mozilla.org/show_bug.cgi?id=1461340
+$client.DownloadFile("http://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-3.2.exe", "C:\binaries\MozillaBuildSetup-3.2.exe")
+Start-Process "C:\binaries\MozillaBuildSetup-3.2.exe" -ArgumentList "/S /D=C:\mozilla-build" -Wait -NoNewWindow
+
+# DeleteMozillaBuildPython3PythonExe
+Start-Process "cmd.exe" -ArgumentList "/c del /F /Q C:\mozilla-build\python3\python.exe" -Wait -NoNewWindow
 
 # msys_home: Maintenance Toolchain - not essential for building firefox
 cmd /c mklink "C:\mozilla-build\msys\home" "C:\Users"
-
-# reg_PythonInstallPath
-New-ItemProperty -Path "HKLM:SOFTWARE\Python\PythonCore\2.7\InstallPath" -Name "(Default)" -Value "C:\mozilla-build\python" -PropertyType String -Force
-
-# reg_PythonPath
-New-ItemProperty -Path "HKLM:SOFTWARE\Python\PythonCore\2.7\PythonPath" -Name "(Default)" -Value "C:\mozilla-build\python\Lib;C:\mozilla-build\python\DLLs;C:\mozilla-build\python\Lib\lib-tk" -PropertyType String -Force
-
-# python_3_7_3_win32_core
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/core.msi", "C:\binaries\core.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\core.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_core_d
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/core_d.msi", "C:\binaries\core_d.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\core_d.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_core_pdb
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/core_pdb.msi", "C:\binaries\core_pdb.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\core_pdb.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_dev
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/dev.msi", "C:\binaries\dev.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\dev.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_dev_d
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/dev_d.msi", "C:\binaries\dev_d.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\dev_d.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_doc
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/doc.msi", "C:\binaries\doc.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\doc.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_exe
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/exe.msi", "C:\binaries\exe.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\exe.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_exe_d
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/exe_d.msi", "C:\binaries\exe_d.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\exe_d.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_exe_pdb
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/exe_pdb.msi", "C:\binaries\exe_pdb.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\exe_pdb.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_launcher
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/launcher.msi", "C:\binaries\launcher.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\launcher.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_lib
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/lib.msi", "C:\binaries\lib.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\lib.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_lib_d
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/lib_d.msi", "C:\binaries\lib_d.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\lib_d.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_lib_pdb
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/lib_pdb.msi", "C:\binaries\lib_pdb.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\lib_pdb.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_path
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/path.msi", "C:\binaries\path.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\path.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_pip
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/pip.msi", "C:\binaries\pip.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\pip.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_tcltk
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/tcltk.msi", "C:\binaries\tcltk.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\tcltk.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_tcltk_d
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/tcltk_d.msi", "C:\binaries\tcltk_d.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\tcltk_d.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_tcltk_pdb
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/tcltk_pdb.msi", "C:\binaries\tcltk_pdb.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\tcltk_pdb.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_test
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/test.msi", "C:\binaries\test.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\test.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_test_d
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/test_d.msi", "C:\binaries\test_d.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\test_d.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_test_pdb
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/test_pdb.msi", "C:\binaries\test_pdb.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\test_pdb.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_tools
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/tools.msi", "C:\binaries\tools.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\tools.msi /quiet" -Wait -NoNewWindow
-
-# python_3_7_3_win32_ucrt
-$client.DownloadFile("https://www.python.org/ftp/python/3.7.3/win32/ucrt.msi", "C:\binaries\ucrt.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\ucrt.msi /quiet" -Wait -NoNewWindow
-
-# Python3: https://bugzilla.mozilla.org/show_bug.cgi?id=1545339
-cmd /c mklink "C:\mozilla-build\python3\python3.exe" "C:\mozilla-build\python3\python.exe"
 
 # DeleteMozillaBuildMercurial
 Start-Process "cmd.exe" -ArgumentList "/c del C:\mozilla-build\python\Scripts\hg*" -Wait -NoNewWindow
 
 # Mercurial: https://bugzilla.mozilla.org/show_bug.cgi?id=1490703
-$client.DownloadFile("https://www.mercurial-scm.org/release/windows/mercurial-4.7.1-x86.msi", "C:\binaries\mercurial-4.7.1-x86.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\mercurial-4.7.1-x86.msi /quiet" -Wait -NoNewWindow
+$client.DownloadFile("https://www.mercurial-scm.org/release/windows/mercurial-4.7.1-x64.msi", "C:\binaries\mercurial-4.7.1-x64.msi")
+Start-Process "msiexec" -ArgumentList "/i C:\binaries\mercurial-4.7.1-x64.msi /quiet" -Wait -NoNewWindow
 
 # MercurialConfig: Required by clonebundle and share hg extensions
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Mercurial/mercurial.ini", "C:\Program Files\Mercurial\Mercurial.ini")
@@ -242,13 +136,13 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\Windows Error Reporting"
 md "C:\generic-worker"
 
 # GenericWorkerDownload
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v15.1.5/generic-worker-multiuser-windows-386.exe", "C:\generic-worker\generic-worker.exe")
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v15.1.5/generic-worker-multiuser-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
 
 # LiveLogDownload
-$client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-386.exe", "C:\generic-worker\livelog.exe")
+$client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")
 
 # TaskClusterProxyDownload
-$client.DownloadFile("https://github.com/taskcluster/taskcluster-proxy/releases/download/v5.1.0/taskcluster-proxy-windows-386.exe", "C:\generic-worker\taskcluster-proxy.exe")
+$client.DownloadFile("https://github.com/taskcluster/taskcluster-proxy/releases/download/v5.1.0/taskcluster-proxy-windows-amd64.exe", "C:\generic-worker\taskcluster-proxy.exe")
 
 # NSSMDownload
 $client.DownloadFile("https://nssm.cc/ci/nssm-2.24-103-gdee49fc.zip", "C:\Windows\Temp\NSSMInstall.zip")
@@ -257,16 +151,19 @@ $client.DownloadFile("https://nssm.cc/ci/nssm-2.24-103-gdee49fc.zip", "C:\Window
 Start-Process "C:\Program Files\7-Zip\7z.exe" -ArgumentList "x -oC:\ C:\Windows\Temp\NSSMInstall.zip" -Wait -NoNewWindow
 
 # GenericWorkerInstall
-Start-Process "C:\generic-worker\generic-worker.exe" -ArgumentList "install service --nssm C:\nssm-2.24-103-gdee49fc\win32\nssm.exe --config C:\generic-worker\generic-worker.config --configure-for-aws" -Wait -NoNewWindow
+Start-Process "C:\generic-worker\generic-worker.exe" -ArgumentList "install service --nssm C:\nssm-2.24-103-gdee49fc\win64\nssm.exe --config C:\generic-worker\generic-worker.config --configure-for-%MY_CLOUD%" -Wait -NoNewWindow
 
 # DisableDesktopInterrupt
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/disable-desktop-interrupt.reg", "C:\generic-worker\disable-desktop-interrupt.reg")
 
+# SetDefaultPrinter
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/SetDefaultPrinter.ps1", "C:\generic-worker\SetDefaultPrinter.ps1")
+
 # GenericWorkerStateWait
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/run-generic-worker-and-reboot.bat", "C:\generic-worker\run-generic-worker.bat")
 
-# TaskUserInitScript: https://bugzilla.mozilla.org/show_bug.cgi?id=1433851#c19
-$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/task-user-init-win7.cmd", "C:\generic-worker\task-user-init.cmd")
+# TaskUserInitScript: Bug 1261188 - initialisation script for new task users
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/task-user-init-win10.cmd", "C:\generic-worker\task-user-init.cmd")
 
 # PipConfDirectory: https://pip.pypa.io/en/stable/user_guide/#config-file
 md "C:\ProgramData\pip"
@@ -307,9 +204,6 @@ Start-Process "icacls.exe" -ArgumentList "y:\tooltool-cache /grant Everyone:(OI)
 # env_TOOLTOOL_CACHE: share tooltool cache between tasks
 [Environment]::SetEnvironmentVariable("TOOLTOOL_CACHE", "y:\tooltool-cache", "Machine")
 
-# ngen_executeQueuedItems: https://blogs.msdn.microsoft.com/dotnet/2013/08/06/wondering-why-mscorsvw-exe-has-high-cpu-usage-you-can-speed-it-up
-Start-Process "c:\Windows\Microsoft.NET\Framework\v4.0.30319\ngen.exe" -ArgumentList "executeQueuedItems" -Wait -NoNewWindow
-
 # CarbonClone: Bug 1316329 - support creation of symlinks by task users
 Start-Process "C:\Program Files\Mercurial\hg.exe" -ArgumentList "clone --insecure https://bitbucket.org/splatteredbits/carbon C:\Windows\Temp\carbon" -Wait -NoNewWindow
 
@@ -335,7 +229,7 @@ $client.DownloadFile("https://github.com/mozilla-releng/OpenCloudConfig/blob/mas
 Start-Process "C:\dsc\MozillaMaintenance\maintenanceservice_installer.exe" -ArgumentList "/s" -Wait -NoNewWindow
 
 # MaintenanceServiceAcessRights: See https://bugzilla.mozilla.org/show_bug.cgi?id=1067756#c21
-Start-Process "icacls.exe" -ArgumentList "`"C:\Program Files\Mozilla Maintenance Service`" /grant Everyone:(OI)(CI)F" -Wait -NoNewWindow
+Start-Process "icacls.exe" -ArgumentList "`"C:\Program Files (x86)\Mozilla Maintenance Service`" /grant Everyone:(OI)(CI)F" -Wait -NoNewWindow
 
 # MozFakeCA_cer
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozFakeCA.cer", "C:\dsc\MozillaMaintenance\MozFakeCA.cer")
@@ -391,8 +285,11 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Mozilla\MaintenanceService\3932ecacee736d3
 # reg_Mozilla_MaintenanceService_3932ecacee736d366d6436db0f55bce4_2_publisherLink
 New-ItemProperty -Path "HKLM:SOFTWARE\Mozilla\MaintenanceService\3932ecacee736d366d6436db0f55bce4\2" -Name "publisherLink" -Value "" -PropertyType String -Force
 
-# GrantEveryoneMozillaRegistryWriteAccess: Bug 1353889 - Grant all users account write access to Mozilla registry key
+# GrantEveryoneMozillaRegistryWriteAccess: Bug 1353889 - Grant Everyone group write access to Mozilla registry key
 Start-Process "powershell" -ArgumentList "-command `"& {(Get-Acl -Path 'HKLM:\SOFTWARE\Mozilla').SetAccessRule((New-Object -TypeName 'System.Security.AccessControl.RegistryAccessRule' -ArgumentList @('Everyone', 'FullControl', 'Allow')))}`"" -Wait -NoNewWindow
+
+# DisableFirewall: Bug 1358301 - Disable Windows Firewall
+Start-Process "netsh" -ArgumentList "advfirewall set allprofiles state off" -Wait -NoNewWindow
 
 # KmsIn
 New-NetFirewallRule -DisplayName "KmsIn (TCP 1688 Inbound): Allow" -Direction Inbound -LocalPort 1688 -Protocol TCP -Action Allow
@@ -406,23 +303,56 @@ $client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/
 # nircmdc
 $client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/nircmd/nircmdc.exe", "C:\Windows\System32\nircmdc.exe")
 
+# reg_DisableNewAppAlert: Bug 1373551 - prevent dialog to confirm file association
+New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name "NoNewAppAlert" -Value "1" -PropertyType Dword -Force
+
+# reg_NewNetworkWindowOff: https://bugzilla.mozilla.org/show_bug.cgi?id=1397201#c58
+New-Item -Path "HKLM:System\CurrentControlSet\Control\Network\NewNetworkWindowOff" -Force
+
 # reg_Power_PreferredPlan_HighPerformance: https://bugzilla.mozilla.org/show_bug.cgi?id=1362613
 New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\explorer\ControlPanel\NameSpace\{025A5937-A6BE-4686-A844-36FE4BEC8B6D}" -Name "PreferredPlan" -Value "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c" -PropertyType String -Force
 
-# DisableWinDefend: https://bugzilla.mozilla.org/show_bug.cgi?id=1365909
-Set-Service "WinDefend" -StartupType Disabled -Status Stopped
+# Reg_WinDefend_DisableConfig: https://bugzilla.mozilla.org/show_bug.cgi?id=1365909
+New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableConfig" -Value "0x00000001" -PropertyType Dword -Force
+
+# Reg_WinDefend_DisableAntiSpyware: https://bugzilla.mozilla.org/show_bug.cgi?id=1365909
+New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Value "0x00000001" -PropertyType Dword -Force
+
+# RegServiceStartupType_Disabled_wscsvc: https://bugzilla.mozilla.org/show_bug.cgi?id=1509722
+New-ItemProperty -Path "HKLM:SYSTEM\CurrentControlSet\Services\wscsvc" -Name "Start" -Value "0x4" -PropertyType Dword -Force
+
+# RegServiceStartupType_Disabled_SecurityHealthService: https://bugzilla.mozilla.org/show_bug.cgi?id=1509722
+New-ItemProperty -Path "HKLM:SYSTEM\CurrentControlSet\Services\SecurityHealthService" -Name "Start" -Value "0x4" -PropertyType Dword -Force
+
+# RegServiceStartupType_Disabled_Sense: https://bugzilla.mozilla.org/show_bug.cgi?id=1509722
+New-ItemProperty -Path "HKLM:SYSTEM\CurrentControlSet\Services\Sense" -Name "Start" -Value "0x4" -PropertyType Dword -Force
+
+# RegServiceStartupType_Disabled_WdBoot: https://bugzilla.mozilla.org/show_bug.cgi?id=1509722
+New-ItemProperty -Path "HKLM:SYSTEM\CurrentControlSet\Services\WdBoot" -Name "Start" -Value "0x4" -PropertyType Dword -Force
+
+# RegServiceStartupType_Disabled_WdFilter: https://bugzilla.mozilla.org/show_bug.cgi?id=1509722
+New-ItemProperty -Path "HKLM:SYSTEM\CurrentControlSet\Services\WdFilter" -Name "Start" -Value "0x4" -PropertyType Dword -Force
+
+# RegServiceStartupType_Disabled_WdNisDrv: https://bugzilla.mozilla.org/show_bug.cgi?id=1509722
+New-ItemProperty -Path "HKLM:SYSTEM\CurrentControlSet\Services\WdNisDrv" -Name "Start" -Value "0x4" -PropertyType Dword -Force
+
+# RegServiceStartupType_Disabled_WdNisSvc: https://bugzilla.mozilla.org/show_bug.cgi?id=1509722
+New-ItemProperty -Path "HKLM:SYSTEM\CurrentControlSet\Services\WdNisSvc" -Name "Start" -Value "0x4" -PropertyType Dword -Force
+
+# RegServiceStartupType_Disabled_WinDefend: https://bugzilla.mozilla.org/show_bug.cgi?id=1509722
+New-ItemProperty -Path "HKLM:SYSTEM\CurrentControlSet\Services\WinDefend" -Name "Start" -Value "0x4" -PropertyType Dword -Force
 
 # OpenSshDownload: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
-$client.DownloadFile("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.1.0p1-Beta/OpenSSH-Win32.zip", "C:\Windows\Temp\OpenSSH-Win32.zip")
+$client.DownloadFile("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.1.0p1-Beta/OpenSSH-Win64.zip", "C:\Windows\Temp\OpenSSH-Win64.zip")
 
 # OpenSshUnzip: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
-Start-Process "C:\Program Files\7-Zip\7z.exe" -ArgumentList "x -o`"C:\Program Files`" C:\Windows\Temp\OpenSSH-Win32.zip" -Wait -NoNewWindow
+Start-Process "C:\Program Files\7-Zip\7z.exe" -ArgumentList "x -o`"C:\Program Files`" C:\Windows\Temp\OpenSSH-Win64.zip" -Wait -NoNewWindow
 
 # SshIn
 New-NetFirewallRule -DisplayName "SshIn (TCP 22 Inbound): Allow" -Direction Inbound -LocalPort 22 -Protocol TCP -Action Allow
 
 # InstallOpenSSH: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
-Start-Process "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -File `"C:\Program Files\OpenSSH-Win32\install-sshd.ps1`"" -Wait -NoNewWindow
+Start-Process "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -File `"C:\Program Files\OpenSSH-Win64\install-sshd.ps1`"" -Wait -NoNewWindow
 
 # reg_OpenSSH_DefaultShell: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
 New-ItemProperty -Path "HKLM:SOFTWARE\OpenSSH" -Name "DefaultShell" -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -PropertyType String -Force
@@ -456,13 +386,56 @@ Start-Process "C:\binaries\vc_redist.x86.exe" -ArgumentList "/install /passive /
 $client.DownloadFile("http://download.microsoft.com/download/4/c/b/4cbd5757-0dd4-43a7-bac0-2a492cedbacb/vc_redist.x64.exe", "C:\binaries\vc_redist.x64.exe")
 Start-Process "C:\binaries\vc_redist.x64.exe" -ArgumentList "/install /passive /norestart /log C:\log\vcredist_vs2015_x64-install.log" -Wait -NoNewWindow
 
+# WindowsPerformanceToolkit: https://bugzilla.mozilla.org/show_bug.cgi?id=1485757
+$client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/WindowsPerformanceToolkit/WPTx64-x86_en-us.msi", "C:\binaries\WPTx64-x86_en-us.msi")
+Start-Process "msiexec" -ArgumentList "/i C:\binaries\WPTx64-x86_en-us.msi /quiet" -Wait -NoNewWindow
+
+# mozprofilerprobe: https://bugzilla.mozilla.org/show_bug.cgi?id=1485757
+$client.DownloadFile("http://hg.mozilla.org/mozilla-central/raw-file/360ab7771e27/toolkit/components/startup/mozprofilerprobe.mof", "C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\mozprofilerprobe.mof")
+
+# mofcomp_mozprofilerprobe: https://bugzilla.mozilla.org/show_bug.cgi?id=1485757
+Start-Process "mofcomp" -ArgumentList "`"C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\mozprofilerprobe.mof`"" -Wait -NoNewWindow
+
 # ProgramData_Mozilla_AccessRights: https://bugzilla.mozilla.org/show_bug.cgi?id=1494048
-Start-Process "icacls.exe" -ArgumentList "c:\ProgramData\Mozilla /grant Everyone:(OI)(CI)F" -Wait -NoNewWindow
+Start-Process "icacls.exe" -ArgumentList "C:\ProgramData\Mozilla /grant Everyone:(OI)(CI)F" -Wait -NoNewWindow
 
 # HostsFile: https://bugzilla.mozilla.org/show_bug.cgi?id=1497308
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/etc/hosts", "C:\Windows\System32\drivers\etc\hosts")
 
 # SetHostsFileContent: https://bugzilla.mozilla.org/show_bug.cgi?id=1497308
+
+# reg_WindowsUpdate_DeferUpgrade: https://bugzilla.mozilla.org/show_bug.cgi?id=1510220
+New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DeferUpgrade" -Value "1" -PropertyType Dword -Force
+
+# reg_WindowsUpdate_DeferUpgradePeriod: https://bugzilla.mozilla.org/show_bug.cgi?id=1510220
+New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DeferUpgradePeriod" -Value "8" -PropertyType Dword -Force
+
+# reg_WindowsUpdate_DeferUpdatePeriod: https://bugzilla.mozilla.org/show_bug.cgi?id=1510220
+New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DeferUpdatePeriod" -Value "4" -PropertyType Dword -Force
+
+# reg_WindowsUpdate_AU_NoAutoRebootWithLoggedOnUsers: https://bugzilla.mozilla.org/show_bug.cgi?id=1485628
+New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "NoAutoRebootWithLoggedOnUsers" -Value "1" -PropertyType Dword -Force
+
+# reg_WindowsUpdate_AU_NoAutoUpdate: https://bugzilla.mozilla.org/show_bug.cgi?id=1485628
+New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "NoAutoUpdate" -Value "1" -PropertyType Dword -Force
+
+# reg_WindowsUpdate_AU_AUOptions: https://bugzilla.mozilla.org/show_bug.cgi?id=1485628
+New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "AUOptions" -Value "1" -PropertyType Dword -Force
+
+# reg_WindowsUpdate_AU_ScheduledInstallDay: https://bugzilla.mozilla.org/show_bug.cgi?id=1485628
+New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "ScheduledInstallDay" -Value "1" -PropertyType Dword -Force
+
+# reg_WindowsUpdate_AU_ScheduledInstallTime: https://bugzilla.mozilla.org/show_bug.cgi?id=1485628
+New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "ScheduledInstallTime" -Value "1" -PropertyType Dword -Force
+
+# reg_WindowsUpdate_AU_AutomaticMaintenanceEnabled: https://bugzilla.mozilla.org/show_bug.cgi?id=1485628
+New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "AutomaticMaintenanceEnabled" -Value "0" -PropertyType Dword -Force
+
+# reg_WindowsUpdate_AU_AllowMUUpdateService: https://bugzilla.mozilla.org/show_bug.cgi?id=1485628
+New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "AllowMUUpdateService" -Value "0" -PropertyType Dword -Force
+
+# reg_ScheduleMaintenance_MaintenanceDisabled: https://bugzilla.mozilla.org/show_bug.cgi?id=1485628
+New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance" -Name "MaintenanceDisabled" -Value "1" -PropertyType Dword -Force
 
 # env_TASKCLUSTER_ROOT_URL: https://bugzilla.mozilla.org/show_bug.cgi?id=1551789
 [Environment]::SetEnvironmentVariable("TASKCLUSTER_ROOT_URL", "https://taskcluster.net", "Machine")
@@ -473,5 +446,3 @@ $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloud
 #   * https://support.microsoft.com/en-in/help/4014551/description-of-the-security-and-quality-rollup-for-the-net-framework-4
 #   * https://support.microsoft.com/en-us/help/4020459
 shutdown -s
-
-</powershell>

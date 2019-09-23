@@ -1,12 +1,10 @@
-<powershell>
-
 ###################################################################################
 # Note, this powershell script is an *APPROXIMATION ONLY* to the steps that are run
-# to build the AMIs for aws-provisioner-v1/gecko-t-win10-64-cu.
+# to build the AMIs for aws-provisioner-v1/gecko-t-win10-64-alpha.
 #
 # The authoratative host definition can be found at:
 #
-#   * https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/gecko-t-win10-64-cu.json
+#   * https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/gecko-t-win10-64-alpha.json
 #
 ###################################################################################
 
@@ -138,7 +136,7 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\Windows Error Reporting"
 md "C:\generic-worker"
 
 # GenericWorkerDownload
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v15.1.5/generic-worker-multiuser-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v14.1.0/generic-worker-nativeEngine-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
 
 # LiveLogDownload
 $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")
@@ -153,7 +151,7 @@ $client.DownloadFile("https://nssm.cc/ci/nssm-2.24-103-gdee49fc.zip", "C:\Window
 Start-Process "C:\Program Files\7-Zip\7z.exe" -ArgumentList "x -oC:\ C:\Windows\Temp\NSSMInstall.zip" -Wait -NoNewWindow
 
 # GenericWorkerInstall
-Start-Process "C:\generic-worker\generic-worker.exe" -ArgumentList "install service --nssm C:\nssm-2.24-103-gdee49fc\win64\nssm.exe --config C:\generic-worker\generic-worker.config --configure-for-aws" -Wait -NoNewWindow
+Start-Process "C:\generic-worker\generic-worker.exe" -ArgumentList "install service --nssm C:\nssm-2.24-103-gdee49fc\win64\nssm.exe --config C:\generic-worker\generic-worker.config --configure-for-%MY_CLOUD%" -Wait -NoNewWindow
 
 # DisableDesktopInterrupt
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/disable-desktop-interrupt.reg", "C:\generic-worker\disable-desktop-interrupt.reg")
@@ -406,39 +404,6 @@ $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloud
 
 # SetHostsFileContent: https://bugzilla.mozilla.org/show_bug.cgi?id=1497308
 
-# reg_WindowsUpdate_DeferUpgrade: https://bugzilla.mozilla.org/show_bug.cgi?id=1510220
-New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DeferUpgrade" -Value "1" -PropertyType Dword -Force
-
-# reg_WindowsUpdate_DeferUpgradePeriod: https://bugzilla.mozilla.org/show_bug.cgi?id=1510220
-New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DeferUpgradePeriod" -Value "8" -PropertyType Dword -Force
-
-# reg_WindowsUpdate_DeferUpdatePeriod: https://bugzilla.mozilla.org/show_bug.cgi?id=1510220
-New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DeferUpdatePeriod" -Value "4" -PropertyType Dword -Force
-
-# reg_WindowsUpdate_AU_NoAutoRebootWithLoggedOnUsers: https://bugzilla.mozilla.org/show_bug.cgi?id=1485628
-New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "NoAutoRebootWithLoggedOnUsers" -Value "1" -PropertyType Dword -Force
-
-# reg_WindowsUpdate_AU_NoAutoUpdate: https://bugzilla.mozilla.org/show_bug.cgi?id=1485628
-New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "NoAutoUpdate" -Value "1" -PropertyType Dword -Force
-
-# reg_WindowsUpdate_AU_AUOptions: https://bugzilla.mozilla.org/show_bug.cgi?id=1485628
-New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "AUOptions" -Value "1" -PropertyType Dword -Force
-
-# reg_WindowsUpdate_AU_ScheduledInstallDay: https://bugzilla.mozilla.org/show_bug.cgi?id=1485628
-New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "ScheduledInstallDay" -Value "1" -PropertyType Dword -Force
-
-# reg_WindowsUpdate_AU_ScheduledInstallTime: https://bugzilla.mozilla.org/show_bug.cgi?id=1485628
-New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "ScheduledInstallTime" -Value "1" -PropertyType Dword -Force
-
-# reg_WindowsUpdate_AU_AutomaticMaintenanceEnabled: https://bugzilla.mozilla.org/show_bug.cgi?id=1485628
-New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "AutomaticMaintenanceEnabled" -Value "0" -PropertyType Dword -Force
-
-# reg_WindowsUpdate_AU_AllowMUUpdateService: https://bugzilla.mozilla.org/show_bug.cgi?id=1485628
-New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "AllowMUUpdateService" -Value "0" -PropertyType Dword -Force
-
-# reg_ScheduleMaintenance_MaintenanceDisabled: https://bugzilla.mozilla.org/show_bug.cgi?id=1485628
-New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance" -Name "MaintenanceDisabled" -Value "1" -PropertyType Dword -Force
-
 # env_TASKCLUSTER_ROOT_URL: https://bugzilla.mozilla.org/show_bug.cgi?id=1551789
 [Environment]::SetEnvironmentVariable("TASKCLUSTER_ROOT_URL", "https://taskcluster.net", "Machine")
 
@@ -448,5 +413,3 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedu
 #   * https://support.microsoft.com/en-in/help/4014551/description-of-the-security-and-quality-rollup-for-the-net-framework-4
 #   * https://support.microsoft.com/en-us/help/4020459
 shutdown -s
-
-</powershell>
