@@ -6,17 +6,24 @@ aws --region "${REGION}" ec2 delete-key-pair --key-name "${WORKER_TYPE}_${REGION
 aws --region "${REGION}" ec2 create-key-pair --key-name "${WORKER_TYPE}_${REGION}" --query 'KeyMaterial' --output text > "${REGION}.id_rsa"
 chmod 400 "${REGION}.id_rsa"
 
-# aws cli docs lie, they say userdata must be base64 encoded, but cli encodes for you, so just cat it...
-USER_DATA="$(cat userdata)"
-
 # search for latest base AMI to use
-AMI_METADATA="$(aws --region "${REGION}" ec2 describe-images --owners $(cat owners) --filters $(cat filters) --query 'Images[*].{A:CreationDate,B:ImageId,C:Name}' --output text | sort -u | tail -1 | cut -f2,3)"
+AMI_METADATA="$(aws --region "${REGION}" ec2 describe-images --owners $(cat aws_owners) --filters $(cat aws_filters) --query 'Images[*].{A:CreationDate,B:ImageId,C:Name}' --output text | sort -u | tail -1 | cut -f2,3)"
 
 AMI="$(echo $AMI_METADATA | sed 's/ .*//')"
 AMI_NAME="$(echo $AMI_METADATA | sed 's/.* //')"
 log "Base AMI is: ${AMI} ('${AMI_NAME}')"
 
 . ../find_old_aws_objects.sh
+
+TEMP_SETUP_SCRIPT="$(mktemp -t ${UNIQUE_NAME}.XXXXXXXXXX)"
+
+if [ -f "bootstrap.ps1" ]; then
+  echo '<powershell>' >> "${TEMP_SETUP_SCRIPT}"
+  cat bootstrap.ps1 | sed 's/%MY_CLOUD%/aws/g' >> "${TEMP_SETUP_SCRIPT}"
+  echo '</powershell>' >> "${TEMP_SETUP_SCRIPT}"
+else
+  cat bootstrap.sh | sed 's/%MY_CLOUD%/aws/g' >> "${TEMP_SETUP_SCRIPT}"
+fi
 
 # make sure we have an ssh security group in this region
 # note if we *try* to create a security group that already exists (regardless of whether it is successful or not), there will be a cloudwatch alarm, so avoid this
@@ -32,7 +39,7 @@ done
 
 # create new base ami, and apply user-data
 # filter output, to get INSTANCE_ID
-INSTANCE_ID="$(aws --region "${REGION}" ec2 run-instances --image-id "${AMI}" --key-name "${WORKER_TYPE}_${REGION}" --security-groups "rdp-only" "ssh-only" --user-data "$(cat userdata)" --instance-type c4.2xlarge --block-device-mappings DeviceName=/dev/sda1,Ebs='{VolumeSize=75,DeleteOnTermination=true,VolumeType=gp2}' --instance-initiated-shutdown-behavior stop --client-token "${SLUGID}" --query 'Instances[*].InstanceId' --output text)"
+INSTANCE_ID="$(aws --region "${REGION}" ec2 run-instances --image-id "${AMI}" --key-name "${WORKER_TYPE}_${REGION}" --security-groups "rdp-only" "ssh-only" --user-data "$(cat "${TEMP_SETUP_SCRIPT}")" --instance-type c4.2xlarge --block-device-mappings DeviceName=/dev/sda1,Ebs='{VolumeSize=75,DeleteOnTermination=true,VolumeType=gp2}' --instance-initiated-shutdown-behavior stop --client-token "${SLUGID}" --query 'Instances[*].InstanceId' --output text)"
 
 log "I've triggered the creation of instance ${INSTANCE_ID} - it can take a \x1B[4mVery Long Time™\x1B[24m for it to be created and bootstrapped..."
 aws --region "${REGION}" ec2 create-tags --resources "${INSTANCE_ID}" --tags "Key=WorkerType,Value=aws-provisioner-v1/${WORKER_TYPE}" "Key=Name,Value=${WORKER_TYPE} base instance" "Key=TC-Windows-Base,Value=true"
@@ -64,6 +71,8 @@ until aws --region "${REGION}" ec2 wait instance-stopped --instance-ids "${INSTA
   sleep 30
 done
 
+rm "${TEMP_SETUP_SCRIPT}"
+
 log "Now snapshotting the instance to create an AMI..."
 # now capture the AMI
 IMAGE_ID="$(aws --region "${REGION}" ec2 create-image --instance-id "${INSTANCE_ID}" --name "${WORKER_TYPE} mozillabuild version ${SLUGID}" --description "generic-worker ${SLUGID}" --output text)"
@@ -82,7 +91,7 @@ until aws --region "${REGION}" ec2 wait image-available --image-ids "${IMAGE_ID}
   sleep 30
 done
 
-touch "${REGION}.${IMAGE_ID}.latest-ami"
+touch "${REGION}.${IMAGE_ID}.latest-image"
 
 {
     echo "Instance:  ${INSTANCE_ID}"
@@ -91,7 +100,7 @@ touch "${REGION}.${IMAGE_ID}.latest-ami"
     echo "AMI:       ${IMAGE_ID}"
 } > "${REGION}.secrets"
 
-. ../delete.sh
+. "../delete_aws.sh"
 
 # log ''
 # log "Starting instance ${INSTANCE_ID} back up..."

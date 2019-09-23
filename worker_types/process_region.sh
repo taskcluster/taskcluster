@@ -8,7 +8,7 @@
 # TODO: [pmoore] submit a task after updating worker type
 
 function log {
-  echo -e "\x1B[38;5;${COLOUR}m$(date): ${WORKER_TYPE}: ${REGION}: ${@}\x1B[0m"
+  echo -e "\x1B[38;5;${COLOUR}m$(date): ${PROVIDER}: ${WORKER_TYPE}: ${REGION}: ${@}\x1B[0m"
 }
 
 REGION="${1}"
@@ -29,12 +29,17 @@ if [ -z "${COLOUR}" ]; then
   exit 66
 fi
 
+if [ -z "${PROVIDER}" ]; then
+  echo "Must export valid PROVIDER env var before calling this script" >&2
+  exit 67
+fi
+
 cd "$(dirname "${0}")/${WORKER_TYPE}"
 
 if [ "${ACTION}" == "update" ]; then
-  . ../update.sh
+  . "../update_${PROVIDER}.sh"
 elif [ "${ACTION}" == "delete" ]; then
-  . ../delete.sh
+  . "../delete_${PROVIDER}.sh"
 else
   log "$(basename "${0}"): ERROR: Unknown action '${ACTION}' ... exiting" >&2
   exit 86
