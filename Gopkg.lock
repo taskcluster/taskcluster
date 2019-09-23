@@ -320,7 +320,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:17858cb6d6d88a70f1c6d4b7bf6d56f3ca4e76b4f69d091346db60ede3a44d93"
+  digest = "1:fd67d099069a6db75874b60f6306e39784bad3d27b1eba07fa45e293e3d41bb0"
   name = "github.com/taskcluster/taskcluster-client-go"
   packages = [
     ".",
@@ -330,9 +330,10 @@
     "tcpurgecache",
     "tcqueue",
     "tcsecrets",
+    "tcworkermanager",
   ]
   pruneopts = "UT"
-  revision = "5efd92131062eb39f5880c9e7d140625c5b098e1"
+  revision = "a5b7ecb3c6a68a08e1e5f074473bad2ac464096f"
 
 [[projects]]
   digest = "1:4b61128f4f0ec9673dedd5e4d276f4399ee7e4087ea26582711c4a17911c2156"
@@ -492,6 +493,7 @@
     "github.com/taskcluster/taskcluster-client-go/tcpurgecache",
     "github.com/taskcluster/taskcluster-client-go/tcqueue",
     "github.com/taskcluster/taskcluster-client-go/tcsecrets",
+    "github.com/taskcluster/taskcluster-client-go/tcworkermanager",
     "github.com/taskcluster/websocktunnel/client",
     "github.com/taskcluster/websocktunnel/wsproxy",
     "github.com/xeipuuv/gojsonschema",
