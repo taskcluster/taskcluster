@@ -1,5 +1,3 @@
-<powershell>
-
 # use TLS 1.2 (see bug 1443595)
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
@@ -73,10 +71,6 @@ choco install -y nuget.commandline --version 4.9.3
 # Carbon for later
 choco install -y carbon --version 2.5.0
 
-# Install NVIDIA Display Driver v412.29 for Tesla, CUDA 10.0, Winows 2012 R2 64bits
-## $client.DownloadFile("http://us.download.nvidia.com/tesla/412.29/412.29-tesla-desktop-winserver2008-2012r2-64bit-international.exe", "C:\412.29-tesla-desktop-winserver2008-2012r2-64bit-international.exe")
-## Start-Process -FilePath "C:\412.29-tesla-desktop-winserver2008-2012r2-64bit-international.exe" -ArgumentList "-s -noeula -passive -noreboot -clean" -Wait -NoNewWindow
-
 # Prepare CUDA v9.0
 #$client.DownloadFile("https://developer.nvidia.com/compute/cuda/9.0/Prod/local_installers/cuda_9.0.176_win10-exe", "C:\cuda_9.0.176_win10.exe")
 #Start-Process -FilePath "C:\cuda_9.0.176_win10.exe" -ArgumentList "-s compiler_9.0 command_line_tools_9.0 cublas_dev_9.0 cudart_9.0 cufft_dev_9.0 curand_dev_9.0 cusolver_dev_9.0 cusparse_dev_9.0" -Wait -NoNewWindow
@@ -97,6 +91,13 @@ cp "C:\CUDNN-9.0\cuda\bin\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA
 $client.DownloadFile("https://developer.nvidia.com/compute/cuda/10.0/Prod/local_installers/cuda_10.0.130_411.31_windows", "C:\cuda_10.0.130_411.31_windows.exe")
 Start-Process -FilePath "C:\cuda_10.0.130_411.31_windows.exe" -ArgumentList "-s nvcc_10.0 nvprune_10.0 cupti_10.0 gpu_library_advisor_10.0 memcheck_10.0 cublas_dev_10.0 cudart_10.0 cufft_dev_10.0 curand_dev_10.0 cusolver_dev_10.0 cusparse_dev_10.0" -Wait -NoNewWindow
 
+# Install CUDA v10.1 as well so we can patch v10.0 cudafe++.exe
+# https://github.com/tensorflow/tensorflow/issues/27576#issuecomment-504703397
+$client.DownloadFile("https://developer.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.168_425.25_win10.exe", "C:\cuda_10.1.168_425.25_win10.exe")
+Start-Process -FilePath "C:\cuda_10.1.168_425.25_win10.exe" -ArgumentList "-s nvcc_10.1 nvprune_10.1 cupti_10.1 gpu_library_advisor_10.1 memcheck_10.1 cublas_dev_10.1 cudart_10.1 cufft_dev_10.1 curand_dev_10.1 cusolver_dev_10.1 cusparse_dev_10.1" -Wait -NoNewWindow
+mv "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.0\bin\cudafe++.exe" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.0\bin\cudafe++.exe.v10.0"
+cp "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.1\bin\cudafe++.exe" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.0\bin\cudafe++.exe"
+
 # CuDNN v7.5.0 for CUDA 10.0
 #Expand-ZIPFile -File "C:\cudnn-10.0-windows10-x64-v7.5.0.56.zip" -Destination "C:\CUDNN-10.0\" -Url "http://developer.download.nvidia.com/compute/redist/cudnn/v7.5.0/cudnn-10.0-windows10-x64-v7.5.0.56.zip"
 md "C:\CUDNN-10.0"
@@ -111,13 +112,6 @@ $acl = Get-Acl -Path "C:\builds"
 $ace = New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone","Full","ContainerInherit,ObjectInherit","None","Allow")
 $acl.AddAccessRule($ace)
 Set-Acl "C:\builds" $acl
-
-# Create Z:\builds and give full access to all users (for hg-shared, tooltool_cache, etc)
-md "Z:\builds"
-$acl = Get-Acl -Path "Z:\builds"
-$ace = New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone","Full","ContainerInherit,ObjectInherit","None","Allow")
-$acl.AddAccessRule($ace)
-Set-Acl "Z:\builds" $acl
 
 # GrantEveryoneSeCreateSymbolicLinkPrivilege
 Start-Process "powershell" -ArgumentList "-command `"& {&'Import-Module' Carbon}`"; `"& {&'Grant-Privilege' -Identity Everyone -Privilege SeCreateSymbolicLinkPrivilege}`"" -Wait -NoNewWindow
@@ -144,7 +138,7 @@ $HostsFile_Content = [System.Convert]::FromBase64String($HostsFile_Base64)
 Set-Content -Path "C:\Windows\System32\drivers\etc\hosts" -Value $HostsFile_Content -Encoding Byte
 
 # install generic-worker
-Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install service --configure-for-aws --nssm C:\nssm-2.24\win64\nssm.exe --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
+Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install service --configure-for-%MY_CLOUD% --nssm C:\nssm-2.24\win64\nssm.exe --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
 # Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install startup --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
 
 # download Windows Server 2003 Resource Kit Tools
@@ -184,7 +178,6 @@ Expand-ZIPFile -File "C:\Handle.zip" -Destination "C:\Handle" -Url "https://down
 Start-Process "cmd.exe" -ArgumentList "/c del C:\cuda_*" -Wait -NoNewWindow
 Start-Process "cmd.exe" -ArgumentList "/c del C:\cudnn*" -Wait -NoNewWindow
 Start-Process "cmd.exe" -ArgumentList "/c del C:\CUDNN*" -Wait -NoNewWindow
-Start-Process "cmd.exe" -ArgumentList "/c del C:\412.29-tesla-desktop-winserver2008-2012r2-64bit-international.exe" -Wait -NoNewWindow
 
 $computersys = Get-WmiObject Win32_ComputerSystem -EnableAllPrivileges;
 $computersys.AutomaticManagedPagefile = $False;
@@ -200,4 +193,3 @@ $pagefile.Put();
 #   * https://support.microsoft.com/en-in/help/4014551/description-of-the-security-and-quality-rollup-for-the-net-framework-4
 #   * https://support.microsoft.com/en-us/help/4020459
 shutdown -s
-</powershell>

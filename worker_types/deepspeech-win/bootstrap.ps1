@@ -1,5 +1,3 @@
-<powershell>
-
 # use TLS 1.2 (see bug 1443595)
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
@@ -140,7 +138,7 @@ $HostsFile_Content = [System.Convert]::FromBase64String($HostsFile_Base64)
 Set-Content -Path "C:\Windows\System32\drivers\etc\hosts" -Value $HostsFile_Content -Encoding Byte
 
 # install generic-worker
-Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install service --configure-for-aws --nssm C:\nssm-2.24\win64\nssm.exe --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
+Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install service --configure-for-%MY_CLOUD% --nssm C:\nssm-2.24\win64\nssm.exe --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
 # Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install startup --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
 
 # download Windows Server 2003 Resource Kit Tools
@@ -195,4 +193,3 @@ $pagefile.Put();
 #   * https://support.microsoft.com/en-in/help/4014551/description-of-the-security-and-quality-rollup-for-the-net-framework-4
 #   * https://support.microsoft.com/en-us/help/4020459
 shutdown -s
-</powershell>

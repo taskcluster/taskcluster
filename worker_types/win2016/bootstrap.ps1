@@ -1,5 +1,3 @@
-<powershell>
-
 # use TLS 1.2 (see bug 1443595)
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
@@ -82,6 +80,36 @@ $client.DownloadFile("https://raw.githubusercontent.com/mozilla/release-services
 # install nssm
 Expand-ZIPFile -File "C:\nssm-2.24.zip" -Destination "C:\" -Url "http://www.nssm.cc/release/nssm-2.24.zip"
 
+# Bizarrely, this sets env TEMP/TMP correctly in default user profile, however, if running a
+# task as Administrator, including any subprocesses that creates, even if processes under a
+# different user account, %USERNAME% will be sustituted by 'SYSTEM' rather than the real
+# %USERNAME% which is in the env. Therefore commenting out this section until this is resolved.
+#
+# # utility function to replace/create a registry key, depending on whether it exists already
+# function SetKey($registryPath, $name, $value)
+# {
+#     if (!(Test-Path $registryPath)) {
+#         New-Item -Path $registryPath -Force | Out-Null
+#     }
+#     New-ItemProperty -Path $registryPath -Name $name -Value $value `
+#     -PropertyType ExpandString -Force | Out-Null
+# }
+#
+# # mount default user profile registry hive
+# reg load "HKLM\DefaultUser" "C:\Documents and Settings\Default User\ntuser.dat"
+#
+# # set TMP env var in profile
+# SetKey -registryPath "HKLM:\DefaultUser\Environment" -name "TMP" -value "C:\Users\%USERNAME%\Task\Temp\Dir"
+#
+# # set TEMP env var in profile
+# SetKey -registryPath "HKLM:\DefaultUser\Environment" -name "TEMP" -value "C:\Users\%USERNAME%\Task\Temp\Dir"
+#
+# # clean up handles so we can unmount registry hive
+# [gc]::collect()
+#
+# # unmount registry hive
+# reg unload HKLM\DefaultUser
+
 # download generic-worker
 md C:\generic-worker
 $client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v16.0.0/generic-worker-multiuser-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
@@ -89,16 +117,8 @@ $client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/dow
 # download livelog
 $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")
 
-# download taskcluster-proxy
-$client.DownloadFile("https://github.com/taskcluster/taskcluster-proxy/releases/download/v5.1.0/taskcluster-proxy-windows-amd64.exe", "C:\generic-worker\taskcluster-proxy.exe")
-
-# configure hosts file for taskcluster-proxy access via http://taskcluster
-$HostsFile_Base64 = "IyBDb3B5cmlnaHQgKGMpIDE5OTMtMjAwOSBNaWNyb3NvZnQgQ29ycC4NCiMNCiMgVGhpcyBpcyBhIHNhbXBsZSBIT1NUUyBmaWxlIHVzZWQgYnkgTWljcm9zb2Z0IFRDUC9JUCBmb3IgV2luZG93cy4NCiMNCiMgVGhpcyBmaWxlIGNvbnRhaW5zIHRoZSBtYXBwaW5ncyBvZiBJUCBhZGRyZXNzZXMgdG8gaG9zdCBuYW1lcy4gRWFjaA0KIyBlbnRyeSBzaG91bGQgYmUga2VwdCBvbiBhbiBpbmRpdmlkdWFsIGxpbmUuIFRoZSBJUCBhZGRyZXNzIHNob3VsZA0KIyBiZSBwbGFjZWQgaW4gdGhlIGZpcnN0IGNvbHVtbiBmb2xsb3dlZCBieSB0aGUgY29ycmVzcG9uZGluZyBob3N0IG5hbWUuDQojIFRoZSBJUCBhZGRyZXNzIGFuZCB0aGUgaG9zdCBuYW1lIHNob3VsZCBiZSBzZXBhcmF0ZWQgYnkgYXQgbGVhc3Qgb25lDQojIHNwYWNlLg0KIw0KIyBBZGRpdGlvbmFsbHksIGNvbW1lbnRzIChzdWNoIGFzIHRoZXNlKSBtYXkgYmUgaW5zZXJ0ZWQgb24gaW5kaXZpZHVhbA0KIyBsaW5lcyBvciBmb2xsb3dpbmcgdGhlIG1hY2hpbmUgbmFtZSBkZW5vdGVkIGJ5IGEgJyMnIHN5bWJvbC4NCiMNCiMgRm9yIGV4YW1wbGU6DQojDQojICAgICAgMTAyLjU0Ljk0Ljk3ICAgICByaGluby5hY21lLmNvbSAgICAgICAgICAjIHNvdXJjZSBzZXJ2ZXINCiMgICAgICAgMzguMjUuNjMuMTAgICAgIHguYWNtZS5jb20gICAgICAgICAgICAgICMgeCBjbGllbnQgaG9zdA0KDQojIGxvY2FsaG9zdCBuYW1lIHJlc29sdXRpb24gaXMgaGFuZGxlZCB3aXRoaW4gRE5TIGl0c2VsZi4NCiMJMTI3LjAuMC4xICAgICAgIGxvY2FsaG9zdA0KIwk6OjEgICAgICAgICAgICAgbG9jYWxob3N0DQoNCiMgVXNlZnVsIGZvciBnZW5lcmljLXdvcmtlciB0YXNrY2x1c3Rlci1wcm94eSBpbnRlZ3JhdGlvbg0KIyBTZWUgaHR0cHM6Ly9idWd6aWxsYS5tb3ppbGxhLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTQ0OTk4MSNjNg0KMTI3LjAuMC4xICAgICAgICB0YXNrY2x1c3RlciAgICANCg=="
-$HostsFile_Content = [System.Convert]::FromBase64String($HostsFile_Base64)
-Set-Content -Path "C:\Windows\System32\drivers\etc\hosts" -Value $HostsFile_Content -Encoding Byte
-
 # install generic-worker
-Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install service --configure-for-aws --nssm C:\nssm-2.24\win64\nssm.exe --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
+Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install service --configure-for-%MY_CLOUD% --nssm C:\nssm-2.24\win64\nssm.exe --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
 # Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install startup --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
 
 # initial clone of mozilla-central
@@ -205,4 +225,3 @@ Expand-ZIPFile -File "C:\ProcessMonitor.zip" -Destination "C:\ProcessMonitor" -U
 #   * https://support.microsoft.com/en-in/help/4014551/description-of-the-security-and-quality-rollup-for-the-net-framework-4
 #   * https://support.microsoft.com/en-us/help/4020459
 shutdown -s
-</powershell>

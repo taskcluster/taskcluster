@@ -1,5 +1,3 @@
-<powershell>
-
 # use TLS 1.2 (see bug 1443595)
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
@@ -37,7 +35,7 @@ $client.DownloadFile("http://download.microsoft.com/download/A/E/7/AE743F1F-632B
 Install-WindowsFeature NET-Framework-Core
 
 # now run DirectX SDK installer
-Start-Process C:\DXSDK_Jun10.exe -ArgumentList "/U" -wait -NoNewWindow -PassThru -RedirectStandardOutput C:\directx_sdk_install.log -RedirectStandardError C:\directx_sdk_install.err
+Start-Process C:\DXSDK_Jun10.exe -ArgumentList "/U" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\directx_sdk_install.log -RedirectStandardError C:\directx_sdk_install.err
 
 # install rustc dependencies (32 bit)
 $client.DownloadFile("http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe", "C:\vcredist_x86-vs2013.exe")
@@ -84,7 +82,8 @@ Expand-ZIPFile -File "C:\nssm-2.24.zip" -Destination "C:\" -Url "http://www.nssm
 
 # download generic-worker
 md C:\generic-worker
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v16.0.0/generic-worker-multiuser-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
+$client.DownloadFile("https://taskcluster-artifacts.net/FnDaYpolQMqxtRSgkPXLYA/0/public/build/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe.gz")
+Start-Process "C:\mozilla-build\msys\bin\bash.exe" -ArgumentList "-l gunzip /c/generic-worker/generic-worker.exe.gz" -Wait -PassThru
 
 # download livelog
 $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")
@@ -98,8 +97,7 @@ $HostsFile_Content = [System.Convert]::FromBase64String($HostsFile_Base64)
 Set-Content -Path "C:\Windows\System32\drivers\etc\hosts" -Value $HostsFile_Content -Encoding Byte
 
 # install generic-worker
-Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install service --configure-for-aws --nssm C:\nssm-2.24\win64\nssm.exe --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
-# Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install startup --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
+Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install service --configure-for-%MY_CLOUD% --nssm C:\nssm-2.24\win64\nssm.exe --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
 
 # initial clone of mozilla-central
 # Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "C:\mozilla-build\python\Scripts\hg clone -u null https://hg.mozilla.org/mozilla-central C:\gecko" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\hg_initial_clone.log" -RedirectStandardError "C:\hg_initial_clone.err"
@@ -128,9 +126,9 @@ Expand-ZIPFile -File "C:\go1.11.5.windows-amd64.zip" -Destination "C:\" -Url "ht
 # md "C:\PSTools"
 # Expand-ZIPFile -File "C:\PSTools\PSTools.zip" -Destination "C:\PSTools" -Url "https://download.sysinternals.com/files/PSTools.zip"
 
-# install git
-$client.DownloadFile("https://github.com/git-for-windows/git/releases/download/v2.16.2.windows.1/Git-2.16.2-64-bit.exe", "C:\Git-2.16.2-64-bit.exe")
-Start-Process "C:\Git-2.16.2-64-bit.exe" -ArgumentList "/SILENT" -Wait -PassThru
+# install git - this is broken in gcp - no idea why yet, so commenting out.....
+# $client.DownloadFile("https://github.com/git-for-windows/git/releases/download/v2.16.2.windows.1/Git-2.16.2-64-bit.exe", "C:\Git-2.16.2-64-bit.exe")
+# Start-Process "C:\Git-2.16.2-64-bit.exe" -ArgumentList "/SILENT" -Wait -PassThru
 
 # install AZCopy (azure table storage backup utility - for bstack)
 $client.DownloadFile("http://aka.ms/downloadazcopy", "C:\AZCopy.msi")
@@ -153,8 +151,8 @@ $env:GOROOT = "C:\go"
 $env:GOPATH = "C:\gopath"
 $env:PATH   = $env:PATH + ";C:\go\bin;C:\gopath\bin;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\Program Files\Git\cmd"
 
-# get generic-worker and livelog source code (note required, but useful)
-Start-Process "go" -ArgumentList "get -t github.com/taskcluster/generic-worker github.com/taskcluster/livelog" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\generic-worker\go-get_install.log" -RedirectStandardError "C:\generic-worker\go-get_install.err"
+# get generic-worker and livelog source code (note required, but useful) - commenting out as git isn't installed
+#Start-Process "go" -ArgumentList "get -t github.com/taskcluster/generic-worker github.com/taskcluster/livelog" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\generic-worker\go-get_install.log" -RedirectStandardError "C:\generic-worker\go-get_install.err"
 
 # generate ed25519 key
 Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "new-ed25519-keypair --file C:\generic-worker\generic-worker-ed25519-signing-key.key" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\generate-signing-key.log -RedirectStandardError C:\generic-worker\generate-signing-key.err
@@ -205,4 +203,3 @@ Expand-ZIPFile -File "C:\ProcessMonitor.zip" -Destination "C:\ProcessMonitor" -U
 #   * https://support.microsoft.com/en-in/help/4014551/description-of-the-security-and-quality-rollup-for-the-net-framework-4
 #   * https://support.microsoft.com/en-us/help/4020459
 shutdown -s
-</powershell>

@@ -1,5 +1,3 @@
-<powershell>
-
 # use TLS 1.2 (see bug 1443595)
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
@@ -139,7 +137,7 @@ Copy-Item C:\gopath\bin\livelog.exe C:\generic-worker
 
 # install generic-worker
 Copy-Item C:\gopath\bin\generic-worker.exe C:\generic-worker
-# Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install service --configure-for-aws --nssm C:\nssm-2.24\win64\nssm.exe --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
+# Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install service --configure-for-%MY_CLOUD% --nssm C:\nssm-2.24\win64\nssm.exe --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
 Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install startup --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
 
 # patch generic worker startup script to rebuild generic worker
@@ -194,4 +192,3 @@ Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "new-ed25519-ke
 #   * https://support.microsoft.com/en-in/help/4014551/description-of-the-security-and-quality-rollup-for-the-net-framework-4
 #   * https://support.microsoft.com/en-us/help/4020459
 shutdown -s
-</powershell>

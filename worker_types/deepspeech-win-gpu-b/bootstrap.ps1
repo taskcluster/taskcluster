@@ -1,15 +1,3 @@
-<powershell>
-
-#### Before making changes to nss-win2012r2 worker type, please first apply
-#### your changes to nss-win2012r2-new worker type, which is the staging worker
-#### type for nss windows tasks. Then please ask for these changes to be
-#### deployed to production, and you can then make a new try push which uses
-#### nss-win2012r2-new instead of nss-win2012r2 to test that the worker type
-#### changes are ok. If that try push is successful, you can then copy over
-#### the staging worker type definition over the production worker type
-#### definition, and request a new deployment in order to get your changes in
-#### production.
-
 # use TLS 1.2 (see bug 1443595)
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
@@ -74,7 +62,7 @@ $client.DownloadFile("http://download.microsoft.com/download/A/8/0/A80747C3-41BD
 Start-Process "C:\vcredist_x64-vs2010.exe" -ArgumentList "/install /passive /norestart /log C:\vcredist_x64-vs2010-install.log" -Wait -PassThru
 
 # download mozilla-build installer
-$client.DownloadFile("https://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-3.2.exe", "C:\MozillaBuildSetup.exe")
+$client.DownloadFile("https://ftp.mozilla.org/pub/mozilla.org/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe", "C:\MozillaBuildSetup.exe")
 
 # run mozilla-build installer in silent (/S) mode
 Start-Process "C:\MozillaBuildSetup.exe" -ArgumentList "/S" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\MozillaBuild_install.log" -RedirectStandardError "C:\MozillaBuild_install.err"
@@ -108,7 +96,7 @@ $HostsFile_Content = [System.Convert]::FromBase64String($HostsFile_Base64)
 Set-Content -Path "C:\Windows\System32\drivers\etc\hosts" -Value $HostsFile_Content -Encoding Byte
 
 # install generic-worker
-Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install service --configure-for-aws --nssm C:\nssm-2.24\win64\nssm.exe --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
+Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install service --configure-for-%MY_CLOUD% --nssm C:\nssm-2.24\win64\nssm.exe --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
 # Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install startup --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
 
 # initial clone of mozilla-central
@@ -141,6 +129,10 @@ Expand-ZIPFile -File "C:\go1.11.5.windows-amd64.zip" -Destination "C:\" -Url "ht
 # install git
 $client.DownloadFile("https://github.com/git-for-windows/git/releases/download/v2.16.2.windows.1/Git-2.16.2-64-bit.exe", "C:\Git-2.16.2-64-bit.exe")
 Start-Process "C:\Git-2.16.2-64-bit.exe" -ArgumentList "/SILENT" -Wait -PassThru
+
+# install AZCopy (azure table storage backup utility - for bstack)
+$client.DownloadFile("http://aka.ms/downloadazcopy", "C:\AZCopy.msi")
+Start-Process "msiexec" -ArgumentList "/i C:\AZCopy.msi /quiet" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\AZCopy-install.log" -RedirectStandardError "C:\AZCopy-install.err"
 
 # install node
 $client.DownloadFile("https://nodejs.org/dist/v6.6.0/node-v6.6.0-x64.msi", "C:\NodeSetup.msi")
@@ -211,4 +203,3 @@ Expand-ZIPFile -File "C:\ProcessMonitor.zip" -Destination "C:\ProcessMonitor" -U
 #   * https://support.microsoft.com/en-in/help/4014551/description-of-the-security-and-quality-rollup-for-the-net-framework-4
 #   * https://support.microsoft.com/en-us/help/4020459
 shutdown -s
-</powershell>
