@@ -151,13 +151,13 @@ func main() {
 		case "CommandRun":
 			switch cc := c.Arguments.(type) {
 			case string:
-				fmt.Printf(strings.Replace(fmt.Sprintf(`Start-Process "%s" -ArgumentList "%s" -Wait -NoNewWindow`+"\n", c.Command, PSEscape(cc)), "--configure-for-aws", "--configure-for-%MY_CLOUD%", -1))
+				fmt.Println(strings.Replace(`Start-Process "`+c.Command+`" -ArgumentList "`+PSEscape(cc)+`" -Wait -NoNewWindow`, "--configure-for-aws", "--configure-for-%MY_CLOUD%", -1))
 			case []interface{}:
 				a := []string{}
 				for _, x := range cc {
 					a = append(a, x.(string))
 				}
-				fmt.Printf(`Start-Process "%s" -ArgumentList "%s" -Wait -NoNewWindow`+"\n", c.Command, PSEscape(strings.Join(a, " ")))
+				fmt.Println(strings.Replace(`Start-Process "`+c.Command+`" -ArgumentList "`+PSEscape(strings.Join(a, " "))+`" -Wait -NoNewWindow`, "--configure-for-aws", "--configure-for-%MY_CLOUD%", -1))
 			default:
 				log.Printf("Got type %T", cc)
 			}
