@@ -40,7 +40,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       return helper.GithubAccessToken.create({
         userId: '99',
         accessToken: 'qwerty',
-        expires: taskcluster.fromNow('1000 years'),
         ...options,
       }, true);
     };

@@ -249,20 +249,6 @@ const load = loader(
       },
     },
 
-    'cleanup-expire-github-access-tokens': {
-      requires: ['cfg', 'GithubAccessToken', 'monitor'],
-      setup: ({cfg, GithubAccessToken, monitor}) => {
-        return monitor.oneShot('cleanup-expire-github-access-tokens', async () => {
-          const delay = cfg.app.githubAccessTokenExpirationDelay;
-          const now = taskcluster.fromNow(delay);
-
-          debug('Expiring github access tokens');
-          const count = await GithubAccessToken.expire(now);
-          debug('Expired ' + count + ' access tokens');
-        });
-      },
-    },
-
     devServer: {
       requires: ['cfg', 'httpServer'],
       setup: async ({ cfg, httpServer }) => {

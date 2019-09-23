@@ -11,8 +11,6 @@ const GithubAccessToken = Entity.configure({
     userId: Entity.types.String,
     // The Github Oauth access token
     accessToken: Entity.types.EncryptedText,
-    // The expiration time of the table entry
-    expires: Entity.types.Date,
   },
 });
 

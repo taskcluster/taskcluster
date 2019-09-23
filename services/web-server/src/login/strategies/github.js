@@ -142,8 +142,6 @@ module.exports = class Github {
           await this.GithubAccessToken.create({
             userId: profile.id,
             accessToken,
-            // Github Oauth tokens have no expiration
-            expires: taskcluster.fromNow('1000 years'),
           }, true);
           const user = await this.getUser({ username: profile.username, userId: Number(profile.id) });
 
