@@ -1,13 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/taskcluster/taskcluster-client-go/tcworkermanager"
 )
 
 type MockGCPProvisionedEnvironment struct {
@@ -18,7 +21,7 @@ func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 	workerType := testWorkerType()
 	configureForGCP = true
 	oldGCPMetadataBaseURL := GCPMetadataBaseURL
-	GCPMetadataBaseURL = "http://localhost:13243/computeMetadata/v1/"
+	GCPMetadataBaseURL = "http://localhost:13243/computeMetadata/v1"
 
 	// Create custom *http.ServeMux rather than using http.DefaultServeMux, so
 	// registered handler functions won't interfere with future tests that also
@@ -27,28 +30,21 @@ func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 	ec2MetadataHandler.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		switch req.URL.Path {
 
-		// simulate gce provider concept endpoints
-
-		case "/gce-thing/credentials":
-			resp := map[string]interface{}{
-				"clientId":    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-				"certificate": os.Getenv("TASKCLUSTER_CERTIFICATE"),
-				"accessToken": os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-			}
-			WriteJSON(t, w, resp)
-
 		// simulate GCP endpoints
 
-		case "/computeMetadata/v1/instance/attributes/config":
+		case "/computeMetadata/v1/instance/attributes/taskcluster":
 			resp := map[string]interface{}{
-				"workerType":         workerType,
-				"workerGroup":        "workers",
-				"provisionerId":      "test-provisioner",
-				"credentialUrl":      "http://localhost:13243/gce-thing/credentials",
-				"audience":           "plants",
-				"signingKeyLocation": filepath.Join(testdataDir, "private-opengpg-key"),
-				"authBaseUrl":        "http://localhost:13243/auth",
-				"queueBaseUrl":       "http://localhost:13243/queue",
+				"workerPoolId": "test-provisioner/" + workerType,
+				"providerId":   "test-provider",
+				"workerGroup":  "workers",
+				"rootURL":      "http://localhost:13243",
+				"workerConfig": map[string]interface{}{
+					"genericWorker": map[string]interface{}{
+						"config": map[string]interface{}{
+							"deploymentId": "12345",
+						},
+					},
+				},
 			}
 			WriteJSON(t, w, resp)
 		case "/computeMetadata/v1/instance/service-accounts/default/identity":
@@ -68,10 +64,43 @@ func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 		case "/computeMetadata/v1/instance/network-interfaces/0/ip":
 			fmt.Fprintf(w, "10.10.10.10")
 
+		case "/api/worker-manager/v1/worker/register":
+			if req.Method != "POST" {
+				w.WriteHeader(400)
+				fmt.Fprintf(w, "Must register with POST")
+			}
+			d := json.NewDecoder(req.Body)
+			d.DisallowUnknownFields()
+			b := tcworkermanager.RegisterWorkerRequest{}
+			err := d.Decode(&b)
+			if err != nil {
+				w.WriteHeader(400)
+				fmt.Fprintf(w, "%v", err)
+			}
+			d = json.NewDecoder(bytes.NewBuffer(b.WorkerIdentityProof))
+			d.DisallowUnknownFields()
+			g := tcworkermanager.GoogleProviderType{}
+			err = d.Decode(&g)
+			if err != nil {
+				w.WriteHeader(400)
+				fmt.Fprintf(w, "%v", err)
+			}
+			if g.Token != "sekrit-token" {
+				w.WriteHeader(400)
+				fmt.Fprintf(w, "Got token %q but was expecting %q", g.Token, "sekrit-token")
+			}
+			resp := map[string]interface{}{
+				"credentials": map[string]interface{}{
+					"accessToken": "test-access-token",
+					"certificate": "test-certificate",
+					"clientId":    "test-client-id",
+				},
+			}
+			WriteJSON(t, w, resp)
+
 		default:
 			w.WriteHeader(400)
 			fmt.Fprintf(w, "Cannot serve URL %v", req.URL)
-			t.Fatalf("Cannot serve URL %v", req.URL)
 		}
 	})
 	s := &http.Server{

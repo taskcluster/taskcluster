@@ -220,6 +220,7 @@ func loadConfig(filename string, queryAWSUserData bool, queryGCPMetaData bool) (
 			TaskclusterProxyPort:           80,
 			TasksDir:                       defaultTasksDir(),
 			WorkerGroup:                    "test-worker-group",
+			WorkerManagerBaseURL:           "",
 			WorkerTypeMetadata:             map[string]interface{}{},
 		},
 	}

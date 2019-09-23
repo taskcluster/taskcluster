@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -233,8 +232,6 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 		default:
 			w.WriteHeader(400)
 			fmt.Fprintf(w, "Cannot serve URL %v", req.URL)
-			log.Printf("Cannot serve URL %v", req.URL)
-			t.Fatalf("Cannot serve URL %v", req.URL)
 		}
 	})
 

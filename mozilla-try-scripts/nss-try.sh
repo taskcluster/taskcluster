@@ -19,7 +19,7 @@ function open_browser_page {
 cd "$(dirname "${0}")"
 THIS_SCRIPT_DIR="$(pwd)"
 
-NEW_VERSION="$(cat ../worker_types/nss-win2012r2-new/userdata | sed -n 's_.*https://github\.com/taskcluster/generic-worker/releases/download/v\(.*\)/generic-worker-multiuser-windows-amd64\.exe.*_\1_p')"
+NEW_VERSION="$(cat ../worker_types/nss-win2012r2-new/bootstrap.ps1 | sed -n 's_.*https://github\.com/taskcluster/generic-worker/releases/download/v\(.*\)/generic-worker-multiuser-windows-amd64\.exe.*_\1_p')"
 VALID_FORMAT='^[1-9][0-9]*\.\(0\|[1-9][0-9]*\)\.\(0\|[1-9]\)\([0-9]*alpha[1-9][0-9]*\|[0-9]*\)$'
 
 if ! echo "${NEW_VERSION}" | grep -q "${VALID_FORMAT}"; then

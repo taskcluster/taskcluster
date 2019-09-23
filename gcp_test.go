@@ -14,4 +14,9 @@ func TestGcpWorkerTypeMetadata(t *testing.T) {
 	if actual != expected {
 		t.Fatalf("Was expecting machine id '%v' but got '%v'", expected, actual)
 	}
+	expectedClientID := "test-client-id"
+	actualClientID := config.ClientID
+	if actualClientID != expectedClientID {
+		t.Fatalf("Was expecting client id '%v' but got '%v'", expectedClientID, actualClientID)
+	}
 }

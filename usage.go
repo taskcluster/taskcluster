@@ -254,6 +254,11 @@ and reports back results to the queue.
                                             identifier to uniquely identify which pool of
                                             workers this worker logically belongs to.
                                             [default: test-worker-group]
+          workerManagerBaseURL              The base URL for taskcluster worker-manager API calls.
+                                            If not provided, the base URL for API calls is
+                                            instead derived from rootURL setting as follows:
+                                              * https://worker-manager.taskcluster.net/v1 for rootURL https://taskcluster.net
+                                              * <rootURL>/api/worker-manager/v1 for all other rootURLs
           workerTypeMetaData                This arbitrary json blob will be included at the
                                             top of each task log. Providing information here,
                                             such as a URL to the code/config used to set up the

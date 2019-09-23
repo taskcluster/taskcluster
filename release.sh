@@ -92,7 +92,7 @@ fi
 
 inline_sed README.md "s/.\/release.sh ${OLD_VERSION//./\\.}/.\/release.sh ${NEW_VERSION}/"
 inline_sed main.go 's/\(version *= *\)"'"${OLD_VERSION//./\\.}"'"$/\1"'"${NEW_VERSION}"'"/'
-find . -name userdata | while read file; do
+find . -name bootstrap.* | while read file; do
   inline_sed "${file}" "s:taskcluster/generic-worker/releases/download/v${OLD_VERSION//./\\.}/:taskcluster/generic-worker/releases/download/v${NEW_VERSION}/:g"
   inline_sed "${file}" "s:GENERIC_WORKER_VERSION='v${OLD_VERSION//./\\.}':GENERIC_WORKER_VERSION='v${NEW_VERSION}':g"
 done
