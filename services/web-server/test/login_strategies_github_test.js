@@ -40,7 +40,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       return helper.GithubAccessToken.create({
         userId: '99',
         accessToken: 'qwerty',
-        expires: taskcluster.fromNow('10 minutes'),
+        expires: taskcluster.fromNow('1000 years'),
         ...options,
       }, true);
     };
@@ -146,10 +146,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     });
 
     test('userFromIdentity with GitHub failure', async function() {
-      assert.rejects(async () => {
+      await assert.rejects(async () => {
         const strategy = getStrategy();
-        await makeUser();
-        strategy.userFromIdentity('github/20|FAIL');
+        await makeUser({ userId: String(20) });
+
+        return strategy.userFromIdentity('github/20|FAIL');
       }, /uhoh/);
     });
 

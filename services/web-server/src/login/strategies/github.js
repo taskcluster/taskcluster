@@ -37,6 +37,12 @@ module.exports = class Github {
     }
 
     const githubClient = this.clients.get(userId);
+
+    if (!githubClient) {
+      debug(`Github client for user id ${userId} could not be found.`);
+      return;
+    }
+
     const [githubErr, githubUser] = await tryCatch(githubClient.userFromUsername(username));
 
     // 404 means the user doesn't exist; otherwise, throw the error up the chain
@@ -70,6 +76,12 @@ module.exports = class Github {
     }
 
     const githubClient = this.clients.get(userId);
+
+    if (!githubClient) {
+      debug(`Github client for user id ${userId} could not be found.`);
+      return;
+    }
+
     const [teamsErr, teams] = await tryCatch(githubClient.listTeams());
 
     if (teamsErr) {
@@ -130,7 +142,8 @@ module.exports = class Github {
           await this.GithubAccessToken.create({
             userId: profile.id,
             accessToken,
-            expires: taskcluster.fromNow('10 minutes'),
+            // Github Oauth tokens have no expiration
+            expires: taskcluster.fromNow('1000 years'),
           }, true);
           const user = await this.getUser({ username: profile.username, userId: Number(profile.id) });
 
