@@ -73,7 +73,7 @@ mkdir -p /var/local/generic-worker
 # ensure host 'taskcluster' resolves to localhost
 echo 127.0.1.1 taskcluster >> /etc/hosts
 # configure generic-worker to run on boot
-echo '@reboot cd /var/local/generic-worker && PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /usr/local/bin/generic-worker run --configure-for-gcp --config /etc/generic-worker/config >> /var/log/generic-worker.log 2>&1' | crontab -
+echo '@reboot cd /var/local/generic-worker && PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /usr/local/bin/generic-worker run --configure-for-%MY_CLOUD% --config /etc/generic-worker/config >> /var/log/generic-worker.log 2>&1' | crontab -
 
 retry apt install -y ubuntu-desktop ubuntu-gnome-desktop
 
