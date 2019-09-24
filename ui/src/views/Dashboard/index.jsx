@@ -30,7 +30,8 @@ export default class DashboardView extends Component {
         <br />
 
         <Button component={Link} to="/tasks">
-          <HexagonIcon className={classes.buttonIcon} />I want to look at a task.
+          <HexagonIcon className={classes.buttonIcon} />I want to look at a
+          task.
         </Button>
         <br />
         <br />
