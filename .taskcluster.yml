@@ -14,7 +14,7 @@ tasks:
   ######### Windows Server 2012 R2 Multiuser Build #########
   ##########################################################
 
-  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
+  - provisionerId: pmoore-test
     workerType: win2012r2-cu
     metadata:
       name: "Build/test 64 bit generic-worker (multiuser engine) on Windows Server 2012 R2"
@@ -98,7 +98,7 @@ tasks:
   ############### Windows 7 Multiuser Build ################
   ##########################################################
 
-  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
+  - provisionerId: aws-provisioner-v1
     workerType: gecko-t-win7-32-cu
     metadata:
       name: "Build/test 32 bit generic-worker (multiuser engine) on Windows 7"
@@ -178,7 +178,7 @@ tasks:
   ############### Windows 10 Multiuser Build ###############
   ##########################################################
 
-  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
+  - provisionerId: aws-provisioner-v1
     workerType: gecko-t-win10-64-cu
     metadata:
       name: "Build/test 64 bit generic-worker (multiuser engine) on Windows 10"
@@ -479,7 +479,7 @@ tasks:
   ############## Linux amd64 Multiuser Build ###############
   ##########################################################
 
-  - provisionerId: aws-provisioner-v1
+  - provisionerId: pmoore-test
     workerType: gwci-linux
     metadata:
       name: "Build/test 64 bit generic-worker (multiuser engine) on Ubuntu 17.04 VM"
@@ -554,7 +554,7 @@ tasks:
   ################ Linux amd64 Simple Build ################
   ##########################################################
 
-  - provisionerId: aws-provisioner-v1
+  - provisionerId: pmoore-test
     workerType: gwci-linux
     metadata:
       name: "Build/test 64 bit generic-worker (simple engine) on Ubuntu 17.04 VM"
@@ -625,7 +625,7 @@ tasks:
   ################ Linux amd64 Docker Build ################
   ##########################################################
 
-  - provisionerId: aws-provisioner-v1
+  - provisionerId: pmoore-test
     workerType: gwci-linux
     metadata:
       name: "Build/test 64 bit generic-worker (docker engine) on Ubuntu 17.04 VM"
@@ -696,8 +696,8 @@ tasks:
   ###################### Docs Upload #######################
   ##########################################################
 
-  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
-    workerType: '{{ taskcluster.docker.workerType }}'
+  - provisionerId: aws-provisioner-v1
+    workerType: github-worker
     extra:
       github:
         events:
@@ -733,8 +733,8 @@ tasks:
   ############## Check vendored dependencies ###############
   ##########################################################
 
-  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
-    workerType: "{{ taskcluster.docker.workerType }}"
+  - provisionerId: aws-provisioner-v1
+    workerType: github-worker
     metadata:
       name: "Run 'dep check' to ensure dependencies are up to date"
       description: "Run 'dep check' to ensure dependencies are up to date"
