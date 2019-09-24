@@ -10,6 +10,9 @@ import { withAuth } from '../../utils/Auth';
   secondaryIcon: {
     ...theme.mixins.secondaryIcon,
   },
+  button: {
+    ...theme.mixins.button,
+  },
 }))
 /**
  * A Material UI SpeedDialAction augmented with application specific props.
