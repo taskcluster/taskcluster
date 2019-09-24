@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import HexagonMultipleIcon from 'mdi-react/HexagonMultipleIcon';
+import HexagonIcon from 'mdi-react/HexagonIcon';
 import PlusCircleIcon from 'mdi-react/PlusCircleIcon';
 import LibraryIcon from 'mdi-react/LibraryIcon';
 import Dashboard from '../../components/Dashboard';
@@ -28,9 +29,16 @@ export default class DashboardView extends Component {
         <br />
         <br />
 
+        <Button component={Link} to="/tasks">
+          <HexagonIcon className={classes.buttonIcon} />I want to look at a
+          task.
+        </Button>
+        <br />
+        <br />
+
         <Button component={Link} to="/tasks/groups">
           <HexagonMultipleIcon className={classes.buttonIcon} />I want to look
-          at a task or group of tasks.
+          at a group of tasks.
         </Button>
         <br />
         <br />
