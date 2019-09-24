@@ -256,10 +256,10 @@ export default class Dashboard extends Component {
             src={Logo}
           />
           <Typography
-            {...!window.env.DOCS_ONLY && {
+            {...(!window.env.DOCS_ONLY && {
               component: Link,
               to: '/',
-            }}
+            })}
             variant="h6"
             noWrap
             className={classes.title}>

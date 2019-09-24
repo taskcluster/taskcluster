@@ -86,9 +86,7 @@ export default class Main extends Component {
     // not logged in on the site they will be prompted to login.
     // Once logged in, we need to re-initiate the oauth2 login flow
     if (user && thirdPartyLogin) {
-      window.location.href = `${window.location.origin}/login/oauth/authorize${
-        window.location.search
-      }`;
+      window.location.href = `${window.location.origin}/login/oauth/authorize${window.location.search}`;
     }
   }
 

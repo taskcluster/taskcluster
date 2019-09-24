@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { bool } from 'prop-types';
 import { Link as RouterLink, NavLink } from 'react-router-dom';
 import isAbsolute from 'is-absolute-url';
-import routes from '../App/routes';
 import matchRoutes from './matchRoutes';
 
 /**
@@ -22,7 +21,7 @@ export default function Link({ nav, to, skipPrefetch, ...props }) {
     }
 
     if (!isPathAbsolute) {
-      const matchingRoutes = matchRoutes(path, routes);
+      const matchingRoutes = matchRoutes(path, Link.routes);
       const components = matchingRoutes.map(({ component }) =>
         component.preload()
       );
@@ -104,4 +103,9 @@ Link.propTypes = {
 Link.defaultProps = {
   nav: false,
   skipPrefetch: false,
+};
+
+// App calls this on load; it avoids an import cycle by importing App/routes
+Link.setRoutes = routes => {
+  Link.routes = routes;
 };

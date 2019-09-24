@@ -16,9 +16,7 @@ import indexedTaskQuery from './indexedTask.graphql';
   name: 'indexedTaskData',
   options: props => ({
     variables: {
-      indexPath: `${props.match.params.namespace}.${
-        props.match.params.namespaceTaskId
-      }`,
+      indexPath: `${props.match.params.namespace}.${props.match.params.namespaceTaskId}`,
     },
   }),
 })

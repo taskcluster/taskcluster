@@ -162,9 +162,7 @@ export default class TaskDetailsCard extends Component {
                   <IconButton
                     component={Link}
                     title="View Workers"
-                    to={`/provisioners/${task.provisionerId}/worker-types/${
-                      task.workerType
-                    }`}>
+                    to={`/provisioners/${task.provisionerId}/worker-types/${task.workerType}`}>
                     <LinkIcon />
                   </IconButton>
                 </ListItemSecondaryAction>

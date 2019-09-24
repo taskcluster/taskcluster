@@ -218,9 +218,7 @@ export default class WorkerTypesTable extends Component {
                 <TableCellItem
                   button
                   component={Link}
-                  to={`/provisioners/${workerType.provisionerId}/worker-types/${
-                    workerType.workerType
-                  }`}>
+                  to={`/provisioners/${workerType.provisionerId}/worker-types/${workerType.workerType}`}>
                   <ListItemText
                     disableTypography
                     primary={<Typography>{workerType.workerType}</Typography>}

@@ -136,11 +136,7 @@ export default class Ec2ResourcesTable extends Component {
                 component="a"
                 target="_blank"
                 rel="noopener noreferrer"
-                href={`${awsConsoleUrl}?region=${
-                  instance.region
-                }#Images:visibility=owned-by-me;imageId=${
-                  instance.id
-                };sort=name`}>
+                href={`${awsConsoleUrl}?region=${instance.region}#Images:visibility=owned-by-me;imageId=${instance.id};sort=name`}>
                 <ListItemText primary={instance.id} />
                 <OpenInNewIcon size={iconSize} />
               </TableCellItem>

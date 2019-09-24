@@ -26,15 +26,15 @@ const TaskRedirect = lazy(() =>
   import(/* webpackChunkName: 'Tasks.TaskRedirect' */ './TaskRedirect')
 );
 const InteractiveConnect = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.InteractiveConnect' */ './InteractiveConnect')
+  import(
+    /* webpackChunkName: 'Tasks.InteractiveConnect' */ './InteractiveConnect'
+  )
 );
 const taskGroupDescription =
   'Inspect task groups, monitor progress, view dependencies and states, and inspect the individual tasks that make up a task group.';
 const taskDescription =
   'Inspect the state, runs, public and private artifacts, definition, and logs of a task.';
-const createTaskDescription = `Write and submit a task to ${
-  window.env.APPLICATION_NAME
-}.`;
+const createTaskDescription = `Write and submit a task to ${window.env.APPLICATION_NAME}.`;
 const taskIndexDescription =
   'The generic index browser lets you browse through the hierarchy of namespaces in the index, and discover indexed tasks.';
 
