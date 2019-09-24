@@ -1585,13 +1585,35 @@
             },
             "name": "pulse",
             "next": {
-              "path": "reference/README",
-              "title": "Taskcluster Reference"
+              "path": "manual/deploying/third-party",
+              "title": "Third Party"
             },
             "path": "manual/deploying/pulse",
             "prev": {
               "path": "manual/deploying/monitoring",
               "title": "Monitoring Services"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "Third Party"
+            },
+            "name": "third-party",
+            "next": {
+              "path": "reference/README",
+              "title": "Taskcluster Reference"
+            },
+            "path": "manual/deploying/third-party",
+            "prev": {
+              "path": "manual/deploying/pulse",
+              "title": "Pulse"
             },
             "up": {
               "path": "manual/deploying",
@@ -3128,8 +3150,8 @@
     },
     "path": "reference/README",
     "prev": {
-      "path": "manual/deploying/pulse",
-      "title": "Pulse"
+      "path": "manual/deploying/third-party",
+      "title": "Third Party"
     }
   },
   "resources": {
