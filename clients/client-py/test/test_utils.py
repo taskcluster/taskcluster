@@ -8,8 +8,6 @@ import httmock
 import mock
 import requests
 
-import base
-from unittest import TestCase
 from hypothesis import given
 import hypothesis.strategies as st
 import pytest
@@ -17,6 +15,7 @@ import pytest
 pytestmark = [
     pytest.mark.skipif(os.environ.get("NO_TESTS_OVER_WIRE"), reason="Skipping tests over wire")
 ]
+
 
 # https://docs.python.org/2/library/datetime.html#tzinfo-objects
 class UTC(datetime.tzinfo):
@@ -48,6 +47,7 @@ def test_naive():
     actual = subject.stringDate(dateObj)
     assert expected == actual
 
+
 def test_aware():
     dateObj = datetime.datetime(
         year=2000,
@@ -71,6 +71,7 @@ def test_has_no_spaces():
     actual = subject.dumpJson({'test': 'works', 'doesit': 'yes'})
     assert actual in expected
 
+
 def test_serializes_naive_date():
     dateObj = datetime.datetime(
         year=2000,
@@ -83,6 +84,7 @@ def test_serializes_naive_date():
     expected = '{"date":"2000-01-01T01:01:01Z"}'
     actual = subject.dumpJson({'date': dateObj})
     assert expected == actual
+
 
 def test_serializes_aware_date():
     dateObj = datetime.datetime(
@@ -106,10 +108,12 @@ def test_encode_string_for_b64_header():
     actual = subject.encodeStringForB64Header('abcdef' * 500)
     assert expected == actual
 
+
 def test_makeb64urlsafe():
     expected = b'-_'
     actual = subject.makeB64UrlSafe('+/')
     assert expected == actual
+
 
 def test_makeb64urlunsafe():
     expected = b'+/'
@@ -124,6 +128,7 @@ def test_slug_id_is_always_nice():
         expected = 'Ptl5I3YWTsiF7UtpX2esLg'
         actual = subject.slugId()
         assert expected == actual
+
 
 def test_slug_id_nice_stays_nice():
     with mock.patch('uuid.uuid4') as p:
@@ -145,6 +150,7 @@ def test_success_no_payload():
         assert d.status_code == 200
         d.raise_for_status()
 
+
 def test_success_payload():
     @httmock.all_requests
     def response_content(url, request):
@@ -156,6 +162,7 @@ def test_success_payload():
         assert d.json() == {'k': 'l'}
         assert d.status_code == 200
         d.raise_for_status()
+
 
 def test_failure():
     @httmock.all_requests
@@ -182,8 +189,6 @@ def test_success_put_file():
         p.assert_called_once_with('put', 'http://www.example.com', mock.ANY, mock.ANY, mock.ANY)
 
 
-
-
 @given(st.text())
 def test_repeat(text):
     s = subject.stableSlugId()
@@ -200,15 +205,31 @@ def test_repeat(text):
         assert s1(text) != s2(text)
 
 
+examples = [{"expr": '1 hour', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T17:27:20.974Z'},
+            {"expr": '3h', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T19:27:20.974Z'},
+            {"expr": '1 hours', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T17:27:20.974Z'},
+            {"expr": '-1 hour', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T15:27:20.974Z'},
+            {"expr": '1 m', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T16:28:20.974Z'},
+            {"expr": '1m', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T16:28:20.974Z'},
+            {"expr": '12 min', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T16:39:20.974Z'},
+            {"expr": '12min', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T16:39:20.974Z'},
+            {"expr": '11m', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T16:38:20.974Z'},
+            {"expr": '11 m', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T16:38:20.974Z'},
+            {"expr": '1 day', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-20T16:27:20.974Z'},
+            {"expr": '2 days', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-21T16:27:20.974Z'},
+            {"expr": '1 second', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T16:27:21.974Z'},
+            {"expr": '1 week', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-26T16:27:20.974Z'},
+            {"expr": '1 month', "from": '2017-01-19T16:27:20.974Z', "result": '2017-02-18T16:27:20.974Z'},
+            {"expr": '30 mo', "from": '2017-01-19T16:27:20.974Z', "result": '2019-07-08T16:27:20.974Z'},
+            {"expr": '-30 mo', "from": '2017-01-19T16:27:20.974Z', "result": '2014-08-03T16:27:20.974Z'},
+            {"expr": '1 year', "from": '2017-01-19T16:27:20.974Z', "result": '2018-01-19T16:27:20.974Z'}]
 
 
-examples = [{"expr":'1 hour',"from":'2017-01-19T16:27:20.974Z',"result":'2017-01-19T17:27:20.974Z'},{"expr":'3h',"from":'2017-01-19T16:27:20.974Z',"result":'2017-01-19T19:27:20.974Z'},{"expr":'1 hours',"from":'2017-01-19T16:27:20.974Z',"result":'2017-01-19T17:27:20.974Z'},{"expr":'-1 hour',"from":'2017-01-19T16:27:20.974Z',"result":'2017-01-19T15:27:20.974Z'},{"expr":'1 m',"from":'2017-01-19T16:27:20.974Z',"result":'2017-01-19T16:28:20.974Z'},{"expr":'1m',"from":'2017-01-19T16:27:20.974Z',"result":'2017-01-19T16:28:20.974Z'},{"expr":'12 min',"from":'2017-01-19T16:27:20.974Z',"result":'2017-01-19T16:39:20.974Z'},{"expr":'12min',"from":'2017-01-19T16:27:20.974Z',"result":'2017-01-19T16:39:20.974Z'},{"expr":'11m',"from":'2017-01-19T16:27:20.974Z',"result":'2017-01-19T16:38:20.974Z'},{"expr":'11 m',"from":'2017-01-19T16:27:20.974Z',"result":'2017-01-19T16:38:20.974Z'},{"expr":'1 day',"from":'2017-01-19T16:27:20.974Z',"result":'2017-01-20T16:27:20.974Z'},{"expr":'2 days',"from":'2017-01-19T16:27:20.974Z',"result":'2017-01-21T16:27:20.974Z'},{"expr":'1 second',"from":'2017-01-19T16:27:20.974Z',"result":'2017-01-19T16:27:21.974Z'},{"expr":'1 week',"from":'2017-01-19T16:27:20.974Z',"result":'2017-01-26T16:27:20.974Z'},{"expr":'1 month',"from":'2017-01-19T16:27:20.974Z',"result":'2017-02-18T16:27:20.974Z'},{"expr":'30 mo',"from":'2017-01-19T16:27:20.974Z',"result":'2019-07-08T16:27:20.974Z'},{"expr":'-30 mo',"from":'2017-01-19T16:27:20.974Z',"result":'2014-08-03T16:27:20.974Z'},{"expr":'1 year',"from":'2017-01-19T16:27:20.974Z',"result":'2018-01-19T16:27:20.974Z'},]
 def test_examples():
     for example in examples:
         from_ = dateutil.parser.parse(example['from'])
         res = dateutil.parser.parse(example['result'])
         assert subject.fromNow(example['expr'], from_) == res
-
 
 
 def assertScopeMatch(self, assumed, requiredScopeSets, expected):
@@ -289,8 +310,6 @@ def assertScopeMatch(self, assumed, requiredScopeSets, expected):
         self.assertScopeMatch(["foo:bar"], [], False)
 
 
-
-
 def test_not_expired():
     isExpired = subject.isExpired("""
           {
@@ -302,7 +321,7 @@ def test_not_expired():
             "signature":"HocA2IiCoGzjUQZbrbLSwKMXZSYWCu/hfMPCa/ovggQ="
           }
         """)
-    assert isExpired == False
+    assert isExpired is False
 
     def test_expired(self):
         # Warning we have to test with expiry: 0 as magic python spy thing
@@ -317,9 +336,7 @@ def test_not_expired():
                 "signature":"HocA2IiCoGzjUQZbrbLSwKMXZSYWCu/hfMPCa/ovggQ="
             }
             """)
-        assert isExpired == True
-
-
+        assert isExpired is True
 
 
 def clear_env(self):
@@ -339,36 +356,41 @@ def clear_env(self):
         os.environ['TASKCLUSTER_CLIENT_ID'] = 'me'
         os.environ['TASKCLUSTER_ACCESS_TOKEN'] = 'shave-and-a-haircut'
         os.environ['TASKCLUSTER_CERTIFICATE'] = '{"bits":2}'
-        assert subject.optionsFromEnvironment() == {    'rootUrl': 'https://tc.example.com',    'credentials': {    'clientId': 'me',    'accessToken': 'shave-and-a-haircut',    'certificate': '{"bits":2}',    },    }
+        assert subject.optionsFromEnvironment() == {'rootUrl': 'https://tc.example.com', 'credentials': {
+            'clientId': 'me', 'accessToken': 'shave-and-a-haircut', 'certificate': '{"bits":2}', }, }
 
     @mock.patch.dict(os.environ)
     def test_cred_only(self):
         os.environ['TASKCLUSTER_ACCESS_TOKEN'] = 'shave-and-a-haircut'
-        assert subject.optionsFromEnvironment() == {    'credentials': {    'accessToken': 'shave-and-a-haircut',    },    }
+        assert subject.optionsFromEnvironment() == {'credentials': {'accessToken': 'shave-and-a-haircut', }, }
 
     @mock.patch.dict(os.environ)
     def test_rooturl_only(self):
         os.environ['TASKCLUSTER_ROOT_URL'] = 'https://tc.example.com'
-        assert subject.optionsFromEnvironment() == {    'rootUrl': 'https://tc.example.com',    }
+        assert subject.optionsFromEnvironment() == {'rootUrl': 'https://tc.example.com', }
 
     @mock.patch.dict(os.environ)
     def test_default_rooturl(self):
         os.environ['TASKCLUSTER_CLIENT_ID'] = 'me'
         os.environ['TASKCLUSTER_ACCESS_TOKEN'] = 'shave-and-a-haircut'
         os.environ['TASKCLUSTER_CERTIFICATE'] = '{"bits":2}'
-        assert subject.optionsFromEnvironment({'rootUrl': 'https://other.example.com'}) == {    'rootUrl': 'https://other.example.com',    'credentials': {    'clientId': 'me',    'accessToken': 'shave-and-a-haircut',    'certificate': '{"bits":2}',    },    }
+        assert subject.optionsFromEnvironment({'rootUrl': 'https://other.example.com'}) == {
+            'rootUrl': 'https://other.example.com', 'credentials': {
+                'clientId': 'me', 'accessToken': 'shave-and-a-haircut', 'certificate': '{"bits":2}', }, }
 
     @mock.patch.dict(os.environ)
     def test_default_rooturl_overridden(self):
         os.environ['TASKCLUSTER_ROOT_URL'] = 'https://tc.example.com'
-        assert subject.optionsFromEnvironment({'rootUrl': 'https://other.example.com'}) ==    {'rootUrl': 'https://tc.example.com'}
+        assert subject.optionsFromEnvironment({'rootUrl': 'https://other.example.com'}) == {'rootUrl': 'https://tc.example.com'}
 
     @mock.patch.dict(os.environ)
     def test_default_creds(self):
         os.environ['TASKCLUSTER_ROOT_URL'] = 'https://tc.example.com'
         os.environ['TASKCLUSTER_ACCESS_TOKEN'] = 'shave-and-a-haircut'
         os.environ['TASKCLUSTER_CERTIFICATE'] = '{"bits":2}'
-        assert subject.optionsFromEnvironment({'credentials': {'clientId': 'them'}}) == {    'rootUrl': 'https://tc.example.com',    'credentials': {    'clientId': 'them',    'accessToken': 'shave-and-a-haircut',    'certificate': '{"bits":2}',    },    }
+        assert subject.optionsFromEnvironment({'credentials': {'clientId': 'them'}}) == {
+            'rootUrl': 'https://tc.example.com', 'credentials': {
+                'clientId': 'them', 'accessToken': 'shave-and-a-haircut', 'certificate': '{"bits":2}', }, }
 
     @mock.patch.dict(os.environ)
     def test_default_creds_overridden(self):
@@ -376,4 +398,6 @@ def clear_env(self):
         os.environ['TASKCLUSTER_CLIENT_ID'] = 'me'
         os.environ['TASKCLUSTER_ACCESS_TOKEN'] = 'shave-and-a-haircut'
         os.environ['TASKCLUSTER_CERTIFICATE'] = '{"bits":2}'
-        assert subject.optionsFromEnvironment({'credentials': {'clientId': 'them'}}) == {    'rootUrl': 'https://tc.example.com',    'credentials': {    'clientId': 'me',    'accessToken': 'shave-and-a-haircut',    'certificate': '{"bits":2}',    },    }
+        assert subject.optionsFromEnvironment({'credentials': {'clientId': 'them'}}) == {
+            'rootUrl': 'https://tc.example.com', 'credentials': {
+                'clientId': 'me', 'accessToken': 'shave-and-a-haircut', 'certificate': '{"bits":2}', }, }

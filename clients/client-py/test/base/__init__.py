@@ -1,6 +1,5 @@
 """ Basic and helper things for testing the Taskcluster Python client"""
 # -*- coding: utf-8 -*-
-import unittest
 import os
 import logging
 import time
@@ -17,7 +16,6 @@ log.setLevel(logging.DEBUG)
 log.addHandler(logging.NullHandler())
 if os.environ.get('DEBUG_TASKCLUSTER_CLIENT'):
     log.addHandler(logging.StreamHandler())
-
 
 
 def createApiRef(**kwargs):

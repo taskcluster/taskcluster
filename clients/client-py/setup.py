@@ -9,6 +9,7 @@ VERSION = '16.0.0'
 tests_require = [
     'pytest',
     'pytest-cov',   
+    'pytest-mock',
     'httmock',
     'mock',
     'setuptools-lint',
