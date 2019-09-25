@@ -6,7 +6,6 @@ defaults:
     playground: false
     # Delete expired entries in both the access token and authorization code tables
     authorizationCodeExpirationDelay: '- 10 minutes'
-    githubAccessTokenExpirationDelay: '- 10 minutes'
 
   monitoring:
     level: !env:optional LEVEL
