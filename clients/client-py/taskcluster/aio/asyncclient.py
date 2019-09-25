@@ -187,8 +187,8 @@ class AsyncBaseClient(BaseClient):
                     pass  # Ignore JSON errors in error messages
                 # Find error message
                 message = "Unknown Server Error"
-                if isinstance(data, dict):
-                    message = data.get('message')
+                if isinstance(data, dict) and 'message' in data:
+                    message = data['message']
                 else:
                     if status == 401:
                         message = "Authentication Error"
