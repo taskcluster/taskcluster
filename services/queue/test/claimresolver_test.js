@@ -8,11 +8,6 @@ const monitorManager = require('../src/monitor');
 const {LEVELS} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
-  suiteSetup(function() {
-    // See https://bugzilla.mozilla.org/show_bug.cgi?id=1579496
-    this.skip();
-  });
-
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPollingServices(mock, skipping);
   helper.withPulse(mock, skipping);
