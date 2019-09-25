@@ -84,7 +84,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       const strategy = getStrategy();
       await makeUser({ userId });
       const user = await strategy.userFromIdentity(`github/${userId}|taskcluster`);
-      assert.deepEqual(user.roles.sort(), ['github-team:team-1', 'github-team:team-3', 'github-org-admin:taskcluster', 'github-org-admin:neutrinojs'].sort());
+      assert.deepEqual(user.roles.sort(), ['github-team:neutrinojs/team-1', 'github-team:taskcluster/team-3', 'github-org-admin:taskcluster', 'github-org-admin:neutrinojs'].sort());
     });
 
     test('userFromIdentity user with empty roles', async function() {

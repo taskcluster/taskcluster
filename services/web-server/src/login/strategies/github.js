@@ -82,7 +82,7 @@ module.exports = class Github {
     }
 
     const roles = [
-      ...teams.map(({ slug: team }) => `github-team:${team}`),
+      ...teams.map(({ slug: team, organization }) => `github-team:${organization.login}/${team}`),
       ...userMembershipsOrgs
         .filter(({ role }) => role === 'admin')
         .map(({ organization }) => `github-org-admin:${organization.login}`),

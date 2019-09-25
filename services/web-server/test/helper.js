@@ -99,12 +99,12 @@ exports.githubFixtures = {
   },
   teams: {
     'octocat': [
-      { slug: 'team-1' },
-      { slug: 'team-2' },
+      { slug: 'team-1', organization: { login: 'taskcluster'} },
+      { slug: 'team-2', organization: { login: 'neutrinojs'} },
     ],
     'taskcluster': [
-      { slug: 'team-3' },
-      { slug: 'team-1' },
+      { slug: 'team-3', organization: { login: 'taskcluster'} },
+      { slug: 'team-1', organization: { login: 'neutrinojs'} },
     ],
     'a/c': [],
   },
