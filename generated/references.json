@@ -7881,21 +7881,22 @@
           "version": 1
         },
         {
-          "description": "The simple estimator has decided that we need some number of instances.",
+          "description": "The simple estimator has decided that we need some amount of capacity.",
           "fields": {
-            "capacityPerInstance": "Amount of capacity a single instance provides",
-            "desiredSize": "Number that this estimator thinks we should have",
+            "desiredCapacity": "Amount of capacity the estimator believes is needed",
             "maxCapacity": "The maximum amount of capacity that should be running",
             "minCapacity": "The minimum amount of capacity that should be running",
+            "pendingCapacity": "Amount of capacity the provider believes is coming online currently",
             "pendingTasks": "The number of tasks the queue reports are pending for this worker pool",
-            "running": "Number of currently requested and running instances",
+            "requestingCapacity": "Amount of capacity the estimator is asking the provider to add",
+            "runningCapacity": "Amount of capacity the provider believes exists currently",
             "workerPoolId": "The worker pool name (provisionerId/workerType)"
           },
           "level": "notice",
           "name": "simpleEstimate",
           "title": "Simple Estimate Provided",
           "type": "simple-estimate",
-          "version": 1
+          "version": 2
         },
         {
           "description": "An error was reported regarding the given worker pool.  Such errors are generally\nthe responsibility of the owner of the worker pool, but may also indicate issues\nwith the Taskcluster deployment and as such are reported in the service logs as\nwell.  Note that the 'extra' data associated with such a report is not included\nhere.  To see that, use the UI or API to view the worker pool errors directly.",
