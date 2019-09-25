@@ -5,11 +5,6 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
-  suiteSetup(function() {
-    // See https://bugzilla.mozilla.org/show_bug.cgi?id=1579496
-    this.skip();
-  });
-
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withS3(mock, skipping);
