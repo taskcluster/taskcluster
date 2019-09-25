@@ -16,4 +16,7 @@ Since the numeric GitHub `userid` cannot be changed, and no user can impersonate
 
 ## User Scopes
 
-This login strategy currently provides no additional scopes for users.
+This login strategy adds the following scopes to each user:
+
+* `assume:github-team:<organization>/<team>` for each team across all of the organizations
+* `assume:github-org-admin:<organization>` for each organization the authenticated user has the admin permission role
