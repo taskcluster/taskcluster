@@ -440,9 +440,7 @@ export default class ClientForm extends Component {
                   disabled ? this.handleEnableClient : this.handleDisableClient
                 }
                 tooltipTitle={disabled ? 'Enable' : 'Disable'}
-                classes={{
-                  button: disabled ? classes.enableIcon : classes.disableIcon,
-                }}
+                className = {disabled ? classes.enableIcon : classes.disableIcon}
                 ButtonProps={{
                   disabled: loading,
                 }}
