@@ -584,6 +584,16 @@ export default class TaskGroup extends Component {
     }
   };
 
+  shouldIgnoreError(error) {
+    if (!error) {
+      return true;
+    }
+
+    // Outside Firefox CI, quite often we can have a
+    // task group without a decision task.
+    return /does not correspond to a task that exists/.test(error.message);
+  }
+
   render() {
     const {
       groupActions,
@@ -615,6 +625,7 @@ export default class TaskGroup extends Component {
         : true;
     const notificationsCount = Object.values(notifyPreferences).filter(Boolean)
       .length;
+    const shouldIgnoreError = error && this.shouldIgnoreError(error);
 
     this.subscribe({ taskGroupId, subscribeToMore });
 
@@ -633,7 +644,9 @@ export default class TaskGroup extends Component {
             defaultValue={taskGroupId}
           />
         }>
-        <ErrorPanel fixed error={error} warning={Boolean(taskGroup)} />
+        {!shouldIgnoreError && (
+          <ErrorPanel fixed error={error} warning={Boolean(taskGroup)} />
+        )}
         {taskGroup && (
           <TaskGroupProgress
             taskGroupId={taskGroupId}
