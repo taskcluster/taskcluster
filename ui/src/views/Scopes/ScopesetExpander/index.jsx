@@ -71,7 +71,7 @@ export default class ScopesetExpander extends Component {
           />
           {scopes && (
             <Query query={scopesetQuery} variables={{ scopes }}>
-              {({ loading, error, data: { expandScopes } }) => (
+              {({ loading, error, data }) => (
                 <Fragment>
                   <ErrorPanel error={error} />
                   <List dense>
@@ -80,8 +80,9 @@ export default class ScopesetExpander extends Component {
                         <Spinner />
                       </ListItem>
                     )}
-                    {expandScopes &&
-                      expandScopes.map(scope => (
+                    {data &&
+                      data.expandScopes &&
+                      data.expandScopes.map(scope => (
                         <ListItem
                           key={scope}
                           button
