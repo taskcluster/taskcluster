@@ -30,9 +30,18 @@ tasks:
           - push
     scopes:
       - generic-worker:cache:generic-worker-checkout
+      - secrets:get:repo:github.com/taskcluster/generic-worker
     payload:
+      features:
+        taskclusterProxy: true
       maxRunTime: 3600
       command:
+        - >-
+          C:\cygwin\bin\wget.exe -q -O-
+          %TASKCLUSTER_PROXY_URL%/secrets/v1/secret/repo:github.com/taskcluster/generic-worker
+          | C:\cygwin\bin\sed.exe -n 's/.*"b64_encoded_credentials_batch_script":
+          "\(.*\)".*/\1/p' | C:\cygwin\bin\base64.exe -d > tc-creds.bat
+        - call tc-creds.bat 2>&1
         - set CGO_ENABLED=0
         - set GOPATH=%CD%\gopath1.10.8
         - set GOROOT=%CD%\go1.10.8\go
@@ -68,8 +77,9 @@ tasks:
         - go install -tags multiuser -v -ldflags "-X main.revision=%revision%" ./...
         - set CGO_ENABLED=1
         - set GORACE=history_size=7
-        - C:\generic-worker\generic-worker-test-creds.cmd
         - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
+        # We must set here since this worker does not have a Z: drive
+        - set GW_SKIP_Z_DRIVE_TESTS=true
         - 'go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
         - set GW_TESTS_RUN_AS_CURRENT_USER=true
         - 'go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
@@ -114,7 +124,10 @@ tasks:
           - push
     scopes:
       - generic-worker:cache:generic-worker-checkout
+      - secrets:get:repo:github.com/taskcluster/generic-worker
     payload:
+      features:
+        taskclusterProxy: true
       maxRunTime: 3600
       env:
         # Python 2 is needed for TestDesktopResizeAndMovePointer
@@ -122,6 +135,13 @@ tasks:
         # System32 is needed for e.g. cmd.exe, icacls.exe, ...
         PATH: C:\Windows\System32;C:\Windows\System32\WindowsPowerShell\v1.0;C:\mozilla-build\python
       command:
+        - >-
+          C:\mozilla-build\wget\wget.exe -q -O-
+          %TASKCLUSTER_PROXY_URL%/secrets/v1/secret/repo:github.com/taskcluster/generic-worker
+          | C:\mozilla-build\msys\bin\sed.exe -n
+          's/.*"b64_encoded_credentials_batch_script": "\(.*\)".*/\1/p' > tc-creds.bat.b64
+        - certutil -decode tc-creds.bat.b64 tc-creds.bat
+        - call tc-creds.bat 2>&1
         - set CGO_ENABLED=0
         - set GOPATH=%CD%\gopath1.10.8
         - set GOROOT=%CD%\go1.10.8\go
@@ -146,9 +166,8 @@ tasks:
         - set revision={{ event.head.sha }}
         - go install -tags multiuser -v -ldflags "-X main.revision=%revision%" ./...
         - set GORACE=history_size=7
-        - C:\generic-worker\generic-worker-test-creds.cmd
         - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
-        # This env var is not set on Windows Server 2012 R2 CI tasks; we must set here since this worker type runs tasks from Z: drive
+        # We must set here since this worker type runs tasks from Z: drive
         - set GW_SKIP_Z_DRIVE_TESTS=true
         - 'go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v ./...'
         - set GW_TESTS_RUN_AS_CURRENT_USER=true
@@ -194,9 +213,19 @@ tasks:
           - push
     scopes:
       - generic-worker:cache:generic-worker-checkout
+      - secrets:get:repo:github.com/taskcluster/generic-worker
     payload:
+      features:
+        taskclusterProxy: true
       maxRunTime: 3600
       command:
+        - >-
+          C:\mozilla-build\bin\wget.exe -q -O-
+          %TASKCLUSTER_PROXY_URL%/secrets/v1/secret/repo:github.com/taskcluster/generic-worker
+          | C:\mozilla-build\msys\bin\sed.exe -n
+          's/.*"b64_encoded_credentials_batch_script": "\(.*\)".*/\1/p' > tc-creds.bat.b64
+        - certutil -decode tc-creds.bat.b64 tc-creds.bat
+        - call tc-creds.bat 2>&1
         - set CGO_ENABLED=0
         - set GOPATH=%CD%\gopath1.10.8
         - set GOROOT=%CD%\go1.10.8\go
@@ -232,9 +261,8 @@ tasks:
         - go install -tags multiuser -v -ldflags "-X main.revision=%revision%" ./...
         - set CGO_ENABLED=1
         - set GORACE=history_size=7
-        - C:\generic-worker\generic-worker-test-creds.cmd
         - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
-        # This env var is not set on Windows Server 2012 R2 CI tasks; we must set here since this worker type runs tasks from Z: drive
+        # We must set here since this worker type runs tasks from Z: drive
         - set GW_SKIP_Z_DRIVE_TESTS=true
         - 'go test -tags multiuser -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
         - set GW_TESTS_RUN_AS_CURRENT_USER=true
@@ -280,10 +308,12 @@ tasks:
           - push
     scopes:
       - generic-worker:cache:generic-worker-checkout
+      - secrets:get:repo:github.com/taskcluster/generic-worker
     payload:
+      features:
+        taskclusterProxy: true
       maxRunTime: 3600
       env:
-        GW_CREDS_BOOTSTRAP: /Users/genericworker/generic-worker/gw_private_env.sh
       command:
         - - /bin/bash
           - -vxec
@@ -294,7 +324,8 @@ tasks:
             export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
             go version
             go env
-            source "${GW_CREDS_BOOTSTRAP}"
+            curl -s "${TASKCLUSTER_PROXY_URL}/secrets/v1/secret/repo:github.com/taskcluster/generic-worker" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -D > tc-creds.sh
+            source tc-creds.sh
             mkdir -p "${GOPATH}/src/github.com/taskcluster"
             cd "${GOPATH}/src/github.com/taskcluster"
             if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
@@ -349,10 +380,12 @@ tasks:
           - push
     scopes:
       - generic-worker:cache:generic-worker-checkout
+      - secrets:get:repo:github.com/taskcluster/generic-worker
     payload:
+      features:
+        taskclusterProxy: true
       maxRunTime: 3600
       env:
-        GW_CREDS_BOOTSTRAP: /Users/genericworker/generic-worker/gw_private_env.sh
       command:
         - - /bin/bash
           - -vxec
@@ -363,7 +396,8 @@ tasks:
             export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
             go version
             go env
-            source "${GW_CREDS_BOOTSTRAP}"
+            curl -s "${TASKCLUSTER_PROXY_URL}/secrets/v1/secret/repo:github.com/taskcluster/generic-worker" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -D > tc-creds.sh
+            source tc-creds.sh
             mkdir -p "${GOPATH}/src/github.com/taskcluster"
             cd "${GOPATH}/src/github.com/taskcluster"
             if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
@@ -428,7 +462,10 @@ tasks:
   #         - push
   #   scopes:
   #     - generic-worker:cache:generic-worker-checkout
+  #     - secrets:get:repo:github.com/taskcluster/generic-worker
   #   payload:
+  #     features:
+  #       taskclusterProxy: true
   #     maxRunTime: 3600
   #     command:
   #       - - /bin/bash
@@ -441,7 +478,8 @@ tasks:
   #           export CGO_ENABLED=0
   #           go version
   #           go env
-  #           source "${GW_CREDS_BOOTSTRAP}"
+  #           curl -s "${TASKCLUSTER_PROXY_URL}/secrets/v1/secret/repo:github.com/taskcluster/generic-worker" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -d > tc-creds.sh
+  #           source tc-creds.sh
   #           mkdir -p "${GOPATH}/src/github.com/taskcluster"
   #           cd "${GOPATH}/src/github.com/taskcluster"
   #           if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
@@ -511,8 +549,8 @@ tasks:
             export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
             go version
             go env
-            curl -s "${TASKCLUSTER_PROXY_URL}/secrets/v1/secret/repo:github.com/taskcluster/generic-worker" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -d > ~/env_private.sh
-            source ~/env_private.sh
+            curl -s "${TASKCLUSTER_PROXY_URL}/secrets/v1/secret/repo:github.com/taskcluster/generic-worker" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -d > tc-creds.sh
+            source tc-creds.sh
             mkdir -p "${GOPATH}/src/github.com/taskcluster"
             cd "${GOPATH}/src/github.com/taskcluster"
             if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
@@ -586,8 +624,8 @@ tasks:
             export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
             go version
             go env
-            wget -q -O- "${TASKCLUSTER_PROXY_URL}/secrets/v1/secret/repo:github.com/taskcluster/generic-worker" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -d > ~/env_private.sh
-            source ~/env_private.sh
+            wget -q -O- "${TASKCLUSTER_PROXY_URL}/secrets/v1/secret/repo:github.com/taskcluster/generic-worker" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -d > tc-creds.sh
+            source tc-creds.sh
             mkdir -p "${GOPATH}/src/github.com/taskcluster"
             cd "${GOPATH}/src/github.com/taskcluster"
             if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
@@ -657,8 +695,8 @@ tasks:
             export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
             go version
             go env
-            wget -q -O- "${TASKCLUSTER_PROXY_URL}/secrets/v1/secret/repo:github.com/taskcluster/generic-worker" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -d > ~/env_private.sh
-            source ~/env_private.sh
+            wget -q -O- "${TASKCLUSTER_PROXY_URL}/secrets/v1/secret/repo:github.com/taskcluster/generic-worker" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -d > tc-creds.sh
+            source tc-creds.sh
             mkdir -p "${GOPATH}/src/github.com/taskcluster"
             cd "${GOPATH}/src/github.com/taskcluster"
             if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
