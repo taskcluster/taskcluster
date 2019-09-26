@@ -434,15 +434,14 @@ export default class ClientForm extends Component {
                 ButtonProps={{ disabled: loading }}
               />
               <SpeedDialAction
+                requiresAuth
                 tooltipOpen
                 icon={disabled ? <PowerIcon /> : <CancelIcon />}
                 onClick={
                   disabled ? this.handleEnableClient : this.handleDisableClient
                 }
                 tooltipTitle={disabled ? 'Enable' : 'Disable'}
-                classes={{
-                  button: disabled ? classes.enableIcon : classes.disableIcon,
-                }}
+                className={disabled ? classes.enableIcon : classes.disableIcon}
                 ButtonProps={{
                   disabled: loading,
                 }}
