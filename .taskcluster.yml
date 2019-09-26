@@ -731,43 +731,6 @@ tasks:
 
 
   ##########################################################
-  ###################### Docs Upload #######################
-  ##########################################################
-
-  - provisionerId: aws-provisioner-v1
-    workerType: github-worker
-    extra:
-      github:
-        events:
-          - push
-        branches:
-          - master
-    scopes:
-      - auth:aws-s3:read-write:taskcluster-raw-docs/generic-worker/
-    payload:
-      maxRunTime: 3600
-      image: taskcluster/upload-project-docs:latest
-      features:
-        taskclusterProxy:
-          true
-      command:
-        - /bin/bash
-        - '--login'
-        - '-cxe'
-        - |
-          git clone {{event.head.repo.url}} repo
-          cd repo
-          git checkout -b "X${TASK_ID}" '{{event.head.sha}}'
-          export DOCS_PROJECT=generic-worker DOCS_TIER=workers DOCS_FOLDER=docs DOCS_README=README.md
-          upload-project-docs
-    metadata:
-      name: "Publish generic-worker docs to https://docs.taskcluster.net/reference/workers/generic-worker"
-      description: "Upload generic-worker documentation to taskcluster [docs site](https://docs.taskcluster.net/reference/workers/generic-worker)."
-      owner: '{{ event.head.user.email }}'
-      source: '{{ event.head.repo.url }}'
-
-
-  ##########################################################
   ############## Check vendored dependencies ###############
   ##########################################################
 
