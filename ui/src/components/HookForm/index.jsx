@@ -11,7 +11,6 @@ import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import TextField from '@material-ui/core/TextField';
 import Switch from '@material-ui/core/Switch';
 import FormGroup from '@material-ui/core/FormGroup';
@@ -78,17 +77,7 @@ const initialHook = {
     bottom: theme.spacing.double,
     right: theme.spacing.unit * 11,
   },
-  editorListItem: {
-    paddingTop: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'start',
-    '&> :last-child': {
-      marginTop: theme.spacing.unit,
-    },
-  },
   iconButton: {
-    marginRight: -14,
     '& svg': {
       fill: theme.palette.text.primary,
     },
@@ -137,6 +126,33 @@ const initialHook = {
     [theme.breakpoints.down('sm')]: {
       width: '90vw',
     },
+  },
+  hookDescriptionListItem: {
+    marginTop: theme.spacing.unit,
+    marginBottom: theme.spacing.triple,
+  },
+  scheduleContainer: {
+    paddingRight: theme.spacing.double,
+    display: 'flex',
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  scheduleTextField: {
+    paddingRight: theme.spacing.double,
+  },
+  scheduleListItem: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+  },
+  taskTemplateListItem: {
+    marginBottom: theme.spacing.double,
+  },
+  ownerEmailListItem: {
+    display: 'block',
+    marginTop: theme.spacing.triple,
+  },
+  hookGroupAndIdDiv: {
+    display: 'flex',
   },
 }))
 /** A form to view/edit/create a hook */
@@ -536,47 +552,31 @@ export default class HookForm extends Component {
     return (
       <Fragment>
         <List>
-          {isNewHook && (
-            <Fragment>
-              <ListItem>
-                <TextField
-                  required
-                  label="Hook Group ID"
-                  name="hookGroupId"
-                  onChange={this.handleHookGroupIdChange}
-                  fullWidth
-                  autoFocus
-                  value={hook.hookGroupId}
-                />
-              </ListItem>
-              <ListItem>
-                <TextField
-                  required
-                  label="Hook ID"
-                  name="hookId"
-                  onChange={this.handleHookIdChange}
-                  fullWidth
-                  value={hook.hookId}
-                />
-              </ListItem>
-            </Fragment>
-          )}
-          {!isNewHook && (
-            <Fragment>
-              <ListItem>
-                <ListItemText
-                  primary="Hook Group ID"
-                  secondary={<code>{hook.hookGroupId}</code>}
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Hook ID"
-                  secondary={<code>{hook.hookId}</code>}
-                />
-              </ListItem>
-            </Fragment>
-          )}
+          <div className={classes.hookGroupAndIdDiv}>
+            <ListItem>
+              <TextField
+                required
+                label="Hook Group ID"
+                name="hookGroupId"
+                onChange={this.handleHookGroupIdChange}
+                fullWidth
+                autoFocus
+                disabled={!isNewHook}
+                value={hook.hookGroupId}
+              />
+            </ListItem>
+            <ListItem>
+              <TextField
+                disabled={!isNewHook}
+                required
+                label="Hook ID"
+                name="hookId"
+                onChange={this.handleHookIdChange}
+                fullWidth
+                value={hook.hookId}
+              />
+            </ListItem>
+          </div>
           <ListItem>
             <TextField
               required
@@ -587,7 +587,7 @@ export default class HookForm extends Component {
               value={hook.metadata.name}
             />
           </ListItem>
-          <ListItem>
+          <ListItem className={classes.ownerEmailListItem}>
             <TextField
               error={validation.owner.error}
               required
@@ -599,8 +599,6 @@ export default class HookForm extends Component {
               fullWidth
               value={hook.metadata.owner}
             />
-          </ListItem>
-          <ListItem>
             <FormGroup row>
               <FormControlLabel
                 control={
@@ -609,17 +607,60 @@ export default class HookForm extends Component {
                     onChange={this.handleEmailOnErrorChange}
                   />
                 }
-                label="Email on Error"
+                label="Email on error"
               />
             </FormGroup>
           </ListItem>
-          <ListItem>
+          <ListItem className={classes.hookDescriptionListItem}>
             <MarkdownTextArea
               onChange={this.handleDescriptionChange}
               value={hook.metadata.description}
               placeholder="Hook description (markdown)"
               defaultTabIndex={isNewHook ? 0 : 1}
             />
+          </ListItem>
+          <ListItem className={classes.scheduleListItem}>
+            <div className={classes.scheduleContainer}>
+              <TextField
+                className={classes.scheduleTextField}
+                label="Schedule"
+                helperText={
+                  <span>
+                    See{' '}
+                    <a
+                      href="https://www.npmjs.com/package/cron-parser"
+                      target="_blank"
+                      rel="noopener noreferrer">
+                      cron-parser
+                    </a>{' '}
+                    for format information. Times are in UTC.
+                  </span>
+                }
+                name="scheduleTextField"
+                placeholder="* * * * * *"
+                fullWidth
+                onChange={this.handleScheduleChange}
+                value={scheduleTextField}
+              />
+              <IconButton
+                className={classes.iconButton}
+                onClick={this.handleNewCronJob}>
+                <PlusIcon />
+              </IconButton>
+            </div>
+            <List>
+              {hook.schedule.map(cronJob => (
+                <ListItem className={classes.scheduleEntry} key={cronJob}>
+                  <ListItemText primary={<code>{cronJob}</code>} />
+                  <IconButton
+                    className={classes.iconButton}
+                    name={cronJob}
+                    onClick={this.handleDeleteCronJob}>
+                    <DeleteIcon />
+                  </IconButton>
+                </ListItem>
+              ))}
+            </List>
           </ListItem>
           {!isNewHook && (
             <Fragment>
@@ -658,120 +699,93 @@ export default class HookForm extends Component {
               </ListItem>
             </Fragment>
           )}
-          <PulseBindings
-            bindings={hook.bindings}
-            onBindingAdd={this.handleAddBinding}
-            onBindingRemove={this.handleDeleteBinding}
-            onRoutingKeyPatternChange={this.handleRoutingKeyPatternChange}
-            onPulseExchangeChange={this.handlePulseExchangeChange}
-            pulseExchange={pulseExchange}
-            pattern={routingKeyPattern}
-          />
-          <List
-            subheader={
-              <ListSubheader className={classes.subheader}>
-                Schedule
-              </ListSubheader>
-            }>
-            <ListItem>
-              <ListItemText
-                primary={
-                  <TextField
-                    helperText={
-                      <span>
-                        See{' '}
+          <ListItem>
+            <ListItemText
+              disableTypography
+              primary={<Typography variant="subtitle1">Bindings</Typography>}
+              secondary={
+                <PulseBindings
+                  bindings={hook.bindings}
+                  onBindingAdd={this.handleAddBinding}
+                  onBindingRemove={this.handleDeleteBinding}
+                  onRoutingKeyPatternChange={this.handleRoutingKeyPatternChange}
+                  onPulseExchangeChange={this.handlePulseExchangeChange}
+                  pulseExchange={pulseExchange}
+                  pattern={routingKeyPattern}
+                />
+              }
+            />
+          </ListItem>
+          <ListItem className={classes.taskTemplateListItem}>
+            <ListItemText
+              disableTypography
+              primary={
+                <Typography variant="subtitle1">Task Template *</Typography>
+              }
+              secondary={
+                <Fragment>
+                  <Typography
+                    gutterBottom
+                    color="textSecondary"
+                    variant="caption">
+                    <span>
+                      When the hook fires, this template is rendered with{' '}
+                      <a
+                        href="https://taskcluster.github.io/json-e/"
+                        target="_blank"
+                        rel="noopener noreferrer">
+                        JSON-e
+                      </a>{' '}
+                      to create the the task definition. See{' '}
+                      {
                         <a
-                          href="https://www.npmjs.com/package/cron-parser"
                           target="_blank"
-                          rel="noopener noreferrer">
-                          cron-parser
-                        </a>{' '}
-                        for format information. Times are in UTC.
-                      </span>
-                    }
-                    name="scheduleTextField"
-                    placeholder="* * * * * *"
-                    fullWidth
-                    onChange={this.handleScheduleChange}
-                    value={scheduleTextField}
+                          rel="noopener noreferrer"
+                          href={docs(
+                            window.env.TASKCLUSTER_ROOT_URL,
+                            'reference/core/hooks/firing-hooks'
+                          )}>
+                          {'"'}
+                          firing hooks
+                          {'"'}
+                        </a>
+                      }{' '}
+                      for more information.
+                    </span>
+                  </Typography>
+                  <CodeEditor
+                    lint
+                    value={taskInput}
+                    onChange={this.handleTaskChange}
                   />
-                }
-              />
-              <IconButton
-                className={classes.iconButton}
-                onClick={this.handleNewCronJob}>
-                <PlusIcon />
-              </IconButton>
-            </ListItem>
-            {hook.schedule.map(cronJob => (
-              <ListItem className={classes.scheduleEntry} key={cronJob}>
-                <ListItemText primary={<code>{cronJob}</code>} />
-                <IconButton
-                  className={classes.iconButton}
-                  name={cronJob}
-                  onClick={this.handleDeleteCronJob}>
-                  <DeleteIcon />
-                </IconButton>
-              </ListItem>
-            ))}
-          </List>
-          <List
-            subheader={
-              <ListSubheader className={classes.subheader}>
-                Task Template *
-              </ListSubheader>
-            }>
-            <ListItem className={classes.editorListItem}>
-              <Typography variant="caption">
-                <span>
-                  When the hook fires, this template is rendered with{' '}
-                  <a
-                    href="https://taskcluster.github.io/json-e/"
-                    target="_blank"
-                    rel="noopener noreferrer">
-                    JSON-e
-                  </a>{' '}
-                  to create the the task definition. See{' '}
-                  {
-                    <a
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      href={docs(
-                        window.env.TASKCLUSTER_ROOT_URL,
-                        'reference/core/hooks/firing-hooks'
-                      )}>
-                      {'"'}
-                      firing hooks
-                      {'"'}
-                    </a>
-                  }{' '}
-                  for more information.
-                </span>
-              </Typography>
-              <CodeEditor
-                lint
-                value={taskInput}
-                onChange={this.handleTaskChange}
-              />
-            </ListItem>
-          </List>
-          <List
-            subheader={
-              <ListSubheader className={classes.subheader}>
-                Trigger Schema *
-              </ListSubheader>
-            }>
-            <ListItem className={classes.editorListItem}>
-              <Typography variant="caption">
-                The payload to <code>triggerHook</code> must match this schema.
-              </Typography>
-              <CodeEditor
-                value={triggerSchemaInput}
-                lint
-                onChange={this.handleTriggerSchemaChange}
-              />
-            </ListItem>
-          </List>
+                </Fragment>
+              }
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemText
+              disableTypography
+              primary={
+                <Typography variant="subtitle1">Trigger Schema *</Typography>
+              }
+              secondary={
+                <Fragment>
+                  <Typography
+                    gutterBottom
+                    color="textSecondary"
+                    variant="caption">
+                    The payload to <code>triggerHook</code> must match this
+                    schema.
+                  </Typography>
+                  <CodeEditor
+                    lint
+                    value={triggerSchemaInput}
+                    onChange={this.handleTriggerSchemaChange}
+                  />
+                </Fragment>
+              }
+            />
+          </ListItem>
         </List>
         {isNewHook ? (
           <Button
