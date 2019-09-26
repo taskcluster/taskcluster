@@ -229,7 +229,8 @@ class GoogleProvider extends Provider {
       // The lost entropy from downcasing, etc should be ok due to the fact that
       // only running instances need not be identical. We do not use this name to identify
       // workers in taskcluster.
-      const instanceName = `${workerPoolId.replace(/\//g, '-')}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
+      const poolName = workerPoolId.replace(/\//g, '-').slice(0, 38);
+      const instanceName = `${poolName}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
 
       let op;
 
