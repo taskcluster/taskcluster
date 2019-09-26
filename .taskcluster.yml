@@ -734,8 +734,8 @@ tasks:
   ############## Check vendored dependencies ###############
   ##########################################################
 
-  - provisionerId: aws-provisioner-v1
-    workerType: github-worker
+  - provisionerId: pmoore-test
+    workerType: gwci-linux
     metadata:
       name: "Run 'dep check' to ensure dependencies are up to date"
       description: "Run 'dep check' to ensure dependencies are up to date"
@@ -749,30 +749,36 @@ tasks:
           - pull_request.synchronize
           - push
     scopes:
-      - secrets:get:repo:github.com/taskcluster/generic-worker
-      - docker-worker:cache:generic-worker-checkout
+      - generic-worker:cache:generic-worker-checkout
     payload:
-      features:
-        taskclusterProxy: true
       maxRunTime: 3600
-      image: golang:1.10
       command:
-        - /bin/bash
-        - -vxec
-        - |
-          export CGO_ENABLED=0
-          go version
-          go env
-          curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-          mkdir -p "${GOPATH}/src/github.com/taskcluster"
-          cd "${GOPATH}/src/github.com/taskcluster"
-          if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
-          cd 'generic-worker'
-          git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/X${TASK_ID}"
-          git checkout -f "X${TASK_ID}"
-          git reset --hard '{{ event.head.sha }}'
-          git clean -fdx
-          git checkout -B tmp -t "X${TASK_ID}"
-          dep check
-      cache:
-        generic-worker-checkout: /go/src
+        - - /bin/bash
+          - -vxec
+          - |
+            export CGO_ENABLED=0
+            export GOROOT="$(pwd)/go1.10.8/go"
+            export GOPATH="$(pwd)/gopath1.10.8"
+            export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
+            go version
+            go env
+            mkdir -p "${GOPATH}/src/github.com/taskcluster"
+            cd "${GOPATH}/src/github.com/taskcluster"
+            if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
+            cd 'generic-worker'
+            git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/X${TASK_ID}"
+            git checkout -f "X${TASK_ID}"
+            git reset --hard '{{ event.head.sha }}'
+            git clean -fdx
+            git checkout -B tmp -t "X${TASK_ID}"
+            mkdir -p "${GOPATH}/bin"
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            dep check
+      mounts:
+#       - cacheName: generic-worker-checkout
+#         directory: gopath1.10.8/src
+        - content:
+            url: https://storage.googleapis.com/golang/go1.10.8.linux-amd64.tar.gz
+            sha256: d8626fb6f9a3ab397d88c483b576be41fa81eefcec2fd18562c87626dbb3c39e
+          directory: go1.10.8
+          format: tar.gz
