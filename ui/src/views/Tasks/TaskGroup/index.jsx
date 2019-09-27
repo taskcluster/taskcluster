@@ -589,9 +589,13 @@ export default class TaskGroup extends Component {
       return true;
     }
 
-    // Outside Firefox CI, quite often we can have a
-    // task group without a decision task.
-    return /does not correspond to a task that exists/.test(error.message);
+    // Task groups do not necessarily have a decision task,
+    // so handle task-not-found errors gracefully
+    return (
+      error.graphQLErrors &&
+      error.graphQLErrors[0].statusCode === 404 &&
+      error.graphQLErrors[0].requestInfo.method === 'task'
+    );
   }
 
   render() {
