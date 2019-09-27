@@ -38,12 +38,16 @@ class AwsProvider extends Provider {
   async provision({workerPool}) {
     const {workerPoolId} = workerPool;
 
-    if (!workerPool.providerData[this.providerId] || workerPool.providerData[this.providerId].running === undefined) {
-      await workerPool.modify(wt => {
-        wt.providerData[this.providerId] = wt.providerData[this.providerId] || {};
-        wt.providerData[this.providerId].running = wt.providerData[this.providerId].running || 0;
-      });
+    let providerData = workerPool.providerData[this.providerId] || {};
+
+    // Migrate old workerpools to new config
+    if (typeof providerData.running === 'number') {
+      providerData.running = {count: providerData.running, time: new Date()};
     }
+
+    providerData.running = providerData.running || {count: 0, time: new Date()};
+    providerData.pending = providerData.pending || {count: 0, time: new Date()};
+    providerData.requested = providerData.requested || {count: 0, time: new Date()};
 
     const config = this.chooseConfig({possibleConfigs: workerPool.config.launchConfigs});
 
@@ -52,16 +56,25 @@ class AwsProvider extends Provider {
       region: config.region,
     });
 
-    const toSpawn = await this.estimator.simple({
+    const pendingCapacity = providerData.pending.time >= providerData.requested.time
+      ? providerData.pending.count
+      : providerData.pending.count + providerData.requested.count;
+
+    const toSpawn = Math.ceil((await this.estimator.simple({
       workerPoolId,
-      minCapacity: config.minCapacity,
-      maxCapacity: config.maxCapacity,
-      capacityPerInstance: config.capacityPerInstance,
-      running: workerPool.providerData[this.providerId].running,
-    });
+      minCapacity: workerPool.config.minCapacity,
+      maxCapacity: workerPool.config.maxCapacity,
+      runningCapacity: providerData.running.count,
+      pendingCapacity,
+    })) / config.capacityPerInstance);
     if (toSpawn === 0) {
       return;
     }
+
+    // We keep adding up here until we get an authoratative answer then reset
+    providerData.requested.count = providerData.requested.count + toSpawn;
+    providerData.requested.time = new Date();
+    await workerPool.modify(wp => wp.providerData[this.providerId] = providerData);
 
     const userData = Buffer.from(JSON.stringify({
       rootUrl: this.rootUrl,
@@ -156,6 +169,7 @@ class AwsProvider extends Provider {
           owner: spawned.OwnerId,
           state: i.State.Name,
           stateReason: i.StateReason.Message,
+          instanceCapacity: workerPool.config.capacityPerInstance,
         },
       });
     }));

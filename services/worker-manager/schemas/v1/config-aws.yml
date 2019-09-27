@@ -13,7 +13,9 @@ properties:
         region:
           title: Region
           type: string
-          description: AWS region (not to be confused with AZ) to launch the instances in
+          description: |
+            AWS region (not to be confused with AZ) to launch this config in
+            https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions
         launchConfig:
           title: Launch Configuration
           type: object
@@ -39,22 +41,22 @@ properties:
           type: integer
           minimum: 1
           description: The number of tasks a single worker of this type can run at any given time.
-        minCapacity:
-          title: Minimum Capacity
-          type: integer
-          description: Minimum capacity necessary to maintain at any given time
-        maxCapacity:
-          title: Maximum Capacity
-          type: integer
-          description: Maximum capacity that should not be exceeded at any given time
       additionalProperties: false
       required:
         - region
         - launchConfig
         - capacityPerInstance
-        - minCapacity
-        - maxCapacity
+  minCapacity:
+    title: Minimum Capacity
+    type: integer
+    description: Minimum capacity necessary to maintain at any given time (for the entire workerpool)
+  maxCapacity:
+    title: Maximum Capacity
+    type: integer
+    description: Maximum capacity that should not be exceeded at any given time (for the entire workerpool)
 additionalProperties: false
 required:
   - launchConfigs
+  - minCapacity
+  - maxCapacity
   
