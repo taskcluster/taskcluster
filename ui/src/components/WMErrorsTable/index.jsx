@@ -65,7 +65,7 @@ export default class WorkerManagerErrorsTable extends Component {
     onPageChange: func.isRequired,
     searchTerm: string,
     errorsConnection: shape({
-      edges: arrayOf(shape({node: WMError.isRequred}).isRequired).isRequired,
+      edges: arrayOf(shape({ node: WMError.isRequred }).isRequired).isRequired,
       pageInfo: pageInfo.isRequired,
     }).isRequired,
   };
@@ -221,7 +221,7 @@ export default class WorkerManagerErrorsTable extends Component {
           anchor="right"
           open={Boolean(drawerError)}
           onClose={this.handleDrawerClose}
-          classes={{paper: classes.drawerPaper}}>
+          classes={{ paper: classes.drawerPaper }}>
           {drawerError && (
             <Fragment>
               <IconButton
@@ -235,7 +235,10 @@ export default class WorkerManagerErrorsTable extends Component {
                 </Typography>
                 <List>
                   <ListItem>
-                    <ListItemText primary="Title" secondary={drawerError.title} />
+                    <ListItemText
+                      primary="Title"
+                      secondary={drawerError.title}
+                    />
                   </ListItem>
                   <ListItem>
                     <ListItemText
@@ -256,7 +259,9 @@ export default class WorkerManagerErrorsTable extends Component {
                         component: 'div',
                       }}
                       secondary={
-                        <Code language="json">{JSON.stringify(drawerError.extra, null, 2)}</Code>
+                        <Code language="json">
+                          {JSON.stringify(drawerError.extra, null, 2)}
+                        </Code>
                       }
                     />
                   </ListItem>
