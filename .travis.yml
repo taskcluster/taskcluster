@@ -24,12 +24,13 @@ script:
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || go generate"
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || git status"
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || test $(git status --porcelain | wc -l) == 0"
-  - "test $GIMME_OS.$GIMME_ARCH.$engine != linux.amd64.simple || GORACE=history_size=7 travis_wait 60 ./gotestcover.sh $engine coverage.report"
-  - "go install -tags \"${engine}\" -ldflags \"-X main.revision=$(git rev-parse HEAD)\" -v ./..."
+  - 'test $GIMME_OS.$GIMME_ARCH.$engine != linux.amd64.simple || test -z "${TASKCLUSTER_ACCESS_TOKEN}" || GORACE=history_size=7 travis_wait 60 ./gotestcover.sh $engine coverage.report'
+  - 'test $GIMME_OS.$GIMME_ARCH.$engine != linux.amd64.simple || test -n "${TASKCLUSTER_ACCESS_TOKEN}" || CGO_ENABLED=1 GW_SKIP_INTEGRATION_TESTS=true GORACE=history_size=7 go test -tags "${engine}" -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race -timeout 1m'
+  - 'go install -tags "${engine}" -ldflags "-X main.revision=$(git rev-parse HEAD)" -v ./...'
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || ${GOPATH}/bin/ineffassign ."
 
 after_script:
-  - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || ${GOPATH}/bin/goveralls -coverprofile=coverage.report -service=travis-ci"
+  - "test '!' -f coverage.report || ${GOPATH}/bin/goveralls -coverprofile=coverage.report -service=travis-ci"
 
 before_deploy:
   - "source .travis_rename_releases.sh"
