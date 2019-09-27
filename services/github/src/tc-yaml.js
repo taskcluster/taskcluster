@@ -150,7 +150,7 @@ class VersionZero extends TcYaml {
 
     // Add common taskGroupId and schedulerId. taskGroupId is always the taskId of the first
     // task in taskcluster.
-    if (config.tasks.length > 0) {
+    if (config.tasks && config.tasks.length > 0) {
       let taskGroupId = config.tasks[0].taskId;
       config.tasks = config.tasks.map((task) => {
         return {
@@ -234,7 +234,7 @@ class VersionOne extends TcYaml {
   }
 
   compileTasks(config, cfg, payload, now) {
-    if (config.tasks.length > 0) {
+    if (config.tasks && config.tasks.length > 0) {
       // default taskGroupId and taskId
       // - if only one task, make these match (making the task appear to be a decision task)
       // - if two or more tasks, make them different (so that the taskgroup has no decision task)
