@@ -855,18 +855,8 @@
                 "title": "Launch Configuration",
                 "type": "object"
               },
-              "maxCapacity": {
-                "description": "Maximum capacity that should not be exceeded at any given time",
-                "title": "Maximum Capacity",
-                "type": "integer"
-              },
-              "minCapacity": {
-                "description": "Minimum capacity necessary to maintain at any given time",
-                "title": "Minimum Capacity",
-                "type": "integer"
-              },
               "region": {
-                "description": "AWS region (not to be confused with AZ) to launch the instances in",
+                "description": "AWS region (not to be confused with AZ) to launch this config in\nhttps://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions\n",
                 "title": "Region",
                 "type": "string"
               }
@@ -874,19 +864,29 @@
             "required": [
               "region",
               "launchConfig",
-              "capacityPerInstance",
-              "minCapacity",
-              "maxCapacity"
+              "capacityPerInstance"
             ],
             "type": "object"
           },
           "title": "Launch Configurations",
           "type": "array",
           "uniqueItems": true
+        },
+        "maxCapacity": {
+          "description": "Maximum capacity that should not be exceeded at any given time (for the entire workerpool)",
+          "title": "Maximum Capacity",
+          "type": "integer"
+        },
+        "minCapacity": {
+          "description": "Minimum capacity necessary to maintain at any given time (for the entire workerpool)",
+          "title": "Minimum Capacity",
+          "type": "integer"
         }
       },
       "required": [
-        "launchConfigs"
+        "launchConfigs",
+        "minCapacity",
+        "maxCapacity"
       ],
       "title": "AWS Provider Config",
       "type": "object"
