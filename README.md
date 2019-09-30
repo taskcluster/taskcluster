@@ -833,6 +833,11 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v16.2.0 since v16.1.0
+========================
+
+* [Bug 1536780 - generic-worker: Support contentEncoding artifact property in task payload](https://bugzil.la/1536780)
+
 In v16.1.0 since v16.0.0
 ========================
 
