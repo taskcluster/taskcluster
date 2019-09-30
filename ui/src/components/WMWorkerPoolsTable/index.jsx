@@ -10,6 +10,7 @@ import IconButton from '@material-ui/core/IconButton';
 import LinkIcon from 'mdi-react/LinkIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import WorkerIcon from 'mdi-react/WorkerIcon';
+import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import { withRouter } from 'react-router-dom';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case';
@@ -32,10 +33,10 @@ import { splitWorkerPoolId } from '../../utils/workerPool';
     marginRight: theme.spacing.unit,
     borderRadius: 4,
   },
-  workerIcon: {
+  linksIcon: {
     marginRight: theme.spacing.unit,
   },
-  viewWorkersButton: {
+  linksButton: {
     marginRight: theme.spacing.triple,
   },
 }))
@@ -184,29 +185,37 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         </TableCell>
 
         <TableCell>
+          <Button
+            className={classes.linksButton}
+            variant="outlined"
+            component={Link}
+            to={`/provisioners/${encodeURIComponent(
+              provisionerId
+            )}/worker-types/${encodeURIComponent(workerType)}`}
+            disabled={actionLoading}
+            size="small">
+            <WorkerIcon className={classes.linksIcon} size={iconSize} />
+            View Workers
+          </Button>
+          <Button
+            className={classes.linksButton}
+            variant="outlined"
+            component={Link}
+            to={`${path}/${encodeURIComponent(workerPool.workerPoolId)}/errors`}
+            disabled={actionLoading}
+            size="small">
+            <MessageAlertIcon className={classes.linksIcon} size={iconSize} />
+            View Errors
+          </Button>
           {workerPool.providerId !== NULL_PROVIDER ? (
-            <Fragment>
-              <Button
-                className={classes.viewWorkersButton}
-                variant="outlined"
-                component={Link}
-                to={`/provisioners/${encodeURIComponent(
-                  provisionerId
-                )}/worker-types/${encodeURIComponent(workerType)}`}
-                disabled={actionLoading}
-                size="small">
-                <WorkerIcon className={classes.workerIcon} size={iconSize} />
-                View Workers
-              </Button>
-              <IconButton
-                title="Delete Worker Pool ID"
-                className={classes.button}
-                name={`${workerPool.workerPoolId}`}
-                onClick={this.handleDeleteClick}
-                disabled={actionLoading}>
-                <DeleteIcon size={iconSize} />
-              </IconButton>
-            </Fragment>
+            <IconButton
+              title="Delete Worker Pool ID"
+              className={classes.button}
+              name={`${workerPool.workerPoolId}`}
+              onClick={this.handleDeleteClick}
+              disabled={actionLoading}>
+              <DeleteIcon size={iconSize} />
+            </IconButton>
           ) : (
             <Label mini status="warning" className={classes.button}>
               Scheduled for deletion
