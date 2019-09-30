@@ -14,6 +14,7 @@ export default class WorkerManager extends Client {
     this.listProviders.entry = {"args":[],"category":"Worker Manager","method":"get","name":"listProviders","output":true,"query":["continuationToken","limit"],"route":"/providers","stability":"stable","type":"function"}; // eslint-disable-line
     this.createWorkerPool.entry = {"args":["workerPoolId"],"category":"Worker Manager","input":true,"method":"put","name":"createWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":{"AllOf":["worker-manager:manage-worker-pool:<workerPoolId>","worker-manager:provider:<providerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.updateWorkerPool.entry = {"args":["workerPoolId"],"category":"Worker Manager","input":true,"method":"post","name":"updateWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":{"AllOf":["worker-manager:manage-worker-pool:<workerPoolId>","worker-manager:provider:<providerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
+    this.deleteWorkerPool.entry = {"args":["workerPoolId"],"category":"Worker Manager","method":"delete","name":"deleteWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":"worker-manager:manage-worker-pool:<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.workerPool.entry = {"args":["workerPoolId"],"category":"Worker Manager","method":"get","name":"workerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkerPools.entry = {"args":[],"category":"Worker Manager","method":"get","name":"listWorkerPools","output":true,"query":["continuationToken","limit"],"route":"/worker-pools","stability":"experimental","type":"function"}; // eslint-disable-line
     this.reportWorkerError.entry = {"args":["workerPoolId"],"category":"Worker Manager","input":true,"method":"post","name":"reportWorkerError","output":true,"query":[],"route":"/worker-pool-errors/<workerPoolId>","scopes":{"AllOf":["assume:worker-pool:<workerPoolId>","assume:worker-id:<workerGroup>/<workerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
@@ -62,6 +63,16 @@ export default class WorkerManager extends Client {
     this.validate(this.updateWorkerPool.entry, args);
 
     return this.request(this.updateWorkerPool.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Mark a worker pool for deletion.  This is the same as updating the pool to
+  // set its providerId to `"null-provider"`, but does not require scope
+  // `worker-manager:provider:null-provider`.
+  /* eslint-enable max-len */
+  deleteWorkerPool(...args) {
+    this.validate(this.deleteWorkerPool.entry, args);
+
+    return this.request(this.deleteWorkerPool.entry, args);
   }
   /* eslint-disable max-len */
   // Fetch an existing worker pool defition.

@@ -190,6 +190,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       owner: 'example@example.com',
       emailOnError: false,
     });
+    const wp = await helper.workerManager.workerPool('pp/oo');
+    assert.equal(wp.providerId, 'null-provider');
+  });
+
+  test('delete worker pool', async function() {
+    await helper.workerManager.createWorkerPool('pp/oo', {
+      providerId: 'testing1',
+      description: 'e',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    });
+    await helper.workerManager.deleteWorkerPool('pp/oo');
+    const wp = await helper.workerManager.workerPool('pp/oo');
+    assert.equal(wp.providerId, 'null-provider');
   });
 
   test('create worker pool (already exists)', async function() {

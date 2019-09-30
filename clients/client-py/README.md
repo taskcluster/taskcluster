@@ -4390,6 +4390,28 @@ await asyncWorkerManager.updateWorkerPool(workerPoolId, payload) # -> result
 await asyncWorkerManager.updateWorkerPool(payload, workerPoolId='value') # -> result
 ```
 
+#### Delete Worker Pool
+Mark a worker pool for deletion.  This is the same as updating the pool to
+set its providerId to `"null-provider"`, but does not require scope
+`worker-manager:provider:null-provider`.
+
+
+
+Takes the following arguments:
+
+  * `workerPoolId`
+
+Has required output schema
+
+```python
+# Sync calls
+workerManager.deleteWorkerPool(workerPoolId) # -> result
+workerManager.deleteWorkerPool(workerPoolId='value') # -> result
+# Async call
+await asyncWorkerManager.deleteWorkerPool(workerPoolId) # -> result
+await asyncWorkerManager.deleteWorkerPool(workerPoolId='value') # -> result
+```
+
 #### Get Worker Pool
 Fetch an existing worker pool defition.
 
