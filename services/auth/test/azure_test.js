@@ -9,11 +9,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure', 'gcp'], function(
   if (mock) {
     return; // We only test this with real creds
   }
+  helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withRoles(mock, skipping);
   helper.withServers(mock, skipping);
-  helper.withCfg(mock, skipping);
 
   let testaccount;
   suiteSetup('get azure test account name', async function() {

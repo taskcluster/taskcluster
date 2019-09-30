@@ -22,6 +22,15 @@ const actions = [
       if (!config.meta || !config.meta.deploymentPrefix) {
         throw new Error('Must have configured dev-config.yml to deploy.');
       }
+
+      if (config.auth && config.auth.static_clients) {
+        if (config.auth.static_clients.some(({clientId, scopes}) => clientId.startsWith('static/taskcluster/') && scopes)) {
+          throw new Error('`static/taskcluster/..` clients in auth.static_clients in `dev-config.yml` should not contain scopes');
+        }
+        if (config.auth.static_clients.some(({clientId, scopes}) => !clientId.startsWith('static/taskcluster/') && !scopes)) {
+          throw new Error('non-taskcluster static clients in auth.static_clients in `dev-config.yml` should scopes');
+        }
+      }
       return {'dev-config': config};
     },
   },
@@ -58,7 +67,7 @@ const actions = [
       if (requirements['helm-version'] === 2) {
         command.push('-n');
       }
-      command = command.concat(['taskcluster', '-f', './dev-config.yml', 'infrastructure/k8s']);
+      command = command.concat(['taskcluster', '-f', 'dev-config.yml', 'infrastructure/k8s']);
       return {
         'target-templates': await execCommand({
           command,

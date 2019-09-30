@@ -1,0 +1,9 @@
+# NOTE: ${azureAccountId} will be substituted with the azure account at runtime
+- assume:repo:github.com/*
+- assume:scheduler-id:taskcluster-github/*
+- auth:azure-table-access:${azureAccountId}/TaskclusterGithubBuilds
+- auth:azure-table-access:${azureAccountId}/TaskclusterIntegrationOwners
+- auth:azure-table:read-write:${azureAccountId}/TaskclusterGithubBuilds
+- auth:azure-table:read-write:${azureAccountId}/TaskclusterIntegrationOwners
+- auth:azure-table:read-write:${azureAccountId}/TaskclusterChecksToTasks
+- auth:azure-table:read-write:${azureAccountId}/TaskclusterCheckRuns

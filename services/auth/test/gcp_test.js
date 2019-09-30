@@ -4,12 +4,12 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp', 'azure'], function(mock, skipping) {
+  helper.withCfg(mock, skipping);
   helper.withGcp(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withRoles(mock, skipping);
   helper.withServers(mock, skipping);
-  helper.withCfg(mock, skipping);
 
   test('gcpCredentials invalid account', async () => {
     try {

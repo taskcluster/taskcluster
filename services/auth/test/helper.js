@@ -9,6 +9,7 @@ const slugid = require('slugid');
 const uuid = require('uuid');
 const Builder = require('taskcluster-lib-api');
 const SchemaSet = require('taskcluster-lib-validate');
+const staticScopes = require('../src/static-scopes.json');
 const {stickyLoader, Secrets, withEntity, withPulse, withMonitor} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
@@ -24,6 +25,7 @@ suiteSetup(async function() {
 
 exports.rootUrl = `http://localhost:60552`;
 exports.containerName = `auth-test-${uuid.v4()}`;
+exports.rootAccessToken = '-test-access-token-that-is-at-least-22-chars-long-';
 
 withMonitor(exports);
 
@@ -62,6 +64,13 @@ exports.withCfg = (mock, skipping) => {
   }
   suiteSetup(async function() {
     exports.cfg = await exports.load('cfg');
+
+    // override app.staticClients based on the static scopes
+    exports.load.cfg('app.staticClients', staticScopes.map(({clientId}) => ({
+      clientId,
+      accessToken: clientId === 'static/taskcluster/root' ? exports.rootAccessToken : 'must-be-at-least-22-characters',
+      description: 'testing',
+    })));
   });
 };
 
@@ -242,7 +251,6 @@ exports.withServers = (mock, skipping) => {
     await exports.load('cfg');
 
     exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
-    exports.rootAccessToken = '-test-access-token-that-is-at-least-22-chars-long-';
 
     // First set up the auth service
     exports.AuthClient = taskcluster.createClient(builder.reference());
@@ -407,6 +415,7 @@ exports.withGcp = (mock, skipping) => {
       };
     } else {
       const {credentials, allowedServiceAccounts} = await exports.load('gcp');
+      console.log(credentials);
       exports.gcpAccount = {
         email: allowedServiceAccounts[0],
         project_id: credentials.project_id,

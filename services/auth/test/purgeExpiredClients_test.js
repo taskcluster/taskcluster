@@ -4,11 +4,11 @@ const taskcluster = require('taskcluster-client');
 const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure', 'gcp'], function(mock, skipping) {
+  helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withRoles(mock, skipping);
   helper.withServers(mock, skipping);
-  helper.withCfg(mock, skipping);
 
   const CLIENT_ID = 'nobody/sds:ad_asd/df-sAdSfchsdfsdfs';
 

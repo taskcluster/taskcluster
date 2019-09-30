@@ -1585,13 +1585,35 @@
             },
             "name": "pulse",
             "next": {
-              "path": "manual/deploying/third-party",
-              "title": "Third Party"
+              "path": "manual/deploying/static-clients",
+              "title": "static-clients"
             },
             "path": "manual/deploying/pulse",
             "prev": {
               "path": "manual/deploying/monitoring",
               "title": "Monitoring Services"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "static-clients"
+            },
+            "name": "static-clients",
+            "next": {
+              "path": "manual/deploying/third-party",
+              "title": "Third Party"
+            },
+            "path": "manual/deploying/static-clients",
+            "prev": {
+              "path": "manual/deploying/pulse",
+              "title": "Pulse"
             },
             "up": {
               "path": "manual/deploying",
@@ -1612,8 +1634,8 @@
             },
             "path": "manual/deploying/third-party",
             "prev": {
-              "path": "manual/deploying/pulse",
-              "title": "Pulse"
+              "path": "manual/deploying/static-clients",
+              "title": "static-clients"
             },
             "up": {
               "path": "manual/deploying",
