@@ -45,6 +45,7 @@ import { pageInfo, WMError } from '../../utils/prop-types';
     textOverflow: 'ellipsis',
     overflow: 'hidden',
     maxWidth: '80vw',
+    whiteSpace: 'nowrap',
   },
   metadataContainer: {
     paddingTop: theme.spacing.double,
