@@ -127,6 +127,39 @@ properties:
             See [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).
 
             Since: generic-worker 10.4.0
+        contentEncoding:
+          title: Content-Encoding header when serving artifact over HTTP.
+          type: string
+          enum:
+            - identity
+            - gzip
+          description: |-
+            Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the
+            following file extensions, where `identity` will be used, since they are already
+            compressed:
+
+            * jpg
+            * jpeg
+            * png
+            * gif
+            * webp
+            * 7z
+            * zip
+            * gz
+            * tgz
+            * bz2
+            * tbz
+            * whl
+            * xz
+            * swf
+            * flv
+            * woff
+            * woff2
+
+            Note, setting `contentEncoding` on a directory artifact will apply the same content
+            encoding to all the files contained in the directory.
+
+            Since: generic-worker 16.2.0
       required:
       - type
       - path

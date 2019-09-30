@@ -72,7 +72,7 @@ func TestEnvVarsMustBeStrings(t *testing.T) {
     "GITHUB_BASE_BRANCH": "master"
   },
   "maxRunTime": 1200,
-  `+rawHelloGoodbye()+`
+  "command": [`+ rawHelloGoodbye() +`]
 }`))
 }
 
@@ -84,7 +84,7 @@ func TestExtraFieldsNotAllowed(t *testing.T) {
   },
   "maxRunTime": 3,
   "extraField": "This field is not allowed!",
-  `+rawHelloGoodbye()+`
+  "command": [`+ rawHelloGoodbye() +`]
 }`))
 }
 
@@ -106,7 +106,7 @@ func TestValidPayload(t *testing.T) {
     "XPI_NAME": "dist/example_add-on-0.0.1.zip"
   },
   "maxRunTime": 3,
-  `+rawHelloGoodbye()+`
+  "command": [`+ rawHelloGoodbye() +`]
 }`))
 }
 
@@ -129,7 +129,7 @@ func TestArtifactExpiresBeforeDeadline(t *testing.T) {
     "XPI_NAME": "dist/example_add-on-0.0.1.zip"
   },
   "maxRunTime": 3,
-  ` + rawHelloGoodbye() + `,
+  "command": [`+ rawHelloGoodbye() +`],
   "artifacts": [
     {
       "type": "file",
@@ -151,7 +151,7 @@ func TestArtifactExpiresWithDeadline(t *testing.T) {
     "XPI_NAME": "dist/example_add-on-0.0.1.zip"
   },
   "maxRunTime": 3,
-  ` + rawHelloGoodbye() + `,
+  "command": [`+ rawHelloGoodbye() +`],
   "artifacts": [
     {
       "type": "file",
@@ -173,7 +173,7 @@ func TestArtifactExpiresBetweenDeadlineAndTaskExpiry(t *testing.T) {
     "XPI_NAME": "dist/example_add-on-0.0.1.zip"
   },
   "maxRunTime": 3,
-  ` + rawHelloGoodbye() + `,
+  "command": [`+ rawHelloGoodbye() +`],
   "artifacts": [
     {
       "type": "file",
@@ -195,7 +195,7 @@ func TestArtifactExpiresWithTask(t *testing.T) {
     "XPI_NAME": "dist/example_add-on-0.0.1.zip"
   },
   "maxRunTime": 3,
-  ` + rawHelloGoodbye() + `,
+  "command": [`+ rawHelloGoodbye() +`],
   "artifacts": [
     {
       "type": "file",
@@ -217,7 +217,7 @@ func TestArtifactExpiresAfterTaskExpiry(t *testing.T) {
     "XPI_NAME": "dist/example_add-on-0.0.1.zip"
   },
   "maxRunTime": 3,
-  ` + rawHelloGoodbye() + `,
+  "command": [`+ rawHelloGoodbye() +`],
   "artifacts": [
     {
       "type": "file",
@@ -237,7 +237,7 @@ func TestInvalidPayload(t *testing.T) {
 	td := testTask(t)
 	td.Payload = json.RawMessage(`
 {
-  ` + rawHelloGoodbye() + `,
+  "command": [`+ rawHelloGoodbye() +`],
   "maxRunTime": 60,
   "mounts": [
     {

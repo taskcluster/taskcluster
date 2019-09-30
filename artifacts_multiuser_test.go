@@ -118,7 +118,7 @@ func TestChainOfTrustUpload(t *testing.T) {
 		"SampleArtifacts/b/c/d.jpg": {
 			Extracts:        []string{},
 			ContentType:     "image/jpeg",
-			ContentEncoding: "", // jpg files are blacklisted against gzip compression
+			ContentEncoding: "identity", // jpg files are blacklisted against gzip compression
 			Expires:         payload.Artifacts[0].Expires,
 		},
 	}

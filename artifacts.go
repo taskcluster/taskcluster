@@ -172,43 +172,6 @@ func (s3Artifact *S3Artifact) CreateTempFileForPUTBody() string {
 	return tmpFile.Name()
 }
 
-func (s3Artifact *S3Artifact) ChooseContentEncoding() {
-	// respect value, if already set
-	if s3Artifact.ContentEncoding != "" {
-		return
-	}
-	// based on https://github.com/evansd/whitenoise/blob/03f6ea846394e01cbfe0c730141b81eb8dd6e88a/whitenoise/compress.py#L21-L29
-	// with .7z added (useful for NSS)
-	SkipCompressionExtensions := map[string]bool{
-		// Images
-		".jpg":  true,
-		".jpeg": true,
-		".png":  true,
-		".gif":  true,
-		".webp": true,
-		// Compressed files
-		".7z":  true,
-		".zip": true,
-		".gz":  true,
-		".tgz": true,
-		".bz2": true,
-		".tbz": true,
-		".whl": true, // Python wheel are already zip file
-		".xz":  true,
-		// Flash
-		".swf": true,
-		".flv": true,
-		// Fonts
-		".woff":  true,
-		".woff2": true,
-	}
-	if SkipCompressionExtensions[filepath.Ext(s3Artifact.Path)] {
-		return
-	}
-
-	s3Artifact.ContentEncoding = "gzip"
-}
-
 func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, task *TaskRun) (err error) {
 	response := resp.(*tcqueue.S3ArtifactResponse)
 
@@ -311,9 +274,9 @@ func (task *TaskRun) PayloadArtifacts() []TaskArtifact {
 		}
 		switch artifact.Type {
 		case "file":
-			artifacts = append(artifacts, resolve(base, "file", basePath, artifact.ContentType))
+			artifacts = append(artifacts, resolve(base, "file", basePath, artifact.ContentType, artifact.ContentEncoding))
 		case "directory":
-			if errArtifact := resolve(base, "directory", basePath, artifact.ContentType); errArtifact != nil {
+			if errArtifact := resolve(base, "directory", basePath, artifact.ContentType, artifact.ContentEncoding); errArtifact != nil {
 				artifacts = append(artifacts, errArtifact)
 				continue
 			}
@@ -338,11 +301,11 @@ func (task *TaskRun) PayloadArtifacts() []TaskArtifact {
 				}
 				switch {
 				case info.IsDir():
-					if errArtifact := resolve(b, "directory", subPath, artifact.ContentType); errArtifact != nil {
+					if errArtifact := resolve(b, "directory", subPath, artifact.ContentType, artifact.ContentEncoding); errArtifact != nil {
 						artifacts = append(artifacts, errArtifact)
 					}
 				default:
-					artifacts = append(artifacts, resolve(b, "file", subPath, artifact.ContentType))
+					artifacts = append(artifacts, resolve(b, "file", subPath, artifact.ContentType, artifact.ContentEncoding))
 				}
 				return nil
 			}
@@ -361,7 +324,7 @@ func (task *TaskRun) PayloadArtifacts() []TaskArtifact {
 // ErrorArtifact, otherwise if it exists as a file, as
 // "invalid-resource-on-worker" ErrorArtifact
 // TODO: need to also handle "too-large-file-on-worker"
-func resolve(base *BaseArtifact, artifactType string, path string, contentType string) TaskArtifact {
+func resolve(base *BaseArtifact, artifactType string, path string, contentType string, contentEncoding string) TaskArtifact {
 	fullPath := filepath.Join(taskContext.TaskDir, path)
 	fileReader, err := os.Open(fullPath)
 	if err != nil {
@@ -418,12 +381,47 @@ func resolve(base *BaseArtifact, artifactType string, path string, contentType s
 			contentType = "application/octet-stream"
 		}
 	}
+	// Is content encoding specified in task payload?
+	if contentEncoding == "" {
+		extension := filepath.Ext(path)
+		// based on https://github.com/evansd/whitenoise/blob/03f6ea846394e01cbfe0c730141b81eb8dd6e88a/whitenoise/compress.py#L21-L29
+		// with .7z added (useful for NSS)
+		SkipCompressionExtensions := map[string]bool{
+			// Images
+			".jpg":  true,
+			".jpeg": true,
+			".png":  true,
+			".gif":  true,
+			".webp": true,
+			// Compressed files
+			".7z":  true,
+			".zip": true,
+			".gz":  true,
+			".tgz": true,
+			".bz2": true,
+			".tbz": true,
+			".whl": true, // Python wheel are already zip file
+			".xz":  true,
+			// Flash
+			".swf": true,
+			".flv": true,
+			// Fonts
+			".woff":  true,
+			".woff2": true,
+		}
+		// When the file extension is blacklisted in SkipCompressionExtensions then "identity" should be used, otherwise "gzip".
+		if SkipCompressionExtensions[extension] {
+			contentEncoding = "identity"
+		} else {
+			contentEncoding = "gzip"
+		}
+	}
 	s3Artifact := &S3Artifact{
 		BaseArtifact: base,
 		Path:         path,
 		ContentType:  contentType,
+		ContentEncoding: contentEncoding,
 	}
-	s3Artifact.ChooseContentEncoding()
 	return s3Artifact
 }
 

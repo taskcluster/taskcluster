@@ -13,6 +13,38 @@ import (
 type (
 	Artifact struct {
 
+		// Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the
+		// following file extensions, where `identity` will be used, since they are already
+		// compressed:
+		//
+		// * jpg
+		// * jpeg
+		// * png
+		// * gif
+		// * webp
+		// * 7z
+		// * zip
+		// * gz
+		// * tgz
+		// * bz2
+		// * tbz
+		// * whl
+		// * xz
+		// * swf
+		// * flv
+		// * woff
+		// * woff2
+		//
+		// Note, setting `contentEncoding` on a directory artifact will apply the same content
+		// encoding to all the files contained in the directory.
+		//
+		// Since: generic-worker 16.2.0
+		//
+		// Possible values:
+		//   * "identity"
+		//   * "gzip"
+		ContentEncoding string `json:"contentEncoding,omitempty"`
+
 		// Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)
 		// is/are served over HTTP(S). If not provided (this property is optional) the worker will
 		// guess the content type of artifacts based on the filename extension of the file storing
@@ -550,6 +582,15 @@ func taskPayloadSchema() string {
       "items": {
         "additionalProperties": false,
         "properties": {
+          "contentEncoding": {
+            "description": "Content-Encoding for the artifact. If not provided, ` + "`" + `gzip` + "`" + ` will be used, except for the\nfollowing file extensions, where ` + "`" + `identity` + "`" + ` will be used, since they are already\ncompressed:\n\n* jpg\n* jpeg\n* png\n* gif\n* webp\n* 7z\n* zip\n* gz\n* tgz\n* bz2\n* tbz\n* whl\n* xz\n* swf\n* flv\n* woff\n* woff2\n\nNote, setting ` + "`" + `contentEncoding` + "`" + ` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+            "enum": [
+              "identity",
+              "gzip"
+            ],
+            "title": "Content-Encoding header when serving artifact over HTTP.",
+            "type": "string"
+          },
           "contentType": {
             "description": "Explicitly set the value of the HTTP ` + "`" + `Content-Type` + "`" + ` response header when the artifact(s)\nis/are served over HTTP(S). If not provided (this property is optional) the worker will\nguess the content type of artifacts based on the filename extension of the file storing\nthe artifact content. It does this by looking at the system filename-to-mimetype mappings\ndefined in multiple ` + "`" + `mime.types` + "`" + ` files located under ` + "`" + `/etc` + "`" + `. Note, setting ` + "`" + `contentType` + "`" + `\non a directory artifact will apply the same contentType to all files contained in the\ndirectory.\n\nSee [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).\n\nSince: generic-worker 10.4.0",
             "title": "Content-Type header when serving artifact over HTTP",
