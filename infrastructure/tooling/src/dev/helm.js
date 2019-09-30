@@ -1,5 +1,12 @@
+const {promisify} = require('util');
 const {REPO_ROOT, readRepoYAML, execCommand} = require('../utils');
 const {TaskGraph} = require('console-taskgraph');
+const jsone = require('json-e');
+const temporary = require('temporary');
+const yaml = require('js-yaml');
+const fs = require('fs');
+
+const writeFile = promisify(fs.writeFile);
 
 const resourceTypes = [
   'cronjob',
@@ -22,7 +29,24 @@ const actions = [
       if (!config.meta || !config.meta.deploymentPrefix) {
         throw new Error('Must have configured dev-config.yml to deploy.');
       }
+
+      if (config.auth && config.auth.static_clients) {
+        if (config.auth.static_clients.some(({scopes}) => Boolean(scopes))) {
+          throw new Error('auth.static_clients in `dev-config.yml` should not contain scopes');
+        }
+      }
       return {'dev-config': config};
+    },
+  },
+  {
+    title: 'Get static clients',
+    requires: ['dev-config'],
+    provides: ['static-clients'],
+    run: async (requirements, utils) => {
+      const ymlFile = await readRepoYAML('infrastructure/tooling/static-clients.yml');
+      const config = requirements['dev-config'];
+      const staticClients = await jsone(ymlFile, {azureAccountId: config.azureAccountId || 'unknown'});
+      return {'static-clients': staticClients};
     },
   },
   {
@@ -51,22 +75,36 @@ const actions = [
   },
   {
     title: 'Generate k8s Resources',
-    requires: ['dev-config', 'helm-version'],
+    requires: ['dev-config', 'helm-version', 'static-clients'],
     provides: ['target-templates'],
     run: async (requirements, utils) => {
-      let command = ['helm', 'template'];
-      if (requirements['helm-version'] === 2) {
-        command.push('-n');
+      const tmpfile = new temporary.File();
+      try {
+        const config = requirements['dev-config'];
+        const staticClients = requirements['static-clients'];
+        ((config.auth || {}).static_clients || []).forEach(sc => {
+          const serviceName = sc.clientId.split('/')[2];
+          sc.scopes = staticClients[serviceName];
+        });
+
+        await writeFile(tmpfile.path, yaml.safeDump(config, {lineWidth: -1}));
+
+        let command = ['helm', 'template'];
+        if (requirements['helm-version'] === 2) {
+          command.push('-n');
+        }
+        command = command.concat(['taskcluster', '-f', tmpfile.path, 'infrastructure/k8s']);
+        return {
+          'target-templates': await execCommand({
+            command,
+            dir: REPO_ROOT,
+            keepAllOutput: true,
+            utils,
+          }),
+        };
+      } finally {
+        tmpfile.unlink();
       }
-      command = command.concat(['taskcluster', '-f', './dev-config.yml', 'infrastructure/k8s']);
-      return {
-        'target-templates': await execCommand({
-          command,
-          dir: REPO_ROOT,
-          keepAllOutput: true,
-          utils,
-        }),
-      };
     },
   },
   {
