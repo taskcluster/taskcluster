@@ -68,7 +68,7 @@ builder.declare({
   input: 'create-worker-pool-request.yml',
   output: 'worker-pool-full.yml',
   scopes: {AllOf: [
-    'worker-manager:create-worker-type:<workerPoolId>',
+    'worker-manager:manage-worker-pool:<workerPoolId>',
     'worker-manager:provider:<providerId>',
   ]},
   description: [
@@ -139,7 +139,7 @@ builder.declare({
   input: 'update-worker-pool-request.yml',
   output: 'worker-pool-full.yml',
   scopes: {AllOf: [
-    'worker-manager:update-worker-type:<workerPoolId>',
+    'worker-manager:manage-worker-pool:<workerPoolId>',
     'worker-manager:provider:<providerId>',
   ]},
   description: [
