@@ -42,6 +42,9 @@ import { pageInfo, WMError } from '../../utils/prop-types';
   headline: {
     paddingLeft: theme.spacing.triple,
     paddingRight: theme.spacing.triple,
+    textOverflow: 'ellipsis',
+    overflow: 'hidden',
+    maxWidth: '80vw',
   },
   metadataContainer: {
     paddingTop: theme.spacing.double,
@@ -170,7 +173,7 @@ export default class WorkerManagerErrorsTable extends Component {
             onClick={this.handleDrawerOpen}>
             <InformationVariantIcon size={iconSize} />
           </IconButton>
-          <Typography className={classes.errorDescription}>
+          <Typography className={classes.errorDescription} title={description}>
             {description}
           </Typography>
         </TableCell>
@@ -230,7 +233,7 @@ export default class WorkerManagerErrorsTable extends Component {
                 <CloseIcon />
               </IconButton>
               <div className={classes.metadataContainer}>
-                <Typography variant="h5" className={classes.headline}>
+                <Typography variant="h5" className={classes.headline} title={drawerError.errorId}>
                   {drawerError.errorId}
                 </Typography>
                 <List>

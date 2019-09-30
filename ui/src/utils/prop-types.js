@@ -181,11 +181,11 @@ export const workers = shape({
 });
 
 export const WMError = shape({
-  errorId: string.isRequired,
-  title: string.isRequired,
-  description: string.isRequired,
-  reported: date.isRequired,
-  extra: object.isRequired,
+  errorId: string,
+  title: string,
+  description: string,
+  reported: date,
+  extra: object,
 });
 
 export const WMWorker = shape({
