@@ -233,7 +233,10 @@ export default class WorkerManagerErrorsTable extends Component {
                 <CloseIcon />
               </IconButton>
               <div className={classes.metadataContainer}>
-                <Typography variant="h5" className={classes.headline} title={drawerError.errorId}>
+                <Typography
+                  variant="h5"
+                  className={classes.headline}
+                  title={drawerError.errorId}>
                   {drawerError.errorId}
                 </Typography>
                 <List>
