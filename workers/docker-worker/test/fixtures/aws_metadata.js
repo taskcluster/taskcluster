@@ -5,7 +5,7 @@ Stub for the aws metadata server.
 const koa = require('koa');
 const slugid = require('slugid');
 
-let app = koa();
+let app = new koa();
 
 const PREFIX = '/latest';
 const PROVISIONER_BASE_URL = 'https://taskcluster-aws-provisioner2.herokuapp.com/v1';

@@ -1,6 +1,5 @@
 var debug = require('debug')('docker-worker:volumeCacheManager');
 var path = require('path');
-var Promise = require('promise');
 var fs = require('fs');
 const {makeDir, removeDir} = require('./util/fs');
 var taskcluster = require('taskcluster-client');

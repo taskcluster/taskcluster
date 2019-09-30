@@ -2,13 +2,14 @@ const TaskListener = require('../src/lib/task_listener');
 const assert = require('assert');
 const nock = require('nock');
 const Debug = require('debug');
+const monitor = require('./fixtures/monitor');
 
 var fakeLog = Debug('fakeRuntime.log');
 
 suite('TaskListener.applySuperseding', function() {
   var listener;
   var claimTaskResponses;
-  var SUPERSEDER_URL = 'http://supersed.er/superkey';
+  var SUPERSEDER_URL = 'http://supersed.er/superkey/';
 
   class TestTaskListener extends TaskListener {
     constructor(runtime) {
@@ -29,12 +30,14 @@ suite('TaskListener.applySuperseding', function() {
         pollInterval: 1,
         expiration: 30000
       },
+      host: {
+        billingCycleUptime: () => 1,
+      },
       task: {
         dequeueCount: 5
       },
-      workerTypeMonitor: {
-        prefix: () => { }
-      },
+      monitor: monitor,
+      workerTypeMonitor: monitor,
       deviceManagement: {enabled: false},
       queue: {
         claimTask: async function(taskId, runId, claimConfig) {
@@ -93,14 +96,14 @@ suite('TaskListener.applySuperseding', function() {
     async function() {
       var task = makeTask(SUPERSEDER_URL);
       var claim = makeClaim('fakeTask', 1, task);
-      nock(SUPERSEDER_URL).get('?taskId=fakeTask')
+      nock(SUPERSEDER_URL).get('/?taskId=fakeTask')
         .reply(200, {'supersedes': []});
       assert.deepEqual(await listener.applySuperseding(claim), [claim]);
     });
 
   test('with a claim the superseder knows about claims those tasks too, ordering the claims according to the superseder',
     async function() {
-      nock(SUPERSEDER_URL) .get('?taskId=fakeTask')
+      nock(SUPERSEDER_URL) .get('/?taskId=fakeTask')
         .reply(200, {'supersedes': ['cTask1', 'fakeTask', 'cTask2']});
       claimTaskResponses['cTask1'] = {status: {taskId: 'cTask1'}, runId: 0};
       claimTaskResponses['cTask2'] = {status: {taskId: 'cTask2'}, runId: 0};
@@ -113,7 +116,7 @@ suite('TaskListener.applySuperseding', function() {
 
   test('when the superseder does not return the primary task, just yield the original claim',
     async function() {
-      nock(SUPERSEDER_URL) .get('?taskId=fakeTask')
+      nock(SUPERSEDER_URL) .get('/?taskId=fakeTask')
         .reply(200, {'supersedes': ['cTask1', 'cTask2']});
       var task = makeTask(SUPERSEDER_URL);
       var claim = makeClaim('fakeTask', 0, task);
@@ -124,7 +127,7 @@ suite('TaskListener.applySuperseding', function() {
   test('when the superseder times out, just yield the original claim',
     async function() {
       listener.coalescerTimeout = 100;
-      nock(SUPERSEDER_URL) .get('?taskId=fakeTask').delay(400)
+      nock(SUPERSEDER_URL) .get('/?taskId=fakeTask').delay(400)
         .reply(200, {'supersedes': []});
       var task = makeTask(SUPERSEDER_URL);
       var claim = makeClaim('fakeTask', 0, task);
@@ -133,7 +136,7 @@ suite('TaskListener.applySuperseding', function() {
 
   test('an error in claiming the secondary claim just omits it',
     async function() {
-      nock(SUPERSEDER_URL) .get('?taskId=fakeTask')
+      nock(SUPERSEDER_URL) .get('/?taskId=fakeTask')
         .reply(200, {'supersedes': ['cTask1', 'fakeTask', 'cTask2']});
       claimTaskResponses['cTask1'] = {status: {taskId: 'cTask1'}, runId: 0};
       var task = makeTask(SUPERSEDER_URL);

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -vx
 
 # First, make sure that cgroups are mounted correctly.
 CGROUP=/sys/fs/cgroup
@@ -76,11 +76,13 @@ popd >/dev/null
 # delete it so that docker can start.
 rm -rf /var/run/docker.pid
 
-docker daemon $DOCKER_DAEMON_ARGS &>/var/log/docker.log &
+docker version
+dockerd > /var/log/docker.log 2>&1 &
 (( timeout = 20 + SECONDS ))
 until docker info >/dev/null 2>&1
 do
     if (( SECONDS >= timeout )); then
+        cat /var/log/docker.log
         echo 'Timed out trying to connect to internal docker host.' >&2
         exit 1
     fi

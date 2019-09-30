@@ -7,6 +7,7 @@ var DockerProc = require('dockerode-process');
 var dockerUtils = require('dockerode-process/utils');
 var pipe = require('promisepipe');
 var Debug = require('debug');
+var taskcluster = require('taskcluster-client');
 
 const debug = Debug('dockerworker');
 
@@ -53,6 +54,7 @@ function eventPromise(listener, event) {
 
 class DockerWorker {
   constructor(provisionerId, workerType, workerId) {
+    taskcluster.config(taskcluster.fromEnvVars());
     this.provisionerId = provisionerId;
     this.workerType = workerType;
     this.workerId = workerId;

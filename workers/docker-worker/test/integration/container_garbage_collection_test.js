@@ -6,14 +6,11 @@ const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
 const waitForEvent = require('../../src/lib/wait_for_event');
 const assert = require('assert');
+const sleep = require('./helper/sleep');
 
 let docker = new Docker();
 
 suite('Container garbage collection tests', () => {
-
-  async function sleep(duration) {
-    return new Promise(accept => setTimeout(accept, duration));
-  }
 
   setup(() => {
     settings.cleanup();

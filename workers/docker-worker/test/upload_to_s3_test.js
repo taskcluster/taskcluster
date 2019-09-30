@@ -86,8 +86,8 @@ suite('upload to s3 test', function () {
       assert.equal(requestState, 2);
       assert.equal(DATA, fs.readFileSync(resultFile.path, 'utf8'));
     } finally {
-      tempFile.unlink();
-      resultFile.unlink();
+      tempFile.unlinkSync();
+      resultFile.unlinkSync();
     }
   });
 });

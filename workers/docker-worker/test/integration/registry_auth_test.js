@@ -152,7 +152,11 @@ suite('Docker custom private registry', () => {
 
     assert.equal(result.run.state, 'failed', 'auth download works');
     assert.equal(result.run.reasonResolved, 'failed', 'auth download works');
-    assert.ok(result.log.includes(`image ${REPO_IMAGE_NAME} not found`), 'authorization failed');
+    assert.ok(
+      result.log.includes(`image ${REPO_IMAGE_NAME} not found`)
+      || result.log.includes('unauthorized'),
+      'authorization failed'
+    );
 
     await worker.terminate();
   });

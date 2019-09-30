@@ -3,7 +3,7 @@ const dockerUtils = require('dockerode-process/utils');
 const path = require('path');
 const slugid = require('slugid');
 
-const sleep = require('../../../src/lib/util/sleep');
+const sleep = require('./sleep');
 const {removeImage} = require('../../../src/lib/util/remove_image');
 const pipe = require('promisepipe');
 

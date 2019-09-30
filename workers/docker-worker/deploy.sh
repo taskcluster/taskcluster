@@ -110,8 +110,8 @@ fi
 
 NODE_VERSION_MAJOR=$(node --version | tr -d v | awk -F. '{print $1}')
 NODE_VERSION_MINOR=$(node --version | tr -d v | awk -F. '{print $2}')
-if [ 0$NODE_VERSION_MAJOR -lt 8 -o 0$NODE_VERSION_MAJOR -eq 8 -a 0$NODE_VERSION_MINOR -lt 15 ]; then
-  echo "$0 requires node version 8.15.0 or higher." >&2
+if [ 0$NODE_VERSION_MAJOR -lt 12 -o 0$NODE_VERSION_MAJOR -eq 12 -a 0$NODE_VERSION_MINOR -lt 11 ]; then
+  echo "$0 requires node version 12.11.0 or higher." >&2
   exit 1
 fi
 

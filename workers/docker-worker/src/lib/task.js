@@ -18,7 +18,7 @@ const features = require('./features');
 const getHostname = require('./util/hostname');
 const { fmtLog, fmtErrorLog } = require('./log');
 const { hasPrefixedScopes } = require('./util/scopes');
-const { scopeMatch } = require('taskcluster-lib-scopes');
+const { scopeMatch } = require('./scopes');
 const { validatePayload } = require('./util/validate_schema');
 const waitForEvent = require('./wait_for_event');
 const uploadToS3 = require('./upload_to_s3');
@@ -73,6 +73,7 @@ function buildStateHandlers(task, monitor) {
   let featureFlags = task.payload.features || {};
 
   // performs a set difference (featureFlags - features) to get the set of non supported requested features
+  // eslint-disable-next-line no-prototype-builtins
   let diff = _.keys(featureFlags).filter(x => !features.hasOwnProperty(x));
 
   if (diff.length) {

@@ -1,3 +1,4 @@
+const taskcluster = require('taskcluster-client');
 const ImageManager = require('../src/lib/docker/image_manager');
 const sleep = require('../src/lib/util/sleep');
 const VolumeCache = require('../src/lib/volume_cache');
@@ -11,7 +12,7 @@ const {createLogger} = require('../src/lib/log');
 const path = require('path');
 const rmrf = require('rimraf');
 const {removeImage} = require('../src/lib/util/remove_image');
-const monitoring = require('taskcluster-lib-monitor');
+const monitor = require('./fixtures/monitor');
 
 let docker = Docker();
 let debug = Debug('garbageCollectionTests');
@@ -32,16 +33,10 @@ suite('garbage collection tests', () => {
   var IMAGE = 'taskcluster/test-ubuntu';
 
   var localCacheDir = path.join(__dirname, 'tmp');
-  var monitor;
   var imageManager;
 
-
   setup(async () => {
-    monitor = await monitoring({
-      credentials: {},
-      projectName: 'docker-worker-tests',
-      mock: true
-    });
+    taskcluster.config(taskcluster.fromEnvVars());
 
     imageManager = new ImageManager({
       docker: docker,

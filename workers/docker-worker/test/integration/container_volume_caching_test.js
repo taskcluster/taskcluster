@@ -22,6 +22,7 @@ suite('volume cache tests', () => {
 
   setup(() => {
     // expects rootUrl, credentials in env vars
+    taskcluster.config(taskcluster.fromEnvVars());
     purgeCache = new taskcluster.PurgeCache();
   });
 

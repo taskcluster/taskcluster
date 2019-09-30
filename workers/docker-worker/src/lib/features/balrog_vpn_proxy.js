@@ -1,6 +1,6 @@
 const assert = require('assert');
 const Debug = require('debug');
-const { scopeMatch } = require('taskcluster-lib-scopes');
+const { scopeMatch } = require('../scopes');
 const got = require('got');
 const waitForPort = require('../wait_for_port');
 

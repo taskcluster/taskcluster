@@ -1,6 +1,5 @@
 var EventEmitter = require('events').EventEmitter;
 var parseImage = require('docker-image-parser');
-var Promise = require('promise');
 var debug = require('debug')('taskcluster-docker-worker:garbageCollector');
 var exceedsDiskspaceThreshold = require('./util/capacity').exceedsDiskspaceThreshold;
 

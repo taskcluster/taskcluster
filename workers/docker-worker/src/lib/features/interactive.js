@@ -18,6 +18,9 @@ const express = require('express');
 const {makeDir, removeDir} = require('../util/fs');
 const libUrls = require('taskcluster-lib-urls');
 const queryString = require('query-string');
+const util = require('util');
+
+const readFile = util.promisify(fs.readFile);
 
 let debug = Debug('docker-worker:features:interactive');
 
@@ -149,13 +152,13 @@ class WebsocketServer {
     };
   }
 
-  async started(task) {
+  async createHttpServer(task) {
     debug('creating ws server');
     let httpServ;
     if (task.runtime.interactive.ssl) {
       let [key, cert] = await Promise.all([
-        fs.readFile(task.runtime.ssl.key),
-        fs.readFile(task.runtime.ssl.certificate)
+        readFile(task.runtime.ssl.key),
+        readFile(task.runtime.ssl.certificate)
       ]);
       httpServ = https.createServer({key, cert});
     } else {
@@ -196,8 +199,12 @@ class WebsocketServer {
       }
     }
 
-    // Remember the http server
-    this.httpServer = httpServ;
+    return {httpServ, port};
+  }
+
+  async started(task) {
+    this.vnc = await this.createHttpServer(task);
+    this.ssh = await this.createHttpServer(task);
 
     // Create a simple app to serve listDisplays
     let app = express();
@@ -235,20 +242,20 @@ class WebsocketServer {
       }
     });
     // Make app handle requests
-    httpServ.on('request', app);
+    this.vnc.httpServ.on('request', app);
 
     // Create display lookup url
     let listDisplayUrl = url.format({
       protocol: task.runtime.interactive.ssl ? 'https' : 'http',
       slashes: true,
       hostname: task.hostname,
-      port: port,
+      port: this.vnc.port,
       pathname: this.vncPath,
     });
 
     // Create websockify display server
-    this.displayServer = ws.createServer({
-      server: httpServ,
+    this.displayServer = new ws.Server({
+      server: this.vnc.httpServ,
       path:   this.vncPath,
     }, async (client) => {
       try {
@@ -293,13 +300,13 @@ class WebsocketServer {
       protocol: task.runtime.interactive.ssl ? 'wss' : 'ws',
       slashes: true,
       hostname: task.hostname,
-      port: port,
+      port: this.vnc.port,
       pathname: this.vncPath,
     });
 
     // Create the websocket server
     this.shellServer = new DockerExecServer({
-      server: httpServ,
+      server: this.ssh.httpServ,
       containerId: task.dockerProcess.id,
       path: this.path,
     });
@@ -309,7 +316,7 @@ class WebsocketServer {
       protocol: task.runtime.interactive.ssl ? 'wss' : 'ws',
       slashes: true,
       hostname: task.hostname,
-      port: port,
+      port: this.ssh.port,
       pathname: this.path,
     });
 
@@ -374,8 +381,11 @@ class WebsocketServer {
   }
 
   async killed (task) {
-    if (this.httpServer) {
-      this.httpServer.close();
+    if (this.vnc.httpServ) {
+      this.vnc.httpServ.close();
+    }
+    if (this.ssh.httpServ) {
+      this.ssh.httpServ.close();
     }
     if(this.shellServer) {
       this.shellServer.close();

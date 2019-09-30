@@ -1,4 +1,4 @@
-const scopeUtils = require('taskcluster-lib-scopes');
+const scopeUtils = require('../scopes');
 const taskcluster = require('taskcluster-client');
 
 /**

@@ -1,5 +1,5 @@
 const assert = require('assert');
-const SchemaSet = require('taskcluster-lib-validate');
+const SchemaSet = require('../../src/lib/validate');
 const path = require('path');
 const _ = require('lodash');
 const libUrls = require('taskcluster-lib-urls');

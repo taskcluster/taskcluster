@@ -2,8 +2,6 @@
 Tiny helper to wait for a stream to be finished writing.
 */
 
-var Promise = require('promise');
-
 module.exports = function waitForStream(stream) {
   return new Promise(function(accept, reject) {
     // If the stream has a .closed property try to use this otherwise read the

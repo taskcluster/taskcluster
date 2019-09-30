@@ -11,7 +11,7 @@ const TestWorker = require('../testworker');
 const Debug = require('debug');
 const {removeImage} = require('../../src/lib/util/remove_image');
 const pipe = require('promisepipe');
-const testing = require('taskcluster-lib-testing');
+const sleep = require('./helper/sleep');
 const taskcluster = require('taskcluster-client');
 
 let debug = Debug('docker-worker:test:docker-save-test');
@@ -59,7 +59,7 @@ suite('use docker-save', () => {
     const tarStream = fs.createWriteStream('/tmp/dockerload.tar');
     await pipe(res, tarStream);
     //make sure it finishes unzipping
-    await testing.sleep(2000);
+    await sleep(2000);
 
     let docker = new Docker(dockerOpts());
     let imageName = createImageName(taskId, runId);
@@ -89,7 +89,7 @@ suite('use docker-save', () => {
       // stream.on('end', () => {reject(new Error('stream ended too early'))});
       setTimeout(reject, 15000, new Error('timed out waiting for docker container'));
     });
-    await testing.sleep(100);
+    await sleep(100);
     await Promise.all([container.remove(), fs.unlink('/tmp/dockerload.tar')]);
     await removeImage(docker, imageName);
   });
@@ -124,7 +124,7 @@ suite('use docker-save', () => {
     let tarStream = tar.extract('/tmp/cacheload');
     await pipe(res, tarStream);
     //so the tar actually finishes extracting; tarStream doesn't have an end event
-    await testing.sleep(1000);
+    await sleep(1000);
 
     let testStr = await fs.readFile('/tmp/cacheload/test.log', {encoding: 'utf-8'});
     assert.equal(testStr, 'testString\n');

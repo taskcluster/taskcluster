@@ -18,7 +18,7 @@ suite('Cancel Task', () => {
     });
 
     // expects rootUrl, credentials in env vars
-    let queue = new taskcluster.Queue();
+    let queue = new taskcluster.Queue(taskcluster.fromEnvVars());
     let task = {
       payload: {
         image: 'taskcluster/test-ubuntu',

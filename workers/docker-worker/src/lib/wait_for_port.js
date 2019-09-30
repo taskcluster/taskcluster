@@ -1,4 +1,3 @@
-var Promise = require('promise');
 var net = require('net');
 
 // Wait for the port to be available at a particular host/port...

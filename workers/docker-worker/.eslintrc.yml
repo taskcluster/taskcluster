@@ -23,3 +23,6 @@ rules:
     - vars: local
       args: none
   no-console: off
+  require-atomic-updates: off
+  no-async-promise-executor: off
+  no-redeclare: off

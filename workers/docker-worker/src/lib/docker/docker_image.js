@@ -1,7 +1,7 @@
 const Debug = require('debug');
 const dockerUtils = require('dockerode-process/utils');
 const parseImage = require('docker-image-parser');
-const { scopeMatch } = require('taskcluster-lib-scopes');
+const { scopeMatch } = require('../scopes');
 const sleep = require('../util/sleep');
 
 let debug = Debug('docker-worker:dockerImage');

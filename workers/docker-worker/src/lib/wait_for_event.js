@@ -1,4 +1,3 @@
-var Promise = require('promise');
 /**
 
 function* waitForSomething () {

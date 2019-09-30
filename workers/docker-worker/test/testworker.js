@@ -9,12 +9,11 @@ const Debug = require('debug');
 const waitForEvent = require('../src/lib/wait_for_event');
 const split = require('split2');
 const getArtifact = require('./integration/helper/get_artifact');
-const Task = require('taskcluster-task-factory/task');
-const Graph = require('taskcluster-task-factory/graph');
+const Task = require('./task');
+const Graph = require('./graph');
 const LocalWorker = require('./localworker');
 const taskcluster = require('taskcluster-client');
 const typedEnvConfig = require('typed-env-config');
-const Promise = require('promise');
 const {EventEmitter} = require('events');
 const getLogsLocationsFromTask = require('../src/lib/features/logs_location.js');
 

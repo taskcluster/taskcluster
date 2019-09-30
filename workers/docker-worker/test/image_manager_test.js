@@ -7,10 +7,9 @@ const slugid = require('slugid');
 const {createLogger} = require('../src/lib/log');
 const {NAMESPACE, TASK_ID, ROOT_URL} = require('./fixtures/image_artifacts');
 const taskcluster = require('taskcluster-client');
-const monitoring = require('taskcluster-lib-monitor');
+const monitor = require('./fixtures/monitor');
 
 let docker = Docker();
-let monitor;
 
 const DOCKER_CONFIG = {
   defaultRegistry: 'registry.hub.docker.com',
@@ -21,11 +20,7 @@ const DOCKER_CONFIG = {
 
 suite('Image Manager', () => {
   setup(async () => {
-    monitor = await monitoring({
-      credentials: {},
-      projectName: 'docker-worker-tests',
-      mock: true
-    });
+    taskcluster.config(taskcluster.fromEnvVars());
   });
   test('download docker image from registry', async () => {
     let image = 'gliderlabs/alpine:latest';

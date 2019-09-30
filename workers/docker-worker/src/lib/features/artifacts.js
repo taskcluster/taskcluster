@@ -8,7 +8,6 @@ const _ = require('lodash');
 const mime = require('mime');
 const tarStream = require('tar-stream');
 const Debug = require('debug');
-const Promise = require('promise');
 const assert = require('assert');
 
 const {fmtLog, fmtErrorLog} = require('../log');

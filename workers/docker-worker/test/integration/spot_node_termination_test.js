@@ -8,7 +8,7 @@ const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
 const settings = require('../settings');
 const getArtifact = require('./helper/get_artifact');
-const sleep = require('../../src/lib/util/sleep');
+const sleep = require('./helper/sleep');
 const waitForEvent = require('../../src/lib/wait_for_event');
 const assert = require('assert');
 

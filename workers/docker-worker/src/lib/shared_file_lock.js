@@ -1,9 +1,11 @@
 const assert = require('assert');
 const Debug = require('debug');
 const fs = require('fs-ext');
-const Promise = require('promise');
+const util = require('util');
 
 let debug = Debug('docker-worker:lib:shared_file_lock');
+
+const flock = util.promisify(fs.flock);
 
 class SharedFileLock {
   /* This acts as a semaphore which locks a file if one or more locks
@@ -20,7 +22,7 @@ class SharedFileLock {
   //acquires a lock, at >=1 locks it will flock the lockfile
   async acquire() {
     if(this.count === 0 || !this.locked) {
-      let err = await Promise.denodeify(fs.flock)(this.lockFd, 'shnb');
+      let err = await flock(this.lockFd, 'shnb');
       if(err) {
         debug('[alert-operator] couldn\'t acquire lock, this is probably bad');
         debug(err);
@@ -41,7 +43,7 @@ class SharedFileLock {
     assert(this.count > 0, 'Has been released more times than acquired');
     this.count -= 1;
     if(this.count === 0 && this.locked) {
-      let err = await Promise.denodeify(fs.flock)(this.lockFd, 'un');
+      let err = await fs.flock(this.lockFd, 'un');
       if(err) {
         debug('[alert-operator] couldn\'t unlock, this is probably bad');
         debug(err);

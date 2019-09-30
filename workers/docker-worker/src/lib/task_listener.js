@@ -35,7 +35,7 @@ class TaskListener extends EventEmitter {
     this.reportCapacityStateIntervalId = setInterval(
       this.reportCapacityState.bind(this), 60 * 1000
     );
-    this.capacityMonitor = this.runtime.workerTypeMonitor.prefix('capacity');
+    this.capacityMonitor = this.runtime.workerTypeMonitor.childMonitor('capacity');
     this.deviceManager = new DeviceManager(runtime);
   }
 

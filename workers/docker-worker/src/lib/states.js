@@ -50,7 +50,7 @@ class States {
         return hook[method](task)
           .then(info => { return info; })
           .catch(err => {
-            errors.push(new Error(`Error calling '${method}' for ${hook.featureName} : ${err}`));
+            errors.push(new Error(`Error calling '${method}' for ${hook.featureName} : ${err.stack}`));
           });
       })
     ).then(results => {

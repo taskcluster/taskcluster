@@ -1,5 +1,3 @@
-var Promise = require('promise');
-
 var spawn = require('child_process').spawn;
 
 /** Binary to launch inorder to get a worker instance running */
