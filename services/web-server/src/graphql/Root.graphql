@@ -32,7 +32,8 @@ union Node =
   Client |
   RoleCompact |
   NotificationAddress |
-  WorkerManagerProvider
+  WorkerManagerProvider |
+  WorkerManagerError
 
 interface Edge {
   cursor: String

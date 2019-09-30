@@ -180,6 +180,14 @@ export const workers = shape({
   edges: arrayOf(worker),
 });
 
+export const WMError = shape({
+  errorId: string,
+  title: string,
+  description: string,
+  reported: date,
+  extra: object,
+});
+
 export const WMWorker = shape({
   workerId: string,
   workerGroup: string,
