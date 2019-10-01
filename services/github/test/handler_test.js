@@ -193,6 +193,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       assert(args[0][0].body.indexOf('tasks field  of .taskcluster.yml must be array of tasks or empty array') !== -1);
     });
 
+    test('tasks generated as undefined is OK', async function() {
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+        content: {version: 1, tasks: undefined},
+      });
+      await simulateJobMessage({user: 'TaskclusterRobot'});
+
+      assert(github.inst(5828).repos.createCommitComment.notCalled);
+    });
+
     test('valid push (owner is collaborator) creates a taskGroup', async function() {
       github.inst(5828).setTaskclusterYml({
         owner: 'TaskclusterRobot',
