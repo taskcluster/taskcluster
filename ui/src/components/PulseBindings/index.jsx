@@ -5,7 +5,6 @@ import { arrayOf, func, object, string } from 'prop-types';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import Tooltip from '@material-ui/core/Tooltip';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
@@ -20,7 +19,7 @@ import DeleteIcon from 'mdi-react/DeleteIcon';
     },
   },
   plusIcon: {
-    marginTop: 80,
+    marginTop: theme.spacing.unit * 5,
   },
   deleteIcon: {
     marginRight: -theme.spacing.double,
@@ -32,13 +31,11 @@ import DeleteIcon from 'mdi-react/DeleteIcon';
   },
   inputList: {
     flex: 1,
+    paddingRight: theme.spacing.double,
   },
   bindingListItem: {
     paddingTop: 0,
     paddingBottom: 0,
-  },
-  subheader: {
-    fontSize: theme.typography.pxToRem(16),
   },
 }))
 export default class PulseBindings extends Component {
@@ -67,44 +64,27 @@ export default class PulseBindings extends Component {
     return (
       <Fragment>
         <div className={classes.inputWrapper}>
-          <List
-            className={classes.inputList}
-            subheader={
-              <ListSubheader className={classes.subheader}>
-                Bindings
-              </ListSubheader>
-            }>
-            <ListItem>
-              <ListItemText
-                primary={
-                  <TextField
-                    required
-                    label="Pulse Exchange"
-                    name="pulseExchange"
-                    placeholder="exchange/<username>/some-exchange-name"
-                    onChange={onPulseExchangeChange}
-                    fullWidth
-                    value={pulseExchange}
-                  />
-                }
-              />
-            </ListItem>
-            <ListItem>
-              <ListItemText
-                primary={
-                  <TextField
-                    required
-                    label="Routing Key Pattern"
-                    placeholder="#.some-interesting-key.#"
-                    name="pattern"
-                    onChange={onRoutingKeyPatternChange}
-                    fullWidth
-                    value={pattern}
-                  />
-                }
-              />
-            </ListItem>
-          </List>
+          <div className={classes.inputList}>
+            <TextField
+              required
+              label="Pulse Exchange"
+              name="pulseExchange"
+              placeholder="exchange/<username>/some-exchange-name"
+              onChange={onPulseExchangeChange}
+              fullWidth
+              value={pulseExchange}
+            />
+            <TextField
+              margin="normal"
+              required
+              label="Routing Key Pattern"
+              placeholder="#.some-interesting-key.#"
+              name="pattern"
+              onChange={onRoutingKeyPatternChange}
+              fullWidth
+              value={pattern}
+            />
+          </div>
           <Tooltip title="Add Binding">
             <IconButton
               className={classNames(classes.iconButton, classes.plusIcon)}

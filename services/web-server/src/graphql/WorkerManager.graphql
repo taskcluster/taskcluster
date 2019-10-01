@@ -8,6 +8,26 @@ type WorkerManagerWorkerPoolSummary {
     pendingTasks: Int #this value comes from a separate request to queue
 }
 
+type WorkerManagerError {
+    workerPoolId: String!
+    errorId: ID!
+    kind: String!
+    title: String!
+    description: String!
+    reported: DateTime!
+    extra: JSON!
+}
+
+type WorkerManagerErrorsConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [WorkerManagerErrorsEdge]
+}
+
+type WorkerManagerErrorsEdge implements Edge {
+  cursor: String
+  node: WorkerManagerError
+}
+
 type WorkerManagerWorker {
     workerId: String!
     workerGroup: String!
@@ -49,6 +69,8 @@ extend type Query {
     WorkerManagerWorkerPoolSummaries(filter: JSON): [WorkerManagerWorkerPoolSummary]
 
     WorkerManagerWorkers(workerPool: String, provider: String, isQuarantined: Boolean): [WorkerManagerWorker]
+
+    WorkerManagerErrors(workerPoolId: String, connection: PageConnection, filter: JSON): WorkerManagerErrorsConnection!
 
     WorkerPool(workerPoolId: String!): WorkerManagerWorkerPoolSummary
 

@@ -577,10 +577,10 @@ async function jobHandler(message) {
         1: libUrls.schema(this.rootUrl, 'github', 'v1/taskcluster-github-config.v1.yml'),
       },
     });
-    if (!Array.isArray(graphConfig.tasks)) {
+    if (graphConfig.tasks !== undefined && !Array.isArray(graphConfig.tasks)) {
       throw new Error('tasks field  of .taskcluster.yml must be array of tasks or empty array');
     }
-    if (graphConfig.tasks.length === 0) {
+    if (!graphConfig.tasks || graphConfig.tasks.length === 0) {
       debug(`intree config for ${organization}/${repository}@${sha} compiled with zero tasks. Skipping.`);
       return;
     }

@@ -7,10 +7,10 @@ import sys
 VERSION = '17.0.0'
 
 tests_require = [
-    'nose',
-    'nose-exclude',
+    'pytest',
+    'pytest-cov',   
+    'pytest-mock',
     'httmock',
-    'rednose',
     'mock',
     'setuptools-lint',
     'flake8',

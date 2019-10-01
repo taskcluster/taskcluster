@@ -3838,7 +3838,7 @@ module.exports = {
           "route": "/worker-pool/<workerPoolId>",
           "scopes": {
             "AllOf": [
-              "worker-manager:create-worker-type:<workerPoolId>",
+              "worker-manager:manage-worker-pool:<workerPoolId>",
               "worker-manager:provider:<providerId>"
             ]
           },
@@ -3861,12 +3861,29 @@ module.exports = {
           "route": "/worker-pool/<workerPoolId>",
           "scopes": {
             "AllOf": [
-              "worker-manager:update-worker-type:<workerPoolId>",
+              "worker-manager:manage-worker-pool:<workerPoolId>",
               "worker-manager:provider:<providerId>"
             ]
           },
           "stability": "experimental",
           "title": "Update Worker Pool",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId"
+          ],
+          "category": "Worker Manager",
+          "description": "Mark a worker pool for deletion.  This is the same as updating the pool to\nset its providerId to `\"null-provider\"`, but does not require scope\n`worker-manager:provider:null-provider`.",
+          "method": "delete",
+          "name": "deleteWorkerPool",
+          "output": "v1/worker-pool-full.json#",
+          "query": [
+          ],
+          "route": "/worker-pool/<workerPoolId>",
+          "scopes": "worker-manager:manage-worker-pool:<workerPoolId>",
+          "stability": "experimental",
+          "title": "Delete Worker Pool",
           "type": "function"
         },
         {

@@ -117,7 +117,7 @@ func (workerManager *WorkerManager) ListProviders(continuationToken, limit strin
 //
 // Required scopes:
 //   All of:
-//   * worker-manager:create-worker-type:<workerPoolId>
+//   * worker-manager:manage-worker-pool:<workerPoolId>
 //   * worker-manager:provider:<providerId>
 //
 // See #createWorkerPool
@@ -139,13 +139,29 @@ func (workerManager *WorkerManager) CreateWorkerPool(workerPoolId string, payloa
 //
 // Required scopes:
 //   All of:
-//   * worker-manager:update-worker-type:<workerPoolId>
+//   * worker-manager:manage-worker-pool:<workerPoolId>
 //   * worker-manager:provider:<providerId>
 //
 // See #updateWorkerPool
 func (workerManager *WorkerManager) UpdateWorkerPool(workerPoolId string, payload *WorkerPoolDefinition1) (*WorkerPoolFullDefinition, error) {
 	cd := tcclient.Client(*workerManager)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/worker-pool/"+url.QueryEscape(workerPoolId), new(WorkerPoolFullDefinition), nil)
+	return responseObject.(*WorkerPoolFullDefinition), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Mark a worker pool for deletion.  This is the same as updating the pool to
+// set its providerId to `"null-provider"`, but does not require scope
+// `worker-manager:provider:null-provider`.
+//
+// Required scopes:
+//   worker-manager:manage-worker-pool:<workerPoolId>
+//
+// See #deleteWorkerPool
+func (workerManager *WorkerManager) DeleteWorkerPool(workerPoolId string) (*WorkerPoolFullDefinition, error) {
+	cd := tcclient.Client(*workerManager)
+	responseObject, _, err := (&cd).APICall(nil, "DELETE", "/worker-pool/"+url.QueryEscape(workerPoolId), new(WorkerPoolFullDefinition), nil)
 	return responseObject.(*WorkerPoolFullDefinition), err
 }
 
