@@ -23,4 +23,4 @@ require (
 // https://bugzilla.mozilla.org/show_bug.cgi?id=1580513
 replace gopkg.in/yaml.v2 => github.com/go-yaml/yaml v0.0.0-20181115110504-51d6538a90f8
 
-replace gopkg.in/check.v1 => github.com/go-check/check 41f04d3bba15
+replace gopkg.in/check.v1 => github.com/go-check/check v0.0.0-20190902080502-41f04d3bba15
