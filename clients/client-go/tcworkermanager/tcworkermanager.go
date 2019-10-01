@@ -117,7 +117,7 @@ func (workerManager *WorkerManager) ListProviders(continuationToken, limit strin
 //
 // Required scopes:
 //   All of:
-//   * worker-manager:create-worker-type:<workerPoolId>
+//   * worker-manager:manage-worker-pool:<workerPoolId>
 //   * worker-manager:provider:<providerId>
 //
 // See #createWorkerPool
@@ -139,7 +139,7 @@ func (workerManager *WorkerManager) CreateWorkerPool(workerPoolId string, payloa
 //
 // Required scopes:
 //   All of:
-//   * worker-manager:update-worker-type:<workerPoolId>
+//   * worker-manager:manage-worker-pool:<workerPoolId>
 //   * worker-manager:provider:<providerId>
 //
 // See #updateWorkerPool

@@ -3838,7 +3838,7 @@ module.exports = {
           "route": "/worker-pool/<workerPoolId>",
           "scopes": {
             "AllOf": [
-              "worker-manager:create-worker-type:<workerPoolId>",
+              "worker-manager:manage-worker-pool:<workerPoolId>",
               "worker-manager:provider:<providerId>"
             ]
           },
@@ -3861,7 +3861,7 @@ module.exports = {
           "route": "/worker-pool/<workerPoolId>",
           "scopes": {
             "AllOf": [
-              "worker-manager:update-worker-type:<workerPoolId>",
+              "worker-manager:manage-worker-pool:<workerPoolId>",
               "worker-manager:provider:<providerId>"
             ]
           },
