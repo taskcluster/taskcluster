@@ -74,7 +74,7 @@ func main() {
 			}
 			sshSecret[region] = string(bytes)
 		}
-		if !f.IsDir() && strings.HasSuffix(f.Name(), ".latest-ami") {
+		if !f.IsDir() && strings.HasSuffix(f.Name(), ".latest-image") {
 			newAMICount++
 			tokens := strings.Split(f.Name(), ".")
 			region := tokens[0]

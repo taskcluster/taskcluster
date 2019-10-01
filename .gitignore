@@ -30,7 +30,7 @@ _testmain.go
 *.secrets
 *.id_rsa
 *.log
-*.latest-ami
+*.latest-image
 
 # Created by generic worker tests
 /downloads/
