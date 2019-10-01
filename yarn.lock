@@ -3777,10 +3777,17 @@ graphql-validation-complexity@^0.2.5:
   dependencies:
     warning "^4.0.3"
 
-graphql@^14.5.3, graphql@^14.5.4:
+graphql@^14.5.3:
   version "14.5.4"
   resolved "https://registry.yarnpkg.com/graphql/-/graphql-14.5.4.tgz#b33fe957854e90c10d4c07c7d26b6c8e9f159a13"
   integrity sha512-dPLvHoxy5m9FrkqWczPPRnH0X80CyvRE6e7Fa5AWEqEAzg9LpxHvKh24po/482E6VWHigOkAmb4xCp6P9yT9gw==
+  dependencies:
+    iterall "^1.2.2"
+
+graphql@^14.5.4:
+  version "14.5.8"
+  resolved "https://registry.yarnpkg.com/graphql/-/graphql-14.5.8.tgz#504f3d3114cb9a0a3f359bbbcf38d9e5bf6a6b3c"
+  integrity sha512-MMwmi0zlVLQKLdGiMfWkgQD7dY/TUKt4L+zgJ/aR0Howebod3aNgP5JkgvAULiR2HPVZaP2VEElqtdidHweLkg==
   dependencies:
     iterall "^1.2.2"
 
@@ -7645,7 +7652,7 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-client@link:clients/client":
-  version "16.2.0"
+  version "17.0.0"
   dependencies:
     debug "^4.0.0"
     hawk "^7.0.10"
@@ -7655,37 +7662,37 @@ tar@^4:
     taskcluster-lib-urls "^12.0.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "16.2.0"
+  version "17.0.0"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "16.2.0"
+  version "17.0.0"
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "16.2.0"
+  version "17.0.0"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "16.2.0"
+  version "17.0.0"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "16.2.0"
+  version "17.0.0"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "16.2.0"
+  version "17.0.0"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "16.2.0"
+  version "17.0.0"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "16.2.0"
+  version "17.0.0"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "16.2.0"
+  version "17.0.0"
 
 "taskcluster-lib-scopes@link:libraries/scopes":
-  version "16.2.0"
+  version "17.0.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "16.2.0"
+  version "17.0.0"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -7693,7 +7700,7 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "16.2.0"
+  version "17.0.0"
 
 taskgroup@^4.0.5, taskgroup@^4.2.0:
   version "4.3.1"
