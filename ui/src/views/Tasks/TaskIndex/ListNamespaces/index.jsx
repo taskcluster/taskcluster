@@ -6,7 +6,6 @@ import { defaultTo } from 'ramda';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../../../components/Dashboard';
-import HelpView from '../../../../components/HelpView';
 import IndexNamespacesTable from '../../../../components/IndexNamespacesTable';
 import IndexTaskNamespaceTable from '../../../../components/IndexTaskNamespaceTable';
 import { VIEW_NAMESPACES_PAGE_SIZE } from '../../../../utils/constants';
@@ -125,7 +124,6 @@ export default class ListNamespaces extends Component {
         loading: taskNamespaceLoading,
         error: taskNamespaceError,
       },
-      description,
     } = this.props;
     const hasIndexedTasks =
       taskNamespace && taskNamespace.edges && taskNamespace.edges.length > 0;
@@ -135,8 +133,7 @@ export default class ListNamespaces extends Component {
 
     return (
       <Dashboard
-        title="Index Browser"
-        helpView={<HelpView description={description} />}>
+        title="Index Browser">
         <Fragment>
           {loading && <Spinner loading />}
           <ErrorPanel fixed error={namespacesError || taskNamespaceError} />
