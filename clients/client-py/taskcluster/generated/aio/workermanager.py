@@ -72,6 +72,19 @@ class WorkerManager(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["updateWorkerPool"], *args, **kwargs)
 
+    async def deleteWorkerPool(self, *args, **kwargs):
+        """
+        Delete Worker Pool
+
+        Mark a worker pool for deletion.  This is the same as updating the pool to
+        set its providerId to `"null-provider"`, but does not require scope
+        `worker-manager:provider:null-provider`.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["deleteWorkerPool"], *args, **kwargs)
+
     async def workerPool(self, *args, **kwargs):
         """
         Get Worker Pool
@@ -215,6 +228,14 @@ class WorkerManager(AsyncBaseClient):
             'input': 'v1/create-worker-pool-request.json#',
             'method': 'put',
             'name': 'createWorkerPool',
+            'output': 'v1/worker-pool-full.json#',
+            'route': '/worker-pool/<workerPoolId>',
+            'stability': 'experimental',
+        },
+        "deleteWorkerPool": {
+            'args': ['workerPoolId'],
+            'method': 'delete',
+            'name': 'deleteWorkerPool',
             'output': 'v1/worker-pool-full.json#',
             'route': '/worker-pool/<workerPoolId>',
             'stability': 'experimental',

@@ -202,6 +202,46 @@ builder.declare({
 });
 
 builder.declare({
+  method: 'delete',
+  route: '/worker-pool/:workerPoolId(*)',
+  name: 'deleteWorkerPool',
+  title: 'Delete Worker Pool',
+  stability: APIBuilder.stability.experimental,
+  category: 'Worker Manager',
+  output: 'worker-pool-full.yml',
+  scopes: 'worker-manager:manage-worker-pool:<workerPoolId>',
+  description: [
+    'Mark a worker pool for deletion.  This is the same as updating the pool to',
+    'set its providerId to `"null-provider"`, but does not require scope',
+    '`worker-manager:provider:null-provider`.',
+  ].join('\n'),
+}, async function(req, res) {
+  const {workerPoolId} = req.params;
+  const providerId = "null-provider";
+
+  await req.authorize({workerPoolId});
+
+  const workerPool = await this.WorkerPool.load({
+    workerPoolId,
+  }, true);
+  if (!workerPool) {
+    return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
+  }
+
+  const previousProviderId = workerPool.providerId;
+
+  await workerPool.modify(wt => {
+    wt.providerId = providerId;
+    if (previousProviderId !== providerId && !wt.previousProviderIds.includes(previousProviderId)) {
+      wt.previousProviderIds.push(previousProviderId);
+    }
+  });
+
+  await this.publisher.workerPoolUpdated({workerPoolId, providerId, previousProviderId});
+  res.reply(workerPool.serializable());
+});
+
+builder.declare({
   method: 'get',
   route: '/worker-pool/:workerPoolId(*)',
   name: 'workerPool',
