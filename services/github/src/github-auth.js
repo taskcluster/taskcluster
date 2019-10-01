@@ -25,6 +25,11 @@ const retryPlugin = (octokit, options) => {
 const Octokit = require('@octokit/rest').plugin([retryPlugin]);
 
 module.exports = async ({cfg}) => {
+  const keyRe = /-----BEGIN RSA PRIVATE KEY-----\n.*\n-----END RSA PRIVATE KEY-----\n?/;
+  if (!keyRe.test(cfg.github.credentials.privatePEM)) {
+    throw new Error(`Malformed GITHUB_PRIVATE_PEM: must match ${keyRe}`);
+  }
+
   const getAppGithub = async () => {
     const inteToken = jwt.sign(
       {iss: cfg.github.credentials.appId},

@@ -35,7 +35,10 @@ Set the fields as follows:
 
 ### How to set up private keys? 
 
-On the app's settings page, generate a private key, and add its PEM to your Taskcluster instance's configs. Then restart your Taskcluster instance's GitHub service. 
+On the app's settings page, generate a private key, and add its PEM to your Taskcluster instance's configs.
+Then restart your Taskcluster instance's GitHub service. 
+Note that the entire PEM key, including the "BEGIN" and "END" lines, must be included, with no additional whitespace
+or other formatting added or moved.
 
 ### What permissions does the Taskcluster Github app need?
 
