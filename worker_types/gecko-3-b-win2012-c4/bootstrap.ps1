@@ -167,7 +167,7 @@ $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloud
 [Environment]::SetEnvironmentVariable("MOZILLABUILD", "C:\mozilla-build", "Machine")
 
 # pip_upgrade_pip
-Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "-m pip install --upgrade pip==8.1.2" -Wait -NoNewWindow
+Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "-m pip install --upgrade pip==19.2.3" -Wait -NoNewWindow
 
 # pip_upgrade_setuptools
 Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "-m pip install --upgrade setuptools==20.7.0" -Wait -NoNewWindow
@@ -188,10 +188,13 @@ Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "-m pip install
 Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "-m pip install --upgrade psutil==4.1.0" -Wait -NoNewWindow
 
 # pip3_upgrade_pip
-Start-Process "C:\mozilla-build\python3\python3.exe" -ArgumentList "-m pip install --upgrade pip==19.2.1" -Wait -NoNewWindow
+Start-Process "C:\mozilla-build\python3\python3.exe" -ArgumentList "-m pip install --upgrade pip==19.2.3" -Wait -NoNewWindow
 
 # pip3_upgrade_zstandard
 Start-Process "C:\mozilla-build\python3\python3.exe" -ArgumentList "-m pip install --upgrade zstandard==0.11.1" -Wait -NoNewWindow
+
+# pip3_upgrade_certifi
+Start-Process "C:\mozilla-build\python3\python3.exe" -ArgumentList "-m pip install --upgrade certifi" -Wait -NoNewWindow
 
 # ToolToolInstall
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla/release-services/master/src/tooltool/client/tooltool.py", "C:\mozilla-build\tooltool.py")

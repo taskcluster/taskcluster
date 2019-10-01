@@ -118,10 +118,13 @@ $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloud
 # env_PATH
 
 # pip3_upgrade_pip
-Start-Process "C:\mozilla-build\python3\python3.exe" -ArgumentList "-m pip install --upgrade pip==19.2.1" -Wait -NoNewWindow
+Start-Process "C:\mozilla-build\python3\python3.exe" -ArgumentList "-m pip install --upgrade pip==19.2.3" -Wait -NoNewWindow
 
 # pip3_upgrade_zstandard
 Start-Process "C:\mozilla-build\python3\python3.exe" -ArgumentList "-m pip install --upgrade zstandard==0.11.1" -Wait -NoNewWindow
+
+# pip3_upgrade_certifi
+Start-Process "C:\mozilla-build\python3\python3.exe" -ArgumentList "-m pip install --upgrade certifi" -Wait -NoNewWindow
 
 # ToolToolInstall
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla/release-services/master/src/tooltool/client/tooltool.py", "C:\mozilla-build\tooltool.py")
