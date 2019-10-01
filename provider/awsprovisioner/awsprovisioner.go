@@ -1,6 +1,7 @@
 package awsprovisioner
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"reflect"
@@ -15,6 +16,8 @@ import (
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v17"
 	"github.com/taskcluster/taskcluster/clients/client-go/v17/tcawsprovisioner"
 )
+
+const TERMINATION_PATH = "/meta-data/spot/termination-time"
 
 type AwsProvisionerProvider struct {
 	runnercfg                   *cfg.RunnerConfig
@@ -155,7 +158,7 @@ func (p *AwsProvisionerProvider) SetProtocol(proto *protocol.Protocol) {
 }
 
 func (p *AwsProvisionerProvider) checkTerminationTime() {
-	_, err := p.metadataService.queryMetadata("/meta-data/spot/termination-time")
+	_, err := p.metadataService.queryMetadata(TERMINATION_PATH)
 	// if the file exists (so, no error), it's time to go away
 	if err == nil {
 		log.Println("EC2 Metadata Service says termination is imminent")
@@ -227,6 +230,11 @@ func new(runnercfg *cfg.RunnerConfig, awsProvisionerClientFactory tc.AwsProvisio
 	if metadataService == nil {
 		metadataService = &realMetadataService{}
 	}
+
+	if _, err := metadataService.queryMetadata(TERMINATION_PATH); err == nil {
+		return nil, errors.New("Instance is about to shutdown")
+	}
+
 	return &AwsProvisionerProvider{
 		runnercfg:                   runnercfg,
 		awsProvisionerClientFactory: awsProvisionerClientFactory,

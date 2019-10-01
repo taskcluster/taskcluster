@@ -1,6 +1,7 @@
 package awsprovider
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
@@ -11,6 +12,8 @@ import (
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v17"
 	"github.com/taskcluster/taskcluster/clients/client-go/v17/tcworkermanager"
 )
+
+const TERMINATION_PATH = "/meta-data/spot/termination-time"
 
 type AWSProvider struct {
 	runnercfg                  *cfg.RunnerConfig
@@ -146,6 +149,10 @@ func new(
 
 	if metadataService == nil {
 		metadataService = &realMetadataService{}
+	}
+
+	if _, err := metadataService.queryMetadata(TERMINATION_PATH); err == nil {
+		return nil, errors.New("Instance is about to shutdown")
 	}
 
 	return &AWSProvider{
