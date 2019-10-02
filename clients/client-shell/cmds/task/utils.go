@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v17"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v18"
 	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 )
 

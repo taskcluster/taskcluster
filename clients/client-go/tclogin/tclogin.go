@@ -38,7 +38,7 @@ package tclogin
 import (
 	"net/url"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v17"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v18"
 )
 
 type Login tcclient.Client
