@@ -10,7 +10,7 @@ properties:
       List of tasks.
     type:           array
     uniqueItems: true
-    items: {$ref: "indexed-task-response.json#" }
+    items: {$ref: "indexed-task.json#" }
   continuationToken:
     title:                "Continuation Token"
     type:                 string
