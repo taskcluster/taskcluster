@@ -3,6 +3,7 @@ filename: tasks/workertypes.mdx
 title: Worker Types
 order: 20
 ---
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
 
 Workers execute tasks, but there are many types of workers. A task specifies a
 single "worker type" by which it should be executed, using the two-part
@@ -12,8 +13,10 @@ both identifiers. Thus `gcp-provisioner/persona-build` and
 `rackspace-provisioner/persona-build` are completely different worker types,
 despite sharing the same `workerType` identifier.
 
-*NOTE*: [RFC#145](https://github.com/taskcluster/taskcluster-rfcs/pull/145) addresses this confusion by introducing the term `taskQueueId` to name the queue in which a task is stored.
+<Warning>
+[RFC#145](https://github.com/taskcluster/taskcluster-rfcs/pull/145) addresses this confusion by introducing the term `taskQueueId` to name the queue in which a task is stored.
 This RFC is not yet fully implemented, so the Queue API still uses identifiers `provisionerId` and `workerType`.
+</Warning>
 
 Workers of the same worker type all consume tasks from a single queue, as
 [described later](/docs/manual/task-execution/queues), and as such are

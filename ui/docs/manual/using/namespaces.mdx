@@ -2,6 +2,7 @@
 title: Namespaces
 order: 30
 ---
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
 
 # Namespaces
 
@@ -119,11 +120,13 @@ Artifact names are, by convention, slash-separated.
    This namespace enables tasks to persist data that is only readable by a single user (typically the user that submitted it), such as loaner credentials.
    Access to such artifacts is not automatically granted, but such a grant could be accomplished by adding scope `queue:get-artifact:login-identity/<..>` to role `login-identity:*`.
 
-Note, highly confidential data should not be stored in unencrpyted taskcluster
+<Warning>
+Highly confidential data should not be stored in unencrpyted taskcluster
 artifacts, since they are only protected by a single (fallible) system. If
 highly sensitive data needs to be persisted, it is recommended to encrypt data
 using the public key of a key-pair whose private key has been highly secured,
 in order that at least two independent systems protect the data.
+</Warning>
 
 ---
 
@@ -259,6 +262,8 @@ The scopes cover:
 * secrets `project/<project>/*`
 * index namespaces `project.<project>.*`
 
+<Warning>
 In some cases, projects need additional scopes.
 To do so, create a role `project:<project>:grants/<grantName` containing the desired scopes.
 This role can then be assumed where necessary, or project admins can use it to grant specific scopes as desired.
+</Warning>
