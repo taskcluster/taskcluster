@@ -2,6 +2,7 @@
 title: API Access Control
 order: 10
 ---
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
 
 # API Access Control
 
@@ -29,5 +30,7 @@ There are some interesting semantics to `*` for roles, described in the design d
 Each request is associated with a [`clientId`](/docs/manual/design/apis/hawk/clients).
 This can indicate a record in the table of pre-defined clients, but much more commonly names a temporary credential such as that for a worker executing a task.
 
+<Warning>
 An important point to note is that API access control is based entirely on scopes and involves no notion of "identity" - no "users" or "accounts".
 Client IDs are for logging and auditing purposes and are not used for access control.
+</Warning>

@@ -3,11 +3,14 @@ filename: tasks/priority.mdx
 title: Priority
 order: 25
 ---
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
 
 Each task has a `priority` field giving its relative priority, chosen from a
 small set of named priorities. When several tasks are pending in the same
 queue, those with the highest priority will be executed first.
 
-Note that this can result in starvation: if there are enough tasks at a given
+<Warning>
+Please note that this can result in starvation: if there are enough tasks at a given
 priority to keep all available workers busy, then no tasks of lower priority
 will run.
+</Warning>
