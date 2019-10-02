@@ -1,5 +1,5 @@
 $schema: "/schemas/common/metaschema.json#"
-title:              "Indexed Task Response"
+title:              "Indexed Task"
 description: |
   Representation of an indexed task.
 type:               object
