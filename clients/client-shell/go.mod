@@ -14,7 +14,7 @@ require (
 	github.com/taskcluster/go-got v0.0.0-20190722003521-c63e3293a290
 	github.com/taskcluster/slugid-go v1.1.0
 	github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible
-	github.com/taskcluster/taskcluster/clients/client-go/v18 v18.0.0
+	github.com/taskcluster/taskcluster/clients/client-go/v18 v18.0.1
 	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
 	golang.org/x/net v0.0.0-20191002035440-2ec189313ef0 // indirect
 	golang.org/x/text v0.3.2 // indirect
