@@ -452,13 +452,6 @@ export default class TaskRunsCard extends Component {
                       />
                       <ListItemSecondaryAction
                         className={classes.listItemSecondaryAction}>
-                        <CopyToClipboard
-                          title={`${run.workerId} (Copy)`}
-                          text={run.workerId}>
-                          <IconButton>
-                            <ContentCopyIcon />
-                          </IconButton>
-                        </CopyToClipboard>
                         <IconButton
                           title="View Worker"
                           component={Link}

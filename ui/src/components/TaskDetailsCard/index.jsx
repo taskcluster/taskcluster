@@ -152,13 +152,6 @@ export default class TaskDetailsCard extends Component {
                 />
                 <ListItemSecondaryAction
                   className={classes.listItemSecondaryAction}>
-                  <CopyToClipboard
-                    title={`${task.workerType} (Copy)`}
-                    text={task.workerType}>
-                    <IconButton>
-                      <ContentCopyIcon />
-                    </IconButton>
-                  </CopyToClipboard>
                   <IconButton
                     component={Link}
                     title="View Workers"
@@ -304,13 +297,6 @@ export default class TaskDetailsCard extends Component {
                           <ListItemText primary={task.metadata.name} />
                           <ListItemSecondaryAction
                             className={classes.listItemSecondaryAction}>
-                            <CopyToClipboard
-                              title={`${task.metadata.name} (Copy)`}
-                              text={task.metadata.name}>
-                              <IconButton>
-                                <ContentCopyIcon />
-                              </IconButton>
-                            </CopyToClipboard>
                             <IconButton
                               title="View Task"
                               component={Link}
