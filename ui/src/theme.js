@@ -30,6 +30,7 @@ const error = {
   main: red[500],
   dark: red[700],
   light: red[300],
+  contrastText: THEME.PRIMARY_LIGHT,
 };
 const createTheme = isDarkTheme => {
   const primaryMain = isDarkTheme ? THEME.PRIMARY_DARK : THEME.PRIMARY_LIGHT;
