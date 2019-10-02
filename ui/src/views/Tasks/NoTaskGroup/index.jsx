@@ -48,7 +48,12 @@ export default class NoTaskGroup extends Component {
       <Dashboard
         title="Task Groups"
         helpView={<HelpView description={description} />}
-        search={<Search placeholder="Search Task Group ID" onSubmit={this.handleTaskGroupSearchSubmit} />}>
+        search={
+          <Search
+            placeholder="Search Task Group ID"
+            onSubmit={this.handleTaskGroupSearchSubmit}
+          />
+        }>
         <Typography className={classes.infoText}>
           Enter a task group ID in the search box
         </Typography>
