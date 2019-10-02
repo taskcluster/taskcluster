@@ -8,6 +8,7 @@ import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography';
 import LinkIcon from 'mdi-react/LinkIcon';
+import TableCellItem from '../TableCellItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import DateDistance from '../DateDistance';
 import { VIEW_CLIENTS_PAGE_SIZE } from '../../utils/constants';
@@ -30,7 +31,6 @@ const tableHeaders = ['Client ID', 'Last Date Used'];
     justifyContent: 'space-between',
     width: '100%',
     padding: theme.spacing.unit,
-    ...theme.mixins.hover,
   },
 }))
 export default class ClientsTable extends Component {
@@ -108,14 +108,15 @@ export default class ClientsTable extends Component {
         renderRow={({ node: client }) => (
           <TableRow key={client.clientId}>
             <TableCell padding="dense">
-              <Link
-                className={classes.tableCell}
+              <TableCellItem
+                button
+                component={Link}
                 to={`/auth/clients/${encodeURIComponent(client.clientId)}`}>
                 <div className={classes.listItemCell}>
                   <Typography>{client.clientId}</Typography>
                   <LinkIcon size={iconSize} />
                 </div>
-              </Link>
+              </TableCellItem>
             </TableCell>
             <TableCell>
               <DateDistance from={client.lastDateUsed} />

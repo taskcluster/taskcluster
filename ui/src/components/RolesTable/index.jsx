@@ -8,6 +8,7 @@ import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography';
 import LinkIcon from 'mdi-react/LinkIcon';
+import TableCellItem from '../TableCellItem';
 import sort from '../../utils/sort';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_ROLES_PAGE_SIZE } from '../../utils/constants';
@@ -29,7 +30,6 @@ const tableHeaders = ['Role ID'];
     justifyContent: 'space-between',
     width: '100%',
     padding: theme.spacing.unit,
-    ...theme.mixins.hover,
   },
 }))
 export default class RolesTable extends Component {
@@ -114,14 +114,16 @@ export default class RolesTable extends Component {
         renderRow={({ node: role }) => (
           <TableRow key={role.roleId}>
             <TableCell padding="dense">
-              <Link
+              <TableCellItem
+                button
+                component={Link}
                 className={classes.tableCell}
                 to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
                 <div className={classes.listItemCell}>
                   <Typography>{role.roleId}</Typography>
                   <LinkIcon size={iconSize} />
                 </div>
-              </Link>
+              </TableCellItem>
             </TableCell>
           </TableRow>
         )}
