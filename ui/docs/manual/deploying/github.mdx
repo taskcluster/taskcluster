@@ -36,9 +36,9 @@ Set the fields as follows:
 ### How to set up private keys? 
 
 On the app's settings page, generate a private key, and add its PEM to your Taskcluster instance's configs.
-Then restart your Taskcluster instance's GitHub service. 
-Note that the entire PEM key, including the "BEGIN" and "END" lines, must be included, with no additional whitespace
-or other formatting added or moved.
+This is a multi-line string, and unfortunately Kubernetes does not support multiline secrets - it replaces newlines with the escape sequence `\n`.
+The service can accept this form as well, e.g.,  `-----BEGIN RSA PRIVATE KEY-----\n{key material}\n-----END RSA PRIVATE KEY-----`.
+Note that the entire PEM key, including the "BEGIN" and "END" lines, must be included, with no additional whitespace or other formatting added or moved.
 
 ### What permissions does the Taskcluster Github app need?
 
