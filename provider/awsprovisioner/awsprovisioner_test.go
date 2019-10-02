@@ -9,7 +9,7 @@ import (
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
-	"github.com/taskcluster/taskcluster/clients/client-go/v17/tcawsprovisioner"
+	"github.com/taskcluster/taskcluster/clients/client-go/v18/tcawsprovisioner"
 )
 
 var testMetadata = map[string]string{

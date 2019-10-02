@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/taskcluster/httpbackoff/v3"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v17"
-	"github.com/taskcluster/taskcluster/clients/client-go/v17/tcsecrets"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v18"
+	"github.com/taskcluster/taskcluster/clients/client-go/v18/tcsecrets"
 )
 
 func TestSecretsSecretsGetNosuch(t *testing.T) {

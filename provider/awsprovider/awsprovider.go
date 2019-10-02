@@ -9,8 +9,8 @@ import (
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v17"
-	"github.com/taskcluster/taskcluster/clients/client-go/v17/tcworkermanager"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v18"
+	"github.com/taskcluster/taskcluster/clients/client-go/v18/tcworkermanager"
 )
 
 const TERMINATION_PATH = "/meta-data/spot/termination-time"
