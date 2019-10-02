@@ -6,7 +6,6 @@ import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
@@ -191,6 +190,28 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
   iconContainer: {
     marginLeft: theme.spacing(1),
     marginTop: theme.spacing(2),
+  },
+  taskShouldRunFlex: {
+    display: 'flex',
+    width: '100%',
+    justifyContent: 'space-between',
+    [theme.breakpoints.down('xs')]: {
+      flexDirection: 'column',
+    },
+  },
+  formLabelSpacing: {
+    marginTop: -0.5 * theme.spacing.unit,
+    marginBottom: -0.5 * theme.spacing.unit,
+    marginRight: 4 * theme.spacing.triple,
+    [theme.breakpoints.down('sm')]: {
+      marginRight: theme.spacing.double,
+    },
+  },
+  mainHeading: {
+    marginTop: -theme.spacing.triple,
+  },
+  generalSpacing: {
+    marginTop: -2 * theme.spacing.unit,
   },
 }))
 export default class QuickStart extends Component {
@@ -412,9 +433,11 @@ export default class QuickStart extends Component {
               contact the organization owner to have it set up!"
             />
           )}
-          <Typography variant="h6">Create Your Task Definition</Typography>
+          <Typography className={classes.mainHeading} variant="h6">
+            Create Your Task Definition
+          </Typography>
           <List>
-            <ListItem>
+            <ListItem className={classes.generalSpacing}>
               <TextField
                 label="Name"
                 name="taskName"
@@ -423,87 +446,98 @@ export default class QuickStart extends Component {
                 value={taskName}
               />
             </ListItem>
-            <ListItem>
+            <ListItem className={classes.generalSpacing}>
               <TextField
                 label="Description"
                 name="taskDescription"
                 onChange={this.handleInputChange}
                 fullWidth
                 multiline
-                rows={4}
+                rows={3}
                 value={taskDescription}
               />
             </ListItem>
-            <ListItem>
+            <ListItem className={classes.generalSpacing}>
               <FormControl component="fieldset">
                 <FormLabel component="legend">
                   This task should run on
                 </FormLabel>
-                <FormGroup>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={events.has('pull_request.opened')}
-                        onChange={this.handleEventsSelection}
-                        value="pull_request.opened"
-                      />
-                    }
-                    label="Pull request opened"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={events.has('pull_request.closed')}
-                        onChange={this.handleEventsSelection}
-                        value="pull_request.closed"
-                      />
-                    }
-                    label="Pull request merged or closed"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={events.has('pull_request.synchronize')}
-                        onChange={this.handleEventsSelection}
-                        value="pull_request.synchronize"
-                      />
-                    }
-                    label="New commit made in an opened pull request"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={events.has('pull_request.reopened')}
-                        onChange={this.handleEventsSelection}
-                        value="pull_request.reopened"
-                      />
-                    }
-                    label="Pull request re-opened"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={events.has('push')}
-                        onChange={this.handleEventsSelection}
-                        value="push"
-                      />
-                    }
-                    label="Push"
-                  />
-                </FormGroup>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={events.has('release')}
-                      onChange={this.handleEventsSelection}
-                      value="release"
+                <div className={classes.taskShouldRunFlex}>
+                  <FormGroup>
+                    <FormControlLabel
+                      className={classes.formLabelSpacing}
+                      control={
+                        <Checkbox
+                          checked={events.has('pull_request.opened')}
+                          onChange={this.handleEventsSelection}
+                          value="pull_request.opened"
+                        />
+                      }
+                      label="Pull request opened"
                     />
-                  }
-                  label="Release or tag created"
-                />
+                    <FormControlLabel
+                      className={classes.formLabelSpacing}
+                      control={
+                        <Checkbox
+                          checked={events.has('pull_request.closed')}
+                          onChange={this.handleEventsSelection}
+                          value="pull_request.closed"
+                        />
+                      }
+                      label="Pull request merged or closed"
+                    />
+                    <FormControlLabel
+                      className={classes.formLabelSpacing}
+                      control={
+                        <Checkbox
+                          checked={events.has('pull_request.synchronize')}
+                          onChange={this.handleEventsSelection}
+                          value="pull_request.synchronize"
+                        />
+                      }
+                      label="New commit made in an opened pull request"
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <FormControlLabel
+                      className={classes.formLabelSpacing}
+                      control={
+                        <Checkbox
+                          checked={events.has('pull_request.reopened')}
+                          onChange={this.handleEventsSelection}
+                          value="pull_request.reopened"
+                        />
+                      }
+                      label="Pull request re-opened"
+                    />
+                    <FormControlLabel
+                      className={classes.formLabelSpacing}
+                      control={
+                        <Checkbox
+                          checked={events.has('push')}
+                          onChange={this.handleEventsSelection}
+                          value="push"
+                        />
+                      }
+                      label="Push"
+                    />
+
+                    <FormControlLabel
+                      className={classes.formLabelSpacing}
+                      control={
+                        <Checkbox
+                          checked={events.has('release')}
+                          onChange={this.handleEventsSelection}
+                          value="release"
+                        />
+                      }
+                      label="Release or tag created"
+                    />
+                  </FormGroup>
+                </div>
               </FormControl>
             </ListItem>
-            <ListItem>
+            <ListItem className={classes.generalSpacing}>
               <TextField
                 id="select-access"
                 select
@@ -517,7 +551,7 @@ export default class QuickStart extends Component {
                 <MenuItem value="collaborators">Collaborators</MenuItem>
               </TextField>
             </ListItem>
-            <ListItem>
+            <ListItem className={classes.generalSpacing}>
               <TextField
                 id="select-language"
                 select
@@ -533,7 +567,7 @@ export default class QuickStart extends Component {
                 <MenuItem value="go">Go</MenuItem>
               </TextField>
             </ListItem>
-            <ListItem>
+            <ListItem className={classes.generalSpacing}>
               <TextField
                 id="select-commands"
                 select
@@ -547,7 +581,13 @@ export default class QuickStart extends Component {
                 <MenuItem value="custom">I will define them myself</MenuItem>
               </TextField>
             </ListItem>
-            <ListSubheader>Task Definiton</ListSubheader>
+            <ListItem>
+              <TextField
+                className={classes.generalSpacing}
+                label="Task Definiton"
+                fullWidth
+              />
+            </ListItem>
             <ListItem className={classes.editorListItem}>
               {this.renderEditor()}
             </ListItem>
