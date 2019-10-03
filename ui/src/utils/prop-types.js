@@ -126,6 +126,7 @@ export const taskPriority = oneOf([
   'LOW',
   'VERY_LOW',
   'LOWEST',
+  'normal',
 ]);
 
 export const taskActions = shape({
