@@ -32,7 +32,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
 
       // zero out the container
       const blobService = new azure.Blob(credentials);
-      blobService.deleteBlob(containerName, "Roles", {});
+      try {
+        await blobService.deleteBlob(containerName, "Roles", {});
+      } catch (err) {
+        if (err.code !== 'BlobNotFound') {
+          throw err;
+        }
+        // ignore BlobNotFound here, as that's the desired result
+      }
     }
   });
 
