@@ -28,7 +28,7 @@ exports.tasks.push({
     let pollForStatus = true;
     setTimeout(function () {
       pollForStatus = false;
-    }, 12000);
+    }, 120000);
     while (pollForStatus){
       let status = await queue.status(taskId);
       if (status.status.state === 'pending' || status.status.state === 'running'){
@@ -41,16 +41,9 @@ exports.tasks.push({
           ['built-in/succeed']: status.status.state,
         };
       } else {
-        return utils.skip({
-          [`built-in/succeed`]: status.status.state,
-          reason: 'Task finished with status ' + status.status.state,
-        });
+        throw new Error('Task finished with status ' + status.status.state);
       }
     }
-    return utils.skip({
-      [`built-in/succeed`]: 'deadline exceeded',
-      reason: 'Deadline exceeded',
-    });
-
+    throw new Error('Deadline exceeded');
   },
 });
