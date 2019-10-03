@@ -36,8 +36,8 @@ Set the fields as follows:
 ### How to set up private keys? 
 
 On the app's settings page, generate a private key, and add its PEM to your Taskcluster instance's configs.
-This is a multi-line string, and unfortunately Kubernetes does not support multiline secrets - it replaces newlines with the escape sequence `\n`.
-The service can accept this form as well, e.g.,  `-----BEGIN RSA PRIVATE KEY-----\n{key material}\n-----END RSA PRIVATE KEY-----`.
+This is a multiline string.
+If your deployment mechanics does not handle multiline values correctly, the newlines can be replaced by a literal `\``n` escape sequence, thus fitting on a single (long) line.
 Note that the entire PEM key, including the "BEGIN" and "END" lines, must be included, with no additional whitespace or other formatting added or moved.
 
 ### What permissions does the Taskcluster Github app need?
