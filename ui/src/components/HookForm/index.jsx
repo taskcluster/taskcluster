@@ -18,6 +18,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
+import Tooltip from '@material-ui/core/Tooltip';
 import FlashIcon from 'mdi-react/FlashIcon';
 import PlusIcon from 'mdi-react/PlusIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
@@ -642,22 +643,26 @@ export default class HookForm extends Component {
                 onChange={this.handleScheduleChange}
                 value={scheduleTextField}
               />
-              <IconButton
-                className={classes.iconButton}
-                onClick={this.handleNewCronJob}>
-                <PlusIcon />
-              </IconButton>
+              <Tooltip title="Add Schedule">
+                <IconButton
+                  className={classes.iconButton}
+                  onClick={this.handleNewCronJob}>
+                  <PlusIcon />
+                </IconButton>
+              </Tooltip>
             </div>
             <List>
               {hook.schedule.map(cronJob => (
                 <ListItem className={classes.scheduleEntry} key={cronJob}>
                   <ListItemText primary={<code>{cronJob}</code>} />
-                  <IconButton
-                    className={classes.iconButton}
-                    name={cronJob}
-                    onClick={this.handleDeleteCronJob}>
-                    <DeleteIcon />
-                  </IconButton>
+                  <Tooltip title="Delete Schedule">
+                    <IconButton
+                      className={classes.iconButton}
+                      name={cronJob}
+                      onClick={this.handleDeleteCronJob}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
                 </ListItem>
               ))}
             </List>
