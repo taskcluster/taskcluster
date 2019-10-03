@@ -35,7 +35,7 @@ const getPrivatePEM = cfg => {
   // sometimes it's easier to provide this config value with embedded backslash-n characters
   // than to convince everything to correctly handle newlines.  So, we'll be friendly to that
   // arrangement, too.
-  return privatePEM.replace('\\n', '\n');
+  return privatePEM.replace(/\\n/g, '\n');
 };
 
 module.exports = async ({cfg}) => {

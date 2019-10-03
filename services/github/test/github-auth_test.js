@@ -12,7 +12,7 @@ suite(testing.suiteName(), function() {
     });
 
     test('with escaped newlines', function() {
-      const cfg = {github: {credentials: {privatePEM: privatePEM.replace('\n', '\\n')}}};
+      const cfg = {github: {credentials: {privatePEM: privatePEM.replace(/\n/g, '\\n')}}};
       assert.equal(githubAuth.getPrivatePEM(cfg), privatePEM);
     });
 
