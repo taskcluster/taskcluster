@@ -2,20 +2,21 @@ import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import { oneOfType, object, string, func, bool } from 'prop-types';
 import { equals } from 'ramda';
-import ListSubheader from '@material-ui/core/ListSubheader';
+import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography/Typography';
 import MarkdownTextArea from '@mozilla-frontend-infra/components/MarkdownTextArea';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormGroup from '@material-ui/core/FormGroup';
 import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import DialogAction from '../DialogAction';
-import List from '../../views/Documentation/components/List';
 import Button from '../Button';
 import isWorkerTypeNameValid from '../../utils/isWorkerTypeNameValid';
 import {
@@ -57,22 +58,15 @@ import SpeedDial from '../SpeedDial';
   dropdown: {
     minWidth: 200,
   },
-  list: {
-    paddingLeft: 0,
-    paddingRight: 0,
-  },
-  middleList: {
-    paddingTop: theme.spacing.unit * 7,
-    paddingBottom: theme.spacing.unit * 9,
-    paddingLeft: 0,
-    paddingRight: 0,
-  },
-  separator: {
-    padding: theme.spacing.double,
-    paddingBottom: 0,
+  workerPoolIdDiv: {
+    display: 'flex',
   },
   workerPoolDescriptionListItem: {
-    marginBottom: theme.spacing.quad,
+    marginTop: theme.spacing.unit,
+    marginBottom: theme.spacing.triple,
+  },
+  ownerEmailListItem: {
+    display: 'block',
   },
 }))
 export default class WMWorkerPoolEditor extends Component {
@@ -300,37 +294,36 @@ export default class WMWorkerPoolEditor extends Component {
     return (
       <Fragment>
         <ErrorPanel fixed error={error} />
-        <List className={classes.list}>
-          <ListSubheader>Worker Pool ID *</ListSubheader>
-          <ListItem>
-            <TextField
-              name="workerPoolId1"
-              error={validation.workerPoolId1.error}
-              onChange={this.handleInputChange}
-              fullWidth
-              value={workerPool.workerPoolId1}
-              required
-              disabled={!isNewWorkerPool}
-              autoFocus={isNewWorkerPool}
-              helperText={validation.workerPoolId1.message}
-            />
-            <Typography className={classes.separator} variant="h5">
-              /
-            </Typography>
-            <TextField
-              name="workerPoolId2"
-              error={validation.workerPoolId2.error}
-              onChange={this.handleInputChange}
-              fullWidth
-              value={workerPool.workerPoolId2}
-              required
-              disabled={!isNewWorkerPool}
-              helperText={validation.workerPoolId2.message}
-            />
-          </ListItem>
-        </List>
-
-        <List className={classes.list}>
+        <List>
+          <div className={classes.workerPoolIdDiv}>
+            <ListItem>
+              <TextField
+                name="workerPoolId1"
+                label="Worker Pool ID 1"
+                error={validation.workerPoolId1.error}
+                onChange={this.handleInputChange}
+                fullWidth
+                value={workerPool.workerPoolId1}
+                required
+                disabled={!isNewWorkerPool}
+                autoFocus={isNewWorkerPool}
+                helperText={validation.workerPoolId1.message}
+              />
+            </ListItem>
+            <ListItem>
+              <TextField
+                name="workerPoolId2"
+                label="Worker Pool ID 2"
+                error={validation.workerPoolId2.error}
+                onChange={this.handleInputChange}
+                fullWidth
+                value={workerPool.workerPoolId2}
+                required
+                disabled={!isNewWorkerPool}
+                helperText={validation.workerPoolId2.message}
+              />
+            </ListItem>
+          </div>
           <ListItem className={classes.workerPoolDescriptionListItem}>
             <MarkdownTextArea
               name="description"
@@ -340,8 +333,7 @@ export default class WMWorkerPoolEditor extends Component {
               defaultTabIndex={isNewWorkerPool ? 0 : 1}
             />
           </ListItem>
-
-          <ListItem>
+          <ListItem className={classes.ownerEmailListItem}>
             <TextField
               label="Owner's Email"
               name="owner"
@@ -354,104 +346,110 @@ export default class WMWorkerPoolEditor extends Component {
               type="email"
               helperText={validation.owner.message}
             />
+            <FormGroup row>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={workerPool.emailOnError}
+                    onChange={this.handleSwitchChange}
+                    value="emailOnError"
+                  />
+                }
+                label="Email the owner about errors"
+              />
+            </FormGroup>
+          </ListItem>
+          <ListItem>
+            <ListItemText
+              disableTypography
+              primary={<Typography variant="subtitle1">Provider</Typography>}
+              secondary={
+                <TextField
+                  select
+                  required
+                  id="select-provider-type"
+                  className={classes.dropdown}
+                  helperText="Which cloud do you want to run your tasks in?"
+                  value={workerPool.providerId}
+                  onChange={this.handleProviderChange}>
+                  {providers.map(({ providerId }) => (
+                    <MenuItem key={providerId} value={providerId}>
+                      {providerId}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              }
+            />
           </ListItem>
 
           <ListItem>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={workerPool.emailOnError}
-                  onChange={this.handleSwitchChange}
-                  value="emailOnError"
+            <ListItemText
+              disableTypography
+              primary={
+                <Typography variant="subtitle1">Configuration</Typography>
+              }
+              secondary={
+                <CodeEditor
+                  value={JSON.stringify(workerPool.config, null, 2)}
+                  onChange={this.handleEditorChange}
+                  lint
                 />
               }
-              label="Email the owner about errors"
             />
           </ListItem>
         </List>
 
-        <List className={classes.middleList}>
-          <ListSubheader>Provider</ListSubheader>
-          <ListItem>
-            <TextField
-              select
-              required
-              id="select-provider-type"
-              className={classes.dropdown}
-              helperText="Which cloud do you want to run your tasks in?"
-              value={workerPool.providerId}
-              onChange={this.handleProviderChange}>
-              {providers.map(({ providerId }) => (
-                <MenuItem key={providerId} value={providerId}>
-                  {providerId}
-                </MenuItem>
-              ))}
-            </TextField>
-          </ListItem>
-        </List>
+        <Button
+          spanProps={{
+            className: isNewWorkerPool
+              ? classes.createIconSpan
+              : classes.saveIconSpan,
+          }}
+          name="saveRequest"
+          disabled={!this.isValid()}
+          requiresAuth
+          tooltipProps={{ title: 'Save Worker Pool' }}
+          onClick={this.handleOnClick}
+          classes={{ root: classes.saveIcon }}
+          variant="round">
+          <ContentSaveIcon />
+        </Button>
 
-        <List className={classes.list}>
-          <ListSubheader>Configuration</ListSubheader>
-          <ListItem>
-            <CodeEditor
-              value={JSON.stringify(workerPool.config, null, 2)}
-              onChange={this.handleEditorChange}
-              lint
+        {!isNewWorkerPool && (
+          <SpeedDial>
+            <SpeedDialAction
+              requiresAuth
+              tooltipOpen
+              icon={<DeleteIcon />}
+              onClick={onDialogActionOpen}
+              tooltipTitle="Delete"
+              className={classes.deleteIcon}
+              disabled={actionLoading}
             />
-          </ListItem>
-
-          <Button
-            spanProps={{
-              className: isNewWorkerPool
-                ? classes.createIconSpan
-                : classes.saveIconSpan,
-            }}
-            name="saveRequest"
-            disabled={!this.isValid()}
-            requiresAuth
-            tooltipProps={{ title: 'Save Worker Pool' }}
-            onClick={this.handleOnClick}
-            classes={{ root: classes.saveIcon }}
-            variant="round">
-            <ContentSaveIcon />
-          </Button>
-
-          {!isNewWorkerPool && (
-            <SpeedDial>
-              <SpeedDialAction
-                requiresAuth
-                tooltipOpen
-                icon={<DeleteIcon />}
-                onClick={onDialogActionOpen}
-                tooltipTitle="Delete"
-                className={classes.deleteIcon}
-                disabled={actionLoading}
-              />
-            </SpeedDial>
-          )}
-          {dialogOpen && (
-            <DialogAction
-              open={dialogOpen}
-              onSubmit={this.handleDeleteWorkerPool}
-              onComplete={onDialogActionComplete}
-              onClose={onDialogActionClose}
-              onError={onDialogActionError}
-              error={dialogError}
-              title="Delete Worker Pool?"
-              body={
-                <Typography>
-                  This will delete the worker pool{' '}
-                  {joinWorkerPoolId(
-                    workerPool.workerPoolId1,
-                    workerPool.workerPoolId2
-                  )}
-                  .
-                </Typography>
-              }
-              confirmText="Delete Worker Pool"
-            />
-          )}
-        </List>
+          </SpeedDial>
+        )}
+        {dialogOpen && (
+          <DialogAction
+            open={dialogOpen}
+            onSubmit={this.handleDeleteWorkerPool}
+            onComplete={onDialogActionComplete}
+            onClose={onDialogActionClose}
+            onError={onDialogActionError}
+            error={dialogError}
+            title="Delete Worker Pool?"
+            body={
+              <Typography>
+                This will delete the worker pool{' '}
+                {joinWorkerPoolId(
+                  workerPool.workerPoolId1,
+                  workerPool.workerPoolId2
+                )}
+                .
+              </Typography>
+            }
+            confirmText="Delete Worker Pool"
+          />
+        )}
       </Fragment>
     );
   }
