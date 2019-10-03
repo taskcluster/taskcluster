@@ -220,7 +220,7 @@ export default class TaskDetailsCard extends Component {
                     classes={{ secondary: classes.sourceHeadline }}
                     primary="Source"
                     secondary={task.metadata.source}
-                    title="https://hg.mozilla.org/integration/mozilla-inbound/raw-file/8735151820ebeaf7ee06e9f2ed16868c164d85ab/.taskcluster.yml"
+                    title={task.metadata.source}
                   />
                   {isExternal ? <OpenInNewIcon /> : <LinkIcon />}
                 </ListItem>
