@@ -73,6 +73,11 @@ class GoogleProvider extends Provider {
       auth: client,
     });
     this.oauth2 = new google.auth.OAuth2();
+
+    // A place to keep operations that we'll raise errors with to the user
+    // on a best-effort basis. For instance, this will not persist
+    // across restarts
+    this.trackedOperations = [];
   }
 
   async _enqueue(type, func, tries = 0) {
@@ -195,6 +200,24 @@ class GoogleProvider extends Provider {
     await workerPool.modify(wt => {
       delete wt.providerData[this.providerId];
     });
+  }
+
+  async removeWorker(worker) {
+    try {
+      this.trackedOperations.push({
+        op: await this._enqueue('query', () => this.compute.instances.delete({
+          project: this.project,
+          zone: worker.providerData.zone,
+          instance: worker.workerId,
+        })),
+        workerPoolId: worker.workerPoolId,
+      });
+    } catch (err) {
+      if (err.code === 404) {
+        return; // Nothing to do, it is already gone
+      }
+      throw err;
+    }
   }
 
   async provision({workerPool}) {
@@ -324,6 +347,17 @@ class GoogleProvider extends Provider {
   async scanPrepare() {
     this.seen = {};
     this.errors = {};
+
+    const opPromises = [];
+    // Also use this time to handle any tracked operations
+    for (let i = 0; i++; i < this.trackedOperations.length) {
+      const {op, workerPoolId} = this.trackedOperations.shift();
+      opPromises.push(this.handleOperation({
+        op,
+        errors: this.errors[workerPoolId],
+      }));
+    }
+    await Promise.all(opPromises);
   }
 
   /*
