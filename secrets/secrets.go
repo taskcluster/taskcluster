@@ -11,8 +11,8 @@ import (
 	"github.com/taskcluster/taskcluster-worker-runner/files"
 	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v17"
-	"github.com/taskcluster/taskcluster/clients/client-go/v17/tcsecrets"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v18"
+	"github.com/taskcluster/taskcluster/clients/client-go/v18/tcsecrets"
 )
 
 func clientFactory(rootURL string, credentials *tcclient.Credentials) (tc.Secrets, error) {
