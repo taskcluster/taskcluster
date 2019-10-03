@@ -35,6 +35,19 @@ class AwsProvider extends Provider {
     this.providerConfig = providerConfig;
   }
 
+  async setup() {
+    const ec2 = new aws.EC2({});
+    const regions = await (ec2.describeRegions({}).promise()).Regions;
+
+    this.ec2s = {};
+    regions.forEach(r => {
+      this.ec2s[r.RegionName] = new aws.EC2({
+        region: r.RegionName,
+        credentials: this.providerConfig.credentials,
+      });
+    });
+  }
+
   async provision({workerPool}) {
     const {workerPoolId} = workerPool;
 
@@ -46,11 +59,6 @@ class AwsProvider extends Provider {
     }
 
     const config = this.chooseConfig({possibleConfigs: workerPool.config.launchConfigs});
-
-    const ec2 = new aws.EC2({
-      credentials: this.providerConfig.credentials,
-      region: config.region,
-    });
 
     const toSpawn = await this.estimator.simple({
       workerPoolId,
@@ -92,7 +100,7 @@ class AwsProvider extends Provider {
 
     let spawned;
     try {
-      spawned = await ec2.runInstances({
+      spawned = await this.ec2s[config.region].runInstances({
         ...config.launchConfig,
 
         UserData: userData.toString('base64'), // The string needs to be base64-encoded. See the docs above
@@ -200,14 +208,9 @@ class AwsProvider extends Provider {
   async checkWorker({worker}) {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
 
-    const ec2 = new aws.EC2({
-      credentials: this.providerConfig.credentials,
-      region: worker.providerData.region,
-    });
-
     let instanceStatuses;
     try {
-      instanceStatuses = (await ec2.describeInstanceStatus({
+      instanceStatuses = (await this.ec2s[worker.providerData.region].describeInstanceStatus({
         InstanceIds: [worker.workerId.toString()],
         IncludeAllInstances: true,
       }).promise()).InstanceStatuses;
