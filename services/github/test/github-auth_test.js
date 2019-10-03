@@ -18,7 +18,11 @@ suite(testing.suiteName(), function() {
 
     test('with invalid value', function() {
       const cfg = {github: {credentials: {privatePEM: 'somekey'}}};
-      assert.throws(() => githubAuth.getPrivatePEM(cfg), /must match/);
+      assert.throws(() => githubAuth.getPrivatePEM(cfg), err => {
+        assert(/must match/.test(err.toString()));
+        assert(!/somekey/.test(err.toString()));
+        return true;
+      });
     });
   });
 });
