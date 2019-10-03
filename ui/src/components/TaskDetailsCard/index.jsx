@@ -214,14 +214,13 @@ export default class TaskDetailsCard extends Component {
                   component="a"
                   href={task.metadata.source}
                   target="_blank"
-                  rel="noopener noreferrer" 
-                  title ="https://hg.mozilla.org/integration/mozilla-inbound/raw-file/8735151820ebeaf7ee06e9f2ed16868c164d85ab/.taskcluster.yml"
-                  >
+                  rel="noopener noreferrer">
                   <ListItemText
                     className={classes.sourceHeadlineText}
                     classes={{ secondary: classes.sourceHeadline }}
                     primary="Source"
                     secondary={task.metadata.source}
+                    title="https://hg.mozilla.org/integration/mozilla-inbound/raw-file/8735151820ebeaf7ee06e9f2ed16868c164d85ab/.taskcluster.yml"
                   />
                   {isExternal ? <OpenInNewIcon /> : <LinkIcon />}
                 </ListItem>
