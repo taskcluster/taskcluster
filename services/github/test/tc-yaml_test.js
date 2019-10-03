@@ -26,7 +26,11 @@ suite(testing.suiteName(), function() {
         repository: 'repo',
         details: {'event.type': 'pull_request.opened'},
       }, now);
-      assume(config.scopes.sort()).to.deeply.equal(['assume:repo:github.com/org/repo:pull-request']);
+      assume(config.scopes.sort()).to.deeply.equal([
+        'assume:repo:github.com/org/repo:pull-request',
+        'queue:route:statuses-queue',
+        'queue:scheduler-id:test-sched',
+      ]);
     });
 
     test('compileTasks for a push sets scopes correctly', function() {
@@ -39,7 +43,11 @@ suite(testing.suiteName(), function() {
         repository: 'repo',
         details: {'event.type': 'push', 'event.base.repo.branch': 'master'},
       }, now);
-      assume(config.scopes.sort()).to.deeply.equal(['assume:repo:github.com/org/repo:branch:master']);
+      assume(config.scopes.sort()).to.deeply.equal([
+        'assume:repo:github.com/org/repo:branch:master',
+        'queue:route:statuses-queue',
+        'queue:scheduler-id:test-sched',
+      ]);
     });
 
     test('compileTasks for a tag sets scopes correctly', function() {
@@ -52,7 +60,11 @@ suite(testing.suiteName(), function() {
         repository: 'repo',
         details: {'event.type': 'tag', 'event.head.tag': 'v1.2.3'},
       }, now);
-      assume(config.scopes.sort()).to.deeply.equal(['assume:repo:github.com/org/repo:tag:v1.2.3']);
+      assume(config.scopes.sort()).to.deeply.equal([
+        'assume:repo:github.com/org/repo:tag:v1.2.3',
+        'queue:route:statuses-queue',
+        'queue:scheduler-id:test-sched',
+      ]);
     });
 
     test('compileTasks for a release sets scopes correctly', function() {
@@ -65,7 +77,11 @@ suite(testing.suiteName(), function() {
         repository: 'repo',
         details: {'event.type': 'release'},
       }, now);
-      assume(config.scopes.sort()).to.deeply.equal(['assume:repo:github.com/org/repo:release']);
+      assume(config.scopes.sort()).to.deeply.equal([
+        'assume:repo:github.com/org/repo:release',
+        'queue:route:statuses-queue',
+        'queue:scheduler-id:test-sched',
+      ]);
     });
 
   });
@@ -89,7 +105,10 @@ suite(testing.suiteName(), function() {
       };
       tcyaml.compileTasks(config, cfg, {}, now);
       assume(config.tasks).to.deeply.equal([]);
-      assume(config.scopes.sort()).to.deeply.equal([]);
+      assume(config.scopes.sort()).to.deeply.equal([
+        'queue:route:statuses-queue',
+        'queue:scheduler-id:test-sched',
+      ]);
     });
 
     test('compileTasks with one task sets default properties', function() {
@@ -107,7 +126,10 @@ suite(testing.suiteName(), function() {
           routes: ['statuses-queue'],
         },
       }]);
-      assume(config.scopes.sort()).to.deeply.equal([]);
+      assume(config.scopes.sort()).to.deeply.equal([
+        'queue:route:statuses-queue',
+        'queue:scheduler-id:test-sched',
+      ]);
     });
 
     test('compileTasks for a pull-request sets scopes correctly', function() {
@@ -120,7 +142,29 @@ suite(testing.suiteName(), function() {
         organization: 'org',
         repository: 'repo',
       }, now);
-      assume(config.scopes.sort()).to.deeply.equal(['assume:repo:github.com/org/repo:pull-request']);
+      assume(config.scopes.sort()).to.deeply.equal([
+        'assume:repo:github.com/org/repo:pull-request',
+        'queue:route:statuses-queue',
+        'queue:scheduler-id:test-sched',
+      ]);
+    });
+
+    test('compileTasks for a pull-request with checks sets scopes correctly', function() {
+      const config = {
+        tasks: [{}],
+        reporting: 'checks',
+      };
+
+      tcyaml.compileTasks(config, cfg, {
+        tasks_for: 'github-pull-request',
+        organization: 'org',
+        repository: 'repo',
+      }, now);
+      assume(config.scopes.sort()).to.deeply.equal([
+        'assume:repo:github.com/org/repo:pull-request',
+        'queue:route:checks-queue',
+        'queue:scheduler-id:test-sched',
+      ]);
     });
 
     test('compileTasks for a push sets scopes correctly', function() {
@@ -135,7 +179,11 @@ suite(testing.suiteName(), function() {
         body: {ref: 'refs/heads/master'},
         details: {'event.base.repo.branch': 'master'},
       }, now);
-      assume(config.scopes.sort()).to.deeply.equal(['assume:repo:github.com/org/repo:branch:master']);
+      assume(config.scopes.sort()).to.deeply.equal([
+        'assume:repo:github.com/org/repo:branch:master',
+        'queue:route:statuses-queue',
+        'queue:scheduler-id:test-sched',
+      ]);
     });
 
     test('compileTasks for a tag sets scopes correctly', function() {
@@ -150,7 +198,11 @@ suite(testing.suiteName(), function() {
         body: {ref: 'refs/tags/v1.2.3'},
         details: {'event.head.tag': 'v1.2.3'},
       }, now);
-      assume(config.scopes.sort()).to.deeply.equal(['assume:repo:github.com/org/repo:tag:v1.2.3']);
+      assume(config.scopes.sort()).to.deeply.equal([
+        'assume:repo:github.com/org/repo:tag:v1.2.3',
+        'queue:route:statuses-queue',
+        'queue:scheduler-id:test-sched',
+      ]);
     });
 
     test('compileTasks for a release sets scopes correctly', function() {
@@ -163,7 +215,11 @@ suite(testing.suiteName(), function() {
         organization: 'org',
         repository: 'repo',
       }, now);
-      assume(config.scopes.sort()).to.deeply.equal(['assume:repo:github.com/org/repo:release']);
+      assume(config.scopes.sort()).to.deeply.equal([
+        'assume:repo:github.com/org/repo:release',
+        'queue:route:statuses-queue',
+        'queue:scheduler-id:test-sched',
+      ]);
     });
 
     test('compileTasks with one taskId sets taskGroupId', function() {
