@@ -131,7 +131,7 @@ Helm is still used to render templates because we need to support it.
 
 ## v15.0.0
 
-[MAJOR] The web-server application no longer generates a JWT when logging in. It uses a sessions to keep track of users.
+[MAJOR] The web-server application no longer generates a JWT when logging in. It uses sessions to keep track of users.
 The `JWT_KEY` configuration variable in web-server should be replaced with `SESSION_SECRET` which is used to compute
 the session hash.
 
