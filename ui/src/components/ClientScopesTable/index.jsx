@@ -22,6 +22,7 @@ import sort from '../../utils/sort';
 import Link from '../../utils/Link';
 import { VIEW_CLIENT_SCOPES_INSPECT_SIZE } from '../../utils/constants';
 import { pageInfo, client, scopeExpansionLevel } from '../../utils/prop-types';
+import TableCellItem from '../TableCellItem';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.clientId, b.node.clientId)),
@@ -113,8 +114,9 @@ export default class ClientScopesTable extends Component {
       map(node => (
         <TableRow key={node}>
           <TableCell padding="dense">
-            <Link
-              className={classes.tableCell}
+            <TableCellItem
+              button
+              component={Link}
               to={
                 selectedScope
                   ? `/auth/clients/${encodeURIComponent(node)}`
@@ -124,7 +126,7 @@ export default class ClientScopesTable extends Component {
                 <Typography>{node}</Typography>
                 <LinkIcon size={16} />
               </div>
-            </Link>
+            </TableCellItem>
           </TableCell>
         </TableRow>
       ))

@@ -17,13 +17,13 @@ import { FixedSizeList } from 'react-window';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import LinkIcon from 'mdi-react/LinkIcon';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
 import { role, scopeExpansionLevel } from '../../utils/prop-types';
+import TableCellItem from '../TableCellItem';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.roleId, b.roleId)),
@@ -93,8 +93,7 @@ export default class RoleScopesTable extends Component {
 
     return (
       <Fragment>
-        <ListItem
-          style={style}
+        <TableCellItem
           button
           component={Link}
           to={
@@ -102,9 +101,12 @@ export default class RoleScopesTable extends Component {
               ? `/auth/roles/${encodeURIComponent(item)}`
               : `/auth/scopes/${encodeURIComponent(item)}`
           }>
-          <ListItemText primary={item} />
+          <ListItemText
+            disableTypography
+            primary={<Typography>{item}</Typography>}
+          />
           <LinkIcon size={iconSize} />
-        </ListItem>
+        </TableCellItem>
         <Divider
           style={{
             ...style,
@@ -143,9 +145,9 @@ export default class RoleScopesTable extends Component {
         </FixedSizeList>
       </List>
     ) : (
-      <Typography className={classes.noRolesText}>
-        No roles available
+        <Typography className={classes.noRolesText}>
+          No roles available
       </Typography>
-    );
+      );
   }
 }
