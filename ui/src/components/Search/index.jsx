@@ -16,7 +16,7 @@ import { THEME } from '../../utils/constants';
     },
     '& $input': {
       transition: theme.transitions.create('width'),
-      width: 200,
+      width: 230,
       '&:focus': {
         width: 300,
       },
