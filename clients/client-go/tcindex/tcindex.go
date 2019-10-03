@@ -104,10 +104,10 @@ func (index *Index) Ping() error {
 // task exists for the given path, this API end-point will respond with a 404 status.
 //
 // See #findTask
-func (index *Index) FindTask(indexPath string) (*IndexedTaskResponse, error) {
+func (index *Index) FindTask(indexPath string) (*IndexedTask, error) {
 	cd := tcclient.Client(*index)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(indexPath), new(IndexedTaskResponse), nil)
-	return responseObject.(*IndexedTaskResponse), err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(indexPath), new(IndexedTask), nil)
+	return responseObject.(*IndexedTask), err
 }
 
 // List the namespaces immediately under a given namespace.
@@ -167,10 +167,10 @@ func (index *Index) ListTasks(namespace, continuationToken, limit string) (*List
 //   index:insert-task:<namespace>
 //
 // See #insertTask
-func (index *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTaskResponse, error) {
+func (index *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTask, error) {
 	cd := tcclient.Client(*index)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse), nil)
-	return responseObject.(*IndexedTaskResponse), err
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/task/"+url.QueryEscape(namespace), new(IndexedTask), nil)
+	return responseObject.(*IndexedTask), err
 }
 
 // Find a task by index path and redirect to the artifact on the most recent

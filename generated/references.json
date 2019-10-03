@@ -4063,47 +4063,7 @@
         "tasks": {
           "description": "List of tasks.\n",
           "items": {
-            "additionalProperties": false,
-            "description": "Representation of a task.\n",
-            "properties": {
-              "data": {
-                "description": "Data that was reported with the task. This is an arbitrary JSON\nobject.\n",
-                "title": "Task Specific Data",
-                "type": "object"
-              },
-              "expires": {
-                "description": "Date at which this entry expires from the task index.\n",
-                "format": "date-time",
-                "title": "Expiration",
-                "type": "string"
-              },
-              "namespace": {
-                "description": "Index path of the task.\n",
-                "maxLength": 255,
-                "title": "Namespace",
-                "type": "string"
-              },
-              "rank": {
-                "description": "If multiple tasks are indexed with the same `namespace` the task\nwith the highest `rank` will be stored and returned in later\nrequests. If two tasks has the same `rank` the latest task will be\nstored.\n",
-                "title": "Rank",
-                "type": "number"
-              },
-              "taskId": {
-                "description": "Unique task identifier for the task currently indexed at `namespace`.\n",
-                "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
-                "title": "Task Identifier",
-                "type": "string"
-              }
-            },
-            "required": [
-              "namespace",
-              "taskId",
-              "rank",
-              "data",
-              "expires"
-            ],
-            "title": "Task",
-            "type": "object"
+            "$ref": "indexed-task.json#"
           },
           "title": "Tasks",
           "type": "array",
@@ -4246,7 +4206,7 @@
   },
   {
     "content": {
-      "$id": "/schemas/index/v1/indexed-task-response.json#",
+      "$id": "/schemas/index/v1/indexed-task.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
       "description": "Representation of an indexed task.\n",
@@ -4287,10 +4247,10 @@
         "data",
         "expires"
       ],
-      "title": "Indexed Task Response",
+      "title": "Indexed Task",
       "type": "object"
     },
-    "filename": "schemas/index/v1/indexed-task-response.json"
+    "filename": "schemas/index/v1/indexed-task.json"
   },
   {
     "content": {
@@ -11452,7 +11412,7 @@
           "description": "Find a task by index path, returning the highest-rank task with that path. If no\ntask exists for the given path, this API end-point will respond with a 404 status.",
           "method": "get",
           "name": "findTask",
-          "output": "v1/indexed-task-response.json#",
+          "output": "v1/indexed-task.json#",
           "query": [
           ],
           "route": "/task/<indexPath>",
@@ -11505,7 +11465,7 @@
           "input": "v1/insert-task-request.json#",
           "method": "put",
           "name": "insertTask",
-          "output": "v1/indexed-task-response.json#",
+          "output": "v1/indexed-task.json#",
           "query": [
           ],
           "route": "/task/<namespace>",
