@@ -10,7 +10,7 @@ import (
 
 type (
 	// Representation of an indexed task.
-	IndexedTask struct {
+	IndexedTaskResponse struct {
 
 		// Data that was reported with the task. This is an arbitrary JSON object.
 		//
@@ -85,7 +85,7 @@ type (
 		ContinuationToken string `json:"continuationToken,omitempty"`
 
 		// List of tasks.
-		Tasks []IndexedTask `json:"tasks"`
+		Tasks []IndexedTaskResponse `json:"tasks"`
 	}
 
 	// Representation of a namespace that contains indexed tasks.

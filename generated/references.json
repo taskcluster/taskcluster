@@ -4247,7 +4247,7 @@
         "data",
         "expires"
       ],
-      "title": "Indexed Task",
+      "title": "Indexed Task Response",
       "type": "object"
     },
     "filename": "schemas/index/v1/indexed-task.json"
