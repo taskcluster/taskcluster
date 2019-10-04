@@ -42,7 +42,7 @@ class StaticProvider extends Provider {
     return worker;
   }
 
-  async removeWorker(worker) {
+  async removeWorker({worker}) {
     await worker.remove();
   }
 
