@@ -25,11 +25,8 @@ exports.tasks.push({
     utils.status({message: 'built-in/succeed taskId: ' + taskId});
     let queue = new taskcluster.Queue(taskcluster.fromEnvVars());
     await queue.createTask(taskId, task);
-    let pollForStatus = true;
-    setTimeout(function () {
-      pollForStatus = false;
-    }, 120000);
-    while (pollForStatus){
+    let pollForStatusStart = new Date();
+    while((new Date() - pollForStatusStart) < 120000){
       let status = await queue.status(taskId);
       if (status.status.state === 'pending' || status.status.state === 'running'){
         utils.status({
