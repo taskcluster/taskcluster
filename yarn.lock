@@ -5647,12 +5647,7 @@ node-status-codes@^1.0.0:
   resolved "https://registry.yarnpkg.com/node-status-codes/-/node-status-codes-1.0.0.tgz#5ae5541d024645d32a58fcddc9ceecea7ae3ac2f"
   integrity sha1-WuVUHQJGRdMqWPzdyc7s6nrjrC8=
 
-nodemailer@^6.0.0:
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-6.1.0.tgz#81a918857f2f157b66bdaca528b83682505ba98f"
-  integrity sha512-mzKGT5Q1PY84v6oRVjy88ymMDLUbPqvIr26n9Uy3j2nXzdhKWx1z4GLSHOyX8655zMkQng1MFR3lK+cE1egS6Q==
-
-nodemailer@^6.2.1, nodemailer@^6.3.0:
+nodemailer@^6.0.0, nodemailer@^6.2.1, nodemailer@^6.3.0:
   version "6.3.0"
   resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-6.3.0.tgz#a89b0c62d3937bdcdeecbf55687bd7911b627e12"
   integrity sha512-TEHBNBPHv7Ie/0o3HXnb7xrPSSQmH1dXwQKRaMKDBGt/ZN54lvDVujP6hKkO/vjkIYL9rK8kHSG11+G42Nhxuw==
@@ -7674,7 +7669,7 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-client@link:clients/client":
-  version "18.0.1"
+  version "18.0.3"
   dependencies:
     debug "^4.0.0"
     hawk "^7.0.10"
@@ -7684,37 +7679,37 @@ tar@^4:
     taskcluster-lib-urls "^12.0.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "18.0.1"
+  version "18.0.3"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "18.0.1"
+  version "18.0.3"
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "18.0.1"
+  version "18.0.3"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "18.0.1"
+  version "18.0.3"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "18.0.1"
+  version "18.0.3"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "18.0.1"
+  version "18.0.3"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "18.0.1"
+  version "18.0.3"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "18.0.1"
+  version "18.0.3"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "18.0.1"
+  version "18.0.3"
 
 "taskcluster-lib-scopes@link:libraries/scopes":
-  version "18.0.1"
+  version "18.0.3"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "18.0.1"
+  version "18.0.3"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -7722,7 +7717,7 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "18.0.1"
+  version "18.0.3"
 
 taskgroup@^4.0.5, taskgroup@^4.2.0:
   version "4.3.1"
