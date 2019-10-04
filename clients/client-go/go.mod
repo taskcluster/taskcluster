@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
-	github.com/streadway/amqp v0.0.0-20190827080102-edfb9018d271
+	github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271
 	github.com/taskcluster/httpbackoff/v3 v3.0.0
 	github.com/taskcluster/jsonschema2go v1.0.0
 	github.com/taskcluster/pulse-go v1.0.0
