@@ -75,10 +75,9 @@ export default class Documentation extends Component {
   }
 
   findChildFromRootNode(node) {
-    const currentPath = window.location.pathname.replace(
-      `${DOCS_PATH_PREFIX}/`,
-      ''
-    );
+    const currentPath = window.location.pathname
+      .replace(/\/+$/, '')
+      .replace(`${DOCS_PATH_PREFIX}/`, '');
 
     if (node.path && currentPath === removeReadmeFromPath(node.path)) {
       return node;
