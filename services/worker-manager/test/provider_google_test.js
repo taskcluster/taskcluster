@@ -162,6 +162,24 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     assert.equal(worker.state, helper.Worker.states.STOPPED);
   });
 
+  test('update long-running worker', async function() {
+    const expires = taskcluster.fromNow('-1 week');
+    const worker = await helper.Worker.create({
+      workerPoolId,
+      workerGroup: 'whatever',
+      workerId: 'whatever',
+      providerId,
+      created: taskcluster.fromNow('-2 weeks'),
+      expires,
+      state: helper.Worker.states.RUNNING,
+      providerData: {zone: 'us-east1-a'},
+    });
+    await provider.scanPrepare();
+    await provider.checkWorker({worker});
+    await provider.scanCleanup();
+    assert(worker.expires > expires);
+  });
+
   suite('registerWorker', function() {
     const workerGroup = providerId;
     const workerId = 'abc123';
