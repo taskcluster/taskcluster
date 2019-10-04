@@ -193,11 +193,7 @@
     "prHourlyLimit": 5,
     "prConcurrentLimit": 10,
     "rangeStrategy": "update-lockfile",
-    "gomod": {
-      "ignoreDeps": [
-        "golang.org/x/tools"
-      ]
-    }
+    "enabeledManagers": ["node"]
   },
   "eslintIgnore": [
     "**/node_modules/**",
