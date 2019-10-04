@@ -141,6 +141,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     });
 
     assert(worker.providerData.operation);
+    assert.equal(worker.state, helper.Worker.states.REQUESTED);
 
     // On the first run we've faked that the instance is running
     await provider.scanPrepare();
@@ -149,7 +150,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     await workerPool.reload();
     assert.equal(workerPool.providerData.google.running, 1);
     worker.reload();
-    assert(worker.providerData.operation);
+    assert.equal(worker.state, helper.Worker.states.REQUESTED); // RUNNING is set by register which does not happen here
 
     // And now we fake it is stopped
     await provider.scanPrepare();
@@ -158,7 +159,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     await workerPool.reload();
     assert.equal(workerPool.providerData.google.running, 0);
     worker.reload();
-    assert(worker.providerData.operation);
+    assert.equal(worker.state, helper.Worker.states.STOPPED);
   });
 
   suite('registerWorker', function() {
