@@ -50,7 +50,7 @@ export default class NoTaskGroup extends Component {
         helpView={<HelpView description={description} />}
         search={
           <Search
-            placeholder="Search Task Group ID"
+            placeholder="Search Task Group ID "
             onSubmit={this.handleTaskGroupSearchSubmit}
           />
         }>
