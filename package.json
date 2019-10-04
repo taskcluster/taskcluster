@@ -167,7 +167,6 @@
     "zurvan": "^0.5.2"
   },
   "scripts": {
-    
     "lint": "eslint --cache --ext js --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test",
     "test": "yarn workspaces run test",
     "test:meta": "mocha test/*_test.js",
