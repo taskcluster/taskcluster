@@ -387,7 +387,7 @@ async function deprecatedStatusHandler(message) {
   }
 
   debug(`Attempting to update status for ${build.organization}/${build.repository}@${build.sha} (${state})`);
-  const target_url = libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/task-group-inspector/#/${taskGroupId}`);
+  const target_url = libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/tasks/groups/${taskGroupId}`);
   try {
     await instGithub.repos.createStatus({
       owner: build.organization,
@@ -729,7 +729,7 @@ async function taskGroupCreationHandler(message) {
 
   const statusContext = `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`;
   const description = `TaskGroup: Pending (for ${eventType})`;
-  const target_url = libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/task-group-inspector/#/${taskGroupId}`);
+  const target_url = libUrls.ui(this.context.cfg.taskcluster.rootUrl, `tasks/groups/${taskGroupId}`);
 
   // Authenticating as installation.
   const instGithub = await this.context.github.getInstallationGithub(installationId);
