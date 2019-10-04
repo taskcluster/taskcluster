@@ -15,15 +15,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
   let workerPool;
   let providerId = 'google';
   let workerPoolId = 'foo/bar';
+  let fakeGoogle;
 
   setup(async function() {
+    fakeGoogle = new FakeGoogle();
     provider = new GoogleProvider({
       providerId,
       notify: await helper.load('notify'),
       monitor: (await helper.load('monitor')).childMonitor('google'),
       estimator: await helper.load('estimator'),
       fakeCloudApis: {
-        google: new FakeGoogle(),
+        google: fakeGoogle,
       },
       rootUrl: helper.rootUrl,
       Worker: helper.Worker,
@@ -112,6 +114,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     });
     await provider.removeResources({workerPool});
     assert(!workerPool.providerData.google);
+  });
+
+  test('removeWorker', async function() {
+    const workerId = '12345';
+    const worker = await helper.Worker.create({
+      workerPoolId,
+      workerGroup: 'whatever',
+      workerId,
+      providerId,
+      created: taskcluster.fromNow('0 seconds'),
+      expires: taskcluster.fromNow('90 seconds'),
+      state: 'requested',
+      providerData: {zone: 'us-east1-a'},
+    });
+    await provider.removeWorker({worker});
+    assert(fakeGoogle.instanceDeleteStub.called);
   });
 
   test('worker-scan loop', async function() {

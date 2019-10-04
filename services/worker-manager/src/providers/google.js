@@ -197,6 +197,25 @@ class GoogleProvider extends Provider {
     });
   }
 
+  async removeWorker({worker}) {
+    try {
+      // This returns an operation that we could track but the chances
+      // that this fails due to user input being wrong are low so
+      // we'll ignore it in order to save a bunch of traffic checking up on these
+      // operations when many instances are terminated at once
+      await this._enqueue('query', () => this.compute.instances.delete({
+        project: this.project,
+        zone: worker.providerData.zone,
+        instance: worker.workerId,
+      }));
+    } catch (err) {
+      if (err.code === 404) {
+        return; // Nothing to do, it is already gone
+      }
+      throw err;
+    }
+  }
+
   async provision({workerPool}) {
     const {workerPoolId} = workerPool;
 
