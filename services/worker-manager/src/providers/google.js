@@ -384,6 +384,16 @@ class GoogleProvider extends Provider {
     const {status} = res.data;
     if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
       this.seen[worker.workerPoolId] += 1;
+
+      // If the worker will be expired soon but it still exists,
+      // update it to stick around a while longer. If this doesn't happen,
+      // long-lived instances become orphaned from the provider. We don't update
+      // this on every loop just to avoid the extra work when not needed
+      if (worker.expires < taskcluster.fromNow('1 day')) {
+        await worker.modify(w => {
+          w.expires = taskcluster.fromNow('1 week');
+        });
+      }
     } else if (['TERMINATED', 'STOPPED'].includes(status)) {
       await this._enqueue('query', () => this.compute.instances.delete({
         project: worker.providerData.project,
