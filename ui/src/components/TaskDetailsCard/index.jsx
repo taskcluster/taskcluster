@@ -220,6 +220,7 @@ export default class TaskDetailsCard extends Component {
                     classes={{ secondary: classes.sourceHeadline }}
                     primary="Source"
                     secondary={task.metadata.source}
+                    title={task.metadata.source}
                   />
                   {isExternal ? <OpenInNewIcon /> : <LinkIcon />}
                 </ListItem>
