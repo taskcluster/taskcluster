@@ -10,11 +10,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'aws', 'gcp'], function(mo
     return; // This is actually testing sts tokens and we are not going to mock those
   }
   // pulse/azure aren't under test, so we always mock them out
+  helper.withCfg(mock, skipping);
   helper.withPulse('mock', skipping);
   helper.withEntities('mock', skipping);
   helper.withRoles('mock', skipping);
   helper.withServers(mock, skipping);
-  helper.withCfg(mock, skipping);
 
   let bucket;
   setup(function() {

@@ -7,11 +7,11 @@ const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
 
 helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure', 'gcp'], function(mock, skipping) {
+  helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withEntities(mock, skipping, {orderedTests: true});
   helper.withRoles(mock, skipping, {orderedTests: true});
   helper.withServers(mock, skipping);
-  helper.withCfg(mock, skipping);
 
   let sorted = (arr) => {
     arr.sort();

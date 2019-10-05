@@ -1,0 +1,21 @@
+# NOTE: ${azureAccountId} will be substituted with the azure account at runtime
+- assume:mozilla-group:*
+- assume:mozilla-user:*
+- assume:mozillians-group:*
+- assume:mozillians-user:*
+- auth:create-client:mozilla-auth0/*
+- auth:delete-client:mozilla-auth0/*
+- auth:disable-client:mozilla-auth0/*
+- auth:enable-client:mozilla-auth0/*
+- auth:reset-access-token:mozilla-auth0/*
+- auth:update-client:mozilla-auth0/*
+- auth:create-client:github/*
+- auth:delete-client:github/*
+- auth:disable-client:github/*
+- auth:enable-client:github/*
+- auth:reset-access-token:github/*
+- auth:update-client:github/*
+- auth:azure-table:read-write:${azureAccountId}/AccessTokenTable
+- auth:azure-table:read-write:${azureAccountId}/AuthorizationCodesTable
+- auth:azure-table:read-write:${azureAccountId}/GithubAccessTokenTable
+- assume:login-identity:*

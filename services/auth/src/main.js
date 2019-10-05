@@ -132,7 +132,7 @@ const load = Loader({
       await Client.ensureTable();
 
       // set up the static clients
-      await Client.syncStaticClients(cfg.app.staticClients || []);
+      await Client.syncStaticClients(cfg.app.staticClients || [], cfg.azure.accountId);
 
       // Load everything for resolver
       await resolver.setup({

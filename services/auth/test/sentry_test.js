@@ -7,12 +7,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp'], function(mock, ski
   if (!mock) {
     return; // We don't test this with real credentials for now!
   }
+  helper.withCfg(mock, skipping);
   helper.withSentry(mock, skipping);
   helper.withPulse('mock', skipping);
   helper.withEntities('mock', skipping);
   helper.withRoles('mock', skipping);
   helper.withServers(mock, skipping);
-  helper.withCfg(mock, skipping);
 
   test('sentryDSN', async () => {
     await helper.apiClient.sentryDSN('playground');
