@@ -440,32 +440,23 @@ class GoogleProvider extends Provider {
    */
   async handleOperation({op, errors}) {
     let operation;
-    let args;
-    let obj;
+    let opService;
+    const args = {
+      project: this.project,
+      operation: op.name,
+    };
     if (op.region) {
-      args = {
-        project: this.project,
-        region: op.region.split('/').slice(-1)[0],
-        operation: op.name,
-      };
-      obj = this.compute.regionOperations;
+      args.region = op.region.split('/').slice(-1)[0];
+      opService = this.compute.regionOperations;
     } else if (op.zone) {
-      args = {
-        project: this.project,
-        zone: op.zone.split('/').slice(-1)[0],
-        operation: op.name,
-      };
-      obj = this.compute.zoneOperations;
+      args.zone = op.zone.split('/').slice(-1)[0];
+      opService = this.compute.zoneOperations;
     } else {
-      args = {
-        project: this.project,
-        operation: op.name,
-      };
-      obj = this.compute.globalOperations;
+      opService = this.compute.globalOperations;
     }
 
     try {
-      operation = (await this._enqueue('opRead', () => obj.get(args))).data;
+      operation = (await this._enqueue('opRead', () => opService.get(args))).data;
     } catch (err) {
       if (err.code !== 404) {
         throw err;
@@ -493,7 +484,6 @@ class GoogleProvider extends Provider {
         });
       }
     }
-    await obj.delete(args);
     return false;
   }
 }
