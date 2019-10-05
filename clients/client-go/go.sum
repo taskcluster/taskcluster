@@ -24,6 +24,8 @@ github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94 h1:0ngsPmuP6XIjiFRN
 github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
 github.com/streadway/amqp v0.0.0-20190819003559-eade30b20f1d h1:ciocj2R6f6p+WgiA3JlmM6/v9w3Ld/g6ENr9YgHBgxM=
 github.com/streadway/amqp v0.0.0-20190819003559-eade30b20f1d/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
+github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271 h1:WhxRHzgeVGETMlmVfqhRn8RIeeNoPr2Czh33I4Zdccw=
+github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
 github.com/streadway/amqp v0.0.0-20190827080102-edfb9018d271 h1:9ZltBYfOn7l3lpNgPb+vGbTc00IBlC+iJv7YII11rNo=
 github.com/streadway/amqp v0.0.0-20190827080102-edfb9018d271/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
 github.com/taskcluster/httpbackoff v1.0.0 h1:bdh5txPv6geBVSEcx7Jy3kqiBaIrCZJwzCotPJKf9DU=
