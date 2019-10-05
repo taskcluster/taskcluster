@@ -193,7 +193,7 @@
     "prHourlyLimit": 5,
     "prConcurrentLimit": 10,
     "rangeStrategy": "update-lockfile",
-    "enabeledManagers": ["node"]
+    "enabledManagers": ["node"]
   },
   "eslintIgnore": [
     "**/node_modules/**",
