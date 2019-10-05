@@ -6,7 +6,6 @@ import cloneDeep from 'lodash.clonedeep';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Chip from '@material-ui/core/Chip';
-import Divider from '@material-ui/core/Divider';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
@@ -747,7 +746,9 @@ export default class ViewTask extends Component {
                 }
               />
             ))}
-            <Divider className={classes.divider} />
+            <br />
+            <br />
+            <br />
             <Grid container spacing={24}>
               <Grid item xs={12} md={6}>
                 <TaskDetailsCard task={task} dependentTasks={dependentTasks} />
