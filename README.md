@@ -171,6 +171,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://www.linkedin.com/in/shubham-chinda-a0754713b/"><img src="https://avatars2.githubusercontent.com/u/21038543?v=4" width="100px;" alt="Shubham Chinda"/><br /><sub><b>Shubham Chinda</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Shubhamchinda" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/patrickkang"><img src="https://avatars1.githubusercontent.com/u/1489148?v=4" width="100px;" alt="Patrick Kang"/><br /><sub><b>Patrick Kang</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=patrickkang" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/rbrishabh"><img src="https://avatars3.githubusercontent.com/u/22501334?v=4" width="100px;" alt="Rishabh Budhiraja "/><br /><sub><b>Rishabh Budhiraja </b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=rbrishabh" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/ededals"><img src="https://avatars3.githubusercontent.com/u/43218607?v=4" width="100px;" alt="ededals"/><br /><sub><b>ededals</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=ededals" title="Code">💻</a></td>
   </tr>
 </table>
 
