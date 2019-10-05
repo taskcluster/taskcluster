@@ -77,6 +77,9 @@ class GoogleProvider extends Provider {
 
   async _enqueue(type, func, tries = 0) {
     const queue = this.queues[type];
+    if (!queue) {
+      throw new Error(`Unknown p-queue attempted: ${type}`);
+    }
     try {
       return await queue.add(func, {priority: tries});
     } catch (err) {
@@ -119,7 +122,7 @@ class GoogleProvider extends Provider {
         throw err;
       }
 
-      return await this._enqueue(type, func, tries++);
+      return await this._enqueue(type, func, tries + 1);
     }
   }
 

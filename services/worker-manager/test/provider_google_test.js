@@ -1,4 +1,5 @@
 const taskcluster = require('taskcluster-client');
+const sinon = require('sinon');
 const assert = require('assert');
 const helper = require('./helper');
 const {FakeGoogle} = require('./fake-google');
@@ -178,6 +179,55 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     await provider.checkWorker({worker});
     await provider.scanCleanup();
     assert(worker.expires > expires);
+  });
+
+  suite('_enqueue p-queues', function() {
+    test('non existing queue', async function() {
+      try {
+        await provider._enqueue('nonexisting', () => {});
+      } catch (err) {
+        assert.equal(err.message, 'Unknown p-queue attempted: nonexisting');
+        return;
+      }
+      throw new Error('should have thrown an error');
+    });
+
+    test('simple', async function() {
+      const result = await provider._enqueue('query', () => 5);
+      assert.equal(result, 5);
+    });
+
+    test('one 500', async function() {
+      const remote = sinon.stub();
+      remote.onCall(0).throws({code: 500});
+      remote.onCall(1).returns(10);
+      const result = await provider._enqueue('query', () => remote());
+      assert.equal(result, 10);
+      assert.equal(remote.callCount, 2);
+    });
+    test('multiple 500', async function() {
+      const remote = sinon.stub();
+      remote.onCall(0).throws({code: 500});
+      remote.onCall(1).throws({code: 520});
+      remote.onCall(2).throws({code: 503});
+      remote.onCall(3).returns(15);
+      const result = await provider._enqueue('query', () => remote());
+      assert.equal(result, 15);
+      assert.equal(remote.callCount, 4);
+    });
+    test('500s forever should throw', async function() {
+      const remote = sinon.stub();
+      remote.throws({code: 500});
+
+      try {
+        await provider._enqueue('query', () => remote());
+      } catch (err) {
+        assert.deepEqual(err, {code: 500});
+        return;
+      }
+      assert.equal(remote.callCount, 5);
+      throw new Error('should have thrown an error');
+    });
   });
 
   suite('registerWorker', function() {
