@@ -150,7 +150,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     await provider.scanCleanup();
     await workerPool.reload();
     assert.equal(workerPool.providerData.google.running, 1);
-    worker.reload();
+    await worker.reload();
     assert.equal(worker.state, helper.Worker.states.REQUESTED); // RUNNING is set by register which does not happen here
 
     // And now we fake it is stopped
@@ -159,7 +159,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     await provider.scanCleanup();
     await workerPool.reload();
     assert.equal(workerPool.providerData.google.running, 0);
-    worker.reload();
+    await worker.reload();
     assert.equal(worker.state, helper.Worker.states.STOPPED);
   });
 
