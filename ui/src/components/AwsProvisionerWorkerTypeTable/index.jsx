@@ -88,18 +88,10 @@ export default class AwsProvisionerWorkerTypeTable extends Component {
         <DataTable
           items={sortedWorkerTypes}
           headers={[
-            { label: 'Worker Type', id: 'Worker Type', type: 'String' },
-            { label: 'Pending Tasks', id: 'Pending Tasks', type: 'Number' },
-            {
-              label: 'Running Capacity',
-              id: 'Running Capacity',
-              type: 'Number',
-            },
-            {
-              label: 'Pending Capacity',
-              id: 'Pending Capacity',
-              type: 'Number',
-            },
+            'Worker Type',
+            'Pending Tasks',
+            'Running Capacity',
+            'Pending Capacity',
           ]}
           sortByHeader={sortBy}
           sortDirection={sortDirection}
