@@ -132,13 +132,13 @@ export default class DataTable extends Component {
               <TableHead>
                 <TableRow>
                   {headers.map(header => (
-                    <TableCell key={`table-header-${header}`}>
+                    <TableCell key={`table-header-${header.label}`}>
                       <TableSortLabel
-                        id={header}
-                        active={header === sortByHeader}
+                        id={header.label}
+                        active={header.label === sortByHeader}
                         direction={sortDirection || 'desc'}
                         onClick={this.handleHeaderClick}>
-                        {header}
+                        {header.label}
                       </TableSortLabel>
                     </TableCell>
                   ))}
