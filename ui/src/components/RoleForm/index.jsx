@@ -206,6 +206,7 @@ export default class RoleForm extends Component {
             <TextField
               label="Scopes"
               name="scopeText"
+              helperText="Enter each scope on its own line"
               onChange={this.handleInputChange}
               spellCheck={false}
               fullWidth
