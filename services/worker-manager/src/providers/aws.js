@@ -36,8 +36,11 @@ class AwsProvider extends Provider {
   }
 
   async setup() {
-    const ec2 = new aws.EC2({});
-    const regions = await (ec2.describeRegions({}).promise()).Regions;
+    const ec2 = new aws.EC2({
+      credentials: this.providerConfig.credentials,
+    });
+
+    const regions = (await ec2.describeRegions({}).promise()).Regions;
 
     this.ec2s = {};
     regions.forEach(r => {
@@ -60,9 +63,9 @@ class AwsProvider extends Provider {
 
     const toSpawn = await this.estimator.simple({
       workerPoolId,
-      minCapacity: config.minCapacity,
-      maxCapacity: config.maxCapacity,
-      capacityPerInstance: config.capacityPerInstance,
+      minCapacity: workerPool.config.minCapacity,
+      maxCapacity: workerPool.config.maxCapacity,
+      capacityPerInstance: 1, // todo: this will be corrected along with estimator changes
       running: workerPool.providerData[this.providerId].running,
     });
     if (toSpawn === 0) {
@@ -87,18 +90,18 @@ class AwsProvider extends Provider {
       });
     }
 
-    // Make sure we don't get "The same resource type may not be specified more than once in tag specifications" errors
-    const TagSpecifications = config.launchConfig.TagSpecifications ? config.launchConfig.TagSpecifications : [];
-    const instanceTags = [];
-    const otherTagSpecs = [];
-    TagSpecifications.forEach(ts =>
-      ts.ResourceType === 'instance' ? instanceTags.concat(ts.Tags) : otherTagSpecs.push(ts)
-    );
-
     const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
 
     let spawned;
     for await (let config of shuffledConfigs) {
+      // Make sure we don't get "The same resource type may not be specified more than once in tag specifications" errors
+      const TagSpecifications = config.TagSpecifications ? config.TagSpecifications : [];
+      const instanceTags = [];
+      const otherTagSpecs = [];
+      TagSpecifications.forEach(ts =>
+        ts.ResourceType === 'instance' ? instanceTags.concat(ts.Tags) : otherTagSpecs.push(ts)
+      );
+
       try {
         spawned = await this.ec2s[config.region].runInstances({
           ...config.launchConfig,
@@ -142,33 +145,34 @@ class AwsProvider extends Provider {
           WorkerPoolError: this.WorkerPoolError,
         });
       }
+
+      await Promise.all(spawned.Instances.map(i => {
+        return this.Worker.create({
+          workerPoolId,
+          providerId: this.providerId,
+          workerGroup: this.providerId,
+          workerId: i.InstanceId,
+          created: new Date(),
+          expires: taskcluster.fromNow('1 week'),
+          state: this.Worker.states.REQUESTED,
+          providerData: {
+            region: config.region,
+            groups: spawned.Groups,
+            amiLaunchIndex: i.AmiLaunchIndex,
+            imageId: i.ImageId,
+            instanceType: i.InstanceType,
+            architecture: i.Architecture,
+            availabilityZone: i.Placement.AvailabilityZone,
+            privateIp: i.PrivateIpAddress,
+            owner: spawned.OwnerId,
+            state: i.State.Name,
+            stateReason: i.StateReason.Message,
+          },
+        });
+      }));
     }
 
-
-    return Promise.all(spawned.Instances.map(i => {
-      return this.Worker.create({
-        workerPoolId,
-        providerId: this.providerId,
-        workerGroup: this.providerId,
-        workerId: i.InstanceId,
-        created: new Date(),
-        expires: taskcluster.fromNow('1 week'),
-        state: this.Worker.states.REQUESTED,
-        providerData: {
-          region: config.region,
-          groups: spawned.Groups,
-          amiLaunchIndex: i.AmiLaunchIndex,
-          imageId: i.ImageId,
-          instanceType: i.InstanceType,
-          architecture: i.Architecture,
-          availabilityZone: i.Placement.AvailabilityZone,
-          privateIp: i.PrivateIpAddress,
-          owner: spawned.OwnerId,
-          state: i.State.Name,
-          stateReason: i.StateReason.Message,
-        },
-      });
-    }));
+    return;
   }
 
   /**

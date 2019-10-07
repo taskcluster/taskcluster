@@ -25,8 +25,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     launchConfig: {
       ImageId: 'banana-123',
     },
-    minCapacity: 1,
-    maxCapacity: 2,
   };
   let workerPool = {
     workerPoolId,
@@ -39,6 +37,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       launchConfigs: [
         defaultLaunchConfig,
       ],
+      minCapacity: 1,
+      maxCapacity: 2,
     },
     owner: 'whatever@example.com',
     providerData: {},
@@ -117,22 +117,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
 
     workerPool = await helper.WorkerPool.create(workerPool);
 
+    sinon.stub(aws, 'EC2').returns({
+      describeRegions: fakeAWS.EC2.describeRegions,
+      runInstances: fakeAWS.EC2.runInstances({defaultLaunchConfig, TagSpecifications, UserData}),
+    });
+
     await provider.setup();
   });
 
   suite('AWS provider - provision', function() {
 
     test('positive test', async function() {
-      sinon.stub(aws, 'EC2')
-        .withArgs({
-          credentials: provider.providerConfig.credentials,
-          region: defaultLaunchConfig.region,
-        }).returns({
-          runInstances: fakeAWS.EC2.runInstances({defaultLaunchConfig, TagSpecifications, UserData}),
-        });
-
       await provider.provision({workerPool});
       const workers = await helper.Worker.scan({}, {});
+
+      assert.notStrictEqual(workers.entries.length, 0);
 
       workers.entries.forEach(w => {
         assert.strictEqual(w.workerPoolId, workerPoolId, 'Worker was created for a wrong worker pool');
@@ -143,11 +142,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       sinon.restore();
     });
 
-    test('instance tags in launch spec - should merge them with our instance tags', async function() {});
+    test('instance tags in launch spec - should merge them with our instance tags', async function() {
+      sinon.restore();
+    });
 
-    test('no instance tags in launch spec, but other tags - should have 1 object per resource type', async function() {});
+    test('no instance tags in launch spec, but other tags - should have 1 object per resource type', async function() {
+      sinon.restore();
+    });
 
-    test('UserData should be base64 encoded', async function() {});
+    test('UserData should be base64 encoded', async function() {
+      sinon.restore();
+    });
   });
 
   suite('[UNIT] AWS provider - registerWorker - negative test cases', function() {
@@ -164,6 +169,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         new ApiError('Instance identity document validation error'),
         'Should fail to verify iid (the document has been edited)'
       );
+      sinon.restore();
     });
 
     test('registerWorker - verifyInstanceIdentityDocument - signature was produced with a wrong key', async function() {
@@ -176,6 +182,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         new ApiError('Instance identity document validation error'),
         'Should fail to verify iid (the signature was produced with a wrong key)'
       );
+      sinon.restore();
     });
 
     test('registerWorker - verifyInstanceIdentityDocument - signature is wrong', async function() {
@@ -188,6 +195,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         new ApiError('Instance identity document validation error'),
         'Should fail to verify iid (the signature is wrong)'
       );
+      sinon.restore();
     });
 
     test('registerWorker - verifyWorkerInstance - document is legit but differs from what we know about the instance', async function() {
@@ -215,6 +223,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         new ApiError('Instance validation error'),
         'Should fail to verify worker (info from the signature and info from our DB differ)'
       );
+      sinon.restore();
     });
 
     test('registerWorker - no signature', async function() {
@@ -227,7 +236,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         new ApiError('Token validation error'),
         'Should fail because there is no signature'
       );
-
+      sinon.restore();
     });
 
     test('registerWorker - worker is already running', async function() {
@@ -247,18 +256,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
         'Should fail because the worker is already running'
       );
 
+      sinon.restore();
+
     });
   });
 
   suite('AWS provider - checkWorker', function() {
 
-    test('stopped and terminated instances - should be marked as STOPPED in DB', async function() {});
+    test('stopped and terminated instances - should be marked as STOPPED in DB', async function() {
+      sinon.restore();
+    });
 
-    test('pending/running,/shutting-down/stopping instances - should not reject', async function() {});
+    test('pending/running,/shutting-down/stopping instances - should not reject', async function() {
+      sinon.restore();
+    });
 
-    test('some strange status - should reject', async function() {});
+    test('some strange status - should reject', async function() {
+      sinon.restore();
+    });
 
-    test('instance terminated by hand - should be marked as STOPPED in DB; should not reject', async function() {});
+    test('instance terminated by hand - should be marked as STOPPED in DB; should not reject', async function() {
+      sinon.restore();
+    });
   });
 
 });
