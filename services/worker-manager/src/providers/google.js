@@ -401,7 +401,6 @@ class GoogleProvider extends Provider {
       await worker.modify(w => {
         w.state = states.STOPPED;
       });
-      return;
     }
   }
 
