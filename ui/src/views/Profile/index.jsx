@@ -87,7 +87,7 @@ export default class Profile extends Component {
                         ))}
                       </List>
                     ) : (
-                      'n/a'
+                      'no scope'
                     )
                   }
                 />
