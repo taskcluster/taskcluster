@@ -3,11 +3,10 @@ import { shape, func, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case/change-case';
-import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
-import Typography from '@material-ui/core/Typography';
 import LinkIcon from 'mdi-react/LinkIcon';
+import { ListItemText } from '@material-ui/core';
 import TableCellItem from '../TableCellItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import DateDistance from '../DateDistance';
@@ -22,17 +21,6 @@ const sorted = pipe(
 );
 const tableHeaders = ['Client ID', 'Last Date Used'];
 
-@withStyles(theme => ({
-  tableCell: {
-    textDecoration: 'none',
-  },
-  listItemCell: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    width: '100%',
-    padding: theme.spacing.unit,
-  },
-}))
 export default class ClientsTable extends Component {
   static propTypes = {
     clientsConnection: shape({
@@ -88,7 +76,7 @@ export default class ClientsTable extends Component {
   };
 
   render() {
-    const { classes, onPageChange, clientsConnection } = this.props;
+    const { onPageChange, clientsConnection } = this.props;
     const { sortBy, sortDirection } = this.state;
     const iconSize = 16;
 
@@ -109,13 +97,12 @@ export default class ClientsTable extends Component {
           <TableRow key={client.clientId}>
             <TableCell padding="dense">
               <TableCellItem
+                dense
                 button
                 component={Link}
                 to={`/auth/clients/${encodeURIComponent(client.clientId)}`}>
-                <div className={classes.listItemCell}>
-                  <Typography>{client.clientId}</Typography>
-                  <LinkIcon size={iconSize} />
-                </div>
+                <ListItemText primary={client.clientId} />
+                <LinkIcon size={iconSize} />
               </TableCellItem>
             </TableCell>
             <TableCell>
