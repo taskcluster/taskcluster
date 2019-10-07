@@ -4063,7 +4063,7 @@
         "tasks": {
           "description": "List of tasks.\n",
           "items": {
-            "$ref": "indexed-task.json#"
+            "$ref": "indexed-task-response.json#"
           },
           "title": "Tasks",
           "type": "array",
