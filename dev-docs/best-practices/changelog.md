@@ -1,7 +1,24 @@
 # Changlog Entries
 
-Any pull request to Taskcluster that has any user-visible effect should contain a new snippet in the `changelog/` directory.
+Changes that we want users to be aware of when updating should add a new snippet file in the `changelog/` directory.
 This directory contains "snippets" that will be combined into the Changelog of the next release.
+
+## When to Write a Changelog
+
+Taskcluster has several groups of users: people creating tasks (for testing or CI); people administering the service (managing scopes and roles); and people deploying the service (running TC services, setting service config values).
+If any of these users would want to know about the change, add a new snippet.
+We want to avoid including *every* change in the Changelog, as the length would be overwhelming and users would have difficulty finding the information that is important to them.
+If the change is routine or a very minor fix, do not write a snippet.
+
+For example:
+ * YES: Breaking changes
+ * YES: New feature users want to know about and take advantage of
+ * YES: Bug fix users are waiting on
+ * NO: Changes to tests or documentation
+ * NO: Minor changes or fixes to UI
+ * NO: Dependency changes
+ * NO: Changes to developer infrastructure such as `yarn generate` or `yarn lint`
+ * NO: Minor bugfixes where the bugs did not impact any users
 
 ## File Format
 
@@ -31,7 +48,7 @@ A minor change is one that adds new functionality without breaking backward comp
 Typically this functionality is something that would motivate a user or operator to adopt the upgrade.
 If the change is in response to a feature-request filed by a user, it is probably at least "minor".
 
-A patch change is one that fixes a bug or makes a trivial change on which users would not rely.
+A patch change is one that fixes a bug or makes a minor change which users can do their work without.
 A key distinction between minor and patch changes is that an operations engineer should be comfortable rolling back a patch upgrade immediately if any issues are uncovered.
 If a change cannot be easily rolled back, it is not a patch change.
 
@@ -58,13 +75,3 @@ If the change is not user-visible, but would be important to someone deploying T
 > The web-server service now takes a single `JWT_KEY` configuration value
 > containing an HMAC-SHA256 secret, replacing the earlier use of a
 > public/private key pair.
-
-If nobody could possibly care about the change, then it may be OK to omit the changelog snippet entirely.
-This is the case for
-
-* typo fixes
-* minor documentation edits,
-* test-only changes
-* changes to developer infrastructure such as `yarn generate` or `yarn lint`
-
-In this case, include a sentence in your PR justifying the lack of a changelog snippet.
