@@ -1909,7 +1909,7 @@ module.exports = {
           "description": "Find a task by index path, returning the highest-rank task with that path. If no\ntask exists for the given path, this API end-point will respond with a 404 status.",
           "method": "get",
           "name": "findTask",
-          "output": "v1/indexed-task.json#",
+          "output": "v1/indexed-task-response.json#",
           "query": [
           ],
           "route": "/task/<indexPath>",
@@ -1962,7 +1962,7 @@ module.exports = {
           "input": "v1/insert-task-request.json#",
           "method": "put",
           "name": "insertTask",
-          "output": "v1/indexed-task.json#",
+          "output": "v1/indexed-task-response.json#",
           "query": [
           ],
           "route": "/task/<namespace>",

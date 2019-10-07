@@ -1,0 +1,16 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: taskcluster-hooks
+  labels: &ref_0
+    app.kubernetes.io/name: taskcluster-hooks
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-hooks-web
+    app.kubernetes.io/part-of: taskcluster
+spec:
+  type: NodePort
+  selector: *ref_0
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
