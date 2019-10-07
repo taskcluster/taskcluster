@@ -12,6 +12,9 @@
     "clientId": "static/taskcluster/github",
     "scopes": [
       "assume:repo:github.com/*",
+      "queue:scheduler-id:taskcluster-github",
+      "queue:route:statuses",
+      "queue:route:checks",
       "assume:scheduler-id:taskcluster-github/*",
       "auth:azure-table-access:${azureAccountId}/TaskclusterGithubBuilds",
       "auth:azure-table-access:${azureAccountId}/TaskclusterIntegrationOwners",
