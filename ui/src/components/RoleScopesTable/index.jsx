@@ -145,9 +145,9 @@ export default class RoleScopesTable extends Component {
         </FixedSizeList>
       </List>
     ) : (
-        <Typography className={classes.noRolesText}>
-          No roles available
+      <Typography className={classes.noRolesText}>
+        No roles available
       </Typography>
-      );
+    );
   }
 }
