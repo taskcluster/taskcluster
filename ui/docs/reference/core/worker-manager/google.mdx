@@ -10,6 +10,10 @@ Google-based providers create workers dynamically in GCE, using a single GCP pro
 Best practice is to use a dedicated project for each provider that is not shared with other uses.
 This isolates the workers from other GCP activities, protecting both from misuse or abuse.
 
+## Removing Workers
+
+A call to the `workerManager.removeWorker` API method for a worker managed by this provider type will result in an attempt to terminate the worker instance.
+
 ## Worker Interaction
 
 The provider starts workers with an instance attribute named `taskcluster` containing a JSON object with the following properties:
