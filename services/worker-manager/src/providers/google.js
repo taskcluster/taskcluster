@@ -77,6 +77,9 @@ class GoogleProvider extends Provider {
 
   async _enqueue(type, func, tries = 0) {
     const queue = this.queues[type];
+    if (!queue) {
+      throw new Error(`Unknown p-queue attempted: ${type}`);
+    }
     try {
       return await queue.add(func, {priority: tries});
     } catch (err) {
@@ -119,7 +122,7 @@ class GoogleProvider extends Provider {
         throw err;
       }
 
-      return await this._enqueue(type, func, tries++);
+      return await this._enqueue(type, func, tries + 1);
     }
   }
 
@@ -354,47 +357,49 @@ class GoogleProvider extends Provider {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
 
-    let deleteOp = false;
-    if (worker.providerData.operation) {
-      deleteOp = await this.handleOperation({
-        op: worker.providerData.operation,
-        errors: this.errors[worker.workerPoolId],
-      });
-    }
-
-    let res;
     try {
-      res = await this._enqueue('get', () => this.compute.instances.get({
+      const {data} = await this._enqueue('get', () => this.compute.instances.get({
         project: worker.providerData.project,
         zone: worker.providerData.zone,
         instance: worker.workerId,
       }));
+      const {status} = data;
+      if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
+        this.seen[worker.workerPoolId] += 1;
+
+        // If the worker will be expired soon but it still exists,
+        // update it to stick around a while longer. If this doesn't happen,
+        // long-lived instances become orphaned from the provider. We don't update
+        // this on every loop just to avoid the extra work when not needed
+        if (worker.expires < taskcluster.fromNow('1 day')) {
+          await worker.modify(w => {
+            w.expires = taskcluster.fromNow('1 week');
+          });
+        }
+      } else if (['TERMINATED', 'STOPPED'].includes(status)) {
+        await this._enqueue('query', () => this.compute.instances.delete({
+          project: worker.providerData.project,
+          zone: worker.providerData.zone,
+          instance: worker.workerId,
+        }));
+        await worker.modify(w => {
+          w.state = states.STOPPED;
+        });
+      }
     } catch (err) {
       if (err.code !== 404) {
         throw err;
       }
+      if (worker.providerData.operation) {
+        // We only check in on the operation if the worker failed to
+        // start succesfully
+        await this.handleOperation({
+          op: worker.providerData.operation,
+          errors: this.errors[worker.workerPoolId],
+        });
+      }
       await worker.modify(w => {
         w.state = states.STOPPED;
-        if (deleteOp) {
-          delete w.providerData.operation;
-        }
-      });
-      return;
-    }
-    const {status} = res.data;
-    if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
-      this.seen[worker.workerPoolId] += 1;
-    } else if (['TERMINATED', 'STOPPED'].includes(status)) {
-      await this._enqueue('query', () => this.compute.instances.delete({
-        project: worker.providerData.project,
-        zone: worker.providerData.zone,
-        instance: worker.workerId,
-      }));
-      await worker.modify(w => {
-        w.state = states.STOPPED;
-        if (deleteOp) {
-          delete w.providerData.operation;
-        }
       });
     }
   }
@@ -437,32 +442,23 @@ class GoogleProvider extends Provider {
    */
   async handleOperation({op, errors}) {
     let operation;
-    let args;
-    let obj;
+    let opService;
+    const args = {
+      project: this.project,
+      operation: op.name,
+    };
     if (op.region) {
-      args = {
-        project: this.project,
-        region: op.region.split('/').slice(-1)[0],
-        operation: op.name,
-      };
-      obj = this.compute.regionOperations;
+      args.region = op.region.split('/').slice(-1)[0];
+      opService = this.compute.regionOperations;
     } else if (op.zone) {
-      args = {
-        project: this.project,
-        zone: op.zone.split('/').slice(-1)[0],
-        operation: op.name,
-      };
-      obj = this.compute.zoneOperations;
+      args.zone = op.zone.split('/').slice(-1)[0];
+      opService = this.compute.zoneOperations;
     } else {
-      args = {
-        project: this.project,
-        operation: op.name,
-      };
-      obj = this.compute.globalOperations;
+      opService = this.compute.globalOperations;
     }
 
     try {
-      operation = (await this._enqueue('opRead', () => obj.get(args))).data;
+      operation = (await this._enqueue('opRead', () => opService.get(args))).data;
     } catch (err) {
       if (err.code !== 404) {
         throw err;
@@ -490,7 +486,6 @@ class GoogleProvider extends Provider {
         });
       }
     }
-    await obj.delete(args);
     return false;
   }
 }
