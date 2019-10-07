@@ -40,7 +40,7 @@ builder.declare({
   name: 'findTask',
   stability: APIBuilder.stability.stable,
   category: 'Index Service',
-  output: 'indexed-task.yml',
+  output: 'indexed-task-response.yml',
   title: 'Find Indexed Task',
   description: [
     'Find a task by index path, returning the highest-rank task with that path. If no',
@@ -253,7 +253,7 @@ builder.declare({
   stability: APIBuilder.stability.stable,
   scopes: 'index:insert-task:<namespace>',
   input: 'insert-task-request.yml',
-  output: 'indexed-task.yml',
+  output: 'indexed-task-response.yml',
   category: 'Index Service',
   title: 'Insert Task into Index',
   description: [
