@@ -73,6 +73,8 @@
   {
     "clientId": "static/taskcluster/web-server",
     "scopes": [
+      "assume:github-team:*",
+      "assume:github-org-admin:*",
       "assume:mozilla-group:*",
       "assume:mozilla-user:*",
       "assume:mozillians-group:*",
