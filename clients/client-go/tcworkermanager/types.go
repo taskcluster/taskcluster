@@ -5,7 +5,7 @@ package tcworkermanager
 import (
 	"encoding/json"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v18"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v19"
 )
 
 type (
