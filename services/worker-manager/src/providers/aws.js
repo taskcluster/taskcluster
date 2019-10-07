@@ -4,7 +4,7 @@ const taskcluster = require('taskcluster-client');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const assert = require('assert');
+const _ = require('lodash');
 
 class AwsProvider extends Provider {
   constructor({
@@ -58,8 +58,6 @@ class AwsProvider extends Provider {
       });
     }
 
-    const config = this.chooseConfig({possibleConfigs: workerPool.config.launchConfigs});
-
     const toSpawn = await this.estimator.simple({
       workerPoolId,
       minCapacity: config.minCapacity,
@@ -77,7 +75,6 @@ class AwsProvider extends Provider {
       providerId: this.providerId,
       workerGroup: this.providerId,
     }));
-
     // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-add-user-data
     // The raw data should be 16KB maximum
     if (userData.length > 16384) {
@@ -98,50 +95,55 @@ class AwsProvider extends Provider {
       ts.ResourceType === 'instance' ? instanceTags.concat(ts.Tags) : otherTagSpecs.push(ts)
     );
 
+    const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
+
     let spawned;
-    try {
-      spawned = await this.ec2s[config.region].runInstances({
-        ...config.launchConfig,
+    for await (let config of shuffledConfigs) {
+      try {
+        spawned = await this.ec2s[config.region].runInstances({
+          ...config.launchConfig,
 
-        UserData: userData.toString('base64'), // The string needs to be base64-encoded. See the docs above
+          UserData: userData.toString('base64'), // The string needs to be base64-encoded. See the docs above
 
-        MaxCount: toSpawn,
-        MinCount: toSpawn,
-        TagSpecifications: [
-          ...otherTagSpecs,
-          {
-            ResourceType: 'instance',
-            Tags: [
-              ...instanceTags,
-              {
-                Key: 'CreatedBy',
-                Value: `taskcluster-wm-${this.providerId}`,
-              }, {
-                Key: 'Owner',
-                Value: workerPool.owner,
-              },
-              {
-                Key: 'ManagedBy',
-                Value: 'taskcluster',
-              },
-              {
-                Key: 'Name',
-                Value: `${workerPoolId}`,
-              }],
-          },
-        ],
-      }).promise();
-    } catch (e) {
-      this.monitor.err(`Error calling AWS API: ${e}`);
+          MaxCount: toSpawn,
+          MinCount: toSpawn,
+          TagSpecifications: [
+            ...otherTagSpecs,
+            {
+              ResourceType: 'instance',
+              Tags: [
+                ...instanceTags,
+                {
+                  Key: 'CreatedBy',
+                  Value: `taskcluster-wm-${this.providerId}`,
+                }, {
+                  Key: 'Owner',
+                  Value: workerPool.owner,
+                },
+                {
+                  Key: 'ManagedBy',
+                  Value: 'taskcluster',
+                },
+                {
+                  Key: 'Name',
+                  Value: `${workerPoolId}`,
+                }],
+            },
+          ],
+        }).promise();
+      } catch (e) {
+        this.monitor.err(`Error calling AWS API: ${e}`);
 
-      return await workerPool.reportError({
-        kind: 'creation-error',
-        title: 'Instance Creation Error',
-        description: e.message,
-        notify: this.notify,
-        WorkerPoolError: this.WorkerPoolError,
-      });
+        return await workerPool.reportError({
+          kind: 'creation-error',
+          title: 'Instance Creation Error',
+          description: e.message,
+          notify: this.notify,
+          WorkerPoolError: this.WorkerPoolError,
+        });
+      }
     }
+
 
     return Promise.all(spawned.Instances.map(i => {
       return this.Worker.create({
@@ -263,20 +265,6 @@ class AwsProvider extends Provider {
         wp.providerData[this.providerId].running = seen;
       });
     }));
-  }
-
-  /**
-   * Method to select instance launch specification. At the moment selects at random, which is temporary
-   *
-   * @param possibleConfigs Array<Object>
-   * @returns Object
-   */
-  chooseConfig({possibleConfigs}) {
-    assert(Array.isArray(possibleConfigs), 'possible configs is not an array');
-
-    const i = Math.floor(Math.random() * possibleConfigs.length);
-
-    return possibleConfigs[i];
   }
 
   /**
