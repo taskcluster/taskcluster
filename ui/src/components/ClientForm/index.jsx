@@ -326,8 +326,9 @@ export default class ClientForm extends Component {
           </ListItem>
           <ListItem>
             <MarkdownTextArea
+              name="description"
               onChange={this.handleInputChange}
-              placeholder="Client form description (markdown)"
+              placeholder="Client description (markdown)"
               value={description}
               defaultTabIndex={isNewClient ? 0 : 1}
             />
