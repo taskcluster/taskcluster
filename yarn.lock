@@ -1403,9 +1403,9 @@ aws-sdk-mock@^4.3.0:
     traverse "^0.6.6"
 
 aws-sdk@^2.394.0:
-  version "2.541.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.541.0.tgz#dd9902ceb2b6b002893de9d35ae598b332019e0b"
-  integrity sha512-KDw2M4Df0KC6mguYWQm+r9A4dfijsnFKaJtrOtSeoIiHDmTdPzSpsrZXGCb9Mc+npGcMT1144sQNCUZWjG0JDA==
+  version "2.544.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.544.0.tgz#d99eeada8237ee67699ce6644f8070eeb84996e7"
+  integrity sha512-wwiBJgAUGKXY/xoCSrUXVZnNtefoH3YcPwGxQrQXOIDnLMQ32yh/SWc52qmwdxA7WJzpTcIj8y+5keH3P1LYaw==
   dependencies:
     buffer "4.9.1"
     events "1.1.1"
@@ -7664,7 +7664,7 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-client@link:clients/client":
-  version "18.0.3"
+  version "19.0.0"
   dependencies:
     debug "^4.0.0"
     hawk "^7.0.10"
@@ -7674,37 +7674,37 @@ tar@^4:
     taskcluster-lib-urls "^12.0.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "18.0.3"
+  version "19.0.0"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "18.0.3"
+  version "19.0.0"
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "18.0.3"
+  version "19.0.0"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "18.0.3"
+  version "19.0.0"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "18.0.3"
+  version "19.0.0"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "18.0.3"
+  version "19.0.0"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "18.0.3"
+  version "19.0.0"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "18.0.3"
+  version "19.0.0"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "18.0.3"
+  version "19.0.0"
 
 "taskcluster-lib-scopes@link:libraries/scopes":
-  version "18.0.3"
+  version "19.0.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "18.0.3"
+  version "19.0.0"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -7712,7 +7712,7 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "18.0.3"
+  version "19.0.0"
 
 taskgroup@^4.0.5, taskgroup@^4.2.0:
   version "4.3.1"
