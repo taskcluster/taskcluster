@@ -33,4 +33,15 @@ exports.tasks = [{
       utils,
     });
   },
+}, {
+  title: 'Run Go Mod Tidy',
+  requires: ['references-json', 'go-version'],
+  provides: ['go-mod-tidy'],
+  run : async (requirements, utils) => {
+    await execCommand({
+      dir: path.join(REPO_ROOT, 'clients', 'client-go'),
+      command: ['go', 'mod', 'tidy'],
+      utils,
+    })
+  }
 }];
