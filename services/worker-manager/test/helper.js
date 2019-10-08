@@ -5,6 +5,9 @@ const {stickyLoader, Secrets, withEntity, fakeauth, withMonitor, withPulse} = re
 const builder = require('../src/api');
 const data = require('../src/data');
 const load = require('../src/main');
+const sinon = require('sinon');
+const aws = require('aws-sdk');
+const fakeAWS = require('./fake-aws');
 
 exports.rootUrl = 'http://localhost:60409';
 
@@ -43,9 +46,17 @@ exports.withProviders = (mock, skipping) => {
       return;
     }
 
+    sinon.stub(aws, 'EC2').returns({
+      describeRegions: fakeAWS.EC2.describeRegions,
+    });
+
     exports.load.inject('fakeCloudApis', {
       google: new FakeGoogle(),
     });
+  });
+
+  suiteTeardown(function() {
+    sinon.restore();
   });
 };
 
