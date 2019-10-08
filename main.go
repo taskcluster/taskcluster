@@ -26,6 +26,7 @@ import (
 	"time"
 
 	docopt "github.com/docopt/docopt-go"
+	sysinfo "github.com/elastic/go-sysinfo"
 	"github.com/taskcluster/generic-worker/expose"
 	"github.com/taskcluster/generic-worker/gwconfig"
 	"github.com/taskcluster/generic-worker/host"
@@ -158,18 +159,22 @@ func main() {
 		log.Printf("Exiting worker with exit code %v", exitCode)
 		switch exitCode {
 		case REBOOT_REQUIRED:
+			logEvent("instanceReboot", nil, time.Now())
 			if !config.DisableReboots {
 				host.ImmediateReboot()
 			}
 		case IDLE_TIMEOUT:
+			logEvent("instanceShutdown", nil, time.Now())
 			if config.ShutdownMachineOnIdle {
 				host.ImmediateShutdown("generic-worker idle timeout")
 			}
 		case INTERNAL_ERROR:
+			logEvent("instanceShutdown", nil, time.Now())
 			if config.ShutdownMachineOnInternalError {
 				host.ImmediateShutdown("generic-worker internal error")
 			}
 		case NONCURRENT_DEPLOYMENT_ID:
+			logEvent("instanceShutdown", nil, time.Now())
 			host.ImmediateShutdown("generic-worker deploymentId is not latest")
 		}
 		os.Exit(int(exitCode))
@@ -382,6 +387,10 @@ func RunWorker() (exitCode ExitCode) {
 	log.Printf("Config: %v", config)
 	log.Printf("Detected %s platform", runtime.GOOS)
 	log.Printf("Detected %s engine", engine)
+	if host, err := sysinfo.Host(); err == nil {
+		logEvent("instanceBoot", nil, host.Info().BootTime)
+	}
+	logEvent("workerReady", nil, time.Now())
 
 	err = setupExposer()
 	if err != nil {
@@ -450,7 +459,11 @@ func RunWorker() (exitCode ExitCode) {
 		wait5Seconds := time.NewTimer(time.Second * 5)
 
 		if task != nil {
+			logEvent("taskQueued", task, time.Time(task.Definition.Created))
+			logEvent("taskStart", task, time.Now())
+
 			errors := task.Run()
+			logEvent("taskFinish", task, time.Now())
 			if errors.Occurred() {
 				log.Printf("ERROR(s) encountered: %v", errors)
 				task.Error(errors.Error())
