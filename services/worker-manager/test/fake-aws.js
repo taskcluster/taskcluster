@@ -46,12 +46,12 @@ module.exports = {
     describeRegions: () => {
       return {
         promise: () => ({
-            Regions: [
-              {RegionName: 'us-west-2'},
-              {RegionName: 'us-east-1'},
-              {RegionName: 'eu-central-1'},
-            ],
-        })
+          Regions: [
+            {RegionName: 'us-west-2'},
+            {RegionName: 'us-east-1'},
+            {RegionName: 'eu-central-1'},
+          ],
+        }),
       };
     },
   },

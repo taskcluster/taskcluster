@@ -94,7 +94,8 @@ class AwsProvider extends Provider {
 
     let spawned;
     for await (let config of shuffledConfigs) {
-      // Make sure we don't get "The same resource type may not be specified more than once in tag specifications" errors
+      // Make sure we don't get "The same resource type may not be specified
+      // more than once in tag specifications" errors
       const TagSpecifications = config.TagSpecifications ? config.TagSpecifications : [];
       const instanceTags = [];
       const otherTagSpecs = [];
