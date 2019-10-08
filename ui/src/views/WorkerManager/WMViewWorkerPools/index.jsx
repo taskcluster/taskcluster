@@ -83,7 +83,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
 
     return (
       <Dashboard
-        title="Worker Pools"
+        title="Worker Manager"
         search={
           <Search
             disabled={loading}
