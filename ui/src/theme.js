@@ -24,13 +24,13 @@ const warning = {
   main: amber[500],
   dark: amber[700],
   light: amber[200],
-  contrastText: 'rgba(0, 0, 0, 0.87)',
+  contrastText: THEME.PRIMARY_TEXT_LIGHT,
 };
 const error = {
   main: red[500],
   dark: red[700],
   light: red[300],
-  contrastText: THEME.PRIMARY_LIGHT,
+  contrastText: THEME.PRIMARY_TEXT_DARK,
 };
 const createTheme = isDarkTheme => {
   const primaryMain = isDarkTheme ? THEME.PRIMARY_DARK : THEME.PRIMARY_LIGHT;
