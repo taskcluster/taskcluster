@@ -232,7 +232,7 @@ class GoogleProvider extends Provider {
     const toSpawn = await this.estimator.simple({
       workerPoolId,
       ...workerPool.config,
-      capacityPerInstance: 1, // TODO Hardcoded for now until estimator updates
+      capacityPerInstance: 1, // TODO (bug 1587234) Hardcoded for now until estimator updates
       running: workerPool.providerData[this.providerId].running,
     });
 
