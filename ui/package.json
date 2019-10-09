@@ -106,6 +106,7 @@
     "@neutrinojs/react": "9.0.0-rc.0",
     "babel-loader": "^8.0.5",
     "chai": "^4.2.0",
+    "cross-env": "^6.0.3",
     "dotenv-cli": "^2.0.1",
     "eslint": "^5.6.1",
     "eslint-plugin-react-hooks": "^2.0.0",
