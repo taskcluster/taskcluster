@@ -9233,9 +9233,9 @@ prism-themes@^1.0.1:
   integrity sha512-tRYOqg2tT5/eB++iX+rqRnqESkCKuoV+0PrUiGKdWMr5lApd/hwfu+72Hi0OS50wmcuIty3GB1HrRqoBD+Cpfg==
 
 prismjs@^1.15.0:
-  version "1.15.0"
-  resolved "https://registry.yarnpkg.com/prismjs/-/prismjs-1.15.0.tgz#8801d332e472091ba8def94976c8877ad60398d9"
-  integrity sha512-Lf2JrFYx8FanHrjoV5oL8YHCclLQgbJcVZR+gikGGMqz6ub5QVWDTM6YIwm3BuPxM/LOV+rKns3LssXNLIf+DA==
+  version "1.17.1"
+  resolved "https://registry.yarnpkg.com/prismjs/-/prismjs-1.17.1.tgz#e669fcbd4cdd873c35102881c33b14d0d68519be"
+  integrity sha512-PrEDJAFdUGbOP6xK/UsfkC5ghJsPJviKgnQOoxaDbBjwc8op68Quupwt1DeAFoG8GImPhiKXAvvsH7wDSLsu1Q==
   optionalDependencies:
     clipboard "^2.0.0"
 
