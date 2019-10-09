@@ -10,23 +10,22 @@ exports.tasks.push({
   ],
   run: async () => {
     let secrets = new taskcluster.Secrets(taskcluster.fromEnvVars());
-    let baseUrl = 'project/taskcluster/smoketest/';
     let secretName = taskcluster.slugid();
+    let secretPrefix = `project/taskcluster/smoketest/${secretName}`;
     const payload = {
       "expires": taskcluster.fromNowJSON('2 minutes'),
       "secret": {
-        "description": secretName,
+        "description": `Secret ${secretName}`,
         "type": "object",
       },
     };
-    await secrets.set(baseUrl, payload);
-    const getSecret = await secrets.get(baseUrl);
+    await secrets.set(secretPrefix, payload);
+    const getSecret = await secrets.get(secretPrefix);
     assert.deepEqual(getSecret.secret, payload.secret);
-    await secrets.remove(baseUrl);
+    await secrets.remove(secretPrefix);
     await assert.rejects(
-      () => secrets.get(baseUrl),
-    ).then(()=>{
-      err => assert.equal(err.code, 404);
-    });
+      () => secrets.get(secretPrefix),
+      err => assert.equal(err.code, 404)
+    );
   },
 });
