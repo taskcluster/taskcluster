@@ -914,12 +914,7 @@ agent-base@~4.2.1:
   dependencies:
     es6-promisify "^5.0.0"
 
-ajv-keywords@^3.4.1:
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/ajv-keywords/-/ajv-keywords-3.4.1.tgz#ef916e271c64ac12171fd8384eaae6b2345854da"
-  integrity sha512-RO1ibKvd27e6FEShVFfPALuHI3WjSVNeK5FIsmme/LYRNxjKuNj+Dt7bucLa6NdSv3JcVTyMlm9kGR84z1XpaQ==
-
-ajv@^6.10.0, ajv@^6.10.2, ajv@^6.5.5, ajv@^6.9.2:
+ajv@^6.10.0, ajv@^6.5.5, ajv@^6.9.2:
   version "6.10.2"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.10.2.tgz#d3cea04d6b017b2894ad69040fec8b623eb4bd52"
   integrity sha512-TXtUUEYHuaTEbLZWIKUr5pmBuhDLy+8KYtPYdcV8qC+pOZL+NKqYwvWSRrVXHn+ZmRRAu8vJTAznH7Oag6RVRw==
@@ -1568,11 +1563,6 @@ before-after-hook@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/before-after-hook/-/before-after-hook-2.1.0.tgz#b6c03487f44e24200dd30ca5e6a1979c5d2fb635"
   integrity sha512-IWIbu7pMqyw3EAJHzzHbWa85b6oud/yfKYg5rqB5hNE8CeMi3nX+2C2sj0HswfblST86hpVEOAb9x34NZd6P7A==
-
-big.js@^5.2.2:
-  version "5.2.2"
-  resolved "https://registry.yarnpkg.com/big.js/-/big.js-5.2.2.tgz#65f0af382f578bcdc742bd9c281e9cb2d7768328"
-  integrity sha512-vyL2OymJxmarO8gxMr0mhChsO9QGwhynfuu4+MHTAW6czfq9humCB7rKpUjDd9YUiDPU4mzpyupFSvOClAwbmQ==
 
 bignumber.js@^7.0.0:
   version "7.2.1"
@@ -2777,11 +2767,6 @@ emoji-regex@^8.0.0:
   version "8.0.0"
   resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-8.0.0.tgz#e818fd69ce5ccfcb404594f842963bf53164cc37"
   integrity sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==
-
-emojis-list@^2.0.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/emojis-list/-/emojis-list-2.1.0.tgz#4daa4d9db00f9819880c79fa457ae5b09a1fd389"
-  integrity sha1-TapNnbAPmBmIDHn6RXrlsJof04k=
 
 encodeurl@~1.0.2:
   version "1.0.2"
@@ -4579,13 +4564,6 @@ json-stringify-safe@^5.0.1, json-stringify-safe@~5.0.1:
   resolved "https://registry.yarnpkg.com/json-stringify-safe/-/json-stringify-safe-5.0.1.tgz#1296a2d58fd45f19a0f6ce01d65701e2c735b6eb"
   integrity sha1-Epai1Y/UXxmg9s4B1lcB4sc1tus=
 
-json5@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/json5/-/json5-1.0.1.tgz#779fb0018604fa854eacbf6252180d83543e3dbe"
-  integrity sha512-aKS4WQjPenRxiQsC93MNfjx+nbF4PAdYzmd/1JIj8HYzqfbu86beTuNgXDzPknWk0n0uARlyewZo4s++ES36Ow==
-  dependencies:
-    minimist "^1.2.0"
-
 json5@^2.1.0:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/json5/-/json5-2.1.1.tgz#81b6cb04e9ba496f1c7005d07b4368a2638f90b6"
@@ -4823,15 +4801,6 @@ load-json-file@^4.0.0:
     parse-json "^4.0.0"
     pify "^3.0.0"
     strip-bom "^3.0.0"
-
-loader-utils@^1.1.0:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/loader-utils/-/loader-utils-1.2.3.tgz#1ff5dc6911c9f0a062531a4c04b609406108c2c7"
-  integrity sha512-fkpz8ejdnEMG3s37wGL07iSBDg99O9D5yflE9RGNH3hRdx9SOwYfnGYdZOUIZitN8E+E2vkq3MUMYMvPYl5ZZA==
-  dependencies:
-    big.js "^5.2.2"
-    emojis-list "^2.0.0"
-    json5 "^1.0.1"
 
 locate-path@^3.0.0:
   version "3.0.0"
@@ -6572,14 +6541,6 @@ raw-body@^2.2.0:
     iconv-lite "0.4.24"
     unpipe "1.0.0"
 
-raw-loader@^3.0.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/raw-loader/-/raw-loader-3.1.0.tgz#5e9d399a5a222cc0de18f42c3bc5e49677532b3f"
-  integrity sha512-lzUVMuJ06HF4rYveaz9Tv0WRlUMxJ0Y1hgSkkgg+50iEdaI0TthyEDe08KIHb0XsF6rn8WYTqPCaGTZg3sX+qA==
-  dependencies:
-    loader-utils "^1.1.0"
-    schema-utils "^2.0.1"
-
 rc@^1.2.7:
   version "1.2.8"
   resolved "https://registry.yarnpkg.com/rc/-/rc-1.2.8.tgz#cd924bf5200a075b83c188cd6b9e211b7fc0d3ed"
@@ -6959,14 +6920,6 @@ scandirectory@^2.5.0:
     ignorefs "^1.0.0"
     safefs "^3.1.2"
     taskgroup "^4.0.5"
-
-schema-utils@^2.0.1:
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/schema-utils/-/schema-utils-2.4.1.tgz#e89ade5d056dc8bcaca377574bb4a9c4e1b8be56"
-  integrity sha512-RqYLpkPZX5Oc3fw/kHHHyP56fg5Y+XBpIpV8nCg0znIALfq3OH+Ea9Hfeac9BAMwG5IICltiZ0vxFvJQONfA5w==
-  dependencies:
-    ajv "^6.10.2"
-    ajv-keywords "^3.4.1"
 
 scope-analyzer@^2.0.1:
   version "2.0.5"
@@ -7678,47 +7631,52 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-client@link:clients/client":
-  version "19.0.0"
-  dependencies:
-    debug "^4.0.0"
-    hawk "^7.0.10"
-    lodash "^4.17.4"
-    slugid "^2.0.0"
-    superagent "^5.0.0"
-    taskcluster-lib-urls "^12.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-api@link:libraries/api":
-  version "19.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-app@link:libraries/app":
-  version "19.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "19.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-config@link:libraries/config":
-  version "19.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "19.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "19.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "19.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "19.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-references@link:libraries/references":
-  version "19.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-scopes@link:libraries/scopes":
-  version "19.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "19.0.0"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -7726,7 +7684,8 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "19.0.0"
+  version "0.0.0"
+  uid ""
 
 taskgroup@^4.0.5, taskgroup@^4.2.0:
   version "4.3.1"
