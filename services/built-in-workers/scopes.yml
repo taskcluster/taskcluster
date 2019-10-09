@@ -1,0 +1,5 @@
+# NOTE: ${azureAccountId} will be substituted with the azure account at runtime
+- queue:claim-work:built-in/*
+- assume:worker-id:built-in/*
+- queue:worker-id:built-in/*
+- queue:resolve-task

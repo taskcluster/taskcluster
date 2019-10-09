@@ -144,14 +144,7 @@ test:
   app:
     statsComponent:           auth-tests
     clientTableName:          Clients
-    # hardcoded into helper.js
-    staticClients:
-    - clientId:     static/taskcluster/root
-      accessToken:  -test-access-token-that-is-at-least-22-chars-long-
-      description: |
-        Root client used for creating other clients (bootstrapping).
-      scopes:
-        - '*'
+    staticClients:  # overridden in helper.js
     # Special value for tests, as we don't want to wait forever
     maxLastUsedDelay:         '- 3 seconds'
     sentry:

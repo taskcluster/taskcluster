@@ -51,7 +51,7 @@ export default class NoTask extends Component {
         search={
           <Search
             placeholder="Search Task ID"
-            onSubmit={this.handleTaskGroupSearchSubmit}
+            onSubmit={this.handleTaskSearchSubmit}
           />
         }>
         <Typography className={classes.infoText}>

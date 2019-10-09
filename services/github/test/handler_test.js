@@ -16,7 +16,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
   helper.withFakeGithub(mock, skipping);
   helper.withPulse(mock, skipping);
 
-  const URL_PREFIX = 'https://tc-tests.example.com/task-group-inspector/#/';
+  const URL_PREFIX = 'https://tc-tests.example.com/tasks/groups/';
 
   let github = null;
   let handlers = null;

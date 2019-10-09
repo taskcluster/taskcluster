@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-ui",
-  "version": "17.0.0",
+  "version": "19.0.0",
   "private": true,
   "license": "MPL-2.0",
   "engines": {

@@ -1,6 +1,6 @@
 {
   "name": "taskcluster",
-  "version": "17.0.0",
+  "version": "19.0.0",
   "private": true,
   "engine-strict": true,
   "engines": {
@@ -193,11 +193,9 @@
     "prHourlyLimit": 5,
     "prConcurrentLimit": 10,
     "rangeStrategy": "update-lockfile",
-    "gomod": {
-      "ignoreDeps": [
-        "golang.org/x/tools"
-      ]
-    }
+    "enabledManagers": [
+      "npm"
+    ]
   },
   "eslintIgnore": [
     "**/node_modules/**",

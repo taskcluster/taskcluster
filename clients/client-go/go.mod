@@ -1,11 +1,11 @@
-module github.com/taskcluster/taskcluster/clients/client-go/v17
+module github.com/taskcluster/taskcluster/clients/client-go/v19
 
 go 1.12
 
 require (
 	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
-	github.com/streadway/amqp v0.0.0-20190827080102-edfb9018d271
+	github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271
 	github.com/taskcluster/httpbackoff/v3 v3.0.0
 	github.com/taskcluster/jsonschema2go v1.0.0
 	github.com/taskcluster/pulse-go v1.0.0
@@ -23,4 +23,4 @@ require (
 // https://bugzilla.mozilla.org/show_bug.cgi?id=1580513
 replace gopkg.in/yaml.v2 => github.com/go-yaml/yaml v0.0.0-20181115110504-51d6538a90f8
 
-replace gopkg.in/check.v1 => github.com/go-check/check v0.0.0-20161208181325-20d25e280405
+replace gopkg.in/check.v1 => github.com/go-check/check v0.0.0-20190902080502-41f04d3bba15
