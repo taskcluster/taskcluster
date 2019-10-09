@@ -59,7 +59,7 @@ export default class ScopesetExpander extends Component {
 
     return (
       <Dashboard
-        title="Expand Scopes 1"
+        title="Expand Scopes"
         helpView={<HelpView description={description} />}>
         <Fragment>
           <CodeEditor
