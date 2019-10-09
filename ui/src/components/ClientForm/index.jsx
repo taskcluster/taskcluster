@@ -9,6 +9,7 @@ import classNames from 'classnames';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import MarkdownTextArea from '@mozilla-frontend-infra/components/MarkdownTextArea';
 import TextField from '@material-ui/core/TextField';
 import Switch from '@material-ui/core/Switch';
 import FormGroup from '@material-ui/core/FormGroup';
@@ -324,14 +325,11 @@ export default class ClientForm extends Component {
             />
           </ListItem>
           <ListItem>
-            <TextField
-              label="Description"
-              name="description"
+            <MarkdownTextArea
               onChange={this.handleInputChange}
-              fullWidth
-              multiline
-              rows={5}
+              placeholder="Client form description (markdown)"
               value={description}
+              defaultTabIndex={isNewClient ? 0 : 1}
             />
           </ListItem>
           <ListItem>

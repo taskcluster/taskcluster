@@ -7,6 +7,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import TextField from '@material-ui/core/TextField';
+import MarkdownTextArea from '@mozilla-frontend-infra/components/MarkdownTextArea';
 import Typography from '@material-ui/core/Typography';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
@@ -196,12 +197,20 @@ export default class RoleForm extends Component {
               </ListItem>
             </Fragment>
           )}
+<<<<<<< HEAD
           <ListItem className={classes.roleDescriptionListItem}>
             <MarkdownTextArea
               name="description"
               onChange={this.handleInputChange}
               value={description}
               placeholder="Role description (markdown)"
+=======
+          <ListItem>
+            <MarkdownTextArea
+              onChange={this.handleInputChange}
+              placeholder="Role form description (markdown)"
+              value={description}
+>>>>>>> 53d7c4dd8... [UI] Replace text field by MarkdownTextArea
               defaultTabIndex={isNewRole ? 0 : 1}
             />
           </ListItem>
