@@ -239,7 +239,7 @@ export default class TaskRunsCard extends Component {
         pageSize={ARTIFACTS_PAGE_SIZE}
         columnsSize={3}
         onPageChange={onArtifactsPageChange}
-        renderRow={({ node: artifact }) => (
+        renderRow={({ node: artifact }) => {
           <TableRow
             key={`run-artifact-${run.taskId}-${run.runId}-${artifact.name}`}
             className={classNames(
@@ -281,7 +281,7 @@ export default class TaskRunsCard extends Component {
               </TableCell>
             </Link>
           </TableRow>
-        )}
+        }}
       />
     );
   }
@@ -384,8 +384,8 @@ export default class TaskRunsCard extends Component {
                               offset={run.scheduled}
                             />
                           ) : (
-                            <em>n/a</em>
-                          )
+                              <em>n/a</em>
+                            )
                         }
                       />
                       <ContentCopyIcon />
@@ -404,8 +404,8 @@ export default class TaskRunsCard extends Component {
                               offset={run.started}
                             />
                           ) : (
-                            <em>n/a</em>
-                          )
+                              <em>n/a</em>
+                            )
                         }
                       />
                       <ContentCopyIcon />
@@ -434,8 +434,8 @@ export default class TaskRunsCard extends Component {
                           run.reasonResolved ? (
                             <StatusLabel state={run.reasonResolved} />
                           ) : (
-                            <em>n/a</em>
-                          )
+                              <em>n/a</em>
+                            )
                         }
                       />
                     </ListItem>
@@ -477,8 +477,8 @@ export default class TaskRunsCard extends Component {
                             run.takenUntil ? (
                               <DateDistance from={run.takenUntil} />
                             ) : (
-                              <em>n/a</em>
-                            )
+                                <em>n/a</em>
+                              )
                           }
                         />
                         <ContentCopyIcon />
@@ -488,19 +488,19 @@ export default class TaskRunsCard extends Component {
                 </Collapse>
               </Fragment>
             ) : (
-              <div className={classes.boxVariant}>
-                <NoRunsIcon
-                  fill={theme.palette.text.primary}
-                  className={classes.boxVariantIcon}
-                />
-                <Typography className={classes.boxVariantText} variant="h6">
-                  No Runs
+                <div className={classes.boxVariant}>
+                  <NoRunsIcon
+                    fill={theme.palette.text.primary}
+                    className={classes.boxVariantIcon}
+                  />
+                  <Typography className={classes.boxVariantText} variant="h6">
+                    No Runs
                 </Typography>
-                <Typography className={classes.boxVariantText}>
-                  A run will be created when the task gets schedueled.
+                  <Typography className={classes.boxVariantText}>
+                    A run will be created when the task gets schedueled.
                 </Typography>
-              </div>
-            )}
+                </div>
+              )}
           </CardContent>
           <MobileStepper
             variant={runs.length > DOTS_VARIANT_LIMIT ? 'progress' : 'dots'}
