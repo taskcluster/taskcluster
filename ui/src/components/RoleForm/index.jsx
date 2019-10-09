@@ -197,21 +197,12 @@ export default class RoleForm extends Component {
               </ListItem>
             </Fragment>
           )}
-<<<<<<< HEAD
-          <ListItem className={classes.roleDescriptionListItem}>
-            <MarkdownTextArea
-              name="description"
-              onChange={this.handleInputChange}
-              value={description}
-              placeholder="Role description (markdown)"
-=======
           <ListItem>
             <MarkdownTextArea
               name="description"
               onChange={this.handleInputChange}
               placeholder="Role description (markdown)"
               value={description}
->>>>>>> 53d7c4dd8... [UI] Replace text field by MarkdownTextArea
               defaultTabIndex={isNewRole ? 0 : 1}
             />
           </ListItem>
