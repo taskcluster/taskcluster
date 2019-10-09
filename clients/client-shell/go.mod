@@ -4,7 +4,6 @@ go 1.12
 
 require (
 	github.com/iancoleman/strcase v0.0.0-20190422225806-e506e3ef7365
-	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pborman/uuid v1.2.0
 	github.com/pkg/browser v0.0.0-20190722003412-0a3d74bf9ce4

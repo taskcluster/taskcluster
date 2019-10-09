@@ -25,7 +25,7 @@ exports.tasks = [{
 }, {
   title: 'Generate Taskcluster-Client-Go',
   requires: ['references-json', 'go-version'],
-  provides: ['target-taskcluster-client-go'],
+  provides: ['generate-taskcluster-client-go'],
   run: async (requirements, utils) => {
     await execCommand({
       dir: path.join(REPO_ROOT, 'clients', 'client-go'),
@@ -34,14 +34,14 @@ exports.tasks = [{
     });
   },
 }, {
-  title: 'Run Go Mod Tidy',
-  requires: ['references-json', 'go-version'],
-  provides: ['go-mod-tidy'],
-  run : async (requirements, utils) => {
+  title: 'Run `go mod tidy` for Taskcluster-Client-Go',
+  requires: ['generate-taskcluster-client-go'],
+  provides: ['target-taskcluster-client-go'],
+  run: async (requirements, utils) => {
     await execCommand({
       dir: path.join(REPO_ROOT, 'clients', 'client-go'),
       command: ['go', 'mod', 'tidy'],
       utils,
-    })
-  }
+    });
+  },
 }];
