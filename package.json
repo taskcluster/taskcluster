@@ -4,7 +4,11 @@
   "description": "Mozilla Front End Infra Shareable React Components",
   "repository": "mozilla-frontend-infra/components",
   "engines": {
-    "npm": "^6.12.0"
+    "npm": "^6.12.0",
+    "yarn": "^1.17.3"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "license": "MPL-2.0",
   "main": "./index.js",
