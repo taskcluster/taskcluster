@@ -193,6 +193,9 @@
     "prHourlyLimit": 5,
     "prConcurrentLimit": 10,
     "rangeStrategy": "update-lockfile",
+    "ignoreDeps": [
+        "aws-sdk"
+    ],
     "enabledManagers": [
       "npm"
     ]
