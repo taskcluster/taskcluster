@@ -4,6 +4,7 @@ import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../../components/Dashboard';
+import HelpView from '../../../../components/HelpView';
 import IndexedEntry from '../../../../components/IndexedEntry';
 import { ARTIFACTS_PAGE_SIZE } from '../../../../utils/constants';
 import ErrorPanel from '../../../../components/ErrorPanel';
@@ -97,11 +98,14 @@ export default class IndexedTask extends Component {
         error: indexedTaskError,
         loading: indexedTaskLoading,
       },
+      description,
     } = this.props;
     const loading = latestArtifactsLoading || indexedTaskLoading;
 
     return (
-      <Dashboard title="Index Browser">
+      <Dashboard
+        title="Index Browser"
+        helpView={<HelpView description={description} />}>
         {loading && <Spinner loading />}
         {!loading && (
           <ErrorPanel fixed error={indexedTaskError || latestArtifactsError} />
