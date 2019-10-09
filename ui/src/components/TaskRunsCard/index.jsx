@@ -240,48 +240,51 @@ export default class TaskRunsCard extends Component {
         columnsSize={3}
         onPageChange={onArtifactsPageChange}
         renderRow={({ node: artifact }) => {
-          <TableRow
-            key={`run-artifact-${run.taskId}-${run.runId}-${artifact.name}`}
-            className={classNames(
-              classes.listItemButton,
-              classes.artifactTableRow,
-              {
-                [classes.pointer]: !!artifact.url,
-              }
-            )}
-            hover={!!artifact.url}>
-            <Link
-              className={classes.artifactLink}
-              to={this.getArtifactUrl(artifact)}>
-              <TableCell className={classes.artifactsTableCell}>
-                {artifact.isPublic && <LockOpenOutlineIcon />}
-                {!artifact.isPublic && artifact.url && <LockIcon />}
-              </TableCell>
-              <TableCell
-                className={classNames(
-                  classes.artifactNameTableCell,
-                  classes.artifactsTableCell
-                )}>
-                <div className={classes.artifactNameWrapper}>
-                  {artifact.isLog && (
-                    <Label status="info" mini className={classes.logButton}>
-                      LOG
+          (
+            <TableRow
+              key={`run-artifact-${run.taskId}-${run.runId}-${artifact.name}`}
+              className={classNames(
+                classes.listItemButton,
+                classes.artifactTableRow,
+                {
+                  [classes.pointer]: !!artifact.url,
+                }
+              )}
+              hover={!!artifact.url}>
+              <Link
+                className={classes.artifactLink}
+                to={this.getArtifactUrl(artifact)}>
+                <TableCell className={classes.artifactsTableCell}>
+                  {artifact.isPublic && <LockOpenOutlineIcon />}
+                  {!artifact.isPublic && artifact.url && <LockIcon />}
+                </TableCell>
+                <TableCell
+                  className={classNames(
+                    classes.artifactNameTableCell,
+                    classes.artifactsTableCell
+                  )}>
+                  <div className={classes.artifactNameWrapper}>
+                    {artifact.isLog && (
+                      <Label status="info" mini className={classes.logButton}>
+                        LOG
                     </Label>
-                  )}
-                  <Typography>{artifact.name}</Typography>
-                </div>
-              </TableCell>
-              <TableCell
-                className={classNames(
-                  classes.linkCell,
-                  classes.artifactsTableCell
-                )}>
-                {artifact.isPublic && <LinkIcon />}
-                {!artifact.isPublic && artifact.url && <OpenInNewIcon />}
-              </TableCell>
-            </Link>
-          </TableRow>
-        }}
+                    )}
+                    <Typography>{artifact.name}</Typography>
+                  </div>
+                </TableCell>
+                <TableCell
+                  className={classNames(
+                    classes.linkCell,
+                    classes.artifactsTableCell
+                  )}>
+                  {artifact.isPublic && <LinkIcon />}
+                  {!artifact.isPublic && artifact.url && <OpenInNewIcon />}
+                </TableCell>
+              </Link>
+            </TableRow>
+          )
+        }
+        }
       />
     );
   }
