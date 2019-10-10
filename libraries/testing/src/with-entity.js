@@ -105,5 +105,5 @@ module.exports = (mock, skipping, helper, loaderComponent, cls,
 
 module.exports.secret = [
   {env: 'AZURE_ACCOUNT', cfg: 'azure.accountId', name: 'accountId'},
-  {env: 'AZURE_ACCOUNT_KEY', cfg: 'azure.accessKey', name: 'accountKey'},
+  {env: 'AZURE_ACCOUNT_KEY', cfg: 'azure.accessKey', name: 'accessKey'},
 ];

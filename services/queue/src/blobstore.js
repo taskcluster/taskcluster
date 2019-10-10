@@ -10,7 +10,7 @@ let assert = require('assert');
  *   container:            // Container name to use
  *   credentials: {
  *     accountName:        // Azure storage account name
- *     accountKey:         // Azure storage account key
+ *     accessKey:          // Azure storage account key
  *   }
  * }
  */
@@ -21,7 +21,7 @@ let BlobStore = function(options) {
   // http://dl.windowsazure.com/nodestoragedocs/index.html
   this.service = azure.createBlobService(
     options.credentials.accountId,
-    options.credentials.accountKey,
+    options.credentials.accessKey,
   ).withFilter(new azure.ExponentialRetryPolicyFilter());
 };
 
