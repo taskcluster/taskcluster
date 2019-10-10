@@ -480,11 +480,11 @@ async function statusHandler(message) {
         output: {
           title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
           summary: `${taskDefinition.metadata.description}`,
-          text: `[Task group](${libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/groups/${taskGroupId}`)})`,
+          text: `[Task group](${libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/tasks/groups/${taskGroupId}`)})`,
         },
         details_url: libUrls.ui(
           this.context.cfg.taskcluster.rootUrl,
-          `/groups/${taskGroupId}/tasks/${taskId}/details`
+          `/tasks/${taskId}`
         ),
       });
 
@@ -783,11 +783,11 @@ async function taskDefinedHandler(message) {
     output: {
       title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
       summary: `${taskDefinition.metadata.description}`,
-      text: `[Task group](${libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/groups/${taskGroupId}`)})`,
+      text: `[Task group](${libUrls.ui(this.context.cfg.taskcluster.rootUrl, `tasks/groups/${taskGroupId}`)})`,
     },
     details_url: libUrls.ui(
       this.context.cfg.taskcluster.rootUrl,
-      `/groups/${taskGroupId}/tasks/${taskId}/details`
+      `tasks/${taskId}`
     ),
   }).catch(async (err) => {
     await this.createExceptionComment({instGithub, organization, repository, sha, error: err});
