@@ -230,8 +230,8 @@ tasks:
                   else: {}
             each(job):
               taskId: {$eval: as_slugid(job.name)}
-              provisionerId: aws-provisioner-v1
-              workerType: github-worker
+              provisionerId: proj-taskcluster
+              workerType: ci
               created: {$fromNow: ''}
               deadline: {$fromNow: '3 hours'}
               dependencies: {$eval: job.dependencies}
