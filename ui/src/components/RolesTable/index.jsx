@@ -3,11 +3,11 @@ import { string, shape, func, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case/change-case';
-import { withStyles } from '@material-ui/core/styles';
+import { ListItemText } from '@material-ui/core';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
-import Typography from '@material-ui/core/Typography';
 import LinkIcon from 'mdi-react/LinkIcon';
+import TableCellItem from '../TableCellItem';
 import sort from '../../utils/sort';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_ROLES_PAGE_SIZE } from '../../utils/constants';
@@ -20,18 +20,6 @@ const sorted = pipe(
 );
 const tableHeaders = ['Role ID'];
 
-@withStyles(theme => ({
-  tableCell: {
-    textDecoration: 'none',
-  },
-  listItemCell: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    width: '100%',
-    padding: theme.spacing.unit,
-    ...theme.mixins.hover,
-  },
-}))
 export default class RolesTable extends Component {
   static defaultProps = {
     searchTerm: null,
@@ -93,7 +81,7 @@ export default class RolesTable extends Component {
   };
 
   render() {
-    const { classes, onPageChange, rolesConnection } = this.props;
+    const { onPageChange, rolesConnection } = this.props;
     const { sortBy, sortDirection } = this.state;
     const iconSize = 16;
     const sortedRolesConnection = this.createSortedRolesConnection(
@@ -114,14 +102,14 @@ export default class RolesTable extends Component {
         renderRow={({ node: role }) => (
           <TableRow key={role.roleId}>
             <TableCell padding="dense">
-              <Link
-                className={classes.tableCell}
+              <TableCellItem
+                dense
+                button
+                component={Link}
                 to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
-                <div className={classes.listItemCell}>
-                  <Typography>{role.roleId}</Typography>
-                  <LinkIcon size={iconSize} />
-                </div>
-              </Link>
+                <ListItemText primary={role.roleId} />
+                <LinkIcon size={iconSize} />
+              </TableCellItem>
             </TableCell>
           </TableRow>
         )}

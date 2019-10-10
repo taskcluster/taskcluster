@@ -228,25 +228,15 @@ class GoogleProvider extends Provider {
         wt.providerData[this.providerId].running = wt.providerData[this.providerId].running || 0;
       });
     }
-    const regions = workerPool.config.regions;
 
     const toSpawn = await this.estimator.simple({
       workerPoolId,
       ...workerPool.config,
+      capacityPerInstance: 1, // TODO (bug 1587234) Hardcoded for now until estimator updates
       running: workerPool.providerData[this.providerId].running,
     });
 
-    await Promise.all(new Array(toSpawn).fill(null).map(async _ => {
-      const region = regions[Math.floor(Math.random() * regions.length)];
-      if (!this.zonesByRegion[region]) {
-        this.zonesByRegion[region] = (await this._enqueue('get', () => this.compute.regions.get({
-          project: this.project,
-          region,
-        }))).data.zones;
-      }
-      const zones = this.zonesByRegion[region];
-      const zone = zones[Math.floor(Math.random() * zones.length)].split('/').slice(-1)[0];
-
+    await Promise.all(new Array(toSpawn).fill(null).map(async i => {
       // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
       // The lost entropy from downcasing, etc should be ok due to the fact that
       // only running instances need not be identical. We do not use this name to identify
@@ -254,24 +244,24 @@ class GoogleProvider extends Provider {
       const poolName = workerPoolId.replace(/\//g, '-').slice(0, 38);
       const instanceName = `${poolName}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
 
+      const cfg = _.sample(workerPool.config.launchConfigs);
+
       let op;
 
       try {
         const res = await this._enqueue('query', () => this.compute.instances.insert({
           project: this.project,
-          zone,
+          zone: cfg.zone,
           requestId: uuid.v4(), // This is just for idempotency
           requestBody: {
+            ...cfg, // We spread this in first so that users can't override stuff we set below
             name: instanceName,
             labels: {
+              ...cfg.labels || {},
+              'managed-by': 'taskcluster',
               'worker-pool-id': workerPoolId.replace('/', '_').toLowerCase(),
             },
-            description: workerPool.description,
-            machineType: `zones/${zone}/machineTypes/${workerPool.config.machineType}`,
-            scheduling: workerPool.config.scheduling,
-            networkInterfaces: workerPool.config.networkInterfaces,
-            disks: workerPool.config.disks,
-            displayDevice: workerPool.config.displayDevice,
+            description: cfg.description || workerPool.description,
             serviceAccounts: [{
               email: this.workerServiceAccountEmail,
               scopes: [
@@ -288,8 +278,13 @@ class GoogleProvider extends Provider {
                 'https://www.googleapis.com/auth/cloud-platform',
               ],
             }],
+            scheduling: {
+              ...cfg.scheduling || {},
+              automaticRestart: false,
+            },
             metadata: {
               items: [
+                ...(cfg.metadata || {}).items || [],
                 {
                   key: 'taskcluster',
                   value: JSON.stringify({
@@ -297,8 +292,7 @@ class GoogleProvider extends Provider {
                     providerId: this.providerId,
                     workerGroup: this.providerId,
                     rootUrl: this.rootUrl,
-                    workerConfig: workerPool.config.workerConfig || {},
-                    userData: workerPool.config.userData,
+                    workerConfig: cfg.workerConfig || {},
                   }),
                 },
               ],
@@ -330,7 +324,7 @@ class GoogleProvider extends Provider {
         state: this.Worker.states.REQUESTED,
         providerData: {
           project: this.project,
-          zone,
+          zone: cfg.zone,
           operation: {
             name: op.name,
             zone: op.zone,
