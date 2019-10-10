@@ -130,7 +130,14 @@ function makeToc({ files, rootPath }) {
                 ptr.data = child.data;
                 ptr.path = `${rootPath}${path.join('/')}`;
               }
-
+              if (rootPath === 'reference/' && name === 'api') {
+                ptr.data = child.data;
+                ptr.path = `reference/core/hooks/v1/api`;
+              }
+              if (rootPath === 'reference/' && name === 'exchanges') {
+                ptr.data = child.data;
+                ptr.path = `reference/core/hooks/v1/exchanges`;
+              }
               if (ptr.path !== child.path) {
                 ptr.children.push(child);
               }
