@@ -1,7 +1,6 @@
 const assert = require('assert');
 const assume = require('assume');
 const taskcreator = require('../src/taskcreator');
-const debug = require('debug')('test:test_schedule_hooks');
 const helper = require('./helper');
 const taskcluster = require('taskcluster-client');
 const {sleep} = require('taskcluster-lib-testing');
@@ -12,30 +11,17 @@ const testing = require('taskcluster-lib-testing');
 const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 suite(testing.suiteName(), function() {
-  helper.secrets.mockSuite('TaskCreator', ['taskcluster'], function(mock, skipping) {
+  helper.secrets.mockSuite('TaskCreator', ['azure'], function(mock, skipping) {
     helper.withEntities(mock, skipping);
 
     this.slow(500);
 
-    /* Note that this requires the following set up in production TC:
-     *  - TC credentials given in cfg.get('taskcluster:credentials') with
-     *    - assume:hook-id:tc-hooks-tests/tc-test-hook
-     *    - auth:azure-table-access:pamplemousse/*
-     *  - a role `hook-id:tc-hooks-tests/tc-test-hook` with scopes
-     *    - queue:create-task:no-provisioner/test-worker
-     *    - project:taskcluster:tests:tc-hooks:scope/required/for/task/1
-     */
-
     let creator = null;
     setup(async () => {
       helper.load.remove('taskcreator');
-      if (mock) {
-        helper.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
-      }
+      helper.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
       creator = await helper.load('taskcreator');
-      if (mock) {
-        creator.fakeCreate = true;
-      }
+      creator.fakeCreate = true;
     });
 
     const defaultHook = {
@@ -91,34 +77,13 @@ suite(testing.suiteName(), function() {
     };
 
     const fetchFiredTask = async taskId => {
-      if (mock) {
-        // for mock runs, creator was started with fakeCreate, so use that
-        assume(creator.lastCreateTask.taskId).equals(taskId);
-        return creator.lastCreateTask.task;
-      } else {
-        // in real runs, ask the queue for the resulting task
-        const cfg = await helper.load('cfg');
-        const queue = new taskcluster.Queue(cfg.taskcluster);
-        return await queue.task(taskId);
-      }
+      // for mock runs, creator was started with fakeCreate, so use that
+      assume(creator.lastCreateTask.taskId).equals(taskId);
+      return creator.lastCreateTask.task;
     };
 
     const assertNoTask = async taskId => {
-      if (mock) {
-        assert(!creator.lastCreateTask);
-      } else {
-        // in real runs, ask the queue for the resulting task
-        const cfg = await helper.load('cfg');
-        const queue = new taskcluster.Queue(cfg.taskcluster);
-        try {
-          await queue.task(taskId);
-          assume(false, 'task was found!');
-        } catch (err) {
-          if (err.code !== 'ResourceNotFound') {
-            throw err;
-          }
-        }
-      }
+      assert(!creator.lastCreateTask);
     };
 
     const assertFireLogged = fields =>
@@ -142,14 +107,9 @@ suite(testing.suiteName(), function() {
         firedBy: '${firedBy}',
       });
       let taskId = taskcluster.slugid();
-      let resp = await creator.fire(hook, {context: true, firedBy: 'schedule'}, {taskId});
-      if (mock) {
-        assume(creator.lastCreateTask.taskId).equals(taskId);
-        assume(creator.lastCreateTask.task.workerType).equals(hook.task.then.workerType);
-      } else {
-        assume(resp.status.taskId).equals(taskId);
-        assume(resp.status.workerType).equals(hook.task.then.workerType);
-      }
+      await creator.fire(hook, {context: true, firedBy: 'schedule'}, {taskId});
+      assume(creator.lastCreateTask.taskId).equals(taskId);
+      assume(creator.lastCreateTask.task.workerType).equals(hook.task.then.workerType);
       assertFireLogged({firedBy: "schedule", taskId, result: 'success'});
     });
 
@@ -291,16 +251,6 @@ suite(testing.suiteName(), function() {
       const task = await fetchFiredTask(resp.status.taskId);
       assume(task.workerType).equals(hook.task.then.workerType);
     });
-
-    if (!mock) {
-      // this only makes sense with the real queue's scope-checking logic
-      test('fails if task.scopes includes scopes not granted to the role', async function() {
-        let hook = await createTestHook(['project:taskcluster:tests:tc-hooks:scope/not/in/the/role']);
-        await creator.fire(hook, {payload: true}).then(
-          () => { throw new Error('Expected an error'); },
-          (err) => { debug('Got expected error: %s', err); });
-      });
-    }
 
     test('adds a new row to lastFire', async function() {
       let hook = _.cloneDeep(defaultHook);

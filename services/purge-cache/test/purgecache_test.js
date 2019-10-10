@@ -2,7 +2,7 @@ const helper = require('./helper');
 const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withServer(mock, skipping);
 

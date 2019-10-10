@@ -118,6 +118,10 @@ class Secrets {
     const that = this;
     let skipping = false;
 
+    if (secretList.some(n => ! this.secrets[n])) {
+      throw new Error(`Unknown secrets in ${JSON.stringify(secretList)}`);
+    }
+
     suite(`${title} (mock)`, function() {
       suiteSetup(async function() {
         skipping = false;

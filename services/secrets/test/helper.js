@@ -3,7 +3,6 @@ const {fakeauth, stickyLoader, Secrets, withMonitor} = require('taskcluster-lib-
 const load = require('../src/main');
 const data = require('../src/data');
 const builder = require('../src/api.js');
-const libUrls = require('taskcluster-lib-urls');
 const {withEntity} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
@@ -17,13 +16,9 @@ withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({
-  secretName: 'project/taskcluster/testing/taskcluster-secrets',
+  secretName: 'project/taskcluster/testing/azure',
   secrets: {
-    taskcluster: [
-      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl', mock: libUrls.testRootUrl()},
-      {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId'},
-      {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
-    ],
+    azure: withEntity.secret,
   },
   load: exports.load,
 });

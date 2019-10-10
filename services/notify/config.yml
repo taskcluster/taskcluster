@@ -69,6 +69,8 @@ production:
 
 # Configuration of tests
 test:
+  taskcluster:
+    rootUrl: "https://tc.example.com"
   aws:
     region:           us-east-1
   app:

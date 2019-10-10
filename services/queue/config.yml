@@ -161,6 +161,9 @@ production:
 
 # Configuration of tests
 test:
+  taskcluster:
+    rootUrl: "https://tc.example.com"
+
   app:
     # For testing purposes we let claims expire very fast
     claimTimeout:                 1

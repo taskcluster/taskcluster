@@ -84,7 +84,6 @@ development:
     allowedCORSOrigins: [true]
 
   azure:
-    accountId: 'jungle'
     signingKey: 'REALULTIMATEPOWER.NET'
     cryptoKey: 'CNcj2aOozdo7Pn+HEkAIixwninIwKnbYc6JPS9mNxZk='
 
@@ -95,8 +94,10 @@ test:
   app:
     publicUrl: http://localhost:5080
 
+  taskcluster:
+    rootUrl: https://tc.example.com
+
   azure:
-    accountId: 'jungle'
     signingKey: 'REALULTIMATEPOWER.NET'
     cryptoKey: 'CNcj2aOozdo7Pn+HEkAIixwninIwKnbYc6JPS9mNxZk='
 

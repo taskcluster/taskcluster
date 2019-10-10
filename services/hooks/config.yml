@@ -49,6 +49,9 @@ production:
 
 test:
   # See user-config-example.yml for secrets credentials required for tests
+  taskcluster:
+    rootUrl: "https://tc.example.com"
+
   app:
     component:        hooks-tests
     hookTableName:    HooksTestTable2

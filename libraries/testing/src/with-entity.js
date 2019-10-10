@@ -1,4 +1,3 @@
-const {sasCredentials} = require('taskcluster-lib-azure');
 const slugid = require('slugid');
 
 // a suffix used to generate unique table names so that parallel test runs do not
@@ -12,7 +11,7 @@ const TABLE_SUFFIX = (() => {
   return `T${date}T${rand}`;
 })();
 
-const bug1579496fixed = false;
+const bug1579496fixed = true; // XXX TEMP
 
 // withEntity: monkey-patch an entity class to either use inmemory data
 // or to use a unique table name, and set up to ensure the table exists and
@@ -37,25 +36,22 @@ module.exports = (mock, skipping, helper, loaderComponent, cls,
 
     const cfg = await helper.load('cfg');
     const oldSetup = cls.setup;
-    cls.setup = function ({...options}) {
+    cls.setup = async function ({...options}) {
       if (mock) {
         options.credentials = 'inMemory';
       } else {
         options.tableName = options.tableName + TABLE_SUFFIX;
-        // since the tableName has changed, we need new creds
+        // supply raw Azure credentials for the table
         if (!noSasCredentials) {
-          options.credentials = sasCredentials({
-            accountId: cfg.azure.accountId,
-            tableName: options.tableName,
-            rootUrl: cfg.taskcluster.rootUrl,
-            credentials: cfg.taskcluster.credentials,
-          });
+          options.credentials = cfg.azure;
         }
       }
 
       // un-monkeypatch
       cls.setup = oldSetup;
-      return this.setup(options);
+      const entity = await this.setup(options);
+      await entity.ensureTable();
+      return entity;
     };
 
     // now invoke the loader component to load this class
@@ -106,3 +102,8 @@ module.exports = (mock, skipping, helper, loaderComponent, cls,
     component = helper[loaderComponent] = null;
   });
 };
+
+module.exports.secret = [
+  {env: 'AZURE_ACCOUNT', cfg: 'azure.accountId', name: 'accountId'},
+  {env: 'AZURE_ACCOUNT_KEY', cfg: 'azure.accessKey', name: 'accountKey'},
+];
