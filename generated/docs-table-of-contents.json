@@ -2152,6 +2152,75 @@
                 ],
                 "data": {
                   "inline": true,
+                  "order": 1,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                  "path": "reference/core/purge-cache/logs",
+                  "title": "logs"
+                },
+                "path": "reference/core/purge-cache/api",
+                "prev": {
+                  "path": "reference/core/hooks/v1/api",
+                  "title": "api"
+                },
+                "up": {
+                  "path": "reference/core/hooks/v1/api",
+                  "title": "api"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 2,
+                  "title": "logs"
+                },
+                "name": "logs",
+                "next": {
+                  "path": "reference/core/built-in-workers/README",
+                  "title": "built-in-workers"
+                },
+                "path": "reference/core/purge-cache/logs",
+                "prev": {
+                  "path": "reference/core/purge-cache/api",
+                  "title": "api"
+                },
+                "up": {
+                  "path": "reference/core/hooks/v1/api",
+                  "title": "api"
+                }
+              }
+            ],
+            "data": {
+              "inline": true,
+              "order": 1,
+              "title": "api"
+            },
+            "name": "purge-cache",
+            "next": {
+              "path": "reference/core/purge-cache/api",
+              "title": "api"
+            },
+            "path": "reference/core/hooks/v1/api",
+            "prev": {
+              "path": "reference/core/README",
+              "title": "Core Services"
+            },
+            "up": {
+              "path": "reference/core/README",
+              "title": "Core Services"
+            }
+          },
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
                   "order": 2,
                   "title": "logs"
                 },
@@ -2181,8 +2250,8 @@
             },
             "path": "reference/core/built-in-workers/README",
             "prev": {
-              "path": "reference/core/README",
-              "title": "Core Services"
+              "path": "reference/core/purge-cache/logs",
+              "title": "logs"
             },
             "up": {
               "path": "reference/core/README",
@@ -2199,38 +2268,15 @@
                   "order": 1,
                   "title": "api"
                 },
-                "name": "api",
-                "next": {
-                  "path": "reference/core/hooks/exchanges",
-                  "title": "exchanges"
-                },
-                "path": "reference/core/hooks/api",
-                "prev": {
-                  "path": "reference/core/hooks/README",
-                  "title": "hooks"
-                },
-                "up": {
-                  "path": "reference/core/hooks/README",
-                  "title": "hooks"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 2,
-                  "title": "exchanges"
-                },
-                "name": "exchanges",
+                "name": "v1",
                 "next": {
                   "path": "reference/core/hooks/logs",
                   "title": "logs"
                 },
-                "path": "reference/core/hooks/exchanges",
+                "path": "reference/core/hooks/v1/api",
                 "prev": {
-                  "path": "reference/core/hooks/api",
-                  "title": "api"
+                  "path": "reference/core/hooks/README",
+                  "title": "hooks"
                 },
                 "up": {
                   "path": "reference/core/hooks/README",
@@ -2252,8 +2298,8 @@
                 },
                 "path": "reference/core/hooks/logs",
                 "prev": {
-                  "path": "reference/core/hooks/exchanges",
-                  "title": "exchanges"
+                  "path": "reference/core/hooks/v1/api",
+                  "title": "api"
                 },
                 "up": {
                   "path": "reference/core/hooks/README",
@@ -2288,7 +2334,7 @@
             },
             "name": "hooks",
             "next": {
-              "path": "reference/core/hooks/api",
+              "path": "reference/core/hooks/v1/api",
               "title": "api"
             },
             "path": "reference/core/hooks/README",
@@ -2448,8 +2494,8 @@
                 },
                 "name": "usage",
                 "next": {
-                  "path": "reference/core/purge-cache/README",
-                  "title": "purge-cache"
+                  "path": "reference/core/secrets/README",
+                  "title": "secrets"
                 },
                 "path": "reference/core/notify/usage",
                 "prev": {
@@ -2474,73 +2520,6 @@
             "prev": {
               "path": "reference/core/index/logs",
               "title": "logs"
-            },
-            "up": {
-              "path": "reference/core/README",
-              "title": "Core Services"
-            }
-          },
-          {
-            "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 1,
-                  "title": "api"
-                },
-                "name": "api",
-                "next": {
-                  "path": "reference/core/purge-cache/logs",
-                  "title": "logs"
-                },
-                "path": "reference/core/purge-cache/api",
-                "prev": {
-                  "path": "reference/core/purge-cache/README",
-                  "title": "purge-cache"
-                },
-                "up": {
-                  "path": "reference/core/purge-cache/README",
-                  "title": "purge-cache"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 2,
-                  "title": "logs"
-                },
-                "name": "logs",
-                "next": {
-                  "path": "reference/core/secrets/README",
-                  "title": "secrets"
-                },
-                "path": "reference/core/purge-cache/logs",
-                "prev": {
-                  "path": "reference/core/purge-cache/api",
-                  "title": "api"
-                },
-                "up": {
-                  "path": "reference/core/purge-cache/README",
-                  "title": "purge-cache"
-                }
-              }
-            ],
-            "data": {
-              "order": 1000
-            },
-            "name": "purge-cache",
-            "next": {
-              "path": "reference/core/purge-cache/api",
-              "title": "api"
-            },
-            "path": "reference/core/purge-cache/README",
-            "prev": {
-              "path": "reference/core/notify/usage",
-              "title": "Enable Notifications"
             },
             "up": {
               "path": "reference/core/README",
@@ -2606,8 +2585,8 @@
             },
             "path": "reference/core/secrets/README",
             "prev": {
-              "path": "reference/core/purge-cache/logs",
-              "title": "logs"
+              "path": "reference/core/notify/usage",
+              "title": "Enable Notifications"
             },
             "up": {
               "path": "reference/core/README",
@@ -2841,8 +2820,8 @@
         },
         "name": "core",
         "next": {
-          "path": "reference/core/built-in-workers/README",
-          "title": "built-in-workers"
+          "path": "reference/core/hooks/v1/api",
+          "title": "api"
         },
         "path": "reference/core/README",
         "prev": {
