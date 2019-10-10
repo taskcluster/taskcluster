@@ -9228,9 +9228,9 @@ pretty-error@^2.1.1:
     utila "~0.4"
 
 prism-themes@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/prism-themes/-/prism-themes-1.0.1.tgz#8e68972176f5e4fbc0859cd8e9474a0bbfaf2e41"
-  integrity sha512-tRYOqg2tT5/eB++iX+rqRnqESkCKuoV+0PrUiGKdWMr5lApd/hwfu+72Hi0OS50wmcuIty3GB1HrRqoBD+Cpfg==
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/prism-themes/-/prism-themes-1.2.0.tgz#a9f5e5e14a82d7cf4fa77a43f8ddcce72952799e"
+  integrity sha512-Y+xZs8u++9IHPZOIaeQ6itdTuDMNcGv0tMIO8MA6AlV9ZocdBvhy1JU6SE/Yzg+8RwSvWLYDQx85ardSKxo/9g==
 
 prismjs@^1.15.0:
   version "1.15.0"
