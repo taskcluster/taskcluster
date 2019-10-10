@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const assert = require('assert');
-const request = require('superagent');
+const taskcluster = require('taskcluster-client');
 const debug = require('debug')('tc-lib-testing:secrets');
 
 class Secrets {
@@ -80,15 +80,13 @@ class Secrets {
   async _fetchSecrets() {
     const secrets = {};
 
-    // construct a taskcluster-proxy URL to get the secret.  We can't use the taskcluster-client
-    // as it cannot form URLs that match the proxy right now (https://bugzilla.mozilla.org/show_bug.cgi?id=1460015)
+    const client = new taskcluster.Secrets({rootUrl: process.env.TASKCLUSTER_PROXY_URL});
     for (let secretName of this.secretName) {
-      const url = `http://taskcluster/secrets.taskcluster.net/v1/secret/${encodeURIComponent(secretName)}`;
       try {
-        const vars = (await request.get(url)).body.secret;
-        Object.assign(secrets, vars);
+        const res = await client.get(secretName);
+        Object.assign(secrets, res.secret);
       } catch (err) {
-        debug(`Error fetching ${url}; ignoring`);
+        debug(`Error fetching secret ${secretName}; ignoring`);
       }
     }
 
