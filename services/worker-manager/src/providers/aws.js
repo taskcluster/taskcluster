@@ -71,6 +71,7 @@ class AwsProvider extends Provider {
     if (toSpawn === 0) {
       return;
     }
+    const toSpawnPerConfig = Math.ceil(toSpawn / workerPool.config.launchConfigs.length);
 
     const userData = Buffer.from(JSON.stringify({
       rootUrl: this.rootUrl,
@@ -93,6 +94,7 @@ class AwsProvider extends Provider {
     const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
 
     let spawned;
+    let toSpawnCounter = toSpawn;
     for await (let config of shuffledConfigs) {
       // Make sure we don't get "The same resource type may not be specified
       // more than once in tag specifications" errors
@@ -109,8 +111,8 @@ class AwsProvider extends Provider {
 
           UserData: userData.toString('base64'), // The string needs to be base64-encoded. See the docs above
 
-          MaxCount: toSpawn,
-          MinCount: toSpawn,
+          MaxCount: Math.min(toSpawnCounter, toSpawnPerConfig),
+          MinCount: Math.min(toSpawnCounter, toSpawnPerConfig),
           TagSpecifications: [
             ...otherTagSpecs,
             {
@@ -146,6 +148,8 @@ class AwsProvider extends Provider {
           WorkerPoolError: this.WorkerPoolError,
         });
       }
+
+      toSpawnCounter -= toSpawnPerConfig;
 
       await Promise.all(spawned.Instances.map(i => {
         return this.Worker.create({
