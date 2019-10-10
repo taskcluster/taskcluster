@@ -135,7 +135,7 @@ export default class ListNamespaces extends Component {
 
     return (
       <Dashboard
-        title="Index Browser"
+        title="Task Index"
         helpView={<HelpView description={description} />}>
         <Fragment>
           {loading && <Spinner loading />}
