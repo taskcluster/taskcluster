@@ -150,7 +150,6 @@
     "mockdate": "^2.0.2",
     "nock": "10.0.6",
     "qlobber": "^3.1.0",
-    "raw-loader": "^3.0.0",
     "rmp": "^0.0.0",
     "semver": "^6.1.1",
     "shell-quote": "^1.6.1",
@@ -194,6 +193,9 @@
     "prHourlyLimit": 5,
     "prConcurrentLimit": 10,
     "rangeStrategy": "update-lockfile",
+    "ignoreDeps": [
+      "aws-sdk"
+    ],
     "enabledManagers": [
       "npm"
     ]
