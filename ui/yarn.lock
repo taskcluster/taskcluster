@@ -9940,9 +9940,9 @@ react-virtualized@^9.21.0:
     react-lifecycles-compat "^3.0.4"
 
 react-vnc-display@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/react-vnc-display/-/react-vnc-display-2.0.0.tgz#f7b692d3f34dde6ab654d7cf2c64023718a62eae"
-  integrity sha512-vCSYFbZP9ypqC4R48/UTiGpCOOz20wIdjYxViCI4LdJ1ZYbn0E3ABz0LsX8/9wTRy9AmKOf/ipYGlL2GMPb5yQ==
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/react-vnc-display/-/react-vnc-display-2.0.1.tgz#bb5ad0f6901526da832e78ceedbf49e0cb9843fb"
+  integrity sha512-XQ+t118HfdXg8LTrTer9KLf1gyod+KYnXeXHhJI4xZivnB/iNXQnvb06ZeFLz9+WPmz6TvR36mlfkA0x8BaylQ==
   dependencies:
     novnc-node "^0.5.3"
     prop-types "^15.6.1"
