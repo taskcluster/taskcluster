@@ -2,7 +2,6 @@ import React, { Component, Fragment } from 'react';
 import { string, arrayOf } from 'prop-types';
 import { pipe, map, isEmpty, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
-import { camelCase } from 'change-case/change-case';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -38,7 +37,6 @@ export default class AwsProvisionerWorkerTypeTable extends Component {
 
   createSortedWorkerTypes = memoize(
     (workerTypes, sortBy, sortDirection, searchTerm) => {
-      const sortByProperty = camelCase(sortBy);
       const filteredWorkerTypes = searchTerm
         ? workerTypes.filter(({ workerType }) =>
             workerType.includes(searchTerm)
@@ -49,9 +47,9 @@ export default class AwsProvisionerWorkerTypeTable extends Component {
         ? filteredWorkerTypes
         : [...filteredWorkerTypes].sort((a, b) => {
             const firstElement =
-              sortDirection === 'desc' ? b[sortByProperty] : a[sortByProperty];
+              sortDirection === 'desc' ? b[sortBy] : a[sortBy];
             const secondElement =
-              sortDirection === 'desc' ? a[sortByProperty] : b[sortByProperty];
+              sortDirection === 'desc' ? a[sortBy] : b[sortBy];
 
             return sort(firstElement, secondElement);
           });
@@ -65,11 +63,11 @@ export default class AwsProvisionerWorkerTypeTable extends Component {
     }
   );
 
-  handleHeaderClick = sortBy => {
+  handleHeaderClick = header => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
+    const sortDirection = this.state.sortBy === header.id ? toggled : 'desc';
 
-    this.setState({ sortBy, sortDirection });
+    this.setState({ sortBy: header.id, sortDirection });
   };
 
   render() {
@@ -82,26 +80,27 @@ export default class AwsProvisionerWorkerTypeTable extends Component {
       searchTerm
     );
     const iconSize = 16;
+    const headers = [
+      { label: 'Worker Type', id: 'workerType', type: 'string' },
+      { label: 'Pending Tasks', id: 'pendingTasks', type: 'number' },
+      {
+        label: 'Running Capacity',
+        id: 'runningCapacity',
+        type: 'number',
+      },
+      {
+        label: 'Pending Capacity',
+        id: 'pendingCapacity',
+        type: 'number',
+      },
+    ];
 
     return (
       <Fragment>
         <DataTable
           items={sortedWorkerTypes}
-          headers={[
-            { label: 'Worker Type', id: 'workerType', type: 'string' },
-            { label: 'Pending Tasks', id: 'pendingTasks', type: 'number' },
-            {
-              label: 'Running Capacity',
-              id: 'runningCapacity',
-              type: 'number',
-            },
-            {
-              label: 'Pending Capacity',
-              id: 'pendingCapacity',
-              type: 'number',
-            },
-          ]}
-          sortByHeader={sortBy}
+          headers={headers}
+          sortByLabel={sortBy}
           sortDirection={sortDirection}
           onHeaderClick={this.handleHeaderClick}
           renderRow={workerType => (

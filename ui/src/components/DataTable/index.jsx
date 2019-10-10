@@ -7,6 +7,7 @@ import {
   oneOf,
   oneOfType,
   object,
+  shape,
   bool,
 } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
@@ -40,22 +41,33 @@ export default class DataTable extends Component {
     renderRow: func.isRequired,
     /**
      * A function to execute when a column header is clicked.
-     * Will receive a single argument which is the column name.
+     * Will receive a single argument
+     * which is the header object for the corresponding column.
      * This can be used to handle sorting.
      */
     onHeaderClick: func,
     /**
      * A header name to sort on.
      */
-    sortByHeader: string,
+    sortByLabel: string,
     /**
      * The sorting direction.
      */
     sortDirection: oneOf(['desc', 'asc']),
     /**
-     * A list of header names to use on the table starting from the left.
+     * An list of objects. Each element contains a label
+     * representing a header name to use on the table starting from the left,
+     * an id which is a camel-cased version of the header name used in
+     * the sorting function to sort column contents
+     * and a type, a string identifying the data type of the column contents.
      */
-    headers: arrayOf(string),
+    headers: arrayOf(
+      shape({
+        id: string,
+        type: string,
+        label: string,
+      })
+    ),
     /**
      * A list of objects or strings to display. Each element in
      * the list is represented by a row and each element represents a column.
@@ -80,7 +92,7 @@ export default class DataTable extends Component {
     columnsSize: null,
     headers: null,
     onHeaderClick: null,
-    sortByHeader: null,
+    sortByLabel: null,
     sortDirection: 'desc',
     noItemsMessage: 'No items for this page.',
     paginate: false,
@@ -91,11 +103,11 @@ export default class DataTable extends Component {
     page: 0,
   };
 
-  handleHeaderClick = ({ target }) => {
+  handleHeaderClick = header => {
     const { onHeaderClick } = this.props;
 
     if (onHeaderClick) {
-      onHeaderClick(target.id);
+      onHeaderClick(header);
     }
   };
 
@@ -110,7 +122,7 @@ export default class DataTable extends Component {
       columnsSize,
       renderRow,
       headers,
-      sortByHeader,
+      sortByLabel,
       sortDirection,
       noItemsMessage,
       rowsPerPage,
@@ -132,12 +144,11 @@ export default class DataTable extends Component {
               <TableHead>
                 <TableRow>
                   {headers.map(header => (
-                    <TableCell key={`table-header-${header.label}`}>
+                    <TableCell key={`table-header-${header.id}`}>
                       <TableSortLabel
-                        id={header.label}
-                        active={header.label === sortByHeader}
+                        active={header.id === sortByLabel}
                         direction={sortDirection || 'desc'}
-                        onClick={this.handleHeaderClick}>
+                        onClick={() => this.handleHeaderClick(header)}>
                         {header.label}
                       </TableSortLabel>
                     </TableCell>
