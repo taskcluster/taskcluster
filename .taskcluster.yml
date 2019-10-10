@@ -159,6 +159,12 @@ tasks:
               cd clients/client-shell
           command: >-
               go test -v -race ./...
+        - name: check for invalid go pseudo-versions
+          # see https://github.com/taskcluster/taskcluster/issues/1492
+          image: 'golang:1.13.1'
+          command: >-
+              (cd clients/client-go && go list -m all) &&
+              (cd clients/client-shell && go list -m all)
         - name: taskcluster-ui
           image: 'taskcluster/browser-test:${node}'
           install: >-
