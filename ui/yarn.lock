@@ -1251,9 +1251,9 @@
     buble "^0.19.6"
 
 "@mozilla-frontend-infra/components@^2.4.0":
-  version "2.4.2"
-  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/components/-/components-2.4.2.tgz#31e47525acb651e9a33f0fe51ca62e4f2b59da53"
-  integrity sha512-zZ0dt/pmh7ajISIPIJPrYX2razrC3XN2FEDhWNwTZtMr6QGyg4jfdjciAaXoLlZrUrmC0iOVkmr9ojZx8j5SLw==
+  version "2.4.4"
+  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/components/-/components-2.4.4.tgz#6463da1d16e19775bc1299472dcf091c71a24009"
+  integrity sha512-Zv+1PssQz21MNyhj5wuR22K0kVh6xdlr0/X2mdwg94BxtNl7iunGFMx2K1ImSuNT327HXckwDmh3MFwt68mIjA==
   dependencies:
     classnames "^2.2.6"
     codemirror "^5.39.0"
@@ -1262,7 +1262,7 @@
     is-absolute-url "^2.1.0"
     js-yaml "^3.13.1"
     jsonlint-mod "^1.7.2"
-    markdown-it "^8.4.2"
+    markdown-it "^10.0.0"
     markdown-it-highlightjs "^3.0.0"
     markdown-it-link-attributes "^2.1.0"
     mdi-react "^4.0.0"
@@ -4464,6 +4464,11 @@ entities@~1.1.1:
   resolved "https://registry.yarnpkg.com/entities/-/entities-1.1.2.tgz#bdfa735299664dfafd34529ed4f8522a275fea56"
   integrity sha512-f2LZMYl1Fzu7YSBKg+RoROelpOaNrcGmE9AZubeDfrCEia483oW4MI4VyFd5VNHIgQ/7qm1I0wUHK1eJnn2y2w==
 
+entities@~2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/entities/-/entities-2.0.0.tgz#68d6084cab1b079767540d80e56a39b423e4abf4"
+  integrity sha512-D9f7V0JSRwIxlRI2mjMqufDrRDnx8p+eEOz7aUM9SuvF8gsBzra0/6tbjl1m8eQHrZlYj6PxqE00hZ1SAIKPLw==
+
 errno@^0.1.3, errno@~0.1.7:
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/errno/-/errno-0.1.7.tgz#4684d71779ad39af177e3f007996f7c67c852618"
@@ -7460,7 +7465,18 @@ markdown-it-link-attributes@^2.1.0:
   resolved "https://registry.yarnpkg.com/markdown-it-link-attributes/-/markdown-it-link-attributes-2.1.0.tgz#32a74c94f7c5cdfd08868d2bee29c6fa70a08324"
   integrity sha1-MqdMlPfFzf0Iho0r7inG+nCggyQ=
 
-markdown-it@^8.4.0, markdown-it@^8.4.2:
+markdown-it@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/markdown-it/-/markdown-it-10.0.0.tgz#abfc64f141b1722d663402044e43927f1f50a8dc"
+  integrity sha512-YWOP1j7UbDNz+TumYP1kpwnP0aEa711cJjrAQrzd0UXlbJfc5aAq0F/PZHjiioqDC1NKgvIMX+o+9Bk7yuM2dg==
+  dependencies:
+    argparse "^1.0.7"
+    entities "~2.0.0"
+    linkify-it "^2.0.0"
+    mdurl "^1.0.1"
+    uc.micro "^1.0.5"
+
+markdown-it@^8.4.0:
   version "8.4.2"
   resolved "https://registry.yarnpkg.com/markdown-it/-/markdown-it-8.4.2.tgz#386f98998dc15a37722aa7722084f4020bdd9b54"
   integrity sha512-GcRz3AWTqSUphY3vsUqQSFMbgR38a4Lh3GWlHRh/7MRwz8mcu9n2IO7HOh+bXHrR9kOPDl5RNCaEsrneb+xhHQ==
