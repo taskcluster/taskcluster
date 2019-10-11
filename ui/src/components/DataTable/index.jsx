@@ -55,16 +55,22 @@ export default class DataTable extends Component {
      */
     sortDirection: oneOf(['desc', 'asc']),
     /**
-     * An list of objects. Each element contains a label
-     * representing a header name to use on the table starting from the left,
-     * an id which is a camel-cased version of the header name used in
-     * the sorting function to sort column contents
-     * and a type, a string identifying the data type of the column contents.
+     * A list of header objects to use on the table starting from the left.
      */
     headers: arrayOf(
       shape({
+        /**
+         * A string identifying the data type of the column contents
+         * (e.g., 'string', 'object', 'number'). */
         id: string,
+        /**
+         * An identifier for the header.
+         * This is used to identify, for example, which column was clicked.
+         */
         type: string,
+        /**
+         * A label to use for the column name.
+         */
         label: string,
       })
     ),

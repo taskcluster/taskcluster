@@ -26,11 +26,25 @@ const styles = theme => ({
 function HookLastFiredTable({ classes, ...props }) {
   const { items, onErrorClick, ...rest } = props;
   const iconSize = 16;
+  const headers = [
+    { label: 'Task ID', id: 'taskId', type: 'string' },
+    { label: 'Reason', id: 'reason', type: 'string' },
+    {
+      label: 'Fire Status',
+      id: 'fireStatus',
+      type: 'string',
+    },
+    {
+      label: 'Attempted',
+      id: 'attempted',
+      type: 'string',
+    },
+  ];
 
   return (
     <DataTable
       items={items}
-      headers={['Task ID', 'Reason', 'Fire Status', 'Attempted']}
+      headers={headers}
       renderRow={hookFire => (
         <TableRow key={hookFire.taskId}>
           <TableCell>
