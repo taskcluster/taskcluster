@@ -2,32 +2,35 @@ version: 1
 policy:
   pullRequests: public
 tasks:
+  $flatten:
   - $if: '(tasks_for == "github-pull-request"  && event["action"] in ["opened", "reopened", "synchronize"])'
     then:
-      taskId: {$eval: as_slugid("test")}
-      created: {$fromNow: ''}
-      deadline: {$fromNow: '2 hours'}
-      provisionerId: proj-taskcluster
-      workerType: ci
-      payload:
-        maxRunTime: 3600
-        image: golang
-        command:
-          - /bin/bash
-          - '-c'
-          - >-
-            mkdir -p /go/src/github.com/taskcluster &&
-            cd /go/src/github.com/taskcluster &&
-            git clone ${event.pull_request.head.repo.git_url} websocktunnel &&
-            cd websocktunnel &&
-            git config advice.detachedHead false &&
-            git checkout ${event.pull_request.head.sha} &&
-            go test -v -race ./...
-      metadata:
-        name: websocktunnel-tests
-        description: runs tests for websocktunnel components
-        owner: ${event.pull_request.user.login}@users.noreply.github.com
-        source: ${event.repository.url}
+      $map: ["1.10", "1.11.1", "1.12.9"]
+      each(version):
+        taskId: {$eval: as_slugid("test")}
+        created: {$fromNow: ''}
+        deadline: {$fromNow: '2 hours'}
+        provisionerId: proj-taskcluster
+        workerType: ci
+        payload:
+          maxRunTime: 3600
+          image: golang:${version}
+          command:
+            - /bin/bash
+            - '-c'
+            - >-
+              mkdir -p /go/src/github.com/taskcluster &&
+              cd /go/src/github.com/taskcluster &&
+              git clone ${event.pull_request.head.repo.git_url} websocktunnel &&
+              cd websocktunnel &&
+              git config advice.detachedHead false &&
+              git checkout ${event.pull_request.head.sha} &&
+              go test -v -race ./...
+        metadata:
+          name: websocktunnel-tests-go${version}
+          description: runs tests for websocktunnel components
+          owner: ${event.pull_request.user.login}@users.noreply.github.com
+          source: ${event.repository.url}
 
   - $if: '(tasks_for == "github-pull-request"  && event["action"] in ["opened", "reopened", "synchronize"])'
     then:
@@ -38,7 +41,7 @@ tasks:
       workerType: ci
       payload:
         maxRunTime: 3600
-        image: golang
+        image: golang:1.10
         command:
           - /bin/bash
           - '-c'
