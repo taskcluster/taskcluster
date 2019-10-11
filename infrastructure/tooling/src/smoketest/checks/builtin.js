@@ -1,5 +1,13 @@
 const taskcluster = require('taskcluster-client');
 
+exports.scopeExpression = {
+  AllOf: [
+    'queue:create-task:highest:built-in/succeed',
+    'queue:create-task:highest:built-in/fail',
+    'queue:scheduler-id:-',
+  ],
+};
+
 exports.tasks = [];
 
 [{taskType: 'succeed', successCondition: 'completed'},

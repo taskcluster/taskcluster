@@ -1,7 +1,15 @@
 const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 
+exports.scopeExpression = {
+  AllOf: [
+    'secrets:get:project/taskcluster/smoketest/*',
+    'secrets:set:project/taskcluster/smoketest/*',
+  ],
+};
+
 exports.tasks = [];
+
 exports.tasks.push({
   title: 'Create secret/read-it-back check',
   requires: [],
