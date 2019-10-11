@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "webpack --mode production",
-    "start": "GENERATE_ENV_JS=1 webpack-dev-server --mode development",
+    "start": "cross-env GENERATE_ENV_JS=1 webpack-dev-server --mode development",
     "test": "karma start --single-run",
     "styleguide": "dotenv styleguidist server",
     "styleguide:build": "styleguidist build",
