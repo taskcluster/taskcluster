@@ -7,8 +7,8 @@ tasks:
       taskId: {$eval: as_slugid("test")}
       created: {$fromNow: ''}
       deadline: {$fromNow: '2 hours'}
-      provisionerId: aws-provisioner-v1
-      workerType: github-worker
+      provisionerId: proj-taskcluster
+      workerType: ci
       payload:
         maxRunTime: 3600
         image: golang
@@ -34,8 +34,8 @@ tasks:
       taskId: {$eval: as_slugid("dep")}
       created: {$fromNow: ''}
       deadline: {$fromNow: '2 hours'}
-      provisionerId: aws-provisioner-v1
-      workerType: github-worker
+      provisionerId: proj-taskcluster
+      workerType: ci
       payload:
         maxRunTime: 3600
         image: golang
@@ -62,8 +62,8 @@ tasks:
       taskId: {$eval: as_slugid("lint")}
       created: {$fromNow: ''}
       deadline: {$fromNow: '2 hours'}
-      provisionerId: aws-provisioner-v1
-      workerType: github-worker
+      provisionerId: proj-taskcluster
+      workerType: ci
       payload:
         maxRunTime: 3600
         image: golang:1.10
@@ -90,8 +90,8 @@ tasks:
       taskId: {$eval: as_slugid("all")}
       created: {$fromNow: ''}
       deadline: {$fromNow: '2 hours'}
-      provisionerId: aws-provisioner-v1
-      workerType: github-worker
+      provisionerId: proj-taskcluster
+      workerType: ci
       payload:
         maxRunTime: 3600
         image: golang:1.10
