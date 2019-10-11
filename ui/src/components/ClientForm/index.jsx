@@ -63,6 +63,10 @@ import { formatScope, scopeLink } from '../../utils/scopeUtils';
   enableIcon: {
     ...theme.mixins.successIcon,
   },
+  clickDescriptionListItem: {
+    marginTop: theme.spacing.unit,
+    marginBottom: theme.spacing.triple,
+  },
 }))
 /** A form to view/edit/create a client */
 export default class ClientForm extends Component {
@@ -324,7 +328,7 @@ export default class ClientForm extends Component {
               }
             />
           </ListItem>
-          <ListItem>
+          <ListItem className={classes.clickDescriptionListItem}>
             <MarkdownTextArea
               onChange={this.handleInputChange}
               name="description"
