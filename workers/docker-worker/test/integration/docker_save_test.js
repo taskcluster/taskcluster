@@ -3,18 +3,13 @@ const Docker = require('dockerode-promise');
 const dockerOpts = require('dockerode-options');
 const DockerWorker = require('../dockerworker');
 const fs = require('mz/fs');
-const https = require('https');
 const got = require('got');
-const settings = require('../settings');
 const tar = require('tar-fs');
 const TestWorker = require('../testworker');
-const Debug = require('debug');
 const {removeImage} = require('../../src/lib/util/remove_image');
 const pipe = require('promisepipe');
 const sleep = require('./helper/sleep');
 const taskcluster = require('taskcluster-client');
-
-let debug = Debug('docker-worker:test:docker-save-test');
 
 function createImageName(taskId, runId) {
   return `${taskId.toLowerCase().replace(/[_-]/g, '0')}-${runId}`;

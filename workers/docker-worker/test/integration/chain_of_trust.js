@@ -73,7 +73,7 @@ suite('certificate of trust', () => {
 
     // ed25519 cot
     let chainOfTrust = await getArtifact(result, 'public/chain-of-trust.json');
-    let queue = new taskcluster.Queue();
+    let queue = new taskcluster.Queue(taskcluster.fromEnvVars());
     let url = queue.buildUrl(queue.getArtifact, result.taskId, result.runId, 'public/chain-of-trust.json.sig');
     let chainOfTrustSig = (await got(url, {encoding: null})).body;
 
@@ -92,7 +92,7 @@ suite('certificate of trust', () => {
       'public/logs/certified.log': {sha256: logHash.digest('hex')}
     };
 
-    let data = JSON.parse(verified.data);
+    let data = JSON.parse(chainOfTrust);
     assert.deepEqual(data.artifacts, expectedHashes);
 
     assert.equal(data.environment.privateIpAddress, '169.254.1.1');

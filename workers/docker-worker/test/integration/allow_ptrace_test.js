@@ -1,11 +1,5 @@
 const assert = require('assert');
-const Docker = require('dockerode-promise');
-const dockerOpts = require('dockerode-options');
 const DockerWorker = require('../dockerworker');
-const fs = require('mz/fs');
-const https = require('https');
-const settings = require('../settings');
-const tar = require('tar-fs');
 const TestWorker = require('../testworker');
 const Debug = require('debug');
 

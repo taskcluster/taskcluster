@@ -1,6 +1,4 @@
 const assert = require('assert');
-const slugid = require('slugid');
-
 const cmd = require('./helper/cmd');
 const Docker = require('../../src/lib/docker');
 const DockerWorker = require('../dockerworker');

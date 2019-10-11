@@ -3,9 +3,6 @@ const testworker = require('../post_task');
 const getArtifact = require('./helper/get_artifact');
 const cmd = require('./helper/cmd');
 const expires = require('./helper/expires');
-const TestWorker = require('../testworker');
-const DockerWorker = require('../dockerworker');
-const _ = require('lodash');
 
 suite('Directory artifact', function() {
   test('attempt to upload file as directory', async () => {

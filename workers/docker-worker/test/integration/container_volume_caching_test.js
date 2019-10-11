@@ -9,7 +9,6 @@ const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
 const waitForEvent = require('../../src/lib/wait_for_event');
 const taskcluster = require('taskcluster-client');
-const slugid = require('slugid');
 const util = require('util');
 const sleep = require('../../src/lib/util/sleep');
 
@@ -99,7 +98,7 @@ suite('volume cache tests', () => {
         cache: {},
         maxRunTime: 5 * 60
       },
-      scopes: ['assume:project:taskcluster:worker-test-scopes']
+      scopes: ['docker-worker:cache:docker-worker-garbage-caches-tmp-obj-dir*']
     };
 
     task.payload.cache[cacheName] = '/tmp-obj-dir';

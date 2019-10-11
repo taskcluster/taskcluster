@@ -1,5 +1,4 @@
 const got = require('got');
-const promiseRetry = require('promise-retry');
 
 module.exports = async (url) => {
   try {

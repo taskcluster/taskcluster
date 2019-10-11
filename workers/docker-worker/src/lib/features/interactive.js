@@ -1,4 +1,3 @@
-const assert = require('assert');
 const Debug = require('debug');
 const {DockerExecServer} = require('docker-exec-websocket-server');
 const fs = require('mz/fs');

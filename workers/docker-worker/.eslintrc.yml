@@ -1,10 +1,11 @@
 env:
   es6: true
   node: true
-parserOptions:
-  ecmaVersion: 8
-  ecmaFeatures: impliedStrict
 extends: 'eslint:recommended'
+parserOptions:
+  ecmaVersion: 2018
+  sourceType: 'module'
+  ecmaFeatures: impliedStrict
 rules:
   indent:
     - error

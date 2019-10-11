@@ -1,13 +1,10 @@
 const assert = require('assert');
-const getArtifact = require('./helper/get_artifact');
 const cmd = require('./helper/cmd');
 const expires = require('./helper/expires');
 const waitTaskCompletion = require('./helper/wait_task_completion');
 const TestWorker = require('../testworker');
 const DockerWorker = require('../dockerworker');
-const iptables = require('iptables');
 const slugid = require('slugid');
-const _ = require('lodash');
 const mime = require('mime');
 const debug = require('debug')('docker-worker:test:docker-manifest');
 

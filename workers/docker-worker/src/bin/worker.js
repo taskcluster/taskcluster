@@ -39,15 +39,6 @@ var overridableFields = [
   'provisionerId'
 ];
 
-function sanitizeGraphPath() {
-  return Array.prototype.slice.call(arguments).reduce(function(result, v) {
-    if (!v) return result;
-    // Remove any dots which can get confused...
-    result.push(v.replace('.', '-'));
-    return result;
-  }, []).join('.');
-}
-
 function verifySSLCertificates(config) {
   try {
     fs.statSync(config.ssl.certificate);

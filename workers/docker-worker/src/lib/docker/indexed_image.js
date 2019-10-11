@@ -1,9 +1,6 @@
-const Debug = require('debug');
 const taskcluster = require('taskcluster-client');
 
 const ArtifactImage = require('./artifact_image');
-
-let debug = Debug('docker-worker:indexedImage');
 
 /*
  * Image manager for indexed images.

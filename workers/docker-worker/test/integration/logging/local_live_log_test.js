@@ -3,7 +3,6 @@ const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 
-const cmd = require('../helper/cmd');
 const DockerWorker = require('../../dockerworker');
 const TestWorker = require('../../testworker');
 const waitForEvent = require('../../../src/lib/wait_for_event');

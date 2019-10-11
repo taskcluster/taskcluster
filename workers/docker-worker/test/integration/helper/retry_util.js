@@ -1,5 +1,4 @@
 const iptables = require('iptables');
-const dns = require('dns');
 const request = require('request-promise-native');
 
 // When test an S3 retry upload, we have to block all the IP ranges for S3 service

@@ -245,7 +245,7 @@ suite('use docker exec websocket server', () => {
 
     const TEST_BUF_SIZE = 1024 * 1024;
 
-    let buf = await crypto.pseudoRandomBytes(TEST_BUF_SIZE);
+    let buf = await pseudoRandomBytes(TEST_BUF_SIZE);
     client.stdin.write(buf);
     client.stdin.end();
     let buffers = [];

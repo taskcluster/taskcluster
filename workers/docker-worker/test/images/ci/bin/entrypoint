@@ -36,7 +36,7 @@ mkdir /worker
 ln -s $checkout_path/bin-utils /worker/bin-utils
 
 # Setup test credentials
-export TASKCLUSTER_CLIENT_ID=$(curl -s http://taskcluster/secrets/v1/secret/repo:github.com/taskcluster/docker-worker:ci-creds | jq -r '.secret.client_id')
-export TASKCLUSTER_ACCESS_TOKEN=$(curl -s http://taskcluster/secrets/v1/secret/repo:github.com/taskcluster/docker-worker:ci-creds | jq -r '.secret.access_token')
-export PULSE_USERNAME=$(curl -s http://taskcluster/secrets/v1/secret/repo:github.com/taskcluster/docker-worker:pulse-creds | jq -r '.secret.username')
-export PULSE_PASSWORD=$(curl -s http://taskcluster/secrets/v1/secret/repo:github.com/taskcluster/docker-worker:pulse-creds | jq -r '.secret.password')
+export TASKCLUSTER_CLIENT_ID=$(curl -s http://taskcluster/secrets/v1/secret/project/taskcluster/testing/docker-worker/ci-creds | jq -r '.secret.client_id')
+export TASKCLUSTER_ACCESS_TOKEN=$(curl -s http://taskcluster/secrets/v1/secret/project/taskcluster/testing/docker-worker/ci-creds | jq -r '.secret.access_token')
+export PULSE_USERNAME=$(curl -s http://taskcluster/secrets/v1/secret/project/taskcluster/testing/docker-worker/pulse-creds | jq -r '.secret.username')
+export PULSE_PASSWORD=$(curl -s http://taskcluster/secrets/v1/secret/project/taskcluster/testing/docker-worker/pulse-creds | jq -r '.secret.password')

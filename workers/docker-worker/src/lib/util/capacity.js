@@ -1,5 +1,4 @@
 var diskspace = require('diskspace');
-var debug = require('debug')('taskcluster-docker-worker:diskspaceCheck');
 
 module.exports = {
   exceedsDiskspaceThreshold(mnt, threshold, availableCapacity, log, monitor) {

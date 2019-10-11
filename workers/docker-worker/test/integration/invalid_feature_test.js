@@ -1,6 +1,5 @@
 const assert = require('assert');
 const cmd = require('./helper/cmd');
-const expires = require('./helper/expires');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
 

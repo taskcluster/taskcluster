@@ -4,7 +4,6 @@ const settings = require('../settings');
 const cmd = require('./helper/cmd');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
-const taskcluster = require('taskcluster-client');
 const expires = require('./helper/expires');
 
 suite('Reclaiming task', () => {

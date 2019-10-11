@@ -1,8 +1,5 @@
 const { EventEmitter } = require('events');
 const { spawn } = require('child_process');
-const Debug = require('debug');
-
-let debug = Debug('docker-worker:shutdown_manager');
 
 class ShutdownManager extends EventEmitter {
   constructor(host, config) {

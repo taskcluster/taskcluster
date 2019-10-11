@@ -9,8 +9,10 @@ Vagrant.configure("2") do |config|
   # Setup Taskcluster and Pulse Credentials if available
   echo 'export TASKCLUSTER_CLIENT_ID="#{ENV['TASKCLUSTER_CLIENT_ID']}"' >> /home/vagrant/.bash_profile
   echo 'export TASKCLUSTER_ACCESS_TOKEN="#{ENV['TASKCLUSTER_ACCESS_TOKEN']}"' >> /home/vagrant/.bash_profile
+  echo 'export TASKCLUSTER_ROOT_URL="#{ENV['TASKCLUSTER_ROOT_URL']}"' >> /home/vagrant/.bash_profile
   echo 'export PULSE_USERNAME="#{ENV['PULSE_USERNAME']}"' >> /home/vagrant/.bash_profile
   echo 'export PULSE_PASSWORD="#{ENV['PULSE_PASSWORD']}"' >> /home/vagrant/.bash_profile
+  echo 'set -o vi' >> /home/vagrant/.bash_profile
 
 SCRIPT
 

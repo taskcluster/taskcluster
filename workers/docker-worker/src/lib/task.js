@@ -4,12 +4,8 @@
  */
 const Debug = require('debug');
 const DockerProc = require('dockerode-process');
-const util = require('util');
-const uuid = require('uuid');
 const { PassThrough } = require('stream');
 const States = require('./states');
-const fs = require('mz/fs');
-const child_process = require('mz/child_process');
 const taskcluster = require('taskcluster-client');
 const promiseRetry = require('promise-retry');
 const os = require('os');
@@ -25,21 +21,12 @@ const uploadToS3 = require('./upload_to_s3');
 const _ = require('lodash');
 const EventEmitter = require('events');
 const libUrls = require('taskcluster-lib-urls');
-const promiseTry = require('promise-retry');
 
 let debug = new Debug('runTask');
 
 // TODO probably a terrible error message, look at making it better later
 const CANCEL_ERROR = 'Task was canceled by another entity. This can happen using ' +
                    'a taskcluster client or by cancelling a task within Treeherder.';
-
-function getImageName(imageDetails) {
-  if (typeof imageDetails === 'string') {
-    return imageDetails;
-  } else {
-    return `${imageDetails.namespace} - ${imageDetails.path}`;
-  }
-}
 
 /*
 @example

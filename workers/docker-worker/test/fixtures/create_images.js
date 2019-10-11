@@ -4,7 +4,6 @@ const path = require('path');
 const mime = require('mime');
 const taskcluster = require('taskcluster-client');
 const uploadToS3 = require('../../src/lib/upload_to_s3');
-const artifactDownload = require('../../src/lib/util/artifact_download');
 const Docker = require('dockerode-promise');
 
 function removeFile(filename) {
@@ -17,6 +16,7 @@ function createQueue() {
   // expects rootUrl and credentials in env vars
   return new taskcluster.Queue({
     timeout: 30 * 1000,
+    ...taskcluster.fromEnvVars(),
   });
 }
 
@@ -52,12 +52,12 @@ function run(name, args) {
 }
 
 async function main() {
-  const IMAGE_NAME = 'taskcluster/taskcluster-proxy:latest';
+  const IMAGE_NAME = 'ubuntu:18.04';
   const lz4ImagePath = '/tmp/image.tar.lz4';
   const zstImagePath = '/tmp/image.tar.zst';
   const tarImagePath = '/tmp/image.tar';
 
-  const queue = createQueue();
+  const queue = createQueue(taskcluster.fromEnvVars());
   const docker = new Docker();
 
   removeFile(tarImagePath);

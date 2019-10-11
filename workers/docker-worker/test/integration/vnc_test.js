@@ -1,6 +1,5 @@
 const assert = require('assert');
 const cmd = require('./helper/cmd');
-const crypto = require('crypto');
 const Debug = require('debug');
 const DockerWorker = require('../dockerworker');
 const https = require('https');

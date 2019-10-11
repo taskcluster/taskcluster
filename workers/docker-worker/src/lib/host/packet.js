@@ -2,7 +2,6 @@
 Return the appropriate configuration defaults when on packet.net.
 */
 
-const Debug = require('debug');
 const got = require('got-promise');
 const { createLogger } = require('../log');
 const { spawn } = require('child_process');
@@ -10,8 +9,6 @@ const os = require('os');
 const assert = require('assert');
 const fs = require('fs');
 const taskcluster = require('taskcluster-client');
-
-const debug = Debug('docker-worker:host:packet');
 
 const log = createLogger({
   source: 'host/packet'

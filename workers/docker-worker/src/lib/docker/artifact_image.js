@@ -3,14 +3,13 @@ const Debug = require('debug');
 const fs = require('mz/fs');
 const { spawn } = require('child_process');
 const slugid = require('slugid');
-const {Transform} = require('stream');
 const path = require('path');
 const tarfs = require('tar-fs');
 const {scopeMatch} = require('../scopes');
 const pipe = require('promisepipe');
 
 const {makeDir, removeDir} = require('../util/fs');
-const {fmtLog, fmtErrorLog} = require('../log');
+const {fmtLog} = require('../log');
 const downloadArtifact = require('../util/artifact_download');
 const sleep = require('../util/sleep');
 

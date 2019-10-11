@@ -18,18 +18,6 @@ process.on('unhandledRejection', (reason, p) => {
 });
 
 
-function waitForMessage(listener, event, data) {
-  return new Promise(function(accept) {
-    listener.on(event, function filter(value) {
-      if (value.toString().indexOf(data) !== -1) {
-        listener.removeListener(event, filter);
-        return accept();
-      }
-      process.stdout.write(value);
-    });
-  });
-}
-
 // Environment varibles to copy over to the docker instance.
 var COPIED_ENV = [
   'DEBUG',
@@ -43,14 +31,6 @@ var COPIED_ENV = [
   'PULSE_PASSWORD',
   'INFLUX_CONNECTION_STRING'
 ];
-
-function eventPromise(listener, event) {
-  return new Promise(function(accept, reject) {
-    listener.on(event, function(message) {
-      accept(message);
-    });
-  });
-}
 
 class DockerWorker {
   constructor(provisionerId, workerType, workerId) {

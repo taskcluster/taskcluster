@@ -1,7 +1,4 @@
-const fs = require('fs');
 const slugid = require('slugid');
-const co = require('co');
-const taskcluster = require('taskcluster-client');
 const Docker = require('../../src/lib/docker');
 const dockerUtils = require('dockerode-process/utils');
 const DockerWorker = require('../dockerworker');

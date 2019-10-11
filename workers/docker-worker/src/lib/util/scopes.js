@@ -1,5 +1,4 @@
 const scopeUtils = require('../scopes');
-const taskcluster = require('taskcluster-client');
 
 /**
  * Do the expandedScopes satisfy all of the scopes for the given resources?

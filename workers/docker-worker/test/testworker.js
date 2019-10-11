@@ -3,15 +3,12 @@
  * this automatically generated workerType and listens for the task completion
  * event.
  */
-const devnull = require('dev-null');
 const slugid = require('slugid');
 const Debug = require('debug');
 const waitForEvent = require('../src/lib/wait_for_event');
 const split = require('split2');
 const getArtifact = require('./integration/helper/get_artifact');
 const Task = require('./task');
-const Graph = require('./graph');
-const LocalWorker = require('./localworker');
 const taskcluster = require('taskcluster-client');
 const typedEnvConfig = require('typed-env-config');
 const {EventEmitter} = require('events');
@@ -21,8 +18,6 @@ let debug = Debug('docker-worker:test:testworker');
 
 /** Test provisioner id, don't change this... */
 const PROVISIONER_ID = 'no-provisioning-nope';
-
-const DEFAULT_WORKER_PREFIX = 'dummy-worker';
 
 class TestWorker extends EventEmitter {
   static workerTypeName() {

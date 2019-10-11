@@ -30,7 +30,7 @@ tasks:
         taskclusterProxy:
           true
       env:
-        TASKCLUSTER_ROOT_URL: https://taskcluster.net
+        TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
       command:
         - /bin/bash
         - '--login'
@@ -43,24 +43,24 @@ tasks:
           export DOCS_PROJECT=docker-worker DOCS_TIER=workers DOCS_FOLDER=docs DOCS_README=README.md &&
           upload-project-docs
     metadata:
-      name: "Publish docker-worker docs to https://docs.taskcluster.net/reference/workers/docker-worker"
-      description: "Upload docker-worker documentation to taskcluster [docs site](https://docs.taskcluster.net/reference/workers/docker-worker)."
+      name: "Publish docker-worker docs to https://docs.community-tc.services.mozilla.com/reference/workers/docker-worker"
+      description: "Upload docker-worker documentation to taskcluster [docs site](https://docs.community-tc.services.mozilla.com/reference/workers/docker-worker)."
       owner: '{{ event.head.user.email }}'
       source: '{{ event.head.repo.url }}'
 
-  - provisionerId: aws-provisioner-v1
-    workerType: worker-ci-test
+  - provisionerId: proj-taskcluster
+    workerType: ci
     retries: 0
     scopes:
       - 'docker-worker:cache:docker-worker-garbage-*'
       - 'docker-worker:capability:privileged'
       - 'docker-worker:capability:device:loopbackAudio'
       - 'docker-worker:capability:device:loopbackVideo'
-      - 'secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds'
-      - 'secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds'
+      - 'secrets:get:project/taskcluster/testing/docker-worker/ci-creds'
+      - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
     payload:
       image: >-
-        taskcluster/worker-ci@sha256:2c6bf1eddb9c6f9b959ee5a596761297a7684c1da9e1e213c83fc96e66da1944
+        taskcluster/worker-ci@sha256:c0eec8cce5bc3c751e0424d20bb7cfdb8680fc217e62b34e26cc1f48c8dfea9d
       maxRunTime: 10800
       command:
         - >-
@@ -72,7 +72,7 @@ tasks:
           loopbackVideo: true
       env:
         WORKER_CI: '1'
-        TASKCLUSTER_ROOT_URL: https://taskcluster.net
+        TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
       features:
         taskclusterProxy: true
     metadata:
@@ -90,19 +90,19 @@ tasks:
           - pull_request.synchronize
           - pull_request.reopened
 
-  - provisionerId: aws-provisioner-v1
-    workerType: worker-ci-test
+  - provisionerId: proj-taskcluster
+    workerType: ci
     retries: 3
     scopes:
       - 'docker-worker:cache:docker-worker-garbage-*'
       - 'docker-worker:capability:privileged'
       - 'docker-worker:capability:device:loopbackAudio'
       - 'docker-worker:capability:device:loopbackVideo'
-      - 'secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds'
-      - 'secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds'
+      - 'secrets:get:project/taskcluster/testing/docker-worker/ci-creds'
+      - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
     payload:
       image: >-
-        taskcluster/worker-ci@sha256:2c6bf1eddb9c6f9b959ee5a596761297a7684c1da9e1e213c83fc96e66da1944
+        taskcluster/worker-ci@sha256:c0eec8cce5bc3c751e0424d20bb7cfdb8680fc217e62b34e26cc1f48c8dfea9d
       maxRunTime: 10800
       command:
         - >-
@@ -115,7 +115,7 @@ tasks:
           loopbackVideo: true
       env:
         WORKER_CI: '1'
-        TASKCLUSTER_ROOT_URL: https://taskcluster.net
+        TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
       features:
         taskclusterProxy: true
     metadata:
@@ -133,19 +133,19 @@ tasks:
           - pull_request.synchronize
           - pull_request.reopened
 
-  - provisionerId: aws-provisioner-v1
-    workerType: worker-ci-test
+  - provisionerId: proj-taskcluster
+    workerType: ci
     retries: 3
     scopes:
       - 'docker-worker:cache:docker-worker-garbage-*'
       - 'docker-worker:capability:privileged'
       - 'docker-worker:capability:device:loopbackAudio'
       - 'docker-worker:capability:device:loopbackVideo'
-      - 'secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds'
-      - 'secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds'
+      - 'secrets:get:project/taskcluster/testing/docker-worker/ci-creds'
+      - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
     payload:
       image: >-
-        taskcluster/worker-ci@sha256:2c6bf1eddb9c6f9b959ee5a596761297a7684c1da9e1e213c83fc96e66da1944
+        taskcluster/worker-ci@sha256:c0eec8cce5bc3c751e0424d20bb7cfdb8680fc217e62b34e26cc1f48c8dfea9d
       maxRunTime: 10800
       command:
         - >-
@@ -158,7 +158,7 @@ tasks:
           loopbackVideo: true
       env:
         WORKER_CI: '1'
-        TASKCLUSTER_ROOT_URL: https://taskcluster.net
+        TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
       features:
         taskclusterProxy: true
     metadata:
@@ -176,19 +176,19 @@ tasks:
           - pull_request.synchronize
           - pull_request.reopened
 
-  - provisionerId: aws-provisioner-v1
-    workerType: worker-ci-test
+  - provisionerId: proj-taskcluster
+    workerType: ci
     retries: 3
     scopes:
       - 'docker-worker:cache:docker-worker-garbage-*'
       - 'docker-worker:capability:privileged'
       - 'docker-worker:capability:device:loopbackAudio'
       - 'docker-worker:capability:device:loopbackVideo'
-      - 'secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds'
-      - 'secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds'
+      - 'secrets:get:project/taskcluster/testing/docker-worker/ci-creds'
+      - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
     payload:
       image: >-
-        taskcluster/worker-ci@sha256:2c6bf1eddb9c6f9b959ee5a596761297a7684c1da9e1e213c83fc96e66da1944
+        taskcluster/worker-ci@sha256:c0eec8cce5bc3c751e0424d20bb7cfdb8680fc217e62b34e26cc1f48c8dfea9d
       maxRunTime: 10800
       command:
         - >-
@@ -201,7 +201,7 @@ tasks:
           loopbackVideo: true
       env:
         WORKER_CI: '1'
-        TASKCLUSTER_ROOT_URL: https://taskcluster.net
+        TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
       features:
         taskclusterProxy: true
     metadata:
@@ -219,19 +219,19 @@ tasks:
           - pull_request.synchronize
           - pull_request.reopened
 
-  - provisionerId: aws-provisioner-v1
-    workerType: worker-ci-test
+  - provisionerId: proj-taskcluster
+    workerType: ci
     retries: 3
     scopes:
       - 'docker-worker:cache:docker-worker-garbage-*'
       - 'docker-worker:capability:privileged'
       - 'docker-worker:capability:device:loopbackAudio'
       - 'docker-worker:capability:device:loopbackVideo'
-      - 'secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds'
-      - 'secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds'
+      - 'secrets:get:project/taskcluster/testing/docker-worker/ci-creds'
+      - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
     payload:
       image: >-
-        taskcluster/worker-ci@sha256:2c6bf1eddb9c6f9b959ee5a596761297a7684c1da9e1e213c83fc96e66da1944
+        taskcluster/worker-ci@sha256:c0eec8cce5bc3c751e0424d20bb7cfdb8680fc217e62b34e26cc1f48c8dfea9d
       maxRunTime: 10800
       command:
         - >-
@@ -244,7 +244,7 @@ tasks:
           loopbackVideo: true
       env:
         WORKER_CI: '1'
-        TASKCLUSTER_ROOT_URL: https://taskcluster.net
+        TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
       features:
         taskclusterProxy: true
     metadata:
@@ -262,19 +262,19 @@ tasks:
           - pull_request.synchronize
           - pull_request.reopened
 
-  - provisionerId: aws-provisioner-v1
-    workerType: worker-ci-test
+  - provisionerId: proj-taskcluster
+    workerType: ci
     retries: 3
     scopes:
       - 'docker-worker:cache:docker-worker-garbage-*'
       - 'docker-worker:capability:privileged'
       - 'docker-worker:capability:device:loopbackAudio'
       - 'docker-worker:capability:device:loopbackVideo'
-      - 'secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds'
-      - 'secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds'
+      - 'secrets:get:project/taskcluster/testing/docker-worker/ci-creds'
+      - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
     payload:
       image: >-
-        taskcluster/worker-ci@sha256:2c6bf1eddb9c6f9b959ee5a596761297a7684c1da9e1e213c83fc96e66da1944
+        taskcluster/worker-ci@sha256:c0eec8cce5bc3c751e0424d20bb7cfdb8680fc217e62b34e26cc1f48c8dfea9d
       maxRunTime: 10800
       command:
         - >-
@@ -287,7 +287,7 @@ tasks:
           loopbackVideo: true
       env:
         WORKER_CI: '1'
-        TASKCLUSTER_ROOT_URL: https://taskcluster.net
+        TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
       features:
         taskclusterProxy: true
     metadata:

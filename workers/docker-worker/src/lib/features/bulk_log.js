@@ -5,11 +5,9 @@ to s3 after the task has completed running.
 
 const Debug = require('debug');
 const fs = require('mz/fs');
-const https = require('https');
 const streamClosed = require('../stream_closed');
 const temporary = require('temporary');
 const uploadToS3 = require('../upload_to_s3');
-const url = require('url');
 const zlib = require('zlib');
 
 var debug = Debug('taskcluster-docker-worker:features:bulk_log');

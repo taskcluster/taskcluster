@@ -13,7 +13,7 @@ const streamClosed = require('../stream_closed');
 const temporary = require('temporary');
 const uploadToS3 = require('../upload_to_s3');
 const zlib = require('zlib');
-const {fmtLog, fmtErrorLog} = require('../log');
+const {fmtErrorLog} = require('../log');
 
 let debug = Debug('taskcluster-docker-worker:features:cot');
 

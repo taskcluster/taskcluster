@@ -1,22 +1,6 @@
 var EventEmitter = require('events').EventEmitter;
-var parseImage = require('docker-image-parser');
 var debug = require('debug')('taskcluster-docker-worker:garbageCollector');
 var exceedsDiskspaceThreshold = require('./util/capacity').exceedsDiskspaceThreshold;
-
-async function getImageId(docker, imageName) {
-  var dockerImages = await docker.listImages();
-  var imageId;
-  dockerImages.forEach(function (dockerImage) {
-    if (dockerImage.RepoTags.indexOf(imageName) !== -1) {
-      imageId = dockerImage.Id;
-    }
-  });
-  return imageId;
-}
-
-function isContainerRunning(container) {
-  return (container['Status'].indexOf('Exited') === -1);
-}
 
 async function isContainerStale(docker, container, expiration) {
   // Containers can be running, exited, or no status (created but not started).

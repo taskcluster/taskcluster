@@ -1,5 +1,4 @@
 const assert = require('assert');
-const slugid = require('slugid');
 
 const cmd = require('./helper/cmd');
 const expires = require('./helper/expires');

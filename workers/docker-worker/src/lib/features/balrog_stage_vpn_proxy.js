@@ -1,4 +1,3 @@
-const assert = require('assert');
 const Debug = require('debug');
 const { scopeMatch } = require('../scopes');
 const got = require('got');
