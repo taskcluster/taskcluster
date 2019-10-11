@@ -3,6 +3,7 @@ import { withRouter } from 'react-router-dom';
 import { oneOfType, object, string, func, bool } from 'prop-types';
 import { equals } from 'ramda';
 import List from '@material-ui/core/List';
+import ListSubheader from '@material-ui/core/ListSubheader';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import TextField from '@material-ui/core/TextField';
@@ -58,8 +59,9 @@ import SpeedDial from '../SpeedDial';
   dropdown: {
     minWidth: 200,
   },
-  workerPoolIdDiv: {
-    display: 'flex',
+  separator: {
+    padding: theme.spacing.double,
+    paddingBottom: 0,
   },
   workerPoolDescriptionListItem: {
     marginTop: theme.spacing.unit,
@@ -295,11 +297,11 @@ export default class WMWorkerPoolEditor extends Component {
       <Fragment>
         <ErrorPanel fixed error={error} />
         <List>
-          <div className={classes.workerPoolIdDiv}>
+          <div>
+            <ListSubheader>Worker Pool ID *</ListSubheader>
             <ListItem>
               <TextField
                 name="workerPoolId1"
-                label="Worker Pool ID 1"
                 error={validation.workerPoolId1.error}
                 onChange={this.handleInputChange}
                 fullWidth
@@ -309,11 +311,11 @@ export default class WMWorkerPoolEditor extends Component {
                 autoFocus={isNewWorkerPool}
                 helperText={validation.workerPoolId1.message}
               />
-            </ListItem>
-            <ListItem>
+              <Typography className={classes.separator} variant="h5">
+                /
+              </Typography>
               <TextField
                 name="workerPoolId2"
-                label="Worker Pool ID 2"
                 error={validation.workerPoolId2.error}
                 onChange={this.handleInputChange}
                 fullWidth
@@ -386,7 +388,9 @@ export default class WMWorkerPoolEditor extends Component {
             <ListItemText
               disableTypography
               primary={
-                <Typography variant="subtitle1">Configuration</Typography>
+                <Typography variant="subtitle1" gutterBottom>
+                  Configuration
+                </Typography>
               }
               secondary={
                 <CodeEditor
