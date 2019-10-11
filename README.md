@@ -121,6 +121,10 @@ Do not manually edit anything under the `vendor/` directory!
 ## Deployment
 
 This service is deployed from a Docker image containing only the single, statically-linked binary.
-You can rebuild the docker image with `docker build .`.
+You can find the docker image on Docker hub at `taskcluster/websocktunnel:<version>` or build it yourself with `docker build .`.
 The image should be run with the environment variables described above, and the container's port exposed on the Docker host.
 Use the same value for PORT as the port exposed on the host (typically 443), as the service will include that port in the URLs it generates.
+
+## Releases
+
+New releases are made by running `./release.sh <version>`.
