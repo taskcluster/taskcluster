@@ -65,9 +65,6 @@ const DOTS_VARIANT_LIMIT = 5;
     pointer: {
       cursor: 'pointer',
     },
-    linkCell: {
-      textAlign: 'right',
-    },
     logButton: {
       marginRight: theme.spacing.unit,
     },
@@ -86,22 +83,16 @@ const DOTS_VARIANT_LIMIT = 5;
     },
     artifactLink: {
       textDecoration: 'none',
-      width: '100%',
-      display: 'block',
-      height: '100%',
+      display: 'flex',
+      justifyContent: 'space-between',
       verticalAlign: 'middle',
     },
     artifactTableRow: {
       height: 'auto',
     },
-    artifactNameTableCell: {
-      width: '100%',
-    },
-    artifactsTableCell: {
-      padding: `${theme.spacing.unit}px ${theme.spacing.triple}px`,
-    },
     artifactNameWrapper: {
       display: 'inline-flex',
+      flexBasis: '50%',
     },
     liveLogLabel: {
       marginLeft: theme.spacing.unit / 2,
@@ -240,18 +231,14 @@ export default class TaskRunsCard extends Component {
               }
             )}
             hover={!!artifact.url}>
-            <Link
-              className={classes.artifactLink}
-              to={this.getArtifactUrl(artifact)}>
-              <TableCell className={classes.artifactsTableCell}>
-                {artifact.isPublic && <LockOpenOutlineIcon />}
-                {!artifact.isPublic && artifact.url && <LockIcon />}
-              </TableCell>
-              <TableCell
-                className={classNames(
-                  classes.artifactNameTableCell,
-                  classes.artifactsTableCell
-                )}>
+            <TableCell>
+              <Link
+                className={classes.artifactLink}
+                to={this.getArtifactUrl(artifact)}>
+                <div>
+                  {artifact.isPublic && <LockOpenOutlineIcon />}
+                  {!artifact.isPublic && artifact.url && <LockIcon />}
+                </div>
                 <div className={classes.artifactNameWrapper}>
                   {artifact.isLog && (
                     <Label status="info" mini className={classes.logButton}>
@@ -260,16 +247,12 @@ export default class TaskRunsCard extends Component {
                   )}
                   <Typography>{artifact.name}</Typography>
                 </div>
-              </TableCell>
-              <TableCell
-                className={classNames(
-                  classes.linkCell,
-                  classes.artifactsTableCell
-                )}>
-                {artifact.isPublic && <LinkIcon />}
-                {!artifact.isPublic && artifact.url && <OpenInNewIcon />}
-              </TableCell>
-            </Link>
+                <div>
+                  {artifact.isPublic && <LinkIcon />}
+                  {!artifact.isPublic && artifact.url && <OpenInNewIcon />}
+                </div>
+              </Link>
+            </TableCell>
           </TableRow>
         )}
       />
