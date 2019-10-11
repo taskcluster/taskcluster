@@ -10,14 +10,15 @@ exports.scopeExpression = {
 
 exports.tasks = [];
 
-[{taskType: 'succeed', successCondition: 'completed'},
-  {taskType: 'fail', successCondition: 'failed'}].forEach(({taskType, successCondition})=>{
-
+[
+  {taskType: 'succeed', successCondition: 'completed'},
+  {taskType: 'fail', successCondition: 'failed'},
+].forEach(({taskType, successCondition})=>{
   exports.tasks.push({
-    title: 'Built-in/' + taskType + ' task check',
+    title: `Create built-in/${taskType} task (--target built-in/${taskType})`,
     requires: [],
     provides: [
-      'built-in/' + taskType,
+      'target-built-in/' + taskType,
     ],
     run: async (requirements, utils) => {
       let task = {
@@ -46,9 +47,7 @@ exports.tasks = [];
           });
           await new Promise(resolve => setTimeout(resolve, 1000));
         } else if (status.status.state === successCondition) {
-          return {
-            ['built-in/' + taskType]: status.status.state,
-          };
+          return;
         } else {
           throw new Error('Task finished with status ' + status.status.state);
         }

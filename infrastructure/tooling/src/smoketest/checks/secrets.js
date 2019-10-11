@@ -11,10 +11,10 @@ exports.scopeExpression = {
 exports.tasks = [];
 
 exports.tasks.push({
-  title: 'Create secret/read-it-back check',
+  title: 'Create and read secrets (--target secrets)',
   requires: [],
   provides: [
-    'smoke-secret',
+    'target-secrets',
   ],
   run: async () => {
     let secrets = new taskcluster.Secrets(taskcluster.fromEnvVars());

@@ -4,6 +4,7 @@ const program = require('commander');
 const {version} = require('../../../package.json');
 
 program.version(version);
+program.name('yarn'); // these commands are invoked via yarn
 program.command('build')
   .option('-p, --push', 'Push images to docker hub')
   .option('--base-dir <base-dir>', 'Base directory for build (fast and big!; default /tmp/taskcluster-builder-build)')
@@ -92,6 +93,11 @@ program.command('dev')
   });
 
 program.command('smoketest')
+  .option('--target <target>', 'Run a specific check, rather than all of them')
+  .on('--help', () => {
+    const {targets} = require('./smoketest/checks');
+    console.log(`\nAvailable Targets:\n${targets.map(t => `  - ${t}`).join('\n')}`);
+  })
   .action((...options) => {
     if (options.length !== 1) {
       console.error('unexpected command-line arguments');
