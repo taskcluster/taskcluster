@@ -77,6 +77,11 @@ func New(conf Config) (http.Handler, error) {
 func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p.logf("", r.RemoteAddr, "Host=%s Path=%s", r.Host, r.URL.Path)
 
+	// Dockerflow
+	if r.URL.Path == "/__lbheartbeat__" {
+		return
+	}
+
 	// Client registration requests are a GET of path / with some headers set
 	if path, id := r.URL.Path, r.Header.Get("x-websocktunnel-id"); id != "" && path == "/" {
 		tokenString := util.ExtractJWT(r.Header.Get("Authorization"))
