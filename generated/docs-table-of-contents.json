@@ -1586,7 +1586,7 @@
             "name": "pulse",
             "next": {
               "path": "manual/deploying/static-clients",
-              "title": "static-clients"
+              "title": "Static Clients"
             },
             "path": "manual/deploying/pulse",
             "prev": {
@@ -1603,7 +1603,7 @@
             ],
             "data": {
               "order": 1000,
-              "title": "static-clients"
+              "title": "Static Clients"
             },
             "name": "static-clients",
             "next": {
@@ -1635,7 +1635,7 @@
             "path": "manual/deploying/third-party",
             "prev": {
               "path": "manual/deploying/static-clients",
-              "title": "static-clients"
+              "title": "Static Clients"
             },
             "up": {
               "path": "manual/deploying",
