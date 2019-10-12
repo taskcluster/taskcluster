@@ -9,6 +9,41 @@ import HeaderWithAnchor from '../components/HeaderWithAnchor';
 import Anchor from '../components/Anchor';
 import findRefDoc from '../../../utils/findRefDoc';
 
+class GroupEntry extends Component {
+
+  render() {
+    const { group, serviceName } = this.props;
+    const [groupName, listOfEntries] = group;
+    const isGroupHeaderNeeded = (listOfEntries.length > 1) ? true : false;
+
+    if (!isGroupHeaderNeeded) {
+      const singleEntry = listOfEntries[0];
+      return (
+        <Entry
+          type="function"
+          entry={singleEntry}
+          serviceName={serviceName}
+        />
+      )
+    }
+    return (
+      <div>
+        <br />
+        <Typography> {groupName} </Typography>
+        <br />
+        {listOfEntries.map(entry => (
+          <Entry
+            key={`${entry.name}-${entry.query}`}
+            type="function"
+            entry={entry}
+            serviceName={serviceName}
+          />
+        ))}
+      </div>
+    );
+  }
+}
+
 @withRouter
 export default class ApiReference extends Component {
   static propTypes = {
@@ -20,7 +55,7 @@ export default class ApiReference extends Component {
 
   groupBy = (list, keyGetter) => {
     const map = new Map();
-    list.forEach((item) => {
+    list.forEach(item => {
       const key = keyGetter(item);
       const collection = map.get(key);
       if (!collection) {
@@ -30,39 +65,6 @@ export default class ApiReference extends Component {
       }
     });
     return map;
-  };
-
-  renderSingleEntry = (entry, serviceName) => (
-      <Entry
-        key={`${entry.name}-${entry.query}`}
-        type="function"
-        entry={entry}
-        serviceName={serviceName}
-      />
-  );
-
-  renderGroupEntry = (groupName, entries, serviceName) => (
-    <div>
-      <Typography>{groupName}</Typography>
-      {entries.map(entry => (
-        <Entry
-          key={`${entry.name}-${entry.query}`}
-          type="function"
-          entry={entry}
-          serviceName={serviceName}
-        />
-      ))}
-    </div>
-  );
-
-  renderEntries = (groupedEntries, serviceName) => {
-    for (let entry of groupedEntries.entries()) {
-      const [ groupName, listOfEntries] = entry;
-      if (listOfEntries.length === 1) {
-        return this.renderSingleEntry(listOfEntries[0], serviceName);
-      }
-      return this.renderGroupEntry(groupName, listOfEntries, serviceName);
-    }
   };
 
   render() {
@@ -80,7 +82,8 @@ export default class ApiReference extends Component {
     const functionEntries =
       ref.entries && ref.entries.filter(({ type }) => type === 'function');
 
-    const groupedEntries = this.groupBy(functionEntries, entry=>entry.category);
+    const groupedEntries = 
+      Array.from(this.groupBy(functionEntries, entry => entry.category));
 
     return (
       <div>
@@ -98,7 +101,13 @@ export default class ApiReference extends Component {
               the manual.
             </Typography>
             <br />
-            {this.renderEntries(groupedEntries, ref.serviceName)}
+            {groupedEntries.map(group => (
+              <GroupEntry 
+                key={group[0]}
+                group={group} 
+                serviceName={ref.serviceName} 
+              />
+            ))}
           </Fragment>
         )}
       </div>
