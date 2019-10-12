@@ -21,6 +21,7 @@ import LightBulbOnOutline from 'mdi-react/LightbulbOnOutlineIcon';
 import PageTitle from '../PageTitle';
 import Helmet from '../Helmet';
 import UserMenu from '../UserMenu';
+import MobileMenu from '../MobileMenu';
 import SidebarList from './SidebarList';
 import {
   THEME,
@@ -294,7 +295,6 @@ export default class Dashboard extends Component {
     const isDocs = history.location.pathname.startsWith(DOCS_PATH_PREFIX);
     const isMobileView = width === 'sm' || width === 'xs';
     const pageTitle = makeTitle(title);
-
     return (
       <div className={classes.root}>
         <Helmet />
@@ -318,30 +318,38 @@ export default class Dashboard extends Component {
               {pageTitle}
             </Typography>
             {search}
-            <Tooltip placement="bottom" title="Toggle light/dark theme">
-              <IconButton
-                className={classes.leftAppBarButton}
-                onClick={onToggleTheme}>
-                {theme.palette.type === 'dark' ? (
-                  <LightBulbOn className={classes.appIcon} />
-                ) : (
-                  <LightBulbOnOutline className={classes.appIcon} />
-                )}
-              </IconButton>
-            </Tooltip>
-            <Tooltip placement="bottom" title="Documentation">
-              <IconButton component={Link} to={DOCS_PATH_PREFIX}>
-                <BookOpenPageVariantIcon className={classes.appIcon} />
-              </IconButton>
-            </Tooltip>
-            {helpView && (
-              <Tooltip placement="bottom" title="Page Information">
-                <IconButton onClick={this.handleHelpViewToggle}>
-                  <HelpIcon className={classes.appIcon} />
+            {isMobileView &&(<MobileMenu/>)}
+              {(!isMobileView) && 
+              (
+                <Fragment>
+                <Tooltip placement="bottom" title="Toggle light/dark theme">
+                <IconButton
+                  className={classes.leftAppBarButton}
+                  onClick={onToggleTheme}>
+                  {theme.palette.type === 'dark' ? (
+                    <LightBulbOn className={classes.appIcon} />
+                  ) : (
+                    <LightBulbOnOutline className={classes.appIcon} />
+                  )}
                 </IconButton>
               </Tooltip>
-            )}
-            <UserMenu appBar />
+               <Tooltip placement="bottom" title="Documentation">
+                <IconButton component={Link} to={DOCS_PATH_PREFIX}>
+                  <BookOpenPageVariantIcon className={classes.appIcon} />
+                 </IconButton>
+               </Tooltip>
+               {helpView && (
+                 <Tooltip placement="bottom" title="Page Information">
+                  <IconButton onClick={this.handleHelpViewToggle}>
+                    <HelpIcon className={classes.appIcon} />
+                   </IconButton>
+                 </Tooltip>
+               )}
+              <UserMenu appBar />
+              </Fragment>
+              )
+              }
+                        
           </Toolbar>
         </AppBar>
         <Drawer
