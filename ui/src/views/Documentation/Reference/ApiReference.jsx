@@ -18,6 +18,53 @@ export default class ApiReference extends Component {
     apiVersion: string.isRequired,
   };
 
+  groupBy = (list, keyGetter) => {
+    const map = new Map();
+    list.forEach((item) => {
+      const key = keyGetter(item);
+      const collection = map.get(key);
+      if (!collection) {
+        map.set(key, [item]);
+      } else {
+        collection.push(item);
+      }
+    });
+    return map;
+  };
+
+  renderSingleEntry = (entry, serviceName) => (
+      <Entry
+        key={`${entry.name}-${entry.query}`}
+        type="function"
+        entry={entry}
+        serviceName={serviceName}
+      />
+  );
+
+  renderGroupEntry = (groupName, entries, serviceName) => (
+    <div>
+      <Typography>{groupName}</Typography>
+      {entries.map(entry => (
+        <Entry
+          key={`${entry.name}-${entry.query}`}
+          type="function"
+          entry={entry}
+          serviceName={serviceName}
+        />
+      ))}
+    </div>
+  );
+
+  renderEntries = (groupedEntries, serviceName) => {
+    for (let entry of groupedEntries.entries()) {
+      const [ groupName, listOfEntries] = entry;
+      if (listOfEntries.length === 1) {
+        return this.renderSingleEntry(listOfEntries[0], serviceName);
+      }
+      return this.renderGroupEntry(groupName, listOfEntries, serviceName);
+    }
+  };
+
   render() {
     const { serviceName, apiVersion } = this.props;
     const { ref, version } = findRefDoc({
@@ -32,6 +79,8 @@ export default class ApiReference extends Component {
 
     const functionEntries =
       ref.entries && ref.entries.filter(({ type }) => type === 'function');
+
+    const groupedEntries = this.groupBy(functionEntries, entry=>entry.category);
 
     return (
       <div>
@@ -49,14 +98,7 @@ export default class ApiReference extends Component {
               the manual.
             </Typography>
             <br />
-            {functionEntries.map(entry => (
-              <Entry
-                key={`${entry.name}-${entry.query}`}
-                type="function"
-                entry={entry}
-                serviceName={ref.serviceName}
-              />
-            ))}
+            {this.renderEntries(groupedEntries, ref.serviceName)}
           </Fragment>
         )}
       </div>
