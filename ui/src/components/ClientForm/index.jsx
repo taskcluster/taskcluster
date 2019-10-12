@@ -13,6 +13,7 @@ import TextField from '@material-ui/core/TextField';
 import Switch from '@material-ui/core/Switch';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
+import MarkdownTextArea from '@mozilla-frontend-infra/components/MarkdownTextArea';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import CancelIcon from 'mdi-react/CancelIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
@@ -61,6 +62,10 @@ import { formatScope, scopeLink } from '../../utils/scopeUtils';
   },
   enableIcon: {
     ...theme.mixins.successIcon,
+  },
+  clientDescriptionListItem: {
+    marginTop: theme.spacing.unit,
+    marginBottom: theme.spacing.triple,
   },
 }))
 /** A form to view/edit/create a client */
@@ -323,15 +328,13 @@ export default class ClientForm extends Component {
               }
             />
           </ListItem>
-          <ListItem>
-            <TextField
-              label="Description"
-              name="description"
+          <ListItem className={classes.clientDescriptionListItem}>
+            <MarkdownTextArea
               onChange={this.handleInputChange}
-              fullWidth
-              multiline
-              rows={5}
+              name="description"
               value={description}
+              placeholder="Client description (markdown)"
+              defaultTabIndex={isNewClient ? 0 : 1}
             />
           </ListItem>
           <ListItem>
