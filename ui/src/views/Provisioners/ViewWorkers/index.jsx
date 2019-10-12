@@ -2,6 +2,7 @@ import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
+import { parse, stringify } from 'qs';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
@@ -24,13 +25,14 @@ import workersQuery from './workers.graphql';
 @withAuth
 @graphql(workersQuery, {
   skip: props => !props.match.params.provisionerId,
-  options: ({ match: { params } }) => ({
+  options: ({ location, match: { params } }) => ({
     variables: {
       provisionerId: params.provisionerId,
       workerType: params.workerType,
       workersConnection: {
         limit: VIEW_WORKERS_PAGE_SIZE,
       },
+      quarantined: parse(location.search.slice(1)).filterBy === 'quarantined',
     },
   }),
 })
@@ -52,7 +54,6 @@ import workersQuery from './workers.graphql';
 }))
 export default class ViewWorkers extends Component {
   state = {
-    filterBy: null,
     actionLoading: false,
     dialogError: null,
     dialogOpen: false,
@@ -95,13 +96,26 @@ export default class ViewWorkers extends Component {
 
   handleFilterChange = ({ target }) => {
     const {
+      location,
       data: { refetch },
       match: {
         params: { provisionerId, workerType },
       },
     } = this.props;
+    const query = parse(location.search.slice(1));
 
-    this.setState({ filterBy: target.value });
+    if (target.value) {
+      query.filterBy = target.value;
+    } else {
+      delete query.filterBy;
+    }
+
+    this.props.history.replace(
+      `/provisioners/${provisionerId}/worker-types/${workerType}${stringify(
+        query,
+        { addQueryPrefix: true }
+      )}`
+    );
 
     refetch({
       provisionerId,
@@ -152,17 +166,18 @@ export default class ViewWorkers extends Component {
 
   render() {
     const {
-      filterBy,
       actionLoading,
       selectedAction,
       dialogOpen,
       dialogError,
     } = this.state;
     const {
+      location,
       classes,
       match: { params },
       data: { loading, error, workers, workerType },
     } = this.props;
+    const query = parse(location.search.slice(1));
 
     return (
       <Dashboard title="Workers">
@@ -195,12 +210,12 @@ export default class ViewWorkers extends Component {
                   className={classes.dropdown}
                   select
                   label="Filter By"
-                  value={filterBy || ''}
+                  value={query.filterBy || ''}
                   onChange={this.handleFilterChange}>
                   <MenuItem value="">
                     <em>None</em>
                   </MenuItem>
-                  <MenuItem value="Quarantined">Quarantined</MenuItem>
+                  <MenuItem value="quarantined">Quarantined</MenuItem>
                 </TextField>
               </div>
               <br />
