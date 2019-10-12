@@ -47,7 +47,7 @@
     "react-dom": "^16.6.1",
     "react-styleguidist": "^7.3.11",
     "semantic-release": "^15.9.16",
-    "verdaccio": "^3.8.1",
+    "verdaccio": "^3.13.0",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.3.0",
     "webpack-dev-server": "^3.2.1"
