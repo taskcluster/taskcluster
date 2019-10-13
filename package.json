@@ -18,8 +18,6 @@
     "amqplib": "^0.5.2",
     "apollo-server-express": "^2.9.3",
     "app-root-dir": "^1.0.2",
-    "array.prototype.flat": "^1.2.1",
-    "array.prototype.flatmap": "^1.2.1",
     "auth0": "^2.14.0",
     "aws-sdk": "^2.394.0",
     "azure-blob-storage": "^4.2.1",
