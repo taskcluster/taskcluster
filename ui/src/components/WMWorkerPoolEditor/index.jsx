@@ -301,6 +301,7 @@ export default class WMWorkerPoolEditor extends Component {
         Tab: false,
       },
     };
+
     return (
       <Fragment>
         <ErrorPanel fixed error={error} />
