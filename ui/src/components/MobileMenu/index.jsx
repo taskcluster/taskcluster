@@ -9,11 +9,11 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import AccountIcon from 'mdi-react/AccountIcon';
 import HandPeaceIcon from 'mdi-react/HandPeaceIcon';
+import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
 import { withAuth } from '../../utils/Auth';
 import MobileMenuList from './MobileMenuList';
 import MobileMenuButton from './MobileMenuButton';
 import { THEME } from '../../utils/constants';
-import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
 
 @withAuth
 @withApollo
@@ -75,7 +75,7 @@ export default class MobileMenu extends Component {
   };
 
   render() {
-    const { classes, user, appBar, onToggleTheme } = this.props;
+    const { classes, user, appBar } = this.props;
     const { anchorEl, signInDialogOpen } = this.state;
 
     return (
@@ -107,11 +107,10 @@ export default class MobileMenu extends Component {
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={this.handleMenuClose}>
-              
-            <MenuItem title="Documentation" component={Link} to="/docs/">
+          <MenuItem title="Documentation" component={Link} to="/docs/">
             <BookOpenPageVariantIcon className={classes.leftIcon} />
             Documentation
-            </MenuItem>
+          </MenuItem>
 
           <MenuItem title="Your Profile" component={Link} to="/profile">
             <AccountIcon className={classes.leftIcon} />

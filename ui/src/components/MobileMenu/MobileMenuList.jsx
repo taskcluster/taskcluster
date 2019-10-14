@@ -6,10 +6,9 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
+import DotsVerticalIcon from 'mdi-react/DotsVerticalIcon';
 import SignInDialog from '../SignInDialog';
 import { withAuth } from '../../utils/Auth';
-import DotsVerticalIcon from 'mdi-react/DotsVerticalIcon';
-
 
 @withAuth
 @withApollo
@@ -28,7 +27,7 @@ import DotsVerticalIcon from 'mdi-react/DotsVerticalIcon';
   },
   icon: {
     fill: theme.palette.text.primary,
-  }
+  },
 }))
 export default class MobileMenuList extends Component {
   render() {
@@ -77,7 +76,7 @@ export default class MobileMenuList extends Component {
             aria-controls="mobile-menu"
             aria-label="mobile menu"
             onClick={onMenuClick}>
-            <DotsVerticalIcon/>
+            <DotsVerticalIcon />
           </ListItem>
         </List>
       </Fragment>
