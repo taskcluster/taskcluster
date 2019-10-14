@@ -42,7 +42,8 @@ The `TASKCLUSTER_ROOT_URL` is the rootUrl of your deployment -- the origin in yo
 The [taskcluster-cli](https://github.com/taskcluster/taskcluster-cli) project
 provides a tool that can do all of the above for you.
 
-<Warning>This technique does not yet work for deployments other than `https://taskcluster.net`.</Warning>
+<Warning>This technique does not yet work for deployments other than `https://taskcluster.net`.
+See [#1619](https://github.com/taskcluster/taskcluster/pull/1619) for progress.</Warning>
 
 ```
 $ eval `taskcluster signin --scope queue:create-task:aws-provisioner-v1/tutorial`
