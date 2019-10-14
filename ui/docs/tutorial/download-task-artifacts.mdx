@@ -49,8 +49,8 @@ let payload = {
 };
 
 let task = { 
-  provisionerId:      'aws-provisioner-v1',
-  workerType:         'tutorial',
+  provisionerId:      'tutorial',
+  workerType:         'docker-worker',
   created:            taskcluster.fromNowJSON('0 seconds'),
   deadline:           taskcluster.fromNowJSON('2 days 3 hours'),
   metadata: {
@@ -70,7 +70,7 @@ let runTask = async () => {
     
   console.log("Created task:\n" + JSON.stringify(result.status, null, 2));    
   console.log("Inspect it at:");    
-  console.log("https://tc.example.com/tasks/" + taskId);    
+  console.log(process.env.TASKCLUSTER_ROOT_URL + "/tasks/" + taskId);
     
   while (1) {
     console.log("waiting for completion..");
