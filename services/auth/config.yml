@@ -170,3 +170,5 @@ test:
     env:                      development
     development:              true
     trustProxy:               true
+  taskcluster:
+    rootUrl: "https://tc.example.com"

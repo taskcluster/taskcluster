@@ -127,6 +127,7 @@ test:
 
   taskcluster:
     schedulerId: tc-gh-devel
+    rootUrl: "https://tc.example.com"
 
   pulse:
     namespace: 'taskcluster-fake'

@@ -12,7 +12,7 @@ suite('Test Cleanup', function() {
 
   test('cleanup testing containers (for all services)', async function() {
     this.timeout(0);
-    const {accountId, accountKey: accessKey} = helper.secrets.get('azure');
+    const {accountId, accessKey} = helper.secrets.get('azure');
     const blob = new azure.Blob({accountId, accessKey});
 
     // specify a few prefixes of known test containers, including those from
@@ -58,7 +58,7 @@ suite('Test Cleanup', function() {
   test('cleanup testing tables (for all services)', async function() {
     this.timeout(0);
 
-    const {accountId, accountKey: accessKey} = helper.secrets.get('azure');
+    const {accountId, accessKey} = helper.secrets.get('azure');
     const table = new azure.Table({accountId, accessKey});
 
     // match the pattern used in libraries/testing/src/with-entity.js to name

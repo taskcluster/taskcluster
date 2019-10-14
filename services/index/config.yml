@@ -72,6 +72,8 @@ production:
     trustProxy: !env:bool TRUST_PROXY
 
 test:
+  taskcluster:
+    rootUrl: "https://tc.example.com"
   app:
     indexedTaskTableName: 'DummyTestIndexedTasks'
     namespaceTableName: 'DummyTestNamespaces'

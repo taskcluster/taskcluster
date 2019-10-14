@@ -5,7 +5,7 @@ const azure = require('fast-azure-storage');
 const taskcluster = require('taskcluster-client');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
   if (mock) {
     return; // We only test this with real creds
   }
@@ -22,8 +22,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure', 'gcp'], function(
   });
 
   test('azureAccounts', function() {
-    return helper.apiClient.azureAccounts(
-    ).then(function(result) {
+    return helper.apiClient.azureAccounts().then(function(result) {
       assert.deepEqual(result.accounts, _.keys(helper.cfg.app.azureAccounts));
     });
   });

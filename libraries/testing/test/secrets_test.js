@@ -203,8 +203,8 @@ suite(suiteName(), function() {
     });
 
     suiteSetup(function() {
-      nock('http://taskcluster:80')
-        .get('/secrets.taskcluster.net/v1/secret/path%2Fto%2Fsecret')
+      nock('http://proxy')
+        .get('/api/secrets/v1/secret/path%2Fto%2Fsecret')
         .reply(200, (uri, requestBody) => {
           return {secret: {SECRET_VALUE: '13'}};
         });
@@ -216,6 +216,7 @@ suite(suiteName(), function() {
 
     test('with TASK_ID set', async function() {
       process.env.TASK_ID = '1234';
+      process.env.TASKCLUSTER_PROXY_URL = 'http://proxy';
       assert.deepEqual(await secrets._fetchSecrets(), {SECRET_VALUE: '13'});
     });
   });

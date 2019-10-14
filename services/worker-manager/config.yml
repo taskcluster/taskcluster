@@ -33,6 +33,8 @@ test:
     env: 'development'
     forceSSL: false
     trustProxy: false
+  taskcluster:
+    rootUrl: "https://tc.example.com"
   azure:
     accountId: "pamplemousse"
   app:
