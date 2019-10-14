@@ -7606,9 +7606,9 @@ teamwork@3.x.x:
   integrity sha512-OCB56z+G70iA1A1OFoT+51TPzfcgN0ks75uN3yhxA+EU66WTz2BevNDK4YzMqfaL5tuAvxy4iFUn35/u8pxMaQ==
 
 temporary@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/temporary/-/temporary-1.0.0.tgz#1c70425c0260e869db604143e0eca3ee5ff25768"
-  integrity sha512-HmLnJspSWV50Zcn7mPcKUPXQCLgqikZU43g33NHn9iOUuOKRQtM8+1rFGgu2riKATUOJPBmKiEkhubhklVJg9g==
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/temporary/-/temporary-1.0.1.tgz#465690b78bcd9b47fbd6e3b555b51e86cbf0b5cf"
+  integrity sha512-HiDptG49o7ALYzcUfXJpPhoqerCMrI1uWestEkxuonBqKlPw7xOCUi11rXxAXJzQqAOgPPjWVNlX085TwUfKNQ==
 
 test-exclude@^5.2.3:
   version "5.2.3"
