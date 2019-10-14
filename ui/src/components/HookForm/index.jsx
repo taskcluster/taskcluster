@@ -68,7 +68,6 @@ const initialHook = {
     additionalProperties: false,
   },
 };
-const safeDumpOpts = { noCompatMode: true, noRefs: true };
 
 @withStyles(theme => ({
   actionButtonSpan: {
@@ -240,11 +239,8 @@ export default class HookForm extends Component {
       hook: props.hook,
       hookLastFires: props.hookLastFires,
       previousHook: props.hook,
-      taskInput: safeDump(
-        removeKeys(cloneDeep(hook.task), ['__typename']),
-        safeDumpOpts
-      ),
-      triggerSchemaInput: safeDump(hook.triggerSchema, safeDumpOpts),
+      taskInput: safeDump(removeKeys(cloneDeep(hook.task), ['__typename'])),
+      triggerSchemaInput: safeDump(hook.triggerSchema),
       triggerContextInput: safeDump({}),
       scheduleTextField: '',
       taskValidYaml: true,
@@ -726,7 +722,9 @@ export default class HookForm extends Component {
             <ListItemText
               disableTypography
               primary={
-                <Typography variant="subtitle1">Task Template *</Typography>
+                <Typography variant="subtitle1">
+                  Task Template <small>(in YAML)</small> *
+                </Typography>
               }
               secondary={
                 <Fragment>
@@ -773,7 +771,9 @@ export default class HookForm extends Component {
             <ListItemText
               disableTypography
               primary={
-                <Typography variant="subtitle1">Trigger Schema *</Typography>
+                <Typography variant="subtitle1">
+                  Trigger Schema <small>(in YAML)</small> *
+                </Typography>
               }
               secondary={
                 <Fragment>
@@ -885,7 +885,7 @@ export default class HookForm extends Component {
                       Schema
                     </Typography>
                     <Code language="yaml" className={classes.code}>
-                      {safeDump(hook.triggerSchema, safeDumpOpts)}
+                      {safeDump(hook.triggerSchema)}
                     </Code>
                   </Grid>
                 </Grid>
