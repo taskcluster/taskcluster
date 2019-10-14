@@ -31,7 +31,6 @@ import DialogAction from '../DialogAction';
 import DateDistance from '../DateDistance';
 import HookLastFiredTable from '../HookLastFiredTable';
 import PulseBindings from '../PulseBindings';
-import { hook } from '../../utils/prop-types';
 import removeKeys from '../../utils/removeKeys';
 
 const initialHook = {
@@ -160,7 +159,7 @@ export default class HookForm extends Component {
   static propTypes = {
     /** Part of a GraphQL hook response containing info about that hook.
      Not needed when creating a new hook */
-    hook: hook.isRequired,
+    hook: object.isRequired,
     /** Part of the same Grahql hook response as above containing info
      about some last hook fired attempts */
     hookLastFires: array,
