@@ -3,6 +3,15 @@
 const program = require('commander');
 const {version} = require('../../../package.json');
 
+const run = (main, arg) => {
+  main(arg).then(
+    () => {},
+    err => {
+      console.error(err.toString());
+      process.exit(1);
+    });
+};
+
 program.version(version);
 program.command('build')
   .option('-p, --push', 'Push images to docker hub')
@@ -16,12 +25,7 @@ program.command('build')
       process.exit(1);
     }
     const {main} = require('./build');
-    main(options[0]).then(
-      () => {},
-      err => {
-        console.error(err);
-        process.exit(1);
-      });
+    run(main, options[0]);
   });
 
 program.command('release')
@@ -35,12 +39,7 @@ program.command('release')
       process.exit(1);
     }
     const {main} = require('./release');
-    main(options[0]).then(
-      () => {},
-      err => {
-        console.error(err);
-        process.exit(1);
-      });
+    run(main, options[0]);
   });
 
 program.command('generate')
@@ -51,12 +50,7 @@ program.command('generate')
       process.exit(1);
     }
     const {main} = require('./generate');
-    main(options[0]).then(
-      () => {},
-      err => {
-        console.error(err);
-        process.exit(1);
-      });
+    run(main, options[0]);
   });
 
 program.command('changelog')
@@ -66,12 +60,7 @@ program.command('changelog')
       process.exit(1);
     }
     const {main} = require('./changelog');
-    main(options[0]).then(
-      () => {},
-      err => {
-        console.error(err);
-        process.exit(1);
-      });
+    run(main, options[0]);
   });
 
 program.command('dev')
@@ -83,12 +72,7 @@ program.command('dev')
       process.exit(1);
     }
     const {main} = require('./dev');
-    main(options[0]).then(
-      () => {},
-      err => {
-        console.error(err);
-        process.exit(1);
-      });
+    run(main, options[0]);
   });
 
 program.command('smoketest')
@@ -98,12 +82,7 @@ program.command('smoketest')
       process.exit(1);
     }
     const {main} = require('./smoketest');
-    main(options[0]).then(
-      () => {},
-      err => {
-        console.error(err);
-        process.exit(1);
-      });
+    run(main, options[0]);
   });
 
 program.command('*', {noHelp: true})
