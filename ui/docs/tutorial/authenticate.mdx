@@ -7,6 +7,8 @@ followup:
     create-task-via-api: Create a task with createTask
 ---
 
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning'
+
 # Authenticating to Taskcluster
 
 Taskcluster uses its own kind of "credentials" to [authenticate API
@@ -21,21 +23,26 @@ Open the Clients tool (under Authorization) and create a new client:
 
  * Add `tutorial` to the end of the clientId
  * Set the expiration date to tomorrow, and check "Automatically delete this client when it expires"
- * Add the scope `queue:create-task:aws-provisioner-v1/tutorial`.
+ * Add the scope `queue:create-task:higheste:<workerPoolId>` using the worker pool that you determined in the hello-world step.
 
 When you create the client, the site will give you an accessToken.  Copy that
 and set it in your shell session, along with the clientId you chose.  Sometihng
 like this:
 
 ```
+export TASKCLUSTER_ROOT_URL=https://tc.example.com
 export TASKCLUSTER_CLIENT_ID=email/you@yourdomain.com/tutorial
 export TASKCLUSTER_ACCESS_TOKEN=9dTvVYdzMxAb6qnMPccfQhSzfrMZ1WQ46DgsL_I75S-w
 ```
+
+The `TASKCLUSTER_ROOT_URL` is the rootUrl of your deployment -- the origin in your browser.
 
 ## Alternative Process
 
 The [taskcluster-cli](https://github.com/taskcluster/taskcluster-cli) project
 provides a tool that can do all of the above for you.
+
+<Warning>This technique does not yet work for deployments other than `https://taskcluster.net`.</Warning>
 
 ```
 $ eval `taskcluster signin --scope queue:create-task:aws-provisioner-v1/tutorial`
