@@ -217,7 +217,35 @@ class Handlers {
       credentials: this.context.cfg.taskcluster.credentials,
     });
     for (const t of tasks) {
-      await scopedQueueClient.createTask(t.taskId, t.task);
+      try {
+        await scopedQueueClient.createTask(t.taskId, t.task);
+      } catch (err) {
+        // translate InsufficientScopes errors nicely for our users, since they are common and
+        // since we can provide additional context not available from the queue.
+        if (err.code === 'InsufficientScopes') {
+          err.message = [
+            'Taskcluster-GitHub attempted to create a task for this event with the following scopes:',
+            '',
+            '```',
+            JSON.stringify(scopes, null, 2),
+            '```',
+            '',
+            'The expansion of these scopes is not sufficient to create the task and is missing',
+            'scopes satisfying the following expression:',
+            '',
+            '```',
+            JSON.stringify(err.details.unsatisfied, null, 2),
+            '```',
+            '',
+            'The `queue.createTask` call requires scopes satisfying the following expression:',
+            '',
+            '```',
+            JSON.stringify(err.details.required, null, 2),
+            '```',
+          ].join('\n');
+        }
+        throw err;
+      }
     }
   }
 
