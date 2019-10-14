@@ -6,6 +6,7 @@ import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
@@ -213,6 +214,9 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
   generalSpacing: {
     marginTop: -2 * theme.spacing.unit,
   },
+  descriptionSpacing: {
+    marginBottom: 2 * theme.spacing.unit,
+  },
 }))
 export default class QuickStart extends Component {
   initialEvents = new Set([
@@ -403,6 +407,7 @@ export default class QuickStart extends Component {
             <TextField
               label="Organization Name"
               name="owner"
+              fullWidth
               onChange={this.handleOrgRepoChange}
               value={owner}
               autoFocus
@@ -413,6 +418,7 @@ export default class QuickStart extends Component {
             <TextField
               label="Repository Name"
               name="repo"
+              fullWidth
               onChange={this.handleOrgRepoChange}
               value={repo}
             />
@@ -446,7 +452,7 @@ export default class QuickStart extends Component {
                 value={taskName}
               />
             </ListItem>
-            <ListItem className={classes.generalSpacing}>
+            <ListItem className={classes.descriptionSpacing}>
               <TextField
                 label="Description"
                 name="taskDescription"
@@ -490,12 +496,12 @@ export default class QuickStart extends Component {
                       className={classes.formLabelSpacing}
                       control={
                         <Checkbox
-                          checked={events.has('pull_request.synchronize')}
+                          checked={events.has('pull_request.reopened')}
                           onChange={this.handleEventsSelection}
-                          value="pull_request.synchronize"
+                          value="pull_request.reopened"
                         />
                       }
-                      label="New commit made in an opened pull request"
+                      label="Pull request re-opened"
                     />
                   </FormGroup>
                   <FormGroup>
@@ -503,12 +509,12 @@ export default class QuickStart extends Component {
                       className={classes.formLabelSpacing}
                       control={
                         <Checkbox
-                          checked={events.has('pull_request.reopened')}
+                          checked={events.has('pull_request.synchronize')}
                           onChange={this.handleEventsSelection}
-                          value="pull_request.reopened"
+                          value="pull_request.synchronize"
                         />
                       }
-                      label="Pull request re-opened"
+                      label="New commit made in an opened pull request"
                     />
                     <FormControlLabel
                       className={classes.formLabelSpacing}
@@ -581,11 +587,12 @@ export default class QuickStart extends Component {
                 <MenuItem value="custom">I will define them myself</MenuItem>
               </TextField>
             </ListItem>
-            <ListItem>
-              <TextField
-                className={classes.generalSpacing}
-                label="Task Definiton"
-                fullWidth
+            <ListItem className={classes.generalSpacing}>
+              <ListItemText
+                disableTypography
+                primary={
+                  <Typography variant="subtitle1">Task Definiton</Typography>
+                }
               />
             </ListItem>
             <ListItem className={classes.editorListItem}>
