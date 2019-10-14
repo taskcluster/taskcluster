@@ -5909,17 +5909,17 @@ p-map@^2.0.0:
   integrity sha512-GO107XdrSUmtHxVoi60qc9tUl/KkNKm+X2CF4P9amalpGxv5YqVPJNfSb0wcA+syCopkZvYYIzW8OVTQW59x/w==
 
 p-queue@^6.1.1:
-  version "6.1.1"
-  resolved "https://registry.yarnpkg.com/p-queue/-/p-queue-6.1.1.tgz#eedbaf7335b4931ef857e2e58063fed461b97e80"
-  integrity sha512-R9gq36Th88xZ+rWAptN5IXLwqkwA1gagCQhT6ZXQ6RxEfmjb9ZW+UBzRVqv9sm5TQmbbI/TsKgGLbOaA61xR5w==
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/p-queue/-/p-queue-6.2.0.tgz#c8122b9514d2bbe5f16d8a47f17dc2f9a8ac7235"
+  integrity sha512-B2LXNONcyn/G6uz2UBFsGjmSa0e/br3jznlzhEyCXg56c7VhEpiT2pZxGOfv32Q3FSyugAdys9KGpsv3kV+Sbg==
   dependencies:
     eventemitter3 "^4.0.0"
     p-timeout "^3.1.0"
 
 p-timeout@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/p-timeout/-/p-timeout-3.1.0.tgz#198c1f503bb973e9b9727177a276c80afd6851f3"
-  integrity sha512-C27DYI+tCroT8J8cTEyySGydl2B7FlxrGNF5/wmMbl1V+jeehUCzEE/BVgzRebdm2K3ZitKOKx8YbdFumDyYmw==
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/p-timeout/-/p-timeout-3.2.0.tgz#c7e17abc971d2a7962ef83626b35d635acf23dfe"
+  integrity sha512-rhIwUycgwwKcP9yTOOFK/AKsAopjjCakVqLHePO3CC6Mir1Z99xT+R63jZxAT5lFZLa2inS5h+ZS2GvR99/FBg==
   dependencies:
     p-finally "^1.0.0"
 
