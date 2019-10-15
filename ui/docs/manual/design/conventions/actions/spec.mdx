@@ -3,6 +3,7 @@ title: Action Specification
 order: 20
 ---
 import SchemaTable from 'taskcluster-ui/components/SchemaTable'
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
 
 # Action Specification
 
@@ -306,9 +307,11 @@ limit what the resulting task does.
 The payload of the `triggerHook` call is given by the `hookPayload` property,
 which is rendered using JSON-e with the context described above.
 
+<Warning>
 Note that the result of rendering `hookPayload` becomes the *context* for
 another JSON-e rendering performed by the hooks service.  Do not confuse the
 two operations!
+</Warning>
 
 ## Formal Specification
 

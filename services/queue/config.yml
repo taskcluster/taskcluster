@@ -120,7 +120,7 @@ defaults:
   # Azure credentials (for blob and queue storage)
   azure:
     accountId:                !env AZURE_ACCOUNT_ID
-    accountKey:               !env AZURE_ACCOUNT_KEY
+    accessKey:                !env AZURE_ACCOUNT_KEY
 
   pulse:
     username:                 !env PULSE_USERNAME
@@ -161,6 +161,9 @@ production:
 
 # Configuration of tests
 test:
+  taskcluster:
+    rootUrl: "https://tc.example.com"
+
   app:
     # For testing purposes we let claims expire very fast
     claimTimeout:                 1

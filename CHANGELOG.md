@@ -3,6 +3,45 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v19.0.0
+
+[MAJOR] ([bug 1584321](http://bugzil.la/1584321)) Scopes for the Taskcluster services themselves are now handled internally to the platform, although access tokens must still be managed as part of the deployment process.
+When deploying this version, remove all `scopes` and `description` properties from `static/taskcluster/..` clients in the array in the Auth service's `STATIC_CLIENTS` configuration.
+See [the new docs on static clients](https://docs.taskcluster.net/docs/manual/deploying/static-clients) for more background on this setting.
+
+[minor] ([bug 1586102](http://bugzil.la/1586102)) The github service now adds scopes for check/status scopes and its scheduler-id, where previously it had relied on specific configuration of the `repo:github.com/*` role.
+There is no longer a need to add such scopes scopes to the role `repo:github.com/*`.
+
+[minor] ([#1486](https://github.com/taskcluster/taskcluster/issues/1486)) The Worker-Manager `google` provider implementation now supports terminating instances in response to `workerManager.removeWorker(..)`  API calls.
+
+([#1495](https://github.com/taskcluster/taskcluster/issues/1495)) In the previous version, indirect go dependency `github.com/streadway/amqp` had an invalid pseudo-version.
+This has been fixed, and the tool that generated the incorrect dependency (renovate) has been disabled.
+
+## v18.0.3
+
+([bug 1585135](http://bugzil.la/1585135)) The fix in 18.0.2 is updated to replace *all* escaped newlines in the `GITHUB_PRIVATE_PEM` config, not just the first.
+
+## v18.0.2
+
+([bug 1585135](http://bugzil.la/1585135)) The `github.private_pem` configuration in `GITHUB_PRIVATE_PEM` can now be specified with "regular" newlines or with encoded newlines (`\` `\n`).
+This works around a bug in the generation of multiline secrets present in the Mozilla deployment pipeline.
+
+## v18.0.1
+
+No changes
+
+## v18.0.0
+
+[MAJOR] ([bug 1583935](http://bugzil.la/1583935)) Administrative scopes for worker pools are now `worker-manager:manage-worker-pool:<workerPoolId>`.
+Existing `worker-manager:{create,update}-worker-type:<workerPoolId>` scopes are no longer recognized.
+
+[minor] ([bug 1323871](http://bugzil.la/1323871)) Taskcluster now issues scopes based on repo access for Github logins. 
+Static clients need to be updated in deployments.
+
+([bug 1582376](http://bugzil.la/1582376)) Taskcluster now uses the AMQP server's value for `frame_max`, rather than enforcing its own limit of 4k.
+The server level should be configured to 128k.
+This is the default for RabbitMQ, so in most cases no change is required.
+
 ## v17.0.0
 
 [MAJOR] ([bug 1561905](http://bugzil.la/1561905)) 1. Static clients need to be updated in deployments.
@@ -115,7 +154,7 @@ Helm is still used to render templates because we need to support it.
 
 ## v15.0.0
 
-[MAJOR] The web-server application no longer generates a JWT when logging in. It uses a sessions to keep track of users.
+[MAJOR] The web-server application no longer generates a JWT when logging in. It uses sessions to keep track of users.
 The `JWT_KEY` configuration variable in web-server should be replaced with `SESSION_SECRET` which is used to compute
 the session hash.
 

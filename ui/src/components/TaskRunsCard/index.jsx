@@ -15,8 +15,6 @@ import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import IconButton from '@material-ui/core/IconButton';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import ChevronLeftIcon from 'mdi-react/ChevronLeftIcon';
@@ -67,9 +65,6 @@ const DOTS_VARIANT_LIMIT = 5;
     pointer: {
       cursor: 'pointer',
     },
-    linkCell: {
-      textAlign: 'right',
-    },
     logButton: {
       marginRight: theme.spacing.unit,
     },
@@ -86,32 +81,18 @@ const DOTS_VARIANT_LIMIT = 5;
     boxVariantText: {
       color: fade(theme.palette.text.primary, 0.4),
     },
-    listItemSecondaryAction: {
-      paddingRight: theme.spacing.unit,
-      display: 'flex',
-      alignItems: 'center',
-      '& button, & a': {
-        ...theme.mixins.listItemButton,
-      },
-    },
     artifactLink: {
       textDecoration: 'none',
-      width: '100%',
-      display: 'block',
-      height: '100%',
+      display: 'flex',
+      justifyContent: 'space-between',
       verticalAlign: 'middle',
     },
     artifactTableRow: {
       height: 'auto',
     },
-    artifactNameTableCell: {
-      width: '100%',
-    },
-    artifactsTableCell: {
-      padding: `${theme.spacing.unit}px ${theme.spacing.triple}px`,
-    },
     artifactNameWrapper: {
       display: 'inline-flex',
+      flexBasis: '50%',
     },
     liveLogLabel: {
       marginLeft: theme.spacing.unit / 2,
@@ -250,18 +231,14 @@ export default class TaskRunsCard extends Component {
               }
             )}
             hover={!!artifact.url}>
-            <Link
-              className={classes.artifactLink}
-              to={this.getArtifactUrl(artifact)}>
-              <TableCell className={classes.artifactsTableCell}>
-                {artifact.isPublic && <LockOpenOutlineIcon />}
-                {!artifact.isPublic && artifact.url && <LockIcon />}
-              </TableCell>
-              <TableCell
-                className={classNames(
-                  classes.artifactNameTableCell,
-                  classes.artifactsTableCell
-                )}>
+            <TableCell>
+              <Link
+                className={classes.artifactLink}
+                to={this.getArtifactUrl(artifact)}>
+                <div>
+                  {artifact.isPublic && <LockOpenOutlineIcon />}
+                  {!artifact.isPublic && artifact.url && <LockIcon />}
+                </div>
                 <div className={classes.artifactNameWrapper}>
                   {artifact.isLog && (
                     <Label status="info" mini className={classes.logButton}>
@@ -270,16 +247,12 @@ export default class TaskRunsCard extends Component {
                   )}
                   <Typography>{artifact.name}</Typography>
                 </div>
-              </TableCell>
-              <TableCell
-                className={classNames(
-                  classes.linkCell,
-                  classes.artifactsTableCell
-                )}>
-                {artifact.isPublic && <LinkIcon />}
-                {!artifact.isPublic && artifact.url && <OpenInNewIcon />}
-              </TableCell>
-            </Link>
+                <div>
+                  {artifact.isPublic && <LinkIcon />}
+                  {!artifact.isPublic && artifact.url && <OpenInNewIcon />}
+                </div>
+              </Link>
+            </TableCell>
           </TableRow>
         )}
       />
@@ -445,27 +418,17 @@ export default class TaskRunsCard extends Component {
                         secondary={run.workerGroup || <em>n/a</em>}
                       />
                     </ListItem>
-                    <ListItem>
+                    <ListItem
+                      title="View Worker"
+                      button
+                      className={classes.listItemButton}
+                      component={Link}
+                      to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${run.workerId}`}>
                       <ListItemText
                         primary="Worker ID"
                         secondary={run.workerId}
                       />
-                      <ListItemSecondaryAction
-                        className={classes.listItemSecondaryAction}>
-                        <CopyToClipboard
-                          title={`${run.workerId} (Copy)`}
-                          text={run.workerId}>
-                          <IconButton>
-                            <ContentCopyIcon />
-                          </IconButton>
-                        </CopyToClipboard>
-                        <IconButton
-                          title="View Worker"
-                          component={Link}
-                          to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${run.workerId}`}>
-                          <LinkIcon />
-                        </IconButton>
-                      </ListItemSecondaryAction>
+                      <LinkIcon />
                     </ListItem>
                     <CopyToClipboard
                       title={`${run.takenUntil} (Copy)`}

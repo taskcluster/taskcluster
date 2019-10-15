@@ -2,7 +2,6 @@ const path = require('path');
 const builder = require('../src/api');
 const data = require('../src/data');
 const taskcluster = require('taskcluster-client');
-const libUrls = require('taskcluster-lib-urls');
 const load = require('../src/main');
 const {stickyLoader, Secrets, fakeauth, withEntity, withMonitor} = require('taskcluster-lib-testing');
 
@@ -25,13 +24,9 @@ withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({
-  secretName: 'project/taskcluster/testing/taskcluster-purge-cache',
+  secretName: 'project/taskcluster/testing/azure',
   secrets: {
-    taskcluster: [
-      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl', mock: libUrls.testRootUrl()},
-      {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId'},
-      {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
-    ],
+    azure: withEntity.secret,
   },
   load: exports.load,
 });

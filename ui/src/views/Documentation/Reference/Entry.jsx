@@ -104,7 +104,7 @@ export default class Entry extends Component {
     expanded:
       this.props.entry.name === window.location.hash.slice(1) ||
       this.props.entry.type === window.location.hash.slice(1) ||
-      encodeURIComponent(path(['content', '$id'], this.props.entry)) ===
+      encodeURIComponent(path(['schema', '$id'], this.props.entry)) ===
         window.location.hash.slice(1),
   };
 

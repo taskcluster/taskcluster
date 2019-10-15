@@ -2,6 +2,7 @@ const Entity = require('azure-entities');
 const assert = require('assert');
 const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
+const staticScopes = require('./static-scopes.json');
 
 const Client = Entity.configure({
   version: 1,
@@ -112,19 +113,60 @@ Client.prototype.json = function(resolver) {
  * , where description will be amended with a section explaining that this
  * client is static and can't be modified at runtime.
  */
-Client.syncStaticClients = async function(clients = []) {
+Client.syncStaticClients = async function(clients = [], azureAccountId) {
   // Validate input for sanity (we hardly need perfect validation here...)
   assert(clients instanceof Array, 'Expected clients to be am array');
   for (const client of clients) {
     assert(typeof client.clientId === 'string', 'expected clientId to be a string');
     assert(typeof client.accessToken === 'string', 'expected accessToken to be a string');
     assert(client.accessToken.length >= 22, 'accessToken must have at least 22 chars');
-    assert(client.accessToken.length <= 66, 'accessToken must have at least 66 chars');
-    assert(typeof client.description === 'string', 'expected description to be a string');
-    assert(client.scopes instanceof Array, 'expected scopes to be an array of strings');
+    assert(client.accessToken.length <= 66, 'accessToken must have at most 66 chars');
     assert(client.clientId.startsWith('static/'), 'static clients must have clientId = "static/..."');
-    assert(client.scopes.every(s => typeof s === 'string'), 'scopes must be strings');
+    if (client.clientId.startsWith('static/taskcluster')) {
+      assert(!client.scopes, 'scopes are not allowed in configuration for static/taskcluster clients');
+    } else {
+      assert(client.scopes instanceof Array, 'expected scopes to be an array of strings');
+      assert(typeof client.description === 'string', 'expected description to be a string');
+      assert(client.scopes.every(s => typeof s === 'string'), 'scopes must be strings');
+    }
   }
+
+  // check that we have all of the expected static/taskcluster clients, and no more.  The staticClients
+  // are generated from `services/*/scopes.yml` for all of the other services.
+  const seenTCClients = clients
+    .map(({clientId}) => clientId)
+    .filter(c => c.startsWith('static/taskcluster/'));
+  const expectedTCClients = staticScopes
+    .map(({clientId}) => clientId);
+  const extraTCClients = _.difference(seenTCClients, expectedTCClients);
+  const missingTCClients = _.difference(expectedTCClients, seenTCClients);
+
+  if (extraTCClients.length > 0 || missingTCClients.length > 0) {
+    let msg = 'Incorrect `static/taskcluster` static clients in STATIC_CLIENTS';
+    if (extraTCClients.length > 0) {
+      msg = msg + `; extra clients ${JSON.stringify(extraTCClients)}`;
+    }
+    if (missingTCClients.length > 0) {
+      msg = msg + `; missing clients ${JSON.stringify(missingTCClients)}`;
+    }
+    throw new Error(msg);
+  }
+
+  // put the configured scopes into place
+  clients = clients.map(client => {
+    if (client.clientId.startsWith('static/taskcluster/')) {
+      const {scopes} = _.find(staticScopes, {clientId: client.clientId});
+      return {...client, description: 'Internal client', scopes};
+    } else {
+      return client;
+    }
+  });
+
+  // substitute the azureAccountId into the scopes
+  clients = clients.map(client => ({
+    ...client,
+    scopes: client.scopes.map(sc => sc.replace(/\${azureAccountId}/g, azureAccountId)),
+  }));
 
   // description suffix to use for all static clients
   const descriptionSuffix = [

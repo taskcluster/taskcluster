@@ -92,6 +92,12 @@ class FakeGoogle {
       },
     });
 
+    this.instanceDeleteStub = sinon.stub();
+    this.instanceDeleteStub.onCall(0).returns({
+      name: 'bar',
+      zone: 'whatever/a',
+    });
+
     return {
       regions: {
         get: async () => ({
@@ -103,7 +109,7 @@ class FakeGoogle {
       instances: {
         insert: async () => instanceInsertStub(),
         get: async () => instanceGetStub(),
-        delete: async () => {},
+        delete: async () => this.instanceDeleteStub(),
       },
       zoneOperations: {
         get: async () => opStub(),

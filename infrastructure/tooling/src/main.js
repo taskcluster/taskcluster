@@ -3,7 +3,17 @@
 const program = require('commander');
 const {version} = require('../../../package.json');
 
+const run = (main, arg) => {
+  main(arg).then(
+    () => {},
+    err => {
+      console.error(err.toString());
+      process.exit(1);
+    });
+};
+
 program.version(version);
+program.name('yarn'); // these commands are invoked via yarn
 program.command('build')
   .option('-p, --push', 'Push images to docker hub')
   .option('--base-dir <base-dir>', 'Base directory for build (fast and big!; default /tmp/taskcluster-builder-build)')
@@ -16,12 +26,7 @@ program.command('build')
       process.exit(1);
     }
     const {main} = require('./build');
-    main(options[0]).then(
-      () => {},
-      err => {
-        console.error(err);
-        process.exit(1);
-      });
+    run(main, options[0]);
   });
 
 program.command('release')
@@ -35,12 +40,7 @@ program.command('release')
       process.exit(1);
     }
     const {main} = require('./release');
-    main(options[0]).then(
-      () => {},
-      err => {
-        console.error(err);
-        process.exit(1);
-      });
+    run(main, options[0]);
   });
 
 program.command('generate')
@@ -51,12 +51,7 @@ program.command('generate')
       process.exit(1);
     }
     const {main} = require('./generate');
-    main(options[0]).then(
-      () => {},
-      err => {
-        console.error(err);
-        process.exit(1);
-      });
+    run(main, options[0]);
   });
 
 program.command('changelog')
@@ -66,12 +61,7 @@ program.command('changelog')
       process.exit(1);
     }
     const {main} = require('./changelog');
-    main(options[0]).then(
-      () => {},
-      err => {
-        console.error(err);
-        process.exit(1);
-      });
+    run(main, options[0]);
   });
 
 program.command('dev')
@@ -83,27 +73,22 @@ program.command('dev')
       process.exit(1);
     }
     const {main} = require('./dev');
-    main(options[0]).then(
-      () => {},
-      err => {
-        console.error(err);
-        process.exit(1);
-      });
+    run(main, options[0]);
   });
 
 program.command('smoketest')
+  .option('--target <target>', 'Run a specific check, rather than all of them')
+  .on('--help', () => {
+    const {targets} = require('./smoketest/checks');
+    console.log(`\nAvailable Targets:\n${targets.map(t => `  - ${t}`).join('\n')}`);
+  })
   .action((...options) => {
     if (options.length !== 1) {
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
     const {main} = require('./smoketest');
-    main(options[0]).then(
-      () => {},
-      err => {
-        console.error(err);
-        process.exit(1);
-      });
+    run(main, options[0]);
   });
 
 program.command('*', {noHelp: true})

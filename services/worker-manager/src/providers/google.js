@@ -77,6 +77,9 @@ class GoogleProvider extends Provider {
 
   async _enqueue(type, func, tries = 0) {
     const queue = this.queues[type];
+    if (!queue) {
+      throw new Error(`Unknown p-queue attempted: ${type}`);
+    }
     try {
       return await queue.add(func, {priority: tries});
     } catch (err) {
@@ -119,7 +122,7 @@ class GoogleProvider extends Provider {
         throw err;
       }
 
-      return await this._enqueue(type, func, tries++);
+      return await this._enqueue(type, func, tries + 1);
     }
   }
 
@@ -197,6 +200,25 @@ class GoogleProvider extends Provider {
     });
   }
 
+  async removeWorker({worker}) {
+    try {
+      // This returns an operation that we could track but the chances
+      // that this fails due to user input being wrong are low so
+      // we'll ignore it in order to save a bunch of traffic checking up on these
+      // operations when many instances are terminated at once
+      await this._enqueue('query', () => this.compute.instances.delete({
+        project: this.project,
+        zone: worker.providerData.zone,
+        instance: worker.workerId,
+      }));
+    } catch (err) {
+      if (err.code === 404) {
+        return; // Nothing to do, it is already gone
+      }
+      throw err;
+    }
+  }
+
   async provision({workerPool}) {
     const {workerPoolId} = workerPool;
 
@@ -206,25 +228,15 @@ class GoogleProvider extends Provider {
         wt.providerData[this.providerId].running = wt.providerData[this.providerId].running || 0;
       });
     }
-    const regions = workerPool.config.regions;
 
     const toSpawn = await this.estimator.simple({
       workerPoolId,
       ...workerPool.config,
+      capacityPerInstance: 1, // TODO (bug 1587234) Hardcoded for now until estimator updates
       running: workerPool.providerData[this.providerId].running,
     });
 
-    await Promise.all(new Array(toSpawn).fill(null).map(async _ => {
-      const region = regions[Math.floor(Math.random() * regions.length)];
-      if (!this.zonesByRegion[region]) {
-        this.zonesByRegion[region] = (await this._enqueue('get', () => this.compute.regions.get({
-          project: this.project,
-          region,
-        }))).data.zones;
-      }
-      const zones = this.zonesByRegion[region];
-      const zone = zones[Math.floor(Math.random() * zones.length)].split('/').slice(-1)[0];
-
+    await Promise.all(new Array(toSpawn).fill(null).map(async i => {
       // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
       // The lost entropy from downcasing, etc should be ok due to the fact that
       // only running instances need not be identical. We do not use this name to identify
@@ -232,24 +244,24 @@ class GoogleProvider extends Provider {
       const poolName = workerPoolId.replace(/\//g, '-').slice(0, 38);
       const instanceName = `${poolName}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
 
+      const cfg = _.sample(workerPool.config.launchConfigs);
+
       let op;
 
       try {
         const res = await this._enqueue('query', () => this.compute.instances.insert({
           project: this.project,
-          zone,
+          zone: cfg.zone,
           requestId: uuid.v4(), // This is just for idempotency
           requestBody: {
+            ...cfg, // We spread this in first so that users can't override stuff we set below
             name: instanceName,
             labels: {
+              ...cfg.labels || {},
+              'managed-by': 'taskcluster',
               'worker-pool-id': workerPoolId.replace('/', '_').toLowerCase(),
             },
-            description: workerPool.description,
-            machineType: `zones/${zone}/machineTypes/${workerPool.config.machineType}`,
-            scheduling: workerPool.config.scheduling,
-            networkInterfaces: workerPool.config.networkInterfaces,
-            disks: workerPool.config.disks,
-            displayDevice: workerPool.config.displayDevice,
+            description: cfg.description || workerPool.description,
             serviceAccounts: [{
               email: this.workerServiceAccountEmail,
               scopes: [
@@ -266,8 +278,13 @@ class GoogleProvider extends Provider {
                 'https://www.googleapis.com/auth/cloud-platform',
               ],
             }],
+            scheduling: {
+              ...cfg.scheduling || {},
+              automaticRestart: false,
+            },
             metadata: {
               items: [
+                ...(cfg.metadata || {}).items || [],
                 {
                   key: 'taskcluster',
                   value: JSON.stringify({
@@ -275,8 +292,7 @@ class GoogleProvider extends Provider {
                     providerId: this.providerId,
                     workerGroup: this.providerId,
                     rootUrl: this.rootUrl,
-                    workerConfig: workerPool.config.workerConfig || {},
-                    userData: workerPool.config.userData,
+                    workerConfig: cfg.workerConfig || {},
                   }),
                 },
               ],
@@ -308,7 +324,7 @@ class GoogleProvider extends Provider {
         state: this.Worker.states.REQUESTED,
         providerData: {
           project: this.project,
-          zone,
+          zone: cfg.zone,
           operation: {
             name: op.name,
             zone: op.zone,
@@ -335,47 +351,49 @@ class GoogleProvider extends Provider {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
 
-    let deleteOp = false;
-    if (worker.providerData.operation) {
-      deleteOp = await this.handleOperation({
-        op: worker.providerData.operation,
-        errors: this.errors[worker.workerPoolId],
-      });
-    }
-
-    let res;
     try {
-      res = await this._enqueue('get', () => this.compute.instances.get({
+      const {data} = await this._enqueue('get', () => this.compute.instances.get({
         project: worker.providerData.project,
         zone: worker.providerData.zone,
         instance: worker.workerId,
       }));
+      const {status} = data;
+      if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
+        this.seen[worker.workerPoolId] += 1;
+
+        // If the worker will be expired soon but it still exists,
+        // update it to stick around a while longer. If this doesn't happen,
+        // long-lived instances become orphaned from the provider. We don't update
+        // this on every loop just to avoid the extra work when not needed
+        if (worker.expires < taskcluster.fromNow('1 day')) {
+          await worker.modify(w => {
+            w.expires = taskcluster.fromNow('1 week');
+          });
+        }
+      } else if (['TERMINATED', 'STOPPED'].includes(status)) {
+        await this._enqueue('query', () => this.compute.instances.delete({
+          project: worker.providerData.project,
+          zone: worker.providerData.zone,
+          instance: worker.workerId,
+        }));
+        await worker.modify(w => {
+          w.state = states.STOPPED;
+        });
+      }
     } catch (err) {
       if (err.code !== 404) {
         throw err;
       }
+      if (worker.providerData.operation) {
+        // We only check in on the operation if the worker failed to
+        // start succesfully
+        await this.handleOperation({
+          op: worker.providerData.operation,
+          errors: this.errors[worker.workerPoolId],
+        });
+      }
       await worker.modify(w => {
         w.state = states.STOPPED;
-        if (deleteOp) {
-          delete w.providerData.operation;
-        }
-      });
-      return;
-    }
-    const {status} = res.data;
-    if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
-      this.seen[worker.workerPoolId] += 1;
-    } else if (['TERMINATED', 'STOPPED'].includes(status)) {
-      await this._enqueue('query', () => this.compute.instances.delete({
-        project: worker.providerData.project,
-        zone: worker.providerData.zone,
-        instance: worker.workerId,
-      }));
-      await worker.modify(w => {
-        w.state = states.STOPPED;
-        if (deleteOp) {
-          delete w.providerData.operation;
-        }
       });
     }
   }
@@ -418,32 +436,23 @@ class GoogleProvider extends Provider {
    */
   async handleOperation({op, errors}) {
     let operation;
-    let args;
-    let obj;
+    let opService;
+    const args = {
+      project: this.project,
+      operation: op.name,
+    };
     if (op.region) {
-      args = {
-        project: this.project,
-        region: op.region.split('/').slice(-1)[0],
-        operation: op.name,
-      };
-      obj = this.compute.regionOperations;
+      args.region = op.region.split('/').slice(-1)[0];
+      opService = this.compute.regionOperations;
     } else if (op.zone) {
-      args = {
-        project: this.project,
-        zone: op.zone.split('/').slice(-1)[0],
-        operation: op.name,
-      };
-      obj = this.compute.zoneOperations;
+      args.zone = op.zone.split('/').slice(-1)[0];
+      opService = this.compute.zoneOperations;
     } else {
-      args = {
-        project: this.project,
-        operation: op.name,
-      };
-      obj = this.compute.globalOperations;
+      opService = this.compute.globalOperations;
     }
 
     try {
-      operation = (await this._enqueue('opRead', () => obj.get(args))).data;
+      operation = (await this._enqueue('opRead', () => opService.get(args))).data;
     } catch (err) {
       if (err.code !== 404) {
         throw err;
@@ -471,7 +480,6 @@ class GoogleProvider extends Provider {
         });
       }
     }
-    await obj.delete(args);
     return false;
   }
 }

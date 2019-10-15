@@ -11,6 +11,11 @@ import { CONTENT_MAX_WIDTH } from '../../utils/constants';
       color: theme.palette.secondary.dark,
     },
   },
+  error: {
+    '& svg': {
+      fill: theme.palette.error.contrastText,
+    },
+  },
   link: {
     '& a': {
       ...theme.mixins.link,
@@ -68,6 +73,7 @@ export default class ErrorPanel extends Component {
   render() {
     const { classes, className, fixed, error: _, ...props } = this.props;
     const { error } = this.state;
+    const hasWarning = Boolean(props.warning);
     const errorMessage =
       error && error.graphQLErrors && error.graphQLErrors[0]
         ? error.graphQLErrors[0].message
@@ -77,7 +83,8 @@ export default class ErrorPanel extends Component {
       error && (
         <MuiErrorPanel
           className={classNames(className, classes.link, {
-            [classes.warning]: Boolean(props.warning),
+            [classes.error]: !hasWarning,
+            [classes.warning]: hasWarning,
             [classes.fixed]: fixed,
           })}
           error={errorMessage}

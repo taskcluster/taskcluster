@@ -1,42 +1,42 @@
 # Taskcluster Client Go
 
-[![GoDoc](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17?status.svg)](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17)
+[![GoDoc](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19?status.svg)](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19)
 [![Coverage Status](https://coveralls.io/repos/taskcluster/taskcluster/clients/client-go/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/taskcluster/clients/client-go?branch=master)
 [![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
 A go (golang) port of taskcluster-client.
 
-Complete godoc documentation [here](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17).
+Complete godoc documentation [here](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19).
 
 This library provides the following packages to interface with Taskcluster:
 
 ### HTTP APIs
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcauth
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcawsprovisioner
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcec2manager
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcgithub
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tchooks
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcindex
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tclogin
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcnotify
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcpurgecache
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcqueue
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcsecrets
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcauth
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcawsprovisioner
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcec2manager
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcgithub
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tchooks
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcindex
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tclogin
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcnotify
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcpurgecache
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcqueue
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcsecrets
 
 ### AMQP APIs
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcauthevents
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcawsprovisionerevents
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcgithubevents
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcpurgecacheevents
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcqueueevents
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcauthevents
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcawsprovisionerevents
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcgithubevents
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcpurgecacheevents
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcqueueevents
 
 ## Example programs
 
 To get you started quickly, some example programs are included that use both the HTTP APIs and the AMQP APIs:
 
-* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcauth#example-package--Scopes) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcauth) package to query the expiry and expanded scopes of a given clientId.
-* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcauth#example-package--UpdateClient) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcauth) package to update an existing clientId with a new description and expiry.
-* The [AMQP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcqueueevents#example-package--TaskclusterSniffer) demonstrates the use of the [tcqueueevents](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v17/tcqueueevents) package to listen in on Taskcluster tasks being defined and executed.
+* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcauth#example-package--Scopes) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcauth) package to query the expiry and expanded scopes of a given clientId.
+* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcauth#example-package--UpdateClient) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcauth) package to update an existing clientId with a new description and expiry.
+* The [AMQP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcqueueevents#example-package--TaskclusterSniffer) demonstrates the use of the [tcqueueevents](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v19/tcqueueevents) package to listen in on Taskcluster tasks being defined and executed.
 
 ## Calling API End-Points
 
@@ -54,8 +54,8 @@ import (
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v17"
-	"github.com/taskcluster/taskcluster/clients/client-go/v17/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v19"
+	"github.com/taskcluster/taskcluster/clients/client-go/v19/tcqueue"
 )
 
 // *********************************************************
@@ -525,8 +525,8 @@ import (
 	"strconv"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v17"
-	"github.com/taskcluster/taskcluster/clients/client-go/v17/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v19"
+	"github.com/taskcluster/taskcluster/clients/client-go/v19/tcqueue"
 )
 
 const (

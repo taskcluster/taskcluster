@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-ui",
-  "version": "17.0.0",
+  "version": "19.0.0",
   "private": true,
   "license": "MPL-2.0",
   "engines": {
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "webpack --mode production",
-    "start": "GENERATE_ENV_JS=1 webpack-dev-server --mode development",
+    "start": "cross-env GENERATE_ENV_JS=1 webpack-dev-server --mode development",
     "test": "karma start --single-run",
     "styleguide": "dotenv styleguidist server",
     "styleguide:build": "styleguidist build",
@@ -106,6 +106,7 @@
     "@neutrinojs/react": "9.0.0-rc.0",
     "babel-loader": "^8.0.5",
     "chai": "^4.2.0",
+    "cross-env": "^6.0.3",
     "dotenv-cli": "^2.0.1",
     "eslint": "^5.6.1",
     "eslint-plugin-react-hooks": "^2.0.0",

@@ -4,7 +4,7 @@ const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
-  helper.secrets.mockSuite('expires_test.js', ['taskcluster'], function(mock, skipping) {
+  helper.secrets.mockSuite('expires_test.js', ['azure'], function(mock, skipping) {
     helper.withEntities(mock, skipping);
 
     test('expire nothing', async function() {

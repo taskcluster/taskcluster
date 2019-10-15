@@ -5,7 +5,7 @@ const testing = require('taskcluster-lib-testing');
 const fs = require('fs');
 const path = require('path');
 
-helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withProviders(mock, skipping);
@@ -800,13 +800,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     config: {
       minCapacity: 1,
       maxCapacity: 1,
-      capacityPerInstance: 1,
-      machineType: 'n1-standard-2',
-      regions: ['us-east1'],
-      workerConfig: {},
-      scheduling: {},
-      networkInterfaces: [],
-      disks: [],
+      launchConfigs: [
+        {
+          capacityPerInstance: 1,
+          machineType: 'n1-standard-2',
+          region: 'us-east1',
+          zone: 'us-east1-a',
+          workerConfig: {},
+          scheduling: {},
+          networkInterfaces: [],
+          disks: [],
+        },
+      ],
     },
     owner: 'example@example.com',
     emailOnError: false,
@@ -824,6 +829,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     const workerGroup = 'wg';
     const workerId = 'wi';
     const workerIdentityProof = {'token': 'tok'};
+
+    suiteSetup(function() {
+      helper.load.save();
+
+      // create fake clientId / accessToken for temporary creds
+      helper.load.cfg('taskcluster.credentials.clientId', 'fake');
+      helper.load.cfg('taskcluster.credentials.accessToken', 'fake');
+    });
+
+    suiteTeardown(function() {
+      helper.load.restore();
+    });
 
     const defaultRegisterWorker = {
       workerPoolId, providerId, workerGroup, workerId, workerIdentityProof,

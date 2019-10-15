@@ -12,8 +12,6 @@ import Collapse from '@material-ui/core/Collapse';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import IconButton from '@material-ui/core/IconButton';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
@@ -53,14 +51,6 @@ import Link from '../../utils/Link';
   pre: {
     margin: 0,
     fontSize: theme.typography.body2.fontSize,
-  },
-  listItemSecondaryAction: {
-    paddingRight: theme.spacing.unit,
-    display: 'flex',
-    alignItems: 'center',
-    '& button, & a': {
-      ...theme.mixins.listItemButton,
-    },
   },
   unorderedList: {
     ...theme.mixins.unorderedList,
@@ -145,27 +135,17 @@ export default class TaskDetailsCard extends Component {
                   secondary={task.provisionerId}
                 />
               </ListItem>
-              <ListItem>
+              <ListItem
+                title="View Workers"
+                button
+                className={classes.listItemButton}
+                component={Link}
+                to={`/provisioners/${task.provisionerId}/worker-types/${task.workerType}`}>
                 <ListItemText
                   primary="Worker Type"
                   secondary={task.workerType}
                 />
-                <ListItemSecondaryAction
-                  className={classes.listItemSecondaryAction}>
-                  <CopyToClipboard
-                    title={`${task.workerType} (Copy)`}
-                    text={task.workerType}>
-                    <IconButton>
-                      <ContentCopyIcon />
-                    </IconButton>
-                  </CopyToClipboard>
-                  <IconButton
-                    component={Link}
-                    title="View Workers"
-                    to={`/provisioners/${task.provisionerId}/worker-types/${task.workerType}`}>
-                    <LinkIcon />
-                  </IconButton>
-                </ListItemSecondaryAction>
+                <LinkIcon />
               </ListItem>
               <ListItem
                 button
@@ -220,6 +200,7 @@ export default class TaskDetailsCard extends Component {
                     classes={{ secondary: classes.sourceHeadline }}
                     primary="Source"
                     secondary={task.metadata.source}
+                    title={task.metadata.source}
                   />
                   {isExternal ? <OpenInNewIcon /> : <LinkIcon />}
                 </ListItem>
@@ -296,28 +277,15 @@ export default class TaskDetailsCard extends Component {
                     <List dense disablePadding>
                       {dependentTasks.map(task => (
                         <ListItem
-                          classes={{
-                            container: classes.listItemWithSecondaryAction,
-                          }}
-                          key={task.taskId}>
+                          button
+                          component={Link}
+                          className={classes.listItemButton}
+                          to={`/tasks/${task.taskId}`}
+                          key={task.taskId}
+                          title="View Task">
                           <StatusLabel state={task.status.state} />
                           <ListItemText primary={task.metadata.name} />
-                          <ListItemSecondaryAction
-                            className={classes.listItemSecondaryAction}>
-                            <CopyToClipboard
-                              title={`${task.metadata.name} (Copy)`}
-                              text={task.metadata.name}>
-                              <IconButton>
-                                <ContentCopyIcon />
-                              </IconButton>
-                            </CopyToClipboard>
-                            <IconButton
-                              title="View Task"
-                              component={Link}
-                              to={`/tasks/${task.taskId}`}>
-                              <LinkIcon />
-                            </IconButton>
-                          </ListItemSecondaryAction>
+                          <LinkIcon />
                         </ListItem>
                       ))}
                     </List>

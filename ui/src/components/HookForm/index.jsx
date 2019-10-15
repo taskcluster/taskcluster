@@ -13,11 +13,13 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import TextField from '@material-ui/core/TextField';
 import Switch from '@material-ui/core/Switch';
+import { safeLoad, safeDump } from 'js-yaml';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
+import Tooltip from '@material-ui/core/Tooltip';
 import FlashIcon from 'mdi-react/FlashIcon';
 import PlusIcon from 'mdi-react/PlusIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
@@ -216,8 +218,8 @@ export default class HookForm extends Component {
     triggerSchemaInput: '',
     triggerContextInput: '',
     scheduleTextField: '',
-    taskValidJson: true,
-    triggerSchemaValidJson: true,
+    taskValidYaml: true,
+    triggerSchemaValidYaml: true,
     validation: {},
     drawerOpen: false,
     drawerData: null,
@@ -237,16 +239,12 @@ export default class HookForm extends Component {
       hook: props.hook,
       hookLastFires: props.hookLastFires,
       previousHook: props.hook,
-      taskInput: JSON.stringify(
-        removeKeys(cloneDeep(hook.task), ['__typename']),
-        null,
-        2
-      ),
-      triggerSchemaInput: JSON.stringify(hook.triggerSchema, null, 2),
-      triggerContextInput: JSON.stringify({}),
+      taskInput: safeDump(removeKeys(cloneDeep(hook.task), ['__typename'])),
+      triggerSchemaInput: safeDump(hook.triggerSchema),
+      triggerContextInput: safeDump({}),
       scheduleTextField: '',
-      taskValidJson: true,
-      triggerSchemaValidJson: true,
+      taskValidYaml: true,
+      triggerSchemaValidYaml: true,
       validation: {
         owner: {
           error: false,
@@ -347,13 +345,13 @@ export default class HookForm extends Component {
     try {
       this.setState({
         taskInput: value,
-        hook: assocPath(['task'], JSON.parse(value), hook),
-        taskValidJson: true,
+        hook: assocPath(['task'], safeLoad(value), hook),
+        taskValidYaml: true,
       });
     } catch (err) {
       this.setState({
         taskInput: value,
-        taskValidJson: false,
+        taskValidYaml: false,
       });
     }
   };
@@ -372,7 +370,7 @@ export default class HookForm extends Component {
     return onTriggerHook({
       hookId,
       hookGroupId,
-      payload: JSON.parse(triggerContextInput),
+      payload: safeLoad(triggerContextInput),
     });
   };
 
@@ -380,12 +378,12 @@ export default class HookForm extends Component {
     try {
       this.setState({
         triggerSchemaInput: value,
-        hook: assocPath(['triggerSchema'], JSON.parse(value), this.state.hook),
-        triggerSchemaValidJson: true,
+        hook: assocPath(['triggerSchema'], safeLoad(value), this.state.hook),
+        triggerSchemaValidYaml: true,
       });
     } catch (err) {
       this.setState({
-        triggerSchemaValidJson: false,
+        triggerSchemaValidYaml: false,
         triggerSchemaInput: value,
       });
     }
@@ -408,8 +406,8 @@ export default class HookForm extends Component {
   validHook = () => {
     const {
       hook,
-      taskValidJson,
-      triggerSchemaValidJson,
+      taskValidYaml,
+      triggerSchemaValidYaml,
       validation,
     } = this.state;
 
@@ -420,8 +418,8 @@ export default class HookForm extends Component {
       hook.metadata.owner &&
       hook.bindings &&
       !validation.owner.error &&
-      taskValidJson &&
-      triggerSchemaValidJson
+      taskValidYaml &&
+      triggerSchemaValidYaml
     );
   };
 
@@ -642,22 +640,26 @@ export default class HookForm extends Component {
                 onChange={this.handleScheduleChange}
                 value={scheduleTextField}
               />
-              <IconButton
-                className={classes.iconButton}
-                onClick={this.handleNewCronJob}>
-                <PlusIcon />
-              </IconButton>
+              <Tooltip title="Add Schedule">
+                <IconButton
+                  className={classes.iconButton}
+                  onClick={this.handleNewCronJob}>
+                  <PlusIcon />
+                </IconButton>
+              </Tooltip>
             </div>
             <List>
               {hook.schedule.map(cronJob => (
                 <ListItem className={classes.scheduleEntry} key={cronJob}>
                   <ListItemText primary={<code>{cronJob}</code>} />
-                  <IconButton
-                    className={classes.iconButton}
-                    name={cronJob}
-                    onClick={this.handleDeleteCronJob}>
-                    <DeleteIcon />
-                  </IconButton>
+                  <Tooltip title="Delete Schedule">
+                    <IconButton
+                      className={classes.iconButton}
+                      name={cronJob}
+                      onClick={this.handleDeleteCronJob}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
                 </ListItem>
               ))}
             </List>
@@ -720,7 +722,9 @@ export default class HookForm extends Component {
             <ListItemText
               disableTypography
               primary={
-                <Typography variant="subtitle1">Task Template *</Typography>
+                <Typography variant="subtitle1">
+                  Task Template <small>(in YAML)</small> *
+                </Typography>
               }
               secondary={
                 <Fragment>
@@ -754,6 +758,7 @@ export default class HookForm extends Component {
                     </span>
                   </Typography>
                   <CodeEditor
+                    mode="yaml"
                     lint
                     value={taskInput}
                     onChange={this.handleTaskChange}
@@ -766,7 +771,9 @@ export default class HookForm extends Component {
             <ListItemText
               disableTypography
               primary={
-                <Typography variant="subtitle1">Trigger Schema *</Typography>
+                <Typography variant="subtitle1">
+                  Trigger Schema <small>(in YAML)</small> *
+                </Typography>
               }
               secondary={
                 <Fragment>
@@ -778,6 +785,7 @@ export default class HookForm extends Component {
                     schema.
                   </Typography>
                   <CodeEditor
+                    mode="yaml"
                     lint
                     value={triggerSchemaInput}
                     onChange={this.handleTriggerSchemaChange}
@@ -876,8 +884,8 @@ export default class HookForm extends Component {
                     <Typography gutterBottom variant="subtitle1">
                       Schema
                     </Typography>
-                    <Code language="json" className={classes.code}>
-                      {JSON.stringify(hook.triggerSchema, null, 2)}
+                    <Code language="yaml" className={classes.code}>
+                      {safeDump(hook.triggerSchema)}
                     </Code>
                   </Grid>
                 </Grid>

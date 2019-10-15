@@ -2,12 +2,23 @@
 title: Taskcluster Reviews
 ---
 
+# Taskcluster Reviews
+
 Taskcluster reviews aim to ensure that code we deploy is maintainable,
 understandable, resilient and fast. We’ve developed a review process that
 works really well for us. It is modeled on the general Mozilla review policy.
-Each component, library or service has an owner who is responsible for the
-overall design and implementation. Reviews are a collaborative conversation
-which ensures that new code is good quality.
+
+## Bug Fixes and Small Patches
+
+For most changes, the author makes a pull request using the usual GitHub process.
+If there is an issue or Bugzilla bug to which it relates, the description for the pull request should point to it with a link.
+It's also OK to make a pull request to fix something without first filing an issue.
+
+We have configured GitHub to automatically assign reviewers in most cases.
+We typically review changes within a few working days.
+Feel free to comment if you think your pull request has been missed.
+
+## Large-Scale Projects
 
 When a project starts, the engineers working on it figure out who the reviewer
 for this project will be. It’s important that the component, library or

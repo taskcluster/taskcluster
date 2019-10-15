@@ -35,14 +35,20 @@ SERVICES.forEach(name => {
 
       if (status === 'skipped') {
         return utils.skip({
-          [`ping-${name}`]: status,
           reason: 'No exposed web service',
         });
       }
-
-      return {
-        [`ping-${name}`]: status,
-      };
     },
   });
+});
+
+exports.tasks.push({
+  title: `API ping endpoints succeed (--target ping)`,
+  requires: [
+    ...SERVICES.map(name => `ping-${name}`),
+  ],
+  provides: [
+    `target-ping`,
+  ],
+  run: async (requirements, utils) => {},
 });
