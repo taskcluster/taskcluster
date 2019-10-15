@@ -37,6 +37,11 @@ export default class Profile extends Component {
       <Dashboard title="Profile">
         {!currentScopes && loading && <Spinner loading />}
         <ErrorPanel fixed error={error} />
+        {!user && !loading && (
+          <Typography variant="subtitle1">
+            Sign in to view your profile
+          </Typography>
+        )}
         {user && currentScopes && (
           <Fragment>
             <Typography variant="subtitle1">Credential Information</Typography>
