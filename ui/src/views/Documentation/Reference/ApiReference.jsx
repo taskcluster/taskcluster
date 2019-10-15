@@ -9,29 +9,6 @@ import HeaderWithAnchor from '../components/HeaderWithAnchor';
 import Anchor from '../components/Anchor';
 import findRefDoc from '../../../utils/findRefDoc';
 
-class GroupEntry extends Component {
-  render() {
-    const { group, serviceName } = this.props;
-    const [groupName, listOfEntries] = group;
-
-    return (
-      <div>
-        <br />
-        <HeaderWithAnchor type="h4">{groupName}</HeaderWithAnchor>
-        <br />
-        {listOfEntries.map(entry => (
-          <Entry
-            key={`${entry.name}-${entry.query}`}
-            type="function"
-            entry={entry}
-            serviceName={serviceName}
-          />
-        ))}
-      </div>
-    );
-  }
-}
-
 @withRouter
 export default class ApiReference extends Component {
   static propTypes = {
@@ -93,11 +70,19 @@ export default class ApiReference extends Component {
             </Typography>
             <br />
             {groupedEntries.map(group => (
-              <GroupEntry
-                key={group[0]}
-                group={group}
-                serviceName={ref.serviceName}
-              />
+              <div key={group[0]}>
+                <HeaderWithAnchor type="h4">{group[0]}</HeaderWithAnchor>
+                <br />
+                {group[1].map(entry => (
+                  <Entry
+                    key={`${entry.name}-${entry.query}`}
+                    type="function"
+                    entry={entry}
+                    serviceName={ref.serviceName}
+                  />
+                ))}
+                <br />
+              </div>
             ))}
           </Fragment>
         )}
