@@ -171,10 +171,6 @@ markdown.use(linkAttributes, {
       padding: `${theme.spacing.unit / 2}px ${3 * theme.spacing.unit}px`,
       margin: `${3 * theme.spacing.unit}px 0`,
     },
-    '& a, & a code': {
-      // Style taken from the Link component
-      color: theme.palette.error.contrastText,
-    },
     '& img': {
       maxWidth: '100%',
     },

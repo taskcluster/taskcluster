@@ -15,54 +15,61 @@ import Markdown from '../Markdown';
 import palette from '../../utils/palette';
 
 @withStyles(
-  theme => ({
-    panel: {
-      marginBottom: 3 * theme.spacing.unit,
-    },
-    paper: {
-      padding: `0 ${2 * theme.spacing.unit}px`,
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start',
-    },
-    // Make sure the markdown doesn't overflow the panel
-    markdownContent: {
-      minWidth: 0,
-      overflow: 'auto',
-    },
-    pad: {
-      paddingTop: 9,
-      paddingBottom: 9,
-    },
-    error: {
-      backgroundColor: theme.palette.error.dark,
-      borderColor: theme.palette.error.light,
-    },
-    warning: {
-      backgroundColor: palette.warning.dark,
-      borderColor: palette.warning.light,
-      '& svg': {
-        fill: palette.warning.contrastText,
+  theme => {
+    const warning = theme.palette.warning || palette.warning;
+
+    return {
+      panel: {
+        marginBottom: 3 * theme.spacing.unit,
       },
-    },
-    errorText: {
-      color: theme.palette.error.contrastText,
-    },
-    warningText: {
-      color: palette.warning.contrastText,
-      '& code': {
-        color: lighten(palette.warning.contrastText, 0.2),
-        fontWeight: 'bold',
+      paper: {
+        padding: `0 ${2 * theme.spacing.unit}px`,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
       },
-    },
-    disabled: {
-      opacity: 1,
-    },
-    heading: {
-      fontSize: theme.typography.pxToRem(15),
-      fontWeight: theme.typography.fontWeightRegular,
-    },
-  }),
+      // Make sure the markdown doesn't overflow the panel
+      markdownContent: {
+        minWidth: 0,
+        overflow: 'auto',
+      },
+      pad: {
+        paddingTop: 9,
+        paddingBottom: 9,
+      },
+      error: {
+        backgroundColor: theme.palette.error.dark,
+        borderColor: theme.palette.error.light,
+      },
+      warning: {
+        backgroundColor: warning.dark,
+        borderColor: warning.light,
+        '& svg': {
+          fill: warning.contrastText,
+        },
+      },
+      errorText: {
+        color: theme.palette.error.contrastText,
+      },
+      warningText: {
+        color: warning.contrastText,
+        '& code': {
+          color: lighten(warning.contrastText, 0.2),
+          fontWeight: 'bold',
+        },
+        '& a': {
+          color: lighten(warning.contrastText, 0.2),
+        },
+      },
+      disabled: {
+        opacity: 1,
+      },
+      heading: {
+        fontSize: theme.typography.pxToRem(15),
+        fontWeight: theme.typography.fontWeightRegular,
+      },
+    };
+  },
   { withTheme: true }
 )
 /**
