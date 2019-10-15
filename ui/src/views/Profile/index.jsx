@@ -39,7 +39,7 @@ export default class Profile extends Component {
         <ErrorPanel fixed error={error} />
         {!user && !loading && (
           <Typography variant="subtitle1">
-            Sign in to view your Profile
+            Sign in to view your profile
           </Typography>
         )}
         {user && currentScopes && (
