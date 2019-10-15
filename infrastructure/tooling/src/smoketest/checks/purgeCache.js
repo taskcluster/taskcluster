@@ -1,12 +1,18 @@
 const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 
+exports.scopeExpression = {
+  AllOf: [
+    'purge-cache:built-in/succeed:smoketest-cache',
+  ],
+};
+
 exports.tasks = [];
 exports.tasks.push({
-  title: 'Create purge cache smoke test',
+  title: 'Purge a cache',
   requires: [],
   provides: [
-    'purge-cache',
+    'target-purge-cache',
   ],
   run: async () => {
     let purge = new taskcluster.PurgeCache(taskcluster.fromEnvVars());

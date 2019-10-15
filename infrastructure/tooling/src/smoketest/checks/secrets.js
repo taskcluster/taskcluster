@@ -1,12 +1,20 @@
 const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 
+exports.scopeExpression = {
+  AllOf: [
+    'secrets:get:project/taskcluster/smoketest/*',
+    'secrets:set:project/taskcluster/smoketest/*',
+  ],
+};
+
 exports.tasks = [];
+
 exports.tasks.push({
-  title: 'Create secret/read-it-back check',
+  title: 'Create and read secrets (--target secrets)',
   requires: [],
   provides: [
-    'smoke-secret',
+    'target-secrets',
   ],
   run: async () => {
     let secrets = new taskcluster.Secrets(taskcluster.fromEnvVars());
@@ -25,7 +33,11 @@ exports.tasks.push({
     await secrets.remove(secretPrefix);
     await assert.rejects(
       () => secrets.get(secretPrefix),
-      err => assert.equal(err.code, 404)
+      err => {
+        assert.equal(err.code, 'ResourceNotFound');
+        assert.equal(err.statusCode, 404);
+        return true;
+      }
     );
   },
 });
