@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster/clients/client-go/v18/tcawsprovisioner"
+	"github.com/taskcluster/taskcluster/clients/client-go/v20/tcawsprovisioner"
 )
 
 func TestAwsProvisionerSecretsGetNosuch(t *testing.T) {

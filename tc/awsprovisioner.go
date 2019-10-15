@@ -1,8 +1,8 @@
 package tc
 
 import (
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v18"
-	"github.com/taskcluster/taskcluster/clients/client-go/v18/tcawsprovisioner"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v20"
+	"github.com/taskcluster/taskcluster/clients/client-go/v20/tcawsprovisioner"
 )
 
 // An interface containing the functions required of AwsProvisioner, allowing

@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v18"
-	"github.com/taskcluster/taskcluster/clients/client-go/v18/tcsecrets"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v20"
+	"github.com/taskcluster/taskcluster/clients/client-go/v20/tcsecrets"
 )
 
 var (
