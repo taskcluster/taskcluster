@@ -43,6 +43,8 @@ var (
 	reclaimEvery5Seconds = false
 	// Current working directory of process
 	cwd = CwdOrPanic()
+	// workerReady becomes true when it is able to call queue.claimWork for the first time
+	workerReady = false
 	// Whether we are running under the aws provisioner
 	configureForAWS bool
 	// Whether we are running in GCP
@@ -390,7 +392,6 @@ func RunWorker() (exitCode ExitCode) {
 	if host, err := sysinfo.Host(); err == nil {
 		logEvent("instanceBoot", nil, host.Info().BootTime)
 	}
-	logEvent("workerReady", nil, time.Now())
 
 	err = setupExposer()
 	if err != nil {
@@ -541,6 +542,11 @@ func RunWorker() (exitCode ExitCode) {
 
 // ClaimWork queries the Queue to find a task.
 func ClaimWork() *TaskRun {
+	// only log workerReady the first time queue.claimWork is called
+	if !workerReady {
+		workerReady = true
+		logEvent("workerReady", nil, time.Now())
+	}
 	req := &tcqueue.ClaimWorkRequest{
 		Tasks:       1,
 		WorkerGroup: config.WorkerGroup,
