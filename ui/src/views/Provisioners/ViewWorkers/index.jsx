@@ -37,6 +37,7 @@ import workersQuery from './workers.graphql';
 @withStyles(theme => ({
   bar: {
     display: 'flex',
+    flexWrap: 'wrap',
     alignItems: 'center',
   },
   breadcrumbsPaper: {
