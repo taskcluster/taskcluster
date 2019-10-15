@@ -18,7 +18,10 @@ import './json-lint';
     width: '100%',
   },
 })
-/** Render an editor */
+/** Render an editor.
+ *
+ * _Note: [material-ui](https://material-ui.com/) is a peer-dependency_
+ */
 export default class CodeEditor extends Component {
   static propTypes = {
     /** Callback function fired when the editor is changed. */

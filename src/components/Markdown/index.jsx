@@ -182,6 +182,8 @@ markdown.use(linkAttributes, {
 }))
 /**
  * Render children as syntax-highlighted monospace code.
+ *
+ * _Note: [material-ui](https://material-ui.com/) is a peer-dependency_
  */
 export default class Markdown extends Component {
   static propTypes = {

@@ -42,6 +42,8 @@ import palette from '../../utils/palette';
 }))
 /**
  * A label color-coded based on a given status.
+ *
+ * _Note: [material-ui](https://material-ui.com/) is a peer-dependency_
  */
 export default class Label extends Component {
   static propTypes = {

@@ -11,6 +11,8 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 })
 /**
  * Render an indeterminate spinning indicator.
+ *
+ * _Note: [material-ui](https://material-ui.com/) is a peer-dependency_
  */
 export default class Spinner extends PureComponent {
   static propTypes = {

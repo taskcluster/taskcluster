@@ -39,6 +39,8 @@ import pickClassName from '../../utils/pickClassName';
 })
 /**
  * An input text field with a markdown preview feature.
+ *
+ * _Note: [material-ui](https://material-ui.com/) is a peer-dependency_
  */
 export default class MarkdownTextArea extends Component {
   static propTypes = {

@@ -68,6 +68,8 @@ import palette from '../../utils/palette';
 /**
  * Render an error in a panel. Will be expandable display stack traces
  * when in development
+ *
+ * _Note: [material-ui](https://material-ui.com/) is a peer-dependency_
  */
 export default class ErrorPanel extends Component {
   static propTypes = {
