@@ -38,6 +38,7 @@ class AwsProvider extends Provider {
   async setup() {
     const ec2 = new aws.EC2({
       credentials: this.providerConfig.credentials,
+      region: 'us-east-1', // This is supposed to be the default region for EC2 requests, but in practice it would throw an error without a region
     });
 
     const regions = (await ec2.describeRegions({}).promise()).Regions;
@@ -96,6 +97,7 @@ class AwsProvider extends Provider {
     let spawned;
     let toSpawnCounter = toSpawn;
     for await (let config of shuffledConfigs) {
+      if (toSpawnCounter <= 0) break; // eslint-disable-line
       // Make sure we don't get "The same resource type may not be specified
       // more than once in tag specifications" errors
       const TagSpecifications = config.TagSpecifications ? config.TagSpecifications : [];
