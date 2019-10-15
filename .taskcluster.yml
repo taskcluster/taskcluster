@@ -160,6 +160,7 @@ tasks:
         - name: check for invalid go pseudo-versions
           # see https://github.com/taskcluster/taskcluster/issues/1492
           image: 'golang:1.13.1'
+          install: ":"
           command: >-
               (cd clients/client-go && go list -m all) &&
               (cd clients/client-shell && go list -m all)
