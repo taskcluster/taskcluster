@@ -7542,7 +7542,7 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-client@link:clients/client":
-  version "19.0.0"
+  version "20.0.0"
   dependencies:
     debug "^4.0.0"
     hawk "^7.0.10"
@@ -7552,37 +7552,37 @@ tar@^4:
     taskcluster-lib-urls "^12.0.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "19.0.0"
+  version "20.0.0"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "19.0.0"
+  version "20.0.0"
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "19.0.0"
+  version "20.0.0"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "19.0.0"
+  version "20.0.0"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "19.0.0"
+  version "20.0.0"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "19.0.0"
+  version "20.0.0"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "19.0.0"
+  version "20.0.0"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "19.0.0"
+  version "20.0.0"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "19.0.0"
+  version "20.0.0"
 
 "taskcluster-lib-scopes@link:libraries/scopes":
-  version "19.0.0"
+  version "20.0.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "19.0.0"
+  version "20.0.0"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -7590,7 +7590,7 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "19.0.0"
+  version "20.0.0"
 
 taskgroup@^4.0.5, taskgroup@^4.2.0:
   version "4.3.1"
@@ -8329,9 +8329,9 @@ xml2js@^0.4.19:
     xmlbuilder "~11.0.0"
 
 xmlbuilder@^13.0.0:
-  version "13.0.1"
-  resolved "https://registry.yarnpkg.com/xmlbuilder/-/xmlbuilder-13.0.1.tgz#0770a63c8672e38eea413ed13080de4fdc01f0ef"
-  integrity sha512-qdGT2O3+OWTVY5HqESkgbOd8NE5MWUIuKxXd9PNQOhVC83SRfdje+Ku4vjFCaEpL6JZqlTOcKN33TlCEbApNcA==
+  version "13.0.2"
+  resolved "https://registry.yarnpkg.com/xmlbuilder/-/xmlbuilder-13.0.2.tgz#02ae33614b6a047d1c32b5389c1fdacb2bce47a7"
+  integrity sha512-Eux0i2QdDYKbdbA6AM6xE4m6ZTZr4G4xF9kahI2ukSEMCzwce2eX9WlTI5J3s+NU7hpasFsr8hWIONae7LluAQ==
 
 xmlbuilder@^9.0.7, xmlbuilder@~9.0.1:
   version "9.0.7"
