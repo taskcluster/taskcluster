@@ -13,7 +13,7 @@ const GithubClient = require('../clients/GithubClient');
 const debug = Debug('strategies.github');
 
 module.exports = class Github {
-  constructor({ name, cfg, GithubAccessToken }) {
+  constructor({ name, cfg, GithubAccessToken, monitor }) {
     const strategyCfg = cfg.login.strategies[name];
 
     assert(strategyCfg.clientId, `${name}.clientId is required`);
@@ -23,6 +23,7 @@ module.exports = class Github {
 
     this.identityProviderId = 'github';
     this.GithubAccessToken = GithubAccessToken;
+    this.monitor = monitor;
   }
 
   async getUser({ username, userId }) {
@@ -43,6 +44,7 @@ module.exports = class Github {
       if (githubErr.status === 404) {
         return;
       }
+
       throw githubErr;
     }
 
@@ -129,9 +131,16 @@ module.exports = class Github {
             userId: profile.id,
             accessToken,
           }, true);
-          const user = await this.getUser({ username: profile.username, userId: Number(profile.id) });
+          const [userErr, user] = await tryCatch(
+            this.getUser({ username: profile.username, userId: Number(profile.id) })
+          );
 
-          if (!user) {
+          if (userErr || !user) {
+            this.monitor.reportError(userErr || 'Could not get user', {
+              identityProviderId: this.identityProviderId,
+              username: profile.username,
+              userId: Number(profile.id),
+            });
             // Don't report much to the user, to avoid revealing sensitive information, although
             // it is likely in the service logs.
             next(new WebServerError('InputError', 'Could not generate credentials for this access token'));
