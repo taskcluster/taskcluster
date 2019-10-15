@@ -41,8 +41,8 @@ const DOTS_VARIANT_LIMIT = 5;
 @withStyles(
   theme => ({
     headline: {
-      paddingLeft: theme.spacing.triple,
-      paddingRight: theme.spacing.triple,
+      paddingLeft: theme.spacing.double,
+      paddingRight: theme.spacing.double,
     },
     cardContent: {
       paddingLeft: 0,
