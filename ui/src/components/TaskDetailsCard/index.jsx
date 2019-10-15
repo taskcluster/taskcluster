@@ -26,7 +26,7 @@ import Link from '../../utils/Link';
 @withStyles(theme => ({
   headline: {
     paddingLeft: theme.spacing.double,
-    paddingRight: theme.spacing.triple,
+    paddingRight: theme.spacing.double,
   },
   cardContent: {
     paddingLeft: 0,

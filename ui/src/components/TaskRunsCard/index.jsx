@@ -42,7 +42,7 @@ const DOTS_VARIANT_LIMIT = 5;
   theme => ({
     headline: {
       paddingLeft: theme.spacing.double,
-      paddingRight: theme.spacing.triple,
+      paddingRight: theme.spacing.double,
     },
     cardContent: {
       paddingLeft: 0,
