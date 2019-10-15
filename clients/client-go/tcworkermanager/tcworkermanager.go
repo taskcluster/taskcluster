@@ -37,7 +37,7 @@ package tcworkermanager
 import (
 	"net/url"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v19"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v20"
 )
 
 type WorkerManager tcclient.Client

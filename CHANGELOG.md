@@ -3,6 +3,34 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v20.0.0
+
+[MAJOR] The worker-manager service's `google` provider type now requires that worker pool definitions contain an array of possible variations of workers for the pool, in the `launchConfig` property.
+See [google provider type](https://docs.taskcluster.net/docs/reference/core/worker-manager/google) for more detail.
+Note that this is a breaking change that will cause all `google`-based worker pools to stop provisioning until they have been updated to the new format.
+To update, change the `config` field by moving all fields *except* `minCapacity` and `maxCapacity` into an array in `launchConfigs`:
+
+```diff
+some/worker:
+  config:
+    minCapacity: 25
+    maxCapacity: 50
+-   region: us-central1
+-   zone: us-central1-a
+-   capacityPerInstance: 1
+-   minCpuPlatform: "Intel Skylake"
+-   ...
++   launchConfigs:
++     - region: us-central1
++       zone: us-central1-a
++       capacityPerInstance: 1
++       minCpuPlatform: "Intel Skylake"
++       ...
+```
+
+([bug 1585102](http://bugzil.la/1585102)) The GitHub service now posts a more useful comment to pull requests and commits when an InsufficientScopes error occurs.
+The message now includes the scopes used to make the API call, including the `assume:repo:..` role.
+
 ## v19.0.0
 
 [MAJOR] ([bug 1584321](http://bugzil.la/1584321)) Scopes for the Taskcluster services themselves are now handled internally to the platform, although access tokens must still be managed as part of the deployment process.
