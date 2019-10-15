@@ -35,6 +35,22 @@ md C:\binaries
 # LogDirectory: Required by OpenCloudConfig for DSC logging
 md "C:\log"
 
+# StackdriverLogging
+$client.DownloadFile("https://dl.google.com/cloudagents/windows/StackdriverLogging-v1-9.exe", "C:\binaries\StackdriverLogging-v1-9.exe")
+Start-Process "C:\binaries\StackdriverLogging-v1-9.exe" -ArgumentList "/S" -Wait -NoNewWindow
+
+# fluentd_genericworker: Maintenance Toolchain - not essential for building firefox
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/generic-worker.conf", "C:\Program Files (x86)\Stackdriver\LoggingAgent\config.d\generic-worker.conf")
+
+# fluentd_genericworkerservice: Maintenance Toolchain - not essential for building firefox
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/generic-worker-service.conf", "C:\Program Files (x86)\Stackdriver\LoggingAgent\config.d\generic-worker-service.conf")
+
+# fluentd_genericworkerwrapper: Maintenance Toolchain - not essential for building firefox
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/generic-worker-wrapper.conf", "C:\Program Files (x86)\Stackdriver\LoggingAgent\config.d\generic-worker-wrapper.conf")
+
+# fluentd_occ: Maintenance Toolchain - not essential for building firefox
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/occ.conf", "C:\Program Files (x86)\Stackdriver\LoggingAgent\config.d\occ.conf")
+
 # NxLog: Maintenance Toolchain - forwards event logs to papertrail
 $client.DownloadFile("https://nxlog.co/system/files/products/files/348/nxlog-ce-2.10.2150.msi", "C:\binaries\nxlog-ce-2.10.2150.msi")
 Start-Process "msiexec" -ArgumentList "/i C:\binaries\nxlog-ce-2.10.2150.msi /quiet" -Wait -NoNewWindow
@@ -449,6 +465,12 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedu
 
 # env_TASKCLUSTER_ROOT_URL: https://bugzilla.mozilla.org/show_bug.cgi?id=1551789
 [Environment]::SetEnvironmentVariable("TASKCLUSTER_ROOT_URL", "https://taskcluster.net", "Machine")
+
+# programdata_google_auth: https://bugzilla.mozilla.org/show_bug.cgi?id=1588757
+md "C:\ProgramData\Google\Auth"
+
+# stackdriver_key: https://bugzilla.mozilla.org/show_bug.cgi?id=1588757
+cmd /c mklink "C:\ProgramData\Google\Auth\application_default_credentials.json" "C:\builds\taskcluster-worker-ec2@aws-stackdriver-log-1571127027.json"
 
 # now shutdown, in preparation for creating an image
 # Stop-Computer isn't working, also not when specifying -AsJob, so reverting to using `shutdown` command instead
