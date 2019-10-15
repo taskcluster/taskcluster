@@ -195,11 +195,14 @@ module.exports = class MozillaAuth0 {
         async (accessToken, refreshToken, extraParams, profile, done) => {
           const [userErr, user] = await tryCatch(this.getUser({ userId: profile.user_id }));
 
-          if (userErr || !user) {
+          if (userErr) {
             this.monitor.reportError(userErr || 'Could not get user', {
               identityProviderId: this.identityProviderId,
               userId: profile.user_id,
             });
+          }
+
+          if (!user) {
             // Don't report much to the user, to avoid revealing sensitive information, although
             // it is likely in the service logs.
             done(new WebServerError('InputError', 'Could not generate credentials for this access token'));

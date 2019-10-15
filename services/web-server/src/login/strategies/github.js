@@ -135,12 +135,15 @@ module.exports = class Github {
             this.getUser({ username: profile.username, userId: Number(profile.id) })
           );
 
-          if (userErr || !user) {
+          if (userErr) {
             this.monitor.reportError(userErr || 'Could not get user', {
               identityProviderId: this.identityProviderId,
               username: profile.username,
               userId: Number(profile.id),
             });
+          }
+
+          if (!user) {
             // Don't report much to the user, to avoid revealing sensitive information, although
             // it is likely in the service logs.
             next(new WebServerError('InputError', 'Could not generate credentials for this access token'));
