@@ -56,5 +56,7 @@ properties:
         - maxCapacity
 additionalProperties: false
 required:
+  - minCapacity
+  - maxCapacity
   - launchConfigs
   

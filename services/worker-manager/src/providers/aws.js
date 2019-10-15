@@ -45,23 +45,24 @@ class AwsProvider extends Provider {
       });
     }
 
+    const toSpawn = await this.estimator.simple({
+      workerPoolId,
+      minCapacity: workerPool.config.minCapacity,
+      maxCapacity: workerPool.config.maxCapacity,
+      capacityPerInstance: 1, // TODO (bug 1587234) Hardcoded for now until estimator updates
+      running: workerPool.providerData[this.providerId].running,
+    });
+
+    if (toSpawn === 0) {
+      return;
+    }
+
     const config = this.chooseConfig({possibleConfigs: workerPool.config.launchConfigs});
 
     const ec2 = new aws.EC2({
       credentials: this.providerConfig.credentials,
       region: config.region,
     });
-
-    const toSpawn = await this.estimator.simple({
-      workerPoolId,
-      minCapacity: config.minCapacity,
-      maxCapacity: config.maxCapacity,
-      capacityPerInstance: config.capacityPerInstance,
-      running: workerPool.providerData[this.providerId].running,
-    });
-    if (toSpawn === 0) {
-      return;
-    }
 
     const userData = Buffer.from(JSON.stringify({
       rootUrl: this.rootUrl,

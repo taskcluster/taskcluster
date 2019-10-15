@@ -25,13 +25,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     launchConfig: {
       ImageId: 'banana-123',
     },
-    minCapacity: 1,
-    maxCapacity: 2,
   };
   let workerPool = {
     workerPoolId,
     providerId,
     description: 'none',
+    minCapacity: 1,
+    maxCapacity: 2,
     previousProviderIds: [],
     created: new Date(),
     lastModified: new Date(),
