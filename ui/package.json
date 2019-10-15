@@ -102,7 +102,7 @@
     "@mozilla-frontend-infra/react-lint": "^1.2.1",
     "@neutrinojs/airbnb": "9.0.0-rc.0",
     "@neutrinojs/copy": "9.0.0-rc.0",
-    "@neutrinojs/karma": "9.0.0-rc.0",
+    "@neutrinojs/karma": "9.0.0-rc.4",
     "@neutrinojs/react": "9.0.0-rc.0",
     "babel-loader": "^8.0.5",
     "chai": "^4.2.0",
