@@ -17,7 +17,7 @@ class GroupEntry extends Component {
     return (
       <div>
         <br />
-        <Typography> {groupName} </Typography>
+        <HeaderWithAnchor type="h4">{groupName}</HeaderWithAnchor>
         <br />
         {listOfEntries.map(entry => (
           <Entry
