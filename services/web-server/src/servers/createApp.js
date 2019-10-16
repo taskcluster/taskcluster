@@ -32,6 +32,12 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
     origin: allowedCORSOrigins,
     credentials: true,
   }));
+  const thirdPartyLoginCors = cors({
+    origin: cfg.login.registeredClients
+      ? [...new Set([].concat(...cfg.login.registeredClients.map(({ redirectUri }) => new URL(redirectUri).origin)))]
+      : false,
+    credentials: true,
+  });
 
   app.use(session({
     store: new MemoryStore({
@@ -110,9 +116,9 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
   // 2. Process the dialog submission (skipped if redirectUri is whitelisted)
   app.post('/login/oauth/authorize/decision', decision);
   // 3. Exchange code for an OAuth2 token
-  app.post('/login/oauth/token', token);
+  app.post('/login/oauth/token', thirdPartyLoginCors, token);
   // 4. Get Taskcluster credentials
-  app.get('/login/oauth/credentials', oauth2AccessToken(), getCredentials);
+  app.get('/login/oauth/credentials', thirdPartyLoginCors, oauth2AccessToken(), getCredentials);
 
   // Error handling middleware
   app.use((err, req, res, next) => {
