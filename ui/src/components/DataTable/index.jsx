@@ -60,13 +60,13 @@ export default class DataTable extends Component {
     headers: arrayOf(
       shape({
         /**
-         * A string identifying the data type of the column contents
-         * (e.g., 'string', 'object', 'number'). */
-        id: string,
-        /**
          * An identifier for the header.
          * This is used to identify, for example, which column was clicked.
          */
+        id: string,
+        /**
+         * A string identifying the data type of the column contents
+         * (e.g., 'string', 'object', 'number'). */
         type: string,
         /**
          * A label to use for the column name.

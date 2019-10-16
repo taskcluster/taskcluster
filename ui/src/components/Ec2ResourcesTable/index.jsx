@@ -53,14 +53,8 @@ export default class Ec2ResourcesTable extends Component {
       }
 
       return [...awsState.instances].sort((a, b) => {
-        const firstElement =
-          sortDirection === 'desc'
-            ? this.valueFromNode(b)
-            : this.valueFromNode(a);
-        const secondElement =
-          sortDirection === 'desc'
-            ? this.valueFromNode(a)
-            : this.valueFromNode(b);
+        const firstElement = sortDirection === 'desc' ? b[sortBy] : a[sortBy];
+        const secondElement = sortDirection === 'desc' ? a[sortBy] : b[sortBy];
 
         return sort(firstElement, secondElement);
       });
@@ -85,17 +79,6 @@ export default class Ec2ResourcesTable extends Component {
     this.setState({ sortBy: header.id, sortDirection });
   };
 
-  valueFromNode(item) {
-    const mapping = {
-      instanceId: item.id,
-      State: item.state,
-      availabilityZone: item.zone,
-      launchTime: item.launch,
-    };
-
-    return mapping[this.state.sortBy];
-  }
-
   render() {
     const {
       onTerminateInstance,
@@ -110,27 +93,22 @@ export default class Ec2ResourcesTable extends Component {
     );
     const iconSize = 16;
     const headers = [
-      { label: 'Instance ID', id: 'instanceId', type: 'string' },
+      { label: 'Instance ID', id: 'id', type: 'string' },
       {
         label: 'State',
         id: 'state',
         type: 'string',
       },
-      // Blocked by https://bugzilla.mozilla.org/show_bug.cgi?id=1453649
-      // 'Instance Type',
       {
         label: 'Availability Zone',
-        id: 'availabilityZone',
+        id: 'zone',
         type: 'string',
       },
-      // Blocked by https://bugzilla.mozilla.org/show_bug.cgi?id=1453649
-      // 'AMI',
       {
         label: 'Launch Time',
-        id: 'launchTime',
+        id: 'launch',
         type: 'string',
       },
-
       {
         label: '',
         id: '',

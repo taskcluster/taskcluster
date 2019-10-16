@@ -91,14 +91,8 @@ export default class AwsProvisionerWorkerTypeStatus extends Component {
       }
 
       return [...statuses].sort((a, b) => {
-        const firstElement =
-          sortDirection === 'desc'
-            ? this.valueFromNode(b)
-            : this.valueFromNode(a);
-        const secondElement =
-          sortDirection === 'desc'
-            ? this.valueFromNode(a)
-            : this.valueFromNode(b);
+        const firstElement = sortDirection === 'desc' ? b[sortBy] : a[sortBy];
+        const secondElement = sortDirection === 'desc' ? a[sortBy] : b[sortBy];
 
         return sort(firstElement, secondElement);
       });
@@ -119,17 +113,6 @@ export default class AwsProvisionerWorkerTypeStatus extends Component {
     this.setState({ sortBy: header.id, sortDirection });
   };
 
-  valueFromNode(item) {
-    const mapping = {
-      instanceType: item.instanceType,
-      availabilityZones: item.zone,
-      runningInstances: item.running,
-      pendingInstances: item.pending,
-    };
-
-    return mapping[this.state.sortBy];
-  }
-
   render() {
     const { awsState, workerType } = this.props;
     const { sortBy, sortDirection } = this.state;
@@ -147,15 +130,15 @@ export default class AwsProvisionerWorkerTypeStatus extends Component {
     );
     const headers = [
       { label: 'Instance Type', id: 'instanceType', type: 'string' },
-      { label: 'Availability Zones', id: 'availabilityZones', type: 'string' },
+      { label: 'Availability Zones', id: 'zone', type: 'string' },
       {
         label: 'Running Instances',
-        id: 'runningInstances',
+        id: 'running',
         type: 'number',
       },
       {
         label: 'Pending Instances',
-        id: 'pendingInstances',
+        id: 'pending',
         type: 'number',
       },
     ];
