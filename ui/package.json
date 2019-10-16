@@ -58,7 +58,7 @@
     "lodash.debounce": "^4.0.8",
     "markdown-it": "^10.0.0",
     "markdown-it-highlightjs": "^3.0.0",
-    "markdown-it-link-attributes": "^2.1.0",
+    "markdown-it-link-attributes": "^3.0.0",
     "material-ui-pickers": "2.2.4",
     "material-ui-treeview": "^3.2.0",
     "mdi-react": "^5.0.0",
