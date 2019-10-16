@@ -44,8 +44,16 @@ const defaultEmpty = defaultTo('');
 })
 export default class ListNamespaces extends Component {
   state = {
-    namespaceInput: this.props.match.params.namespace,
+    namespaceInput: '',
   };
+
+  componentDidMount() {
+    if (this.props.match.params.namespace) {
+      this.setState({ namespaceInput: this.props.match.params.namespace });
+    } else {
+      this.setState({ namespaceInput: '' });
+    }
+  }
 
   componentDidUpdate(prevProps) {
     if (
