@@ -61,14 +61,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, s
     });
     await helper.checkEmails(email => {
       assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
-
-      // We "parse" the mime tree here and check that we've sanitized the html version.
-      const boundary = /boundary="(.*)"/.exec(email.data)[1];
-      for (const part of email.data.split(boundary)) {
-        if (part.includes('Content-Type: text/html')) {
-          assert(!part.includes('alert(1)'));
-        }
-      }
     });
   });
 
