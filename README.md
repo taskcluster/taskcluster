@@ -833,6 +833,11 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v16.3.1 since v16.3.0
+========================
+
+* [Bug 1588789 - log workerReady the first time we're ready to call queue.claimWork](https://bugzil.la/1588789)
+
 In v16.2.0 since v16.1.0
 ========================
 
