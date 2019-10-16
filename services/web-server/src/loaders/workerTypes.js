@@ -2,7 +2,7 @@ const DataLoader = require('dataloader');
 const sift = require('../utils/sift');
 const ConnectionLoader = require('../ConnectionLoader');
 
-module.exports = ({ queue, ec2Manager }) => {
+module.exports = ({ queue }) => {
   const workerType = new DataLoader(queries =>
     Promise.all(
       queries.map(({ provisionerId, workerType }) =>

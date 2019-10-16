@@ -24,7 +24,6 @@ import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_WORKER_TYPES_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
-import normalizeWorkerTypes from '../../utils/normalizeWorkerTypes';
 import { pageInfo } from '../../utils/prop-types';
 
 const sorted = pipe(
@@ -75,16 +74,14 @@ export default class WorkerTypesTable extends Component {
   createSortedWorkerTypesConnection = memoize(
     (workerTypesConnection, sortBy, sortDirection) => {
       const sortByProperty = camelCase(sortBy);
-      // Normalize worker types for aws-provisioner-v1
-      const workerTypes = normalizeWorkerTypes(workerTypesConnection);
 
       if (!sortBy) {
-        return workerTypes;
+        return workerTypesConnection;
       }
 
       return {
-        ...workerTypes,
-        edges: [...workerTypes.edges].sort((a, b) => {
+        ...workerTypesConnection,
+        edges: [...workerTypesConnection.edges].sort((a, b) => {
           const firstElement =
             sortDirection === 'desc'
               ? b.node[sortByProperty]
@@ -106,8 +103,6 @@ export default class WorkerTypesTable extends Component {
       },
     }
   );
-
-  workerTypes = null;
 
   handleDrawerClose = () => {
     this.setState({
