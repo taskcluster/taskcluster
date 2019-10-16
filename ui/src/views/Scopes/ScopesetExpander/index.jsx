@@ -41,8 +41,25 @@ export default class ScopesetExpander extends Component {
     scopeText: '',
   };
 
+  componentDidMount() {
+    const searchParams = new URLSearchParams(this.props.location.search);
+    const scope = searchParams.get('q');
+
+    if (scope) {
+      this.setState(() => ({
+        scopeText: scope.replace(/%/g, '\n'),
+      }));
+    }
+  }
+
   handleExpandScopesClick = async () => {
     const scopes = splitLines(this.state.scopeText);
+    const scopeParam = scopes.join('%');
+
+    this.props.history.push({
+      pathname: '/auth/scopes/expansions',
+      search: `?q=${scopeParam}`,
+    });
 
     this.setState({ scopes });
   };
@@ -59,7 +76,7 @@ export default class ScopesetExpander extends Component {
 
     return (
       <Dashboard
-        title="Expand Scopes"
+        title="Expand Scopesets"
         helpView={<HelpView description={description} />}>
         <Fragment>
           <CodeEditor
