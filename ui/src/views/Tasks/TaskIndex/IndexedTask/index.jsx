@@ -5,6 +5,7 @@ import dotProp from 'dot-prop-immutable';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../../components/Dashboard';
 import HelpView from '../../../../components/HelpView';
+import Search from '../../../../components/Search';
 import IndexedEntry from '../../../../components/IndexedEntry';
 import { ARTIFACTS_PAGE_SIZE } from '../../../../utils/constants';
 import ErrorPanel from '../../../../components/ErrorPanel';
@@ -33,6 +34,10 @@ import indexedTaskQuery from './indexedTask.graphql';
   }),
 })
 export default class IndexedTask extends Component {
+  state = {
+    namespaceInput: this.props.match.params.namespace,
+  };
+
   componentDidUpdate(prevProps) {
     if (
       'indexedTask' in this.props.indexedTaskData &&
@@ -85,6 +90,13 @@ export default class IndexedTask extends Component {
     });
   };
 
+  handleNamespaceInputChange = e =>
+    this.setState({ namespaceInput: e.target.value });
+
+  handleTaskNamespaceSearchSubmit = () => {
+    this.props.history.replace(`/tasks/index/${this.state.namespaceInput}`);
+  };
+
   render() {
     const {
       latestArtifactsData: {
@@ -105,7 +117,16 @@ export default class IndexedTask extends Component {
     return (
       <Dashboard
         title="Index Browser"
-        helpView={<HelpView description={description} />}>
+        helpView={<HelpView description={description} />}
+        search={
+          <Search
+            disabled={loading}
+            value={this.state.namespaceInput}
+            onChange={this.handleNamespaceInputChange}
+            onSubmit={this.handleTaskNamespaceSearchSubmit}
+            placeholder="Search"
+          />
+        }>
         {loading && <Spinner loading />}
         {!loading && (
           <ErrorPanel fixed error={indexedTaskError || latestArtifactsError} />
