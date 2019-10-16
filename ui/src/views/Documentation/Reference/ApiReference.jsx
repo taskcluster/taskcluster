@@ -18,6 +18,23 @@ export default class ApiReference extends Component {
     apiVersion: string.isRequired,
   };
 
+  groupBy = (list, keyGetter) => {
+    const map = new Map();
+
+    list.forEach(item => {
+      const key = keyGetter(item);
+      const collection = map.get(key);
+
+      if (!collection) {
+        map.set(key, [item]);
+      } else {
+        collection.push(item);
+      }
+    });
+
+    return map;
+  };
+
   render() {
     const { serviceName, apiVersion } = this.props;
     const { ref, version } = findRefDoc({
@@ -32,6 +49,9 @@ export default class ApiReference extends Component {
 
     const functionEntries =
       ref.entries && ref.entries.filter(({ type }) => type === 'function');
+    const groupedEntries = Array.from(
+      this.groupBy(functionEntries, entry => entry.category)
+    );
 
     return (
       <div>
@@ -48,14 +68,18 @@ export default class ApiReference extends Component {
               <Anchor href="/docs/manual/design/apis">Using the APIs</Anchor> in
               the manual.
             </Typography>
-            <br />
-            {functionEntries.map(entry => (
-              <Entry
-                key={`${entry.name}-${entry.query}`}
-                type="function"
-                entry={entry}
-                serviceName={ref.serviceName}
-              />
+            {groupedEntries.map(group => (
+              <Fragment key={group[0]}>
+                <HeaderWithAnchor type="h4">{group[0]}</HeaderWithAnchor>
+                {group[1].map(entry => (
+                  <Entry
+                    key={`${entry.name}-${entry.query}`}
+                    type="function"
+                    entry={entry}
+                    serviceName={ref.serviceName}
+                  />
+                ))}
+              </Fragment>
             ))}
           </Fragment>
         )}
