@@ -734,10 +734,9 @@ export default class ViewTask extends Component {
               }
             />
             {tags.map(([key, value]) => (
-              <div>
+              <div key={key}>
                 <Chip
                   className={classes.tag}
-                  key={key}
                   label={
                     <Fragment>
                       {key}
