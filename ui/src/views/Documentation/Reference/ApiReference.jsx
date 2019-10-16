@@ -68,11 +68,9 @@ export default class ApiReference extends Component {
               <Anchor href="/docs/manual/design/apis">Using the APIs</Anchor> in
               the manual.
             </Typography>
-            <br />
             {groupedEntries.map(group => (
-              <div key={group[0]}>
+              <Fragment key={group[0]}>
                 <HeaderWithAnchor type="h4">{group[0]}</HeaderWithAnchor>
-                <br />
                 {group[1].map(entry => (
                   <Entry
                     key={`${entry.name}-${entry.query}`}
@@ -81,8 +79,7 @@ export default class ApiReference extends Component {
                     serviceName={ref.serviceName}
                   />
                 ))}
-                <br />
-              </div>
+              </Fragment>
             ))}
           </Fragment>
         )}
