@@ -1,6 +1,5 @@
 const {
   Auth,
-  AwsProvisioner,
   EC2Manager,
   Github,
   Hooks,
@@ -15,7 +14,6 @@ const {
 
 module.exports = options => ({
   auth: new Auth(options),
-  awsProvisioner: new AwsProvisioner(options),
   ec2Manager: new EC2Manager(options),
   github: new Github(options),
   hooks: new Hooks(options),

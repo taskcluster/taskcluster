@@ -222,46 +222,6 @@ export const workerType = shape({
   actions: arrayOf(provisionerAction),
 });
 
-export const awsProvisionerWorkerType = shape({
-  workerType: string,
-  launchSpec: object,
-  userData: object,
-  secrets: object,
-  scopes: arrayOf(string),
-  minCapacity: number,
-  maxCapacity: number,
-  scalingRatio: number,
-  minPrice: number,
-  maxPrice: number,
-  lastModified: date,
-  instanceTypes: arrayOf(
-    shape({
-      instanceType: string,
-      capacity: number,
-      utility: number,
-      secrets: object,
-      scopes: arrayOf(string),
-      userData: object,
-      launchSpec: object,
-    })
-  ),
-  regions: arrayOf(
-    shape({
-      region: string,
-      secrets: object,
-      scopes: arrayOf(string),
-      userData: object,
-      launchSpec: shape({
-        ImageId: string,
-      }),
-    })
-  ),
-  canUseOndemand: bool,
-  canUseSpot: bool,
-  description: string,
-  owner: string,
-});
-
 export const WorkerManagerWorkerPoolSummary = shape({
   workerPoolId: string,
   providerId: string,
@@ -280,16 +240,6 @@ export const providersArray = arrayOf(
     providerType: string,
   })
 );
-
-export const awsProvisionerWorkerTypeSummary = shape({
-  workerType: string,
-  minCapacity: number,
-  maxCapacity: number,
-  requestedCapacity: number,
-  pendingCapacity: number,
-  runningCapacity: number,
-  pendingTasks: number,
-});
 
 export const provisioner = shape({
   provisionerId: string,
@@ -356,49 +306,6 @@ export const hook = shape({
   expires: date,
   deadline: date,
   triggerSchema: object,
-});
-
-const aws = {
-  region: string,
-  az: string,
-  instanceType: string,
-};
-
-export const awsProvisionerHealth = shape({
-  running: arrayOf(shape(aws)),
-  terminationHealth: arrayOf(
-    shape({
-      ...aws,
-      cleanShutdown: number,
-      spotKill: number,
-      insufficientCapacity: number,
-      volumeLimitExceeded: number,
-      missingAmi: number,
-      startupFailed: number,
-      unknownCodes: number,
-      noCode: number,
-    })
-  ),
-  requestHealth: arrayOf(
-    shape({
-      ...aws,
-      successful: number,
-      failed: number,
-      configurationIssue: number,
-      throttledCalls: number,
-      insufficientCapacity: number,
-      limitExceeded: number,
-    })
-  ),
-});
-
-export const awsProvisionerErrors = shape({
-  ...aws,
-  code: string,
-  type: oneOf(['INSTANCE_REQUEST', 'TERMINATION']),
-  workerType: string,
-  time: date,
-  message: string,
 });
 
 export const secret = shape({
