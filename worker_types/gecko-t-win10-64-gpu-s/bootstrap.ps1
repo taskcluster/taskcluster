@@ -35,21 +35,24 @@ md C:\binaries
 # LogDirectory: Required by OpenCloudConfig for DSC logging
 md "C:\log"
 
-# StackdriverLogging
+# StackdriverLogging: https://bugzilla.mozilla.org/show_bug.cgi?id=1588757
 $client.DownloadFile("https://dl.google.com/cloudagents/windows/StackdriverLogging-v1-9.exe", "C:\binaries\StackdriverLogging-v1-9.exe")
 Start-Process "C:\binaries\StackdriverLogging-v1-9.exe" -ArgumentList "/S" -Wait -NoNewWindow
 
-# fluentd_genericworker: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/generic-worker.conf", "C:\Program Files (x86)\Stackdriver\LoggingAgent\config.d\generic-worker.conf")
+# fluentd_gw_exe: https://bugzilla.mozilla.org/show_bug.cgi?id=1588757
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/gw.exe.conf", "C:\Program Files (x86)\Stackdriver\LoggingAgent\config.d\gw.exe.conf")
 
-# fluentd_genericworkerservice: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/generic-worker-service.conf", "C:\Program Files (x86)\Stackdriver\LoggingAgent\config.d\generic-worker-service.conf")
+# fluentd_gw_service: https://bugzilla.mozilla.org/show_bug.cgi?id=1588757
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/gw.service.conf", "C:\Program Files (x86)\Stackdriver\LoggingAgent\config.d\gw.service.conf")
 
-# fluentd_genericworkerwrapper: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/generic-worker-wrapper.conf", "C:\Program Files (x86)\Stackdriver\LoggingAgent\config.d\generic-worker-wrapper.conf")
+# fluentd_gw_wrapper: https://bugzilla.mozilla.org/show_bug.cgi?id=1588757
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/gw.wrapper.conf", "C:\Program Files (x86)\Stackdriver\LoggingAgent\config.d\gw.wrapper.conf")
 
-# fluentd_occ: Maintenance Toolchain - not essential for building firefox
+# fluentd_occ: https://bugzilla.mozilla.org/show_bug.cgi?id=1588757
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/occ.conf", "C:\Program Files (x86)\Stackdriver\LoggingAgent\config.d\occ.conf")
+
+# fluentd_redact: https://bugzilla.mozilla.org/show_bug.cgi?id=1588757
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/redact.conf", "C:\Program Files (x86)\Stackdriver\LoggingAgent\config.d\redact.conf")
 
 # NxLog: Maintenance Toolchain - forwards event logs to papertrail
 $client.DownloadFile("https://nxlog.co/system/files/products/files/348/nxlog-ce-2.10.2150.msi", "C:\binaries\nxlog-ce-2.10.2150.msi")
