@@ -734,19 +734,20 @@ export default class ViewTask extends Component {
               }
             />
             {tags.map(([key, value]) => (
-              <Chip
-                className={classes.tag}
-                key={key}
-                label={
-                  <Fragment>
-                    {key}
-                    :&nbsp;&nbsp;
+              <div>
+                <Chip
+                  className={classes.tag}
+                  key={key}
+                  label={
+                    <Fragment>
+                      {key}
+                      :&nbsp;&nbsp;
                     <em>{value}</em>
-                  </Fragment>
-                }
-              />
+                    </Fragment>
+                  }
+                />
+              </div>
             ))}
-            <br />
             <br />
             <br />
             <Grid container spacing={24}>
