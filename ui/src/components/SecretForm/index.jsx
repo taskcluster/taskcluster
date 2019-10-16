@@ -3,7 +3,7 @@ import { oneOfType, object, string, func, bool } from 'prop-types';
 import classNames from 'classnames';
 import { addYears } from 'date-fns';
 import { safeDump, safeLoad } from 'js-yaml';
-import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
+// import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -225,12 +225,22 @@ export default class SecretForm extends Component {
             }>
             {showSecret && (
               <ListItem className={classes.editorListItem}>
-                <CodeEditor
+                 <TextField
+                  required
+                  label="Enter secret"
+                  name="editorValue"
+                  onChange={this.handleEditorChange}
+                  mode="yaml"
+                  lint
+                  fullWidth
+                  autoFocus
+                />
+<!--              <CodeEditor
                   onChange={this.handleEditorChange}
                   mode="yaml"
                   lint
                   value={editorValue}
-                />
+                /> -->
               </ListItem>
             )}
           </List>
