@@ -28,16 +28,16 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
     }
     return o;
   }).filter(o => o && o !== "");
-  app.use(cors({
+  const corsOptions = {
     origin: allowedCORSOrigins,
     credentials: true,
-  }));
-  const thirdPartyLoginCors = cors({
+  };
+  const thirdPartyCorsOptions = {
+    ...corsOptions,
     origin: cfg.login.registeredClients
       ? [...new Set([].concat(...cfg.login.registeredClients.map(({ redirectUri }) => new URL(redirectUri).origin)))]
       : false,
-    credentials: true,
-  });
+  };
 
   app.use(session({
     store: new MemoryStore({
@@ -64,6 +64,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
   app.use(bodyParser.json());
   app.post(
     '/graphql',
+    cors(corsOptions),
     credentials(),
     bodyParserGraphql.graphql({
       limit: '1mb',
@@ -73,6 +74,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
   if (cfg.app.playground) {
     app.get(
       '/playground',
+      cors(corsOptions),
       playground({
         endpoint: '/graphql',
         subscriptionsEndpoint: '/subscription',
@@ -92,7 +94,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
     return done(null, obj);
   });
 
-  app.post('/login/logout', (req, res) => {
+  app.post('/login/logout', cors(corsOptions), (req, res) => {
     // Remove the req.user property and clear the login session
     req.logout();
     res
@@ -112,13 +114,15 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
   } = oauth2(cfg, AuthorizationCode, AccessToken, strategies, auth, monitor);
 
   // 1. Render a dialog asking the user to grant access
-  app.get('/login/oauth/authorize', authorization);
+  app.get('/login/oauth/authorize', cors(corsOptions), authorization);
   // 2. Process the dialog submission (skipped if redirectUri is whitelisted)
-  app.post('/login/oauth/authorize/decision', decision);
+  app.post('/login/oauth/authorize/decision', cors(corsOptions), decision);
   // 3. Exchange code for an OAuth2 token
-  app.post('/login/oauth/token', thirdPartyLoginCors, token);
+  app.options('/login/oauth/token', cors(thirdPartyCorsOptions));
+  app.post('/login/oauth/token', cors(thirdPartyCorsOptions), token);
   // 4. Get Taskcluster credentials
-  app.get('/login/oauth/credentials', thirdPartyLoginCors, oauth2AccessToken(), getCredentials);
+  app.options('/login/oauth/credentials', cors(thirdPartyCorsOptions));
+  app.get('/login/oauth/credentials', cors(thirdPartyCorsOptions), oauth2AccessToken(), getCredentials);
 
   // Error handling middleware
   app.use((err, req, res, next) => {
