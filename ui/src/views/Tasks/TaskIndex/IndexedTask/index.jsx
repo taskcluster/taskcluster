@@ -35,7 +35,7 @@ import indexedTaskQuery from './indexedTask.graphql';
 })
 export default class IndexedTask extends Component {
   state = {
-    namespaceInput: this.props.match.params.namespace,
+    namespaceInput: `${this.props.match.params.namespace}.${this.props.match.params.namespaceTaskId}`,
   };
 
   componentDidUpdate(prevProps) {
