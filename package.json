@@ -42,7 +42,7 @@
     "fast-azure-storage": "^3.0.1",
     "fast-json-stable-stringify": "^2.0.0",
     "get-caller-file": "^2.0.5",
-    "googleapis": "^42.0.0",
+    "googleapis": "^44.0.0",
     "graphql": "^14.5.4",
     "graphql-depth-limit": "^1.1.0",
     "graphql-iso-date": "^3.5.0",
