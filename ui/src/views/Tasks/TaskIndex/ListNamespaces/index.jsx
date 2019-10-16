@@ -68,7 +68,6 @@ export default class ListNamespaces extends Component {
   }
 
   handleNamespacesPageChange = ({ cursor, previousCursor }) => {
-    this.setState({ namespaceInput: this.props.match.params.namespace });
     const {
       match: {
         params: { namespace },
