@@ -9,7 +9,6 @@ import clientRoutes from '../views/Clients/routes';
 import roleRoutes from '../views/Roles/routes';
 import hookRoutes from '../views/Hooks/routes';
 import denylistRoutes from '../views/Denylist/routes';
-import awsProvisionerRoutes from '../views/AwsProvisioner/routes';
 import cachePurgeRoutes from '../views/CachePurges/routes';
 import lazy from '../utils/lazy';
 
@@ -33,9 +32,6 @@ const Scopes = lazy(() =>
 );
 const Hooks = lazy(() =>
   import(/* webpackChunkName: 'Hooks' */ '../views/Hooks')
-);
-const AwsProvisioner = lazy(() =>
-  import(/* webpackChunkName: 'AWS Provisioner' */ '../views/AwsProvisioner')
 );
 const WorkerManager = lazy(() =>
   import(/* webpackChunkName: 'Worker Manager' */ '../views/WorkerManager')
@@ -108,11 +104,6 @@ export default [
     component: Hooks,
     path: '/hooks',
     routes: hookRoutes('/hooks'),
-  },
-  {
-    component: AwsProvisioner,
-    path: '/aws-provisioner',
-    routes: awsProvisionerRoutes('/aws-provisioner'),
   },
   {
     component: WorkerManager,

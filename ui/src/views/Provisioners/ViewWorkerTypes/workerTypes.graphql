@@ -1,10 +1,4 @@
-query ViewWorkerTypes($provisionerId: String!, $workerTypesConnection: PageConnection, $isAwsProvisioner: Boolean!) {
-  awsProvisionerWorkerTypeSummaries @include(if: $isAwsProvisioner) {
-    workerType
-    runningCapacity
-    pendingCapacity
-  }
-
+query ViewWorkerTypes($provisionerId: String!, $workerTypesConnection: PageConnection) {
   workerTypes(provisionerId: $provisionerId, connection: $workerTypesConnection) {
     pageInfo {
       hasNextPage

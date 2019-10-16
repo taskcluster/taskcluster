@@ -5,7 +5,6 @@ import HexagonSlice4 from 'mdi-react/HexagonSlice4Icon';
 import PlusCircleIcon from 'mdi-react/PlusCircleIcon';
 import GroupIcon from 'mdi-react/GroupIcon';
 import AccountMultipleIcon from 'mdi-react/AccountMultipleIcon';
-import AmazonIcon from 'mdi-react/AmazonIcon';
 import MixcloudIcon from 'mdi-react/MixcloudIcon';
 import BackupRestoreIcon from 'mdi-react/BackupRestoreIcon';
 import AccountKeyIcon from 'mdi-react/AccountKeyIcon';
@@ -64,10 +63,6 @@ export default class SidebarList extends Component {
             Expand Scopes
           </SidebarListItem>
         </SidebarListGroup>
-
-        <SidebarListItem to="/aws-provisioner" icon={<AmazonIcon />}>
-          AWS Provisioner
-        </SidebarListItem>
 
         <SidebarListItem to="/worker-manager" icon={<HexagonSlice4 />}>
           Worker Manager
