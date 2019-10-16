@@ -3620,7 +3620,7 @@ globals@^11.7.0:
   resolved "https://registry.yarnpkg.com/globals/-/globals-11.11.0.tgz#dcf93757fa2de5486fbeed7118538adf789e9c2e"
   integrity sha512-WHq43gS+6ufNOEqlrDBxVEbb8ntfXrfAUU2ZOpCxrBdGKW3gyv8mCxAfIBD0DroPKGrJ2eSsXsLtY9MPntsyTw==
 
-google-auth-library@^5.1.0, google-auth-library@^5.2.0:
+google-auth-library@^5.2.0:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/google-auth-library/-/google-auth-library-5.2.0.tgz#fff161ec6ad8630c60b37324f78347e11712512b"
   integrity sha512-I2726rgOedQ06HgTvoNvBeRCzy5iFe6z3khwj6ugfRd1b0VHwnTYKl/3t2ytOTo7kKc6KivYIBsCIdZf2ep67g==
@@ -3641,10 +3641,10 @@ google-p12-pem@^2.0.0:
   dependencies:
     node-forge "^0.8.0"
 
-googleapis-common@^3.0.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/googleapis-common/-/googleapis-common-3.1.0.tgz#592dbf4e1fa543090b2671a524dcdb09184ec15c"
-  integrity sha512-abnogPoWqv0cU6O/EFpkerCVsaUsKEG6XpCm4P1YgK44PxIRcGtalDwijqUErkcivM1Xy5MNyf1PDkKTLEjOZA==
+googleapis-common@^3.1.0:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/googleapis-common/-/googleapis-common-3.1.1.tgz#387e75d914a3e09fec2cb3daf321e04194c8a379"
+  integrity sha512-sXNS9oJifZOk2Pa6SzxoSfv0Mj9y/qIOsVV7D8WHuH//90CXNnpR/nCYVa+KcPMDT9ONq21sbtvjfKATMV1Bug==
   dependencies:
     extend "^3.0.2"
     gaxios "^2.0.1"
@@ -3653,13 +3653,13 @@ googleapis-common@^3.0.0:
     url-template "^2.0.8"
     uuid "^3.3.2"
 
-googleapis@^42.0.0:
-  version "42.0.0"
-  resolved "https://registry.yarnpkg.com/googleapis/-/googleapis-42.0.0.tgz#17de1fc4494a49bc120152e6df87b8eca9a6bf0d"
-  integrity sha512-nQiKPDmzmMusnU8UOibmlC6hsgkm70SjqmLxSlBBb7i0z7/J6UPilSzo9tAMoHA8u3BUw3OXn13+p9YLmBH6Gg==
+googleapis@^44.0.0:
+  version "44.0.0"
+  resolved "https://registry.yarnpkg.com/googleapis/-/googleapis-44.0.0.tgz#e78dc5dee734225a82136616c536fa97d4e2d12f"
+  integrity sha512-xfToYX/Z7zkGJnMjA2FTRZGqc3W+3WjU7KH6jh6+GvQBxEofZjEcfDmy+h+yZKeky7mWBT35LdRr1MM2jXYnyA==
   dependencies:
-    google-auth-library "^5.1.0"
-    googleapis-common "^3.0.0"
+    google-auth-library "^5.2.0"
+    googleapis-common "^3.1.0"
 
 got@^5.0.0:
   version "5.7.1"
