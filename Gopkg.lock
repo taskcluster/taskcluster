@@ -105,6 +105,30 @@
   version = "v0.0.1"
 
 [[projects]]
+  digest = "1:5bcaba5067932e65fd5337c8a839c3ae2312a1618fbd2d05cd99a3efa07c88e8"
+  name = "github.com/elastic/go-sysinfo"
+  packages = [
+    ".",
+    "internal/registry",
+    "providers/darwin",
+    "providers/linux",
+    "providers/shared",
+    "providers/windows",
+    "types",
+  ]
+  pruneopts = "UT"
+  revision = "51d9d1362d77a4792dfb39a7a19f056cdf1b9840"
+  version = "v1.1.0"
+
+[[projects]]
+  digest = "1:1ccb0a9b1971646dcaa9537cce0423a14aaf0643311abb8da753cd59372915d5"
+  name = "github.com/elastic/go-windows"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "8c929792e70203792e3baf128c380e28754ae8b5"
+  version = "v1.0.1"
+
+[[projects]]
   digest = "1:bbc4aacabe6880bdbce849c64cb061b7eddf39f132af4ea2853ddd32f85fbec3"
   name = "github.com/fatih/camelcase"
   packages = ["."]
@@ -169,6 +193,14 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "c2b33e84"
+
+[[projects]]
+  branch = "master"
+  digest = "1:ca41e6bafdc8d60c47dba38e9adfc75219a2892b09e5c2160161e7b6bf9562c2"
+  name = "github.com/joeshaw/multierror"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "69b34d4ec901851247ae7e77d33909caf9df99ed"
 
 [[projects]]
   digest = "1:31e761d97c76151dde79e9d28964a812c46efc5baee4085b86f68f0c654450de"
@@ -244,6 +276,18 @@
   pruneopts = "UT"
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
   version = "v1.0.0"
+
+[[projects]]
+  digest = "1:a210815b437763623ecca8eb91e6a0bf4f2d6773c5a6c9aec0e28f19e5fd6deb"
+  name = "github.com/prometheus/procfs"
+  packages = [
+    ".",
+    "internal/fs",
+    "internal/util",
+  ]
+  pruneopts = "UT"
+  revision = "499c85531f756d1129edd26485a5f73871eeb308"
+  version = "v0.0.5"
 
 [[projects]]
   digest = "1:33a48129d0a0eeb790b9ccba3560d2bc191b023e14285369e9f7dfae1e22830a"
@@ -460,6 +504,14 @@
   revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
   version = "v2.2.2"
 
+[[projects]]
+  branch = "master"
+  digest = "1:c10265d5a71326618d37e97169eddb3582f78e8ac7dcf87403b4cf619efd519a"
+  name = "howett.net/plist"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "591f970eefbbeb04d7b37f334a0c4c3256e32876"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
@@ -470,6 +522,7 @@
     "github.com/dchest/uniuri",
     "github.com/dgrijalva/jwt-go",
     "github.com/docopt/docopt-go",
+    "github.com/elastic/go-sysinfo",
     "github.com/getsentry/raven-go",
     "github.com/ghodss/yaml",
     "github.com/gorilla/websocket",
