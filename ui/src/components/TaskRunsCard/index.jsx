@@ -162,12 +162,12 @@ export default class TaskRunsCard extends Component {
 
       return this.isLiveLog()
         ? `/tasks/${taskId}/runs/${runId}/logs/live/${encoded}`
-        :  `/tasks/${taskId}/runs/${runId}/logs/${encoded}`;
-    } 
+        : `/tasks/${taskId}/runs/${runId}/logs/${encoded}`;
+    }
 
     return url;
-  
   };
+
   handleNext = () => {
     const { history } = this.props;
     const { taskId, runId } = this.getCurrentRun();
@@ -211,8 +211,7 @@ export default class TaskRunsCard extends Component {
         return a.node.isPublic ? -1 : 1;
       }),
     };
-  
-  };
+  }
 
   renderArtifactsTable() {
     const { classes, onArtifactsPageChange } = this.props;
@@ -502,5 +501,6 @@ export default class TaskRunsCard extends Component {
       </Card>
     );
   }
-  };
+}
+
 
