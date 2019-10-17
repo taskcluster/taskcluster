@@ -41,12 +41,8 @@ import createTaskQuery from '../createTask.graphql';
 import Button from '../../../components/Button';
 import db from '../../../utils/db';
 
-const defaultTask = {
-  provisionerId: 'aws-provisioner-v1',
-  workerType: 'tutorial',
-  created: new Date().toISOString(),
-  deadline: toDate(addHours(new Date(), 3)).toISOString(),
-  payload: {
+const taskPayload = interactive => {
+  let defaultPayload = {
     image: 'ubuntu:13.10',
     command: [
       '/bin/bash',
@@ -55,14 +51,35 @@ const defaultTask = {
     ],
     // 30s margin to avoid task timeout winning race against task command.
     maxRunTime: 600 + 30,
-  },
+  };
+
+  if (interactive) {
+    defaultPayload = {
+      ...defaultPayload,
+      // 30s margin to avoid task timeout winning race against task command.
+      maxRunTime: 3600 + 30,
+      features: {
+        interactive: true,
+      },
+    };
+  }
+
+  return defaultPayload;
+};
+
+const defaultTask = interactive => ({
+  provisionerId: 'aws-provisioner-v1',
+  workerType: 'tutorial',
+  created: new Date().toISOString(),
+  deadline: toDate(addHours(new Date(), 3)).toISOString(),
+  payload: taskPayload(interactive),
   metadata: {
     name: 'Example Task',
     description: 'Markdown description of **what** this task does',
     owner: 'name@example.com',
     source: `${window.location.origin}/tasks/create`,
   },
-};
+});
 
 @hot(module)
 @withApollo
@@ -121,7 +138,7 @@ export default class CreateTask extends Component {
   }
 
   async getTask() {
-    const { location } = this.props;
+    const { location, interactive } = this.props;
     const { task } = this.state;
 
     if (task) {
@@ -135,9 +152,9 @@ export default class CreateTask extends Component {
     try {
       const task = await storage.getItem(TASKS_CREATE_STORAGE_KEY);
 
-      return task || defaultTask;
+      return task || defaultTask(interactive);
     } catch (err) {
-      return defaultTask;
+      return defaultTask(interactive);
     }
   }
 
@@ -182,7 +199,7 @@ export default class CreateTask extends Component {
   handleResetEditor = () =>
     this.setState({
       createdTaskError: null,
-      task: this.parameterizeTask(defaultTask),
+      task: this.parameterizeTask(defaultTask(this.props.interactive)),
       invalid: false,
     });
 
