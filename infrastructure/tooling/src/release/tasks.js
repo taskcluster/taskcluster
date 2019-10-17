@@ -186,7 +186,7 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
       await writeRepoFile('CHANGELOG.md',
         oldCL.slice(0, breakpoint) +
           `\n## v${requirements['release-version']}\n\n` +
-          requirements['changelog'].format() +
+          (await requirements['changelog'].format()) +
           '\n' +
           oldCL.slice(breakpoint));
       changed.push('CHANGELOG.md');

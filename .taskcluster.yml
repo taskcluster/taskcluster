@@ -97,7 +97,10 @@ tasks:
         - name: yarn build
           command: yarn build --dry-run
         - name: yarn changelog
-          command: yarn changelog
+          command:
+            $if: 'tasks_for == "github-pull-request"'
+            then: yarn changelog:check --pr ${event.number}
+            else: yarn changelog:check
         - name: taskcluster-client
           # taskcluster-client tests use taskcluster-lib-*, including taskcluster-lib-testing,
           # and thus require a full install at the monorepo root (including devDependencies)

@@ -70,6 +70,8 @@ script/build) exec sh -c 'yarn run build';;
 script/release) exec sh -c 'yarn run release';;
 script/generate) exec sh -c 'yarn run generate';;
 script/changelog) exec sh -c 'yarn run changelog';;
+script/changelog:show) exec sh -c 'yarn run changelog:show';;
+script/changelog:check) exec sh -c 'yarn run changelog:check';;
 script/shared-secrets) exec sh -c 'yarn run shared-secrets';;
 script/heroku-prebuild) exec sh -c 'yarn run heroku-prebuild';;
 script/heroku-postbuild) exec sh -c 'yarn run heroku-postbuild';;

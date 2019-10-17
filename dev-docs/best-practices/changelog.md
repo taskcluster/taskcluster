@@ -3,22 +3,14 @@
 Changes that we want users to be aware of when updating should add a new snippet file in the `changelog/` directory.
 This directory contains "snippets" that will be combined into the Changelog of the next release.
 
-## When to Write a Changelog
+## Writing a Changelog
 
-Taskcluster has several groups of users: people creating tasks (for testing or CI); people administering the service (managing scopes and roles); and people deploying the service (running TC services, setting service config values).
-If any of these users would want to know about the change, add a new snippet.
-We want to avoid including *every* change in the Changelog, as the length would be overwhelming and users would have difficulty finding the information that is important to them.
-If the change is routine or a very minor fix, do not write a snippet.
-
+To write a changelog entry, use `yarn changelog`, giving the issue or bug if one exists, and a level.
 For example:
- * YES: Breaking changes
- * YES: New feature users want to know about and take advantage of
- * YES: Bug fix users are waiting on
- * NO: Changes to tests or documentation
- * NO: Minor changes or fixes to UI
- * NO: Dependency changes
- * NO: Changes to developer infrastructure such as `yarn generate` or `yarn lint`
- * NO: Minor bugfixes where the bugs did not impact any users
+
+```shell
+yarn changelog --issue 1234 --minor
+```
 
 ## File Format
 
@@ -39,9 +31,10 @@ reference:  ...
 ## Levels
 
 Every changelog snippet must specify a level.
-These follow [semver](https://semver.org/):
+These follow [semver](https://semver.org/), with the addition of "silent" changes that are like a patch, but not shown in the release notes.
 
-A major change is one that breaks backward compatibility or could cause disruption for users if not handled carefully.
+Taskcluster has several groups of users: people creating tasks (for testing or CI); people administering the service (managing scopes and roles); and people deploying the service (running TC services, setting service config values).
+A major change is one that breaks backward compatibility or could cause disruption for any of these users if not handled carefully.
 Do not be afraid to flag a change as major -- users and operations staff will always prefer to be warned of an issue that does not apply to them, over being surprised by an issue that the developers did not anticipate.
 
 A minor change is one that adds new functionality without breaking backward compatibility.
@@ -51,6 +44,22 @@ If the change is in response to a feature-request filed by a user, it is probabl
 A patch change is one that fixes a bug or makes a minor change which users can do their work without.
 A key distinction between minor and patch changes is that an operations engineer should be comfortable rolling back a patch upgrade immediately if any issues are uncovered.
 If a change cannot be easily rolled back, it is not a patch change.
+
+We want to avoid including *every* change in the release notes, as the length would be overwhelming and users would have difficulty finding the information that is important to them.
+If any of these users would want to know about the change, the level should be at least "patch".
+If the change is routine or a very minor fix, we regard the change as "silent".
+
+For example:
+ * major: Breaking changes for deployment of Taskcluster
+ * major: Breaking changes for administration of Taskcluster
+ * major: Breaking changes for users of Taskcluster
+ * minor: New feature users want to know about and take advantage of
+ * patch: Bug fix users are waiting on
+ * silent: Changes to tests or documentation
+ * silent: Minor changes or fixes to UI
+ * silent: Dependency changes
+ * silent: Changes to developer infrastructure such as `yarn generate` or `yarn lint`
+ * silent: Minor bugfixes where the bugs did not impact many users
 
 ## Snippet Text
 
