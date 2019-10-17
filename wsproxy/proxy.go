@@ -41,12 +41,9 @@ type Config struct {
 	JWTSecretA []byte
 	JWTSecretB []byte
 
-	// Domain and port where proxy will be hosted
-	Domain string
-	Port   int
-
-	// set to true if serving with TLS
-	TLS bool
+	// the prefix for publicly accessible URLs (used to generate the URLs sent
+	// to clients)
+	URLPrefix string
 
 	// Audience value for aud claim
 	Audience string
@@ -62,9 +59,7 @@ type proxy struct {
 	onSessionRemove func(string)
 	jwtSecretA      []byte
 	jwtSecretB      []byte
-	domain          string
-	port            int
-	tls             bool
+	urlPrefix       string
 	audience        string
 }
 
@@ -89,7 +84,7 @@ func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// try to match viewer requests to https://<domain>/<id>/<path> (ignoring
+	// try to match viewer requests to <urlPrefix>/<id>/<path> (ignoring
 	// the host field)
 	s := strings.TrimPrefix(r.URL.RequestURI(), "/")
 	index := strings.Index(s, "/")
@@ -114,14 +109,8 @@ func newProxy(conf Config) (*proxy, error) {
 		logger:     conf.Logger,
 		jwtSecretA: conf.JWTSecretA,
 		jwtSecretB: conf.JWTSecretB,
-		domain:     conf.Domain,
-		port:       conf.Port,
-		tls:        conf.TLS,
+		urlPrefix:  strings.TrimSuffix(conf.URLPrefix, "/"),
 		audience:   conf.Audience,
-	}
-
-	if conf.Port == 0 {
-		panic("no port specified")
 	}
 
 	if len(p.jwtSecretA) == 0 || len(p.jwtSecretB) == 0 {
@@ -217,18 +206,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 
 	header := make(http.Header)
 
-	urlScheme := "http://"
-	defaultPort := 80
-	if p.tls {
-		urlScheme = "https://"
-		defaultPort = 443
-	}
-	var portStr string
-	if p.port != defaultPort {
-		portStr = fmt.Sprintf(":%d", p.port)
-	}
-
-	url := urlScheme + p.domain + portStr + "/" + id
+	url := p.urlPrefix + "/" + id
 	header.Set("x-websocktunnel-client-url", url)
 	p.logf(id, r.RemoteAddr, "sending url= %s", url)
 	conn, err := p.upgrader.Upgrade(w, r, header)
