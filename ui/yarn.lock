@@ -1271,9 +1271,9 @@
   integrity sha512-8F8E5FPWKP/cHjjI+O6Sh4KLUktk0KKS1xrxqVoBQd14/PBDH+kUgSJVE99p9jSRGh+OjCBmqx0tXN+m32w1tA==
 
 "@mozilla-frontend-infra/components@^2.4.0":
-  version "2.4.5"
-  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/components/-/components-2.4.5.tgz#5d0c43162547db49266c99a1646bc8ac1c346af7"
-  integrity sha512-pDNTyK59lnF40g1nUy8jQyaEuGJIga1wg3J9OgxFK994KA2AcWj158Zl96KDjpxgk+W5L8g4ECfR8gF7kOoEsg==
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/components/-/components-2.5.0.tgz#559f543fed51aac3105f482fad316a1789f9e4fd"
+  integrity sha512-VwknIGafObvq9SO1soPfDjmZWM7uiWPUaGYZ80nweCprNX5bzNZRcoKSjVWtk7WLXgpok3UZiXh1JFZXe8Q8Lg==
   dependencies:
     classnames "^2.2.6"
     codemirror "^5.39.0"
