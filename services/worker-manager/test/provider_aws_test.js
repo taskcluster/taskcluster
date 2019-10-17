@@ -71,6 +71,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     workerPoolId,
     providerId,
     workerGroup: providerId,
+    workerConfig: {},
   };
   const defaultWorker = {
     workerPoolId,

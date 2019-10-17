@@ -74,24 +74,6 @@ class AwsProvider extends Provider {
     }
     const toSpawnPerConfig = Math.ceil(toSpawn / workerPool.config.launchConfigs.length);
 
-    const userData = Buffer.from(JSON.stringify({
-      rootUrl: this.rootUrl,
-      workerPoolId,
-      providerId: this.providerId,
-      workerGroup: this.providerId,
-    }));
-    // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-add-user-data
-    // The raw data should be 16KB maximum
-    if (userData.length > 16384) {
-      return await workerPool.reportError({
-        kind: 'creation-error',
-        title: 'User Data is too long',
-        description: 'Try a shorter workerPoolId and/or a shorter rootUrl',
-        notify: this.notify,
-        WorkerPoolError: this.WorkerPoolError,
-      });
-    }
-
     const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
 
     let spawned;
@@ -106,6 +88,25 @@ class AwsProvider extends Provider {
       TagSpecifications.forEach(ts =>
         ts.ResourceType === 'instance' ? instanceTags.concat(ts.Tags) : otherTagSpecs.push(ts)
       );
+
+      const userData = Buffer.from(JSON.stringify({
+        rootUrl: this.rootUrl,
+        workerPoolId,
+        providerId: this.providerId,
+        workerGroup: this.providerId,
+        workerConfig: config.launchConfig.workerConfig || {},
+      }));
+      // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-add-user-data
+      // The raw data should be 16KB maximum
+      if (userData.length > 16384) {
+        return await workerPool.reportError({
+          kind: 'creation-error',
+          title: 'User Data is too long',
+          description: 'Try removing some workerConfiguration and consider putting it in a secret',
+          notify: this.notify,
+          WorkerPoolError: this.WorkerPoolError,
+        });
+      }
 
       try {
         spawned = await this.ec2s[config.region].runInstances({
