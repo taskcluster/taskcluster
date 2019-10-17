@@ -167,7 +167,7 @@ export default class TaskRunsCard extends Component {
 
     return url;
   
-
+  };
   handleNext = () => {
     const { history } = this.props;
     const { taskId, runId } = this.getCurrentRun();
@@ -200,7 +200,7 @@ export default class TaskRunsCard extends Component {
     return artifact.node;
   };
 
-  createSortedArtifactsConnection(artifacts) 
+  createSortedArtifactsConnection(artifacts) {
     return {
       ...artifacts,
       edges: [...artifacts.edges].sort((a, b) => {
@@ -211,7 +211,8 @@ export default class TaskRunsCard extends Component {
         return a.node.isPublic ? -1 : 1;
       }),
     };
-  }
+  
+  };
 
   renderArtifactsTable() {
     const { classes, onArtifactsPageChange } = this.props;
@@ -288,7 +289,7 @@ export default class TaskRunsCard extends Component {
         <div>
           <CardContent classes={{ root: classes.cardContent }}>
             <Typography variant="h5" className={classes.headline}>
-              {run ?` Task Run ${selectedRunId}` : 'Task Run'}
+            {run ?` Task Run ${selectedRunId}` : 'Task Run'}
             </Typography>
             {run ? (
               <Fragment>
@@ -501,4 +502,5 @@ export default class TaskRunsCard extends Component {
       </Card>
     );
   }
-}
+  };
+
