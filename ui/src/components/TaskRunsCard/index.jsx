@@ -502,5 +502,3 @@ export default class TaskRunsCard extends Component {
     );
   }
 }
-
-
