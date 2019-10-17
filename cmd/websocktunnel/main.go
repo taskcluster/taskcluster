@@ -6,7 +6,6 @@ import (
 	"log/syslog"
 	"net/http"
 	"os"
-	"strconv"
 
 	docopt "github.com/docopt/docopt-go"
 	"github.com/gorilla/websocket"
@@ -21,8 +20,9 @@ const usage = `Websocketunnel Server
 Usage: websocktunnel [-h | --help]
 
 Environment:
- HOSTNAME (required)                         hostname of this service
- PORT (optional; defaults to 80 or 443)      port on which this service is available
+ URL_PREFIX (required)                       URL prefix (http(s)://hostname(:port)) at which
+                                             this service is publicly exposed
+ PORT (optional; defaults to 80 or 443)      port on which to listent
  TLS_CERT (optional; no TLS if not provided) base64-encoded TLS certificate
  TLS_KEY                                     corresponding base64-encoded TLS key
  TASKCLUSTER_PROXY_SECRET_A                  JWT secret
@@ -36,9 +36,9 @@ Options:
 func main() {
 	_, _ = docopt.Parse(usage, nil, true, "websocktunnel", false)
 
-	hostname := os.Getenv("HOSTNAME")
-	if hostname == "" {
-		panic("hostname required")
+	urlPrefix := os.Getenv("URL_PREFIX")
+	if urlPrefix == "" {
+		panic("URL_PREFIX is required")
 	}
 
 	logger := log.New()
@@ -90,11 +90,6 @@ func main() {
 	// load audience value
 	audience := os.Getenv("AUDIENCE")
 
-	portNum, err := strconv.Atoi(port)
-	if err != nil {
-		panic(err)
-	}
-
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
@@ -107,9 +102,7 @@ func main() {
 		Upgrader:   upgrader,
 		JWTSecretA: []byte(signingSecretA),
 		JWTSecretB: []byte(signingSecretB),
-		Domain:     hostname,
-		Port:       portNum,
-		TLS:        useTLS,
+		URLPrefix:  urlPrefix,
 		Audience:   audience,
 	})
 
@@ -119,7 +112,6 @@ func main() {
 	}()
 	logger.WithFields(log.Fields{
 		"server-addr": server.Addr,
-		"hostname":    hostname,
 	}).Info("starting server")
 
 	// create tls config and serve

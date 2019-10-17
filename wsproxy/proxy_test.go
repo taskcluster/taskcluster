@@ -3,6 +3,7 @@ package wsproxy
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	// "crypto/tls"
 	"io"
@@ -65,8 +66,7 @@ func TestProxyRegister(t *testing.T) {
 		Logger:     genLogger(),
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
-		Domain:     "localhost",
-		Port:       80,
+		URLPrefix:  "http://localhost",
 	}
 
 	proxy, err := New(proxyConfig)
@@ -99,6 +99,7 @@ func TestProxyRegister(t *testing.T) {
 	if err != nil {
 		t.Fatalf("bad status code: connection should be established")
 	}
+
 	_ = conn2.Close()
 }
 
@@ -109,8 +110,7 @@ func TestProxyRegisterInvalidClientId(t *testing.T) {
 		Logger:     genLogger(),
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
-		Domain:     "localhost",
-		Port:       80,
+		URLPrefix:  "http://localhost/",
 	}
 
 	proxy, err := New(proxyConfig)
@@ -144,8 +144,7 @@ func TestProxyRequest(t *testing.T) {
 		Logger:     genLogger(),
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
-		Domain:     "localhost",
-		Port:       80,
+		URLPrefix:  "http://localhost",
 	}
 
 	proxy, err := New(proxyConfig)
@@ -243,8 +242,7 @@ func TestProxyURIRewrite(t *testing.T) {
 		Logger:     genLogger(),
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
-		Domain:     "localhost",
-		Port:       80,
+		URLPrefix:  "http://localhost",
 	}
 
 	proxy, err := New(proxyConfig)
@@ -304,8 +302,7 @@ func TestProxyWebsocket(t *testing.T) {
 		Upgrader:   upgrader,
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
-		Domain:     "localhost",
-		Port:       80,
+		URLPrefix:  "http://localhost",
 	}
 
 	proxy, err := New(proxyConfig)
@@ -396,8 +393,7 @@ func TestWebsocketProxyControl(t *testing.T) {
 		Logger:     genLogger(),
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
-		Domain:     "localhost",
-		Port:       80,
+		URLPrefix:  "http://localhost",
 	}
 	proxy, err := New(proxyConfig)
 	if err != nil {
@@ -542,8 +538,7 @@ func TestWebSocketClosure(t *testing.T) {
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
 		Logger:     proxyLogger,
-		Domain:     "localhost",
-		Port:       80,
+		URLPrefix:  "http://localhost",
 	}
 
 	proxy, err := New(proxyConfig)
@@ -646,8 +641,7 @@ func TestProxySessionRemoved(t *testing.T) {
 		Upgrader:   upgrader,
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
-		Domain:     "localhost",
-		Port:       80,
+		URLPrefix:  "http://localhost",
 	}
 
 	proxy, err := newProxy(proxyConfig)
@@ -690,8 +684,7 @@ func TestProxyAuth(t *testing.T) {
 		Upgrader:   upgrader,
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
-		Domain:     "localhost",
-		Port:       80,
+		URLPrefix:  "http://localhost",
 	}
 
 	proxy, err := New(proxyConfig)
@@ -726,8 +719,7 @@ func TestConcurrentConnections(t *testing.T) {
 		Upgrader:   upgrader,
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
-		Domain:     "localhost",
-		Port:       80,
+		URLPrefix:  "http://localhost",
 	}
 	proxy, err := New(proxyConfig)
 	if err != nil {
@@ -792,8 +784,7 @@ func TestProxySecrets(t *testing.T) {
 		Upgrader:   upgrader,
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
-		Domain:     "localhost",
-		Port:       80,
+		URLPrefix:  "http://localhost",
 	}
 
 	proxy, err := New(proxyConfig)
@@ -863,8 +854,7 @@ func TestResponseStream(t *testing.T) {
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
 		Logger:     proxyLogger,
-		Domain:     "localhost",
-		Port:       80,
+		URLPrefix:  "http://localhost",
 	}
 
 	proxy, err := New(proxyConfig)
@@ -950,8 +940,7 @@ func TestWebSocketStreamClient(t *testing.T) {
 		Upgrader:   upgrader,
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
-		Domain:     "localhost",
-		Port:       80,
+		URLPrefix:  "http://localhost",
 	}
 
 	proxy, err := New(proxyConfig)
@@ -1028,8 +1017,7 @@ func TestGetRequestWithClient(t *testing.T) {
 		Upgrader:   upgrader,
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
-		Domain:     "localhost",
-		Port:       80,
+		URLPrefix:  "http://localhost",
 		Logger:     genLogger(),
 	}
 	proxy, err := New(proxyConfig)
@@ -1114,34 +1102,40 @@ func TestGetRequestWithClient(t *testing.T) {
 // Test that client.New creates a client that has client.URL set to the client
 // URL (which includes the client ID)
 func TestClientURL(t *testing.T) {
-	proxyConfig := Config{
-		Upgrader:   upgrader,
-		JWTSecretA: []byte("test-secret"),
-		JWTSecretB: []byte("another-secret"),
-		Domain:     "localhost",
-		Port:       80,
-		Logger:     genLogger(),
+	prefixes := []string{
+		"http://localhost",
+		"https://localhost/",
+		"http://somehost:1234/",
 	}
-	proxy, err := New(proxyConfig)
-	if err != nil {
-		t.Fatal(err)
-	}
+	for _, prefix := range prefixes {
+		proxyConfig := Config{
+			Upgrader:   upgrader,
+			JWTSecretA: []byte("test-secret"),
+			JWTSecretB: []byte("another-secret"),
+			URLPrefix:  prefix,
+			Logger:     genLogger(),
+		}
+		proxy, err := New(proxyConfig)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	// attempt hosting on port 80
-	server := httptest.NewServer(proxy)
-	defer server.Close()
+		// attempt hosting on port 80
+		server := httptest.NewServer(proxy)
+		defer server.Close()
 
-	// make connection
-	client, err := client.New(testConfigurer("myclient", "ws://localhost:"+getPort(server.URL), client.RetryConfig{},
-		genLogger()))
+		// make connection
+		client, err := client.New(testConfigurer("myclient", "ws://localhost:"+getPort(server.URL), client.RetryConfig{},
+			genLogger()))
 
-	if err != nil {
-		t.Fatal(err)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if client.URL() != strings.TrimSuffix(prefix, "/")+"/myclient" {
+			t.Fatalf("bad url; got %s", client.URL())
+		}
+		_ = client.Close()
 	}
-	if client.URL() != "http://localhost/myclient" {
-		t.Fatalf("bad url; got %s", client.URL())
-	}
-	_ = client.Close()
 }
 
 // Test a WebSocket connection via the tunnel
@@ -1150,8 +1144,7 @@ func TestProxyWebSocketPath(t *testing.T) {
 		Upgrader:   upgrader,
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
-		Domain:     "localhost",
-		Port:       80,
+		URLPrefix:  "http://localhost",
 		Logger:     genLogger(),
 	}
 	proxy, err := New(proxyConfig)
@@ -1206,8 +1199,7 @@ func TestProxyAudClaim(t *testing.T) {
 		Upgrader:   upgrader,
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
-		Domain:     "localhost",
-		Port:       80,
+		URLPrefix:  "http://localhost",
 		Audience:   "ws-server",
 	}
 

@@ -11,7 +11,8 @@ The critical characteristic is that all connections are made *to* the websocktun
 
 Configuration is via environment variables:
 
-* `HOSTNAME` gives the hostname of the websocktunnel service itself. This is used to construct URLs for use by viewers.
+* `URL_PREFIX` gives the URL prefix (http(s)://hostname(:port)) at which this service is publicly exposed.
+  This is used to generate public URLs pointing to the service.
 * `ENV` defines the runtime environment; use `ENV=production` for production deployments.
 * `SYSLOG_ADDR` (optional) defines a syslog server to which log messages will be sent in production
 * `TASKCLUSTER_PROXY_SECRET_A` and `TASKCLUSTER_PROXY_SECRET_B` define two secrets, either of which may be used to sign valid JWTs.
