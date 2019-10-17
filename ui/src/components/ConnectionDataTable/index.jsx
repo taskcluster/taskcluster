@@ -150,10 +150,41 @@ export default class ConnectionDataTable extends Component {
     });
   };
 
+  renderTablePagination = (colSpan, count) => {
+    const { classes, pageSize } = this.props;
+    const { loading, page } = this.state;
+
+    if (loading) {
+      return (
+        <div className={classes.spinner}>
+          <Spinner size={24} />
+        </div>
+      );
+    }
+
+    return (
+      <TablePagination
+        component="div"
+        colSpan={colSpan}
+        count={count}
+        labelDisplayedRows={Function.prototype}
+        rowsPerPage={pageSize}
+        rowsPerPageOptions={[pageSize]}
+        page={page}
+        backIconButtonProps={{
+          'aria-label': 'Previous Page',
+        }}
+        nextIconButtonProps={{
+          'aria-label': 'Next Page',
+        }}
+        onChangePage={this.handlePageChange}
+      />
+    );
+  };
+
   render() {
     const {
       classes,
-      pageSize,
       columnsSize,
       connection,
       renderRow,
@@ -161,7 +192,6 @@ export default class ConnectionDataTable extends Component {
       sortByHeader,
       sortDirection,
     } = this.props;
-    const { loading, page } = this.state;
     const { count } = this.getPaginationMetadata();
     const colSpan = columnsSize || (headers && headers.length) || 1;
 
@@ -199,28 +229,7 @@ export default class ConnectionDataTable extends Component {
             </TableBody>
           </Table>
         </div>
-        {loading ? (
-          <div className={classes.spinner}>
-            <Spinner size={24} />
-          </div>
-        ) : (
-          <TablePagination
-            component="div"
-            colSpan={colSpan}
-            count={count}
-            labelDisplayedRows={Function.prototype}
-            rowsPerPage={pageSize}
-            rowsPerPageOptions={[pageSize]}
-            page={page}
-            backIconButtonProps={{
-              'aria-label': 'Previous Page',
-            }}
-            nextIconButtonProps={{
-              'aria-label': 'Next Page',
-            }}
-            onChangePage={this.handlePageChange}
-          />
-        )}
+        {this.renderTablePagination(colSpan, count)}
       </Fragment>
     );
   }
