@@ -15,7 +15,8 @@ module.exports = class GithubClient {
   async userFromUsername(username) {
     const { body } = await request
       .get(`${baseUrl}/users/${username}`)
-      .set('Authorization', `Bearer ${this.accessToken}`);
+      .set('Authorization', `Bearer ${this.accessToken}`)
+      .set('user-agent', 'web-server');
 
     if (!body) {
       debug(`profile for user ${username} not found`);
@@ -27,7 +28,8 @@ module.exports = class GithubClient {
   async listTeams() {
     const { body } = await request
       .get(`${baseUrl}/user/teams`)
-      .set('Authorization', `Bearer ${this.accessToken}`);
+      .set('Authorization', `Bearer ${this.accessToken}`)
+      .set('user-agent', 'web-server');
 
     if (!body) {
       debug(`teams not found`);
@@ -39,7 +41,8 @@ module.exports = class GithubClient {
   async userMembershipsOrgs() {
     const { body } = await request
       .get(`${baseUrl}/user/memberships/orgs`)
-      .set('Authorization', `Bearer ${this.accessToken}`);
+      .set('Authorization', `Bearer ${this.accessToken}`)
+      .set('user-agent', 'web-server');
 
     if (!body) {
       debug(`membership orgs not found`);
