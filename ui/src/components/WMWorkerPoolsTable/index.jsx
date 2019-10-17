@@ -13,7 +13,6 @@ import WorkerIcon from 'mdi-react/WorkerIcon';
 import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import { withRouter } from 'react-router-dom';
 import memoize from 'fast-memoize';
-import { camelCase } from 'change-case';
 import { isEmpty } from 'ramda';
 import { WorkerManagerWorkerPoolSummary } from '../../utils/prop-types';
 import DataTable from '../DataTable';
@@ -54,7 +53,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
   };
 
   state = {
-    sortBy: 'Worker Pool ID',
+    sortBy: 'workerPoolId',
     sortDirection: 'asc',
     error: null,
     actionLoading: false,
@@ -62,7 +61,6 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
 
   sortWorkerPools = memoize(
     (workerPools, sortBy, sortDirection, searchTerm, includeDeleted) => {
-      const sortByProperty = camelCase(sortBy);
       const filteredWorkerPoolsBySearchTerm = searchTerm
         ? workerPools.filter(({ workerPoolId }) =>
             workerPoolId.includes(searchTerm)
@@ -78,9 +76,9 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         ? filteredWorkerPools
         : [...filteredWorkerPools].sort((a, b) => {
             const firstElement =
-              sortDirection === 'desc' ? b[sortByProperty] : a[sortByProperty];
+              sortDirection === 'desc' ? b[sortBy] : a[sortBy];
             const secondElement =
-              sortDirection === 'desc' ? a[sortByProperty] : b[sortByProperty];
+              sortDirection === 'desc' ? a[sortBy] : b[sortBy];
 
             return sort(firstElement, secondElement);
           });
@@ -107,11 +105,11 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     }
   );
 
-  handleHeaderClick = sortBy => {
+  handleHeaderClick = header => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
+    const sortDirection = this.state.sortBy === header.id ? toggled : 'desc';
 
-    this.setState({ sortBy, sortDirection });
+    this.setState({ sortBy: header.id, sortDirection });
   };
 
   handleDeleteClick = async ({ currentTarget: { name } }) => {
@@ -236,20 +234,33 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       searchTerm,
       includeDeleted
     );
+    const headers = [
+      { label: 'Worker Pool ID', id: 'workerPoolId', type: 'string' },
+      { label: 'Provider ID', id: 'providerId', type: 'string' },
+      {
+        label: 'Pending Tasks',
+        id: 'pendingTasks',
+        type: 'number',
+      },
+      {
+        label: 'Owner',
+        id: 'owner',
+        type: 'string',
+      },
+      {
+        label: '',
+        id: '',
+        type: 'undefined',
+      },
+    ];
 
     return (
       <Fragment>
         {error && <ErrorPanel fixed error={error} />}
         <DataTable
           items={sortedWorkerPools}
-          headers={[
-            'Worker Pool ID',
-            'Provider ID',
-            'Pending Tasks',
-            'Owner',
-            '',
-          ]}
-          sortByHeader={sortBy}
+          headers={headers}
+          sortByLabel={sortBy}
           sortDirection={sortDirection}
           onHeaderClick={this.handleHeaderClick}
           renderRow={this.renderRow}

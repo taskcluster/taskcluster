@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { isEmpty, map, pipe, sort as rSort } from 'ramda';
-import { camelCase } from 'change-case';
 import memoize from 'fast-memoize';
 import { formatDistanceStrict } from 'date-fns';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -38,7 +37,6 @@ export default class WorkerManagerWorkersTable extends Component {
 
   sortWorkers = memoize(
     (workers, sortBy, sortDirection, searchTerm) => {
-      const sortByProperty = camelCase(sortBy);
       const filteredWorkers = searchTerm
         ? workers.filter(({ w }) => w.includes(searchTerm))
         : workers;
@@ -47,9 +45,9 @@ export default class WorkerManagerWorkersTable extends Component {
         ? filteredWorkers
         : [...filteredWorkers].sort((a, b) => {
             const firstElement =
-              sortDirection === 'desc' ? b[sortByProperty] : a[sortByProperty];
+              sortDirection === 'desc' ? b[sortBy] : a[sortBy];
             const secondElement =
-              sortDirection === 'desc' ? a[sortByProperty] : b[sortByProperty];
+              sortDirection === 'desc' ? a[sortBy] : b[sortBy];
 
             return sort(firstElement, secondElement);
           });
@@ -66,11 +64,11 @@ export default class WorkerManagerWorkersTable extends Component {
     }
   );
 
-  handleHeaderClick = sortBy => {
+  handleHeaderClick = header => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
+    const sortDirection = this.state.sortBy === header.id ? toggled : 'desc';
 
-    this.setState({ sortBy, sortDirection });
+    this.setState({ sortBy: header.id, sortDirection });
   };
 
   renderTableRow = worker => {
@@ -228,25 +226,59 @@ export default class WorkerManagerWorkersTable extends Component {
       sortDirection,
       searchTerm
     );
+    const headers = [
+      { label: 'Worker Group', id: 'workerGroup', type: 'string' },
+      {
+        label: 'Worker ID',
+        id: 'workerId',
+        type: 'number',
+      },
+      {
+        label: 'First Claim',
+        id: 'firstClaim',
+        type: 'string',
+      },
+      {
+        label: 'Most Recent Task',
+        id: 'mostRecentTask',
+        type: 'string',
+      },
+
+      {
+        label: 'Task Started',
+        id: 'taskStarted',
+        type: 'string',
+      },
+      {
+        label: 'Task Resolved',
+        id: 'taskResolved',
+        type: 'string',
+      },
+      {
+        label: 'Recent Provisioning Errors',
+        id: 'recentProvisioningErrors',
+        type: 'string',
+      },
+      {
+        label: 'Resources',
+        id: 'resources',
+        type: 'string',
+      },
+      {
+        label: 'Quarantined',
+        id: 'quarantined',
+        type: 'string',
+      },
+    ];
 
     return (
       <DataTable
         items={sortedWorkers}
-        sortByHeader={sortBy}
+        sortByLabel={sortBy}
         sortDirection={sortDirection}
         onHeaderClick={this.handleHeaderClick}
         renderRow={this.renderTableRow}
-        headers={[
-          'Worker Group',
-          'Worker ID',
-          'First Claim',
-          'Most Recent Task',
-          'Task Started',
-          'Task Resolved',
-          'Recent Provisioning Errors',
-          'Resources',
-          'Quarantined',
-        ]}
+        headers={headers}
         padding="dense"
       />
     );

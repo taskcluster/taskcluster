@@ -408,6 +408,19 @@ export default class Entry extends Component {
     const { classes, entry, exchangePrefix, serviceName } = this.props;
     const { expanded } = this.state;
     const exchange = `${exchangePrefix}${entry.exchange}`;
+    const headers = [
+      { label: 'Index', id: 'index', type: 'number' },
+      {
+        label: 'Name',
+        id: 'name',
+        type: 'string',
+      },
+      {
+        label: 'Summary',
+        id: 'summary',
+        type: 'string',
+      },
+    ];
 
     return (
       expanded && (
@@ -442,7 +455,7 @@ export default class Entry extends Component {
               primary="Routing Keys"
               secondary={
                 <DataTable
-                  headers={['Index', 'Name', 'Summary', '']}
+                  headers={headers}
                   items={entry.routingKey}
                   renderRow={(routingKey, idx) => (
                     <TableRow key={routingKey.name}>
