@@ -3,6 +3,44 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v21.0.0
+
+[MAJOR] ([bug 1578900](http://bugzil.la/1578900)) * Worker Manager AWS Provider now requires the `ec2:DescribeRegions` permission in addition to the previous permissions.
+  The full permissions set is documented in the  deploying workers section of the manual.
+* Worker Manager AWS Provider now uses all the configs from the array of `launchConfigs` worker pools use, rather than a
+  single, randomly selected config. This allows per-region and per-zone resources to be specified. MinCapacity and 
+  MaxCapacity are now specified for the whole worker pool as opposed to for every individual config.
+
+```diff
+some/worker:
+  config:
+    minCapacity: 25
+    maxCapacity: 50
+-   regions: [us-central1, ...]
+-   capacityPerInstance: 1
+-   ...
++   launchConfigs:
++     - region: us-central1
++       capacityPerInstance: 1
++       ...
+```
+
+[minor] ([#1576](https://github.com/taskcluster/taskcluster/issues/1576)) AWS Provisioner support has been removed from the UI and it is no longer a navigation menu item.
+This service has not been a part of the Taskcluster deployment for some time.
+
+([bug 1589403](http://bugzil.la/1589403)) Fix a regression in Github logins. A header was not being set.
+
+([#1573](https://github.com/taskcluster/taskcluster/issues/1573)) The UI now properly listens to pulse messages.
+It was previously hard-coded to a value that would only
+work on https://taskcluster-ui.herokuapp.com/.
+We now read the pulse namespace from `PULSE_USERNAME`.
+
+([#1665](https://github.com/taskcluster/taskcluster/issues/1665)) The web-server service now properly configures CORS for
+its third party login endpoints `/login/oauth/token` and
+`/login/oauth/credentials`.
+
+([bug 1589368](http://bugzil.la/1589368)) Taskcluster-GitHub now correctly reports InsufficientScopes errors, instead of "Cannot read property 'unsatisfied' of undefined".
+
 ## v20.0.0
 
 [MAJOR] The worker-manager service's `google` provider type now requires that worker pool definitions contain an array of possible variations of workers for the pool, in the `launchConfig` property.
