@@ -13,6 +13,13 @@ import { withAuth } from '../../utils/Auth';
 @withAuth
 @withApollo
 @withStyles(theme => ({
+  mainMenu: {
+    position: 'absolute',
+    right: '0',
+  },
+  verticalDotIcon: {
+    fill: '#fff',
+  },
   avatar: {
     backgroundColor: theme.palette.secondary.main,
   },
@@ -68,7 +75,7 @@ export default class MobileMenuList extends Component {
 
     return (
       <Fragment>
-        <List component="nav">
+        <List component="nav" className={classes.mainMenu}>
           <ListItem
             className={classes.mobileMenu}
             button
@@ -76,7 +83,7 @@ export default class MobileMenuList extends Component {
             aria-controls="mobile-menu"
             aria-label="mobile menu"
             onClick={onMenuClick}>
-            <DotsVerticalIcon />
+            <DotsVerticalIcon className={classes.verticalDotIcon} />
           </ListItem>
         </List>
       </Fragment>

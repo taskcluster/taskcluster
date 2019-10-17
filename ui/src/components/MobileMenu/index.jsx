@@ -112,7 +112,7 @@ export default class MobileMenu extends Component {
             Documentation
           </MenuItem>
 
-          <MenuItem title="Your Profile" component={Link} to="/profile">
+          <MenuItem title="Your Profile" component={Link} to="/profile/">
             <AccountIcon className={classes.leftIcon} />
             Account
           </MenuItem>
