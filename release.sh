@@ -5,7 +5,7 @@ set -e
 VERSION="${1}"
 
 if [ -z "$VERSION" ]; then
-    echo "USAGE: $0 <version>"
+    echo "USAGE: $0 <version> (without a leading 'v')"
     exit 1
 fi
 
