@@ -1,5 +1,3 @@
-
- 
 import React, { Fragment, Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
@@ -127,7 +125,7 @@ export default class TaskRunsCard extends Component {
     provisionerId: string.isRequired,
     /**
      * The current selected run index to display in the card. Paging through
-     * runs will trigger a history change, for which the selectedRunId can be
+     * runs will trigger a history change, for which the `selectedRunId` can be
      * updated.
      */
     selectedRunId: number.isRequired,
@@ -163,25 +161,25 @@ export default class TaskRunsCard extends Component {
       const encoded = encodeURIComponent(url);
 
       return this.isLiveLog()
-        ? /tasks/${taskId}/runs/${runId}/logs/live/${encoded}
-        : /tasks/${taskId}/runs/${runId}/logs/${encoded};
-    }
+        ? `/tasks/${taskId}/runs/${runId}/logs/live/${encoded}`
+        :  `/tasks/${taskId}/runs/${runId}/logs/${encoded}`;
+    } 
 
     return url;
-  };
+  
 
   handleNext = () => {
     const { history } = this.props;
     const { taskId, runId } = this.getCurrentRun();
 
-    history.push(/tasks/${taskId}/runs/${runId + 1});
+    history.push(`/tasks/${taskId}/runs/${runId + 1}`);
   };
 
   handlePrevious = () => {
     const { history } = this.props;
     const { taskId, runId } = this.getCurrentRun();
 
-    history.push(/tasks/${taskId}/runs/${runId - 1});
+    history.push(`/tasks/${taskId}/runs/${runId - 1}`);
   };
 
   handleToggleArtifacts = () => {
@@ -202,7 +200,7 @@ export default class TaskRunsCard extends Component {
     return artifact.node;
   };
 
-  createSortedArtifactsConnection(artifacts) {
+  createSortedArtifactsConnection(artifacts) 
     return {
       ...artifacts,
       edges: [...artifacts.edges].sort((a, b) => {
@@ -290,7 +288,7 @@ export default class TaskRunsCard extends Component {
         <div>
           <CardContent classes={{ root: classes.cardContent }}>
             <Typography variant="h5" className={classes.headline}>
-              {run ? Task Run ${selectedRunId} : 'Task Run'}
+              {run ?` Task Run ${selectedRunId}` : 'Task Run'}
             </Typography>
             {run ? (
               <Fragment>
