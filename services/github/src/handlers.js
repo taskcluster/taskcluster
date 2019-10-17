@@ -230,18 +230,9 @@ class Handlers {
             JSON.stringify(scopes, null, 2),
             '```',
             '',
-            'The expansion of these scopes is not sufficient to create the task and is missing',
-            'scopes satisfying the following expression:',
+            'The expansion of these scopes is not sufficient to create the task, leading to the following:',
             '',
-            '```',
-            JSON.stringify(err.details.unsatisfied, null, 2),
-            '```',
-            '',
-            'The `queue.createTask` call requires scopes satisfying the following expression:',
-            '',
-            '```',
-            JSON.stringify(err.details.required, null, 2),
-            '```',
+            err.message,
           ].join('\n');
         }
         throw err;
