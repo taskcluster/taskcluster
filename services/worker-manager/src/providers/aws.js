@@ -94,7 +94,7 @@ class AwsProvider extends Provider {
         workerPoolId,
         providerId: this.providerId,
         workerGroup: this.providerId,
-        workerConfig: config.launchConfig.workerConfig || {},
+        workerConfig: config.workerConfig || {},
       }));
       // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-add-user-data
       // The raw data should be 16KB maximum
