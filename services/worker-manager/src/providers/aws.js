@@ -102,7 +102,7 @@ class AwsProvider extends Provider {
         return await workerPool.reportError({
           kind: 'creation-error',
           title: 'User Data is too long',
-          description: 'Try a shorter workerPoolId and/or a shorter rootUrl',
+          description: 'Try removing some workerConfiguration and consider putting it in a secret',
           notify: this.notify,
           WorkerPoolError: this.WorkerPoolError,
         });
