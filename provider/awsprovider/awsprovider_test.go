@@ -24,11 +24,16 @@ func TestAWSConfigureRun(t *testing.T) {
 		WorkerConfig: runnerWorkerConfig,
 	}
 
+	userDataWorkerConfig := cfg.NewWorkerConfig()
+	userDataWorkerConfig, err = userDataWorkerConfig.Set("from-ud", true)
+	require.NoError(t, err, "setting config")
+
 	userData := &UserData{
 		WorkerPoolId: "w/p",
 		ProviderId:   "amazon",
 		WorkerGroup:  "wg",
 		RootURL:      "https://tc.example.com",
+		WorkerConfig: userDataWorkerConfig,
 	}
 
 	metaData := map[string]string{
@@ -78,6 +83,7 @@ func TestAWSConfigureRun(t *testing.T) {
 	}, state.ProviderMetadata, "providerMetadata is correct")
 
 	require.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
+	require.Equal(t, true, state.WorkerConfig.MustGet("from-ud"), "value for worker-config")
 
 	require.Equal(t, "aws", state.WorkerLocation["cloud"])
 	require.Equal(t, "us-west-2", state.WorkerLocation["region"])
