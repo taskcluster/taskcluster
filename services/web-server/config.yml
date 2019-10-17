@@ -84,9 +84,11 @@ development:
     allowedCORSOrigins: [true]
 
   azure:
-    accountId: 'jungle'
     signingKey: 'REALULTIMATEPOWER.NET'
     cryptoKey: 'CNcj2aOozdo7Pn+HEkAIixwninIwKnbYc6JPS9mNxZk='
+
+    # this is required to start the service without Azure credentials
+    accountId: fake
 
   login:
     sessionSecret: 'keyboard cat'
@@ -95,8 +97,10 @@ test:
   app:
     publicUrl: http://localhost:5080
 
+  taskcluster:
+    rootUrl: https://tc.example.com
+
   azure:
-    accountId: 'jungle'
     signingKey: 'REALULTIMATEPOWER.NET'
     cryptoKey: 'CNcj2aOozdo7Pn+HEkAIixwninIwKnbYc6JPS9mNxZk='
 

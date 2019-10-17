@@ -56,7 +56,7 @@ const load = loader(
 
         return new Client({
           monitor: monitor.childMonitor('pulse-client'),
-          namespace: 'taskcluster-web-server',
+          namespace: cfg.pulse.username,
           credentials: pulseCredentials(cfg.pulse),
         });
       },
@@ -139,13 +139,13 @@ const load = loader(
 
     // Login strategies
     strategies: {
-      requires: ['cfg', 'GithubAccessToken'],
-      setup: ({ cfg, GithubAccessToken }) => {
+      requires: ['cfg', 'GithubAccessToken', 'monitor'],
+      setup: ({ cfg, GithubAccessToken, monitor }) => {
         const strategies = {};
 
         Object.keys(cfg.login.strategies || {}).forEach((name) => {
           const Strategy = require('./login/strategies/' + name);
-          const options = { name, cfg };
+          const options = { name, cfg, monitor };
 
           if (name === 'github') {
             Object.assign(options, { GithubAccessToken });

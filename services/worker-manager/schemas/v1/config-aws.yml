@@ -39,22 +39,23 @@ properties:
           type: integer
           minimum: 1
           description: The number of tasks a single worker of this type can run at any given time.
-        minCapacity:
-          title: Minimum Capacity
-          type: integer
-          description: Minimum capacity necessary to maintain at any given time
-        maxCapacity:
-          title: Maximum Capacity
-          type: integer
-          description: Maximum capacity that should not be exceeded at any given time
       additionalProperties: false
       required:
         - region
         - launchConfig
         - capacityPerInstance
-        - minCapacity
-        - maxCapacity
+  minCapacity:
+    title: Minimum Capacity
+    type: integer
+    description: Minimum capacity necessary to maintain at any given time for the entire workerpool
+  maxCapacity:
+    title: Maximum Capacity
+    type: integer
+    description: Maximum capacity that should not be exceeded at any given time for the entire workerpool
 additionalProperties: false
 required:
   - launchConfigs
+  - minCapacity
+  - maxCapacity
+
   

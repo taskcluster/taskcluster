@@ -99,7 +99,7 @@ export default class ScopesetComparison extends Component {
     const { scopeTextA, scopeTextB, scopesetDiff, cellColors } = this.state;
 
     return (
-      <Dashboard title="Compare Scopesets">
+      <Dashboard title="Compare Scopes">
         <Fragment>
           <Grid className={classes.editorGrid} container spacing={8}>
             <Grid item xs={12} md={6}>

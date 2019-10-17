@@ -19,89 +19,79 @@ properties:
     description: |
       The maximum amount of capacity that worker-manager should make
       available at any given time.
-  capacityPerInstance:
-    title: Capacity Per Instance
-    type: integer
-    minimum: 1
-    description: The number of tasks a single worker of this type can run at any given time.
-  machineType:
-    title: Machine Type
-    type: string
-    description: |
-      'The google machine type to use to run this instance. This refers to
-      [these types](https://cloud.google.com/compute/docs/machine-types)'
-  regions:
-    title: Regions
+  launchConfigs:
     type: array
-    description: 'The google cloud regions to run these instances in. Google documents
-    these [here](https://cloud.google.com/compute/docs/regions-zones/)'
-    uniqueItems: true
-    items:
-      type: string
-  workerConfig:
-    title: Worker Config
-    type: object
-    additionalProperties: true
+    title: Choices
     description: |
-      This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.
-      The expectation is that the worker will merge this information with configuration from other sources,
-      and this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.
-      This property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.
-      Instead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).
-  scheduling:
-    title: Scheduling
-    type: object
-    description: 'Extra documentation [here](https://cloud.google.com/compute/docs/instances/setting-instance-scheduling-options)'
-    additionalProperties: true
-  networkInterfaces:
-    title: Network Interfaces
-    type: array
-    description: |
-      Configure the networking available to the instance. Permitted fields documented in
-      the full instance template docs above.
+      An array of possible variations of workers for this pool. Allows to vary across regions/zones/machineType/etc
+      Each choice must include at least the required properties but can also include anything in
+      the request body of [the instance creation](https://cloud.google.com/compute/docs/reference/rest/beta/instances/insert)
+      api method from gcloud. That said, worker-manager sets `instanceName` and `serviceAccounts` directly and you
+      cannot override these. It also fills in some basic labels, will generate a default description, and sets the `taskcluster`
+      metadata key directly. You are free to set other metadata items though.
     uniqueItems: false
     items:
       type: object
+      properties:
+        capacityPerInstance:
+          title: Capacity Per Instance
+          type: integer
+          minimum: 1
+          description: The number of tasks a single worker of this type can run at any given time.
+        workerConfig:
+          title: Worker Config
+          type: object
+          additionalProperties: true
+          description: |
+            This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.
+            The expectation is that the worker will merge this information with configuration from other sources,
+            and this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.
+            This property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.
+            Instead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).
+            A subset of these fields we require you to set such as `machineType`.
+        region:
+          title: Region
+          type: string
+          description: The gcloud region this worker should be spawned in
+        zone:
+          title: Availability Zone
+          type: string
+          description: |
+            The gcloud az this worker should be spawned in. This az must be included because many resources (such as
+            machine types and disk types) are az-specific.
+        machineType:
+          title: Machine Type
+          type: string
+          description: Full or partial URL of the machine type resource to use. Defined in detail in the google doc above
+        disks:
+          title: Disks
+          type: array
+          description: Defined in detail in the google doc above.
+          uniqueItems: false
+        networkInterfaces:
+          title: Network Interfaces
+          type: array
+          description: Defined in detail in the google doc above.
+          uniqueItems: false
+        scheduling:
+          title: Scheduling
+          type: object
+          description: |
+            Defined in detail in the google doc above. Worker manager harcodes values for `automaticRestart` but
+            you can set all other fields.
+          additionalProperties: true
+      required:
+        - capacityPerInstance
+        - workerConfig
+        - region
+        - zone
+        - machineType
+        - disks
+        - networkInterfaces
+        - scheduling
       additionalProperties: true
-  disks:
-    title: Disks
-    type: array
-    description: |
-      Configure the networking available to the instance. Permitted fields documented in
-      the full instance template docs above. It is likely that you will want to have at least
-      a single `PERSISTENT` disk where the source image is one that contains a taskcluster worker
-      configured to run on boot and talk to worker-manager for credentials.
-    uniqueItems: false
-    items:
-      type: object
-      additionalProperties: true
-  displayDevice:
-    title: Display Device
-    type: object
-    description: Enables display device for the instance
-    properties:
-      enableDisplay:
-        type: boolean
-        title: Enable Display
-        description: 'If true, the instance will have a display device enabled'
-    required:
-      - enableDisplay
-    additionalProperties: false
-  userData:
-    title: User Data (deprecated)
-    type: object
-    additionalProperties: true
-    description: |
-      Supplied as a `userData` property in the `taskcluster` instance metadata attribute.
-      [Taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) ignores this field.
-      Prefer to use the `workerConfig` property.
 additionalProperties: false
 required:
   - minCapacity
   - maxCapacity
-  - capacityPerInstance
-  - machineType
-  - regions
-  - scheduling
-  - networkInterfaces
-  - disks
+  - launchConfigs

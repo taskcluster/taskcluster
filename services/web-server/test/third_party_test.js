@@ -7,7 +7,7 @@ const moment = require('moment');
 const helper = require('./helper');
 const tryCatch = require('../src/utils/tryCatch');
 
-helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withFakeAuth(mock, skipping);
   helper.withServer(mock, skipping);

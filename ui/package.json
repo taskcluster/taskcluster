@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-ui",
-  "version": "18.0.1",
+  "version": "20.0.0",
   "private": true,
   "license": "MPL-2.0",
   "engines": {
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "webpack --mode production",
-    "start": "GENERATE_ENV_JS=1 webpack-dev-server --mode development",
+    "start": "cross-env GENERATE_ENV_JS=1 webpack-dev-server --mode development",
     "test": "karma start --single-run",
     "styleguide": "dotenv styleguidist server",
     "styleguide:build": "styleguidist build",
@@ -56,9 +56,9 @@
     "localforage": "^1.7.3",
     "lodash.clonedeep": "^4.5.0",
     "lodash.debounce": "^4.0.8",
-    "markdown-it": "^9.0.0",
+    "markdown-it": "^10.0.0",
     "markdown-it-highlightjs": "^3.0.0",
-    "markdown-it-link-attributes": "^2.1.0",
+    "markdown-it-link-attributes": "^3.0.0",
     "material-ui-pickers": "2.2.4",
     "material-ui-treeview": "^3.2.0",
     "mdi-react": "^5.0.0",
@@ -106,7 +106,8 @@
     "@neutrinojs/react": "9.0.0-rc.0",
     "babel-loader": "^8.0.5",
     "chai": "^4.2.0",
-    "dotenv-cli": "^2.0.1",
+    "cross-env": "^6.0.3",
+    "dotenv-cli": "^3.0.0",
     "eslint": "^5.6.1",
     "eslint-plugin-react-hooks": "^2.0.0",
     "graphql-tag": "^2.8.0",

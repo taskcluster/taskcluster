@@ -11,7 +11,7 @@ import Typography from '@material-ui/core/Typography';
 import Drawer from '@material-ui/core/Drawer';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
-import { func, array, shape, arrayOf } from 'prop-types';
+import { func, array, shape } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case';
@@ -24,11 +24,7 @@ import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_WORKER_TYPES_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
-import normalizeWorkerTypes from '../../utils/normalizeWorkerTypes';
-import {
-  pageInfo,
-  awsProvisionerWorkerTypeSummary,
-} from '../../utils/prop-types';
+import { pageInfo } from '../../utils/prop-types';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.workerType, b.node.workerType)),
@@ -58,10 +54,6 @@ const sorted = pipe(
  * Display relevant information about worker types in a table.
  */
 export default class WorkerTypesTable extends Component {
-  static defaultProps = {
-    awsProvisionerWorkerTypeSummaries: null,
-  };
-
   static propTypes = {
     /** Callback function fired when a page is changed. */
     onPageChange: func.isRequired,
@@ -70,11 +62,6 @@ export default class WorkerTypesTable extends Component {
       edges: array,
       pageInfo,
     }).isRequired,
-    /**
-     * AWS worker-type summaries.
-     * Required when `provisionerId === 'aws-provisioner-v1'`.
-     */
-    awsProvisionerWorkerTypeSummaries: arrayOf(awsProvisionerWorkerTypeSummary),
   };
 
   state = {
@@ -85,26 +72,16 @@ export default class WorkerTypesTable extends Component {
   };
 
   createSortedWorkerTypesConnection = memoize(
-    (
-      workerTypesConnection,
-      awsProvisionerWorkerTypeSummaries,
-      sortBy,
-      sortDirection
-    ) => {
+    (workerTypesConnection, sortBy, sortDirection) => {
       const sortByProperty = camelCase(sortBy);
-      // Normalize worker types for aws-provisioner-v1
-      const workerTypes = normalizeWorkerTypes(
-        workerTypesConnection,
-        awsProvisionerWorkerTypeSummaries
-      );
 
       if (!sortBy) {
-        return workerTypes;
+        return workerTypesConnection;
       }
 
       return {
-        ...workerTypes,
-        edges: [...workerTypes.edges].sort((a, b) => {
+        ...workerTypesConnection,
+        edges: [...workerTypesConnection.edges].sort((a, b) => {
           const firstElement =
             sortDirection === 'desc'
               ? b.node[sortByProperty]
@@ -119,21 +96,13 @@ export default class WorkerTypesTable extends Component {
       };
     },
     {
-      serializer: ([
-        workerTypesConnection,
-        // eslint-disable-next-line no-unused-vars
-        awsProvisionerWorkerTypeSummaries,
-        sortBy,
-        sortDirection,
-      ]) => {
+      serializer: ([workerTypesConnection, sortBy, sortDirection]) => {
         const ids = sorted(workerTypesConnection.edges);
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}`;
       },
     }
   );
-
-  workerTypes = null;
 
   handleDrawerClose = () => {
     this.setState({
@@ -164,17 +133,11 @@ export default class WorkerTypesTable extends Component {
   };
 
   render() {
-    const {
-      onPageChange,
-      classes,
-      workerTypesConnection,
-      awsProvisionerWorkerTypeSummaries,
-    } = this.props;
+    const { onPageChange, classes, workerTypesConnection } = this.props;
     const { sortBy, sortDirection, drawerOpen, drawerWorkerType } = this.state;
 
     this.workerTypes = this.createSortedWorkerTypesConnection(
       workerTypesConnection,
-      awsProvisionerWorkerTypeSummaries,
       sortBy,
       sortDirection
     );

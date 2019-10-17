@@ -14,7 +14,7 @@ exports.monitor = defaultMonitorManager.setup({
 });
 
 exports.secrets = new Secrets({
-  secretName: 'project/taskcluster/testing/taskcluster-lib-pulse',
+  secretName: [],
   secrets: {
     pulse: [
       {env: 'PULSE_CONNECTION_STRING', name: 'connectionString'},

@@ -4,12 +4,12 @@ const assume = require('assume');
 const taskcluster = require('taskcluster-client');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['app', 'azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+  helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withEntities(mock, skipping, {orderedTests: true});
   helper.withRoles(mock, skipping, {orderedTests: true});
   helper.withServers(mock, skipping);
-  helper.withCfg(mock, skipping);
 
   suite('charlene creates permanent credentials for a test runner', function() {
     suiteSetup(async function() {

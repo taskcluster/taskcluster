@@ -14,7 +14,7 @@ const verifyJwtAuth0 = require('../../utils/verifyJwtAuth0');
 const debug = Debug('strategies.mozilla-auth0');
 
 module.exports = class MozillaAuth0 {
-  constructor({ name, cfg }) {
+  constructor({ name, cfg, monitor }) {
     const strategyCfg = cfg.login.strategies[name];
 
     assert(strategyCfg.domain, `${name}.domain is required`);
@@ -26,6 +26,7 @@ module.exports = class MozillaAuth0 {
     this._personApi = null;
     this._personApiExp = null;
     this.identityProviderId = 'mozilla-auth0';
+    this.monitor = monitor;
   }
 
   // Get a personAPI instance, by requesting an API token as needed.
@@ -192,7 +193,14 @@ module.exports = class MozillaAuth0 {
         // extraParams.id_token has the JSON Web Token
         // profile has all the information from the user
         async (accessToken, refreshToken, extraParams, profile, done) => {
-          const user = await this.getUser({ userId: profile.user_id });
+          const [userErr, user] = await tryCatch(this.getUser({ userId: profile.user_id }));
+
+          if (userErr) {
+            this.monitor.reportError(userErr || 'Could not get user', {
+              identityProviderId: this.identityProviderId,
+              userId: profile.user_id,
+            });
+          }
 
           if (!user) {
             // Don't report much to the user, to avoid revealing sensitive information, although

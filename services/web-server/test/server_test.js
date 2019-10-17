@@ -3,7 +3,7 @@ const helper = require('./helper');
 const request = require('superagent');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   const makeSuite = (allowedCORSOrigins, requestOrigin, responseOrigin) => {
     suite(`with ${JSON.stringify(allowedCORSOrigins)}, request origin = ${requestOrigin}`, function() {

@@ -24,16 +24,27 @@ const retryPlugin = (octokit, options) => {
 };
 const Octokit = require('@octokit/rest').plugin([retryPlugin]);
 
-module.exports = async ({cfg}) => {
-  const keyRe = /-----BEGIN RSA PRIVATE KEY-----\n.*\n-----END RSA PRIVATE KEY-----\n?/;
-  if (!keyRe.test(cfg.github.credentials.privatePEM)) {
-    throw new Error(`Malformed GITHUB_PRIVATE_PEM: must match ${keyRe}`);
+const getPrivatePEM = cfg => {
+  const keyRe = /-----BEGIN RSA PRIVATE KEY-----(\n|\\n).*(\n|\\n)-----END RSA PRIVATE KEY-----(\n|\\n)?/;
+  const privatePEM = cfg.github.credentials.privatePEM;
+  if (!keyRe.test(privatePEM)) {
+    throw new Error(`Malformed GITHUB_PRIVATE_PEM: must match ${keyRe}; ` +
+      `got a value of length ${privatePEM.length}`);
   }
+
+  // sometimes it's easier to provide this config value with embedded backslash-n characters
+  // than to convince everything to correctly handle newlines.  So, we'll be friendly to that
+  // arrangement, too.
+  return privatePEM.replace(/\\n/g, '\n');
+};
+
+module.exports = async ({cfg}) => {
+  const privatePEM = getPrivatePEM(cfg);
 
   const getAppGithub = async () => {
     const inteToken = jwt.sign(
       {iss: cfg.github.credentials.appId},
-      cfg.github.credentials.privatePEM,
+      privatePEM,
       {algorithm: 'RS256', expiresIn: '1m'},
     );
 
@@ -55,3 +66,5 @@ module.exports = async ({cfg}) => {
   // Also, the authentication happens not just once in the beginning, but for each request.
   return {getAppGithub, getInstallationGithub};
 };
+
+module.exports.getPrivatePEM = getPrivatePEM; // for testing

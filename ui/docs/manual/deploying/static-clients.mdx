@@ -1,0 +1,42 @@
+---
+title: Static Clients
+---
+
+# Static Clients
+
+As a collection of microservices, Taskcluster services must be able to communicate with one another.
+They use the same [authorization system](/docs/manual/design/apis/hawk) as external clients.
+This means that each service needs a clientId and accessToken, and that clientId must be associated with specific scopes.
+
+## Static Clients
+
+The Auth service supports this with a feature called "static clients".
+All clientIds beginning with `static/` are considered static clients.
+These are configured in the Auth service's `STATIC_CLIENTS` and cannot be modified via the API.
+The configuration is a JSON blob with the form
+
+```json
+[
+    {clientId: 'static/taskcluster/index', accessToken: '<secret value>'},
+    {clientId: 'static/my-client', accessToken: '<secret value>', description: 'Client for index', scopes: [
+        'some-scope', 'another-scope']]},
+    ...,
+]
+```
+
+Note that clients beginning with `static/taskcluster/` must not specify scopes or description (those are determined automatically), while those not beginning with `static/taskcluster/` *must* specify scopes and description.
+Most deployments do not use non-taskcluster static credentials, but they are available to support some advanced "locked-down" scenarios.
+
+## Configuring AccessTokens
+
+Taskcluster expects the person configuring the deployment to configure the same accessToken for each service both in that service's settings and in `STATIC_CLIENTS`.
+An access token must be a random string from 22 to 66 characters in length.
+
+An access token is required for each Taskcluster service, as well as one for `static/taskcluster/root`, which is an account with `*` scope, used for bootstrapping administration of a deployment.
+The Auth service will fail to start up if `STATIC_CLIENTS` is missing any `static/taskcluster/...` clients, or if it contains unrecognized clients.
+
+## Changes when Upgrading
+
+When a service is added or removed from Taskcluster, the change is considered major.
+In this case, `STATIC_CLIENTS` will need to be modified to add or remove the accessToken for the added or removed service.
+Failure to do so will result in the Auth service failing to start up.

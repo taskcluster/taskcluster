@@ -1,3 +1,0 @@
-mutation DeleteAwsProvisionerWorkerType($workerType: String!) {
-  deleteAwsProvisionerWorkerType(workerType: $workerType)
-}

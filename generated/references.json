@@ -713,42 +713,72 @@
       "additionalProperties": false,
       "description": "'The config section of a workertype is using a provider with implementation google must match this.\nMuch of these fields are documented [here](https://cloud.google.com/compute/docs/reference/rest/v1/instanceTemplates)'\n",
       "properties": {
-        "capacityPerInstance": {
-          "description": "The number of tasks a single worker of this type can run at any given time.",
-          "minimum": 1,
-          "title": "Capacity Per Instance",
-          "type": "integer"
-        },
-        "disks": {
-          "description": "Configure the networking available to the instance. Permitted fields documented in\nthe full instance template docs above. It is likely that you will want to have at least\na single `PERSISTENT` disk where the source image is one that contains a taskcluster worker\nconfigured to run on boot and talk to worker-manager for credentials.\n",
+        "launchConfigs": {
+          "description": "An array of possible variations of workers for this pool. Allows to vary across regions/zones/machineType/etc\nEach choice must include at least the required properties but can also include anything in\nthe request body of [the instance creation](https://cloud.google.com/compute/docs/reference/rest/beta/instances/insert)\napi method from gcloud. That said, worker-manager sets `instanceName` and `serviceAccounts` directly and you\ncannot override these. It also fills in some basic labels, will generate a default description, and sets the `taskcluster`\nmetadata key directly. You are free to set other metadata items though.\n",
           "items": {
             "additionalProperties": true,
+            "properties": {
+              "capacityPerInstance": {
+                "description": "The number of tasks a single worker of this type can run at any given time.",
+                "minimum": 1,
+                "title": "Capacity Per Instance",
+                "type": "integer"
+              },
+              "disks": {
+                "description": "Defined in detail in the google doc above.",
+                "title": "Disks",
+                "type": "array",
+                "uniqueItems": false
+              },
+              "machineType": {
+                "description": "Full or partial URL of the machine type resource to use. Defined in detail in the google doc above",
+                "title": "Machine Type",
+                "type": "string"
+              },
+              "networkInterfaces": {
+                "description": "Defined in detail in the google doc above.",
+                "title": "Network Interfaces",
+                "type": "array",
+                "uniqueItems": false
+              },
+              "region": {
+                "description": "The gcloud region this worker should be spawned in",
+                "title": "Region",
+                "type": "string"
+              },
+              "scheduling": {
+                "additionalProperties": true,
+                "description": "Defined in detail in the google doc above. Worker manager harcodes values for `automaticRestart` but\nyou can set all other fields.\n",
+                "title": "Scheduling",
+                "type": "object"
+              },
+              "workerConfig": {
+                "additionalProperties": true,
+                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).\nA subset of these fields we require you to set such as `machineType`.\n",
+                "title": "Worker Config",
+                "type": "object"
+              },
+              "zone": {
+                "description": "The gcloud az this worker should be spawned in. This az must be included because many resources (such as\nmachine types and disk types) are az-specific.\n",
+                "title": "Availability Zone",
+                "type": "string"
+              }
+            },
+            "required": [
+              "capacityPerInstance",
+              "workerConfig",
+              "region",
+              "zone",
+              "machineType",
+              "disks",
+              "networkInterfaces",
+              "scheduling"
+            ],
             "type": "object"
           },
-          "title": "Disks",
+          "title": "Choices",
           "type": "array",
           "uniqueItems": false
-        },
-        "displayDevice": {
-          "additionalProperties": false,
-          "description": "Enables display device for the instance",
-          "properties": {
-            "enableDisplay": {
-              "description": "If true, the instance will have a display device enabled",
-              "title": "Enable Display",
-              "type": "boolean"
-            }
-          },
-          "required": [
-            "enableDisplay"
-          ],
-          "title": "Display Device",
-          "type": "object"
-        },
-        "machineType": {
-          "description": "'The google machine type to use to run this instance. This refers to\n[these types](https://cloud.google.com/compute/docs/machine-types)'\n",
-          "title": "Machine Type",
-          "type": "string"
         },
         "maxCapacity": {
           "description": "The maximum amount of capacity that worker-manager should make\navailable at any given time.\n",
@@ -761,54 +791,12 @@
           "minimum": 0,
           "title": "Minimum Capacity",
           "type": "integer"
-        },
-        "networkInterfaces": {
-          "description": "Configure the networking available to the instance. Permitted fields documented in\nthe full instance template docs above.\n",
-          "items": {
-            "additionalProperties": true,
-            "type": "object"
-          },
-          "title": "Network Interfaces",
-          "type": "array",
-          "uniqueItems": false
-        },
-        "regions": {
-          "description": "The google cloud regions to run these instances in. Google documents these [here](https://cloud.google.com/compute/docs/regions-zones/)",
-          "items": {
-            "type": "string"
-          },
-          "title": "Regions",
-          "type": "array",
-          "uniqueItems": true
-        },
-        "scheduling": {
-          "additionalProperties": true,
-          "description": "Extra documentation [here](https://cloud.google.com/compute/docs/instances/setting-instance-scheduling-options)",
-          "title": "Scheduling",
-          "type": "object"
-        },
-        "userData": {
-          "additionalProperties": true,
-          "description": "Supplied as a `userData` property in the `taskcluster` instance metadata attribute.\n[Taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) ignores this field.\nPrefer to use the `workerConfig` property.\n",
-          "title": "User Data (deprecated)",
-          "type": "object"
-        },
-        "workerConfig": {
-          "additionalProperties": true,
-          "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).\n",
-          "title": "Worker Config",
-          "type": "object"
         }
       },
       "required": [
         "minCapacity",
         "maxCapacity",
-        "capacityPerInstance",
-        "machineType",
-        "regions",
-        "scheduling",
-        "networkInterfaces",
-        "disks"
+        "launchConfigs"
       ],
       "title": "Google Provider Config",
       "type": "object"
@@ -855,16 +843,6 @@
                 "title": "Launch Configuration",
                 "type": "object"
               },
-              "maxCapacity": {
-                "description": "Maximum capacity that should not be exceeded at any given time",
-                "title": "Maximum Capacity",
-                "type": "integer"
-              },
-              "minCapacity": {
-                "description": "Minimum capacity necessary to maintain at any given time",
-                "title": "Minimum Capacity",
-                "type": "integer"
-              },
               "region": {
                 "description": "AWS region (not to be confused with AZ) to launch the instances in",
                 "title": "Region",
@@ -874,19 +852,29 @@
             "required": [
               "region",
               "launchConfig",
-              "capacityPerInstance",
-              "minCapacity",
-              "maxCapacity"
+              "capacityPerInstance"
             ],
             "type": "object"
           },
           "title": "Launch Configurations",
           "type": "array",
           "uniqueItems": true
+        },
+        "maxCapacity": {
+          "description": "Maximum capacity that should not be exceeded at any given time for the entire workerpool",
+          "title": "Maximum Capacity",
+          "type": "integer"
+        },
+        "minCapacity": {
+          "description": "Minimum capacity necessary to maintain at any given time for the entire workerpool",
+          "title": "Minimum Capacity",
+          "type": "integer"
         }
       },
       "required": [
-        "launchConfigs"
+        "launchConfigs",
+        "minCapacity",
+        "maxCapacity"
       ],
       "title": "AWS Provider Config",
       "type": "object"

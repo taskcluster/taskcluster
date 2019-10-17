@@ -46,6 +46,7 @@ enum TaskPriority {
   LOW
   VERY_LOW
   LOWEST
+  NORMAL
 }
 
 # Dependency requirement semantics; the task's relation to its dependencies

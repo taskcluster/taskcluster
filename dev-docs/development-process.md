@@ -34,6 +34,12 @@ export PATH=$PWD/node_modules/.bin:$PATH
 
 ## Hacking on the UI
 
+Taskcluster requires a Linux-like enviroment for development.
+If you are developing on a Windows system, you will need to either
+* install [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10);
+* use a virtual machine for development; or
+* install Linux as a second OS and boot into that.
+
 The files comprising the Taskcluster UI are under [`ui/`](../ui).
 It relies on a microservice called web-server, which you will need to run in a different terminal window.
 To run the Taskcluster UI:

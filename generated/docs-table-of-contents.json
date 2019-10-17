@@ -1585,13 +1585,35 @@
             },
             "name": "pulse",
             "next": {
-              "path": "manual/deploying/third-party",
-              "title": "Third Party"
+              "path": "manual/deploying/static-clients",
+              "title": "Static Clients"
             },
             "path": "manual/deploying/pulse",
             "prev": {
               "path": "manual/deploying/monitoring",
               "title": "Monitoring Services"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "Static Clients"
+            },
+            "name": "static-clients",
+            "next": {
+              "path": "manual/deploying/third-party",
+              "title": "Third Party"
+            },
+            "path": "manual/deploying/static-clients",
+            "prev": {
+              "path": "manual/deploying/pulse",
+              "title": "Pulse"
             },
             "up": {
               "path": "manual/deploying",
@@ -1612,8 +1634,8 @@
             },
             "path": "manual/deploying/third-party",
             "prev": {
-              "path": "manual/deploying/pulse",
-              "title": "Pulse"
+              "path": "manual/deploying/static-clients",
+              "title": "Static Clients"
             },
             "up": {
               "path": "manual/deploying",
@@ -3262,92 +3284,6 @@
         "data": {
           "followup": {
             "links": {
-              "gecko-task-graph": "How is the task-graph generated?"
-            }
-          },
-          "order": 1000,
-          "title": "Gecko Decision Task"
-        },
-        "name": "gecko-decision-task",
-        "path": "tutorial/gecko-decision-task"
-      },
-      {
-        "children": [
-        ],
-        "data": {
-          "followup": {
-            "links": {
-              "gecko-decision-task": "How is the decision task defined?",
-              "gecko-task-graph": "How is the task-graph generated?"
-            }
-          },
-          "order": 1000,
-          "title": "Docker Image Generation"
-        },
-        "name": "gecko-docker-images",
-        "path": "tutorial/gecko-docker-images"
-      },
-      {
-        "children": [
-        ],
-        "data": {
-          "ejs": true,
-          "marked": true,
-          "order": 1000,
-          "title": "Adding a new job"
-        },
-        "name": "gecko-new-job",
-        "path": "tutorial/gecko-new-job"
-      },
-      {
-        "children": [
-        ],
-        "data": {
-          "order": 1000,
-          "title": "Changing the Task Graph"
-        },
-        "name": "gecko-task-graph-howto",
-        "path": "tutorial/gecko-task-graph-howto"
-      },
-      {
-        "children": [
-        ],
-        "data": {
-          "followup": {
-            "links": {
-              "gecko-new-job": "I want to add a new job",
-              "gecko-task-graph-howto": "I want to change something else"
-            }
-          },
-          "order": 1000,
-          "title": "Gecko Task Graph Creation"
-        },
-        "name": "gecko-task-graph",
-        "path": "tutorial/gecko-task-graph"
-      },
-      {
-        "children": [
-        ],
-        "data": {
-          "followup": {
-            "links": {
-              "gecko-decision-task": "How is the decision task defined?",
-              "gecko-docker-images": "How are the docker images created?",
-              "gecko-task-graph": "How is the task-graph generated?"
-            }
-          },
-          "order": 1000,
-          "title": "Gecko and Taskcluster"
-        },
-        "name": "gecko-tasks",
-        "path": "tutorial/gecko-tasks"
-      },
-      {
-        "children": [
-        ],
-        "data": {
-          "followup": {
-            "links": {
               "reviews": "Submitting changes of Taskcluster itself for review"
             }
           },
@@ -3364,8 +3300,7 @@
           "followup": {
             "links": {
               "apis": "I want to know how to call Taskcluster APIs",
-              "finding-tasks": "I want to look at some real tasks",
-              "gecko-tasks": "I'm a Firefox/Gecko developer - How do my commits get built?"
+              "finding-tasks": "I want to look at some real tasks"
             },
             "subtext": "Digging Deeper"
           },
@@ -3423,7 +3358,6 @@
         "links": {
           "tutorial/apis": "I want to work with the Taskcluster APIs.",
           "tutorial/debug-task": "A task is failing and I want to debug it.",
-          "tutorial/gecko-tasks": "I'm a Firefox/Gecko developer and I want to change builds or tests.",
           "tutorial/hack-tc": "I want to hack on Taskcluster itself.",
           "tutorial/hello-world": "I want to run a task manually in Taskcluster.",
           "tutorial/what-is-tc": "I'm not sure - what is it?"

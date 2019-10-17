@@ -117,8 +117,8 @@ let load = loader({
       's3Controller',
     ],
     setup: async ({cfg, monitor, process, blobStore, publicArtifactBucket,
-      privateArtifactBucket, s3Controller}) => {
-      return data.Artifact.setup({
+      privateArtifactBucket, s3Controller}) =>
+      data.Artifact.setup({
         tableName: cfg.app.artifactTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
@@ -136,15 +136,14 @@ let load = loader({
           s3Controller: s3Controller,
         },
         monitor: monitor.childMonitor('table.artifacts'),
-      });
-    },
+      }),
   },
 
   // Create task table
   Task: {
     requires: ['cfg', 'monitor', 'process'],
-    setup: async ({cfg, monitor, process}) => {
-      return data.Task.setup({
+    setup: async ({cfg, monitor, process}) =>
+      data.Task.setup({
         tableName: cfg.app.taskTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
@@ -155,15 +154,14 @@ let load = loader({
           credentials: cfg.taskcluster.credentials,
         }),
         monitor: monitor.childMonitor('table.tasks'),
-      });
-    },
+      }),
   },
 
   // Create task-group table
   TaskGroup: {
     requires: ['cfg', 'monitor', 'process'],
-    setup: async ({cfg, monitor, process}) => {
-      return data.TaskGroup.setup({
+    setup: async ({cfg, monitor, process}) =>
+      data.TaskGroup.setup({
         tableName: cfg.app.taskGroupTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
@@ -174,15 +172,14 @@ let load = loader({
           credentials: cfg.taskcluster.credentials,
         }),
         monitor: monitor.childMonitor('table.taskgroups'),
-      });
-    },
+      }),
   },
 
   // Create task-group member table
   TaskGroupMember: {
     requires: ['cfg', 'monitor', 'process'],
-    setup: async ({cfg, monitor, process}) => {
-      return data.TaskGroupMember.setup({
+    setup: async ({cfg, monitor, process}) =>
+      data.TaskGroupMember.setup({
         tableName: cfg.app.taskGroupMemberTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
@@ -193,17 +190,16 @@ let load = loader({
           credentials: cfg.taskcluster.credentials,
         }),
         monitor: monitor.childMonitor('table.taskgroupmembers'),
-      });
-    },
+      }),
   },
 
   // Create task-group size table (uses TaskGroupMember entity)
   TaskGroupActiveSet: {
     requires: ['cfg', 'monitor', 'process'],
-    setup: async ({cfg, monitor, process}) => {
+    setup: async ({cfg, monitor, process}) =>
       // NOTE: this uses the same entity type definition as TaskGroupMember,
       // but presence in either table indicates different things
-      return data.TaskGroupMember.setup({
+      data.TaskGroupMember.setup({
         tableName: cfg.app.taskGroupActiveSetTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
@@ -214,15 +210,14 @@ let load = loader({
           credentials: cfg.taskcluster.credentials,
         }),
         monitor: monitor.childMonitor('table.taskgroupactivesets'),
-      });
-    },
+      }),
   },
 
   // Create TaskRequirement table
   TaskRequirement: {
     requires: ['cfg', 'monitor', 'process'],
-    setup: async ({cfg, monitor, process}) => {
-      return data.TaskRequirement.setup({
+    setup: async ({cfg, monitor, process}) =>
+      data.TaskRequirement.setup({
         tableName: cfg.app.taskRequirementTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
@@ -233,8 +228,7 @@ let load = loader({
           credentials: cfg.taskcluster.credentials,
         }),
         monitor: monitor.childMonitor('table.taskrequirements'),
-      });
-    },
+      }),
   },
 
   // Create TaskDependency table
@@ -259,8 +253,8 @@ let load = loader({
   // Create Provisioner table
   Provisioner: {
     requires: ['cfg', 'monitor', 'process'],
-    setup: async ({cfg, monitor, process}) => {
-      let Provisioner = data.Provisioner.setup({
+    setup: async ({cfg, monitor, process}) =>
+      data.Provisioner.setup({
         tableName: cfg.app.provisionerTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
@@ -271,17 +265,14 @@ let load = loader({
           credentials: cfg.taskcluster.credentials,
         }),
         monitor: monitor.childMonitor('table.provisioner'),
-      });
-      await Provisioner.ensureTable();
-      return Provisioner;
-    },
+      }),
   },
 
   // Create WorkerType table
   WorkerType: {
     requires: ['cfg', 'monitor', 'process'],
-    setup: async ({cfg, monitor, process}) => {
-      let WorkerType = data.WorkerType.setup({
+    setup: async ({cfg, monitor, process}) =>
+      data.WorkerType.setup({
         tableName: cfg.app.workerTypeTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
@@ -292,17 +283,14 @@ let load = loader({
           credentials: cfg.taskcluster.credentials,
         }),
         monitor: monitor.childMonitor('table.workerType'),
-      });
-      await WorkerType.ensureTable();
-      return WorkerType;
-    },
+      }),
   },
 
   // Create Worker table
   Worker: {
     requires: ['cfg', 'monitor', 'process'],
-    setup: async ({cfg, monitor, process}) => {
-      let Worker = data.Worker.setup({
+    setup: async ({cfg, monitor, process}) =>
+      data.Worker.setup({
         tableName: cfg.app.workerTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
@@ -313,10 +301,7 @@ let load = loader({
           credentials: cfg.taskcluster.credentials,
         }),
         monitor: monitor.childMonitor('table.worker'),
-      });
-      await Worker.ensureTable();
-      return Worker;
-    },
+      }),
   },
 
   // Create QueueService to manage azure queues

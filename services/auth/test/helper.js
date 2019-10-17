@@ -9,6 +9,7 @@ const slugid = require('slugid');
 const uuid = require('uuid');
 const Builder = require('taskcluster-lib-api');
 const SchemaSet = require('taskcluster-lib-validate');
+const staticScopes = require('../src/static-scopes.json');
 const {stickyLoader, Secrets, withEntity, withPulse, withMonitor} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
@@ -24,30 +25,25 @@ suiteSetup(async function() {
 
 exports.rootUrl = `http://localhost:60552`;
 exports.containerName = `auth-test-${uuid.v4()}`;
+exports.rootAccessToken = '-test-access-token-that-is-at-least-22-chars-long-';
 
 withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({
-  secretName: 'project/taskcluster/testing/taskcluster-auth',
+  secretName: [
+    'project/taskcluster/testing/azure',
+    'project/taskcluster/testing/taskcluster-auth',
+  ],
   secrets: {
-    app: [
-      {env: 'AZURE_ACCOUNTS', cfg: 'app.azureAccounts', mock: {fakeaccount: 'key'}},
-    ],
     azure: [
       {env: 'AZURE_ACCOUNT', cfg: 'azure.accountId', name: 'accountId'},
-      {env: 'AZURE_ACCOUNT_KEY', cfg: 'azure.accessKey', name: 'accountKey'},
+      {env: 'AZURE_ACCOUNT_KEY', cfg: 'azure.accessKey', name: 'accessKey'},
     ],
     aws: [
       {env: 'AWS_ACCESS_KEY_ID', cfg: 'aws.accessKeyId'},
       {env: 'AWS_SECRET_ACCESS_KEY', cfg: 'aws.secretAccessKey'},
-    ],
-    taskcluster: [
-      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl', mock: exports.rootUrl},
-    ],
-    sentry: [
-      {env: 'SENTRY_AUTH_TOKEN', cfg: 'sentry.authToken'},
-      {env: 'SENTRY_HOSTNAME', cfg: 'sentry.hostname'},
+      {env: 'TEST_BUCKET', cfg: 'test.testBucket'},
     ],
     gcp: [
       {env: 'GCP_CREDENTIALS_ALLOWED_PROJECTS', cfg: 'gcpCredentials.allowedProjects', name: 'allowedProjects', mock: {}},
@@ -62,6 +58,16 @@ exports.withCfg = (mock, skipping) => {
   }
   suiteSetup(async function() {
     exports.cfg = await exports.load('cfg');
+
+    // override app.staticClients based on the static scopes
+    exports.load.cfg('app.staticClients', staticScopes.map(({clientId}) => ({
+      clientId,
+      accessToken: clientId === 'static/taskcluster/root' ? exports.rootAccessToken : 'must-be-at-least-22-characters',
+      description: 'testing',
+    })));
+
+    // override cfg.app.azureAccounts based on cfg.azure
+    exports.load.cfg('app.azureAccounts', {[exports.cfg.azure.accountId]: exports.cfg.azure.accessKey});
   });
 };
 
@@ -242,7 +248,6 @@ exports.withServers = (mock, skipping) => {
     await exports.load('cfg');
 
     exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
-    exports.rootAccessToken = '-test-access-token-that-is-at-least-22-chars-long-';
 
     // First set up the auth service
     exports.AuthClient = taskcluster.createClient(builder.reference());

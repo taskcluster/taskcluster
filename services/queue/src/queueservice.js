@@ -69,7 +69,7 @@ class QueueService {
    *   pendingPollTimeout:   // Timeout embedded in signed poll URL (ms)
    *   credentials: {
    *     accountId:          // Azure storage account name
-   *     accountKey:         // Azure storage account key
+   *     accessKey:          // Azure storage account key
    *     fake:               // if true, use in-memory version
    *   },
    *   claimQueue:           // Queue name for the claim expiration queue
@@ -101,7 +101,7 @@ class QueueService {
     } else {
       this.client = new azure.Queue({
         accountId: options.credentials.accountId,
-        accessKey: options.credentials.accountKey,
+        accessKey: options.credentials.accessKey,
         timeout: AZURE_QUEUE_TIMEOUT,
       });
     }

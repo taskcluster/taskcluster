@@ -44,7 +44,6 @@ import workerTypesQuery from './workerTypes.graphql';
       workerTypesConnection: {
         limit: VIEW_WORKER_TYPES_PAGE_SIZE,
       },
-      isAwsProvisioner: provisionerId === 'aws-provisioner-v1',
     },
   }),
 })
@@ -66,7 +65,6 @@ export default class ViewWorkerTypes extends Component {
           cursor,
           previousCursor,
         },
-        isAwsProvisioner: provisionerId === 'aws-provisioner-v1',
       },
       updateQuery(
         previousResult,
@@ -101,13 +99,7 @@ export default class ViewWorkerTypes extends Component {
       match: {
         params: { provisionerId },
       },
-      data: {
-        loading,
-        error,
-        provisioners,
-        workerTypes,
-        awsProvisionerWorkerTypeSummaries,
-      },
+      data: { loading, error, provisioners, workerTypes },
     } = this.props;
 
     return (
@@ -154,9 +146,6 @@ export default class ViewWorkerTypes extends Component {
                 workerTypesConnection={workerTypes}
                 provisionerId={provisionerId}
                 onPageChange={this.handlePageChange}
-                awsProvisionerWorkerTypeSummaries={
-                  awsProvisionerWorkerTypeSummaries
-                }
               />
             </Fragment>
           )}

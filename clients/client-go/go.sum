@@ -24,6 +24,8 @@ github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94 h1:0ngsPmuP6XIjiFRN
 github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
 github.com/streadway/amqp v0.0.0-20190819003559-eade30b20f1d h1:ciocj2R6f6p+WgiA3JlmM6/v9w3Ld/g6ENr9YgHBgxM=
 github.com/streadway/amqp v0.0.0-20190819003559-eade30b20f1d/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
+github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271 h1:WhxRHzgeVGETMlmVfqhRn8RIeeNoPr2Czh33I4Zdccw=
+github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
 github.com/streadway/amqp v0.0.0-20190827080102-edfb9018d271 h1:9ZltBYfOn7l3lpNgPb+vGbTc00IBlC+iJv7YII11rNo=
 github.com/streadway/amqp v0.0.0-20190827080102-edfb9018d271/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
 github.com/taskcluster/httpbackoff v1.0.0 h1:bdh5txPv6geBVSEcx7Jy3kqiBaIrCZJwzCotPJKf9DU=
@@ -63,8 +65,8 @@ golang.org/x/tools v0.0.0-20190708122732-72ffa07ba3db h1:A+9p+kHB/5+SP59X7Zyu7j9
 golang.org/x/tools v0.0.0-20190708122732-72ffa07ba3db/go.mod h1:jcCCGcm9btYwXyDqrUWc6MKQKKGJCWEQ3AfLSRIbEuI=
 golang.org/x/tools v0.0.0-20190715045107-607ca053a137 h1:fTnKBCUDrF9O76dW88IygY9ki9DkVkHaY2TXgzHcyes=
 golang.org/x/tools v0.0.0-20190715045107-607ca053a137/go.mod h1:jcCCGcm9btYwXyDqrUWc6MKQKKGJCWEQ3AfLSRIbEuI=
-golang.org/x/tools v0.0.0-20190722020823-e377ae9d6386 h1:euzlbjtqzApfY/iDBeDNf5O6cmEPfJQdHoQFNZDYbFU=
-golang.org/x/tools v0.0.0-20190722020823-e377ae9d6386/go.mod h1:jcCCGcm9btYwXyDqrUWc6MKQKKGJCWEQ3AfLSRIbEuI=
+golang.org/x/tools v0.0.0-20190719005602-e377ae9d6386 h1:W/t3IYUOQPd8DK2ssOWA8sjulHHMxzTgiQkSx0z5sRQ=
+golang.org/x/tools v0.0.0-20190719005602-e377ae9d6386/go.mod h1:jcCCGcm9btYwXyDqrUWc6MKQKKGJCWEQ3AfLSRIbEuI=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v2 v2.2.2 h1:ZCJp+EgiOT7lHqUV2J862kp8Qj64Jo6az82+3Td9dZw=
