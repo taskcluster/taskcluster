@@ -174,29 +174,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
               task: {
                 message: 'Client ID project/taskcluster/tc-github/production-2 does not have sufficient scopes blah blah',
                 code: 'InsufficientScopes',
-                details: {
-                  required: {
-                    "AllOf": [
-                      "queue:route:statuses",
-                      "queue:create-task:highest:proj-taskcluster/ci",
-                    ],
-                  },
-                  unsatisfied: {
-                    "AllOf": [
-                      "queue:create-task:highest:proj-taskcluster/ci",
-                    ],
-                  },
-                },
               },
             },
           ],
         }),
         err => {
           if (err.code !== 'InsufficientScopes') {
-            return false;
-          }
-
-          if (!('required' in err.details) || !('unsatisfied' in err.details)) {
             return false;
           }
 
@@ -210,27 +193,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
             ]
             \`\`\`
 
-            The expansion of these scopes is not sufficient to create the task and is missing
-            scopes satisfying the following expression:
+            The expansion of these scopes is not sufficient to create the task, leading to the following:
 
-            \`\`\`
-            {
-              "AllOf": [
-                "queue:create-task:highest:proj-taskcluster/ci"
-              ]
-            }
-            \`\`\`
-
-            The \`queue.createTask\` call requires scopes satisfying the following expression:
-
-            \`\`\`
-            {
-              "AllOf": [
-                "queue:route:statuses",
-                "queue:create-task:highest:proj-taskcluster/ci"
-              ]
-            }
-            \`\`\``.replace(/^ {12}/mg, ''));
+            Client ID project/taskcluster/tc-github/production-2 does not have sufficient scopes blah blah`
+            .replace(/^ {12}/mg, ''));
           return true;
         },
       );
