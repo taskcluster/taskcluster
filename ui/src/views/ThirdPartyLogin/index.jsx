@@ -1,3 +1,4 @@
+import { Redirect } from 'react-router-dom';
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
@@ -87,6 +88,10 @@ export default class ThirdPartyLogin extends Component {
   render() {
     const { user, data } = this.props;
     const { formData } = this.state;
+    const isOneLoginStrategy =
+      window.env.UI_LOGIN_STRATEGY_NAMES !== ''
+        ? window.env.UI_LOGIN_STRATEGY_NAMES.split(' ').length === 1
+        : false;
 
     return (
       <Dashboard title="Third Party Login">
@@ -102,7 +107,10 @@ export default class ThirdPartyLogin extends Component {
             formData={formData}
           />
         )}
-        {!user && <Homepage />}
+        {!user && isOneLoginStrategy && (
+          <Redirect to={`/login/${window.env.UI_LOGIN_STRATEGY_NAMES}`} />
+        )}
+        {!user && !isOneLoginStrategy && <Homepage />}
       </Dashboard>
     );
   }
