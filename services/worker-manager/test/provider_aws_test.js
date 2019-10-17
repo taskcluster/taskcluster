@@ -25,6 +25,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     launchConfig: {
       ImageId: 'banana-123',
     },
+    workerConfig: {foo: 5},
   };
   let workerPool = {
     workerPoolId,
@@ -71,7 +72,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     workerPoolId,
     providerId,
     workerGroup: providerId,
-    workerConfig: {},
+    workerConfig: {foo: 5},
   };
   const defaultWorker = {
     workerPoolId,
