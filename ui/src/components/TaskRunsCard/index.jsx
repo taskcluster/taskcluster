@@ -94,7 +94,7 @@ const DOTS_VARIANT_LIMIT = 5;
       display: 'inline-flex',
       flexBasis: '50%',
     },
-    articleName: {
+    artifactName: {
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
