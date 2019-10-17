@@ -733,10 +733,12 @@ export default class ViewTask extends Component {
                 </Fragment>
               }
             />
-            {tags.map(([key, value]) => (
-              <div key={key}>
+            <div>
+              {tags.map(([key, value]) => (
+
                 <Chip
                   className={classes.tag}
+                  key={key}
                   label={
                     <Fragment>
                       {key}
@@ -745,8 +747,9 @@ export default class ViewTask extends Component {
                     </Fragment>
                   }
                 />
-              </div>
-            ))}
+
+              ))}
+            </div>
             <br />
             <br />
             <Grid container spacing={24}>
