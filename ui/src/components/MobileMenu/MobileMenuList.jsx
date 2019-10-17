@@ -29,11 +29,11 @@ import { withAuth } from '../../utils/Auth';
     },
   },
   text: {
-    color: theme.palette.text.primary,
+    color: '#fff',
     fontFamily: 'Roboto500',
   },
   icon: {
-    fill: theme.palette.text.primary,
+    fill: '#fff',
   },
 }))
 export default class MobileMenuList extends Component {
@@ -58,7 +58,7 @@ export default class MobileMenuList extends Component {
               aria-label="mobile menu"
               onClick={onSignInDialogOpen}>
               <ListItemIcon className={classes.icon}>
-                <AccountCircleIcon />
+                <AccountCircleIcon className={classes.icon} />
               </ListItemIcon>
               <ListItemText
                 disableTypography
