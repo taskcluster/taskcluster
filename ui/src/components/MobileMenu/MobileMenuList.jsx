@@ -50,7 +50,7 @@ export default class MobileMenuList extends Component {
     if (!user) {
       return (
         <Fragment>
-          <List component="nav">
+          <List component="nav" className={classes.mainMenu}>
             <ListItem
               button
               aria-haspopup="true"
