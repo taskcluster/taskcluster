@@ -91,6 +91,10 @@ done
 
 echo 'Docker initialization complete'
 
+set -e
+
 . /home/tester/bin/entrypoint
+
+set -vx
 
 eval $@
