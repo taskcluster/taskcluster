@@ -288,7 +288,7 @@ export default class TaskRunsCard extends Component {
         <div>
           <CardContent classes={{ root: classes.cardContent }}>
             <Typography variant="h5" className={classes.headline}>
-               {run ? `Task Run ${selectedRunId}` : 'Task Run'}
+                {run ? `Task Run ${selectedRunId}` : 'Task Run'}
             </Typography>
             {run ? (
               <Fragment>
