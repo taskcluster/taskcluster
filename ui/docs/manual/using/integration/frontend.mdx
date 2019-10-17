@@ -238,7 +238,7 @@ here is the full code we wrote in order to make this happen:
     function fetchToken(code) {
       return request(`${rootUrl}/login/oauth/token`, {
         method: 'POST',
-        body: `grant_type=authorization_code&code=${code}&redirect_uri=${encodeURIComponent(window.origin)}&client_id=demo-app`,
+        body: `grant_type=authorization_code&code=${code}&redirect_uri=${encodeURIComponent('http://localhost:4000')}&client_id=demo-app`,
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       })
     }
@@ -286,7 +286,7 @@ here is the full code we wrote in order to make this happen:
 
       // Let's update the UI and tell the user we are working
       status.innerText = 'Waiting for scopes...';
-      
+
       // With our Taskcluster Auth client, we can request the
       // current user's scopes, and format them for display
       client
