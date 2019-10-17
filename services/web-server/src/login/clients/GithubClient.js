@@ -16,6 +16,7 @@ module.exports = class GithubClient {
     const { body } = await request
       .get(`${baseUrl}/users/${username}`)
       .set('Authorization', `Bearer ${this.accessToken}`)
+      // user-agent is required (https://developer.github.com/v3/#user-agent-required)
       .set('user-agent', 'web-server');
 
     if (!body) {
@@ -29,6 +30,7 @@ module.exports = class GithubClient {
     const { body } = await request
       .get(`${baseUrl}/user/teams`)
       .set('Authorization', `Bearer ${this.accessToken}`)
+      // user-agent is required (https://developer.github.com/v3/#user-agent-required)
       .set('user-agent', 'web-server');
 
     if (!body) {
@@ -42,6 +44,7 @@ module.exports = class GithubClient {
     const { body } = await request
       .get(`${baseUrl}/user/memberships/orgs`)
       .set('Authorization', `Bearer ${this.accessToken}`)
+      // user-agent is required (https://developer.github.com/v3/#user-agent-required)
       .set('user-agent', 'web-server');
 
     if (!body) {
