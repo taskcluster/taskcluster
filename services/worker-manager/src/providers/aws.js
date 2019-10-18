@@ -254,6 +254,34 @@ class AwsProvider extends Provider {
     }));
   }
 
+  async removeWorker({worker}) {
+    let result;
+    try {
+      result = await this.ec2s[worker.providerData.region].terminateInstances({
+        InstanceIds: [worker.workerId]
+      }).promise();
+    } catch (e) {
+      this.monitor.err(`Error terminating AWS instance: ${e}`);
+
+      return await workerPool.reportError({
+        kind: 'termination-error',
+        title: 'Instance Termination Error',
+        description: e.message,
+        notify: this.notify,
+        WorkerPoolError: this.WorkerPoolError,
+      });
+
+      throw e;
+    }
+
+    result.TerminatingInstances.forEach(ti => {
+      if (!ti.InstanceId === worker.workerId || !ti.CurrentState.Name === 'shutting-down')
+        throw new Error(
+          `Unexpected error: expected to shut down instance ${worker.workerId} but got ${ti.CurrentState.Name} state instead`
+        );
+    });
+  }
+
   // should this be implemented on Provider? Looks like it's going to be the same for all providers
   async scanPrepare() {
     this.seen = {};
