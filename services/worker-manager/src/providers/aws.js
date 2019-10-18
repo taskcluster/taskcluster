@@ -258,12 +258,15 @@ class AwsProvider extends Provider {
     let result;
     try {
       result = await this.ec2s[worker.providerData.region].terminateInstances({
-        InstanceIds: [worker.workerId]
+        InstanceIds: [worker.workerId],
       }).promise();
     } catch (e) {
       this.monitor.err(`Error terminating AWS instance: ${e}`);
 
-      return await workerPool.reportError({
+      const workerPool = this.WorkerPool.load({
+        workerPoolId: worker.workerPoolId,
+      });
+      await workerPool.reportError({
         kind: 'termination-error',
         title: 'Instance Termination Error',
         description: e.message,
@@ -275,10 +278,12 @@ class AwsProvider extends Provider {
     }
 
     result.TerminatingInstances.forEach(ti => {
-      if (!ti.InstanceId === worker.workerId || !ti.CurrentState.Name === 'shutting-down')
+      if (!ti.InstanceId === worker.workerId || !ti.CurrentState.Name === 'shutting-down') {
         throw new Error(
           `Unexpected error: expected to shut down instance ${worker.workerId} but got ${ti.CurrentState.Name} state instead`
         );
+      }
+
     });
   }
 

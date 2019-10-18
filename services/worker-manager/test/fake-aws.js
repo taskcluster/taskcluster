@@ -64,8 +64,7 @@ module.exports = {
               Name: 'shutting-down',
             },
           })),
-
-        })
+        }),
       };
     },
   },

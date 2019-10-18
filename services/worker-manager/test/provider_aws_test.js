@@ -289,7 +289,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         ...defaultWorker,
         providerData: {
           ...defaultWorker.providerData,
-          region: 'us-west-2'
+          region: 'us-west-2',
         },
       };
       await assert.doesNotReject(provider.removeWorker({worker}));
