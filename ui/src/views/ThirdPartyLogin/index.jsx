@@ -89,9 +89,8 @@ export default class ThirdPartyLogin extends Component {
     const { user, data } = this.props;
     const { formData } = this.state;
     const isOneLoginStrategy =
-      window.env.UI_LOGIN_STRATEGY_NAMES !== ''
-        ? window.env.UI_LOGIN_STRATEGY_NAMES.split(' ').length === 1
-        : false;
+      window.env.UI_LOGIN_STRATEGY_NAMES &&
+      window.env.UI_LOGIN_STRATEGY_NAMES.split(' ').length === 1;
 
     return (
       <Dashboard title="Third Party Login">
