@@ -1,5 +1,14 @@
 import React, { Component, Fragment } from 'react';
-import { array, arrayOf, func, number, shape, string, oneOf } from 'prop-types';
+import {
+  array,
+  arrayOf,
+  func,
+  number,
+  shape,
+  string,
+  oneOf,
+  bool,
+} from 'prop-types';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -37,6 +46,7 @@ export default class ConnectionDataTable extends Component {
     sortDirection: 'desc',
     headers: null,
     onHeaderClick: null,
+    withoutTopPagination: false,
   };
 
   static propTypes = {
@@ -87,6 +97,11 @@ export default class ConnectionDataTable extends Component {
      * A list of header names to use on the table starting from the left.
      */
     headers: arrayOf(string),
+    /**
+     * If true, an additional pagination component will be displayed
+     * at the top of the table.
+     */
+    withoutTopPagination: bool,
   };
 
   state = {
@@ -191,12 +206,14 @@ export default class ConnectionDataTable extends Component {
       headers,
       sortByHeader,
       sortDirection,
+      withoutTopPagination,
     } = this.props;
     const { count } = this.getPaginationMetadata();
     const colSpan = columnsSize || (headers && headers.length) || 1;
 
     return (
       <Fragment>
+        {!withoutTopPagination && this.renderTablePagination(colSpan, count)}
         <div className={classes.tableWrapper}>
           <Table>
             {headers && (
