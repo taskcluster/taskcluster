@@ -124,20 +124,20 @@ class ChangeLog {
     const levelLabels = {
       'major': '[MAJOR] ',
       'minor': '[minor] ',
-      'patch': '',
+      'patch': '[patch] ',
     };
 
     const silentCount = this.snippets.filter(sn => sn.level === 'silent').length;
     const changesUrl = `https://github.com/taskcluster/taskcluster/tree/v${await this.next_version()}%5E/changelog`;
     const silentSuffix = silentCount === 0 ?
       '' :
-      `\n\n*This release includes additional silent changes; see ${changesUrl} for details.*`;
+      `\n\n*This release includes additional changes that were not considered important enough to mention here; see ${changesUrl} for details.*`;
 
     return this.snippets
       .filter(sn => sn.level !== 'silent')
       .map(({level, reference, body}) => (
-        levelLabels[level] +
-        (reference ? '(' + reference + ') ' : '') +
+        '▶ ' + levelLabels[level] +
+        (reference ? reference : '') + '\n' +
         body.trim()
       ))
       .join('\n\n') + silentSuffix;
