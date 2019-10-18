@@ -10,39 +10,41 @@ import SignInDialog from '../SignInDialog';
 
 @withStyles(theme => ({
   root: {
-    padding: theme.spacing.unit * 10,
-    [theme.breakpoints.down('sm')]: {
-      padding: theme.spacing.unit * 5,
-    },
+  padding: theme.spacing.unit * 10,
+  [theme.breakpoints.down('sm')]:
+   {
+  padding: theme.spacing.unit * 5,
+  },
   },
   headline: {
-    fontFamily: 'Roboto500',
-    [theme.breakpoints.down('sm')]: {
-      marginBottom: theme.spacing.double,
-    },
-    '@media (max-width: 400px)': {
-      fontSize: '40px',
-    },
+  fontFamily: 'Roboto500',
+  [theme.breakpoints.down('sm')]: {
+  marginBottom: theme.spacing.double
+  },
+  '@media (max-width: 400px)': {
+  fontSize: '40px',
+  },
   },
   actions: {
-    marginTop: theme.spacing.triple,
+  marginTop: theme.spacing.triple,
   },
   divider: {
-    margin: ${theme.spacing.unit * 10}px 0 ${theme.spacing.triple}px,
-    [theme.breakpoints.down('sm')]: {
-      margin: ${theme.spacing.unit * 5}px 0 ${theme.spacing.double}px,
-    },
+  margin: `${theme.spacing.unit * 10}px 0 ${theme.spacing.triple}px`,
+  [theme.breakpoints.down('sm')]: {
+  margin:`${theme.spacing.unit * 5}px 0 ${theme.spacing.double}px`,
+  },
   },
   icon: {
-    fill: theme.palette.common.white,
-    marginRight: theme.spacing.unit,
+  fill: theme.palette.common.white,
+  marginRight: theme.spacing.unit,
   },
   text: {
-    '@media (max-width: 400px)': {
-      fontSize: '20px',
-    },
+  '@media (max-width: 400px)': {
+  fontSize: '20px',
   },
-}))
+  },
+  }))
+  
 export default class HomePage extends Component {
   state = {
     signInDialogOpen: false,
