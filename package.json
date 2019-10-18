@@ -129,7 +129,7 @@
     "cronstrue": "^1.82.0",
     "cross-env": "^6.0.3",
     "depcheck": "^0.8.3",
-    "dockerode": "^2.5.8",
+    "dockerode": "^3.0.0",
     "error-stack-parser": "^2.0.2",
     "eslint": "6.3.0",
     "glob": "^7.1.3",
