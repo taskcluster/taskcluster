@@ -94,6 +94,11 @@ const DOTS_VARIANT_LIMIT = 5;
       display: 'inline-flex',
       flexBasis: '50%',
     },
+    artifactName: {
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+    },
     liveLogLabel: {
       marginLeft: theme.spacing.unit / 2,
       marginBottom: theme.spacing.unit / 2,
@@ -245,7 +250,9 @@ export default class TaskRunsCard extends Component {
                       LOG
                     </Label>
                   )}
-                  <Typography>{artifact.name}</Typography>
+                  <div className={classes.artifactName}>
+                    <Typography>{artifact.name}</Typography>
+                  </div>
                 </div>
                 <div>
                   {artifact.isPublic && <LinkIcon />}
