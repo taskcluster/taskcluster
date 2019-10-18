@@ -81,6 +81,17 @@ exports.gitDescribe = async ({dir, utils}) => {
 };
 
 /**
+ * Stage files in git (git add)
+ *
+ * - dir -- directory to commit in
+ * - files -- files to stage
+ */
+exports.gitAdd = async ({dir, files}) => {
+  const opts = {cwd: dir};
+  await exec('git', ['add', ...files], opts);
+};
+
+/**
  * Perform a git commit
  *
  * - dir -- directory to commit in
