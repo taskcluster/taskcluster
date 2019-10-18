@@ -84,7 +84,7 @@ cmd_app() {
 
   local only
   case "$CLOUD" in
-      aws) only=-only=hvm-builder,hvm-builder-trusted;;
+      aws) only=-only=hvm-builder,hvm-builder-trusted,hvm-builder-wm,hvm-builder-trusted-wm;;
       gcp) only=-only=gcp
   esac
 
