@@ -9,89 +9,89 @@ import Landing from '../Landing';
 import SignInDialog from '../SignInDialog';
 
 @withStyles(theme => ({
-root: {
-padding: theme.spacing.unit * 10,
-[theme.breakpoints.down('sm')]: {
-padding: theme.spacing.unit * 5,
-},
-},
-headline: {
-fontFamily: 'Roboto500',
-[theme.breakpoints.down('sm')]: {
-marginBottom: theme.spacing.double,
-},
-'@media (max-width: 400px)': {
-fontSize: '40px',
-},
-},
-actions: {
-marginTop: theme.spacing.triple,
-},
-divider: {
-margin: ${theme.spacing.unit * 10}px 0 ${theme.spacing.triple}px,
-[theme.breakpoints.down('sm')]: {
-margin: ${theme.spacing.unit * 5}px 0 ${theme.spacing.double}px,
-},
-},
-icon: {
-fill: theme.palette.common.white,
-marginRight: theme.spacing.unit,
-},
-text: {
-'@media (max-width: 400px)': {
-fontSize: '20px',
-},
-},
+  root: {
+    padding: theme.spacing.unit * 10,
+    [theme.breakpoints.down('sm')]: {
+      padding: theme.spacing.unit * 5,
+    },
+  },
+  headline: {
+    fontFamily: 'Roboto500',
+    [theme.breakpoints.down('sm')]: {
+      marginBottom: theme.spacing.double,
+    },
+    '@media (max-width: 400px)': {
+      fontSize: '40px',
+    },
+  },
+  actions: {
+    marginTop: theme.spacing.triple,
+  },
+  divider: {
+    margin: ${theme.spacing.unit * 10}px 0 ${theme.spacing.triple}px,
+    [theme.breakpoints.down('sm')]: {
+      margin: ${theme.spacing.unit * 5}px 0 ${theme.spacing.double}px,
+    },
+  },
+  icon: {
+    fill: theme.palette.common.white,
+    marginRight: theme.spacing.unit,
+  },
+  text: {
+    '@media (max-width: 400px)': {
+      fontSize: '20px',
+    },
+  },
 }))
 export default class HomePage extends Component {
-state = {
-signInDialogOpen: false,
-};
+  state = {
+    signInDialogOpen: false,
+  };
 
-handleCloseSignInDialog = () => {
-this.setState({ signInDialogOpen: false });
-};
+  handleCloseSignInDialog = () => {
+    this.setState({ signInDialogOpen: false });
+  };
 
-handleOpenSignInDialog = () => {
-this.setState({ signInDialogOpen: true });
-};
+  handleOpenSignInDialog = () => {
+    this.setState({ signInDialogOpen: true });
+  };
 
-render() {
-const { classes } = this.props;
-const { signInDialogOpen } = this.state;
+  render() {
+    const { classes } = this.props;
+    const { signInDialogOpen } = this.state;
 
-return (
-<Landing className={classes.root}>
-<Hidden xsDown implementation="css">
-<Typography variant="h1" className={classes.headline}>
-{window.env.APPLICATION_NAME}
-</Typography>
-</Hidden>
-<Hidden smUp implementation="css">
-<Typography variant="h2" className={classes.headline}>
-{window.env.APPLICATION_NAME}
-</Typography>
-</Hidden>
-<Typography variant="h5" className={classes.text}>
-{
-"A task execution framework that supports Mozilla's continuous integration and release processes."
-}
-</Typography>
-<Divider className={classes.divider} />
-<div className={classes.actions}>
-<Button
-variant="contained"
-color="secondary"
-onClick={this.handleOpenSignInDialog}>
-<AccountCircleIcon className={classes.icon} />
-Sign in
-</Button>
-<SignInDialog
-open={signInDialogOpen}
-onClose={this.handleCloseSignInDialog}
-/>
-</div>
-</Landing>
-);
-}
+    return (
+      <Landing className={classes.root}>
+        <Hidden xsDown implementation="css">
+          <Typography variant="h1" className={classes.headline}>
+            {window.env.APPLICATION_NAME}
+          </Typography>
+        </Hidden>
+        <Hidden smUp implementation="css">
+          <Typography variant="h2" className={classes.headline}>
+            {window.env.APPLICATION_NAME}
+          </Typography>
+        </Hidden>
+        <Typography variant="h5" className={classes.text}>
+          {
+            "A task execution framework that supports Mozilla's continuous integration and release processes."
+          }
+        </Typography>
+        <Divider className={classes.divider} />
+        <div className={classes.actions}>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={this.handleOpenSignInDialog}>
+            <AccountCircleIcon className={classes.icon} />
+            Sign in
+          </Button>
+          <SignInDialog
+            open={signInDialogOpen}
+            onClose={this.handleCloseSignInDialog}
+          />
+        </div>
+      </Landing>
+    );
+  }
 }
