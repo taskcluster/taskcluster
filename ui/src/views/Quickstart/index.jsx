@@ -162,12 +162,6 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
 @hot(module)
 @withApollo
 @withStyles(theme => ({
-  orgRepo: {
-    display: 'flex',
-    alignItems: 'center',
-    marginBottom: 6 * theme.spacing(1),
-    ...theme.mixins.gutters(),
-  },
   separator: {
     padding: theme.spacing(2),
     paddingBottom: 0,
@@ -195,27 +189,26 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
   taskShouldRunFlex: {
     display: 'flex',
     width: '100%',
-    justifyContent: 'space-between',
     [theme.breakpoints.down('xs')]: {
       flexDirection: 'column',
     },
   },
-  formLabelSpacing: {
-    marginTop: -0.5 * theme.spacing.unit,
-    marginBottom: -0.5 * theme.spacing.unit,
-    marginRight: 4 * theme.spacing.triple,
-    [theme.breakpoints.down('sm')]: {
-      marginRight: theme.spacing.double,
-    },
-  },
   mainHeading: {
-    marginTop: -theme.spacing.triple,
+    paddingLeft: theme.spacing(2),
   },
-  generalSpacing: {
-    marginTop: -2 * theme.spacing.unit,
+  descriptionTextField: {
+    marginBottom: theme.spacing(4),
   },
-  descriptionSpacing: {
-    marginBottom: 2 * theme.spacing.unit,
+  orgRepoStatus: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: 2 * theme.spacing(1),
+  },
+  listStyle: {
+    width: '97%',
+    [theme.breakpoints.down('sm')]: {
+      width: '90%',
+    },
   },
 }))
 export default class QuickStart extends Component {
@@ -361,19 +354,23 @@ export default class QuickStart extends Component {
                 For independent developers and organization owners: How to set
                 up your repository with {window.env.APPLICATION_NAME}
               </Typography>
-              <Typography variant="body2" paragraph>
-                <ul>
-                  <li>
+              <ul>
+                <li>
+                  <Typography paragraph>
                     Fill out the form below. All changes in the form will
                     instantly show up in the code field.
-                  </li>
-                  <li>
+                  </Typography>
+                </li>
+                <li>
+                  <Typography paragraph>
                     When you are done editing, copy the contents of the code
                     field and paste it into a file named{' '}
                     <code>.taskcluster.yml</code> in the root of your
                     repository.
-                  </li>
-                  <li>
+                  </Typography>
+                </li>
+                <li>
+                  <Typography paragraph>
                     Make sure to install the{' '}
                     <a
                       href="https://github.com/apps/taskcluster"
@@ -382,9 +379,9 @@ export default class QuickStart extends Component {
                       Taskcluster-GitHub integration
                     </a>
                     .
-                  </li>
-                </ul>
-              </Typography>
+                  </Typography>
+                </li>
+              </ul>
               <Typography variant="body2" paragraph>
                 Optionally, after you create your file, you can edit it here or
                 in you favorite editor to add more functionality. Please refer
@@ -403,35 +400,41 @@ export default class QuickStart extends Component {
           </HelpView>
         }>
         <Fragment>
-          <div className={classes.orgRepo}>
-            <TextField
-              label="Organization Name"
-              name="owner"
-              fullWidth
-              onChange={this.handleOrgRepoChange}
-              value={owner}
-              autoFocus
-            />
-            <Typography className={classes.separator} variant="h5">
-              /
-            </Typography>
-            <TextField
-              label="Repository Name"
-              name="repo"
-              fullWidth
-              onChange={this.handleOrgRepoChange}
-              value={repo}
-            />
+          <div className={classes.orgRepoStatus}>
+            <div className={classes.listStyle}>
+              <ListItem>
+                <TextField
+                  label="Organization Name"
+                  name="owner"
+                  fullWidth
+                  onChange={this.handleOrgRepoChange}
+                  value={owner}
+                  autoFocus
+                />
+                <Typography className={classes.separator} variant="h5">
+                  /
+                </Typography>
+                <TextField
+                  label="Repository Name"
+                  name="repo"
+                  fullWidth
+                  onChange={this.handleOrgRepoChange}
+                  value={repo}
+                />
+              </ListItem>
+            </div>
+
             <div className={classes.iconContainer}>
               {(installedState === 'success' && (
                 <CheckIcon className={classes.checkIcon} />
               )) ||
-                (installedState === 'error' && (
-                  <AlertCircleOutlineIcon className={classes.errorIcon} />
-                )) ||
-                (installedState === 'loading' && <Spinner size={24} />)}
+              (installedState === 'error' && (
+                <AlertCircleOutlineIcon className={classes.errorIcon} />
+              )) ||
+              (installedState === 'loading' && <Spinner size={24} />)}
             </div>
           </div>
+
           {installedState === 'error' && (
             <ErrorPanel
               className={classes.errorPanels}
@@ -439,11 +442,11 @@ export default class QuickStart extends Component {
               contact the organization owner to have it set up!"
             />
           )}
-          <Typography className={classes.mainHeading} variant="h6">
+          <Typography className={classes.mainHeading} variant="subtitle1">
             Create Your Task Definition
           </Typography>
           <List>
-            <ListItem className={classes.generalSpacing}>
+            <ListItem>
               <TextField
                 label="Name"
                 name="taskName"
@@ -452,7 +455,7 @@ export default class QuickStart extends Component {
                 value={taskName}
               />
             </ListItem>
-            <ListItem className={classes.descriptionSpacing}>
+            <ListItem className={classes.descriptionTextField}>
               <TextField
                 label="Description"
                 name="taskDescription"
@@ -463,7 +466,7 @@ export default class QuickStart extends Component {
                 value={taskDescription}
               />
             </ListItem>
-            <ListItem className={classes.generalSpacing}>
+            <ListItem>
               <FormControl component="fieldset">
                 <FormLabel component="legend">
                   This task should run on
@@ -471,7 +474,6 @@ export default class QuickStart extends Component {
                 <div className={classes.taskShouldRunFlex}>
                   <FormGroup>
                     <FormControlLabel
-                      className={classes.formLabelSpacing}
                       control={
                         <Checkbox
                           checked={events.has('pull_request.opened')}
@@ -482,7 +484,6 @@ export default class QuickStart extends Component {
                       label="Pull request opened"
                     />
                     <FormControlLabel
-                      className={classes.formLabelSpacing}
                       control={
                         <Checkbox
                           checked={events.has('pull_request.closed')}
@@ -493,7 +494,6 @@ export default class QuickStart extends Component {
                       label="Pull request merged or closed"
                     />
                     <FormControlLabel
-                      className={classes.formLabelSpacing}
                       control={
                         <Checkbox
                           checked={events.has('pull_request.reopened')}
@@ -506,7 +506,6 @@ export default class QuickStart extends Component {
                   </FormGroup>
                   <FormGroup>
                     <FormControlLabel
-                      className={classes.formLabelSpacing}
                       control={
                         <Checkbox
                           checked={events.has('pull_request.synchronize')}
@@ -517,7 +516,6 @@ export default class QuickStart extends Component {
                       label="New commit made in an opened pull request"
                     />
                     <FormControlLabel
-                      className={classes.formLabelSpacing}
                       control={
                         <Checkbox
                           checked={events.has('push')}
@@ -529,7 +527,6 @@ export default class QuickStart extends Component {
                     />
 
                     <FormControlLabel
-                      className={classes.formLabelSpacing}
                       control={
                         <Checkbox
                           checked={events.has('release')}
@@ -543,7 +540,7 @@ export default class QuickStart extends Component {
                 </div>
               </FormControl>
             </ListItem>
-            <ListItem className={classes.generalSpacing}>
+            <ListItem>
               <TextField
                 id="select-access"
                 select
@@ -557,7 +554,7 @@ export default class QuickStart extends Component {
                 <MenuItem value="collaborators">Collaborators</MenuItem>
               </TextField>
             </ListItem>
-            <ListItem className={classes.generalSpacing}>
+            <ListItem>
               <TextField
                 id="select-language"
                 select
@@ -573,7 +570,7 @@ export default class QuickStart extends Component {
                 <MenuItem value="go">Go</MenuItem>
               </TextField>
             </ListItem>
-            <ListItem className={classes.generalSpacing}>
+            <ListItem>
               <TextField
                 id="select-commands"
                 select
@@ -587,7 +584,7 @@ export default class QuickStart extends Component {
                 <MenuItem value="custom">I will define them myself</MenuItem>
               </TextField>
             </ListItem>
-            <ListItem className={classes.generalSpacing}>
+            <ListItem>
               <ListItemText
                 disableTypography
                 primary={
