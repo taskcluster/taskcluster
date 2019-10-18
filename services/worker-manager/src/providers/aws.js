@@ -141,12 +141,10 @@ class AwsProvider extends Provider {
           ],
         }).promise();
       } catch (e) {
-        this.monitor.err(`Error calling AWS API: ${e}`);
-
         return await workerPool.reportError({
           kind: 'creation-error',
           title: 'Instance Creation Error',
-          description: e.message,
+          description: `Error calling AWS API: ${e.message}`,
           notify: this.notify,
           WorkerPoolError: this.WorkerPoolError,
         });
@@ -261,15 +259,13 @@ class AwsProvider extends Provider {
         InstanceIds: [worker.workerId],
       }).promise();
     } catch (e) {
-      this.monitor.err(`Error terminating AWS instance: ${e}`);
-
       const workerPool = this.WorkerPool.load({
         workerPoolId: worker.workerPoolId,
       });
       await workerPool.reportError({
         kind: 'termination-error',
         title: 'Instance Termination Error',
-        description: e.message,
+        description: `Error terminating AWS instance: ${e.message}`,
         notify: this.notify,
         WorkerPoolError: this.WorkerPoolError,
       });
