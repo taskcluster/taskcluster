@@ -229,21 +229,30 @@ class GoogleProvider extends Provider {
       });
     }
 
-    const toSpawn = await this.estimator.simple({
+    let toSpawn = await this.estimator.simple({
       workerPoolId,
       ...workerPool.config,
       runningCapacity: workerPool.providerData[this.providerId].running,
     });
 
-    await Promise.all(new Array(toSpawn).fill(null).map(async i => {
+    if (toSpawn === 0) {
+      return; // Nothing to do
+    }
+
+    const cfgs = [];
+    while (toSpawn> 0) {
+      const cfg = _.sample(workerPool.config.launchConfigs);
+      cfgs.push(cfg);
+      toSpawn -= cfg.capacityPerInstance;
+    }
+
+    await Promise.all(cfgs.map(async cfg => {
       // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
       // The lost entropy from downcasing, etc should be ok due to the fact that
       // only running instances need not be identical. We do not use this name to identify
       // workers in taskcluster.
       const poolName = workerPoolId.replace(/\//g, '-').slice(0, 38);
       const instanceName = `${poolName}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
-
-      const cfg = _.sample(workerPool.config.launchConfigs);
 
       let op;
 
@@ -324,6 +333,7 @@ class GoogleProvider extends Provider {
         providerData: {
           project: this.project,
           zone: cfg.zone,
+          instanceCapacity: cfg.capacityPerInstance,
           operation: {
             name: op.name,
             zone: op.zone,
@@ -358,7 +368,7 @@ class GoogleProvider extends Provider {
       }));
       const {status} = data;
       if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
-        this.seen[worker.workerPoolId] += 1;
+        this.seen[worker.workerPoolId] += worker.providerData.instanceCapacity;
 
         // If the worker will be expired soon but it still exists,
         // update it to stick around a while longer. If this doesn't happen,
