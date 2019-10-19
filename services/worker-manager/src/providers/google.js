@@ -232,8 +232,7 @@ class GoogleProvider extends Provider {
     const toSpawn = await this.estimator.simple({
       workerPoolId,
       ...workerPool.config,
-      capacityPerInstance: 1, // TODO (bug 1587234) Hardcoded for now until estimator updates
-      running: workerPool.providerData[this.providerId].running,
+      runningCapacity: workerPool.providerData[this.providerId].running,
     });
 
     await Promise.all(new Array(toSpawn).fill(null).map(async i => {

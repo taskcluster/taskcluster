@@ -66,8 +66,7 @@ class AwsProvider extends Provider {
       workerPoolId,
       minCapacity: workerPool.config.minCapacity,
       maxCapacity: workerPool.config.maxCapacity,
-      capacityPerInstance: 1, // todo: this will be corrected along with estimator changes (bug 1579554)
-      running: workerPool.providerData[this.providerId].running,
+      runningCapacity: workerPool.providerData[this.providerId].running,
     });
     if (toSpawn === 0) {
       return;
