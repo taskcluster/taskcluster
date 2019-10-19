@@ -305,7 +305,7 @@ class WorkerManager(BaseClient):
             'args': ['workerPoolId', 'workerGroup', 'workerId'],
             'method': 'delete',
             'name': 'removeWorker',
-            'route': '/workers/<workerPoolId>:/<workerGroup>/<workerId>',
+            'route': '/workers/<workerPoolId>/<workerGroup>/<workerId>',
             'stability': 'experimental',
         },
         "reportWorkerError": {

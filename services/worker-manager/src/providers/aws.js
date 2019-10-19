@@ -141,12 +141,10 @@ class AwsProvider extends Provider {
           ],
         }).promise();
       } catch (e) {
-        this.monitor.err(`Error calling AWS API: ${e}`);
-
         return await workerPool.reportError({
           kind: 'creation-error',
           title: 'Instance Creation Error',
-          description: e.message,
+          description: `Error calling AWS API: ${e.message}`,
           notify: this.notify,
           WorkerPoolError: this.WorkerPoolError,
         });
@@ -252,6 +250,35 @@ class AwsProvider extends Provider {
           return Promise.reject(`Unknown state: ${is.InstanceState.Name} for ${is.InstanceId}`);
       }
     }));
+  }
+
+  async removeWorker({worker}) {
+    let result;
+    try {
+      result = await this.ec2s[worker.providerData.region].terminateInstances({
+        InstanceIds: [worker.workerId],
+      }).promise();
+    } catch (e) {
+      const workerPool = this.WorkerPool.load({
+        workerPoolId: worker.workerPoolId,
+      });
+      await workerPool.reportError({
+        kind: 'termination-error',
+        title: 'Instance Termination Error',
+        description: `Error terminating AWS instance: ${e.message}`,
+        notify: this.notify,
+        WorkerPoolError: this.WorkerPoolError,
+      });
+    }
+
+    result.TerminatingInstances.forEach(ti => {
+      if (!ti.InstanceId === worker.workerId || !ti.CurrentState.Name === 'shutting-down') {
+        throw new Error(
+          `Unexpected error: expected to shut down instance ${worker.workerId} but got ${ti.CurrentState.Name} state for ${ti.InstanceId} instance instead`
+        );
+      }
+
+    });
   }
 
   // should this be implemented on Provider? Looks like it's going to be the same for all providers

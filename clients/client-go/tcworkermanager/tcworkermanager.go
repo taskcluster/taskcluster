@@ -295,7 +295,7 @@ func (workerManager *WorkerManager) CreateWorker(workerPoolId, workerGroup, work
 // See #removeWorker
 func (workerManager *WorkerManager) RemoveWorker(workerPoolId, workerGroup, workerId string) error {
 	cd := tcclient.Client(*workerManager)
-	_, _, err := (&cd).APICall(nil, "DELETE", "/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), nil, nil)
+	_, _, err := (&cd).APICall(nil, "DELETE", "/workers/"+url.QueryEscape(workerPoolId)+"/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), nil, nil)
 	return err
 }
 
