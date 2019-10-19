@@ -10,6 +10,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import ArrowExpandVerticalIcon from 'mdi-react/ArrowExpandVerticalIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
+import { parse, stringify } from 'qs';
 import HelpView from '../../../components/HelpView';
 import Dashboard from '../../../components/Dashboard/index';
 import Button from '../../../components/Button';
@@ -42,23 +43,24 @@ export default class ScopesetExpander extends Component {
   };
 
   componentDidMount() {
-    const searchParams = new URLSearchParams(this.props.location.search);
-    const scope = searchParams.get('q');
+    const query = parse(this.props.location.search.slice(1));
+    const { scopes } = query;
 
-    if (scope) {
+    if (scopes) {
       this.setState(() => ({
-        scopeText: scope.replace(/%/g, '\n'),
+        scopeText: scopes.join('\n'),
       }));
     }
   }
 
   handleExpandScopesClick = async () => {
     const scopes = splitLines(this.state.scopeText);
-    const scopeParam = scopes.join('%');
+    const queryObj = { scopes };
+    const queryStr = stringify(queryObj);
 
     this.props.history.push({
       pathname: '/auth/scopes/expansions',
-      search: `?q=${scopeParam}`,
+      search: queryStr,
     });
 
     this.setState({ scopes });

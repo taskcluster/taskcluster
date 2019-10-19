@@ -7,7 +7,7 @@ import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import ScaleBalanceIcon from 'mdi-react/ScaleBalanceIcon';
-import { URLSearchParams } from 'apollo-server-env';
+import { parse, stringify } from 'qs';
 import Dashboard from '../../../components/Dashboard/index';
 import Button from '../../../components/Button/index';
 import splitLines from '../../../utils/splitLines';
@@ -51,14 +51,18 @@ export default class ScopesetComparison extends Component {
   };
 
   componentDidMount() {
-    const searchParams = new URLSearchParams(this.props.location.search);
-    const scopesA = searchParams.get('qA');
-    const scopesB = searchParams.get('qB');
+    const query = parse(this.props.location.search.slice(1));
+    const { scopesA, scopesB } = query;
 
     if (scopesA && scopesB) {
+      const scopesetDiff = this.getScopesetDiff(scopesA, scopesB);
+      const cellColors = this.getCellColors(scopesetDiff);
+
       this.setState(() => ({
-        scopeTextA: scopesA.replace(/%/g, '\n'),
-        scopeTextB: scopesB.replace(/%/g, '\n'),
+        scopeTextA: scopesA.join('\n'),
+        scopeTextB: scopesB.join('\n'),
+        scopesetDiff,
+        cellColors,
       }));
     }
   }
@@ -71,12 +75,12 @@ export default class ScopesetComparison extends Component {
       const scopesB = splitLines(scopeTextB);
       const scopesetDiff = this.getScopesetDiff(scopesA, scopesB);
       const cellColors = this.getCellColors(scopesetDiff);
-      const scopeParamA = scopesA.join('%');
-      const scopeParamB = scopesB.join('%');
+      const queryObj = { scopesA, scopesB };
+      const queryStr = stringify(queryObj);
 
       this.props.history.push({
         pathname: '/auth/scopes/compare',
-        search: `?qA=${scopeParamA}&qB=${scopeParamB}`,
+        search: queryStr,
       });
 
       this.setState({ scopesetDiff, cellColors });
