@@ -35,7 +35,7 @@ import indexedTaskQuery from './indexedTask.graphql';
 })
 export default class IndexedTask extends Component {
   state = {
-    namespaceInput: `${this.props.match.params.namespace}.${this.props.match.params.namespaceTaskId}`,
+    indexPathInput: `${this.props.match.params.namespace}.${this.props.match.params.namespaceTaskId}`,
   };
 
   componentDidUpdate(prevProps) {
@@ -90,11 +90,11 @@ export default class IndexedTask extends Component {
     });
   };
 
-  handleNamespaceInputChange = e =>
-    this.setState({ namespaceInput: e.target.value });
+  handleIndexPathInputChange = e =>
+    this.setState({ indexPathInput: e.target.value });
 
-  handleTaskNamespaceSearchSubmit = () => {
-    this.props.history.replace(`/tasks/index/${this.state.namespaceInput}`);
+  handleIndexPathSearchSubmit = () => {
+    this.props.history.replace(`/tasks/index/${this.state.indexPathInput}`);
   };
 
   render() {
@@ -121,10 +121,10 @@ export default class IndexedTask extends Component {
         search={
           <Search
             disabled={loading}
-            value={this.state.namespaceInput}
-            onChange={this.handleNamespaceInputChange}
-            onSubmit={this.handleTaskNamespaceSearchSubmit}
-            placeholder="Search"
+            value={this.state.indexPathInput}
+            onChange={this.handleIndexPathInputChange}
+            onSubmit={this.handleIndexPathSearchSubmit}
+            placeholder="Search path.to.index"
           />
         }>
         {loading && <Spinner loading />}

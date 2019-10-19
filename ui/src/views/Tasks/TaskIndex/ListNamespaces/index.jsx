@@ -43,17 +43,9 @@ const defaultEmpty = defaultTo('');
   }),
 })
 export default class ListNamespaces extends Component {
-  state = {
-    namespaceInput: '',
-  };
-
-  componentDidMount() {
-    if (this.props.match.params.namespace) {
-      this.setState({ namespaceInput: this.props.match.params.namespace });
-    } else {
-      this.setState({ namespaceInput: '' });
-    }
-  }
+  state = this.props.match.params.namespace
+    ? { indexPathInput: this.props.match.params.namespace }
+    : { indexPathInput: '' };
 
   componentDidUpdate(prevProps) {
     if (
@@ -64,7 +56,9 @@ export default class ListNamespaces extends Component {
   }
 
   async loadNamespace() {
-    this.setState({ namespaceInput: this.props.match.params.namespace });
+    this.props.match.params.namespace
+      ? this.setState({ indexPathInput: this.props.match.params.namespace })
+      : this.setState({ indexPathInput: '' });
   }
 
   handleNamespacesPageChange = ({ cursor, previousCursor }) => {
@@ -139,12 +133,12 @@ export default class ListNamespaces extends Component {
     });
   };
 
-  handleNamespaceInputChange = e => {
-    this.setState({ namespaceInput: e.target.value });
+  handleIndexPathInputChange = e => {
+    this.setState({ indexPathInput: e.target.value });
   };
 
-  handleTaskNamespaceSearchSubmit = () => {
-    this.props.history.replace(`/tasks/index/${this.state.namespaceInput}`);
+  handleIndexPathSearchSubmit = () => {
+    this.props.history.replace(`/tasks/index/${this.state.indexPathInput}`);
   };
 
   render() {
@@ -160,13 +154,14 @@ export default class ListNamespaces extends Component {
         error: taskNamespaceError,
       },
       description,
-      match,
     } = this.props;
+    const { indexPathInput } = this.state;
     const hasIndexedTasks =
       taskNamespace && taskNamespace.edges && taskNamespace.edges.length > 0;
     const hasNamespaces =
       namespaces && namespaces.edges && namespaces.edges.length > 0;
     const loading = namespacesLoading || taskNamespaceLoading;
+    const isSinglePath = indexPathInput.split('.').length === 1;
 
     return (
       <Dashboard
@@ -175,22 +170,25 @@ export default class ListNamespaces extends Component {
         search={
           <Search
             disabled={loading}
-            value={this.state.namespaceInput}
-            onChange={this.handleNamespaceInputChange}
-            onSubmit={this.handleTaskNamespaceSearchSubmit}
-            placeholder="Search"
+            value={indexPathInput}
+            onChange={this.handleIndexPathInputChange}
+            onSubmit={this.handleIndexPathSearchSubmit}
+            placeholder="Search path.to.index"
           />
         }>
         <Fragment>
           {loading && <Spinner loading />}
           <ErrorPanel fixed error={namespacesError || taskNamespaceError} />
-          {!loading && !hasNamespaces && !hasIndexedTasks && (
+          {!loading && !hasNamespaces && !hasIndexedTasks && !isSinglePath && (
             <Redirect
-              to={`/tasks/index/${match.params.namespace
+              to={`/tasks/index/${indexPathInput
                 .split('.')
                 .slice(0, -1)
-                .join('.')}/${match.params.namespace.split('.').slice(-1)[0]}`}
+                .join('.')}/${indexPathInput.split('.').slice(-1)[0]}`}
             />
+          )}
+          {!loading && !hasNamespaces && !hasIndexedTasks && isSinglePath && (
+            <Typography>No items for this page.</Typography>
           )}
           {!loading && hasNamespaces && (
             <Fragment>

@@ -65,7 +65,7 @@ export default class Search extends PureComponent {
     spellCheck: false,
     value: undefined,
     onChange: null,
-    defaultValue: null,
+    defaultValue: undefined,
     formProps: {},
   };
 
