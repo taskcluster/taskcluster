@@ -274,7 +274,7 @@ class AwsProvider extends Provider {
     result.TerminatingInstances.forEach(ti => {
       if (!ti.InstanceId === worker.workerId || !ti.CurrentState.Name === 'shutting-down') {
         throw new Error(
-          `Unexpected error: expected to shut down instance ${worker.workerId} but got ${ti.CurrentState.Name} state instead`
+          `Unexpected error: expected to shut down instance ${worker.workerId} but got ${ti.CurrentState.Name} state for ${ti.InstanceId} instance instead`
         );
       }
 
