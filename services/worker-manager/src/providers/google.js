@@ -368,7 +368,7 @@ class GoogleProvider extends Provider {
       }));
       const {status} = data;
       if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
-        this.seen[worker.workerPoolId] += worker.providerData.instanceCapacity;
+        this.seen[worker.workerPoolId] += worker.providerData.instanceCapacity || 1;
 
         // If the worker will be expired soon but it still exists,
         // update it to stick around a while longer. If this doesn't happen,

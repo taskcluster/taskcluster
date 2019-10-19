@@ -240,7 +240,7 @@ class AwsProvider extends Provider {
         case 'running':
         case 'shutting-down': //so that we don't turn on new instances until they're entirely gone
         case 'stopping':
-          this.seen[worker.workerPoolId] += worker.providerData.instanceCapacity;
+          this.seen[worker.workerPoolId] += worker.providerData.instanceCapacity || 1;
           return Promise.resolve();
 
         case 'terminated':
