@@ -82,12 +82,16 @@ class AwsProvider extends Provider {
       if (toSpawnCounter <= 0) break; // eslint-disable-line
       // Make sure we don't get "The same resource type may not be specified
       // more than once in tag specifications" errors
-      const TagSpecifications = config.TagSpecifications ? config.TagSpecifications : [];
+      const TagSpecifications = config.launchConfig.TagSpecifications || [];
       const instanceTags = [];
       const otherTagSpecs = [];
-      TagSpecifications.forEach(ts =>
-        ts.ResourceType === 'instance' ? instanceTags.concat(ts.Tags) : otherTagSpecs.push(ts)
-      );
+      TagSpecifications.forEach(ts => {
+        if (ts.ResourceType === 'instance') {
+          ts.Tags.forEach(tag => instanceTags.push(tag));
+        } else {
+          otherTagSpecs.push(ts);
+        }
+      });
 
       const userData = Buffer.from(JSON.stringify({
         rootUrl: this.rootUrl,

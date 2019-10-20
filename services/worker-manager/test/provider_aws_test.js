@@ -145,15 +145,75 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     });
 
     test('instance tags in launch spec - should merge them with our instance tags', async function() {
+      await workerPool.modify(wp => {
+        wp.config.launchConfigs[0].launchConfig.TagSpecifications = [{
+          ResourceType: 'instance',
+          Tags: [{Key: 'mytag', Value: 'testy'}],
+        }];
+      });
+      await provider.provision({workerPool});
+
+      assert.deepEqual(
+        aws.EC2().runInstances.calls.map(({launchConfig: {TagSpecifications}}) => TagSpecifications).sort(), [
+          [
+            {
+              ResourceType: 'instance',
+              Tags: [
+                {Key: 'mytag', Value: 'testy'},
+                {Key: 'CreatedBy', Value: 'taskcluster-wm-aws'},
+                {Key: 'Owner', Value: 'whatever@example.com'},
+                {Key: 'ManagedBy', Value: 'taskcluster'},
+                {Key: 'Name', Value: 'foo/bar'},
+              ],
+            },
+          ],
+        ]);
+
       sinon.restore();
     });
 
     test('no instance tags in launch spec, but other tags - should have 1 object per resource type', async function() {
+      await workerPool.modify(wp => {
+        wp.config.launchConfigs[0].launchConfig.TagSpecifications = [
+          {ResourceType: 'something-else', Tags: [{Key: 'mytag', Value: 'testy'}]},
+          {ResourceType: 'another-thing', Tags: [{Key: 'tag2', Value: 'testy'}]},
+        ];
+      });
+      await provider.provision({workerPool});
+
+      assert.deepEqual(
+        aws.EC2().runInstances.calls.map(({launchConfig: {TagSpecifications}}) => TagSpecifications).sort(), [
+          [
+            {
+              ResourceType: 'something-else',
+              Tags: [
+                {Key: 'mytag', Value: 'testy'},
+              ],
+            },
+            {
+              ResourceType: 'another-thing',
+              Tags: [
+                {Key: 'tag2', Value: 'testy'},
+              ],
+            },
+            {
+              ResourceType: 'instance',
+              Tags: [
+                {Key: 'CreatedBy', Value: 'taskcluster-wm-aws'},
+                {Key: 'Owner', Value: 'whatever@example.com'},
+                {Key: 'ManagedBy', Value: 'taskcluster'},
+                {Key: 'Name', Value: 'foo/bar'},
+              ],
+            },
+          ],
+        ]);
+
       sinon.restore();
     });
 
     test('UserData should be base64 encoded', async function() {
       sinon.restore();
+      this.skip();
     });
   });
 
@@ -267,18 +327,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
     test('stopped and terminated instances - should be marked as STOPPED in DB', async function() {
       sinon.restore();
+      this.skip();
     });
 
     test('pending/running,/shutting-down/stopping instances - should not reject', async function() {
       sinon.restore();
+      this.skip();
     });
 
     test('some strange status - should reject', async function() {
       sinon.restore();
+      this.skip();
     });
 
     test('instance terminated by hand - should be marked as STOPPED in DB; should not reject', async function() {
       sinon.restore();
+      this.skip();
     });
   });
 
