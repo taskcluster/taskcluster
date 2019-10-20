@@ -114,7 +114,7 @@ export default class MobileMenu extends Component {
 
           <MenuItem title="Your Profile" component={Link} to="/profile/">
             <AccountIcon className={classes.leftIcon} />
-            Account
+            Profile
           </MenuItem>
           <MenuItem
             title={`Sign Out of ${window.env.APPLICATION_NAME}`}
