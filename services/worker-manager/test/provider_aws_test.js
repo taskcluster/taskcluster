@@ -25,6 +25,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     launchConfig: {
       ImageId: 'banana-123',
     },
+    workerConfig: {foo: 5},
   };
   let workerPool = {
     workerPoolId,
@@ -71,6 +72,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     workerPoolId,
     providerId,
     workerGroup: providerId,
+    workerConfig: {foo: 5},
   };
   const defaultWorker = {
     workerPoolId,
@@ -118,7 +120,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     workerPool = await helper.WorkerPool.create(workerPool);
 
     sinon.stub(aws, 'EC2').returns({
-      describeRegions: fakeAWS.EC2.describeRegions,
+      ...fakeAWS.EC2,
       runInstances: fakeAWS.EC2.runInstances({defaultLaunchConfig, TagSpecifications, UserData}),
     });
 
@@ -278,6 +280,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     test('instance terminated by hand - should be marked as STOPPED in DB; should not reject', async function() {
       sinon.restore();
     });
+  });
+
+  suite('AWS provider - removeWorker', function() {
+
+    test('successfully terminated instance', async function() {
+      const worker = {
+        ...defaultWorker,
+        providerData: {
+          ...defaultWorker.providerData,
+          region: 'us-west-2',
+        },
+      };
+      await assert.doesNotReject(provider.removeWorker({worker}));
+      sinon.restore();
+    });
+
   });
 
 });

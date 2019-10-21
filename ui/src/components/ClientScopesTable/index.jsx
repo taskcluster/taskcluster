@@ -12,34 +12,22 @@ import {
   sort as rSort,
 } from 'ramda';
 import memoize from 'fast-memoize';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
+import { ListItemText } from '@material-ui/core';
 import ConnectionDataTable from '../ConnectionDataTable';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
 import { VIEW_CLIENT_SCOPES_INSPECT_SIZE } from '../../utils/constants';
 import { pageInfo, client, scopeExpansionLevel } from '../../utils/prop-types';
+import TableCellItem from '../TableCellItem';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.clientId, b.node.clientId)),
   map(({ node: { clientId } }) => clientId)
 );
 
-@withStyles(theme => ({
-  tableCell: {
-    textDecoration: 'none',
-  },
-  listItemCell: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    width: '100%',
-    padding: theme.spacing.unit,
-    ...theme.mixins.hover,
-  },
-}))
 export default class ClientScopesTable extends Component {
   static defaultProps = {
     searchTerm: null,
@@ -102,7 +90,7 @@ export default class ClientScopesTable extends Component {
   );
 
   renderRow = (scope, index) => {
-    const { searchTerm, classes, selectedScope } = this.props;
+    const { searchTerm, selectedScope } = this.props;
 
     if (index !== 0) {
       return null;
@@ -113,18 +101,18 @@ export default class ClientScopesTable extends Component {
       map(node => (
         <TableRow key={node}>
           <TableCell padding="dense">
-            <Link
-              className={classes.tableCell}
+            <TableCellItem
+              dense
+              button
+              component={Link}
               to={
                 selectedScope
                   ? `/auth/clients/${encodeURIComponent(node)}`
                   : `/auth/scopes/${encodeURIComponent(node)}`
               }>
-              <div className={classes.listItemCell}>
-                <Typography>{node}</Typography>
-                <LinkIcon size={16} />
-              </div>
-            </Link>
+              <ListItemText primary={node} />
+              <LinkIcon size={16} />
+            </TableCellItem>
           </TableCell>
         </TableRow>
       ))

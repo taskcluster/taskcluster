@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/stretchr/testify/assert"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v20"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v21"
 )
 
 // returns the test status on request

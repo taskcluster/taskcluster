@@ -54,5 +54,18 @@ module.exports = {
         }),
       };
     },
+
+    terminateInstances: ({InstanceIds}) => {
+      return {
+        promise: () => ({
+          TerminatingInstances: InstanceIds.map(iid => ({
+            InstanceId: iid,
+            CurrentState: {
+              Name: 'shutting-down',
+            },
+          })),
+        }),
+      };
+    },
   },
 };

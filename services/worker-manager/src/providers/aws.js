@@ -74,24 +74,6 @@ class AwsProvider extends Provider {
     }
     const toSpawnPerConfig = Math.ceil(toSpawn / workerPool.config.launchConfigs.length);
 
-    const userData = Buffer.from(JSON.stringify({
-      rootUrl: this.rootUrl,
-      workerPoolId,
-      providerId: this.providerId,
-      workerGroup: this.providerId,
-    }));
-    // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-add-user-data
-    // The raw data should be 16KB maximum
-    if (userData.length > 16384) {
-      return await workerPool.reportError({
-        kind: 'creation-error',
-        title: 'User Data is too long',
-        description: 'Try a shorter workerPoolId and/or a shorter rootUrl',
-        notify: this.notify,
-        WorkerPoolError: this.WorkerPoolError,
-      });
-    }
-
     const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
 
     let spawned;
@@ -106,6 +88,25 @@ class AwsProvider extends Provider {
       TagSpecifications.forEach(ts =>
         ts.ResourceType === 'instance' ? instanceTags.concat(ts.Tags) : otherTagSpecs.push(ts)
       );
+
+      const userData = Buffer.from(JSON.stringify({
+        rootUrl: this.rootUrl,
+        workerPoolId,
+        providerId: this.providerId,
+        workerGroup: this.providerId,
+        workerConfig: config.workerConfig || {},
+      }));
+      // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-add-user-data
+      // The raw data should be 16KB maximum
+      if (userData.length > 16384) {
+        return await workerPool.reportError({
+          kind: 'creation-error',
+          title: 'User Data is too long',
+          description: 'Try removing some workerConfiguration and consider putting it in a secret',
+          notify: this.notify,
+          WorkerPoolError: this.WorkerPoolError,
+        });
+      }
 
       try {
         spawned = await this.ec2s[config.region].runInstances({
@@ -140,12 +141,10 @@ class AwsProvider extends Provider {
           ],
         }).promise();
       } catch (e) {
-        this.monitor.err(`Error calling AWS API: ${e}`);
-
         return await workerPool.reportError({
           kind: 'creation-error',
           title: 'Instance Creation Error',
-          description: e.message,
+          description: `Error calling AWS API: ${e.message}`,
           notify: this.notify,
           WorkerPoolError: this.WorkerPoolError,
         });
@@ -251,6 +250,35 @@ class AwsProvider extends Provider {
           return Promise.reject(`Unknown state: ${is.InstanceState.Name} for ${is.InstanceId}`);
       }
     }));
+  }
+
+  async removeWorker({worker}) {
+    let result;
+    try {
+      result = await this.ec2s[worker.providerData.region].terminateInstances({
+        InstanceIds: [worker.workerId],
+      }).promise();
+    } catch (e) {
+      const workerPool = this.WorkerPool.load({
+        workerPoolId: worker.workerPoolId,
+      });
+      await workerPool.reportError({
+        kind: 'termination-error',
+        title: 'Instance Termination Error',
+        description: `Error terminating AWS instance: ${e.message}`,
+        notify: this.notify,
+        WorkerPoolError: this.WorkerPoolError,
+      });
+    }
+
+    result.TerminatingInstances.forEach(ti => {
+      if (!ti.InstanceId === worker.workerId || !ti.CurrentState.Name === 'shutting-down') {
+        throw new Error(
+          `Unexpected error: expected to shut down instance ${worker.workerId} but got ${ti.CurrentState.Name} state for ${ti.InstanceId} instance instead`
+        );
+      }
+
+    });
   }
 
   // should this be implemented on Provider? Looks like it's going to be the same for all providers

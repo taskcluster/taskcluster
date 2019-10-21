@@ -28,7 +28,7 @@ properties:
       the request body of [the instance creation](https://cloud.google.com/compute/docs/reference/rest/beta/instances/insert)
       api method from gcloud. That said, worker-manager sets `instanceName` and `serviceAccounts` directly and you
       cannot override these. It also fills in some basic labels, will generate a default description, and sets the `taskcluster`
-      metadata key directly. You are free to set other metadata items though.
+      metadata key directly. You are free to set other metadata items though. A subset of these fields we require you to set such as `machineType`.
     uniqueItems: false
     items:
       type: object
@@ -48,7 +48,6 @@ properties:
             and this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.
             This property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.
             Instead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).
-            A subset of these fields we require you to set such as `machineType`.
         region:
           title: Region
           type: string

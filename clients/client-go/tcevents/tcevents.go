@@ -41,7 +41,7 @@ package tcevents
 import (
 	"net/url"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v20"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v21"
 )
 
 type Events tcclient.Client

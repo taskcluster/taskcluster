@@ -369,29 +369,29 @@ export default class ViewTask extends Component {
     });
   };
 
-  handleCreateLoaner = () =>
-    new Promise(async (resolve, reject) => {
-      const taskId = nice();
-      const task = parameterizeTask(
-        removeKeys(cloneDeep(this.props.data.task), ['__typename'])
-      );
+  handleCreateLoaner = async () => {
+    const taskId = nice();
+    const task = parameterizeTask(
+      removeKeys(cloneDeep(this.props.data.task), ['__typename'])
+    );
 
-      this.preRunningAction();
+    this.preRunningAction();
 
-      try {
-        await this.props.client.mutate({
-          mutation: createTaskQuery,
-          variables: {
-            taskId,
-            task: formatTaskMutation(task),
-          },
-        });
-        resolve(taskId);
-      } catch (error) {
-        this.postRunningFailedAction(formatError(error));
-        reject(error);
-      }
-    });
+    try {
+      await this.props.client.mutate({
+        mutation: createTaskQuery,
+        variables: {
+          taskId,
+          task: formatTaskMutation(task),
+        },
+      });
+
+      return taskId;
+    } catch (error) {
+      this.postRunningFailedAction(formatError(error));
+      throw error;
+    }
+  };
 
   handleEdit = task =>
     this.props.history.push({
@@ -537,74 +537,68 @@ export default class ViewTask extends Component {
     this.setState({ dialogError: null, actionLoading: true });
   };
 
-  purgeWorkerCache = () =>
-    new Promise(async (resolve, reject) => {
-      const { provisionerId, workerType } = this.props.data.task;
-      const { selectedCaches } = this.state;
+  purgeWorkerCache = async () => {
+    const { provisionerId, workerType } = this.props.data.task;
+    const { selectedCaches } = this.state;
 
-      this.preRunningAction();
+    this.preRunningAction();
 
-      try {
-        await Promise.all(
-          [...selectedCaches].map(cacheName =>
-            this.props.client.mutate({
-              mutation: purgeWorkerCacheQuery,
-              variables: {
-                provisionerId,
-                workerType,
-                payload: {
-                  cacheName,
-                },
+    try {
+      await Promise.all(
+        [...selectedCaches].map(cacheName =>
+          this.props.client.mutate({
+            mutation: purgeWorkerCacheQuery,
+            variables: {
+              provisionerId,
+              workerType,
+              payload: {
+                cacheName,
               },
-            })
-          )
-        );
-        resolve();
-      } catch (error) {
-        this.postRunningFailedAction(error);
-        reject(error);
-      }
-    });
+            },
+          })
+        )
+      );
+    } catch (error) {
+      this.postRunningFailedAction(error);
+      throw error;
+    }
+  };
 
-  rerunTask = () =>
-    new Promise(async (resolve, reject) => {
-      const { taskId } = this.props.match.params;
+  rerunTask = async () => {
+    const { taskId } = this.props.match.params;
 
-      this.preRunningAction();
+    this.preRunningAction();
 
-      try {
-        await this.props.client.mutate({
-          mutation: rerunTaskQuery,
-          variables: {
-            taskId,
-          },
-        });
-        resolve();
-      } catch (error) {
-        this.postRunningFailedAction(error);
-        reject(error);
-      }
-    });
+    try {
+      await this.props.client.mutate({
+        mutation: rerunTaskQuery,
+        variables: {
+          taskId,
+        },
+      });
+    } catch (error) {
+      this.postRunningFailedAction(error);
+      throw error;
+    }
+  };
 
-  scheduleTask = () =>
-    new Promise(async (resolve, reject) => {
-      const { taskId } = this.props.match.params;
+  scheduleTask = async () => {
+    const { taskId } = this.props.match.params;
 
-      this.preRunningAction();
+    this.preRunningAction();
 
-      try {
-        await this.props.client.mutate({
-          mutation: scheduleTaskQuery,
-          variables: {
-            taskId,
-          },
-        });
-        resolve();
-      } catch (error) {
-        this.postRunningFailedAction(error);
-        reject(error);
-      }
-    });
+    try {
+      await this.props.client.mutate({
+        mutation: scheduleTaskQuery,
+        variables: {
+          taskId,
+        },
+      });
+    } catch (error) {
+      this.postRunningFailedAction(error);
+      throw error;
+    }
+  };
 
   renderActionIcon = action => {
     switch (action.name) {

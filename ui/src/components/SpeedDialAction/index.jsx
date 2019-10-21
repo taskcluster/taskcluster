@@ -39,6 +39,7 @@ export default class SpeedDialAction extends Component {
       tooltipTitle,
       ...props
     } = this.props;
+    const other = {};
     const lackingAuth = requiresAuth && !user;
     const buttonProps = {
       ...ButtonProps,
@@ -52,12 +53,19 @@ export default class SpeedDialAction extends Component {
         }
       : null;
 
+    if (buttonProps.disabled) {
+      // Remove material-ui disabled prop warning
+      // https://github.com/mui-org/material-ui/issues/15216
+      other.component = 'span';
+    }
+
     return (
       <MuiSpeedDialAction
         className={classNames(classes.secondaryIcon, className)}
         ButtonProps={buttonProps}
         {...title}
         {...props}
+        {...other}
       />
     );
   }
