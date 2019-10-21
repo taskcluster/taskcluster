@@ -748,9 +748,7 @@ export default class HookForm extends Component {
                             window.env.TASKCLUSTER_ROOT_URL,
                             'reference/core/hooks/firing-hooks'
                           )}>
-                          {'"'}
                           firing hooks
-                          {'"'}
                         </a>
                       }{' '}
                       for more information.
