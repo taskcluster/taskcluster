@@ -26,9 +26,9 @@ func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 	// Create custom *http.ServeMux rather than using http.DefaultServeMux, so
 	// registered handler functions won't interfere with future tests that also
 	// use http.DefaultServeMux.
-	ec2MetadataHandler := http.NewServeMux()
-	ec2MetadataHandler.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-		switch req.URL.Path {
+	gcpMetadataHandler := http.NewServeMux()
+	gcpMetadataHandler.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+		switch req.URL.EscapedPath() {
 
 		// simulate GCP endpoints
 
@@ -64,6 +64,11 @@ func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 		case "/computeMetadata/v1/instance/network-interfaces/0/ip":
 			fmt.Fprintf(w, "10.10.10.10")
 
+		// simulate taskcluster secrets endpoints
+		case "/api/secrets/v1/secret/worker-pool%3Atest-provisioner%2F" + workerType:
+			w.WriteHeader(404)
+			fmt.Fprintf(w, "No secret for worker type %v", workerType)
+
 		case "/api/worker-manager/v1/worker/register":
 			if req.Method != "POST" {
 				w.WriteHeader(400)
@@ -92,7 +97,7 @@ func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 			resp := map[string]interface{}{
 				"credentials": map[string]interface{}{
 					"accessToken": "test-access-token",
-					"certificate": "test-certificate",
+					"certificate": "",
 					"clientId":    "test-client-id",
 				},
 			}
@@ -100,12 +105,12 @@ func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 
 		default:
 			w.WriteHeader(400)
-			fmt.Fprintf(w, "Cannot serve URL %v", req.URL)
+			fmt.Fprintf(w, "Cannot serve URL %q", req.URL.EscapedPath())
 		}
 	})
 	s := &http.Server{
 		Addr:           "localhost:13243",
-		Handler:        ec2MetadataHandler,
+		Handler:        gcpMetadataHandler,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,

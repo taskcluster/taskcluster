@@ -3,9 +3,10 @@
 set -exv
 exec &> /var/log/bootstrap.log
 
-# Version numbers ####################
+# Versions ###########################
 LIVELOG_VERSION='v1.1.0'
 TASKCLUSTER_PROXY_VERSION='v5.1.0'
+GENERIC_WORKER_BRANCH='bug1588834'
 ######################################
 
 function retry {
@@ -46,7 +47,7 @@ sleep 5
 systemctl status docker | grep "Started Docker Application Container Engine"
 usermod -aG docker ubuntu
 
-# build generic-worker from bug1578264 branch
+# build generic-worker from ${GENERIC_WORKER_BRANCH} branch
 retry curl -L 'https://dl.google.com/go/go1.12.9.linux-amd64.tar.gz' > go.tar.gz
 tar xvfz go.tar.gz -C /usr/local
 export HOME=/root
@@ -55,7 +56,7 @@ export GOROOT=/usr/local/go
 export PATH="${GOROOT}/bin:${GOPATH}/bin:${PATH}"
 go get -d github.com/taskcluster/generic-worker
 cd "${GOPATH}/src/github.com/taskcluster/generic-worker"
-git checkout bug1578264
+git checkout "${GENERIC_WORKER_BRANCH}"
 CGO_ENABLED=0 go install -tags multiuser -ldflags "-X main.revision=$(git rev-parse HEAD)" github.com/taskcluster/generic-worker
 mv "${GOPATH}/bin/generic-worker" /usr/local/bin/
 

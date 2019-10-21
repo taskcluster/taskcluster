@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"path/filepath"
 	"testing"
+
+	"github.com/taskcluster/generic-worker/fileutil"
 )
 
 func TestNoWorkerTypeUserDataGenericWorkerProperty(t *testing.T) {
@@ -19,7 +21,7 @@ func TestNoPublicConfig(t *testing.T) {
 	m.WorkerTypeDefinitionUserDataFunc = func(t *testing.T) interface{} {
 		return map[string]map[string]interface{}{
 			"genericWorker": {
-				"files": []File{},
+				"files": []fileutil.File{},
 			},
 		}
 	}
