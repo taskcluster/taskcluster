@@ -3854,9 +3854,9 @@ deepmerge@^3.0.0:
   integrity sha512-/TnecbwXEdycfbsM2++O3eGiatEFHjjNciHEwJclM+T5Kd94qD1AP+2elP/Mq0L5b9VZJao5znR01Mz6eX8Seg==
 
 deepmerge@^4.0.0:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-4.1.1.tgz#ee0866e4019fe62c1276b9062d4c4803d9aea14c"
-  integrity sha512-+qO5WbNBKBaZez95TffdUDnGIo4+r5kmsX8aOb7PDHvXsTbghAmleuxjs6ytNaf5Eg4FGBXDS5vqO61TRi6BMg==
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-4.1.2.tgz#73ab0dac658d5e79baabd8b81ce93f9fc9026e89"
+  integrity sha512-9ZXh/8Fp+ggcscoRg324S1aNdGSCl2X1P8F1FPTHbtq3RAxy9ECbU2Wgy2J12r6x/O0BStDlkzcpKK/HptX+Kg==
 
 default-gateway@^4.2.0:
   version "4.2.0"
@@ -11714,8 +11714,7 @@ tar@^4:
     yallist "^3.0.3"
 
 "taskcluster-lib-scopes@link:../libraries/scopes":
-  version "0.0.0"
-  uid ""
+  version "21.0.0"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
