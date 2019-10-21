@@ -160,6 +160,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   suite('[UNIT] AWS provider - registerWorker - negative test cases', function() {
     // For the positive integration test, see api_test.js, registerWorker endpoint
 
+    test('registerWorker - verifyInstanceIdentityDocument - document is not string', async function() {
+      const workerIdentityProof = {
+        "document": {'instanceId': 'abc'},
+        "signature": 'abcd',
+      };
+
+      await assert.rejects(
+        () => provider.registerWorker({worker: workerInDB, workerPool, workerIdentityProof}),
+        new ApiError('Request must include both a document (string) and a signature')
+      );
+      sinon.restore();
+    });
+
     test('registerWorker - verifyInstanceIdentityDocument - bad document', async function() {
       const workerIdentityProof = {
         "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT_bad')).toString(),
@@ -235,8 +248,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       };
 
       await assert.rejects(() => provider.registerWorker({worker: workerInDB, workerPool, workerIdentityProof}),
-        new ApiError('Token validation error'),
-        'Should fail because there is no signature'
+        new ApiError('Request must include both a document (string) and a signature')
       );
       sinon.restore();
     });
