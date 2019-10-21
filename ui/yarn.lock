@@ -1094,10 +1094,10 @@
     eslint-plugin-prettier "^3.1.1"
     prettier "^1.18.2"
 
-"@mozilla-frontend-infra/react-lint@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/react-lint/-/react-lint-2.0.0.tgz#bf9dce2518d76a61807988b4238e42bb5d95c720"
-  integrity sha512-3lzTp66YPTMjI4+KNHXmveMFyMobaLJFHX2cI45m5i6Ob5DodC6P7OJvjHZCL/ShaNmEkMSiAzedI4b5W4kJBA==
+"@mozilla-frontend-infra/react-lint@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/react-lint/-/react-lint-2.0.1.tgz#999eca8c28d0931f3aa3920c0ae64db35fcfd447"
+  integrity sha512-GRBFgFNU/Rp3/Pjpc7hUTP/bF1oA6MJmJyo56NUnyjYX+4ss5/lizscHNl8+IQ6iYbSmXmg5Kgxhr2x1h3Q6yg==
   dependencies:
     "@mozilla-frontend-infra/lint" "^2.0.0"
     "@neutrinojs/airbnb" "9.0.0-rc.4"
