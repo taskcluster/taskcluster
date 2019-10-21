@@ -394,10 +394,7 @@ export default class WMWorkerPoolEditor extends Component {
               }
               secondary={
                 <CodeEditor
-                  value={
-                    JSON.stringify(workerPool.config, null, 2) ||
-                    JSON.stringify({})
-                  }
+                  value={JSON.stringify(workerPool.config || {}, null, 2)}
                   onChange={this.handleEditorChange}
                   lint
                 />
