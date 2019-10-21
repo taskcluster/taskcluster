@@ -43,9 +43,11 @@ const defaultEmpty = defaultTo('');
   }),
 })
 export default class ListNamespaces extends Component {
-  state = this.props.match.params.namespace
-    ? { indexPathInput: this.props.match.params.namespace }
-    : { indexPathInput: '' };
+  state = {
+    indexPathInput: this.props.match.params.namespace
+      ? this.props.match.params.namespace
+      : '',
+  };
 
   componentDidUpdate(prevProps) {
     if (
