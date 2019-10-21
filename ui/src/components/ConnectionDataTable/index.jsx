@@ -9,6 +9,7 @@ import {
   oneOf,
   bool,
 } from 'prop-types';
+import classNames from 'classnames';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -20,7 +21,7 @@ import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import { pageInfo } from '../../utils/prop-types';
 
-@withStyles({
+@withStyles(theme => ({
   loading: {
     textAlign: 'right',
   },
@@ -35,7 +36,10 @@ import { pageInfo } from '../../utils/prop-types';
   tableWrapper: {
     overflowX: 'auto',
   },
-})
+  thWithTopPagination: {
+    height: theme.spacing.quad,
+  },
+}))
 /**
  * A paginated table that operates on a GraphQL PageConnection.
  */
@@ -218,7 +222,12 @@ export default class ConnectionDataTable extends Component {
           <Table>
             {headers && (
               <TableHead>
-                <TableRow>
+                <TableRow
+                  classes={{
+                    head: classNames({
+                      [classes.thWithTopPagination]: !withoutTopPagination,
+                    }),
+                  }}>
                   {headers.map(header => (
                     <TableCell key={`table-header-${header}`}>
                       <TableSortLabel
