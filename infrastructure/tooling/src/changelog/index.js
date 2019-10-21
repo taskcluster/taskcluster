@@ -219,7 +219,7 @@ const add = async (options) => {
   } else if (options.bug) {
     name = `bug-${options.bug}`;
     reference = `reference: bug ${options.bug}\n`;
-  } else if (options.noBug) {
+  } else if (options.bug === false) {
     name = taskcluster.slugid();
     reference = '';
   } else {
