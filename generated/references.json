@@ -714,7 +714,7 @@
       "description": "'The config section of a workertype is using a provider with implementation google must match this.\nMuch of these fields are documented [here](https://cloud.google.com/compute/docs/reference/rest/v1/instanceTemplates)'\n",
       "properties": {
         "launchConfigs": {
-          "description": "An array of possible variations of workers for this pool. Allows to vary across regions/zones/machineType/etc\nEach choice must include at least the required properties but can also include anything in\nthe request body of [the instance creation](https://cloud.google.com/compute/docs/reference/rest/beta/instances/insert)\napi method from gcloud. That said, worker-manager sets `instanceName` and `serviceAccounts` directly and you\ncannot override these. It also fills in some basic labels, will generate a default description, and sets the `taskcluster`\nmetadata key directly. You are free to set other metadata items though.\n",
+          "description": "An array of possible variations of workers for this pool. Allows to vary across regions/zones/machineType/etc\nEach choice must include at least the required properties but can also include anything in\nthe request body of [the instance creation](https://cloud.google.com/compute/docs/reference/rest/beta/instances/insert)\napi method from gcloud. That said, worker-manager sets `instanceName` and `serviceAccounts` directly and you\ncannot override these. It also fills in some basic labels, will generate a default description, and sets the `taskcluster`\nmetadata key directly. You are free to set other metadata items though. A subset of these fields we require you to set such as `machineType`.\n",
           "items": {
             "additionalProperties": true,
             "properties": {
@@ -754,7 +754,7 @@
               },
               "workerConfig": {
                 "additionalProperties": true,
-                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).\nA subset of these fields we require you to set such as `machineType`.\n",
+                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).\n",
                 "title": "Worker Config",
                 "type": "object"
               },
@@ -847,6 +847,12 @@
                 "description": "AWS region (not to be confused with AZ) to launch the instances in",
                 "title": "Region",
                 "type": "string"
+              },
+              "workerConfig": {
+                "additionalProperties": true,
+                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).\n",
+                "title": "Worker Config",
+                "type": "object"
               }
             },
             "required": [
@@ -8288,7 +8294,7 @@
           "name": "removeWorker",
           "query": [
           ],
-          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "route": "/workers/<workerPoolId>/<workerGroup>/<workerId>",
           "scopes": "worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>",
           "stability": "experimental",
           "title": "Remove a Worker",

@@ -55,13 +55,44 @@ program.command('generate')
   });
 
 program.command('changelog')
+  .description('Add a changelog entry (required for every PR)')
+  .option('--major', 'Add a major changelog entry')
+  .option('--minor', 'Add a minor changelog entry')
+  .option('--patch', 'Add a patch changelog entry')
+  .option('--silent', 'Add a silent changelog entry (no content required)')
+  .option('--issue <issue>', 'Reference this issue # in the added changelog')
+  .option('--bug <bug>', 'Reference this Bugzilla bug in the added changelog')
+  .option('--no-bug', 'This change does not reference a but or an issue')
   .action((...options) => {
     if (options.length !== 1) {
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {main} = require('./changelog');
-    run(main, options[0]);
+    const {add} = require('./changelog');
+    run(add, options[0]);
+  });
+
+program.command('changelog:show')
+  .description('Show the changelog for the next release, checking syntax')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {show} = require('./changelog');
+    run(show, options[0]);
+  });
+
+program.command('changelog:check')
+  .description('Check the changelog')
+  .option('--pr <pr>', 'Check that this pull request contains a changelog')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {check} = require('./changelog');
+    run(check, options[0]);
   });
 
 program.command('dev')

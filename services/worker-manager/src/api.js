@@ -507,7 +507,7 @@ builder.declare({
 
 builder.declare({
   method: 'delete',
-  route: '/workers/:workerPoolId:/:workerGroup/:workerId',
+  route: '/workers/:workerPoolId/:workerGroup/:workerId',
   name: 'removeWorker',
   title: 'Remove a Worker',
   category: 'Worker Manager',

@@ -4029,7 +4029,7 @@ module.exports = {
           "name": "removeWorker",
           "query": [
           ],
-          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "route": "/workers/<workerPoolId>/<workerGroup>/<workerId>",
           "scopes": "worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>",
           "stability": "experimental",
           "title": "Remove a Worker",

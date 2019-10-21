@@ -73,6 +73,7 @@ export default class Display extends Component {
       }),
       {}
     );
+    const headers = [{ label: 'Display', id: 'display', type: 'string' }];
 
     return (
       <Dashboard
@@ -87,7 +88,7 @@ export default class Display extends Component {
         {!display && displays && (
           <DataTable
             items={displays}
-            headers={['Display']}
+            headers={headers}
             noItemsMessage={
               error ? 'No displays available.' : 'No displays yet. Loading...'
             }

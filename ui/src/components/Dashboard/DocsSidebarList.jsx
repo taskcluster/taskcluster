@@ -263,7 +263,9 @@ export default class DocsSidebarList extends Component {
               component={Link}
               to={removeReadmeFromPath(item.path)}
               classes={{ container: classes.listItem }}>
-              <ListItemIcon>{<item.icon />}</ListItemIcon>
+              <ListItemIcon>
+                <item.icon />
+              </ListItemIcon>
               <ListItemText primary={item.label} />
               {item.hasChildren &&
                 (menuOpen && currentMenu === item.label ? (

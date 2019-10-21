@@ -1730,7 +1730,7 @@ var services = map[string]definitions.Service{
 				Description: "Remove an existing worker.  The precise behavior of this method depends\non the provider implementing the given worker.  Some providers\ndo not support removing workers at all, and will return a 400 error.\nOthers may begin removing the worker, but it may remain available via\nthe API (perhaps even in state RUNNING) afterward.",
 				Stability:   "experimental",
 				Method:      "delete",
-				Route:       "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+				Route:       "/workers/<workerPoolId>/<workerGroup>/<workerId>",
 				Args: []string{
 					"workerPoolId",
 					"workerGroup",

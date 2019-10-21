@@ -223,6 +223,14 @@ export default class PulseMessages extends Component {
     const iconSize = 16;
     const description = `Bind to Pulse exchanges in your browser, observe messages arriving and inspect
       messages. Useful when debugging and working with undocumented Pulse exchanges.`;
+    const headers = [
+      { label: 'Exchange', id: 'exchange', type: 'string' },
+      {
+        label: 'Routing Key',
+        id: 'routingKey',
+        type: 'string',
+      },
+    ];
 
     return (
       <Dashboard
@@ -279,7 +287,7 @@ export default class PulseMessages extends Component {
                   <TableCell>{message.routingKey}</TableCell>
                 </TableRow>
               )}
-              headers={['Exchange', 'Routing Key']}
+              headers={headers}
             />
           </List>
           {listening ? (

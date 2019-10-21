@@ -7,6 +7,7 @@ const builder = require('../src/api');
 const load = require('../src/main');
 const RateLimit = require('../src/ratelimit');
 const data = require('../src/data');
+const debug = require('debug')('test');
 
 const testclients = {
   'test-client': ['*'],
@@ -103,7 +104,7 @@ exports.withSES = (mock, skipping) => {
         AttributeNames: ['ApproximateNumberOfMessages', 'QueueArn'],
       }).promise().then(req => req.Attributes);
       if (emailAttr.ApproximateNumberOfMessages !== '0') {
-        console.log(`Detected ${emailAttr.ApproximateNumberOfMessages} messages in email queue. Purging.`);
+        debug(`Detected ${emailAttr.ApproximateNumberOfMessages} messages in email queue. Purging.`);
         await sqs.purgeQueue({
           QueueUrl: emailSQSQueue,
         }).promise();

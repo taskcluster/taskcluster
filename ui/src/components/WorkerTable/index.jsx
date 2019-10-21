@@ -4,7 +4,6 @@ import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import Typography from '@material-ui/core/Typography';
 import ListItemText from '@material-ui/core/ListItemText';
-import { camelCase } from 'change-case';
 import memoize from 'fast-memoize';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { withStyles } from '@material-ui/core/styles';
@@ -56,8 +55,6 @@ export default class WorkerTable extends Component {
 
   getTableData = memoize(
     ({ sortBy, sortDirection, worker }) => {
-      const sortByProperty = camelCase(sortBy);
-
       if (!worker) {
         return null;
       }
@@ -76,10 +73,8 @@ export default class WorkerTable extends Component {
       }
 
       return tasks.sort((a, b) => {
-        const firstElement =
-          sortDirection === 'desc' ? b[sortByProperty] : a[sortByProperty];
-        const secondElement =
-          sortDirection === 'desc' ? a[sortByProperty] : b[sortByProperty];
+        const firstElement = sortDirection === 'desc' ? b[sortBy] : a[sortBy];
+        const secondElement = sortDirection === 'desc' ? a[sortBy] : b[sortBy];
 
         return sort(firstElement, secondElement);
       });
@@ -89,11 +84,11 @@ export default class WorkerTable extends Component {
     }
   );
 
-  handleHeaderClick = sortBy => {
+  handleHeaderClick = header => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
+    const sortDirection = this.state.sortBy === header.id ? toggled : 'desc';
 
-    this.setState({ sortBy, sortDirection });
+    this.setState({ sortBy: header.id, sortDirection });
   };
 
   render() {
@@ -101,6 +96,30 @@ export default class WorkerTable extends Component {
     const { sortBy, sortDirection } = this.state;
     const iconSize = 16;
     const items = this.getTableData({ sortBy, sortDirection, worker });
+    const headers = [
+      { label: 'State', id: 'state', type: 'string' },
+      {
+        label: 'Name',
+        id: 'name',
+        type: 'string',
+      },
+      {
+        label: 'Task ID',
+        id: 'taskId',
+        type: 'string',
+      },
+      {
+        label: 'Started',
+        id: 'started',
+        type: 'string',
+      },
+
+      {
+        label: 'Resolved',
+        id: 'resolved',
+        type: 'string',
+      },
+    ];
 
     return (
       <DataTable
@@ -156,8 +175,8 @@ export default class WorkerTable extends Component {
             </CopyToClipboard>
           </TableRow>
         )}
-        headers={['State', 'Name', 'Task ID', 'Started', 'Resolved']}
-        sortByHeader={sortBy}
+        headers={headers}
+        sortByLabel={sortBy}
         sortDirection={sortDirection}
         onHeaderClick={this.handleHeaderClick}
       />
