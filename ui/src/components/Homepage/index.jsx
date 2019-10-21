@@ -19,9 +19,7 @@ import SignInDialog from '../SignInDialog';
     fontFamily: 'Roboto500',
     [theme.breakpoints.down('sm')]: {
       marginBottom: theme.spacing.double,
-    },
-    '@media (max-width: 400px)': {
-      fontSize: '40px',
+      fontSize: 40, 
     },
   },
   actions: {
@@ -38,8 +36,8 @@ import SignInDialog from '../SignInDialog';
     marginRight: theme.spacing.unit,
   },
   text: {
-    '@media (max-width: 400px)': {
-      fontSize: '20px',
+    [theme.breakpoints.down('sm')]: {
+      fontSize: 20,
     },
   },
 }))
@@ -74,7 +72,7 @@ export default class HomePage extends Component {
         </Hidden>
         <Typography variant="h5" className={classes.text}>
           {
-            "A task execution framework that supports Mozilla's continuous integration and release processes."
+           " A task execution framework that supports Mozilla's continuous integration and release processes."
           }
         </Typography>
         <Divider className={classes.divider} />
