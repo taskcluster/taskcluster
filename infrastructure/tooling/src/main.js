@@ -62,7 +62,7 @@ program.command('changelog')
   .option('--silent', 'Add a silent changelog entry (no content required)')
   .option('--issue <issue>', 'Reference this issue # in the added changelog')
   .option('--bug <bug>', 'Reference this Bugzilla bug in the added changelog')
-  .option('--no-bug', 'This change does not reference a but or an issue')
+  .option('--no-bug', 'This change does not reference a bug or an issue')
   .action((...options) => {
     if (options.length !== 1) {
       console.error('unexpected command-line arguments');
