@@ -1,4 +1,3 @@
-import { Redirect } from 'react-router-dom';
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
@@ -106,10 +105,10 @@ export default class ThirdPartyLogin extends Component {
             formData={formData}
           />
         )}
-        {!user && isOneLoginStrategy && (
-          <Redirect to={`/login/${window.env.UI_LOGIN_STRATEGY_NAMES}`} />
-        )}
-        {!user && !isOneLoginStrategy && <Homepage />}
+        {!user && <Homepage />}
+        {!user &&
+          isOneLoginStrategy &&
+          window.open(`/login/${window.env.UI_LOGIN_STRATEGY_NAMES}`, '_blank')}
       </Dashboard>
     );
   }
