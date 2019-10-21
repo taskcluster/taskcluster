@@ -10,7 +10,7 @@ import ArchiveIcon from 'mdi-react/ArchiveIcon';
 import FileWordIcon from 'mdi-react/FileWordIcon';
 import FileExcelIcon from 'mdi-react/FileExcelIcon';
 import FilePowerpointIcon from 'mdi-react/FilePowerpointIcon';
-import FileXmlIcon from 'mdi-react/FileXmlIcon';
+import FileCodeIcon from 'mdi-react/FileCodeIcon';
 import FileVideoIcon from 'mdi-react/FileVideoIcon';
 import FileImageIcon from 'mdi-react/FileImageIcon';
 import FileMusicIcon from 'mdi-react/FileMusicIcon';
@@ -109,7 +109,7 @@ export const MIMETYPE_ICONS = [
   [FileExcelIcon, ['text/csv']],
   [FilePowerpointIcon, []],
   [
-    FileXmlIcon,
+    FileCodeIcon,
     [
       'application/javascript',
       'application/json',
