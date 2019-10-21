@@ -196,8 +196,8 @@ class AwsProvider extends Provider {
     }
 
     const {document, signature} = workerIdentityProof;
-    if (!document || !signature) {
-      throw new ApiError('Token validation error');
+    if (!document || !signature || !(typeof document === "string")) {
+      throw new ApiError('Request must include both a document (string) and a signature');
     }
 
     if (!this.verifyInstanceIdentityDocument({document, signature})) {
