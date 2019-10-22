@@ -26,9 +26,9 @@ import SignInDialog from '../SignInDialog';
     marginTop: theme.spacing.triple,
   },
   divider: {
-    margin: ${theme.spacing.unit * 10}px 0 ${theme.spacing.triple}px,
+    margin: `${theme.spacing.unit * 10}px 0 ${theme.spacing.triple}px`,
     [theme.breakpoints.down('sm')]: {
-      margin: ${theme.spacing.unit * 5}px 0 ${theme.spacing.double}px,
+      margin: `${theme.spacing.unit * 5}px 0 ${theme.spacing.double}px`,
     },
   },
   icon: {
