@@ -224,7 +224,7 @@ export default class SecretForm extends Component {
             {showSecret && (
               <ListItem className={classes.editorListItem}>
                 <CodeEditor
-                  placeholder="foo:bar"
+                  placeholder="YAML representation of secret data"
                   onChange={this.handleEditorChange}
                   mode="yaml"
                   lint
