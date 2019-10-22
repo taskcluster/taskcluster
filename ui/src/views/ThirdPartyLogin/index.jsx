@@ -108,6 +108,7 @@ export default class ThirdPartyLogin extends Component {
         {!user && <Homepage />}
         {!user &&
           isOneLoginStrategy &&
+          window.opener &&
           window.open(`/login/${window.env.UI_LOGIN_STRATEGY_NAMES}`, '_blank')}
       </Dashboard>
     );
