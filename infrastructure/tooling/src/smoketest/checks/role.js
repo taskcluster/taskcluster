@@ -9,19 +9,24 @@ exports.tasks.push({
     'target-roles',
   ],
   run: async () => {
-    let auth = new taskcluster.Auth(taskcluster.fromEnvVars());
-    let randomId = taskcluster.slugid();
-    let roleId = `project:taskcluster:smoketest:${randomId}`;
-    let payload = {
+    const auth = new taskcluster.Auth(taskcluster.fromEnvVars());
+    const randomId = taskcluster.slugid();
+    const roleId = `project:taskcluster:smoketest:${randomId}:*`;
+    const payload = {
       description: 'smoketest test',
-      scopes: ['project:taskcluster:smoketest:*'],
+      scopes: ['project:taskcluster:smoketest:<..>/*'],
     };
-    let expandPayload = {
-      scopes: [`assume:${roleId}`],
+    const expandPayload = {
+      scopes: [`assume:project:taskcluster:smoketest:${randomId}:abc`],
     };
-    let roleCreated = await auth.createRole(roleId, payload);
-    let expandedRole = await auth.expandScopes(expandPayload);
-    assert.deepEqual(roleCreated.expandedScopes, expandedRole.scopes);
+    await auth.createRole(roleId, payload);
+    const expandedRole = await auth.expandScopes(expandPayload);
+    const expectedScopes = {
+      scopes:
+      [ `assume:project:taskcluster:smoketest:${randomId}:abc`,
+        'project:taskcluster:smoketest:abc/*' ],
+    };
+    assert.deepEqual(expandedRole.scopes, expectedScopes.scopes);
     await auth.deleteRole(roleId);
   },
 });
