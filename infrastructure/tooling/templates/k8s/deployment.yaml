@@ -49,3 +49,9 @@ spec:
             timeoutSeconds: 5
             periodSeconds: 10
             initialDelaySeconds: 3
+        livenessProbe:
+          exec:
+            command: "exit $(awk 'BEGIN{srand(); print (rand() > 0.3)}')"
+          initialDelaySeconds: 86400
+          periodSeconds: 10
+          failureThreshold: 1
