@@ -2,12 +2,8 @@ import React, { Component, Fragment } from 'react';
 import { withApollo } from 'react-apollo';
 import List from '@material-ui/core/List';
 import { withStyles } from '@material-ui/core/styles';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
 import DotsVerticalIcon from 'mdi-react/DotsVerticalIcon';
-import SignInDialog from '../SignInDialog';
 import { withAuth } from '../../utils/Auth';
 
 @withAuth
@@ -38,40 +34,7 @@ import { withAuth } from '../../utils/Auth';
 }))
 export default class MobileMenuList extends Component {
   render() {
-    const {
-      classes,
-      user,
-      signInDialogOpen,
-      onSignInDialogOpen,
-      onSignInDialogClose,
-      onMenuClick,
-    } = this.props;
-
-    if (!user) {
-      return (
-        <Fragment>
-          <List component="nav" className={classes.mainMenu}>
-            <ListItem
-              button
-              aria-haspopup="true"
-              aria-controls="mobile-menu"
-              aria-label="mobile menu"
-              onClick={onSignInDialogOpen}>
-              <ListItemIcon className={classes.icon}>
-                <AccountCircleIcon className={classes.icon} />
-              </ListItemIcon>
-              <ListItemText
-                disableTypography
-                className={classes.text}
-                inset
-                primary="Sign In"
-              />
-            </ListItem>
-          </List>
-          <SignInDialog open={signInDialogOpen} onClose={onSignInDialogClose} />
-        </Fragment>
-      );
-    }
+    const { classes, onMenuClick } = this.props;
 
     return (
       <Fragment>

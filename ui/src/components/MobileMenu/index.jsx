@@ -14,6 +14,7 @@ import { withAuth } from '../../utils/Auth';
 import MobileMenuList from './MobileMenuList';
 import MobileMenuButton from './MobileMenuButton';
 import { THEME } from '../../utils/constants';
+import SignInDialog from '../SignInDialog';
 
 @withAuth
 @withApollo
@@ -75,8 +76,20 @@ export default class MobileMenu extends Component {
   };
 
   render() {
-    const { classes, user, appBar } = this.props;
     const { anchorEl, signInDialogOpen } = this.state;
+    const {
+      className,
+      classes,
+      user,
+      appBar,
+      buttonProps,
+      onSignInDialogOpen,
+      onSignInDialogClose,
+      onMenuClick,
+      onAuthorize,
+      onUnauthorize,
+      ...props
+    } = this.props;
 
     return (
       <Fragment>
@@ -102,27 +115,57 @@ export default class MobileMenu extends Component {
             onMenuClick={this.handleMenuClick}
           />
         )}
-        <Menu
-          id="mobile-menu"
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={this.handleMenuClose}>
-          <MenuItem title="Documentation" component={Link} to="/docs/">
-            <BookOpenPageVariantIcon className={classes.leftIcon} />
-            Documentation
-          </MenuItem>
 
-          <MenuItem title="Your Profile" component={Link} to="/profile/">
-            <AccountIcon className={classes.leftIcon} />
-            Profile
-          </MenuItem>
-          <MenuItem
-            title={`Sign Out of ${window.env.APPLICATION_NAME}`}
-            onClick={this.handleSignOutClick}>
-            <HandPeaceIcon className={classes.leftIcon} />
-            Sign Out
-          </MenuItem>
-        </Menu>
+        {user && (
+          <Menu
+            id="mobile-menu"
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={this.handleMenuClose}>
+            <MenuItem title="Documentation" component={Link} to="/docs/">
+              <BookOpenPageVariantIcon className={classes.leftIcon} />
+              Documentation
+            </MenuItem>
+
+            <MenuItem title="Your Profile" component={Link} to="/profile/">
+              <AccountIcon className={classes.leftIcon} />
+              Profile
+            </MenuItem>
+            <MenuItem
+              title={`Sign Out of ${window.env.APPLICATION_NAME}`}
+              onClick={this.handleSignOutClick}>
+              <HandPeaceIcon className={classes.leftIcon} />
+              Sign Out
+            </MenuItem>
+          </Menu>
+        )}
+
+        {!user && (
+          <Menu
+            id="mobile-menu"
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={this.handleMenuClose}>
+            <MenuItem title="Documentation" component={Link} to="/docs/">
+              <BookOpenPageVariantIcon className={classes.leftIcon} />
+              Documentation
+            </MenuItem>
+            <MenuItem>
+              <MenuItem
+                title="Sign In"
+                onClick={onSignInDialogOpen}
+                {...buttonProps}
+                {...props}>
+                <HandPeaceIcon className={classes.leftIcon} />
+                Sign In
+              </MenuItem>
+              <SignInDialog
+                open={signInDialogOpen}
+                onClose={onSignInDialogClose}
+              />
+            </MenuItem>
+          </Menu>
+        )}
       </Fragment>
     );
   }
