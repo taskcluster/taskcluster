@@ -179,6 +179,7 @@ const check_pr = async (pr) => {
     /^clients\/client-shell\/apis\/services\.go$/,
     /^dev-docs\/dev-config-example\.yml$/,
     /^clients\/client-go\/tc*\//,
+    /^\.github\//,
   ];
   const hasImportantFiles = files.some(filename => boringFiles.every(r => !r.test(filename)));
 
