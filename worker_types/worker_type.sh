@@ -11,7 +11,7 @@
 echo "$(date): Checking inputs..."
 
 if [ "${#}" -ne 3 ]; then
-  echo "Please provide a worker type, provider (aws/gcp), and action (delete|update), e.g. worker_type.sh aws win2012r2 update" >&2
+  echo "Please specify a provider (aws/gcp), worker pool (e.g. pmoore-test/gwci-linux) and action (delete|update), e.g. worker_type.sh aws aws-provisioner-v1/win2012r2 update" >&2
   exit 64
 fi
 
@@ -21,8 +21,19 @@ if [ "${PROVIDER}" != "aws" ] && [ "${PROVIDER}" != "gcp" ]; then
   exit 67
 fi
 
+export WORKER_POOL="${2}"
+if ! echo "${WORKER_POOL}" | grep -q '/'; then
+  echo "worker_type.sh: Worker pool (second argument) must contain '/' character - but have '${WORKER_POOL}'" >&2
+  exit 68
+fi
 
-export WORKER_TYPE="${2}"
+export PROVISIONER_ID="${WORKER_POOL%%/*}"
+if [ -z "${PROVISIONER_ID}" ]; then
+  echo "Empty provisioner ID" >&2
+  exit 69
+fi
+
+export WORKER_TYPE="${WORKER_POOL#*/}"
 if [ ! -d "$(dirname "${0}")/${WORKER_TYPE}" ]; then
   echo "worker_type.sh: No directory for worker type: '$(dirname "${0}")/${WORKER_TYPE}'" >&2
   exit 65
@@ -67,7 +78,6 @@ case "${PROVIDER}" in
     # UUID is 20 random chars of [a-z0-9]
     UUID="$(LC_CTYPE=C </dev/urandom tr -dc "a-z0-9" | head -c 20)"
     export UNIQUE_NAME="${WORKER_TYPE}-${UUID}"
-	export PROVISIONER_ID=pmoore-test
 
     echo us-central1-a 118 | xargs -P32 -n3 ../process_region.sh
 
