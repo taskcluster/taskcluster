@@ -37,7 +37,7 @@ import SignInDialog from '../SignInDialog';
   },
   ciDescription: {
     [theme.breakpoints.down('sm')]: {
-      fontSize: 20,
+      fontSize: 16,
     },
   },
 }))
