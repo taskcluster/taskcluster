@@ -116,7 +116,7 @@ export default class ViewClient extends Component {
   };
 
   handleDialogActionComplete = () => {
-    this.props.history.push(`/auth/clients`);
+    this.props.history.replace(`/auth/clients`);
   };
 
   handleDisableClient = async clientId => {
@@ -229,7 +229,7 @@ export default class ViewClient extends Component {
       }
 
       if (isNewClient) {
-        this.props.history.push({
+        this.props.history.replace({
           pathname: `/auth/clients/${encodeURIComponent(clientId)}`,
           state: { accessToken: result.data.createClient.accessToken },
         });

@@ -57,14 +57,14 @@ export default class ViewClients extends PureComponent {
     });
 
     if (search !== searchUri) {
-      this.props.history.push(
+      this.props.history.replace(
         search.length > 0 ? `?${stringify({ search })}` : '/auth/clients'
       );
     }
   };
 
   handleCreate = () => {
-    this.props.history.push('/auth/clients/create');
+    this.props.history.replace('/auth/clients/create');
   };
 
   handlePageChange = ({ cursor, previousCursor }) => {
