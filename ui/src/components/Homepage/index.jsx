@@ -35,7 +35,7 @@ import SignInDialog from '../SignInDialog';
     fill: theme.palette.common.white,
     marginRight: theme.spacing.unit,
   },
-  text: {
+  ciDescription: {
     [theme.breakpoints.down('sm')]: {
       fontSize: 20,
     },
@@ -70,7 +70,7 @@ export default class HomePage extends Component {
             {window.env.APPLICATION_NAME}
           </Typography>
         </Hidden>
-        <Typography variant="h5" className={classes.text}>
+        <Typography variant="h5" className={classes.ciDescription}>
           A task execution framework that supports Mozilla&apos;s continuous
           integration and release processes.
         </Typography>
@@ -80,9 +80,7 @@ export default class HomePage extends Component {
             variant="contained"
             color="secondary"
             onClick={this.handleOpenSignInDialog}>
-            <AccountCircleIcon
-              className={classes.icon}
-            />
+            <AccountCircleIcon className={classes.icon} />
             Sign in
           </Button>
           <SignInDialog
