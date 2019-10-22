@@ -19,7 +19,7 @@ import SignInDialog from '../SignInDialog';
     fontFamily: 'Roboto500',
     [theme.breakpoints.down('sm')]: {
       marginBottom: theme.spacing.double,
-      fontSize: 40, 
+      fontSize: 40
     },
   },
   actions: {
@@ -37,7 +37,7 @@ import SignInDialog from '../SignInDialog';
   },
   text: {
     [theme.breakpoints.down('sm')]: {
-      fontSize: 20,
+      fontSize: 20
     },
   },
 }))
