@@ -106,9 +106,7 @@ export default class SecretForm extends Component {
       ? addYears(new Date(), 1000)
       : this.props.secret.expires,
     editorValue: this.props.isNewSecret
-      ? safeDump({
-          foo: 'bar',
-        })
+      ? ''
       : safeDump(this.props.secret.secret),
     showSecret: this.props.isNewSecret,
   };
@@ -226,6 +224,7 @@ export default class SecretForm extends Component {
             {showSecret && (
               <ListItem className={classes.editorListItem}>
                 <CodeEditor
+                  placeholder="YAML representation of secret data"
                   onChange={this.handleEditorChange}
                   mode="yaml"
                   lint
