@@ -168,11 +168,11 @@ export default class ViewClient extends Component {
     this.setState({ accessToken: null });
   };
 
-  // Only localhost callback_url's are whitelisted.
+  // Only localhost callback_url's are allowed.
   // This tool is not intended for other uses
   // than setting up credentials via `taskcluster signin`,
   // which uses this URL format.
-  isWhitelistedCallback = callbackUrl =>
+  isAllowedCallback = callbackUrl =>
     /^https?:\/\/localhost(:[0-9]+)?(\/|$)/.test(callbackUrl);
 
   handleSaveClient = async (client, clientId) => {
@@ -181,7 +181,7 @@ export default class ViewClient extends Component {
     const callbackUrl = queryString.callback_url;
 
     // Do not bother creating a client if CLI Login has bad url
-    if (callbackUrl && !this.isWhitelistedCallback(callbackUrl)) {
+    if (callbackUrl && !this.isAllowedCallback(callbackUrl)) {
       this.setState({
         error: `Callback URL ${callbackUrl} is not whitelisted.`,
       });
@@ -207,15 +207,9 @@ export default class ViewClient extends Component {
 
       // CLI login
       if (callbackUrl) {
-        if (this.isWhitelistedCallback(callbackUrl)) {
-          window.location.replace(
-            `${callbackUrl}?clientId=${clientId}&accessToken=${result.data.createClient.accessToken}`
-          );
-        } else {
-          this.setState({
-            error: `Callback URL ${callbackUrl} is not whitelisted.`,
-          });
-        }
+        window.location.replace(
+          `${callbackUrl}?clientId=${clientId}&accessToken=${result.data.createClient.accessToken}`
+        );
 
         return;
       }
