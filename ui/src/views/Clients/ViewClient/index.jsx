@@ -183,7 +183,7 @@ export default class ViewClient extends Component {
     // Do not bother creating a client if CLI Login has bad url
     if (callbackUrl && !this.isAllowedCallback(callbackUrl)) {
       this.setState({
-        error: `Callback URL ${callbackUrl} is not whitelisted.`,
+        error: `Callback URL ${callbackUrl} is not allowed.`,
       });
 
       return;
