@@ -59,6 +59,15 @@ var (
 	configFile string
 	Features   []Feature
 
+	// newestDeploymentID is an overwritable function to fetch the
+	// latest/newest/most-recent deployment ID. When not running under AWS
+	// Provisioner nor Worker Manager, this function simply checks the local
+	// generic-worker.config file. If running under AWS Provisioner or Worker
+	// Manager, newestDeploymentID is replaced with a function that fetches
+	// the worker's deployment ID from the latest config for the worker's
+	// worker type.
+	newestDeploymentID func() (string, error)
+
 	logName = "public/logs/live_backing.log"
 	logPath = filepath.Join("generic-worker", "live_backing.log")
 
@@ -230,6 +239,19 @@ func loadConfig(filename string, queryAWSUserData bool, queryGCPMetaData bool) (
 			WorkerManagerBaseURL:           "",
 			WorkerTypeMetadata:             map[string]interface{}{},
 		},
+	}
+
+	newestDeploymentID = func() (string, error) {
+		configData, err := ioutil.ReadFile(configFile)
+		if err != nil {
+			return "", err
+		}
+		var tempConfig gwconfig.Config
+		err = json.Unmarshal(configData, &tempConfig)
+		if err != nil {
+			return "", err
+		}
+		return tempConfig.DeploymentID, nil
 	}
 
 	configFileAbs, err := filepath.Abs(filename)
@@ -429,7 +451,7 @@ func RunWorker() (exitCode ExitCode) {
 	// loop, claiming and running tasks!
 	lastActive := time.Now()
 	// use zero value, to be sure that a check is made before first task runs
-	lastQueriedProvisioner := time.Time{}
+	lastCheckedDeploymentID := time.Time{}
 	lastReportedNoTasks := time.Now()
 	sigInterrupt := make(chan os.Signal, 1)
 	signal.Notify(sigInterrupt, os.Interrupt)
@@ -441,8 +463,8 @@ func RunWorker() (exitCode ExitCode) {
 		// See https://bugzil.la/1298010 - routinely check if this worker type is
 		// outdated, and shut down if a new deployment is required.
 		// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
-		if configureForAWS && time.Now().Round(0).Sub(lastQueriedProvisioner) > time.Duration(config.CheckForNewDeploymentEverySecs)*time.Second {
-			lastQueriedProvisioner = time.Now()
+		if time.Now().Round(0).Sub(lastCheckedDeploymentID) > time.Duration(config.CheckForNewDeploymentEverySecs)*time.Second {
+			lastCheckedDeploymentID = time.Now()
 			if deploymentIDUpdated() {
 				return NONCURRENT_DEPLOYMENT_ID
 			}
@@ -490,7 +512,7 @@ func RunWorker() (exitCode ExitCode) {
 			log.Printf("Resolved %v tasks in total so far%v.", tasksResolved, remainingTaskCountText)
 			if remainingTasks == 0 {
 				log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
-				if configureForAWS && deploymentIDUpdated() {
+				if deploymentIDUpdated() {
 					return NONCURRENT_DEPLOYMENT_ID
 				}
 				return TASKS_COMPLETE
@@ -538,6 +560,20 @@ func RunWorker() (exitCode ExitCode) {
 			return WORKER_STOPPED
 		}
 	}
+}
+
+func deploymentIDUpdated() bool {
+	latestDeploymentID, err := newestDeploymentID()
+	switch {
+	case err != nil:
+		log.Printf("%v", err)
+	case latestDeploymentID == config.DeploymentID:
+		log.Printf("No change to deploymentId - %q == %q", config.DeploymentID, latestDeploymentID)
+	default:
+		log.Printf("New deploymentId found! %q => %q - therefore shutting down!", config.DeploymentID, latestDeploymentID)
+		return true
+	}
+	return false
 }
 
 // ClaimWork queries the Queue to find a task.

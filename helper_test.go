@@ -170,6 +170,9 @@ func setup(t *testing.T) (teardown func()) {
 			},
 		},
 	}
+	newestDeploymentID = func() (string, error) {
+		return config.DeploymentID, nil
+	}
 	setConfigRunTasksAsCurrentUser()
 	return teardown
 }

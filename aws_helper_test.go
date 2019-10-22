@@ -207,6 +207,22 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 			m.workerTypeSecret(t, w)
 
 		// simulate AWS endpoints
+		case "/latest/dynamic/instance-identity/document":
+			resp := map[string]interface{}{
+				"availabilityZone": "outer-space",
+				"privateIp":        "87.65.43.21",
+				"version":          "2017-09-30",
+				"instanceId":       "test-instance-id",
+				"instanceType":     "p3.teenyweeny",
+				"accountId":        "123456789012",
+				"imageId":          "test-ami",
+				"pendingTime":      "2016-11-19T16:32:11Z",
+				"architecture":     "x86_64",
+				"region":           "quadrant-4",
+			}
+			WriteJSON(t, w, resp)
+		case "/latest/dynamic/instance-identity/signature":
+			fmt.Fprint(w, "test-signature")
 		case "/latest/meta-data/ami-id":
 			fmt.Fprint(w, "test-ami")
 		case "/latest/meta-data/spot/termination-time":
