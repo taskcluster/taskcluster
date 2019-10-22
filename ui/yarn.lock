@@ -3475,15 +3475,10 @@ core-js@^1.0.0:
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-1.2.7.tgz#652294c14651db28fa93bd2d5ff2983a4f08c636"
   integrity sha1-ZSKUwUZR2yj6k70tX/KYOk8IxjY=
 
-core-js@^2.4.0:
+core-js@^2.4.0, core-js@^2.5.3:
   version "2.6.10"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.10.tgz#8a5b8391f8cc7013da703411ce5b585706300d7f"
   integrity sha512-I39t74+4t+zau64EN1fE5v2W31Adtc/REhzWN+gWRRXg6WH5qAsZm62DHpQ1+Yhe4047T55jvzz7MUqF/dBBlA==
-
-core-js@^2.5.3:
-  version "2.6.9"
-  resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.9.tgz#6b4b214620c834152e179323727fc19741b084f2"
-  integrity sha512-HOpZf6eXmnl7la+cUdMnLvUxKNqLUzJvgIziQ0DiF3JwSImNphIqdGqzj6hIKyX04MmV0poclQ7+wjWvxQyR2A==
 
 core-util-is@~1.0.0:
   version "1.0.2"
@@ -7551,9 +7546,9 @@ material-ui-pickers@2.2.4:
     tslib "^1.9.3"
 
 material-ui-treeview@^3.2.0:
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/material-ui-treeview/-/material-ui-treeview-3.4.0.tgz#92ff3a0ca975564be7d9c54e0120e19d870a0202"
-  integrity sha512-tKbHBEAkPJfCYR4JK8g6cnSDCl9d9xa7mATQiq5/qRu8x1MjClA8qA+bIrMZWndYgfjHbRedVIbVDr9vOVzRZw==
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/material-ui-treeview/-/material-ui-treeview-3.5.0.tgz#9260f543de9d682f6e5ce887da482ceb207341e6"
+  integrity sha512-qor9cwiBiR3Q5/P7wgpZzdlMkycXlOCD6AyrFLOh6Q3FCsP8zkPCFXiRfvudS1PAp+m64EwdbUIs0GSoAakI1w==
   dependencies:
     "@material-ui/icons" "^1.1.0"
     classnames "^2.2.6"
