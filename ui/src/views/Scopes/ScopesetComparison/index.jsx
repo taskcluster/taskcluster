@@ -12,6 +12,38 @@ import Dashboard from '../../../components/Dashboard/index';
 import Button from '../../../components/Button/index';
 import splitLines from '../../../utils/splitLines';
 
+const getScopesetDiff = (scopesA, scopesB) => {
+  const scopesUnion = scopeUnion(scopesA, scopesB);
+  const scopesetDiff = [];
+
+  scopesUnion.forEach(scope => {
+    const s1 = scopeIntersection([scope], scopesA);
+    const s2 = scopeIntersection([scope], scopesB);
+
+    scopesetDiff.push([s1, s2]);
+  });
+
+  return scopesetDiff;
+};
+
+const getCellColors = scopesetDiff => {
+  const cellColors = [];
+
+  scopesetDiff.forEach(([s1, s2]) => {
+    if (s1.length === 0 && s2.length) {
+      cellColors.push(['', 'greenCell']);
+    } else if (s1.length && s2.length === 0) {
+      cellColors.push(['redCell', '']);
+    } else if (!equals(s1, s2)) {
+      cellColors.push(['yellowCell', 'yellowCell']);
+    } else {
+      cellColors.push(['', '']);
+    }
+  });
+
+  return cellColors;
+};
+
 @hot(module)
 @withStyles(theme => ({
   actionButton: {
@@ -37,10 +69,29 @@ import splitLines from '../../../utils/splitLines';
   },
 }))
 export default class ScopesetComparison extends Component {
-  state = {
-    scopeTextA: '',
-    scopeTextB: '',
-  };
+  constructor(props) {
+    super(props);
+
+    const query = parse(this.props.location.search.slice(1));
+    const { scopesA, scopesB } = query;
+
+    if (scopesA && scopesB) {
+      const scopesetDiff = getScopesetDiff(scopesA, scopesB);
+      const cellColors = getCellColors(scopesetDiff);
+
+      this.state = {
+        scopeTextA: scopesA.join('\n'),
+        scopeTextB: scopesB.join('\n'),
+        scopesetDiff,
+        cellColors,
+      };
+    } else {
+      this.state = {
+        scopeTextA: '',
+        scopeTextB: '',
+      };
+    }
+  }
 
   handleScopesAChange = scopeTextA => {
     this.setState({ scopeTextA });
@@ -50,31 +101,14 @@ export default class ScopesetComparison extends Component {
     this.setState({ scopeTextB });
   };
 
-  componentDidMount() {
-    const query = parse(this.props.location.search.slice(1));
-    const { scopesA, scopesB } = query;
-
-    if (scopesA && scopesB) {
-      const scopesetDiff = this.getScopesetDiff(scopesA, scopesB);
-      const cellColors = this.getCellColors(scopesetDiff);
-
-      this.setState(() => ({
-        scopeTextA: scopesA.join('\n'),
-        scopeTextB: scopesB.join('\n'),
-        scopesetDiff,
-        cellColors,
-      }));
-    }
-  }
-
   handleCompareScopesClick = async () => {
     const { scopeTextA, scopeTextB } = this.state;
 
     if (scopeTextA && scopeTextB) {
       const scopesA = splitLines(scopeTextA);
       const scopesB = splitLines(scopeTextB);
-      const scopesetDiff = this.getScopesetDiff(scopesA, scopesB);
-      const cellColors = this.getCellColors(scopesetDiff);
+      const scopesetDiff = getScopesetDiff(scopesA, scopesB);
+      const cellColors = getCellColors(scopesetDiff);
       const queryObj = { scopesA, scopesB };
       const queryStr = stringify(queryObj);
 
@@ -87,44 +121,12 @@ export default class ScopesetComparison extends Component {
     }
   };
 
-  getScopesetDiff = (scopesA, scopesB) => {
-    const scopesUnion = scopeUnion(scopesA, scopesB);
-    const scopesetDiff = [];
-
-    scopesUnion.forEach(scope => {
-      const s1 = scopeIntersection([scope], scopesA);
-      const s2 = scopeIntersection([scope], scopesB);
-
-      scopesetDiff.push([s1, s2]);
-    });
-
-    return scopesetDiff;
-  };
-
-  getCellColors = scopesetDiff => {
-    const cellColors = [];
-
-    scopesetDiff.forEach(([s1, s2]) => {
-      if (s1.length === 0 && s2.length) {
-        cellColors.push(['', 'greenCell']);
-      } else if (s1.length && s2.length === 0) {
-        cellColors.push(['redCell', '']);
-      } else if (!equals(s1, s2)) {
-        cellColors.push(['yellowCell', 'yellowCell']);
-      } else {
-        cellColors.push(['', '']);
-      }
-    });
-
-    return cellColors;
-  };
-
   render() {
     const { classes } = this.props;
     const { scopeTextA, scopeTextB, scopesetDiff, cellColors } = this.state;
 
     return (
-      <Dashboard title="Compare Scopesets">
+      <Dashboard title="Compare Scopes">
         <Fragment>
           <Grid className={classes.editorGrid} container spacing={8}>
             <Grid item xs={12} md={6}>

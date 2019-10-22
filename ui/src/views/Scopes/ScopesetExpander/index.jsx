@@ -38,18 +38,20 @@ import { formatScope, scopeLink } from '../../../utils/scopeUtils';
   },
 }))
 export default class ScopesetExpander extends Component {
-  state = {
-    scopeText: '',
-  };
+  constructor(props) {
+    super(props);
 
-  componentDidMount() {
     const query = parse(this.props.location.search.slice(1));
     const { scopes } = query;
 
     if (scopes) {
-      this.setState(() => ({
+      this.state = {
         scopeText: scopes.join('\n'),
-      }));
+      };
+    } else {
+      this.state = {
+        scopeText: '',
+      };
     }
   }
 
