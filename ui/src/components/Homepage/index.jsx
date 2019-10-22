@@ -19,16 +19,16 @@ import SignInDialog from '../SignInDialog';
     fontFamily: 'Roboto500',
     [theme.breakpoints.down('sm')]: {
       marginBottom: theme.spacing.double,
-      fontSize: 40
+      fontSize: 40,
     },
   },
   actions: {
     marginTop: theme.spacing.triple,
   },
   divider: {
-    margin: `${theme.spacing.unit * 10}px 0 ${theme.spacing.triple}px`,
+    margin: ${theme.spacing.unit * 10}px 0 ${theme.spacing.triple}px,
     [theme.breakpoints.down('sm')]: {
-      margin: `${theme.spacing.unit * 5}px 0 ${theme.spacing.double}px`,
+      margin: ${theme.spacing.unit * 5}px 0 ${theme.spacing.double}px,
     },
   },
   icon: {
@@ -37,7 +37,7 @@ import SignInDialog from '../SignInDialog';
   },
   text: {
     [theme.breakpoints.down('sm')]: {
-      fontSize: 20
+      fontSize: 20,
     },
   },
 }))
@@ -70,7 +70,7 @@ export default class HomePage extends Component {
             {window.env.APPLICATION_NAME}
           </Typography>
         </Hidden>
-       <Typography variant="h5" className={classes.text}>
+        <Typography variant="h5" className={classes.text}>
           A task execution framework that supports Mozilla&apos;s continuous
           integration and release processes.
         </Typography>
@@ -80,7 +80,9 @@ export default class HomePage extends Component {
             variant="contained"
             color="secondary"
             onClick={this.handleOpenSignInDialog}>
-            <AccountCircleIcon className={classes.icon} />
+            <AccountCircleIcon
+              className={classes.icon}
+            />
             Sign in
           </Button>
           <SignInDialog
