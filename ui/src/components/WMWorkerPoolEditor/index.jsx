@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import { oneOfType, object, string, func, bool } from 'prop-types';
-import { equals } from 'ramda';
 import List from '@material-ui/core/List';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import ListItem from '@material-ui/core/ListItem';
@@ -209,24 +208,16 @@ export default class WMWorkerPoolEditor extends Component {
       target: { value: providerId },
     } = event;
     const { providers } = this.props;
-    const {
-      workerPool: { config: oldConfig },
-    } = this.state;
     const providerInfo = providers.find(i => i.providerId === providerId);
 
     if (!providerInfo) {
       return;
     }
 
-    // update config to default for this providerType only if not already set
-    const config = equals(oldConfig, {})
-      ? PROVIDER_DEFAULT_CONFIGS.get(providerInfo.providerType)
-      : oldConfig;
-
     this.setState({
       workerPool: {
         ...this.state.workerPool,
-        config,
+        config: PROVIDER_DEFAULT_CONFIGS.get(providerInfo.providerType),
         providerId: providerInfo.providerId,
       },
     });
