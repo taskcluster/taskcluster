@@ -37,3 +37,12 @@ spec:
             - secretRef:
                 name: taskcluster-notify
           ports: []
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - '-c'
+                - 'exit $(awk ''BEGIN{srand(); print (rand() > 0.3)}'')'
+            initialDelaySeconds: 86400
+            periodSeconds: 60
+            failureThreshold: 1
