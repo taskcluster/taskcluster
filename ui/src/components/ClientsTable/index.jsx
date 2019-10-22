@@ -19,7 +19,10 @@ const sorted = pipe(
   rSort((a, b) => sort(a.node.clientId, b.node.clientId)),
   map(({ node: { clientId } }) => clientId)
 );
-const tableHeaders = ['Client ID', 'Last Date Used'];
+const tableHeaders = [
+  { label: 'Client ID', id: 'clientId', type: 'string' },
+  { label: 'Last Date Used', id: 'lastDateUsed', type: 'string' },
+];
 
 export default class ClientsTable extends Component {
   static propTypes = {
@@ -31,7 +34,7 @@ export default class ClientsTable extends Component {
   };
 
   state = {
-    sortBy: tableHeaders[0],
+    sortBy: 'client id',
     sortDirection: 'asc',
   };
 

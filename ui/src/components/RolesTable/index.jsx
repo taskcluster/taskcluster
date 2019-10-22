@@ -18,7 +18,7 @@ const sorted = pipe(
   rSort((a, b) => sort(a.node.roleId, b.node.roleId)),
   map(({ node: { roleId } }) => roleId)
 );
-const tableHeaders = ['Role ID'];
+const tableHeaders = [{ label: 'Role ID', id: 'roleId', type: 'string' }];
 
 export default class RolesTable extends Component {
   static defaultProps = {

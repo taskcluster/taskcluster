@@ -19,6 +19,7 @@ const sorted = pipe(
   rSort((a, b) => sort(a.node.name, b.node.name)),
   map(({ node: { name } }) => name)
 );
+const tableHeaders = [{ label: 'Secret ID', id: 'secretId', type: 'string' }];
 
 @withStyles({
   listItemCell: {
@@ -108,7 +109,7 @@ export default class SecretsTable extends Component {
         sortDirection={sortDirection}
         onHeaderClick={this.handleHeaderClick}
         onPageChange={onPageChange}
-        headers={['Secret ID']}
+        headers={tableHeaders}
         renderRow={({ node: { name } }) => (
           <TableRow key={name}>
             <TableCell>

@@ -19,7 +19,10 @@ const sorted = pipe(
   rSort((a, b) => sort(a.node.notificationAddress, b.node.notificationAddress)),
   map(({ node: { notificationAddress } }) => notificationAddress)
 );
-const tableHeaders = ['Address', 'Type'];
+const tableHeaders = [
+  { label: 'Address', id: 'address', type: 'string' },
+  { label: 'Type', id: 'type', type: 'string' },
+];
 
 @withStyles(theme => ({
   tableCell: {

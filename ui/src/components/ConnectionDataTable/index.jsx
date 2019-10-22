@@ -33,7 +33,7 @@ import { pageInfo } from '../../utils/prop-types';
 export default class ConnectionDataTable extends Component {
   static defaultProps = {
     columnsSize: null,
-    sortByHeader: null,
+    sortByLabel: null,
     sortDirection: 'desc',
     headers: null,
     onHeaderClick: null,
@@ -78,7 +78,7 @@ export default class ConnectionDataTable extends Component {
     /**
      * A header name to sort on.
      */
-    sortByHeader: string,
+    sortByLabel: string,
     /**
      * The sorting direction.
      */
@@ -86,7 +86,13 @@ export default class ConnectionDataTable extends Component {
     /**
      * A list of header names to use on the table starting from the left.
      */
-    headers: arrayOf(string),
+    headers: arrayOf(
+      shape({
+        id: string,
+        type: string,
+        label: string,
+      })
+    ),
   };
 
   state = {
@@ -121,9 +127,9 @@ export default class ConnectionDataTable extends Component {
     };
   }
 
-  handleHeaderClick = ({ target }) => {
+  handleHeaderClick = header => {
     if (this.props.onHeaderClick) {
-      this.props.onHeaderClick(target.id);
+      this.props.onHeaderClick(header);
     }
   };
 
@@ -158,7 +164,7 @@ export default class ConnectionDataTable extends Component {
       connection,
       renderRow,
       headers,
-      sortByHeader,
+      sortByLabel,
       sortDirection,
     } = this.props;
     const { loading, page } = this.state;
@@ -173,13 +179,13 @@ export default class ConnectionDataTable extends Component {
               <TableHead>
                 <TableRow>
                   {headers.map(header => (
-                    <TableCell key={`table-header-${header}`}>
+                    <TableCell key={`table-header-${header.id}`}>
                       <TableSortLabel
-                        id={header}
-                        active={header === sortByHeader}
+                        id={header.id}
+                        active={header.id === sortByLabel}
                         direction={sortDirection || 'desc'}
                         onClick={this.handleHeaderClick}>
-                        {header}
+                        {header.label}
                       </TableSortLabel>
                     </TableCell>
                   ))}

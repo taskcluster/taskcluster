@@ -24,6 +24,12 @@ import DateDistance from '../DateDistance';
 import sort from '../../utils/sort';
 import { pageInfo, WMError } from '../../utils/prop-types';
 
+const tableHeaders = [
+  { label: 'Title', id: 'title', type: 'string' },
+  { label: 'Description', id: 'description', type: 'string' },
+  { label: 'Reported', id: 'reported', type: 'string' },
+];
+
 @withStyles(theme => ({
   errorDescription: {
     marginRight: theme.spacing.unit,
@@ -217,7 +223,7 @@ export default class WorkerManagerErrorsTable extends Component {
           sortDirection={sortDirection}
           onHeaderClick={this.handleHeaderClick}
           renderRow={this.renderTableRow}
-          headers={['Title', 'Description', 'Reported']}
+          headers={tableHeaders}
           padding="dense"
           onPageChange={onPageChange}
         />

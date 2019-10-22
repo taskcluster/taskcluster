@@ -142,10 +142,10 @@ export default class WorkerTypesTable extends Component {
       sortDirection
     );
     const headers = [
-      'Worker Type',
-      'Stability',
-      'Last Date Active',
-      'Pending Tasks',
+      { label: 'Worker Type', id: 'workerType', type: 'string' },
+      { label: 'Stability', id: 'stability', type: 'string' },
+      { label: 'Last Date Active', id: 'lastDateActive', type: 'string' },
+      { label: 'Pending Tasks', id: 'pendingTasks', type: 'string' },
     ];
     const iconSize = 16;
 

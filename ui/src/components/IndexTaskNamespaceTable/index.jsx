@@ -19,6 +19,7 @@ const sorted = pipe(
   rSort((a, b) => sort(a.node.namespace, b.node.namespace)),
   map(({ node: { namespace } }) => namespace)
 );
+const tableHeaders = [{ label: 'Name', id: 'name', type: 'string' }];
 
 @withStyles({
   listItemCell: {
@@ -110,7 +111,7 @@ export default class IndexTaskNamespaceTable extends Component {
         sortDirection={sortDirection}
         onHeaderClick={this.handleHeaderClick}
         onPageChange={onPageChange}
-        headers={['Name']}
+        headers={tableHeaders}
         renderRow={({ node: { namespace } }) => (
           <TableRow key={namespace}>
             <TableCell>

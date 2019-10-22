@@ -15,6 +15,12 @@ const sorted = pipe(
   rSort((a, b) => sort(a.node.cacheName, b.node.cacheName)),
   map(({ node: { cacheName } }) => cacheName)
 );
+const tableHeaders = [
+  { label: 'Provisioner ID', id: 'provisionerId', type: 'string' },
+  { label: 'Worker Type', id: 'workerType', type: 'string' },
+  { label: 'Cache Name', id: 'cacheName', type: 'string' },
+  { label: 'Before', id: 'before', type: 'string' },
+];
 
 /**
  * Display active cache purges in a table.
@@ -92,7 +98,7 @@ export default class CachePurgesTable extends Component {
         sortDirection={sortDirection}
         onHeaderClick={this.handleHeaderClick}
         onPageChange={onPageChange}
-        headers={['Provisioner ID', 'Worker Type', 'Cache Name', 'Before']}
+        headers={tableHeaders}
         renderRow={({
           node: { provisionerId, workerType, cacheName, before },
         }) => (
