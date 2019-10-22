@@ -65,9 +65,8 @@ export default class HomePage extends Component {
           </Typography>
         </Hidden>
         <Typography variant="h5">
-          {
-            "A task execution framework that supports Mozilla's continuous integration and release processes."
-          }
+          A task execution framework that supports Mozilla&apos;s continuous
+          integration and release processes.
         </Typography>
         <Divider className={classes.divider} />
         <div className={classes.actions}>

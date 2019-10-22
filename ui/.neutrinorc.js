@@ -1,5 +1,8 @@
 const merge = require('deepmerge');
 const copy = require('@neutrinojs/copy');
+const reactLint = require('@mozilla-frontend-infra/react-lint');
+const react = require('@neutrinojs/react');
+const karma = require('@neutrinojs/karma');
 const { join, resolve } = require('path');
 const fs = require('fs');
 const generateEnvJs = require('./generate-env-js');
@@ -23,7 +26,7 @@ module.exports = {
     },
   },
   use: [
-    ['@mozilla-frontend-infra/react-lint', {
+    reactLint({
       parserOptions: {
         ecmaFeatures: {
           legacyDecorators: true
@@ -35,9 +38,14 @@ module.exports = {
         'babel/no-unused-expressions': 'off',
         'linebreak-style': 'off',
         'react-hooks/rules-of-hooks': 'error',
+        'react/jsx-props-no-spreading': 'off',
+        // We use @babel/plugin-proposal-class-properties to allow those
+        'react/static-property-placement': 'off',
+        // We use @babel/plugin-proposal-class-properties to allow those
+        'react/state-in-constructor': 'off',
       },
-    }],
-    ['@neutrinojs/react', {
+    }),
+    react({
       html: {
         template: './src/index.html',
       },
@@ -63,7 +71,7 @@ module.exports = {
           },
         },
       },
-    }],
+    }),
     (neutrino) => {
       neutrino.register('styleguide', () => ({
         webpackConfig: neutrino.config.toConfig(),
@@ -169,7 +177,7 @@ module.exports = {
         }
       }
 
-      neutrino.use(copy, {
+      neutrino.use(copy({
         patterns: [
           {
             context: 'src/static',
@@ -177,12 +185,12 @@ module.exports = {
             to: 'static',
           },
         ],
-      });
+      }));
     },
-    ['@neutrinojs/karma', {
+    karma({
       plugins: [
         'karma-firefox-launcher',
       ],
-    }],
+    }),
   ],
 };

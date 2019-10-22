@@ -1,5 +1,15 @@
 import React, { Component, Fragment } from 'react';
-import { array, arrayOf, func, number, shape, string, oneOf } from 'prop-types';
+import {
+  array,
+  arrayOf,
+  func,
+  number,
+  shape,
+  string,
+  oneOf,
+  bool,
+} from 'prop-types';
+import classNames from 'classnames';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -11,7 +21,7 @@ import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import { pageInfo } from '../../utils/prop-types';
 
-@withStyles({
+@withStyles(theme => ({
   loading: {
     textAlign: 'right',
   },
@@ -26,7 +36,10 @@ import { pageInfo } from '../../utils/prop-types';
   tableWrapper: {
     overflowX: 'auto',
   },
-})
+  thWithTopPagination: {
+    height: theme.spacing.quad,
+  },
+}))
 /**
  * A paginated table that operates on a GraphQL PageConnection.
  */
@@ -37,6 +50,7 @@ export default class ConnectionDataTable extends Component {
     sortDirection: 'desc',
     headers: null,
     onHeaderClick: null,
+    withoutTopPagination: false,
   };
 
   static propTypes = {
@@ -156,28 +170,65 @@ export default class ConnectionDataTable extends Component {
     });
   };
 
+  renderTablePagination = (colSpan, count) => {
+    const { classes, pageSize } = this.props;
+    const { loading, page } = this.state;
+
+    if (loading) {
+      return (
+        <div className={classes.spinner}>
+          <Spinner size={24} />
+        </div>
+      );
+    }
+
+    return (
+      <TablePagination
+        component="div"
+        colSpan={colSpan}
+        count={count}
+        labelDisplayedRows={Function.prototype}
+        rowsPerPage={pageSize}
+        rowsPerPageOptions={[pageSize]}
+        page={page}
+        backIconButtonProps={{
+          'aria-label': 'Previous Page',
+        }}
+        nextIconButtonProps={{
+          'aria-label': 'Next Page',
+        }}
+        onChangePage={this.handlePageChange}
+      />
+    );
+  };
+
   render() {
     const {
       classes,
-      pageSize,
       columnsSize,
       connection,
       renderRow,
       headers,
       sortByLabel,
       sortDirection,
+      withoutTopPagination,
     } = this.props;
-    const { loading, page } = this.state;
     const { count } = this.getPaginationMetadata();
     const colSpan = columnsSize || (headers && headers.length) || 1;
 
     return (
       <Fragment>
+        {!withoutTopPagination && this.renderTablePagination(colSpan, count)}
         <div className={classes.tableWrapper}>
           <Table>
             {headers && (
               <TableHead>
-                <TableRow>
+                <TableRow
+                  classes={{
+                    head: classNames({
+                      [classes.thWithTopPagination]: !withoutTopPagination,
+                    }),
+                  }}>
                   {headers.map(header => (
                     <TableCell key={`table-header-${header.id}`}>
                       <TableSortLabel
@@ -205,28 +256,7 @@ export default class ConnectionDataTable extends Component {
             </TableBody>
           </Table>
         </div>
-        {loading ? (
-          <div className={classes.spinner}>
-            <Spinner size={24} />
-          </div>
-        ) : (
-          <TablePagination
-            component="div"
-            colSpan={colSpan}
-            count={count}
-            labelDisplayedRows={Function.prototype}
-            rowsPerPage={pageSize}
-            rowsPerPageOptions={[pageSize]}
-            page={page}
-            backIconButtonProps={{
-              'aria-label': 'Previous Page',
-            }}
-            nextIconButtonProps={{
-              'aria-label': 'Next Page',
-            }}
-            onChangePage={this.handlePageChange}
-          />
-        )}
+        {this.renderTablePagination(colSpan, count)}
       </Fragment>
     );
   }
