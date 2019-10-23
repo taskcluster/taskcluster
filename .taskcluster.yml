@@ -518,7 +518,7 @@ tasks:
   ##########################################################
 
   - provisionerId: pmoore-test
-    workerType: gwci-linux-beta
+    workerType: gwci-linux
     metadata:
       name: "Build/test 64 bit generic-worker (multiuser engine) on Ubuntu 17.04 VM"
       description: "This builds the 64 bit linux version of generic-worker (multiuser engine)"
@@ -593,7 +593,7 @@ tasks:
   ##########################################################
 
   - provisionerId: pmoore-test
-    workerType: gwci-linux-beta
+    workerType: gwci-linux
     metadata:
       name: "Build/test 64 bit generic-worker (simple engine) on Ubuntu 17.04 VM"
       description: "This builds the 64 bit linux version of generic-worker (simple engine)"
@@ -664,7 +664,7 @@ tasks:
   ##########################################################
 
   - provisionerId: pmoore-test
-    workerType: gwci-linux-beta
+    workerType: gwci-linux
     metadata:
       name: "Build/test 64 bit generic-worker (docker engine) on Ubuntu 17.04 VM"
       description: "This builds the 64 bit linux version of generic-worker (docker engine)"
@@ -735,7 +735,7 @@ tasks:
   ##########################################################
 
   - provisionerId: pmoore-test
-    workerType: gwci-linux-beta
+    workerType: gwci-linux
     metadata:
       name: "Run 'dep check' to ensure dependencies are up to date"
       description: "Run 'dep check' to ensure dependencies are up to date"
