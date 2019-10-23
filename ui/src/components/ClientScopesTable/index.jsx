@@ -102,7 +102,6 @@ export default class ClientScopesTable extends Component {
         <TableRow key={node}>
           <TableCell size="small">
             <TableCellItem
-              dense
               button
               component={Link}
               to={

@@ -49,6 +49,7 @@ export default class TableCellItem extends Component {
         classes={{ root: classes.root }}
         className={className}>
         <ListItem
+          dense
           component="span"
           classes={{ gutters: classes.listItem }}
           className={classes.listItemButton}

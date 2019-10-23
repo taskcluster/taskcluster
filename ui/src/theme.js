@@ -397,7 +397,7 @@ export default {
       small: theme.typography.fontSize - 2,
     },
     color: {
-      base: theme.palette.text.primary,
+      base: theme.palette.text.secondary,
       link: theme.palette.text.primary,
       linkHover: theme.palette.text.primary,
       border: THEME.DIVIDER,

@@ -156,7 +156,7 @@ export default class SidebarListItem extends Component {
         />
         {rightIcon &&
           cloneElement(rightIcon, {
-            className: classNames(rightIcon.props.className, classes.icon),
+            className: classNames(classes.icon, rightIcon.props.className),
           })}
       </ListItem>
     );
