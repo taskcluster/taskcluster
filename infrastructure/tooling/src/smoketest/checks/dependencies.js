@@ -4,7 +4,7 @@ exports.tasks.push({
   title: 'Check dependencies',
   requires: [],
   provides: [
-    'dependency smoketest',
+    'target-dependencies',
   ],
   run: async (requirements, utils) => {
     let taskCount = 3;
@@ -17,14 +17,14 @@ exports.tasks.push({
         created: (new Date()).toJSON(),
         deadline: taskcluster.fromNowJSON('2 minutes'),
         metadata: {
-          name: 'Smoketest dependencies task Nr' + (3-i),
+          name: 'Smoketest dependencies task Nr' + (taskCount - i),
           description: 'built-in/succeed task created during dependency smoketest',
           owner: 'smoketest@taskcluster.net',
           source: 'https://taskcluster.net',
         },
         payload: {},
       };
-      task.dependencies =[...taskIds];
+      task.dependencies = [...taskIds];
       taskIds.push(taskcluster.slugid());
       await queue.createTask(taskIds[i], task);
       utils.status({message: 'Created task ' + taskIds[i]});
@@ -55,7 +55,7 @@ exports.tasks.push({
       utils.status({message: message});
       if (statuses[statuses.length-1].status.state === 'completed') {
         return {
-          ['dependency smoketest']: statuses[statuses.length-1].status.state,
+          ['target-dependencies']: statuses[statuses.length-1].status.state,
         };
       }
 
