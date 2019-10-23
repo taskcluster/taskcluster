@@ -79,7 +79,7 @@ defaults:
 
   # Shutdown configuration...
   shutdown:
-    enabled: false
+    enabled: true
     # Shut down the worker after this many seconds of idle.
     afterIdleSeconds: 300
   cache:
