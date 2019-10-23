@@ -5,7 +5,7 @@
 
 [build.environment]
   YARN_FLAGS = "--frozen-lockfile"
-  YARN_VERSION = "1.10.1"
+  YARN_VERSION = "1.17.3"
   NODE_VERSION = "10.16.3"
   APPLICATION_NAME = "Taskcluster"
   GRAPHQL_ENDPOINT = "https://taskcluster-web-server.herokuapp.com/graphql"
