@@ -62,7 +62,7 @@ class AwsProvider extends Provider {
       });
     }
 
-    let toSpawn = await this.estimator.simple({
+    const toSpawn = await this.estimator.simple({
       workerPoolId,
       minCapacity: workerPool.config.minCapacity,
       maxCapacity: workerPool.config.maxCapacity,
@@ -71,17 +71,12 @@ class AwsProvider extends Provider {
     if (toSpawn === 0) {
       return;
     }
+    const toSpawnPerConfig = Math.ceil(toSpawn / workerPool.config.launchConfigs.length);
+    const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
 
-    const cfgs = [];
-    const maxPerConfig = 15;
-    while (toSpawn> 0) {
-      const cfg = _.sample(workerPool.config.launchConfigs);
-      const provided = Math.min(toSpawn, maxPerConfig * cfg.capacityPerInstance);
-      cfgs.push([provided, cfg]);
-      toSpawn -= provided;
-    }
-
-    await Promise.all(cfgs.map(async ([toSpawnThisConfig, config]) => {
+    let toSpawnCounter = toSpawn;
+    for await (let config of shuffledConfigs) {
+      if (toSpawnCounter <= 0) break; // eslint-disable-line
       // Make sure we don't get "The same resource type may not be specified
       // more than once in tag specifications" errors
       const TagSpecifications = config.launchConfig.TagSpecifications || [];
@@ -118,8 +113,8 @@ class AwsProvider extends Provider {
 
           UserData: userData.toString('base64'), // The string needs to be base64-encoded. See the docs above
 
-          MaxCount: toSpawnThisConfig,
-          MinCount: toSpawnThisConfig,
+          MaxCount: Math.min(toSpawnCounter, toSpawnPerConfig),
+          MinCount: Math.min(toSpawnCounter, toSpawnPerConfig),
           TagSpecifications: [
             ...otherTagSpecs,
             {
@@ -154,6 +149,8 @@ class AwsProvider extends Provider {
         });
       }
 
+      toSpawnCounter -= toSpawnPerConfig;
+
       await Promise.all(spawned.Instances.map(i => {
         return this.Worker.create({
           workerPoolId,
@@ -179,7 +176,7 @@ class AwsProvider extends Provider {
           },
         });
       }));
-    }));
+    }
   }
 
   /**
