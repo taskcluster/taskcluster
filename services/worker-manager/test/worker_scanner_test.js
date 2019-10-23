@@ -5,7 +5,7 @@ const taskcluster = require('taskcluster-client');
 const monitorManager = require('../src/monitor');
 const {LEVELS} = require('taskcluster-lib-monitor');
 
-helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withProviders(mock, skipping);

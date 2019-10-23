@@ -1,8 +1,0 @@
-query workerTypes {
-  awsProvisionerWorkerTypeSummaries {
-    workerType
-    pendingCapacity
-    runningCapacity
-    pendingTasks
-  }
-}

@@ -3,7 +3,7 @@ const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['app', 'gcp', 'azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['gcp', 'azure'], function(mock, skipping) {
   helper.withCfg(mock, skipping);
   helper.withGcp(mock, skipping);
   helper.withPulse(mock, skipping);

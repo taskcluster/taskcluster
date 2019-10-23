@@ -12,6 +12,9 @@
     "clientId": "static/taskcluster/github",
     "scopes": [
       "assume:repo:github.com/*",
+      "queue:scheduler-id:taskcluster-github",
+      "queue:route:statuses",
+      "queue:route:checks",
       "assume:scheduler-id:taskcluster-github/*",
       "auth:azure-table-access:${azureAccountId}/TaskclusterGithubBuilds",
       "auth:azure-table-access:${azureAccountId}/TaskclusterIntegrationOwners",
@@ -25,7 +28,7 @@
     "clientId": "static/taskcluster/hooks",
     "scopes": [
       "auth:azure-table:read-write:${azureAccountId}/Hooks",
-      "auth:azure-table:read-write:${azureAccountId}/Queue",
+      "auth:azure-table:read-write:${azureAccountId}/Queues",
       "auth:azure-table:read-write:${azureAccountId}/LastFire3",
       "assume:hook-id:*",
       "notify:email:*",
@@ -70,6 +73,8 @@
   {
     "clientId": "static/taskcluster/web-server",
     "scopes": [
+      "assume:github-team:*",
+      "assume:github-org-admin:*",
       "assume:mozilla-group:*",
       "assume:mozilla-user:*",
       "assume:mozillians-group:*",

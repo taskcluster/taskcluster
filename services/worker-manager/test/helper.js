@@ -1,10 +1,12 @@
-const libUrls = require('taskcluster-lib-urls');
 const taskcluster = require('taskcluster-client');
 const {FakeGoogle} = require('./fake-google.js');
 const {stickyLoader, Secrets, withEntity, fakeauth, withMonitor, withPulse} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const data = require('../src/data');
 const load = require('../src/main');
+const sinon = require('sinon');
+const aws = require('aws-sdk');
+const fakeAWS = require('./fake-aws');
 
 exports.rootUrl = 'http://localhost:60409';
 
@@ -16,13 +18,9 @@ withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({
-  secretName: 'project/taskcluster/testing/taskcluster-worker-manager',
+  secretName: 'project/taskcluster/testing/azure',
   secrets: {
-    taskcluster: [
-      {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId', mock: 'testing'},
-      {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken', mock: 'testing'},
-      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl', mock: libUrls.testRootUrl()},
-    ],
+    azure: withEntity.secret,
   },
   load: exports.load,
 });
@@ -43,9 +41,17 @@ exports.withProviders = (mock, skipping) => {
       return;
     }
 
+    sinon.stub(aws, 'EC2').returns({
+      describeRegions: fakeAWS.EC2.describeRegions,
+    });
+
     exports.load.inject('fakeCloudApis', {
       google: new FakeGoogle(),
     });
+  });
+
+  suiteTeardown(function() {
+    sinon.restore();
   });
 };
 

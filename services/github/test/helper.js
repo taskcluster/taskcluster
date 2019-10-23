@@ -6,7 +6,6 @@ const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
 const fakeGithubAuth = require('./github-auth');
 const data = require('../src/data');
-const libUrls = require('taskcluster-lib-urls');
 const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
@@ -20,13 +19,9 @@ withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({
-  secretName: 'project/taskcluster/testing/taskcluster-github',
+  secretName: 'project/taskcluster/testing/azure',
   secrets: {
-    taskcluster: [
-      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl', mock: libUrls.testRootUrl()},
-      {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId'},
-      {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
-    ],
+    azure: withEntity.secret,
   },
   load: exports.load,
 });

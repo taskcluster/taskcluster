@@ -13,6 +13,7 @@ import TextField from '@material-ui/core/TextField';
 import Switch from '@material-ui/core/Switch';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
+import MarkdownTextArea from '@mozilla-frontend-infra/components/MarkdownTextArea';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import CancelIcon from 'mdi-react/CancelIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
@@ -61,6 +62,10 @@ import { formatScope, scopeLink } from '../../utils/scopeUtils';
   },
   enableIcon: {
     ...theme.mixins.successIcon,
+  },
+  clientDescriptionListItem: {
+    marginTop: theme.spacing.unit,
+    marginBottom: theme.spacing.triple,
   },
 }))
 /** A form to view/edit/create a client */
@@ -124,47 +129,20 @@ export default class ClientForm extends Component {
     initialThirdPartyClient: {},
   };
 
-  static getDerivedStateFromProps({ isNewClient, client }, state) {
-    if (isNewClient || (state.clientId && state.prevClient === client)) {
-      return null;
-    }
-
-    return {
-      description: client.description,
-      clientId: client.clientId,
-      created: client.created,
-      lastModified: client.lastModified,
-      lastDateUsed: client.lastDateUsed,
-      lastRotated: client.lastRotated,
-      expires: client.expires,
-      deleteOnExpiration: client.deleteOnExpiration,
-      scopeText: client.scopes.join('\n'),
-      expandedScopes: client.expandedScopes,
-      disabled: client.disabled,
-      prevClient: client,
-    };
-  }
-
   query = parse(this.props.location.search.slice(1));
 
   state = {
-    description: this.props.initialThirdPartyClient.description || '',
-    scopeText: this.props.initialThirdPartyClient.scopes
-      ? this.props.initialThirdPartyClient.scopes.join('\n')
-      : '',
-    clientId: this.props.initialThirdPartyClient.clientId || '',
-    created: null,
-    lastModified: null,
-    lastDateUsed: null,
-    lastRotated: null,
-    expires: this.props.initialThirdPartyClient.expires
-      ? new Date(this.props.initialThirdPartyClient.expires)
-      : addYears(new Date(), 1000),
-    deleteOnExpiration: true,
-    expandedScopes: null,
-    disabled: null,
-    // eslint-disable-next-line react/no-unused-state
-    prevClient: null,
+    description: this.props.client.description || '',
+    clientId: this.props.client.clientId || '',
+    created: this.props.client.created || null,
+    lastModified: this.props.client.lastModified || null,
+    lastDateUsed: this.props.client.lastDateUsed || null,
+    lastRotated: this.props.client.lastRotated || null,
+    expires: this.props.client.expires,
+    deleteOnExpiration: this.props.client.deleteOnExpiration,
+    scopeText: (this.props.client.scopes || []).join('\n'),
+    expandedScopes: this.props.client.expandedScopes,
+    disabled: this.props.client.disabled,
   };
 
   handleDeleteClient = () => this.props.onDeleteClient(this.state.clientId);
@@ -274,7 +252,7 @@ export default class ClientForm extends Component {
               />
             </ListItem>
           )}
-          {client && (
+          {!isNewClient && client && (
             <Fragment>
               <ListItem>
                 <ListItemText primary="Client ID" secondary={clientId} />
@@ -323,15 +301,13 @@ export default class ClientForm extends Component {
               }
             />
           </ListItem>
-          <ListItem>
-            <TextField
-              label="Description"
-              name="description"
+          <ListItem className={classes.clientDescriptionListItem}>
+            <MarkdownTextArea
               onChange={this.handleInputChange}
-              fullWidth
-              multiline
-              rows={5}
+              name="description"
               value={description}
+              placeholder="Client description (markdown)"
+              defaultTabIndex={isNewClient ? 0 : 1}
             />
           </ListItem>
           <ListItem>
@@ -343,11 +319,11 @@ export default class ClientForm extends Component {
               fullWidth
               multiline
               spellCheck={false}
-              placeholder={isNewClient ? 'new-scope:for-something:*' : null}
+              placeholder="new-scope:for-something:*"
               value={scopeText}
             />
           </ListItem>
-          {client && expandedScopes.length ? (
+          {!isNewClient && client && expandedScopes.length ? (
             <Fragment>
               <ListItem>
                 <ListItemText

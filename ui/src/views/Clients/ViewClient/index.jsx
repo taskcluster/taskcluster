@@ -2,6 +2,7 @@ import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import CopyToClipboard from 'react-copy-to-clipboard';
+import { parse } from 'qs';
 import { withStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import Card from '@material-ui/core/Card';
@@ -14,6 +15,7 @@ import IconButton from '@material-ui/core/IconButton';
 import ClearIcon from 'mdi-react/ClearIcon';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
+import { addYears } from 'date-fns';
 import Snackbar from '../../../components/Snackbar';
 import Dashboard from '../../../components/Dashboard';
 import ClientForm from '../../../components/ClientForm';
@@ -26,6 +28,7 @@ import enableClientQuery from './enableClient.graphql';
 import resetAccessTokenQuery from './resetAccessToken.graphql';
 import clientQuery from './client.graphql';
 import { THEME } from '../../../utils/constants';
+import fromNow from '../../../utils/fromNow';
 
 @hot(module)
 @withApollo
@@ -165,8 +168,26 @@ export default class ViewClient extends Component {
     this.setState({ accessToken: null });
   };
 
+  // Only localhost callback_url's are allowed.
+  // This tool is not intended for other uses
+  // than setting up credentials via `taskcluster signin`,
+  // which uses this URL format.
+  isAllowedCallback = callbackUrl =>
+    /^https?:\/\/localhost(:[0-9]+)?(\/|$)/.test(callbackUrl);
+
   handleSaveClient = async (client, clientId) => {
     const { isNewClient } = this.props;
+    const queryString = parse(this.props.location.search.slice(1));
+    const callbackUrl = queryString.callback_url;
+
+    // Do not bother creating a client if CLI Login has bad url
+    if (callbackUrl && !this.isAllowedCallback(callbackUrl)) {
+      this.setState({
+        error: `Callback URL ${callbackUrl} is not allowed.`,
+      });
+
+      return;
+    }
 
     this.setState({ error: null, loading: true });
 
@@ -183,6 +204,15 @@ export default class ViewClient extends Component {
         error: null,
         loading: false,
       });
+
+      // CLI login
+      if (callbackUrl) {
+        window.location.replace(
+          `${callbackUrl}?clientId=${clientId}&accessToken=${result.data.createClient.accessToken}`
+        );
+
+        return;
+      }
 
       if (isNewClient) {
         this.props.history.push({
@@ -235,6 +265,18 @@ export default class ViewClient extends Component {
       dialogOpen,
     } = this.state;
     const { isNewClient, data, classes, location } = this.props;
+    const query = parse(location.search.slice(1));
+    const initialClient = {
+      description: query.description,
+      clientId: query.client_id,
+      expires: query.expires
+        ? fromNow(query.expires)
+        : addYears(new Date(), 1000),
+      deleteOnExpiration: true,
+      scopes: query.scope,
+      expandedScopes: null,
+      disabled: false,
+    };
 
     if (location.state && location.state.accessToken) {
       const state = { ...location.state };
@@ -282,6 +324,7 @@ export default class ViewClient extends Component {
               <ErrorPanel fixed error={error} />
               <ClientForm
                 loading={loading}
+                client={initialClient}
                 isNewClient
                 onSaveClient={this.handleSaveClient}
               />

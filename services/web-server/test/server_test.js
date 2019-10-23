@@ -3,7 +3,7 @@ const helper = require('./helper');
 const request = require('superagent');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   const makeSuite = (allowedCORSOrigins, requestOrigin, responseOrigin) => {
     suite(`with ${JSON.stringify(allowedCORSOrigins)}, request origin = ${requestOrigin}`, function() {
@@ -20,10 +20,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       helper.withServer(mock, skipping);
 
       test('request', async function() {
-        const res = await request
-          .options(`http://localhost:${helper.serverPort}/graphql`)
-          .set('origin', requestOrigin);
-        assert.equal(res.headers['access-control-allow-origin'], responseOrigin);
+        try {
+          await request
+            .post(`http://localhost:${helper.serverPort}/graphql`)
+            .set('origin', requestOrigin);
+          assert.fail();
+        } catch (e) {
+          assert.equal(e.response.headers['access-control-allow-origin'], responseOrigin);
+        }
       });
     });
   };

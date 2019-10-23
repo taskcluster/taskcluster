@@ -86,7 +86,7 @@ export default class ViewCachePurges extends Component {
             </Typography>
           </HelpView>
         }
-        title="Cache Purges">
+        title="Purge Caches">
         <Fragment>
           {!cachePurges && loading && <Spinner loading />}
           <ErrorPanel fixed error={error} />

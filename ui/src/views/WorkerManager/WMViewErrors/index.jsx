@@ -72,9 +72,10 @@ export default class WMViewErrors extends Component {
 
     return (
       <Dashboard
-        title={`Errors for ${decodeURIComponent(
+        title={`Errors For "${decodeURIComponent(
           this.props.match.params.workerPoolId
-        )}`}
+        )}"`}
+        disableTitleFormatting
         search={
           <Search
             disabled={loading}

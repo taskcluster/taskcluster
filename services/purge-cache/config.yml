@@ -37,6 +37,9 @@ production:
     env:                          'production'
 
 test:
+  taskcluster:
+    rootUrl: "https://tc.example.com"
+
   app:
     cachePurgeExpirationDelay:   '7 days'
 

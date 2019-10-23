@@ -1,11 +1,12 @@
 const taskcluster = require('taskcluster-client');
+const sinon = require('sinon');
 const assert = require('assert');
 const helper = require('./helper');
 const {FakeGoogle} = require('./fake-google');
 const {GoogleProvider} = require('../src/providers/google');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withFakeQueue(mock, skipping);
@@ -49,13 +50,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
       config: {
         minCapacity: 1,
         maxCapacity: 1,
-        capacityPerInstance: 1,
-        machineType: 'n1-standard-2',
-        regions: ['us-east1'],
-        workerConfig: {},
-        scheduling: {},
-        networkInterfaces: [],
-        disks: [],
+        launchConfigs: [
+          {
+            capacityPerInstance: 1,
+            machineType: 'n1-standard-2',
+            region: 'us-east1',
+            zone: 'us-east1-a',
+            workerConfig: {},
+            scheduling: {},
+            networkInterfaces: [],
+            disks: [],
+          },
+        ],
       },
       owner: 'whatever@example.com',
       providerData: {},
@@ -141,6 +147,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     });
 
     assert(worker.providerData.operation);
+    assert.equal(worker.state, helper.Worker.states.REQUESTED);
 
     // On the first run we've faked that the instance is running
     await provider.scanPrepare();
@@ -148,8 +155,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     await provider.scanCleanup();
     await workerPool.reload();
     assert.equal(workerPool.providerData.google.running, 1);
-    worker.reload();
-    assert(worker.providerData.operation);
+    await worker.reload();
+    assert.equal(worker.state, helper.Worker.states.REQUESTED); // RUNNING is set by register which does not happen here
 
     // And now we fake it is stopped
     await provider.scanPrepare();
@@ -157,8 +164,75 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     await provider.scanCleanup();
     await workerPool.reload();
     assert.equal(workerPool.providerData.google.running, 0);
-    worker.reload();
-    assert(worker.providerData.operation);
+    await worker.reload();
+    assert.equal(worker.state, helper.Worker.states.STOPPED);
+  });
+
+  test('update long-running worker', async function() {
+    const expires = taskcluster.fromNow('-1 week');
+    const worker = await helper.Worker.create({
+      workerPoolId,
+      workerGroup: 'whatever',
+      workerId: 'whatever',
+      providerId,
+      created: taskcluster.fromNow('-2 weeks'),
+      expires,
+      state: helper.Worker.states.RUNNING,
+      providerData: {zone: 'us-east1-a'},
+    });
+    await provider.scanPrepare();
+    await provider.checkWorker({worker});
+    await provider.scanCleanup();
+    assert(worker.expires > expires);
+  });
+
+  suite('_enqueue p-queues', function() {
+    test('non existing queue', async function() {
+      try {
+        await provider._enqueue('nonexisting', () => {});
+      } catch (err) {
+        assert.equal(err.message, 'Unknown p-queue attempted: nonexisting');
+        return;
+      }
+      throw new Error('should have thrown an error');
+    });
+
+    test('simple', async function() {
+      const result = await provider._enqueue('query', () => 5);
+      assert.equal(result, 5);
+    });
+
+    test('one 500', async function() {
+      const remote = sinon.stub();
+      remote.onCall(0).throws({code: 500});
+      remote.onCall(1).returns(10);
+      const result = await provider._enqueue('query', () => remote());
+      assert.equal(result, 10);
+      assert.equal(remote.callCount, 2);
+    });
+    test('multiple 500', async function() {
+      const remote = sinon.stub();
+      remote.onCall(0).throws({code: 500});
+      remote.onCall(1).throws({code: 520});
+      remote.onCall(2).throws({code: 503});
+      remote.onCall(3).returns(15);
+      const result = await provider._enqueue('query', () => remote());
+      assert.equal(result, 15);
+      assert.equal(remote.callCount, 4);
+    });
+    test('500s forever should throw', async function() {
+      const remote = sinon.stub();
+      remote.throws({code: 500});
+
+      try {
+        await provider._enqueue('query', () => remote());
+      } catch (err) {
+        assert.deepEqual(err, {code: 500});
+        return;
+      }
+      assert.equal(remote.callCount, 5);
+      throw new Error('should have thrown an error');
+    });
   });
 
   suite('registerWorker', function() {

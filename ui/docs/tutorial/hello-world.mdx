@@ -5,36 +5,41 @@ followup:
   links:
     finding-tasks: I want to look at some real tasks
     apis: I want to know how to call Taskcluster APIs
-    gecko-tasks: I'm a Firefox/Gecko developer - How do my commits get built?
 ---
 
 # Hello, World
 
 Let's start by seeing Taskcluster in action.
 
----
+## Finding Taskcluster
+
+Taskcluster is an application that organizations deploy to serve their needs, so following this portion of the tutorial might require some assistance from the people responsible for your deployment.
+The first thing you will need to know is the URL of the deployment (called a "rootUrl").
+That's probably the [origin of this page](/), but if you're reading this on `https://docs.taskcluster.net`, then you may need to do some investigation.
 
 ## Signing In
 
-It's very easy to get started with Taskcluster, but we will need to know a little bit about you.
-We support sign-in by Mozillians, as well as by developers and employees with LDAP credentials.
-If that doesn't sound familiar to you, head over to [Mozillians](https://mozillians.org) and set up a new account for yourself.
-Now you're a Mozillian -- thanks for rocking the free web with us!
-
-Visit the [Task Creator](https://tc.example.com/tasks/create) and click the "Sign In" link in the upper right corner.
+Once you've determined the rootUrl for your deployment, you'll need to visit it in a browser and click the "sign in" link.
 Sign in using whatever method best suits you.
-If you just set up a Mozillians account, use that.
-Click the "Grant Permission" button, which will return you to the task creator.
 
-What you see in the text box is a bare-bones task description, looking something like this (the details may evolve as features are added):
+Once you're signed in, you will need to figure out which, if any, worker pools you have permission to run tasks in.
+Click the userpic in the upper-right corner and choose "Account", and look for scopes beginning with `queue:create-task:`.
+These represent permissions to run tasks.
+Look for one that seems general-purpose, or ask the folks who administer your deployment.
+For example, you might see `queue:create-task:highest:tutorial/docker-worker`.
+This grants access to workerPool `tutorial/docker-worker`, also known as provisionerId `tutorial` and workerType `docker-worker`.
+If possible, choose one that is running docker-worker.
+
+Now that you've got a worker pool in mind, go to "Create a task" on the navigation menu.
+What you see in the resulting text box is a bare-bones task description, looking something like this (the details may evolve as features are added):
 
 ```yaml
-provisionerId: aws-provisioner-v1
-workerType: tutorial
-created: '2017-09-27T15:24:45.442Z'
-deadline: '2017-09-27T18:24:45.443Z'
+provisionerId: something
+workerType: something-else
+created: '2020-09-27T15:24:45.442Z'
+deadline: '2020-09-27T18:24:45.443Z'
 payload:
-  image: 'ubuntu:13.10'
+  image: 'ubuntu:latest'
   command:
     - /bin/bash
     - '-c'
@@ -48,15 +53,12 @@ metadata:
 ```
 
 Happily, this is already set up to print "hello world"!
+Update the provisionerId and workerType according to your discoveries above.
 Submit the task, and click the resulting task ID to load the task inspector while the task is scheduled and run.
 
 The fields in the task description are explained in greater detail throughout the rest of this documentation, but briefly:
 
- * `provisionerId` identifies the Taskcluster provisioner responsible for the compute resources that will execute the task.
-   In this case, it is the [AWS Provisioner](/docs/services/aws-provisioner), which runs its tasks on Amazon EC2 instances using Docker.
- * `workerType` is a parameter specific to the AWS provisioner which identifies the pool of EC2 resources within which the task should be executed.
-   Pools may use different EC2 instance types, AMIs, etc.
-   In this case, we are using a worker type dedicated to running tasks in this tutorial.
+ * `provisionerId` and `workerType` together identify the Taskcluster pool of workers that will execute the task.
 
  * `created` and `deadline` give a time boundary for the task.
    If the task is not completed by its deadline, it will be resolved as `exception` with reason `"deadline-exceeded"`.

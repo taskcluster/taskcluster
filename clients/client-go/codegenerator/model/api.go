@@ -122,7 +122,7 @@ import (
 	"errors"
 	"net/url"
 	"time"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v18"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v21"
 )
 
 type ` + api.Name() + ` tcclient.Client

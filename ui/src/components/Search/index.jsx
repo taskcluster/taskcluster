@@ -16,7 +16,7 @@ import { THEME } from '../../utils/constants';
     },
     '& $input': {
       transition: theme.transitions.create('width'),
-      width: 200,
+      width: 230,
       '&:focus': {
         width: 300,
       },
@@ -65,7 +65,7 @@ export default class Search extends PureComponent {
     spellCheck: false,
     value: undefined,
     onChange: null,
-    defaultValue: null,
+    defaultValue: undefined,
     formProps: {},
   };
 

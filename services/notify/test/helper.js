@@ -7,7 +7,7 @@ const builder = require('../src/api');
 const load = require('../src/main');
 const RateLimit = require('../src/ratelimit');
 const data = require('../src/data');
-const libUrls = require('taskcluster-lib-urls');
+const debug = require('debug')('test');
 
 const testclients = {
   'test-client': ['*'],
@@ -28,13 +28,12 @@ withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({
-  secretName: 'project/taskcluster/testing/taskcluster-notify',
+  secretName: [
+    'project/taskcluster/testing/azure',
+    'project/taskcluster/testing/taskcluster-notify',
+  ],
   secrets: {
-    taskcluster: [
-      {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId'},
-      {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
-      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl', mock: libUrls.testRootUrl()},
-    ],
+    azure: withEntity.secret,
     aws: [
       {env: 'AWS_ACCESS_KEY_ID', cfg: 'aws.accessKeyId'},
       {env: 'AWS_SECRET_ACCESS_KEY', cfg: 'aws.secretAccessKey'},
@@ -105,7 +104,7 @@ exports.withSES = (mock, skipping) => {
         AttributeNames: ['ApproximateNumberOfMessages', 'QueueArn'],
       }).promise().then(req => req.Attributes);
       if (emailAttr.ApproximateNumberOfMessages !== '0') {
-        console.log(`Detected ${emailAttr.ApproximateNumberOfMessages} messages in email queue. Purging.`);
+        debug(`Detected ${emailAttr.ApproximateNumberOfMessages} messages in email queue. Purging.`);
         await sqs.purgeQueue({
           QueueUrl: emailSQSQueue,
         }).promise();

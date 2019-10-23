@@ -3,7 +3,7 @@ const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withSES(mock, skipping);
@@ -59,16 +59,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(m
       content: 'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is finished. It took 124 minutes. <img src=x onerror=alert(1)//>',
       link: {text: 'Inspect Task', href: 'https://taskcluster.net/task-inspector/Z-tDsP4jQ3OUTjN0Q6LNKQ&foo=bar'},
     });
-    helper.checkEmails(email => {
+    await helper.checkEmails(email => {
       assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
-
-      // We "parse" the mime tree here and check that we've sanitized the html version.
-      const boundary = /boundary="(.*)"/.exec(email.data)[1];
-      for (const part of email.data.split(boundary)) {
-        if (part.includes('Content-Type: text/html')) {
-          assert(!part.includes('alert(1)'));
-        }
-      }
     });
   });
 
@@ -101,7 +93,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(m
       subject: 'Task Z-tDsP4jQ3OUTjN0Q6LNKo is Complete',
       content: 'Task Z-tDsP4jQ3OUTjN0Q6LNKo is finished. It took 124 minutes.',
     });
-    helper.checkEmails(email => {
+    await helper.checkEmails(email => {
       assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
     });
   });
@@ -113,7 +105,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster', 'aws'], function(m
       content: 'Task Z-tDsP4jQ3OUTjN0Q6LNKp is finished. It took 124 minutes.',
       template: 'fullscreen',
     });
-    helper.checkEmails(email => {
+    await helper.checkEmails(email => {
       assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
     });
   });

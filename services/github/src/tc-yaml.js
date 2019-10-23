@@ -28,7 +28,7 @@ class VersionZero extends TcYaml {
  * Attach fields to a compiled taskcluster github config so that
  * it becomes a complete task graph config.
  **/
-  completeInTreeConfig(config, payload) {
+  completeInTreeConfig(cfg, config, payload) {
     config.scopes = [];
     if (!branchTest.test(payload.details['event.base.repo.branch'] || '')) {
       throw new Error('Cannot have unicode in branch names!');
@@ -56,6 +56,9 @@ class VersionZero extends TcYaml {
         prefix + payload.details['event.head.tag'],
       ];
     }
+
+    config.scopes.push(`queue:route:${cfg.app.statusTaskRoute}`); // v0 always uses statuses
+    config.scopes.push(`queue:scheduler-id:${cfg.taskcluster.schedulerId}`);
 
     // each task can optionally decide if it wants github specific environment
     // variables added to it
@@ -159,7 +162,7 @@ class VersionZero extends TcYaml {
         };
       });
     }
-    return this.completeInTreeConfig(config, payload);
+    return this.completeInTreeConfig(cfg, config, payload);
   }
 }
 
@@ -173,7 +176,9 @@ class VersionOne extends TcYaml {
  * Get scopes and attach them to the task.
  * v1 function
  */
-  createScopes(config, payload) {
+  createScopes(cfg, config, payload) {
+    config.scopes = [];
+
     if (payload.tasks_for === 'github-pull-request') {
       config.scopes = [
         `assume:repo:github.com/${ payload.organization }/${ payload.repository }:pull-request`,
@@ -195,6 +200,9 @@ class VersionOne extends TcYaml {
         `assume:repo:github.com/${ payload.organization }/${ payload.repository }:release`,
       ];
     }
+
+    config.scopes.push(`queue:route:${config.reporting ? cfg.app.checkTaskRoute : cfg.app.statusTaskRoute}`);
+    config.scopes.push(`queue:scheduler-id:${cfg.taskcluster.schedulerId}`);
 
     return config;
   }
@@ -291,7 +299,7 @@ class VersionOne extends TcYaml {
       config.tasks = tsort.sort().reverse().map(id => taskMap[id]);
 
     }
-    return this.createScopes(config, payload);
+    return this.createScopes(cfg, config, payload);
   }
 }
 

@@ -1,4 +1,6 @@
 # NOTE: ${azureAccountId} will be substituted with the azure account at runtime
+- assume:github-team:*
+- assume:github-org-admin:*
 - assume:mozilla-group:*
 - assume:mozilla-user:*
 - assume:mozillians-group:*

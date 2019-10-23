@@ -16,9 +16,9 @@ import memoize from 'fast-memoize';
 import { FixedSizeList } from 'react-window';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import ListItemText from '@material-ui/core/ListItemText';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import LinkIcon from 'mdi-react/LinkIcon';
 import sort from '../../utils/sort';
@@ -32,6 +32,9 @@ const sorted = pipe(
 
 @withRouter
 @withStyles(theme => ({
+  listItemButton: {
+    ...theme.mixins.listItemButton,
+  },
   listItemCell: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -87,13 +90,14 @@ export default class RoleScopesTable extends Component {
   );
 
   renderItem = items => ({ index, style }) => {
-    const { selectedScope } = this.props;
+    const { selectedScope, classes } = this.props;
     const item = items[index];
     const iconSize = 16;
 
     return (
       <Fragment>
         <ListItem
+          className={classes.listItemButton}
           style={style}
           button
           component={Link}

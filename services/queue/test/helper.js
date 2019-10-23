@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
-const libUrls = require('taskcluster-lib-urls');
 const builder = require('../src/api');
 const load = require('../src/main');
 const data = require('../src/data');
@@ -24,14 +23,11 @@ withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({
-  secretName: 'project/taskcluster/testing/taskcluster-queue',
+  secretName: [
+    'project/taskcluster/testing/azure',
+    'project/taskcluster/testing/taskcluster-queue',
+  ],
   secrets: {
-    taskcluster: [
-      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl',
-        mock: libUrls.testRootUrl()},
-      {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId'},
-      {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
-    ],
     aws: [
       {env: 'AWS_ACCESS_KEY_ID', cfg: 'aws.accessKeyId', name: 'accessKeyId'},
       {env: 'AWS_SECRET_ACCESS_KEY', cfg: 'aws.secretAccessKey', name: 'secretAccessKey'},
@@ -48,10 +44,7 @@ exports.secrets = new Secrets({
       {env: 'BLOB_ARTIFACT_REGION', cfg: 'app.blobArtifactRegion', name: 'blobArtifactRegion',
         mock: 'us-central-7'},
     ],
-    azure: [
-      {env: 'AZURE_ACCOUNT_ID', cfg: 'azure.accountId', name: 'accountId'},
-      {env: 'AZURE_ACCOUNT_KEY', cfg: 'azure.accountKey', name: 'accountKey'},
-    ],
+    azure: withEntity.secret,
   },
   load: exports.load,
 });

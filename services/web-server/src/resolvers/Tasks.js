@@ -9,6 +9,7 @@ module.exports = {
     LOW: 'low',
     VERY_LOW: 'very-low',
     LOWEST: 'lowest',
+    NORMAL: 'normal',
   },
   TaskRequire: {
     ALL_COMPLETED: 'all-completed',

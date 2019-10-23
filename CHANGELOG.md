@@ -3,6 +3,86 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v21.0.0
+
+[MAJOR] ([bug 1578900](http://bugzil.la/1578900)) * Worker Manager AWS Provider now requires the `ec2:DescribeRegions` permission in addition to the previous permissions.
+  The full permissions set is documented in the  deploying workers section of the manual.
+* Worker Manager AWS Provider now uses all the configs from the array of `launchConfigs` worker pools use, rather than a
+  single, randomly selected config. This allows per-region and per-zone resources to be specified. MinCapacity and 
+  MaxCapacity are now specified for the whole worker pool as opposed to for every individual config.
+
+```diff
+some/worker:
+  config:
+    minCapacity: 25
+    maxCapacity: 50
+-   regions: [us-central1, ...]
+-   capacityPerInstance: 1
+-   ...
++   launchConfigs:
++     - region: us-central1
++       capacityPerInstance: 1
++       ...
+```
+
+[minor] ([#1576](https://github.com/taskcluster/taskcluster/issues/1576)) AWS Provisioner support has been removed from the UI and it is no longer a navigation menu item.
+This service has not been a part of the Taskcluster deployment for some time.
+
+([bug 1589403](http://bugzil.la/1589403)) Fix a regression in Github logins. A header was not being set.
+
+([#1573](https://github.com/taskcluster/taskcluster/issues/1573)) The UI now properly listens to pulse messages.
+It was previously hard-coded to a value that would only
+work on https://taskcluster-ui.herokuapp.com/.
+We now read the pulse namespace from `PULSE_USERNAME`.
+
+([#1665](https://github.com/taskcluster/taskcluster/issues/1665)) The web-server service now properly configures CORS for
+its third party login endpoints `/login/oauth/token` and
+`/login/oauth/credentials`.
+
+([bug 1589368](http://bugzil.la/1589368)) Taskcluster-GitHub now correctly reports InsufficientScopes errors, instead of "Cannot read property 'unsatisfied' of undefined".
+
+## v20.0.0
+
+[MAJOR] The worker-manager service's `google` provider type now requires that worker pool definitions contain an array of possible variations of workers for the pool, in the `launchConfig` property.
+See [google provider type](https://docs.taskcluster.net/docs/reference/core/worker-manager/google) for more detail.
+Note that this is a breaking change that will cause all `google`-based worker pools to stop provisioning until they have been updated to the new format.
+To update, change the `config` field by moving all fields *except* `minCapacity` and `maxCapacity` into an array in `launchConfigs`:
+
+```diff
+some/worker:
+  config:
+    minCapacity: 25
+    maxCapacity: 50
+-   region: us-central1
+-   zone: us-central1-a
+-   capacityPerInstance: 1
+-   minCpuPlatform: "Intel Skylake"
+-   ...
++   launchConfigs:
++     - region: us-central1
++       zone: us-central1-a
++       capacityPerInstance: 1
++       minCpuPlatform: "Intel Skylake"
++       ...
+```
+
+([bug 1585102](http://bugzil.la/1585102)) The GitHub service now posts a more useful comment to pull requests and commits when an InsufficientScopes error occurs.
+The message now includes the scopes used to make the API call, including the `assume:repo:..` role.
+
+## v19.0.0
+
+[MAJOR] ([bug 1584321](http://bugzil.la/1584321)) Scopes for the Taskcluster services themselves are now handled internally to the platform, although access tokens must still be managed as part of the deployment process.
+When deploying this version, remove all `scopes` and `description` properties from `static/taskcluster/..` clients in the array in the Auth service's `STATIC_CLIENTS` configuration.
+See [the new docs on static clients](https://docs.taskcluster.net/docs/manual/deploying/static-clients) for more background on this setting.
+
+[minor] ([bug 1586102](http://bugzil.la/1586102)) The github service now adds scopes for check/status scopes and its scheduler-id, where previously it had relied on specific configuration of the `repo:github.com/*` role.
+There is no longer a need to add such scopes scopes to the role `repo:github.com/*`.
+
+[minor] ([#1486](https://github.com/taskcluster/taskcluster/issues/1486)) The Worker-Manager `google` provider implementation now supports terminating instances in response to `workerManager.removeWorker(..)`  API calls.
+
+([#1495](https://github.com/taskcluster/taskcluster/issues/1495)) In the previous version, indirect go dependency `github.com/streadway/amqp` had an invalid pseudo-version.
+This has been fixed, and the tool that generated the incorrect dependency (renovate) has been disabled.
+
 ## v18.0.3
 
 ([bug 1585135](http://bugzil.la/1585135)) The fix in 18.0.2 is updated to replace *all* escaped newlines in the `GITHUB_PRIVATE_PEM` config, not just the first.

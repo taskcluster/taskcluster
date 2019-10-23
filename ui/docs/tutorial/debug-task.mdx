@@ -58,7 +58,7 @@ A few notes are in order before you get too excited about your newfound shell ac
 
  * The original task command executes anyway.  You can, of course, kill it manually.
  * The shell stays open until there are no active connections, but only until the task's `maxRunTime` expires, at which time it will be forcibly terminated.
- * Tasks generally run on EC2 spot instances which can be killed at any time.
+ * Tasks generally run on cloud "spot" instances which can be killed at any time.
 
 All of which is to say, this is a good environment for poking around to see
 what's going on, but you may find yourself disappointed if you try to use it as

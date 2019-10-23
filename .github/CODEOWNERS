@@ -13,6 +13,9 @@ clients/client-py @taskcluster/python-reviewers
 # exceptions to the above
 ui/docs @taskcluster/services-reviewers
 
+# changelogs should not pull in reviewers
+changelog/**
+
 # generated stuff that does not need review (this is similar to /.gitattributes)
 generated/**
 clients/client-web/src/clients/**

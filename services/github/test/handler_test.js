@@ -5,13 +5,14 @@ const sinon = require('sinon');
 const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
 const monitorManager = require('../src/monitor');
+const taskcluster = require('taskcluster-client');
 const {LEVELS} = require('taskcluster-lib-monitor');
 
 /**
  * This tests the event handlers, faking out all of the services they
  * interact with.
  */
-helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withFakeGithub(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -87,6 +88,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
     await handlers.setup();
 
     // stub out `createTasks` so that we don't actually create tasks
+    handlers.realCreateTasks = handlers.createTasks;
     handlers.createTasks = sinon.stub();
     handlers.queueClient = {
       task: (_) => {
@@ -111,6 +113,94 @@ helper.secrets.mockSuite(testing.suiteName(), ['taskcluster'], function(mock, sk
   teardown(async function() {
     await handlers.terminate();
     helper.load.restore();
+  });
+
+  suite('createTasks', function() {
+    let createdTasks;
+
+    suiteSetup(function() {
+      if (skipping()) {
+        this.skip();
+      }
+    });
+
+    setup(function() {
+      createdTasks = [];
+
+      handlers.queueClient = new taskcluster.Queue({
+        rootUrl: 'https://tc.example.com',
+        fake: {
+          createTask: async (taskId, taskDef) => {
+            if (taskId === 'fail') {
+              const {message, ...errorProps} = taskDef;
+              throw Object.assign(new Error(message), errorProps);
+            }
+            createdTasks.push(taskDef);
+          },
+        },
+      });
+    });
+
+    test('does not call queue.createTask if given no tasks', async function() {
+      await handlers.realCreateTasks({scopes: [], tasks: []});
+      assert.equal(createdTasks.length, 0);
+    });
+
+    test('calls queue.createTask in order', async function() {
+      await handlers.realCreateTasks({scopes: [], tasks: [
+        {taskId: 'aa', task: {payload: 'a'}},
+        {taskId: 'bb', task: {payload: 'b'}},
+        {taskId: 'cc', task: {payload: 'c'}},
+      ]});
+      assert.deepEqual(createdTasks.map(({payload}) => payload), ['a', 'b', 'c']);
+    });
+
+    test('propagates unknown errors', async function() {
+      await assert.rejects(
+        handlers.realCreateTasks({scopes: [], tasks: [
+          {taskId: 'fail', task: {message: 'uhoh'}},
+        ]}),
+        err => err.message === 'uhoh',
+      );
+    });
+
+    test('handles InsufficientScopes errors', async function() {
+      await assert.rejects(
+        handlers.realCreateTasks({
+          scopes: ['assume:repo:github.com/a/b:branch:master', 'queue:route:statuses'],
+          tasks: [
+            {
+              taskId: 'fail',
+              task: {
+                message: 'Client ID project/taskcluster/tc-github/production-2 does not have sufficient scopes blah blah',
+                code: 'InsufficientScopes',
+              },
+            },
+          ],
+        }),
+        err => {
+          if (err.code !== 'InsufficientScopes') {
+            return false;
+          }
+
+          assert.equal(err.message, `\
+            Taskcluster-GitHub attempted to create a task for this event with the following scopes:
+
+            \`\`\`
+            [
+              "assume:repo:github.com/a/b:branch:master",
+              "queue:route:statuses"
+            ]
+            \`\`\`
+
+            The expansion of these scopes is not sufficient to create the task, leading to the following:
+
+            Client ID project/taskcluster/tc-github/production-2 does not have sufficient scopes blah blah`
+            .replace(/^ {12}/mg, ''));
+          return true;
+        },
+      );
+    });
   });
 
   suite('jobHandler', function() {

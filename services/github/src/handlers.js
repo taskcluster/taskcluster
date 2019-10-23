@@ -217,7 +217,26 @@ class Handlers {
       credentials: this.context.cfg.taskcluster.credentials,
     });
     for (const t of tasks) {
-      await scopedQueueClient.createTask(t.taskId, t.task);
+      try {
+        await scopedQueueClient.createTask(t.taskId, t.task);
+      } catch (err) {
+        // translate InsufficientScopes errors nicely for our users, since they are common and
+        // since we can provide additional context not available from the queue.
+        if (err.code === 'InsufficientScopes') {
+          err.message = [
+            'Taskcluster-GitHub attempted to create a task for this event with the following scopes:',
+            '',
+            '```',
+            JSON.stringify(scopes, null, 2),
+            '```',
+            '',
+            'The expansion of these scopes is not sufficient to create the task, leading to the following:',
+            '',
+            err.message,
+          ].join('\n');
+        }
+        throw err;
+      }
     }
   }
 
@@ -321,6 +340,11 @@ class Handlers {
 }
 module.exports = Handlers;
 
+const taskUI = (rootUrl, taskGroupId, taskId) =>
+  libUrls.ui(rootUrl, rootUrl ==='https://taskcluster.net' ? `/groups/${taskGroupId}/tasks/${taskId}/details` : `/tasks/${taskId}`);
+const taskGroupUI = (rootUrl, taskGroupId) =>
+  libUrls.ui(rootUrl, `${rootUrl === 'https://taskcluster.net' ? '' : '/tasks'}/groups/${taskGroupId}`);
+
 /**
  * Post updates to GitHub, when the status of a task changes. Uses Statuses API
  * Taskcluster States: https://docs.taskcluster.net/reference/platform/queue/references/events
@@ -387,7 +411,7 @@ async function deprecatedStatusHandler(message) {
   }
 
   debug(`Attempting to update status for ${build.organization}/${build.repository}@${build.sha} (${state})`);
-  const target_url = libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/tasks/groups/${taskGroupId}`);
+  const target_url = taskGroupUI(this.context.cfg.taskcluster.rootUrl, taskGroupId);
   try {
     await instGithub.repos.createStatus({
       owner: build.organization,
@@ -480,12 +504,9 @@ async function statusHandler(message) {
         output: {
           title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
           summary: `${taskDefinition.metadata.description}`,
-          text: `[Task group](${libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/groups/${taskGroupId}`)})`,
+          text: `[Task group](${taskGroupUI(this.context.cfg.taskcluster.rootUrl, taskGroupId)})`,
         },
-        details_url: libUrls.ui(
-          this.context.cfg.taskcluster.rootUrl,
-          `/groups/${taskGroupId}/tasks/${taskId}/details`
-        ),
+        details_url: taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId),
       });
 
       await this.context.CheckRuns.create({
@@ -729,7 +750,7 @@ async function taskGroupCreationHandler(message) {
 
   const statusContext = `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`;
   const description = `TaskGroup: Pending (for ${eventType})`;
-  const target_url = libUrls.ui(this.context.cfg.taskcluster.rootUrl, `tasks/groups/${taskGroupId}`);
+  const target_url = taskGroupUI(this.context.cfg.taskcluster.rootUrl, taskGroupId);
 
   // Authenticating as installation.
   const instGithub = await this.context.github.getInstallationGithub(installationId);
@@ -783,12 +804,9 @@ async function taskDefinedHandler(message) {
     output: {
       title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
       summary: `${taskDefinition.metadata.description}`,
-      text: `[Task group](${libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/groups/${taskGroupId}`)})`,
+      text: `[Task group](${taskGroupUI(this.context.cfg.taskcluster.rootUrl, taskGroupId)})`,
     },
-    details_url: libUrls.ui(
-      this.context.cfg.taskcluster.rootUrl,
-      `/groups/${taskGroupId}/tasks/${taskId}/details`
-    ),
+    details_url: taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId),
   }).catch(async (err) => {
     await this.createExceptionComment({instGithub, organization, repository, sha, error: err});
     throw err;

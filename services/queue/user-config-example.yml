@@ -12,8 +12,8 @@ defaults:
     privateBlobArtifactBucket: ...
     blobArtifactRegion: us-west-2
   azure:
-    accountName:        pamplemousse
-    accountKey:         '...'
+    accountId:        pamplemousse
+    accessKey:         '...'
   pulse:
     username:           '...'
     password:           '...'

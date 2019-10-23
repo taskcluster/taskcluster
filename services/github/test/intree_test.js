@@ -83,6 +83,9 @@ suite(testing.suiteName(), function() {
         assert.equal(config.tasks.length, count);
       }
       for (let key of Object.keys(expected)) {
+        if ('key' === 'scopes') {
+          expected[key].sort();
+        }
         assert.deepEqual(_.get(config, key), expected[key]);
       }
     });
@@ -110,7 +113,11 @@ suite(testing.suiteName(), function() {
     {
       'tasks[0].task.extra.github.events': ['push'],
       'metadata.owner': 'test@test.com',
-      scopes: ['assume:repo:github.com/testorg/testrepo:branch:default_branch'],
+      scopes: [
+        'assume:repo:github.com/testorg/testrepo:branch:default_branch',
+        'queue:route:statuses',
+        'queue:scheduler-id:tc-gh-devel',
+      ],
     });
 
   buildConfigTest(
@@ -123,7 +130,11 @@ suite(testing.suiteName(), function() {
       'metadata.owner': 'test@test.com',
       'tasks[0].task.payload.command': ['test'],
       'tasks[0].task.extra.github.events': ['push'],
-      scopes: ['assume:repo:github.com/testorg/testrepo:branch:default_branch'],
+      scopes: [
+        'assume:repo:github.com/testorg/testrepo:branch:default_branch',
+        'queue:route:statuses',
+        'queue:scheduler-id:tc-gh-devel',
+      ],
     });
 
   buildConfigTest(
@@ -136,7 +147,11 @@ suite(testing.suiteName(), function() {
       'metadata.owner': 'test@test.com',
       'tasks[0].task.payload.command': ['test'],
       'tasks[0].task.extra.github.events': ['pull_request.opened', 'pull_request.synchronize', 'pull_request.reopened'],
-      scopes: ['assume:repo:github.com/testorg/testrepo:pull-request'],
+      scopes: [
+        'assume:repo:github.com/testorg/testrepo:pull-request',
+        'queue:route:statuses',
+        'queue:scheduler-id:tc-gh-devel',
+      ],
     });
 
   buildConfigTest(
@@ -149,7 +164,11 @@ suite(testing.suiteName(), function() {
       'tasks[0].task.extra.github.events': ['push'],
       'tasks[0].task.extra.github.branches': ['master'],
       'metadata.owner': 'test@test.com',
-      scopes: ['assume:repo:github.com/testorg/testrepo:branch:master'],
+      scopes: [
+        'assume:repo:github.com/testorg/testrepo:branch:master',
+        'queue:route:statuses',
+        'queue:scheduler-id:tc-gh-devel',
+      ],
     });
 
   buildConfigTest(
@@ -213,7 +232,11 @@ suite(testing.suiteName(), function() {
     {
       'tasks[0].task.extra.github.events': ['release'],
       'metadata.owner': 'test@test.com',
-      scopes: ['assume:repo:github.com/testorg/testrepo:release'],
+      scopes: [
+        'assume:repo:github.com/testorg/testrepo:release',
+        'queue:route:statuses',
+        'queue:scheduler-id:tc-gh-devel',
+      ],
     });
 
   buildConfigTest(
@@ -225,7 +248,11 @@ suite(testing.suiteName(), function() {
     {
       'tasks[0].task.extra.github.events': ['release'],
       'metadata.owner': 'test@test.com',
-      scopes: ['assume:repo:github.com/testorg/testrepo:release'],
+      scopes: [
+        'assume:repo:github.com/testorg/testrepo:release',
+        'queue:route:statuses',
+        'queue:scheduler-id:tc-gh-devel',
+      ],
     });
 
   buildConfigTest(
@@ -256,7 +283,11 @@ suite(testing.suiteName(), function() {
     {
       'tasks[0].task.extra.github.events': ['tag'],
       'metadata.owner': 'test@test.com',
-      scopes: ['assume:repo:github.com/testorg/testrepo:tag:v1.0.2'],
+      scopes: [
+        'assume:repo:github.com/testorg/testrepo:tag:v1.0.2',
+        'queue:route:statuses',
+        'queue:scheduler-id:tc-gh-devel',
+      ],
     });
 
   buildConfigTest(
@@ -268,7 +299,11 @@ suite(testing.suiteName(), function() {
     {
       'tasks[0].task.extra.github.events': ['tag'],
       'metadata.owner': 'test@test.com',
-      scopes: ['assume:repo:github.com/testorg/testrepo:tag:v1.0.2'],
+      scopes: [
+        'assume:repo:github.com/testorg/testrepo:tag:v1.0.2',
+        'queue:route:statuses',
+        'queue:scheduler-id:tc-gh-devel',
+      ],
     });
 
   buildConfigTest(
@@ -285,7 +320,11 @@ suite(testing.suiteName(), function() {
     {
       'tasks[0].task.metadata.owner': '', // private email
       'tasks[0].task.metadata.source': 'https://github.com/TaskclusterRobot/hooks-testing',
-      scopes: ['assume:repo:github.com/testorg/testrepo:branch:default_branch'],
+      scopes: [
+        'assume:repo:github.com/testorg/testrepo:branch:default_branch',
+        'queue:route:statuses',
+        'queue:scheduler-id:tc-gh-devel',
+      ],
     });
 
   buildConfigTest(
@@ -302,7 +341,11 @@ suite(testing.suiteName(), function() {
     {
       'tasks[0].task.metadata.owner': '', // private email
       'tasks[0].task.metadata.source': 'https://github.com/TaskclusterRobot/hooks-testing',
-      scopes: ['assume:repo:github.com/testorg/testrepo:branch:default_branch'],
+      scopes: [
+        'assume:repo:github.com/testorg/testrepo:branch:default_branch',
+        'queue:route:statuses',
+        'queue:scheduler-id:tc-gh-devel',
+      ],
     });
 
   buildConfigTest(
@@ -319,7 +362,11 @@ suite(testing.suiteName(), function() {
     {
       'tasks[0].task.metadata.owner': 'test@test.com',
       'tasks[0].task.metadata.source': 'http://mrrrgn.com',
-      scopes: ['assume:repo:github.com/testorg/testrepo:branch:default_branch'],
+      scopes: [
+        'assume:repo:github.com/testorg/testrepo:branch:default_branch',
+        'queue:route:statuses',
+        'queue:scheduler-id:tc-gh-devel',
+      ],
     });
 
   buildConfigTest(
@@ -335,7 +382,11 @@ suite(testing.suiteName(), function() {
     {
       'tasks[0].task.metadata.owner': 'test@test.com',
       'tasks[0].task.metadata.source': 'http://mrrrgn.com',
-      scopes: ['assume:repo:github.com/testorg/testrepo:pull-request'],
+      scopes: [
+        'assume:repo:github.com/testorg/testrepo:pull-request',
+        'queue:route:statuses',
+        'queue:scheduler-id:tc-gh-devel',
+      ],
     });
 
   buildConfigTest(
@@ -352,7 +403,11 @@ suite(testing.suiteName(), function() {
     {
       'tasks[0].task.metadata.owner': 'test@test.com',
       'tasks[0].task.metadata.source': 'http://mrrrgn.com',
-      scopes: ['assume:repo:github.com/testorg/testrepo:branch:master'],
+      scopes: [
+        'assume:repo:github.com/testorg/testrepo:branch:master',
+        'queue:route:checks',
+        'queue:scheduler-id:tc-gh-devel',
+      ],
     });
 
   buildConfigTest(
@@ -384,7 +439,11 @@ suite(testing.suiteName(), function() {
     {
       'tasks[0].task.metadata.owner': 'test@test.com',
       'tasks[0].task.metadata.source': 'http://mrrrgn.com',
-      scopes: ['assume:repo:github.com/testorg/testrepo:release'],
+      scopes: [
+        'assume:repo:github.com/testorg/testrepo:release',
+        'queue:route:statuses',
+        'queue:scheduler-id:tc-gh-devel',
+      ],
     });
 
   buildConfigTest(
@@ -401,7 +460,11 @@ suite(testing.suiteName(), function() {
     {
       'tasks[0].task.metadata.owner': 'test@test.com',
       'tasks[0].task.metadata.source': 'http://mrrrgn.com',
-      scopes: ['assume:repo:github.com/testorg/testrepo:release'],
+      scopes: [
+        'assume:repo:github.com/testorg/testrepo:release',
+        'queue:route:statuses',
+        'queue:scheduler-id:tc-gh-devel',
+      ],
     });
 
   buildConfigTest(
@@ -432,7 +495,11 @@ suite(testing.suiteName(), function() {
     {
       'tasks[0].task.metadata.owner': 'test@test.com',
       'tasks[0].task.metadata.source': 'http://mrrrgn.com',
-      scopes: ['assume:repo:github.com/testorg/testrepo:tag:v1.0.2'],
+      scopes: [
+        'assume:repo:github.com/testorg/testrepo:tag:v1.0.2',
+        'queue:route:statuses',
+        'queue:scheduler-id:tc-gh-devel',
+      ],
     });
 
   buildConfigTest(

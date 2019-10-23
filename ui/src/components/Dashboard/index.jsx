@@ -164,6 +164,7 @@ export default class Dashboard extends Component {
     search: null,
     helpView: null,
     docs: false,
+    disableTitleFormatting: false,
   };
 
   static propTypes = {
@@ -194,6 +195,10 @@ export default class Dashboard extends Component {
      * If true, the documentation table of content will be displayed.
      */
     docs: bool,
+    /**
+     * If true, the title will not be formatted to uppercase.
+     */
+    disableTitleFormatting: bool,
   };
 
   static getDerivedStateFromError(error) {
@@ -243,6 +248,7 @@ export default class Dashboard extends Component {
       history,
       width,
       staticContext: _,
+      disableTitleFormatting,
       ...props
     } = this.props;
     const { error, navOpen, showHelpView, deploymentVersion } = this.state;
@@ -293,7 +299,7 @@ export default class Dashboard extends Component {
     );
     const isDocs = history.location.pathname.startsWith(DOCS_PATH_PREFIX);
     const isMobileView = width === 'sm' || width === 'xs';
-    const pageTitle = makeTitle(title);
+    const pageTitle = disableTitleFormatting ? title : makeTitle(title);
 
     return (
       <div className={classes.root}>

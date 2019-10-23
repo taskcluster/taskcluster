@@ -4,7 +4,6 @@ const taskcreator = require('../src/taskcreator');
 const {stickyLoader, fakeauth, Secrets, withEntity, withPulse, withMonitor} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const load = require('../src/main');
-const libUrls = require('taskcluster-lib-urls');
 
 const helper = exports;
 
@@ -17,14 +16,10 @@ helper.load.inject('process', 'test');
 withMonitor(helper);
 
 helper.secrets = new Secrets({
-  secretName: 'project/taskcluster/testing/taskcluster-hooks',
+  secretName: 'project/taskcluster/testing/azure',
   load: helper.load,
   secrets: {
-    taskcluster: [
-      {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId'},
-      {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
-      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl', mock: libUrls.testRootUrl()},
-    ],
+    azure: withEntity.secret,
   },
 });
 

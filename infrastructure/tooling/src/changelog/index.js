@@ -1,12 +1,19 @@
 const yaml = require('js-yaml');
+const semver = require('semver');
 const glob = require('glob');
+const chalk = require('chalk');
 const appRootDir = require('app-root-dir');
-const {readRepoFile} = require('../utils');
+const {REPO_ROOT, readRepoFile, readRepoJSON, writeRepoFile, gitAdd} = require('../utils');
+const taskcluster = require('taskcluster-client');
+const path = require('path');
+const openEditor = require('open-editor');
+const Octokit = require("@octokit/rest");
 
 const ALLOWED_LEVELS = {
   'major': 1,
   'minor': 2,
   'patch': 3,
+  'silent': 4,
 };
 
 /**
@@ -46,10 +53,6 @@ class ChangeLog {
       const snippetContent = await readRepoFile(filename);
       const [headerYaml, body] = snippetContent.split('\n---\n', 2);
 
-      if (!body || body.trim().length === 0) {
-        throw new Error(`Snippet ${filename} is malformed or has no body`);
-      }
-
       let {level, reference, ...extra} = yaml.safeLoad(headerYaml);
       if (Object.keys(extra).length !== 0) {
         throw new Error(`Snippet ${filename}: extra properties in header`);
@@ -57,6 +60,10 @@ class ChangeLog {
 
       if (!level || !ALLOWED_LEVELS[level]) {
         throw new Error(`Snippet ${filename}: invalid level`);
+      }
+
+      if (level !== 'silent' && (!body || body.trim().length === 0)) {
+        throw new Error(`Snippet ${filename} is malformed or has no body`);
       }
 
       if (reference) {
@@ -99,9 +106,17 @@ class ChangeLog {
   }
 
   /**
+   * Get the next version number, given the current level.
+   */
+  async next_version() {
+    const pkgJson = await readRepoJSON('package.json');
+    return semver.inc(pkgJson.version, this.level());
+  }
+
+  /**
    * Get the formatted list of snippets as a string
    */
-  format() {
+  async format() {
     if (this.snippets.length === 0) {
       return 'No changes';
     }
@@ -109,15 +124,23 @@ class ChangeLog {
     const levelLabels = {
       'major': '[MAJOR] ',
       'minor': '[minor] ',
-      'patch': '',
+      'patch': '[patch] ',
     };
+
+    const silentCount = this.snippets.filter(sn => sn.level === 'silent').length;
+    const changesUrl = `https://github.com/taskcluster/taskcluster/tree/v${await this.next_version()}%5E/changelog`;
+    const silentSuffix = silentCount === 0 ?
+      '' :
+      `\n\n*This release includes additional changes that were not considered important enough to mention here; see ${changesUrl} for details.*`;
+
     return this.snippets
+      .filter(sn => sn.level !== 'silent')
       .map(({level, reference, body}) => (
-        levelLabels[level] +
-        (reference ? '(' + reference + ') ' : '') +
+        '▶ ' + levelLabels[level] +
+        (reference ? reference : '') + '\n' +
         body.trim()
       ))
-      .join('\n\n');
+      .join('\n\n') + silentSuffix;
   }
 
   /**
@@ -129,10 +152,131 @@ class ChangeLog {
   }
 }
 
-const main = async (options) => {
-  const cl = new ChangeLog();
-  await cl.load();
-  console.log(cl.format());
+const check_pr = async (pr) => {
+  const octokit = new Octokit();
+  const options = octokit.pulls.listFiles.endpoint.merge({
+    owner: 'taskcluster',
+    repo: 'taskcluster',
+    pull_number: pr,
+  });
+  const files = await octokit.paginate(options,
+    response => response.data.map(({filename}) => filename));
+
+  // files that do not require a changelog entry if they are the only thing changed.  This
+  // is similar to the list in .gitattributes., along with yarn and package.json
+  const boringFiles = [
+    /yarn\.lock$/,
+    /package\.json$/,
+    /^\.yarn$/,
+    /^\.taskcluster.yml/,
+    /^infrastructure\//,
+    /^generated\//,
+    /^clients\/client-web\/src\/clients\//,
+    /^clients\/client-py\/taskcluster\/generated\//,
+    /^clients\/client-py\/README\.md$/,
+    /^clients\/client\/src\/apis\.js$/,
+    /^services\/*\/Procfile$/,
+    /^clients\/client-shell\/apis\/services\.go$/,
+    /^dev-docs\/dev-config-example\.yml$/,
+    /^clients\/client-go\/tc*\//,
+    /^\.github\//,
+  ];
+  const hasImportantFiles = files.some(filename => boringFiles.every(r => !r.test(filename)));
+
+  if (!hasImportantFiles) {
+    console.log(`${chalk.bold.green(`PR ${pr} OK:`)} does not contain any changes requiring a changelog`);
+    return true;
+  }
+
+  const hasChangelog = files.some(filename => filename.startsWith('changelog/'));
+
+  if (hasImportantFiles && !hasChangelog) {
+    console.log(`${chalk.bold.red('ERROR:')} Pull Request ${pr} does not modify any files in 'changelog/'`);
+    return false;
+  }
+  console.log(chalk.bold.green(`PR ${pr} OK`));
+  return true;
 };
 
-module.exports = {main, ChangeLog};
+const add = async (options) => {
+  let level, bad;
+  if (options.major) {
+    level = 'major';
+  } else if (options.minor) {
+    level = 'minor';
+  } else if (options.patch) {
+    level = 'patch';
+  } else if (options.silent) {
+    level = 'silent';
+  } else {
+    console.log('Must specify one of --major, --minor, --patch, or --silent');
+    bad = true;
+  }
+
+  let name, reference;
+  if (options.issue) {
+    name = `issue-${options.issue}`;
+    reference = `reference: issue ${options.issue}\n`;
+  } else if (options.bug) {
+    name = `bug-${options.bug}`;
+    reference = `reference: bug ${options.bug}\n`;
+  } else if (options.bug === false) {
+    name = taskcluster.slugid();
+    reference = '';
+  } else {
+    console.log('Must specify one of --issue, --bug, or --no-bug');
+    bad = true;
+  }
+
+  if (bad) {
+    process.exit(1);
+  }
+
+  // invent a unique filename
+  let filename, i = 0;
+  while (1) {
+    filename = path.join('changelog', `${name}${i > 0 ? `-${i}` : ''}.md`);
+    try {
+      await readRepoFile(filename);
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        break;
+      }
+      throw err;
+    }
+    i++;
+  }
+
+  const helpText =
+    '<!-- replace this text with your changelog entry.  See dev-docs/best-practices/changelog.md for help writing changelog entries. -->';
+  await writeRepoFile(filename, `level: ${level}\n${reference}---\n${level === 'silent' ? '' : helpText}`);
+  await gitAdd({dir: REPO_ROOT, files: [filename]});
+  console.log(`wrote ${filename}`);
+
+  if (level !== 'silent') {
+    openEditor([`${filename}:4`]);
+  }
+};
+
+const show = async (options) => {
+  const cl = new ChangeLog();
+  await cl.load();
+  console.log(`${chalk.bold.cyan('Level:')}        ${cl.level()}`);
+  console.log(`${chalk.bold.cyan('Next Version:')} ${await cl.next_version()}`);
+  console.log(chalk.bold.cyan('Changelog:'));
+  console.log(await cl.format());
+};
+
+const check = async (options) => {
+  const cl = new ChangeLog();
+  await cl.load();
+  console.log(chalk.bold.green('Changelog OK'));
+
+  if (options.pr) {
+    if (!await check_pr(options.pr)) {
+      process.exit(1);
+    }
+  }
+};
+
+module.exports = {add, show, check, ChangeLog};

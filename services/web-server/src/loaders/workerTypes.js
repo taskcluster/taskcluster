@@ -2,7 +2,7 @@ const DataLoader = require('dataloader');
 const sift = require('../utils/sift');
 const ConnectionLoader = require('../ConnectionLoader');
 
-module.exports = ({ queue, awsProvisioner, ec2Manager }) => {
+module.exports = ({ queue }) => {
   const workerType = new DataLoader(queries =>
     Promise.all(
       queries.map(({ provisionerId, workerType }) =>
@@ -29,70 +29,10 @@ module.exports = ({ queue, awsProvisioner, ec2Manager }) => {
       })
     )
   );
-  const awsProvisionerWorkerType = new DataLoader(workerTypes =>
-    Promise.all(
-      workerTypes.map(workerType => awsProvisioner.workerType(workerType))
-    )
-  );
-  const awsProvisionerWorkerTypeState = new DataLoader(workerTypes =>
-    Promise.all(workerTypes.map(workerType => awsProvisioner.state(workerType)))
-  );
-  const awsProvisionerWorkerTypeSummaries = new DataLoader(queries =>
-    Promise.all(
-      queries.map(async ({ filter }) => {
-        const summaries = await awsProvisioner.listWorkerTypeSummaries();
-
-        return sift(filter, summaries);
-      })
-    )
-  );
-  const awsProvisionerRecentErrors = new DataLoader(queries =>
-    Promise.all(
-      queries.map(async ({ filter }) => {
-        const recentErrors = (await ec2Manager.getRecentErrors()).errors;
-
-        return sift(filter, recentErrors);
-      })
-    )
-  );
-  const awsProvisionerHealth = new DataLoader(queries =>
-    Promise.all(
-      queries.map(async ({ filter }) => {
-        const health = await ec2Manager.getHealth();
-
-        return sift(filter, health);
-      })
-    )
-  );
-  const awsProvisionerWorkerTypeHealth = new DataLoader(queries =>
-    Promise.all(
-      queries.map(async ({ workerType, filter }) => {
-        const health = await ec2Manager.workerTypeHealth(workerType);
-
-        return sift(filter, health);
-      })
-    )
-  );
-  const awsProvisionerWorkerTypeErrors = new DataLoader(queries =>
-    Promise.all(
-      queries.map(async ({ workerType, filter }) => {
-        const { errors } = await ec2Manager.workerTypeErrors(workerType);
-
-        return sift(filter, errors);
-      })
-    )
-  );
 
   return {
     workerType,
     workerTypes,
     pendingTasks,
-    awsProvisionerRecentErrors,
-    awsProvisionerHealth,
-    awsProvisionerWorkerTypeErrors,
-    awsProvisionerWorkerTypeHealth,
-    awsProvisionerWorkerType,
-    awsProvisionerWorkerTypeState,
-    awsProvisionerWorkerTypeSummaries,
   };
 };

@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { oneOfType, object, string, func, bool } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
+import MarkdownTextArea from '@mozilla-frontend-infra/components/MarkdownTextArea';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -43,6 +44,10 @@ import { formatScope, scopeLink } from '../../utils/scopeUtils';
   },
   deleteIcon: {
     ...theme.mixins.errorIcon,
+  },
+  roleDescriptionListItem: {
+    marginTop: theme.spacing.unit,
+    marginBottom: theme.spacing.triple,
   },
 }))
 /** A form to view/edit/create a role */
@@ -191,21 +196,20 @@ export default class RoleForm extends Component {
               </ListItem>
             </Fragment>
           )}
-          <ListItem>
-            <TextField
-              label="Description"
+          <ListItem className={classes.roleDescriptionListItem}>
+            <MarkdownTextArea
               name="description"
               onChange={this.handleInputChange}
-              fullWidth
-              multiline
-              rows={5}
               value={description}
+              placeholder="Role description (markdown)"
+              defaultTabIndex={isNewRole ? 0 : 1}
             />
           </ListItem>
           <ListItem>
             <TextField
               label="Scopes"
               name="scopeText"
+              helperText="Enter each scope on its own line"
               onChange={this.handleInputChange}
               spellCheck={false}
               fullWidth

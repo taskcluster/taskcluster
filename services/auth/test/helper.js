@@ -31,25 +31,19 @@ withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({
-  secretName: 'project/taskcluster/testing/taskcluster-auth',
+  secretName: [
+    'project/taskcluster/testing/azure',
+    'project/taskcluster/testing/taskcluster-auth',
+  ],
   secrets: {
-    app: [
-      {env: 'AZURE_ACCOUNTS', cfg: 'app.azureAccounts', mock: {fakeaccount: 'key'}},
-    ],
     azure: [
       {env: 'AZURE_ACCOUNT', cfg: 'azure.accountId', name: 'accountId'},
-      {env: 'AZURE_ACCOUNT_KEY', cfg: 'azure.accessKey', name: 'accountKey'},
+      {env: 'AZURE_ACCOUNT_KEY', cfg: 'azure.accessKey', name: 'accessKey'},
     ],
     aws: [
       {env: 'AWS_ACCESS_KEY_ID', cfg: 'aws.accessKeyId'},
       {env: 'AWS_SECRET_ACCESS_KEY', cfg: 'aws.secretAccessKey'},
-    ],
-    taskcluster: [
-      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl', mock: exports.rootUrl},
-    ],
-    sentry: [
-      {env: 'SENTRY_AUTH_TOKEN', cfg: 'sentry.authToken'},
-      {env: 'SENTRY_HOSTNAME', cfg: 'sentry.hostname'},
+      {env: 'TEST_BUCKET', cfg: 'test.testBucket'},
     ],
     gcp: [
       {env: 'GCP_CREDENTIALS_ALLOWED_PROJECTS', cfg: 'gcpCredentials.allowedProjects', name: 'allowedProjects', mock: {}},
@@ -71,6 +65,9 @@ exports.withCfg = (mock, skipping) => {
       accessToken: clientId === 'static/taskcluster/root' ? exports.rootAccessToken : 'must-be-at-least-22-characters',
       description: 'testing',
     })));
+
+    // override cfg.app.azureAccounts based on cfg.azure
+    exports.load.cfg('app.azureAccounts', {[exports.cfg.azure.accountId]: exports.cfg.azure.accessKey});
   });
 };
 
@@ -415,7 +412,6 @@ exports.withGcp = (mock, skipping) => {
       };
     } else {
       const {credentials, allowedServiceAccounts} = await exports.load('gcp');
-      console.log(credentials);
       exports.gcpAccount = {
         email: allowedServiceAccounts[0],
         project_id: credentials.project_id,

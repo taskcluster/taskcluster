@@ -48,7 +48,12 @@ export default class NoTask extends Component {
       <Dashboard
         title="View Tasks"
         helpView={<HelpView description={description} />}
-        search={<Search onSubmit={this.handleTaskSearchSubmit} />}>
+        search={
+          <Search
+            placeholder="Search Task ID"
+            onSubmit={this.handleTaskSearchSubmit}
+          />
+        }>
         <Typography className={classes.infoText}>
           Enter a task ID in the search box
         </Typography>
