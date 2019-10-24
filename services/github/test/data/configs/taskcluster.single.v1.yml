@@ -13,6 +13,6 @@ tasks:
           - test
       metadata:
         name: "name"
-        description: "description"
+        description: "run on ${taskcluster_root_url}"
         owner: ${event.pusher.email}
         source: ${event.repository.url}

@@ -319,6 +319,7 @@ suite(testing.suiteName(), function() {
     },
     {
       'tasks[0].task.metadata.owner': '', // private email
+      'tasks[0].task.metadata.description': 'run on https://tc-tests.example.com',
       'tasks[0].task.metadata.source': 'https://github.com/TaskclusterRobot/hooks-testing',
       scopes: [
         'assume:repo:github.com/testorg/testrepo:branch:default_branch',
