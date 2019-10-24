@@ -21,6 +21,7 @@ import Link from '../../utils/Link';
 import Button from '../Button';
 import TableCellItem from '../TableCellItem';
 import ErrorPanel from '../ErrorPanel';
+import DialogAction from '../DialogAction';
 import formatError from '../../utils/formatError';
 import { NULL_PROVIDER } from '../../utils/constants';
 import { splitWorkerPoolId } from '../../utils/workerPool';
@@ -57,6 +58,9 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     sortDirection: 'asc',
     error: null,
     actionLoading: false,
+    dialogError: null,
+    dialogOpen: false,
+    workerPool: null,
   };
 
   sortWorkerPools = memoize(
@@ -112,10 +116,8 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     this.setState({ sortBy: header.id, sortDirection });
   };
 
-  handleDeleteClick = async ({ currentTarget: { name } }) => {
-    const workerPool = this.props.workerPools.find(
-      wp => wp.workerPoolId === name
-    );
+  handleDeleteClick = async () => {
+    const { workerPool } = this.state;
     const payload = {
       providerId: workerPool.providerId,
       description: workerPool.description,
@@ -131,9 +133,41 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         workerPoolId: workerPool.workerPoolId,
         payload,
       });
+      this.setState({
+        dialogOpen: false,
+        workerPool: null,
+      });
     } catch (error) {
-      this.setState({ error: formatError(error), actionLoading: false });
+      this.setState({
+        error: formatError(error),
+        actionLoading: false,
+        dialogOpen: false,
+        workerPool: null,
+      });
     }
+  };
+
+  handleDialogActionOpen = workerPool => {
+    this.setState({
+      dialogOpen: true,
+      workerPool,
+    });
+  };
+
+  handleDialogActionError = error => {
+    this.setState({ dialogError: error });
+  };
+
+  handleDialogActionComplete = () => {
+    this.props.history.push('/worker-manager');
+  };
+
+  handleDialogActionClose = () => {
+    this.setState({
+      dialogOpen: false,
+      dialogError: null,
+      workerPool: null,
+    });
   };
 
   renderRow = workerPool => {
@@ -142,6 +176,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       classes,
     } = this.props;
     const { actionLoading } = this.state;
+    const { handleDialogActionOpen } = this;
     const iconSize = 16;
     const { provisionerId, workerType } = splitWorkerPoolId(
       workerPool.workerPoolId
@@ -202,7 +237,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
               title="Delete Worker Pool ID"
               className={classes.button}
               name={`${workerPool.workerPoolId}`}
-              onClick={this.handleDeleteClick}
+              onClick={() => handleDialogActionOpen(workerPool)}
               disabled={actionLoading}>
               <DeleteIcon size={iconSize} />
             </IconButton>
@@ -218,7 +253,14 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
 
   render() {
     const { workerPools, searchTerm, includeDeleted } = this.props;
-    const { sortBy, sortDirection, error } = this.state;
+    const {
+      sortBy,
+      sortDirection,
+      error,
+      dialogError,
+      dialogOpen,
+      workerPool,
+    } = this.state;
     const sortedWorkerPools = this.sortWorkerPools(
       workerPools,
       sortBy,
@@ -254,10 +296,27 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           headers={headers}
           sortByLabel={sortBy}
           sortDirection={sortDirection}
+          size="small"
           onHeaderClick={this.handleHeaderClick}
           renderRow={this.renderRow}
-          size="small"
         />
+        {dialogOpen && (
+          <DialogAction
+            open={dialogOpen}
+            onSubmit={this.handleDeleteClick}
+            onComplete={this.handleDialogActionComplete}
+            onClose={this.handleDialogActionClose}
+            onError={this.handleDialogActionError}
+            error={dialogError}
+            title="Delete Worker Pool?"
+            body={
+              <Typography>
+                {`This will delete the worker pool ${workerPool.workerPoolId}.`}
+              </Typography>
+            }
+            confirmText="Delete Worker Pool"
+          />
+        )}
       </Fragment>
     );
   }
