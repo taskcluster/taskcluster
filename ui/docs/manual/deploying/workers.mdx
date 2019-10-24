@@ -157,5 +157,10 @@ The credentials must correspond to an IAM user with the following permissions:
 }
 ```
 
+The account should have its [AWSServiceRoleForEC2Spot service-linked role](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-requests.html#service-linked-roles-spot-instance-requests) set up.
+Follow the "To manually create.." process at that link.
+You can verify that this worked by creating a spot request manually in the console.
+If this service-linked role is not set up properly, worker creation will fail with the message "The provided credentials do not have permission to create the service-linked role for EC2 Spot Instances".
+
 We recommend a dedicated AWS account for workers, but understand that this is difficult to set up for small deployments.
 If the AWS account is shared with other uses, it is possible to make a more restrictive policy limiting, for example, the security groups or subnets in which the provider can create instances.
