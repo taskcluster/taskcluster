@@ -4,14 +4,30 @@ import List from '@material-ui/core/List';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import DotsVerticalIcon from 'mdi-react/DotsVerticalIcon';
+import { fade } from '@material-ui/core/styles/colorManipulator';
 import { withAuth } from '../../utils/Auth';
 
 @withAuth
 @withApollo
 @withStyles(theme => ({
+  active: {
+    backgroundColor: theme.palette.secondary.dark,
+    '&:hover': {
+      backgroundColor: theme.palette.secondary.dark,
+    },
+    '& $text': {
+      color: theme.palette.common.white,
+    },
+    '& $icon': {
+      fill: fade(theme.palette.common.white, 0.9),
+      '& svg': {
+        fill: fade(theme.palette.common.white, 0.9),
+      },
+    },
+  },
   mainMenu: {
     position: 'absolute',
-    right: '0',
+    right: '16px',
   },
   verticalDotIcon: {
     fill: '#fff',
@@ -21,8 +37,9 @@ import { withAuth } from '../../utils/Auth';
   },
   mobileMenu: {
     [theme.breakpoints.up('sm')]: {
-      padding: `${theme.spacing.unit / 2}px ${theme.spacing.double}px`,
+      padding: '12px',
     },
+    borderRadius: '50%',
   },
   text: {
     color: '#fff',

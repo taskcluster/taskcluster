@@ -3,7 +3,6 @@ import { bool } from 'prop-types';
 import { Link } from 'react-router-dom';
 import { withApollo } from 'react-apollo';
 import classNames from 'classnames';
-import { darken } from '@material-ui/core/styles/colorManipulator';
 import { withStyles } from '@material-ui/core/styles';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -34,9 +33,6 @@ import SignInDialog from '../SignInDialog';
     backgroundColor: THEME.PRIMARY_DARK,
     '& svg': {
       fill: THEME.PRIMARY_TEXT_DARK,
-    },
-    '&:hover': {
-      backgroundColor: darken(THEME.PRIMARY_DARK, 0.5),
     },
   },
 }))
