@@ -368,7 +368,7 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
         repo: 'taskcluster',
         tag_name: requirements['pushed-tag'],
         name: requirements['pushed-tag'],
-        body: requirements['changelog'].format(),
+        body: await requirements['changelog'].format(),
         draft: false,
         prerelease: false,
       });
