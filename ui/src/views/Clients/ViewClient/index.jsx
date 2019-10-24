@@ -116,7 +116,7 @@ export default class ViewClient extends Component {
   };
 
   handleDialogActionComplete = () => {
-    this.props.history.replace(`/auth/clients`);
+    this.props.history.push(`/auth/clients`);
   };
 
   handleDisableClient = async clientId => {
