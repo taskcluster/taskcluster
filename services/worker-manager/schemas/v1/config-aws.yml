@@ -25,14 +25,14 @@ properties:
             ImageId:
               type: string
               description: The ID of the AMI to launch an instance from.
+            # These properties are not allowed, so we assert that
+            # they do not match the empty schema
+            IamInstanceProfile: {not: {}}
+            UserData: {not: {}}
+            MinCount: {not: {}}
+            MaxCount: {not: {}}
           required:
             - ImageId
-          not:
-            required:
-              - IamInstanceProfile
-              - UserData
-              - MinCount
-              - MaxCount
           additionalProperties: true
         capacityPerInstance:
           title: Capacity Per Instance
