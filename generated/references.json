@@ -823,18 +823,26 @@
               "launchConfig": {
                 "additionalProperties": true,
                 "description": "An object to be passed in to AWS runInstances method.\nSee the documentation [here](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/EC2.html#runInstances-property)\nYou can configure any properties you need. Note, however, that we disallow passing in arbitrary IAM instance profiles.\n",
-                "not": {
-                  "required": [
-                    "IamInstanceProfile",
-                    "UserData",
-                    "MinCount",
-                    "MaxCount"
-                  ]
-                },
                 "properties": {
+                  "IamInstanceProfile": {
+                    "not": {
+                    }
+                  },
                   "ImageId": {
                     "description": "The ID of the AMI to launch an instance from.",
                     "type": "string"
+                  },
+                  "MaxCount": {
+                    "not": {
+                    }
+                  },
+                  "MinCount": {
+                    "not": {
+                    }
+                  },
+                  "UserData": {
+                    "not": {
+                    }
                   }
                 },
                 "required": [
