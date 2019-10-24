@@ -814,6 +814,34 @@
           "items": {
             "additionalProperties": false,
             "properties": {
+              "additionalUserData": {
+                "additionalProperties": true,
+                "properties": {
+                  "providerId": {
+                    "not": {
+                    }
+                  },
+                  "rootUrl": {
+                    "not": {
+                    }
+                  },
+                  "workerConfig": {
+                    "not": {
+                    }
+                  },
+                  "workerGroup": {
+                    "not": {
+                    }
+                  },
+                  "workerPoolId": {
+                    "not": {
+                    }
+                  }
+                },
+                "required": [
+                ],
+                "type": "object"
+              },
               "capacityPerInstance": {
                 "description": "The number of tasks a single worker of this type can run at any given time.",
                 "minimum": 1,
