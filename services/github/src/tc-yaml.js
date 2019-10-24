@@ -227,6 +227,7 @@ class VersionOne extends TcYaml {
 
     try {
       return jsone(config, {
+        taskcluster_root_url: cfg.taskcluster.rootUrl,
         tasks_for: payload.tasks_for,
         event: payload.body,
         as_slugid,
