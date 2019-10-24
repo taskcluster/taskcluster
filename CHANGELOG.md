@@ -3,6 +3,27 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v21.2.0
+
+▶ [minor] [bug 1589449](http://bugzil.la/1589449)
+* Implements remove worker functionality in Worker Manager AWS provider.
+* Corrects a typo in the route of remove worker api endpoint of Worker Manager
+
+▶ [minor] [#1713](https://github.com/taskcluster/taskcluster/issues/1713)
+Taskcluster now supports command-line logins via the UI. Query parameters
+are `client_id` and `callback_url`.
+
+▶ [minor] [bug 1590848](http://bugzil.la/1590848)
+The JSON-e context used to render `.taskcluster.yml` in GitHub repositories now contains `taskcluster_root_url` giving the root URL.
+This can be used for conditionals in the file, or to generate URLs.
+
+▶ [patch] [bug 1545939](http://bugzil.la/1545939)
+All long-runnning processes are now restarted once every 24 hours by kubernetes. This
+is partially to replicate how Heroku ran the services and partially just because it
+is a good idea.
+
+*This release includes additional changes that were not considered important enough to mention here; see https://github.com/taskcluster/taskcluster/tree/v21.2.0%5E/changelog for details.*
+
 ## v21.1.1
 
 No changes
