@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/taskcluster/generic-worker/process"
@@ -134,7 +135,12 @@ func (task *TaskRun) EnvVars() []string {
 		taskEnv[k] = v
 	}
 	taskEnv["TASK_ID"] = task.TaskID
+	taskEnv["RUN_ID"] = strconv.Itoa(int(task.RunID))
 	taskEnv["TASKCLUSTER_ROOT_URL"] = config.RootURL
+
+	if config.WorkerLocation != "" {
+		taskEnv["TASKCLUSTER_WORKER_LOCATION"] = config.WorkerLocation
+	}
 
 	for i, j := range taskEnv {
 		taskEnvArray = append(taskEnvArray, i+"="+j)

@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"path"
 	"strings"
 
 	"github.com/taskcluster/generic-worker/gwconfig"
@@ -36,6 +37,12 @@ func queryGCPMetaData(client *http.Client, path string) ([]byte, error) {
 	return ioutil.ReadAll(resp.Body)
 }
 
+type GCPWorkerLocation struct {
+	Cloud  string `json:"cloud"`
+	Region string `json:"region"`
+	Zone   string `json:"zone"`
+}
+
 func updateConfigWithGCPSettings(c *gwconfig.Config) error {
 	log.Print("Querying GCP Metadata to get default worker type config settings...")
 
@@ -52,8 +59,9 @@ func updateConfigWithGCPSettings(c *gwconfig.Config) error {
 		return err
 	}
 
-	gcpMetadata := map[string]interface{}{}
+	gcpMetadata := map[string]string{}
 	for _, path := range []string{
+		"/project/project-id",
 		"/instance/image",
 		"/instance/id",
 		"/instance/machine-type",
@@ -69,13 +77,20 @@ func updateConfigWithGCPSettings(c *gwconfig.Config) error {
 		}
 		gcpMetadata[key] = string(value)
 	}
+
 	c.WorkerTypeMetadata["gcp"] = gcpMetadata
-	c.WorkerID = gcpMetadata["id"].(string)
-	c.PublicIP = net.ParseIP(gcpMetadata["external-ip"].(string))
-	c.PrivateIP = net.ParseIP(gcpMetadata["ip"].(string))
-	c.InstanceID = gcpMetadata["id"].(string)
-	c.InstanceType = gcpMetadata["machine-type"].(string)
-	c.AvailabilityZone = gcpMetadata["zone"].(string)
+	c.WorkerID = gcpMetadata["id"]
+	c.PublicIP = net.ParseIP(gcpMetadata["external-ip"])
+	c.PrivateIP = net.ParseIP(gcpMetadata["ip"])
+	c.InstanceID = gcpMetadata["id"]
+	c.InstanceType = gcpMetadata["machine-type"]
+
+	// See https://github.com/taskcluster/taskcluster-worker-runner/blob/6b5bbd197eed4be664171a482bf4d8d4f81a21b2/provider/google/google.go#L79-L84
+	c.AvailabilityZone = path.Base(gcpMetadata["zone"])
+	if len(c.AvailabilityZone) < 2 {
+		return fmt.Errorf("GCP availability zone must be at least 2 chars, since region is availability zone minus last two chars. Availability zone %q has only %v chars.", c.AvailabilityZone, len(c.AvailabilityZone))
+	}
+	c.Region = c.AvailabilityZone[:len(c.AvailabilityZone)-2]
 
 	identity, err := queryGCPMetaData(client, "/instance/service-accounts/default/identity?audience="+userData.RootURL+"&format=full")
 	if err != nil {
@@ -85,5 +100,25 @@ func updateConfigWithGCPSettings(c *gwconfig.Config) error {
 		Token: string(identity),
 	}
 
-	return userData.updateConfig(c, providerType)
+	err = userData.updateConfig(c, providerType)
+	if err != nil {
+		return err
+	}
+
+	// Don't override WorkerLocation if GCP workerpool specifies an explicit
+	// value.
+	if c.WorkerLocation == "" {
+		workerLocation := &GCPWorkerLocation{
+			Cloud:  "google",
+			Region: c.Region,
+			Zone:   c.AvailabilityZone,
+		}
+
+		workerLocationJSON, err := json.Marshal(workerLocation)
+		if err != nil {
+			return fmt.Errorf("Error encoding worker location %#v as JSON: %v", workerLocation, err)
+		}
+		c.WorkerLocation = string(workerLocationJSON)
+	}
+	return nil
 }

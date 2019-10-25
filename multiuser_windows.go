@@ -100,9 +100,16 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 			contents += "set " + envVar + "=" + envValue + "\r\n"
 		}
 		contents += "set TASK_ID=" + task.TaskID + "\r\n"
+		contents += "set RUN_ID=" + strconv.Itoa(int(task.RunID)) + "\r\n"
 		contents += "set TASKCLUSTER_ROOT_URL=" + config.RootURL + "\r\n"
 		if config.RunTasksAsCurrentUser {
 			contents += "set TASK_USER_CREDENTIALS=" + filepath.Join(cwd, "current-task-user.json") + "\r\n"
+		}
+		if config.WorkerLocation != "" {
+			// Note, in contrast to other shells, the cmd shell set command
+			// expects literal bytes between the `=` character and the line
+			// ending, i.e. no string escaping required!
+			contents += "set TASKCLUSTER_WORKER_LOCATION=" + config.WorkerLocation + "\r\n"
 		}
 		contents += "cd \"" + taskContext.TaskDir + "\"" + "\r\n"
 

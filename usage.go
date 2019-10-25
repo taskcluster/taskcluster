@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type ExitCode int
 
 // These constants represent all possible exit codes from the generic-worker process.
@@ -55,7 +57,7 @@ and reports back results to the queue.
                                             target, this is the config file that the
                                             installation should use, rather than the config
                                             to use during install.
-                                            [default: generic-worker.config]
+                                            [default: "generic-worker.config"]
     --configure-for-aws                     Use this option when installing or running a worker
                                             that is spawned by the AWS provisioner. It will cause
                                             the worker to query the EC2 metadata service when it
@@ -113,7 +115,7 @@ and reports back results to the queue.
                                             the worker. The directory will be created if it does
                                             not exist. This may be a relative path to the
                                             current directory, or an absolute path.
-                                            [default: caches]
+                                            [default: "caches"]
           certificate                       Taskcluster certificate, when using temporary
                                             credentials only.
           checkForNewDeploymentEverySecs    The number of seconds between consecutive calls
@@ -149,7 +151,7 @@ and reports back results to the queue.
                                             populating preloaded caches and readonly mounts. The
                                             directory will be created if it does not exist. This
                                             may be a relative path to the current directory, or
-                                            an absolute path. [default: downloads]
+                                            an absolute path. [default: "downloads"]
           idleTimeoutSecs                   How many seconds to wait without getting a new
                                             task to perform, before the worker process exits.
                                             An integer, >= 0. A value of 0 means "never reach
@@ -162,7 +164,7 @@ and reports back results to the queue.
                                             logs over https. If not set, http will be used.
           livelogExecutable                 Filepath of LiveLog executable to use; see
                                             https://github.com/taskcluster/livelog
-                                            [default: livelog]
+                                            [default: "livelog"]
           livelogGETPort                    Port number for livelog HTTP GET requests.
                                             [default: 60023]
           livelogKey                        SSL key to be used by livelog for hosting logs
@@ -183,7 +185,7 @@ and reports back results to the queue.
                                               * <rootURL>/api/aws-provisioner/v1 for all other rootURLs
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
-                                            running on them. [default: test-provisioner]
+                                            running on them. [default: "test-provisioner"]
           purgeCacheBaseURL                 The base URL for purge cache API calls.
                                             If not provided, the base URL for API calls is
                                             instead derived from rootURL setting as follows:
@@ -226,7 +228,7 @@ and reports back results to the queue.
                                             posses this scope, no crash reports will be sent.
                                             Similarly, if this property is not specified or
                                             is the empty string, no reports will be sent.
-                                            [default: generic-worker]
+                                            [default: "generic-worker"]
           shutdownMachineOnIdle             If true, when the worker is deemed to have been
                                             idle for enough time (see idleTimeoutSecs) the
                                             worker will issue an OS shutdown command. If false,
@@ -242,18 +244,34 @@ and reports back results to the queue.
           subdomain                         Subdomain to use in stateless dns name for live
                                             logs; see
                                             https://github.com/taskcluster/stateless-dns-server
-                                            [default: taskcluster-worker.net]
+                                            [default: "taskcluster-worker.net"]
           taskclusterProxyExecutable        Filepath of taskcluster-proxy executable to use; see
                                             https://github.com/taskcluster/taskcluster-proxy
-                                            [default: taskcluster-proxy]
+                                            [default: "taskcluster-proxy"]
           taskclusterProxyPort              Port number for taskcluster-proxy HTTP requests.
                                             [default: 80]
           tasksDir                          The location where task directories should be
-                                            created on the worker. [default: ` + defaultTasksDir() + `]
+                                            created on the worker. [default: ` + fmt.Sprintf("%q", defaultTasksDir()) + `]
           workerGroup                       Typically this would be an aws region - an
                                             identifier to uniquely identify which pool of
                                             workers this worker logically belongs to.
-                                            [default: test-worker-group]
+                                            [default: "test-worker-group"]
+          workerLocation                    If a non-empty string, task commands will have environment variable
+                                            TASKCLUSTER_WORKER_LOCATION set to the value provided.
+
+                                            If an empty string, and --configure-for-aws is specified,
+                                            TASKCLUSTER_WORKER_LOCATION environment variable will be set to a
+                                            string containing the JSON object:
+                                            {"cloud":"aws","region":"<REGION>","availabilityZone":"<AZ>"}
+
+                                            If an empty string, and --configure-for-gcp is specified,
+                                            TASKCLUSTER_WORKER_LOCATION environment variable will be set to a
+                                            string containing the JSON object:
+                                            {"cloud":"google","region":"<REGION>","zone":"<ZONE>"}
+
+                                            Otherwise TASKCLUSTER_WORKER_LOCATION environment
+                                            variable will not be implicitly set in task commands.
+                                            [default: ""]
           workerManagerBaseURL              The base URL for taskcluster worker-manager API calls.
                                             If not provided, the base URL for API calls is
                                             instead derived from rootURL setting as follows:

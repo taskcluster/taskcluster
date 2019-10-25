@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 
 	"github.com/taskcluster/generic-worker/host"
 	"github.com/taskcluster/generic-worker/process"
@@ -117,12 +118,16 @@ func (task *TaskRun) EnvVars() []string {
 
 	// Values that should be overwritten if also set in task definition
 	taskEnv["TASK_ID"] = task.TaskID
+	taskEnv["RUN_ID"] = strconv.Itoa(int(task.RunID))
 	taskEnv["TASKCLUSTER_ROOT_URL"] = config.RootURL
 	if config.RunTasksAsCurrentUser {
 		taskEnv["TASK_USER_CREDENTIALS"] = filepath.Join(cwd, "current-task-user.json")
 	}
 	if runtime.GOOS == "linux" {
 		taskEnv["DISPLAY"] = ":0"
+	}
+	if config.WorkerLocation != "" {
+		taskEnv["TASKCLUSTER_WORKER_LOCATION"] = config.WorkerLocation
 	}
 
 	for i, j := range taskEnv {

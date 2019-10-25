@@ -64,6 +64,7 @@ type (
 		TasksDir                       string                 `json:"tasksDir"`
 		WorkerGroup                    string                 `json:"workerGroup"`
 		WorkerID                       string                 `json:"workerId"`
+		WorkerLocation                 string                 `json:"workerLocation"`
 		WorkerManagerBaseURL           string                 `json:"workerManagerBaseURL"`
 		WorkerType                     string                 `json:"workerType"`
 		WorkerTypeMetadata             map[string]interface{} `json:"workerTypeMetadata"`
