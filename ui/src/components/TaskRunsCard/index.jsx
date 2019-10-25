@@ -301,27 +301,25 @@ export default class TaskRunsCard extends Component {
                     />
                   </ListItem>
                   {liveLogArtifact && (
-                    <ListItem
-                      button
-                      className={classes.listItemButton}
-                      component={Link}
-                      to={this.getArtifactUrl(liveLogArtifact)}>
-                      <ListItemText
-                        primary={
-                          <Fragment>
-                            View Live Log{' '}
-                            <Label
-                              status="info"
-                              mini
-                              className={classes.liveLogLabel}>
-                              LOG
-                            </Label>
-                          </Fragment>
-                        }
-                        secondary={liveLogArtifact.name}
-                      />
-                      <LinkIcon />
-                    </ListItem>
+                    <Link to={this.getArtifactUrl(liveLogArtifact)}>
+                      <ListItem button className={classes.listItemButton}>
+                        <ListItemText
+                          primary={
+                            <Fragment>
+                              View Live Log{' '}
+                              <Label
+                                status="info"
+                                mini
+                                className={classes.liveLogLabel}>
+                                LOG
+                              </Label>
+                            </Fragment>
+                          }
+                          secondary={liveLogArtifact.name}
+                        />
+                        <LinkIcon />
+                      </ListItem>
+                    </Link>
                   )}
                   <ListItem
                     button
@@ -426,18 +424,19 @@ export default class TaskRunsCard extends Component {
                         secondary={run.workerGroup || <em>n/a</em>}
                       />
                     </ListItem>
-                    <ListItem
-                      title="View Worker"
-                      button
-                      className={classes.listItemButton}
-                      component={Link}
+                    <Link
                       to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${run.workerId}`}>
-                      <ListItemText
-                        primary="Worker ID"
-                        secondary={run.workerId}
-                      />
-                      <LinkIcon />
-                    </ListItem>
+                      <ListItem
+                        title="View Worker"
+                        button
+                        className={classes.listItemButton}>
+                        <ListItemText
+                          primary="Worker ID"
+                          secondary={run.workerId}
+                        />
+                        <LinkIcon />
+                      </ListItem>
+                    </Link>
                     <CopyToClipboard
                       title={`${run.takenUntil} (Copy)`}
                       text={run.takenUntil}>

@@ -117,26 +117,25 @@ export default class IndexTaskNamespaceTable extends Component {
         renderRow={({ node: { namespace } }) => (
           <TableRow key={namespace}>
             <TableCell size="small">
-              <TableCellItem
-                className={classes.listItemCell}
-                button
-                component={Link}
+              <Link
                 to={`/tasks/index/${encodeURIComponent(
                   namespace
                     .split('.')
                     .slice(0, -1)
                     .join('.')
                 )}/${this.taskFromNamespace(namespace)}`}>
-                <ListItemText
-                  disableTypography
-                  primary={
-                    <Typography variant="body2">
-                      {this.taskFromNamespace(namespace)}
-                    </Typography>
-                  }
-                />
-                <LinkIcon size={iconSize} />
-              </TableCellItem>
+                <TableCellItem className={classes.listItemCell} button>
+                  <ListItemText
+                    disableTypography
+                    primary={
+                      <Typography variant="body2">
+                        {this.taskFromNamespace(namespace)}
+                      </Typography>
+                    }
+                  />
+                  <LinkIcon size={iconSize} />
+                </TableCellItem>
+              </Link>
             </TableCell>
           </TableRow>
         )}

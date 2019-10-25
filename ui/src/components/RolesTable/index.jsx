@@ -109,18 +109,16 @@ export default class RolesTable extends Component {
         renderRow={({ node: role }) => (
           <TableRow key={role.roleId}>
             <TableCell size="small">
-              <TableCellItem
-                dense
-                button
-                component={Link}
-                to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
-                <ListItemText>
-                  <Typography className={classes.tableText}>
-                    {role.roleId}
-                  </Typography>
-                </ListItemText>
-                <LinkIcon size={iconSize} />
-              </TableCellItem>
+              <Link to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
+                <TableCellItem dense button>
+                  <ListItemText>
+                    <Typography className={classes.tableText}>
+                      {role.roleId}
+                    </Typography>
+                  </ListItemText>
+                  <LinkIcon size={iconSize} />
+                </TableCellItem>
+              </Link>
             </TableCell>
           </TableRow>
         )}

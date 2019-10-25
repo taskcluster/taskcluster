@@ -157,14 +157,12 @@ export default class IndexedEntry extends Component {
             secondary={<DateDistance from={created} />}
           />
         </ListItem>
-        <ListItem
-          button
-          className={classes.listItemButton}
-          component={Link}
-          to={`/tasks/${indexedTask.taskId}`}>
-          <ListItemText primary="View task" />
-          <LinkIcon />
-        </ListItem>
+        <Link to={`/tasks/${indexedTask.taskId}`}>
+          <ListItem button className={classes.listItemButton}>
+            <ListItemText primary="View task" />
+            <LinkIcon />
+          </ListItem>
+        </Link>
         <ListItem component="div">
           <ListItemText
             primary="Data"

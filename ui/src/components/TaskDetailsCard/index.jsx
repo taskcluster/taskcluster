@@ -135,18 +135,19 @@ export default class TaskDetailsCard extends Component {
                   secondary={task.provisionerId}
                 />
               </ListItem>
-              <ListItem
-                title="View Workers"
-                button
-                className={classes.listItemButton}
-                component={Link}
+              <Link
                 to={`/provisioners/${task.provisionerId}/worker-types/${task.workerType}`}>
-                <ListItemText
-                  primary="Worker Type"
-                  secondary={task.workerType}
-                />
-                <LinkIcon />
-              </ListItem>
+                <ListItem
+                  title="View Workers"
+                  button
+                  className={classes.listItemButton}>
+                  <ListItemText
+                    primary="Worker Type"
+                    secondary={task.workerType}
+                  />
+                  <LinkIcon />
+                </ListItem>
+              </Link>
               <ListItem
                 button
                 className={classes.listItemButton}
@@ -276,17 +277,16 @@ export default class TaskDetailsCard extends Component {
                     </ListItem>
                     <List dense disablePadding>
                       {dependentTasks.map(task => (
-                        <ListItem
-                          button
-                          component={Link}
-                          className={classes.listItemButton}
-                          to={`/tasks/${task.taskId}`}
-                          key={task.taskId}
-                          title="View Task">
-                          <StatusLabel state={task.status.state} />
-                          <ListItemText primary={task.metadata.name} />
-                          <LinkIcon />
-                        </ListItem>
+                        <Link key={task.taskId} to={`/tasks/${task.taskId}`}>
+                          <ListItem
+                            button
+                            className={classes.listItemButton}
+                            title="View Task">
+                            <StatusLabel state={task.status.state} />
+                            <ListItemText primary={task.metadata.name} />
+                            <LinkIcon />
+                          </ListItem>
+                        </Link>
                       ))}
                     </List>
                   </Fragment>

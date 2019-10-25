@@ -342,17 +342,17 @@ export default class InteractiveConnect extends Component {
               label="Notify Me on Ready"
             />
           </ListItem>
-          <ListItem
-            button
-            className={classNames(
-              classes.listItemButton,
-              classes.viewTaskDetails
-            )}
-            component={Link}
-            to={`/tasks/${taskId}`}>
-            <ListItemText primary="View task details" />
-            <LinkIcon />
-          </ListItem>
+          <Link to={`/tasks/${taskId}`}>
+            <ListItem
+              button
+              className={classNames(
+                classes.listItemButton,
+                classes.viewTaskDetails
+              )}>
+              <ListItemText primary="View task details" />
+              <LinkIcon />
+            </ListItem>
+          </Link>
         </List>
         {isSessionReady && (
           <Fragment>

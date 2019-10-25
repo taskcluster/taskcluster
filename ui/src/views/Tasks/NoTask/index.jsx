@@ -64,18 +64,15 @@ export default class NoTask extends Component {
               <ListSubheader component="div">Recent Tasks</ListSubheader>
             }>
             {recentTasks.map(({ taskId }) => (
-              <ListItem
-                button
-                className={classes.listItemButton}
-                component={Link}
-                to={`/tasks/${taskId}`}
-                key={taskId}>
-                <ListItemText
-                  disableTypography
-                  primary={<Typography variant="body2">{taskId}</Typography>}
-                />
-                <LinkIcon />
-              </ListItem>
+              <Link key={taskId} to={`/tasks/${taskId}`}>
+                <ListItem button className={classes.listItemButton}>
+                  <ListItemText
+                    disableTypography
+                    primary={<Typography variant="body2">{taskId}</Typography>}
+                  />
+                  <LinkIcon />
+                </ListItem>
+              </Link>
             ))}
           </List>
         )}

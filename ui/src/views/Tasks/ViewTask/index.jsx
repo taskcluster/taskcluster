@@ -822,13 +822,11 @@ export default class ViewTask extends Component {
         {task && (
           <Fragment>
             <Breadcrumbs>
-              <Typography
-                variant="body2"
-                className={classes.link}
-                component={Link}
-                to={`/tasks/groups/${task.taskGroupId}`}>
-                Task Group
-              </Typography>
+              <Link to={`/tasks/groups/${task.taskGroupId}`}>
+                <Typography variant="body2" className={classes.link}>
+                  Task Group
+                </Typography>
+              </Link>
               <Typography variant="body2" color="textSecondary">
                 {task.metadata.name}
               </Typography>

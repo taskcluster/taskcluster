@@ -189,20 +189,16 @@ export default class ViewWorkers extends Component {
             <Fragment>
               <div className={classes.bar}>
                 <Breadcrumbs classes={{ paper: classes.breadcrumbsPaper }}>
-                  <Typography
-                    variant="body2"
-                    className={classes.link}
-                    component={Link}
-                    to="/provisioners">
-                    Provisioners
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    className={classes.link}
-                    component={Link}
-                    to={`/provisioners/${params.provisionerId}`}>
-                    {params.provisionerId}
-                  </Typography>
+                  <Link to="/provisioners">
+                    <Typography variant="body2" className={classes.link}>
+                      Provisioners
+                    </Typography>
+                  </Link>
+                  <Link to={`/provisioners/${params.provisionerId}`}>
+                    <Typography variant="body2" className={classes.link}>
+                      {params.provisionerId}
+                    </Typography>
+                  </Link>
 
                   <Typography variant="body2" color="textSecondary">
                     {`${params.workerType}`}

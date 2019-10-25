@@ -151,20 +151,19 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       <TableRow key={workerPool.workerPoolId}>
         <TableCell>
           {workerPool.providerId !== NULL_PROVIDER ? (
-            <TableCellItem
-              button
-              component={Link}
-              to={`${path}/${encodeURIComponent(workerPool.workerPoolId)}`}>
-              <ListItemText
-                disableTypography
-                primary={
-                  <Typography variant="body2">
-                    {workerPool.workerPoolId}
-                  </Typography>
-                }
-              />
-              <LinkIcon size={iconSize} />
-            </TableCellItem>
+            <Link to={`${path}/${encodeURIComponent(workerPool.workerPoolId)}`}>
+              <TableCellItem button>
+                <ListItemText
+                  disableTypography
+                  primary={
+                    <Typography variant="body2">
+                      {workerPool.workerPoolId}
+                    </Typography>
+                  }
+                />
+                <LinkIcon size={iconSize} />
+              </TableCellItem>
+            </Link>
           ) : (
             <Typography variant="body2">{workerPool.workerPoolId}</Typography>
           )}
@@ -187,28 +186,32 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         </TableCell>
 
         <TableCell>
-          <Button
-            className={classes.linksButton}
-            variant="outlined"
-            component={Link}
+          <Link
             to={`/provisioners/${encodeURIComponent(
               provisionerId
-            )}/worker-types/${encodeURIComponent(workerType)}`}
-            disabled={actionLoading}
-            size="small">
-            <WorkerIcon className={classes.linksIcon} size={iconSize} />
-            View Workers
-          </Button>
-          <Button
-            className={classes.linksButton}
-            variant="outlined"
-            component={Link}
-            to={`${path}/${encodeURIComponent(workerPool.workerPoolId)}/errors`}
-            disabled={actionLoading}
-            size="small">
-            <MessageAlertIcon className={classes.linksIcon} size={iconSize} />
-            View Errors
-          </Button>
+            )}/worker-types/${encodeURIComponent(workerType)}`}>
+            <Button
+              className={classes.linksButton}
+              variant="outlined"
+              disabled={actionLoading}
+              size="small">
+              <WorkerIcon className={classes.linksIcon} size={iconSize} />
+              View Workers
+            </Button>
+          </Link>
+          <Link
+            to={`${path}/${encodeURIComponent(
+              workerPool.workerPoolId
+            )}/errors`}>
+            <Button
+              className={classes.linksButton}
+              variant="outlined"
+              disabled={actionLoading}
+              size="small">
+              <MessageAlertIcon className={classes.linksIcon} size={iconSize} />
+              View Errors
+            </Button>
+          </Link>
           {workerPool.providerId !== NULL_PROVIDER ? (
             <IconButton
               title="Delete Worker Pool ID"

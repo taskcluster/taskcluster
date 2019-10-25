@@ -139,16 +139,18 @@ export default class WorkersTable extends Component {
           <TableRow key={workerId}>
             <TableCell>{workerGroup}</TableCell>
             <TableCell>
-              <TableCellItem
-                button
-                component={Link}
+              <Link
                 to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${workerGroup}/${workerId}`}>
-                <ListItemText
-                  disableTypography
-                  primary={<Typography variant="body2">{workerId}</Typography>}
-                />
-                <LinkIcon size={iconSize} />
-              </TableCellItem>
+                <TableCellItem button>
+                  <ListItemText
+                    disableTypography
+                    primary={
+                      <Typography variant="body2">{workerId}</Typography>
+                    }
+                  />
+                  <LinkIcon size={iconSize} />
+                </TableCellItem>
+              </Link>
             </TableCell>
             <CopyToClipboard title={`${firstClaim} (Copy)`} text={firstClaim}>
               <TableCell>
@@ -167,20 +169,20 @@ export default class WorkersTable extends Component {
             </CopyToClipboard>
             <TableCell>
               {latestTask ? (
-                <TableCellItem
-                  button
-                  component={Link}
+                <Link
                   to={`/tasks/${latestTask.run.taskId}/runs/${latestTask.run.runId}`}>
-                  <ListItemText
-                    disableTypography
-                    primary={
-                      <Typography variant="body2">
-                        {latestTask.run.taskId}
-                      </Typography>
-                    }
-                  />
-                  <LinkIcon size={iconSize} />
-                </TableCellItem>
+                  <TableCellItem button>
+                    <ListItemText
+                      disableTypography
+                      primary={
+                        <Typography variant="body2">
+                          {latestTask.run.taskId}
+                        </Typography>
+                      }
+                    />
+                    <LinkIcon size={iconSize} />
+                  </TableCellItem>
+                </Link>
               ) : (
                 <Typography variant="body2">n/a</Typography>
               )}

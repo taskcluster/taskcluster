@@ -178,20 +178,20 @@ export default class WorkerTypesTable extends Component {
                   onClick={this.handleDrawerOpen}>
                   <InformationVariantIcon size={iconSize} />
                 </IconButton>
-                <TableCellItem
-                  button
-                  component={Link}
+                <Link
                   to={`/provisioners/${workerType.provisionerId}/worker-types/${workerType.workerType}`}>
-                  <ListItemText
-                    disableTypography
-                    primary={
-                      <Typography variant="body2">
-                        {workerType.workerType}
-                      </Typography>
-                    }
-                  />
-                  <LinkIcon size={iconSize} />
-                </TableCellItem>
+                  <TableCellItem button>
+                    <ListItemText
+                      disableTypography
+                      primary={
+                        <Typography variant="body2">
+                          {workerType.workerType}
+                        </Typography>
+                      }
+                    />
+                    <LinkIcon size={iconSize} />
+                  </TableCellItem>
+                </Link>
               </TableCell>
               <TableCell>
                 <StatusLabel state={workerType.stability} />

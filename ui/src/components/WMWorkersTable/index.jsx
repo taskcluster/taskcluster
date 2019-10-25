@@ -120,20 +120,20 @@ export default class WorkerManagerWorkersTable extends Component {
 
         <TableCell>
           {latestTaskRun ? (
-            <TableCellItem
-              button
-              component={Link}
+            <Link
               to={`/tasks/${latestTaskRun.taskId}/runs/${latestTaskRun.runId}`}>
-              <ListItemText
-                disableTypography
-                primary={
-                  <Typography variant="body2">
-                    {latestTaskRun.taskId}
-                  </Typography>
-                }
-              />
-              <LinkIcon size={iconSize} />
-            </TableCellItem>
+              <TableCellItem button>
+                <ListItemText
+                  disableTypography
+                  primary={
+                    <Typography variant="body2">
+                      {latestTaskRun.taskId}
+                    </Typography>
+                  }
+                />
+                <LinkIcon size={iconSize} />
+              </TableCellItem>
+            </Link>
           ) : (
             <Typography variant="body2">n/a</Typography>
           )}
@@ -202,18 +202,18 @@ export default class WorkerManagerWorkersTable extends Component {
         </TableCell>
 
         <TableCell>
-          <TableCellItem
-            button
-            component={Link}
+          <Link
             to={`${path}/worker-types/${workerPool}/workers/${workerGroup}/${workerId}/resources`}>
-            <ListItemText
-              disableTypography
-              primary={
-                <Typography variant="body2">{`${recentErrors}`}</Typography>
-              }
-            />
-            <LinkIcon size={iconSize} />
-          </TableCellItem>
+            <TableCellItem button>
+              <ListItemText
+                disableTypography
+                primary={
+                  <Typography variant="body2">{`${recentErrors}`}</Typography>
+                }
+              />
+              <LinkIcon size={iconSize} />
+            </TableCellItem>
+          </Link>
         </TableCell>
 
         <TableCell>

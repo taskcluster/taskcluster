@@ -112,18 +112,15 @@ export default class SecretsTable extends Component {
         renderRow={({ node: { name } }) => (
           <TableRow key={name}>
             <TableCell size="small">
-              <TableCellItem
-                className={classes.listItemCell}
-                dense
-                button
-                component={Link}
-                to={`/secrets/${encodeURIComponent(name)}`}>
-                <ListItemText
-                  disableTypography
-                  primary={<Typography variant="body2">{name}</Typography>}
-                />
-                <LinkIcon size={iconSize} />
-              </TableCellItem>
+              <Link to={`/secrets/${encodeURIComponent(name)}`}>
+                <TableCellItem className={classes.listItemCell} dense button>
+                  <ListItemText
+                    disableTypography
+                    primary={<Typography variant="body2">{name}</Typography>}
+                  />
+                  <LinkIcon size={iconSize} />
+                </TableCellItem>
+              </Link>
             </TableCell>
           </TableRow>
         )}

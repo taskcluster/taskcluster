@@ -49,18 +49,17 @@ function HookLastFiredTable({ classes, ...props }) {
         <TableRow key={hookFire.taskId}>
           <TableCell>
             {(hookFire.result === 'SUCCESS' && (
-              <TableCellItem
-                button
-                component={Link}
-                to={`/tasks/${hookFire.taskId}`}>
-                <ListItemText
-                  disableTypography
-                  primary={
-                    <Typography variant="body2">{hookFire.taskId}</Typography>
-                  }
-                />
-                <LinkIcon size={iconSize} />
-              </TableCellItem>
+              <Link to={`/tasks/${hookFire.taskId}`}>
+                <TableCellItem button>
+                  <ListItemText
+                    disableTypography
+                    primary={
+                      <Typography variant="body2">{hookFire.taskId}</Typography>
+                    }
+                  />
+                  <LinkIcon size={iconSize} />
+                </TableCellItem>
+              </Link>
             )) || <Typography variant="body2">{hookFire.taskId}</Typography>}
           </TableCell>
           <TableCell>

@@ -64,15 +64,12 @@ export default class NoTaskGroup extends Component {
               <ListSubheader component="div">Recent Task Groups</ListSubheader>
             }>
             {recentTaskGroups.map(({ taskGroupId }) => (
-              <ListItem
-                button
-                className={classes.listItemButton}
-                component={Link}
-                to={`/tasks/groups/${taskGroupId}`}
-                key={taskGroupId}>
-                <ListItemText primary={taskGroupId} />
-                <LinkIcon />
-              </ListItem>
+              <Link key={taskGroupId} to={`/tasks/groups/${taskGroupId}`}>
+                <ListItem button className={classes.listItemButton}>
+                  <ListItemText primary={taskGroupId} />
+                  <LinkIcon />
+                </ListItem>
+              </Link>
             ))}
           </List>
         )}

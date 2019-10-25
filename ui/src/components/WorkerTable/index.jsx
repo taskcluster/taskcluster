@@ -130,13 +130,12 @@ export default class WorkerTable extends Component {
               <StatusLabel state={task.state} />
             </TableCell>
             <TableCell>
-              <TableCellItem
-                button
-                component={Link}
-                to={`/tasks/${task.taskId}/runs/${task.runId}`}>
-                <div className={classes.taskName}>{task.name}</div>
-                <LinkIcon size={iconSize} />
-              </TableCellItem>
+              <Link to={`/tasks/${task.taskId}/runs/${task.runId}`}>
+                <TableCellItem button>
+                  <div className={classes.taskName}>{task.name}</div>
+                  <LinkIcon size={iconSize} />
+                </TableCellItem>
+              </Link>
             </TableCell>
             <TableCell>{task.taskId}</TableCell>
             <CopyToClipboard title={task.started} text={task.started}>
