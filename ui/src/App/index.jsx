@@ -211,7 +211,11 @@ export default class App extends Component {
             <MuiThemeProvider theme={theme}>
               <FontStager />
               <CssBaseline />
-              <Main key={auth.user} routes={routes} error={error} />
+              <Main
+                key={JSON.stringify(auth.user)}
+                routes={routes}
+                error={error}
+              />
             </MuiThemeProvider>
           </ToggleThemeContext.Provider>
         </AuthContext.Provider>

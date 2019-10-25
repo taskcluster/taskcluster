@@ -35,7 +35,7 @@ export default class ThirdPartyLogin extends Component {
       location: { search },
     } = props;
     const query = parse(search.slice(1));
-    const scopes = query.scope.split(' ');
+    const scopes = (query.scope || []).split(' ');
     const registeredClientId = query.client_id;
 
     if (
