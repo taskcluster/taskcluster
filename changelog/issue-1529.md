@@ -1,4 +1,4 @@
 level: minor
 reference: issue 1529
 ---
-Now if users redirect from third party site to get taskcluster credentials with only one strategy they redirect directly to that strategy without having click on "Sign in" and then clicking on the strategy to use for login
+When a third party site tries to login to the deployment, Taskcluster now attempts to auto login when there is only one login strategy configured. Previously, a user had to click on "Sign In" then click on the login strategy.
