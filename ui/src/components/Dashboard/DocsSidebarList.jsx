@@ -208,17 +208,17 @@ export default class DocsSidebarList extends Component {
       return (
         <Fragment key={node.path}>
           {isRoot && node.prev && <Divider className={classes.divider} />}
-          <Typography
-            variant="body2"
-            className={classNames(classes.link, classes.hover, {
-              [classes.header]: isRoot,
-              [classes.linkActive]: isLinkActive,
-              [classes.childWithInlineNodes]: hasInlineNodes,
-            })}
-            component={Link}
-            to={href}>
-            {node.data.title || node.name}
-          </Typography>
+          <Link to={href}>
+            <Typography
+              variant="body2"
+              className={classNames(classes.link, classes.hover, {
+                [classes.header]: isRoot,
+                [classes.linkActive]: isLinkActive,
+                [classes.childWithInlineNodes]: hasInlineNodes,
+              })}>
+              {node.data.title || node.name}
+            </Typography>
+          </Link>
           {hasInlineNodes && this.renderInlineNodes(inlineNodes)}
           <ul className={classes.ul}>
             {nodes.map(
@@ -233,17 +233,17 @@ export default class DocsSidebarList extends Component {
     }
 
     return (
-      <Typography
-        variant="body2"
-        className={classNames(classes.link, classes.hover, {
-          [classes.linkActive]: isLinkActive,
-          [classes.header]: isRoot,
-        })}
-        key={node.path}
-        component={Link}
-        to={href}>
-        {node.data.title}
-      </Typography>
+      <Link to={href}>
+        <Typography
+          variant="body2"
+          className={classNames(classes.link, classes.hover, {
+            [classes.linkActive]: isLinkActive,
+            [classes.header]: isRoot,
+          })}
+          key={node.path}>
+          {node.data.title}
+        </Typography>
+      </Link>
     );
   };
 
@@ -266,24 +266,24 @@ export default class DocsSidebarList extends Component {
         {DOCS_MENU_ITEMS.map(item => (
           <Fragment key={item.label}>
             {item.hasChildren && <Divider />}
-            <ListItem
-              name={item.label}
-              button
-              onClick={this.handleSectionClick}
-              component={Link}
-              to={removeReadmeFromPath(item.path)}
-              classes={{ container: classes.listItem }}>
-              <ListItemIcon>
-                <item.icon />
-              </ListItemIcon>
-              <ListItemText primary={item.label} />
-              {item.hasChildren &&
-                (menuOpen && currentMenu === item.label ? (
-                  <ChevronUpIcon />
-                ) : (
-                  <ChevronDownIcon />
-                ))}
-            </ListItem>
+            <Link to={removeReadmeFromPath(item.path)}>
+              <ListItem
+                name={item.label}
+                button
+                onClick={this.handleSectionClick}
+                classes={{ container: classes.listItem }}>
+                <ListItemIcon>
+                  <item.icon />
+                </ListItemIcon>
+                <ListItemText primary={item.label} />
+                {item.hasChildren &&
+                  (menuOpen && currentMenu === item.label ? (
+                    <ChevronUpIcon />
+                  ) : (
+                    <ChevronDownIcon />
+                  ))}
+              </ListItem>
+            </Link>
             <Collapse
               in={item.hasChildren && menuOpen && currentMenu === item.label}>
               <div className={classes.collapse}>

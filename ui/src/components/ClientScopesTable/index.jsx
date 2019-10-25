@@ -108,19 +108,19 @@ export default class ClientScopesTable extends Component {
       map(node => (
         <TableRow key={node}>
           <TableCell size="small">
-            <TableCellItem
-              button
-              component={Link}
+            <Link
               to={
                 selectedScope
                   ? `/auth/clients/${encodeURIComponent(node)}`
                   : `/auth/scopes/${encodeURIComponent(node)}`
               }>
-              <ListItemText>
-                <Typography className={classes.tableText}>{node}</Typography>
-              </ListItemText>
-              <LinkIcon size={16} />
-            </TableCellItem>
+              <TableCellItem button>
+                <ListItemText>
+                  <Typography className={classes.tableText}>{node}</Typography>
+                </ListItemText>
+                <LinkIcon size={16} />
+              </TableCellItem>
+            </Link>
           </TableCell>
         </TableRow>
       ))

@@ -33,7 +33,7 @@ import Link from '../../utils/Link';
   text: {
     color: theme.palette.text.inactive,
     fontFamily: 'Roboto500',
-    fontSize: 16,
+    fontSize: '1rem',
   },
   icon: {
     fill: theme.palette.text.inactive,
@@ -131,33 +131,34 @@ export default class SidebarListItem extends Component {
       icon,
       children,
       rightIcon,
+      to,
+      skipPrefetch,
       staticContext,
       ...props
     } = this.props;
 
     return (
-      <ListItem
-        button
-        disableGutters
-        className={classes.listItem}
-        component={Link}
-        nav
-        isActive={this.isItemActive}
+      <Link
+        skipPrefetch={skipPrefetch}
+        to={to}
         activeClassName={classes.active}
-        {...props}>
-        {icon && (
-          <ListItemIcon classes={{ root: classes.icon }}>{icon}</ListItemIcon>
-        )}
-        <ListItemText
-          disableTypography
-          className={classes.text}
-          primary={children}
-        />
-        {rightIcon &&
-          cloneElement(rightIcon, {
-            className: classNames(classes.icon, rightIcon.props.className),
-          })}
-      </ListItem>
+        nav
+        isActive={this.isItemActive}>
+        <ListItem button disableGutters className={classes.listItem} {...props}>
+          {icon && (
+            <ListItemIcon classes={{ root: classes.icon }}>{icon}</ListItemIcon>
+          )}
+          <ListItemText
+            disableTypography
+            className={classes.text}
+            primary={children}
+          />
+          {rightIcon &&
+            cloneElement(rightIcon, {
+              className: classNames(classes.icon, rightIcon.props.className),
+            })}
+        </ListItem>
+      </Link>
     );
   }
 }

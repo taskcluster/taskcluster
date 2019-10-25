@@ -261,16 +261,17 @@ export default class Dashboard extends Component {
             alt="logo"
             src={Logo}
           />
-          <Typography
-            {...(!window.env.DOCS_ONLY && {
-              component: Link,
-              to: '/',
-            })}
-            variant="h6"
-            noWrap
-            className={classes.title}>
-            {window.env.APPLICATION_NAME}
-          </Typography>
+          {window.env.DOCS_ONLY ? (
+            <Typography variant="h6" noWrap className={classes.title}>
+              {window.env.APPLICATION_NAME}
+            </Typography>
+          ) : (
+            <Link to="/">
+              <Typography variant="h6" noWrap className={classes.title}>
+                {window.env.APPLICATION_NAME}
+              </Typography>
+            </Link>
+          )}
         </div>
       </Fragment>
     );

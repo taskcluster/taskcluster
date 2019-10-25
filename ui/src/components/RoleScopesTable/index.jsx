@@ -99,21 +99,19 @@ export default class RoleScopesTable extends Component {
 
     return (
       <Fragment>
-        <ListItem
-          className={classes.listItemButton}
-          style={style}
-          button
-          component={Link}
+        <Link
           to={
             selectedScope
               ? `/auth/roles/${encodeURIComponent(item)}`
               : `/auth/scopes/${encodeURIComponent(item)}`
           }>
-          <ListItemText>
-            <Typography className={classes.tableText}>{item}</Typography>
-          </ListItemText>
-          <LinkIcon size={iconSize} />
-        </ListItem>
+          <ListItem className={classes.listItemButton} style={style} button>
+            <ListItemText>
+              <Typography className={classes.tableText}>{item}</Typography>
+            </ListItemText>
+            <LinkIcon size={iconSize} />
+          </ListItem>
+        </Link>
         <Divider
           style={{
             ...style,
