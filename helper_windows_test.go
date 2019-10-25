@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 func helloGoodbye() []string {
@@ -71,14 +72,16 @@ func sleep(seconds uint) []string {
 }
 
 func goGet(packages ...string) []string {
-	return []string{"go get " + strings.Join(packages, " ")}
+	cmd := []string{"go", "get"}
+	cmd = append(cmd, packages...)
+	return []string{run(cmd, "")}
 }
 
 func goRun(goFile string, args ...string) []string {
 	return goRunFileOutput("", goFile, args...)
 }
 
-func goRunFileOutput(output, goFile string, args ...string) []string {
+func goRunFileOutput(outputFile, goFile string, args ...string) []string {
 	prepare := []string{}
 	for _, envVar := range []string{
 		"PATH", "GOPATH", "GOROOT",
@@ -88,13 +91,47 @@ func goRunFileOutput(output, goFile string, args ...string) []string {
 		}
 	}
 	prepare = append(prepare, copyTestdataFile(goFile)...)
-	command := []string{`"` + goFile + `"`}
-	commandWithArgs := append(command, args...)
-	run := `go run ` + strings.Join(commandWithArgs, ` `)
-	if output != "" {
-		run += " > " + output
+
+	cmd := []string{"go", "run", goFile}
+	cmd = append(cmd, args...)
+
+	return append(prepare, run(cmd, outputFile))
+}
+
+// run runs the command line args specified in args and redirects the output to
+// file outputFile if it is not an empty string.
+func run(args []string, outputFile string) string {
+	run := cmdExeEscape(makeCmdLine(args))
+
+	if outputFile != "" {
+		run += ` > ` + syscall.EscapeArg(outputFile)
 	}
-	return append(prepare, run)
+	return run
+}
+
+// makeCmdLine builds a command line that can be passed to CreateProcess family of syscalls.
+func makeCmdLine(args []string) string {
+	var s string
+	for _, v := range args {
+		if s != "" {
+			s += " "
+		}
+		s += syscall.EscapeArg(v)
+	}
+	return s
+}
+
+// cmdExeEscape escapes cmd.exe metacharacters
+// See: https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
+func cmdExeEscape(text string) string {
+	cmdEscaped := ""
+	for _, c := range text {
+		if strings.ContainsRune(`()%!^"<>&|`, c) {
+			cmdEscaped += "^"
+		}
+		cmdEscaped += string(c)
+	}
+	return cmdEscaped
 }
 
 func copyTestdataFile(path string) []string {
@@ -105,8 +142,8 @@ func copyTestdataFileTo(src, dest string) []string {
 	destFile := strings.Replace(dest, "/", "\\", -1)
 	sourceFile := filepath.Join(testdataDir, strings.Replace(src, "/", "\\", -1))
 	return []string{
-		"if not exist \"" + filepath.Dir(destFile) + "\" mkdir \"" + filepath.Dir(destFile) + "\"",
-		"copy \"" + sourceFile + "\" \"" + destFile + "\"",
+		run([]string{"if", "not", "exist", filepath.Dir(destFile), "mkdir", filepath.Dir(destFile)}, ""),
+		run([]string{"copy", sourceFile, destFile}, ""),
 	}
 }
 
