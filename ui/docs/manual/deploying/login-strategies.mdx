@@ -46,6 +46,7 @@ This integration includes many pieces, such as CIS and the People API, which are
 Deployments outside of Mozilla should not enable this strategy.
 
 To get started, request a new Auth0 application via Hub ("New Single Sign On Application").
+Specify that you want a client with scopes `display:null`, `classification:public`, `display:all`, and `display:public`.
 Use OpenID Connect.
 The Callback URL should be `<rootUrl>/login/mozilla-auth0/callback` or `http://localhost:3050/login/mozilla-auth0/callback` for local development.
 The other options are up to you.

@@ -49,3 +49,15 @@ spec:
             timeoutSeconds: 5
             periodSeconds: 10
             initialDelaySeconds: 3
+        # After 24 hours, we start randomly deciding to exit the container.
+        # Taskcluster services are created with the assumption that they will
+        # not run indefinitely.
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - exit $(awk 'BEGIN{srand(); print (rand() > 0.3)}')
+          initialDelaySeconds: 86400
+          periodSeconds: 60
+          failureThreshold: 1

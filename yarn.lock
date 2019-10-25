@@ -1676,10 +1676,10 @@ bytes@3.1.0:
   resolved "https://registry.yarnpkg.com/bytes/-/bytes-3.1.0.tgz#f6cf7933a360e0588fa9fde85651cdc7f805d1f6"
   integrity sha512-zauLjrfCG+xvoyaqLoV8bLVXXNGC4JqlxFCutSDWA6fJrTo2ZuvLYTqZ7aHBLZSMOopbzwv8f+wZcVzfVTI2Dg==
 
-c8@^5.0.1:
-  version "5.0.4"
-  resolved "https://registry.yarnpkg.com/c8/-/c8-5.0.4.tgz#a247fd6a4cbc19b33dae17178a7d903a8dd7fa79"
-  integrity sha512-MgWIJ3HYe4NTtqwD+v16OdHvfqSzSLOmsptMuUxkzsYMoZzEeUv3yVep2d84qFjgio/3WbVEd9bkYQCFSDKeMw==
+c8@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/c8/-/c8-6.0.0.tgz#609c86ec2ef3c06dc1f706bd199686c4d94b4efe"
+  integrity sha512-3T0PTOtKW0VxHoY77fDz2wQiFamYUWHpD2rRaJhzmhwoRaULXuN+7jdIHxx6yoL0dTa6tuwvZK1luYTkMlEkvA==
   dependencies:
     "@bcoe/v8-coverage" "^0.2.3"
     find-up "^4.0.0"
@@ -1690,9 +1690,9 @@ c8@^5.0.1:
     istanbul-reports "^2.2.6"
     rimraf "^3.0.0"
     test-exclude "^5.2.3"
-    v8-to-istanbul "^3.2.3"
+    v8-to-istanbul "^3.2.6"
     yargs "^14.0.0"
-    yargs-parser "^14.0.0"
+    yargs-parser "^15.0.0"
 
 cacheable-request@^6.0.0:
   version "6.0.0"
@@ -2407,9 +2407,9 @@ deepmerge@^3.2.0:
   integrity sha512-GRQOafGHwMHpjPx9iCvTgpu9NojZ49q794EEL94JVEw6VaeA8XTUyBKvAkOOjBX9oJNiV6G3P+T+tihFjo2TqA==
 
 deepmerge@^4.0.0:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-4.2.0.tgz#77a97af6746882cd1ed85d4b925be8cd4120b630"
-  integrity sha512-/pED+kD8V9n15L1lon8DXEiWLQMW4tTiegn1kIWIQ+DBudOkFitz1cfjWQiSeKMPBQOknT3LpueyAmMVJ1Ho2g==
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-4.2.1.tgz#018a3e5dfe82b95e35e36a9a29ba15ddb194e40f"
+  integrity sha512-32P7FIV6JKt0hPMFNlWFytzVGpppYHFKdnhFUEMXheWc8Lw4HnHEzJa5yxhaQedDAXv2SI6zD7+UbqnC5k9g9Q==
 
 defaults@^1.0.3:
   version "1.0.3"
@@ -7993,10 +7993,10 @@ v8-compile-cache@^2.0.3:
   resolved "https://registry.yarnpkg.com/v8-compile-cache/-/v8-compile-cache-2.1.0.tgz#e14de37b31a6d194f5690d67efc4e7f6fc6ab30e"
   integrity sha512-usZBT3PW+LOjM25wbqIlZwPeJV+3OSz3M1k1Ws8snlW39dZyYL9lOGC5FgPVHfk0jKmjiDV8Z0mIbVQPiwFs7g==
 
-v8-to-istanbul@^3.2.3:
-  version "3.2.3"
-  resolved "https://registry.yarnpkg.com/v8-to-istanbul/-/v8-to-istanbul-3.2.3.tgz#5978ca1120ebaf868738fd51484c15795db2f71c"
-  integrity sha512-B8d/oxMtc/x0TYXr9b+Ywu5KexA/on4QMQ9M1kTYnoGZzKdo8LLk9ySlWePdDOtr2G0/2Injgcp3sOR9gU+3vQ==
+v8-to-istanbul@^3.2.6:
+  version "3.2.6"
+  resolved "https://registry.yarnpkg.com/v8-to-istanbul/-/v8-to-istanbul-3.2.6.tgz#42333fe6b2a9849b108ff781af6faa1a61390eac"
+  integrity sha512-M6zzkVjsr+6sFdWPCuq7fjg9oCOXlssin05Yhobt9jMqHlEhw8AQ4/ClDiLCVWzXjpS2ezik53mhgSivw0XwmQ==
   dependencies:
     "@types/istanbul-lib-coverage" "^2.0.1"
     convert-source-map "^1.6.0"
@@ -8327,10 +8327,10 @@ yargs-parser@13.1.1, yargs-parser@^13.0.0, yargs-parser@^13.1.1:
     camelcase "^5.0.0"
     decamelize "^1.2.0"
 
-yargs-parser@^14.0.0:
-  version "14.0.0"
-  resolved "https://registry.yarnpkg.com/yargs-parser/-/yargs-parser-14.0.0.tgz#42e25777b06718ec99eac2c3a98ad3de73b6818f"
-  integrity sha512-zn/Mnx+tbFjkCFUodEpjXckNS65NfpB5oyqOkDDEG/8uxlfLZJu2IoBLQFjukUkn9rBbGkVYNzrDh6qy4NUd3g==
+yargs-parser@^15.0.0:
+  version "15.0.0"
+  resolved "https://registry.yarnpkg.com/yargs-parser/-/yargs-parser-15.0.0.tgz#cdd7a97490ec836195f59f3f4dbe5ea9e8f75f08"
+  integrity sha512-xLTUnCMc4JhxrPEPUYD5IBR1mWCK/aT6+RJ/K29JY2y1vD+FhtgKK0AXRWvI262q3QSffAQuTouFIKUuHX89wQ==
   dependencies:
     camelcase "^5.0.0"
     decamelize "^1.2.0"

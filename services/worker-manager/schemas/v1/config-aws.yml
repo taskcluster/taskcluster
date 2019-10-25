@@ -34,6 +34,18 @@ properties:
               - MinCount
               - MaxCount
           additionalProperties: true
+        additionalUserData:
+          type: object
+          properties:
+            # These properties are not allowed, so we assert that
+            # they do not match the empty schema
+            rootUrl: {not: {}}
+            workerPoolId: {not: {}}
+            providerId: {not: {}}
+            workerGroup: {not: {}}
+            workerConfig: {not: {}}
+          required: []
+          additionalProperties: true
         capacityPerInstance:
           title: Capacity Per Instance
           type: integer

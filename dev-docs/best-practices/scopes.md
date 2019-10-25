@@ -30,12 +30,13 @@ Following this pattern for permanent resources ensures that any permanent grant 
 Scopes should only ever be used to evaluate scope satisfaction; never pattern match scopes to try to extract information from them.
 
 A common example of this error is in trying to determine a user's identity based on their credentials.
-Since the `taskcluster-login` service helpfully adds scopes like `assume:mozilla-user:example@example.com`, it is tempting to look for a scope matching that pattern and extract the email address.
+Since the user login helpfully adds scopes like `assume:login-identity:github/1234:octocat`, it is tempting to look for a scope matching that pattern and extract the email address.
 
-This has a few awkward failure modes, though.
-Administrative users may have multiple matching scopes, or even `assume:mozilla-user:*`.
+First, this is not a good idea because it suggests that Taskcluster credentials identify a user -- they do not.
+Taskcluster is not designed to be an "identity provider" and it does not implement features typically required of identity providers.
+Instead, it depends on other identity providers for its login strategies, and itself deals only in scopes.
+
+That aside, another issue is that administrative users may have multiple matching scopes, or even `assume:login-identity:*`.
 Even if those administrative users should avoid using your service with such powerful credentials, it's easy to do accidentally and incautious code may assume the user is named `*`.
 Other credentials may have no matching scope, but still possess the scopes to authorize the bearer to perform an operation.
 Basically, scopes do not communicate information -- they only allow satisfaction checks.
-
-The appropriate way to determine a user's identity (as described in [Third Party Integration](/docs/manual/integrations/apis/3rdparty)) is to find an email from some less trustworthy source such as the clientId, and then *verify* that email against the scopes, by asking "is `assume:mozilla-user:<email>` satisfied?"
