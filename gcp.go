@@ -105,8 +105,12 @@ func updateConfigWithGCPSettings(c *gwconfig.Config) error {
 		return err
 	}
 
-	// Don't override WorkerLocation if GCP workerpool specifies an explicit
+	// Don't override WorkerLocation if configuration specifies an explicit
 	// value.
+	//
+	// See:
+	//   * https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md
+	//   * https://github.com/taskcluster/taskcluster-worker-runner#google
 	if c.WorkerLocation == "" {
 		workerLocation := &GCPWorkerLocation{
 			Cloud:  "google",

@@ -263,11 +263,13 @@ and reports back results to the queue.
                                             TASKCLUSTER_WORKER_LOCATION environment variable will be set to a
                                             string containing the JSON object:
                                             {"cloud":"aws","region":"<REGION>","availabilityZone":"<AZ>"}
+                                            See: https://github.com/taskcluster/taskcluster-worker-runner#aws
 
                                             If an empty string, and --configure-for-gcp is specified,
                                             TASKCLUSTER_WORKER_LOCATION environment variable will be set to a
                                             string containing the JSON object:
                                             {"cloud":"google","region":"<REGION>","zone":"<ZONE>"}
+                                            See: https://github.com/taskcluster/taskcluster-worker-runner#google
 
                                             Otherwise TASKCLUSTER_WORKER_LOCATION environment
                                             variable will not be implicitly set in task commands.

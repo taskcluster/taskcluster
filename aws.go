@@ -94,8 +94,12 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 		return err
 	}
 
-	// Don't override WorkerLocation if AWS Provider workerpool / AWS
-	// Provisioner worker type definition specify an explicit value.
+	// Don't override WorkerLocation if configuration specifies an explicit
+	// value.
+	//
+	// See:
+	//   * https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md
+	//   * https://github.com/taskcluster/taskcluster-worker-runner#aws
 	if c.WorkerLocation == "" {
 		workerLocation := &AWSWorkerLocation{
 			Cloud:            "aws",
