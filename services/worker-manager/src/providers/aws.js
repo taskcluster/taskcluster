@@ -90,6 +90,7 @@ class AwsProvider extends Provider {
       );
 
       const userData = Buffer.from(JSON.stringify({
+        ...config.additionalUserData,
         rootUrl: this.rootUrl,
         workerPoolId,
         providerId: this.providerId,
