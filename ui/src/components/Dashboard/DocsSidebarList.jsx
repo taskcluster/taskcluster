@@ -47,6 +47,7 @@ const getDocsSectionFromPathname = pathname => {
   link: {
     textDecoration: 'none',
     padding: `0 ${theme.spacing(1)}px`,
+    display: 'block',
   },
   linkActive: {
     color: theme.palette.secondary.main,
