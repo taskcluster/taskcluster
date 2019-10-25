@@ -35,7 +35,7 @@ export default class ThirdPartyLogin extends Component {
       location: { search },
     } = props;
     const query = parse(search.slice(1));
-    const scopes = query.scope.split(' ');
+    const scopes = (query.scope || []).split(' ');
     const registeredClientId = query.client_id;
 
     if (
@@ -87,9 +87,6 @@ export default class ThirdPartyLogin extends Component {
   render() {
     const { user, data } = this.props;
     const { formData } = this.state;
-    const isOneLoginStrategy =
-      window.env.UI_LOGIN_STRATEGY_NAMES &&
-      window.env.UI_LOGIN_STRATEGY_NAMES.split(' ').length === 1;
 
     return (
       <Dashboard title="Third Party Login">
@@ -106,10 +103,6 @@ export default class ThirdPartyLogin extends Component {
           />
         )}
         {!user && <Homepage />}
-        {!user &&
-          isOneLoginStrategy &&
-          window.opener &&
-          window.open(`/login/${window.env.UI_LOGIN_STRATEGY_NAMES}`, '_blank')}
       </Dashboard>
     );
   }
