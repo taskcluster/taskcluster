@@ -517,7 +517,7 @@ tasks:
   ############## Linux amd64 Multiuser Build ###############
   ##########################################################
 
-  - provisionerId: pmoore-test
+  - provisionerId: aws-provisioner-v1
     workerType: gwci-linux
     metadata:
       name: "Build/test 64 bit generic-worker (multiuser engine) on Ubuntu 17.04 VM"
@@ -592,7 +592,7 @@ tasks:
   ################ Linux amd64 Simple Build ################
   ##########################################################
 
-  - provisionerId: pmoore-test
+  - provisionerId: aws-provisioner-v1
     workerType: gwci-linux
     metadata:
       name: "Build/test 64 bit generic-worker (simple engine) on Ubuntu 17.04 VM"
@@ -663,7 +663,7 @@ tasks:
   ################ Linux amd64 Docker Build ################
   ##########################################################
 
-  - provisionerId: pmoore-test
+  - provisionerId: aws-provisioner-v1
     workerType: gwci-linux
     metadata:
       name: "Build/test 64 bit generic-worker (docker engine) on Ubuntu 17.04 VM"
@@ -734,7 +734,7 @@ tasks:
   ############## Check vendored dependencies ###############
   ##########################################################
 
-  - provisionerId: pmoore-test
+  - provisionerId: aws-provisioner-v1
     workerType: gwci-linux
     metadata:
       name: "Run 'dep check' to ensure dependencies are up to date"

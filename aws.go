@@ -39,6 +39,12 @@ func queryAWSMetaData(url string) ([]byte, error) {
 	return ioutil.ReadAll(resp.Body)
 }
 
+type AWSWorkerLocation struct {
+	Cloud            string `json:"cloud"`
+	Region           string `json:"region"`
+	AvailabilityZone string `json:"availabilityZone"`
+}
+
 func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 
 	awsMetadata := map[string][]byte{}
@@ -83,7 +89,31 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	c.InstanceType = iid.InstanceType
 	c.AvailabilityZone = iid.AvailabilityZone
 
-	return providerSpecificUpdates(c, awsMetadata)
+	err = providerSpecificUpdates(c, awsMetadata)
+	if err != nil {
+		return err
+	}
+
+	// Don't override WorkerLocation if configuration specifies an explicit
+	// value.
+	//
+	// See:
+	//   * https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md
+	//   * https://github.com/taskcluster/taskcluster-worker-runner#aws
+	if c.WorkerLocation == "" {
+		workerLocation := &AWSWorkerLocation{
+			Cloud:            "aws",
+			Region:           c.Region,
+			AvailabilityZone: c.AvailabilityZone,
+		}
+
+		workerLocationJSON, err := json.Marshal(workerLocation)
+		if err != nil {
+			return fmt.Errorf("Error encoding worker location %#v as JSON: %v", workerLocation, err)
+		}
+		c.WorkerLocation = string(workerLocationJSON)
+	}
+	return nil
 }
 
 // providerSpecificUpdates determines whether the instance was spawned by the

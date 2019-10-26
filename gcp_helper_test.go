@@ -58,11 +58,13 @@ func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 		case "/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip":
 			fmt.Fprintf(w, "1.2.3.4")
 		case "/computeMetadata/v1/instance/zone":
-			fmt.Fprintf(w, "us-west1")
+			fmt.Fprintf(w, "/project/1234/zone/in-central1-b")
 		case "/computeMetadata/v1/instance/hostname":
 			fmt.Fprintf(w, "1-2-3-4-at.google.com")
 		case "/computeMetadata/v1/instance/network-interfaces/0/ip":
 			fmt.Fprintf(w, "10.10.10.10")
+		case "/computeMetadata/v1/project/project-id":
+			fmt.Fprintf(w, "proj-1234")
 
 		// simulate taskcluster secrets endpoints
 		case "/api/secrets/v1/secret/worker-pool%3Atest-provisioner%2F" + workerType:
