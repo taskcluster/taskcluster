@@ -30,8 +30,8 @@ import { ACTION_CONTEXT } from '../../utils/constants';
     fontSize: '0.7rem',
   },
   headline: {
-    paddingLeft: theme.spacing.triple,
-    paddingRight: theme.spacing.triple,
+    paddingLeft: theme.spacing.double,
+    paddingRight: theme.spacing.double,
     whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
     overflow: 'hidden',
