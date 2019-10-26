@@ -118,6 +118,11 @@ func TestAWSWorkerTypeMetadata(t *testing.T) {
 	if actual != expected {
 		t.Fatalf("Was expecting pretend metadata '%v' but got '%v'", expected, actual)
 	}
+	expectedWorkerLocation := `{"cloud":"aws","region":"quadrant-4","availabilityZone":"outer-space"}`
+	actualWorkerLocation := config.WorkerLocation
+	if actualWorkerLocation != expectedWorkerLocation {
+		t.Fatalf("Was expecting worker location %q but got %q", expectedWorkerLocation, actualWorkerLocation)
+	}
 }
 
 func TestFileExtraction(t *testing.T) {
