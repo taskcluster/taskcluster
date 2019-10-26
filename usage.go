@@ -57,7 +57,7 @@ and reports back results to the queue.
                                             target, this is the config file that the
                                             installation should use, rather than the config
                                             to use during install.
-                                            [default: "generic-worker.config"]
+                                            [default: generic-worker.config]
     --configure-for-aws                     Use this option when installing or running a worker
                                             that is spawned by the AWS provisioner. It will cause
                                             the worker to query the EC2 metadata service when it
