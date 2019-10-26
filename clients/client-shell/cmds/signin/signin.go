@@ -114,10 +114,10 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	callbackURL := "http://" + strings.Replace(listener.Addr().String(), "127.0.0.1", "localhost", 1)
 	description := url.QueryEscape("Temporary client for use on the command line")
 	name, _ := cmd.Flags().GetString("name")
-        scopes, _ := cmd.Flags().GetStringArray("scope")
- 	expires, _ := cmd.Flags().GetString("expires")
-        var loginURL string
-        if config.RootURL() == "https://taskcluster.net" {  
+	scopes, _ := cmd.Flags().GetStringArray("scope")
+	expires, _ := cmd.Flags().GetString("expires")
+	var loginURL string
+	if config.RootURL() == "https://taskcluster.net" {
 		loginURL += libUrls.UI(config.RootURL(), "/auth/clients/new")
 		loginURL += "?name=" + url.QueryEscape(name)
   		for i := range scopes {
