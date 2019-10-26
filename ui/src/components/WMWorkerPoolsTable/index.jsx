@@ -20,7 +20,6 @@ import sort from '../../utils/sort';
 import Link from '../../utils/Link';
 import Button from '../Button';
 import TableCellItem from '../TableCellItem';
-import ErrorPanel from '../ErrorPanel';
 import DialogAction from '../DialogAction';
 import formatError from '../../utils/formatError';
 import { NULL_PROVIDER } from '../../utils/constants';
@@ -58,7 +57,6 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     sortDirection: 'asc',
     error: null,
     actionLoading: false,
-    dialogError: null,
     dialogOpen: false,
     workerPool: null,
   };
@@ -138,12 +136,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         workerPool: null,
       });
     } catch (error) {
-      this.setState({
-        error: formatError(error),
-        actionLoading: false,
-        dialogOpen: false,
-        workerPool: null,
-      });
+      this.handleDialogActionError(error);
     }
   };
 
@@ -155,7 +148,10 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
   };
 
   handleDialogActionError = error => {
-    this.setState({ dialogError: error });
+    this.setState({
+      error: formatError(error),
+      actionLoading: false,
+    });
   };
 
   handleDialogActionComplete = () => {
@@ -165,7 +161,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
   handleDialogActionClose = () => {
     this.setState({
       dialogOpen: false,
-      dialogError: null,
+      error: null,
       workerPool: null,
     });
   };
@@ -253,14 +249,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
 
   render() {
     const { workerPools, searchTerm, includeDeleted } = this.props;
-    const {
-      sortBy,
-      sortDirection,
-      error,
-      dialogError,
-      dialogOpen,
-      workerPool,
-    } = this.state;
+    const { sortBy, sortDirection, error, dialogOpen, workerPool } = this.state;
     const sortedWorkerPools = this.sortWorkerPools(
       workerPools,
       sortBy,
@@ -290,7 +279,6 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
 
     return (
       <Fragment>
-        {error && <ErrorPanel fixed error={error} />}
         <DataTable
           items={sortedWorkerPools}
           headers={headers}
@@ -307,11 +295,13 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
             onComplete={this.handleDialogActionComplete}
             onClose={this.handleDialogActionClose}
             onError={this.handleDialogActionError}
-            error={dialogError}
+            error={error}
             title="Delete Worker Pool?"
             body={
               <Typography>
-                {`This will delete the worker pool ${workerPool.workerPoolId}.`}
+                {!error
+                  ? `This will delete the worker pool ${workerPool.workerPoolId}.`
+                  : `Could not delete ${workerPool.workerPoolId}. Please try again.`}
               </Typography>
             }
             confirmText="Delete Worker Pool"
