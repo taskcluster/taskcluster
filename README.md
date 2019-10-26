@@ -851,6 +851,16 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v16.5.0 since v16.4.0
+========================
+
+* [Bug 1590134 - Set TASKCLUSTER_WORKER_LOCATION environment variable in task command environments (RFC #0148)](https://bugzil.la/1590134)
+
+In v16.4.0 since v16.3.1
+========================
+
+* [Bug 1588834 - Add support for aws-provider to generic-worker.](https://bugzil.la/1588834)
+
 In v16.3.1 since v16.3.0
 ========================
 
