@@ -113,17 +113,26 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	// Construct URL for login service and open it
 	callbackURL := "http://" + strings.Replace(listener.Addr().String(), "127.0.0.1", "localhost", 1)
 	description := url.QueryEscape("Temporary client for use on the command line")
-	loginURL := libUrls.UI(config.RootURL(), "/auth/clients/new")
 	name, _ := cmd.Flags().GetString("name")
-	loginURL += "?name=" + url.QueryEscape(name)
-	loginURL += "&description=" + description
-	scopes, _ := cmd.Flags().GetStringArray("scope")
-	for i := range scopes {
-		loginURL += "&scope=" + url.QueryEscape(scopes[i])
-	}
-	expires, _ := cmd.Flags().GetString("expires")
-	loginURL += "&expires=" + url.QueryEscape(expires)
-	loginURL += "&callback_url=" + url.QueryEscape(callbackURL)
+  scopes, _ := cmd.Flags().GetStringArray("scope")
+ 	expires, _ := cmd.Flags().GetString("expires")
+  var loginURL string
+  if config.RootURL() == "https://taskcluster.net" {  
+	  loginURL += libUrls.UI(config.RootURL(), "/auth/clients/new")
+	  loginURL += "?name=" + url.QueryEscape(name)
+  	for i := range scopes {
+  		loginURL += "&scope=" + url.QueryEscape(scopes[i])
+  	}
+  } else {
+	  loginURL += libUrls.UI(config.RootURL(), "/auth/clients/create")
+	  loginURL += "?client_id=" + url.QueryEscape(name)
+  	for i := range scopes {
+  		loginURL += "&scope[]=" + url.QueryEscape(scopes[i])
+  	}
+  }
+ loginURL += "&expires=" + url.QueryEscape(expires)
+ loginURL += "&callback_url=" + url.QueryEscape(callbackURL)
+ loginURL += "&description=" + description
 
 	// Display URL to open
 	fmt.Fprintln(cmd.OutOrStderr(), "Listening for a callback on: "+callbackURL)
