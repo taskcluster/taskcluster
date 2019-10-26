@@ -114,25 +114,25 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	callbackURL := "http://" + strings.Replace(listener.Addr().String(), "127.0.0.1", "localhost", 1)
 	description := url.QueryEscape("Temporary client for use on the command line")
 	name, _ := cmd.Flags().GetString("name")
-  scopes, _ := cmd.Flags().GetStringArray("scope")
+        scopes, _ := cmd.Flags().GetStringArray("scope")
  	expires, _ := cmd.Flags().GetString("expires")
-  var loginURL string
-  if config.RootURL() == "https://taskcluster.net" {  
-	  loginURL += libUrls.UI(config.RootURL(), "/auth/clients/new")
-	  loginURL += "?name=" + url.QueryEscape(name)
-  	for i := range scopes {
-  		loginURL += "&scope=" + url.QueryEscape(scopes[i])
+        var loginURL string
+        if config.RootURL() == "https://taskcluster.net" {  
+		loginURL += libUrls.UI(config.RootURL(), "/auth/clients/new")
+		loginURL += "?name=" + url.QueryEscape(name)
+  		for i := range scopes {
+  			loginURL += "&scope=" + url.QueryEscape(scopes[i])
+  		}
+  	} else {
+		loginURL += libUrls.UI(config.RootURL(), "/auth/clients/create")
+		loginURL += "?client_id=" + url.QueryEscape(name)
+	  	for i := range scopes {
+	  		loginURL += "&scope[]=" + url.QueryEscape(scopes[i])
+	  	}
   	}
-  } else {
-	  loginURL += libUrls.UI(config.RootURL(), "/auth/clients/create")
-	  loginURL += "?client_id=" + url.QueryEscape(name)
-  	for i := range scopes {
-  		loginURL += "&scope[]=" + url.QueryEscape(scopes[i])
-  	}
-  }
-  loginURL += "&expires=" + url.QueryEscape(expires)
-  loginURL += "&callback_url=" + url.QueryEscape(callbackURL)
-  loginURL += "&description=" + description
+  	loginURL += "&expires=" + url.QueryEscape(expires)
+  	loginURL += "&callback_url=" + url.QueryEscape(callbackURL)
+ 	loginURL += "&description=" + description
 
 	// Display URL to open
 	fmt.Fprintln(cmd.OutOrStderr(), "Listening for a callback on: "+callbackURL)
