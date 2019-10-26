@@ -1,8 +1,11 @@
 node_modules
 .eslintcache
+.vscode
 user-build-config.yml
 *.log
 .idea
 user-config.*
 dev-config.*
 /artifacts/
+/node_modules
+/ui/node_modules
