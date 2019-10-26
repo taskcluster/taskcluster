@@ -30,6 +30,9 @@ import isLoggedInQuery from './isLoggedIn.graphql';
       fontSize: 13,
       height: '100% !important',
     },
+    '.CodeMirror pre.CodeMirror-placeholder': {
+      color: `${theme.palette.grey[600]} !important`,
+    },
     '[disabled] .mdi-icon': {
       fill: theme.palette.primary.light,
     },
