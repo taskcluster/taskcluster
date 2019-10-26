@@ -130,9 +130,9 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
   		loginURL += "&scope[]=" + url.QueryEscape(scopes[i])
   	}
   }
- loginURL += "&expires=" + url.QueryEscape(expires)
- loginURL += "&callback_url=" + url.QueryEscape(callbackURL)
- loginURL += "&description=" + description
+  loginURL += "&expires=" + url.QueryEscape(expires)
+  loginURL += "&callback_url=" + url.QueryEscape(callbackURL)
+  loginURL += "&description=" + description
 
 	// Display URL to open
 	fmt.Fprintln(cmd.OutOrStderr(), "Listening for a callback on: "+callbackURL)
