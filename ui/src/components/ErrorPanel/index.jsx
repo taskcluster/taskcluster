@@ -21,14 +21,6 @@ import { CONTENT_MAX_WIDTH } from '../../utils/constants';
       ...theme.mixins.link,
     },
   },
-  fixed: {
-    position: 'fixed',
-    zIndex: theme.zIndex.drawer - 1,
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: '92%',
-    maxWidth: CONTENT_MAX_WIDTH,
-  },
 }))
 export default class ErrorPanel extends Component {
   static propTypes = {
