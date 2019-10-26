@@ -444,7 +444,7 @@ Once you have been granted the above scope:
 To see a full description of all the config options available to you, run `generic-worker --help`:
 
 ```
-generic-worker (multiuser engine) 16.5.0
+generic-worker (multiuser engine) 16.5.1
 
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -479,7 +479,7 @@ and reports back results to the queue.
                                             target, this is the config file that the
                                             installation should use, rather than the config
                                             to use during install.
-                                            [default: "generic-worker.config"]
+                                            [default: generic-worker.config]
     --configure-for-aws                     Use this option when installing or running a worker
                                             that is spawned by the AWS provisioner. It will cause
                                             the worker to query the EC2 metadata service when it
@@ -840,7 +840,7 @@ worker.
 Run the `release.sh` script like so:
 
 ```
-$ ./release.sh 16.5.0
+$ ./release.sh 16.5.1
 ```
 
 This will perform some checks, tag the repo, push the tag to github, which will then trigger travis-ci to run tests, and publish the new release.
