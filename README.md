@@ -854,7 +854,7 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 In v16.5.1 since v16.5.0
 ========================
 
-* [Bug 1591769 - generic-worker 16.5.0 does not start up](https://bugzil.la/1588834)
+* [Bug 1591769 - generic-worker 16.5.0 does not start up](https://bugzil.la/1591769)
 
 In v16.5.0 since v16.4.0
 ========================
