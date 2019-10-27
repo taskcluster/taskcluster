@@ -336,13 +336,13 @@ export default class Dashboard extends Component {
                 )}
               </IconButton>
             </Tooltip>
-            <Tooltip placement="bottom" title="Documentation">
-              <Link to={DOCS_PATH_PREFIX}>
+            <Link to={DOCS_PATH_PREFIX}>
+              <Tooltip placement="bottom" title="Documentation">
                 <IconButton>
                   <BookOpenPageVariantIcon className={classes.appIcon} />
                 </IconButton>
-              </Link>
-            </Tooltip>
+              </Tooltip>
+            </Link>
             {helpView && (
               <Tooltip placement="bottom" title="Page Information">
                 <IconButton onClick={this.handleHelpViewToggle}>
