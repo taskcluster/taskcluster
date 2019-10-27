@@ -93,6 +93,9 @@ const DOTS_VARIANT_LIMIT = 5;
     artifactNameWrapper: {
       display: 'inline-flex',
       flexBasis: '50%',
+      [theme.breakpoints.down('sm')]: {
+        minWidth: 290,
+      },
     },
     artifactName: {
       display: 'flex',
