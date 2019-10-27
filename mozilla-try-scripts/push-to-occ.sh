@@ -36,7 +36,7 @@ ORIG_ARGS="${@}"
 while getopts ":pb:" opt; do
   case "${opt}" in
     p) DEPLOYMENT_ENVIRONMENT=PRODUCTION
-       MANIFESTS='gecko-1-b-win2012.json gecko-2-b-win2012.json gecko-3-b-win2012.json gecko-t-win7-32.json gecko-t-win7-32-gpu.json gecko-t-win10-64.json gecko-t-win10-64-gpu.json gecko-1-b-win2012-xlarge gecko-t-win10-64-gpu-s mpd-1-b-win2012 mpd-3-b-win2012 mpd001-1-b-win2012 mpd001-3-b-win2012'
+       MANIFESTS='gecko-1-b-win2012.json gecko-2-b-win2012.json gecko-3-b-win2012.json gecko-t-win7-32.json gecko-t-win7-32-gpu.json gecko-t-win10-64.json gecko-t-win10-64-gpu.json gecko-1-b-win2012-xlarge.json gecko-t-win10-64-gpu-s.json mpd-1-b-win2012.json mpd-3-b-win2012.json mpd001-1-b-win2012.json mpd001-3-b-win2012.json'
        ;;
     b) BRANCH="${OPTARG}"
        ;;
