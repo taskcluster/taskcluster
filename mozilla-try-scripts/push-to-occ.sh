@@ -33,7 +33,7 @@ ORIG_ARGS="${@}"
 while getopts ":pb:" opt; do
   case "${opt}" in
     p) DEPLOYMENT_ENVIRONMENT=PRODUCTION
-       MANIFESTS='gecko-1-b-win2012.json gecko-2-b-win2012.json gecko-3-b-win2012.json gecko-t-win7-32.json gecko-t-win7-32-gpu.json gecko-t-win10-64.json gecko-t-win10-64-gpu.json'
+       MANIFESTS='gecko-1-b-win2012.json gecko-2-b-win2012.json gecko-3-b-win2012.json gecko-t-win7-32.json gecko-t-win7-32-gpu.json gecko-t-win10-64.json gecko-t-win10-64-gpu.json gecko-1-b-win2012-xlarge gecko-t-win10-64-gpu-s mpd-1-b-win2012 mpd-3-b-win2012 mpd001-1-b-win2012 mpd001-3-b-win2012'
        ;;
     b) BRANCH="${OPTARG}"
        ;;
@@ -130,7 +130,8 @@ cat manifest.tt
 
 git clone git@github.com:mozilla-releng/OpenCloudConfig.git
 cd OpenCloudConfig/userdata/Manifest
-git checkout "${BRANCH}"
+# create branch if it doesn't exist, or just check it out if it does...
+git checkout "${BRANCH}" || git checkout -b "${BRANCH}"
 for MANIFEST in ${MANIFESTS}; do
   cat "${MANIFEST}" > "${MANIFEST}.bak"
   cat "${MANIFEST}.bak" \
@@ -149,17 +150,29 @@ for MANIFEST in ${MANIFESTS}; do
   rm "${MANIFEST}.bak"
 done
 
-DEPLOY="deploy: $(git status --porcelain | sed -n 's/^ M userdata\/Manifest\/\(.*\)\.json$/\1/p' | tr '\n' ' ')"
+WORKER_TYPES="$(git status --porcelain | sed -n 's/^ M userdata\/Manifest\/\(.*\)\.json$/\1/p' | tr '\n' ' ')"
+DEPLOY="deploy: ${WORKER_TYPES}"
 THIS_REV="$(git -C "${THIS_SCRIPT_DIR}" rev-parse HEAD)"
 THIS_FILE="$(git -C "${THIS_SCRIPT_DIR}" ls-files --full-name "$(basename "${0}")")"
 git add .
-git -c "commit.gpgsign=false" commit -m "Deploying generic-worker ${NEW_GW_VERSION} / taskcluster-proxy ${NEW_TP_VERSION} to *${DEPLOYMENT_ENVIRONMENT}*.
+if "${BRANCH}" == "master" ]; then
+  git -c "commit.gpgsign=false" commit -m "Deploying generic-worker ${NEW_GW_VERSION} / taskcluster-proxy ${NEW_TP_VERSION} to *${DEPLOYMENT_ENVIRONMENT}*.
 
 Commit made with:
-
     ${0} $(echo ${ORIG_ARGS})
 
 See https://github.com/taskcluster/generic-worker/blob/$THIS_REV/$THIS_FILE" -m "${DEPLOY}"
+else
+  git -c "commit.gpgsign=false" commit -m "Upgrade to generic-worker ${NEW_GW_VERSION} / taskcluster-proxy ${NEW_TP_VERSION}.
+ 
+This change updates worker types:
+  ${WORKER_TYPES}
+
+Commit made with:
+    ${0} $(echo ${ORIG_ARGS})
+
+See https://github.com/taskcluster/generic-worker/blob/$THIS_REV/$THIS_FILE"
+fi
 OCC_COMMIT="$(git rev-parse HEAD)"
 git push origin "${BRANCH}"
 
