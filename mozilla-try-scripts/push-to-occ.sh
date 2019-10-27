@@ -81,7 +81,7 @@ echo "Upgrading ${DEPLOYMENT_ENVIRONMENT} worker types..."
 cd "$(dirname "${0}")"
 THIS_SCRIPT_DIR="$(pwd)"
 
-CHECKOUT="$(mktemp -d -t generic-worker-gecko-try.XXXXXXXXXX)"
+CHECKOUT="$(mktemp -d -t generic-worker-push-to-occ.XXXXXXXXXX)"
 cd "${CHECKOUT}"
 
 function add_github {
