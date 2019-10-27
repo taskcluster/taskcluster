@@ -1,10 +1,13 @@
 #!/bin/bash -e
 
 ######
-# This script allows you to test a new generic-worker Windows release on
-# gecko try. It deploys your chosen generic-worker release to a set of
-# staging worker types that are created for this purpose, in order not
-# to impact other worker types while testing a generic-worker release.
+# This script allows you to test a new generic-worker Windows release on gecko
+# try, or to release to production if the push went well. By default it deploys
+# your chosen generic-worker release to a set of staging worker types that are
+# created for this purpose, in order not to impact other worker types while
+# testing a generic-worker release. However, with the -p option you can either
+# deploy directly to production in OCC, or to an OCC branch in order to create
+# a PR for the production deployment.
 #
 # TODO: this should be rewritten as e.g. a go program, to reduce number
 # of system dependencies (e.g. bash, curl, jq, grep, sleep, ...).
@@ -46,7 +49,7 @@ NEW_GW_VERSION="${1}"
 NEW_TP_VERSION="${2}"
 
 if [ -z "${NEW_GW_VERSION}" ] || [ -z "${NEW_TP_VERSION}" ]; then
-  echo "Please specify version of generic-worker and taskcluster-proxy to use in gecko try push, e.g. '${0}' [[-p] -b BRANCH] 12.0.0 5.1.0" >&2
+  echo "Please specify version of generic-worker and taskcluster-proxy to use, e.g. '${0}' [[-p] -b BRANCH] 12.0.0 5.1.0" >&2
   exit 64
 fi
 
