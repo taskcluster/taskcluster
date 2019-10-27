@@ -228,9 +228,23 @@ class AwsProvider extends Provider {
         IncludeAllInstances: true,
       }).promise()).InstanceStatuses;
     } catch (e) {
+
+      const workerPool = this.WorkerPool.load({
+        workerPoolId: worker.workerPoolId,
+      });
+
+      await workerPool.reportError({
+        kind: 'description-error',
+        title: 'Instance Description Error',
+        description: `Error calling AWS API: ${e.message}`,
+        notify: this.notify,
+        WorkerPoolError: this.WorkerPoolError,
+      });
+
       if (e.code === 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too
         return worker.modify(w => {w.state = this.Worker.states.STOPPED;});
       }
+
       throw e;
     }
 
