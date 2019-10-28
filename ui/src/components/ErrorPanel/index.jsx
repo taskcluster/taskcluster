@@ -3,6 +3,7 @@ import { withStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
 import { bool, oneOfType, string, object } from 'prop-types';
 import MuiErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
+import { CONTENT_MAX_WIDTH } from '../../utils/constants';
 
 @withStyles(theme => ({
   warning: {
@@ -19,6 +20,19 @@ import MuiErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
     '& a': {
       ...theme.mixins.link,
     },
+  },
+  fixed: {
+    '& span': {
+      overflowY: 'auto',
+      maxHeight: 'calc(100vh - 120px)',
+      wordBreak: 'break-word',
+    },
+    position: 'fixed',
+    zIndex: theme.zIndex.drawer + 1,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '92%',
+    maxWidth: CONTENT_MAX_WIDTH,
   },
 }))
 export default class ErrorPanel extends Component {
