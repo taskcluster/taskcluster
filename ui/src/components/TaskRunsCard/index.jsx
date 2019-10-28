@@ -93,9 +93,7 @@ const DOTS_VARIANT_LIMIT = 5;
     artifactNameWrapper: {
       display: 'inline-flex',
       flexBasis: '50%',
-      [theme.breakpoints.down('sm')]: {
-        minWidth: 290,
-      },
+      flexGrow: 1,
     },
     artifactName: {
       display: 'flex',
@@ -106,6 +104,9 @@ const DOTS_VARIANT_LIMIT = 5;
       marginLeft: theme.spacing(0.5),
       marginBottom: theme.spacing(0.5),
     },
+    lockIconDiv: {
+      marginRight: theme.spacing.double,
+       },
   }),
   { withTheme: true }
 )
@@ -244,7 +245,7 @@ export default class TaskRunsCard extends Component {
               <Link
                 className={classes.artifactLink}
                 to={this.getArtifactUrl(artifact)}>
-                <div>
+                <div className={classes.lockIconDiv}>
                   {artifact.isPublic && <LockOpenOutlineIcon />}
                   {!artifact.isPublic && artifact.url && <LockIcon />}
                 </div>
