@@ -7,5 +7,4 @@ user-build-config.yml
 user-config.*
 dev-config.*
 /artifacts/
-/node_modules
 /ui/node_modules
