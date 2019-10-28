@@ -214,85 +214,11 @@ export const PROVIDER_DEFAULT_CONFIGS = new Map([
             {
               autoDelete: true,
               boot: true,
-              initializeParams: {
-                diskSizeGb: 50,
-                sourceImage:
-                  'projects/taskcluster-imaging/global/images/docker-worker-gcp-googlecompute-2019-09-25t19-53-35z',
-              },
+              initializeParams: '...',
               type: 'PERSISTENT',
             },
           ],
           machineType: 'zones/us-west1-a/machineTypes/n1-standard-8',
-          networkInterfaces: [
-            {
-              accessConfigs: [
-                {
-                  type: 'ONE_TO_ONE_NAT',
-                },
-              ],
-            },
-          ],
-          scheduling: {
-            onHostMaintenance: 'terminate',
-          },
-          workerConfig: {
-            shutdown: {
-              enabled: true,
-            },
-          },
-        },
-        {
-          region: 'us-west1',
-          zone: 'us-west1-b',
-          capacityPerInstance: 1,
-          disks: [
-            {
-              autoDelete: true,
-              boot: true,
-              initializeParams: {
-                diskSizeGb: 50,
-                sourceImage:
-                  'projects/taskcluster-imaging/global/images/docker-worker-gcp-googlecompute-2019-09-25t19-53-35z',
-              },
-              type: 'PERSISTENT',
-            },
-          ],
-          machineType: 'zones/us-west1-b/machineTypes/n1-standard-8',
-          networkInterfaces: [
-            {
-              accessConfigs: [
-                {
-                  type: 'ONE_TO_ONE_NAT',
-                },
-              ],
-            },
-          ],
-          scheduling: {
-            onHostMaintenance: 'terminate',
-          },
-          workerConfig: {
-            shutdown: {
-              enabled: true,
-            },
-          },
-        },
-        {
-          region: 'us-west1',
-          zone: 'us-west1-c',
-          capacityPerInstance: 1,
-          disks: [
-            {
-              autoDelete: true,
-              boot: true,
-              initializeParams: {
-                diskSizeGb: 50,
-                sourceImage:
-                  'projects/taskcluster-imaging/global/images/docker-worker-gcp-googlecompute-2019-09-25t19-53-35z',
-              },
-              type: 'PERSISTENT',
-            },
-          ],
-          machineType: 'zones/us-west1-c/machineTypes/n1-standard-8',
           networkInterfaces: [
             {
               accessConfigs: [
