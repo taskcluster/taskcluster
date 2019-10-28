@@ -87,27 +87,36 @@ const DialogInteractiveChangeText = () => (
     <List>
       <ListItem>
         <ListItemText>
-          Set <span className='CodeMirror'> task.payload.features.interactive = true</span>
+          Set
+          <span className="CodeMirror">
+            task.payload.features.interactive = true
+          </span>
         </ListItemText>
       </ListItem>
       <ListItem>
         <ListItemText>
-          Strip <span className='CodeMirror'>task.payload.caches</span> to avoid poisoning
+          Strip
+          <span className="CodeMirror">task.payload.caches</span>
+          to avoid poisoning
         </ListItemText>
       </ListItem>
       <ListItem>
         <ListItemText>
-          Ensures <span className='CodeMirror'>task.payload.maxRunTime</span> is minimum of 60 minutes
+          Ensures
+          <span className="CodeMirror">task.payload.maxRunTime</span>
+          is minimum of 60 minutes
         </ListItemText>
       </ListItem>
       <ListItem>
         <ListItemText>
-          Strip <span className='CodeMirror'>task.routes</span> to avoid side-effects
+          Strip
+          <span className="CodeMirror">task.routes</span> to avoid side-effects
         </ListItemText>
       </ListItem>
       <ListItem>
         <ListItemText>
-          Set the environement variable <span className='CodeMirror'>TASKCLUSTER_INTERACTIVE=true</span>
+          Set the environement variable
+          <span className="CodeMirror">TASKCLUSTER_INTERACTIVE=true</span>
         </ListItemText>
       </ListItem>
     </List>

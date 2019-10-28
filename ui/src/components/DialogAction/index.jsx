@@ -121,7 +121,7 @@ export default class DialogAction extends Component {
               <ErrorPanel error={error} />
             </DialogContentText>
           )}
-          <DialogContentText>{body}</DialogContentText>
+          {body}
         </DialogContent>
         <DialogActions>
           <Button
