@@ -173,6 +173,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/rbrishabh"><img src="https://avatars3.githubusercontent.com/u/22501334?v=4" width="100px;" alt="Rishabh Budhiraja "/><br /><sub><b>Rishabh Budhiraja </b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=rbrishabh" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/ededals"><img src="https://avatars3.githubusercontent.com/u/43218607?v=4" width="100px;" alt="ededals"/><br /><sub><b>ededals</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=ededals" title="Code">💻</a></td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/vishakhanihore"><img src="https://avatars1.githubusercontent.com/u/54327666?v=4" width="100px;" alt="vishakha"/><br /><sub><b>vishakha</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=vishakhanihore" title="Code">💻</a> <a href="https://github.com/taskcluster/taskcluster/commits?author=vishakhanihore" title="Documentation">📖</a></td>
+  </tr>
 </table>
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
