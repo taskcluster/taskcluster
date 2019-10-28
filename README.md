@@ -181,7 +181,6 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/ANURADHAJHA99"><img src="https://avatars2.githubusercontent.com/u/34815869?v=4" width="100px;" alt="ANURADHAJHA99"/><br /><sub><b>ANURADHAJHA99</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=ANURADHAJHA99" title="Code">💻</a></td>
     <td align="center"><a href="https://soundharyaam.com/"><img src="https://avatars2.githubusercontent.com/u/24657693?v=4" width="100px;" alt="Soundharya AM"/><br /><sub><b>Soundharya AM</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Soundharyaam" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/Rolikasi"><img src="https://avatars3.githubusercontent.com/u/44370635?v=4" width="100px;" alt="Edil"/><br /><sub><b>Edil</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Rolikasi" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/FahdJamy"><img src="https://avatars1.githubusercontent.com/u/27225249?v=4" width="100px;" alt="Fahd Jamal A."/><br /><sub><b>Fahd Jamal A.</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=FahdJamy" title="Documentation">📖</a></td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/Jo-IE"><img src="https://avatars3.githubusercontent.com/u/51405444?v=4" width="100px;" alt="Jo"/><br /><sub><b>Jo</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Jo-IE" title="Code">💻</a></td>
@@ -190,6 +189,10 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/bini11"><img src="https://avatars0.githubusercontent.com/u/34271745?v=4" width="100px;" alt="Lubna"/><br /><sub><b>Lubna</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=bini11" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/shilpiverma509"><img src="https://avatars2.githubusercontent.com/u/19169876?v=4" width="100px;" alt="shilpi verma"/><br /><sub><b>shilpi verma</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=shilpiverma509" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/somchi"><img src="https://avatars0.githubusercontent.com/u/28669926?v=4" width="100px;" alt="somchi"/><br /><sub><b>somchi</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=somchi" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/sccofield"><img src="https://avatars0.githubusercontent.com/u/12601490?v=4" width="100px;" alt="Michael Umanah"/><br /><sub><b>Michael Umanah</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=sccofield" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/FahdJamy"><img src="https://avatars1.githubusercontent.com/u/27225249?v=4" width="100px;" alt="Fahd Jamal A."/><br /><sub><b>Fahd Jamal A.</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=FahdJamy" title="Documentation">📖</a></td>
   </tr>
 </table>
 
