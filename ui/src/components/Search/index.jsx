@@ -39,7 +39,6 @@ import { THEME } from '../../utils/constants';
   },
   input: {
     font: 'inherit',
-    fontSize: '1rem',
     paddingTop: theme.spacing(1),
     paddingRight: theme.spacing(1),
     paddingBottom: theme.spacing(1),

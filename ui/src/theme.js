@@ -246,6 +246,9 @@ const createTheme = isDarkTheme => {
             color: textPrimary,
           },
         },
+        icon: {
+          fontSize: '1rem',
+        },
       },
       MuiFormControlLabel: {
         label: {

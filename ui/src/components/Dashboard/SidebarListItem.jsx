@@ -11,6 +11,9 @@ import Link from '../../utils/Link';
 
 @withRouter
 @withStyles(theme => ({
+  listLinkCell: {
+    ...theme.mixins.hover,
+  },
   active: {
     backgroundColor: theme.palette.secondary.dark,
     '&:hover': {
@@ -29,11 +32,11 @@ import Link from '../../utils/Link';
   listItem: {
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(1),
+    backgroundColor: 'inherit',
   },
   text: {
     color: theme.palette.text.inactive,
     fontFamily: 'Roboto500',
-    fontSize: '1rem',
   },
   icon: {
     fill: theme.palette.text.inactive,
@@ -141,10 +144,11 @@ export default class SidebarListItem extends Component {
       <Link
         skipPrefetch={skipPrefetch}
         to={to}
-        activeClassName={classes.active}
         nav
-        isActive={this.isItemActive}>
-        <ListItem button disableGutters className={classes.listItem} {...props}>
+        activeClassName={classes.active}
+        isActive={this.isItemActive}
+        className={classes.listLinkCell}>
+        <ListItem disableGutters className={classes.listItem} {...props}>
           {icon && (
             <ListItemIcon classes={{ root: classes.icon }}>{icon}</ListItemIcon>
           )}
