@@ -1,4 +1,4 @@
-const hawk = require('hawk');
+const hawk = require('@hapi/hawk');
 const _ = require('lodash');
 const assume = require('assume');
 const slugid = require('slugid');
