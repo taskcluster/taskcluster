@@ -175,6 +175,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/Rolikasi"><img src="https://avatars3.githubusercontent.com/u/44370635?v=4" width="100px;" alt="Edil"/><br /><sub><b>Edil</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Rolikasi" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/lailahgrant"><img src="https://avatars0.githubusercontent.com/u/28113644?v=4" width="100px;" alt="lailahgrant"/><br /><sub><b>lailahgrant</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=lailahgrant" title="Code">💻</a></td>
   </tr>
 </table>
 
