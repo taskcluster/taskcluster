@@ -184,6 +184,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/Jo-IE"><img src="https://avatars3.githubusercontent.com/u/51405444?v=4" width="100px;" alt="Jo"/><br /><sub><b>Jo</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Jo-IE" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/katherine95"><img src="https://avatars1.githubusercontent.com/u/17095461?v=4" width="100px;" alt="Catherine Chepkurui"/><br /><sub><b>Catherine Chepkurui</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=katherine95" title="Code">💻</a></td>
   </tr>
 </table>
 
