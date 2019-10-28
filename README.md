@@ -175,6 +175,11 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   </tr>
   <tr>
     <td align="center"><a href="https://devnoorfatima.github.io/"><img src="https://avatars0.githubusercontent.com/u/44938970?v=4" width="100px;" alt="Noor Fatima"/><br /><sub><b>Noor Fatima</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=devnoorfatima" title="Code">💻</a></td>
+    <td align="center"><a href="http://mkneumann777.github.io/personal-portfolio"><img src="https://avatars1.githubusercontent.com/u/52546347?v=4" width="100px;" alt="Michael"/><br /><sub><b>Michael</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=mkneumann777" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/marianazangrossi"><img src="https://avatars1.githubusercontent.com/u/34922478?v=4" width="100px;" alt="Mariana Zangrossi"/><br /><sub><b>Mariana Zangrossi</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=marianazangrossi" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/ANURADHAJHA99"><img src="https://avatars2.githubusercontent.com/u/34815869?v=4" width="100px;" alt="ANURADHAJHA99"/><br /><sub><b>ANURADHAJHA99</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=ANURADHAJHA99" title="Code">💻</a></td>
+    <td align="center"><a href="https://soundharyaam.com/"><img src="https://avatars2.githubusercontent.com/u/24657693?v=4" width="100px;" alt="Soundharya AM"/><br /><sub><b>Soundharya AM</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Soundharyaam" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/Rolikasi"><img src="https://avatars3.githubusercontent.com/u/44370635?v=4" width="100px;" alt="Edil"/><br /><sub><b>Edil</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Rolikasi" title="Code">💻</a></td>
   </tr>
 </table>
 
