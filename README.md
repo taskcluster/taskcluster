@@ -195,6 +195,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/FahdJamy"><img src="https://avatars1.githubusercontent.com/u/27225249?v=4" width="100px;" alt="Fahd Jamal A."/><br /><sub><b>Fahd Jamal A.</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=FahdJamy" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/naimiii"><img src="https://avatars1.githubusercontent.com/u/28563415?v=4" width="100px;" alt="naima shaikh"/><br /><sub><b>naima shaikh</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=naimiii" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/JiwoonKim"><img src="https://avatars2.githubusercontent.com/u/29671309?v=4" width="100px;" alt="Jiwoon Kim"/><br /><sub><b>Jiwoon Kim</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=JiwoonKim" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/Rolikasi"><img src="https://avatars3.githubusercontent.com/u/44370635?v=4" width="100px;" alt="Edil"/><br /><sub><b>Edil</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Rolikasi" title="Code">💻</a></td>
+    <td align="center"><a href="https://www.kelliblalock.com"><img src="https://avatars0.githubusercontent.com/u/2024584?v=4" width="100px;" alt="Kelli Blalock"/><br /><sub><b>Kelli Blalock</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=kellim" title="Code">💻</a></td>
   </tr>
 </table>
 
