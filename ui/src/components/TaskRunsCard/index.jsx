@@ -106,7 +106,7 @@ const DOTS_VARIANT_LIMIT = 5;
     },
     lockIconDiv: {
       marginRight: theme.spacing.double,
-       },
+    },
   }),
   { withTheme: true }
 )
