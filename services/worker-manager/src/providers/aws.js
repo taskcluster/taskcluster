@@ -260,7 +260,7 @@ class AwsProvider extends Provider {
         InstanceIds: [worker.workerId],
       }).promise();
     } catch (e) {
-      const workerPool = this.WorkerPool.load({
+      const workerPool = await this.WorkerPool.load({
         workerPoolId: worker.workerPoolId,
       });
       await workerPool.reportError({
