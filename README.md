@@ -181,11 +181,12 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/ANURADHAJHA99"><img src="https://avatars2.githubusercontent.com/u/34815869?v=4" width="100px;" alt="ANURADHAJHA99"/><br /><sub><b>ANURADHAJHA99</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=ANURADHAJHA99" title="Code">💻</a></td>
     <td align="center"><a href="https://soundharyaam.com/"><img src="https://avatars2.githubusercontent.com/u/24657693?v=4" width="100px;" alt="Soundharya AM"/><br /><sub><b>Soundharya AM</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Soundharyaam" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/Rolikasi"><img src="https://avatars3.githubusercontent.com/u/44370635?v=4" width="100px;" alt="Edil"/><br /><sub><b>Edil</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Rolikasi" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/bini11"><img src="https://avatars0.githubusercontent.com/u/34271745?v=4" width="100px;" alt="Lubna"/><br /><sub><b>Lubna</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=bini11" title="Code">💻</a></td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/Jo-IE"><img src="https://avatars3.githubusercontent.com/u/51405444?v=4" width="100px;" alt="Jo"/><br /><sub><b>Jo</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Jo-IE" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/katherine95"><img src="https://avatars1.githubusercontent.com/u/17095461?v=4" width="100px;" alt="Catherine Chepkurui"/><br /><sub><b>Catherine Chepkurui</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=katherine95" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/Henikilan"><img src="https://avatars2.githubusercontent.com/u/52250201?v=4" width="100px;" alt="Anastasia"/><br /><sub><b>Anastasia</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Henikilan" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/bini11"><img src="https://avatars0.githubusercontent.com/u/34271745?v=4" width="100px;" alt="Lubna"/><br /><sub><b>Lubna</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=bini11" title="Code">💻</a></td>
   </tr>
 </table>
 
