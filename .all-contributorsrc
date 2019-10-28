@@ -546,6 +546,60 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "devnoorfatima",
+      "name": "Noor Fatima",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/44938970?v=4",
+      "profile": "https://devnoorfatima.github.io/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "mkneumann777",
+      "name": "Michael",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/52546347?v=4",
+      "profile": "http://mkneumann777.github.io/personal-portfolio",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "marianazangrossi",
+      "name": "Mariana Zangrossi",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/34922478?v=4",
+      "profile": "https://github.com/marianazangrossi",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "ANURADHAJHA99",
+      "name": "ANURADHAJHA99",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/34815869?v=4",
+      "profile": "https://github.com/ANURADHAJHA99",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "Rolikasi",
+      "name": "Edil",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/44370635?v=4",
+      "profile": "https://github.com/Rolikasi",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "Soundharyaam",
+      "name": "Soundharya AM",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/24657693?v=4",
+      "profile": "https://soundharyaam.com/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
