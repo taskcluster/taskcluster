@@ -545,6 +545,16 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "olympiawoj",
+      "name": "Olympia",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/41010759?v=4",
+      "profile": "https://github.com/olympiawoj",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7
