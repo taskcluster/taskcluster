@@ -121,7 +121,7 @@ Taskcluster-Github will always build pushes and releases.  For pull requests, tw
 This policy is determined by consulting the top-level `allowPullRequests` property in `.taskcluster.yml` in the latest commit to the repository's *default branch* (not on the pull request head!).
 
 For example:
-```
+```yaml
 version: 0
 allowPullRequests: public
 ...
@@ -148,7 +148,7 @@ A function `{{ $fromNow }}` is included in the syntax so that users may specify
 consistent timeouts and deadlines. The function will accept parameters like:
 `'1 day'`, `'3 hours'`, `'1 hour'`, etc.
 
-```
+```yaml
 version: 0
 tasks:
   - payload:
