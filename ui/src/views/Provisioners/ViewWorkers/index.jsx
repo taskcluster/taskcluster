@@ -3,6 +3,7 @@ import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import { parse, stringify } from 'qs';
+import { get, find } from 'lodash';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
@@ -165,6 +166,22 @@ export default class ViewWorkers extends Component {
     });
   };
 
+  shouldIgnoreError = error => {
+    const { data } = this.props;
+    const workers = get(data, 'workers.edges');
+
+    if (error && error.graphQLErrors && workers) {
+      error.graphQLErrors.map(error => {
+        const taskId = get(error, 'requestInfo.params.taskId');
+
+        // ignores the error if task ID is not one of Most Recent Tasks
+        return find(workers, worker => {
+          return get(worker, 'node.latestTask.run.taskId') === taskId;
+        });
+      });
+    }
+  };
+
   render() {
     const {
       actionLoading,
@@ -184,7 +201,9 @@ export default class ViewWorkers extends Component {
       <Dashboard title="Workers">
         <Fragment>
           {(!workers || !workerType) && loading && <Spinner loading />}
-          <ErrorPanel fixed error={this.state.error || error} />
+          {(this.state.error || error) && !!this.shouldIgnoreError(error) && (
+            <ErrorPanel fixed error={this.state.error || error} />
+          )}
           {workers && workerType && (
             <Fragment>
               <div className={classes.bar}>
