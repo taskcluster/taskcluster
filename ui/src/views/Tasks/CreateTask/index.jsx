@@ -87,36 +87,28 @@ const DialogInteractiveChangeText = () => (
     <List>
       <ListItem>
         <ListItemText>
-          Set
-          <span className="CodeMirror">
-            task.payload.features.interactive = true
-          </span>
+          Set <code> task.payload.features.interactive = true</code>
         </ListItemText>
       </ListItem>
       <ListItem>
         <ListItemText>
-          Strip
-          <span className="CodeMirror">task.payload.caches</span>
-          to avoid poisoning
+          Strip <code> task.payload.caches </code> to avoid poisoning
         </ListItemText>
       </ListItem>
       <ListItem>
         <ListItemText>
-          Ensures
-          <span className="CodeMirror">task.payload.maxRunTime</span>
-          is minimum of 60 minutes
+          Ensures <code> task.payload.maxRunTime </code> is minimum of 60
+          minutes
         </ListItemText>
       </ListItem>
       <ListItem>
         <ListItemText>
-          Strip
-          <span className="CodeMirror">task.routes</span> to avoid side-effects
+          Strip <code> task.routes </code> to avoid side-effects
         </ListItemText>
       </ListItem>
       <ListItem>
         <ListItemText>
-          Set the environement variable
-          <span className="CodeMirror">TASKCLUSTER_INTERACTIVE=true</span>
+          Set the environement variable <code>TASKCLUSTER_INTERACTIVE=true</code>
         </ListItemText>
       </ListItem>
     </List>
@@ -236,10 +228,9 @@ export default class CreateTask extends Component {
     }
   };
 
-  handleInteractiveChange = ({ target: { checked } }) => {
-    this.props.history.replace(
-      checked ? '/tasks/create/interactive' : '/tasks/create'
-    );
+  handleInteractiveChange = () => {
+    this.props.interactive = true;
+    this.setState({ dialogOpen: true });
   };
 
   handleResetEditor = () =>
@@ -300,6 +291,19 @@ export default class CreateTask extends Component {
     return `${safeDump(iter(task), { noCompatMode: true, noRefs: true })}`;
   }
 
+  handleDialogSubmit = () => {
+    this.setState({ dialogOpen: false });
+    this.props.history.replace('/tasks/create/interactive');
+  };
+
+  handleDialogComplete = () => {
+    this.setState({ dialogOpen: false });
+  };
+
+  handleDialogClose = () => {
+    this.setState({ dialogOpen: false });
+  };
+
   render() {
     const { interactive, description, classes } = this.props;
     const {
@@ -355,7 +359,7 @@ export default class CreateTask extends Component {
                 control={
                   <Switch
                     checked={interactive}
-                    onChange={this.handleInteractiveChange}
+                    onChange={this.handleCreateTask}
                     color="secondary"
                   />
                 }
@@ -425,12 +429,12 @@ export default class CreateTask extends Component {
           {dialogOpen && (
             <DialogAction
               open={dialogOpen}
-              title="Interactive Task"
+              title="Interactive Task?"
               body={<DialogInteractiveChangeText />}
-              onClose={() => this.props.history.replace('task/create')}
-              confirmText="Ok"
-              onComplete={() => this.setState({ dialogOpen: false })}
-              onSubmit={() => this.setState({ dialogOpen: false })}
+              onClose={this.handleDialogClose}
+              confirmText="Switch to interactive"
+              onComplete={this.handleDialogComplete}
+              onSubmit={this.handleDialogSubmit}
             />
           )}
         </Fragment>
