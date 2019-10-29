@@ -37,7 +37,7 @@ exports.tasks.push({
         assert.equal(err.code, 'ResourceNotFound');
         assert.equal(err.statusCode, 404);
         return true;
-      }
+      },
     );
   },
 });

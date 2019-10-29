@@ -55,7 +55,7 @@ module.exports = {
       const { status } = await clients.hooks.triggerHook(
         hookGroupId,
         hookId,
-        payload
+        payload,
       );
 
       return status;

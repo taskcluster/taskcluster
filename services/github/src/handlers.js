@@ -150,7 +150,7 @@ class Handlers {
         bindings: jobBindings,
         queueName: this.jobQueueName,
       },
-      this.monitor.timedHandler('joblistener', callHandler('job', jobHandler).bind(this))
+      this.monitor.timedHandler('joblistener', callHandler('job', jobHandler).bind(this)),
     );
 
     this.deprecatedResultStatusPq = await consume(
@@ -159,7 +159,7 @@ class Handlers {
         bindings: deprecatedResultStatusBindings,
         queueName: this.deprecatedResultStatusQueueName,
       },
-      this.monitor.timedHandler('deprecatedStatuslistener', callHandler('status', deprecatedStatusHandler).bind(this))
+      this.monitor.timedHandler('deprecatedStatuslistener', callHandler('status', deprecatedStatusHandler).bind(this)),
     );
 
     this.deprecatedInitialStatusPq = await consume(
@@ -168,7 +168,7 @@ class Handlers {
         bindings: deprecatedInitialStatusBindings,
         queueName: this.deprecatedInitialStatusQueueName,
       },
-      this.monitor.timedHandler('deprecatedlistener', callHandler('task', taskGroupCreationHandler).bind(this))
+      this.monitor.timedHandler('deprecatedlistener', callHandler('task', taskGroupCreationHandler).bind(this)),
     );
 
     this.resultStatusPq = await consume(
@@ -177,7 +177,7 @@ class Handlers {
         bindings: statusBindings,
         queueName: this.resultStatusQueueName,
       },
-      this.monitor.timedHandler('statuslistener', callHandler('status', statusHandler).bind(this))
+      this.monitor.timedHandler('statuslistener', callHandler('status', statusHandler).bind(this)),
     );
 
     this.initialTaskStatusPq = await consume(
@@ -186,7 +186,7 @@ class Handlers {
         bindings: taskBindings,
         queueName: this.initialStatusQueueName,
       },
-      this.monitor.timedHandler('tasklistener', callHandler('task', taskDefinedHandler).bind(this))
+      this.monitor.timedHandler('tasklistener', callHandler('task', taskDefinedHandler).bind(this)),
     );
 
   }
@@ -456,7 +456,7 @@ async function statusHandler(message) {
   if (conclusion === undefined) {
     this.monitor.reportError(new Error(`Unknown reasonResolved or state in ${message.exchange}!
       Resolution reason received: ${reasonResolved}. State received: ${state}. Add these to the handlers map.
-      TaskId: ${taskId}, taskGroupId: ${taskGroupId}`)
+      TaskId: ${taskId}, taskGroupId: ${taskGroupId}`),
     );
 
     taskState.output = {
@@ -482,7 +482,7 @@ async function statusHandler(message) {
   }
 
   debug(
-    `Attempting to update status of the checkrun for ${organization}/${repository}@${sha} (${taskState.conclusion})`
+    `Attempting to update status of the checkrun for ${organization}/${repository}@${sha} (${taskState.conclusion})`,
   );
   try {
     if (checkRun) {

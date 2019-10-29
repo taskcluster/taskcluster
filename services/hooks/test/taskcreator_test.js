@@ -263,7 +263,7 @@ suite(testing.suiteName(), function() {
         taskCreateTime,
         result: 'success',
         error: '',
-      }
+      },
       );
 
       const res = await helper.LastFire.load({
@@ -290,7 +290,7 @@ suite(testing.suiteName(), function() {
           taskCreateTime,
           result: 'success',
           error: '',
-        }
+        },
         ),
         creator.appendLastFire({
           hookId: hook2.hookId,
@@ -300,7 +300,7 @@ suite(testing.suiteName(), function() {
           taskCreateTime,
           result: 'success',
           error: '',
-        }
+        },
         )]).catch(() => {});
 
       const res = await helper.LastFire.load({

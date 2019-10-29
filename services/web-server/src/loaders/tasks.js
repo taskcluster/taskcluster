@@ -11,11 +11,11 @@ module.exports = ({ queue, index }) => {
         const task = await queue.task(taskId);
 
         return new Task(taskId, null, task);
-      })
-    )
+      }),
+    ),
   );
   const indexedTask = new DataLoader(indexPaths =>
-    Promise.all(indexPaths.map(indexPath => index.findTask(indexPath)))
+    Promise.all(indexPaths.map(indexPath => index.findTask(indexPath))),
   );
   const taskGroup = new ConnectionLoader(
     async ({ taskGroupId, options, filter }) => {
@@ -25,10 +25,10 @@ module.exports = ({ queue, index }) => {
       return {
         ...raw,
         items: tasks.map(
-          ({ task, status }) => new Task(status.taskId, status, task)
+          ({ task, status }) => new Task(status.taskId, status, task),
         ),
       };
-    }
+    },
   );
   const taskActions = new DataLoader(queries =>
     Promise.all(
@@ -36,7 +36,7 @@ module.exports = ({ queue, index }) => {
         const url = await queue.buildUrl(
           queue.getLatestArtifact,
           taskGroupId,
-          'public/actions.json'
+          'public/actions.json',
         );
 
         try {
@@ -59,8 +59,8 @@ module.exports = ({ queue, index }) => {
 
           return e;
         }
-      })
-    )
+      }),
+    ),
   );
 
   return {

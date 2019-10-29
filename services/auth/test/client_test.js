@@ -175,7 +175,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       // Fetch client again and check that lastUsed was updated
       let r2 = await helper.apiClient.client(CLIENT_ID);
       assume(new Date(r2.lastDateUsed).getTime()).greaterThan(
-        new Date(r1.lastDateUsed).getTime()
+        new Date(r1.lastDateUsed).getTime(),
       );
     });
 
@@ -184,7 +184,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     // Fetch client again and check that lastUsed wasn't updated
     let r3 = await helper.apiClient.client(CLIENT_ID);
     assume(new Date(r3.lastDateUsed).getTime()).equals(
-      new Date(r3.lastDateUsed).getTime()
+      new Date(r3.lastDateUsed).getTime(),
     );
   });
 
@@ -403,7 +403,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
         helper.apiClient.createClient(CLIENT_ID + suffix, {
           expires: taskcluster.fromNow('1 hour'),
           description: 'test client',
-        })
+        }),
       ));
     });
 
@@ -457,7 +457,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
         helper.apiClient.createClient(CLIENT_ID + suffix, {
           expires: taskcluster.fromNow('1 hour'),
           description: 'test client',
-        })
+        }),
       ));
 
       while (true) {

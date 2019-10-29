@@ -106,13 +106,13 @@ module.exports = class Github {
 
     if (!strategyCfg.clientId || !strategyCfg.clientSecret) {
       throw new Error(
-        'Unable to use "github" login strategy without GitHub client ID or secret'
+        'Unable to use "github" login strategy without GitHub client ID or secret',
       );
     }
 
     if (!credentials || !credentials.clientId || !credentials.accessToken) {
       throw new Error(
-        'Unable to use "github" login strategy without taskcluster clientId and accessToken'
+        'Unable to use "github" login strategy without taskcluster clientId and accessToken',
       );
     }
 
@@ -132,7 +132,7 @@ module.exports = class Github {
             accessToken,
           }, true);
           const [userErr, user] = await tryCatch(
-            this.getUser({ username: profile.username, userId: Number(profile.id) })
+            this.getUser({ username: profile.username, userId: Number(profile.id) }),
           );
 
           if (userErr) {
@@ -157,14 +157,14 @@ module.exports = class Github {
             identityProviderId: 'github',
             identity: user.identity,
           });
-        }
-      )
+        },
+      ),
     );
     app.get('/login/github', passport.authenticate('github'));
     app.get(
       callback,
       passport.authenticate('github'),
-      loginMiddleware
+      loginMiddleware,
     );
   }
 };

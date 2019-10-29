@@ -30,7 +30,7 @@ module.exports = ({ pulseEngine, rootUrl, strategies, cfg, monitor }) => ({ req,
       currentClients,
       false,
       rootUrl,
-      monitor
+      monitor,
     );
     // if connection is set, this is for a subscription
     return {

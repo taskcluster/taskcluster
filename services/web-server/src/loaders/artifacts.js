@@ -29,12 +29,12 @@ module.exports = ({ queue }, isAuthed, rootUrl) => {
           ? urls.api(
             'queue',
             'v1',
-            `task/${taskId}/runs/${runId}/artifacts/${encodeURI(artifact.name)}`
+            `task/${taskId}/runs/${runId}/artifacts/${encodeURI(artifact.name)}`,
           )
           : urls.api(
             'queue',
             'v1',
-            `task/${taskId}/artifacts/${encodeURI(artifact.name)}`
+            `task/${taskId}/artifacts/${encodeURI(artifact.name)}`,
           ),
       };
     }
@@ -62,10 +62,10 @@ module.exports = ({ queue }, isAuthed, rootUrl) => {
         return new Artifact(
           taskId,
           withUrl(queue.getArtifact, taskId, artifact, runId),
-          runId
+          runId,
         );
-      })
-    )
+      }),
+    ),
   );
   const artifacts = new ConnectionLoader(
     async ({ taskId, runId, filter, options }) => {
@@ -76,12 +76,12 @@ module.exports = ({ queue }, isAuthed, rootUrl) => {
           taskId,
           artifact,
           runId,
-        })
+        }),
       );
       const artifacts = sift(filter, withUrls);
 
       return new Artifacts(taskId, runId, { ...raw, artifacts });
-    }
+    },
   );
   const latestArtifacts = new ConnectionLoader(
     async ({ taskId, filter, options }) => {
@@ -91,12 +91,12 @@ module.exports = ({ queue }, isAuthed, rootUrl) => {
           method: queue.getLatestArtifact,
           taskId,
           artifact,
-        })
+        }),
       );
       const artifacts = sift(filter, withUrls);
 
       return new Artifacts(taskId, null, { ...raw, artifacts });
-    }
+    },
   );
 
   return {

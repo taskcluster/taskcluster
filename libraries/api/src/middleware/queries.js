@@ -39,7 +39,7 @@ const queryValidator = ({context, entry}) => {
       return res.reportError(
         'InvalidRequestArguments',
         errors.join('\n'),
-        {errors}
+        {errors},
       );
     }
     return next();

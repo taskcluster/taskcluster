@@ -27,7 +27,7 @@ const parameterValidator = ({context, entry}) => {
         if (!pattern.test(val)) {
           errors.push(
             'URL parameter \'' + param + '\' given as \'' + val + '\' must match ' +
-            'regular expression: \'' + pattern.toString() + '\''
+            'regular expression: \'' + pattern.toString() + '\'',
           );
         }
       } else if (pattern instanceof Function) {
@@ -35,7 +35,7 @@ const parameterValidator = ({context, entry}) => {
         if (typeof msg === 'string') {
           errors.push(
             'URL parameter \'' + param + '\' given  as \'' + val + '\' is not ' +
-            'valid: ' + msg
+            'valid: ' + msg,
           );
         }
       }
@@ -44,7 +44,7 @@ const parameterValidator = ({context, entry}) => {
       return res.reportError(
         'InvalidRequestArguments',
         'Invalid URL patterns:\n' + errors.join('\n'),
-        {errors}
+        {errors},
       );
     }
     return next();
