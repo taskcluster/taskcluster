@@ -137,8 +137,8 @@ export default class WorkersTable extends Component {
           },
         }) => (
           <TableRow key={workerId}>
-            <TableCell>{workerGroup}</TableCell>
-            <TableCell>
+            <TableCell size="small">{workerGroup}</TableCell>
+            <TableCell size="small">
               <Link
                 to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${workerGroup}/${workerId}`}>
                 <TableCellItem button>
@@ -153,7 +153,7 @@ export default class WorkersTable extends Component {
               </Link>
             </TableCell>
             <CopyToClipboard title={`${firstClaim} (Copy)`} text={firstClaim}>
-              <TableCell>
+              <TableCell size="small">
                 <TableCellItem button>
                   <ListItemText
                     disableTypography
@@ -167,7 +167,7 @@ export default class WorkersTable extends Component {
                 </TableCellItem>
               </TableCell>
             </CopyToClipboard>
-            <TableCell>
+            <TableCell size="small">
               {latestTask ? (
                 <Link
                   to={`/tasks/${latestTask.run.taskId}/runs/${latestTask.run.runId}`}>
@@ -187,7 +187,7 @@ export default class WorkersTable extends Component {
                 <Typography variant="body2">n/a</Typography>
               )}
             </TableCell>
-            <TableCell>
+            <TableCell size="small">
               {latestTask ? (
                 <StatusLabel state={latestTask.run.state} />
               ) : (
@@ -198,7 +198,7 @@ export default class WorkersTable extends Component {
               <CopyToClipboard
                 title={`${latestTask.run.started} (Copy)`}
                 text={latestTask.run.started}>
-                <TableCell>
+                <TableCell size="small">
                   <TableCellItem button>
                     <ListItemText
                       disableTypography
@@ -213,7 +213,7 @@ export default class WorkersTable extends Component {
                 </TableCell>
               </CopyToClipboard>
             ) : (
-              <TableCell>
+              <TableCell size="small">
                 <Typography variant="body2">n/a</Typography>
               </TableCell>
             )}
@@ -221,7 +221,7 @@ export default class WorkersTable extends Component {
               <CopyToClipboard
                 title={`${latestTask.run.resolved} (Copy)`}
                 text={latestTask.run.resolved}>
-                <TableCell>
+                <TableCell size="small">
                   <TableCellItem button>
                     <ListItemText
                       disableTypography
@@ -236,11 +236,11 @@ export default class WorkersTable extends Component {
                 </TableCell>
               </CopyToClipboard>
             ) : (
-              <TableCell>
+              <TableCell size="small">
                 <Typography variant="body2">n/a</Typography>
               </TableCell>
             )}
-            <TableCell>
+            <TableCell size="small">
               {quarantineUntil ? (
                 formatDistanceStrict(new Date(), parseISO(quarantineUntil), {
                   unit: 'day',

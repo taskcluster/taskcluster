@@ -308,7 +308,7 @@ const createTheme = isDarkTheme => {
           whiteSpace: 'nowrap',
         },
         sizeSmall: {
-          padding: '4px 24px 4px 16px',
+          padding: '4px 32px 4px 24px',
         },
         body: {
           fontSize: '0.8125rem',

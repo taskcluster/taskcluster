@@ -199,7 +199,6 @@ export default class ViewWorkers extends Component {
                       {params.provisionerId}
                     </Typography>
                   </Link>
-
                   <Typography variant="body2" color="textSecondary">
                     {`${params.workerType}`}
                   </Typography>

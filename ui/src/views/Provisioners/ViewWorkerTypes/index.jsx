@@ -116,7 +116,6 @@ export default class ViewWorkerTypes extends Component {
                       Provisioners
                     </Typography>
                   </Link>
-
                   <Typography variant="body2" color="textSecondary">
                     {`${provisionerId}`}
                   </Typography>
