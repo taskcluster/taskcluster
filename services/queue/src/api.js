@@ -471,7 +471,7 @@ let ensureTaskGroup = async (ctx, taskId, taskDef, res) => {
   let taskGroup = await ctx.TaskGroup.load({taskGroupId}, true);
   let expires = new Date(taskDef.expires);
   let taskGroupExpiration = new Date(
-    expires.getTime() + ctx.taskGroupExpiresExtension * 1000
+    expires.getTime() + ctx.taskGroupExpiresExtension * 1000,
   );
   if (!taskGroup) {
     taskGroup = await ctx.TaskGroup.create({
@@ -649,7 +649,7 @@ builder.declare({
     taskId,
     taskDef.taskGroupId,
     taskDef.schedulerId,
-    deadline
+    deadline,
   );
 
   let task;
@@ -838,7 +838,7 @@ builder.declare({
     taskId,
     taskDef.taskGroupId,
     taskDef.schedulerId,
-    deadline
+    deadline,
   );
 
   let task;
@@ -995,7 +995,7 @@ builder.declare({
       '{{deadline}}.', {
         taskId,
         deadline: task.deadline.toJSON(),
-      }
+      },
     );
   }
 
@@ -1243,7 +1243,7 @@ builder.declare({
       taskId,
       task.taskGroupId,
       task.schedulerId,
-      'exception'
+      'exception',
     );
 
     // Publish message about the exception
@@ -1562,7 +1562,7 @@ builder.declare({
       'ResourceNotFound',
       'Task `{{taskId}}` not found. Are you sure it was created?', {
         taskId,
-      }
+      },
     );
   }
 
@@ -1574,7 +1574,7 @@ builder.declare({
       'Run {{runId}} not found on task `{{taskId}}`.', {
         taskId,
         runId,
-      }
+      },
     );
   }
 
@@ -1638,7 +1638,7 @@ builder.declare({
       'Run {{runId}} on task `{{taskId}}` is resolved or not running.', {
         taskId,
         runId,
-      }
+      },
     );
   }
 
@@ -1764,7 +1764,7 @@ let resolveTask = async function(req, res, taskId, runId, target) {
     taskId,
     task.taskGroupId,
     task.schedulerId,
-    target
+    target,
   );
 
   // Construct status object
@@ -2009,7 +2009,7 @@ builder.declare({
       taskId,
       task.taskGroupId,
       task.schedulerId,
-      'exception'
+      'exception',
     );
 
     // Publish message about taskException

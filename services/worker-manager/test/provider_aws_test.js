@@ -168,7 +168,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
       await assert.rejects(
         () => provider.registerWorker({worker: workerInDB, workerPool, workerIdentityProof}),
-        new ApiError('Request must include both a document (string) and a signature')
+        new ApiError('Request must include both a document (string) and a signature'),
       );
       sinon.restore();
     });
@@ -182,7 +182,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await assert.rejects(
         () => provider.registerWorker({worker: workerInDB, workerPool, workerIdentityProof}),
         new ApiError('Instance identity document validation error'),
-        'Should fail to verify iid (the document has been edited)'
+        'Should fail to verify iid (the document has been edited)',
       );
       sinon.restore();
     });
@@ -195,7 +195,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
       await assert.rejects(() => provider.registerWorker({worker: workerInDB, workerPool, workerIdentityProof}),
         new ApiError('Instance identity document validation error'),
-        'Should fail to verify iid (the signature was produced with a wrong key)'
+        'Should fail to verify iid (the signature was produced with a wrong key)',
       );
       sinon.restore();
     });
@@ -208,7 +208,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
       await assert.rejects(() => provider.registerWorker({worker: workerInDB, workerPool, workerIdentityProof}),
         new ApiError('Instance identity document validation error'),
-        'Should fail to verify iid (the signature is wrong)'
+        'Should fail to verify iid (the signature is wrong)',
       );
       sinon.restore();
     });
@@ -236,7 +236,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await assert.rejects(
         () => provider.registerWorker({worker: differentWorkerInDB, workerPool, workerIdentityProof}),
         new ApiError('Instance validation error'),
-        'Should fail to verify worker (info from the signature and info from our DB differ)'
+        'Should fail to verify worker (info from the signature and info from our DB differ)',
       );
       sinon.restore();
     });
@@ -248,7 +248,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       };
 
       await assert.rejects(() => provider.registerWorker({worker: workerInDB, workerPool, workerIdentityProof}),
-        new ApiError('Request must include both a document (string) and a signature')
+        new ApiError('Request must include both a document (string) and a signature'),
       );
       sinon.restore();
     });
@@ -267,7 +267,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await assert.rejects(
         () => provider.registerWorker({worker: runningWorker, workerPool, workerIdentityProof}),
         new ApiError('This worker is either stopped or running. No need to register'),
-        'Should fail because the worker is already running'
+        'Should fail because the worker is already running',
       );
 
       sinon.restore();

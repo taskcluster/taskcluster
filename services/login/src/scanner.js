@@ -73,7 +73,7 @@ async function scanner(cfg, handlers) {
   await Promise.all(
     Object
       .keys(cfg.handlers)
-      .map(scan)
+      .map(scan),
   );
 }
 

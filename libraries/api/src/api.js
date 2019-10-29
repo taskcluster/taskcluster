@@ -104,7 +104,7 @@ class API {
         queryValidator({context, entry}),
         validateSchemas({validator, absoluteSchemas, rootUrl, serviceName, entry}),
         callHandler({entry, context, monitor}),
-        expressError({errorCodes, entry, monitor})
+        expressError({errorCodes, entry, monitor}),
       );
 
       // Create entry on router

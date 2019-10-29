@@ -62,7 +62,7 @@ export const createTemporaryCredentials = opts => {
   if (options.credentials.certificate != null) {
     throw new Error(
       `Temporary credentials cannot be used to make new temporary credentials.
-      Ensure that options.credentials.certificate is null.`
+      Ensure that options.credentials.certificate is null.`,
     );
   }
 

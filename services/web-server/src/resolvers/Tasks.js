@@ -117,7 +117,7 @@ module.exports = {
       subscribe(
         parent,
         { taskGroupId, subscriptions },
-        { pulseEngine, clients }
+        { pulseEngine, clients },
       ) {
         const routingKey = { taskGroupId };
 
@@ -131,7 +131,7 @@ module.exports = {
               exchange: binding.exchange,
               pattern: binding.routingKeyPattern,
             };
-          })
+          }),
         );
       },
       resolve: ({ tasksSubscriptions }) => {

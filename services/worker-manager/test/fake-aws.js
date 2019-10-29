@@ -10,7 +10,7 @@ module.exports = {
           MaxCount: launchConfig.MaxCount,
           TagSpecifications,
           UserData: Buffer.from(JSON.stringify(UserData)).toString('base64'),
-        }
+        },
       );
 
       let Instances = [];

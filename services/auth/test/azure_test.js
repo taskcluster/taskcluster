@@ -32,7 +32,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     await helper.apiClient.azureTableSAS(
       testaccount,
       'TestTable',
-      'read-write'
+      'read-write',
     );
     let extra = {};
     do {
@@ -49,7 +49,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     return helper.apiClient.azureTableSAS(
       testaccount,
       'TestTable',
-      'read-write'
+      'read-write',
     ).then(function(result) {
       assert(typeof result.sas === 'string', 'Expected some form of string');
       assert(new Date(result.expiry).getTime() > new Date().getTime(),
@@ -119,7 +119,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     return helper.apiClient.azureTableSAS(
       testaccount,
       'allowedTable',
-      'read-write'
+      'read-write',
     ).then(function(result) {
       assert(typeof result.sas === 'string', 'Expected some form of string');
       assert(new Date(result.expiry).getTime() > new Date().getTime(),
@@ -135,7 +135,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     return helper.apiClient.azureTableSAS(
       testaccount,
       'allowedTable',
-      'read-only'
+      'read-only',
     ).then(function(result) {
       assert(typeof result.sas === 'string', 'Expected some form of string');
       assert(new Date(result.expiry).getTime() > new Date().getTime(),
@@ -151,7 +151,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     return helper.apiClient.azureTableSAS(
       testaccount,
       'allowedTable',
-      'read-write'
+      'read-write',
     ).then(function(result) {
       assert(false, 'Expected an authentication error!');
     }, function(err) {
@@ -167,7 +167,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     return helper.apiClient.azureTableSAS(
       testaccount,
       'unauthorizedTable',
-      'read-write'
+      'read-write',
     ).then(function(result) {
       assert(false, 'Expected an authentication error!');
     }, function(err) {
@@ -179,7 +179,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     let result = await helper.apiClient.azureContainerSAS(
       testaccount,
       'container-test',
-      'read-write'
+      'read-write',
     );
 
     assert(typeof result.sas === 'string', 'Expected some form of string');
@@ -264,7 +264,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     let result = await helper.apiClient.azureContainerSAS(
       testaccount,
       'allowed-container',
-      'read-write'
+      'read-write',
     );
 
     assert(typeof result.sas === 'string', 'Expected some form of string');
@@ -295,7 +295,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       await helper.apiClient.azureContainerSAS(
         testaccount,
         'unauthorized-container',
-        'read-write'
+        'read-write',
       );
     } catch (error) {
       assert(error.statusCode === 403, 'Expected authorization error!');

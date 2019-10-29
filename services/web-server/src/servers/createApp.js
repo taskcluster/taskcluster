@@ -68,7 +68,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
     credentials(),
     bodyParserGraphql.graphql({
       limit: '1mb',
-    })
+    }),
   );
 
   if (cfg.app.playground) {
@@ -78,7 +78,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
       playground({
         endpoint: '/graphql',
         subscriptionsEndpoint: '/subscription',
-      })
+      }),
     );
   }
 

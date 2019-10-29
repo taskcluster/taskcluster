@@ -9,8 +9,8 @@ module.exports = ({ auth }) => {
         const roles = await auth.listRoles();
 
         return sift(filter, roles);
-      })
-    )
+      }),
+    ),
   );
   const roleIds = new ConnectionLoader(async ({ filter, options }) => {
     const raw = await auth.listRoleIds(options);
@@ -23,7 +23,7 @@ module.exports = ({ auth }) => {
     };
   });
   const role = new DataLoader(roleIds =>
-    Promise.all(roleIds.map(roleId => auth.role(roleId)))
+    Promise.all(roleIds.map(roleId => auth.role(roleId))),
   );
 
   return {
