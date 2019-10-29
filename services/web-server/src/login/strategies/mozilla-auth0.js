@@ -208,6 +208,13 @@ module.exports = class MozillaAuth0 {
             done(new WebServerError('InputError', 'Could not generate credentials for this access token'));
           }
 
+          if (!user.identity) {
+            done(new WebServerError(
+              'InputError',
+              'Could not read user identity. The client is probably not properly configured.'
+            ));
+          }
+
           const exp = await this.expFromIdToken(extraParams.id_token);
 
           done(null, {
