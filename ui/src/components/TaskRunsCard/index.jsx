@@ -485,7 +485,7 @@ export default class TaskRunsCard extends Component {
                 onClick={this.handleNext}
                 disabled={run ? selectedRunId === runs.length - 1 : true}>
                 Next
-                <ChevronRightIcon />
+                <ChevronRightIcon color="rgb(149, 27, 27)" />
               </Button>
             }
             backButton={
@@ -493,7 +493,7 @@ export default class TaskRunsCard extends Component {
                 size="small"
                 onClick={this.handlePrevious}
                 disabled={run ? selectedRunId === 0 : true}>
-                <ChevronLeftIcon />
+                <ChevronLeftIcon color="rgb(149, 27, 27)" />
                 Previous
               </Button>
             }
