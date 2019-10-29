@@ -313,7 +313,6 @@ tasks:
       features:
         taskclusterProxy: true
       maxRunTime: 3600
-      env:
       command:
         - - /bin/bash
           - -vxec
