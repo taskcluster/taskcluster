@@ -211,7 +211,7 @@ module.exports = class MozillaAuth0 {
           if (!user.identity) {
             done(new WebServerError(
               'InputError',
-              'Could not read user identity. The client is probably not properly configured.'
+              'Could not read user identity. The client is probably not properly configured.',
             ));
           }
 
