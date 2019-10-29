@@ -82,7 +82,7 @@ class AwsProvider extends Provider {
       if (toSpawnCounter <= 0) break; // eslint-disable-line
       // Make sure we don't get "The same resource type may not be specified
       // more than once in tag specifications" errors
-      const TagSpecifications = config.TagSpecifications ? config.TagSpecifications : [];
+      const TagSpecifications = config.launchConfig.TagSpecifications || [];
       const instanceTags = [];
       const otherTagSpecs = [];
       TagSpecifications.forEach(ts =>
@@ -260,7 +260,7 @@ class AwsProvider extends Provider {
         InstanceIds: [worker.workerId],
       }).promise();
     } catch (e) {
-      const workerPool = this.WorkerPool.load({
+      const workerPool = await this.WorkerPool.load({
         workerPoolId: worker.workerPoolId,
       });
       await workerPool.reportError({
