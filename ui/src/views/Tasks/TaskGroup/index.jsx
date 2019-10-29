@@ -593,7 +593,6 @@ export default class TaskGroup extends Component {
     // so handle task-not-found errors gracefully
     return (
       error.graphQLErrors &&
-      error.graphQLErrors[0] &&
       error.graphQLErrors[0].statusCode === 404 &&
       error.graphQLErrors[0].requestInfo.method === 'task'
     );
