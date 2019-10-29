@@ -46,7 +46,9 @@ export default class ViewSecrets extends Component {
       secretsConnection: {
         limit: VIEW_SECRETS_PAGE_SIZE,
       },
-      filter: secretSearch ? { name: { $regex: secretSearch } } : null,
+      filter: secretSearch
+        ? { name: { $regex: secretSearch, $options: 'i' } }
+        : null,
     });
   };
 
