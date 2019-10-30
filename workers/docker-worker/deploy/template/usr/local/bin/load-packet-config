@@ -34,6 +34,8 @@ provider:
 workerConfig:
     dockerConfig:
         allowPrivileged: true
+    shutdown:
+        enable: false
 worker:
     implementation: docker-worker
     path: /home/ubuntu/docker_worker
