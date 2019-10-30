@@ -27,6 +27,20 @@ exports.tasks.push({
         'project:taskcluster:smoketest:abc/*' ],
     };
     assert.deepEqual(expandedRole.scopes, expectedScopes.scopes);
-    await auth.deleteRole(roleId);
+    const query = {};
+    const anHourAgo = Date.now() - (1000*60*60);
+    while (1) {
+      const res = await auth.listRoles2();
+      for(let i=0;i<res.roles.length;i++){
+        if(res.roles[i].roleId.includes('project:taskcluster:smoketest:') && res.roles[i].lastModified < anHourAgo){
+          await auth.deleteRole(res.roles[i].roleId);
+        }
+      }
+      if (res.continuationToken) {
+        query.continuationToken = res.continuationToken;
+      } else {
+        break;
+      }
+    }
   },
 });
