@@ -146,20 +146,18 @@ export default class MobileMenu extends Component {
               <BookOpenPageVariantIcon className={classes.leftIcon} />
               Documentation
             </MenuItem>
-            <MenuItem>
-              <MenuItem
-                title="Sign In"
-                onClick={onSignInDialogOpen}
-                {...buttonProps}
-                {...props}>
-                <HandPeaceIcon className={classes.leftIcon} />
-                Sign In
-              </MenuItem>
-              <SignInDialog
-                open={signInDialogOpen}
-                onClose={onSignInDialogClose}
-              />
+            <MenuItem
+              title="Sign In"
+              onClick={onSignInDialogOpen}
+              {...buttonProps}
+              {...props}>
+              <HandPeaceIcon className={classes.leftIcon} />
+              Sign In
             </MenuItem>
+            <SignInDialog
+              open={signInDialogOpen}
+              onClose={onSignInDialogClose}
+            />
           </Menu>
         )}
       </Fragment>
