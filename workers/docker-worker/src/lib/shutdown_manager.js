@@ -35,6 +35,7 @@ class ShutdownManager extends EventEmitter {
     await this.taskListener.close();
 
     this.config.log('shutdown');
+    this.config.logEvent({eventType: 'instanceShutdown'});
     spawn('shutdown', ['-h', 'now']);
   }
 

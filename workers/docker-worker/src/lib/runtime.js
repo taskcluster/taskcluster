@@ -69,7 +69,30 @@ Runtime.prototype = {
   /**
   Host instance
   */
-  hostManager: null
+  hostManager: null,
+};
+
+
+Runtime.prototype.logEvent = function({eventType, task = {status: {}}, timestamp}) {
+  if (!timestamp) {
+    timestamp = Date.now();
+  }
+
+  const eventInfo = {
+    eventType,
+    worker: 'docker-worker',
+    workerPoolId: this.workerType,
+    workerId: this.workerId,
+    timestamp,
+    region: this.region,
+    instanceType: this.instanceType,
+    taskId: task.status.taskId,
+    runId: task.status.runId,
+  };
+
+  if (this.instanceId !== 'test-worker-instance') {
+    process.stdout.write(`\nWORKER_METRICS ${JSON.stringify(eventInfo)}\n`);
+  }
 };
 
 module.exports = Runtime;

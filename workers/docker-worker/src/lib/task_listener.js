@@ -9,6 +9,7 @@ const got = require('got');
 const { Task } = require('./task');
 const { EventEmitter } = require('events');
 const { exceedsDiskspaceThreshold } = require('./util/capacity');
+const os = require('os');
 
 const debug = Debug('docker-worker:task-listener');
 
@@ -145,6 +146,7 @@ class TaskListener extends EventEmitter {
     // call runTaskset for each taskset, but do not wait for it to complete
     Promise.all(tasksets.map(this.runTaskset.bind(this))).then(() => {
       if (this.runtime.shutdownManager.shouldExit()) {
+        this.runtime.logEvent({eventType: 'instanceShutdown'});
         process.exit();
       }
     });
@@ -170,6 +172,13 @@ class TaskListener extends EventEmitter {
     //refactor to just have shutdown manager call terminate()
     this.listenForShutdowns();
     this.taskQueue = new TaskQueue(this.runtime);
+
+    this.runtime.logEvent({
+      eventType: 'instanceBoot',
+      timestamp: Date.now() - os.uptime(),
+    });
+
+    this.runtime.logEvent({eventType: 'workerReady'});
 
     // Scheduled the next poll very soon use the error handling it provides.
     this.scheduleTaskPoll(1);
@@ -495,7 +504,25 @@ class TaskListener extends EventEmitter {
       }
 
       // Run the task and collect runtime metrics.
-      await taskHandler.start();
+      try {
+        this.runtime.logEvent({
+          eventType: 'taskQueue',
+          task: taskHandler,
+          timestamp: new Date(task.created).getTime(),
+        });
+
+        this.runtime.logEvent({
+          eventType: 'taskStart',
+          task: taskHandler,
+        });
+
+        await taskHandler.start();
+      } finally {
+        this.runtime.logEvent({
+          eventType: 'taskFinish',
+          task: taskHandler,
+        });
+      }
 
       this.removeRunningTask(runningState);
     }
