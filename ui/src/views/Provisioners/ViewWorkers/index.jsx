@@ -27,6 +27,7 @@ import workersQuery from './workers.graphql';
 @graphql(workersQuery, {
   skip: props => !props.match.params.provisionerId,
   options: ({ location, match: { params } }) => ({
+    errorPolicy: 'all',
     variables: {
       provisionerId: params.provisionerId,
       workerType: params.workerType,
@@ -166,7 +167,7 @@ export default class ViewWorkers extends Component {
     });
   };
 
-  shouldIgnoreError = error => {
+  shouldIgnoreGraphqlError = error => {
     const { data } = this.props;
     const workers = path(['workers', 'edges'], data);
 
@@ -177,11 +178,13 @@ export default class ViewWorkers extends Component {
         // ignores the error if task ID is not one of Most Recent Tasks
         return filter(worker => {
           return (
-            path(['node', 'latestTask', 'run', 'taskId'], worker) === taskId
+            path(['node', 'latestTask', 'run', 'taskId'], worker) === taskId &&
+            error.statusCode === 404
           );
         }, workers);
       });
     }
+    return true;
   };
 
   render() {
@@ -198,13 +201,15 @@ export default class ViewWorkers extends Component {
       data: { loading, error, workers, workerType },
     } = this.props;
     const query = parse(location.search.slice(1));
-
+    const shouldIgnoreGraphqlError = this.shouldIgnoreGraphqlError(error);
     return (
       <Dashboard title="Workers">
         <Fragment>
           {(!workers || !workerType) && loading && <Spinner loading />}
-          {(this.state.error || error) && !!this.shouldIgnoreError(error) && (
-            <ErrorPanel fixed error={this.state.error || error} />
+          {!shouldIgnoreGraphqlError && <ErrorPanel fixed error={error} />}
+
+          {shouldIgnoreGraphqlError && this.state.error && (
+            <ErrorPanel fixed error={this.state.error} />
           )}
           {workers && workerType && (
             <Fragment>
