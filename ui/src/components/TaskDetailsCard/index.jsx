@@ -55,6 +55,12 @@ import Link from '../../utils/Link';
   unorderedList: {
     ...theme.mixins.unorderedList,
   },
+  listItemText: {
+    paddingLeft: theme.spacing(2),
+  },
+  codeText: {
+    fontSize: '0.8125rem',
+  },
 }))
 /**
  * Render information in a card layout about a task.
@@ -275,7 +281,7 @@ export default class TaskDetailsCard extends Component {
                         }
                       />
                     </ListItem>
-                    <List dense disablePadding>
+                    <List disablePadding>
                       {dependentTasks.map(task => (
                         <Link key={task.taskId} to={`/tasks/${task.taskId}`}>
                           <ListItem
@@ -283,7 +289,10 @@ export default class TaskDetailsCard extends Component {
                             className={classes.listItemButton}
                             title="View Task">
                             <StatusLabel state={task.status.state} />
-                            <ListItemText primary={task.metadata.name} />
+                            <ListItemText
+                              className={classes.listItemText}
+                              primary={task.metadata.name}
+                            />
                             <LinkIcon />
                           </ListItem>
                         </Link>
@@ -366,7 +375,7 @@ export default class TaskDetailsCard extends Component {
                         <Typography variant="subtitle1">Extra</Typography>
                       }
                       secondary={
-                        <Code language="json">
+                        <Code className={classes.codeText} language="json">
                           {JSON.stringify(task.extra, null, 2)}
                         </Code>
                       }

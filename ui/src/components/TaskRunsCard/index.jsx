@@ -237,7 +237,7 @@ export default class TaskRunsCard extends Component {
               }
             )}
             hover={!!artifact.url}>
-            <TableCell>
+            <TableCell size="small">
               <Link
                 className={classes.artifactLink}
                 to={this.getArtifactUrl(artifact)}>
