@@ -203,7 +203,7 @@ export default class ViewWorkers extends Component {
     } = this.props;
     const query = parse(location.search.slice(1));
     const shouldIgnoreGraphqlError = this.shouldIgnoreGraphqlError(error);
-    
+
     return (
       <Dashboard title="Workers">
         <Fragment>
