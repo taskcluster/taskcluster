@@ -285,6 +285,42 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
       assert(new Date(res.body.expires) < taskcluster.fromNow('1 year'));
     });
+    test('can request a client with expires less than maxExpires when client is whitelisted', async function() {
+      const agent = await helper.signedInAgent();
+      const registeredClientId = 'test-code-whitelisted';
+      const redirectUri = 'https://test.example.com/cb';
+      const fifteenMinutes = '15 minutes';
+
+      // user sent to /login/oauth/authorize with query arg
+
+      let res = await agent.get(url('/login/oauth/authorize' +
+        '?response_type=code' +
+        `&client_id=${registeredClientId}` +
+        '&redirect_uri=' + encodeURIComponent(redirectUri) +
+        '&expires=' + encodeURIComponent(fifteenMinutes) +
+        '&scope=tags:get:*' +
+        '&state=abc123'))
+        .redirects(0)
+        .ok(res => res.status === 302);
+
+      let query = getQuery(res.header.location);
+
+      // user calls /login/oauth/token
+
+      res = await agent.post(url('/login/oauth/token'))
+        .set('Content-Type', 'application/x-www-form-urlencoded')
+        .send('grant_type=authorization_code')
+        .send(`code=${query.get('code')}`)
+        .send(`redirect_uri=${encodeURIComponent(redirectUri)}`)
+        .send(`client_id=${registeredClientId}`);
+
+      // user calls /login/oauth/credentials to get TC credentials
+
+      res = await agent.get(url('/login/oauth/credentials'))
+        .set('authorization', `${res.body.token_type} ${res.body.access_token}`);
+
+      assert(new Date(res.body.expires) < taskcluster.fromNow(fifteenMinutes));
+    });
     test('skip decision step when client is whitelisted', async function() {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-code-whitelisted';

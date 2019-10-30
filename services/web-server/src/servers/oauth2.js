@@ -178,29 +178,42 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
 
   const authorization = [
     ensureLoggedIn(),
-    server.authorization((clientID, redirectURI, scope, done) => {
-      const client = findRegisteredClient(clientID);
+    (req, res, done) => {
+      server.authorization((clientID, redirectURI, scope, done) => {
+        const client = findRegisteredClient(clientID);
 
-      if (!client) {
+        if (!client) {
+          return done(null, false);
+        }
+
+        if (!client.redirectUri.some(uri => uri === redirectURI)) {
+          return done(null, false);
+        }
+
+        return done(null, client, redirectURI);
+      }, async (client, user, scope, done) => {
+        // Skip consent form if the client is whitelisted
+        if (client.whitelisted && user && _.isEqual(client.scope.sort(), scope.sort())) {
+          const opts = {};
+
+          if (req.query.expires) {
+            opts.expires = taskcluster.fromNow(req.query.expires);
+          }
+
+          // If you return `true` in the second argument (the `immediate` argument) it will skip the dialog,
+          // automatically authorizing the decision.
+          // It's called to decide whether to immediately approve the request and return a redirect
+          // to the `redirect_uri`.
+          return done(null, true, {
+            scope,
+            clientId: `${user.identity}/${client.clientId}-${taskcluster.slugid().slice(0, 6)}`,
+            ...opts,
+          });
+        }
+
         return done(null, false);
-      }
-
-      if (!client.redirectUri.some(uri => uri === redirectURI)) {
-        return done(null, false);
-      }
-
-      return done(null, client, redirectURI);
-    }, async (client, user, scope, done) => {
-      // Skip consent form if the client is whitelisted
-      if (client.whitelisted && user && _.isEqual(client.scope.sort(), scope.sort())) {
-        // If you return `true` in the second argument (the `immediate` argument) it will skip the dialog,
-        // automatically authorizing the decision.
-        // It's called to decide whether to immediately approve the request and return a redirect to the `redirect_uri`.
-        return done(null, true, { scope, clientId: `${user.identity}/${client.clientId}-${taskcluster.slugid().slice(0, 6)}` });
-      }
-
-      return done(null, false);
-    }),
+      })(req, res, done);
+    },
     (req, res) => {
       const client = findRegisteredClient(req.query.client_id);
       let expires = client.maxExpires;
