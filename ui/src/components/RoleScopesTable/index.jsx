@@ -136,8 +136,7 @@ export default class RoleScopesTable extends Component {
     const filteredItems = searchTerm
       ? filter(contains(searchTerm), items)
       : items;
-    const windowHeight = window.innerHeight;
-    const tableHeight = windowHeight > 400 ? 0.6 * windowHeight : 400;
+    const tableHeight = window.innerHeight;
     const itemCount = filteredItems.length;
 
     return itemCount ? (
