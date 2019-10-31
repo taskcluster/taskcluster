@@ -587,15 +587,11 @@ export default class TaskGroup extends Component {
     if (!error) {
       return true;
     }
-
     // Task groups do not necessarily have a decision task,
     // so handle task-not-found errors gracefully
-
-    // return (
-    //   error.graphQLErrors &&
-    //   error.graphQLErrors[0].statusCode === 404 &&
-    //   error.graphQLErrors[0].requestInfo.method === 'task'
-    // );
+    const errorStatus = error.graphQLErrors.some((statusCode, method) => statusCode === 404 && method === 'task');
+    
+    return errorStatus;
   }
 
   render() {
@@ -630,13 +626,11 @@ export default class TaskGroup extends Component {
     const notificationsCount = Object.values(notifyPreferences).filter(Boolean)
       .length;
     const shouldIgnoreError = error && this.shouldIgnoreError(error);
-
     this.subscribe({ taskGroupId, subscribeToMore });
 
     if (!this.tasks.size && taskGroup && isFromSameTaskGroupId) {
       taskGroup.edges.forEach(edge => this.tasks.set(edge.node.taskId));
     }
-
     return (
       <Dashboard
         title="Task Group"
