@@ -1,0 +1,45 @@
+---
+title: Smoketests
+---
+
+Taskcluster ships with a set of "smoketests" that can be used to check for major issues in a deployment.
+
+# Setup
+
+To run the smoketests, you will need a client with sufficient scopes.
+We recommend adding these scopes to a role named `project:taskcluster:smoketests` and creating a client with scope `assume:project:taskcluster:smoketests`.
+Set the [environment variables](/docs/manual/design/env-vars) `TASKCLUSTER_ROOT_URL`, `TASKCLUSTER_ACCESS_TOKEN`, and `TASKCLUSTER_CLIENT_ID`.
+
+The required scopes may vary from version to version.
+To see the required scopes, begin with a role containing no scopes and run the smoketests as described below.
+The error message will describe the missing scopes.
+
+# Running Smoketests
+
+From a checkout of the Taskcluster source, where `yarn install` has already been run, run the smoketests as follows:
+
+```
+$ yarn smoketest
+yarn run v1.19.1
+$ node infrastructure/tooling/src/main.js smoketest
+✔ Ping health endpoint for web-server
+✔ Ping health endpoint for auth
+ℹ Ping health endpoint for built-in-workers (No exposed web service)
+✔ Ping health endpoint for github
+...
+```
+
+Alternately, the `taskcluster/taskcluster-devel` docker image can be used:
+
+```
+$ docker run -ti --rm \
+  -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_ACCESS_TOKEN -e TASKCLUSTER_CLIENT_ID \
+  taskcluster/taskcluster-devel:v1.2.3 script/smoketest
+yarn run v1.19.1
+$ node infrastructure/tooling/src/main.js smoketest
+✔ Ping health endpoint for web-server
+...
+```
+
+Substitute the deployed Taskcluster version for `v1.2.3`.
+Note that this docker image is quite large!
