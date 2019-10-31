@@ -65,7 +65,11 @@ class WorkerScanner {
         seen(worker.providerId, worker.workerPoolId);
         const provider = this.providers.get(worker.providerId);
         if (provider) {
-          await provider.checkWorker({worker});
+          try {
+            await provider.checkWorker({worker});
+          } catch (err) {
+            this.monitor.reportError(err); // Just report it and move on so this doesn't block other providers
+          }
         } else {
           this.monitor.info(
             `Worker ${worker.workerGroup}/${worker.workerId} has unknown providerId ${worker.providerId} (ignoring)`);
