@@ -14,6 +14,8 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
+import PlusIcon from 'mdi-react/PlusIcon';
+import MinusIcon from 'mdi-react/MinusIcon';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
@@ -186,7 +188,8 @@ export default class TaskDetailsCard extends Component {
                 button
                 className={classes.listItemButton}
                 onClick={this.handleToggleMore}>
-                <ListItemText primary={showMore ? 'Less...' : 'More...'} />
+                {showMore ? <MinusIcon /> : <PlusIcon />}
+                <ListItemText primary={showMore ? 'See Less' : 'See More'} />
                 {showMore ? <ChevronUpIcon /> : <ChevronDownIcon />}
               </ListItem>
             </List>

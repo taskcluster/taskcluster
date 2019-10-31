@@ -21,6 +21,8 @@ import ChevronLeftIcon from 'mdi-react/ChevronLeftIcon';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ChevronRightIcon from 'mdi-react/ChevronRightIcon';
+import PlusIcon from 'mdi-react/PlusIcon';
+import MinusIcon from 'mdi-react/MinusIcon';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import LockIcon from 'mdi-react/LockIcon';
@@ -392,7 +394,10 @@ export default class TaskRunsCard extends Component {
                     button
                     className={classes.listItemButton}
                     onClick={this.handleToggleMore}>
-                    <ListItemText primary={showMore ? 'Less...' : 'More...'} />
+                    {showMore ? <MinusIcon /> : <PlusIcon />}
+                    <ListItemText
+                      primary={showMore ? 'See Less' : 'See More'}
+                    />
                     {showMore ? <ChevronUpIcon /> : <ChevronDownIcon />}
                   </ListItem>
                 </List>
