@@ -77,7 +77,7 @@ class IRCBot {
       bindings: [notifyEvents.ircRequest()],
       queueName: this.pulseQueueName,
     },
-    this.monitor.timedHandler('notification', this.onMessage.bind(this))
+    this.monitor.timedHandler('notification', this.onMessage.bind(this)),
     );
   }
 

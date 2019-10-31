@@ -37,7 +37,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
 
   test('bewit auth (root creds)', async () => {
     let signedUrl = helper.testClient.buildSignedUrl(
-      helper.testClient.resource
+      helper.testClient.resource,
     );
     let res = await request.get(signedUrl);
     assert(res.body.message === 'Hello World');

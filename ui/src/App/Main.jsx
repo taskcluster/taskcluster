@@ -66,6 +66,22 @@ export default class Main extends Component {
       fetchPolicy: 'network-only',
     });
     const thirdPartyLogin = isThirdPartyLogin();
+    const isOneLoginStrategy =
+      window.env.UI_LOGIN_STRATEGY_NAMES &&
+      window.env.UI_LOGIN_STRATEGY_NAMES.split(' ').length === 1;
+    const THIRD_PARTY_DID_AUTO_LOGIN_KEY = 'third-party-did-auto-login';
+
+    if (
+      !user &&
+      thirdPartyLogin &&
+      isOneLoginStrategy &&
+      !sessionStorage.getItem(THIRD_PARTY_DID_AUTO_LOGIN_KEY)
+    ) {
+      sessionStorage.setItem(THIRD_PARTY_DID_AUTO_LOGIN_KEY, 'true');
+      window.open(`/login/${window.env.UI_LOGIN_STRATEGY_NAMES}`);
+
+      return;
+    }
 
     if (
       user &&
@@ -74,12 +90,16 @@ export default class Main extends Component {
       data.isLoggedIn === false
     ) {
       onUnauthorize();
+
+      return;
     }
 
     // Users who were logged in earlier manually will be logged out in order to
     // be able to complete the third party login flow.
     if (user && user.identityProviderId === 'manual' && thirdPartyLogin) {
       onUnauthorize();
+
+      return;
     }
 
     // If a third party tries to login but the user is

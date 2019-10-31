@@ -7,7 +7,7 @@ module.exports = class TaskRun {
 
     if (artifacts) {
       this.artifacts = artifacts.map(
-        artifact => new Artifact(taskId, this.runId, artifact)
+        artifact => new Artifact(taskId, this.runId, artifact),
       );
     }
   }

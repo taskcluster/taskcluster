@@ -260,7 +260,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
     debug('### Reporting task exception');
     helper.scopes(
       'queue:resolve-task',
-      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended'
+      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
     await helper.queue.reportException(taskId, 0, {
       reason: 'internal-error',

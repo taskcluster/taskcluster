@@ -82,11 +82,11 @@ class AwsProvider extends Provider {
       if (toSpawnCounter <= 0) break; // eslint-disable-line
       // Make sure we don't get "The same resource type may not be specified
       // more than once in tag specifications" errors
-      const TagSpecifications = config.TagSpecifications ? config.TagSpecifications : [];
+      const TagSpecifications = config.launchConfig.TagSpecifications || [];
       const instanceTags = [];
       const otherTagSpecs = [];
       TagSpecifications.forEach(ts =>
-        ts.ResourceType === 'instance' ? instanceTags.concat(ts.Tags) : otherTagSpecs.push(ts)
+        ts.ResourceType === 'instance' ? instanceTags.concat(ts.Tags) : otherTagSpecs.push(ts),
       );
 
       const userData = Buffer.from(JSON.stringify({
@@ -260,7 +260,7 @@ class AwsProvider extends Provider {
         InstanceIds: [worker.workerId],
       }).promise();
     } catch (e) {
-      const workerPool = this.WorkerPool.load({
+      const workerPool = await this.WorkerPool.load({
         workerPoolId: worker.workerPoolId,
       });
       await workerPool.reportError({
@@ -275,7 +275,7 @@ class AwsProvider extends Provider {
     result.TerminatingInstances.forEach(ti => {
       if (!ti.InstanceId === worker.workerId || !ti.CurrentState.Name === 'shutting-down') {
         throw new Error(
-          `Unexpected error: expected to shut down instance ${worker.workerId} but got ${ti.CurrentState.Name} state for ${ti.InstanceId} instance instead`
+          `Unexpected error: expected to shut down instance ${worker.workerId} but got ${ti.CurrentState.Name} state for ${ti.InstanceId} instance instead`,
         );
       }
 

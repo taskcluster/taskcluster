@@ -37,7 +37,7 @@ export default class Client {
 
     if (this.options.accessToken) {
       throw new Error(
-        'options.accessToken is no longer supported; use OIDCCredentialAgent'
+        'options.accessToken is no longer supported; use OIDCCredentialAgent',
       );
     }
 
@@ -139,7 +139,7 @@ export default class Client {
 
       if (type !== 'string' && type !== 'number') {
         throw new Error(
-          `URL parameter \`${arg}\` expected a string but was provided type "${type}"`
+          `URL parameter \`${arg}\` expected a string but was provided type "${type}"`,
         );
       }
 
@@ -157,7 +157,7 @@ export default class Client {
 
     if (!entry || entry.type !== 'function') {
       throw new Error(
-        'Method in buildUrl must be an API method from the same object'
+        'Method in buildUrl must be an API method from the same object',
       );
     }
 
@@ -172,7 +172,7 @@ export default class Client {
     ) {
       throw new Error(
         `Method \`${entry.name}.buildUrl\` expected ${arity +
-          1} argument(s) but received ${args.length + 1}`
+          1} argument(s) but received ${args.length + 1}`,
       );
     }
 
@@ -183,8 +183,8 @@ export default class Client {
         if (!optionKeys.includes(key)) {
           throw new Error(
             `Method \`${entry.name}\` expected options ${optionKeys.join(
-              ', '
-            )} but received ${key}`
+              ', ',
+            )} but received ${key}`,
           );
         }
       });
@@ -196,7 +196,7 @@ export default class Client {
     return withRootUrl(this.options.rootUrl).api(
       this.options.serviceName,
       this.options.serviceVersion,
-      `${endpoint}${query}`
+      `${endpoint}${query}`,
     );
   }
 
@@ -250,7 +250,7 @@ export default class Client {
 
     if (!accessToken) {
       throw new Error(
-        'buildSignedUrl missing required credentials accessToken'
+        'buildSignedUrl missing required credentials accessToken',
       );
     }
 
@@ -281,7 +281,7 @@ export default class Client {
       throw new Error(
         `${
           entry.name
-        } expected ${expectedArity} arguments but only received ${arity}`
+        } expected ${expectedArity} arguments but only received ${arity}`,
       );
     }
 
@@ -313,7 +313,7 @@ export default class Client {
             throw new Error(
               `routingKeyPattern "${value}" for ${
                 key.name
-              } cannot contain dots since it does not hold multiple words`
+              } cannot contain dots since it does not hold multiple words`,
             );
           }
 
@@ -322,7 +322,7 @@ export default class Client {
 
         if (value != null) {
           throw new Error(
-            `routingKey value "${value}" is not a valid pattern for ${key.name}`
+            `routingKey value "${value}" is not a valid pattern for ${key.name}`,
           );
         }
 
@@ -346,7 +346,7 @@ export default class Client {
     const url = withRootUrl(this.options.rootUrl).api(
       this.options.serviceName,
       this.options.serviceVersion,
-      `${endpoint}${query}`
+      `${endpoint}${query}`,
     );
     const options = { method: entry.method };
     const credentials = this.options.credentialAgent

@@ -21,7 +21,7 @@ suite(testing.suiteName(), () => {
     assert(_.includes(_.keys(schemas), 'v1/default-schema.json'));
     assert.equal(
       schemas['v1/default-schema.json'].$id,
-      '/schemas/whatever/v1/default-schema.json#'
+      '/schemas/whatever/v1/default-schema.json#',
     );
   });
 
@@ -31,7 +31,7 @@ suite(testing.suiteName(), () => {
     assert(_.includes(_.keys(schemas), 'v1/default-schema.json'));
     assert.equal(
       schemas['v1/default-schema.json'].$id,
-      'https://tc-tests.example.com/schemas/whatever/v1/default-schema.json#'
+      'https://tc-tests.example.com/schemas/whatever/v1/default-schema.json#',
     );
   });
 

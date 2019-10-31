@@ -373,7 +373,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await simulateJobMessage({
         user: 'TaskclusterRobotCollaborator',
         base: '0000000000000000000000000000000000000000',
-        eventType: 'tag'}
+        eventType: 'tag'},
       );
 
       assert(handlers.createTasks.calledWith({scopes: sinon.match.array, tasks: sinon.match.array}));

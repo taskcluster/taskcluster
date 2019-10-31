@@ -9,19 +9,38 @@ exports.tasks.push({
     'target-roles',
   ],
   run: async () => {
-    let auth = new taskcluster.Auth(taskcluster.fromEnvVars());
-    let randomId = taskcluster.slugid();
-    let roleId = `project:taskcluster:smoketest:${randomId}`;
-    let payload = {
+    const auth = new taskcluster.Auth(taskcluster.fromEnvVars());
+    const randomId = taskcluster.slugid();
+    const roleId = `project:taskcluster:smoketest:${randomId}:*`;
+    const payload = {
       description: 'smoketest test',
-      scopes: ['project:taskcluster:smoketest:*'],
+      scopes: ['project:taskcluster:smoketest:<..>/*'],
     };
-    let expandPayload = {
-      scopes: [`assume:${roleId}`],
+    const expandPayload = {
+      scopes: [`assume:project:taskcluster:smoketest:${randomId}:abc`],
     };
-    let roleCreated = await auth.createRole(roleId, payload);
-    let expandedRole = await auth.expandScopes(expandPayload);
-    assert.deepEqual(roleCreated.expandedScopes, expandedRole.scopes);
-    await auth.deleteRole(roleId);
+    await auth.createRole(roleId, payload);
+    const expandedRole = await auth.expandScopes(expandPayload);
+    const expectedScopes = {
+      scopes:
+      [ `assume:project:taskcluster:smoketest:${randomId}:abc`,
+        'project:taskcluster:smoketest:abc/*' ],
+    };
+    assert.deepEqual(expandedRole.scopes, expectedScopes.scopes);
+    const query = {};
+    const anHourAgo = Date.now() - (1000*60*60);
+    while (1) {
+      const res = await auth.listRoles2();
+      for(let i=0;i<res.roles.length;i++){
+        if(res.roles[i].roleId.includes('project:taskcluster:smoketest:') && res.roles[i].lastModified < anHourAgo){
+          await auth.deleteRole(res.roles[i].roleId);
+        }
+      }
+      if (res.continuationToken) {
+        query.continuationToken = res.continuationToken;
+      } else {
+        break;
+      }
+    }
   },
 });
