@@ -5352,10 +5352,10 @@ nise@^1.5.2:
     lolex "^4.1.0"
     path-to-regexp "^1.7.0"
 
-nock@11.6.0:
-  version "11.6.0"
-  resolved "https://registry.yarnpkg.com/nock/-/nock-11.6.0.tgz#481961e0cf78794f200ea71e25d948d668446717"
-  integrity sha512-9ocFR68CxS6nf2XtQNpdSh5n4QQSKl87DhXgLnHO/RD4CsGThFtu8/QG6myHTnrUHRE6JSKpiGjLJdRe2ZSlIA==
+nock@11.7.0:
+  version "11.7.0"
+  resolved "https://registry.yarnpkg.com/nock/-/nock-11.7.0.tgz#5eaae8b8a55c0dfc014d05692c8cf3d31d61a342"
+  integrity sha512-7c1jhHew74C33OBeRYyQENT+YXQiejpwIrEjinh6dRurBae+Ei4QjeUaPlkptIF0ZacEiVCnw8dWaxqepkiihg==
   dependencies:
     chai "^4.1.2"
     debug "^4.1.0"
@@ -7334,7 +7334,7 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-client@link:clients/client":
-  version "21.2.0"
+  version "21.3.0"
   dependencies:
     debug "^4.0.0"
     hawk "^7.0.10"
@@ -7344,37 +7344,37 @@ tar@^4:
     taskcluster-lib-urls "^12.0.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "21.2.0"
+  version "21.3.0"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "21.2.0"
+  version "21.3.0"
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "21.2.0"
+  version "21.3.0"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "21.2.0"
+  version "21.3.0"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "21.2.0"
+  version "21.3.0"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "21.2.0"
+  version "21.3.0"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "21.2.0"
+  version "21.3.0"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "21.2.0"
+  version "21.3.0"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "21.2.0"
+  version "21.3.0"
 
 "taskcluster-lib-scopes@link:libraries/scopes":
-  version "21.2.0"
+  version "21.3.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "21.2.0"
+  version "21.3.0"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -7382,7 +7382,7 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "21.2.0"
+  version "21.3.0"
 
 taskgroup@^4.0.5, taskgroup@^4.2.0:
   version "4.3.1"
