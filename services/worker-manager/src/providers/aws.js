@@ -19,8 +19,6 @@ class AwsProvider extends Provider {
     validator,
     notify,
     providerConfig,
-    intervalCapDefault = 1000,
-    intervalDefault = 60 * 1000,
   }) {
     super({
       providerId,
@@ -35,9 +33,12 @@ class AwsProvider extends Provider {
     });
     this.configSchema = 'config-aws';
     this.ec2iid_RSA_key = fs.readFileSync(path.resolve(__dirname, 'aws-keys/RSA-key-forSignature')).toString();
-    this.providerConfig = providerConfig;
-    this.intervalCapDefault = intervalCapDefault;
-    this.intervalDefault = intervalDefault;
+    this.providerConfig = Object.assign({}, {
+      intervalCapDefault: 1000,
+      intervalDefault: 60 * 1000,
+      _backoffDelay: 1000,
+    }, providerConfig);
+
   }
 
   async setup() {
@@ -66,11 +67,14 @@ class AwsProvider extends Provider {
     const cloud = new CloudAPI({
       types: Object.keys(requestTypes),
       apiRateLimits: requestTypes,
-      intervalDefault: this.intervalDefault,
-      intervalCapDefault: this.intervalCapDefault,
+      intervalDefault: this.providerConfig.intervalDefault,
+      intervalCapDefault: this.providerConfig.intervalCapDefault,
       monitor: this.monitor,
       errorHandler: ({err, tries}) => {
-        // TODO: WHAT TO DO HERE?
+        if (err.code === 'RequestLimitExceeded') {
+          return {backoff: this.providerConfig._backoffDelay * Math.pow(2, tries), reason: 'RequestLimitExceeded', level: 'warning'};
+        }
+        throw err;
       },
     });
     this._enqueue = cloud.enqueue.bind(cloud);
