@@ -1,6 +1,5 @@
 node_modules
 .eslintcache
-.vscode
 user-build-config.yml
 *.log
 .idea
