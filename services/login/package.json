@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-login",
-  "version": "21.2.0",
+  "version": "21.3.0",
   "private": true,
   "description": "Server for giving temporary taskcluster credentials to users.",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
