@@ -30,6 +30,9 @@ import introspectionQueryResultData from '../fragments/fragmentTypes.json';
 import { route } from '../utils/prop-types';
 import AuthController from '../auth/AuthController';
 
+const absoluteUrl = (url, overrides = {}) =>
+  Object.assign(new URL(url, window.location), overrides).toString();
+
 @hot(module)
 export default class App extends Component {
   static propTypes = {
@@ -68,7 +71,7 @@ export default class App extends Component {
   });
 
   httpLink = createHttpLink({
-    uri: window.env.GRAPHQL_ENDPOINT,
+    uri: absoluteUrl(window.env.GRAPHQL_ENDPOINT),
     credentials:
       window.env.TASKCLUSTER_ROOT_URL === 'https://taskcluster.net'
         ? 'include'
@@ -76,8 +79,10 @@ export default class App extends Component {
   });
 
   wsLink = new WebSocketLink({
-    // allow configuration of https:// or http:// and translate to ws:// or wss://
-    uri: window.env.GRAPHQL_SUBSCRIPTION_ENDPOINT.replace(/^http/, 'ws'),
+    uri: absoluteUrl(window.env.GRAPHQL_SUBSCRIPTION_ENDPOINT, {
+      // allow configuration of https:// or http:// and translate to ws:// or wss://
+      protocol: window.location.protocol === 'https:' ? 'wss:' : 'ws:',
+    }),
     options: {
       reconnect: true,
       lazy: true,
