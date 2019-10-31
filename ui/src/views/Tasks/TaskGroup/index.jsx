@@ -332,7 +332,6 @@ export default class TaskGroup extends Component {
         params: { taskGroupId },
       },
     } = this.props;
-    console.log("+++++", this.props);
     if (prevProps.match.params.taskGroupId !== taskGroupId) {
       this.tasks.clear();
       this.previousCursor = INITIAL_CURSOR;

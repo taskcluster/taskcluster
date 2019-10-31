@@ -53,7 +53,6 @@ export default class ErrorPanel extends Component {
   };
 
   static getDerivedStateFromProps(props, state) {
-    console.log("klsmdck", props.error, "wewf", state.previousError)
     if (props.error !== state.previousError) {
       return {
         error: props.error,
