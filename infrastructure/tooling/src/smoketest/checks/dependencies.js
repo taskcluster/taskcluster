@@ -10,7 +10,9 @@ exports.scopeExpression = {
 exports.tasks = [];
 exports.tasks.push({
   title: 'Check dependencies',
-  requires: [],
+  requires: [
+    'ping-queue',
+  ],
   provides: [
     'target-dependencies',
   ],

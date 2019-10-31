@@ -13,7 +13,9 @@ exports.scopeExpression = {
 exports.tasks = [];
 exports.tasks.push({
   title: 'Create role and expand smoketest (--target roles)',
-  requires: [],
+  requires: [
+    'ping-auth',
+  ],
   provides: [
     'target-roles',
   ],

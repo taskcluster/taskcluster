@@ -10,7 +10,9 @@ exports.scopeExpression = {
 exports.tasks = [];
 exports.tasks.push({
   title: 'Purge a cache',
-  requires: [],
+  requires: [
+    'ping-purge-cache',
+  ],
   provides: [
     'target-purge-cache',
   ],
