@@ -93,6 +93,7 @@ export default class SignInDialog extends Component {
                 button
                 component="a"
                 href="/login/mozilla-auth0"
+                rel="opener"
                 target="_blank">
                 <ListItemAvatar>
                   <Avatar>
@@ -107,6 +108,7 @@ export default class SignInDialog extends Component {
                 button
                 component="a"
                 href="/login/github"
+                rel="opener"
                 target="_blank">
                 <ListItemAvatar>
                   <Avatar>
