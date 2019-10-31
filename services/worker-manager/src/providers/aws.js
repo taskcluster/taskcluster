@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const _ = require('lodash');
+const {CloudAPI} = require('./cloudapi');
 
 class AwsProvider extends Provider {
   constructor({
@@ -18,6 +19,8 @@ class AwsProvider extends Provider {
     validator,
     notify,
     providerConfig,
+    intervalCapDefault = 1000,
+    intervalDefault = 60 * 1000,
   }) {
     super({
       providerId,
@@ -33,6 +36,8 @@ class AwsProvider extends Provider {
     this.configSchema = 'config-aws';
     this.ec2iid_RSA_key = fs.readFileSync(path.resolve(__dirname, 'aws-keys/RSA-key-forSignature')).toString();
     this.providerConfig = providerConfig;
+    this.intervalCapDefault = intervalCapDefault;
+    this.intervalDefault = intervalDefault;
   }
 
   async setup() {
@@ -43,13 +48,32 @@ class AwsProvider extends Provider {
 
     const regions = (await ec2.describeRegions({}).promise()).Regions;
 
+    let requestTypes = {};
     this.ec2s = {};
     regions.forEach(r => {
       this.ec2s[r.RegionName] = new aws.EC2({
         region: r.RegionName,
         credentials: this.providerConfig.credentials,
       });
+      // These three categories are described in https://docs.aws.amazon.com/AWSEC2/latest/APIReference/query-api-troubleshooting.html#api-request-rate
+      for (const category of ['describe', 'modify', 'security']) {
+        // AWS does not publish limits for each category so we just pick some nice round numbers with the defaults
+        // The backoff and retry should handle it if these are too high and we can tune them over time
+        requestTypes[`${r.RegionName}.${category}`] = {};
+      }
     });
+
+    const cloud = new CloudAPI({
+      types: Object.keys(requestTypes),
+      apiRateLimits: requestTypes,
+      intervalDefault: this.intervalDefault,
+      intervalCapDefault: this.intervalCapDefault,
+      monitor: this.monitor,
+      errorHandler: ({err, tries}) => {
+        // TODO: WHAT TO DO HERE?
+      },
+    });
+    this._enqueue = cloud.enqueue.bind(cloud);
   }
 
   async provision({workerPool}) {
@@ -109,7 +133,7 @@ class AwsProvider extends Provider {
       const instanceCount = Math.ceil(Math.min(toSpawnCounter, toSpawnPerConfig) / config.capacityPerInstance);
       let spawned;
       try {
-        spawned = await this.ec2s[config.region].runInstances({
+        spawned = await this._enqueue(`${config.region}.modify`, () => this.ec2s[config.region].runInstances({
           ...config.launchConfig,
 
           UserData: userData.toString('base64'), // The string needs to be base64-encoded. See the docs above
@@ -139,7 +163,7 @@ class AwsProvider extends Provider {
                 }],
             },
           ],
-        }).promise();
+        }).promise());
       } catch (e) {
         return await workerPool.reportError({
           kind: 'creation-error',
@@ -221,10 +245,11 @@ class AwsProvider extends Provider {
 
     let instanceStatuses;
     try {
-      instanceStatuses = (await this.ec2s[worker.providerData.region].describeInstanceStatus({
+      const region = worker.providerData.region;
+      instanceStatuses = (await this._enqueue(`${region}.describe`, () => this.ec2s[region].describeInstanceStatus({
         InstanceIds: [worker.workerId.toString()],
         IncludeAllInstances: true,
-      }).promise()).InstanceStatuses;
+      }).promise())).InstanceStatuses;
     } catch (e) {
       if (e.code === 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too
         return worker.modify(w => {w.state = this.Worker.states.STOPPED;});
@@ -254,9 +279,10 @@ class AwsProvider extends Provider {
   async removeWorker({worker}) {
     let result;
     try {
-      result = await this.ec2s[worker.providerData.region].terminateInstances({
+      const region = worker.providerData.region;
+      result = await this._enqueue(`${region}.modify`, () => this.ec2s[region].terminateInstances({
         InstanceIds: [worker.workerId],
-      }).promise();
+      }).promise());
     } catch (e) {
       const workerPool = await this.WorkerPool.load({
         workerPoolId: worker.workerPoolId,
