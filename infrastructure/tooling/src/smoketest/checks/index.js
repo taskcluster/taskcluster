@@ -28,6 +28,8 @@ fs.readdirSync(`${__dirname}/`).forEach(file => {
 
     if (exports.scopeExpression) {
       scopeExpression.AllOf.push(exports.scopeExpression);
+    } else {
+      throw new Error(`${file} has no scopeExpression`);
     }
   }
 });

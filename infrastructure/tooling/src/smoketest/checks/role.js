@@ -1,6 +1,15 @@
 const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 
+exports.scopeExpression = {
+  AllOf: [
+    "auth:create-role:project:taskcluster:smoketest:*",
+    "auth:delete-role:project:taskcluster:smoketest:*",
+    "auth:update-role:project:taskcluster:smoketest:*",
+    "project:taskcluster:smoketest:*",
+  ],
+};
+
 exports.tasks = [];
 exports.tasks.push({
   title: 'Create role and expand smoketest (--target roles)',

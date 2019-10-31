@@ -4,6 +4,7 @@ const {listServices, readRepoYAML} = require('../../utils');
 
 const SERVICES = listServices();
 
+exports.scopeExpression = {AllOf: []};
 exports.tasks = [];
 
 SERVICES.forEach(name => {
