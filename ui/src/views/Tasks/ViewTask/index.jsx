@@ -6,7 +6,6 @@ import cloneDeep from 'lodash.clonedeep';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Chip from '@material-ui/core/Chip';
-import Divider from '@material-ui/core/Divider';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
@@ -835,29 +834,33 @@ export default class ViewTask extends Component {
             <Typography variant="subtitle1">
               <Markdown>{task.metadata.description}</Markdown>
             </Typography>
-            <Chip
-              className={classes.tag}
-              label={
-                <Fragment>
-                  owned by:&nbsp;&nbsp;
-                  <em>{task.metadata.owner}</em>
-                </Fragment>
-              }
-            />
-            {tags.map(([key, value]) => (
+            <div>
               <Chip
                 className={classes.tag}
-                key={key}
                 label={
                   <Fragment>
-                    {key}
-                    :&nbsp;&nbsp;
-                    <em>{value}</em>
+                    owned by:&nbsp;&nbsp;
+                    <em>{task.metadata.owner}</em>
                   </Fragment>
                 }
               />
-            ))}
-            <Divider className={classes.divider} />
+
+              {tags.map(([key, value]) => (
+                <Chip
+                  className={classes.tag}
+                  key={key}
+                  label={
+                    <Fragment>
+                      {key}
+                      :&nbsp;&nbsp;
+                      <em>{value}</em>
+                    </Fragment>
+                  }
+                />
+              ))}
+            </div>
+            <br />
+            <br />
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
                 <TaskDetailsCard task={task} dependentTasks={dependentTasks} />
