@@ -332,7 +332,7 @@ export default class TaskGroup extends Component {
         params: { taskGroupId },
       },
     } = this.props;
-
+    console.log("+++++", this.props);
     if (prevProps.match.params.taskGroupId !== taskGroupId) {
       this.tasks.clear();
       this.previousCursor = INITIAL_CURSOR;
@@ -591,11 +591,12 @@ export default class TaskGroup extends Component {
 
     // Task groups do not necessarily have a decision task,
     // so handle task-not-found errors gracefully
-    return (
-      error.graphQLErrors &&
-      error.graphQLErrors[0].statusCode === 404 &&
-      error.graphQLErrors[0].requestInfo.method === 'task'
-    );
+
+    // return (
+    //   error.graphQLErrors &&
+    //   error.graphQLErrors[0].statusCode === 404 &&
+    //   error.graphQLErrors[0].requestInfo.method === 'task'
+    // );
   }
 
   render() {
