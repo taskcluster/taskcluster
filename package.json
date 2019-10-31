@@ -187,11 +187,12 @@
   },
   "renovate": {
     "extends": [
-      "config:base"
+      "config:base",
+      "schedule:earlyMondays"
     ],
     "schedule": "at any time",
-    "prHourlyLimit": 5,
-    "prConcurrentLimit": 10,
+    "prHourlyLimit": 0,
+    "prConcurrentLimit": 9,
     "rangeStrategy": "update-lockfile",
     "ignoreDeps": [
       "aws-sdk"
