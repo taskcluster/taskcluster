@@ -257,8 +257,12 @@ input TaskInput {
   # Task definitions should not take-up multiple MBs.
   extra: JSON
 
-  # If you need to create a client similar to an existing client, but with some option updated,
-  # use this field.
+  # If present, these options are passed to the taskcluster-client's `use' method
+  # https://github.com/taskcluster/taskcluster/tree/master/clients/client#calling-api-end-points
+  # before calling queue.createTask.  This is typically used to specify
+  # `options.authorizedScopes`.  Note that the supplied options are not
+  # considered part of the task definition, and this value is only seen in calls
+  # to the createTask mutation.
   options: JSON
 }
 
