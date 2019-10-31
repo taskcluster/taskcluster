@@ -79,7 +79,7 @@ export default class ErrorPanel extends Component {
     const hasWarning = Boolean(props.warning);
     const errorMessage =
       error && error.graphQLErrors && error.graphQLErrors[0]
-        ?  error.graphQLErrors[0].message
+        ? error.graphQLErrors[0].message
         : error;
 
     return (

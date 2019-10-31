@@ -332,6 +332,7 @@ export default class TaskGroup extends Component {
         params: { taskGroupId },
       },
     } = this.props;
+
     if (prevProps.match.params.taskGroupId !== taskGroupId) {
       this.tasks.clear();
       this.previousCursor = INITIAL_CURSOR;
@@ -587,12 +588,18 @@ export default class TaskGroup extends Component {
     if (!error) {
       return true;
     }
+
     // Task groups do not necessarily have a decision task,
     // so handle task-not-found errors gracefully
     const errorStatus = error.graphQLErrors.some((error, index) => {
-      return index == 0 && error.statusCode === 404 && error.requestInfo.method === 'task'
-    });  
-    return errorStatus ? !errorStatus: errorStatus;
+      return (
+        index === 0 &&
+        error.statusCode === 404 &&
+        error.requestInfo.method === 'task'
+      );
+    });
+
+    return errorStatus ? !errorStatus : errorStatus;
   }
 
   render() {
@@ -627,11 +634,13 @@ export default class TaskGroup extends Component {
     const notificationsCount = Object.values(notifyPreferences).filter(Boolean)
       .length;
     const shouldIgnoreError = error && this.shouldIgnoreError(error);
+
     this.subscribe({ taskGroupId, subscribeToMore });
 
     if (!this.tasks.size && taskGroup && isFromSameTaskGroupId) {
       taskGroup.edges.forEach(edge => this.tasks.set(edge.node.taskId));
     }
+
     return (
       <Dashboard
         title="Task Group"
