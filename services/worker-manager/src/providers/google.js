@@ -5,7 +5,7 @@ const taskcluster = require('taskcluster-client');
 const uuid = require('uuid');
 const {google} = require('googleapis');
 const {ApiError, Provider} = require('./provider');
-const {default: PQueue} = require('p-queue');
+const {CloudAPI} = require('./cloudapi');
 
 class GoogleProvider extends Provider {
 
@@ -28,15 +28,25 @@ class GoogleProvider extends Provider {
 
     // There are different rate limits per type of request
     // as documented here: https://cloud.google.com/compute/docs/api-rate-limits
-    this.queues = {};
-    this._backoffDelay = _backoffDelay;
-    for (const type of ['query', 'get', 'list', 'opRead']) {
-      const {interval, intervalCap} = (apiRateLimits[type] || {});
-      this.queues[type] = new PQueue({
-        interval: interval || 100 * 1000, // Intervals are enforced every 100 seconds
-        intervalCap: intervalCap || 2000, // The calls we make are all limited 20/sec so 20 * 100 are allowed
-      });
-    }
+    const cloud = new CloudAPI({
+      types: ['query', 'get', 'list', 'opRead'],
+      apiRateLimits,
+      intervalDefault: 100 * 1000, // Intervals are enforced every 100 seconds
+      intervalCapDefault: 2000, // The calls we make are all limited 20/sec so 20 * 100 are allowed
+      monitor: this.monitor,
+      errorHandler: ({err, tries}) => {
+        if (err.code === 403) { // google hands out 403 for rate limiting; back off significantly
+          // google's interval is 100 seconds so let's try once optimistically and a second time to get it for sure
+          return {backoff: _backoffDelay * 50, reason: 'rateLimit', level: 'notice'};
+        } else if (err.code === 403 || err.code >= 500) { // For 500s, let's take a shorter backoff
+          return {backoff: _backoffDelay * Math.pow(2, tries), reason: 'errors', level: 'warning'};
+        }
+        // If we don't want to do anything special here, just throw and let the
+        // calling code figure out what to do
+        throw err;
+      },
+    });
+    this._enqueue = cloud.enqueue.bind(cloud);
 
     if (fakeCloudApis && fakeCloudApis.google) {
       this.ownClientEmail = 'whatever@example.com';
@@ -73,57 +83,6 @@ class GoogleProvider extends Provider {
       auth: client,
     });
     this.oauth2 = new google.auth.OAuth2();
-  }
-
-  async _enqueue(type, func, tries = 0) {
-    const queue = this.queues[type];
-    if (!queue) {
-      throw new Error(`Unknown p-queue attempted: ${type}`);
-    }
-    try {
-      return await queue.add(func, {priority: tries});
-    } catch (err) {
-      let backoff = this._backoffDelay;
-      let level = 'notice';
-      let reason = 'unknown';
-      if (err.code === 403) { // google hands out 403 for rate limiting; back off significantly
-        // google's interval is 100 seconds so let's try once optimistically and a second time to get it for sure
-        backoff *= 50;
-        reason = 'rateLimit';
-      } else if (err.code === 403 || err.code >= 500) { // For 500s, let's take a shorter backoff
-        backoff *= Math.pow(2, tries); // Longest backoff here is half a minute
-        level = 'warning';
-        reason = 'errors';
-      } else {
-        // If we don't want to do anything special here, just throw and let the
-        // calling code figure out what to do
-        throw err;
-      }
-
-      if (!queue.isPaused) {
-        this.monitor.log.cloudApiPaused({
-          providerId: this.providerId,
-          queueName: type,
-          reason,
-          queueSize: queue.size,
-          duration: backoff,
-        }, {level});
-        queue.pause();
-        setTimeout(() => {
-          this.monitor.log.cloudApiResumed({
-            providerId: this.providerId,
-            queueName: type,
-          });
-          queue.start();
-        }, backoff);
-      }
-
-      if (tries > 4) {
-        throw err;
-      }
-
-      return await this._enqueue(type, func, tries + 1);
-    }
   }
 
   async setup() {
