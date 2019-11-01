@@ -53,7 +53,7 @@ class HookListeners {
       }],
       queueName: 'hookChanged',
       maxLength: 50,
-    }, (msg) => this.reconcileConsumers(),
+    }, (msg) => this.reconcileConsumers()
     );
     debug('Listening to hook exchanges');
     this.pulseHookChangedListener = consumer;

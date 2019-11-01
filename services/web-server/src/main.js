@@ -48,7 +48,7 @@ const load = loader(
         if (!cfg.pulse.namespace) {
           assert(
             process.env.NODE_ENV !== 'production',
-            'cfg.pulse.namespace is required',
+            'cfg.pulse.namespace is required'
           );
 
           return null;
@@ -256,7 +256,7 @@ const load = loader(
         assert(cfg.server.port, 'config server.port is required');
         assert(
           cfg.taskcluster.rootUrl,
-          'config taskcluster.rootUrl is required',
+          'config taskcluster.rootUrl is required'
         );
 
         await new Promise(resolve => httpServer.listen(cfg.server.port, resolve));
@@ -266,12 +266,12 @@ const load = loader(
         if (cfg.app.playground) {
           console.log(
             `\nOpen the interactive GraphQL Playground and schema explorer in your browser at:
-          http://localhost:${cfg.server.port}/playground\n`,
+          http://localhost:${cfg.server.port}/playground\n`
           );
         }
         if (!cfg.pulse.namespace) {
           console.log(
-            `\nNo Pulse namespace defined; no Pulse messages will be received.\n`,
+            `\nNo Pulse namespace defined; no Pulse messages will be received.\n`
           );
         }
         /* eslint-enable no-console */
@@ -290,7 +290,7 @@ const load = loader(
     // when running in development mode
     profile: process.env.NODE_ENV || 'development',
     process: process.argv[2] || 'devServer',
-  },
+  }
 );
 
 if (!module.parent) {

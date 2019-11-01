@@ -25,13 +25,13 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => 
         await regenerateSession(req);
 
         return credsResponse;
-      }),
+      })
     );
   });
   const isLoggedIn = new DataLoader(queries =>
     Promise.all(
-      queries.map(() => Boolean(req.user)),
-    ),
+      queries.map(() => Boolean(req.user))
+    )
   );
 
   return {

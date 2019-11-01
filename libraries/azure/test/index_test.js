@@ -11,7 +11,7 @@ suite(testing.suiteName(), function() {
   const mockAzureTableSAS = (accessLevel) => {
     const rootUrl = libUrls.testRootUrl();
     const azureTableSASPath = url.parse(
-      libUrls.api(rootUrl, 'auth', 'v1', `/azure/myaccount/table/mytable/${accessLevel}`),
+      libUrls.api(rootUrl, 'auth', 'v1', `/azure/myaccount/table/mytable/${accessLevel}`)
     ).pathname;
     scope = nock(rootUrl, {encodedQueryParams: true, allowUnmocked: true})
       .get(azureTableSASPath)

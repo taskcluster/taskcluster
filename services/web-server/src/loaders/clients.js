@@ -12,10 +12,10 @@ module.exports = ({ auth }) => {
         ...raw,
         items: clients,
       };
-    },
+    }
   );
   const client = new DataLoader(clientIds =>
-    Promise.all(clientIds.map(clientId => auth.client(clientId))),
+    Promise.all(clientIds.map(clientId => auth.client(clientId)))
   );
 
   return {

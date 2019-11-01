@@ -10,7 +10,7 @@ module.exports = ({ index }) => {
         ...raw,
         items: sift(filter, raw.namespaces),
       };
-    },
+    }
   );
   const taskNamespace = new ConnectionLoader(
     async ({ namespace, options, filter }) => {
@@ -20,7 +20,7 @@ module.exports = ({ index }) => {
         ...raw,
         items: sift(filter, raw.tasks),
       };
-    },
+    }
   );
 
   return {

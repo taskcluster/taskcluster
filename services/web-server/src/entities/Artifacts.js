@@ -10,7 +10,7 @@ module.exports = class Artifacts {
     }
 
     this.items = artifacts.map(
-      artifact => new Artifact(taskId, artifact, runId),
+      artifact => new Artifact(taskId, artifact, runId)
     );
   }
 };

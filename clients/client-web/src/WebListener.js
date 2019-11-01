@@ -47,7 +47,7 @@ export default class WebListener {
       this.options.rootUrl,
       'events',
       'v1',
-      '/listen/websocket',
+      '/listen/websocket'
     ).replace('http', 'ws');
 
     this.socket = new WebSocket(socketUrl);
@@ -67,7 +67,7 @@ export default class WebListener {
     });
 
     const awaitingBindings = Promise.all(
-      this._bindings.map(binding => this._send('bind', binding)),
+      this._bindings.map(binding => this._send('bind', binding))
     );
     const isReady = new Promise((resolve, reject) => {
       const offReady = this.on('ready', resolve);

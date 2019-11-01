@@ -69,7 +69,7 @@ class SentryManager {
     } catch (err) {
       debug(
         'Failed to list keys for %s (will create project), err: %s, stack: %s',
-        project, err, err.stack,
+        project, err, err.stack
       );
       // Ignore error try to create the project, and list keys again.
       await this._sentry.teams.createProject(
@@ -120,7 +120,7 @@ class SentryManager {
         debug('deleting key: %s from project: %s', key.id, p.slug);
         deleted += 1;
         return this._sentry.projects.deleteKey(
-          this._organization, p.slug, key.id,
+          this._organization, p.slug, key.id
         );
       }));
     }));

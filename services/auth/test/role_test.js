@@ -57,7 +57,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
 
     let client = await helper.apiClient.client(clientId);
     assume(client.expandedScopes.sort()).deep.equals(
-      role.expandedScopes.sort(),
+      role.expandedScopes.sort()
     );
   });
 
@@ -340,7 +340,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     });
 
     assume(new Date(r2.lastModified).getTime()).greaterThan(
-      new Date(r1.lastModified).getTime(),
+      new Date(r1.lastModified).getTime()
     );
     helper.assertPulseMessage('role-updated', m => m.payload.roleId === `thing-id:${clientId}`);
 

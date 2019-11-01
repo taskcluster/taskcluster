@@ -128,7 +128,7 @@ describe('Auth', function() {
         (err) => {
           expect(err).to.be.an('error');
           expect(err.response.status).to.equal(401);
-        },
+        }
       );
   });
 
@@ -149,7 +149,7 @@ describe('Auth', function() {
         (err) => {
           expect(err).to.be.an('error');
           expect(err.response.status).to.equal(403);
-        },
+        }
       );
   });
 
@@ -209,7 +209,7 @@ describe('Auth', function() {
       })
       .then(
         () => expect.fail('Expected request to fail'),
-        (err) => expect(err).to.be.an('error'),
+        (err) => expect(err).to.be.an('error')
       );
   });
 
@@ -233,7 +233,7 @@ describe('Auth', function() {
         (err) => {
           expect(err).to.be.an('error');
           expect(err.body.code).to.equal('InsufficientScopes');
-        },
+        }
       );
   });
 
@@ -284,7 +284,7 @@ describe('Auth', function() {
         (err) => {
           expect(err).to.be.an('error');
           expect(err.response.status).to.equal(401);
-        },
+        }
       );
   });
 
@@ -311,7 +311,7 @@ describe('Auth', function() {
         (err) => {
           expect(err).to.be.an('error');
           expect(err.body.code).to.equal('InsufficientScopes');
-        },
+        }
       );
   });
 
@@ -420,7 +420,7 @@ describe('Auth', function() {
         (err) => {
           expect(err).to.be.an('error');
           expect(err.body.code).to.equal('InsufficientScopes');
-        },
+        }
       );
   });
 
@@ -448,7 +448,7 @@ describe('Auth', function() {
         (err) => {
           expect(err).to.be.an('error');
           expect(err.body.code).to.equal('AuthenticationFailed');
-        },
+        }
       );
   });
 
@@ -471,7 +471,7 @@ describe('Auth', function() {
         (err) => {
           expect(err).to.be.an('error');
           expect(err.body.code).to.equal('AuthenticationFailed');
-        },
+        }
       );
   });
 
@@ -486,7 +486,7 @@ describe('Auth', function() {
         (err) => {
           expect(err).to.be.an('error');
           expect(err.body.code).to.equal('InsufficientScopes');
-        },
+        }
       );
   });
 });

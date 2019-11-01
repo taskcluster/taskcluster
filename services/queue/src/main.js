@@ -347,7 +347,7 @@ let load = loader({
     ],
     setup: ({monitor, ...ctx}) => new DependencyTracker({
       monitor: monitor.childMonitor('dependency-tracker'),
-      ...ctx},
+      ...ctx}
     ),
   },
 

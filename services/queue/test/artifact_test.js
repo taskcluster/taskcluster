@@ -813,7 +813,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
     debug('### Send post artifact request');
     helper.scopes(
       'queue:create-artifact:public/azure.json',
-      'assume:worker-id:my-worker-group/my-worker',
+      'assume:worker-id:my-worker-group/my-worker'
     );
     const r1 = await helper.queue.createArtifact(taskId, 0, 'public/azure.json', {
       storageType: 'azure',
@@ -922,7 +922,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
     debug('### Send post artifact request');
     helper.scopes(
       'queue:create-artifact:public/redirect.json',
-      'assume:worker-id:my-worker-group/my-worker',
+      'assume:worker-id:my-worker-group/my-worker'
     );
     await helper.queue.createArtifact(taskId, 0, 'public/redirect.json', {
       storageType: 'reference',

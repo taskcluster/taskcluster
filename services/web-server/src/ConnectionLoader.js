@@ -48,8 +48,8 @@ module.exports = class ConnectionLoader {
           });
 
           return pageConnection;
-        }),
-      ),
+        })
+      )
     );
   }
 

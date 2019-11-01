@@ -8,8 +8,8 @@ module.exports = ({ queue }) => {
         const { status } = await queue.status(taskId);
 
         return new TaskStatus(taskId, status);
-      }),
-    ),
+      })
+    )
   );
 
   return {

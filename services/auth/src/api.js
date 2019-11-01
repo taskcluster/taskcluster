@@ -12,7 +12,7 @@ const Hashids = require('hashids/cjs');
  */
 const roleToJson = (role, context) => _.defaults(
   {expandedScopes: context.resolver.resolve([`assume:${role.roleId}`])},
-  role,
+  role
 );
 
 /**

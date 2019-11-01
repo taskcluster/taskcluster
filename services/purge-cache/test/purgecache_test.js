@@ -65,19 +65,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     spec = await helper.apiClient.purgeRequests(
       'dummy-provisioner-extended-extended',
       'dummy-worker-extended-extended',
-      {since: spec.requests[0].before},
+      {since: spec.requests[0].before}
     );
     assume(spec.requests.length).equals(2);
     spec = await helper.apiClient.purgeRequests(
       'dummy-provisioner-extended-extended',
       'dummy-worker-extended-extended',
-      {since: spec.requests[1].before},
+      {since: spec.requests[1].before}
     );
     assume(spec.requests.length).equals(1);
     spec = await helper.apiClient.purgeRequests(
       'dummy-provisioner-extended-extended',
       'dummy-worker-extended-extended',
-      {since: new Date().toJSON()},
+      {since: new Date().toJSON()}
     );
     assume(spec.requests.length).equals(0);
   });

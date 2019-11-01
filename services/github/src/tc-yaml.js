@@ -85,7 +85,7 @@ class VersionZero extends TcYaml {
             GITHUB_HEAD_TAG: payload.details['event.head.tag'],
             GITHUB_HEAD_REF: payload.details['event.head.ref'],
             GITHUB_HEAD_USER_EMAIL: payload.details['event.head.user.email'],
-          },
+          }
         );
       }
       return task;

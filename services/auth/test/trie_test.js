@@ -414,7 +414,7 @@ suite(testing.suiteName(), () => {
               const t = trie.withPrefix(trie.withSuffix(buildDirectMatchOnlyTrie(rules), suffix), prefix);
               assume(trie.execute(t, param).scopes()).eql(
                 ScopeSetBuilder.normalizeScopeSet(scopes),
-                `failed withPrefix + withSuffix on split "${prefix}|${param}|${suffix}"`,
+                `failed withPrefix + withSuffix on split "${prefix}|${param}|${suffix}"`
               );
             }
           }
@@ -432,7 +432,7 @@ suite(testing.suiteName(), () => {
               const t = trie.withSuffix(trie.withPrefix(buildDirectMatchOnlyTrie(rules), prefix), suffix);
               assume(trie.execute(t, param).scopes()).eql(
                 ScopeSetBuilder.normalizeScopeSet(scopes),
-                `failed withSuffix + withPrefix on split "${prefix}|${param}|${suffix}"`,
+                `failed withSuffix + withPrefix on split "${prefix}|${param}|${suffix}"`
               );
             }
           }
@@ -493,7 +493,7 @@ suite(testing.suiteName(), () => {
               const t = trie.withPrefix(trie.withSuffix(trie.build(rules), suffix), prefix);
               assume(trie.execute(t, param).scopes()).eql(
                 ScopeSetBuilder.normalizeScopeSet(scopes),
-                `failed withPrefix + withSuffix on split "${prefix}|${param}|${suffix}"`,
+                `failed withPrefix + withSuffix on split "${prefix}|${param}|${suffix}"`
               );
             }
           }
@@ -511,7 +511,7 @@ suite(testing.suiteName(), () => {
               const t = trie.withSuffix(trie.withPrefix(trie.build(rules), prefix), suffix);
               assume(trie.execute(t, param).scopes()).eql(
                 ScopeSetBuilder.normalizeScopeSet(scopes),
-                `failed withSuffix + withPrefix on split "${prefix}|${param}|${suffix}"`,
+                `failed withSuffix + withPrefix on split "${prefix}|${param}|${suffix}"`
               );
             }
           }

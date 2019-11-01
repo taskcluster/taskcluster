@@ -1010,7 +1010,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       });
 
       assert.equal(res.credentials.clientId,
-        `worker/${awsProviderId}/${workerPoolId}/${workerGroup}/${awsWorkerIdentityProofParsed.instanceId}`,
+        `worker/${awsProviderId}/${workerPoolId}/${workerGroup}/${awsWorkerIdentityProofParsed.instanceId}`
       );
 
       const scopes = new Set(JSON.parse(res.credentials.certificate).scopes);

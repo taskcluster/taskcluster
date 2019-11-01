@@ -9,7 +9,7 @@ module.exports = {
   Worker: {
     latestTasks(parent, args, { loaders }) {
       return loaders.task.loadMany(
-        parent.recentTasks.map(({ taskId }) => taskId),
+        parent.recentTasks.map(({ taskId }) => taskId)
       );
     },
   },
@@ -17,7 +17,7 @@ module.exports = {
     worker(
       parent,
       { provisionerId, workerType, workerGroup, workerId },
-      { loaders },
+      { loaders }
     ) {
       return loaders.worker.load({
         provisionerId,
@@ -29,7 +29,7 @@ module.exports = {
     workers(
       parent,
       { provisionerId, workerType, isQuarantined, connection, filter },
-      { loaders },
+      { loaders }
     ) {
       return loaders.workers.load({
         provisionerId,
@@ -44,14 +44,14 @@ module.exports = {
     quarantineWorker(
       parent,
       { provisionerId, workerType, workerGroup, workerId, payload },
-      { clients },
+      { clients }
     ) {
       return clients.queue.quarantineWorker(
         provisionerId,
         workerType,
         workerGroup,
         workerId,
-        payload,
+        payload
       );
     },
   },
