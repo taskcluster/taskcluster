@@ -124,7 +124,7 @@
     "c8": "^6.0.0",
     "capture-console": "^1.0.1",
     "cliff": "^0.1.10",
-    "commander": "^3.0.0",
+    "commander": "^4.0.0",
     "console-taskgraph": "^1.6.0",
     "cronstrue": "^1.82.0",
     "cross-env": "^6.0.3",
