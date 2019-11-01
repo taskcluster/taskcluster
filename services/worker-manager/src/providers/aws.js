@@ -66,17 +66,14 @@ class AwsProvider extends Provider {
       workerPoolId,
       minCapacity: workerPool.config.minCapacity,
       maxCapacity: workerPool.config.maxCapacity,
-      capacityPerInstance: 1, // todo: this will be corrected along with estimator changes (bug 1579554)
-      running: workerPool.providerData[this.providerId].running,
+      runningCapacity: workerPool.providerData[this.providerId].running,
     });
     if (toSpawn === 0) {
       return;
     }
     const toSpawnPerConfig = Math.ceil(toSpawn / workerPool.config.launchConfigs.length);
-
     const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
 
-    let spawned;
     let toSpawnCounter = toSpawn;
     for await (let config of shuffledConfigs) {
       if (toSpawnCounter <= 0) break; // eslint-disable-line
@@ -109,14 +106,16 @@ class AwsProvider extends Provider {
         });
       }
 
+      const instanceCount = Math.ceil(Math.min(toSpawnCounter, toSpawnPerConfig) / config.capacityPerInstance);
+      let spawned;
       try {
         spawned = await this.ec2s[config.region].runInstances({
           ...config.launchConfig,
 
           UserData: userData.toString('base64'), // The string needs to be base64-encoded. See the docs above
 
-          MaxCount: Math.min(toSpawnCounter, toSpawnPerConfig),
-          MinCount: Math.min(toSpawnCounter, toSpawnPerConfig),
+          MaxCount: instanceCount,
+          MinCount: instanceCount,
           TagSpecifications: [
             ...otherTagSpecs,
             {
@@ -164,6 +163,7 @@ class AwsProvider extends Provider {
           state: this.Worker.states.REQUESTED,
           providerData: {
             region: config.region,
+            instanceCapacity: config.capacityPerInstance,
             groups: spawned.Groups,
             amiLaunchIndex: i.AmiLaunchIndex,
             imageId: i.ImageId,
@@ -178,8 +178,6 @@ class AwsProvider extends Provider {
         });
       }));
     }
-
-    return;
   }
 
   /**
@@ -240,7 +238,7 @@ class AwsProvider extends Provider {
         case 'running':
         case 'shutting-down': //so that we don't turn on new instances until they're entirely gone
         case 'stopping':
-          this.seen[worker.workerPoolId] += 1;
+          this.seen[worker.workerPoolId] += worker.providerData.instanceCapacity || 1;
           return Promise.resolve();
 
         case 'terminated':
