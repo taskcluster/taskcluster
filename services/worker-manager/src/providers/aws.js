@@ -315,7 +315,10 @@ class AwsProvider extends Provider {
     this.errors = {};
   }
 
-  async scanCleanup() {
+  async scanCleanup({responsibleFor}) {
+    for (const workerPoolId of responsibleFor) {
+      this.seen[workerPoolId] = this.seen[workerPoolId] || 0;
+    }
     await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
       const workerPool = await this.WorkerPool.load({
         workerPoolId,

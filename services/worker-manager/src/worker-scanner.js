@@ -76,12 +76,21 @@ class WorkerScanner {
         }
       },
     });
-    await this.providers.forAll(p => p.scanCleanup());
+
+    // We keep track of which providers are actively managing
+    // each workerpool so that the provider can update the
+    // pool even if 0 non-STOPPED instances of the worker
+    // currently exist
+    const poolsByProvider = new Map();
 
     // Now, see if we can remove any previous providers
     await this.WorkerPool.scan({}, {
       handler: async workerPool => {
-        const {previousProviderIds, workerPoolId} = workerPool;
+        const {providerId, previousProviderIds, workerPoolId} = workerPool;
+        if (!poolsByProvider.has(providerId)) {
+          poolsByProvider.set(providerId, new Set());
+        }
+        poolsByProvider.get(providerId).add(workerPoolId);
         const stillCurrent = providersByPool.get(workerPoolId) || new Set();
         const removable = previousProviderIds.filter(providerId => !stillCurrent.has(providerId));
 
@@ -107,6 +116,8 @@ class WorkerScanner {
         }
       },
     });
+
+    await this.providers.forAll(p => p.scanCleanup({responsibleFor: poolsByProvider.get(p.providerId) || new Set()}));
   }
 }
 

@@ -152,7 +152,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     // On the first run we've faked that the instance is running
     await provider.scanPrepare();
     await provider.checkWorker({worker});
-    await provider.scanCleanup();
+    await provider.scanCleanup({responsibleFor: new Set([workerPoolId])});
     await workerPool.reload();
     assert.equal(workerPool.providerData.google.running, 1);
     await worker.reload();
@@ -161,7 +161,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     // And now we fake it is stopped
     await provider.scanPrepare();
     await provider.checkWorker({worker});
-    await provider.scanCleanup();
+    await provider.scanCleanup({responsibleFor: new Set([workerPoolId])});
     await workerPool.reload();
     assert.equal(workerPool.providerData.google.running, 0);
     await worker.reload();
@@ -182,7 +182,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     });
     await provider.scanPrepare();
     await provider.checkWorker({worker});
-    await provider.scanCleanup();
+    await provider.scanCleanup({responsibleFor: new Set([workerPoolId])});
     assert(worker.expires > expires);
   });
 
