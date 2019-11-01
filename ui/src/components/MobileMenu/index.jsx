@@ -13,7 +13,7 @@ import MobileMenuList from './MobileMenuList';
 import { THEME } from '../../utils/constants';
 import SignInDialog from '../SignInDialog';
 import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
-
+import LogoutVariantIcon from 'mdi-react/LogoutVariantIcon';
 @withAuth
 @withApollo
 @withStyles(theme => ({
@@ -108,7 +108,7 @@ export default class MobileMenu extends Component {
           <MenuItem
             title={`Sign Out of ${window.env.APPLICATION_NAME}`}
             onClick={this.handleSignOutClick}>
-            <HandPeaceIcon className={classes.leftIcon} />
+            <LogoutVariantIcon className={classes.leftIcon} />
             Sign Out
           </MenuItem>
         </Menu>)}
