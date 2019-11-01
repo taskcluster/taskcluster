@@ -1,4 +1,4 @@
-level: minor
+level: silent
 reference: issue 1754
 ---
-Make search case insensitive for Roles and Secrets pages
+Make search case insensitive for Roles, Secrets and Clients pages

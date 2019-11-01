@@ -19,16 +19,18 @@ import ErrorPanel from '../../../components/ErrorPanel';
 @graphql(clientsQuery, {
   options: props => ({
     variables: {
-      clientOptions: {
-        ...(props.history.location.search
-          ? {
-              prefix: parse(props.history.location.search.slice(1)).search,
-            }
-          : null),
-      },
+      clientOptions: null,
       clientsConnection: {
         limit: VIEW_CLIENTS_PAGE_SIZE,
       },
+      filter: props.history.location.search
+        ? {
+            clientId: {
+              $regex: parse(props.history.location.search.slice(1)).search,
+              $options: 'i',
+            },
+          }
+        : null,
     },
   }),
 })
@@ -47,12 +49,11 @@ export default class ViewClients extends PureComponent {
       : '';
 
     await refetch({
-      clientOptions: {
-        ...(search ? { prefix: search } : null),
-      },
+      clientOptions: null,
       clientsConnection: {
         limit: VIEW_CLIENTS_PAGE_SIZE,
       },
+      filter: search ? { clientId: { $regex: search, $options: 'i' } } : null,
     });
 
     if (search !== searchUri) {
