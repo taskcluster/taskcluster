@@ -312,7 +312,6 @@ class AwsProvider extends Provider {
 
   async scanPrepare() {
     this.seen = {};
-    this.errors = {};
   }
 
   async scanCleanup({responsibleFor}) {

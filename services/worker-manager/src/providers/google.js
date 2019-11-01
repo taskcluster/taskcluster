@@ -372,6 +372,7 @@ class GoogleProvider extends Provider {
   async scanCleanup({responsibleFor}) {
     for (const workerPoolId of responsibleFor) {
       this.seen[workerPoolId] = this.seen[workerPoolId] || 0;
+      this.errors[workerPoolId] = this.errors[workerPoolId] || [];
     }
     await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
       const workerPool = await this.WorkerPool.load({
