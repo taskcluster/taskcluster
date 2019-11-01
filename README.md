@@ -851,10 +851,19 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v16.5.2 since v16.5.1
+========================
+
+This release fixes the bug that caused macOS multiuser generic-worker to be broken since v16.0.0.
+
+* [Bug 1592233 - calculate UID for new user under macOS multiuser](https://bugzil.la/1592233)
+
 In v16.5.1 since v16.5.0
 ========================
 
 * [Bug 1591769 - generic-worker 16.5.0 does not start up](https://bugzil.la/1591769)
+
+The multiuser macOS release is broken - please use v16.5.2 or higher.
 
 In v16.5.0 since v16.4.0
 ========================
@@ -863,31 +872,42 @@ This release is buggy and does not start up. Please do __not__ use this release!
 
 * [Bug 1590134 - Set TASKCLUSTER_WORKER_LOCATION environment variable in task command environments (RFC #0148)](https://bugzil.la/1590134)
 
+The multiuser macOS release is broken - please use v16.5.2 or higher.
+
 In v16.4.0 since v16.3.1
 ========================
 
 * [Bug 1588834 - Add support for aws-provider to generic-worker.](https://bugzil.la/1588834)
+
+The multiuser macOS release is broken - please use v16.5.2 or higher.
 
 In v16.3.1 since v16.3.0
 ========================
 
 * [Bug 1588789 - log workerReady the first time we're ready to call queue.claimWork](https://bugzil.la/1588789)
 
+The multiuser macOS release is broken - please use v16.5.2 or higher.
+
 In v16.2.0 since v16.1.0
 ========================
 
 * [Bug 1536780 - generic-worker: Support contentEncoding artifact property in task payload](https://bugzil.la/1536780)
+
+The multiuser macOS release is broken - please use v16.5.2 or higher.
 
 In v16.1.0 since v16.0.0
 ========================
 
 * [Bug 1578264 - Support deployments in GCP](https://bugzil.la/1578264)
 
+The multiuser macOS release is broken - please use v16.5.2 or higher.
+
 In v16.0.0 since v15.1.5
 ========================
 
 This major release includes support for multiuser on linux. There are no
-changes to the other platforms.
+changes to other platforms, except that macOS multiuser was accidentally broken
+in this release. For macOS multiuser, please use release 16.5.2 or higher.
 
 [Installation
 instructions](https://github.com/taskcluster/generic-worker#linux-simplemultiuserdocker-build)
