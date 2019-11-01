@@ -104,7 +104,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
       debug('### Find task in index');
       await helper.index.findTask(
-        'my-ns.slash/things-are-ignored',
+        'my-ns.slash/things-are-ignored'
       ).then(function() {
         assert(false, 'Expected ill formated namespaces to be ignored!');
       }, function(err) {

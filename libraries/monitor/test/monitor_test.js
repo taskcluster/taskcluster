@@ -233,7 +233,7 @@ suite(testing.suiteName(), function() {
         args,
         {
           silent: true,
-        },
+        }
       );
       proc.stdout.on('data', data => output += data.toString());
       proc.stderr.on('data', data => output += data.toString());

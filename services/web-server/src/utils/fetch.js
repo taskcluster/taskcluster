@@ -20,7 +20,7 @@ const handleResponse = response =>
     .then(() =>
       JSON_CONTENT.test(response.headers.get('Content-Type'))
         ? response.json()
-        : null,
+        : null
     )
     .then(json => {
       if (response.ok) {
@@ -36,7 +36,7 @@ const handleResponse = response =>
         Object.assign(new Error(message), {
           response,
           body: json,
-        }),
+        })
       );
     });
 
@@ -70,7 +70,7 @@ module.exports = (url, opts = {}) => {
                 (Math.random() * 2 * randomizationFactor +
                   1 -
                   randomizationFactor),
-              maxDelay,
+              maxDelay
             );
 
             setTimeout(() => attempt(n + 1), delay);

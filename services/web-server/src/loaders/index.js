@@ -13,5 +13,5 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) =>
       ...loaders,
       ...loader(clients, isAuthed, rootUrl, monitor, strategies, req, cfg),
     }),
-    {},
+    {}
   );

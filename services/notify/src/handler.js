@@ -41,7 +41,7 @@ class Handler {
       bindings: this.bindings,
       queueName: 'notifications',
     },
-    this.monitor.timedHandler('notification', this.onMessage.bind(this)),
+    this.monitor.timedHandler('notification', this.onMessage.bind(this))
     );
   }
 

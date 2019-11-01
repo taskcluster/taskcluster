@@ -165,7 +165,7 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
       const hash = hawk.crypto.calculatePayloadHash(
         Buffer.from(req.text, 'utf-8'),
         'sha256',
-        req.headers['content-type'],
+        req.headers['content-type']
       );
       if (!crypto.timingSafeEqual(Buffer.from(result.hash), Buffer.from(hash))) {
         // create a fake auth-failed result with the failed hash

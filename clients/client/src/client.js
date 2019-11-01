@@ -327,7 +327,7 @@ exports.createClient = function(reference, name) {
             entry.method,
             url,
             payload,
-            query,
+            query
           ).then(function(res) {
             // If request was successful, accept the result
             debug('Success calling: %s, (%s retries)',

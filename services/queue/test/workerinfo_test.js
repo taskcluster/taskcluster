@@ -211,7 +211,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
     assert(!result.workers[0].quarantineUntil, 'expected quarantineUntil to not be defined');
     assert(result.workers[0].latestTask.taskId === taskId2, `expected ${taskId2}`);
     assert(
-      new Date(result.workers[0].firstClaim).getTime() === worker.firstClaim.getTime(), `expected ${worker.firstClaim}`,
+      new Date(result.workers[0].firstClaim).getTime() === worker.firstClaim.getTime(), `expected ${worker.firstClaim}`
     );
   });
 
@@ -263,11 +263,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
     const worker = await makeWorker({});
 
     const result = await helper.queue.listWorkers(
-      worker.provisionerId, worker.workerType, {quarantined: false},
+      worker.provisionerId, worker.workerType, {quarantined: false}
     );
 
     const result2 = await helper.queue.listWorkers(
-      worker.provisionerId, worker.workerType, {quarantined: true},
+      worker.provisionerId, worker.workerType, {quarantined: true}
     );
 
     assert.equal(result.workers.length, 1, 'expected 1 worker');
@@ -346,7 +346,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
 
     assert(
       result.quarantineUntil === update.quarantineUntil,
-      `expected quarantineUntil to be ${update.quarantineUntil}`,
+      `expected quarantineUntil to be ${update.quarantineUntil}`
     );
   });
 
@@ -579,7 +579,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
     result = await helper.queue.getWorkerType(wType.provisionerId, wType.workerType);
 
     assert(
-      new Date(result.lastDateActive).getTime() === wType.lastDateActive.getTime(), `expected ${wType.lastDateActive}`,
+      new Date(result.lastDateActive).getTime() === wType.lastDateActive.getTime(), `expected ${wType.lastDateActive}`
     );
 
     wType.workerType = 'gecko-b-2-android';
@@ -591,7 +591,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
     result = await helper.queue.getWorkerType(wType.provisionerId, wType.workerType);
 
     assert(
-      new Date(result.lastDateActive).getTime() !== wType.lastDateActive.getTime(), 'expected different lastDateActive',
+      new Date(result.lastDateActive).getTime() !== wType.lastDateActive.getTime(), 'expected different lastDateActive'
     );
   });
 
@@ -755,11 +755,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
     };
 
     await helper.queue.declareWorker(
-      worker.provisionerId, worker.workerType, worker.workerGroup, worker.workerId, updateProps,
+      worker.provisionerId, worker.workerType, worker.workerGroup, worker.workerId, updateProps
     );
 
     const result = await helper.queue.getWorker(
-      worker.provisionerId, worker.workerType, worker.workerGroup, worker.workerId,
+      worker.provisionerId, worker.workerType, worker.workerGroup, worker.workerId
     );
 
     assert(result.provisionerId === worker.provisionerId, `expected ${worker.provisionerId}`);
@@ -816,7 +816,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
 
     try {
       await helper.queue.declareWorker(
-        worker.provisionerId, worker.workerType, worker.workerGroup, worker.workerId, updateProps,
+        worker.provisionerId, worker.workerType, worker.workerGroup, worker.workerId, updateProps
       );
 
       assert(false, 'expected to not be able to update quarantineUntil');

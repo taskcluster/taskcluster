@@ -258,7 +258,7 @@ const createSignatureValidator = function(options) {
 
           // Parse authorization header for ext
           let attrs = hawk.utils.parseAuthorizationHeader(
-            req.authorization,
+            req.authorization
           );
           // Extra ext
           if (!(attrs instanceof Error)) {
@@ -293,7 +293,7 @@ const createSignatureValidator = function(options) {
 
           // Get bewit string (stolen from hawk)
           let parts = req.resource.match(
-            /^(\/.*)([\?&])bewit\=([^&$]*)(?:&(.+))?$/,
+            /^(\/.*)([\?&])bewit\=([^&$]*)(?:&(.+))?$/
           );
 
           let bewitString;

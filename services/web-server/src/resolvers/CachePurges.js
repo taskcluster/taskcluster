@@ -8,7 +8,7 @@ module.exports = {
     async purgeCache(
       parent,
       { provisionerId, workerType, payload },
-      { clients },
+      { clients }
     ) {
       await clients.purgeCache.purgeCache(provisionerId, workerType, payload);
 

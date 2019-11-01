@@ -41,7 +41,7 @@ exports.tasks.push({
             if (taskStatus.status.runs){
               let scheduledDate = new Date(taskStatus.status.runs[taskStatus.status.runs.length-1].scheduled);
               let previousTaskCompletion = new Date(
-                statuses[i-1].status.runs[statuses[i-1].status.runs.length-1].resolved,
+                statuses[i-1].status.runs[statuses[i-1].status.runs.length-1].resolved
               );
               if (scheduledDate < previousTaskCompletion){
                 throw new Error('Task ' + taskIds[i] + ' scheduled before completion of task ' + taskIds[i-1]);

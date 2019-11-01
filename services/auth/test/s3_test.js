@@ -28,7 +28,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'gcp'], function(mock, ski
     let result = await helper.apiClient.awsS3Credentials(
       'read-write',
       bucket,
-      'folder1/folder2/',
+      'folder1/folder2/'
     );
     assert(new Date(result.expires).getTime() > new Date().getTime(),
       'Expected expires to be in the future');
@@ -64,7 +64,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'gcp'], function(mock, ski
     let result = await helper.apiClient.awsS3Credentials(
       'read-write',
       bucket,
-      '',
+      ''
     );
     assert(new Date(result.expires).getTime() > new Date().getTime(),
       'Expected expires to be in the future');
@@ -99,7 +99,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'gcp'], function(mock, ski
     let result = await helper.apiClient.awsS3Credentials(
       'read-write',
       bucket,
-      'folder1/',
+      'folder1/'
     );
     assert(new Date(result.expires).getTime() > new Date().getTime(),
       'Expected expires to be in the future');
@@ -126,7 +126,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'gcp'], function(mock, ski
     let result = await helper.apiClient.awsS3Credentials(
       'read-write',
       bucket,
-      'folder1/',
+      'folder1/'
     );
     let s3 = new aws.S3(result.credentials);
     debug('### s3.putObject');
@@ -140,7 +140,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'gcp'], function(mock, ski
     result = await helper.apiClient.awsS3Credentials(
       'read-only',
       bucket,
-      'folder1/',
+      'folder1/'
     );
     s3 = new aws.S3(result.credentials);
     debug('### s3.getObject');

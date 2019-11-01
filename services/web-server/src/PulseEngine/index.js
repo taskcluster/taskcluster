@@ -57,7 +57,7 @@ module.exports = class PulseEngine {
         handleError,
         monitor: this.monitor,
         subscriptions,
-      }),
+      })
     );
     this.reconcileSubscriptions();
 
@@ -109,8 +109,8 @@ module.exports = class PulseEngine {
 
       await Promise.all(
         Array.from(this.subscriptions.values()).map(sub =>
-          sub.reconcile(client, connection),
-        ),
+          sub.reconcile(client, connection)
+        )
       );
 
       // clean up any garbage
@@ -127,7 +127,7 @@ module.exports = class PulseEngine {
   messageIterator(eventName, subscriptions) {
     return new MessageIterator(
       new PulseIterator(this, subscriptions),
-      eventName,
+      eventName
     );
   }
 

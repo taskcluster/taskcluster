@@ -9,8 +9,8 @@ module.exports = ({ hooks }) => {
         const raw = groups.map(hookGroupId => ({ hookGroupId }));
 
         return sift(filter, raw);
-      }),
-    ),
+      })
+    )
   );
   const hooksForGroup = new DataLoader(queries =>
     Promise.all(
@@ -18,22 +18,22 @@ module.exports = ({ hooks }) => {
         const { hooks: hooksForGroup } = await hooks.listHooks(hookGroupId);
 
         return sift(filter, hooksForGroup);
-      }),
-    ),
+      })
+    )
   );
   const hook = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ hookGroupId, hookId }) =>
-        hooks.hook(hookGroupId, hookId),
-      ),
-    ),
+        hooks.hook(hookGroupId, hookId)
+      )
+    )
   );
   const hookStatus = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ hookGroupId, hookId }) =>
-        hooks.getHookStatus(hookGroupId, hookId),
-      ),
-    ),
+        hooks.getHookStatus(hookGroupId, hookId)
+      )
+    )
   );
 
   const hookLastFires = new DataLoader(queries =>
@@ -50,9 +50,9 @@ module.exports = ({ hooks }) => {
 
           return e;
         }
-      },
-      ),
-    ),
+      }
+      )
+    )
   );
 
   return {

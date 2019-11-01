@@ -71,7 +71,7 @@ suite(testing.suiteName(), function() {
             const { taskId } = item;
             recentTaskIds.push(taskId);
           },
-        },
+        }
         );
         hookIdToTaskIds[hookId].splice(0, 7);
         assume(recentTaskIds.sort()).eql(hookIdToTaskIds[hookId].sort());

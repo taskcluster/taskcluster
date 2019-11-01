@@ -32,5 +32,5 @@ module.exports = ({ server, schema, context, path }) =>
     {
       server,
       path,
-    },
+    }
   );

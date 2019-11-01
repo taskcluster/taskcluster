@@ -518,6 +518,6 @@ suite(testing.suiteName(), function() {
       'tasks[1].taskId': 'py37',
       'tasks[2].taskId': 'docker_build',
       'tasks[3].taskId': 'docker_push',
-    },
+    }
   );
 });

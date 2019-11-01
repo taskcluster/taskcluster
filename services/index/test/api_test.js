@@ -201,7 +201,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     const url = helper.index.buildUrl(
       helper.index.findArtifactFromTask,
       'my.name.space',
-      'public/abc.zip',
+      'public/abc.zip'
     );
     const res = await request.get(url).redirects(0).catch(function(err) {
       return err.response;
@@ -225,7 +225,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     const url = helper.index.buildSignedUrl(
       helper.index.findArtifactFromTask,
       'my.name.space',
-      'not-public/abc.zip',
+      'not-public/abc.zip'
     );
     const res = await request.get(url).redirects(0).catch(function(err) {
       return err.response;
@@ -251,7 +251,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     const url = helper.index.buildSignedUrl(
       helper.index.findArtifactFromTask,
       'my.name.space',
-      'not-public/abc.zip',
+      'not-public/abc.zip'
     );
     const res = await request.get(url).redirects(0).catch(function(err) {
       return err.response;

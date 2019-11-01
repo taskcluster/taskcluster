@@ -63,7 +63,7 @@ let insertTask = function(namespace, input, options) {
     // Create namespace hierarchy
     return options.Namespace.ensureNamespace(
       namespace,
-      expires,
+      expires
     ).then(function() {
       return options.IndexedTask.create({
         namespace: namespace,

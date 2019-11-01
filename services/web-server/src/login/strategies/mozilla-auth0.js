@@ -104,7 +104,7 @@ module.exports = class MozillaAuth0 {
 
   async expFromIdToken(idToken) {
     const [jwtError, profile] = await tryCatch(
-      verifyJwtAuth0({ token: idToken, domain: this.domain, audience: this.clientId }),
+      verifyJwtAuth0({ token: idToken, domain: this.domain, audience: this.clientId })
     );
 
     if (jwtError) {
@@ -171,7 +171,7 @@ module.exports = class MozillaAuth0 {
 
     if (!credentials || !credentials.clientId || !credentials.accessToken) {
       throw new Error(
-        'Unable to use "mozilla-auth0" login strategy without taskcluster clientId and accessToken',
+        'Unable to use "mozilla-auth0" login strategy without taskcluster clientId and accessToken'
       );
     }
 
@@ -223,8 +223,8 @@ module.exports = class MozillaAuth0 {
             identityProviderId: 'mozilla-auth0',
             identity: user.identity,
           });
-        },
-      ),
+        }
+      )
     );
 
     // Called by the consumer
@@ -233,7 +233,7 @@ module.exports = class MozillaAuth0 {
     app.get(
       callback,
       passport.authenticate('auth0'),
-      loginMiddleware,
+      loginMiddleware
     );
   }
 };

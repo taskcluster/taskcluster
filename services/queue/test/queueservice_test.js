@@ -201,7 +201,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   test('countPendingMessages', async () => {
     const count = await queueService.countPendingMessages(
       provisionerId,
-      workerType,
+      workerType
     );
     debug('pending message count: %j', count);
     assert(typeof count === 'number', 'Expected count as number!');

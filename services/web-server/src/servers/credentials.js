@@ -9,8 +9,8 @@ module.exports = () => async (request, response, next) => {
   const credentials = JSON.parse(
     Buffer.from(
       request.headers.authorization.replace('Bearer ', ''),
-      'base64',
-    ).toString(),
+      'base64'
+    ).toString()
   );
 
   Object.assign(request, { credentials });

@@ -8,7 +8,7 @@ module.exports = {
     workers(
       { provisionerId, workerType },
       { connection, filter },
-      { loaders },
+      { loaders }
     ) {
       return loaders.workers.load({
         provisionerId,
@@ -20,7 +20,7 @@ module.exports = {
     worker(
       { provisionerId, workerType },
       { workerGroup, workerId },
-      { loaders },
+      { loaders }
     ) {
       return loaders.worker.load({
         provisionerId,

@@ -278,7 +278,7 @@ builder.declare({
   return helpers.insertTask(
     namespace,
     input,
-    that,
+    that
   ).then(function(task) {
     res.reply(task.json());
   });
@@ -338,7 +338,7 @@ builder.declare({
       url = that.queue.buildUrl(
         that.queue.getLatestArtifact,
         task.taskId,
-        artifactName,
+        artifactName
       );
     } else {
       url = that.queue.buildSignedUrl(
