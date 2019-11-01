@@ -886,6 +886,13 @@ In v16.3.1 since v16.3.0
 
 This multiuser macOS release is broken. If you require macOS multiuser, please use version 16.5.2 or higher.
 
+In v16.3.0 since v16.2.0
+========================
+
+* [Bug 1587471 - generic-worker: log metric events](https://bugzil.la/1587471)
+
+This multiuser macOS release is broken. If you require macOS multiuser, please use version 16.5.2 or higher.
+
 In v16.2.0 since v16.1.0
 ========================
 
