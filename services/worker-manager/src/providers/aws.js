@@ -34,9 +34,9 @@ class AwsProvider extends Provider {
     this.configSchema = 'config-aws';
     this.ec2iid_RSA_key = fs.readFileSync(path.resolve(__dirname, 'aws-keys/RSA-key-forSignature')).toString();
     this.providerConfig = Object.assign({}, {
-      intervalCapDefault: 1000,
-      intervalDefault: 60 * 1000,
-      _backoffDelay: 1000,
+      intervalCapDefault: 500,
+      intervalDefault: 10 * 1000,
+      _backoffDelay: 2000,
     }, providerConfig);
 
   }
@@ -310,7 +310,6 @@ class AwsProvider extends Provider {
     });
   }
 
-  // should this be implemented on Provider? Looks like it's going to be the same for all providers
   async scanPrepare() {
     this.seen = {};
     this.errors = {};
