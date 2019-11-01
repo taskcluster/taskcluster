@@ -81,6 +81,7 @@ export default class MobileMenu extends Component {
 
   render() {
     const { classes, user, appBar } = this.props;
+    const pathname= window.location.pathname;
     const { anchorEl, signInDialogOpen } = this.state;
 
     return (
@@ -96,11 +97,11 @@ export default class MobileMenu extends Component {
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={this.handleMenuClose}>
-          <MenuItem title="Your Profile" component={Link} to="/profile">
+          <MenuItem title="Your Profile" selected={pathname === "/profile"} component={Link} to="/profile">
             <AccountIcon className={classes.leftIcon} />
             Profile
           </MenuItem>
-          <MenuItem title="Documentation" component={Link} to="/docs/">
+          <MenuItem title="Documentation" selected={pathname === "/docs/"} component={Link} to="/docs/">
               <BookOpenPageVariantIcon className={classes.leftIcon} />
               Documentation
           </MenuItem>
@@ -118,7 +119,7 @@ export default class MobileMenu extends Component {
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={this.handleMenuClose}>
-          <MenuItem title="Documentation" component={Link} to="/docs/">
+          <MenuItem title="Documentation" selected={pathname === "/docs/"} component={Link} to="/docs/">
               <BookOpenPageVariantIcon className={classes.leftIcon} />
               Documentation
           </MenuItem>

@@ -31,9 +31,6 @@ import { fade } from '@material-ui/core/styles/colorManipulator';
   verticalDotIcon: {
     fill: '#fff',
   },
-  avatar: {
-    backgroundColor: theme.palette.secondary.main,
-  },
   mobileMenu: {
     [theme.breakpoints.up('sm')]: {
       padding: '12px',
