@@ -34,7 +34,7 @@ class AwsProvider extends Provider {
     this.configSchema = 'config-aws';
     this.ec2iid_RSA_key = fs.readFileSync(path.resolve(__dirname, 'aws-keys/RSA-key-forSignature')).toString();
     this.providerConfig = Object.assign({}, {
-      intervalCapDefault: 500,
+      intervalCapDefault: 150,
       intervalDefault: 10 * 1000,
       _backoffDelay: 2000,
     }, providerConfig);
