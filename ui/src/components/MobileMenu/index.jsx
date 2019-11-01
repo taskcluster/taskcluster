@@ -2,7 +2,6 @@ import React, { Component, Fragment } from 'react';
 import { bool } from 'prop-types';
 import { Link } from 'react-router-dom';
 import { withApollo } from 'react-apollo';
-import classNames from 'classnames';
 import { darken } from '@material-ui/core/styles/colorManipulator';
 import { withStyles } from '@material-ui/core/styles';
 import Menu from '@material-ui/core/Menu';
