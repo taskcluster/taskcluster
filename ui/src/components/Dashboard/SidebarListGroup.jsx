@@ -34,6 +34,14 @@ export default class SidebarListGroup extends Component {
     e.preventDefault();
     this.setState({ open: !this.state.open });
   };
+  
+  componentDidMount(){
+    if(this.props.sidebarkeepopen){
+      this.setState({
+        open:true
+      })
+    }
+  }
 
   render() {
     const { classes, children, icon, title, to, ...props } = this.props;

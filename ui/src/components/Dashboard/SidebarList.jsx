@@ -23,6 +23,14 @@ import SidebarListGroup from './SidebarListGroup';
 import SidebarListItem from './SidebarListItem';
 
 export default class SidebarList extends Component {
+  state ={
+    sidebarKeepOpen:false,
+  }
+
+  handleSidebarKeepOpen = () =>{
+  this.setState({sidebarKeepOpen:true});
+  }
+
   render() {
     return (
       <List disablePadding>
@@ -43,22 +51,25 @@ export default class SidebarList extends Component {
           skipPrefetch
           to="/auth"
           title="Authorization"
+          sidebarkeepopen={this.handleSidebarKeepOpen}
           icon={<AccountKeyIcon />}>
-          <SidebarListItem to="/auth/clients" icon={<AccountMultipleIcon />}>
+          <SidebarListItem onClick={this.handleSidebarKeepOpen} to="/auth/clients" icon={<AccountMultipleIcon />}>
             Clients
           </SidebarListItem>
-          <SidebarListItem to="/auth/roles" icon={<AccountStarIcon />}>
+          <SidebarListItem onClick={this.handleSidebarKeepOpen} to="/auth/roles" icon={<AccountStarIcon />}>
             Roles
           </SidebarListItem>
-          <SidebarListItem to="/auth/scopes" icon={<AccountSettingsIcon />}>
+          <SidebarListItem onClick={this.handleSidebarKeepOpen} to="/auth/scopes" icon={<AccountSettingsIcon />}>
             Scopes
           </SidebarListItem>
           <SidebarListItem
+            onClick={this.handleSidebarKeepOpen}
             to="/auth/scopes/compare"
             icon={<ScaleBalanceIcon />}>
             Compare Scopes
           </SidebarListItem>
           <SidebarListItem
+            onClick={this.handleSidebarKeepOpen}
             to="/auth/scopes/expansions"
             icon={<ArrowExpandVerticalIcon />}>
             Expand Scopes
