@@ -34,12 +34,12 @@ export default class SidebarListGroup extends Component {
     e.preventDefault();
     this.setState({ open: !this.state.open });
   };
-  
-  componentDidMount(){
-    if(this.props.sidebarkeepopen){
+
+  componentDidMount() {
+    if (this.props.sidebarkeepopen) {
       this.setState({
-        open:true
-      })
+        open: true,
+      });
     }
   }
 

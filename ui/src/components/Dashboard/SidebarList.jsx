@@ -23,13 +23,13 @@ import SidebarListGroup from './SidebarListGroup';
 import SidebarListItem from './SidebarListItem';
 
 export default class SidebarList extends Component {
-  state ={
-    sidebarKeepOpen:false,
-  }
+  state = {
+    sidebarKeepOpen: false,
+  };
 
-  handleSidebarKeepOpen = () =>{
-  this.setState({sidebarKeepOpen:true});
-  }
+  handleSidebarKeepOpen = () => {
+    this.setState({ sidebarKeepOpen: true });
+  };
 
   render() {
     return (
@@ -53,13 +53,22 @@ export default class SidebarList extends Component {
           title="Authorization"
           sidebarkeepopen={this.handleSidebarKeepOpen}
           icon={<AccountKeyIcon />}>
-          <SidebarListItem onClick={this.handleSidebarKeepOpen} to="/auth/clients" icon={<AccountMultipleIcon />}>
+          <SidebarListItem
+            onClick={this.handleSidebarKeepOpen}
+            to="/auth/clients"
+            icon={<AccountMultipleIcon />}>
             Clients
           </SidebarListItem>
-          <SidebarListItem onClick={this.handleSidebarKeepOpen} to="/auth/roles" icon={<AccountStarIcon />}>
+          <SidebarListItem
+            onClick={this.handleSidebarKeepOpen}
+            to="/auth/roles"
+            icon={<AccountStarIcon />}>
             Roles
           </SidebarListItem>
-          <SidebarListItem onClick={this.handleSidebarKeepOpen} to="/auth/scopes" icon={<AccountSettingsIcon />}>
+          <SidebarListItem
+            onClick={this.handleSidebarKeepOpen}
+            to="/auth/scopes"
+            icon={<AccountSettingsIcon />}>
             Scopes
           </SidebarListItem>
           <SidebarListItem
