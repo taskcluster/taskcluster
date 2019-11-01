@@ -591,7 +591,7 @@ export default class TaskGroup extends Component {
 
     if (typeof error === 'string') {
         return error;
-      }
+    }
 
     // Task groups do not necessarily have a decision task,
     // so handle task-not-found errors gracefully
@@ -632,6 +632,7 @@ export default class TaskGroup extends Component {
     const notificationsCount = Object.values(notifyPreferences).filter(Boolean)
       .length;
     const graphqlError = this.getError(error);
+    
     this.subscribe({ taskGroupId, subscribeToMore });
 
     if (!this.tasks.size && taskGroup && isFromSameTaskGroupId) {
