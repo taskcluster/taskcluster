@@ -240,7 +240,7 @@ class GoogleProvider extends Provider {
     }
 
     const cfgs = [];
-    while (toSpawn> 0) {
+    while (toSpawn > 0) {
       const cfg = _.sample(workerPool.config.launchConfigs);
       cfgs.push(cfg);
       toSpawn -= cfg.capacityPerInstance;
