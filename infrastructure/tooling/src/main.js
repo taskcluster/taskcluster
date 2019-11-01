@@ -126,6 +126,3 @@ program.command('*', {noHelp: true})
   .action(() => program.help(txt => txt));
 
 program.parse(process.argv);
-if (!program.args.length) {
-  program.help();
-}
