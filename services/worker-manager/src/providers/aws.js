@@ -111,7 +111,7 @@ class AwsProvider extends Provider {
       const instanceTags = [];
       const otherTagSpecs = [];
       TagSpecifications.forEach(ts =>
-        ts.ResourceType === 'instance' ? instanceTags.concat(ts.Tags) : otherTagSpecs.push(ts)
+        ts.ResourceType === 'instance' ? instanceTags.concat(ts.Tags) : otherTagSpecs.push(ts),
       );
 
       const userData = Buffer.from(JSON.stringify({
@@ -303,7 +303,7 @@ class AwsProvider extends Provider {
     result.TerminatingInstances.forEach(ti => {
       if (!ti.InstanceId === worker.workerId || !ti.CurrentState.Name === 'shutting-down') {
         throw new Error(
-          `Unexpected error: expected to shut down instance ${worker.workerId} but got ${ti.CurrentState.Name} state for ${ti.InstanceId} instance instead`
+          `Unexpected error: expected to shut down instance ${worker.workerId} but got ${ti.CurrentState.Name} state for ${ti.InstanceId} instance instead`,
         );
       }
 

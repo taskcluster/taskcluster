@@ -12,5 +12,5 @@ const keys = [
 
 module.exports = keys.reduce(
   (resolvers, key) => merge(resolvers, importer(key)),
-  {}
+  {},
 );

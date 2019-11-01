@@ -319,7 +319,7 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
         .createClient(clientId, {
           ...data,
           expires: new Date(data.expires),
-        })
+        }),
     );
 
     if (clientError) {

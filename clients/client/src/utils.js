@@ -27,7 +27,7 @@ let fromNow = function(offset, reference) {
     + offset.days * 24 * 60 * 60 * 1000
     + offset.hours * 60 * 60 * 1000
     + offset.minutes * 60 * 1000
-    + offset.seconds * 1000
+    + offset.seconds * 1000,
   );
   return retval;
 };

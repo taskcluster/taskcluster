@@ -169,7 +169,7 @@ exports.tasks = [{
         data: Object.assign(files[fileName].data || {}, {
           order: files[fileName].data.order || 1000,
         }),
-      })
+      }),
     );
     const docsToc = {
       gettingStarted,

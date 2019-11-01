@@ -249,7 +249,7 @@ const dependencyOrdering = (rules = []) => {
     // We use the index of a rule to indicate that it have been matched
     trie.merge(withoutKleene(rule.pattern), rule.pattern.endsWith('*')
       ? new Node([], [`${index}`]) // if pattern ends with kleene rule matches if node is entered
-      : new Node([`${index}`], []) // if pattern ends without kleene input must end in node
+      : new Node([`${index}`], []), // if pattern ends without kleene input must end in node
     );
   });
   // To find dependencies we assume the worst case that a rule is parameterized

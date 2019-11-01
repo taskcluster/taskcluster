@@ -21,8 +21,8 @@ module.exports = ({ secrets }) => {
           name,
           ...secret,
         };
-      })
-    )
+      }),
+    ),
   );
 
   return {

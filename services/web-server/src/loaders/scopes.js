@@ -8,8 +8,8 @@ module.exports = ({ auth }) => {
         const { scopes } = await auth.currentScopes();
 
         return sift(filter, scopes);
-      })
-    )
+      }),
+    ),
   );
   const expandScopes = new DataLoader(queries =>
     Promise.all(
@@ -17,8 +17,8 @@ module.exports = ({ auth }) => {
         const { scopes: expandedScopes } = await auth.expandScopes({ scopes });
 
         return sift(filter, expandedScopes);
-      })
-    )
+      }),
+    ),
   );
 
   return {
