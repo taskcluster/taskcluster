@@ -591,12 +591,8 @@ export default class TaskGroup extends Component {
 
     // Task groups do not necessarily have a decision task,
     // so handle task-not-found errors gracefully
-    const errorStatus = error.graphQLErrors.some((error, index) => {
-      return (
-        index === 0 &&
-        error.statusCode === 404 &&
-        error.requestInfo.method === 'task'
-      );
+    const errorStatus = error.graphQLErrors.some(error => {
+      return error.statusCode === 404 && error.requestInfo.method === 'task';
     });
 
     return errorStatus ? !errorStatus : errorStatus;
