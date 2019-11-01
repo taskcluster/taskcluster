@@ -318,6 +318,7 @@ class AwsProvider extends Provider {
     for (const workerPoolId of responsibleFor) {
       this.seen[workerPoolId] = this.seen[workerPoolId] || 0;
     }
+    this.monitor.notice('scan-seen', {providerId: this.providerId, seen: this.seen, responsible: [...responsibleFor]});
     await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
       const workerPool = await this.WorkerPool.load({
         workerPoolId,
