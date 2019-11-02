@@ -63,7 +63,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     (workerPools, sortBy, sortDirection, searchTerm, includeDeleted) => {
       const filteredWorkerPoolsBySearchTerm = searchTerm
         ? workerPools.filter(({ workerPoolId }) =>
-            workerPoolId.includes(searchTerm)
+            RegExp(searchTerm, 'i').test(workerPoolId)
           )
         : workerPools;
       const filteredWorkerPools = includeDeleted
