@@ -7,13 +7,14 @@ import { withStyles } from '@material-ui/core/styles';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import AccountIcon from 'mdi-react/AccountIcon';
-import HandPeaceIcon from 'mdi-react/HandPeaceIcon';
 import { withAuth } from '../../utils/Auth';
 import MobileMenuList from './MobileMenuList';
 import { THEME } from '../../utils/constants';
 import SignInDialog from '../SignInDialog';
 import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
 import LogoutVariantIcon from 'mdi-react/LogoutVariantIcon';
+import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
+
 @withAuth
 @withApollo
 @withStyles(theme => ({
@@ -126,7 +127,7 @@ export default class MobileMenu extends Component {
           <MenuItem
             title={`Sign In ${window.env.APPLICATION_NAME}`}
             onClick={this.handleOpenSignInDialog}>
-            <HandPeaceIcon className={classes.leftIcon} />
+            <AccountCircleIcon className={classes.leftIcon} />
             Sign In
           </MenuItem>
         </Menu>,
