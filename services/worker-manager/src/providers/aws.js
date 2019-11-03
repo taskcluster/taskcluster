@@ -268,6 +268,8 @@ class AwsProvider extends Provider {
         notify: this.notify,
         WorkerPoolError: this.WorkerPoolError,
       });
+
+      return;
     }
 
     result.TerminatingInstances.forEach(ti => {
