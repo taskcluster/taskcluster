@@ -133,6 +133,7 @@ export default class ClientForm extends Component {
 
   state = {
     description: this.props.client.description || '',
+    name: this.props.client.name || '',
     clientId: this.props.client.clientId || '',
     created: this.props.client.created || null,
     lastModified: this.props.client.lastModified || null,
@@ -208,6 +209,7 @@ export default class ClientForm extends Component {
     const {
       description,
       scopeText,
+      name,
       clientId,
       created,
       lastModified,
@@ -224,6 +226,7 @@ export default class ClientForm extends Component {
       expires !== client.expires ||
       deleteOnExpiration !== client.deleteOnExpiration ||
       scopeText !== client.scopes.join('\n');
+    const clientIdFieldText = `${clientId}/${name}`;
 
     return (
       <Fragment>
@@ -249,14 +252,17 @@ export default class ClientForm extends Component {
                 onChange={this.handleInputChange}
                 fullWidth
                 autoFocus
-                value={clientId}
+                value={clientIdFieldText}
               />
             </ListItem>
           )}
           {!isNewClient && client && (
             <Fragment>
               <ListItem>
-                <ListItemText primary="Client ID" secondary={clientId} />
+                <ListItemText
+                  primary="Client ID"
+                  secondary={clientIdFieldText}
+                />
               </ListItem>
               <ListItem>
                 <ListItemText

@@ -15,6 +15,7 @@ import IconButton from '@material-ui/core/IconButton';
 import ClearIcon from 'mdi-react/ClearIcon';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
+import Typography from '@material-ui/core/Typography';
 import { addYears } from 'date-fns';
 import Snackbar from '../../../components/Snackbar';
 import Dashboard from '../../../components/Dashboard';
@@ -29,8 +30,10 @@ import resetAccessTokenQuery from './resetAccessToken.graphql';
 import clientQuery from './client.graphql';
 import { THEME } from '../../../utils/constants';
 import fromNow from '../../../utils/fromNow';
+import { withAuth } from '../../../utils/Auth';
 
 @hot(module)
+@withAuth
 @withApollo
 @graphql(clientQuery, {
   skip: ({ match: { params } }) => !params.clientId,
@@ -264,11 +267,11 @@ export default class ViewClient extends Component {
       dialogError,
       dialogOpen,
     } = this.state;
-    const { isNewClient, data, classes, location } = this.props;
+    const { isNewClient, data, classes, location, user } = this.props;
     const query = parse(location.search.slice(1));
     const initialClient = {
       description: query.description,
-      clientId: query.client_id,
+      name: query.name,
       expires: query.expires
         ? fromNow(query.expires)
         : addYears(new Date(), 1000),
@@ -277,6 +280,10 @@ export default class ViewClient extends Component {
       expandedScopes: null,
       disabled: false,
     };
+
+    if (user) {
+      initialClient.clientId = user.credentials.clientId;
+    }
 
     if (location.state && location.state.accessToken) {
       const state = { ...location.state };
@@ -319,38 +326,46 @@ export default class ViewClient extends Component {
               </CardContent>
             </Card>
           </Collapse>
-          {isNewClient ? (
+          {user ? (
             <Fragment>
-              <ErrorPanel fixed error={error} />
-              <ClientForm
-                loading={loading}
-                client={initialClient}
-                isNewClient
-                onSaveClient={this.handleSaveClient}
-              />
-            </Fragment>
-          ) : (
-            <Fragment>
-              {data.loading && <Spinner loading />}
-              <ErrorPanel fixed error={error || data.error} />
-              {data && data.client && (
-                <ClientForm
-                  dialogError={dialogError}
-                  loading={loading}
-                  client={data.client}
-                  onResetAccessToken={this.handleResetAccessToken}
-                  onSaveClient={this.handleSaveClient}
-                  onDeleteClient={this.handleDeleteClient}
-                  onDisableClient={this.handleDisableClient}
-                  onEnableClient={this.handleEnableClient}
-                  dialogOpen={dialogOpen}
-                  onDialogActionError={this.handleDialogActionError}
-                  onDialogActionComplete={this.handleDialogActionComplete}
-                  onDialogActionClose={this.handleDialogActionClose}
-                  onDialogActionOpen={this.handleDialogActionOpen}
-                />
+              {isNewClient ? (
+                <Fragment>
+                  <ErrorPanel fixed error={error} />
+                  <ClientForm
+                    loading={loading}
+                    client={initialClient}
+                    isNewClient
+                    onSaveClient={this.handleSaveClient}
+                  />
+                </Fragment>
+              ) : (
+                <Fragment>
+                  {data.loading && <Spinner loading />}
+                  <ErrorPanel fixed error={error || data.error} />
+                  {data && data.client && (
+                    <ClientForm
+                      dialogError={dialogError}
+                      loading={loading}
+                      client={data.client}
+                      onResetAccessToken={this.handleResetAccessToken}
+                      onSaveClient={this.handleSaveClient}
+                      onDeleteClient={this.handleDeleteClient}
+                      onDisableClient={this.handleDisableClient}
+                      onEnableClient={this.handleEnableClient}
+                      dialogOpen={dialogOpen}
+                      onDialogActionError={this.handleDialogActionError}
+                      onDialogActionComplete={this.handleDialogActionComplete}
+                      onDialogActionClose={this.handleDialogActionClose}
+                      onDialogActionOpen={this.handleDialogActionOpen}
+                    />
+                  )}
+                </Fragment>
               )}
             </Fragment>
+          ) : (
+            <Typography variant="subtitle1">
+              Sign in to view client form
+            </Typography>
           )}
         </Fragment>
         <Snackbar onClose={this.handleSnackbarClose} {...snackbar} />
