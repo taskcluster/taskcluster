@@ -23,7 +23,8 @@ async function decompressLz4File(inputFile) {
     err.push(data);
   });
 
-  await new Promise((accept) => {
+  await new Promise((accept, reject) => {
+    proc.on('error', reject);
     proc.on('exit', accept);
   });
 
