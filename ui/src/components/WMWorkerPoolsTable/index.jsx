@@ -128,6 +128,13 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       emailOnError: item.emailOnError,
     };
 
+    this.setState({
+      dialogState: {
+        ...this.state.dialogState,
+        error: null,
+      },
+    });
+
     this.props.history.replace('/worker-manager');
 
     try {
@@ -153,7 +160,6 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
   handleDialogActionOpen = workerPool => {
     this.setState({
       dialogState: {
-        error: null,
         open: true,
         title: 'Delete Worker Pool?',
         body: `This will delete the worker pool ${workerPool.workerPoolId}.`,
@@ -164,13 +170,10 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
   };
 
   handleDialogActionError = error => {
-    const { item } = this.state.dialogState;
-
     this.setState({
       dialogState: {
         ...this.state.dialogState,
         error,
-        body: `Could not delete ${item.workerPoolId}. Please try again.`,
       },
     });
   };
@@ -184,10 +187,6 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       dialogState: {
         error: null,
         open: false,
-        title: '',
-        body: '',
-        confirmText: '',
-        item: null,
       },
     });
   };
@@ -335,3 +334,4 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     );
   }
 }
+
