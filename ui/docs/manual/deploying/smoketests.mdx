@@ -2,9 +2,11 @@
 title: Smoketests
 ---
 
+# Smoketests
+
 Taskcluster ships with a set of "smoketests" that can be used to check for major issues in a deployment.
 
-# Setup
+## Setup
 
 To run the smoketests, you will need a client with sufficient scopes.
 We recommend adding these scopes to a role named `project:taskcluster:smoketests` and creating a client with scope `assume:project:taskcluster:smoketests`.
@@ -14,7 +16,7 @@ The required scopes may vary from version to version.
 To see the required scopes, begin with a role containing no scopes and run the smoketests as described below.
 The error message will describe the missing scopes.
 
-# Running Smoketests
+## Running Smoketests
 
 From a checkout of the Taskcluster source, where `yarn install` has already been run, run the smoketests as follows:
 
