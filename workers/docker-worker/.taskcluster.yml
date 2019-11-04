@@ -9,45 +9,6 @@ metadata:
 tasks:
 
 
-  ##########################################################
-  ###################### docs upload #######################
-  ##########################################################
-
-  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
-    workerType: '{{ taskcluster.docker.workerType }}'
-    extra:
-      github:
-        events:
-          - push
-        branches:
-          - master
-    scopes:
-      - auth:aws-s3:read-write:taskcluster-raw-docs/docker-worker/
-    payload:
-      maxRunTime: 3600
-      image: taskcluster/upload-project-docs:latest
-      features:
-        taskclusterProxy:
-          true
-      env:
-        TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
-      command:
-        - /bin/bash
-        - '--login'
-        - '-cx'
-        - >-
-          git clone {{event.head.repo.url}} repo &&
-          cd repo &&
-          git config advice.detachedHead false &&
-          git checkout {{event.head.sha}} &&
-          export DOCS_PROJECT=docker-worker DOCS_TIER=workers DOCS_FOLDER=docs DOCS_README=README.md &&
-          upload-project-docs
-    metadata:
-      name: "Publish docker-worker docs to https://docs.community-tc.services.mozilla.com/reference/workers/docker-worker"
-      description: "Upload docker-worker documentation to taskcluster [docs site](https://docs.community-tc.services.mozilla.com/reference/workers/docker-worker)."
-      owner: '{{ event.head.user.email }}'
-      source: '{{ event.head.repo.url }}'
-
   - provisionerId: proj-taskcluster
     workerType: ci
     retries: 0
