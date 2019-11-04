@@ -158,7 +158,7 @@ DEPLOY="deploy: ${WORKER_TYPES}"
 THIS_REV="$(git -C "${THIS_SCRIPT_DIR}" rev-parse HEAD)"
 THIS_FILE="$(git -C "${THIS_SCRIPT_DIR}" ls-files --full-name "$(basename "${0}")")"
 git add .
-if "${BRANCH}" == "master" ]; then
+if [ "${BRANCH}" == "master" ]; then
   git -c "commit.gpgsign=false" commit -m "Deploying generic-worker ${NEW_GW_VERSION} / taskcluster-proxy ${NEW_TP_VERSION} to *${DEPLOYMENT_ENVIRONMENT}*.
 
 Commit made with:
