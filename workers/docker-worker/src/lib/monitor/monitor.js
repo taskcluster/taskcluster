@@ -1,5 +1,5 @@
 const assert = require('assert');
-const serializeError = require('serialize-error');
+const {serializeError} = require('serialize-error');
 const {Logger} = require('./logger');
 const TimeKeeper = require('./timekeeper');
 
