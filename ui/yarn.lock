@@ -9849,9 +9849,9 @@ react-is@^16.7.0:
   integrity sha512-INBT1QEgtcCCgvccr5/86CfD71fw9EPmDxgiJX4I2Ddr6ZsV6iFXsuby+qWJPtmNuMY0zByTsG4468P7nHuNWA==
 
 react-lazylog@^4.3.1:
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/react-lazylog/-/react-lazylog-4.4.0.tgz#0dc2bbcd43fcd8cf5d0fdc676fdadf2571d01a28"
-  integrity sha512-UdSiB9LcZsC5ScGjV+93UXq8c+8oX0w9EeSxgqVcpl2FgOXv8nlvBvzm3aB+z4sbzuXIC+90/z9gNflPayPElg==
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/react-lazylog/-/react-lazylog-4.4.1.tgz#63f2a2d10cfb9399f728fe98dfa9ba819b538192"
+  integrity sha512-6nGTZcID73SQ0MM/Tsv/+fc8s9eHMDo4aoKTOqp0M5IFjMYpGgE1bDXsWCdvxne67fRgmH7cPlgKezTc5B3uVQ==
   dependencies:
     "@mattiasbuelens/web-streams-polyfill" "^0.2.0"
     fetch-readablestream "^0.2.0"
