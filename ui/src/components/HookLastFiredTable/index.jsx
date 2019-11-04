@@ -47,7 +47,7 @@ function HookLastFiredTable({ classes, ...props }) {
       headers={headers}
       renderRow={hookFire => (
         <TableRow key={hookFire.taskId}>
-          <TableCell>
+          <TableCell size="small">
             {(hookFire.result === 'SUCCESS' && (
               <Link to={`/tasks/${hookFire.taskId}`}>
                 <TableCellItem button>
@@ -62,12 +62,12 @@ function HookLastFiredTable({ classes, ...props }) {
               </Link>
             )) || <Typography variant="body2">{hookFire.taskId}</Typography>}
           </TableCell>
-          <TableCell>
+          <TableCell size="small">
             <Typography variant="body2">
               {titleCase(hookFire.firedBy)}
             </Typography>
           </TableCell>
-          <TableCell>
+          <TableCell size="small">
             <StatusLabel state={hookFire.result} />
             {hookFire.result === 'ERROR' && (
               <IconButton
@@ -81,7 +81,7 @@ function HookLastFiredTable({ classes, ...props }) {
           <CopyToClipboard
             title={`${hookFire.taskCreateTime} (Copy)`}
             text={hookFire.taskCreateTime}>
-            <TableCell>
+            <TableCell size="small">
               <TableCellItem button>
                 <ListItemText
                   disableTypography
