@@ -593,9 +593,11 @@ export default class TaskGroup extends Component {
     }
     // Task groups do not necessarily have a decision task,
     // so handle task-not-found errors gracefully
-    return error.graphQLErrors.find(error => {
+    errorStatus = error.graphQLErrors.find(error => {
       return !(error.statusCode === 404 && error.requestInfo.method === 'task');
     });
+
+    return errorStatus
   }
 
   render() {
@@ -631,11 +633,9 @@ export default class TaskGroup extends Component {
       .length;
     const graphqlError = this.getError(error);
     this.subscribe({ taskGroupId, subscribeToMore });
-
     if (!this.tasks.size && taskGroup && isFromSameTaskGroupId) {
       taskGroup.edges.forEach(edge => this.tasks.set(edge.node.taskId));
     }
-
     return (
       <Dashboard
         title="Task Group"
