@@ -32,6 +32,6 @@ module.exports = async ({ token, domain, audience }) => new Promise((resolve, re
       } else {
         resolve(decoded);
       }
-    }
+    },
   );
 });

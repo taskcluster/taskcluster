@@ -66,6 +66,6 @@ module.exports = async (auth, strategies) => {
   await Promise.all(
     Object
       .values(strategies)
-      .map(scan)
+      .map(scan),
   );
 };

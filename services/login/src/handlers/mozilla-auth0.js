@@ -199,14 +199,14 @@ class Handler {
       ...groups
         .filter(g => !g.startsWith(hrisGroupPrefix))
         .filter(g => !g.startsWith(mozGroupPrefix))
-        .map(g => `mozilla-group:${g}`)
+        .map(g => `mozilla-group:${g}`),
     );
     user.addRole(
       ...groups
         .filter(g => !g.startsWith(hrisGroupPrefix))
         .filter(g => g.startsWith(mozGroupPrefix))
         .map(g => g.slice(mozGroupPrefix.length))
-        .map(g => `mozillians-group:${g}`)
+        .map(g => `mozillians-group:${g}`),
     );
   }
 }

@@ -9,16 +9,16 @@ module.exports = ({ workerManager }) => {
         const summaries = (await workerManager.listWorkerPools()).workerPools;
 
         return sift(filter, summaries);
-      })
-    )
+      }),
+    ),
   );
 
   const WorkerPool = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ workerPoolId }) =>
-        workerManager.workerPool(workerPoolId)
-      )
-    )
+        workerManager.workerPool(workerPoolId),
+      ),
+    ),
   );
 
   // const WMWorkers = new DataLoader(queries =>
@@ -67,7 +67,7 @@ module.exports = ({ workerManager }) => {
         ];
 
         return Promise.resolve(sift(filter, summaries));
-      })
+      }),
     );
   });
 
@@ -80,7 +80,7 @@ module.exports = ({ workerManager }) => {
         ...raw,
         items: errors,
       };
-    }
+    },
   );
 
   const WorkerManagerProviders = new ConnectionLoader(
@@ -92,7 +92,7 @@ module.exports = ({ workerManager }) => {
         ...raw,
         items: providers,
       };
-    }
+    },
   );
 
   return {
