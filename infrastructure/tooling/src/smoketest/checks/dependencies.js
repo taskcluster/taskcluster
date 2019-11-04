@@ -1,8 +1,18 @@
 const taskcluster = require('taskcluster-client');
+
+exports.scopeExpression = {
+  AllOf: [
+    'queue:create-task:highest:built-in/succeed',
+    'queue:scheduler-id:-',
+  ],
+};
+
 exports.tasks = [];
 exports.tasks.push({
   title: 'Check dependencies',
-  requires: [],
+  requires: [
+    'ping-queue',
+  ],
   provides: [
     'target-dependencies',
   ],

@@ -1585,13 +1585,35 @@
             },
             "name": "pulse",
             "next": {
-              "path": "manual/deploying/static-clients",
-              "title": "Static Clients"
+              "path": "manual/deploying/smoketests",
+              "title": "Smoketests"
             },
             "path": "manual/deploying/pulse",
             "prev": {
               "path": "manual/deploying/monitoring",
               "title": "Monitoring Services"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "Smoketests"
+            },
+            "name": "smoketests",
+            "next": {
+              "path": "manual/deploying/static-clients",
+              "title": "Static Clients"
+            },
+            "path": "manual/deploying/smoketests",
+            "prev": {
+              "path": "manual/deploying/pulse",
+              "title": "Pulse"
             },
             "up": {
               "path": "manual/deploying",
@@ -1612,8 +1634,8 @@
             },
             "path": "manual/deploying/static-clients",
             "prev": {
-              "path": "manual/deploying/pulse",
-              "title": "Pulse"
+              "path": "manual/deploying/smoketests",
+              "title": "Smoketests"
             },
             "up": {
               "path": "manual/deploying",

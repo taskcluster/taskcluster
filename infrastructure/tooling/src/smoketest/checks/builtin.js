@@ -16,7 +16,9 @@ exports.tasks = [];
 ].forEach(({taskType, successCondition})=>{
   exports.tasks.push({
     title: `Create built-in/${taskType} task (--target built-in/${taskType})`,
-    requires: [],
+    requires: [
+      'ping-queue',
+    ],
     provides: [
       'target-built-in/' + taskType,
     ],
