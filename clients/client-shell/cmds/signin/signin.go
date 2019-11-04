@@ -119,9 +119,9 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	var loginURL string
 
 	if config.RootURL() == "https://taskcluster.net" {
-		loginURL += libUrls.UI(config.RootURL(), "/auth/clients/new")
+    loginURL += libUrls.UI(config.RootURL(), "/auth/clients/new")
   } else {
-		loginURL += libUrls.UI(config.RootURL(), "/auth/clients/create")
+    loginURL += libUrls.UI(config.RootURL(), "/auth/clients/create")
   }
 
   for i := range scopes {
