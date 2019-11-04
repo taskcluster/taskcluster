@@ -71,7 +71,11 @@ func (userData *WorkerManagerUserData) updateConfig(c *gwconfig.Config, provider
 			return "", errors.New("WARNING: Can't decode /userData portion of worker type definition - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")
 		}
 
-		publicHostSetup, err := workerManagerConfig.WorkerConfig.PublicHostSetup()
+		if len(workerManagerConfig.LaunchConfigs) < 1 {
+			return "", errors.New("WARNING: No launchConfigs in worker pool configuration - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")
+		}
+
+		publicHostSetup, err := workerManagerConfig.LaunchConfigs[0].WorkerConfig.PublicHostSetup()
 		if err != nil {
 			return "", fmt.Errorf("WARNING: Can't extract public host setup from latest userdata for worker type %v - not shutting down as latest user data is probably botched: %v", config.WorkerType, err)
 		}
@@ -80,6 +84,10 @@ func (userData *WorkerManagerUserData) updateConfig(c *gwconfig.Config, provider
 	return Bootstrap(c, &userData.WorkerConfig, "worker-pool")
 }
 
-type WorkerManagerConfig struct {
+type WorkerManagerLaunchConfig struct {
 	WorkerConfig BootstrapConfig `json:"workerConfig"`
+}
+
+type WorkerManagerConfig struct {
+	LaunchConfigs []WorkerManagerLaunchConfig `json:"launchConfigs"`
 }
