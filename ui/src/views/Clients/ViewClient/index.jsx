@@ -280,9 +280,10 @@ export default class ViewClient extends Component {
       expandedScopes: null,
       disabled: false,
     };
+    const isCliLogin = Boolean(query.callback_url);
 
     // CLI login
-    if (query.callback_url && user) {
+    if (isCliLogin && user) {
       initialClient.clientId = `${user.credentials.clientId}/${query.name}`;
     }
 
@@ -326,7 +327,7 @@ export default class ViewClient extends Component {
             </CardContent>
           </Card>
         </Collapse>
-        {user ? (
+        {!isCliLogin || user ? (
           <Fragment>
             {isNewClient ? (
               <Fragment>
