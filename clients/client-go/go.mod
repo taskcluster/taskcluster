@@ -1,4 +1,4 @@
-module github.com/taskcluster/taskcluster/clients/client-go/v21
+module github.com/taskcluster/taskcluster/clients/client-go/v22
 
 go 1.12
 

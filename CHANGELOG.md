@@ -3,6 +3,28 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v22.0.0
+
+▶ [MAJOR] [bug 1591591](http://bugzil.la/1591591)
+The deployment Helm variable `ui.application_name` has been renamed to a top-level `applicationName`.  This value is now used as context in the GitHub status and check posts to PRs and commits.
+
+▶ [MAJOR] [bug 1590175](http://bugzil.la/1590175)
+Worker pools now support instance capacity in configuration such that larger instances can handle more tasks if desired. The configuration option, `instanceCapacity` was already accepted but previously had no effect.  As long as this value is set to 1 for all aws and google worker pools, this change will have no effect.
+
+▶ [minor] [#1758](https://github.com/taskcluster/taskcluster/issues/1758)
+Taskcluster shell client 'signin' command can now interact with the new UI.
+
+▶ [patch] [#1842](https://github.com/taskcluster/taskcluster/issues/1842)
+API documentation display is fixed.
+
+▶ [patch] [bug 1593142](http://bugzil.la/1593142)
+AWS Providers in Worker Manager now handle `RequestLimitExceeded` errors from AWS gracefully with exponential backoff
+
+▶ [patch] [#1771](https://github.com/taskcluster/taskcluster/issues/1771)
+Taskcluster now properly allows a client to be saved when the "Delete on expiration" switch is changed when updating an existent client.
+
+*This release includes additional changes that were not considered important enough to mention here; see https://github.com/taskcluster/taskcluster/tree/v22.0.0%5E/changelog for details.*
+
 ## v21.3.0
 
 ▶ [minor] [bug 1588834](http://bugzil.la/1588834)
