@@ -117,21 +117,23 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	scopes, _ := cmd.Flags().GetStringArray("scope")
 	expires, _ := cmd.Flags().GetString("expires")
 	var loginURL string
+
 	if config.RootURL() == "https://taskcluster.net" {
 		loginURL += libUrls.UI(config.RootURL(), "/auth/clients/new")
 		for i := range scopes {
   			loginURL += "?scope=" + url.QueryEscape(scopes[i])
-  		}
-  	} else {
+    }
+  } else {
 		loginURL += libUrls.UI(config.RootURL(), "/auth/clients/create")
-	  	for i := range scopes {
-	  		loginURL += "?scope[]=" + url.QueryEscape(scopes[i])
-	  	}
-  	}
-        loginURL += "&name=" + url.QueryEscape(name)
-  	loginURL += "&expires=" + url.QueryEscape(expires)
-  	loginURL += "&callback_url=" + url.QueryEscape(callbackURL)
- 	loginURL += "&description=" + description
+    for i := range scopes {
+      loginURL += "?scope[]=" + url.QueryEscape(scopes[i])
+    }
+  }
+
+  loginURL += "&name=" + url.QueryEscape(name)
+  loginURL += "&expires=" + url.QueryEscape(expires)
+  loginURL += "&callback_url=" + url.QueryEscape(callbackURL)
+  loginURL += "&description=" + description
 
 	// Display URL to open
 	fmt.Fprintln(cmd.OutOrStderr(), "Listening for a callback on: "+callbackURL)
