@@ -106,6 +106,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       ref: 'master',
       info: [{creator: {id: 123345}, state: 'success'}],
     });
+    github.inst(9090).setStatuses({
+      owner: 'abc123',
+      repo: 'errorRepo',
+      ref: 'master',
+      info: {errorStatus: 499},
+    });
     github.inst(9090).setUser({id: 55555, email: 'noreply@github.com', username: 'magicalTCspirit[bot]'});
   });
 
@@ -156,23 +162,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     assert.deepEqual(result, {installed: false});
   });
 
-  test('build badges', async function() {
-    let res;
-
-    // status: failure
-    res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'coolRepo', 'master'));
+  test('build badges - status:failure', async function() {
+    let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'coolRepo', 'master'));
     assert.equal(res.headers['content-length'], 8615);
+  });
 
-    // status: success
-    res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'awesomeRepo', 'master'));
+  test('build badges - status: success', async function() {
+    let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'awesomeRepo', 'master'));
     assert.equal(res.headers['content-length'], 9189);
+  });
 
-    // error
-    res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'unknownRepo', 'master'));
+  test('build badges - error', async function() {
+    let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'errorRepo', 'master'));
     assert.equal(res.headers['content-length'], 4268);
+  });
 
-    // new repo (no info yet)
-    res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'nonTCGHRepo', 'master'));
+  test('build badges - no such status', async function() {
+    let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'unknownRepo', 'master'));
+    assert.equal(res.headers['content-length'], 7873);
+  });
+
+  test('build badges - new repo (no info yet)', async function() {
+    let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'nonTCGHRepo', 'master'));
     assert.equal(res.headers['content-length'], 7873);
   });
 
@@ -188,6 +199,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       console.log(`Test for redirecting to correct page failed. Error: ${JSON.stringify(e)}`);
     }
     assert.equal(res.body, 'Found. Redirecting to Wonderland');
+  });
+
+  test('link for clickable badges when no such thing exists', async function() {
+    await assert.rejects(() => got(
+      helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'unknownRepo', 'nosuch'),
+      {followRedirect: false}), err => err.statusCode === 404);
   });
 
   test('simple status creation', async function() {
