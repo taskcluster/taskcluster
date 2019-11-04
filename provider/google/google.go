@@ -9,8 +9,8 @@ import (
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v21"
-	"github.com/taskcluster/taskcluster/clients/client-go/v21/tcworkermanager"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v22"
+	"github.com/taskcluster/taskcluster/clients/client-go/v22/tcworkermanager"
 )
 
 type GoogleProvider struct {
