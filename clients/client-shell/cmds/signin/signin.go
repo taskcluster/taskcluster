@@ -18,6 +18,7 @@ import (
 	"github.com/taskcluster/taskcluster/clients/client-go/v21/tcauth"
 	"github.com/taskcluster/taskcluster/clients/client-shell/cmds/root"
 	"github.com/taskcluster/taskcluster/clients/client-shell/config"
+	"github.com/taskcluster/slugid-go/slugid"
 	graceful "gopkg.in/tylerb/graceful.v1"
 )
 
@@ -128,7 +129,7 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
     loginURL += "?scope=" + url.QueryEscape(scopes[i])
   }
 
-  loginURL += "&name=" + url.QueryEscape(name)
+  loginURL += "&name=" + url.QueryEscape(name) + "-" + slugid.Nice()[0:6]
   loginURL += "&expires=" + url.QueryEscape(expires)
   loginURL += "&callback_url=" + url.QueryEscape(callbackURL)
   loginURL += "&description=" + description
