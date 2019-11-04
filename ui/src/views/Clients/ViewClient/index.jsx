@@ -271,7 +271,7 @@ export default class ViewClient extends Component {
     const query = parse(location.search.slice(1));
     const initialClient = {
       description: query.description,
-      name: query.name,
+      clientId: query.client_id,
       expires: query.expires
         ? fromNow(query.expires)
         : addYears(new Date(), 1000),
@@ -281,8 +281,9 @@ export default class ViewClient extends Component {
       disabled: false,
     };
 
-    if (user) {
-      initialClient.clientId = user.credentials.clientId;
+    // CLI login
+    if (query.callback_url && user) {
+      initialClient.clientId = `${user.credentials.clientId}/${query.name}`;
     }
 
     if (location.state && location.state.accessToken) {
@@ -294,80 +295,78 @@ export default class ViewClient extends Component {
 
     return (
       <Dashboard title={isNewClient ? 'Create Client' : 'Client'}>
-        <Fragment>
-          <Collapse in={accessToken}>
-            <Card classes={{ root: classes.panelCard }}>
-              <CardHeader
-                classes={{
-                  root: classes.panelHeader,
-                  title: classes.panelTextPrimary,
-                }}
-                action={
-                  <IconButton onClick={this.handleAccessTokenPanelClose}>
-                    <ClearIcon className={classes.clearIcon} />
-                  </IconButton>
-                }
-                title="You won't be able to see this again"
-              />
-              <CardContent className={classes.listItemButton}>
-                <CopyToClipboard text={accessToken}>
-                  <ListItem button>
-                    <ListItemText
-                      classes={{
-                        primary: classes.panelTextPrimary,
-                        secondary: classes.panelTextSecondary,
-                      }}
-                      primary="Access Token"
-                      secondary={accessToken}
-                    />
-                    <ContentCopyIcon />
-                  </ListItem>
-                </CopyToClipboard>
-              </CardContent>
-            </Card>
-          </Collapse>
-          {user ? (
-            <Fragment>
-              {isNewClient ? (
-                <Fragment>
-                  <ErrorPanel fixed error={error} />
-                  <ClientForm
-                    loading={loading}
-                    client={initialClient}
-                    isNewClient
-                    onSaveClient={this.handleSaveClient}
+        <Collapse in={accessToken}>
+          <Card classes={{ root: classes.panelCard }}>
+            <CardHeader
+              classes={{
+                root: classes.panelHeader,
+                title: classes.panelTextPrimary,
+              }}
+              action={
+                <IconButton onClick={this.handleAccessTokenPanelClose}>
+                  <ClearIcon className={classes.clearIcon} />
+                </IconButton>
+              }
+              title="You won't be able to see this again"
+            />
+            <CardContent className={classes.listItemButton}>
+              <CopyToClipboard text={accessToken}>
+                <ListItem button>
+                  <ListItemText
+                    classes={{
+                      primary: classes.panelTextPrimary,
+                      secondary: classes.panelTextSecondary,
+                    }}
+                    primary="Access Token"
+                    secondary={accessToken}
                   />
-                </Fragment>
-              ) : (
-                <Fragment>
-                  {data.loading && <Spinner loading />}
-                  <ErrorPanel fixed error={error || data.error} />
-                  {data && data.client && (
-                    <ClientForm
-                      dialogError={dialogError}
-                      loading={loading}
-                      client={data.client}
-                      onResetAccessToken={this.handleResetAccessToken}
-                      onSaveClient={this.handleSaveClient}
-                      onDeleteClient={this.handleDeleteClient}
-                      onDisableClient={this.handleDisableClient}
-                      onEnableClient={this.handleEnableClient}
-                      dialogOpen={dialogOpen}
-                      onDialogActionError={this.handleDialogActionError}
-                      onDialogActionComplete={this.handleDialogActionComplete}
-                      onDialogActionClose={this.handleDialogActionClose}
-                      onDialogActionOpen={this.handleDialogActionOpen}
-                    />
-                  )}
-                </Fragment>
-              )}
-            </Fragment>
-          ) : (
-            <Typography variant="subtitle1">
-              Sign in to view client form
-            </Typography>
-          )}
-        </Fragment>
+                  <ContentCopyIcon />
+                </ListItem>
+              </CopyToClipboard>
+            </CardContent>
+          </Card>
+        </Collapse>
+        {user ? (
+          <Fragment>
+            {isNewClient ? (
+              <Fragment>
+                <ErrorPanel fixed error={error} />
+                <ClientForm
+                  loading={loading}
+                  client={initialClient}
+                  isNewClient
+                  onSaveClient={this.handleSaveClient}
+                />
+              </Fragment>
+            ) : (
+              <Fragment>
+                {data.loading && <Spinner loading />}
+                <ErrorPanel fixed error={error || data.error} />
+                {data && data.client && (
+                  <ClientForm
+                    dialogError={dialogError}
+                    loading={loading}
+                    client={data.client}
+                    onResetAccessToken={this.handleResetAccessToken}
+                    onSaveClient={this.handleSaveClient}
+                    onDeleteClient={this.handleDeleteClient}
+                    onDisableClient={this.handleDisableClient}
+                    onEnableClient={this.handleEnableClient}
+                    dialogOpen={dialogOpen}
+                    onDialogActionError={this.handleDialogActionError}
+                    onDialogActionComplete={this.handleDialogActionComplete}
+                    onDialogActionClose={this.handleDialogActionClose}
+                    onDialogActionOpen={this.handleDialogActionOpen}
+                  />
+                )}
+              </Fragment>
+            )}
+          </Fragment>
+        ) : (
+          <Typography variant="subtitle1">
+            Sign in to create a client
+          </Typography>
+        )}
         <Snackbar onClose={this.handleSnackbarClose} {...snackbar} />
       </Dashboard>
     );
