@@ -276,7 +276,7 @@ export default class ViewClient extends Component {
         ? fromNow(query.expires)
         : addYears(new Date(), 1000),
       deleteOnExpiration: true,
-      scopes: query.scope,
+      scopes: typeof query.scope === 'string' ? [query.scope] : query.scope,
       expandedScopes: null,
       disabled: false,
     };

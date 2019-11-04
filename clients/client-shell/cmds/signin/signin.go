@@ -120,14 +120,12 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 
 	if config.RootURL() == "https://taskcluster.net" {
 		loginURL += libUrls.UI(config.RootURL(), "/auth/clients/new")
-		for i := range scopes {
-  			loginURL += "?scope=" + url.QueryEscape(scopes[i])
-    }
   } else {
 		loginURL += libUrls.UI(config.RootURL(), "/auth/clients/create")
-    for i := range scopes {
-      loginURL += "?scope[]=" + url.QueryEscape(scopes[i])
-    }
+  }
+
+  for i := range scopes {
+    loginURL += "?scope=" + url.QueryEscape(scopes[i])
   }
 
   loginURL += "&name=" + url.QueryEscape(name)
