@@ -13,12 +13,12 @@ import (
 
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
+	"github.com/taskcluster/slugid-go/slugid"
 	libUrls "github.com/taskcluster/taskcluster-lib-urls"
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v21"
 	"github.com/taskcluster/taskcluster/clients/client-go/v21/tcauth"
 	"github.com/taskcluster/taskcluster/clients/client-shell/cmds/root"
 	"github.com/taskcluster/taskcluster/clients/client-shell/config"
-	"github.com/taskcluster/slugid-go/slugid"
 	graceful "gopkg.in/tylerb/graceful.v1"
 )
 
@@ -120,19 +120,19 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	var loginURL string
 
 	if config.RootURL() == "https://taskcluster.net" {
-    loginURL += libUrls.UI(config.RootURL(), "/auth/clients/new")
-  } else {
-    loginURL += libUrls.UI(config.RootURL(), "/auth/clients/create")
-  }
+		loginURL += libUrls.UI(config.RootURL(), "/auth/clients/new")
+	} else {
+		loginURL += libUrls.UI(config.RootURL(), "/auth/clients/create")
+	}
 
-  for i := range scopes {
-    loginURL += "?scope=" + url.QueryEscape(scopes[i])
-  }
+	for i := range scopes {
+		loginURL += "?scope=" + url.QueryEscape(scopes[i])
+	}
 
-  loginURL += "&name=" + url.QueryEscape(name) + "-" + slugid.Nice()[0:6]
-  loginURL += "&expires=" + url.QueryEscape(expires)
-  loginURL += "&callback_url=" + url.QueryEscape(callbackURL)
-  loginURL += "&description=" + description
+	loginURL += "&name=" + url.QueryEscape(name) + "-" + slugid.Nice()[0:6]
+	loginURL += "&expires=" + url.QueryEscape(expires)
+	loginURL += "&callback_url=" + url.QueryEscape(callbackURL)
+	loginURL += "&description=" + description
 
 	// Display URL to open
 	fmt.Fprintln(cmd.OutOrStderr(), "Listening for a callback on: "+callbackURL)
