@@ -30,6 +30,22 @@ import buildArtifactUrl from '../../utils/buildArtifactUrl';
   linkCell: {
     textAlign: 'right',
   },
+  artifactLink: {
+    textDecoration: 'none',
+    display: 'flex',
+    justifyContent: 'space-between',
+    verticalAlign: 'middle',
+  },
+  artifactName: {
+    marginLeft: theme.spacing.unit,
+  },
+  artifactIconWithName: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  latestArtifactsListItem: {
+    paddingBottom: 0,
+  },
 }))
 export default class IndexedEntry extends Component {
   static propTypes = {
@@ -41,14 +57,6 @@ export default class IndexedEntry extends Component {
     }).isRequired,
     onArtifactsPageChange: func.isRequired,
   };
-
-  // Handle programmatically in order to avoid
-  // '<a> cannot appear as a child of <tbody>'
-  handleArtifactClick = url =>
-    Object.assign(window.open(), {
-      opener: null,
-      location: url,
-    });
 
   handleHeaderClick = sortBy => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
@@ -104,18 +112,26 @@ export default class IndexedEntry extends Component {
             className={classNames(classes.listItemButton, {
               [classes.pointer]: Boolean(artifact.url),
             })}
-            onClick={() => this.handleArtifactClick(artifact.url)}
             hover={Boolean(artifact.url)}>
             <TableCell>
-              {artifact.isPublic && <LockOpenOutlineIcon />}
-              {!artifact.isPublic && artifact.url && <LockIcon />}
-              {artifact.icon && <artifact.icon />}
-            </TableCell>
-            <TableCell>
-              <Typography>{artifact.name}</Typography>
-            </TableCell>
-            <TableCell className={classes.linkCell}>
-              <OpenInNewIcon />
+              <Link
+                className={classes.artifactLink}
+                target="_blank"
+                to={artifact.url}>
+                <div className={classes.artifactIconWithName}>
+                  <div>
+                    {artifact.isPublic && <LockOpenOutlineIcon />}
+                    {!artifact.isPublic && artifact.url && <LockIcon />}
+                    {artifact.icon && <artifact.icon />}
+                  </div>
+                  <Typography className={classes.artifactName}>
+                    {artifact.name}
+                  </Typography>
+                </div>
+                <div>
+                  <OpenInNewIcon />
+                </div>
+              </Link>
             </TableCell>
           </TableRow>
         )}
@@ -162,7 +178,7 @@ export default class IndexedEntry extends Component {
             }
           />
         </ListItem>
-        <ListItem>
+        <ListItem className={classes.latestArtifactsListItem}>
           <ListItemText primary="Latest Artifacts" />
         </ListItem>
         {this.renderArtifactsTable()}
