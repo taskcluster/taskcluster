@@ -72,7 +72,7 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Indexed task not found', {});
   }
   if (!tasks.entries.length) {
-    return res.reportError('ResourceNotFound', 'Indexed task has expired', {});
+    return res.reportError('ResourceNotFound', 'Indexed task not found', {});
   }
   let task = tasks.entries[0];
   return res.reply(task.json());
