@@ -33,7 +33,13 @@ Set the fields as follows:
 * Webhook URL should link to `/api/github/v1/github` on your deployment's root URL
 * Set the secret to an arbitrary value that you also configure in your Taskcluster instance's settings. 
 
-### How to set up private keys? 
+### Configuration
+
+In the Helm templates, you'll need to set
+
+* `github.bot_username` -- this should match the name in the integration's URL.  For example, if the URL is https://github.com/apps/acme-taskclsuter then the `bot_name` should be `acme-taskcluster`.
+* `github.github_app_id` -- numeric app_id
+* `github.github_private_pem` -- see below
 
 On the app's settings page, generate a private key, and add its PEM to your Taskcluster instance's configs.
 This is a multiline string.
