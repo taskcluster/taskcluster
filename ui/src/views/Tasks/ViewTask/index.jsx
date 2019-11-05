@@ -55,6 +55,7 @@ import submitTaskAction from '../submitTaskAction';
 import taskQuery from './task.graphql';
 import scheduleTaskQuery from './scheduleTask.graphql';
 import rerunTaskQuery from './rerunTask.graphql';
+import cancelTaskQuery from './cancelTask.graphql';
 import purgeWorkerCacheQuery from './purgeWorkerCache.graphql';
 import pageArtifactsQuery from './pageArtifacts.graphql';
 import createTaskQuery from '../createTask.graphql';
@@ -306,7 +307,12 @@ export default class ViewTask extends Component {
     this.handleActionDialogClose();
     this.props.data.refetch();
   };
-
+  
+  handleCancelComplete = () => {
+    this.handleActionDialogClose();
+    this.props.data.refetch();
+  };
+  
   handleCreateInteractiveComplete = taskId => {
     this.handleActionDialogClose();
     this.props.history.push(`/tasks/${taskId}/connect`);
@@ -453,6 +459,21 @@ export default class ViewTask extends Component {
     });
   };
 
+  handleCancelTaskClick = () => {
+    const title = 'Cancel Task';
+
+    this.setState({
+      dialogOpen: true,
+      dialogActionProps: {
+        fullScreen: false,
+        title: `${title}?`,
+        onSubmit: this.cancelTask,
+        onComplete: this.handleCancelComplete,
+        confirmText: title,
+      },
+    });
+  };
+
   handleRerunTaskClick = () => {
     const title = 'Rerun';
 
@@ -581,6 +602,25 @@ export default class ViewTask extends Component {
       throw error;
     }
   };
+
+  cancelTask = async () => {
+    const { taskId } = this.props.match.params;
+
+    this.preRunningAction();
+
+    try {
+      await this.props.client.mutate({
+        mutation: cancelTaskQuery,
+        variables: {
+          taskId,
+        },
+      });
+    } catch (error) {
+      this.postRunningFailedAction(error);
+      throw error;
+    }
+  };
+
 
   scheduleTask = async () => {
     const { taskId } = this.props.match.params;
@@ -762,6 +802,18 @@ export default class ViewTask extends Component {
               </Grid>
             </Grid>
             <SpeedDial>
+            {!('cancel' in actionData) && (
+                <SpeedDialAction
+                  requiresAuth
+                  tooltipOpen
+                  ButtonProps={{
+                    disabled: actionLoading,
+                  }}
+                  icon={<CloseIcon />}
+                  tooltipTitle="Cancel"
+                  onClick={this.handleCancelTaskClick}
+                />
+              )}
               {!('rerun' in actionData) && (
                 <SpeedDialAction
                   requiresAuth

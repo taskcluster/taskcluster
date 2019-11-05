@@ -50,7 +50,7 @@ export default class TaskActionForm extends Component {
           </Typography>
           {action.kind === 'hook' && (
             <Typography gutterBottom>
-              This action trigers hook{' '}
+              This action triggers hook{' '}
               <code>
                 {action.hookGroupId}/{action.hookId}
               </code>
