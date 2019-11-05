@@ -291,10 +291,8 @@ tasks:
                 source: ${repo.url}
         in:
           $flattenDeep:
-          - $if: 'tasks_for == "github-push"'
+          # only build pushes to master; everything else should be tested in a PR
+          - $if: 'tasks_for == "github-push" && event["ref"] == "refs/heads/master"'
             then: {$eval: allTasks}
           - $if: 'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]'
-            then:
-              # We can skip this if pushed to our own repo since push event will get it
-              $if: 'event.pull_request.base.repo.id != event.pull_request.head.repo.id'
-              then: {$eval: allTasks}
+            then: {$eval: allTasks}
