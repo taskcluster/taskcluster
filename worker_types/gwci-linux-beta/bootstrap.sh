@@ -6,7 +6,7 @@ exec &> /var/log/bootstrap.log
 # Versions ###########################
 LIVELOG_VERSION='v1.1.0'
 TASKCLUSTER_PROXY_VERSION='v5.1.0'
-GENERIC_WORKER_BRANCH='bug1588834'
+GENERIC_WORKER_BRANCH='bug1593483-part2'
 ######################################
 
 function retry {

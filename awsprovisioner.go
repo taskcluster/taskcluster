@@ -34,10 +34,36 @@ type AWSProvisionerUserData struct {
 	SecurityToken       string          `json:"securityToken"`
 }
 
-func updateConfigAWSProvisioner(c *gwconfig.Config, awsMetadata map[string][]byte, userData *AWSProvisionerUserData) error {
-	c.ProvisionerID = userData.ProvisionerID
-	c.ProvisionerBaseURL = userData.ProvisionerBaseURL
-	c.RootURL = userData.TaskclusterRootURL
+type AWSProvisioner struct {
+	UserData *AWSProvisionerUserData
+}
+
+func (a *AWSProvisioner) NewestDeploymentID() (string, error) {
+	log.Print("Checking if there is a new deploymentId...")
+	wtr, err := provisioner.WorkerType(config.WorkerType)
+	if err != nil {
+		return "", fmt.Errorf("**** Can't reach provisioner to see if there is a new deploymentId: %v", err)
+	}
+	workerTypeDefinitionUserData := new(BootstrapConfig)
+	err = json.Unmarshal(wtr.UserData, &workerTypeDefinitionUserData)
+	if err != nil {
+		return "", errors.New("WARNING: Can't decode /userData portion of worker type definition - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")
+	}
+	publicHostSetup, err := workerTypeDefinitionUserData.PublicHostSetup()
+	if err != nil {
+		return "", fmt.Errorf("WARNING: Can't extract public host setup from latest userdata for worker type %v - not shutting down as latest user data is probably botched: %v", config.WorkerType, err)
+	}
+	return publicHostSetup.Config.DeploymentID, nil
+}
+
+func (a *AWSProvisioner) UpdateConfig(c *gwconfig.Config) error {
+	_, err := AWSUpdateConfig(c)
+	if err != nil {
+		return err
+	}
+	c.ProvisionerID = a.UserData.ProvisionerID
+	c.ProvisionerBaseURL = a.UserData.ProvisionerBaseURL
+	c.RootURL = a.UserData.TaskclusterRootURL
 
 	// We need an AWS Provisioner client for fetching taskcluster credentials.
 	// Ensure auth is disabled in client, since we don't have credentials yet.
@@ -45,9 +71,9 @@ func updateConfigAWSProvisioner(c *gwconfig.Config, awsMetadata map[string][]byt
 	awsprov.Authenticate = false
 	awsprov.Credentials = nil
 
-	secToken, getErr := awsprov.GetSecret(userData.SecurityToken)
+	secToken, getErr := awsprov.GetSecret(a.UserData.SecurityToken)
 	// remove secrets even if we couldn't retrieve them!
-	removeErr := awsprov.RemoveSecret(userData.SecurityToken)
+	removeErr := awsprov.RemoveSecret(a.UserData.SecurityToken)
 	if getErr != nil {
 		// serious error
 		return fmt.Errorf("Could not fetch credentials from AWS Provisioner: %v", getErr)
@@ -60,26 +86,8 @@ func updateConfigAWSProvisioner(c *gwconfig.Config, awsMetadata map[string][]byt
 	c.AccessToken = secToken.Credentials.AccessToken
 	c.Certificate = secToken.Credentials.Certificate
 	c.ClientID = secToken.Credentials.ClientID
-	c.WorkerGroup = userData.Region
-	c.WorkerType = userData.WorkerType
+	c.WorkerGroup = a.UserData.Region
+	c.WorkerType = a.UserData.WorkerType
 
-	newestDeploymentID = func() (string, error) {
-		log.Print("Checking if there is a new deploymentId...")
-		wtr, err := provisioner.WorkerType(config.WorkerType)
-		if err != nil {
-			return "", fmt.Errorf("**** Can't reach provisioner to see if there is a new deploymentId: %v", err)
-		}
-		workerTypeDefinitionUserData := new(BootstrapConfig)
-		err = json.Unmarshal(wtr.UserData, &workerTypeDefinitionUserData)
-		if err != nil {
-			return "", errors.New("WARNING: Can't decode /userData portion of worker type definition - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")
-		}
-		publicHostSetup, err := workerTypeDefinitionUserData.PublicHostSetup()
-		if err != nil {
-			return "", fmt.Errorf("WARNING: Can't extract public host setup from latest userdata for worker type %v - not shutting down as latest user data is probably botched: %v", config.WorkerType, err)
-		}
-		return publicHostSetup.Config.DeploymentID, nil
-	}
-
-	return Bootstrap(c, &userData.Data, "worker-type")
+	return Bootstrap(c, &a.UserData.Data, "worker-type")
 }

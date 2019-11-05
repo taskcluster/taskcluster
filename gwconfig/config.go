@@ -1,9 +1,13 @@
 package gwconfig
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
+	"os"
 	"reflect"
 
 	"github.com/taskcluster/generic-worker/fileutil"
@@ -82,12 +86,6 @@ type (
 		Setting string
 	}
 )
-
-// Persist writes config to json file
-func (c *Config) Persist(file string) error {
-	log.Print("Creating file " + file + "...")
-	return fileutil.WriteToFileAsJSON(c, file)
-}
 
 func (c *Config) String() string {
 	cCopy := *c
@@ -218,4 +216,56 @@ func (c *Config) WorkerManager() *tcworkermanager.WorkerManager {
 		workerManager.BaseURL = c.WorkerManagerBaseURL
 	}
 	return workerManager
+}
+
+type File struct {
+	Path string
+}
+
+func (cf *File) NewestDeploymentID() (string, error) {
+	configData, err := ioutil.ReadFile(cf.Path)
+	if err != nil {
+		return "", err
+	}
+	var tempConfig Config
+	err = json.Unmarshal(configData, &tempConfig)
+	if err != nil {
+		return "", err
+	}
+	return tempConfig.DeploymentID, nil
+}
+
+func (cf *File) UpdateConfig(c *Config) error {
+	log.Printf("Loading generic-worker config file '%v'...", cf.Path)
+	configData, err := ioutil.ReadFile(cf.Path)
+	if err != nil {
+		return err
+	}
+	buffer := bytes.NewBuffer(configData)
+	decoder := json.NewDecoder(buffer)
+	decoder.DisallowUnknownFields()
+	var newConfig Config
+	err = decoder.Decode(&newConfig)
+	if err != nil {
+		// An error here is serious - it means the file existed but was invalid
+		return fmt.Errorf("Error unmarshaling generic worker config file %v as JSON: %v", cf.Path, err)
+	}
+	err = c.MergeInJSON(configData, func(a map[string]interface{}) map[string]interface{} {
+		return a
+	})
+	if err != nil {
+		return fmt.Errorf("Error overlaying config file %v on top of defaults: %v", cf.Path, err)
+	}
+	return nil
+}
+
+// Persist writes config to json file
+func (cf *File) Persist(c *Config) error {
+	log.Print("Creating file " + cf.Path + "...")
+	return fileutil.WriteToFileAsJSON(c, cf.Path)
+}
+
+func (cf *File) DoesNotExist() bool {
+	_, err := os.Stat(cf.Path)
+	return err != nil && os.IsNotExist(err)
 }

@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/taskcluster/generic-worker/gwconfig"
 	"github.com/taskcluster/taskcluster-client-go/tcworkermanager"
 )
 
@@ -122,7 +123,10 @@ func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 		t.Log("HTTP server for mock Provisioner and GCP metadata endpoints stopped")
 	}()
 	var err error
-	config, err = loadConfig(filepath.Join(testdataDir, t.Name(), "generic-worker.config"), false, true)
+	configFile := &gwconfig.File{
+		Path: filepath.Join(testdataDir, t.Name(), "generic-worker.config"),
+	}
+	configProvider, err = loadConfig(configFile, false, true)
 	if err != nil {
 		t.Fatalf("Error: %v", err)
 	}
