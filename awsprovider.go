@@ -8,13 +8,25 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/tcworkermanager"
 )
 
-func updateConfigAWSProvider(c *gwconfig.Config, awsMetadata map[string][]byte, userData *WorkerManagerUserData) error {
+type AWSProvider struct {
+	UserData *WorkerManagerUserData
+}
 
+func (a *AWSProvider) NewestDeploymentID() (string, error) {
+	return WMDeploymentID()
+}
+
+func (a *AWSProvider) UpdateConfig(c *gwconfig.Config) error {
+
+	awsMetadata, err := AWSUpdateConfig(c)
+	if err != nil {
+		return err
+	}
 	providerType := &tcworkermanager.AwsProviderType{
 		// Document must be a string, not an object
 		Document:  json.RawMessage(fmt.Sprintf(`%q`, string(awsMetadata["document"]))),
 		Signature: string(awsMetadata["signature"]),
 	}
 
-	return userData.updateConfig(c, providerType)
+	return a.UserData.UpdateConfig(c, providerType)
 }

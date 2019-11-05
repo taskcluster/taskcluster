@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/taskcluster/generic-worker/gwconfig"
 	"github.com/taskcluster/taskcluster-client-go/tcpurgecache"
 	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
@@ -262,7 +263,10 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 		s.ListenAndServe()
 		t.Log("HTTP server for mock Provisioner and EC2 metadata endpoints stopped")
 	}()
-	config, err = loadConfig(filepath.Join(testdataDir, t.Name(), "generic-worker.config"), true, false)
+	configFile := &gwconfig.File{
+		Path: filepath.Join(testdataDir, t.Name(), "generic-worker.config"),
+	}
+	configProvider, err = loadConfig(configFile, true, false)
 	return func() {
 		td()
 		err := s.Shutdown(context.Background())
@@ -277,20 +281,14 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 	}, err
 }
 
-func (m *MockAWSProvisionedEnvironment) ExpectError(t *testing.T, errorText string) (teardown func()) {
-	var err error
-	teardown, err = m.Setup(t)
+func (m *MockAWSProvisionedEnvironment) ExpectError(t *testing.T, errorText string, err error) {
 	if err == nil || !strings.Contains(err.Error(), errorText) {
 		t.Fatalf("Was expecting error to include %q but got: %v", errorText, err)
 	}
-	return
 }
 
-func (m *MockAWSProvisionedEnvironment) ExpectNoError(t *testing.T) (teardown func()) {
-	var err error
-	teardown, err = m.Setup(t)
+func (m *MockAWSProvisionedEnvironment) ExpectNoError(t *testing.T, err error) {
 	if err != nil {
 		t.Fatalf("Was expecting no error but got: %v", err)
 	}
-	return
 }

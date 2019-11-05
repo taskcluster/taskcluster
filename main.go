@@ -10,7 +10,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -54,19 +53,11 @@ var (
 	taskContext = &TaskContext{}
 	// queue is the object we will use for accessing queue api. See
 	// https://docs.taskcluster.net/reference/platform/queue/api-docs
-	queue      *tcqueue.Queue
-	config     *gwconfig.Config
-	configFile string
-	Features   []Feature
-
-	// newestDeploymentID is an overwritable function to fetch the
-	// latest/newest/most-recent deployment ID. When not running under AWS
-	// Provisioner nor Worker Manager, this function simply checks the local
-	// generic-worker.config file. If running under AWS Provisioner or Worker
-	// Manager, newestDeploymentID is replaced with a function that fetches
-	// the worker's deployment ID from the latest config for the worker's
-	// worker type.
-	newestDeploymentID func() (string, error)
+	queue          *tcqueue.Queue
+	config         *gwconfig.Config
+	configProvider gwconfig.Provider
+	configFile     string
+	Features       []Feature
 
 	logName = "public/logs/live_backing.log"
 	logPath = filepath.Join("generic-worker", "live_backing.log")
@@ -129,8 +120,15 @@ func main() {
 	case arguments["run"]:
 		configureForAWS = arguments["--configure-for-aws"].(bool)
 		configureForGCP = arguments["--configure-for-gcp"].(bool)
-		configFile = arguments["--config"].(string)
-		config, err = loadConfig(configFile, configureForAWS, configureForGCP)
+
+		configFileAbs, err := filepath.Abs(arguments["--config"].(string))
+		exitOnError(CANT_LOAD_CONFIG, err, "Cannot determine absolute path location for generic-worker config file '%v'", arguments["--config"])
+
+		configFile := &gwconfig.File{
+			Path: configFileAbs,
+		}
+
+		configProvider, err = loadConfig(configFile, configureForAWS, configureForGCP)
 
 		// We need to persist the generic-worker config file if we fetched it
 		// over the network, for example if the config is fetched from the AWS
@@ -149,11 +147,11 @@ func main() {
 		// logs, so this should provide a reliable way to inspect what config
 		// was in the case of an unexpected failure, including default values
 		// for config settings not provided in the user-supplied config file.
-		if _, statError := os.Stat(configFile); os.IsNotExist(statError) && config != nil {
-			err = config.Persist(configFile)
-			exitOnError(CANT_SAVE_CONFIG, err, "Not able to persist config file %v", configFile)
+		if configFile.DoesNotExist() {
+			errPersist := configFile.Persist(config)
+			exitOnError(CANT_SAVE_CONFIG, errPersist, "Not able to persist config file %v", configFile)
 		}
-		exitOnError(CANT_LOAD_CONFIG, err, "Error loading configuration file %v", configFile)
+		exitOnError(CANT_LOAD_CONFIG, err, "Error loading configuration")
 
 		// Config known to be loaded successfully at this point...
 
@@ -202,12 +200,18 @@ func main() {
 	}
 }
 
-func loadConfig(filename string, queryAWSUserData bool, queryGCPMetaData bool) (*gwconfig.Config, error) {
-	// TODO: would be better to have a json schema, and also define defaults in
-	// only one place if possible (defaults also declared in `usage`)
+func loadConfig(configFile *gwconfig.File, queryAWSUserData bool, queryGCPMetaData bool) (gwconfig.Provider, error) {
+
+	configProvider, err := ConfigProvider(configFile, queryAWSUserData, queryGCPMetaData)
+	if err != nil {
+		return nil, err
+	}
 
 	// first assign defaults
-	c := &gwconfig.Config{
+
+	// TODO: would be better to have a json schema, and also define defaults in
+	// only one place if possible (defaults also declared in `usage`)
+	config = &gwconfig.Config{
 		PublicConfig: gwconfig.PublicConfig{
 			AuthBaseURL:                    "",
 			CachesDir:                      "caches",
@@ -242,63 +246,21 @@ func loadConfig(filename string, queryAWSUserData bool, queryGCPMetaData bool) (
 		},
 	}
 
-	newestDeploymentID = func() (string, error) {
-		configData, err := ioutil.ReadFile(configFile)
-		if err != nil {
-			return "", err
-		}
-		var tempConfig gwconfig.Config
-		err = json.Unmarshal(configData, &tempConfig)
-		if err != nil {
-			return "", err
-		}
-		return tempConfig.DeploymentID, nil
-	}
-
-	configFileAbs, err := filepath.Abs(filename)
-	if err != nil {
-		return nil, fmt.Errorf("Cannot determine absolute path location for generic-worker config file '%v': %v", filename, err)
-	}
-
-	log.Printf("Loading generic-worker config file '%v'...", configFileAbs)
-	configData, err := ioutil.ReadFile(configFileAbs)
-	// configFileAbs won't exist on the first run of generic-worker in gcp/aws
-	// so an error here could indicate that we need to fetch config externally
-	if err != nil {
-		// overlay with data from amazon/gcp, if applicable
-		switch {
-		case queryAWSUserData:
-			err = updateConfigWithAmazonSettings(c)
-		case queryGCPMetaData:
-			err = updateConfigWithGCPSettings(c)
-		default:
-			// don't wrap this with fmt.Errorf as different platforms produce different error text, so easier to process native error type
-			return nil, err
-		}
-		if err != nil {
-			return nil, fmt.Errorf("FATAL: problem retrieving config/secrets from aws/gcp: %v", err)
-		}
+	if configFile.DoesNotExist() {
+		// apply values from provider
+		err = configProvider.UpdateConfig(config)
 	} else {
-		buffer := bytes.NewBuffer(configData)
-		decoder := json.NewDecoder(buffer)
-		decoder.DisallowUnknownFields()
-		var newConfig gwconfig.Config
-		err = decoder.Decode(&newConfig)
-		if err != nil {
-			// An error here is serious - it means the file existed but was invalid
-			return c, fmt.Errorf("Error unmarshaling generic worker config file %v as JSON: %v", configFileAbs, err)
-		}
-		err = c.MergeInJSON(configData, func(a map[string]interface{}) map[string]interface{} {
-			return a
-		})
-		if err != nil {
-			return c, fmt.Errorf("Error overlaying config file %v on top of defaults: %v", configFileAbs, err)
-		}
+		// apply values from config file
+		err = configFile.UpdateConfig(config)
 	}
 
-	// Add any useful worker config to worker metadata
-	c.WorkerTypeMetadata["config"] = map[string]interface{}{
-		"deploymentId": c.DeploymentID,
+	if err != nil {
+		return nil, err
+	}
+
+	// Add useful worker config to worker metadata
+	config.WorkerTypeMetadata["config"] = map[string]interface{}{
+		"deploymentId": config.DeploymentID,
 	}
 	gwMetadata := map[string]interface{}{
 		"go-arch":    runtime.GOARCH,
@@ -312,8 +274,26 @@ func loadConfig(filename string, queryAWSUserData bool, queryGCPMetaData bool) (
 		gwMetadata["revision"] = revision
 		gwMetadata["source"] = "https://github.com/taskcluster/generic-worker/commits/" + revision
 	}
-	c.WorkerTypeMetadata["generic-worker"] = gwMetadata
-	return c, nil
+	config.WorkerTypeMetadata["generic-worker"] = gwMetadata
+	return configProvider, nil
+}
+
+func ConfigProvider(configFile *gwconfig.File, queryAWSUserData bool, queryGCPMetaData bool) (gwconfig.Provider, error) {
+	var configProvider gwconfig.Provider
+	switch {
+	case queryAWSUserData:
+		var err error
+		configProvider, err = InferAWSConfigProvider()
+		if err != nil {
+			return nil, err
+		}
+	case queryGCPMetaData:
+		configProvider = &GCPConfigProvider{}
+	default:
+		configProvider = configFile
+	}
+
+	return configProvider, nil
 }
 
 var exposer expose.Exposer
@@ -564,7 +544,7 @@ func RunWorker() (exitCode ExitCode) {
 }
 
 func deploymentIDUpdated() bool {
-	latestDeploymentID, err := newestDeploymentID()
+	latestDeploymentID, err := configProvider.NewestDeploymentID()
 	switch {
 	case err != nil:
 		log.Printf("%v", err)

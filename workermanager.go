@@ -19,7 +19,7 @@ type WorkerManagerUserData struct {
 	WorkerConfig BootstrapConfig `json:"workerConfig"`
 }
 
-func (userData *WorkerManagerUserData) updateConfig(c *gwconfig.Config, providerType interface{}) error {
+func (userData *WorkerManagerUserData) UpdateConfig(c *gwconfig.Config, providerType interface{}) error {
 	wp := strings.SplitN(userData.WorkerPoolID, "/", -1)
 	if len(wp) != 2 {
 		return fmt.Errorf("Was expecting WorkerPoolID to have syntax <provisionerId>/<workerType> but was %q", userData.WorkerPoolID)
@@ -59,29 +59,31 @@ func (userData *WorkerManagerUserData) updateConfig(c *gwconfig.Config, provider
 
 	// TODO: process reg.Expires
 
-	newestDeploymentID = func() (string, error) {
-		log.Print("Checking if there is a new deploymentId...")
-		wpfd, err := wm.WorkerPool(c.ProvisionerID + "/" + c.WorkerType)
-		if err != nil {
-			return "", fmt.Errorf("**** Can't reach worker-manager to see if there is a new deploymentId: %v", err)
-		}
-		workerManagerConfig := new(WorkerManagerConfig)
-		err = json.Unmarshal(wpfd.Config, &workerManagerConfig)
-		if err != nil {
-			return "", errors.New("WARNING: Can't decode /userData portion of worker type definition - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")
-		}
-
-		if len(workerManagerConfig.LaunchConfigs) < 1 {
-			return "", errors.New("WARNING: No launchConfigs in worker pool configuration - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")
-		}
-
-		publicHostSetup, err := workerManagerConfig.LaunchConfigs[0].WorkerConfig.PublicHostSetup()
-		if err != nil {
-			return "", fmt.Errorf("WARNING: Can't extract public host setup from latest userdata for worker type %v - not shutting down as latest user data is probably botched: %v", config.WorkerType, err)
-		}
-		return publicHostSetup.Config.DeploymentID, nil
-	}
 	return Bootstrap(c, &userData.WorkerConfig, "worker-pool")
+}
+
+func WMDeploymentID() (string, error) {
+	log.Print("Checking if there is a new deploymentId...")
+	wm := config.WorkerManager()
+	wpfd, err := wm.WorkerPool(config.ProvisionerID + "/" + config.WorkerType)
+	if err != nil {
+		return "", fmt.Errorf("**** Can't reach worker-manager to see if there is a new deploymentId: %v", err)
+	}
+	workerManagerConfig := new(WorkerManagerConfig)
+	err = json.Unmarshal(wpfd.Config, &workerManagerConfig)
+	if err != nil {
+		return "", errors.New("WARNING: Can't decode /userData portion of worker type definition - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")
+	}
+
+	if len(workerManagerConfig.LaunchConfigs) < 1 {
+		return "", errors.New("WARNING: No launchConfigs in worker pool configuration - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")
+	}
+
+	publicHostSetup, err := workerManagerConfig.LaunchConfigs[0].WorkerConfig.PublicHostSetup()
+	if err != nil {
+		return "", fmt.Errorf("WARNING: Can't extract public host setup from latest userdata for worker type %v - not shutting down as latest user data is probably botched: %v", config.WorkerType, err)
+	}
+	return publicHostSetup.Config.DeploymentID, nil
 }
 
 type WorkerManagerLaunchConfig struct {

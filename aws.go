@@ -45,9 +45,9 @@ type AWSWorkerLocation struct {
 	AvailabilityZone string `json:"availabilityZone"`
 }
 
-func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
+func AWSUpdateConfig(c *gwconfig.Config) (awsMetadata map[string][]byte, err error) {
 
-	awsMetadata := map[string][]byte{}
+	awsMetadata = map[string][]byte{}
 	for _, url := range []string{
 		EC2MetadataBaseURL + "/meta-data/public-ipv4",
 		EC2MetadataBaseURL + "/meta-data/public-hostname",
@@ -56,18 +56,21 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 		EC2MetadataBaseURL + "/user-data",
 	} {
 		key := url[strings.LastIndex(url, "/")+1:]
-		value, err := queryAWSMetaData(url)
+		var value []byte
+		value, err = queryAWSMetaData(url)
 		if err != nil {
 			// not being able to read metadata is serious error
-			return fmt.Errorf("Error querying AWS metadata url %v: %v", url, err)
+			err = fmt.Errorf("Error querying AWS metadata url %v: %v", url, err)
+			return
 		}
 		awsMetadata[key] = value
 	}
 
 	iid := new(InstanceIdentityDocument)
-	err := json.Unmarshal(awsMetadata["document"], iid)
+	err = json.Unmarshal(awsMetadata["document"], iid)
 	if err != nil {
-		return fmt.Errorf("Could not interpret id document as json: %v: %v", string(awsMetadata["document"]), err)
+		err = fmt.Errorf("Could not interpret id document as json: %v: %v", string(awsMetadata["document"]), err)
+		return
 	}
 
 	c.WorkerTypeMetadata["aws"] = map[string]string{
@@ -89,11 +92,6 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	c.InstanceType = iid.InstanceType
 	c.AvailabilityZone = iid.AvailabilityZone
 
-	err = providerSpecificUpdates(c, awsMetadata)
-	if err != nil {
-		return err
-	}
-
 	// Don't override WorkerLocation if configuration specifies an explicit
 	// value.
 	//
@@ -106,43 +104,50 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 			Region:           c.Region,
 			AvailabilityZone: c.AvailabilityZone,
 		}
-
-		workerLocationJSON, err := json.Marshal(workerLocation)
+		var workerLocationJSON []byte
+		workerLocationJSON, err = json.Marshal(workerLocation)
 		if err != nil {
-			return fmt.Errorf("Error encoding worker location %#v as JSON: %v", workerLocation, err)
+			err = fmt.Errorf("Error encoding worker location %#v as JSON: %v", workerLocation, err)
+			return
 		}
 		c.WorkerLocation = string(workerLocationJSON)
 	}
-	return nil
+	return
 }
 
-// providerSpecificUpdates determines whether the instance was spawned by the
-// AWS Provisioner or the AWS Provider, and applies config updates accordingly.
-func providerSpecificUpdates(c *gwconfig.Config, awsMetadata map[string][]byte) error {
-
-	// Test if running under AWS Provisioner...
+// InferAWSConfigProvider determines whether the instance was spawned by the
+// AWS Provisioner or the AWS Provider, and returns the appropriate Provider.
+func InferAWSConfigProvider() (gwconfig.Provider, error) {
+	userdataBytes, err := queryAWSMetaData(EC2MetadataBaseURL + "/user-data")
+	if err != nil {
+		// if we can't read user data, this is a serious problem
+		return nil, fmt.Errorf("Could not read user data: %v", err)
+	}
+	// If running under AWS Provisioner, we should have a `taskclusterRootUrl` property set in userdata ...
 	awsProvisionerUserData := new(AWSProvisionerUserData)
-	err := json.Unmarshal(awsMetadata["user-data"], awsProvisionerUserData)
+	err = json.Unmarshal(userdataBytes, awsProvisionerUserData)
 	if err != nil {
 		// if we can't parse user data, this is a serious problem
-		return fmt.Errorf("Could not parse user data %v: %v", string(awsMetadata["user-data"]), err)
+		return nil, fmt.Errorf("Could not unmarshal userdata %q into AWSProvisionerUserData struct: %v", string(userdataBytes), err)
 	}
 	if awsProvisionerUserData.TaskclusterRootURL != "" {
-		return updateConfigAWSProvisioner(c, awsMetadata, awsProvisionerUserData)
+		return &AWSProvisioner{
+			UserData: awsProvisionerUserData,
+		}, nil
 	}
-
-	// Test if running under AWS Provider...
+	// If running under AWS Provider, we should have a `rootUrl` property set in userdata ...
 	awsProviderUserData := new(WorkerManagerUserData)
-	err = json.Unmarshal(awsMetadata["user-data"], awsProviderUserData)
+	err = json.Unmarshal(userdataBytes, awsProviderUserData)
 	if err != nil {
 		// if we can't parse user data, this is a serious problem
-		return fmt.Errorf("Could not parse user data %v: %v", string(awsMetadata["user-data"]), err)
+		return nil, fmt.Errorf("Could not unmarshal userdata %q into WorkerManagerUserData struct: %v", string(userdataBytes), err)
 	}
 	if awsProviderUserData.RootURL != "" {
-		return updateConfigAWSProvider(c, awsMetadata, awsProviderUserData)
+		return &AWSProvider{
+			UserData: awsProviderUserData,
+		}, nil
 	}
-
-	return fmt.Errorf("Userdata is neither recognised as valid AWS Provisioner userdata nor as AWS Provider userdata: %v", string(awsMetadata["user-data"]))
+	return nil, fmt.Errorf("Userdata is neither recognised as valid AWS Provisioner userdata nor as AWS Provider userdata: %q", string(userdataBytes))
 }
 
 func handleWorkerShutdown(abort func()) func() {

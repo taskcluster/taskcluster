@@ -170,11 +170,19 @@ func setup(t *testing.T) (teardown func()) {
 			},
 		},
 	}
-	newestDeploymentID = func() (string, error) {
-		return config.DeploymentID, nil
-	}
+	configProvider = &TestProvider{}
 	setConfigRunTasksAsCurrentUser()
 	return teardown
+}
+
+type TestProvider struct{}
+
+func (tp *TestProvider) NewestDeploymentID() (string, error) {
+	return config.DeploymentID, nil
+}
+
+func (tp *TestProvider) UpdateConfig(c *gwconfig.Config) error {
+	return nil
 }
 
 // testWorkerType returns a fake workerType identifier that conforms to

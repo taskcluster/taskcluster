@@ -10,7 +10,9 @@ func TestWorkerShutdown(t *testing.T) {
 	m := &MockAWSProvisionedEnvironment{
 		Terminating: true,
 	}
-	defer m.ExpectNoError(t)()
+	teardown, err := m.Setup(t)
+	defer teardown()
+	m.ExpectNoError(t, err)
 	payload := GenericWorkerPayload{
 		Command:    sleep(20),
 		MaxRunTime: 15,

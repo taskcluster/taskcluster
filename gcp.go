@@ -20,6 +20,15 @@ var (
 	GCPMetadataBaseURL = "http://metadata.google.internal/computeMetadata/v1"
 )
 
+type GCPConfigProvider struct {
+}
+
+type GCPWorkerLocation struct {
+	Cloud  string `json:"cloud"`
+	Region string `json:"region"`
+	Zone   string `json:"zone"`
+}
+
 func queryGCPMetaData(client *http.Client, path string) ([]byte, error) {
 	req, err := http.NewRequest("GET", GCPMetadataBaseURL+path, nil)
 
@@ -37,13 +46,7 @@ func queryGCPMetaData(client *http.Client, path string) ([]byte, error) {
 	return ioutil.ReadAll(resp.Body)
 }
 
-type GCPWorkerLocation struct {
-	Cloud  string `json:"cloud"`
-	Region string `json:"region"`
-	Zone   string `json:"zone"`
-}
-
-func updateConfigWithGCPSettings(c *gwconfig.Config) error {
+func (g *GCPConfigProvider) UpdateConfig(c *gwconfig.Config) error {
 	log.Print("Querying GCP Metadata to get default worker type config settings...")
 
 	client := &http.Client{}
@@ -100,7 +103,7 @@ func updateConfigWithGCPSettings(c *gwconfig.Config) error {
 		Token: string(identity),
 	}
 
-	err = userData.updateConfig(c, providerType)
+	err = userData.UpdateConfig(c, providerType)
 	if err != nil {
 		return err
 	}
@@ -125,4 +128,8 @@ func updateConfigWithGCPSettings(c *gwconfig.Config) error {
 		c.WorkerLocation = string(workerLocationJSON)
 	}
 	return nil
+}
+
+func (g *GCPConfigProvider) NewestDeploymentID() (string, error) {
+	return WMDeploymentID()
 }
