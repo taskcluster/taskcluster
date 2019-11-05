@@ -13,7 +13,7 @@ exports.tasks.push({
     const randomId = taskcluster.slugid();
     const roleId = `project:taskcluster:smoketest:${randomId}:*`;
     const payload = {
-      description: 'smoketest test',
+      description: 'smoketest for creating a role and expanding it',
       scopes: ['project:taskcluster:smoketest:<..>/*'],
     };
     const expandPayload = {
@@ -31,9 +31,9 @@ exports.tasks.push({
     const anHourAgo = Date.now() - (1000*60*60);
     while (1) {
       const res = await auth.listRoles2();
-      for(let i=0;i<res.roles.length;i++){
-        if(res.roles[i].roleId.includes('project:taskcluster:smoketest:') && res.roles[i].lastModified < anHourAgo){
-          await auth.deleteRole(res.roles[i].roleId);
+      for(let role of res.roles){
+        if(role.roleId.includes('project:taskcluster:smoketest:') && role.lastModified < new Date(anHourAgo)){
+          await auth.deleteRole(role.roleId);
         }
       }
       if (res.continuationToken) {
