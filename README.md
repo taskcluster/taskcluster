@@ -851,10 +851,16 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
-In v16.5.3 since v16.5.2
+In v16.5.4 since v16.5.3
 ========================
 
 * [Bug 1593483 - generic-worker looks for deploymentId in the wrong place](https://bugzil.la/1593483)
+
+In v16.5.3 since v16.5.2
+========================
+
+This release was intended to fix bug 1593483 but unfortunately did not. Bug
+1593483 was later fixed in 16.5.4.
 
 In v16.5.2 since v16.5.1
 ========================
