@@ -34,6 +34,7 @@ class GoogleProvider extends Provider {
       intervalDefault: 100 * 1000, // Intervals are enforced every 100 seconds
       intervalCapDefault: 2000, // The calls we make are all limited 20/sec so 20 * 100 are allowed
       monitor: this.monitor,
+      providerId: this.providerId,
       errorHandler: ({err, tries}) => {
         if (err.code === 403) { // google hands out 403 for rate limiting; back off significantly
           // google's interval is 100 seconds so let's try once optimistically and a second time to get it for sure

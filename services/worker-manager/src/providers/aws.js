@@ -70,6 +70,7 @@ class AwsProvider extends Provider {
       intervalDefault: this.providerConfig.intervalDefault,
       intervalCapDefault: this.providerConfig.intervalCapDefault,
       monitor: this.monitor,
+      providerId: this.providerId,
       errorHandler: ({err, tries}) => {
         if (err.code === 'RequestLimitExceeded') {
           return {backoff: this.providerConfig._backoffDelay * Math.pow(2, tries), reason: 'RequestLimitExceeded', level: 'warning'};
