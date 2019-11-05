@@ -392,8 +392,17 @@ export default class TaskRunsCard extends Component {
                     button
                     className={classes.listItemButton}
                     onClick={this.handleToggleMore}>
-                    <ListItemText primary={showMore ? 'Less...' : 'More...'} />
-                    {showMore ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                    <ListItemText
+                      disableTypography
+                      primary={
+                        <Typography
+                          variant="subtitle1"
+                          align="center"
+                          color="textSecondary">
+                          {showMore ? 'See Less' : 'See More'}
+                        </Typography>
+                      }
+                    />
                   </ListItem>
                 </List>
                 <Collapse in={showMore} timeout="auto">
