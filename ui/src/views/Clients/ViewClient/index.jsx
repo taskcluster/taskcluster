@@ -17,6 +17,7 @@ import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Typography from '@material-ui/core/Typography';
 import { addYears } from 'date-fns';
+import { scopeIntersection } from 'taskcluster-lib-scopes';
 import Snackbar from '../../../components/Snackbar';
 import Dashboard from '../../../components/Dashboard';
 import ClientForm from '../../../components/ClientForm';
@@ -27,6 +28,7 @@ import deleteClientQuery from './deleteClient.graphql';
 import disableClientQuery from './disableClient.graphql';
 import enableClientQuery from './enableClient.graphql';
 import resetAccessTokenQuery from './resetAccessToken.graphql';
+import currentScopesQuery from './currentScopes.graphql';
 import clientQuery from './client.graphql';
 import { THEME } from '../../../utils/constants';
 import fromNow from '../../../utils/fromNow';
@@ -36,12 +38,21 @@ import { withAuth } from '../../../utils/Auth';
 @withAuth
 @withApollo
 @graphql(clientQuery, {
+  name: 'clientData',
   skip: ({ match: { params } }) => !params.clientId,
   options: ({ match: { params } }) => ({
+    fetchPolicy: 'network-only',
     variables: {
       clientId: decodeURIComponent(params.clientId),
     },
   }),
+})
+@graphql(currentScopesQuery, {
+  name: 'currentScopesData',
+  skip: ({ user }) => !user,
+  options: {
+    fetchPolicy: 'network-only',
+  },
 })
 @withStyles(theme => ({
   listItemButton: {
@@ -142,7 +153,7 @@ export default class ViewClient extends Component {
 
   handleResetAccessToken = async clientId => {
     const {
-      data: { refetch },
+      clientData: { refetch },
       client,
     } = this.props;
 
@@ -267,7 +278,14 @@ export default class ViewClient extends Component {
       dialogError,
       dialogOpen,
     } = this.state;
-    const { isNewClient, data, classes, location, user } = this.props;
+    const {
+      isNewClient,
+      clientData,
+      currentScopesData,
+      classes,
+      location,
+      user,
+    } = this.props;
     const query = parse(location.search.slice(1));
     const initialClient = {
       description: query.description,
@@ -283,8 +301,19 @@ export default class ViewClient extends Component {
     const isCliLogin = Boolean(query.callback_url);
 
     // CLI login
-    if (isCliLogin && user) {
-      initialClient.clientId = `${user.credentials.clientId}/${query.name}`;
+    if (
+      isCliLogin &&
+      user &&
+      currentScopesData &&
+      currentScopesData.currentScopes
+    ) {
+      Object.assign(initialClient, {
+        clientId: `${user.credentials.clientId}/${query.name}`,
+        scopes: scopeIntersection(
+          initialClient.scopes,
+          currentScopesData.currentScopes
+        ),
+      });
     }
 
     if (location.state && location.state.accessToken) {
@@ -333,6 +362,7 @@ export default class ViewClient extends Component {
               <Fragment>
                 <ErrorPanel fixed error={error} />
                 <ClientForm
+                  key={JSON.stringify(initialClient)}
                   loading={loading}
                   client={initialClient}
                   isNewClient
@@ -341,13 +371,23 @@ export default class ViewClient extends Component {
               </Fragment>
             ) : (
               <Fragment>
-                {data.loading && <Spinner loading />}
-                <ErrorPanel fixed error={error || data.error} />
-                {data && data.client && (
+                {((clientData && clientData.loading) ||
+                  (currentScopesData && currentScopesData.loading)) && (
+                  <Spinner loading />
+                )}
+                <ErrorPanel
+                  fixed
+                  error={
+                    error ||
+                    (clientData && clientData.error) ||
+                    (currentScopesData && currentScopesData.error)
+                  }
+                />
+                {clientData && clientData.client && (
                   <ClientForm
                     dialogError={dialogError}
                     loading={loading}
-                    client={data.client}
+                    client={clientData.client}
                     onResetAccessToken={this.handleResetAccessToken}
                     onSaveClient={this.handleSaveClient}
                     onDeleteClient={this.handleDeleteClient}
