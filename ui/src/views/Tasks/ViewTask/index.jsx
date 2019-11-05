@@ -478,8 +478,11 @@ export default class ViewTask extends Component {
                   Update deadlines and other timestamps for the current time
                 </li>
                 <li>Strip self-dependencies from the task definition</li>
+                <li>
+                  Set number of <code>retries</code> to zero
+                </li>
               </ul>
-              Note: this may not work with all tasks.
+              <Typography>Note: this may not work with all tasks.</Typography>
             </Typography>
           </Fragment>
         ),
