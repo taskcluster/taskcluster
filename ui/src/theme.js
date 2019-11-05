@@ -301,6 +301,9 @@ const createTheme = isDarkTheme => {
         },
       },
       MuiTableCell: {
+        head: {
+          fontSize: '0.75rem',
+        },
         root: {
           borderBottom: `1px solid ${
             isDarkTheme ? THEME.TEN_PERCENT_WHITE : THEME.TEN_PERCENT_BLACK

@@ -40,7 +40,6 @@ import { pageInfo } from '../../utils/prop-types';
     height: theme.spacing(4),
   },
   sortHeader: {
-    fontSize: '0.75rem',
     color: theme.palette.text.secondary,
   },
 }))

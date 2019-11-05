@@ -24,7 +24,6 @@ import TablePagination from '@material-ui/core/TablePagination';
     overflowX: 'auto',
   },
   sortHeader: {
-    fontSize: '0.75rem',
     color: theme.palette.text.secondary,
   },
 }))

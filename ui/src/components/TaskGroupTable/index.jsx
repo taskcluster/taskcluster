@@ -116,6 +116,7 @@ const createSortedTasks = memoize(
     height: theme.spacing(4),
     '& > [role="columnheader"]': {
       paddingBottom: theme.spacing(2),
+      paddingTop: theme.spacing(0.5),
     },
   },
   tableHeadCell: {
