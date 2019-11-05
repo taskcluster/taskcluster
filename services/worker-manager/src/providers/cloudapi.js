@@ -34,8 +34,10 @@ class CloudAPI {
     intervalCapDefault,
     monitor,
     errorHandler,
+    providerId,
   }) {
     this.queues = {};
+    this.providerId = providerId;
     this.errorHandler = errorHandler;
     this.monitor = monitor;
     for (const type of types) {
