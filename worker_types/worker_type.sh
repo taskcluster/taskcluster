@@ -50,10 +50,7 @@ echo "$(date): Starting"'!'
 # cd into directory containing script...
 cd "$(dirname "${0}")/${WORKER_TYPE}"
 
-# generate a random slugid for aws client token...
-go get github.com/taskcluster/slugid-go/slugid
-go install github.com/taskcluster/generic-worker/update-worker-type
-export SLUGID=$("${GOPATH}/bin/slug")
+export GW_COMMIT_SHA="$(git rev-parse HEAD)"
 
 # aws ec2 describe-regions --query '{A:Regions[*].RegionName}' --output text | grep -v sa-east-1 | while read x REGION; do
 # (skip sa-east-1 since it doesn't support all the APIs we use in this script)

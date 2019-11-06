@@ -39,7 +39,7 @@ done
 
 # create new base ami, and apply user-data
 # filter output, to get INSTANCE_ID
-INSTANCE_ID="$(aws --region "${REGION}" ec2 run-instances --image-id "${AMI}" --key-name "${WORKER_TYPE}_${REGION}" --security-groups "rdp-only" "ssh-only" --user-data "$(cat "${TEMP_SETUP_SCRIPT}")" --instance-type c4.2xlarge --block-device-mappings DeviceName=/dev/sda1,Ebs='{VolumeSize=75,DeleteOnTermination=true,VolumeType=gp2}' --instance-initiated-shutdown-behavior stop --client-token "${SLUGID}" --query 'Instances[*].InstanceId' --output text)"
+INSTANCE_ID="$(aws --region "${REGION}" ec2 run-instances --image-id "${AMI}" --key-name "${WORKER_TYPE}_${REGION}" --security-groups "rdp-only" "ssh-only" --user-data "$(cat "${TEMP_SETUP_SCRIPT}")" --instance-type c4.2xlarge --block-device-mappings DeviceName=/dev/sda1,Ebs='{VolumeSize=75,DeleteOnTermination=true,VolumeType=gp2}' --instance-initiated-shutdown-behavior stop --client-token "${GW_COMMIT_SHA}" --query 'Instances[*].InstanceId' --output text)"
 
 log "I've triggered the creation of instance ${INSTANCE_ID} - it can take a \x1B[4mVery Long Time™\x1B[24m for it to be created and bootstrapped..."
 aws --region "${REGION}" ec2 create-tags --resources "${INSTANCE_ID}" --tags "Key=WorkerType,Value=aws-provisioner-v1/${WORKER_TYPE}" "Key=Name,Value=${WORKER_TYPE} base instance" "Key=TC-Windows-Base,Value=true"
@@ -75,7 +75,7 @@ rm "${TEMP_SETUP_SCRIPT}"
 
 log "Now snapshotting the instance to create an AMI..."
 # now capture the AMI
-IMAGE_ID="$(aws --region "${REGION}" ec2 create-image --instance-id "${INSTANCE_ID}" --name "${WORKER_TYPE} mozillabuild version ${SLUGID}" --description "generic-worker ${SLUGID}" --output text)"
+IMAGE_ID="$(aws --region "${REGION}" ec2 create-image --instance-id "${INSTANCE_ID}" --name "${WORKER_TYPE} generic-worker version ${GW_COMMIT_SHA}" --description "generic-worker ${GW_COMMIT_SHA}" --output text)"
 
 log "The AMI is currently being created: ${IMAGE_ID}"
 
