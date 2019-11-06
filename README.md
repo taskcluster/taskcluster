@@ -851,8 +851,16 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v16.5.5 since v16.5.4
+========================
+
+* [Bug 1594353 - generic-worker: "Not able to secure config file" on Windows](https://bugzil.la/1594353)
+
 In v16.5.4 since v16.5.3
 ========================
+
+This release is also unfortunately broken on Windows Server 2012 R2 (although runs on all other
+supported platforms including Windows 7 and Windows 10). Fixed in 16.5.5.
 
 * [Bug 1593483 - generic-worker looks for deploymentId in the wrong place](https://bugzil.la/1593483)
 
