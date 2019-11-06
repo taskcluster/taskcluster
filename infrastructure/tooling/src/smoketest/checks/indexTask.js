@@ -11,7 +11,6 @@ exports.tasks.push({
     let queue = new taskcluster.Queue(taskcluster.fromEnvVars());
     let randomId = taskcluster.slugid();
     const findIndexedTask='project.taskcluster.smoketest.' + randomId;
-    console.log('edil: ', randomId);
     let task = {
       provisionerId: 'built-in',
       workerType: 'succeed',
@@ -30,20 +29,17 @@ exports.tasks.push({
     utils.status({message: 'indexTask-find taskId: ' + randomId});
     await queue.createTask(randomId, task);
     let index = new taskcluster.Index(taskcluster.fromEnvVars());
-    console.log('edil3 ', index.findTask(findIndexedTask));
     await new Promise(resolve => setTimeout(resolve, 5000));
-    await index.findTask(findIndexedTask);
-    let status2 = await queue.status(randomId);
-    console.log('edil4 ', status2.status.state);
     let pollForStatusStart = new Date();
     while((new Date() - pollForStatusStart) < 120000){
       let status = await queue.status(randomId);
+      let finded = await index.findTask(findIndexedTask);
       if (status.status.state === 'pending' || status.status.state === 'running'){
         utils.status({
           message: 'Current status: ' + status.status.state,
         });
         await new Promise(resolve => setTimeout(resolve, 1000));
-      } else if (status.status.state === "completed") {
+      } else if (finded) {
         return;
       } else {
         throw new Error('Task finished with status ' + status.status.state);
