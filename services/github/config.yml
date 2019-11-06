@@ -12,7 +12,7 @@ defaults:
     checksToTasksTableName: 'TaskclusterChecksToTasks'
     checkTaskRoute: 'checks'
     statusTaskRoute: 'statuses'
-    statusContext: 'Taskcluster'
+    statusContext: !env APPLICATION_NAME
     botName: !env BOT_USERNAME
 
   taskcluster:
@@ -59,7 +59,6 @@ production:
     deprecatedInitialStatusQueue: 'stat-init'
     resultStatusQueue: 'ch-result'
     initialStatusQueue: 'ch-init'
-    botName: 'taskcluster[bot]'
 
   intree:
     provisionerId: 'aws-provisioner-v1'
@@ -87,7 +86,6 @@ staging:
     ownersDirectoryTableName: 'TaskclusterIntegrationOwnersStaging'
     name: 'tc-github-staging'
     statusContext: 'Taskcluster-Staging'
-    botName: 'taskcluster-staging[bot]'
 
   intree:
     provisionerId: 'aws-provisioner-v1'
@@ -111,6 +109,7 @@ test:
     deprecatedInitialStatusQueue: 'deprecated-tasks'
     resultStatusQueue: 'checks-statuses'
     initialStatusQueue: 'checks-tasks'
+    statusContext: 'Taskcluster-Test'
 
   webhook:
     secret: ['abc123', 'def456']

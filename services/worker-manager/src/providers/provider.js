@@ -65,7 +65,7 @@ class Provider {
   async checkWorker({worker}) {
   }
 
-  async scanCleanup() {
+  async scanCleanup({responsibleFor}) {
   }
 
   async createWorker({workerPool, workerGroup, workerId, input}) {

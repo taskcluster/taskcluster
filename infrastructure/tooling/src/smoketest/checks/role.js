@@ -1,10 +1,21 @@
 const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 
+exports.scopeExpression = {
+  AllOf: [
+    "auth:create-role:project:taskcluster:smoketest:*",
+    "auth:delete-role:project:taskcluster:smoketest:*",
+    "auth:update-role:project:taskcluster:smoketest:*",
+    "project:taskcluster:smoketest:*",
+  ],
+};
+
 exports.tasks = [];
 exports.tasks.push({
   title: 'Create role and expand smoketest (--target roles)',
-  requires: [],
+  requires: [
+    'ping-auth',
+  ],
   provides: [
     'target-roles',
   ],
@@ -13,7 +24,7 @@ exports.tasks.push({
     const randomId = taskcluster.slugid();
     const roleId = `project:taskcluster:smoketest:${randomId}:*`;
     const payload = {
-      description: 'smoketest test',
+      description: 'smoketest for creating a role and expanding it',
       scopes: ['project:taskcluster:smoketest:<..>/*'],
     };
     const expandPayload = {
@@ -31,9 +42,9 @@ exports.tasks.push({
     const anHourAgo = Date.now() - (1000*60*60);
     while (1) {
       const res = await auth.listRoles2();
-      for(let i=0;i<res.roles.length;i++){
-        if(res.roles[i].roleId.includes('project:taskcluster:smoketest:') && res.roles[i].lastModified < anHourAgo){
-          await auth.deleteRole(res.roles[i].roleId);
+      for(let role of res.roles){
+        if(role.roleId.includes('project:taskcluster:smoketest:') && role.lastModified < new Date(anHourAgo)){
+          await auth.deleteRole(role.roleId);
         }
       }
       if (res.continuationToken) {

@@ -13,9 +13,6 @@
 <h5 align="center">The task execution framework that supports Mozilla's continuous integration and release processes.</h5>
 
 <p align="center">
-  <a href="https://github.taskcluster.net/v1/repository/taskcluster/taskcluster/master/latest">
-    <img src="https://github.taskcluster.net/v1/repository/taskcluster/taskcluster/master/badge.svg" alt="Task Status">
-  </a>
   <a href="http://mozilla.org/MPL/2.0">
     <img src="https://img.shields.io/badge/license-MPL%202.0-orange.svg" alt="License">
   </a>

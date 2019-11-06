@@ -100,8 +100,12 @@ class FakeGithub {
       },
       'repos.listStatusesForRef': async ({owner, repo, ref}) => {
         const key = `${owner}/${repo}@${ref}`;
-        if (this._statuses[key]) {
-          return {data: this._statuses[key]};
+        const info = this._statuses[key];
+        if (info && info.errorStatus) {
+          throwError(info.errorStatus);
+        }
+        if (info) {
+          return {data: info};
         } else {
           throwError(404);
         }

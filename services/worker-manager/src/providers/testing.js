@@ -44,7 +44,7 @@ class TestingProvider extends Provider {
     });
   }
 
-  async scanCleanup() {
+  async scanCleanup({responsibleFor}) {
     this.monitor.notice('scan-cleanup', {});
   }
 
