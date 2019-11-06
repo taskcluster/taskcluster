@@ -1,9 +1,7 @@
 package fileutil
 
 import (
-	"golang.org/x/sys/windows"
-
-	acl "github.com/hectane/go-acl"
+	"github.com/taskcluster/generic-worker/host"
 )
 
 // SecureFiles modifies the discretionary access control list (DACL) of each
@@ -11,16 +9,7 @@ import (
 // Administrators group have read/write access to it.
 func SecureFiles(filepaths []string) (err error) {
 	for _, path := range filepaths {
-		err = acl.Apply(
-			// file
-			path,
-			// delete existing permissions (ACLs)
-			true,
-			// don't inherit permissions (ACLs)
-			false,
-			// grant Administrators group full control
-			acl.GrantName(windows.GENERIC_ALL, "Administrators"),
-		)
+		err = host.Run("icacls", path, "/grant:r", "Administrators:(GA)", "/inheritance:r")
 		if err != nil {
 			return
 		}

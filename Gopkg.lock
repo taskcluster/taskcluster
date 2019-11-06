@@ -177,17 +177,6 @@
   version = "v1.4.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:8a187cfc0da6aea41d2bc0f2d8fe09ccbca7441eab9cb63764b2842891e8481a"
-  name = "github.com/hectane/go-acl"
-  packages = [
-    ".",
-    "api",
-  ]
-  pruneopts = "UT"
-  revision = "e28f47eff0c447e859f6c95bf830678734822412"
-
-[[projects]]
   digest = "1:bb81097a5b62634f3e9fec1014657855610c82d19b9a40c17612e32651e35dca"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
@@ -526,7 +515,6 @@
     "github.com/getsentry/raven-go",
     "github.com/ghodss/yaml",
     "github.com/gorilla/websocket",
-    "github.com/hectane/go-acl",
     "github.com/kr/text",
     "github.com/mholt/archiver",
     "github.com/peterbourgon/mergemap",

@@ -45,10 +45,6 @@
   version = "1.0.0"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/hectane/go-acl"
-
-[[constraint]]
   name = "github.com/kr/text"
   version = "0.1.0"
 
