@@ -8,6 +8,6 @@ const (
 	engine = "simple"
 )
 
-func secureConfigFile() {
-	log.Print("WARNING: can't secure generic-worker config file")
+func secure(configFile string) {
+	log.Printf("WARNING: can't secure generic-worker config file %q", configFile)
 }

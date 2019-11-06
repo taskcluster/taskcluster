@@ -56,7 +56,6 @@ var (
 	queue          *tcqueue.Queue
 	config         *gwconfig.Config
 	configProvider gwconfig.Provider
-	configFile     string
 	Features       []Feature
 
 	logName = "public/logs/live_backing.log"
@@ -162,7 +161,7 @@ func main() {
 		//   process, then we can't avoid that tasks can read the config file,
 		//   we can just hope that the config file is at least not writable by
 		//   the current user. In this case we won't change file permissions.
-		secureConfigFile()
+		secure(configFile.Path)
 
 		exitCode := RunWorker()
 		log.Printf("Exiting worker with exit code %v", exitCode)
