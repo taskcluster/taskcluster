@@ -21,6 +21,9 @@ func SecureFiles(filepaths []string) (err error) {
 			// grant Administrators group full control
 			acl.GrantName(windows.GENERIC_ALL, "Administrators"),
 		)
+		if err != nil {
+			return
+		}
 	}
 	return
 }
