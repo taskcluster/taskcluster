@@ -21,10 +21,10 @@ const (
 	engine = "multiuser"
 )
 
-func secureConfigFile() {
+func secure(configFile string) {
 	if !config.RunTasksAsCurrentUser {
 		secureError := fileutil.SecureFiles([]string{configFile})
-		exitOnError(CANT_SECURE_CONFIG, secureError, "Not able to secure config file %v", configFile)
+		exitOnError(CANT_SECURE_CONFIG, secureError, "Not able to secure config file %q", configFile)
 	}
 }
 

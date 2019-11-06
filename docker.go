@@ -8,7 +8,7 @@ const (
 	engine = "docker"
 )
 
-func secureConfigFile() {
+func secure(configFile string) {
 }
 
 func MkdirAllTaskUser(dir string, perms os.FileMode) (err error) {
