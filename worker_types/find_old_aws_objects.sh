@@ -1,6 +1,6 @@
 # query old instances
 log "Querying old instances..."
-OLD_INSTANCES="$(aws --region "${REGION}" ec2 describe-instances --filters "Name=tag:WorkerType,Values=aws-provisioner-v1/${WORKER_TYPE}" --query 'Reservations[*].Instances[*].InstanceId' --output text)"
+OLD_INSTANCES="$(aws --region "${REGION}" ec2 describe-instances --filters "Name=tag:WorkerType,Values=${WORKER_POOL}" --query 'Reservations[*].Instances[*].InstanceId' --output text)"
 
 # find old amis
 log "Querying previous AMI..."
