@@ -1231,6 +1231,7 @@ func exitOnError(exitCode ExitCode, err error, logMessage string, args ...interf
 		return
 	}
 	log.Printf(logMessage, args...)
-	log.Printf("%v", err)
+	log.Printf("Root cause: %v", err)
+	log.Printf("%#v (%T)", err, err)
 	os.Exit(int(exitCode))
 }
