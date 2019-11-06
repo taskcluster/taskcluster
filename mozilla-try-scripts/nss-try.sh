@@ -27,7 +27,7 @@ if ! echo "${NEW_VERSION}" | grep -q "${VALID_FORMAT}"; then
   exit 65
 fi
 
-../worker_types/worker_type.sh nss-win2012r2-new update
+../worker_types/worker_type.sh aws aws-provisioner-v1/nss-win2012r2-new update
 
 NSS_CHECKOUT="$(mktemp -d -t nss-checkout.XXXXXXXXXX)"
 cd "${NSS_CHECKOUT}"
