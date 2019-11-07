@@ -163,6 +163,7 @@ const extras = {
       {type: '!env', var: 'GRAPHQL_SUBSCRIPTION_ENDPOINT'},
       {type: '!env', var: 'GRAPHQL_ENDPOINT'},
       {type: '!env', var: 'UI_LOGIN_STRATEGY_NAMES'},
+      {type: '!env', var: 'BANNER_MESSAGE'},
     ],
     procs: {
       web: {
