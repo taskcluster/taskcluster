@@ -19,6 +19,7 @@ const Roboto500 = { fontFamily: 'Roboto500, sans-serif' };
 const success = {
   main: green[500],
   dark: green[700],
+  contrastText: THEME.PRIMARY_TEXT_DARK,
 };
 const warning = {
   main: amber[500],
