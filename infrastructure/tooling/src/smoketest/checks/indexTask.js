@@ -1,5 +1,12 @@
 const taskcluster = require('taskcluster-client');
 
+exports.scopeExpression = {
+  AllOf: [
+    'queue:create-task:highest:built-in/succeed',
+    'queue:scheduler-id:-',
+  ],
+};
+
 exports.tasks = [];
 exports.tasks.push({
   title: 'create an indexed task and find it in the index',
@@ -10,7 +17,7 @@ exports.tasks.push({
   run: async (requirements, utils) => {
     let queue = new taskcluster.Queue(taskcluster.fromEnvVars());
     let randomId = taskcluster.slugid();
-    const findIndexedTask='project.taskcluster.smoketest.' + randomId;
+    const taskIndex='project.taskcluster.smoketest.' + randomId;
     let task = {
       provisionerId: 'built-in',
       workerType: 'succeed',
@@ -24,7 +31,7 @@ exports.tasks.push({
         source: "https://taskcluster.net",
       },
       payload: {},
-      routes: [`index.project.taskcluster.smoketest.${randomId}`],
+      routes: [`index.${taskIndex}`],
     };
     utils.status({message: 'indexTask-find taskId: ' + randomId});
     await queue.createTask(randomId, task);
@@ -33,7 +40,7 @@ exports.tasks.push({
     let pollForStatusStart = new Date();
     while((new Date() - pollForStatusStart) < 120000){
       let status = await queue.status(randomId);
-      let finded = await index.findTask(findIndexedTask);
+      let finded = await index.findTask(taskIndex);
       if (status.status.state === 'pending' || status.status.state === 'running'){
         utils.status({
           message: 'Current status: ' + status.status.state,
@@ -42,7 +49,7 @@ exports.tasks.push({
       } else if (finded) {
         return;
       } else {
-        throw new Error('Task finished with status ' + status.status.state);
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
     throw new Error('Deadline exceeded');
