@@ -1,6 +1,6 @@
 export default {
   RUNNING: 'info',
-  PENDING: 'warning',
+  PENDING: 'default',
   SCHEDULED: 'default',
   UNSCHEDULED: 'default',
   COMPLETED: 'success',
