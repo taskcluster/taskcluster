@@ -41,14 +41,15 @@ export default class TaskLog extends Component {
       classes,
       match,
       stream,
-      data: { task }, 
+      data: { task },
     } = this.props;
-    
     const url = decodeURIComponent(match.params.logUrl);
     const run = this.getCurrentRun();
-  
+
     return (
-      <Dashboard title={`${task ? task.metadata.name : 'Task'} Log`} disablePadding>
+      <Dashboard
+        title={`${task ? task.metadata.name : 'Task'} Log`}
+        disablePadding>
         <Helmet state={run && run.state} />
         <Log
           url={url}
