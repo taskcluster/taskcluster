@@ -63,6 +63,9 @@ import { pageInfo, WMError } from '../../utils/prop-types';
     top: theme.spacing(1),
     right: theme.spacing(1),
   },
+  errorReported: {
+    paddingRight: theme.spacing(2),
+  },
 }))
 export default class WorkerManagerErrorsTable extends Component {
   static propTypes = {
@@ -186,6 +189,7 @@ export default class WorkerManagerErrorsTable extends Component {
           <TableCell>
             <TableCellItem button>
               <ListItemText
+                className={classes.errorReported}
                 disableTypography
                 primary={
                   <Typography variant="body2">

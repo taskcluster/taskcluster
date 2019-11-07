@@ -4,6 +4,7 @@ import { formatDistanceStrict, parseISO } from 'date-fns';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { withStyles } from '@material-ui/core/styles';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import TableCell from '@material-ui/core/TableCell';
@@ -28,6 +29,11 @@ const sorted = pipe(
       }`
   )
 );
+@withStyles(theme => ({
+  tableCellText: {
+    paddingRight: theme.spacing(2),
+  },
+}))
 
 /**
  * Display relevant information about workers in a table.
@@ -110,6 +116,7 @@ export default class WorkersTable extends Component {
       workerType,
       onPageChange,
       workersConnection,
+      classes,
       ...props
     } = this.props;
     const iconSize = 16;
@@ -143,6 +150,7 @@ export default class WorkersTable extends Component {
                 to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${workerGroup}/${workerId}`}>
                 <TableCellItem button>
                   <ListItemText
+                    className={classes.tableCellText}
                     disableTypography
                     primary={
                       <Typography variant="body2">{workerId}</Typography>
@@ -156,6 +164,7 @@ export default class WorkersTable extends Component {
               <TableCell>
                 <TableCellItem button>
                   <ListItemText
+                    className={classes.tableCellText}
                     disableTypography
                     primary={
                       <Typography variant="body2">
@@ -173,6 +182,7 @@ export default class WorkersTable extends Component {
                   to={`/tasks/${latestTask.run.taskId}/runs/${latestTask.run.runId}`}>
                   <TableCellItem button>
                     <ListItemText
+                      className={classes.tableCellText}
                       disableTypography
                       primary={
                         <Typography variant="body2">
@@ -201,6 +211,7 @@ export default class WorkersTable extends Component {
                 <TableCell>
                   <TableCellItem button>
                     <ListItemText
+                      className={classes.tableCellText}
                       disableTypography
                       primary={
                         <Typography variant="body2">
@@ -224,6 +235,7 @@ export default class WorkersTable extends Component {
                 <TableCell>
                   <TableCellItem button>
                     <ListItemText
+                      className={classes.tableCellText}
                       disableTypography
                       primary={
                         <Typography variant="body2">
