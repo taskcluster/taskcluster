@@ -190,7 +190,6 @@
       "config:base",
       "schedule:earlyMondays"
     ],
-    "schedule": "at any time",
     "prHourlyLimit": 0,
     "prConcurrentLimit": 9,
     "rangeStrategy": "update-lockfile",
