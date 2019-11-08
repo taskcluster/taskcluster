@@ -10099,10 +10099,10 @@ react-router@^4.3.1:
     prop-types "^15.6.1"
     warning "^4.0.1"
 
-react-schema-viewer@^3.2.0:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/react-schema-viewer/-/react-schema-viewer-3.2.1.tgz#15ae05ef72cda3d4dc0b62c422c347a39717ec42"
-  integrity sha512-h366c/CiVzGSsOZpvoxtlQuWCX/ScvV2FNc4QIDPahurgL55YMo5hnfI66wqlKjxNkf8txgtbbwcUNfeCAfapg==
+react-schema-viewer@^3.2.2:
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/react-schema-viewer/-/react-schema-viewer-3.2.2.tgz#c2d970251cec16a0d06a99f3724667dcd41b1e28"
+  integrity sha512-Kh7oNKVoEPDr8ExVg1N9DcIoJlZ5xXvA3VyRl765Z7XbG0afAakvUD4W1Ss9kBUgXNlKhzFZDaNukVzrNLt2Wg==
   dependencies:
     bootstrap "^3.3.7"
     joi-to-json-schema "^3.0.0"
@@ -11879,7 +11879,8 @@ tar@^4:
     yallist "^3.0.3"
 
 "taskcluster-lib-scopes@link:../libraries/scopes":
-  version "22.0.0"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
