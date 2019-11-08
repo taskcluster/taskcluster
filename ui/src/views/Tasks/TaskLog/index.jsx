@@ -48,7 +48,7 @@ export default class TaskLog extends Component {
 
     return (
       <Dashboard
-        title={`${task ? task.metadata.name : 'Task'} Log`}
+        title={task ? `Log ${task.metadata.name}` : 'Log'}
         disablePadding>
         <Helmet state={run && run.state} />
         <Log
