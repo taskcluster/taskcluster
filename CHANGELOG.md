@@ -3,6 +3,41 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v22.1.0
+
+▶ [minor] [#1875](https://github.com/taskcluster/taskcluster/issues/1875)
+Taskcluster UI now adds the ability to cancel a task from the Task view
+
+▶ [minor] [#1919](https://github.com/taskcluster/taskcluster/issues/1919)
+Taskcluster UI now exposes an additional env var `BANNER_MESSAGE` to inform users with important messages (e.g., "Taskcluster will be down for maintenance on November 11") in the UI.
+
+▶ [patch] [bug 1588083](http://bugzil.la/1588083)
+Deployment smoketests can now be run from a `taskcluster/taskcluster-devel:v<version>` Docker image.
+See the deployment documentation for details.
+
+▶ [patch] [#1857](https://github.com/taskcluster/taskcluster/issues/1857)
+Errors regarding `authorizedScopes` are now formatted in Markdown, and thus more readable in error messages in the Taskcluster UI.
+
+▶ [patch] [#1895](https://github.com/taskcluster/taskcluster/issues/1895)
+Taskcluster UI CLI login now uses the intersection of scopes (?scope=...) with the user's scopes to generate the set of scopes added to the client.
+
+▶ [patch] [#1892](https://github.com/taskcluster/taskcluster/issues/1892)
+Taskcluster UI now adds the ability to retrigger a task from the Task view.
+
+▶ [patch] [#1879](https://github.com/taskcluster/taskcluster/issues/1879)
+Taskcluster UI now allows users to copy artifact links from index browser
+through the normal right-click-copy-link.
+
+▶ [patch] [bug 1593809](http://bugzil.la/1593809)
+The taskcluster-github service now correctly uses the `github.bot_username` configuration to look up the latest status for a branch.
+Deployments of Taskcluster should double-check that this value is set correctly; see the [deployment docs](https://docs.taskcluster.net/docs/manual/deploying/github) for details.
+
+▶ [patch] 
+The taskcluster-index service now responds with a 404 and "Indexed task not found" when a task is not found, instead of the misleading "Indexed task has expired".
+
+▶ [patch] [bug 1593754](http://bugzil.la/1593754)
+The web-server service now uses the correct Pulse namespace to listen for pulse messages.  This fixes one more bug preventing task and task-group UI from dynamically updating.
+
 ## v22.0.0
 
 ▶ [MAJOR] [bug 1591591](http://bugzil.la/1591591)
