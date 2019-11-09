@@ -17,6 +17,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
+import grey from '@material-ui/core/colors/grey';
 import ChevronLeftIcon from 'mdi-react/ChevronLeftIcon';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
@@ -43,6 +44,9 @@ const DOTS_VARIANT_LIMIT = 5;
     headline: {
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(2),
+    },
+    reasonResolved: {
+      backgroundColor: `${grey[800]} !important`,
     },
     cardContent: {
       paddingLeft: 0,
@@ -354,37 +358,21 @@ export default class TaskRunsCard extends Component {
                       </ListItem>
                     </List>
                   </Collapse>
-                  <CopyToClipboard
-                    title={`${run.scheduled} (Copy)`}
-                    text={run.scheduled}>
-                    <ListItem button className={classes.listItemButton}>
-                      <ListItemText
-                        primary="Scheduled"
-                        secondary={<DateDistance from={run.scheduled} />}
-                      />
-                      <ContentCopyIcon />
-                    </ListItem>
-                  </CopyToClipboard>
-                  <CopyToClipboard
-                    title={`${run.started} (Copy)`}
-                    text={run.started}>
-                    <ListItem button className={classes.listItemButton}>
-                      <ListItemText
-                        primary="Started"
-                        secondary={
-                          run.started ? (
-                            <DateDistance
-                              from={run.started}
-                              offset={run.scheduled}
-                            />
-                          ) : (
-                            <em>n/a</em>
-                          )
-                        }
-                      />
-                      <ContentCopyIcon />
-                    </ListItem>
-                  </CopyToClipboard>
+                  <ListItem>
+                    <ListItemText
+                      primary="Reason Resolved"
+                      secondary={
+                        run.reasonResolved ? (
+                          <StatusLabel
+                            state={run.reasonResolved}
+                            className={classes.reasonResolved}
+                          />
+                        ) : (
+                          <em>n/a</em>
+                        )
+                      }
+                    />
+                  </ListItem>
                   <CopyToClipboard
                     title={`${run.resolved} (Copy)`}
                     text={run.resolved}>
@@ -427,21 +415,45 @@ export default class TaskRunsCard extends Component {
                     <ListItem>
                       <ListItemText
                         primary="Reason Created"
-                        secondary={<StatusLabel state={run.reasonCreated} />}
-                      />
-                    </ListItem>
-                    <ListItem>
-                      <ListItemText
-                        primary="Reason Resolved"
                         secondary={
-                          run.reasonResolved ? (
-                            <StatusLabel state={run.reasonResolved} />
-                          ) : (
-                            <em>n/a</em>
-                          )
+                          <StatusLabel
+                            state={run.reasonCreated}
+                            className={classes.reasonResolved}
+                          />
                         }
                       />
                     </ListItem>
+                    <CopyToClipboard
+                      title={`${run.scheduled} (Copy)`}
+                      text={run.scheduled}>
+                      <ListItem button className={classes.listItemButton}>
+                        <ListItemText
+                          primary="Scheduled"
+                          secondary={<DateDistance from={run.scheduled} />}
+                        />
+                        <ContentCopyIcon />
+                      </ListItem>
+                    </CopyToClipboard>
+                    <CopyToClipboard
+                      title={`${run.started} (Copy)`}
+                      text={run.started}>
+                      <ListItem button className={classes.listItemButton}>
+                        <ListItemText
+                          primary="Started"
+                          secondary={
+                            run.started ? (
+                              <DateDistance
+                                from={run.started}
+                                offset={run.scheduled}
+                              />
+                            ) : (
+                              <em>n/a</em>
+                            )
+                          }
+                        />
+                        <ContentCopyIcon />
+                      </ListItem>
+                    </CopyToClipboard>
                     <ListItem>
                       <ListItemText
                         primary="Worker Group"
