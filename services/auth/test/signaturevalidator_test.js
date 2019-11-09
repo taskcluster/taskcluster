@@ -427,9 +427,20 @@ suite(testing.suiteName(), function() {
         authorizedScopes: ['scope1:*', 'scope2'],
       },
     },
-  }, failed('Supplied credentials do not satisfy authorizedScopes; '
-    + `credentials have scopes [${clients.unpriv.scopes}]; `
-    + 'authorizedScopes are [scope1:*,scope2]'));
+  }, failed([
+    'Supplied credentials do not satisfy authorizedScopes; credentials have scopes:',
+    '',
+    '```',
+    clients.unpriv.scopes.join('\n'),
+    '```',
+    '',
+    'authorizedScopes are:',
+    '',
+    '```',
+    'scope1:*',
+    'scope2',
+    '```',
+  ].join('\n')));
 
   makeTest('invalid: authorizedScopes not an array', {
     authorization: {
@@ -559,9 +570,20 @@ suite(testing.suiteName(), function() {
         authorizedScopes: ['scope1', 'scope2'],
       },
     },
-  }), failed('Supplied credentials do not satisfy authorizedScopes; '
-    + `credentials have scopes [${clients.unpriv.scopes}]; `
-    + 'authorizedScopes are [scope1,scope2]'));
+  }), failed([
+    'Supplied credentials do not satisfy authorizedScopes; credentials have scopes:',
+    '',
+    '```',
+    'scope2',
+    '```',
+    '',
+    'authorizedScopes are:',
+    '',
+    '```',
+    'scope1',
+    'scope2',
+    '```',
+  ].join('\n')));
 
   testWithTemp('invalid: temporary credentials with authorizedScopes, temp not satisfied', {
     id: 'unpriv',

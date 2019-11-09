@@ -373,7 +373,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await simulateJobMessage({
         user: 'TaskclusterRobotCollaborator',
         base: '0000000000000000000000000000000000000000',
-        eventType: 'tag'}
+        eventType: 'tag'},
       );
 
       assert(handlers.createTasks.calledWith({scopes: sinon.match.array, tasks: sinon.match.array}));
@@ -716,7 +716,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
           assert(args.target_url.startsWith(URL_PREFIX));
           let taskGroupId = args.target_url.substr(URL_PREFIX.length);
           assert.equal(taskGroupId, TASKGROUPID);
-          assert.equal(/Taskcluster \((.*)\)/.exec(args.context)[1], 'push');
+          assert.equal(/Taskcluster-Test \((.*)\)/.exec(args.context)[1], 'push');
         }
       });
     }

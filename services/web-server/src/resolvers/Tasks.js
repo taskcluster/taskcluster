@@ -92,7 +92,8 @@ module.exports = {
       const queue = task.options
         ? clients.queue.use(task.options)
         : clients.queue;
-      const { status } = await queue.createTask(taskId, task);
+      const { options: _, ...taskWithoutOptions } = task;
+      const { status } = await queue.createTask(taskId, taskWithoutOptions);
 
       return new TaskStatus(taskId, status);
     },
@@ -117,7 +118,7 @@ module.exports = {
       subscribe(
         parent,
         { taskGroupId, subscriptions },
-        { pulseEngine, clients }
+        { pulseEngine, clients },
       ) {
         const routingKey = { taskGroupId };
 
@@ -131,7 +132,7 @@ module.exports = {
               exchange: binding.exchange,
               pattern: binding.routingKeyPattern,
             };
-          })
+          }),
         );
       },
       resolve: ({ tasksSubscriptions }) => {

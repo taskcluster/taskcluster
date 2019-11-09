@@ -145,9 +145,20 @@ async function installationAuthenticate(owner, OwnersDirectory, github) {
  Returns either status object or undefined (if not found).
 ***/
 async function findTCStatus(github, owner, repo, branch, configuration) {
-  let taskclusterBot = (await github.users.getByUsername({username: configuration.app.botName})).data;
+  const botName = configuration.app.botName;
+  const username = botName.endsWith('[bot]') ? botName : `${botName}[bot]`;
+  const taskclusterBot = (await github.users.getByUsername({username})).data;
   // Statuses is an array of status objects, where we find the relevant status
-  let statuses = (await github.repos.listStatusesForRef({owner, repo, ref: branch})).data;
+  let statuses;
+
+  try {
+    statuses = (await github.repos.listStatusesForRef({owner, repo, ref: branch})).data;
+  } catch (e) {
+    if (e.code === 404) {
+      return undefined;
+    }
+    throw e;
+  }
   return statuses.find(statusObject => statusObject.creator.id === taskclusterBot.id);
 }
 
@@ -459,17 +470,14 @@ builder.declare({
 
   // Get task group ID
   if (instGithub) {
-    try {
-      let status = await findTCStatus(instGithub, owner, repo, branch, this.cfg);
+    let status = await findTCStatus(instGithub, owner, repo, branch, this.cfg);
 
-      return res.redirect(status.target_url);
-    } catch (e) {
-      debug(`Error creating link: ${JSON.stringify(e)}`);
-      await this.monitor.reportError(e);
-      return res.status(500).send();
+    if (!status) {
+      return res.reportError('ResourceNotFound', 'Status not found', {});
     }
+
+    return res.redirect(status.target_url);
   }
-  return res.status(404).send();
 });
 
 builder.declare({

@@ -55,6 +55,7 @@ import submitTaskAction from '../submitTaskAction';
 import taskQuery from './task.graphql';
 import scheduleTaskQuery from './scheduleTask.graphql';
 import rerunTaskQuery from './rerunTask.graphql';
+import cancelTaskQuery from './cancelTask.graphql';
 import purgeWorkerCacheQuery from './purgeWorkerCache.graphql';
 import pageArtifactsQuery from './pageArtifacts.graphql';
 import createTaskQuery from '../createTask.graphql';
@@ -307,9 +308,19 @@ export default class ViewTask extends Component {
     this.props.data.refetch();
   };
 
+  handleCancelComplete = () => {
+    this.handleActionDialogClose();
+    this.props.data.refetch();
+  };
+
   handleCreateInteractiveComplete = taskId => {
     this.handleActionDialogClose();
     this.props.history.push(`/tasks/${taskId}/connect`);
+  };
+
+  handleRetriggerComplete = taskId => {
+    this.handleActionDialogClose();
+    this.props.history.push(`/tasks/${taskId}`);
   };
 
   handleCreateInteractiveTaskClick = () => {
@@ -453,6 +464,57 @@ export default class ViewTask extends Component {
     });
   };
 
+  handleCancelTaskClick = () => {
+    const title = 'Cancel Task';
+
+    this.setState({
+      dialogOpen: true,
+      dialogActionProps: {
+        fullScreen: false,
+        title: `${title}?`,
+        onSubmit: this.cancelTask,
+        onComplete: this.handleCancelComplete,
+        confirmText: title,
+      },
+    });
+  };
+
+  handleRetriggerTaskClick = () => {
+    const title = 'Retrigger';
+
+    this.setState({
+      dialogOpen: true,
+      dialogActionProps: {
+        fullScreen: false,
+        body: (
+          <Fragment>
+            <Typography>
+              This will duplicate the task and create it under a different{' '}
+              <code>taskId</code>.
+            </Typography>
+            <Typography>
+              The new task will be altered to:
+              <ul>
+                <li>
+                  Update deadlines and other timestamps for the current time
+                </li>
+                <li>Strip self-dependencies from the task definition</li>
+                <li>
+                  Set number of <code>retries</code> to zero
+                </li>
+              </ul>
+              <Typography>Note: this may not work with all tasks.</Typography>
+            </Typography>
+          </Fragment>
+        ),
+        title: `${title}?`,
+        onSubmit: this.retriggerTask,
+        onComplete: this.handleRetriggerComplete,
+        confirmText: title,
+      },
+    });
+  };
+
   handleRerunTaskClick = () => {
     const title = 'Rerun';
 
@@ -582,6 +644,24 @@ export default class ViewTask extends Component {
     }
   };
 
+  cancelTask = async () => {
+    const { taskId } = this.props.match.params;
+
+    this.preRunningAction();
+
+    try {
+      await this.props.client.mutate({
+        mutation: cancelTaskQuery,
+        variables: {
+          taskId,
+        },
+      });
+    } catch (error) {
+      this.postRunningFailedAction(error);
+      throw error;
+    }
+  };
+
   scheduleTask = async () => {
     const { taskId } = this.props.match.params;
 
@@ -594,6 +674,41 @@ export default class ViewTask extends Component {
           taskId,
         },
       });
+    } catch (error) {
+      this.postRunningFailedAction(error);
+      throw error;
+    }
+  };
+
+  retriggerTask = async () => {
+    const taskId = nice();
+    const task = removeKeys(cloneDeep(this.props.data.task), [
+      ...TASK_ADDED_FIELDS,
+      '__typename',
+      'dependencies',
+    ]);
+    const now = Date.now();
+    const created = Date.parse(task.created);
+
+    Object.assign(task, {
+      retries: 0,
+      deadline: new Date(now + Date.parse(task.deadline) - created).toJSON(),
+      expires: new Date(now + Date.parse(task.expires) - created).toJSON(),
+      created: new Date(now).toJSON(),
+    });
+
+    this.preRunningAction();
+
+    try {
+      await this.props.client.mutate({
+        mutation: createTaskQuery,
+        variables: {
+          taskId,
+          task,
+        },
+      });
+
+      return taskId;
     } catch (error) {
       this.postRunningFailedAction(error);
       throw error;
@@ -762,6 +877,30 @@ export default class ViewTask extends Component {
               </Grid>
             </Grid>
             <SpeedDial>
+              {!('cancel' in actionData) && (
+                <SpeedDialAction
+                  requiresAuth
+                  tooltipOpen
+                  ButtonProps={{
+                    disabled: actionLoading,
+                  }}
+                  icon={<CloseIcon />}
+                  tooltipTitle="Cancel"
+                  onClick={this.handleCancelTaskClick}
+                />
+              )}
+              {!('retrigger' in actionData) && (
+                <SpeedDialAction
+                  requiresAuth
+                  tooltipOpen
+                  ButtonProps={{
+                    disabled: actionLoading,
+                  }}
+                  icon={<RestartIcon />}
+                  tooltipTitle="Retrigger"
+                  onClick={this.handleRetriggerTaskClick}
+                />
+              )}
               {!('rerun' in actionData) && (
                 <SpeedDialAction
                   requiresAuth

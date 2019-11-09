@@ -109,7 +109,11 @@ class Provisioner {
           return;
         }
 
-        await provider.provision({workerPool});
+        try {
+          await provider.provision({workerPool});
+        } catch (err) {
+          this.monitor.reportError(err, {providerId: workerPool.providerId}); // Just report this and move on
+        }
 
         await Promise.all(workerPool.previousProviderIds.map(async pId => {
           const provider = this.providers.get(pId);
@@ -119,7 +123,11 @@ class Provisioner {
             return;
           }
 
-          await provider.deprovision({workerPool});
+          try {
+            await provider.deprovision({workerPool});
+          } catch (err) {
+            this.monitor.reportError(err, {providerId: pId}); // Just report this and move on
+          }
         }));
 
         this.monitor.log.workerPoolProvisioned({

@@ -29,9 +29,9 @@ monitorManager.register({
     pendingTasks: 'The number of tasks the queue reports are pending for this worker pool',
     minCapacity: 'The minimum amount of capacity that should be running',
     maxCapacity: 'The maximum amount of capacity that should be running',
-    capacityPerInstance: 'Amount of capacity a single instance provides',
-    running: 'Number of currently requested and running instances',
-    desiredSize: 'Number that this estimator thinks we should have',
+    runningCapacity: 'Amount of currently requested and available capacity',
+    desiredCapacity: 'Amount of capacity that this estimator thinks we should have',
+    requestedCapacity: 'Amount of capacity that this estimator thinks we should add',
   },
 });
 

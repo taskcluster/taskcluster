@@ -127,11 +127,12 @@ class ChangeLog {
       'patch': '[patch] ',
     };
 
-    const silentCount = this.snippets.filter(sn => sn.level === 'silent').length;
-    const changesUrl = `https://github.com/taskcluster/taskcluster/tree/v${await this.next_version()}%5E/changelog`;
+    const silent = this.snippets.filter(sn => sn.level === 'silent' && sn.reference);
+    const silentCount = silent.length;
+    const silentLinks = silent.map(sn => sn.reference).join(', ');
     const silentSuffix = silentCount === 0 ?
       '' :
-      `\n\n*This release includes additional changes that were not considered important enough to mention here; see ${changesUrl} for details.*`;
+      `\n\n▶ Additional change${silentCount === 1 ? '' : 's'} not described here: ${silentLinks}.`;
 
     return this.snippets
       .filter(sn => sn.level !== 'silent')

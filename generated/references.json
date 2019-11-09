@@ -4920,7 +4920,7 @@
           "$ref": "schedule.json#"
         },
         "task": {
-          "description": "Template for the task definition.  This is rendered using [JSON-e](https://taskcluster.github.io/json-e/)\nas described in [firing hooks](/docs/reference/core/taskcluster-hooks/docs/firing-hooks) to produce\na task definition that is submitted to the Queue service.\n",
+          "description": "Template for the task definition.  This is rendered using [JSON-e](https://taskcluster.github.io/json-e/)\nas described in [firing hooks](/docs/reference/core/hooks/firing-hooks) to produce\na task definition that is submitted to the Queue service.\n",
           "title": "Task Template",
           "type": "object"
         },
@@ -4979,7 +4979,7 @@
           "uniqueItems": true
         },
         "task": {
-          "description": "Template for the task definition.  This is rendered using [JSON-e](https://taskcluster.github.io/json-e/)\nas described in [firing hooks](/docs/reference/core/taskcluster-hooks/docs/firing-hooks) to produce\na task definition that is submitted to the Queue service.\n",
+          "description": "Template for the task definition.  This is rendered using [JSON-e](https://taskcluster.github.io/json-e/)\nas described in [firing hooks](/docs/reference/core/hooks/firing-hooks) to produce\na task definition that is submitted to the Queue service.\n",
           "title": "Task Template",
           "type": "object"
         },
@@ -7905,12 +7905,12 @@
         {
           "description": "The simple estimator has decided that we need some number of instances.",
           "fields": {
-            "capacityPerInstance": "Amount of capacity a single instance provides",
-            "desiredSize": "Number that this estimator thinks we should have",
+            "desiredCapacity": "Amount of capacity that this estimator thinks we should have",
             "maxCapacity": "The maximum amount of capacity that should be running",
             "minCapacity": "The minimum amount of capacity that should be running",
             "pendingTasks": "The number of tasks the queue reports are pending for this worker pool",
-            "running": "Number of currently requested and running instances",
+            "requestedCapacity": "Amount of capacity that this estimator thinks we should add",
+            "runningCapacity": "Amount of currently requested and available capacity",
             "workerPoolId": "The worker pool name (provisionerId/workerType)"
           },
           "level": "notice",

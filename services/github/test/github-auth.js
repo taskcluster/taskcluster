@@ -81,7 +81,7 @@ class FakeGithub {
         const key = `${owner}/${repo}@${ref}`;
         if (this._taskcluster_yml_files[key]) {
           return {data: {content: Buffer.from(
-            JSON.stringify(this._taskcluster_yml_files[key])
+            JSON.stringify(this._taskcluster_yml_files[key]),
           ).toString('base64')}};
         } else {
           throwError(404);
@@ -100,8 +100,12 @@ class FakeGithub {
       },
       'repos.listStatusesForRef': async ({owner, repo, ref}) => {
         const key = `${owner}/${repo}@${ref}`;
-        if (this._statuses[key]) {
-          return {data: this._statuses[key]};
+        const info = this._statuses[key];
+        if (info && info.errorStatus) {
+          throwError(info.errorStatus);
+        }
+        if (info) {
+          return {data: info};
         } else {
           throwError(404);
         }

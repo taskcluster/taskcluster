@@ -5,7 +5,7 @@ const taskcluster = require('taskcluster-client');
 const uuid = require('uuid');
 const {google} = require('googleapis');
 const {ApiError, Provider} = require('./provider');
-const {default: PQueue} = require('p-queue');
+const {CloudAPI} = require('./cloudapi');
 
 class GoogleProvider extends Provider {
 
@@ -28,15 +28,26 @@ class GoogleProvider extends Provider {
 
     // There are different rate limits per type of request
     // as documented here: https://cloud.google.com/compute/docs/api-rate-limits
-    this.queues = {};
-    this._backoffDelay = _backoffDelay;
-    for (const type of ['query', 'get', 'list', 'opRead']) {
-      const {interval, intervalCap} = (apiRateLimits[type] || {});
-      this.queues[type] = new PQueue({
-        interval: interval || 100 * 1000, // Intervals are enforced every 100 seconds
-        intervalCap: intervalCap || 2000, // The calls we make are all limited 20/sec so 20 * 100 are allowed
-      });
-    }
+    const cloud = new CloudAPI({
+      types: ['query', 'get', 'list', 'opRead'],
+      apiRateLimits,
+      intervalDefault: 100 * 1000, // Intervals are enforced every 100 seconds
+      intervalCapDefault: 2000, // The calls we make are all limited 20/sec so 20 * 100 are allowed
+      monitor: this.monitor,
+      providerId: this.providerId,
+      errorHandler: ({err, tries}) => {
+        if (err.code === 403) { // google hands out 403 for rate limiting; back off significantly
+          // google's interval is 100 seconds so let's try once optimistically and a second time to get it for sure
+          return {backoff: _backoffDelay * 50, reason: 'rateLimit', level: 'notice'};
+        } else if (err.code === 403 || err.code >= 500) { // For 500s, let's take a shorter backoff
+          return {backoff: _backoffDelay * Math.pow(2, tries), reason: 'errors', level: 'warning'};
+        }
+        // If we don't want to do anything special here, just throw and let the
+        // calling code figure out what to do
+        throw err;
+      },
+    });
+    this._enqueue = cloud.enqueue.bind(cloud);
 
     if (fakeCloudApis && fakeCloudApis.google) {
       this.ownClientEmail = 'whatever@example.com';
@@ -73,57 +84,6 @@ class GoogleProvider extends Provider {
       auth: client,
     });
     this.oauth2 = new google.auth.OAuth2();
-  }
-
-  async _enqueue(type, func, tries = 0) {
-    const queue = this.queues[type];
-    if (!queue) {
-      throw new Error(`Unknown p-queue attempted: ${type}`);
-    }
-    try {
-      return await queue.add(func, {priority: tries});
-    } catch (err) {
-      let backoff = this._backoffDelay;
-      let level = 'notice';
-      let reason = 'unknown';
-      if (err.code === 403) { // google hands out 403 for rate limiting; back off significantly
-        // google's interval is 100 seconds so let's try once optimistically and a second time to get it for sure
-        backoff *= 50;
-        reason = 'rateLimit';
-      } else if (err.code === 403 || err.code >= 500) { // For 500s, let's take a shorter backoff
-        backoff *= Math.pow(2, tries); // Longest backoff here is half a minute
-        level = 'warning';
-        reason = 'errors';
-      } else {
-        // If we don't want to do anything special here, just throw and let the
-        // calling code figure out what to do
-        throw err;
-      }
-
-      if (!queue.isPaused) {
-        this.monitor.log.cloudApiPaused({
-          providerId: this.providerId,
-          queueName: type,
-          reason,
-          queueSize: queue.size,
-          duration: backoff,
-        }, {level});
-        queue.pause();
-        setTimeout(() => {
-          this.monitor.log.cloudApiResumed({
-            providerId: this.providerId,
-            queueName: type,
-          });
-          queue.start();
-        }, backoff);
-      }
-
-      if (tries > 4) {
-        throw err;
-      }
-
-      return await this._enqueue(type, func, tries + 1);
-    }
   }
 
   async setup() {
@@ -229,22 +189,30 @@ class GoogleProvider extends Provider {
       });
     }
 
-    const toSpawn = await this.estimator.simple({
+    let toSpawn = await this.estimator.simple({
       workerPoolId,
       ...workerPool.config,
-      capacityPerInstance: 1, // TODO (bug 1587234) Hardcoded for now until estimator updates
-      running: workerPool.providerData[this.providerId].running,
+      runningCapacity: workerPool.providerData[this.providerId].running,
     });
 
-    await Promise.all(new Array(toSpawn).fill(null).map(async i => {
+    if (toSpawn === 0) {
+      return; // Nothing to do
+    }
+
+    const cfgs = [];
+    while (toSpawn > 0) {
+      const cfg = _.sample(workerPool.config.launchConfigs);
+      cfgs.push(cfg);
+      toSpawn -= cfg.capacityPerInstance;
+    }
+
+    await Promise.all(cfgs.map(async cfg => {
       // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
       // The lost entropy from downcasing, etc should be ok due to the fact that
       // only running instances need not be identical. We do not use this name to identify
       // workers in taskcluster.
       const poolName = workerPoolId.replace(/\//g, '-').slice(0, 38);
       const instanceName = `${poolName}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
-
-      const cfg = _.sample(workerPool.config.launchConfigs);
 
       let op;
 
@@ -325,6 +293,7 @@ class GoogleProvider extends Provider {
         providerData: {
           project: this.project,
           zone: cfg.zone,
+          instanceCapacity: cfg.capacityPerInstance,
           operation: {
             name: op.name,
             zone: op.zone,
@@ -359,7 +328,7 @@ class GoogleProvider extends Provider {
       }));
       const {status} = data;
       if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
-        this.seen[worker.workerPoolId] += 1;
+        this.seen[worker.workerPoolId] += worker.providerData.instanceCapacity || 1;
 
         // If the worker will be expired soon but it still exists,
         // update it to stick around a while longer. If this doesn't happen,
@@ -401,7 +370,11 @@ class GoogleProvider extends Provider {
   /*
    * Called after an iteration of the worker scanner
    */
-  async scanCleanup() {
+  async scanCleanup({responsibleFor}) {
+    for (const workerPoolId of responsibleFor) {
+      this.seen[workerPoolId] = this.seen[workerPoolId] || 0;
+      this.errors[workerPoolId] = this.errors[workerPoolId] || [];
+    }
     await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
       const workerPool = await this.WorkerPool.load({
         workerPoolId,

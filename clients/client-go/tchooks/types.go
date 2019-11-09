@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v21"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v22"
 )
 
 type (
@@ -67,7 +67,7 @@ type (
 		Schedule []string `json:"schedule,omitempty"`
 
 		// Template for the task definition.  This is rendered using [JSON-e](https://taskcluster.github.io/json-e/)
-		// as described in [firing hooks](/docs/reference/core/taskcluster-hooks/docs/firing-hooks) to produce
+		// as described in [firing hooks](/docs/reference/core/hooks/firing-hooks) to produce
 		// a task definition that is submitted to the Queue service.
 		//
 		// Additional properties allowed
@@ -112,7 +112,7 @@ type (
 		Schedule []string `json:"schedule"`
 
 		// Template for the task definition.  This is rendered using [JSON-e](https://taskcluster.github.io/json-e/)
-		// as described in [firing hooks](/docs/reference/core/taskcluster-hooks/docs/firing-hooks) to produce
+		// as described in [firing hooks](/docs/reference/core/hooks/firing-hooks) to produce
 		// a task definition that is submitted to the Queue service.
 		//
 		// Additional properties allowed

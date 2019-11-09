@@ -12,7 +12,7 @@ const timeExpression = new RegExp(
     '(\\s*(\\d+)\\s*s(ec(onds?)?)?)?',
     '\\s*$',
   ].join(''),
-  'i'
+  'i',
 );
 
 export const parseTime = (str = '') => {
@@ -59,7 +59,7 @@ export const fromNow = (offset, reference = new Date()) => {
       parsedOffset.days * 24 * 60 * 60 * 1000 +
       parsedOffset.hours * 60 * 60 * 1000 +
       parsedOffset.minutes * 60 * 1000 +
-      parsedOffset.seconds * 1000
+      parsedOffset.seconds * 1000,
   );
 };
 

@@ -2,6 +2,10 @@
   "$schema": "http://json-schema.org/draft-06/schema#",
   "aditionalProperties": false,
   "properties": {
+    "applicationName": {
+      "description": "The name of this deployment of Taskcluster.",
+      "type": "string"
+    },
     "auth": {
       "additionalProperties": false,
       "properties": {
@@ -1339,7 +1343,7 @@
     "ui": {
       "additionalProperties": false,
       "properties": {
-        "application_name": {
+        "banner_message": {
           "type": "string"
         },
         "debug": {
@@ -1388,10 +1392,10 @@
       },
       "required": [
         "procs",
-        "application_name",
         "graphql_subscription_endpoint",
         "graphql_endpoint",
-        "ui_login_strategy_names"
+        "ui_login_strategy_names",
+        "banner_message"
       ],
       "title": "Configuration options for ui",
       "type": "object"

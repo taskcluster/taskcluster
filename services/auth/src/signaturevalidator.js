@@ -152,9 +152,19 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
 
     // Validate authorizedScopes scopes are satisfied by client (or temp) scopes
     if (!utils.scopeMatch(res.scopes, [ext.authorizedScopes])) {
-      throw new Error('Supplied credentials do not satisfy authorizedScopes; '
-        + `credentials have scopes [${res.scopes}]; `
-        + `authorizedScopes are [${[ext.authorizedScopes]}]`);
+      throw new Error([
+        'Supplied credentials do not satisfy authorizedScopes; credentials have scopes:',
+        '',
+        '```',
+        res.scopes.join('\n'),
+        '```',
+        '',
+        'authorizedScopes are:',
+        '',
+        '```',
+        ext.authorizedScopes.join('\n'),
+        '```',
+      ].join('\n'));
     }
 
     // Further limit scopes
@@ -258,7 +268,7 @@ const createSignatureValidator = function(options) {
 
           // Parse authorization header for ext
           let attrs = hawk.utils.parseAuthorizationHeader(
-            req.authorization
+            req.authorization,
           );
           // Extra ext
           if (!(attrs instanceof Error)) {
@@ -293,7 +303,7 @@ const createSignatureValidator = function(options) {
 
           // Get bewit string (stolen from hawk)
           let parts = req.resource.match(
-            /^(\/.*)([\?&])bewit\=([^&$]*)(?:&(.+))?$/
+            /^(\/.*)([\?&])bewit\=([^&$]*)(?:&(.+))?$/,
           );
 
           let bewitString;

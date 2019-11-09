@@ -78,7 +78,7 @@ Namespace.ensureNamespace = function(namespace, expires) {
     expires.getFullYear(),
     expires.getMonth(),
     expires.getDate() + 1,
-    0, 0, 0, 0
+    0, 0, 0, 0,
   );
 
   // Parse namespace
@@ -115,7 +115,7 @@ Namespace.ensureNamespace = function(namespace, expires) {
     return Namespace.ensureNamespace.call(
       that,
       namespace,
-      expires
+      expires,
     ).then(function() {
       // Create namespace
       return that.create({

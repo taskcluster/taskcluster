@@ -8,9 +8,9 @@ module.exports = ({ queue }) => {
     Promise.all(
       queries.map(
         async ({ provisionerId, workerType, workerGroup, workerId }) =>
-          queue.getWorker(provisionerId, workerType, workerGroup, workerId)
-      )
-    )
+          queue.getWorker(provisionerId, workerType, workerGroup, workerId),
+      ),
+    ),
   );
   const workers = new ConnectionLoader(
     async ({ provisionerId, workerType, options, filter, isQuarantined }) => {
@@ -19,17 +19,17 @@ module.exports = ({ queue }) => {
         workerType,
         typeof isQuarantined === 'boolean'
           ? { ...options, quarantined: isQuarantined }
-          : options
+          : options,
       );
       const workers = sift(filter, raw.workers);
 
       return {
         ...raw,
         items: workers.map(
-          worker => new WorkerCompact(provisionerId, workerType, worker)
+          worker => new WorkerCompact(provisionerId, workerType, worker),
         ),
       };
-    }
+    },
   );
 
   return {

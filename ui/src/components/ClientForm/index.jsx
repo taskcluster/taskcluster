@@ -222,6 +222,7 @@ export default class ClientForm extends Component {
       isNewClient ||
       description !== client.description ||
       expires !== client.expires ||
+      deleteOnExpiration !== client.deleteOnExpiration ||
       scopeText !== client.scopes.join('\n');
 
     return (

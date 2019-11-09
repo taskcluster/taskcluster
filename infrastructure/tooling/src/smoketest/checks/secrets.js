@@ -12,7 +12,9 @@ exports.tasks = [];
 
 exports.tasks.push({
   title: 'Create and read secrets (--target secrets)',
-  requires: [],
+  requires: [
+    'ping-secrets',
+  ],
   provides: [
     'target-secrets',
   ],
@@ -37,7 +39,7 @@ exports.tasks.push({
         assert.equal(err.code, 'ResourceNotFound');
         assert.equal(err.statusCode, 404);
         return true;
-      }
+      },
     );
   },
 });

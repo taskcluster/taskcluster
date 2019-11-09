@@ -72,7 +72,7 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Indexed task not found', {});
   }
   if (!tasks.entries.length) {
-    return res.reportError('ResourceNotFound', 'Indexed task has expired', {});
+    return res.reportError('ResourceNotFound', 'Indexed task not found', {});
   }
   let task = tasks.entries[0];
   return res.reply(task.json());
@@ -278,7 +278,7 @@ builder.declare({
   return helpers.insertTask(
     namespace,
     input,
-    that
+    that,
   ).then(function(task) {
     res.reply(task.json());
   });
@@ -338,7 +338,7 @@ builder.declare({
       url = that.queue.buildUrl(
         that.queue.getLatestArtifact,
         task.taskId,
-        artifactName
+        artifactName,
       );
     } else {
       url = that.queue.buildSignedUrl(

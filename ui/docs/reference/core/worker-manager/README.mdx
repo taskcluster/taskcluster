@@ -32,3 +32,5 @@ This combination is expected to be unique within a given worker pool.
 How workers are managed depends on the provider.
 In some cases, workers must be configured explicitly with API methods.
 In other cases, the provider manages all aspects of the workers and no user control is available.
+
+Each worker has a "capacity" it provides which is simply how many tasks it can run concurrently.

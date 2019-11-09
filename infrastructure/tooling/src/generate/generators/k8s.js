@@ -34,6 +34,7 @@ const SHARED_CONFIG = {
   trust_proxy: '.Values.trustProxy',
   node_env: '.Values.nodeEnv',
   error_config: '.Values.errorConfig',
+  application_name: '.Values.applicationName',
 };
 
 const labels = (projectName, component) => ({
@@ -162,6 +163,7 @@ const extras = {
       {type: '!env', var: 'GRAPHQL_SUBSCRIPTION_ENDPOINT'},
       {type: '!env', var: 'GRAPHQL_ENDPOINT'},
       {type: '!env', var: 'UI_LOGIN_STRATEGY_NAMES'},
+      {type: '!env', var: 'BANNER_MESSAGE'},
     ],
     procs: {
       web: {
@@ -249,6 +251,10 @@ exports.tasks.push({
           format: 'uri',
           description: 'The url pointing to your deployment\'s ingress.',
         },
+        applicationName: {
+          type: 'string',
+          description: 'The name of this deployment of Taskcluster.',
+        },
         dockerImage: {
           type: 'string',
           description: 'The docker image containing taskcluster.',
@@ -311,6 +317,7 @@ exports.tasks.push({
 
     // Something to copy-paste for users
     const exampleConfig = {
+      applicationName: 'My Taskcluster',
       rootUrl: '...',
       dockerImage: '...',
       ingressStaticIpName: '...',
