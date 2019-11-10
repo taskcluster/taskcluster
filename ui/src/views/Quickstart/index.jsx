@@ -318,7 +318,7 @@ export default class QuickStart extends Component {
 
     return (
       <Dashboard
-        title="Github Quickstart"
+        title="GitHub Quickstart"
         helpView={
           <HelpView
             description="Create a configuration file and
@@ -380,7 +380,7 @@ export default class QuickStart extends Component {
         <Fragment>
           <div className={classes.orgRepo}>
             <TextField
-              label="Organization Name"
+              label="Org Name"
               name="owner"
               onChange={this.handleOrgRepoChange}
               value={owner}
@@ -390,7 +390,7 @@ export default class QuickStart extends Component {
               /
             </Typography>
             <TextField
-              label="Repository Name"
+              label="Repo Name"
               name="repo"
               onChange={this.handleOrgRepoChange}
               value={repo}
