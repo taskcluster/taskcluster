@@ -187,6 +187,9 @@ const stubbedAuth = () => {
           ...input,
         });
       },
+      expandScopes({scopes}) {
+        return {scopes};
+      },
       resetAccessToken(clientId) {
         return Promise.resolve({ clientId, accessToken: taskcluster.slugid() });
       },
