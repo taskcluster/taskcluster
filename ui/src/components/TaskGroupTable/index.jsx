@@ -94,6 +94,10 @@ const createSortedTasks = memoize(
     textDecoration: 'none',
     ...theme.mixins.hover,
     ...theme.mixins.listItemButton,
+    [theme.breakpoints.down('sm')]: {
+      paddingLeft: 0,
+      paddingRight: 0,
+    },
   },
   taskGroupName: {
     marginRight: theme.spacing(1),
@@ -103,6 +107,10 @@ const createSortedTasks = memoize(
     textOverflow: 'ellipsis',
     verticalAlign: 'middle',
     display: 'inline-block',
+    [theme.breakpoints.down('sm')]: {
+      maxWidth: '90%',
+      marginRight: theme.spacing.unit * 0.5,
+    },
   },
   table: {
     marginBottom: theme.spacing(1),
@@ -128,6 +136,11 @@ const createSortedTasks = memoize(
   },
   tableFirstCell: {
     flex: 1,
+    [theme.breakpoints.down('sm')]: {
+      minWidth: 0,
+      paddingLeft: 0,
+      paddingRight: theme.spacing.unit,
+    },
   },
   tableSecondCell: {
     flex: 0.5,
@@ -135,6 +148,10 @@ const createSortedTasks = memoize(
     flexGrow: 0,
     flexDirection: 'column',
     justifyContent: 'center',
+    [theme.breakpoints.down('sm')]: {
+      paddingLeft: 0,
+      paddingRight: '0 !important',
+    },
   },
   noTasksText: {
     marginTop: theme.spacing(2),
