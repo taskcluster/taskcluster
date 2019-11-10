@@ -14,6 +14,7 @@ import MobileStepper from '@material-ui/core/MobileStepper';
 import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
@@ -102,6 +103,13 @@ const DOTS_VARIANT_LIMIT = 5;
     liveLogLabel: {
       marginLeft: theme.spacing.unit / 2,
       marginBottom: theme.spacing.unit / 2,
+    },
+    previousPageArrow: {
+      marginLeft: -theme.spacing.unit,
+      marginRight: 0,
+    },
+    nextPageArrow: {
+      marginRight: 0,
     },
   }),
   { withTheme: true }
@@ -485,7 +493,9 @@ export default class TaskRunsCard extends Component {
                 onClick={this.handleNext}
                 disabled={run ? selectedRunId === runs.length - 1 : true}>
                 Next
-                <ChevronRightIcon />
+                <ListItemIcon classes={{ root: classes.nextPageArrow }}>
+                  <ChevronRightIcon />
+                </ListItemIcon>
               </Button>
             }
             backButton={
@@ -493,7 +503,9 @@ export default class TaskRunsCard extends Component {
                 size="small"
                 onClick={this.handlePrevious}
                 disabled={run ? selectedRunId === 0 : true}>
-                <ChevronLeftIcon />
+                <ListItemIcon classes={{ root: classes.previousPageArrow }}>
+                  <ChevronLeftIcon />
+                </ListItemIcon>
                 Previous
               </Button>
             }
