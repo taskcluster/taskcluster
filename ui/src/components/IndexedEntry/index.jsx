@@ -12,7 +12,6 @@ import LockOpenOutlineIcon from 'mdi-react/LockOpenOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import LockIcon from 'mdi-react/LockIcon';
-import Typography from '@material-ui/core/Typography';
 import ConnectionDataTable from '../ConnectionDataTable';
 import DateDistance from '../DateDistance';
 import { artifact, indexedTask, date, pageInfo } from '../../utils/prop-types';
@@ -36,8 +35,8 @@ import buildArtifactUrl from '../../utils/buildArtifactUrl';
     justifyContent: 'space-between',
     verticalAlign: 'middle',
   },
-  artifactName: {
-    marginLeft: theme.spacing(1),
+  artifactIcons: {
+    marginRight: theme.spacing(1),
   },
   artifactIconWithName: {
     display: 'flex',
@@ -119,14 +118,12 @@ export default class IndexedEntry extends Component {
                 target="_blank"
                 to={artifact.url}>
                 <div className={classes.artifactIconWithName}>
-                  <div>
+                  <div className={classes.artifactIcons}>
                     {artifact.isPublic && <LockOpenOutlineIcon />}
                     {!artifact.isPublic && artifact.url && <LockIcon />}
                     {artifact.icon && <artifact.icon />}
                   </div>
-                  <Typography variant="body2" className={classes.artifactName}>
-                    {artifact.name}
-                  </Typography>
+                  {artifact.name}
                 </div>
                 <div>
                   <OpenInNewIcon />

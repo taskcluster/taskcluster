@@ -10,7 +10,6 @@ import AlertIcon from 'mdi-react/AlertIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
-import Typography from '@material-ui/core/Typography';
 import DataTable from '../DataTable';
 import TableCellItem from '../TableCellItem';
 import Link from '../../utils/Link';
@@ -117,7 +116,7 @@ export default class WorkerManagerWorkersTable extends Component {
               </TableCellItem>
             </Link>
           ) : (
-            <Typography variant="body2">n/a</Typography>
+            <em>n/a</em>
           )}
         </TableCell>
 
@@ -176,7 +175,7 @@ export default class WorkerManagerWorkersTable extends Component {
               unit: 'day',
             })
           ) : (
-            <Typography variant="body2">n/a</Typography>
+            <em>n/a</em>
           )}
         </TableCell>
       </TableRow>

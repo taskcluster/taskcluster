@@ -251,9 +251,7 @@ export default class TaskRunsCard extends Component {
                       LOG
                     </Label>
                   )}
-                  <div className={classes.artifactName}>
-                    <Typography variant="body2">{artifact.name}</Typography>
-                  </div>
+                  <div className={classes.artifactName}>{artifact.name}</div>
                 </div>
                 <div>
                   {artifact.isPublic && <LinkIcon />}

@@ -4,10 +4,10 @@ import { formatDistanceStrict, parseISO } from 'date-fns';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import Typography from '@material-ui/core/Typography';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
+import { withStyles } from '@material-ui/core/styles';
 import LinkIcon from 'mdi-react/LinkIcon';
 import StatusLabel from '../StatusLabel';
 import DateDistance from '../DateDistance';
@@ -28,6 +28,11 @@ const sorted = pipe(
   )
 );
 
+@withStyles(theme => ({
+  linksIcon: {
+    marginLeft: theme.spacing(1),
+  },
+}))
 /**
  * Display relevant information about workers in a table.
  */
@@ -109,6 +114,7 @@ export default class WorkersTable extends Component {
       workerType,
       onPageChange,
       workersConnection,
+      classes,
       ...props
     } = this.props;
     const iconSize = 16;
@@ -142,7 +148,7 @@ export default class WorkersTable extends Component {
                 to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${workerGroup}/${workerId}`}>
                 <TableCellItem button>
                   {workerId}
-                  <LinkIcon size={iconSize} />
+                  <LinkIcon className={classes.linksIcon} size={iconSize} />
                 </TableCellItem>
               </Link>
             </TableCell>
@@ -150,7 +156,10 @@ export default class WorkersTable extends Component {
               <TableCell>
                 <TableCellItem button>
                   <DateDistance from={firstClaim} />
-                  <ContentCopyIcon size={iconSize} />
+                  <ContentCopyIcon
+                    className={classes.linksIcon}
+                    size={iconSize}
+                  />
                 </TableCellItem>
               </TableCell>
             </CopyToClipboard>
@@ -160,18 +169,18 @@ export default class WorkersTable extends Component {
                   to={`/tasks/${latestTask.run.taskId}/runs/${latestTask.run.runId}`}>
                   <TableCellItem button>
                     {latestTask.run.taskId}
-                    <LinkIcon size={iconSize} />
+                    <LinkIcon className={classes.linksIcon} size={iconSize} />
                   </TableCellItem>
                 </Link>
               ) : (
-                <Typography variant="body2">n/a</Typography>
+                <em>n/a</em>
               )}
             </TableCell>
             <TableCell>
               {latestTask ? (
                 <StatusLabel state={latestTask.run.state} />
               ) : (
-                <Typography variant="body2">n/a</Typography>
+                <em>n/a</em>
               )}
             </TableCell>
             {latestTask ? (
@@ -181,7 +190,10 @@ export default class WorkersTable extends Component {
                 <TableCell>
                   <TableCellItem button>
                     <DateDistance from={latestTask.run.started} />
-                    <ContentCopyIcon size={iconSize} />
+                    <ContentCopyIcon
+                      className={classes.linksIcon}
+                      size={iconSize}
+                    />
                   </TableCellItem>
                 </TableCell>
               </CopyToClipboard>
@@ -195,7 +207,10 @@ export default class WorkersTable extends Component {
                 <TableCell>
                   <TableCellItem button>
                     <DateDistance from={latestTask.run.resolved} />
-                    <ContentCopyIcon size={iconSize} />
+                    <ContentCopyIcon
+                      className={classes.linksIcon}
+                      size={iconSize}
+                    />
                   </TableCellItem>
                 </TableCell>
               </CopyToClipboard>
@@ -208,7 +223,7 @@ export default class WorkersTable extends Component {
                   unit: 'day',
                 })
               ) : (
-                <Typography variant="body2">n/a</Typography>
+                <em>n/a</em>
               )}
             </TableCell>
           </TableRow>

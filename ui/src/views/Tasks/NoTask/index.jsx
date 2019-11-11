@@ -2,7 +2,6 @@ import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { withStyles } from '@material-ui/core/styles';
@@ -20,6 +19,8 @@ import Link from '../../../utils/Link';
   },
   listItemButton: {
     ...theme.mixins.listItemButton,
+    display: 'flex',
+    justifyContent: 'space-between',
   },
 }))
 export default class NoTask extends Component {
@@ -66,10 +67,7 @@ export default class NoTask extends Component {
             {recentTasks.map(({ taskId }) => (
               <Link key={taskId} to={`/tasks/${taskId}`}>
                 <ListItem button className={classes.listItemButton}>
-                  <ListItemText
-                    disableTypography
-                    primary={<Typography variant="body2">{taskId}</Typography>}
-                  />
+                  {taskId}
                   <LinkIcon />
                 </ListItem>
               </Link>

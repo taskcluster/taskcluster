@@ -4,7 +4,6 @@ import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import LinkIcon from 'mdi-react/LinkIcon';
 import Dashboard from '../../../components/Dashboard';
@@ -20,6 +19,8 @@ import db from '../../../utils/db';
   },
   listItemButton: {
     ...theme.mixins.listItemButton,
+    display: 'flex',
+    justifyContent: 'space-between',
   },
 }))
 export default class NoTaskGroup extends Component {
@@ -66,7 +67,7 @@ export default class NoTaskGroup extends Component {
             {recentTaskGroups.map(({ taskGroupId }) => (
               <Link key={taskGroupId} to={`/tasks/groups/${taskGroupId}`}>
                 <ListItem button className={classes.listItemButton}>
-                  <ListItemText primary={taskGroupId} />
+                  {taskGroupId}
                   <LinkIcon />
                 </ListItem>
               </Link>
