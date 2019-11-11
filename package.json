@@ -1,6 +1,6 @@
 {
   "name": "taskcluster",
-  "version": "22.0.0",
+  "version": "22.1.1",
   "private": true,
   "engine-strict": true,
   "engines": {
@@ -190,7 +190,6 @@
       "config:base",
       "schedule:earlyMondays"
     ],
-    "schedule": "at any time",
     "prHourlyLimit": 0,
     "prConcurrentLimit": 9,
     "rangeStrategy": "update-lockfile",

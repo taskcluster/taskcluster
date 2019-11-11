@@ -5,6 +5,7 @@ import { object, arrayOf } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import RouteWithProps from '../components/RouteWithProps';
 import ErrorPanel from '../components/ErrorPanel';
+import StatusBanner from '../components/StatusBanner';
 import { route } from '../utils/prop-types';
 import { withAuth } from '../utils/Auth';
 import isThirdPartyLogin from '../utils/isThirdPartyLogin';
@@ -115,6 +116,7 @@ export default class Main extends Component {
 
     return (
       <Fragment>
+        <StatusBanner message={window.env.BANNER_MESSAGE} />
         <ErrorPanel fixed error={error} />
         <BrowserRouter>
           <Switch>

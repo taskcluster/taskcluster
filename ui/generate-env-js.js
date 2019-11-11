@@ -10,6 +10,7 @@ const ENV_DEFAULTS = {
   UI_LOGIN_STRATEGY_NAMES: '',
   GA_TRACKING_ID: '',
   SENTRY_DSN: '',
+  BANNER_MESSAGE: '',
 };
 
 /**

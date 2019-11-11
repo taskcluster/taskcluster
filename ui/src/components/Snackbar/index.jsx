@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { func, object, string, oneOf } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import { fade } from '@material-ui/core/styles/colorManipulator';
 import IconButton from '@material-ui/core/IconButton';
 import MuiSnackbar from '@material-ui/core/Snackbar';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
@@ -21,26 +20,31 @@ const variantIcon = {
 @withStyles(theme => ({
   success: {
     backgroundColor: theme.palette.success.dark,
-    color: fade(theme.palette.common.white, 0.9),
+    color: theme.palette.success.contrastText,
+    '& .mdi-icon': {
+      fill: theme.palette.success.contrastText,
+    },
   },
   info: {
     backgroundColor: theme.palette.secondary.main,
-    color: fade(theme.palette.common.white, 0.9),
+    color: theme.palette.secondary.contrastText,
+    '& .mdi-icon': {
+      fill: theme.palette.secondary.contrastText,
+    },
   },
   error: {
     backgroundColor: theme.palette.error.dark,
-    color: fade(theme.palette.common.white, 0.9),
+    color: theme.palette.error.contrastText,
+    '& .mdi-icon': {
+      fill: theme.palette.error.contrastText,
+    },
   },
   warning: {
     backgroundColor: theme.palette.warning.dark,
     color: theme.palette.warning.contrastText,
-  },
-  closeIconWhite: {
-    opacity: 0.9,
-  },
-  closeIconBlack: {
-    opacity: 0.9,
-    color: theme.palette.warning.contrastText,
+    '& .mdi-icon': {
+      fill: theme.palette.warning.contrastText,
+    },
   },
   iconVariant: {
     marginRight: theme.spacing.unit,
@@ -48,6 +52,23 @@ const variantIcon = {
   message: {
     display: 'flex',
     alignItems: 'center',
+    flex: 1,
+  },
+  messageDiv: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  iconDiv: {
+    display: 'flex',
+    alignItems: 'center',
+    marginRight: theme.spacing.double,
+  },
+  iconButtonDiv: {
+    marginRight: -12,
+  },
+  snackbarContentMessage: {
+    flex: 1,
   },
 }))
 export default class Snackbar extends Component {
@@ -77,26 +98,24 @@ export default class Snackbar extends Component {
       ...props
     } = this.props;
     const Icon = variantIcon[variant];
-    const isWarning = variant === 'warning';
 
     return (
       <MuiSnackbar autoHideDuration={5000} onClose={onClose} {...props}>
         <SnackbarContent
+          classes={{ message: classes.snackbarContentMessage }}
           className={classes[variant]}
-          action={
-            <IconButton aria-label="Close" onClick={onClose}>
-              <CloseIcon
-                className={
-                  isWarning ? classes.closeIconBlack : classes.closeIconWhite
-                }
-              />
-            </IconButton>
-          }
           message={
-            <span className={classes.message}>
-              <Icon className={classes.iconVariant} />
-              {message}
-            </span>
+            <div className={classes.messageDiv}>
+              <div className={classes.iconDiv}>
+                <Icon className={classes.iconVariant} />
+              </div>
+              <div className={classes.message}>{message}</div>
+              <div className={classes.iconButtonDiv}>
+                <IconButton aria-label="Close" onClick={onClose}>
+                  <CloseIcon />
+                </IconButton>
+              </div>
+            </div>
           }
           {...snackbarContentProps}
         />

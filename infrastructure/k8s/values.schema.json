@@ -1343,6 +1343,9 @@
     "ui": {
       "additionalProperties": false,
       "properties": {
+        "banner_message": {
+          "type": "string"
+        },
         "debug": {
           "title": "node debug env var",
           "type": "string"
@@ -1391,7 +1394,8 @@
         "procs",
         "graphql_subscription_endpoint",
         "graphql_endpoint",
-        "ui_login_strategy_names"
+        "ui_login_strategy_names",
+        "banner_message"
       ],
       "title": "Configuration options for ui",
       "type": "object"
