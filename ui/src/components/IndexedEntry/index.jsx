@@ -12,13 +12,13 @@ import LockOpenOutlineIcon from 'mdi-react/LockOpenOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import LockIcon from 'mdi-react/LockIcon';
+import Typography from '@material-ui/core/Typography';
 import ConnectionDataTable from '../ConnectionDataTable';
 import DateDistance from '../DateDistance';
 import { artifact, indexedTask, date, pageInfo } from '../../utils/prop-types';
 import { ARTIFACTS_PAGE_SIZE } from '../../utils/constants';
 import Link from '../../utils/Link';
 import buildArtifactUrl from '../../utils/buildArtifactUrl';
-import Typography from '@material-ui/core/Typography';
 
 @withStyles(theme => ({
   listItemButton: {
