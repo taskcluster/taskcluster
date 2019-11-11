@@ -49,7 +49,7 @@ To run the Taskcluster UI:
     For example:
 
     ```sh
-    export TASKCLUSTER_ROOT_URL=https://taskcluster.net
+    export TASKCLUSTER_ROOT_URL=https://community-tc.services.mozilla.com
     ```
   * Change to the `services/web-server` directory and run `yarn start`.
     This will start a web server on port 3050.
