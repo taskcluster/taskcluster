@@ -97,7 +97,7 @@
     semver "^5.4.1"
     source-map "^0.5.0"
 
-"@babel/generator@^7.7.0", "@babel/generator@^7.7.2":
+"@babel/generator@^7.7.2":
   version "7.7.2"
   resolved "https://registry.yarnpkg.com/@babel/generator/-/generator-7.7.2.tgz#2f4852d04131a5e17ea4f6645488b5da66ebf3af"
   integrity sha512-WthSArvAjYLz4TcbKOi88me+KmDJdKSlfwwN8CnUYn9jBkzhq0ZEPuBfkAWIvjJ3AdEV1Cf/+eSQTnp3IDJKlQ==
@@ -189,12 +189,12 @@
     esutils "^2.0.2"
     js-tokens "^4.0.0"
 
-"@babel/parser@^7.6.4":
-  version "7.7.0"
-  resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.7.0.tgz#232618f6e8947bc54b407fa1f1c91a22758e7159"
-  integrity sha512-GqL+Z0d7B7ADlQBMXlJgvXEbtt5qlqd1YQ5fr12hTSfh7O/vgrEIvJxU2e7aSVrEUn75zTZ6Nd0s8tthrlZnrQ==
+"@babel/parser@^7.6.4", "@babel/parser@^7.7.0":
+  version "7.7.3"
+  resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.7.3.tgz#5fad457c2529de476a248f75b0f090b3060af043"
+  integrity sha512-bqv+iCo9i+uLVbI0ILzKkvMorqxouI+GbV13ivcARXn9NNEabi2IEz912IgNpT/60BNXac5dgcfjb94NjsF33A==
 
-"@babel/parser@^7.7.0", "@babel/parser@^7.7.2":
+"@babel/parser@^7.7.2":
   version "7.7.2"
   resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.7.2.tgz#ea8334dc77416bfd9473eb470fd00d8245b3943b"
   integrity sha512-DDaR5e0g4ZTb9aP7cpSZLkACEBdoLGwJDWgHtBhrGX7Q1RjhdoMOfexICj5cqTAtpowjGQWfcvfnQG7G2kAB5w==
@@ -223,22 +223,7 @@
     "@babel/parser" "^7.7.0"
     "@babel/types" "^7.7.0"
 
-"@babel/traverse@^7.6.3":
-  version "7.7.0"
-  resolved "https://registry.yarnpkg.com/@babel/traverse/-/traverse-7.7.0.tgz#9f5744346b8d10097fd2ec2eeffcaf19813cbfaf"
-  integrity sha512-ea/3wRZc//e/uwCpuBX2itrhI0U9l7+FsrKWyKGNyvWbuMcCG7ATKY2VI4wlg2b2TA39HHwIxnvmXvtiKsyn7w==
-  dependencies:
-    "@babel/code-frame" "^7.5.5"
-    "@babel/generator" "^7.7.0"
-    "@babel/helper-function-name" "^7.7.0"
-    "@babel/helper-split-export-declaration" "^7.7.0"
-    "@babel/parser" "^7.7.0"
-    "@babel/types" "^7.7.0"
-    debug "^4.1.0"
-    globals "^11.1.0"
-    lodash "^4.17.13"
-
-"@babel/traverse@^7.7.0", "@babel/traverse@^7.7.2":
+"@babel/traverse@^7.6.3", "@babel/traverse@^7.7.0", "@babel/traverse@^7.7.2":
   version "7.7.2"
   resolved "https://registry.yarnpkg.com/@babel/traverse/-/traverse-7.7.2.tgz#ef0a65e07a2f3c550967366b3d9b62a2dcbeae09"
   integrity sha512-TM01cXib2+rgIZrGJOLaHV/iZUAxf4A0dt5auY6KNZ+cm6aschuJGqKJM3ROTt3raPUdIDk9siAufIFEleRwtw==
@@ -2370,9 +2355,9 @@ delegates@^1.0.0:
   integrity sha1-hMbhWbgZBP3KWaDvRM2HDTElD5o=
 
 depcheck@^0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/depcheck/-/depcheck-0.9.0.tgz#fab778e91908b5196d38a0fde45291495fc13c3b"
-  integrity sha512-YdFTkVXUsW7z+b72iQFWjXEs4+7mtGp40WsX6FW5W33WajkDh/peXqYTp7ds6+NlosSLpo1mOMOBj3Xd8csbzQ==
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/depcheck/-/depcheck-0.9.1.tgz#11a9d22f6fef309ce44545453df0909bf9e26649"
+  integrity sha512-tuz7Hdbtz9Bfnrqs6hMSTWamlZfS4BE3qzy44IvMTYTilupjYh+dnYzEJrUZVZD98ZDlsA3HA4ZMcT/8Ga13Zw==
   dependencies:
     "@babel/parser" "^7.6.4"
     "@babel/traverse" "^7.6.3"
@@ -2383,6 +2368,7 @@ depcheck@^0.9.0:
     minimatch "^3.0.2"
     node-sass-tilde-importer "^1.0.2"
     please-upgrade-node "^3.2.0"
+    require-from-string "^2.0.2"
     require-package-name "^2.0.1"
     resolve "^1.12.0"
     vue-template-compiler "^2.6.10"
@@ -6464,6 +6450,11 @@ require-directory@^2.1.1:
   resolved "https://registry.yarnpkg.com/require-directory/-/require-directory-2.1.1.tgz#8c64ad5fd30dab1c976e2344ffe7f792a6a6df42"
   integrity sha1-jGStX9MNqxyXbiNE/+f3kqam30I=
 
+require-from-string@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/require-from-string/-/require-from-string-2.0.2.tgz#89a7fdd938261267318eafe14f9c32e598c36909"
+  integrity sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==
+
 require-main-filename@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/require-main-filename/-/require-main-filename-2.0.0.tgz#d0b329ecc7cc0f61649f62215be69af54aa8989b"
@@ -7321,7 +7312,7 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-client@link:clients/client":
-  version "22.0.0"
+  version "22.1.1"
   dependencies:
     debug "^4.0.0"
     hawk "^7.0.10"
@@ -7331,37 +7322,37 @@ tar@^4:
     taskcluster-lib-urls "^12.0.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "22.0.0"
+  version "22.1.1"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "22.0.0"
+  version "22.1.1"
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "22.0.0"
+  version "22.1.1"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "22.0.0"
+  version "22.1.1"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "22.0.0"
+  version "22.1.1"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "22.0.0"
+  version "22.1.1"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "22.0.0"
+  version "22.1.1"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "22.0.0"
+  version "22.1.1"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "22.0.0"
+  version "22.1.1"
 
 "taskcluster-lib-scopes@link:libraries/scopes":
-  version "22.0.0"
+  version "22.1.1"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "22.0.0"
+  version "22.1.1"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -7369,7 +7360,7 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "22.0.0"
+  version "22.1.1"
 
 taskgroup@^4.0.5, taskgroup@^4.2.0:
   version "4.3.1"
