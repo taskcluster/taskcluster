@@ -18,6 +18,7 @@ import { artifact, indexedTask, date, pageInfo } from '../../utils/prop-types';
 import { ARTIFACTS_PAGE_SIZE } from '../../utils/constants';
 import Link from '../../utils/Link';
 import buildArtifactUrl from '../../utils/buildArtifactUrl';
+import Typography from '@material-ui/core/Typography';
 
 @withStyles(theme => ({
   listItemButton: {
@@ -36,7 +37,7 @@ import buildArtifactUrl from '../../utils/buildArtifactUrl';
     verticalAlign: 'middle',
   },
   artifactName: {
-    marginLeft: theme.spacing.unit,
+    marginLeft: theme.spacing(1),
   },
   artifactIconWithName: {
     display: 'flex',
