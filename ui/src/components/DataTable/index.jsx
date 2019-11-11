@@ -153,7 +153,7 @@ export default class DataTable extends Component {
               <TableHead>
                 <TableRow>
                   {headers.map(header => (
-                    <TableCell size="small" key={`table-header-${header.id}`}>
+                    <TableCell key={`table-header-${header.id}`}>
                       <TableSortLabel
                         className={classes.sortHeader}
                         active={header.id === sortByLabel}

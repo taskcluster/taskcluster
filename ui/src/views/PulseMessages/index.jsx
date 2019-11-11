@@ -276,7 +276,7 @@ export default class PulseMessages extends Component {
               renderRow={message => (
                 <TableRow
                   key={`message-${message.routingKey}-${message.exchange}`}>
-                  <TableCell size="small">
+                  <TableCell>
                     <IconButton
                       className={classes.infoButton}
                       onClick={() => this.handleMessageDrawerOpen(message)}>
@@ -284,7 +284,7 @@ export default class PulseMessages extends Component {
                     </IconButton>
                     {message.exchange}
                   </TableCell>
-                  <TableCell size="small">{message.routingKey}</TableCell>
+                  <TableCell>{message.routingKey}</TableCell>
                 </TableRow>
               )}
               headers={headers}

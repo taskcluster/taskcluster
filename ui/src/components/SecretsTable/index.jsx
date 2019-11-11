@@ -111,7 +111,7 @@ export default class SecretsTable extends Component {
         headers={['Secret ID']}
         renderRow={({ node: { name } }) => (
           <TableRow key={name}>
-            <TableCell size="small">
+            <TableCell>
               <Link to={`/secrets/${encodeURIComponent(name)}`}>
                 <TableCellItem className={classes.listItemCell} dense button>
                   <ListItemText

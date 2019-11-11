@@ -61,6 +61,11 @@ const createTheme = isDarkTheme => {
   };
 
   return {
+    props: {
+      MuiTableCell: {
+        size: 'small',
+      },
+    },
     palette: {
       type: isDarkTheme ? 'dark' : 'light',
       background: {

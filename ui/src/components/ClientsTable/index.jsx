@@ -102,7 +102,7 @@ export default class ClientsTable extends Component {
         onPageChange={onPageChange}
         renderRow={({ node: client }) => (
           <TableRow key={client.clientId}>
-            <TableCell size="small">
+            <TableCell>
               <Link to={`/auth/clients/${encodeURIComponent(client.clientId)}`}>
                 <TableCellItem button>
                   <ListItemText>
@@ -114,7 +114,7 @@ export default class ClientsTable extends Component {
                 </TableCellItem>
               </Link>
             </TableCell>
-            <TableCell size="small" className={classes.tableText}>
+            <TableCell className={classes.tableText}>
               <DateDistance from={client.lastDateUsed} />
             </TableCell>
           </TableRow>

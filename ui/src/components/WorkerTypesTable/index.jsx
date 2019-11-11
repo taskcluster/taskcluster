@@ -171,7 +171,7 @@ export default class WorkerTypesTable extends Component {
           headers={headers}
           renderRow={({ node: workerType }) => (
             <TableRow key={workerType.workerType}>
-              <TableCell size="small">
+              <TableCell>
                 <IconButton
                   className={classes.infoButton}
                   name={workerType.workerType}
@@ -193,13 +193,13 @@ export default class WorkerTypesTable extends Component {
                   </TableCellItem>
                 </Link>
               </TableCell>
-              <TableCell size="small">
+              <TableCell>
                 <StatusLabel state={workerType.stability} />
               </TableCell>
               <CopyToClipboard
                 title={`${workerType.lastDateActive} (Copy)`}
                 text={workerType.lastDateActive}>
-                <TableCell size="small">
+                <TableCell>
                   <TableCellItem button>
                     <ListItemText
                       disableTypography
@@ -213,12 +213,12 @@ export default class WorkerTypesTable extends Component {
                   </TableCellItem>
                 </TableCell>
               </CopyToClipboard>
-              <TableCell size="small">{workerType.pendingTasks}</TableCell>
+              <TableCell>{workerType.pendingTasks}</TableCell>
               {'runningCapacity' in workerType && (
-                <TableCell size="small">{workerType.runningCapacity}</TableCell>
+                <TableCell>{workerType.runningCapacity}</TableCell>
               )}
               {'pendingCapacity' in workerType && (
-                <TableCell size="small">{workerType.pendingCapacity}</TableCell>
+                <TableCell>{workerType.pendingCapacity}</TableCell>
               )}
             </TableRow>
           )}

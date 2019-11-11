@@ -162,12 +162,12 @@ export default class WorkerManagerErrorsTable extends Component {
 
     return (
       <TableRow key={errorId}>
-        <TableCell size="small">
+        <TableCell>
           <TableCellItem>
             <ListItemText disableTypography primary={title} />
           </TableCellItem>
         </TableCell>
-        <TableCell size="small">
+        <TableCell>
           <IconButton
             className={classes.infoButton}
             name={errorId}
@@ -183,7 +183,7 @@ export default class WorkerManagerErrorsTable extends Component {
         </TableCell>
 
         <CopyToClipboard title={`${reported} (Copy)`} text={reported}>
-          <TableCell size="small">
+          <TableCell>
             <TableCellItem button>
               <ListItemText
                 disableTypography

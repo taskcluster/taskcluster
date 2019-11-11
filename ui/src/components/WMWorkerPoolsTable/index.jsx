@@ -149,7 +149,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
 
     return (
       <TableRow key={workerPool.workerPoolId}>
-        <TableCell size="small">
+        <TableCell>
           {workerPool.providerId !== NULL_PROVIDER ? (
             <Link to={`${path}/${encodeURIComponent(workerPool.workerPoolId)}`}>
               <TableCellItem button>
@@ -169,7 +169,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           )}
         </TableCell>
 
-        <TableCell size="small">
+        <TableCell>
           {workerPool.providerId !== NULL_PROVIDER ? (
             <Typography variant="body2">{workerPool.providerId}</Typography>
           ) : (
@@ -177,15 +177,15 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           )}
         </TableCell>
 
-        <TableCell size="small">
+        <TableCell>
           <Typography variant="body2">{workerPool.pendingTasks}</Typography>
         </TableCell>
 
-        <TableCell size="small">
+        <TableCell>
           <Typography variant="body2">{workerPool.owner}</Typography>
         </TableCell>
 
-        <TableCell size="small">
+        <TableCell>
           <Link
             to={`/provisioners/${encodeURIComponent(
               provisionerId

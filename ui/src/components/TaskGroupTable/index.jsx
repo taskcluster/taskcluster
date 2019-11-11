@@ -216,7 +216,6 @@ export default class TaskGroupTable extends Component {
           component="div"
           role="row">
           <TableCell
-            size="small"
             className={classes.tableFirstCell}
             component="div"
             role="cell">

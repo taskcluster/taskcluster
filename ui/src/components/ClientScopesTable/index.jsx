@@ -107,7 +107,7 @@ export default class ClientScopesTable extends Component {
       searchTerm ? filter(contains(searchTerm)) : identity,
       map(node => (
         <TableRow key={node}>
-          <TableCell size="small">
+          <TableCell>
             <Link
               to={
                 selectedScope

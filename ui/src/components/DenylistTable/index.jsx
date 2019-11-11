@@ -140,7 +140,7 @@ export default class DenylistTable extends Component {
         sortDirection={sortDirection}
         renderRow={({ node }) => (
           <TableRow key={node.notificationAddress}>
-            <TableCell size="small">
+            <TableCell>
               <Link
                 className={classes.tableCell}
                 to={`/notify/denylist/${encodeURIComponent(
@@ -158,7 +158,7 @@ export default class DenylistTable extends Component {
                 </div>
               </Link>
             </TableCell>
-            <TableCell size="small">
+            <TableCell>
               <div className={classes.listItemCell}>
                 <Typography variant="body2">
                   {this.prettify(node.notificationType)}

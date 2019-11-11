@@ -116,7 +116,7 @@ export default class IndexTaskNamespaceTable extends Component {
         headers={['Name']}
         renderRow={({ node: { namespace } }) => (
           <TableRow key={namespace}>
-            <TableCell size="small">
+            <TableCell>
               <Link
                 to={`/tasks/index/${encodeURIComponent(
                   namespace

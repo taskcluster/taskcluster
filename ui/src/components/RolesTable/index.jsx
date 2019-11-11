@@ -108,7 +108,7 @@ export default class RolesTable extends Component {
         sortDirection={sortDirection}
         renderRow={({ node: role }) => (
           <TableRow key={role.roleId}>
-            <TableCell size="small">
+            <TableCell>
               <Link to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
                 <TableCellItem dense button>
                   <ListItemText>

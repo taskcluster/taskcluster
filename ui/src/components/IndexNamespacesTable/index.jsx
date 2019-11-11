@@ -109,7 +109,7 @@ export default class IndexNamespacesTable extends Component {
         headers={['Name']}
         renderRow={({ node: { name, namespace } }) => (
           <TableRow key={name}>
-            <TableCell size="small">
+            <TableCell>
               <Link to={`/tasks/index/${encodeURIComponent(namespace)}`}>
                 <TableCellItem className={classes.listItemCell} button>
                   <ListItemText>

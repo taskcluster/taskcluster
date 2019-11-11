@@ -232,7 +232,7 @@ export default class ConnectionDataTable extends Component {
                     }),
                   }}>
                   {headers.map(header => (
-                    <TableCell size="small" key={`table-header-${header}`}>
+                    <TableCell key={`table-header-${header}`}>
                       <TableSortLabel
                         className={classes.sortHeader}
                         id={header}

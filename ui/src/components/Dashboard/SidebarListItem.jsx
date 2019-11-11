@@ -37,6 +37,7 @@ import Link from '../../utils/Link';
   text: {
     color: theme.palette.text.inactive,
     fontFamily: 'Roboto500',
+    fontSize: theme.typography.body1.fontSize,
   },
   icon: {
     fill: theme.palette.text.inactive,
