@@ -3,14 +3,15 @@ const sift = require('../utils/sift');
 const fetch = require('../utils/fetch');
 const ConnectionLoader = require('../ConnectionLoader');
 const Task = require('../entities/Task');
-const tryCatch = require('../utils/tryCatch');
 
 module.exports = ({ queue, index }) => {
   const task = new DataLoader(taskIds =>
     Promise.all(taskIds.map(async (taskId) => {
-      const [error, task] = await tryCatch(queue.task(taskId));
-
-      return error || new Task(taskId, null, task);
+      try {
+        return new Task(taskId, null, await queue.task(taskId));
+      } catch (err) {
+        return err;
+      }
     })),
   );
   const indexedTask = new DataLoader(indexPaths =>
