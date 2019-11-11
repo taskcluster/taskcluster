@@ -38,6 +38,7 @@ import { THEME } from '../../utils/constants';
     },
   },
   input: {
+    fontSize: theme.typography.body1.fontSize,
     font: 'inherit',
     paddingTop: theme.spacing(1),
     paddingRight: theme.spacing(1),

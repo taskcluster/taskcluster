@@ -6,8 +6,6 @@ import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
 import ArrowExpandVerticalIcon from 'mdi-react/ArrowExpandVerticalIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import HelpView from '../../../components/HelpView';
@@ -34,6 +32,8 @@ import { formatScope, scopeLink } from '../../../utils/scopeUtils';
     ...theme.mixins.listItemButton,
     paddingTop: theme.spacing(0.5),
     paddingBottom: theme.spacing(0.5),
+    display: 'flex',
+    justifyContent: 'space-between',
   },
 }))
 export default class ScopesetExpander extends Component {
@@ -85,18 +85,11 @@ export default class ScopesetExpander extends Component {
                       data.expandScopes.map(scope => (
                         <Link key={scope} to={scopeLink(scope)}>
                           <ListItem button className={classes.listItemButton}>
-                            <ListItemText
-                              disableTypography
-                              secondary={
-                                <Typography variant="body2">
-                                  <code
-                                    // eslint-disable-next-line react/no-danger
-                                    dangerouslySetInnerHTML={{
-                                      __html: formatScope(scope),
-                                    }}
-                                  />
-                                </Typography>
-                              }
+                            <code
+                              // eslint-disable-next-line react/no-danger
+                              dangerouslySetInnerHTML={{
+                                __html: formatScope(scope),
+                              }}
                             />
                             <LinkIcon size={16} />
                           </ListItem>

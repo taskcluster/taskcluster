@@ -95,6 +95,10 @@ export default class DataTable extends Component {
      * Relevant if `paginate` is set to `true`.
      */
     rowsPerPage: number,
+    /**
+     * Allows TableCells to inherit size of the Table.
+     */
+    size: oneOf(['small', 'medium']),
   };
 
   static defaultProps = {
@@ -106,6 +110,7 @@ export default class DataTable extends Component {
     noItemsMessage: 'No items for this page.',
     paginate: false,
     rowsPerPage: 5,
+    size: 'small',
   };
 
   state = {
@@ -137,6 +142,7 @@ export default class DataTable extends Component {
       rowsPerPage,
       paginate,
       onHeaderClick,
+      size,
       ...props
     } = this.props;
     const colSpan = columnsSize || (headers && headers.length) || 0;
@@ -148,7 +154,7 @@ export default class DataTable extends Component {
     return (
       <Fragment>
         <div className={classes.tableWrapper}>
-          <Table {...props}>
+          <Table size={size} {...props}>
             {headers && (
               <TableHead>
                 <TableRow>

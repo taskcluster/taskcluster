@@ -10,7 +10,6 @@ import AlertIcon from 'mdi-react/AlertIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
-import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import DataTable from '../DataTable';
 import TableCellItem from '../TableCellItem';
@@ -93,10 +92,7 @@ export default class WorkerManagerWorkersTable extends Component {
         <TableCell>
           <Link to={`${path}/tasks`}>
             <TableCellItem button>
-              <ListItemText
-                disableTypography
-                primary={<Typography variant="body2">{workerId}</Typography>}
-              />
+              {workerId}
               <LinkIcon size={iconSize} />
             </TableCellItem>
           </Link>
@@ -105,14 +101,7 @@ export default class WorkerManagerWorkersTable extends Component {
         <CopyToClipboard title={`${workerAge} (Copy)`} text={workerAge}>
           <TableCell>
             <TableCellItem button>
-              <ListItemText
-                disableTypography
-                primary={
-                  <Typography variant="body2">
-                    <DateDistance from={workerAge} />
-                  </Typography>
-                }
-              />
+              <DateDistance from={workerAge} />
               <ContentCopyIcon size={iconSize} />
             </TableCellItem>
           </TableCell>
@@ -123,14 +112,7 @@ export default class WorkerManagerWorkersTable extends Component {
             <Link
               to={`/tasks/${latestTaskRun.taskId}/runs/${latestTaskRun.runId}`}>
               <TableCellItem button>
-                <ListItemText
-                  disableTypography
-                  primary={
-                    <Typography variant="body2">
-                      {latestTaskRun.taskId}
-                    </Typography>
-                  }
-                />
+                {latestTaskRun.taskId}
                 <LinkIcon size={iconSize} />
               </TableCellItem>
             </Link>
@@ -145,22 +127,13 @@ export default class WorkerManagerWorkersTable extends Component {
             text={latestTaskRun.started}>
             <TableCell>
               <TableCellItem button>
-                <ListItemText
-                  disableTypography
-                  primary={
-                    <Typography variant="body2">
-                      <DateDistance from={latestTaskRun.started} />
-                    </Typography>
-                  }
-                />
+                <DateDistance from={latestTaskRun.started} />
                 <ContentCopyIcon size={iconSize} />
               </TableCellItem>
             </TableCell>
           </CopyToClipboard>
         ) : (
-          <TableCell>
-            <Typography variant="body2">n/a</Typography>
-          </TableCell>
+          <TableCell>n/a</TableCell>
         )}
 
         {latestTaskRun ? (
@@ -169,33 +142,19 @@ export default class WorkerManagerWorkersTable extends Component {
             text={latestTaskRun.resolved}>
             <TableCell>
               <TableCellItem button>
-                <ListItemText
-                  disableTypography
-                  primary={
-                    <Typography variant="body2">
-                      <DateDistance from={latestTaskRun.resolved} />
-                    </Typography>
-                  }
-                />
+                <DateDistance from={latestTaskRun.resolved} />
                 <ContentCopyIcon size={iconSize} />
               </TableCellItem>
             </TableCell>
           </CopyToClipboard>
         ) : (
-          <TableCell>
-            <Typography variant="body2">n/a</Typography>
-          </TableCell>
+          <TableCell>n/a</TableCell>
         )}
 
         <TableCell>
           <Link to={`${path}/errors`}>
             <TableCellItem button>
-              <ListItemText
-                disableTypography
-                primary={
-                  <Typography variant="body2">Click to see errors</Typography>
-                }
-              />
+              Click to see errors
               <AlertIcon size={iconSize} />
             </TableCellItem>
           </Link>
@@ -205,12 +164,7 @@ export default class WorkerManagerWorkersTable extends Component {
           <Link
             to={`${path}/worker-types/${workerPool}/workers/${workerGroup}/${workerId}/resources`}>
             <TableCellItem button>
-              <ListItemText
-                disableTypography
-                primary={
-                  <Typography variant="body2">{`${recentErrors}`}</Typography>
-                }
-              />
+              {`${recentErrors}`}
               <LinkIcon size={iconSize} />
             </TableCellItem>
           </Link>
@@ -291,7 +245,6 @@ export default class WorkerManagerWorkersTable extends Component {
         onHeaderClick={this.handleHeaderClick}
         renderRow={this.renderTableRow}
         headers={headers}
-        size="small"
       />
     );
   }

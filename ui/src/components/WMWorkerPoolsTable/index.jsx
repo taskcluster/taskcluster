@@ -5,7 +5,6 @@ import { bool, arrayOf, string, func } from 'prop-types';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography';
-import ListItemText from '@material-ui/core/ListItemText';
 import IconButton from '@material-ui/core/IconButton';
 import LinkIcon from 'mdi-react/LinkIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
@@ -153,14 +152,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           {workerPool.providerId !== NULL_PROVIDER ? (
             <Link to={`${path}/${encodeURIComponent(workerPool.workerPoolId)}`}>
               <TableCellItem button>
-                <ListItemText
-                  disableTypography
-                  primary={
-                    <Typography variant="body2">
-                      {workerPool.workerPoolId}
-                    </Typography>
-                  }
-                />
+                {workerPool.workerPoolId}
                 <LinkIcon size={iconSize} />
               </TableCellItem>
             </Link>
@@ -177,13 +169,9 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           )}
         </TableCell>
 
-        <TableCell>
-          <Typography variant="body2">{workerPool.pendingTasks}</Typography>
-        </TableCell>
+        <TableCell>{workerPool.pendingTasks}</TableCell>
 
-        <TableCell>
-          <Typography variant="body2">{workerPool.owner}</Typography>
-        </TableCell>
+        <TableCell>{workerPool.owner}</TableCell>
 
         <TableCell>
           <Link

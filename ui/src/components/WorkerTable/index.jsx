@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
-import Typography from '@material-ui/core/Typography';
-import ListItemText from '@material-ui/core/ListItemText';
 import memoize from 'fast-memoize';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { withStyles } from '@material-ui/core/styles';
@@ -141,14 +139,7 @@ export default class WorkerTable extends Component {
             <CopyToClipboard title={task.started} text={task.started}>
               <TableCell>
                 <TableCellItem button>
-                  <ListItemText
-                    disableTypography
-                    primary={
-                      <Typography variant="body2">
-                        <DateDistance from={task.started} />
-                      </Typography>
-                    }
-                  />
+                  <DateDistance from={task.started} />
                   <ContentCopyIcon size={iconSize} />
                 </TableCellItem>
               </TableCell>
@@ -157,18 +148,11 @@ export default class WorkerTable extends Component {
               <TableCell>
                 {task.resolved ? (
                   <TableCellItem button>
-                    <ListItemText
-                      disableTypography
-                      primary={
-                        <Typography variant="body2">
-                          <DateDistance from={task.resolved} />
-                        </Typography>
-                      }
-                    />
+                    <DateDistance from={task.resolved} />
                     <ContentCopyIcon size={iconSize} />
                   </TableCellItem>
                 ) : (
-                  <Typography variant="body2">n/a</Typography>
+                  <em>n/a</em>
                 )}
               </TableCell>
             </CopyToClipboard>

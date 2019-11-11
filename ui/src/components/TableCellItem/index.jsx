@@ -18,6 +18,8 @@ import ListItem from '@material-ui/core/ListItem';
   },
   listItemButton: {
     ...theme.mixins.listItemButton,
+    display: 'flex',
+    justifyContent: 'space-between',
   },
 }))
 /**

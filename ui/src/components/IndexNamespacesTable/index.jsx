@@ -2,12 +2,9 @@ import React, { Component } from 'react';
 import { func, shape, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
-import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
-import ListItemText from '@material-ui/core/ListItemText';
 import TableRow from '@material-ui/core/TableRow';
 import LinkIcon from 'mdi-react/LinkIcon';
-import Typography from '@material-ui/core/Typography';
 import { camelCase } from 'change-case';
 import TableCellItem from '../TableCellItem';
 import ConnectionDataTable from '../ConnectionDataTable';
@@ -21,14 +18,6 @@ const sorted = pipe(
   map(({ node: { namespace } }) => namespace)
 );
 
-@withStyles({
-  listItemCell: {
-    width: '100%',
-  },
-  tableText: {
-    fontSize: '0.8125rem',
-  },
-})
 /**
  * Display index namespaces in a table.
  */
@@ -89,7 +78,7 @@ export default class IndexNamespacesTable extends Component {
   };
 
   render() {
-    const { onPageChange, classes, connection } = this.props;
+    const { onPageChange, connection } = this.props;
     const { sortBy, sortDirection } = this.state;
     const sortedNamespacesConnection = this.createSortedNamespacesConnection(
       connection,
@@ -111,12 +100,8 @@ export default class IndexNamespacesTable extends Component {
           <TableRow key={name}>
             <TableCell>
               <Link to={`/tasks/index/${encodeURIComponent(namespace)}`}>
-                <TableCellItem className={classes.listItemCell} button>
-                  <ListItemText>
-                    <Typography className={classes.tableText}>
-                      {name}
-                    </Typography>
-                  </ListItemText>
+                <TableCellItem button>
+                  {name}
                   <LinkIcon size={iconSize} />
                 </TableCellItem>
               </Link>

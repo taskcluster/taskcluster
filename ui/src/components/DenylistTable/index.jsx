@@ -9,7 +9,6 @@ import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
-import Typography from '@material-ui/core/Typography';
 import { notificationAddress, pageInfo } from '../../utils/prop-types';
 import { VIEW_DENYLIST_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
@@ -151,18 +150,14 @@ export default class DenylistTable extends Component {
                     classes.listItemCell,
                     classes.listLinkCell
                   )}>
-                  <Typography variant="body2">
-                    {node.notificationAddress}
-                  </Typography>
+                  {node.notificationAddress}
                   <LinkIcon size={iconSize} />
                 </div>
               </Link>
             </TableCell>
             <TableCell>
               <div className={classes.listItemCell}>
-                <Typography variant="body2">
-                  {this.prettify(node.notificationType)}
-                </Typography>
+                {this.prettify(node.notificationType)}
               </div>
             </TableCell>
           </TableRow>

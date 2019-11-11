@@ -61,11 +61,6 @@ const createTheme = isDarkTheme => {
   };
 
   return {
-    props: {
-      MuiTableCell: {
-        size: 'small',
-      },
-    },
     palette: {
       type: isDarkTheme ? 'dark' : 'light',
       background: {
@@ -306,20 +301,11 @@ const createTheme = isDarkTheme => {
         },
       },
       MuiTableCell: {
-        head: {
-          fontSize: '0.75rem',
-        },
         root: {
           borderBottom: `1px solid ${
             isDarkTheme ? THEME.TEN_PERCENT_WHITE : THEME.TEN_PERCENT_BLACK
           }`,
           whiteSpace: 'nowrap',
-        },
-        sizeSmall: {
-          padding: '4px 32px 4px 24px',
-        },
-        body: {
-          fontSize: '0.8125rem',
         },
       },
       MuiPickersToolbar: {

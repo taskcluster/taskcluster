@@ -478,14 +478,8 @@ export default class Entry extends Component {
                   items={entry.routingKey}
                   renderRow={(routingKey, idx) => (
                     <TableRow key={routingKey.name}>
-                      <TableCell>
-                        <Typography variant="body2">{idx}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          {routingKey.name}
-                        </Typography>
-                      </TableCell>
+                      <TableCell>{idx}</TableCell>
+                      <TableCell>{routingKey.name}</TableCell>
                       <TableCell className={classes.summaryCell}>
                         <Markdown>{routingKey.summary}</Markdown>
                       </TableCell>
@@ -543,17 +537,12 @@ export default class Entry extends Component {
               primary="Fields"
               secondary={
                 <DataTable
+                  size="medium"
                   items={Object.keys(entry.fields)}
                   renderRow={field => (
                     <TableRow key={field}>
-                      <TableCell>
-                        <Typography variant="body2">{field}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          {entry.fields[field]}
-                        </Typography>
-                      </TableCell>
+                      <TableCell>{field}</TableCell>
+                      <TableCell>{entry.fields[field]}</TableCell>
                     </TableRow>
                   )}
                 />

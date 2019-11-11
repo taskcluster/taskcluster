@@ -225,7 +225,6 @@ export default class WorkerManagerErrorsTable extends Component {
           onHeaderClick={this.handleHeaderClick}
           renderRow={this.renderTableRow}
           headers={['Title', 'Description', 'Reported']}
-          size="small"
           onPageChange={onPageChange}
         />
         <Drawer

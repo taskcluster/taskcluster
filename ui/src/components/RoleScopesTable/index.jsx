@@ -16,7 +16,6 @@ import memoize from 'fast-memoize';
 import { FixedSizeList } from 'react-window';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import ListItemText from '@material-ui/core/ListItemText';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import Divider from '@material-ui/core/Divider';
@@ -34,6 +33,8 @@ const sorted = pipe(
 @withStyles(theme => ({
   listItemButton: {
     ...theme.mixins.listItemButton,
+    display: 'flex',
+    justifyContent: 'space-between',
   },
   listItemCell: {
     display: 'flex',
@@ -44,9 +45,6 @@ const sorted = pipe(
   },
   noRolesText: {
     marginTop: theme.spacing(2),
-  },
-  tableText: {
-    fontSize: '0.8125rem',
   },
 }))
 export default class RoleScopesTable extends Component {
@@ -106,9 +104,7 @@ export default class RoleScopesTable extends Component {
               : `/auth/scopes/${encodeURIComponent(item)}`
           }>
           <ListItem className={classes.listItemButton} style={style} button>
-            <ListItemText>
-              <Typography className={classes.tableText}>{item}</Typography>
-            </ListItemText>
+            {item}
             <LinkIcon size={iconSize} />
           </ListItem>
         </Link>

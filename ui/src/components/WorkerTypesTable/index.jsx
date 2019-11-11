@@ -181,14 +181,7 @@ export default class WorkerTypesTable extends Component {
                 <Link
                   to={`/provisioners/${workerType.provisionerId}/worker-types/${workerType.workerType}`}>
                   <TableCellItem button>
-                    <ListItemText
-                      disableTypography
-                      primary={
-                        <Typography variant="body2">
-                          {workerType.workerType}
-                        </Typography>
-                      }
-                    />
+                    {workerType.workerType}
                     <LinkIcon size={iconSize} />
                   </TableCellItem>
                 </Link>
@@ -201,14 +194,7 @@ export default class WorkerTypesTable extends Component {
                 text={workerType.lastDateActive}>
                 <TableCell>
                   <TableCellItem button>
-                    <ListItemText
-                      disableTypography
-                      primary={
-                        <Typography variant="body2">
-                          <DateDistance from={workerType.lastDateActive} />
-                        </Typography>
-                      }
-                    />
+                    <DateDistance from={workerType.lastDateActive} />
                     <ContentCopyIcon size={iconSize} />
                   </TableCellItem>
                 </TableCell>

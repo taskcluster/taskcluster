@@ -4,8 +4,6 @@ import { formatDistanceStrict, parseISO } from 'date-fns';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { withStyles } from '@material-ui/core/styles';
-import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
@@ -29,11 +27,6 @@ const sorted = pipe(
       }`
   )
 );
-@withStyles(theme => ({
-  tableCellText: {
-    paddingRight: theme.spacing(2),
-  },
-}))
 
 /**
  * Display relevant information about workers in a table.
@@ -116,7 +109,6 @@ export default class WorkersTable extends Component {
       workerType,
       onPageChange,
       workersConnection,
-      classes,
       ...props
     } = this.props;
     const iconSize = 16;
@@ -149,13 +141,7 @@ export default class WorkersTable extends Component {
               <Link
                 to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${workerGroup}/${workerId}`}>
                 <TableCellItem button>
-                  <ListItemText
-                    className={classes.tableCellText}
-                    disableTypography
-                    primary={
-                      <Typography variant="body2">{workerId}</Typography>
-                    }
-                  />
+                  {workerId}
                   <LinkIcon size={iconSize} />
                 </TableCellItem>
               </Link>
@@ -163,15 +149,7 @@ export default class WorkersTable extends Component {
             <CopyToClipboard title={`${firstClaim} (Copy)`} text={firstClaim}>
               <TableCell>
                 <TableCellItem button>
-                  <ListItemText
-                    className={classes.tableCellText}
-                    disableTypography
-                    primary={
-                      <Typography variant="body2">
-                        <DateDistance from={firstClaim} />
-                      </Typography>
-                    }
-                  />
+                  <DateDistance from={firstClaim} />
                   <ContentCopyIcon size={iconSize} />
                 </TableCellItem>
               </TableCell>
@@ -181,15 +159,7 @@ export default class WorkersTable extends Component {
                 <Link
                   to={`/tasks/${latestTask.run.taskId}/runs/${latestTask.run.runId}`}>
                   <TableCellItem button>
-                    <ListItemText
-                      className={classes.tableCellText}
-                      disableTypography
-                      primary={
-                        <Typography variant="body2">
-                          {latestTask.run.taskId}
-                        </Typography>
-                      }
-                    />
+                    {latestTask.run.taskId}
                     <LinkIcon size={iconSize} />
                   </TableCellItem>
                 </Link>
@@ -210,23 +180,13 @@ export default class WorkersTable extends Component {
                 text={latestTask.run.started}>
                 <TableCell>
                   <TableCellItem button>
-                    <ListItemText
-                      className={classes.tableCellText}
-                      disableTypography
-                      primary={
-                        <Typography variant="body2">
-                          <DateDistance from={latestTask.run.started} />
-                        </Typography>
-                      }
-                    />
+                    <DateDistance from={latestTask.run.started} />
                     <ContentCopyIcon size={iconSize} />
                   </TableCellItem>
                 </TableCell>
               </CopyToClipboard>
             ) : (
-              <TableCell>
-                <Typography variant="body2">n/a</Typography>
-              </TableCell>
+              <TableCell>n/a</TableCell>
             )}
             {latestTask && latestTask.run.resolved ? (
               <CopyToClipboard
@@ -234,23 +194,13 @@ export default class WorkersTable extends Component {
                 text={latestTask.run.resolved}>
                 <TableCell>
                   <TableCellItem button>
-                    <ListItemText
-                      className={classes.tableCellText}
-                      disableTypography
-                      primary={
-                        <Typography variant="body2">
-                          <DateDistance from={latestTask.run.resolved} />
-                        </Typography>
-                      }
-                    />
+                    <DateDistance from={latestTask.run.resolved} />
                     <ContentCopyIcon size={iconSize} />
                   </TableCellItem>
                 </TableCell>
               </CopyToClipboard>
             ) : (
-              <TableCell>
-                <Typography variant="body2">n/a</Typography>
-              </TableCell>
+              <TableCell>n/a</TableCell>
             )}
             <TableCell>
               {quarantineUntil ? (

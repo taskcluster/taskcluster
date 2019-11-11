@@ -3,7 +3,6 @@ import { func, array } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
-import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { titleCase } from 'change-case';
 import IconButton from '@material-ui/core/IconButton';
@@ -51,22 +50,13 @@ function HookLastFiredTable({ classes, ...props }) {
             {(hookFire.result === 'SUCCESS' && (
               <Link to={`/tasks/${hookFire.taskId}`}>
                 <TableCellItem button>
-                  <ListItemText
-                    disableTypography
-                    primary={
-                      <Typography variant="body2">{hookFire.taskId}</Typography>
-                    }
-                  />
+                  {hookFire.taskId}
                   <LinkIcon size={iconSize} />
                 </TableCellItem>
               </Link>
             )) || <Typography variant="body2">{hookFire.taskId}</Typography>}
           </TableCell>
-          <TableCell>
-            <Typography variant="body2">
-              {titleCase(hookFire.firedBy)}
-            </Typography>
-          </TableCell>
+          <TableCell>{titleCase(hookFire.firedBy)}</TableCell>
           <TableCell>
             <StatusLabel state={hookFire.result} />
             {hookFire.result === 'ERROR' && (
@@ -83,14 +73,7 @@ function HookLastFiredTable({ classes, ...props }) {
             text={hookFire.taskCreateTime}>
             <TableCell>
               <TableCellItem button>
-                <ListItemText
-                  disableTypography
-                  primary={
-                    <Typography variant="body2">
-                      <DateDistance from={hookFire.taskCreateTime} />
-                    </Typography>
-                  }
-                />
+                <DateDistance from={hookFire.taskCreateTime} />
                 <ContentCopyIcon size={iconSize} />
               </TableCellItem>
             </TableCell>
