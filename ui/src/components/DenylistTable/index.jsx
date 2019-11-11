@@ -29,7 +29,7 @@ const tableHeaders = ['Address', 'Type'];
     display: 'flex',
     justifyContent: 'space-between',
     width: '100%',
-    padding: theme.spacing.unit,
+    padding: theme.spacing(1),
   },
   listLinkCell: {
     ...theme.mixins.hover,
@@ -151,14 +151,18 @@ export default class DenylistTable extends Component {
                     classes.listItemCell,
                     classes.listLinkCell
                   )}>
-                  <Typography>{node.notificationAddress}</Typography>
+                  <Typography variant="body2">
+                    {node.notificationAddress}
+                  </Typography>
                   <LinkIcon size={iconSize} />
                 </div>
               </Link>
             </TableCell>
             <TableCell>
               <div className={classes.listItemCell}>
-                <Typography>{this.prettify(node.notificationType)}</Typography>
+                <Typography variant="body2">
+                  {this.prettify(node.notificationType)}
+                </Typography>
               </div>
             </TableCell>
           </TableRow>

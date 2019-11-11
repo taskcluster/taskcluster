@@ -113,10 +113,9 @@ export default class IndexTaskNamespaceTable extends Component {
         headers={['Name']}
         renderRow={({ node: { namespace } }) => (
           <TableRow key={namespace}>
-            <TableCell>
+            <TableCell size="small">
               <TableCellItem
                 className={classes.listItemCell}
-                dense
                 button
                 component={Link}
                 to={`/tasks/index/${encodeURIComponent(
@@ -128,7 +127,9 @@ export default class IndexTaskNamespaceTable extends Component {
                 <ListItemText
                   disableTypography
                   primary={
-                    <Typography>{this.taskFromNamespace(namespace)}</Typography>
+                    <Typography variant="body2">
+                      {this.taskFromNamespace(namespace)}
+                    </Typography>
                   }
                 />
                 <LinkIcon size={iconSize} />

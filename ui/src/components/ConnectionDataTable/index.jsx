@@ -37,7 +37,7 @@ import { pageInfo } from '../../utils/prop-types';
     overflowX: 'auto',
   },
   thWithTopPagination: {
-    height: theme.spacing.quad,
+    height: theme.spacing(4),
   },
 }))
 /**

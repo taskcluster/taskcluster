@@ -19,12 +19,13 @@ import getPictureFromUser from '../../utils/getPictureFromUser';
   },
   userMenu: {
     [theme.breakpoints.up('sm')]: {
-      padding: `${theme.spacing.unit / 2}px ${theme.spacing.double}px`,
+      padding: `${theme.spacing(0.5)}px ${theme.spacing(2)}px`,
     },
   },
   text: {
     color: theme.palette.text.primary,
     fontFamily: 'Roboto500',
+    fontSize: 16,
   },
   icon: {
     fill: theme.palette.text.primary,
@@ -63,7 +64,7 @@ export default class UserMenuList extends Component {
               <ListItemText
                 disableTypography
                 className={classes.text}
-                inset
+                variant="inset"
                 primary="Sign In"
               />
             </ListItem>

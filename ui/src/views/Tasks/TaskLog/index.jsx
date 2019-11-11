@@ -15,8 +15,8 @@ import taskQuery from './task.graphql';
   fab: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
-    bottom: theme.spacing.triple,
-    right: theme.spacing.unit * 12,
+    bottom: theme.spacing(3),
+    right: theme.spacing(12),
   },
 }))
 @graphql(taskQuery, {

@@ -18,10 +18,10 @@ import { THEME } from '../../utils/constants';
 @withApollo
 @withStyles(theme => ({
   leftIcon: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
   },
   userMenuButton: {
-    marginLeft: theme.spacing.unit,
+    marginLeft: theme.spacing(1),
   },
   buttonAvatar: {
     color: THEME.PRIMARY_TEXT_DARK,

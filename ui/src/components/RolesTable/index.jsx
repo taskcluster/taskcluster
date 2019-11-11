@@ -101,7 +101,7 @@ export default class RolesTable extends Component {
         sortDirection={sortDirection}
         renderRow={({ node: role }) => (
           <TableRow key={role.roleId}>
-            <TableCell padding="dense">
+            <TableCell size="small">
               <TableCellItem
                 dense
                 button

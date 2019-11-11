@@ -15,7 +15,7 @@ import Link from '../../utils/Link';
 @hot(module)
 @withStyles(theme => ({
   buttonIcon: {
-    marginRight: theme.spacing.double,
+    marginRight: theme.spacing(2),
   },
 }))
 @withAuth

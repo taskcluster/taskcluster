@@ -25,16 +25,16 @@ import Link from '../../utils/Link';
 
 @withStyles(theme => ({
   headline: {
-    paddingLeft: theme.spacing.double,
-    paddingRight: theme.spacing.double,
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
   },
   cardContent: {
     paddingLeft: 0,
     paddingRight: 0,
-    paddingTop: theme.spacing.double,
-    paddingBottom: theme.spacing.double,
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
     '&:last-child': {
-      paddingBottom: theme.spacing.double,
+      paddingBottom: theme.spacing(2),
     },
   },
   sourceHeadline: {
@@ -318,6 +318,7 @@ export default class TaskDetailsCard extends Component {
                           {task.scopes.map(scope => (
                             <li key={scope}>
                               <Typography
+                                variant="body2"
                                 component="span"
                                 color="textSecondary">
                                 {scope}
@@ -343,6 +344,7 @@ export default class TaskDetailsCard extends Component {
                           {task.routes.map(route => (
                             <li key={route}>
                               <Typography
+                                variant="body2"
                                 component="span"
                                 color="textSecondary">
                                 {route}

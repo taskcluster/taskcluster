@@ -9,29 +9,33 @@ const styles = theme => ({
     ...theme.mixins.link,
   },
 });
+// Ref: https://material-ui.com/guides/composition/#caveat-with-refs
+// eslint-disable-next-line react/display-name
+const Anchor = React.forwardRef(
+  ({ classes, href, children, ...props }, ref) => {
+    if (href.startsWith('http')) {
+      return (
+        <a
+          className={classes.link}
+          href={href}
+          {...props}
+          target="_blank"
+          rel="noopener noreferrer"
+          ref={ref}>
+          {children}
+        </a>
+      );
+    }
 
-function Anchor({ classes, href, children, ...props }) {
-  if (href.startsWith('http')) {
+    const url = resolve(href, window.location.pathname);
+
     return (
-      <a
-        className={classes.link}
-        href={href}
-        {...props}
-        target="_blank"
-        rel="noopener noreferrer">
+      <Link className={classes.link} to={url} ref={ref} {...props}>
         {children}
-      </a>
+      </Link>
     );
   }
-
-  const url = resolve(href, window.location.pathname);
-
-  return (
-    <Link className={classes.link} to={url} {...props}>
-      {children}
-    </Link>
-  );
-}
+);
 
 Anchor.propTypes = {
   href: string.isRequired,

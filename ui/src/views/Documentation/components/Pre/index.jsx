@@ -13,7 +13,7 @@ const styles = theme => ({
       },
     },
     '&, & pre[class*="language-"]': {
-      margin: `${theme.spacing.triple}px 0`,
+      margin: `${theme.spacing(3)}px 0`,
       padding: '12px 18px',
       backgroundColor: THEME.PRIMARY_DARK,
       borderRadius: 3,

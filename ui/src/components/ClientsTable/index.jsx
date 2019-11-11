@@ -95,7 +95,7 @@ export default class ClientsTable extends Component {
         onPageChange={onPageChange}
         renderRow={({ node: client }) => (
           <TableRow key={client.clientId}>
-            <TableCell padding="dense">
+            <TableCell size="small">
               <TableCellItem
                 dense
                 button

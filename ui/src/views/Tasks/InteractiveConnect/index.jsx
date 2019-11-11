@@ -70,14 +70,14 @@ const getInteractiveStatus = ({
     ...theme.mixins.listItemButton,
   },
   divider: {
-    margin: `${theme.spacing.double}px 0`,
+    margin: `${theme.spacing(2)}px 0`,
   },
   warningPanel: {
-    marginTop: theme.spacing.double,
-    marginBottom: theme.spacing.double,
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
   },
   viewTaskDetails: {
-    marginTop: theme.spacing.double,
+    marginTop: theme.spacing(2),
   },
 }))
 export default class InteractiveConnect extends Component {
@@ -358,7 +358,7 @@ export default class InteractiveConnect extends Component {
           <Fragment>
             <Divider className={classes.divider} />
             <Typography variant="h5">Select a Session</Typography>
-            <Typography>
+            <Typography variant="body2">
               You have approximately <strong>5 minutes</strong> to connect,
               after that the task will shutdown when all connections are closed.
             </Typography>

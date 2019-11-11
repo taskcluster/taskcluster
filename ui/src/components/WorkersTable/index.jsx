@@ -145,7 +145,7 @@ export default class WorkersTable extends Component {
                 to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${workerGroup}/${workerId}`}>
                 <ListItemText
                   disableTypography
-                  primary={<Typography>{workerId}</Typography>}
+                  primary={<Typography variant="body2">{workerId}</Typography>}
                 />
                 <LinkIcon size={iconSize} />
               </TableCellItem>
@@ -156,7 +156,7 @@ export default class WorkersTable extends Component {
                   <ListItemText
                     disableTypography
                     primary={
-                      <Typography>
+                      <Typography variant="body2">
                         <DateDistance from={firstClaim} />
                       </Typography>
                     }
@@ -173,19 +173,23 @@ export default class WorkersTable extends Component {
                   to={`/tasks/${latestTask.run.taskId}/runs/${latestTask.run.runId}`}>
                   <ListItemText
                     disableTypography
-                    primary={<Typography>{latestTask.run.taskId}</Typography>}
+                    primary={
+                      <Typography variant="body2">
+                        {latestTask.run.taskId}
+                      </Typography>
+                    }
                   />
                   <LinkIcon size={iconSize} />
                 </TableCellItem>
               ) : (
-                <Typography>n/a</Typography>
+                <Typography variant="body2">n/a</Typography>
               )}
             </TableCell>
             <TableCell>
               {latestTask ? (
                 <StatusLabel state={latestTask.run.state} />
               ) : (
-                <Typography>n/a</Typography>
+                <Typography variant="body2">n/a</Typography>
               )}
             </TableCell>
             {latestTask ? (
@@ -197,7 +201,7 @@ export default class WorkersTable extends Component {
                     <ListItemText
                       disableTypography
                       primary={
-                        <Typography>
+                        <Typography variant="body2">
                           <DateDistance from={latestTask.run.started} />
                         </Typography>
                       }
@@ -208,7 +212,7 @@ export default class WorkersTable extends Component {
               </CopyToClipboard>
             ) : (
               <TableCell>
-                <Typography>n/a</Typography>
+                <Typography variant="body2">n/a</Typography>
               </TableCell>
             )}
             {latestTask && latestTask.run.resolved ? (
@@ -220,7 +224,7 @@ export default class WorkersTable extends Component {
                     <ListItemText
                       disableTypography
                       primary={
-                        <Typography>
+                        <Typography variant="body2">
                           <DateDistance from={latestTask.run.resolved} />
                         </Typography>
                       }
@@ -231,7 +235,7 @@ export default class WorkersTable extends Component {
               </CopyToClipboard>
             ) : (
               <TableCell>
-                <Typography>n/a</Typography>
+                <Typography variant="body2">n/a</Typography>
               </TableCell>
             )}
             <TableCell>
@@ -240,7 +244,7 @@ export default class WorkersTable extends Component {
                   unit: 'day',
                 })
               ) : (
-                <Typography>n/a</Typography>
+                <Typography variant="body2">n/a</Typography>
               )}
             </TableCell>
           </TableRow>

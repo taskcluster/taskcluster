@@ -51,20 +51,20 @@ import SpeedDial from '../SpeedDial';
   },
   saveIconSpan: {
     ...theme.mixins.fab,
-    bottom: theme.spacing.double,
-    right: theme.spacing.unit * 11,
+    bottom: theme.spacing(2),
+    right: theme.spacing(11),
     ...theme.mixins.actionButton,
   },
   dropdown: {
     minWidth: 200,
   },
   separator: {
-    padding: theme.spacing.double,
+    padding: theme.spacing(2),
     paddingBottom: 0,
   },
   workerPoolDescriptionListItem: {
-    marginTop: theme.spacing.unit,
-    marginBottom: theme.spacing.triple,
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(3),
   },
   ownerEmailListItem: {
     display: 'block',
@@ -433,7 +433,7 @@ export default class WMWorkerPoolEditor extends Component {
             error={dialogError}
             title="Delete Worker Pool?"
             body={
-              <Typography>
+              <Typography variant="body2">
                 This will delete the worker pool{' '}
                 {joinWorkerPoolId(
                   workerPool.workerPoolId1,

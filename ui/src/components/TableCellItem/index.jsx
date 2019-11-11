@@ -13,8 +13,8 @@ import ListItem from '@material-ui/core/ListItem';
     width: '100%',
   },
   listItem: {
-    marginLeft: -theme.spacing.unit,
-    padding: theme.spacing.unit,
+    marginLeft: -theme.spacing(1),
+    padding: theme.spacing(1),
   },
   listItemButton: {
     ...theme.mixins.listItemButton,
@@ -45,7 +45,6 @@ export default class TableCellItem extends Component {
 
     return (
       <List
-        dense={dense}
         component="div"
         classes={{ root: classes.root }}
         className={className}>

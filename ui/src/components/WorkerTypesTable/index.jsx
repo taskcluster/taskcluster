@@ -36,17 +36,17 @@ const sorted = pipe(
 
 @withStyles(theme => ({
   infoButton: {
-    marginLeft: -theme.spacing.double,
-    marginRight: theme.spacing.unit,
+    marginLeft: -theme.spacing(2),
+    marginRight: theme.spacing(1),
     borderRadius: 4,
   },
   headline: {
-    paddingLeft: theme.spacing.triple,
-    paddingRight: theme.spacing.triple,
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
   },
   metadataContainer: {
-    paddingTop: theme.spacing.double,
-    paddingBottom: theme.spacing.double,
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
     width: 400,
   },
 }))
@@ -184,7 +184,11 @@ export default class WorkerTypesTable extends Component {
                   to={`/provisioners/${workerType.provisionerId}/worker-types/${workerType.workerType}`}>
                   <ListItemText
                     disableTypography
-                    primary={<Typography>{workerType.workerType}</Typography>}
+                    primary={
+                      <Typography variant="body2">
+                        {workerType.workerType}
+                      </Typography>
+                    }
                   />
                   <LinkIcon size={iconSize} />
                 </TableCellItem>
@@ -200,7 +204,7 @@ export default class WorkerTypesTable extends Component {
                     <ListItemText
                       disableTypography
                       primary={
-                        <Typography>
+                        <Typography variant="body2">
                           <DateDistance from={workerType.lastDateActive} />
                         </Typography>
                       }

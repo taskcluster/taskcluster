@@ -26,7 +26,7 @@ import { pageInfo, WMError } from '../../utils/prop-types';
 
 @withStyles(theme => ({
   errorDescription: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
     maxWidth: '55vw',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -35,21 +35,21 @@ import { pageInfo, WMError } from '../../utils/prop-types';
     display: 'inline-block',
   },
   infoButton: {
-    marginLeft: -theme.spacing.double,
-    marginRight: theme.spacing.unit,
+    marginLeft: -theme.spacing(2),
+    marginRight: theme.spacing(1),
     borderRadius: 4,
   },
   headline: {
-    paddingLeft: theme.spacing.triple,
-    paddingRight: theme.spacing.triple,
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
     textOverflow: 'ellipsis',
     overflow: 'hidden',
     maxWidth: '80vw',
     whiteSpace: 'nowrap',
   },
   metadataContainer: {
-    paddingTop: theme.spacing.double,
-    paddingBottom: theme.spacing.double,
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
     width: 400,
   },
   drawerPaper: {
@@ -60,8 +60,8 @@ import { pageInfo, WMError } from '../../utils/prop-types';
   },
   drawerCloseIcon: {
     position: 'absolute',
-    top: theme.spacing.unit,
-    right: theme.spacing.unit,
+    top: theme.spacing(1),
+    right: theme.spacing(1),
   },
 }))
 export default class WorkerManagerErrorsTable extends Component {
@@ -174,7 +174,10 @@ export default class WorkerManagerErrorsTable extends Component {
             onClick={this.handleDrawerOpen}>
             <InformationVariantIcon size={iconSize} />
           </IconButton>
-          <Typography className={classes.errorDescription} title={description}>
+          <Typography
+            variant="body2"
+            className={classes.errorDescription}
+            title={description}>
             {description}
           </Typography>
         </TableCell>
@@ -185,7 +188,7 @@ export default class WorkerManagerErrorsTable extends Component {
               <ListItemText
                 disableTypography
                 primary={
-                  <Typography>
+                  <Typography variant="body2">
                     <DateDistance from={reported} />
                   </Typography>
                 }
@@ -218,7 +221,7 @@ export default class WorkerManagerErrorsTable extends Component {
           onHeaderClick={this.handleHeaderClick}
           renderRow={this.renderTableRow}
           headers={['Title', 'Description', 'Reported']}
-          padding="dense"
+          size="small"
           onPageChange={onPageChange}
         />
         <Drawer

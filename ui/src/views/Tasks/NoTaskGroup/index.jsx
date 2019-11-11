@@ -16,7 +16,7 @@ import db from '../../../utils/db';
 @hot(module)
 @withStyles(theme => ({
   infoText: {
-    marginBottom: theme.spacing.unit,
+    marginBottom: theme.spacing(1),
   },
   listItemButton: {
     ...theme.mixins.listItemButton,
@@ -54,7 +54,7 @@ export default class NoTaskGroup extends Component {
             onSubmit={this.handleTaskGroupSearchSubmit}
           />
         }>
-        <Typography className={classes.infoText}>
+        <Typography variant="body2" className={classes.infoText}>
           Enter a task group ID in the search box
         </Typography>
         {recentTaskGroups && Boolean(recentTaskGroups.length) && (

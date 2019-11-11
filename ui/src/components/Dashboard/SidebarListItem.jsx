@@ -27,12 +27,13 @@ import Link from '../../utils/Link';
     },
   },
   listItem: {
-    paddingLeft: theme.spacing.double,
-    paddingRight: theme.spacing.unit,
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(1),
   },
   text: {
     color: theme.palette.text.inactive,
     fontFamily: 'Roboto500',
+    fontSize: 16,
   },
   icon: {
     fill: theme.palette.text.inactive,
@@ -150,7 +151,7 @@ export default class SidebarListItem extends Component {
         <ListItemText
           disableTypography
           className={classes.text}
-          inset
+          variant="inset"
           primary={children}
         />
         {rightIcon &&

@@ -28,15 +28,15 @@ import { splitWorkerPoolId } from '../../utils/workerPool';
 @withRouter
 @withStyles(theme => ({
   button: {
-    marginLeft: -theme.spacing.double,
-    marginRight: theme.spacing.unit,
+    marginLeft: -theme.spacing(2),
+    marginRight: theme.spacing(1),
     borderRadius: 4,
   },
   linksIcon: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
   },
   linksButton: {
-    marginRight: theme.spacing.triple,
+    marginRight: theme.spacing(3),
   },
 }))
 export default class WorkerManagerWorkerPoolsTable extends Component {
@@ -157,29 +157,33 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
               to={`${path}/${encodeURIComponent(workerPool.workerPoolId)}`}>
               <ListItemText
                 disableTypography
-                primary={<Typography>{workerPool.workerPoolId}</Typography>}
+                primary={
+                  <Typography variant="body2">
+                    {workerPool.workerPoolId}
+                  </Typography>
+                }
               />
               <LinkIcon size={iconSize} />
             </TableCellItem>
           ) : (
-            <Typography>{workerPool.workerPoolId}</Typography>
+            <Typography variant="body2">{workerPool.workerPoolId}</Typography>
           )}
         </TableCell>
 
         <TableCell>
           {workerPool.providerId !== NULL_PROVIDER ? (
-            <Typography>{workerPool.providerId}</Typography>
+            <Typography variant="body2">{workerPool.providerId}</Typography>
           ) : (
             <em>n/a</em>
           )}
         </TableCell>
 
         <TableCell>
-          <Typography>{workerPool.pendingTasks}</Typography>
+          <Typography variant="body2">{workerPool.pendingTasks}</Typography>
         </TableCell>
 
         <TableCell>
-          <Typography>{workerPool.owner}</Typography>
+          <Typography variant="body2">{workerPool.owner}</Typography>
         </TableCell>
 
         <TableCell>
@@ -264,7 +268,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           sortDirection={sortDirection}
           onHeaderClick={this.handleHeaderClick}
           renderRow={this.renderRow}
-          padding="dense"
+          size="small"
         />
       </Fragment>
     );

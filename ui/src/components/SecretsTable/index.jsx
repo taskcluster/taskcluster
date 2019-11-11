@@ -111,7 +111,7 @@ export default class SecretsTable extends Component {
         headers={['Secret ID']}
         renderRow={({ node: { name } }) => (
           <TableRow key={name}>
-            <TableCell>
+            <TableCell size="small">
               <TableCellItem
                 className={classes.listItemCell}
                 dense
@@ -120,7 +120,7 @@ export default class SecretsTable extends Component {
                 to={`/secrets/${encodeURIComponent(name)}`}>
                 <ListItemText
                   disableTypography
-                  primary={<Typography>{name}</Typography>}
+                  primary={<Typography variant="body2">{name}</Typography>}
                 />
                 <LinkIcon size={iconSize} />
               </TableCellItem>

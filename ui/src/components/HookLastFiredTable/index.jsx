@@ -19,7 +19,7 @@ import Link from '../../utils/Link';
 
 const styles = theme => ({
   informationIcon: {
-    marginLeft: theme.spacing.unit,
+    marginLeft: theme.spacing(1),
   },
 });
 
@@ -55,14 +55,18 @@ function HookLastFiredTable({ classes, ...props }) {
                 to={`/tasks/${hookFire.taskId}`}>
                 <ListItemText
                   disableTypography
-                  primary={<Typography>{hookFire.taskId}</Typography>}
+                  primary={
+                    <Typography variant="body2">{hookFire.taskId}</Typography>
+                  }
                 />
                 <LinkIcon size={iconSize} />
               </TableCellItem>
-            )) || <Typography>{hookFire.taskId}</Typography>}
+            )) || <Typography variant="body2">{hookFire.taskId}</Typography>}
           </TableCell>
           <TableCell>
-            <Typography>{titleCase(hookFire.firedBy)}</Typography>
+            <Typography variant="body2">
+              {titleCase(hookFire.firedBy)}
+            </Typography>
           </TableCell>
           <TableCell>
             <StatusLabel state={hookFire.result} />
@@ -83,7 +87,7 @@ function HookLastFiredTable({ classes, ...props }) {
                 <ListItemText
                   disableTypography
                   primary={
-                    <Typography>
+                    <Typography variant="body2">
                       <DateDistance from={hookFire.taskCreateTime} />
                     </Typography>
                   }

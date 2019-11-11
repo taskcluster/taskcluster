@@ -43,7 +43,7 @@ import workersQuery from './workers.graphql';
     alignItems: 'center',
   },
   breadcrumbsPaper: {
-    marginRight: theme.spacing.unit * 4,
+    marginRight: theme.spacing(4),
     flex: 1,
   },
   dropdown: {
@@ -190,19 +190,21 @@ export default class ViewWorkers extends Component {
               <div className={classes.bar}>
                 <Breadcrumbs classes={{ paper: classes.breadcrumbsPaper }}>
                   <Typography
+                    variant="body2"
                     className={classes.link}
                     component={Link}
                     to="/provisioners">
                     Provisioners
                   </Typography>
                   <Typography
+                    variant="body2"
                     className={classes.link}
                     component={Link}
                     to={`/provisioners/${params.provisionerId}`}>
                     {params.provisionerId}
                   </Typography>
 
-                  <Typography color="textSecondary">
+                  <Typography variant="body2" color="textSecondary">
                     {`${params.workerType}`}
                   </Typography>
                 </Breadcrumbs>

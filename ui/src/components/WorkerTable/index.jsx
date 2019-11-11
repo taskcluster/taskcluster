@@ -18,11 +18,11 @@ import Link from '../../utils/Link';
 
 @withStyles(theme => ({
   dateListItem: {
-    marginLeft: -theme.spacing.unit,
-    padding: theme.spacing.unit,
+    marginLeft: -theme.spacing(1),
+    padding: theme.spacing(1),
   },
   taskName: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
     maxWidth: 250,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -31,8 +31,8 @@ import Link from '../../utils/Link';
     display: 'inline-block',
   },
   infoButton: {
-    marginLeft: -theme.spacing.double,
-    marginRight: theme.spacing.unit,
+    marginLeft: -theme.spacing(2),
+    marginRight: theme.spacing(1),
   },
 }))
 /**
@@ -145,7 +145,7 @@ export default class WorkerTable extends Component {
                   <ListItemText
                     disableTypography
                     primary={
-                      <Typography>
+                      <Typography variant="body2">
                         <DateDistance from={task.started} />
                       </Typography>
                     }
@@ -161,7 +161,7 @@ export default class WorkerTable extends Component {
                     <ListItemText
                       disableTypography
                       primary={
-                        <Typography>
+                        <Typography variant="body2">
                           <DateDistance from={task.resolved} />
                         </Typography>
                       }
@@ -169,7 +169,7 @@ export default class WorkerTable extends Component {
                     <ContentCopyIcon size={iconSize} />
                   </TableCellItem>
                 ) : (
-                  <Typography>n/a</Typography>
+                  <Typography variant="body2">n/a</Typography>
                 )}
               </TableCell>
             </CopyToClipboard>

@@ -100,7 +100,7 @@ export default class ClientScopesTable extends Component {
       searchTerm ? filter(contains(searchTerm)) : identity,
       map(node => (
         <TableRow key={node}>
-          <TableCell padding="dense">
+          <TableCell size="small">
             <TableCellItem
               dense
               button
