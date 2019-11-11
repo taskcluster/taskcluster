@@ -41,6 +41,7 @@ func ReportCrashToSentry(r interface{}) {
 			"workerGroup":     config.WorkerGroup,
 			"workerId":        config.WorkerID,
 			"workerType":      config.WorkerType,
+			"rootURL":         config.RootURL,
 		},
 	)
 }
