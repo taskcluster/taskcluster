@@ -9,10 +9,13 @@ exports.scopeExpression = {
 
 exports.tasks = [];
 exports.tasks.push({
-  title: 'create an indexed task and find it in the index',
-  requires: [],
+  title: 'Create an indexed task and find it in the index (--target index)',
+  requires: [
+    'ping-queue',
+    'ping-index',
+  ],
   provides: [
-    'target-indexed-task',
+    'target-index',
   ],
   run: async (requirements, utils) => {
     let queue = new taskcluster.Queue(taskcluster.fromEnvVars());
