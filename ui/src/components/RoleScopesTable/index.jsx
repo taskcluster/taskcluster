@@ -45,6 +45,9 @@ const sorted = pipe(
   noRolesText: {
     marginTop: theme.spacing(2),
   },
+  tableText: {
+    fontSize: '0.8125rem',
+  },
 }))
 export default class RoleScopesTable extends Component {
   static defaultProps = {
@@ -106,7 +109,9 @@ export default class RoleScopesTable extends Component {
               ? `/auth/roles/${encodeURIComponent(item)}`
               : `/auth/scopes/${encodeURIComponent(item)}`
           }>
-          <ListItemText primary={item} />
+          <ListItemText>
+            <Typography className={classes.tableText}>{item}</Typography>
+          </ListItemText>
           <LinkIcon size={iconSize} />
         </ListItem>
         <Divider

@@ -266,7 +266,7 @@ export default class PulseMessages extends Component {
           />
           <List>
             <Toolbar>
-              <Typography variant="body1" id="tableTitle">
+              <Typography variant="body2" id="tableTitle">
                 Messages
               </Typography>
             </Toolbar>

@@ -24,6 +24,9 @@ const sorted = pipe(
   listItemCell: {
     width: '100%',
   },
+  tableText: {
+    fontSize: '0.8125rem',
+  },
 })
 /**
  * Display index task namespaces in a table.

@@ -345,27 +345,24 @@ export default class ClientForm extends Component {
                   secondary={
                     <List dense>
                       {expandedScopes.map(scope => (
-                        <ListItem
-                          key={scope}
-                          button
-                          component={Link}
-                          to={scopeLink(scope)}
-                          className={classes.listItemButton}>
-                          <ListItemText
-                            disableTypography
-                            secondary={
-                              <Typography variant="body2">
-                                <code
-                                  // eslint-disable-next-line react/no-danger
-                                  dangerouslySetInnerHTML={{
-                                    __html: formatScope(scope),
-                                  }}
-                                />
-                              </Typography>
-                            }
-                          />
-                          <LinkIcon />
-                        </ListItem>
+                        <Link key={scope} to={scopeLink(scope)}>
+                          <ListItem button className={classes.listItemButton}>
+                            <ListItemText
+                              disableTypography
+                              secondary={
+                                <Typography variant="body2">
+                                  <code
+                                    // eslint-disable-next-line react/no-danger
+                                    dangerouslySetInnerHTML={{
+                                      __html: formatScope(scope),
+                                    }}
+                                  />
+                                </Typography>
+                              }
+                            />
+                            <LinkIcon />
+                          </ListItem>
+                        </Link>
                       ))}
                     </List>
                   }

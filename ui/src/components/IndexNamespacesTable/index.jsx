@@ -7,6 +7,7 @@ import TableCell from '@material-ui/core/TableCell';
 import ListItemText from '@material-ui/core/ListItemText';
 import TableRow from '@material-ui/core/TableRow';
 import LinkIcon from 'mdi-react/LinkIcon';
+import Typography from '@material-ui/core/Typography';
 import { camelCase } from 'change-case';
 import TableCellItem from '../TableCellItem';
 import ConnectionDataTable from '../ConnectionDataTable';
@@ -23,6 +24,9 @@ const sorted = pipe(
 @withStyles({
   listItemCell: {
     width: '100%',
+  },
+  tableText: {
+    fontSize: '0.8125rem',
   },
 })
 /**
@@ -111,7 +115,9 @@ export default class IndexNamespacesTable extends Component {
                 button
                 component={Link}
                 to={`/tasks/index/${encodeURIComponent(namespace)}`}>
-                <ListItemText disableTypography primary={name} />
+                <ListItemText>
+                  <Typography className={classes.tableText}>{name}</Typography>
+                </ListItemText>
                 <LinkIcon size={iconSize} />
               </TableCellItem>
             </TableCell>

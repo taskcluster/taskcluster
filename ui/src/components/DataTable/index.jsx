@@ -19,9 +19,13 @@ import TableSortLabel from '@material-ui/core/TableSortLabel';
 import TableRow from '@material-ui/core/TableRow';
 import TablePagination from '@material-ui/core/TablePagination';
 
-@withStyles(() => ({
+@withStyles(theme => ({
   tableWrapper: {
     overflowX: 'auto',
+  },
+  sortHeader: {
+    fontSize: '0.75rem',
+    color: theme.palette.text.secondary,
   },
 }))
 /**
@@ -150,8 +154,9 @@ export default class DataTable extends Component {
               <TableHead>
                 <TableRow>
                   {headers.map(header => (
-                    <TableCell key={`table-header-${header.id}`}>
+                    <TableCell size="small" key={`table-header-${header.id}`}>
                       <TableSortLabel
+                        className={classes.sortHeader}
                         active={header.id === sortByLabel}
                         direction={sortDirection || 'desc'}
                         onClick={() => this.handleHeaderClick(header)}>

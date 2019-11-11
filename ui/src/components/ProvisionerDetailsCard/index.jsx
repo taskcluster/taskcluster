@@ -37,7 +37,7 @@ import { ACTION_CONTEXT } from '../../utils/constants';
     overflow: 'hidden',
   },
   cardContent: {
-    minHeight: 415,
+    minHeight: 430,
     paddingLeft: 0,
     paddingRight: 0,
     paddingTop: theme.spacing(2),

@@ -235,9 +235,27 @@ const createTheme = isDarkTheme => {
       },
     },
     overrides: {
+      MuiTypography: {
+        root: {
+          color: textPrimary,
+        },
+      },
+      MuiTableSortLabel: {
+        root: {
+          '&:hover': {
+            color: textPrimary,
+          },
+        },
+      },
+      MuiFormControlLabel: {
+        label: {
+          fontSize: '0.875rem',
+        },
+      },
       MuiPaper: {
         root: {
           backgroundColor: primaryMain,
+          color: 'inherit',
         },
       },
       MuiFormLabel: {
@@ -285,6 +303,12 @@ const createTheme = isDarkTheme => {
             isDarkTheme ? THEME.TEN_PERCENT_WHITE : THEME.TEN_PERCENT_BLACK
           }`,
           whiteSpace: 'nowrap',
+        },
+        sizeSmall: {
+          padding: '4px 24px 4px 16px',
+        },
+        body: {
+          fontSize: '0.8125rem',
         },
       },
       MuiPickersToolbar: {
@@ -397,7 +421,7 @@ export default {
       small: theme.typography.fontSize - 2,
     },
     color: {
-      base: theme.palette.text.secondary,
+      base: theme.palette.text.primary,
       link: theme.palette.text.primary,
       linkHover: theme.palette.text.primary,
       border: THEME.DIVIDER,

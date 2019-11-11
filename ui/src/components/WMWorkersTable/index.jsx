@@ -8,10 +8,10 @@ import { arrayOf } from 'prop-types';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import AlertIcon from 'mdi-react/AlertIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
-import TableRow from '@material-ui/core/TableRow/TableRow';
-import TableCell from '@material-ui/core/TableCell/TableCell';
-import ListItemText from '@material-ui/core/ListItemText/ListItemText';
-import Typography from '@material-ui/core/Typography/Typography';
+import TableRow from '@material-ui/core/TableRow';
+import TableCell from '@material-ui/core/TableCell';
+import ListItemText from '@material-ui/core/ListItemText';
+import Typography from '@material-ui/core/Typography';
 import DataTable from '../DataTable';
 import TableCellItem from '../TableCellItem';
 import Link from '../../utils/Link';
@@ -91,13 +91,15 @@ export default class WorkerManagerWorkersTable extends Component {
         <TableCell>{workerGroup}</TableCell>
 
         <TableCell>
-          <TableCellItem button component={Link} to={`${path}/tasks`}>
-            <ListItemText
-              disableTypography
-              primary={<Typography variant="body2">{workerId}</Typography>}
-            />
-            <LinkIcon size={iconSize} />
-          </TableCellItem>
+          <Link to={`${path}/tasks`}>
+            <TableCellItem button>
+              <ListItemText
+                disableTypography
+                primary={<Typography variant="body2">{workerId}</Typography>}
+              />
+              <LinkIcon size={iconSize} />
+            </TableCellItem>
+          </Link>
         </TableCell>
 
         <CopyToClipboard title={`${workerAge} (Copy)`} text={workerAge}>
@@ -186,15 +188,17 @@ export default class WorkerManagerWorkersTable extends Component {
         )}
 
         <TableCell>
-          <TableCellItem button component={Link} to={`${path}/errors`}>
-            <ListItemText
-              disableTypography
-              primary={
-                <Typography variant="body2">Click to see errors</Typography>
-              }
-            />
-            <AlertIcon size={iconSize} />
-          </TableCellItem>
+          <Link to={`${path}/errors`}>
+            <TableCellItem button>
+              <ListItemText
+                disableTypography
+                primary={
+                  <Typography variant="body2">Click to see errors</Typography>
+                }
+              />
+              <AlertIcon size={iconSize} />
+            </TableCellItem>
+          </Link>
         </TableCell>
 
         <TableCell>

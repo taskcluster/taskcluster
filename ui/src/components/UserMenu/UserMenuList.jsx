@@ -34,6 +34,7 @@ import getPictureFromUser from '../../utils/getPictureFromUser';
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
+    paddingLeft: theme.spacing(2),
   },
 }))
 export default class UserMenuList extends Component {
@@ -64,7 +65,6 @@ export default class UserMenuList extends Component {
               <ListItemText
                 disableTypography
                 className={classes.text}
-                variant="inset"
                 primary="Sign In"
               />
             </ListItem>

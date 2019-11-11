@@ -3,6 +3,8 @@ import { string, shape, func, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case/change-case';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import { ListItemText } from '@material-ui/core';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
@@ -20,6 +22,11 @@ const sorted = pipe(
 );
 const tableHeaders = ['Role ID'];
 
+@withStyles({
+  tableText: {
+    fontSize: '0.8125rem',
+  },
+})
 export default class RolesTable extends Component {
   static defaultProps = {
     searchTerm: null,
@@ -81,7 +88,7 @@ export default class RolesTable extends Component {
   };
 
   render() {
-    const { onPageChange, rolesConnection } = this.props;
+    const { onPageChange, rolesConnection, classes } = this.props;
     const { sortBy, sortDirection } = this.state;
     const iconSize = 16;
     const sortedRolesConnection = this.createSortedRolesConnection(
@@ -107,7 +114,11 @@ export default class RolesTable extends Component {
                 button
                 component={Link}
                 to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
-                <ListItemText primary={role.roleId} />
+                <ListItemText>
+                  <Typography className={classes.tableText}>
+                    {role.roleId}
+                  </Typography>
+                </ListItemText>
                 <LinkIcon size={iconSize} />
               </TableCellItem>
             </TableCell>

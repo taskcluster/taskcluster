@@ -13,8 +13,10 @@ import {
 } from 'ramda';
 import memoize from 'fast-memoize';
 import TableRow from '@material-ui/core/TableRow';
+import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
+import Typography from '@material-ui/core/Typography';
 import { ListItemText } from '@material-ui/core';
 import ConnectionDataTable from '../ConnectionDataTable';
 import sort from '../../utils/sort';
@@ -28,6 +30,11 @@ const sorted = pipe(
   map(({ node: { clientId } }) => clientId)
 );
 
+@withStyles({
+  tableText: {
+    fontSize: '0.8125rem',
+  },
+})
 export default class ClientScopesTable extends Component {
   static defaultProps = {
     searchTerm: null,
@@ -90,7 +97,7 @@ export default class ClientScopesTable extends Component {
   );
 
   renderRow = (scope, index) => {
-    const { searchTerm, selectedScope } = this.props;
+    const { searchTerm, selectedScope, classes } = this.props;
 
     if (index !== 0) {
       return null;
@@ -109,7 +116,9 @@ export default class ClientScopesTable extends Component {
                   ? `/auth/clients/${encodeURIComponent(node)}`
                   : `/auth/scopes/${encodeURIComponent(node)}`
               }>
-              <ListItemText primary={node} />
+              <ListItemText>
+                <Typography className={classes.tableText}>{node}</Typography>
+              </ListItemText>
               <LinkIcon size={16} />
             </TableCellItem>
           </TableCell>

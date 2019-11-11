@@ -38,7 +38,7 @@ import isLoggedInQuery from './isLoggedIn.graphql';
       color: theme.palette.text.primary,
     },
     'html, body': {
-      color: theme.palette.text.primary,
+      color: theme.palette.text.secondary,
     },
     pre: {
       overflowX: 'auto',

@@ -124,7 +124,7 @@ export default class IndexedEntry extends Component {
                     {!artifact.isPublic && artifact.url && <LockIcon />}
                     {artifact.icon && <artifact.icon />}
                   </div>
-                  <Typography className={classes.artifactName}>
+                  <Typography variant="body2" className={classes.artifactName}>
                     {artifact.name}
                   </Typography>
                 </div>

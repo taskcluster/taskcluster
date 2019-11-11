@@ -4,9 +4,11 @@ import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case/change-case';
 import TableRow from '@material-ui/core/TableRow';
+import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { ListItemText } from '@material-ui/core';
+import Typography from '@material-ui/core/Typography';
 import TableCellItem from '../TableCellItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import DateDistance from '../DateDistance';
@@ -21,6 +23,11 @@ const sorted = pipe(
 );
 const tableHeaders = ['Client ID', 'Last Date Used'];
 
+@withStyles({
+  tableText: {
+    fontSize: '0.8125rem',
+  },
+})
 export default class ClientsTable extends Component {
   static propTypes = {
     clientsConnection: shape({
@@ -76,7 +83,7 @@ export default class ClientsTable extends Component {
   };
 
   render() {
-    const { onPageChange, clientsConnection } = this.props;
+    const { onPageChange, clientsConnection, classes } = this.props;
     const { sortBy, sortDirection } = this.state;
     const iconSize = 16;
 
@@ -96,16 +103,18 @@ export default class ClientsTable extends Component {
         renderRow={({ node: client }) => (
           <TableRow key={client.clientId}>
             <TableCell size="small">
-              <TableCellItem
-                dense
-                button
-                component={Link}
-                to={`/auth/clients/${encodeURIComponent(client.clientId)}`}>
-                <ListItemText primary={client.clientId} />
-                <LinkIcon size={iconSize} />
-              </TableCellItem>
+              <Link to={`/auth/clients/${encodeURIComponent(client.clientId)}`}>
+                <TableCellItem button>
+                  <ListItemText>
+                    <Typography className={classes.tableText}>
+                      {client.clientId}
+                    </Typography>
+                  </ListItemText>
+                  <LinkIcon size={iconSize} />
+                </TableCellItem>
+              </Link>
             </TableCell>
-            <TableCell>
+            <TableCell size="small" className={classes.tableText}>
               <DateDistance from={client.lastDateUsed} />
             </TableCell>
           </TableRow>

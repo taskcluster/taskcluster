@@ -151,7 +151,6 @@ export default class SidebarListItem extends Component {
         <ListItemText
           disableTypography
           className={classes.text}
-          variant="inset"
           primary={children}
         />
         {rightIcon &&

@@ -39,6 +39,10 @@ import { pageInfo } from '../../utils/prop-types';
   thWithTopPagination: {
     height: theme.spacing(4),
   },
+  sortHeader: {
+    fontSize: '0.75rem',
+    color: theme.palette.text.secondary,
+  },
 }))
 /**
  * A paginated table that operates on a GraphQL PageConnection.
@@ -231,6 +235,7 @@ export default class ConnectionDataTable extends Component {
                   {headers.map(header => (
                     <TableCell size="small" key={`table-header-${header}`}>
                       <TableSortLabel
+                        className={classes.sortHeader}
                         id={header}
                         active={header === sortByHeader}
                         direction={sortDirection || 'desc'}
