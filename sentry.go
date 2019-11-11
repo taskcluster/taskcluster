@@ -29,19 +29,19 @@ func ReportCrashToSentry(r interface{}) {
 			panic(r)
 		},
 		map[string]string{
+			"GOARCH":          runtime.GOARCH,
+			"GOOS":            runtime.GOOS,
 			"cleanUpTaskDirs": strconv.FormatBool(config.CleanUpTaskDirs),
 			"deploymentId":    config.DeploymentID,
 			"engine":          engine,
-			"gwVersion":       version,
 			"gwRevision":      revision,
-			"GOOS":            runtime.GOOS,
-			"GOARCH":          runtime.GOARCH,
+			"gwVersion":       version,
 			"instanceType":    config.InstanceType,
 			"provisionerId":   config.ProvisionerID,
+			"rootURL":         config.RootURL,
 			"workerGroup":     config.WorkerGroup,
 			"workerId":        config.WorkerID,
 			"workerType":      config.WorkerType,
-			"rootURL":         config.RootURL,
 		},
 	)
 }
