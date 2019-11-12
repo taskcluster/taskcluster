@@ -365,12 +365,17 @@ class Queue(AsyncBaseClient):
         intermediate artifacts from data processing applications, as the
         artifacts can be set to expire a few days later.
 
-        We currently support 3 different `storageType`s, each storage type have
-        slightly different features and in some cases difference semantics.
-        We also have 2 deprecated `storageType`s which are only maintained for
-        backwards compatiability and should not be used in new implementations
+        We currently support "S3 Artifacts" officially, with remaining support
+        for two deprecated types.  Do not use these deprecated types.
 
-        **Blob artifacts**, are useful for storing large files.  Currently, these
+        **S3 artifacts**, is useful for static files which will be
+        stored on S3. When creating an S3 artifact the queue will return a
+        pre-signed URL to which you can do a `PUT` request to upload your
+        artifact. Note that `PUT` request **must** specify the `content-length`
+        header and **must** give the `content-type` header the same value as in
+        the request to `createArtifact`.
+
+        DEPRECATED **Blob artifacts**, are useful for storing large files.  Currently, these
         are all stored in S3 but there are facilities for adding support for other
         backends in futre.  A call for this type of artifact must provide information
         about the file which will be uploaded.  This includes sha256 sums and sizes.
@@ -379,14 +384,7 @@ class Queue(AsyncBaseClient):
         the list of `ETag` values returned by the requests must be passed to the
         queue `completeArtifact` method
 
-        **S3 artifacts**, DEPRECATED is useful for static files which will be
-        stored on S3. When creating an S3 artifact the queue will return a
-        pre-signed URL to which you can do a `PUT` request to upload your
-        artifact. Note that `PUT` request **must** specify the `content-length`
-        header and **must** give the `content-type` header the same value as in
-        the request to `createArtifact`.
-
-        **Azure artifacts**, DEPRECATED are stored in _Azure Blob Storage_ service
+        DEPRECATED **Azure artifacts** are stored in _Azure Blob Storage_ service
         which given the consistency guarantees and API interface offered by Azure
         is more suitable for artifacts that will be modified during the execution
         of the task. For example docker-worker has a feature that persists the
