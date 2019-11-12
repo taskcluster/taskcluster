@@ -18,4 +18,5 @@
 - auth:azure-table:read-write:${azureAccountId}/AccessTokenTable
 - auth:azure-table:read-write:${azureAccountId}/AuthorizationCodesTable
 - auth:azure-table:read-write:${azureAccountId}/GithubAccessTokenTable
+- auth:azure-table:read-write:${azureAccountId}/SessionStorageTable
 - assume:login-identity:*
