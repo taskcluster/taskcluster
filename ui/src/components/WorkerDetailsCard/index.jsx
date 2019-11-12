@@ -32,7 +32,9 @@ export default class WorkerDetailsCard extends Component {
           <ListItemText
             primary="Quarantine Until"
             secondary={
-              quarantineUntil ? format(parseISO(quarantineUntil), 'LL') : 'n/a'
+              quarantineUntil
+                ? format(parseISO(quarantineUntil), 'yyyy/MM/dd')
+                : 'n/a'
             }
           />
         </ListItem>
