@@ -17,7 +17,7 @@ const getLogsLocationsFromTask = require('../src/lib/features/logs_location.js')
 let debug = Debug('docker-worker:test:testworker');
 
 /** Test provisioner id, don't change this... */
-const PROVISIONER_ID = 'no-provisioning-nope';
+const PROVISIONER_ID = 'null-provisioner';
 
 class TestWorker extends EventEmitter {
   static workerTypeName() {

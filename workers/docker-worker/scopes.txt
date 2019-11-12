@@ -1,20 +1,2 @@
---scope assume:scheduler-id:docker-worker-tests/*
---scope assume:worker-type:no-provisioning-nope/dummy-type-*
---scope queue:worker-id:random-local-worker/dummy-worker-*
---scope queue:create-task:no-provisioning-nope/dummy-type-*
---scope queue:claim-work:no-provisioning-nope/*
---scope queue:claim-task
---scope queue:resolve-task
---scope queue:create-artifact:public/*
---scope queue:get-artifact:private/docker-worker-tests/*
---scope queue:cancel-task
---scope docker-worker:feature:balrogVPNProxy
---scope docker-worker:capability:privileged
---scope docker-worker:cache:docker-worker-garbage-caches-test-cache
---scope queue:create-artifact:custom
---scope queue:create-task:lowest:no-provisioning-nope/*
---scope queue:scheduler-id:docker-worker-tests
---scope docker-worker:cache:docker-worker-garbage-caches-tmp-obj-dir
---scope aws-provisioner:create-secret:*
---scope docker-worker:feature:balrogStageVPNProxy
---scope docker-worker:image:localhost:*/testuser/busybox:latest
+--scopes assume:repo:github.com/taskcluster/docker-worker:*
+
