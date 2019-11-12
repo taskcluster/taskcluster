@@ -14,7 +14,6 @@ import MobileStepper from '@material-ui/core/MobileStepper';
 import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
@@ -107,9 +106,15 @@ const DOTS_VARIANT_LIMIT = 5;
     previousPageArrow: {
       marginLeft: -theme.spacing.unit,
       marginRight: 0,
+      '& .mdi-icon': {
+        fill: 'currentcolor',
+      },
     },
     nextPageArrow: {
       marginRight: 0,
+      '& .mdi-icon': {
+        fill: 'currentcolor',
+      },
     },
   }),
   { withTheme: true }
@@ -486,26 +491,23 @@ export default class TaskRunsCard extends Component {
             position="static"
             steps={runs.length}
             activeStep={selectedRunId}
-            className={classes.root}
             nextButton={
               <Button
+                className={classes.nextPageArrow}
                 size="small"
                 onClick={this.handleNext}
                 disabled={run ? selectedRunId === runs.length - 1 : true}>
                 Next
-                <ListItemIcon classes={{ root: classes.nextPageArrow }}>
-                  <ChevronRightIcon />
-                </ListItemIcon>
+                <ChevronRightIcon />
               </Button>
             }
             backButton={
               <Button
+                className={classes.previousPageArrow}
                 size="small"
                 onClick={this.handlePrevious}
                 disabled={run ? selectedRunId === 0 : true}>
-                <ListItemIcon classes={{ root: classes.previousPageArrow }}>
-                  <ChevronLeftIcon />
-                </ListItemIcon>
+                <ChevronLeftIcon />
                 Previous
               </Button>
             }
