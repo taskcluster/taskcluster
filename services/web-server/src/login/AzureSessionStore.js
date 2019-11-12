@@ -1,6 +1,5 @@
 const assert = require('assert');
 const taskcluster = require('taskcluster-client');
-const tryCatch = require('../utils/tryCatch');
 const { NOOP } = require('../utils/constants');
 
 module.exports = function ({ session, SessionStorage, options = {} }) {
@@ -22,9 +21,13 @@ module.exports = function ({ session, SessionStorage, options = {} }) {
      * The callback should be called as callback(error) once the session is destroyed.
      */
     async destroy(sessionId, callback = NOOP) {
-      await SessionStorage.remove({ sessionId }, true);
+      try {
+        await SessionStorage.remove({ sessionId }, true);
 
-      return callback();
+        return callback();
+      } catch (err) {
+        return callback(err);
+      }
     }
 
     /*
@@ -38,21 +41,21 @@ module.exports = function ({ session, SessionStorage, options = {} }) {
      * error.code === 'ENOENT' to act like callback(null, null).
      */
     async get(sessionId, callback = NOOP) {
-      const [err, entry] = await tryCatch(SessionStorage.load({ sessionId }));
+      try {
+        const entry = await SessionStorage.load({ sessionId });
 
-      if (err) {
+        if (!entry) {
+          return callback();
+        }
+
+        return callback(null, entry.data);
+      } catch (err) {
         if (err.statusCode === 404) {
           return callback(null, null);
         }
 
         return callback(err);
       }
-
-      if (!entry) {
-        return callback();
-      }
-
-      return callback(null, entry.data);
     }
 
     /*
@@ -62,13 +65,17 @@ module.exports = function ({ session, SessionStorage, options = {} }) {
      * The callback should be called as callback(error) once the session has been set in the store.
      */
     async set(sessionId, data, callback = NOOP) {
-      await SessionStorage.create({
-        sessionId,
-        data,
-        expires: taskcluster.fromNow(sessionTimeout),
-      }, true);
+      try {
+        await SessionStorage.create({
+          sessionId,
+          data,
+          expires: taskcluster.fromNow(sessionTimeout),
+        }, true);
 
-      return callback();
+        return callback();
+      } catch (err) {
+        return callback(err);
+      }
     }
 
     /*
