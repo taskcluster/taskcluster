@@ -23,6 +23,7 @@ let App = require('taskcluster-lib-app');
 let remoteS3 = require('remotely-signed-s3');
 let {sasCredentials} = require('taskcluster-lib-azure');
 let pulse = require('taskcluster-lib-pulse');
+const QuickLRU = require('quick-lru');
 
 // Create component loader
 let load = loader({
@@ -431,6 +432,7 @@ let load = loader({
         blobRegion: ctx.cfg.app.blobArtifactRegion,
         publicBlobBucket: ctx.cfg.app.publicBlobArtifactBucket,
         privateBlobBucket: ctx.cfg.app.privateBlobArtifactBucket,
+        LRUcache: new QuickLRU({maxSize: 1000000}),
       },
       rootUrl: ctx.cfg.taskcluster.rootUrl,
       schemaset: ctx.schemaset,

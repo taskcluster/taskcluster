@@ -120,6 +120,7 @@ let builder = new APIBuilder({
     'blobRegion', // Region where blobs are stored (no cloud-mirror)
     'publicBlobBucket', // Bucket containing public blobs
     'privateBlobBucket', // Bucket containing private blobs
+    'LRUcache', // LRU cache for tasks
   ],
 });
 
@@ -142,19 +143,23 @@ builder.declare({
     'not specified the queue may provide a default value.',
   ].join('\n'),
 }, async function(req, res) {
-  // Load Task entity
-  let task = await this.Task.load({
-    taskId: req.params.taskId,
-  }, true);
+  const {taskId} = req.params;
+
+  // Load Task entity if it's absent from cache
+  let task;
+  if (this.LRUcache.has(taskId)) {
+    task = this.LRUcache.get(taskId);
+  } else {
+    task = await this.Task.load({taskId}, true);
+    this.LRUcache.set(taskId, task);
+  }
 
   // Handle cases where the task doesn't exist
   if (!task) {
     return res.reportError('ResourceNotFound', [
       '`{{taskId}}` does not correspond to a task that exists.',
       'Are you sure this task has already been submitted?',
-    ].join('\n'), {
-      taskId: req.params.taskId,
-    });
+    ].join('\n'), {taskId});
   }
 
   // Create task definition
