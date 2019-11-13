@@ -764,9 +764,10 @@ builder.declare({
       });
 
       if (headRes.statusCode >= 300 || headRes.statusCode < 200) {
-        return res.reportError('InternalServerError', [
+        return res.reportError('InputError', [
           `When attempting to do a HEAD request for the uploaded artifact ${url}`,
-          `a status code of ${headRes.statusCode} was returned.`,
+          `a status code of ${headRes.statusCode} was returned.  Was it correctly `,
+          'uploaded?',
         ].join(' '), {});
       }
 
