@@ -34,7 +34,7 @@ type MetadataService interface {
 	// return both parsed and unparsed instance identity document
 	queryInstanceIdentityDocument() (string, *InstanceIdentityDocument, error)
 
-	// Query an aribtrary metadata value; path is the portion following `latest`
+	// Query an arbitrary metadata value; path is the portion following `latest`
 	queryMetadata(path string) (string, error)
 }
 

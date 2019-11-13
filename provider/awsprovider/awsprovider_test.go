@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
 )
@@ -88,4 +89,44 @@ func TestAWSConfigureRun(t *testing.T) {
 	require.Equal(t, "aws", state.WorkerLocation["cloud"])
 	require.Equal(t, "us-west-2", state.WorkerLocation["region"])
 	require.Equal(t, "us-west-2a", state.WorkerLocation["availabilityZone"])
+}
+
+func TestCheckTerminationTime(t *testing.T) {
+	transp := protocol.NewFakeTransport()
+	proto := protocol.NewProtocol(transp)
+
+	metaData := map[string]string{}
+	instanceIdentityDocument := "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n,  \"privateIp\" : \"1.1.1.1\"\n}"
+
+	p := &AWSProvider{
+		runnercfg:                  nil,
+		workerManagerClientFactory: nil,
+		metadataService:            &fakeMetadataService{nil, nil, metaData, instanceIdentityDocument},
+		proto:                      proto,
+		terminationTicker:          nil,
+	}
+
+	p.checkTerminationTime()
+
+	// not time yet..
+	require.Equal(t, []protocol.Message{}, transp.Messages())
+
+	metaData["/meta-data/spot/termination-time"] = "now!"
+	p.checkTerminationTime()
+
+	// protocol does not have the capability set..
+	require.Equal(t, []protocol.Message{}, transp.Messages())
+
+	proto.Capabilities.Add("graceful-termination")
+	p.checkTerminationTime()
+
+	// now we send a message..
+	require.Equal(t, []protocol.Message{
+		protocol.Message{
+			Type: "graceful-termination",
+			Properties: map[string]interface{}{
+				"finish-tasks": false,
+			},
+		},
+	}, transp.Messages())
 }

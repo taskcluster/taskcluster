@@ -3,6 +3,8 @@ package awsprovider
 import (
 	"errors"
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
@@ -20,6 +22,7 @@ type AWSProvider struct {
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	metadataService            MetadataService
 	proto                      *protocol.Protocol
+	terminationTicker          *time.Ticker
 }
 
 func (p *AWSProvider) ConfigureRun(state *run.State) error {
@@ -103,11 +106,39 @@ func (p *AWSProvider) SetProtocol(proto *protocol.Protocol) {
 	p.proto = proto
 }
 
+func (p *AWSProvider) checkTerminationTime() {
+	_, err := p.metadataService.queryMetadata(TERMINATION_PATH)
+	// if the file exists (so, no error), it's time to go away
+	if err == nil {
+		log.Println("EC2 Metadata Service says termination is imminent")
+		if p.proto != nil && p.proto.Capable("graceful-termination") {
+			p.proto.Send(protocol.Message{
+				Type: "graceful-termination",
+				Properties: map[string]interface{}{
+					// spot termination generally doesn't leave time to finish tasks
+					"finish-tasks": false,
+				},
+			})
+		}
+	}
+}
+
 func (p *AWSProvider) WorkerStarted() error {
+	// start polling for graceful shutdown
+	p.terminationTicker = time.NewTicker(30 * time.Second)
+	go func() {
+		for {
+			<-p.terminationTicker.C
+			log.Println("polling for termination-time")
+			p.checkTerminationTime()
+		}
+	}()
+
 	return nil
 }
 
 func (p *AWSProvider) WorkerFinished() error {
+	p.terminationTicker.Stop()
 	return nil
 }
 
