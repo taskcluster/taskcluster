@@ -100,6 +100,8 @@ defaults:
     useCloudMirror:               !env:bool:optional USE_CLOUD_MIRROR
     cloudMirrorHost:              'cloud-mirror.taskcluster.net'
 
+    taskCacheMaxSize: 5000
+
 
   taskcluster:
     rootUrl:          !env TASKCLUSTER_ROOT_URL
@@ -191,6 +193,7 @@ test:
       parallelism:                1
     publicArtifactBucketProxies:
       'us-east-1':    'proxy-for-us-east-1'
+    taskCacheMaxSize: 10
   server:
     port:             60401
     env:              development

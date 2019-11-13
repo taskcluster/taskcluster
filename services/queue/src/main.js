@@ -432,7 +432,7 @@ let load = loader({
         blobRegion: ctx.cfg.app.blobArtifactRegion,
         publicBlobBucket: ctx.cfg.app.publicBlobArtifactBucket,
         privateBlobBucket: ctx.cfg.app.privateBlobArtifactBucket,
-        LRUcache: new QuickLRU({maxSize: 1000000}),
+        LRUcache: new QuickLRU({maxSize: ctx.cfg.app.taskCacheMaxSize}),
       },
       rootUrl: ctx.cfg.taskcluster.rootUrl,
       schemaset: ctx.schemaset,
