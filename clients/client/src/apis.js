@@ -1996,47 +1996,6 @@ module.exports = {
       "title": "Task Index API Documentation"
     }
   },
-  "Login": {
-    "reference": {
-      "$schema": "/schemas/common/api-reference-v0.json#",
-      "apiVersion": "v1",
-      "description": "The Login service serves as the interface between external authentication\nsystems and Taskcluster credentials.",
-      "entries": [
-        {
-          "args": [
-          ],
-          "category": "Ping Server",
-          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
-          "method": "get",
-          "name": "ping",
-          "query": [
-          ],
-          "route": "/ping",
-          "stability": "stable",
-          "title": "Ping Server",
-          "type": "function"
-        },
-        {
-          "args": [
-            "provider"
-          ],
-          "category": "Login Service",
-          "description": "Given an OIDC `access_token` from a trusted OpenID provider, return a\nset of Taskcluster credentials for use on behalf of the identified\nuser.\n\nThis method is typically not called with a Taskcluster client library\nand does not accept Hawk credentials. The `access_token` should be\ngiven in an `Authorization` header:\n```\nAuthorization: Bearer abc.xyz\n```\n\nThe `access_token` is first verified against the named\n:provider, then passed to the provider's APIBuilder to retrieve a user\nprofile. That profile is then used to generate Taskcluster credentials\nappropriate to the user. Note that the resulting credentials may or may\nnot include a `certificate` property. Callers should be prepared for either\nalternative.\n\nThe given credentials will expire in a relatively short time. Callers should\nmonitor this expiration and refresh the credentials if necessary, by calling\nthis endpoint again, if they have expired.",
-          "method": "get",
-          "name": "oidcCredentials",
-          "output": "v1/oidc-credentials-response.json#",
-          "query": [
-          ],
-          "route": "/oidc-credentials/<provider>",
-          "stability": "experimental",
-          "title": "Get Taskcluster credentials given a suitable `access_token`",
-          "type": "function"
-        }
-      ],
-      "serviceName": "login",
-      "title": "Login API"
-    }
-  },
   "Notify": {
     "reference": {
       "$schema": "/schemas/common/api-reference-v0.json#",

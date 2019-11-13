@@ -3023,10 +3023,6 @@
                   "title": ".taskcluster.yml version 0"
                 },
                 "name": "taskcluster-yml-v0",
-                "next": {
-                  "path": "reference/integrations/login/README",
-                  "title": "login"
-                },
                 "path": "reference/integrations/github/taskcluster-yml-v0",
                 "prev": {
                   "path": "reference/integrations/github/taskcluster-yml-v1",
@@ -3050,113 +3046,6 @@
             "prev": {
               "path": "reference/integrations/README",
               "title": "Integrations"
-            },
-            "up": {
-              "path": "reference/integrations/README",
-              "title": "Integrations"
-            }
-          },
-          {
-            "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 1,
-                  "title": "api"
-                },
-                "name": "api",
-                "next": {
-                  "path": "reference/integrations/login/logs",
-                  "title": "logs"
-                },
-                "path": "reference/integrations/login/api",
-                "prev": {
-                  "path": "reference/integrations/login/README",
-                  "title": "login"
-                },
-                "up": {
-                  "path": "reference/integrations/login/README",
-                  "title": "login"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 2,
-                  "title": "logs"
-                },
-                "name": "logs",
-                "next": {
-                  "path": "reference/integrations/login/getting-user-creds",
-                  "title": "Getting User Credentials"
-                },
-                "path": "reference/integrations/login/logs",
-                "prev": {
-                  "path": "reference/integrations/login/api",
-                  "title": "api"
-                },
-                "up": {
-                  "path": "reference/integrations/login/README",
-                  "title": "login"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000,
-                  "title": "Getting User Credentials"
-                },
-                "name": "getting-user-creds",
-                "next": {
-                  "path": "reference/integrations/login/mozilla-auth0",
-                  "title": "Mozilla-Auth0 logins"
-                },
-                "path": "reference/integrations/login/getting-user-creds",
-                "prev": {
-                  "path": "reference/integrations/login/logs",
-                  "title": "logs"
-                },
-                "up": {
-                  "path": "reference/integrations/login/README",
-                  "title": "login"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000,
-                  "title": "Mozilla-Auth0 logins"
-                },
-                "name": "mozilla-auth0",
-                "path": "reference/integrations/login/mozilla-auth0",
-                "prev": {
-                  "path": "reference/integrations/login/getting-user-creds",
-                  "title": "Getting User Credentials"
-                },
-                "up": {
-                  "path": "reference/integrations/login/README",
-                  "title": "login"
-                }
-              }
-            ],
-            "data": {
-              "order": 1000
-            },
-            "name": "login",
-            "next": {
-              "path": "reference/integrations/login/api",
-              "title": "api"
-            },
-            "path": "reference/integrations/login/README",
-            "prev": {
-              "path": "reference/integrations/github/taskcluster-yml-v0",
-              "title": ".taskcluster.yml version 0"
             },
             "up": {
               "path": "reference/integrations/README",
