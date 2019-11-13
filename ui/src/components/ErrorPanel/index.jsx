@@ -28,6 +28,8 @@ import { CONTENT_MAX_WIDTH } from '../../utils/constants';
     transform: 'translateX(-50%)',
     width: '92%',
     maxWidth: CONTENT_MAX_WIDTH,
+    overflow: 'auto',
+    maxHeight: '85vh',
   },
 }))
 export default class ErrorPanel extends Component {
