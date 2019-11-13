@@ -814,38 +814,6 @@ var services = map[string]definitions.Service{
 			},
 		},
 	},
-	"Login": definitions.Service{
-		APIVersion:  "v1",
-		ServiceName: "login",
-		Title:       "Login API",
-		Description: "The Login service serves as the interface between external authentication\nsystems and Taskcluster credentials.",
-		Entries: []definitions.Entry{
-			definitions.Entry{
-				Name:        "ping",
-				Title:       "Ping Server",
-				Description: "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
-				Stability:   "stable",
-				Method:      "get",
-				Route:       "/ping",
-				Args:        []string{},
-				Query:       []string{},
-				Input:       "",
-			},
-			definitions.Entry{
-				Name:        "oidcCredentials",
-				Title:       "Get Taskcluster credentials given a suitable `access_token`",
-				Description: "Given an OIDC `access_token` from a trusted OpenID provider, return a\nset of Taskcluster credentials for use on behalf of the identified\nuser.\n\nThis method is typically not called with a Taskcluster client library\nand does not accept Hawk credentials. The `access_token` should be\ngiven in an `Authorization` header:\n```\nAuthorization: Bearer abc.xyz\n```\n\nThe `access_token` is first verified against the named\n:provider, then passed to the provider's APIBuilder to retrieve a user\nprofile. That profile is then used to generate Taskcluster credentials\nappropriate to the user. Note that the resulting credentials may or may\nnot include a `certificate` property. Callers should be prepared for either\nalternative.\n\nThe given credentials will expire in a relatively short time. Callers should\nmonitor this expiration and refresh the credentials if necessary, by calling\nthis endpoint again, if they have expired.",
-				Stability:   "experimental",
-				Method:      "get",
-				Route:       "/oidc-credentials/<provider>",
-				Args: []string{
-					"provider",
-				},
-				Query: []string{},
-				Input: "",
-			},
-		},
-	},
 	"Notify": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "notify",

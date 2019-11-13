@@ -18,7 +18,6 @@ export { default as GithubEvents } from './clients/GithubEvents';
 export { default as Hooks } from './clients/Hooks';
 export { default as HooksEvents } from './clients/HooksEvents';
 export { default as Index } from './clients/Index';
-export { default as Login } from './clients/Login';
 export { default as Notify } from './clients/Notify';
 export { default as NotifyEvents } from './clients/NotifyEvents';
 export { default as PurgeCache } from './clients/PurgeCache';
