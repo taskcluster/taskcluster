@@ -66,7 +66,7 @@ export default class SidebarList extends Component {
 
         <SidebarListItem to="/worker-manager" icon={<HexagonSlice4 />}>
           Worker Manager
-        </SidebarListItem>
+        </SidebarListItem> 
 
         <SidebarListItem to="/provisioners" icon={<MixcloudIcon />}>
           Provisioners
