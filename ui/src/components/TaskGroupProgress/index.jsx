@@ -140,9 +140,9 @@ const getStatusCount = memoize(
     },
   },
   pendingButton: {
-    backgroundColor: yellow[600],
+    backgroundColor: yellow[700],
     '&:hover': {
-      backgroundColor: yellow[800],
+      backgroundColor: yellow[900],
     },
   },
   exceptionButton: {
