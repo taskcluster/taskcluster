@@ -25,11 +25,11 @@ markdown.use(linkAttributes, {
       margin: 0,
     },
     '& .anchor-link': {
-      marginTop: -theme.spacing.unit * 12, // Offset for the anchor.
+      marginTop: -theme.spacing(1) * 12, // Offset for the anchor.
       position: 'absolute',
     },
     '& pre, & pre[class*="language-"]': {
-      margin: `${3 * theme.spacing.unit}px 0`,
+      margin: `${3 * theme.spacing(1)}px 0`,
       padding: '12px 18px',
       borderRadius: 3,
       overflow: 'auto',
@@ -46,22 +46,22 @@ markdown.use(linkAttributes, {
       lineHeight: 1.6,
     },
     '& h1': {
-      ...theme.typography.display2,
+      ...theme.typography.h3,
       color: theme.palette.text.secondary,
       margin: '0.7em 0',
     },
     '& h2': {
-      ...theme.typography.display1,
+      ...theme.typography.h4,
       color: theme.palette.text.secondary,
       margin: '1em 0 0.7em',
     },
     '& h3': {
-      ...theme.typography.headline,
+      ...theme.typography.h5,
       color: theme.palette.text.secondary,
       margin: '1em 0 0.7em',
     },
     '& h4': {
-      ...theme.typography.title,
+      ...theme.typography.h6,
       color: theme.palette.text.secondary,
       margin: '1em 0 0.7em',
     },
@@ -83,7 +83,7 @@ markdown.use(linkAttributes, {
       '&:hover .anchor-link-style': {
         display: 'inline-block',
         opacity: 1,
-        padding: `0 ${theme.spacing.unit}px`,
+        padding: `0 ${theme.spacing(1)}px`,
         color: theme.palette.text.hint,
         '&:hover': {
           color: theme.palette.text.secondary,
@@ -132,16 +132,16 @@ markdown.use(linkAttributes, {
     },
     '& td': {
       borderBottom: `1px solid ${theme.palette.divider}`,
-      padding: `${theme.spacing.unit}px ${2 * theme.spacing.unit}px ${
-        theme.spacing.unit
-      }px ${theme.spacing.unit}px`,
+      padding: `${theme.spacing(1)}px ${2 * theme.spacing(1)}px ${theme.spacing(
+        1
+      )}px ${theme.spacing(1)}px`,
       textAlign: 'left',
     },
     '& td:last-child': {
-      paddingRight: 3 * theme.spacing.unit,
+      paddingRight: 3 * theme.spacing(1),
     },
     '& td compact': {
-      paddingRight: 3 * theme.spacing.unit,
+      paddingRight: 3 * theme.spacing(1),
     },
     '& td code': {
       fontSize: 13,
@@ -151,11 +151,11 @@ markdown.use(linkAttributes, {
       whiteSpace: 'pre',
       borderBottom: `1px solid ${theme.palette.divider}`,
       fontWeight: theme.typography.fontWeightMedium,
-      padding: `0 ${theme.spacing.unit * 2}px 0 ${theme.spacing.unit}px`,
+      padding: `0 ${theme.spacing(1) * 2}px 0 ${theme.spacing(1)}px`,
       textAlign: 'left',
     },
     '& th:last-child': {
-      paddingRight: 3 * theme.spacing.unit,
+      paddingRight: 3 * theme.spacing(1),
     },
     '& tr': {
       height: 48,
@@ -168,8 +168,8 @@ markdown.use(linkAttributes, {
     },
     '& blockquote': {
       borderLeft: `5px solid ${theme.palette.text.hint}`,
-      padding: `${theme.spacing.unit / 2}px ${3 * theme.spacing.unit}px`,
-      margin: `${3 * theme.spacing.unit}px 0`,
+      padding: `${theme.spacing(1) / 2}px ${3 * theme.spacing(1)}px`,
+      margin: `${3 * theme.spacing(1)}px 0`,
     },
     '& img': {
       maxWidth: '100%',

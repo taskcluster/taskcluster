@@ -21,7 +21,7 @@ exports[`<Label /> should render correctly 1`] = `
     mini={false}
     status="default"
   >
-    <WithStyles(Button)
+    <WithStyles(ForwardRef(Button))
       className=""
       classes={
         Object {
@@ -32,79 +32,71 @@ exports[`<Label /> should render correctly 1`] = `
       disabled={true}
       size="small"
     >
-      <Button
+      <ForwardRef(Button)
         className=""
         classes={
           Object {
-            "colorInherit": "MuiButton-colorInherit-30",
-            "contained": "MuiButton-contained-20",
-            "containedPrimary": "MuiButton-containedPrimary-21",
-            "containedSecondary": "MuiButton-containedSecondary-22",
-            "disabled": "MuiButton-disabled-29 Label-default-7 Label-disabled-3",
-            "extendedFab": "MuiButton-extendedFab-27",
-            "fab": "MuiButton-fab-26",
-            "flat": "MuiButton-flat-14",
-            "flatPrimary": "MuiButton-flatPrimary-15",
-            "flatSecondary": "MuiButton-flatSecondary-16",
-            "focusVisible": "MuiButton-focusVisible-28",
-            "fullWidth": "MuiButton-fullWidth-34",
-            "label": "MuiButton-label-10",
-            "mini": "MuiButton-mini-31",
-            "outlined": "MuiButton-outlined-17",
-            "outlinedPrimary": "MuiButton-outlinedPrimary-18",
-            "outlinedSecondary": "MuiButton-outlinedSecondary-19",
-            "raised": "MuiButton-raised-23",
-            "raisedPrimary": "MuiButton-raisedPrimary-24",
-            "raisedSecondary": "MuiButton-raisedSecondary-25",
-            "root": "MuiButton-root-9",
-            "sizeLarge": "MuiButton-sizeLarge-33",
-            "sizeSmall": "MuiButton-sizeSmall-32 Label-dense-1",
-            "text": "MuiButton-text-11",
-            "textPrimary": "MuiButton-textPrimary-12",
-            "textSecondary": "MuiButton-textSecondary-13",
+            "colorInherit": "MuiButton-colorInherit",
+            "contained": "MuiButton-contained",
+            "containedPrimary": "MuiButton-containedPrimary",
+            "containedSecondary": "MuiButton-containedSecondary",
+            "containedSizeLarge": "MuiButton-containedSizeLarge",
+            "containedSizeSmall": "MuiButton-containedSizeSmall",
+            "disabled": "Mui-disabled Label-default-7 Label-disabled-3",
+            "endIcon": "MuiButton-endIcon",
+            "focusVisible": "Mui-focusVisible",
+            "fullWidth": "MuiButton-fullWidth",
+            "iconSizeLarge": "MuiButton-iconSizeLarge",
+            "iconSizeMedium": "MuiButton-iconSizeMedium",
+            "iconSizeSmall": "MuiButton-iconSizeSmall",
+            "label": "MuiButton-label",
+            "outlined": "MuiButton-outlined",
+            "outlinedPrimary": "MuiButton-outlinedPrimary",
+            "outlinedSecondary": "MuiButton-outlinedSecondary",
+            "outlinedSizeLarge": "MuiButton-outlinedSizeLarge",
+            "outlinedSizeSmall": "MuiButton-outlinedSizeSmall",
+            "root": "MuiButton-root",
+            "sizeLarge": "MuiButton-sizeLarge",
+            "sizeSmall": "MuiButton-sizeSmall Label-dense-1",
+            "startIcon": "MuiButton-startIcon",
+            "text": "MuiButton-text",
+            "textPrimary": "MuiButton-textPrimary",
+            "textSecondary": "MuiButton-textSecondary",
+            "textSizeLarge": "MuiButton-textSizeLarge",
+            "textSizeSmall": "MuiButton-textSizeSmall",
           }
         }
-        color="default"
-        component="button"
-        disableFocusRipple={false}
         disabled={true}
-        fullWidth={false}
-        mini={false}
         size="small"
-        type="button"
-        variant="text"
       >
-        <WithStyles(ButtonBase)
-          className="MuiButton-root-9 MuiButton-text-11 MuiButton-flat-14 MuiButton-sizeSmall-32 Label-dense-1 MuiButton-disabled-29 Label-default-7 Label-disabled-3"
+        <WithStyles(ForwardRef(ButtonBase))
+          className="MuiButton-root MuiButton-text MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-1 Mui-disabled Label-default-7 Label-disabled-3"
           component="button"
           disabled={true}
           focusRipple={true}
-          focusVisibleClassName="MuiButton-focusVisible-28"
+          focusVisibleClassName="Mui-focusVisible"
           type="button"
         >
-          <ButtonBase
-            centerRipple={false}
-            className="MuiButton-root-9 MuiButton-text-11 MuiButton-flat-14 MuiButton-sizeSmall-32 Label-dense-1 MuiButton-disabled-29 Label-default-7 Label-disabled-3"
+          <ForwardRef(ButtonBase)
+            className="MuiButton-root MuiButton-text MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-1 Mui-disabled Label-default-7 Label-disabled-3"
             classes={
               Object {
-                "disabled": "MuiButtonBase-disabled-36",
-                "focusVisible": "MuiButtonBase-focusVisible-37",
-                "root": "MuiButtonBase-root-35",
+                "disabled": "Mui-disabled",
+                "focusVisible": "Mui-focusVisible",
+                "root": "MuiButtonBase-root",
               }
             }
             component="button"
-            disableRipple={false}
-            disableTouchRipple={false}
             disabled={true}
             focusRipple={true}
-            focusVisibleClassName="MuiButton-focusVisible-28"
-            tabIndex="0"
+            focusVisibleClassName="Mui-focusVisible"
             type="button"
           >
             <button
-              className="MuiButtonBase-root-35 MuiButtonBase-disabled-36 MuiButton-root-9 MuiButton-text-11 MuiButton-flat-14 MuiButton-sizeSmall-32 Label-dense-1 MuiButton-disabled-29 Label-default-7 Label-disabled-3"
+              className="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-1 Mui-disabled Label-default-7 Label-disabled-3 Mui-disabled"
               disabled={true}
               onBlur={[Function]}
+              onDragLeave={[Function]}
               onFocus={[Function]}
               onKeyDown={[Function]}
               onKeyUp={[Function]}
@@ -114,19 +106,19 @@ exports[`<Label /> should render correctly 1`] = `
               onTouchEnd={[Function]}
               onTouchMove={[Function]}
               onTouchStart={[Function]}
-              tabIndex="-1"
+              tabIndex={-1}
               type="button"
             >
               <span
-                className="MuiButton-label-10"
+                className="MuiButton-label"
               >
                 Foo
               </span>
             </button>
-          </ButtonBase>
-        </WithStyles(ButtonBase)>
-      </Button>
-    </WithStyles(Button)>
+          </ForwardRef(ButtonBase)>
+        </WithStyles(ForwardRef(ButtonBase))>
+      </ForwardRef(Button)>
+    </WithStyles(ForwardRef(Button))>
   </Label>
 </WithStyles(Label)>
 `;

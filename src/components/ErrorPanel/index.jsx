@@ -20,10 +20,10 @@ import palette from '../../utils/palette';
 
     return {
       panel: {
-        marginBottom: 3 * theme.spacing.unit,
+        marginBottom: 3 * theme.spacing(1),
       },
       paper: {
-        padding: `0 ${2 * theme.spacing.unit}px`,
+        padding: `0 ${2 * theme.spacing(1)}px`,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'flex-start',

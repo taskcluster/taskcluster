@@ -127,37 +127,35 @@ exports[`<ErrorPanel /> should render correctly 1`] = `
         "props": Object {},
         "shadows": Array [
           "none",
-          "0px 1px 3px 0px rgba(0, 0, 0, 0.2),0px 1px 1px 0px rgba(0, 0, 0, 0.14),0px 2px 1px -1px rgba(0, 0, 0, 0.12)",
-          "0px 1px 5px 0px rgba(0, 0, 0, 0.2),0px 2px 2px 0px rgba(0, 0, 0, 0.14),0px 3px 1px -2px rgba(0, 0, 0, 0.12)",
-          "0px 1px 8px 0px rgba(0, 0, 0, 0.2),0px 3px 4px 0px rgba(0, 0, 0, 0.14),0px 3px 3px -2px rgba(0, 0, 0, 0.12)",
-          "0px 2px 4px -1px rgba(0, 0, 0, 0.2),0px 4px 5px 0px rgba(0, 0, 0, 0.14),0px 1px 10px 0px rgba(0, 0, 0, 0.12)",
-          "0px 3px 5px -1px rgba(0, 0, 0, 0.2),0px 5px 8px 0px rgba(0, 0, 0, 0.14),0px 1px 14px 0px rgba(0, 0, 0, 0.12)",
-          "0px 3px 5px -1px rgba(0, 0, 0, 0.2),0px 6px 10px 0px rgba(0, 0, 0, 0.14),0px 1px 18px 0px rgba(0, 0, 0, 0.12)",
-          "0px 4px 5px -2px rgba(0, 0, 0, 0.2),0px 7px 10px 1px rgba(0, 0, 0, 0.14),0px 2px 16px 1px rgba(0, 0, 0, 0.12)",
-          "0px 5px 5px -3px rgba(0, 0, 0, 0.2),0px 8px 10px 1px rgba(0, 0, 0, 0.14),0px 3px 14px 2px rgba(0, 0, 0, 0.12)",
-          "0px 5px 6px -3px rgba(0, 0, 0, 0.2),0px 9px 12px 1px rgba(0, 0, 0, 0.14),0px 3px 16px 2px rgba(0, 0, 0, 0.12)",
-          "0px 6px 6px -3px rgba(0, 0, 0, 0.2),0px 10px 14px 1px rgba(0, 0, 0, 0.14),0px 4px 18px 3px rgba(0, 0, 0, 0.12)",
-          "0px 6px 7px -4px rgba(0, 0, 0, 0.2),0px 11px 15px 1px rgba(0, 0, 0, 0.14),0px 4px 20px 3px rgba(0, 0, 0, 0.12)",
-          "0px 7px 8px -4px rgba(0, 0, 0, 0.2),0px 12px 17px 2px rgba(0, 0, 0, 0.14),0px 5px 22px 4px rgba(0, 0, 0, 0.12)",
-          "0px 7px 8px -4px rgba(0, 0, 0, 0.2),0px 13px 19px 2px rgba(0, 0, 0, 0.14),0px 5px 24px 4px rgba(0, 0, 0, 0.12)",
-          "0px 7px 9px -4px rgba(0, 0, 0, 0.2),0px 14px 21px 2px rgba(0, 0, 0, 0.14),0px 5px 26px 4px rgba(0, 0, 0, 0.12)",
-          "0px 8px 9px -5px rgba(0, 0, 0, 0.2),0px 15px 22px 2px rgba(0, 0, 0, 0.14),0px 6px 28px 5px rgba(0, 0, 0, 0.12)",
-          "0px 8px 10px -5px rgba(0, 0, 0, 0.2),0px 16px 24px 2px rgba(0, 0, 0, 0.14),0px 6px 30px 5px rgba(0, 0, 0, 0.12)",
-          "0px 8px 11px -5px rgba(0, 0, 0, 0.2),0px 17px 26px 2px rgba(0, 0, 0, 0.14),0px 6px 32px 5px rgba(0, 0, 0, 0.12)",
-          "0px 9px 11px -5px rgba(0, 0, 0, 0.2),0px 18px 28px 2px rgba(0, 0, 0, 0.14),0px 7px 34px 6px rgba(0, 0, 0, 0.12)",
-          "0px 9px 12px -6px rgba(0, 0, 0, 0.2),0px 19px 29px 2px rgba(0, 0, 0, 0.14),0px 7px 36px 6px rgba(0, 0, 0, 0.12)",
-          "0px 10px 13px -6px rgba(0, 0, 0, 0.2),0px 20px 31px 3px rgba(0, 0, 0, 0.14),0px 8px 38px 7px rgba(0, 0, 0, 0.12)",
-          "0px 10px 13px -6px rgba(0, 0, 0, 0.2),0px 21px 33px 3px rgba(0, 0, 0, 0.14),0px 8px 40px 7px rgba(0, 0, 0, 0.12)",
-          "0px 10px 14px -6px rgba(0, 0, 0, 0.2),0px 22px 35px 3px rgba(0, 0, 0, 0.14),0px 8px 42px 7px rgba(0, 0, 0, 0.12)",
-          "0px 11px 14px -7px rgba(0, 0, 0, 0.2),0px 23px 36px 3px rgba(0, 0, 0, 0.14),0px 9px 44px 8px rgba(0, 0, 0, 0.12)",
-          "0px 11px 15px -7px rgba(0, 0, 0, 0.2),0px 24px 38px 3px rgba(0, 0, 0, 0.14),0px 9px 46px 8px rgba(0, 0, 0, 0.12)",
+          "0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12)",
+          "0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12)",
+          "0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12)",
+          "0px 2px 4px -1px rgba(0,0,0,0.2),0px 4px 5px 0px rgba(0,0,0,0.14),0px 1px 10px 0px rgba(0,0,0,0.12)",
+          "0px 3px 5px -1px rgba(0,0,0,0.2),0px 5px 8px 0px rgba(0,0,0,0.14),0px 1px 14px 0px rgba(0,0,0,0.12)",
+          "0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12)",
+          "0px 4px 5px -2px rgba(0,0,0,0.2),0px 7px 10px 1px rgba(0,0,0,0.14),0px 2px 16px 1px rgba(0,0,0,0.12)",
+          "0px 5px 5px -3px rgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12)",
+          "0px 5px 6px -3px rgba(0,0,0,0.2),0px 9px 12px 1px rgba(0,0,0,0.14),0px 3px 16px 2px rgba(0,0,0,0.12)",
+          "0px 6px 6px -3px rgba(0,0,0,0.2),0px 10px 14px 1px rgba(0,0,0,0.14),0px 4px 18px 3px rgba(0,0,0,0.12)",
+          "0px 6px 7px -4px rgba(0,0,0,0.2),0px 11px 15px 1px rgba(0,0,0,0.14),0px 4px 20px 3px rgba(0,0,0,0.12)",
+          "0px 7px 8px -4px rgba(0,0,0,0.2),0px 12px 17px 2px rgba(0,0,0,0.14),0px 5px 22px 4px rgba(0,0,0,0.12)",
+          "0px 7px 8px -4px rgba(0,0,0,0.2),0px 13px 19px 2px rgba(0,0,0,0.14),0px 5px 24px 4px rgba(0,0,0,0.12)",
+          "0px 7px 9px -4px rgba(0,0,0,0.2),0px 14px 21px 2px rgba(0,0,0,0.14),0px 5px 26px 4px rgba(0,0,0,0.12)",
+          "0px 8px 9px -5px rgba(0,0,0,0.2),0px 15px 22px 2px rgba(0,0,0,0.14),0px 6px 28px 5px rgba(0,0,0,0.12)",
+          "0px 8px 10px -5px rgba(0,0,0,0.2),0px 16px 24px 2px rgba(0,0,0,0.14),0px 6px 30px 5px rgba(0,0,0,0.12)",
+          "0px 8px 11px -5px rgba(0,0,0,0.2),0px 17px 26px 2px rgba(0,0,0,0.14),0px 6px 32px 5px rgba(0,0,0,0.12)",
+          "0px 9px 11px -5px rgba(0,0,0,0.2),0px 18px 28px 2px rgba(0,0,0,0.14),0px 7px 34px 6px rgba(0,0,0,0.12)",
+          "0px 9px 12px -6px rgba(0,0,0,0.2),0px 19px 29px 2px rgba(0,0,0,0.14),0px 7px 36px 6px rgba(0,0,0,0.12)",
+          "0px 10px 13px -6px rgba(0,0,0,0.2),0px 20px 31px 3px rgba(0,0,0,0.14),0px 8px 38px 7px rgba(0,0,0,0.12)",
+          "0px 10px 13px -6px rgba(0,0,0,0.2),0px 21px 33px 3px rgba(0,0,0,0.14),0px 8px 40px 7px rgba(0,0,0,0.12)",
+          "0px 10px 14px -6px rgba(0,0,0,0.2),0px 22px 35px 3px rgba(0,0,0,0.14),0px 8px 42px 7px rgba(0,0,0,0.12)",
+          "0px 11px 14px -7px rgba(0,0,0,0.2),0px 23px 36px 3px rgba(0,0,0,0.14),0px 9px 44px 8px rgba(0,0,0,0.12)",
+          "0px 11px 15px -7px rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px rgba(0,0,0,0.12)",
         ],
         "shape": Object {
           "borderRadius": 4,
         },
-        "spacing": Object {
-          "unit": 8,
-        },
+        "spacing": [Function],
         "transitions": Object {
           "create": [Function],
           "duration": Object {
@@ -179,14 +177,6 @@ exports[`<ErrorPanel /> should render correctly 1`] = `
         },
         "typography": Object {
           "body1": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
-            "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
-            "fontSize": "0.875rem",
-            "fontWeight": 400,
-            "lineHeight": "1.46429em",
-          },
-          "body1Next": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
             "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
             "fontSize": "1rem",
             "fontWeight": 400,
@@ -194,91 +184,34 @@ exports[`<ErrorPanel /> should render correctly 1`] = `
             "lineHeight": 1.5,
           },
           "body2": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
-            "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
-            "fontSize": "0.875rem",
-            "fontWeight": 500,
-            "lineHeight": "1.71429em",
-          },
-          "body2Next": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
             "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
             "fontSize": "0.875rem",
             "fontWeight": 400,
             "letterSpacing": "0.01071em",
-            "lineHeight": 1.5,
+            "lineHeight": 1.43,
           },
           "button": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
-            "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
-            "fontSize": "0.875rem",
-            "fontWeight": 500,
-            "textTransform": "uppercase",
-          },
-          "buttonNext": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
             "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
             "fontSize": "0.875rem",
             "fontWeight": 500,
             "letterSpacing": "0.02857em",
-            "lineHeight": 1.5,
+            "lineHeight": 1.75,
             "textTransform": "uppercase",
           },
           "caption": Object {
-            "color": "rgba(0, 0, 0, 0.54)",
-            "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
-            "fontSize": "0.75rem",
-            "fontWeight": 400,
-            "lineHeight": "1.375em",
-          },
-          "captionNext": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
             "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
             "fontSize": "0.75rem",
             "fontWeight": 400,
             "letterSpacing": "0.03333em",
             "lineHeight": 1.66,
           },
-          "display1": Object {
-            "color": "rgba(0, 0, 0, 0.54)",
-            "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
-            "fontSize": "2.125rem",
-            "fontWeight": 400,
-            "lineHeight": "1.20588em",
-          },
-          "display2": Object {
-            "color": "rgba(0, 0, 0, 0.54)",
-            "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
-            "fontSize": "2.8125rem",
-            "fontWeight": 400,
-            "lineHeight": "1.13333em",
-            "marginLeft": "-.02em",
-          },
-          "display3": Object {
-            "color": "rgba(0, 0, 0, 0.54)",
-            "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
-            "fontSize": "3.5rem",
-            "fontWeight": 400,
-            "letterSpacing": "-.02em",
-            "lineHeight": "1.30357em",
-            "marginLeft": "-.02em",
-          },
-          "display4": Object {
-            "color": "rgba(0, 0, 0, 0.54)",
-            "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
-            "fontSize": "7rem",
-            "fontWeight": 300,
-            "letterSpacing": "-.04em",
-            "lineHeight": "1.14286em",
-            "marginLeft": "-.04em",
-          },
           "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
           "fontSize": 14,
+          "fontWeightBold": 700,
           "fontWeightLight": 300,
           "fontWeightMedium": 500,
           "fontWeightRegular": 400,
           "h1": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
             "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
             "fontSize": "6rem",
             "fontWeight": 300,
@@ -286,7 +219,6 @@ exports[`<ErrorPanel /> should render correctly 1`] = `
             "lineHeight": 1,
           },
           "h2": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
             "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
             "fontSize": "3.75rem",
             "fontWeight": 300,
@@ -294,7 +226,6 @@ exports[`<ErrorPanel /> should render correctly 1`] = `
             "lineHeight": 1,
           },
           "h3": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
             "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
             "fontSize": "3rem",
             "fontWeight": 400,
@@ -302,7 +233,6 @@ exports[`<ErrorPanel /> should render correctly 1`] = `
             "lineHeight": 1.04,
           },
           "h4": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
             "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
             "fontSize": "2.125rem",
             "fontWeight": 400,
@@ -310,7 +240,6 @@ exports[`<ErrorPanel /> should render correctly 1`] = `
             "lineHeight": 1.17,
           },
           "h5": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
             "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
             "fontSize": "1.5rem",
             "fontWeight": 400,
@@ -318,22 +247,14 @@ exports[`<ErrorPanel /> should render correctly 1`] = `
             "lineHeight": 1.33,
           },
           "h6": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
             "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
             "fontSize": "1.25rem",
             "fontWeight": 500,
             "letterSpacing": "0.0075em",
             "lineHeight": 1.6,
           },
-          "headline": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
-            "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
-            "fontSize": "1.5rem",
-            "fontWeight": 400,
-            "lineHeight": "1.35417em",
-          },
+          "htmlFontSize": 16,
           "overline": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
             "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
             "fontSize": "0.75rem",
             "fontWeight": 400,
@@ -343,15 +264,7 @@ exports[`<ErrorPanel /> should render correctly 1`] = `
           },
           "pxToRem": [Function],
           "round": [Function],
-          "subheading": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
-            "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
-            "fontSize": "1rem",
-            "fontWeight": 400,
-            "lineHeight": "1.5em",
-          },
           "subtitle1": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
             "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
             "fontSize": "1rem",
             "fontWeight": 400,
@@ -359,21 +272,12 @@ exports[`<ErrorPanel /> should render correctly 1`] = `
             "lineHeight": 1.75,
           },
           "subtitle2": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
             "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
             "fontSize": "0.875rem",
             "fontWeight": 500,
             "letterSpacing": "0.00714em",
             "lineHeight": 1.57,
           },
-          "title": Object {
-            "color": "rgba(0, 0, 0, 0.87)",
-            "fontFamily": "\\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif",
-            "fontSize": "1.3125rem",
-            "fontWeight": 500,
-            "lineHeight": "1.16667em",
-          },
-          "useNextVariants": false,
         },
         "zIndex": Object {
           "appBar": 1100,
@@ -381,54 +285,52 @@ exports[`<ErrorPanel /> should render correctly 1`] = `
           "mobileStepper": 1000,
           "modal": 1300,
           "snackbar": 1400,
+          "speedDial": 1050,
           "tooltip": 1500,
         },
       }
     }
     warning={false}
   >
-    <WithStyles(Paper)
+    <WithStyles(ForwardRef(Paper))
       className="ErrorPanel-panel-1 ErrorPanel-paper-2 ErrorPanel-error-5"
     >
-      <Paper
+      <ForwardRef(Paper)
         className="ErrorPanel-panel-1 ErrorPanel-paper-2 ErrorPanel-error-5"
         classes={
           Object {
-            "elevation0": "MuiPaper-elevation0-13",
-            "elevation1": "MuiPaper-elevation1-14",
-            "elevation10": "MuiPaper-elevation10-23",
-            "elevation11": "MuiPaper-elevation11-24",
-            "elevation12": "MuiPaper-elevation12-25",
-            "elevation13": "MuiPaper-elevation13-26",
-            "elevation14": "MuiPaper-elevation14-27",
-            "elevation15": "MuiPaper-elevation15-28",
-            "elevation16": "MuiPaper-elevation16-29",
-            "elevation17": "MuiPaper-elevation17-30",
-            "elevation18": "MuiPaper-elevation18-31",
-            "elevation19": "MuiPaper-elevation19-32",
-            "elevation2": "MuiPaper-elevation2-15",
-            "elevation20": "MuiPaper-elevation20-33",
-            "elevation21": "MuiPaper-elevation21-34",
-            "elevation22": "MuiPaper-elevation22-35",
-            "elevation23": "MuiPaper-elevation23-36",
-            "elevation24": "MuiPaper-elevation24-37",
-            "elevation3": "MuiPaper-elevation3-16",
-            "elevation4": "MuiPaper-elevation4-17",
-            "elevation5": "MuiPaper-elevation5-18",
-            "elevation6": "MuiPaper-elevation6-19",
-            "elevation7": "MuiPaper-elevation7-20",
-            "elevation8": "MuiPaper-elevation8-21",
-            "elevation9": "MuiPaper-elevation9-22",
-            "root": "MuiPaper-root-11",
-            "rounded": "MuiPaper-rounded-12",
+            "elevation0": "MuiPaper-elevation0",
+            "elevation1": "MuiPaper-elevation1",
+            "elevation10": "MuiPaper-elevation10",
+            "elevation11": "MuiPaper-elevation11",
+            "elevation12": "MuiPaper-elevation12",
+            "elevation13": "MuiPaper-elevation13",
+            "elevation14": "MuiPaper-elevation14",
+            "elevation15": "MuiPaper-elevation15",
+            "elevation16": "MuiPaper-elevation16",
+            "elevation17": "MuiPaper-elevation17",
+            "elevation18": "MuiPaper-elevation18",
+            "elevation19": "MuiPaper-elevation19",
+            "elevation2": "MuiPaper-elevation2",
+            "elevation20": "MuiPaper-elevation20",
+            "elevation21": "MuiPaper-elevation21",
+            "elevation22": "MuiPaper-elevation22",
+            "elevation23": "MuiPaper-elevation23",
+            "elevation24": "MuiPaper-elevation24",
+            "elevation3": "MuiPaper-elevation3",
+            "elevation4": "MuiPaper-elevation4",
+            "elevation5": "MuiPaper-elevation5",
+            "elevation6": "MuiPaper-elevation6",
+            "elevation7": "MuiPaper-elevation7",
+            "elevation8": "MuiPaper-elevation8",
+            "elevation9": "MuiPaper-elevation9",
+            "root": "MuiPaper-root",
+            "rounded": "MuiPaper-rounded",
           }
         }
-        component="div"
-        elevation={2}
-        square={false}
       >
         <div
-          className="MuiPaper-root-11 MuiPaper-elevation2-15 MuiPaper-rounded-12 ErrorPanel-panel-1 ErrorPanel-paper-2 ErrorPanel-error-5"
+          className="MuiPaper-root MuiPaper-elevation1 ErrorPanel-panel-1 ErrorPanel-paper-2 ErrorPanel-error-5 MuiPaper-rounded"
         >
           <WithStyles(Markdown)
             className="ErrorPanel-markdownContent-3 ErrorPanel-errorText-7 ErrorPanel-pad-4"
@@ -453,8 +355,8 @@ exports[`<ErrorPanel /> should render correctly 1`] = `
             </Markdown>
           </WithStyles(Markdown)>
         </div>
-      </Paper>
-    </WithStyles(Paper)>
+      </ForwardRef(Paper)>
+    </WithStyles(ForwardRef(Paper))>
   </ErrorPanel>
 </WithStyles(ErrorPanel)>
 `;

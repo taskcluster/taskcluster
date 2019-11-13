@@ -17,35 +17,30 @@ exports[`<Spinner /> should render correctly 1`] = `
     <div
       className="Spinner-center-1"
     >
-      <WithStyles(CircularProgress)
+      <WithStyles(ForwardRef(CircularProgress))
         className={null}
         color="primary"
       >
-        <CircularProgress
+        <ForwardRef(CircularProgress)
           className={null}
           classes={
             Object {
-              "circle": "MuiCircularProgress-circle-8",
-              "circleDisableShrink": "MuiCircularProgress-circleDisableShrink-11",
-              "circleIndeterminate": "MuiCircularProgress-circleIndeterminate-10",
-              "circleStatic": "MuiCircularProgress-circleStatic-9",
-              "colorPrimary": "MuiCircularProgress-colorPrimary-5",
-              "colorSecondary": "MuiCircularProgress-colorSecondary-6",
-              "indeterminate": "MuiCircularProgress-indeterminate-4",
-              "root": "MuiCircularProgress-root-2",
-              "static": "MuiCircularProgress-static-3",
-              "svg": "MuiCircularProgress-svg-7",
+              "circle": "MuiCircularProgress-circle",
+              "circleDisableShrink": "MuiCircularProgress-circleDisableShrink",
+              "circleIndeterminate": "MuiCircularProgress-circleIndeterminate",
+              "circleStatic": "MuiCircularProgress-circleStatic",
+              "colorPrimary": "MuiCircularProgress-colorPrimary",
+              "colorSecondary": "MuiCircularProgress-colorSecondary",
+              "indeterminate": "MuiCircularProgress-indeterminate",
+              "root": "MuiCircularProgress-root",
+              "static": "MuiCircularProgress-static",
+              "svg": "MuiCircularProgress-svg",
             }
           }
           color="primary"
-          disableShrink={false}
-          size={40}
-          thickness={3.6}
-          value={0}
-          variant="indeterminate"
         >
           <div
-            className="MuiCircularProgress-root-2 MuiCircularProgress-colorPrimary-5 MuiCircularProgress-indeterminate-4"
+            className="MuiCircularProgress-root MuiCircularProgress-colorPrimary MuiCircularProgress-indeterminate"
             role="progressbar"
             style={
               Object {
@@ -55,11 +50,11 @@ exports[`<Spinner /> should render correctly 1`] = `
             }
           >
             <svg
-              className="MuiCircularProgress-svg-7"
+              className="MuiCircularProgress-svg"
               viewBox="22 22 44 44"
             >
               <circle
-                className="MuiCircularProgress-circle-8 MuiCircularProgress-circleIndeterminate-10"
+                className="MuiCircularProgress-circle MuiCircularProgress-circleIndeterminate"
                 cx={44}
                 cy={44}
                 fill="none"
@@ -69,8 +64,8 @@ exports[`<Spinner /> should render correctly 1`] = `
               />
             </svg>
           </div>
-        </CircularProgress>
-      </WithStyles(CircularProgress)>
+        </ForwardRef(CircularProgress)>
+      </WithStyles(ForwardRef(CircularProgress))>
     </div>
   </Spinner>
 </WithStyles(Spinner)>

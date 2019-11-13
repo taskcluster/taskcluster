@@ -21,8 +21,8 @@ import pickClassName from '../../utils/pickClassName';
       color: theme.palette.text.primary,
     },
     tabContent: {
-      marginTop: theme.spacing.unit,
-      padding: theme.spacing.unit,
+      marginTop: theme.spacing(1),
+      padding: theme.spacing(1),
     },
     markdownContainer: {
       borderColor,
