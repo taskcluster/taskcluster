@@ -31,7 +31,7 @@ func TestSecureFile(t *testing.T) {
 	if err := os.Chmod(tmpfile.Name(), 0777); err != nil {
 		t.Fatal(err)
 	}
-	if err := SecureFiles([]string{tmpfile.Name()}); err != nil {
+	if err := SecureFiles(tmpfile.Name()); err != nil {
 		t.Fatal(err)
 	}
 	stat, err := os.Stat(tmpfile.Name())

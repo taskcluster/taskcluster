@@ -113,6 +113,10 @@ func (feature *MountsFeature) PersistState() (err error) {
 		return
 	}
 	err = fileutil.WriteToFileAsJSON(&directoryCaches, "directory-caches.json")
+	if err != nil {
+		return
+	}
+	err = fileutil.SecureFiles("file-caches.json", "directory-caches.json")
 	return
 }
 
