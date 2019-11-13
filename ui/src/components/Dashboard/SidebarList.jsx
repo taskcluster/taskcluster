@@ -73,7 +73,7 @@ export default class SidebarList extends Component {
         </SidebarListItem>
 
         <SidebarListItem to="/purge-caches" icon={<BackupRestoreIcon />}>
-          Purge Cache
+          Purge Caches
         </SidebarListItem>
 
         <SidebarListItem to="/hooks" icon={<WebhookIcon />}>
