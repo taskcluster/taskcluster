@@ -41,9 +41,6 @@
         "azure_signing_key": {
           "type": "string"
         },
-        "client_table_name": {
-          "type": "string"
-        },
         "debug": {
           "title": "node debug env var",
           "type": "string"
@@ -119,9 +116,6 @@
           "type": "string"
         },
         "refs_bucket": {
-          "type": "string"
-        },
-        "roles_container_name": {
           "type": "string"
         },
         "schemas_bucket": {
