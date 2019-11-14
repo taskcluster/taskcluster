@@ -100,16 +100,16 @@ const getStatusCount = memoize(
     display: 'flex',
     flexGrow: 1,
     flexBasis: 0,
-    padding: `${theme.spacing(1)}px ${theme.spacing(1)}px`,
+    padding: `${theme.spacing.unit}px ${theme.spacing.unit}px`,
     justifyContent: 'space-around',
     cursor: 'pointer',
-    margin: theme.spacing(1),
+    margin: theme.spacing.unit,
     '& > div': {
       display: 'flex',
       flexDirection: 'column',
       width: '100%',
     },
-    borderRadius: theme.spacing(0.25),
+    borderRadius: theme.spacing.unit / 4,
   },
   statusButtonTypography: {
     color: THEME.PRIMARY_TEXT_DARK,
@@ -291,7 +291,7 @@ export default class TaskGroupProgress extends Component {
     const taskGroupState = this.getTaskGroupState();
 
     return (
-      <Grid container spacing={2}>
+      <Grid container spacing={16}>
         <Helmet state={taskGroupState} />
         {Object.keys(TASK_STATE).map(status => {
           const Icon = this.getStatusIcon(status);

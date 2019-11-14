@@ -10,30 +10,30 @@ import SignInDialog from '../SignInDialog';
 
 @withStyles(theme => ({
   root: {
-    padding: theme.spacing(10),
+    padding: theme.spacing.unit * 10,
     [theme.breakpoints.down('sm')]: {
-      padding: theme.spacing(5),
+      padding: theme.spacing.unit * 5,
     },
   },
   headline: {
     fontFamily: 'Roboto500',
     [theme.breakpoints.down('sm')]: {
-      marginBottom: theme.spacing(2),
+      marginBottom: theme.spacing.double,
       fontSize: 40,
     },
   },
   actions: {
-    marginTop: theme.spacing(3),
+    marginTop: theme.spacing.triple,
   },
   divider: {
-    margin: `${theme.spacing(10)}px 0 ${theme.spacing(3)}px`,
+    margin: `${theme.spacing.unit * 10}px 0 ${theme.spacing.triple}px`,
     [theme.breakpoints.down('sm')]: {
-      margin: `${theme.spacing(5)}px 0 ${theme.spacing(2)}px`,
+      margin: `${theme.spacing.unit * 5}px 0 ${theme.spacing.double}px`,
     },
   },
   icon: {
     fill: theme.palette.common.white,
-    marginRight: theme.spacing(1),
+    marginRight: theme.spacing.unit,
   },
   ciDescription: {
     [theme.breakpoints.down('sm')]: {

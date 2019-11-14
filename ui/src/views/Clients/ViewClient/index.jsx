@@ -69,8 +69,8 @@ import { withAuth } from '../../../utils/Auth';
     },
   },
   panelHeader: {
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(1),
+    paddingTop: theme.spacing.unit,
+    paddingBottom: theme.spacing.unit,
   },
   panelTextPrimary: {
     color: THEME.PRIMARY_TEXT_LIGHT,
@@ -80,7 +80,7 @@ import { withAuth } from '../../../utils/Auth';
   },
   panelCard: {
     background: theme.palette.warning.dark,
-    marginBottom: theme.spacing(1),
+    marginBottom: theme.spacing.unit,
   },
   clearIcon: {
     fill: THEME.PRIMARY_TEXT_LIGHT,

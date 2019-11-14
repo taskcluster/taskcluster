@@ -81,13 +81,13 @@ const getCachesFromTask = task =>
 @withApollo
 @withStyles(theme => ({
   title: {
-    marginBottom: theme.spacing(1),
+    marginBottom: theme.spacing.unit,
   },
   divider: {
-    margin: `${theme.spacing(3)}px 0`,
+    margin: `${theme.spacing.triple}px 0`,
   },
   tag: {
-    margin: `${theme.spacing(1)}px ${theme.spacing(1)}px 0 0`,
+    margin: `${theme.spacing.unit}px ${theme.spacing.unit}px 0 0`,
   },
   dialogListItem: {
     paddingTop: 0,
@@ -332,43 +332,41 @@ export default class ViewTask extends Component {
         fullScreen: false,
         body: (
           <Fragment>
-            <Typography variant="body2">
+            <Typography>
               This will duplicate the task and create it under a different{' '}
               <code>taskId</code>.
             </Typography>
-            <Typography variant="body2">
-              The new task will be altered to:
-            </Typography>
+            <Typography>The new task will be altered to:</Typography>
             <ul>
               <li>
-                <Typography variant="body2">
+                <Typography>
                   Set <code>task.payload.features.interactive = true</code>
                 </Typography>
               </li>
               <li>
-                <Typography variant="body2">
+                <Typography>
                   Strip <code>task.payload.caches</code> to avoid poisoning
                 </Typography>
               </li>
               <li>
-                <Typography variant="body2">
+                <Typography>
                   Ensures <code>task.payload.maxRunTime</code> is minimum of 60
                   minutes
                 </Typography>
               </li>
               <li>
-                <Typography variant="body2">
+                <Typography>
                   Strip <code>task.routes</code> to avoid side-effects
                 </Typography>
               </li>
               <li>
-                <Typography variant="body2">
+                <Typography>
                   Set the environment variable{' '}
                   <code>TASKCLUSTER_INTERACTIVE=true</code>
                 </Typography>
               </li>
             </ul>
-            <Typography variant="body2">
+            <Typography>
               Note: this may not work with all tasks. You may not have the
               scopes required to create the task.
             </Typography>
@@ -420,7 +418,7 @@ export default class ViewTask extends Component {
       dialogActionProps: {
         fullScreen: false,
         body: (
-          <Typography variant="body2">
+          <Typography>
             Note that the edited task will not be linked to other tasks nor have
             the same <code>task.routes</code> as other tasks, so this is not a
             way to fix a failing task in a larger task group. Note that you may
@@ -525,7 +523,7 @@ export default class ViewTask extends Component {
       dialogActionProps: {
         fullScreen: false,
         body: (
-          <Typography variant="body2">
+          <Typography>
             This will cause a new run of the task to be created with the same{' '}
             <code>taskId</code>. It will only succeed if the task hasn&#39;t
             passed it&#39;s deadline. Notice that this may interfere with
@@ -548,7 +546,7 @@ export default class ViewTask extends Component {
       dialogActionProps: {
         fullScreen: false,
         body: (
-          <Typography variant="body2">
+          <Typography>
             This will <strong>overwrite any scheduling process</strong> taking
             place. If this task is part of a continuous integration process,
             scheduling this task may cause your commit to land with failing
@@ -754,11 +752,11 @@ export default class ViewTask extends Component {
 
     return (
       <Fragment>
-        <Typography variant="body2">
+        <Typography>
           This will purge caches used in this task across all workers of this
           worker type.
         </Typography>
-        <Typography variant="body2">Select the caches to purge:</Typography>
+        <Typography>Select the caches to purge:</Typography>
         <List>
           {caches.map(cache => (
             <ListItem
@@ -770,7 +768,7 @@ export default class ViewTask extends Component {
                 tabIndex={-1}
                 disableRipple
               />
-              <Typography variant="body2">{cache}</Typography>
+              <Typography>{cache}</Typography>
             </ListItem>
           ))}
         </List>
@@ -823,12 +821,13 @@ export default class ViewTask extends Component {
         {task && (
           <Fragment>
             <Breadcrumbs>
-              <Link to={`/tasks/groups/${task.taskGroupId}`}>
-                <Typography variant="body2" className={classes.link}>
-                  Task Group
-                </Typography>
-              </Link>
-              <Typography variant="body2" color="textSecondary">
+              <Typography
+                className={classes.link}
+                component={Link}
+                to={`/tasks/groups/${task.taskGroupId}`}>
+                Task Group
+              </Typography>
+              <Typography color="textSecondary">
                 {task.metadata.name}
               </Typography>
             </Breadcrumbs>
@@ -859,7 +858,7 @@ export default class ViewTask extends Component {
               />
             ))}
             <Divider className={classes.divider} />
-            <Grid container spacing={3}>
+            <Grid container spacing={24}>
               <Grid item xs={12} md={6}>
                 <TaskDetailsCard task={task} dependentTasks={dependentTasks} />
               </Grid>

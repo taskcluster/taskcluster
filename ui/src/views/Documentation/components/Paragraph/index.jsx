@@ -4,12 +4,12 @@ import { withStyles } from '@material-ui/core/styles';
 
 const styles = theme => ({
   text: {
-    marginBottom: theme.spacing(2),
+    marginBottom: theme.spacing.double,
   },
 });
 
 function Paragraph({ classes, ...props }) {
-  return <Typography className={classes.text} {...props} />;
+  return <Typography className={classes.text} variant="body1" {...props} />;
 }
 
 export default withStyles(styles)(Paragraph);

@@ -7,6 +7,12 @@ import blue from '@material-ui/core/colors/blue';
 import green from '@material-ui/core/colors/green';
 import { THEME } from './utils/constants';
 
+const SPACING = {
+  UNIT: 8,
+  DOUBLE: 16,
+  TRIPLE: 24,
+  QUAD: 32,
+};
 const Roboto300 = { fontFamily: 'Roboto300, sans-serif' };
 const Roboto400 = { fontFamily: 'Roboto400, sans-serif' };
 const Roboto500 = { fontFamily: 'Roboto500, sans-serif' };
@@ -103,6 +109,7 @@ const createTheme = isDarkTheme => {
       },
     },
     typography: {
+      useNextVariants: true,
       ...Roboto400,
       h1: TYPOGRAPHY.H1,
       h2: TYPOGRAPHY.H2,
@@ -121,7 +128,12 @@ const createTheme = isDarkTheme => {
       fontWeightMedium: FONT_WEIGHTS.MEDIUM,
       fontWeightDark: FONT_WEIGHTS.DARK,
     },
-    spacing: 8,
+    spacing: {
+      unit: SPACING.UNIT,
+      double: SPACING.DOUBLE,
+      triple: SPACING.TRIPLE,
+      quad: SPACING.QUAD,
+    },
     drawerWidth: THEME.DRAWER_WIDTH,
     docsDrawerWidth: THEME.DRAWER_WIDTH + 125,
     mixins: {
@@ -235,30 +247,9 @@ const createTheme = isDarkTheme => {
       },
     },
     overrides: {
-      MuiTypography: {
-        root: {
-          color: textPrimary,
-        },
-      },
-      MuiTableSortLabel: {
-        root: {
-          '&:hover': {
-            color: textPrimary,
-          },
-        },
-        icon: {
-          fontSize: '1rem',
-        },
-      },
-      MuiFormControlLabel: {
-        label: {
-          fontSize: '0.875rem',
-        },
-      },
       MuiPaper: {
         root: {
           backgroundColor: primaryMain,
-          color: 'inherit',
         },
       },
       MuiFormLabel: {

@@ -4,6 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import LinkIcon from 'mdi-react/LinkIcon';
 import Dashboard from '../../../components/Dashboard';
@@ -15,12 +16,10 @@ import db from '../../../utils/db';
 @hot(module)
 @withStyles(theme => ({
   infoText: {
-    marginBottom: theme.spacing(1),
+    marginBottom: theme.spacing.unit,
   },
   listItemButton: {
     ...theme.mixins.listItemButton,
-    display: 'flex',
-    justifyContent: 'space-between',
   },
 }))
 export default class NoTaskGroup extends Component {
@@ -55,7 +54,7 @@ export default class NoTaskGroup extends Component {
             onSubmit={this.handleTaskGroupSearchSubmit}
           />
         }>
-        <Typography variant="body2" className={classes.infoText}>
+        <Typography className={classes.infoText}>
           Enter a task group ID in the search box
         </Typography>
         {recentTaskGroups && Boolean(recentTaskGroups.length) && (
@@ -65,12 +64,15 @@ export default class NoTaskGroup extends Component {
               <ListSubheader component="div">Recent Task Groups</ListSubheader>
             }>
             {recentTaskGroups.map(({ taskGroupId }) => (
-              <Link key={taskGroupId} to={`/tasks/groups/${taskGroupId}`}>
-                <ListItem button className={classes.listItemButton}>
-                  {taskGroupId}
-                  <LinkIcon />
-                </ListItem>
-              </Link>
+              <ListItem
+                button
+                className={classes.listItemButton}
+                component={Link}
+                to={`/tasks/groups/${taskGroupId}`}
+                key={taskGroupId}>
+                <ListItemText primary={taskGroupId} />
+                <LinkIcon />
+              </ListItem>
             ))}
           </List>
         )}

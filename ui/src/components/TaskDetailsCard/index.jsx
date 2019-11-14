@@ -25,16 +25,16 @@ import Link from '../../utils/Link';
 
 @withStyles(theme => ({
   headline: {
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2),
+    paddingLeft: theme.spacing.double,
+    paddingRight: theme.spacing.double,
   },
   cardContent: {
     paddingLeft: 0,
     paddingRight: 0,
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
+    paddingTop: theme.spacing.double,
+    paddingBottom: theme.spacing.double,
     '&:last-child': {
-      paddingBottom: theme.spacing(2),
+      paddingBottom: theme.spacing.double,
     },
   },
   sourceHeadline: {
@@ -54,9 +54,6 @@ import Link from '../../utils/Link';
   },
   unorderedList: {
     ...theme.mixins.unorderedList,
-  },
-  listItemText: {
-    paddingLeft: theme.spacing(2),
   },
 }))
 /**
@@ -138,19 +135,18 @@ export default class TaskDetailsCard extends Component {
                   secondary={task.provisionerId}
                 />
               </ListItem>
-              <Link
+              <ListItem
+                title="View Workers"
+                button
+                className={classes.listItemButton}
+                component={Link}
                 to={`/provisioners/${task.provisionerId}/worker-types/${task.workerType}`}>
-                <ListItem
-                  title="View Workers"
-                  button
-                  className={classes.listItemButton}>
-                  <ListItemText
-                    primary="Worker Type"
-                    secondary={task.workerType}
-                  />
-                  <LinkIcon />
-                </ListItem>
-              </Link>
+                <ListItemText
+                  primary="Worker Type"
+                  secondary={task.workerType}
+                />
+                <LinkIcon />
+              </ListItem>
               <ListItem
                 button
                 className={classes.listItemButton}
@@ -278,21 +274,19 @@ export default class TaskDetailsCard extends Component {
                         }
                       />
                     </ListItem>
-                    <List disablePadding>
+                    <List dense disablePadding>
                       {dependentTasks.map(task => (
-                        <Link key={task.taskId} to={`/tasks/${task.taskId}`}>
-                          <ListItem
-                            button
-                            className={classes.listItemButton}
-                            title="View Task">
-                            <StatusLabel state={task.status.state} />
-                            <ListItemText
-                              className={classes.listItemText}
-                              primary={task.metadata.name}
-                            />
-                            <LinkIcon />
-                          </ListItem>
-                        </Link>
+                        <ListItem
+                          button
+                          component={Link}
+                          className={classes.listItemButton}
+                          to={`/tasks/${task.taskId}`}
+                          key={task.taskId}
+                          title="View Task">
+                          <StatusLabel state={task.status.state} />
+                          <ListItemText primary={task.metadata.name} />
+                          <LinkIcon />
+                        </ListItem>
                       ))}
                     </List>
                   </Fragment>
@@ -324,7 +318,6 @@ export default class TaskDetailsCard extends Component {
                           {task.scopes.map(scope => (
                             <li key={scope}>
                               <Typography
-                                variant="body2"
                                 component="span"
                                 color="textSecondary">
                                 {scope}
@@ -350,7 +343,6 @@ export default class TaskDetailsCard extends Component {
                           {task.routes.map(route => (
                             <li key={route}>
                               <Typography
-                                variant="body2"
                                 component="span"
                                 color="textSecondary">
                                 {route}

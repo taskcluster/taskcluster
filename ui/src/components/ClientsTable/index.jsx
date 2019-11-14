@@ -6,6 +6,7 @@ import { camelCase } from 'change-case/change-case';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
+import { ListItemText } from '@material-ui/core';
 import TableCellItem from '../TableCellItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import DateDistance from '../DateDistance';
@@ -94,13 +95,15 @@ export default class ClientsTable extends Component {
         onPageChange={onPageChange}
         renderRow={({ node: client }) => (
           <TableRow key={client.clientId}>
-            <TableCell>
-              <Link to={`/auth/clients/${encodeURIComponent(client.clientId)}`}>
-                <TableCellItem button>
-                  {client.clientId}
-                  <LinkIcon size={iconSize} />
-                </TableCellItem>
-              </Link>
+            <TableCell padding="dense">
+              <TableCellItem
+                dense
+                button
+                component={Link}
+                to={`/auth/clients/${encodeURIComponent(client.clientId)}`}>
+                <ListItemText primary={client.clientId} />
+                <LinkIcon size={iconSize} />
+              </TableCellItem>
             </TableCell>
             <TableCell>
               <DateDistance from={client.lastDateUsed} />

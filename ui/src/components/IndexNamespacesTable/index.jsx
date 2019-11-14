@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import { func, shape, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
+import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
+import ListItemText from '@material-ui/core/ListItemText';
 import TableRow from '@material-ui/core/TableRow';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { camelCase } from 'change-case';
@@ -18,6 +20,11 @@ const sorted = pipe(
   map(({ node: { namespace } }) => namespace)
 );
 
+@withStyles({
+  listItemCell: {
+    width: '100%',
+  },
+})
 /**
  * Display index namespaces in a table.
  */
@@ -78,7 +85,7 @@ export default class IndexNamespacesTable extends Component {
   };
 
   render() {
-    const { onPageChange, connection } = this.props;
+    const { onPageChange, classes, connection } = this.props;
     const { sortBy, sortDirection } = this.state;
     const sortedNamespacesConnection = this.createSortedNamespacesConnection(
       connection,
@@ -99,12 +106,15 @@ export default class IndexNamespacesTable extends Component {
         renderRow={({ node: { name, namespace } }) => (
           <TableRow key={name}>
             <TableCell>
-              <Link to={`/tasks/index/${encodeURIComponent(namespace)}`}>
-                <TableCellItem button>
-                  {name}
-                  <LinkIcon size={iconSize} />
-                </TableCellItem>
-              </Link>
+              <TableCellItem
+                className={classes.listItemCell}
+                dense
+                button
+                component={Link}
+                to={`/tasks/index/${encodeURIComponent(namespace)}`}>
+                <ListItemText disableTypography primary={name} />
+                <LinkIcon size={iconSize} />
+              </TableCellItem>
             </TableCell>
           </TableRow>
         )}

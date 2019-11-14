@@ -22,7 +22,6 @@ import { CONTENT_MAX_WIDTH } from '../../utils/constants';
     },
   },
   fixed: {
-    fontSize: theme.typography.body1.fontSize,
     position: 'fixed',
     zIndex: theme.zIndex.drawer - 1,
     left: '50%',

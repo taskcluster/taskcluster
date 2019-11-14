@@ -3,6 +3,8 @@ import { func, array } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
+import ListItemText from '@material-ui/core/ListItemText';
+import Typography from '@material-ui/core/Typography';
 import { titleCase } from 'change-case';
 import IconButton from '@material-ui/core/IconButton';
 import LinkIcon from 'mdi-react/LinkIcon';
@@ -17,7 +19,7 @@ import Link from '../../utils/Link';
 
 const styles = theme => ({
   informationIcon: {
-    marginLeft: theme.spacing(1),
+    marginLeft: theme.spacing.unit,
   },
 });
 
@@ -47,15 +49,21 @@ function HookLastFiredTable({ classes, ...props }) {
         <TableRow key={hookFire.taskId}>
           <TableCell>
             {(hookFire.result === 'SUCCESS' && (
-              <Link to={`/tasks/${hookFire.taskId}`}>
-                <TableCellItem button>
-                  {hookFire.taskId}
-                  <LinkIcon size={iconSize} />
-                </TableCellItem>
-              </Link>
-            )) || <div>{hookFire.taskId}</div>}
+              <TableCellItem
+                button
+                component={Link}
+                to={`/tasks/${hookFire.taskId}`}>
+                <ListItemText
+                  disableTypography
+                  primary={<Typography>{hookFire.taskId}</Typography>}
+                />
+                <LinkIcon size={iconSize} />
+              </TableCellItem>
+            )) || <Typography>{hookFire.taskId}</Typography>}
           </TableCell>
-          <TableCell>{titleCase(hookFire.firedBy)}</TableCell>
+          <TableCell>
+            <Typography>{titleCase(hookFire.firedBy)}</Typography>
+          </TableCell>
           <TableCell>
             <StatusLabel state={hookFire.result} />
             {hookFire.result === 'ERROR' && (
@@ -72,7 +80,14 @@ function HookLastFiredTable({ classes, ...props }) {
             text={hookFire.taskCreateTime}>
             <TableCell>
               <TableCellItem button>
-                <DateDistance from={hookFire.taskCreateTime} />
+                <ListItemText
+                  disableTypography
+                  primary={
+                    <Typography>
+                      <DateDistance from={hookFire.taskCreateTime} />
+                    </Typography>
+                  }
+                />
                 <ContentCopyIcon size={iconSize} />
               </TableCellItem>
             </TableCell>

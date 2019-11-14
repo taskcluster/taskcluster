@@ -15,7 +15,7 @@ import Link from '../../utils/Link';
 @hot(module)
 @withStyles(theme => ({
   buttonIcon: {
-    marginRight: theme.spacing(2),
+    marginRight: theme.spacing.double,
   },
 }))
 @withAuth
@@ -28,36 +28,32 @@ export default class DashboardView extends Component {
         <Typography variant="h4">Hello, {user.profile.displayName}!</Typography>
         <br />
         <br />
-        <Link to="/tasks">
-          <Button>
-            <HexagonIcon className={classes.buttonIcon} />I want to look at a
-            task.
-          </Button>
-        </Link>
+
+        <Button component={Link} to="/tasks">
+          <HexagonIcon className={classes.buttonIcon} />I want to look at a
+          task.
+        </Button>
         <br />
         <br />
-        <Link to="/tasks/groups">
-          <Button>
-            <HexagonMultipleIcon className={classes.buttonIcon} />I want to look
-            at a group of tasks.
-          </Button>
-        </Link>
+
+        <Button component={Link} to="/tasks/groups">
+          <HexagonMultipleIcon className={classes.buttonIcon} />I want to look
+          at a group of tasks.
+        </Button>
         <br />
         <br />
-        <Link to="/tasks/create">
-          <Button>
-            <PlusCircleIcon className={classes.buttonIcon} />I want to create a
-            task or build.
-          </Button>
-        </Link>
+
+        <Button component={Link} to="/tasks/create">
+          <PlusCircleIcon className={classes.buttonIcon} />I want to create a
+          task or build.
+        </Button>
         <br />
         <br />
-        <Link to={DOCS_PATH_PREFIX}>
-          <Button>
-            <LibraryIcon className={classes.buttonIcon} />I want to see
-            documentation.
-          </Button>
-        </Link>
+
+        <Button component={Link} to={DOCS_PATH_PREFIX}>
+          <LibraryIcon className={classes.buttonIcon} />I want to see
+          documentation.
+        </Button>
       </Dashboard>
     );
   }

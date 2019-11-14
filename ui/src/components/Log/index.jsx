@@ -38,7 +38,7 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
         fontFamily: 'Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace',
         fontSize: 13,
         paddingTop: 4,
-        paddingBottom: theme.spacing(1),
+        paddingBottom: theme.spacing.unit,
         color: theme.palette.text.primary,
         '-webkit-font-smoothing': 'auto',
       },
@@ -50,7 +50,7 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
         ...(theme.palette.type === 'light'
           ? {
               '& > .react-lazylog-searchbar-input': {
-                height: theme.spacing(3),
+                height: theme.spacing.triple,
                 backgroundColor: theme.palette.grey['300'],
                 color: theme.palette.common.black,
                 borderColor: theme.palette.grey['300'],
@@ -72,7 +72,7 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
             }
           : {
               '& > .react-lazylog-searchbar-input': {
-                height: theme.spacing(3),
+                height: theme.spacing.triple,
               },
               '& > .react-lazylog-searchbar-filter': filterStyles,
             }),
@@ -113,7 +113,7 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
     logSpeedDial: {
       ...theme.mixins.fab,
       ...theme.mixins.actionButton,
-      bottom: theme.spacing(3),
+      bottom: theme.spacing.triple,
     },
     logToolbarButton: {
       width: 31,
@@ -122,7 +122,7 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
       padding: '0 6px',
     },
     goToLineButton: {
-      marginRight: theme.spacing(1),
+      marginRight: theme.spacing.unit,
     },
   };
 })

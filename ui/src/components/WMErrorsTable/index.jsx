@@ -9,14 +9,14 @@ import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from 'mdi-react/CloseIcon';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
-import TableRow from '@material-ui/core/TableRow';
+import TableRow from '@material-ui/core/TableRow/TableRow';
 import Drawer from '@material-ui/core/Drawer';
-import TableCell from '@material-ui/core/TableCell';
+import TableCell from '@material-ui/core/TableCell/TableCell';
 import Code from '@mozilla-frontend-infra/components/Code';
 import List from '@material-ui/core/List';
-import ListItemText from '@material-ui/core/ListItemText';
+import ListItemText from '@material-ui/core/ListItemText/ListItemText';
 import ListItem from '@material-ui/core/ListItem';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@material-ui/core/Typography/Typography';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_WORKER_POOL_ERRORS_PAGE_SIZE } from '../../utils/constants';
 import TableCellItem from '../TableCellItem';
@@ -26,7 +26,7 @@ import { pageInfo, WMError } from '../../utils/prop-types';
 
 @withStyles(theme => ({
   errorDescription: {
-    marginRight: theme.spacing(1),
+    marginRight: theme.spacing.unit,
     maxWidth: '55vw',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -35,21 +35,21 @@ import { pageInfo, WMError } from '../../utils/prop-types';
     display: 'inline-block',
   },
   infoButton: {
-    marginLeft: -theme.spacing(2),
-    marginRight: theme.spacing(1),
+    marginLeft: -theme.spacing.double,
+    marginRight: theme.spacing.unit,
     borderRadius: 4,
   },
   headline: {
-    paddingLeft: theme.spacing(3),
-    paddingRight: theme.spacing(3),
+    paddingLeft: theme.spacing.triple,
+    paddingRight: theme.spacing.triple,
     textOverflow: 'ellipsis',
     overflow: 'hidden',
     maxWidth: '80vw',
     whiteSpace: 'nowrap',
   },
   metadataContainer: {
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
+    paddingTop: theme.spacing.double,
+    paddingBottom: theme.spacing.double,
     width: 400,
   },
   drawerPaper: {
@@ -60,11 +60,8 @@ import { pageInfo, WMError } from '../../utils/prop-types';
   },
   drawerCloseIcon: {
     position: 'absolute',
-    top: theme.spacing(1),
-    right: theme.spacing(1),
-  },
-  errorReported: {
-    paddingRight: theme.spacing(2),
+    top: theme.spacing.unit,
+    right: theme.spacing.unit,
   },
 }))
 export default class WorkerManagerErrorsTable extends Component {
@@ -177,10 +174,7 @@ export default class WorkerManagerErrorsTable extends Component {
             onClick={this.handleDrawerOpen}>
             <InformationVariantIcon size={iconSize} />
           </IconButton>
-          <Typography
-            variant="body2"
-            className={classes.errorDescription}
-            title={description}>
+          <Typography className={classes.errorDescription} title={description}>
             {description}
           </Typography>
         </TableCell>
@@ -189,10 +183,9 @@ export default class WorkerManagerErrorsTable extends Component {
           <TableCell>
             <TableCellItem button>
               <ListItemText
-                className={classes.errorReported}
                 disableTypography
                 primary={
-                  <Typography variant="body2">
+                  <Typography>
                     <DateDistance from={reported} />
                   </Typography>
                 }
@@ -225,6 +218,7 @@ export default class WorkerManagerErrorsTable extends Component {
           onHeaderClick={this.handleHeaderClick}
           renderRow={this.renderTableRow}
           headers={['Title', 'Description', 'Reported']}
+          padding="dense"
           onPageChange={onPageChange}
         />
         <Drawer

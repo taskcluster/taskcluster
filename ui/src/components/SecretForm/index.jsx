@@ -28,8 +28,8 @@ import { secret } from '../../utils/prop-types';
   },
   saveSecretSpan: {
     position: 'fixed',
-    bottom: theme.spacing(2),
-    right: theme.spacing(11),
+    bottom: theme.spacing.double,
+    right: theme.spacing.unit * 11,
   },
   editorListItem: {
     paddingTop: 0,
@@ -37,7 +37,7 @@ import { secret } from '../../utils/prop-types';
     flexDirection: 'column',
     alignItems: 'start',
     '&> :last-child': {
-      marginTop: theme.spacing(1),
+      marginTop: theme.spacing.unit,
     },
   },
   saveIcon: {
@@ -286,9 +286,7 @@ export default class SecretForm extends Component {
             error={dialogError}
             title="Delete Secret?"
             body={
-              <Typography variant="body2">
-                This will delete the secret {secretName}.
-              </Typography>
+              <Typography>This will delete the secret {secretName}.</Typography>
             }
             confirmText="Delete Secret"
           />

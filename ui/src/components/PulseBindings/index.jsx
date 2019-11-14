@@ -19,10 +19,10 @@ import DeleteIcon from 'mdi-react/DeleteIcon';
     },
   },
   plusIcon: {
-    marginTop: theme.spacing(5),
+    marginTop: theme.spacing.unit * 5,
   },
   deleteIcon: {
-    marginRight: -theme.spacing(2),
+    marginRight: -theme.spacing.double,
   },
   inputWrapper: {
     display: 'flex',
@@ -31,7 +31,7 @@ import DeleteIcon from 'mdi-react/DeleteIcon';
   },
   inputList: {
     flex: 1,
-    paddingRight: theme.spacing(2),
+    paddingRight: theme.spacing.double,
   },
   bindingListItem: {
     paddingTop: 0,
@@ -102,7 +102,7 @@ export default class PulseBindings extends Component {
               <ListItemText
                 disableTypography
                 primary={
-                  <Typography variant="body1">
+                  <Typography variant="body2">
                     <code>{binding.exchange}</code> with{' '}
                     <code>{binding.pattern || binding.routingKeyPattern}</code>
                   </Typography>

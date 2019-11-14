@@ -36,7 +36,7 @@ import logo from '../../images/brandLogo.png';
     ...theme.mixins.successIcon,
   },
   denySpanProps: {
-    right: theme.spacing(11),
+    right: theme.spacing.unit * 11,
   },
 }))
 export default class AuthConsent extends Component {
@@ -87,12 +87,12 @@ export default class AuthConsent extends Component {
               </span>
             }
           />
-          <ExpansionPanel elevation={2} defaultExpanded>
+          <ExpansionPanel defaultExpanded>
             <ExpansionPanelSummary
               expandIcon={<ExpandMoreIcon />}
               aria-controls="panel1a-content"
               id="panel1a-header">
-              <Typography variant="body2" className={classes.heading}>
+              <Typography className={classes.heading}>
                 Client Details
               </Typography>
             </ExpansionPanelSummary>

@@ -89,13 +89,13 @@ const createSortedTasks = memoize(
     display: 'flex',
     width: '100%',
     alignItems: 'center',
-    padding: theme.spacing(1),
+    padding: theme.spacing.unit,
     textDecoration: 'none',
     ...theme.mixins.hover,
     ...theme.mixins.listItemButton,
   },
   taskGroupName: {
-    marginRight: theme.spacing(1),
+    marginRight: theme.spacing.unit,
     maxWidth: '55vw',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -104,7 +104,7 @@ const createSortedTasks = memoize(
     display: 'inline-block',
   },
   table: {
-    marginBottom: theme.spacing(1),
+    marginBottom: theme.spacing.unit,
   },
   tableHead: {
     display: 'flex',
@@ -113,10 +113,9 @@ const createSortedTasks = memoize(
     flex: 1,
     display: 'flex',
     alignItems: 'center',
-    height: theme.spacing(4),
+    height: theme.spacing.unit * 4,
     '& > [role="columnheader"]': {
-      paddingBottom: theme.spacing(2),
-      paddingTop: theme.spacing(0.5),
+      paddingBottom: theme.spacing.double,
     },
   },
   tableHeadCell: {
@@ -136,7 +135,7 @@ const createSortedTasks = memoize(
     justifyContent: 'center',
   },
   noTasksText: {
-    marginTop: theme.spacing(2),
+    marginTop: theme.spacing.double,
   },
   windowScrollerOverride: {
     height: '100% !important',
@@ -216,6 +215,7 @@ export default class TaskGroupTable extends Component {
           component="div"
           role="row">
           <TableCell
+            padding="dense"
             className={classes.tableFirstCell}
             component="div"
             role="cell">
@@ -223,7 +223,7 @@ export default class TaskGroupTable extends Component {
               title={taskGroup.metadata.name}
               className={classes.listItemCell}
               to={`/tasks/${taskGroup.taskId}`}>
-              <Typography variant="body2" className={classes.taskGroupName}>
+              <Typography className={classes.taskGroupName}>
                 {taskGroup.metadata.name}
               </Typography>
               <LinkIcon size={iconSize} />
@@ -290,7 +290,7 @@ export default class TaskGroupTable extends Component {
             </List>
           </Fragment>
         ) : (
-          <Typography variant="body2" className={classes.noTasksText}>
+          <Typography className={classes.noTasksText}>
             No
             {filter ? ` ${lowerCase(filter)}` : ''} tasks available
           </Typography>

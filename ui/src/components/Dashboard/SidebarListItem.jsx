@@ -11,9 +11,6 @@ import Link from '../../utils/Link';
 
 @withRouter
 @withStyles(theme => ({
-  listLinkCell: {
-    ...theme.mixins.hover,
-  },
   active: {
     backgroundColor: theme.palette.secondary.dark,
     '&:hover': {
@@ -30,14 +27,12 @@ import Link from '../../utils/Link';
     },
   },
   listItem: {
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(1),
-    backgroundColor: 'inherit',
+    paddingLeft: theme.spacing.double,
+    paddingRight: theme.spacing.unit,
   },
   text: {
     color: theme.palette.text.inactive,
     fontFamily: 'Roboto500',
-    fontSize: theme.typography.body1.fontSize,
   },
   icon: {
     fill: theme.palette.text.inactive,
@@ -135,35 +130,34 @@ export default class SidebarListItem extends Component {
       icon,
       children,
       rightIcon,
-      to,
-      skipPrefetch,
       staticContext,
       ...props
     } = this.props;
 
     return (
-      <Link
-        skipPrefetch={skipPrefetch}
-        to={to}
+      <ListItem
+        button
+        disableGutters
+        className={classes.listItem}
+        component={Link}
         nav
-        activeClassName={classes.active}
         isActive={this.isItemActive}
-        className={classes.listLinkCell}>
-        <ListItem disableGutters className={classes.listItem} {...props}>
-          {icon && (
-            <ListItemIcon classes={{ root: classes.icon }}>{icon}</ListItemIcon>
-          )}
-          <ListItemText
-            disableTypography
-            className={classes.text}
-            primary={children}
-          />
-          {rightIcon &&
-            cloneElement(rightIcon, {
-              className: classNames(classes.icon, rightIcon.props.className),
-            })}
-        </ListItem>
-      </Link>
+        activeClassName={classes.active}
+        {...props}>
+        {icon && (
+          <ListItemIcon classes={{ root: classes.icon }}>{icon}</ListItemIcon>
+        )}
+        <ListItemText
+          disableTypography
+          className={classes.text}
+          inset
+          primary={children}
+        />
+        {rightIcon &&
+          cloneElement(rightIcon, {
+            className: classNames(rightIcon.props.className, classes.icon),
+          })}
+      </ListItem>
     );
   }
 }

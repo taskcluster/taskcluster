@@ -2,7 +2,10 @@ import React, { Component } from 'react';
 import { func, shape, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
+import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
+import ListItemText from '@material-ui/core/ListItemText';
+import Typography from '@material-ui/core/Typography';
 import TableRow from '@material-ui/core/TableRow';
 import LinkIcon from 'mdi-react/LinkIcon';
 import TableCellItem from '../TableCellItem';
@@ -17,6 +20,11 @@ const sorted = pipe(
   map(({ node: { namespace } }) => namespace)
 );
 
+@withStyles({
+  listItemCell: {
+    width: '100%',
+  },
+})
 /**
  * Display index task namespaces in a table.
  */
@@ -85,7 +93,7 @@ export default class IndexTaskNamespaceTable extends Component {
   }
 
   render() {
-    const { onPageChange, connection } = this.props;
+    const { onPageChange, classes, connection } = this.props;
     const { sortBy, sortDirection } = this.state;
     const sortedTaskConnection = this.createSortedTaskNamespaceConnection(
       connection,
@@ -106,18 +114,25 @@ export default class IndexTaskNamespaceTable extends Component {
         renderRow={({ node: { namespace } }) => (
           <TableRow key={namespace}>
             <TableCell>
-              <Link
+              <TableCellItem
+                className={classes.listItemCell}
+                dense
+                button
+                component={Link}
                 to={`/tasks/index/${encodeURIComponent(
                   namespace
                     .split('.')
                     .slice(0, -1)
                     .join('.')
                 )}/${this.taskFromNamespace(namespace)}`}>
-                <TableCellItem button>
-                  {this.taskFromNamespace(namespace)}
-                  <LinkIcon size={iconSize} />
-                </TableCellItem>
-              </Link>
+                <ListItemText
+                  disableTypography
+                  primary={
+                    <Typography>{this.taskFromNamespace(namespace)}</Typography>
+                  }
+                />
+                <LinkIcon size={iconSize} />
+              </TableCellItem>
             </TableCell>
           </TableRow>
         )}

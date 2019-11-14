@@ -30,7 +30,7 @@ import Button from '../Button';
   },
   dropdown: {
     minWidth: 200,
-    marginBottom: theme.spacing(2),
+    marginBottom: theme.spacing.double,
   },
 }))
 
@@ -274,7 +274,7 @@ export default class DenylistForm extends Component {
             error={dialogError}
             title="Delete Address?"
             body={
-              <Typography variant="body2">
+              <Typography>
                 This will delete {address.notificationAddress}.
               </Typography>
             }

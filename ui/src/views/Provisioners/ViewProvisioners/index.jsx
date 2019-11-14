@@ -14,7 +14,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 @graphql(provisionersQuery)
 @withStyles(theme => ({
   gridItem: {
-    marginBottom: theme.spacing(2),
+    marginBottom: theme.spacing.double,
   },
 }))
 export default class ViewProvisioners extends Component {
@@ -32,7 +32,7 @@ export default class ViewProvisioners extends Component {
         {loading && <Spinner loading />}
         <ErrorPanel fixed error={error} />
         {provisioners && (
-          <Grid container spacing={3}>
+          <Grid container spacing={24}>
             {provisioners.edges.map(({ node: provisioner }) => (
               <Grid
                 key={`${provisioner.provisionerId}-item`}

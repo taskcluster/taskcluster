@@ -10,7 +10,7 @@ import Anchor from '../Anchor';
 const styles = theme => ({
   root: {
     position: 'relative',
-    height: theme.spacing(25),
+    height: theme.spacing.unit * 25,
   },
   cardActionArea: {
     height: '100%',
@@ -20,7 +20,7 @@ const styles = theme => ({
     alignItems: 'center',
   },
   title: {
-    marginLeft: theme.spacing(1),
+    marginLeft: theme.spacing.unit,
   },
 });
 
@@ -38,7 +38,7 @@ function ExploreCard({ classes, to, title, description, icon, ...props }) {
           </Typography>
         </CardContent>
         <CardContent>
-          <Typography variant="body2">{description}</Typography>
+          <Typography>{description}</Typography>
         </CardContent>
       </CardActionArea>
     </Card>
