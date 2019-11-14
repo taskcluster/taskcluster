@@ -131,6 +131,33 @@ exports.withSES = (mock, skipping) => {
           TopicArn: snsArn,
           Endpoint: emailAttr.QueueArn,
         }).promise();
+
+        // This policy allows the SNS topic subscription to send messages to
+        // the SQS queue.  The AWS Console adds a policy automatically when you
+        // click "subscribe", and this merely duplicates that policy.
+        const Policy = {
+          Version: "2012-10-17",
+          Statement: [
+            {
+              Sid: "Sid1573761323466",
+              Effect: "Allow",
+              Principal: {AWS: "*"},
+              Action: "SQS:SendMessage",
+              Resource: emailAttr.QueueArn,
+              Condition: {
+                ArnEquals: {
+                  "aws:SourceArn": snsArn,
+                },
+              },
+            },
+          ],
+        };
+        await sns.setQueueAttributes({
+          QueueUrl: emailSQSQueue,
+          Attributes: {
+            Policy,
+          },
+        }).promise();
       }
 
       exports.checkEmails = async (check) => {
