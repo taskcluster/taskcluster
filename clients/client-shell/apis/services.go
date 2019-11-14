@@ -343,19 +343,6 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
-				Name:        "statsumToken",
-				Title:       "Get Token for Statsum Project",
-				Description: "Get temporary `token` and `baseUrl` for sending metrics to statsum.\n\nThe token is valid for 24 hours, clients should refresh after expiration.",
-				Stability:   "stable",
-				Method:      "get",
-				Route:       "/statsum/<project>/token",
-				Args: []string{
-					"project",
-				},
-				Query: []string{},
-				Input: "",
-			},
-			definitions.Entry{
 				Name:        "websocktunnelToken",
 				Title:       "Get a client token for the Websocktunnel service",
 				Description: "Get a temporary token suitable for use connecting to a\n[websocktunnel](https://github.com/taskcluster/websocktunnel) server.\n\nThe resulting token will only be accepted by servers with a matching audience\nvalue.  Reaching such a server is the callers responsibility.  In general,\na server URL or set of URLs should be provided to the caller as configuration\nalong with the audience value.\n\nThe token is valid for a limited time (on the scale of hours). Callers should\nrefresh it before expiration.",

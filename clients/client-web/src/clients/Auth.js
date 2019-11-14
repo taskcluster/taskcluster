@@ -35,7 +35,6 @@ export default class Auth extends Client {
     this.azureContainers.entry = {"args":["account"],"category":"Auth Service","method":"get","name":"azureContainers","output":true,"query":["continuationToken"],"route":"/azure/<account>/containers","scopes":"auth:azure-container:list-containers:<account>","stability":"stable","type":"function"}; // eslint-disable-line
     this.azureContainerSAS.entry = {"args":["account","container","level"],"category":"Auth Service","method":"get","name":"azureContainerSAS","output":true,"query":[],"route":"/azure/<account>/containers/<container>/<level>","scopes":{"else":"auth:azure-container:read-write:<account>/<container>","if":"levelIsReadOnly","then":{"AnyOf":["auth:azure-container:read-only:<account>/<container>","auth:azure-container:read-write:<account>/<container>"]}},"stability":"stable","type":"function"}; // eslint-disable-line
     this.sentryDSN.entry = {"args":["project"],"category":"Auth Service","method":"get","name":"sentryDSN","output":true,"query":[],"route":"/sentry/<project>/dsn","scopes":"auth:sentry:<project>","stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.statsumToken.entry = {"args":["project"],"category":"Auth Service","method":"get","name":"statsumToken","output":true,"query":[],"route":"/statsum/<project>/token","scopes":"auth:statsum:<project>","stability":"stable","type":"function"}; // eslint-disable-line
     this.websocktunnelToken.entry = {"args":["wstAudience","wstClient"],"category":"Auth Service","method":"get","name":"websocktunnelToken","output":true,"query":[],"route":"/websocktunnel/<wstAudience>/<wstClient>","scopes":"auth:websocktunnel-token:<wstAudience>/<wstClient>","stability":"stable","type":"function"}; // eslint-disable-line
     this.gcpCredentials.entry = {"args":["projectId","serviceAccount"],"category":"Auth Service","method":"get","name":"gcpCredentials","output":true,"query":[],"route":"/gcp/credentials/<projectId>/<serviceAccount>","scopes":"auth:gcp:access-token:<projectId>/<serviceAccount>","stability":"stable","type":"function"}; // eslint-disable-line
     this.authenticateHawk.entry = {"args":[],"category":"Auth Service","input":true,"method":"post","name":"authenticateHawk","output":true,"query":[],"route":"/authenticate-hawk","stability":"stable","type":"function"}; // eslint-disable-line
@@ -366,15 +365,6 @@ export default class Auth extends Client {
     this.validate(this.sentryDSN.entry, args);
 
     return this.request(this.sentryDSN.entry, args);
-  }
-  /* eslint-disable max-len */
-  // Get temporary `token` and `baseUrl` for sending metrics to statsum.
-  // The token is valid for 24 hours, clients should refresh after expiration.
-  /* eslint-enable max-len */
-  statsumToken(...args) {
-    this.validate(this.statsumToken.entry, args);
-
-    return this.request(this.statsumToken.entry, args);
   }
   /* eslint-disable max-len */
   // Get a temporary token suitable for use connecting to a

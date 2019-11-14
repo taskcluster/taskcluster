@@ -6726,47 +6726,6 @@
   },
   {
     "content": {
-      "$id": "/schemas/auth/v1/statsum-token-response.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Token for submitting statistics to statsum.\n",
-      "properties": {
-        "baseUrl": {
-          "description": "Base URL for the statsum server this project is allocated on.\n",
-          "format": "uri",
-          "title": "BaseUrl",
-          "type": "string"
-        },
-        "expires": {
-          "description": "Time at which the token expires and should not be used anymore.\n",
-          "format": "date-time",
-          "title": "Token Expiration",
-          "type": "string"
-        },
-        "project": {
-          "description": "Project name that the token grants access to.\n",
-          "title": "Project",
-          "type": "string"
-        },
-        "token": {
-          "description": "JWT token to be used as `Bearer <token>` when submitting data to statsum.\n",
-          "title": "Access Token",
-          "type": "string"
-        }
-      },
-      "required": [
-        "project",
-        "token",
-        "expires",
-        "baseUrl"
-      ],
-      "title": "Statsum Token Response",
-      "type": "object"
-    },
-    "filename": "schemas/auth/v1/statsum-token-response.json"
-  },
-  {
-    "content": {
       "$id": "/schemas/auth/v1/sentry-dsn-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -13250,23 +13209,6 @@
           "scopes": "auth:sentry:<project>",
           "stability": "deprecated",
           "title": "Get DSN for Sentry Project",
-          "type": "function"
-        },
-        {
-          "args": [
-            "project"
-          ],
-          "category": "Auth Service",
-          "description": "Get temporary `token` and `baseUrl` for sending metrics to statsum.\n\nThe token is valid for 24 hours, clients should refresh after expiration.",
-          "method": "get",
-          "name": "statsumToken",
-          "output": "v1/statsum-token-response.json#",
-          "query": [
-          ],
-          "route": "/statsum/<project>/token",
-          "scopes": "auth:statsum:<project>",
-          "stability": "stable",
-          "title": "Get Token for Statsum Project",
           "type": "function"
         },
         {
