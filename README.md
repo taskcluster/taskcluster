@@ -154,23 +154,6 @@ defined by this provider has the following fields:
 * region
 * availabilityZone
 
-### aws-provisioner
-
-The providerType "aws-provisioner" is intended for workers provisioned with
-the legacy aws-provisioner application.  It requires 
-
-```yaml
-provider:
-    providerType: aws-provisioner
-```
-
-The [$TASKCLUSTER_WORKER_LOCATION](https://docs.taskcluster.net/docs/reference/core/worker-manager/)
-defined by this provider has the following fields:
-
-* cloud: aws
-* region
-* availabilityZone
-
 ### google
 
 The providerType "google" is intended for workers provisioned with worker-manager
