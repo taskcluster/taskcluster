@@ -36,17 +36,17 @@ const sorted = pipe(
 
 @withStyles(theme => ({
   infoButton: {
-    marginLeft: -theme.spacing.double,
-    marginRight: theme.spacing.unit,
+    marginLeft: -theme.spacing(2),
+    marginRight: theme.spacing(1),
     borderRadius: 4,
   },
   headline: {
-    paddingLeft: theme.spacing.triple,
-    paddingRight: theme.spacing.triple,
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
   },
   metadataContainer: {
-    paddingTop: theme.spacing.double,
-    paddingBottom: theme.spacing.double,
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
     width: 400,
   },
 }))
@@ -178,16 +178,13 @@ export default class WorkerTypesTable extends Component {
                   onClick={this.handleDrawerOpen}>
                   <InformationVariantIcon size={iconSize} />
                 </IconButton>
-                <TableCellItem
-                  button
-                  component={Link}
+                <Link
                   to={`/provisioners/${workerType.provisionerId}/worker-types/${workerType.workerType}`}>
-                  <ListItemText
-                    disableTypography
-                    primary={<Typography>{workerType.workerType}</Typography>}
-                  />
-                  <LinkIcon size={iconSize} />
-                </TableCellItem>
+                  <TableCellItem button>
+                    {workerType.workerType}
+                    <LinkIcon size={iconSize} />
+                  </TableCellItem>
+                </Link>
               </TableCell>
               <TableCell>
                 <StatusLabel state={workerType.stability} />
@@ -197,14 +194,7 @@ export default class WorkerTypesTable extends Component {
                 text={workerType.lastDateActive}>
                 <TableCell>
                   <TableCellItem button>
-                    <ListItemText
-                      disableTypography
-                      primary={
-                        <Typography>
-                          <DateDistance from={workerType.lastDateActive} />
-                        </Typography>
-                      }
-                    />
+                    <DateDistance from={workerType.lastDateActive} />
                     <ContentCopyIcon size={iconSize} />
                   </TableCellItem>
                 </TableCell>

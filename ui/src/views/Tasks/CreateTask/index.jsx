@@ -73,7 +73,7 @@ const defaultTask = {
   createIconSpan: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
-    right: theme.spacing.unit * 11,
+    right: theme.spacing(11),
   },
   listItemButton: {
     ...theme.mixins.listItemButton,
@@ -264,7 +264,7 @@ export default class CreateTask extends Component {
         title="Create Task"
         helpView={
           <HelpView description={description}>
-            <Typography>
+            <Typography variant="body2">
               For details on what you can write, refer to the{' '}
               <a
                 href={urls.docs('/')}
@@ -322,7 +322,11 @@ export default class CreateTask extends Component {
                       key={task.metadata.name}>
                       <ListItemText
                         disableTypography
-                        primary={<Typography>{task.metadata.name}</Typography>}
+                        primary={
+                          <Typography variant="body2">
+                            {task.metadata.name}
+                          </Typography>
+                        }
                       />
                       <LinkIcon />
                     </ListItem>

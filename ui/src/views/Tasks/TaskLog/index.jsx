@@ -15,8 +15,8 @@ import taskQuery from './task.graphql';
   fab: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
-    bottom: theme.spacing.triple,
-    right: theme.spacing.unit * 12,
+    bottom: theme.spacing(3),
+    right: theme.spacing(12),
   },
 }))
 @graphql(taskQuery, {
@@ -48,15 +48,16 @@ export default class TaskLog extends Component {
           url={url}
           stream={stream}
           actions={
-            <Button
-              spanProps={{ className: classes.fab }}
-              tooltipProps={{ title: 'View Task' }}
-              component={Link}
-              to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}
-              variant="round"
-              color="secondary">
-              <ArrowLeftIcon />
-            </Button>
+            <Link
+              to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}>
+              <Button
+                spanProps={{ className: classes.fab }}
+                tooltipProps={{ title: 'View Task' }}
+                variant="round"
+                color="secondary">
+                <ArrowLeftIcon />
+              </Button>
+            </Link>
           }
         />
       </Dashboard>

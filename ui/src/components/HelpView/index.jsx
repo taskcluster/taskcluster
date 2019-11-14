@@ -7,7 +7,7 @@ import Divider from '@material-ui/core/Divider';
 
 @withStyles(theme => ({
   divider: {
-    margin: `${theme.spacing.unit}px 0`,
+    margin: `${theme.spacing(1)}px 0`,
   },
   hasNoDescription: {
     marginTop: 45,
@@ -41,7 +41,9 @@ export default class HelpView extends PureComponent {
           <Fragment>
             <Typography variant="subtitle1">Description</Typography>
             {typeof description === 'string' ? (
-              <Typography paragraph>{description}</Typography>
+              <Typography variant="body2" paragraph>
+                {description}
+              </Typography>
             ) : (
               description
             )}
