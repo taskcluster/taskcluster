@@ -193,7 +193,7 @@ export default class ViewWorkers extends Component {
                     className={classes.link}
                     component={Link}
                     to="/provisioners">
-                    Provisioners
+                    Workers
                   </Typography>
                   <Typography
                     className={classes.link}

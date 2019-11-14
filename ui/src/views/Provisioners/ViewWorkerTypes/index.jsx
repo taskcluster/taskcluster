@@ -115,7 +115,7 @@ export default class ViewWorkerTypes extends Component {
                     className={classes.link}
                     component={Link}
                     to="/provisioners">
-                    Provisioners
+                    Workers
                   </Typography>
 
                   <Typography color="textSecondary">
