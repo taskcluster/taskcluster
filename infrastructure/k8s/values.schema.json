@@ -1178,6 +1178,9 @@
         "pulse_username": {
           "type": "string"
         },
+        "task_cache_max_size": {
+          "type": "number"
+        },
         "taskcluster_access_token": {
           "type": "string"
         },
