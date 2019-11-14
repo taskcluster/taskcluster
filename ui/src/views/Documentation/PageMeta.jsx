@@ -16,18 +16,18 @@ import { DOCS_PATH_PREFIX } from '../../utils/constants';
 
 @withStyles(theme => ({
   divider: {
-    margin: `${theme.spacing.triple}px 0`,
+    margin: `${theme.spacing(3)}px 0`,
   },
   pageNavigation: {
     display: 'flex',
     justifyContent: 'space-between',
-    bottom: theme.spacing.unit,
+    bottom: theme.spacing(1),
     left: 0,
     right: 0,
     position: 'absolute',
     [theme.breakpoints.down('sm')]: {
-      width: `calc(100% - ${theme.spacing.unit * 6}px)`,
-      left: theme.spacing.triple,
+      width: `calc(100% - ${theme.spacing(6)}px)`,
+      left: theme.spacing(3),
     },
   },
   pageNavigationWithoutPrevious: {
