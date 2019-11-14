@@ -1,5 +1,6 @@
 import React, { Fragment, Component } from 'react';
 import { string, arrayOf, oneOf, shape } from 'prop-types';
+import classNames from 'classnames';
 import { curry, pipe, map, sort as rSort } from 'ramda';
 import { lowerCase } from 'change-case';
 import memoize from 'fast-memoize';
@@ -115,12 +116,12 @@ const createSortedTasks = memoize(
     alignItems: 'center',
     height: theme.spacing(4),
     '& > [role="columnheader"]': {
-      paddingBottom: theme.spacing(2),
+      paddingBottom: theme.spacing(1),
       paddingTop: theme.spacing(0.5),
     },
   },
   tableHeadCell: {
-    flexDirection: 'row',
+    color: theme.palette.text.secondary,
   },
   tableRow: {
     display: 'flex',
@@ -254,7 +255,10 @@ export default class TaskGroupTable extends Component {
               role="row">
               <TableCell
                 size="small"
-                className={classes.tableFirstCell}
+                className={classNames(
+                  classes.tableFirstCell,
+                  classes.tableHeadCell
+                )}
                 component="div"
                 role="columnheader">
                 <TableSortLabel
@@ -267,6 +271,7 @@ export default class TaskGroupTable extends Component {
               </TableCell>
               <TableCell size="small" component="div" role="columnheader">
                 <TableSortLabel
+                  className={classes.tableHeadCell}
                   id="Status"
                   active={sortBy === 'Status'}
                   direction={sortDirection || 'desc'}

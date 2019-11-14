@@ -241,18 +241,8 @@ const createTheme = isDarkTheme => {
         },
       },
       MuiTableSortLabel: {
-        root: {
-          '&:hover': {
-            color: textPrimary,
-          },
-        },
         icon: {
           fontSize: '1rem',
-        },
-      },
-      MuiFormControlLabel: {
-        label: {
-          fontSize: '0.875rem',
         },
       },
       MuiPaper: {
