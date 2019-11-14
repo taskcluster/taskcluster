@@ -95,7 +95,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
       identity,
     });
   });
-  passport.deserializeUser(async (obj, done) => {
+  passport.deserializeUser((obj, done) => {
     return done(null, obj);
   });
 
