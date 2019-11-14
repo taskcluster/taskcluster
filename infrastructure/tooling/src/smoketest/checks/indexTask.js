@@ -46,12 +46,11 @@ exports.tasks.push({
         utils.status({
           message: 'Current task status: ' + status.status.state,
         });
-        await new Promise(resolve => setTimeout(resolve, 1000));
       } else if (status.status.state === 'completed') {
         await index.findTask(taskIndex);
         return;
       } else {
-        throw new Error('Task finished with status ' + status.status.state);
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
     throw new Error('Deadline exceeded');
