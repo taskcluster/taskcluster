@@ -126,8 +126,7 @@ export default class DialogAction extends Component {
         <DialogActions>
           <Button
             disabled={executing}
-            onClick={onClose}
-            action={actions => actions.focusVisible()}>
+            onClick={onClose}>
             Cancel
           </Button>
           <div className={classes.executingActionWrapper}>

@@ -216,6 +216,7 @@ export default class TaskGroupTable extends Component {
           component="div"
           role="row">
           <TableCell
+            size="small"
             className={classes.tableFirstCell}
             component="div"
             role="cell">
@@ -230,6 +231,7 @@ export default class TaskGroupTable extends Component {
             </Link>
           </TableCell>
           <TableCell
+            size="small"
             className={classes.tableSecondCell}
             component="div"
             role="cell">
@@ -251,6 +253,7 @@ export default class TaskGroupTable extends Component {
               component="div"
               role="row">
               <TableCell
+                size="small"
                 className={classes.tableFirstCell}
                 component="div"
                 role="columnheader">
@@ -262,7 +265,7 @@ export default class TaskGroupTable extends Component {
                   Name
                 </TableSortLabel>
               </TableCell>
-              <TableCell component="div" role="columnheader">
+              <TableCell size="small" component="div" role="columnheader">
                 <TableSortLabel
                   id="Status"
                   active={sortBy === 'Status'}
