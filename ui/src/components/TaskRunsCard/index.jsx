@@ -41,23 +41,23 @@ const DOTS_VARIANT_LIMIT = 5;
 @withStyles(
   theme => ({
     headline: {
-      paddingLeft: theme.spacing.double,
-      paddingRight: theme.spacing.double,
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
     },
     cardContent: {
       paddingLeft: 0,
       paddingRight: 0,
-      paddingTop: theme.spacing.double,
-      paddingBottom: theme.spacing.double,
+      paddingTop: theme.spacing(2),
+      paddingBottom: theme.spacing(2),
       '&:last-child': {
-        paddingBottom: theme.spacing.triple,
+        paddingBottom: theme.spacing(3),
       },
     },
     controls: {
       display: 'flex',
       alignItems: 'center',
-      paddingLeft: theme.spacing.unit,
-      paddingBottom: theme.spacing.unit,
+      paddingLeft: theme.spacing(1),
+      paddingBottom: theme.spacing(1),
     },
     listItemButton: {
       ...theme.mixins.listItemButton,
@@ -66,7 +66,7 @@ const DOTS_VARIANT_LIMIT = 5;
       cursor: 'pointer',
     },
     logButton: {
-      marginRight: theme.spacing.unit,
+      marginRight: theme.spacing(1),
     },
     artifactsListItemContainer: {
       display: 'block',
@@ -100,8 +100,8 @@ const DOTS_VARIANT_LIMIT = 5;
       justifyContent: 'center',
     },
     liveLogLabel: {
-      marginLeft: theme.spacing.unit / 2,
-      marginBottom: theme.spacing.unit / 2,
+      marginLeft: theme.spacing(0.5),
+      marginBottom: theme.spacing(0.5),
     },
   }),
   { withTheme: true }
@@ -251,9 +251,7 @@ export default class TaskRunsCard extends Component {
                       LOG
                     </Label>
                   )}
-                  <div className={classes.artifactName}>
-                    <Typography>{artifact.name}</Typography>
-                  </div>
+                  <div className={classes.artifactName}>{artifact.name}</div>
                 </div>
                 <div>
                   {artifact.isPublic && <LinkIcon />}
@@ -301,27 +299,25 @@ export default class TaskRunsCard extends Component {
                     />
                   </ListItem>
                   {liveLogArtifact && (
-                    <ListItem
-                      button
-                      className={classes.listItemButton}
-                      component={Link}
-                      to={this.getArtifactUrl(liveLogArtifact)}>
-                      <ListItemText
-                        primary={
-                          <Fragment>
-                            View Live Log{' '}
-                            <Label
-                              status="info"
-                              mini
-                              className={classes.liveLogLabel}>
-                              LOG
-                            </Label>
-                          </Fragment>
-                        }
-                        secondary={liveLogArtifact.name}
-                      />
-                      <LinkIcon />
-                    </ListItem>
+                    <Link to={this.getArtifactUrl(liveLogArtifact)}>
+                      <ListItem button className={classes.listItemButton}>
+                        <ListItemText
+                          primary={
+                            <Fragment>
+                              View Live Log{' '}
+                              <Label
+                                status="info"
+                                mini
+                                className={classes.liveLogLabel}>
+                                LOG
+                              </Label>
+                            </Fragment>
+                          }
+                          secondary={liveLogArtifact.name}
+                        />
+                        <LinkIcon />
+                      </ListItem>
+                    </Link>
                   )}
                   <ListItem
                     button
@@ -426,18 +422,19 @@ export default class TaskRunsCard extends Component {
                         secondary={run.workerGroup || <em>n/a</em>}
                       />
                     </ListItem>
-                    <ListItem
-                      title="View Worker"
-                      button
-                      className={classes.listItemButton}
-                      component={Link}
+                    <Link
                       to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${run.workerId}`}>
-                      <ListItemText
-                        primary="Worker ID"
-                        secondary={run.workerId}
-                      />
-                      <LinkIcon />
-                    </ListItem>
+                      <ListItem
+                        title="View Worker"
+                        button
+                        className={classes.listItemButton}>
+                        <ListItemText
+                          primary="Worker ID"
+                          secondary={run.workerId}
+                        />
+                        <LinkIcon />
+                      </ListItem>
+                    </Link>
                     <CopyToClipboard
                       title={`${run.takenUntil} (Copy)`}
                       text={run.takenUntil}>
@@ -467,7 +464,7 @@ export default class TaskRunsCard extends Component {
                 <Typography className={classes.boxVariantText} variant="h6">
                   No Runs
                 </Typography>
-                <Typography className={classes.boxVariantText}>
+                <Typography variant="body2" className={classes.boxVariantText}>
                   A run will be created when the task gets schedueled.
                 </Typography>
               </div>

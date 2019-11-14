@@ -19,7 +19,7 @@ import Markdown from '../Markdown';
     maxHeight: '70vh',
   },
   description: {
-    marginBottom: theme.spacing.triple,
+    marginBottom: theme.spacing(3),
   },
 }))
 export default class TaskActionForm extends Component {
@@ -45,11 +45,11 @@ export default class TaskActionForm extends Component {
       <Fragment>
         <ErrorPanel error={error} />
         <div className={classes.description}>
-          <Typography gutterBottom>
+          <Typography variant="body2" gutterBottom>
             <Markdown>{action.description}</Markdown>
           </Typography>
           {action.kind === 'hook' && (
-            <Typography gutterBottom>
+            <Typography variant="body2" gutterBottom>
               This action triggers hook{' '}
               <code>
                 {action.hookGroupId}/{action.hookId}
@@ -59,7 +59,7 @@ export default class TaskActionForm extends Component {
           )}
         </div>
         {action.schema && (
-          <Grid container spacing={16}>
+          <Grid container spacing={2}>
             <Grid item lg={6} md={6} sm={12}>
               <Typography gutterBottom variant="subtitle1">
                 Action
