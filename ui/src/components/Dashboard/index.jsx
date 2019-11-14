@@ -59,15 +59,15 @@ import SkipNavigation from '../SkipNavigation';
       },
     },
     appBarTitle: {
-      marginLeft: theme.spacing(1),
+      marginLeft: theme.spacing.unit,
       fontFamily: 'Roboto300',
       flex: 1,
       color: THEME.PRIMARY_TEXT_DARK,
     },
     toolbar: {
       ...theme.mixins.toolbar,
-      paddingLeft: theme.spacing(2),
-      paddingRight: theme.spacing(2),
+      paddingLeft: theme.spacing.double,
+      paddingRight: theme.spacing.double,
       display: 'flex',
       flexGrow: 1,
       flexDirection: 'row',
@@ -85,7 +85,7 @@ import SkipNavigation from '../SkipNavigation';
     docsDrawerPaper: {
       width: theme.docsDrawerWidth,
       [theme.breakpoints.down('xs')]: {
-        width: theme.spacing(30),
+        width: theme.spacing.unit * 30,
       },
     },
     helpDrawerPaper: {
@@ -94,7 +94,7 @@ import SkipNavigation from '../SkipNavigation';
         width: '90vw',
       },
       backgroundColor: theme.palette.primary.main,
-      padding: theme.spacing(3),
+      padding: theme.spacing.triple,
     },
     title: {
       textDecoration: 'none',
@@ -102,13 +102,13 @@ import SkipNavigation from '../SkipNavigation';
       width: '100%',
     },
     contentPadding: {
-      paddingTop: theme.spacing(3),
-      paddingLeft: theme.spacing(3),
-      paddingRight: theme.spacing(3),
-      paddingBottom: theme.spacing(12),
+      paddingTop: theme.spacing.triple,
+      paddingLeft: theme.spacing.triple,
+      paddingRight: theme.spacing.triple,
+      paddingBottom: theme.spacing.triple * 4,
     },
     logoStyle: {
-      paddingRight: theme.spacing(2),
+      paddingRight: theme.spacing.double,
     },
     content: {
       maxWidth: CONTENT_MAX_WIDTH,
@@ -131,18 +131,18 @@ import SkipNavigation from '../SkipNavigation';
       maxWidth: '60em',
     },
     leftAppBarButton: {
-      marginLeft: theme.spacing(1),
+      marginLeft: theme.spacing.unit,
     },
     appIcon: {
       fill: theme.palette.common.white,
     },
     helpCloseIcon: {
       position: 'absolute',
-      top: theme.spacing(1),
-      right: theme.spacing(1),
+      top: theme.spacing.unit,
+      right: theme.spacing.unit,
     },
     deploymentVersion: {
-      padding: theme.spacing(1),
+      padding: theme.spacing.unit,
     },
     nav: {
       display: 'flex',
@@ -261,17 +261,16 @@ export default class Dashboard extends Component {
             alt="logo"
             src={Logo}
           />
-          {window.env.DOCS_ONLY ? (
-            <Typography variant="h6" noWrap className={classes.title}>
-              {window.env.APPLICATION_NAME}
-            </Typography>
-          ) : (
-            <Link to="/">
-              <Typography variant="h6" noWrap className={classes.title}>
-                {window.env.APPLICATION_NAME}
-              </Typography>
-            </Link>
-          )}
+          <Typography
+            {...(!window.env.DOCS_ONLY && {
+              component: Link,
+              to: '/',
+            })}
+            variant="h6"
+            noWrap
+            className={classes.title}>
+            {window.env.APPLICATION_NAME}
+          </Typography>
         </div>
       </Fragment>
     );
@@ -336,13 +335,11 @@ export default class Dashboard extends Component {
                 )}
               </IconButton>
             </Tooltip>
-            <Link to={DOCS_PATH_PREFIX}>
-              <Tooltip placement="bottom" title="Documentation">
-                <IconButton>
-                  <BookOpenPageVariantIcon className={classes.appIcon} />
-                </IconButton>
-              </Tooltip>
-            </Link>
+            <Tooltip placement="bottom" title="Documentation">
+              <IconButton component={Link} to={DOCS_PATH_PREFIX}>
+                <BookOpenPageVariantIcon className={classes.appIcon} />
+              </IconButton>
+            </Tooltip>
             {helpView && (
               <Tooltip placement="bottom" title="Page Information">
                 <IconButton onClick={this.handleHelpViewToggle}>

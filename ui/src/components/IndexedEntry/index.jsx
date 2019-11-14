@@ -7,6 +7,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import Typography from '@material-ui/core/Typography';
 import ListItemText from '@material-ui/core/ListItemText';
 import LockOpenOutlineIcon from 'mdi-react/LockOpenOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
@@ -35,8 +36,8 @@ import buildArtifactUrl from '../../utils/buildArtifactUrl';
     justifyContent: 'space-between',
     verticalAlign: 'middle',
   },
-  artifactIcons: {
-    marginRight: theme.spacing(1),
+  artifactName: {
+    marginLeft: theme.spacing.unit,
   },
   artifactIconWithName: {
     display: 'flex',
@@ -118,12 +119,14 @@ export default class IndexedEntry extends Component {
                 target="_blank"
                 to={artifact.url}>
                 <div className={classes.artifactIconWithName}>
-                  <div className={classes.artifactIcons}>
+                  <div>
                     {artifact.isPublic && <LockOpenOutlineIcon />}
                     {!artifact.isPublic && artifact.url && <LockIcon />}
                     {artifact.icon && <artifact.icon />}
                   </div>
-                  {artifact.name}
+                  <Typography className={classes.artifactName}>
+                    {artifact.name}
+                  </Typography>
                 </div>
                 <div>
                   <OpenInNewIcon />
@@ -154,12 +157,14 @@ export default class IndexedEntry extends Component {
             secondary={<DateDistance from={created} />}
           />
         </ListItem>
-        <Link to={`/tasks/${indexedTask.taskId}`}>
-          <ListItem button className={classes.listItemButton}>
-            <ListItemText primary="View task" />
-            <LinkIcon />
-          </ListItem>
-        </Link>
+        <ListItem
+          button
+          className={classes.listItemButton}
+          component={Link}
+          to={`/tasks/${indexedTask.taskId}`}>
+          <ListItemText primary="View task" />
+          <LinkIcon />
+        </ListItem>
         <ListItem component="div">
           <ListItemText
             primary="Data"

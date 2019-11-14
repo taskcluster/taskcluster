@@ -36,7 +36,6 @@ import isLoggedInQuery from './isLoggedIn.graphql';
     },
     a: {
       color: theme.palette.text.primary,
-      textDecoration: 'inherit',
     },
     'html, body': {
       color: theme.palette.text.secondary,

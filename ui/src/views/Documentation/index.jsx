@@ -57,12 +57,12 @@ export default class Documentation extends Component {
     catchLinks(document.querySelector('main'), href => {
       history.push(href);
 
-      scrollToHash(theme.spacing(2));
+      scrollToHash(theme.spacing.double);
     });
 
     // Handle initial scroll if necessary
     if (this.props.history.location.hash) {
-      scrollToHash(theme.spacing(2));
+      scrollToHash(theme.spacing.double);
     }
   };
 

@@ -75,8 +75,8 @@ const initialHook = {
   },
   saveHookSpan: {
     position: 'fixed',
-    bottom: theme.spacing(2),
-    right: theme.spacing(11),
+    bottom: theme.spacing.double,
+    right: theme.spacing.unit * 11,
   },
   iconButton: {
     '& svg': {
@@ -115,12 +115,12 @@ const initialHook = {
     },
   },
   headline: {
-    paddingLeft: theme.spacing(3),
-    paddingRight: theme.spacing(3),
+    paddingLeft: theme.spacing.triple,
+    paddingRight: theme.spacing.triple,
   },
   metadataContainer: {
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
+    paddingTop: theme.spacing.double,
+    paddingBottom: theme.spacing.double,
   },
   drawerPaper: {
     width: '40vw',
@@ -129,28 +129,28 @@ const initialHook = {
     },
   },
   hookDescriptionListItem: {
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(3),
+    marginTop: theme.spacing.unit,
+    marginBottom: theme.spacing.triple,
   },
   scheduleContainer: {
-    paddingRight: theme.spacing(2),
+    paddingRight: theme.spacing.double,
     display: 'flex',
     flex: 1,
     alignItems: 'flex-end',
   },
   scheduleTextField: {
-    paddingRight: theme.spacing(2),
+    paddingRight: theme.spacing.double,
   },
   scheduleListItem: {
     flexDirection: 'column',
     alignItems: 'stretch',
   },
   taskTemplateListItem: {
-    marginBottom: theme.spacing(2),
+    marginBottom: theme.spacing.double,
   },
   ownerEmailListItem: {
     display: 'block',
-    marginTop: theme.spacing(3),
+    marginTop: theme.spacing.triple,
   },
   hookGroupAndIdDiv: {
     display: 'flex',
@@ -858,14 +858,14 @@ export default class HookForm extends Component {
             confirmText="Trigger Hook"
             body={
               <Fragment>
-                <Typography variant="body2" gutterBottom>
+                <Typography gutterBottom>
                   Trigger Hook{' '}
                   <code>
                     {hook.hookGroupId}/{hook.hookId}
                   </code>{' '}
                   with the following context:
                 </Typography>
-                <Grid container spacing={2}>
+                <Grid container spacing={16}>
                   <Grid item lg={6} md={6} sm={12}>
                     <Typography gutterBottom variant="subtitle1">
                       Context
@@ -901,7 +901,7 @@ export default class HookForm extends Component {
             error={dialogError}
             confirmText="Delete Hook"
             body={
-              <Typography variant="body2">
+              <Typography>
                 This will delete {hook.hookGroupId}/{hook.hookId}
               </Typography>
             }

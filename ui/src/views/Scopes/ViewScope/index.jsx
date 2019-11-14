@@ -18,10 +18,10 @@ import scopesQuery from '../scopes.graphql';
 @graphql(scopesQuery)
 @withStyles(theme => ({
   icon: {
-    marginRight: theme.spacing(1),
+    marginRight: theme.spacing.unit,
   },
   tabs: {
-    marginBottom: theme.spacing(3),
+    marginBottom: theme.spacing.triple,
   },
 }))
 export default class ViewScope extends Component {
@@ -95,7 +95,7 @@ export default class ViewScope extends Component {
         <Fragment>
           <Tabs
             className={classes.tabs}
-            variant="fullWidth"
+            fullWidth
             value={currentTabIndex}
             onChange={this.handleTabChange}>
             <Tab label="Roles" />

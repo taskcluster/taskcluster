@@ -86,7 +86,6 @@ export default class CachePurgesTable extends Component {
 
     return (
       <ConnectionDataTable
-        size="medium"
         connection={sortedCachePurgesConnection}
         pageSize={VIEW_CACHE_PURGES_PAGE_SIZE}
         sortByHeader={sortBy}

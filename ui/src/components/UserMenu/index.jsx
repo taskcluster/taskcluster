@@ -18,10 +18,10 @@ import { THEME } from '../../utils/constants';
 @withApollo
 @withStyles(theme => ({
   leftIcon: {
-    marginRight: theme.spacing(1),
+    marginRight: theme.spacing.unit,
   },
   userMenuButton: {
-    marginLeft: theme.spacing(1),
+    marginLeft: theme.spacing.unit,
   },
   buttonAvatar: {
     color: THEME.PRIMARY_TEXT_DARK,
@@ -106,12 +106,10 @@ export default class UserMenu extends Component {
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={this.handleMenuClose}>
-          <Link to="/profile">
-            <MenuItem title="Your Profile">
-              <AccountIcon className={classes.leftIcon} />
-              Account
-            </MenuItem>
-          </Link>
+          <MenuItem title="Your Profile" component={Link} to="/profile">
+            <AccountIcon className={classes.leftIcon} />
+            Account
+          </MenuItem>
           <MenuItem
             title={`Sign Out of ${window.env.APPLICATION_NAME}`}
             onClick={this.handleSignOutClick}>

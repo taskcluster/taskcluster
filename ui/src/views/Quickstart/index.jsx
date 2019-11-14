@@ -165,11 +165,11 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
   orgRepo: {
     display: 'flex',
     alignItems: 'center',
-    marginBottom: 6 * theme.spacing(1),
+    marginBottom: 6 * theme.spacing.unit,
     ...theme.mixins.gutters(),
   },
   separator: {
-    padding: theme.spacing(2),
+    padding: theme.spacing.double,
     paddingBottom: 0,
   },
   editorListItem: {
@@ -186,11 +186,11 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
     ...theme.mixins.actionButton,
   },
   errorPanels: {
-    marginTop: theme.spacing(2),
+    marginTop: theme.spacing.double,
   },
   iconContainer: {
-    marginLeft: theme.spacing(1),
-    marginTop: theme.spacing(2),
+    marginLeft: theme.spacing.unit,
+    marginTop: theme.spacing.double,
   },
 }))
 export default class QuickStart extends Component {
@@ -324,7 +324,7 @@ export default class QuickStart extends Component {
             description="Create a configuration file and
                 plug the CI into your repository.">
             <Fragment>
-              <Typography variant="body2" paragraph>
+              <Typography paragraph>
                 This tool lets you easily generate a simple generic{' '}
                 <code>.taskcluster.yml</code> file, which should live in the
                 root of your repository. It defines tasks that you want{' '}
@@ -332,11 +332,11 @@ export default class QuickStart extends Component {
                 when certain GitHub events happen. You will choose the events
                 you are interested in while creating the file.
               </Typography>
-              <Typography variant="body2" paragraph>
+              <Typography paragraph>
                 For independent developers and organization owners: How to set
                 up your repository with {window.env.APPLICATION_NAME}
               </Typography>
-              <Typography variant="body2" paragraph>
+              <Typography paragraph>
                 <ul>
                   <li>
                     Fill out the form below. All changes in the form will
@@ -360,7 +360,7 @@ export default class QuickStart extends Component {
                   </li>
                 </ul>
               </Typography>
-              <Typography variant="body2" paragraph>
+              <Typography paragraph>
                 Optionally, after you create your file, you can edit it here or
                 in you favorite editor to add more functionality. Please refer
                 to the{' '}

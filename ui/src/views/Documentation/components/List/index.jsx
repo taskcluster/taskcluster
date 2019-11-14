@@ -3,7 +3,7 @@ import { withStyles } from '@material-ui/core/styles';
 
 const styles = theme => ({
   ul: {
-    marginBottom: theme.spacing(2),
+    marginBottom: theme.spacing.double,
   },
 });
 

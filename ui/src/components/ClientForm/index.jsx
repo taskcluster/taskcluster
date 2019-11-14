@@ -38,8 +38,8 @@ import { formatScope, scopeLink } from '../../utils/scopeUtils';
   },
   saveClientSpan: {
     position: 'fixed',
-    bottom: theme.spacing(2),
-    right: theme.spacing(11),
+    bottom: theme.spacing.double,
+    right: theme.spacing.unit * 11,
   },
   expandedScopesListItem: {
     paddingTop: 0,
@@ -64,8 +64,8 @@ import { formatScope, scopeLink } from '../../utils/scopeUtils';
     ...theme.mixins.successIcon,
   },
   clientDescriptionListItem: {
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(3),
+    marginTop: theme.spacing.unit,
+    marginBottom: theme.spacing.triple,
   },
 }))
 /** A form to view/edit/create a client */
@@ -345,24 +345,27 @@ export default class ClientForm extends Component {
                   secondary={
                     <List dense>
                       {expandedScopes.map(scope => (
-                        <Link key={scope} to={scopeLink(scope)}>
-                          <ListItem button className={classes.listItemButton}>
-                            <ListItemText
-                              disableTypography
-                              secondary={
-                                <Typography variant="body2">
-                                  <code
-                                    // eslint-disable-next-line react/no-danger
-                                    dangerouslySetInnerHTML={{
-                                      __html: formatScope(scope),
-                                    }}
-                                  />
-                                </Typography>
-                              }
-                            />
-                            <LinkIcon />
-                          </ListItem>
-                        </Link>
+                        <ListItem
+                          key={scope}
+                          button
+                          component={Link}
+                          to={scopeLink(scope)}
+                          className={classes.listItemButton}>
+                          <ListItemText
+                            disableTypography
+                            secondary={
+                              <Typography>
+                                <code
+                                  // eslint-disable-next-line react/no-danger
+                                  dangerouslySetInnerHTML={{
+                                    __html: formatScope(scope),
+                                  }}
+                                />
+                              </Typography>
+                            }
+                          />
+                          <LinkIcon />
+                        </ListItem>
                       ))}
                     </List>
                   }
@@ -443,9 +446,7 @@ export default class ClientForm extends Component {
             error={dialogError}
             title="Delete Client?"
             body={
-              <Typography variant="body2">
-                This will delete the {clientId} client.
-              </Typography>
+              <Typography>This will delete the {clientId} client.</Typography>
             }
             confirmText="Delete Client"
           />

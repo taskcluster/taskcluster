@@ -25,25 +25,25 @@ import { ACTION_CONTEXT } from '../../utils/constants';
 @withAuth
 @withStyles(theme => ({
   actionButton: {
-    marginRight: theme.spacing(1),
-    marginBottom: theme.spacing(1),
+    marginRight: theme.spacing.unit,
+    marginBottom: theme.spacing.unit,
     fontSize: '0.7rem',
   },
   headline: {
-    paddingLeft: theme.spacing(3),
-    paddingRight: theme.spacing(3),
+    paddingLeft: theme.spacing.triple,
+    paddingRight: theme.spacing.triple,
     whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
     overflow: 'hidden',
   },
   cardContent: {
-    minHeight: 450,
+    minHeight: 415,
     paddingLeft: 0,
     paddingRight: 0,
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
+    paddingTop: theme.spacing.double,
+    paddingBottom: theme.spacing.double,
     '&:last-child': {
-      paddingBottom: theme.spacing(3),
+      paddingBottom: theme.spacing.triple,
     },
   },
   sourceHeadline: {

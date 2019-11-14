@@ -29,10 +29,10 @@ import splitLines from '../../../utils/splitLines';
     backgroundColor: 'rgba(255, 255, 0, 0.25)',
   },
   editorGrid: {
-    marginBottom: theme.spacing(1),
+    marginBottom: theme.spacing.unit,
   },
   cellGrid: {
-    padding: `0 ${theme.spacing(1)}px`,
+    padding: `0 ${theme.spacing.unit}px`,
   },
 }))
 export default class ScopesetComparison extends Component {
@@ -101,7 +101,7 @@ export default class ScopesetComparison extends Component {
     return (
       <Dashboard title="Compare Scopes">
         <Fragment>
-          <Grid className={classes.editorGrid} container spacing={1}>
+          <Grid className={classes.editorGrid} container spacing={8}>
             <Grid item xs={12} md={6}>
               <Typography gutterBottom variant="subtitle1">
                 Scope A
@@ -136,7 +136,7 @@ export default class ScopesetComparison extends Component {
                       scopes[0].map(scope => (
                         <Typography
                           key={scope}
-                          variant="body2"
+                          variant="body1"
                           className={classes.cellGrid}>
                           {scope}
                         </Typography>
@@ -147,7 +147,7 @@ export default class ScopesetComparison extends Component {
                       scopes[1].map(scope => (
                         <Typography
                           key={scope}
-                          variant="body2"
+                          variant="body1"
                           className={classes.cellGrid}>
                           {scope}
                         </Typography>
