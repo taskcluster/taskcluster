@@ -69,7 +69,7 @@ export default class SidebarList extends Component {
         </SidebarListItem>
 
         <SidebarListItem to="/provisioners" icon={<MixcloudIcon />}>
-          Provisioners
+          Workers
         </SidebarListItem>
 
         <SidebarListItem to="/purge-caches" icon={<BackupRestoreIcon />}>
