@@ -39,20 +39,19 @@ exports.tasks.push({
     utils.status({message: 'indexTask-find taskId: ' + randomId});
     await queue.createTask(randomId, task);
     let index = new taskcluster.Index(taskcluster.fromEnvVars());
-    await new Promise(resolve => setTimeout(resolve, 5000));
     let pollForStatusStart = new Date();
     while((new Date() - pollForStatusStart) < 120000){
       let status = await queue.status(randomId);
-      let finded = await index.findTask(taskIndex);
       if (status.status.state === 'pending' || status.status.state === 'running'){
         utils.status({
-          message: 'Current status: ' + status.status.state,
+          message: 'Current task status: ' + status.status.state,
         });
         await new Promise(resolve => setTimeout(resolve, 1000));
-      } else if (finded) {
+      } else if (status.status.state === 'completed') {
+        await index.findTask(taskIndex);
         return;
       } else {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        throw new Error('Task finished with status ' + status.status.state);
       }
     }
     throw new Error('Deadline exceeded');
