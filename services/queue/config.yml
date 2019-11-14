@@ -100,7 +100,7 @@ defaults:
     useCloudMirror:               !env:bool:optional USE_CLOUD_MIRROR
     cloudMirrorHost:              'cloud-mirror.taskcluster.net'
 
-    taskCacheMaxSize: 5000
+    taskCacheMaxSize: !env:number:optional TASK_CACHE_MAX_SIZE
 
 
   taskcluster:
