@@ -58,9 +58,6 @@ import Link from '../../utils/Link';
   listItemText: {
     paddingLeft: theme.spacing(2),
   },
-  codeText: {
-    fontSize: '0.8125rem',
-  },
 }))
 /**
  * Render information in a card layout about a task.
@@ -375,7 +372,7 @@ export default class TaskDetailsCard extends Component {
                         <Typography variant="subtitle1">Extra</Typography>
                       }
                       secondary={
-                        <Code className={classes.codeText} language="json">
+                        <Code language="json">
                           {JSON.stringify(task.extra, null, 2)}
                         </Code>
                       }

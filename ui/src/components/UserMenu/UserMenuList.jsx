@@ -25,7 +25,6 @@ import getPictureFromUser from '../../utils/getPictureFromUser';
   text: {
     color: theme.palette.text.primary,
     fontFamily: 'Roboto500',
-    fontSize: 16,
   },
   icon: {
     fill: theme.palette.text.primary,
@@ -63,8 +62,10 @@ export default class UserMenuList extends Component {
                 <AccountCircleIcon />
               </ListItemIcon>
               <ListItemText
-                disableTypography
-                className={classes.text}
+                primaryTypographyProps={{
+                  variant: 'body1',
+                  className: classes.text,
+                }}
                 primary="Sign In"
               />
             </ListItem>
