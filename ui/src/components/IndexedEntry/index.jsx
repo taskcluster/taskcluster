@@ -7,7 +7,6 @@ import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import Typography from '@material-ui/core/Typography';
 import ListItemText from '@material-ui/core/ListItemText';
 import LockOpenOutlineIcon from 'mdi-react/LockOpenOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
@@ -36,8 +35,8 @@ import buildArtifactUrl from '../../utils/buildArtifactUrl';
     justifyContent: 'space-between',
     verticalAlign: 'middle',
   },
-  artifactName: {
-    marginLeft: theme.spacing.unit,
+  artifactIcons: {
+    marginRight: theme.spacing(1),
   },
   artifactIconWithName: {
     display: 'flex',
@@ -119,14 +118,12 @@ export default class IndexedEntry extends Component {
                 target="_blank"
                 to={artifact.url}>
                 <div className={classes.artifactIconWithName}>
-                  <div>
+                  <div className={classes.artifactIcons}>
                     {artifact.isPublic && <LockOpenOutlineIcon />}
                     {!artifact.isPublic && artifact.url && <LockIcon />}
                     {artifact.icon && <artifact.icon />}
                   </div>
-                  <Typography className={classes.artifactName}>
-                    {artifact.name}
-                  </Typography>
+                  {artifact.name}
                 </div>
                 <div>
                   <OpenInNewIcon />
@@ -157,14 +154,12 @@ export default class IndexedEntry extends Component {
             secondary={<DateDistance from={created} />}
           />
         </ListItem>
-        <ListItem
-          button
-          className={classes.listItemButton}
-          component={Link}
-          to={`/tasks/${indexedTask.taskId}`}>
-          <ListItemText primary="View task" />
-          <LinkIcon />
-        </ListItem>
+        <Link to={`/tasks/${indexedTask.taskId}`}>
+          <ListItem button className={classes.listItemButton}>
+            <ListItemText primary="View task" />
+            <LinkIcon />
+          </ListItem>
+        </Link>
         <ListItem component="div">
           <ListItemText
             primary="Data"

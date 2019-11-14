@@ -132,7 +132,7 @@ export default class ViewDenylistAddress extends Component {
               />
             )}
             {!data.loading && !hasDenylistAddresses && (
-              <Typography>
+              <Typography variant="body2">
                 <em>{decodeURIComponent(params.notificationAddress)}</em> cannot
                 be found.
               </Typography>

@@ -41,12 +41,12 @@ export default function GetStarted() {
   return (
     <Fragment>
       <HeaderWithAnchor>Documentation</HeaderWithAnchor>
-      <Typography>
+      <Typography variant="body2">
         Taskcluster is the task execution framework that supports Mozilla&#39;s
         continuous integration and release processes.
       </Typography>
       <br />
-      <Grid container spacing={16}>
+      <Grid container spacing={2}>
         {cards.map(({ title, description, icon, to }) => (
           <Grid key={title} item sm={6} xs={12}>
             <ExploreCard
@@ -61,14 +61,14 @@ export default function GetStarted() {
       <br />
       <br />
       <HeaderWithAnchor type="h2">People</HeaderWithAnchor>
-      <Typography>
+      <Typography variant="body2">
         Find out more about the <Anchor href="/docs/people">people</Anchor> who
         make Taskcluster, and get involved yourself!
       </Typography>
       <br />
       <br />
       <HeaderWithAnchor type="h2">Questions?</HeaderWithAnchor>
-      <Typography>
+      <Typography variant="body2">
         We&#39;re always happy to help with code or other questions you might
         have.{' '}
         <Anchor href="https://github.com/taskcluster/taskcluster/issues/new">

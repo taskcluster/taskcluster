@@ -47,7 +47,7 @@ const variantIcon = {
     },
   },
   iconVariant: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
   },
   message: {
     display: 'flex',
@@ -62,7 +62,7 @@ const variantIcon = {
   iconDiv: {
     display: 'flex',
     alignItems: 'center',
-    marginRight: theme.spacing.double,
+    marginRight: theme.spacing(2),
   },
   iconButtonDiv: {
     marginRight: -12,
