@@ -21,8 +21,8 @@ import { join } from 'path';
 // eslint-disable-next-line import/prefer-default-export
 export const ARTIFACTS_PAGE_SIZE = 1000;
 export const TASK_GROUP_PAGE_SIZE = 1000;
-export const VIEW_WORKER_TYPES_PAGE_SIZE = 50;
-export const VIEW_WORKERS_PAGE_SIZE = 15;
+export const VIEW_WORKER_TYPES_PAGE_SIZE = 1000;
+export const VIEW_WORKERS_PAGE_SIZE = 1000;
 export const VIEW_WORKER_POOL_ERRORS_PAGE_SIZE = 100;
 export const VIEW_CLIENTS_PAGE_SIZE = 1000;
 export const VIEW_CLIENT_SCOPES_INSPECT_SIZE = 10;
