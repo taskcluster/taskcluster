@@ -45,10 +45,10 @@ const initialHook = {
   schedule: [],
   bindings: [],
   task: {
-    provisionerId: 'aws-provisioner-v1',
+    provisionerId: 'proj-getting-started',
     workerType: 'tutorial',
     payload: {
-      image: 'ubuntu:14.04',
+      image: 'ubuntu:latest',
       command: ['/bin/bash', '-c', 'echo "hello World"'],
       maxRunTime: 60 * 10,
     },

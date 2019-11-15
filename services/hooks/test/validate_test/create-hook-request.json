@@ -7,7 +7,7 @@
     },
     "task":
     {
-        "provisionerId": "aws-provisioner-v1",
+        "provisionerId": "test-provisioner",
         "workerType": "gecko-t-linux-xlarge",
         "payload": {},
         "metadata": {

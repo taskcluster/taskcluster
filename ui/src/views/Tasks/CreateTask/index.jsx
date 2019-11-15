@@ -42,7 +42,7 @@ import Button from '../../../components/Button';
 import db from '../../../utils/db';
 
 const defaultTask = {
-  provisionerId: 'aws-provisioner-v1',
+  provisionerId: 'proj-getting-started',
   workerType: 'tutorial',
   created: new Date().toISOString(),
   deadline: toDate(addHours(new Date(), 3)).toISOString(),
