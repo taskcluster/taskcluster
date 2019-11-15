@@ -34,8 +34,8 @@ The scopes actually used by the hook's task are, of course, defined in
 include `queue:create-task:<provisionerId>/<workerType>` unless the task will
 be creating more tasks (for example, a [decision task](/docs/manual/conventions/decision-task)).
 
-For the documentation repository, the hook is named `taskcluster/docs-update`.
-The task has scopes
+For example, at one time the Taskcluster documentation was updated by a hook named `taskcluster/docs-update`.
+The task had scopes
 
 ```yaml
 task:
@@ -45,14 +45,14 @@ task:
     - "secrets:get:project/taskcluster/tc-docs/mozillians"
 ```
 
-and the hook role has those scopes plus the required `create-task` scope:
+and the hook role had those scopes plus the required `create-task` scope:
 
 ```yaml
 "hook-id:taskcluster/docs-update":
   - "auth:aws-s3:read-only:taskcluster-raw-docs/*"
   - "auth:aws-s3:read-write:docs-taskcluster-net/"
   - "secrets:get:project/taskcluster/tc-docs/mozillians"
-  - "queue:create-task:aws-provisioner-v1/github-worker"
+  - "queue:create-task:aws-provisioner/taskcluster"
 ```
 
 ## Advice

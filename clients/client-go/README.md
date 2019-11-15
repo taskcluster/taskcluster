@@ -482,7 +482,7 @@ func main() {
 		},
 		Payload:       *payloadJSON,
 		Priority:      "normal",
-		ProvisionerID: "aws-provisioner-v1",
+		ProvisionerID: "some-provisioner-id",
 		Requires:      "all-completed",
 		Retries:       5,
 		Routes:        []string{},
@@ -490,7 +490,7 @@ func main() {
 		Scopes:        []string{},
 		Tags:          map[string]string{},
 		TaskGroupID:   taskID,
-		WorkerType:    "win2012r2",
+		WorkerType:    "some-worker-type",
 	}
 
 	tsr, err := myQueue.CreateTask(taskID, taskDef)

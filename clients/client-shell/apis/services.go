@@ -1311,7 +1311,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "declareProvisioner",
 				Title:       "Update a provisioner",
-				Description: "Declare a provisioner, supplying some details about it.\n\n`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are\npossessed. For example, a request to update the `aws-provisioner-v1`\nprovisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope\n`queue:declare-provisioner:aws-provisioner-v1#description`.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.",
+				Description: "Declare a provisioner, supplying some details about it.\n\n`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are\npossessed. For example, a request to update the `my-provisioner`\nprovisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope\n`queue:declare-provisioner:my-provisioner#description`.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.",
 				Stability:   "experimental",
 				Method:      "put",
 				Route:       "/provisioners/<provisionerId>",
@@ -1368,7 +1368,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "declareWorkerType",
 				Title:       "Update a worker-type",
-				Description: "Declare a workerType, supplying some details about it.\n\n`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are\npossessed. For example, a request to update the `gecko-b-1-w2008` worker-type within the `aws-provisioner-v1`\nprovisioner with a body `{description: 'This worker type is great'}` would require you to have the scope\n`queue:declare-worker-type:aws-provisioner-v1/gecko-b-1-w2008#description`.",
+				Description: "Declare a workerType, supplying some details about it.\n\n`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are\npossessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`\nprovisioner with a body `{description: 'This worker type is great'}` would require you to have the scope\n`queue:declare-worker-type:my-provisioner/highmem#description`.",
 				Stability:   "experimental",
 				Method:      "put",
 				Route:       "/provisioners/<provisionerId>/worker-types/<workerType>",

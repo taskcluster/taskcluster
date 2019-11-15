@@ -70,8 +70,8 @@ func listTaskGroupHandler(w http.ResponseWriter, _ *http.Request) {
 			    {
 			      "status": {
 			        "taskId": "ANnmjMocTymeTID0tlNJAw",
-			        "provisionerId": "aws-provisioner-v1",
-			        "workerType": "github-worker",
+			        "provisionerId": "some-provisioner-id",
+			        "workerType": "some-worker-type",
 			        "schedulerId": "taskcluster-github",
 			        "taskGroupId": "e4WPJRJeSdaSdKxeWzDlNQ",
 			        "deadline": "2017-03-30T15:49:31.389Z",

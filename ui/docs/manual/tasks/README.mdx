@@ -20,17 +20,17 @@ documentation](/docs/reference/platform/queue/task-schema), but a
 simple task might look like this:
 
 ```yaml
-provisionerId:      aws-provisioner-v1
+provisionerId:      proj-getting-started
 workerType:         tutorial
 created:            2020-01-04T04:18.084Z
 deadline:           2020-01-05T04:18.084Z
 metadata:
   name:             Example Task
   description:      Eample from TC Manual
-  owner:            nobody@taskcluster.net
-  source:           https://github.com/taskcluster/taskcluster-docs
+  owner:            nobody@example.com
+  source:           https://github.com/taskcluster/taskcluster
 payload:
-  image:            ubuntu:16.04
+  image:            ubuntu:18.04
   command:          ['echo', 'hello world']
 ```
 
