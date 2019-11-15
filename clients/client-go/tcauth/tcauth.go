@@ -63,7 +63,9 @@ type Auth tcclient.Client
 func New(credentials *tcclient.Credentials, rootURL string) *Auth {
 	return &Auth{
 		Credentials:  credentials,
-		BaseURL:      tcclient.BaseURL(rootURL, "auth", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "auth",
+		APIVersion:   "v1",
 		Authenticate: credentials != nil,
 	}
 }
@@ -84,9 +86,12 @@ func New(credentials *tcclient.Credentials, rootURL string) *Auth {
 // disabled.
 func NewFromEnv() *Auth {
 	c := tcclient.CredentialsFromEnvVars()
+	rootURL := tcclient.RootURLFromEnvVars()
 	return &Auth{
 		Credentials:  c,
-		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "auth", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "auth",
+		APIVersion:   "v1",
 		Authenticate: c.ClientID != "",
 	}
 }

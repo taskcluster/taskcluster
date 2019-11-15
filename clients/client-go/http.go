@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
 
 	// "net/http/httputil"
 	"net/url"
@@ -19,6 +18,7 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	hawk "github.com/tent/hawk-go"
+	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 )
 
 var debug = false
@@ -98,17 +98,10 @@ var defaultHTTPClient ReducedHTTPClient = &http.Client{}
 
 // utility function to create a URL object based on given data
 func setURL(client *Client, route string, query url.Values) (u *url.URL, err error) {
-	URL := client.BaseURL
-	// See https://bugzil.la/1484702
-	// Avoid double separator; routes must start with `/`, so baseURL shouldn't
-	// end with `/`.
-	if strings.HasSuffix(URL, "/") {
-		URL = URL[:len(URL)-1]
-	}
-	URL += route
+	URL := tcurls.API(client.RootURL, client.ServiceName, client.APIVersion, route)
 	u, err = url.Parse(URL)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot parse url: '%v', is BaseURL (%v) set correctly?\n%v\n", URL, client.BaseURL, err)
+		return nil, fmt.Errorf("Cannot parse url: '%v', is RootURL (%v) set correctly?\n%v\n", URL, client.RootURL, err)
 	}
 	if query != nil {
 		u.RawQuery = query.Encode()
@@ -136,7 +129,7 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 		}
 		callSummary.HTTPRequest, err = http.NewRequest(method, u.String(), ioReader)
 		if err != nil {
-			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), client.BaseURL, err)
+			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the RootURL (%v) set correctly?\n%v\n", u.String(), client.RootURL, err)
 		}
 		if len(rawPayload) > 0 {
 			callSummary.HTTPRequest.Header.Set("Content-Type", "application/json")
@@ -267,7 +260,7 @@ func (client *Client) APICall(payload interface{}, method, route string, result 
 }
 
 // SignedURL creates a signed URL using the given Client, where route is the
-// url path relative to the BaseURL stored in the Client, query is the set of
+// url path relative to the RootURL stored in the Client, query is the set of
 // query string parameters, if any, and duration is the amount of time that the
 // signed URL should remain valid for.
 func (client *Client) SignedURL(route string, query url.Values, duration time.Duration) (u *url.URL, err error) {

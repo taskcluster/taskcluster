@@ -47,10 +47,7 @@ func Example_updateClient() {
 	// In this example we will connect to a local auth server running on
 	// localhost:8080 with authentication disabled. This could be, for
 	// example, a locally deployed taskcluster-proxy instance.
-	myAuth := tcauth.New(nil, "http://localhost:8080")
-
-	// Set target url to localhost url...
-	myAuth.BaseURL = "http://localhost:60024/v1"
+	myAuth := tcauth.New(nil, "http://tc.example.com")
 
 	// Update client id "b2g-power-tests" with new description and expiry...
 	client, err := myAuth.UpdateClient(

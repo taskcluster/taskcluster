@@ -66,7 +66,9 @@ type Queue tcclient.Client
 func New(credentials *tcclient.Credentials, rootURL string) *Queue {
 	return &Queue{
 		Credentials:  credentials,
-		BaseURL:      tcclient.BaseURL(rootURL, "queue", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "queue",
+		APIVersion:   "v1",
 		Authenticate: credentials != nil,
 	}
 }
@@ -87,9 +89,12 @@ func New(credentials *tcclient.Credentials, rootURL string) *Queue {
 // disabled.
 func NewFromEnv() *Queue {
 	c := tcclient.CredentialsFromEnvVars()
+	rootURL := tcclient.RootURLFromEnvVars()
 	return &Queue{
 		Credentials:  c,
-		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "queue", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "queue",
+		APIVersion:   "v1",
 		Authenticate: c.ClientID != "",
 	}
 }
