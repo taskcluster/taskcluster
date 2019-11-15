@@ -1,11 +1,11 @@
 ---
 defaults:
   app:
-    jobQueue: null
-    deprecatedResultStatusQueue: null
-    deprecatedInitialStatusQueue: null
-    resultStatusQueue: null
-    initialStatusQueue: null
+    jobQueue: 'jobs'
+    deprecatedResultStatusQueue: 'stat-result'
+    deprecatedInitialStatusQueue: 'stat-init'
+    resultStatusQueue: 'ch-result'
+    initialStatusQueue: 'ch-init'
     buildsTableName: 'TaskclusterGithubBuilds'
     ownersDirectoryTableName: 'TaskclusterIntegrationOwners'
     checkRunsTableName: 'TaskclusterCheckRuns'
@@ -17,6 +17,7 @@ defaults:
 
   taskcluster:
     rootUrl: !env TASKCLUSTER_ROOT_URL
+    schedulerId: taskcluster-github
     credentials:
       clientId: !env TASKCLUSTER_CLIENT_ID
       accessToken: !env TASKCLUSTER_ACCESS_TOKEN
@@ -42,60 +43,16 @@ defaults:
 
   server:
     port: !env:number PORT
-    env: 'development'
-    forceSSL: false
-    trustProxy: false
+    env: !env NODE_ENV
+    forceSSL: !env:bool FORCE_SSL
+    trustProxy: !env:bool TRUST_PROXY
 
   pulse:
     hostname: !env PULSE_HOSTNAME
     username: !env PULSE_USERNAME
     password: !env PULSE_PASSWORD
     vhost: !env PULSE_VHOST
-
-production:
-  app:
-    jobQueue: 'jobs'
-    deprecatedResultStatusQueue: 'stat-result'
-    deprecatedInitialStatusQueue: 'stat-init'
-    resultStatusQueue: 'ch-result'
-    initialStatusQueue: 'ch-init'
-
-  intree:
-    provisionerId: 'default-provisioner'
-    workerType: 'default'
-
-  server:
-    env: 'production'
-    forceSSL: !env:bool FORCE_SSL
-    trustProxy: !env:bool TRUST_PROXY
-
-  taskcluster:
-    schedulerId: taskcluster-github
-
-  pulse:
     namespace: taskcluster-github
-
-staging:
-  app:
-    jobQueue: 'jobs'
-    deprecatedResultStatusQueue: 'deprecated-statuses'
-    deprecatedInitialStatusQueue: 'deprecated-tasks'
-    resultStatusQueue: 'checks-statuses'
-    initialStatusQueue: 'checks-tasks'
-    buildsTableName: 'TaskclusterGithubBuildsStaging'
-    ownersDirectoryTableName: 'TaskclusterIntegrationOwnersStaging'
-    name: 'tc-github-staging'
-    statusContext: 'Taskcluster-Staging'
-
-  server:
-    env: 'production'
-    forceSSL: true
-    # We trust the proxy on heroku, as the SSL end-point provided by heroku
-    # is a proxy, so we have to trust it.
-    trustProxy: true
-
-  taskcluster:
-    schedulerId: tc-gh-staging
 
 test:
   app:
@@ -115,6 +72,9 @@ test:
 
   server:
     port: 60415
+    env: development
+    forceSSL: false
+    trustProxy: false
 
   intree:
     provisionerId: 'dummy-provisioner'

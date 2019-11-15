@@ -9,7 +9,7 @@ defaults:
     namespaceTableName: 'Namespaces'
 
     # Name of pulse queue, if a non-exclusive queue is to be used.
-    listenerQueueName: null
+    listenerQueueName: 'index/incoming-tasks2'
 
     # Time delay before expiring artifacts, in readable format, see:
     # taskcluster.fromNow, notice this should be negative!
@@ -29,13 +29,10 @@ defaults:
     port: !env:number PORT
 
     # Environment 'development' or 'production'
-    env: 'development'
+    env: !env NODE_ENV
 
-    # Force SSL, not useful when runnning locally
-    forceSSL: false
-
-    # Trust a forwarding proxy
-    trustProxy: false
+    forceSSL: !env:bool FORCE_SSL
+    trustProxy: !env:bool TRUST_PROXY
 
   # Configuration of access to other taskcluster components
   taskcluster:
@@ -53,23 +50,7 @@ defaults:
     username: !env PULSE_USERNAME
     password: !env PULSE_PASSWORD
     vhost: !env PULSE_VHOST
-
-production:
-  pulse:
     namespace: taskcluster-index
-  app:
-    routePrefix: 'index'
-    indexedTaskTableName: 'IndexedTasks'
-    namespaceTableName: 'Namespaces'
-    # updated because the old queue was wedged when CloudAmqp failed 2016-08-24
-    listenerQueueName: 'index/incoming-tasks2'
-
-  server:
-    env: 'production'
-    forceSSL: !env:bool FORCE_SSL
-    # We trust the proxy on heroku, as the SSL end-point provided by heroku
-    # is a proxy, so we have to trust it.
-    trustProxy: !env:bool TRUST_PROXY
 
 test:
   taskcluster:
@@ -81,6 +62,9 @@ test:
 
   server:
     port: 60020
+    env: development
+    forceSSL: false
+    trustProxy: false
 
   aws:
     region: 'us-west-2'

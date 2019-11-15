@@ -45,6 +45,7 @@ defaults:
     username: !env PULSE_USERNAME
     password: !env PULSE_PASSWORD
     vhost: !env PULSE_VHOST
+    namespace: taskcluster-notify
 
   # All optional. If not specified, irc just won't work
   irc:
@@ -55,17 +56,7 @@ defaults:
     password:         !env:optional IRC_PASSWORD
     port:             !env:optional IRC_PORT
     debug:            !env:optional IRC_DEBUG
-    pulseQueueName:   !env:optional IRC_PULSE_QUEUE_NAME
-
-# Configuration in production
-production:
-  server:
-    env:              production
-  irc:
-    port:             6697
     pulseQueueName:   irc-notifications
-  pulse:
-    namespace: taskcluster-notify
 
 # Configuration of tests
 test:

@@ -18,16 +18,16 @@ defaults:
     artifactContainer:            artifacts
 
     # Azure table name for tasks, artifact meta-data
-    taskTableName:                Tasks
-    artifactTableName:            Artifacts
-    taskGroupTableName:           TaskGroups
-    taskGroupMemberTableName:     TaskGroupMembers
-    taskGroupActiveSetTableName:  TaskGroupActiveSets
-    taskRequirementTableName:     TaskRequirement
-    taskDependencyTableName:      TaskDependency
-    workerTableName:              Worker
-    workerTypeTableName:          WorkerType
-    provisionerTableName:         Provisioner
+    taskTableName:                'QueueTasks'
+    artifactTableName:            'QueueArtifacts'
+    taskGroupTableName:           'QueueTaskGroups'
+    taskGroupMemberTableName:     'QueueTaskGroupMembers'
+    taskGroupActiveSetTableName:  'QueueTaskGroupActiveSets'
+    taskRequirementTableName:     'QueueTaskRequirement'
+    taskDependencyTableName:      'QueueTaskDependency'
+    workerTableName:              'QueueWorker'
+    workerTypeTableName:          'QueueWorkerType'
+    provisionerTableName:         'QueueProvisioner'
 
     # Azure monitoring knobs
     azureReportChance:            !env:number:optional AZURE_REPORT_CHANCE # range [0.0, 1.0]
@@ -99,6 +99,11 @@ defaults:
     # Cloud mirror configuration
     useCloudMirror:               !env:bool:optional USE_CLOUD_MIRROR
     cloudMirrorHost:              'cloud-mirror.taskcluster.net'
+    cloudMirrorRegions:
+      - us-east-1
+      - us-east-2
+      - us-west-1
+      - eu-central-1
 
     taskCacheMaxSize: !env:number:optional TASK_CACHE_MAX_SIZE
 
@@ -117,7 +122,7 @@ defaults:
     port:             !env:number PORT
     env:              !env NODE_ENV
     forceSSL:         !env:bool FORCE_SSL
-    trustProxy:       false
+    trustProxy:       true
 
   # Azure credentials (for blob and queue storage)
   azure:
@@ -137,29 +142,6 @@ defaults:
     secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
     region:           !env ARTIFACT_REGION
     apiVersion:       2014-01-01
-
-# Configuration in production
-production:
-  app:
-    artifactContainer:            'artifacts'
-    taskTableName:                'QueueTasks'
-    artifactTableName:            'QueueArtifacts'
-    taskGroupTableName:           'QueueTaskGroups'
-    taskGroupMemberTableName:     'QueueTaskGroupMembers'
-    taskGroupActiveSetTableName:  'QueueTaskGroupActiveSets'
-    taskRequirementTableName:     'QueueTaskRequirement'
-    taskDependencyTableName:      'QueueTaskDependency'
-    workerTableName:              'QueueWorker'
-    workerTypeTableName:          'QueueWorkerType'
-    provisionerTableName:         'QueueProvisioner'
-    cloudMirrorRegions:
-      - us-east-1
-      - us-east-2
-      - us-west-1
-      - eu-central-1
-  server:
-    env:              production
-    trustProxy:       true
 
 # Configuration of tests
 test:
@@ -198,29 +180,4 @@ test:
     port:             60401
     env:              development
     forceSSL:         false
-load-test:
-  app:
-    publicArtifactBucket:         'test-bucket-for-any-garbage'
-    privateArtifactBucket:        'test-bucket-for-any-garbage2'
-    artifactContainer:            'artifacts'
-    queuePrefix:                  'lta'
-    taskTableName:                'LoadTestTasks2'
-    artifactTableName:            'LoadTestArtifacts2'
-    taskGroupTableName:           'LoadTestTaskGroups2'
-    taskGroupMemberTableName:     'LoadTestTaskGroupMembers2'
-    taskGroupActiveSetTableName:  'LoadTestTaskSizeMembers2'
-    taskRequirementTableName:     'LoadTestTaskRequirement2'
-    taskDependencyTableName:      'LoadTestTaskDependency2'
-    workerTableName:              'LoadTestWorker'
-    workerTypeTableName:          'LoadTestWorkerType'
-    provisionerTableName:         'LoadTestProvisioner'
-    claimQueue:                   'load-test-claim-queue'
-    deadlineQueue:                'load-test-deadline-queue'
-    publicArtifactBucketProxies:
-      'us-east-1':    'proxy-for-us-east-1'
-    azureReportChance:            0.0
-    azureReportThreshold:         1000000
-  server:
-    env:              development
-    forceSSL:         true
-    trustProxy:       true
+    trustProxy:       false

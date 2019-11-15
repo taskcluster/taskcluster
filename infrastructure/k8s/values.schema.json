@@ -664,9 +664,6 @@
         "irc_port": {
           "type": "string"
         },
-        "irc_pulse_queue_name": {
-          "type": "string"
-        },
         "irc_real_name": {
           "type": "string"
         },

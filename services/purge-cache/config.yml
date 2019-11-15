@@ -15,7 +15,7 @@ defaults:
     port:                           !env:number PORT
 
     # Environment 'development' or 'production'
-    env:                            'development'
+    env:                            !env NODE_ENV
 
     # Force SSL not useful when runnning locally
     forceSSL:                       !env:bool FORCE_SSL
@@ -32,10 +32,6 @@ defaults:
       clientId:                   !env TASKCLUSTER_CLIENT_ID
       accessToken:                !env TASKCLUSTER_ACCESS_TOKEN
 
-production:
-  server:
-    env:                          'production'
-
 test:
   taskcluster:
     rootUrl: "https://tc.example.com"
@@ -50,9 +46,4 @@ test:
     port:                         60415
     forceSSL:                     false
     trustProxy:                   true
-
-verify:
-  taskcluster:
-    credentials:
-      clientId:                   !env TASKCLUSTER_CLIENT_ID
-      accessToken:                !env TASKCLUSTER_ACCESS_TOKEN
+    env: development
