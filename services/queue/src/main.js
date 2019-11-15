@@ -21,6 +21,7 @@ let libReferences = require('taskcluster-lib-references');
 let App = require('taskcluster-lib-app');
 let {sasCredentials} = require('taskcluster-lib-azure');
 let pulse = require('taskcluster-lib-pulse');
+const QuickLRU = require('quick-lru');
 
 // Create component loader
 let load = loader({
@@ -387,6 +388,7 @@ let load = loader({
         monitor: ctx.monitor.childMonitor('api-context'),
         workClaimer: ctx.workClaimer,
         workerInfo: ctx.workerInfo,
+        LRUcache: new QuickLRU({maxSize: ctx.cfg.app.taskCacheMaxSize || 10}),
       },
       rootUrl: ctx.cfg.taskcluster.rootUrl,
       schemaset: ctx.schemaset,
