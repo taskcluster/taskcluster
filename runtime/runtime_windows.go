@@ -93,7 +93,9 @@ func InteractiveUsername() (string, error) {
 }
 
 func AutoLogonUser() (username string) {
-	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`, registry.QUERY_VALUE)
+	// Set flag registry.WOW64_64KEY since Windows 10 ARM machines will otherwise read from:
+	// HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Winlogon
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`, registry.QUERY_VALUE|registry.WOW64_64KEY)
 	if err != nil {
 		log.Printf("Hit error reading Winlogon registry key - assume no autologon set: %v", err)
 		return
@@ -108,7 +110,9 @@ func AutoLogonUser() (username string) {
 }
 
 func SetAutoLogin(user *OSUser) error {
-	k, _, err := registry.CreateKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`, registry.WRITE)
+	// Set flag registry.WOW64_64KEY since Windows 10 ARM machines will otherwise write to:
+	// HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Winlogon
+	k, _, err := registry.CreateKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`, registry.WRITE|registry.WOW64_64KEY)
 	if err != nil {
 		return fmt.Errorf(`Was not able to create registry key 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' due to %s`, err)
 	}
