@@ -30,7 +30,6 @@ type (
 		// artifact.
 		//
 		// Possible values:
-		//   * "blob"
 		//   * "reference"
 		//   * "error"
 		StorageType string `json:"storageType"`

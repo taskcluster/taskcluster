@@ -102,7 +102,6 @@ let builder = new APIBuilder({
     'Worker', // data.Worker instance
     'publicBucket', // bucket instance for public artifacts
     'privateBucket', // bucket instance for private artifacts
-    'blobStore', // BlobStore for azure artifacts
     'publisher', // publisher from base.Exchanges
     'claimTimeout', // Number of seconds before a claim expires
     'queueService', // Azure QueueService object from queueservice.js
@@ -112,14 +111,9 @@ let builder = new APIBuilder({
     'monitor', // base.monitor instance
     'workClaimer', // Instance of WorkClaimer
     'workerInfo', // Instance of WorkerInfo
-    's3Controller', // Instance of remotely-signed-s3.Controller
-    's3Runner', // Instance of remotely-signed-s3.Runner
     'useCloudMirror', // If true, use the cloud-mirror service
     'cloudMirrorHost', // Hostname of the cloud-mirror service
     'artifactRegion', // Region where artifacts are stored (no cloud-mirror)
-    'blobRegion', // Region where blobs are stored (no cloud-mirror)
-    'publicBlobBucket', // Bucket containing public blobs
-    'privateBlobBucket', // Bucket containing private blobs
   ],
 });
 
