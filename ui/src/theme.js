@@ -303,6 +303,14 @@ const createTheme = isDarkTheme => {
           backgroundColor: THEME.SECONDARY,
         },
       },
+      MuiPickersToolbarText: {
+        toolbarTxt: {
+          color: THEME.PRIMARY_TEXT_DARK,
+        },
+        toolbarBtnSelected: {
+          color: THEME.PRIMARY_TEXT_DARK,
+        },
+      },
       MuiPickersToolbarButton: {
         toolbarBtn: {
           '&:hover, &:focus': {
@@ -325,7 +333,7 @@ const createTheme = isDarkTheme => {
           '&:focus': {
             color: isDarkTheme ? 'white' : '#000',
           },
-          '&$selected': {
+          '&$yearSelected': {
             color: isDarkTheme ? 'white' : '#000',
           },
         },
@@ -352,11 +360,16 @@ const createTheme = isDarkTheme => {
         },
       },
       MuiPickersDay: {
-        isSelected: {
+        daySelected: {
           backgroundColor: THEME.SECONDARY,
         },
         current: {
           color: isDarkTheme ? 'white' : '#000',
+        },
+        day: {
+          color: isDarkTheme
+            ? 'rgba(255, 255, 255, 0.7)'
+            : 'rgba(0, 0, 0, 0.7)',
         },
       },
       MuiPickersModal: {
@@ -366,6 +379,18 @@ const createTheme = isDarkTheme => {
             backgroundColor: isDarkTheme
               ? THEME.TEN_PERCENT_WHITE
               : THEME.TEN_PERCENT_BLACK,
+          },
+        },
+      },
+      MuiDialogActions: {
+        root: {
+          '& button': {
+            color: isDarkTheme ? 'white' : '#000',
+            '&:hover': {
+              backgroundColor: isDarkTheme
+                ? THEME.TEN_PERCENT_WHITE
+                : THEME.TEN_PERCENT_BLACK,
+            },
           },
         },
       },
