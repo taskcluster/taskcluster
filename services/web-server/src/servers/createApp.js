@@ -7,6 +7,7 @@ const express = require('express');
 const playground = require('graphql-playground-middleware-express').default;
 const passport = require('passport');
 const url = require('url');
+const MemoryStore = require('memorystore')(session);
 const credentials = require('./credentials');
 const oauth2AccessToken = require('./oauth2AccessToken');
 const oauth2 = require('./oauth2');
@@ -48,7 +49,14 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
   });
 
   app.use(session({
-    store: new SessionStore(),
+    store: process.env.NODE_ENV === 'production' ?
+      new SessionStore() :
+      // Run MemoryStore in local development so that we don't rely on Azure to store sessions.
+      // The login story is messy at the moment.
+      new MemoryStore({
+        // prune expired entries every 1h
+        checkPeriod: 1000 * 60 * 60,
+      }),
     secret: cfg.login.sessionSecret,
     sameSite: true,
     resave: false,
