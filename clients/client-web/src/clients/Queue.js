@@ -27,7 +27,6 @@ export default class Queue extends Client {
     this.reportFailed.entry = {"args":["taskId","runId"],"category":"Queue Service","method":"post","name":"reportFailed","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/failed","scopes":{"AnyOf":["queue:resolve-task:<taskId>/<runId>",{"AllOf":["queue:resolve-task","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.reportException.entry = {"args":["taskId","runId"],"category":"Queue Service","input":true,"method":"post","name":"reportException","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/exception","scopes":{"AnyOf":["queue:resolve-task:<taskId>/<runId>",{"AllOf":["queue:resolve-task","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.createArtifact.entry = {"args":["taskId","runId","name"],"category":"Queue Service","input":true,"method":"post","name":"createArtifact","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/artifacts/<name>","scopes":{"AnyOf":["queue:create-artifact:<taskId>/<runId>",{"AllOf":["queue:create-artifact:<name>","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.completeArtifact.entry = {"args":["taskId","runId","name"],"category":"Queue Service","input":true,"method":"put","name":"completeArtifact","query":[],"route":"/task/<taskId>/runs/<runId>/artifacts/<name>","scopes":{"AnyOf":["queue:create-artifact:<taskId>/<runId>",{"AllOf":["queue:create-artifact:<name>","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.getArtifact.entry = {"args":["taskId","runId","name"],"category":"Queue Service","method":"get","name":"getArtifact","query":[],"route":"/task/<taskId>/runs/<runId>/artifacts/<name>","scopes":{"if":"private","then":{"AllOf":["queue:get-artifact:<name>"]}},"stability":"stable","type":"function"}; // eslint-disable-line
     this.getLatestArtifact.entry = {"args":["taskId","name"],"category":"Queue Service","method":"get","name":"getLatestArtifact","query":[],"route":"/task/<taskId>/artifacts/<name>","scopes":{"if":"private","then":{"AllOf":["queue:get-artifact:<name>"]}},"stability":"stable","type":"function"}; // eslint-disable-line
     this.listArtifacts.entry = {"args":["taskId","runId"],"category":"Queue Service","method":"get","name":"listArtifacts","output":true,"query":["continuationToken","limit"],"route":"/task/<taskId>/runs/<runId>/artifacts","stability":"experimental","type":"function"}; // eslint-disable-line
@@ -309,24 +308,6 @@ export default class Queue extends Client {
   // artifact. Note that `PUT` request **must** specify the `content-length`
   // header and **must** give the `content-type` header the same value as in
   // the request to `createArtifact`.
-  // DEPRECATED **Blob artifacts**, are useful for storing large files.  Currently, these
-  // are all stored in S3 but there are facilities for adding support for other
-  // backends in futre.  A call for this type of artifact must provide information
-  // about the file which will be uploaded.  This includes sha256 sums and sizes.
-  // This method will return a list of general form HTTP requests which are signed
-  // by AWS S3 credentials managed by the Queue.  Once these requests are completed
-  // the list of `ETag` values returned by the requests must be passed to the
-  // queue `completeArtifact` method
-  // DEPRECATED **Azure artifacts** are stored in _Azure Blob Storage_ service
-  // which given the consistency guarantees and API interface offered by Azure
-  // is more suitable for artifacts that will be modified during the execution
-  // of the task. For example docker-worker has a feature that persists the
-  // task log to Azure Blob Storage every few seconds creating a somewhat
-  // live log. A request to create an Azure artifact will return a URL
-  // featuring a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),
-  // refer to MSDN for further information on how to use these.
-  // **Warning: azure artifact is currently an experimental feature subject
-  // to changes and data-drops.**
   // **Reference artifacts**, only consists of meta-data which the queue will
   // store for you. These artifacts really only have a `url` property and
   // when the artifact is requested the client will be redirect the URL
@@ -356,22 +337,6 @@ export default class Queue extends Client {
     this.validate(this.createArtifact.entry, args);
 
     return this.request(this.createArtifact.entry, args);
-  }
-  /* eslint-disable max-len */
-  // This endpoint finalises an upload done through the blob `storageType`.
-  // The queue will ensure that the task/run is still allowing artifacts
-  // to be uploaded.  For single-part S3 blob artifacts, this endpoint
-  // will simply ensure the artifact is present in S3.  For multipart S3
-  // artifacts, the endpoint will perform the commit step of the multipart
-  // upload flow.  As the final step for both multi and single part artifacts,
-  // the `present` entity field will be set to `true` to reflect that the
-  // artifact is now present and a message published to pulse.  NOTE: This
-  // endpoint *must* be called for all artifacts of storageType 'blob'
-  /* eslint-enable max-len */
-  completeArtifact(...args) {
-    this.validate(this.completeArtifact.entry, args);
-
-    return this.request(this.completeArtifact.entry, args);
   }
   /* eslint-disable max-len */
   // Get artifact by `<name>` from a specific run.
@@ -415,13 +380,10 @@ export default class Queue extends Client {
   // artifact must also be validated against the values specified in the original queue response
   // 1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`
   // must not occur
-  // 1. A request which has x-taskcluster-artifact-storage-type value of `blob` and does not
-  // have x-taskcluster-location-content-sha256 or x-taskcluster-location-content-length
-  // must be treated as an error
   // **Headers**
   // The following important headers are set on the response to this method:
   // * location: the url of the artifact if a redirect is to be performed
-  // * x-taskcluster-artifact-storage-type: the storage type.  Example: blob, s3, error
+  // * x-taskcluster-artifact-storage-type: the storage type.  Example: s3
   // The following important headers are set on responses to this method for Blob artifacts
   // * x-taskcluster-location-content-sha256: the SHA256 of the artifact
   // *after* any content-encoding is undone.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})

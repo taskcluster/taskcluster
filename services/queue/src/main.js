@@ -3,7 +3,6 @@ let debug = require('debug')('app:main');
 let taskcluster = require('taskcluster-client');
 let builder = require('./api');
 let exchanges = require('./exchanges');
-let BlobStore = require('./blobstore');
 let data = require('./data');
 let Bucket = require('./bucket');
 let QueueService = require('./queueservice');
@@ -20,7 +19,6 @@ let monitorManager = require('./monitor');
 let SchemaSet = require('taskcluster-lib-validate');
 let libReferences = require('taskcluster-lib-references');
 let App = require('taskcluster-lib-app');
-let remoteS3 = require('remotely-signed-s3');
 let {sasCredentials} = require('taskcluster-lib-azure');
 let pulse = require('taskcluster-lib-pulse');
 
@@ -95,29 +93,14 @@ let load = loader({
     },
   },
 
-  // Create blobStore
-  blobStore: {
-    requires: ['cfg'],
-    setup: async ({cfg}) => {
-      let store = new BlobStore({
-        container: cfg.app.artifactContainer,
-        credentials: cfg.azure,
-      });
-      await store.createContainer();
-      await store.setupCORS();
-      return store;
-    },
-  },
-
   // Create artifacts table
   Artifact: {
     requires: [
       'cfg', 'monitor', 'process',
-      'blobStore', 'publicArtifactBucket', 'privateArtifactBucket',
-      's3Controller',
+      'publicArtifactBucket', 'privateArtifactBucket',
     ],
-    setup: async ({cfg, monitor, process, blobStore, publicArtifactBucket,
-      privateArtifactBucket, s3Controller}) =>
+    setup: async ({cfg, monitor, process, publicArtifactBucket,
+      privateArtifactBucket}) =>
       data.Artifact.setup({
         tableName: cfg.app.artifactTableName,
         operationReportChance: cfg.app.azureReportChance,
@@ -129,11 +112,9 @@ let load = loader({
           credentials: cfg.taskcluster.credentials,
         }),
         context: {
-          blobStore,
           publicBucket: publicArtifactBucket,
           privateBucket: privateArtifactBucket,
           monitor: monitor.childMonitor('data.Artifact'),
-          s3Controller: s3Controller,
         },
         monitor: monitor.childMonitor('table.artifacts'),
       }),
@@ -364,24 +345,6 @@ let load = loader({
     },
   },
 
-  s3Controller: {
-    requires: ['cfg'],
-    setup: async ({cfg}) => {
-      return new remoteS3.Controller({
-        region: cfg.app.blobArtifactRegion,
-        accessKeyId: cfg.aws.accessKeyId,
-        secretAccessKey: cfg.aws.secretAccessKey,
-      });
-    },
-  },
-
-  s3Runner: {
-    requires: ['cfg'],
-    setup: async ({cfg}) => {
-      return new remoteS3.Runner();
-    },
-  },
-
   generateReferences: {
     requires: ['cfg', 'schemaset'],
     setup: ({cfg, schemaset}) => libReferences.fromService({
@@ -394,10 +357,9 @@ let load = loader({
     requires: [
       'cfg', 'publisher', 'schemaset', 'Task', 'Artifact',
       'TaskGroup', 'TaskGroupMember', 'TaskGroupActiveSet', 'queueService',
-      'blobStore', 'publicArtifactBucket', 'privateArtifactBucket',
+      'publicArtifactBucket', 'privateArtifactBucket',
       'regionResolver', 'monitor', 'dependencyTracker', 'TaskDependency',
       'workClaimer', 'Provisioner', 'workerInfo', 'WorkerType', 'Worker',
-      's3Controller', 's3Runner',
     ],
     setup: (ctx) => builder.build({
       context: {
@@ -415,7 +377,6 @@ let load = loader({
         publisher: ctx.publisher,
         claimTimeout: ctx.cfg.app.claimTimeout,
         queueService: ctx.queueService,
-        blobStore: ctx.blobStore,
         publicBucket: ctx.publicArtifactBucket,
         privateBucket: ctx.privateArtifactBucket,
         regionResolver: ctx.regionResolver,
@@ -426,11 +387,6 @@ let load = loader({
         monitor: ctx.monitor.childMonitor('api-context'),
         workClaimer: ctx.workClaimer,
         workerInfo: ctx.workerInfo,
-        s3Controller: ctx.s3Controller,
-        s3Runner: ctx.s3Runner,
-        blobRegion: ctx.cfg.app.blobArtifactRegion,
-        publicBlobBucket: ctx.cfg.app.publicBlobArtifactBucket,
-        privateBlobBucket: ctx.cfg.app.privateBlobArtifactBucket,
       },
       rootUrl: ctx.cfg.taskcluster.rootUrl,
       schemaset: ctx.schemaset,
