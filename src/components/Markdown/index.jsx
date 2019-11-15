@@ -20,6 +20,7 @@ markdown.use(linkAttributes, {
 @withStyles(theme => ({
   root: {
     fontFamily: theme.typography.fontFamily,
+    fontSize: '1rem',
     color: theme.palette.text.primary,
     '& > p': {
       margin: 0,
@@ -39,10 +40,10 @@ markdown.use(linkAttributes, {
       lineHeight: 1.6,
       fontFamily: 'Consolas, "Liberation Mono", Menlo, Courier, monospace',
       padding: '3px 6px',
-      fontSize: 14,
+      fontSize: '0.875rem',
     },
     '& p code, & ul code, & pre code': {
-      fontSize: 14,
+      fontSize: '0.875rem',
       lineHeight: 1.6,
     },
     '& h1': {
@@ -103,30 +104,30 @@ markdown.use(linkAttributes, {
       borderSpacing: 0,
       overflow: 'hidden',
       '& .prop-name': {
-        fontSize: 13,
+        fontSize: '0.8125rem',
         fontFamily: 'Consolas, "Liberation Mono", Menlo, monospace',
       },
       '& .required': {
         color: theme.palette.type === 'light' ? '#006500' : '#9bc89b',
       },
       '& .prop-type': {
-        fontSize: 13,
+        fontSize: '0.8125rem',
         fontFamily: 'Consolas, "Liberation Mono", Menlo, monospace',
         color: theme.palette.type === 'light' ? '#932981' : '#dbb0d0',
       },
       '& .prop-default': {
-        fontSize: 13,
+        fontSize: '0.8125rem',
         fontFamily: 'Consolas, "Liberation Mono", Menlo, monospace',
         borderBottom: `1px dotted ${theme.palette.text.hint}`,
       },
     },
     '& thead': {
-      fontSize: 14,
+      fontSize: '0.875rem',
       fontWeight: theme.typography.fontWeightMedium,
       color: theme.palette.text.secondary,
     },
     '& tbody': {
-      fontSize: 14,
+      fontSize: '0.875rem',
       lineHeight: 1.5,
       color: theme.palette.text.primary,
     },
@@ -144,7 +145,7 @@ markdown.use(linkAttributes, {
       paddingRight: 3 * theme.spacing(1),
     },
     '& td code': {
-      fontSize: 13,
+      fontSize: '.8125rem',
       lineHeight: 1.6,
     },
     '& th': {
