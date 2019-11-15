@@ -936,28 +936,6 @@ await asyncAuth.sentryDSN(project) # -> result
 await asyncAuth.sentryDSN(project='value') # -> result
 ```
 
-#### Get Token for Statsum Project
-Get temporary `token` and `baseUrl` for sending metrics to statsum.
-
-The token is valid for 24 hours, clients should refresh after expiration.
-
-
-
-Takes the following arguments:
-
-  * `project`
-
-Has required output schema
-
-```python
-# Sync calls
-auth.statsumToken(project) # -> result
-auth.statsumToken(project='value') # -> result
-# Async call
-await asyncAuth.statsumToken(project) # -> result
-await asyncAuth.statsumToken(project='value') # -> result
-```
-
 #### Get a client token for the Websocktunnel service
 Get a temporary token suitable for use connecting to a
 [websocktunnel](https://github.com/taskcluster/websocktunnel) server.

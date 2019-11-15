@@ -497,23 +497,6 @@ module.exports = {
         },
         {
           "args": [
-            "project"
-          ],
-          "category": "Auth Service",
-          "description": "Get temporary `token` and `baseUrl` for sending metrics to statsum.\n\nThe token is valid for 24 hours, clients should refresh after expiration.",
-          "method": "get",
-          "name": "statsumToken",
-          "output": "v1/statsum-token-response.json#",
-          "query": [
-          ],
-          "route": "/statsum/<project>/token",
-          "scopes": "auth:statsum:<project>",
-          "stability": "stable",
-          "title": "Get Token for Statsum Project",
-          "type": "function"
-        },
-        {
-          "args": [
             "wstAudience",
             "wstClient"
           ],

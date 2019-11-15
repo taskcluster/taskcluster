@@ -42,10 +42,6 @@ defaults:
     # Similarly, delay before deleting expired clients
     clientExpirationDelay:      '-1 hour'
 
-    statsum:
-      secret:                   !env:optional STATSUM_API_SECRET
-      baseUrl:                  !env:optional STATSUM_BASE_URL
-
     websocktunnel:
       secret:                   !env:optional WEBSOCKTUNNEL_SECRET
 
@@ -140,9 +136,6 @@ test:
       authToken:                whatever
       initialTeam:              taskcluster
       keyPrefix:                auth-test
-    statsum:
-      secret:                   'secret'
-      baseUrl:                  'http://localhost.com'
     websocktunnel:
       secret:                   'test-secret'
   azure:

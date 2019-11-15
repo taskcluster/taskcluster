@@ -90,7 +90,6 @@
     "serialize-error": "^5.0.0",
     "sift": "^8.0.0",
     "slugid": "^2.0.0",
-    "statsum": "^0.6.0",
     "subscriptions-transport-ws": "^0.9.7",
     "superagent": "^5.0.0",
     "tar-stream": "^2.0.0",

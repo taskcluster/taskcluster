@@ -147,12 +147,6 @@
             }
           ]
         },
-        "statsum_api_secret": {
-          "type": "string"
-        },
-        "statsum_base_url": {
-          "type": "string"
-        },
         "test_bucket": {
           "type": "string"
         },
