@@ -41,23 +41,23 @@ const DOTS_VARIANT_LIMIT = 5;
 @withStyles(
   theme => ({
     headline: {
-      paddingLeft: theme.spacing.double,
-      paddingRight: theme.spacing.double,
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
     },
     cardContent: {
       paddingLeft: 0,
       paddingRight: 0,
-      paddingTop: theme.spacing.double,
-      paddingBottom: theme.spacing.double,
+      paddingTop: theme.spacing(2),
+      paddingBottom: theme.spacing(2),
       '&:last-child': {
-        paddingBottom: theme.spacing.triple,
+        paddingBottom: theme.spacing(3),
       },
     },
     controls: {
       display: 'flex',
       alignItems: 'center',
-      paddingLeft: theme.spacing.unit,
-      paddingBottom: theme.spacing.unit,
+      paddingLeft: theme.spacing(1),
+      paddingBottom: theme.spacing(1),
     },
     listItemButton: {
       ...theme.mixins.listItemButton,
@@ -66,7 +66,7 @@ const DOTS_VARIANT_LIMIT = 5;
       cursor: 'pointer',
     },
     logButton: {
-      marginRight: theme.spacing.unit,
+      marginRight: theme.spacing(1),
     },
     artifactsListItemContainer: {
       display: 'block',
@@ -100,11 +100,11 @@ const DOTS_VARIANT_LIMIT = 5;
       justifyContent: 'center',
     },
     liveLogLabel: {
-      marginLeft: theme.spacing.unit / 2,
-      marginBottom: theme.spacing.unit / 2,
+      marginLeft: theme.spacing(1) / 2,
+      marginBottom: theme.spacing(1) / 2,
     },
     previousPageArrow: {
-      marginLeft: -theme.spacing.unit,
+      marginLeft: -theme.spacing(1),
       marginRight: 0,
       '& .mdi-icon': {
         fill: 'currentcolor',
