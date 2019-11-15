@@ -99,8 +99,8 @@ class VersionZero extends TcYaml {
       timestamp: Math.floor(new Date()),
       organization: payload.organization,
       repository: payload.repository,
-      'taskcluster.docker.provisionerId': cfg.intree.provisionerId,
-      'taskcluster.docker.workerType': cfg.intree.workerType,
+      'taskcluster.docker.provisionerId': cfg.intree.provisionerId || 'unknown',
+      'taskcluster.docker.workerType': cfg.intree.workerType || 'unknown',
     }));
   }
   compileTasks(config, cfg, payload, now) {
