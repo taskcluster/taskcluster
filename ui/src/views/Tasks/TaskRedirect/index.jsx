@@ -42,7 +42,7 @@ export default class TaskRedirect extends Component {
                   to={{
                     pathname:
                       action === 'interactive'
-                        ? '/tasks/create/interactive'
+                        ? '/tasks/create?interactive=1'
                         : '/tasks/create',
                     state: {
                       task:
