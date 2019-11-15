@@ -178,7 +178,7 @@ don't take a payload.
 Also please consider using a relatively limited expiration time, as it's not
 possible to retract a signed url without revoking your credentials.
 For more technical details on signed urls, see _bewit_ urls in
-[hawk](https://github.com/hueniverse/hawk).
+[@hapi/hawk](https://github.com/hapijs/hawk).
 
 ## Generating Temporary Credentials
 If you have non-temporary taskcluster credentials you can generate a set of

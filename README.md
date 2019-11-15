@@ -64,7 +64,6 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [GitHub Service](services/github#readme)
     * [Hooks Service](services/hooks#readme)
     * [Index Service](services/index#readme)
-    * [Login Service](services/login#readme)
     * [Notify Service](services/notify#readme)
     * [Purge-Cache Service](services/purge-cache#readme)
     * [Queue Service](services/queue#readme)

@@ -231,8 +231,8 @@ tasks:
   $match:
     'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]':
       taskId: {$eval: as_slugid("pr_task")}
-      provisionerId: aws-provisioner-v1
-      workerType: github-worker
+      provisionerId: proj-taskcluster
+      workerType: ci
       scopes:
         - secrets:get:project/taskcluster/testing/taskcluster-github
       payload:
@@ -253,8 +253,8 @@ tasks:
         source: ${event.repository.url}
     'tasks_for == "github-push"':
       taskId: {$eval: as_slugid("push_task")}
-      provisionerId: aws-provisioner-v1
-      workerType: github-worker
+      provisionerId: proj-taskcluster
+      workerType: ci
       scopes:
         - secrets:get:project/taskcluster/testing/taskcluster-github
       payload:

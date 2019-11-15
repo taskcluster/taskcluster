@@ -682,11 +682,10 @@ export default class ViewTask extends Component {
 
   retriggerTask = async () => {
     const taskId = nice();
-    const task = removeKeys(cloneDeep(this.props.data.task), [
-      ...TASK_ADDED_FIELDS,
-      '__typename',
-      'dependencies',
-    ]);
+    const task = omit(
+      [...TASK_ADDED_FIELDS, 'dependencies'],
+      removeKeys(cloneDeep(this.props.data.task), ['__typename'])
+    );
     const now = Date.now();
     const created = Date.parse(task.created);
 
@@ -801,8 +800,9 @@ export default class ViewTask extends Component {
 
     return (
       <Dashboard
-        title={task ? task.metadata.name : 'Task'}
+        title={task ? `Task "${task.metadata.name}"` : 'Task'}
         helpView={<HelpView description={description} />}
+        disableTitleFormatting
         search={
           <Search
             onSubmit={this.handleTaskSearchSubmit}

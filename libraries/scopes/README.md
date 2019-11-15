@@ -179,12 +179,12 @@ that one set of scopes must be completely satisfied.
 
 ```js
 let myScopes = [
-    'queue:create-task:aws-provisioner-v1/*',
+    'queue:create-task:some-provisioner-id/*',
     'secrets:get:garbage/my-secrets/*',
 ]
 assert(scopeUtils.scopeMatch(myScopes, [
     // either both of these scopes must be satisfied
-    ['queue:create-task:aws-provisioner-v1/my-worker', 'secrets:get:garbage/my-secrets/xx'],
+    ['queue:create-task:some-provisioner-id/my-worker', 'secrets:get:garbage/my-secrets/xx'],
     // or this scope
     ['some-other-scope'],
 ])

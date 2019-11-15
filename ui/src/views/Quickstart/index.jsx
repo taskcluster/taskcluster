@@ -35,8 +35,8 @@ const taskDefinition = {
   tasks: {
     $match: {
       taskId: { $eval: 'as_slugid("pr_task")' },
-      provisionerId: 'aws-provisioner-v1',
-      workerType: 'github-worker',
+      provisionerId: 'proj-getting-started',
+      workerType: 'tutorial',
       payload: {
         maxRunTime: 3600,
         image: 'node',

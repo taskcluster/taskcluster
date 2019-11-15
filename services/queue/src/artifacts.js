@@ -1,9 +1,7 @@
-const debug = require('debug')('app:artifacts');
 const _ = require('lodash');
 const assert = require('assert');
 const APIBuilder = require('taskcluster-lib-api');
 const urllib = require('url');
-const crypto = require('crypto');
 const builder = require('./api');
 const Entity = require('azure-entities');
 
@@ -35,38 +33,15 @@ builder.declare({
     'intermediate artifacts from data processing applications, as the',
     'artifacts can be set to expire a few days later.',
     '',
-    'We currently support 3 different `storageType`s, each storage type have',
-    'slightly different features and in some cases difference semantics.',
-    'We also have 2 deprecated `storageType`s which are only maintained for',
-    'backwards compatiability and should not be used in new implementations',
+    'We currently support "S3 Artifacts" officially, with remaining support',
+    'for two deprecated types.  Do not use these deprecated types.',
     '',
-    '**Blob artifacts**, are useful for storing large files.  Currently, these',
-    'are all stored in S3 but there are facilities for adding support for other',
-    'backends in futre.  A call for this type of artifact must provide information',
-    'about the file which will be uploaded.  This includes sha256 sums and sizes.',
-    'This method will return a list of general form HTTP requests which are signed',
-    'by AWS S3 credentials managed by the Queue.  Once these requests are completed',
-    'the list of `ETag` values returned by the requests must be passed to the',
-    'queue `completeArtifact` method',
-    '',
-    '**S3 artifacts**, DEPRECATED is useful for static files which will be',
+    '**S3 artifacts**, is useful for static files which will be',
     'stored on S3. When creating an S3 artifact the queue will return a',
     'pre-signed URL to which you can do a `PUT` request to upload your',
     'artifact. Note that `PUT` request **must** specify the `content-length`',
     'header and **must** give the `content-type` header the same value as in',
     'the request to `createArtifact`.',
-    '',
-    '**Azure artifacts**, DEPRECATED are stored in _Azure Blob Storage_ service',
-    'which given the consistency guarantees and API interface offered by Azure',
-    'is more suitable for artifacts that will be modified during the execution',
-    'of the task. For example docker-worker has a feature that persists the',
-    'task log to Azure Blob Storage every few seconds creating a somewhat',
-    'live log. A request to create an Azure artifact will return a URL',
-    'featuring a [Shared-Access-Signature]' +
-    '(http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),',
-    'refer to MSDN for further information on how to use these.',
-    '**Warning: azure artifact is currently an experimental feature subject',
-    'to changes and data-drops.**',
     '',
     '**Reference artifacts**, only consists of meta-data which the queue will',
     'store for you. These artifacts really only have a `url` property and',
@@ -192,83 +167,15 @@ builder.declare({
   let isPublic = /^public\//.test(name);
   let details = {};
   let present = false;
-  let uploadId;
   switch (storageType) {
-    case 'blob':
-    // Generate the details that we'll be using.
-      details.contentLength = input.contentLength;
-      details.contentSha256 = input.contentSha256;
-      if (input.transferLength) {
-        details.transferLength = input.transferLength;
-      }
-      if (input.transferSha256) {
-        details.transferSha256 = input.transferSha256;
-      }
-      // We want to ensure, for idempotency reasons, that any following
-      // requests to createArtifact() use the same set of part information.
-      // Instead of storing the entire parts list in the entity, we'll instead
-      // store a hash of the JSON serialized version of the list.
-      //
-      // Note that this means that for loaded entities we'll need to use the
-      // details.partsHash field to check whether we're multipart or not
-      // instead of the details.parts list
-      if (input.parts) {
-        let partsHash = crypto.createHash('sha256');
-        for (let part of input.parts) {
-          partsHash.update(`${part.sha256}:${part.size}_`);
-        }
-        partsHash = partsHash.digest('hex');
-        details.partsHash = partsHash;
-      }
-
-      details.provider = 's3';
-      details.region = this.blobRegion;
-      if (input.contentEncoding) {
-        details.contentEncoding = input.contentEncoding;
-      }
-
-      if (isPublic) {
-        details.bucket = this.publicBlobBucket;
-      } else {
-        details.bucket = this.privateBlobBucket;
-      }
-
-      details.key = `${taskId}/${runId}/${name}`;
-      if (input.parts) {
-        uploadId = await this.s3Controller.initiateMultipartUpload({
-          bucket: details.bucket,
-          key: details.key,
-          sha256: details.contentSha256,
-          size: details.contentLength,
-          transferSha256: details.transferSha256 ? details.transferSha256 : details.contentSha256,
-          transferSize: details.transferLength ? details.transferLength : details.contentLength,
-          metadata: {taskId, runId, name},
-          contentType: contentType,
-          contentEncoding: details.contentEncoding || 'identity',
-        });
-        debug(`Multipart Artifact init ${details.bucket}/${details.key} ${uploadId}`);
-        assert(uploadId);
-        details.uploadId = uploadId;
-      }
-      break;
     case 's3':
       present = true;
-      // TODO: Once we're deprecating this artifact type, we'll throw an error
-      // here
       if (isPublic) {
         details.bucket = this.publicBucket.bucket;
       } else {
         details.bucket = this.privateBucket.bucket;
       }
       details.prefix = [taskId, runId, name].join('/');
-      break;
-
-    case 'azure':
-      present = true;
-      // TODO: Once we're deprecating this artifact type, we'll throw an error
-      // here
-      details.container = this.blobStore.container;
-      details.path = [taskId, runId, name].join('/');
       break;
 
     case 'reference':
@@ -324,43 +231,7 @@ builder.declare({
         });
     }
 
-    // Check that details match, unless this has storageType 'reference', we'll
-    // workers to overwrite redirect artifacts.  We handle blob artifacts
-    // differently than other all the other artifacts.  We consider a second
-    // creation of the same blob a non-error.  If the blob is a multipart
-    // upload we need to handle an already-existing uploadId gracefully.  In
-    // the case of a conflict, we will cancel the uploadId created in *this*
-    // request and will eventually return requests based on the existing
-    // uploadId.
-    if (storageType === 'blob') {
-      let storedWithoutUploadId = _.omit(artifact.details, 'uploadId');
-      let inputWithoutUploadId = _.omit(details, 'uploadId');
-
-      // The two good conditions are that the details are identical or that
-      // they're multipart uploads and the uploadId is the only differing
-      // attribute.  In that case, we'll cancel the uploadId we just created
-      if (_.isEqual(artifact.details, details)) {
-        // Do nothing!
-      } else if (input.parts && _.isEqual(storedWithoutUploadId, inputWithoutUploadId)) {
-        if (artifact.details.uploadId !== details.uploadId) {
-          await this.s3Controller.abortMultipartUpload({
-            bucket: details.bucket,
-            key: details.key,
-            uploadId: details.uploadId,
-          });
-        }
-      } else {
-        return res.reportError('RequestConflict',
-          'Artifact already exists, with different contentType or error message\n\n' +
-          'Existing artifact information: {{originalArtifact}}', {
-            originalArtifact: {
-              storageType: artifact.storageType,
-              contentType: artifact.contentType,
-              expires: artifact.expires,
-            },
-          });
-      }
-    } else if (storageType !== 'reference' &&
+    if (storageType !== 'reference' &&
         !_.isEqual(artifact.details, details)) {
       return res.reportError('RequestConflict',
         'Artifact already exists, with different contentType or error message\n\n' +
@@ -376,25 +247,12 @@ builder.declare({
     // Update expiration and detail, which may have been modified
     await artifact.modify((artifact) => {
       artifact.expires = expires;
-      // NOTE: the conditional here is only because I'm unsure of all the
-      // ramifications of not doing the details update for other storage types.
-      // If this is OK, feel free to remove the conditional
-      //
-      // The problem with this for blob storage type is that it ends up
-      // overwriting the UploadId that we already had stored with one that we
-      // don't want.  Since nothing in details should be mutable which would be
-      // stored in the createArtifact routine, we shouldn't overwrite here.  In
-      // fact, doing so overwrites the valid old UploadId with the just
-      // cancelled one when running an idempotent operation
-      if (storageType !== 'blob') {
-        artifact.details = details;
-      }
+      artifact.details = details;
     });
   }
 
-  // This event is *invalid* for s3/azure storage types so we'll stop sending it.
-  // It's only valid for error, reference and blob, but we should only send it
-  // here for error and reference storageTypes
+  // This event is *invalid* for s3 storage types so we'll stop sending it.
+  // It's only valid for error and reference types.
   if (artifact.storageType === 'error' || artifact.storageType === 'reference') {
     // Publish message about artifact creation
     await this.publisher.artifactCreated({
@@ -407,40 +265,6 @@ builder.declare({
   }
 
   switch (artifact.storageType) {
-    case 'blob': {
-      let expiry = new Date(new Date().getTime() + 15 * 60 * 1000);
-      let requests;
-      // If we're supposed to do a multipart upload, we should generate an UploadId
-      // if it doesn't already exist.  We should store that ID in the entity
-      if (input.parts) {
-        requests = await this.s3Controller.generateMultipartRequest({
-          bucket: artifact.details.bucket,
-          key: artifact.details.key,
-          uploadId: artifact.details.uploadId,
-          parts: input.parts,
-        });
-      } else {
-        let singlePartRequest = await this.s3Controller.generateSinglepartRequest({
-          bucket: artifact.details.bucket,
-          key: artifact.details.key,
-          sha256: artifact.details.contentSha256,
-          size: artifact.details.contentLength,
-          transferSha256: artifact.details.transferSha256,
-          transferSize: artifact.details.transferLength,
-          metadata: {taskId, runId, name},
-          tags: {taskId, runId, name},
-          contentType: artifact.contentType,
-          contentEncoding: artifact.details.contentEncoding || 'identity',
-        });
-        requests = [singlePartRequest];
-      }
-      res.reply({
-        storageType: 'blob',
-        expires: expiry.toJSON(),
-        requests: requests,
-      });
-      break;
-    }
     case 's3': {
     // Reply with signed S3 URL
       let expiry = new Date(new Date().getTime() + 45 * 60 * 1000);
@@ -463,20 +287,6 @@ builder.declare({
         contentType: artifact.contentType,
         expires: expiry.toJSON(),
         putUrl: putUrl,
-      });
-    }
-    case 'azure': {
-    // Reply with SAS for azure
-      let expiry = new Date(new Date().getTime() + 30 * 60 * 1000);
-      // Generate SAS
-      let putUrl = this.blobStore.generateWriteSAS(
-        artifact.details.path, {expiry},
-      );
-      return res.reply({
-        storageType: 'azure',
-        contentType: artifact.contentType,
-        expires: expiry.toJSON(),
-        putUrl,
       });
     }
     case 'reference':
@@ -504,36 +314,6 @@ let replyWithArtifact = async function(taskId, runId, name, req, res) {
   // field on all artifact responses so that the downloading utilities can use
   // slightly different logic for each artifact type
   res.set('x-taskcluster-artifact-storage-type', artifact.storageType);
-
-  if (artifact.storageType === 'blob') {
-    // Most of the time, the same base options are used.
-    let getOpts = {
-      bucket: artifact.details.bucket,
-      key: artifact.details.key,
-    };
-
-    res.set('x-taskcluster-location-content-sha256', artifact.details.contentSha256);
-    res.set('x-taskcluster-location-content-length', artifact.details.contentLength);
-    res.set('x-taskcluster-location-transfer-sha256', artifact.details.transferSha256);
-    res.set('x-taskcluster-location-transfer-length', artifact.details.transferLength);
-    res.set('x-taskcluster-location-content-encoding', artifact.details.contentEncoding || 'identity');
-    res.set('x-taskcluster-location-content-type', artifact.details.contentType);
-
-    // TODO: We should consider doing a HEAD on all resources and verifying that
-    // the ETag they have matches the one that we received when creating the artifact.
-    // This is a bit of extra overhead, but it's one more check of consistency
-
-    if (artifact.details.bucket === this.privateBlobBucket) {
-      // TODO: Make sure that we can set expiration of these signed urls
-      getOpts.signed = true;
-      // TODO: Figure out how to set the ETag as a header on this response
-      return res.redirect(303, await this.s3Controller.generateGetUrl(getOpts));
-    } else if (artifact.details.bucket === this.publicBlobBucket) {
-      return res.redirect(303, await this.s3Controller.generateGetUrl(getOpts));
-    } else {
-      throw new Error('Using a bucket we should not');
-    }
-  }
 
   // Handle S3 artifacts
   if (artifact.storageType === 's3') {
@@ -605,23 +385,6 @@ let replyWithArtifact = async function(taskId, runId, name, req, res) {
     return res.redirect(303, url);
   }
 
-  // Handle azure artifacts
-  if (artifact.storageType === 'azure') {
-    if (artifact.details.container !== this.blobStore.container) {
-      let err = new Error('Unknown container: ' +
-                          artifact.details.container + ' for artifact');
-      err.artifact = artifact.json();
-      await this.monitor.reportError(err);
-    }
-    // Generate URL expiration time
-    let expiry = new Date();
-    expiry.setMinutes(expiry.getMinutes() + 30);
-    // Create and redirect to signed URL
-    return res.redirect(303, this.blobStore.createSignedGetUrl(
-      artifact.details.path, {expiry},
-    ));
-  }
-
   // Handle redirect artifacts
   if (artifact.storageType === 'reference') {
     return res.redirect(303, artifact.details.url);
@@ -641,168 +404,6 @@ let replyWithArtifact = async function(taskId, runId, name, req, res) {
   err.artifact = artifact.json();
   this.monitor.reportError(err);
 };
-
-/** Complete artifact */
-builder.declare({
-  method: 'put',
-  route: '/task/:taskId/runs/:runId/artifacts/:name(*)',
-  name: 'completeArtifact',
-  stability: APIBuilder.stability.experimental,
-  category: 'Queue Service',
-  scopes: {AnyOf: [
-    'queue:create-artifact:<taskId>/<runId>',
-    {AllOf: [
-      'queue:create-artifact:<name>',
-      'assume:worker-id:<workerGroup>/<workerId>',
-    ]},
-  ]},
-  input: 'put-artifact-request.json#',
-  title: 'Complete Artifact',
-  description: [
-    'This endpoint finalises an upload done through the blob `storageType`.',
-    'The queue will ensure that the task/run is still allowing artifacts',
-    'to be uploaded.  For single-part S3 blob artifacts, this endpoint',
-    'will simply ensure the artifact is present in S3.  For multipart S3',
-    'artifacts, the endpoint will perform the commit step of the multipart',
-    'upload flow.  As the final step for both multi and single part artifacts,',
-    'the `present` entity field will be set to `true` to reflect that the',
-    'artifact is now present and a message published to pulse.  NOTE: This',
-    'endpoint *must* be called for all artifacts of storageType \'blob\'',
-  ].join('\n'),
-}, async function(req, res) {
-  let taskId = req.params.taskId;
-  let runId = parseInt(req.params.runId, 10);
-  let name = req.params.name;
-  let input = req.body;
-  let isPublic = /^public\//.test(name);
-
-  let [artifact, task] = await Promise.all([
-    this.Artifact.load({taskId, runId, name}, true),
-    this.Task.load({taskId}, true),
-  ]);
-
-  let run = task.runs[runId];
-  if (!run) {
-    return res.reportError('InputError',
-      'Run not found',
-      {});
-  }
-  let workerGroup = run.workerGroup;
-  let workerId = run.workerId;
-
-  await req.authorize({
-    taskId,
-    runId,
-    workerGroup,
-    workerId,
-    name,
-  });
-
-  // Ensure that the run is running
-  if (run.state !== 'running') {
-    let allow = false;
-    if (run.state === 'exception') {
-      // If task was resolved exception, we'll allow artifacts to be uploaded
-      // up to 25 min past resolution. This allows us to report exception as
-      // soon as we know and then upload logs if possible.
-      // Useful because exception usually implies something badly wrong.
-      allow = new Date(run.resolved).getTime() > Date.now() - 25 * 60 * 1000;
-    }
-    if (!allow) {
-      return res.reportError('RequestConflict',
-        'Artifacts cannot be completed for a task after it is ' +
-        'resolved, unless it is resolved \'exception\', and even ' +
-        'in this case only up to 25 min past resolution.' +
-        'This to ensure that artifacts have been uploaded before ' +
-        'a task is \'completed\' and output is consumed by a ' +
-        'dependent task\n\nTask status: {{status}}', {
-          status: task.status(),
-        });
-    }
-  }
-
-  if (artifact.storageType !== 'blob') {
-    return res.reportError('InputError',
-      'Cannot mark this artifact type as completed');
-  } else if (artifact.storageType === 'blob') {
-    // If the artifact is present, we've already done what's required here
-    if (artifact.present) {
-      await this.publisher.artifactCreated({
-        status: task.status(),
-        artifact: artifact.json(),
-        workerGroup,
-        workerId,
-        runId,
-      }, task.routes);
-      return res.status(204).send();
-    }
-    let etag;
-    if (artifact.details.partsHash) {
-      etag = await this.s3Controller.completeMultipartUpload({
-        bucket: artifact.details.bucket,
-        key: artifact.details.key,
-        etags: input.etags,
-        uploadId: artifact.details.uploadId,
-        tags: {taskId, runId, name},
-      });
-    } else {
-      let url = await this.s3Controller.generateUrl({
-        bucket: artifact.details.bucket,
-        key: artifact.details.key,
-        method: 'HEAD',
-        signed: !isPublic,
-      });
-
-      if (urllib.parse(url).protocol !== 'https:') {
-        return res.reportError('InputError', 'Only HTTPS is allowed for artifacts');
-      }
-
-      let headRes = await this.s3Runner.run({
-        req: {
-          url,
-          method: 'HEAD',
-          headers: {},
-        },
-      });
-
-      if (headRes.statusCode >= 300 || headRes.statusCode < 200) {
-        return res.reportError('InternalServerError', [
-          `When attempting to do a HEAD request for the uploaded artifact ${url}`,
-          `a status code of ${headRes.statusCode} was returned.`,
-        ].join(' '), {});
-      }
-
-      if (headRes.headers['x-amz-meta-content-sha256'] !== artifact.details.contentSha256) {
-        let msg = [
-          'Expected S3 object to have SHA256 of ',
-          artifact.details.contentSha256,
-          ' but found its headers to have ',
-          headRes.headers['x-amz-meta-content-sha256'] || 'no value',
-          '',
-        ].join('"');
-        return res.reportError('InputError', msg);
-      }
-
-      etag = input.etags[0];
-    }
-
-    await artifact.modify((artifact) => {
-      artifact.details.etag = etag;
-      // Now that we're finished, we don't want to store the uploadId any longer
-      artifact.details = _.omit(artifact.details, 'uploadId');
-      artifact.present = true;
-    });
-
-    await this.publisher.artifactCreated({
-      status: task.status(),
-      artifact: artifact.json(),
-      workerGroup,
-      workerId,
-      runId,
-    }, task.routes);
-    return res.status(204).send();
-  }
-});
 
 /** Get artifact from run */
 builder.declare({
@@ -865,15 +466,12 @@ builder.declare({
     'artifact must also be validated against the values specified in the original queue response',
     '1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`',
     'must not occur',
-    '1. A request which has x-taskcluster-artifact-storage-type value of `blob` and does not',
-    'have x-taskcluster-location-content-sha256 or x-taskcluster-location-content-length',
-    'must be treated as an error',
     '',
     '**Headers**',
     'The following important headers are set on the response to this method:',
     '',
     '* location: the url of the artifact if a redirect is to be performed',
-    '* x-taskcluster-artifact-storage-type: the storage type.  Example: blob, s3, error',
+    '* x-taskcluster-artifact-storage-type: the storage type.  Example: s3',
     '',
     'The following important headers are set on responses to this method for Blob artifacts',
     '',

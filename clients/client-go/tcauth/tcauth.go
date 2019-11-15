@@ -667,31 +667,6 @@ func (auth *Auth) SentryDSN_SignedURL(project string, duration time.Duration) (*
 	return (&cd).SignedURL("/sentry/"+url.QueryEscape(project)+"/dsn", nil, duration)
 }
 
-// Get temporary `token` and `baseUrl` for sending metrics to statsum.
-//
-// The token is valid for 24 hours, clients should refresh after expiration.
-//
-// Required scopes:
-//   auth:statsum:<project>
-//
-// See #statsumToken
-func (auth *Auth) StatsumToken(project string) (*StatsumTokenResponse, error) {
-	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/statsum/"+url.QueryEscape(project)+"/token", new(StatsumTokenResponse), nil)
-	return responseObject.(*StatsumTokenResponse), err
-}
-
-// Returns a signed URL for StatsumToken, valid for the specified duration.
-//
-// Required scopes:
-//   auth:statsum:<project>
-//
-// See StatsumToken for more details.
-func (auth *Auth) StatsumToken_SignedURL(project string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/statsum/"+url.QueryEscape(project)+"/token", nil, duration)
-}
-
 // Get a temporary token suitable for use connecting to a
 // [websocktunnel](https://github.com/taskcluster/websocktunnel) server.
 //

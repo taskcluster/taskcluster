@@ -28,10 +28,6 @@ exports.tasks = [{
       apis[camelCaseName] = {reference: content};
     });
 
-    // include some deprecated services for which we want to (temporarily)
-    // continue generating clients
-    Object.assign(apis, require('./deprecated-services.json'));
-
     return {apis};
   },
 }];

@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const request = require('superagent');
-const hawk = require('hawk');
+const hawk = require('@hapi/hawk');
 const assert = require('assert');
 const SchemaSet = require('taskcluster-lib-validate');
 const makeApp = require('taskcluster-lib-app');

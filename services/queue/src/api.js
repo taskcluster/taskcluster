@@ -102,7 +102,6 @@ let builder = new APIBuilder({
     'Worker', // data.Worker instance
     'publicBucket', // bucket instance for public artifacts
     'privateBucket', // bucket instance for private artifacts
-    'blobStore', // BlobStore for azure artifacts
     'publisher', // publisher from base.Exchanges
     'claimTimeout', // Number of seconds before a claim expires
     'queueService', // Azure QueueService object from queueservice.js
@@ -112,14 +111,9 @@ let builder = new APIBuilder({
     'monitor', // base.monitor instance
     'workClaimer', // Instance of WorkClaimer
     'workerInfo', // Instance of WorkerInfo
-    's3Controller', // Instance of remotely-signed-s3.Controller
-    's3Runner', // Instance of remotely-signed-s3.Runner
     'useCloudMirror', // If true, use the cloud-mirror service
     'cloudMirrorHost', // Hostname of the cloud-mirror service
     'artifactRegion', // Region where artifacts are stored (no cloud-mirror)
-    'blobRegion', // Region where blobs are stored (no cloud-mirror)
-    'publicBlobBucket', // Bucket containing public blobs
-    'privateBlobBucket', // Bucket containing private blobs
     'LRUcache', // LRU cache for tasks
   ],
 });
@@ -2130,9 +2124,9 @@ builder.declare({
     'Declare a provisioner, supplying some details about it.',
     '',
     '`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are',
-    'possessed. For example, a request to update the `aws-provisioner-v1`',
+    'possessed. For example, a request to update the `my-provisioner`',
     'provisioner with a body `{description: \'This provisioner is great\'}` would require you to have the scope',
-    '`queue:declare-provisioner:aws-provisioner-v1#description`.',
+    '`queue:declare-provisioner:my-provisioner#description`.',
     '',
     'The term "provisioner" is taken broadly to mean anything with a provisionerId.',
     'This does not necessarily mean there is an associated service performing any',
@@ -2290,9 +2284,9 @@ builder.declare({
     'Declare a workerType, supplying some details about it.',
     '',
     '`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are',
-    'possessed. For example, a request to update the `gecko-b-1-w2008` worker-type within the `aws-provisioner-v1`',
+    'possessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`',
     'provisioner with a body `{description: \'This worker type is great\'}` would require you to have the scope',
-    '`queue:declare-worker-type:aws-provisioner-v1/gecko-b-1-w2008#description`.',
+    '`queue:declare-worker-type:my-provisioner/highmem#description`.',
   ].join('\n'),
 }, async function(req, res) {
   const {provisionerId, workerType} = req.params;

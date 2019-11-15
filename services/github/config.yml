@@ -61,8 +61,8 @@ production:
     initialStatusQueue: 'ch-init'
 
   intree:
-    provisionerId: 'aws-provisioner-v1'
-    workerType: 'github-worker'
+    provisionerId: 'default-provisioner'
+    workerType: 'default'
 
   server:
     env: 'production'
@@ -86,10 +86,6 @@ staging:
     ownersDirectoryTableName: 'TaskclusterIntegrationOwnersStaging'
     name: 'tc-github-staging'
     statusContext: 'Taskcluster-Staging'
-
-  intree:
-    provisionerId: 'aws-provisioner-v1'
-    workerType: 'github-worker'
 
   server:
     env: 'production'

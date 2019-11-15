@@ -64,6 +64,8 @@ export default class QueueEvents extends Client {
   // artifacts per task, or _index_ artifacts though in most cases it'll be
   // smarter to index artifacts after the task in question have completed
   // successfully.
+  // *NOTE*: this message is currently only sent for reference and error
+  // artifacts.  This will be remedied in a future version of Taskcluster.
   /* eslint-enable max-len */
   artifactCreated(pattern) {
     const entry = {"exchange":"artifact-created","name":"artifactCreated","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskId","required":true},{"multipleWords":false,"name":"runId","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":false,"name":"workerId","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/artifact-created-message.json#","type":"topic-exchange"}; // eslint-disable-line
