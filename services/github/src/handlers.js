@@ -552,7 +552,7 @@ async function jobHandler(message) {
   let pullNumber = message.payload.details['event.pullNumber'];
   if (!sha) {
     debug('Trying to get commit info in job handler...');
-    let commitInfo = await instGithub.repos.getCommitRefSha({
+    let commitInfo = await instGithub.repos.getCommit({
       owner: organization,
       repo: repository,
       ref: `refs/tags/${message.payload.details['event.version']}`,
