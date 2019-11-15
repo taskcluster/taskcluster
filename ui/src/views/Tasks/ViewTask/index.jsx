@@ -801,8 +801,9 @@ export default class ViewTask extends Component {
 
     return (
       <Dashboard
-        title={task ? task.metadata.name : 'Task'}
+        title={task ? `Task "${task.metadata.name}"` : 'Task'}
         helpView={<HelpView description={description} />}
+        disableTitleFormatting
         search={
           <Search
             onSubmit={this.handleTaskSearchSubmit}

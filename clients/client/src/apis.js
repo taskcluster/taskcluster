@@ -1996,47 +1996,6 @@ module.exports = {
       "title": "Task Index API Documentation"
     }
   },
-  "Login": {
-    "reference": {
-      "$schema": "/schemas/common/api-reference-v0.json#",
-      "apiVersion": "v1",
-      "description": "The Login service serves as the interface between external authentication\nsystems and Taskcluster credentials.",
-      "entries": [
-        {
-          "args": [
-          ],
-          "category": "Ping Server",
-          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
-          "method": "get",
-          "name": "ping",
-          "query": [
-          ],
-          "route": "/ping",
-          "stability": "stable",
-          "title": "Ping Server",
-          "type": "function"
-        },
-        {
-          "args": [
-            "provider"
-          ],
-          "category": "Login Service",
-          "description": "Given an OIDC `access_token` from a trusted OpenID provider, return a\nset of Taskcluster credentials for use on behalf of the identified\nuser.\n\nThis method is typically not called with a Taskcluster client library\nand does not accept Hawk credentials. The `access_token` should be\ngiven in an `Authorization` header:\n```\nAuthorization: Bearer abc.xyz\n```\n\nThe `access_token` is first verified against the named\n:provider, then passed to the provider's APIBuilder to retrieve a user\nprofile. That profile is then used to generate Taskcluster credentials\nappropriate to the user. Note that the resulting credentials may or may\nnot include a `certificate` property. Callers should be prepared for either\nalternative.\n\nThe given credentials will expire in a relatively short time. Callers should\nmonitor this expiration and refresh the credentials if necessary, by calling\nthis endpoint again, if they have expired.",
-          "method": "get",
-          "name": "oidcCredentials",
-          "output": "v1/oidc-credentials-response.json#",
-          "query": [
-          ],
-          "route": "/oidc-credentials/<provider>",
-          "stability": "experimental",
-          "title": "Get Taskcluster credentials given a suitable `access_token`",
-          "type": "function"
-        }
-      ],
-      "serviceName": "login",
-      "title": "Login API"
-    }
-  },
   "Notify": {
     "reference": {
       "$schema": "/schemas/common/api-reference-v0.json#",
@@ -2776,7 +2735,7 @@ module.exports = {
             "name"
           ],
           "category": "Queue Service",
-          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support 3 different `storageType`s, each storage type have\nslightly different features and in some cases difference semantics.\nWe also have 2 deprecated `storageType`s which are only maintained for\nbackwards compatiability and should not be used in new implementations\n\n**Blob artifacts**, are useful for storing large files.  Currently, these\nare all stored in S3 but there are facilities for adding support for other\nbackends in futre.  A call for this type of artifact must provide information\nabout the file which will be uploaded.  This includes sha256 sums and sizes.\nThis method will return a list of general form HTTP requests which are signed\nby AWS S3 credentials managed by the Queue.  Once these requests are completed\nthe list of `ETag` values returned by the requests must be passed to the\nqueue `completeArtifact` method\n\n**S3 artifacts**, DEPRECATED is useful for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`.\n\n**Azure artifacts**, DEPRECATED are stored in _Azure Blob Storage_ service\nwhich given the consistency guarantees and API interface offered by Azure\nis more suitable for artifacts that will be modified during the execution\nof the task. For example docker-worker has a feature that persists the\ntask log to Azure Blob Storage every few seconds creating a somewhat\nlive log. A request to create an Azure artifact will return a URL\nfeaturing a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),\nrefer to MSDN for further information on how to use these.\n**Warning: azure artifact is currently an experimental feature subject\nto changes and data-drops.**\n\n**Reference artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts really only have a `url` property and\nwhen the artifact is requested the client will be redirect the URL\nprovided with a `303` (See Other) redirect. Please note that we cannot\ndelete artifacts you upload to other service, we can only delete the\nreference to the artifact, when it expires.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nAs a special case the `url` property on _reference artifacts_ can be\nupdated. You should only use this to update the `url` property for\nreference artifacts your process has created.",
+          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support \"S3 Artifacts\" officially, with remaining support\nfor two deprecated types.  Do not use these deprecated types.\n\n**S3 artifacts**, is useful for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`.\n\nDEPRECATED **Blob artifacts**, are useful for storing large files.  Currently, these\nare all stored in S3 but there are facilities for adding support for other\nbackends in futre.  A call for this type of artifact must provide information\nabout the file which will be uploaded.  This includes sha256 sums and sizes.\nThis method will return a list of general form HTTP requests which are signed\nby AWS S3 credentials managed by the Queue.  Once these requests are completed\nthe list of `ETag` values returned by the requests must be passed to the\nqueue `completeArtifact` method\n\nDEPRECATED **Azure artifacts** are stored in _Azure Blob Storage_ service\nwhich given the consistency guarantees and API interface offered by Azure\nis more suitable for artifacts that will be modified during the execution\nof the task. For example docker-worker has a feature that persists the\ntask log to Azure Blob Storage every few seconds creating a somewhat\nlive log. A request to create an Azure artifact will return a URL\nfeaturing a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),\nrefer to MSDN for further information on how to use these.\n**Warning: azure artifact is currently an experimental feature subject\nto changes and data-drops.**\n\n**Reference artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts really only have a `url` property and\nwhen the artifact is requested the client will be redirect the URL\nprovided with a `303` (See Other) redirect. Please note that we cannot\ndelete artifacts you upload to other service, we can only delete the\nreference to the artifact, when it expires.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nAs a special case the `url` property on _reference artifacts_ can be\nupdated. You should only use this to update the `url` property for\nreference artifacts your process has created.",
           "input": "v1/post-artifact-request.json#",
           "method": "post",
           "name": "createArtifact",

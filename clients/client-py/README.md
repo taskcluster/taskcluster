@@ -2606,76 +2606,6 @@ await asyncIndex.findArtifactFromTask(indexPath='value', name='value') # -> None
 
 
 
-### Methods in `taskcluster.Login`
-```python
-import asyncio # Only for async 
-import taskcluster
-import taskcluster.aio
-
-# Create Login client instance
-login = taskcluster.Login(options)
-# Below only for async instances, assume already in coroutine
-loop = asyncio.get_event_loop()
-session = taskcluster.aio.createSession(loop=loop)
-asyncLogin = taskcluster.aio.Login(options, session=session)
-```
-The Login service serves as the interface between external authentication
-systems and Taskcluster credentials.
-#### Ping Server
-Respond without doing anything.
-This endpoint is used to check that the service is up.
-
-
-```python
-# Sync calls
-login.ping() # -> None
-# Async call
-await asyncLogin.ping() # -> None
-```
-
-#### Get Taskcluster credentials given a suitable `access_token`
-Given an OIDC `access_token` from a trusted OpenID provider, return a
-set of Taskcluster credentials for use on behalf of the identified
-user.
-
-This method is typically not called with a Taskcluster client library
-and does not accept Hawk credentials. The `access_token` should be
-given in an `Authorization` header:
-```
-Authorization: Bearer abc.xyz
-```
-
-The `access_token` is first verified against the named
-:provider, then passed to the provider's APIBuilder to retrieve a user
-profile. That profile is then used to generate Taskcluster credentials
-appropriate to the user. Note that the resulting credentials may or may
-not include a `certificate` property. Callers should be prepared for either
-alternative.
-
-The given credentials will expire in a relatively short time. Callers should
-monitor this expiration and refresh the credentials if necessary, by calling
-this endpoint again, if they have expired.
-
-
-
-Takes the following arguments:
-
-  * `provider`
-
-Has required output schema
-
-```python
-# Sync calls
-login.oidcCredentials(provider) # -> result
-login.oidcCredentials(provider='value') # -> result
-# Async call
-await asyncLogin.oidcCredentials(provider) # -> result
-await asyncLogin.oidcCredentials(provider='value') # -> result
-```
-
-
-
-
 ### Methods in `taskcluster.Notify`
 ```python
 import asyncio # Only for async 
@@ -3440,12 +3370,17 @@ expiration point. This features makes it feasible to upload large
 intermediate artifacts from data processing applications, as the
 artifacts can be set to expire a few days later.
 
-We currently support 3 different `storageType`s, each storage type have
-slightly different features and in some cases difference semantics.
-We also have 2 deprecated `storageType`s which are only maintained for
-backwards compatiability and should not be used in new implementations
+We currently support "S3 Artifacts" officially, with remaining support
+for two deprecated types.  Do not use these deprecated types.
 
-**Blob artifacts**, are useful for storing large files.  Currently, these
+**S3 artifacts**, is useful for static files which will be
+stored on S3. When creating an S3 artifact the queue will return a
+pre-signed URL to which you can do a `PUT` request to upload your
+artifact. Note that `PUT` request **must** specify the `content-length`
+header and **must** give the `content-type` header the same value as in
+the request to `createArtifact`.
+
+DEPRECATED **Blob artifacts**, are useful for storing large files.  Currently, these
 are all stored in S3 but there are facilities for adding support for other
 backends in futre.  A call for this type of artifact must provide information
 about the file which will be uploaded.  This includes sha256 sums and sizes.
@@ -3454,14 +3389,7 @@ by AWS S3 credentials managed by the Queue.  Once these requests are completed
 the list of `ETag` values returned by the requests must be passed to the
 queue `completeArtifact` method
 
-**S3 artifacts**, DEPRECATED is useful for static files which will be
-stored on S3. When creating an S3 artifact the queue will return a
-pre-signed URL to which you can do a `PUT` request to upload your
-artifact. Note that `PUT` request **must** specify the `content-length`
-header and **must** give the `content-type` header the same value as in
-the request to `createArtifact`.
-
-**Azure artifacts**, DEPRECATED are stored in _Azure Blob Storage_ service
+DEPRECATED **Azure artifacts** are stored in _Azure Blob Storage_ service
 which given the consistency guarantees and API interface offered by Azure
 is more suitable for artifacts that will be modified during the execution
 of the task. For example docker-worker has a feature that persists the

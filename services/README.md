@@ -10,7 +10,6 @@ These are any packages that are run as part of a deployment of Taskcluster.
 * [GitHub Service](github#readme)
 * [Hooks Service](hooks#readme)
 * [Index Service](index#readme)
-* [Login Service](login#readme)
 * [Notify Service](notify#readme)
 * [Purge-Cache Service](purge-cache#readme)
 * [Queue Service](queue#readme)

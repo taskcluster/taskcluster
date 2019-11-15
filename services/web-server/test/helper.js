@@ -5,6 +5,7 @@ const sinon = require('sinon');
 const AuthorizationCode = require('../src/data/AuthorizationCode');
 const AccessToken = require('../src/data/AccessToken');
 const GithubAccessToken = require('../src/data/GithubAccessToken');
+const SessionStorage = require('../src/data/SessionStorage');
 const GithubClient = require('../src/login/clients/GithubClient');
 const libUrls = require('taskcluster-lib-urls');
 const request = require('superagent');
@@ -33,6 +34,7 @@ exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'AuthorizationCode', AuthorizationCode);
   withEntity(mock, skipping, exports, 'AccessToken', AccessToken);
   withEntity(mock, skipping, exports, 'GithubAccessToken', GithubAccessToken);
+  withEntity(mock, skipping, exports, 'SessionStorage', SessionStorage);
 };
 
 exports.withFakeAuth = (mock, skipping) => {
@@ -186,6 +188,9 @@ const stubbedAuth = () => {
           accessToken: 'fake-access-token',
           ...input,
         });
+      },
+      expandScopes({scopes}) {
+        return {scopes};
       },
       resetAccessToken(clientId) {
         return Promise.resolve({ clientId, accessToken: taskcluster.slugid() });

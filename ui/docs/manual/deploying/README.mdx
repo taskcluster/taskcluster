@@ -3,6 +3,8 @@ title: Deploying Taskcluster
 order: 60
 ---
 
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
+
 # Deploying Taskcluster
 
 A Taskcluster deployment is identified by a `rootUrl`, which defines the domain name on which the deployment can be accessed.
@@ -14,10 +16,16 @@ The `/` path is routed to the taskcluster-ui service, which serves a browser-bas
 The services all run from a single Docker image, referred to as the "monoimage", that is built by running `yarn release` (or `yarn build` to build a one-off) in this repository.
 A Taskcluster "release" is a semantically versioned docker image along with the repository at that tag (for deployment configuration) and similarly-tagged client libraries in various languages.
 
-## Work in Progress
+<Warning>
+The "Deploying Taskcluster" section is incomplete, as we iterate to find a suitable approach to deployment.
+Pull Requests to improve this section are welcome.
+</Warning>
 
-This section is incomplete, as we iterate to find a suitable approach to deployment.
-The following pages document some of the more complex aspects of Taskcluster deployment.
+## Configuration
+
+A Taskcluster deployment's configuration comes in the form of Helm "values".
+Most of those are undocumented, but see:
+ * [static clients](/docs/manual/deploying/static-clients)
 
 ## Clouds
 
@@ -27,14 +35,32 @@ The services' Kubernetes deployment can run anywhere; at Mozilla it is deployed 
 Task artifacts are stored in Amazon S3, so AWS credentials will be required.
 Services' data is stored in Azure Table Storage, so Azure credentials will be required.
 
-Taskcluster can also dynamically provision workers in a variety of clouds; see the [workers](./workers) page for for details.
+Taskcluster can dynamically provision workers in a variety of clouds; see the [workers](/docs/manual/deploying/workers) page for for details.
+
+Taskcluster can also generate temporary credentials for supported clouds.
+See [Cloud Credentials](/docs/manual/deploying/cloud-credentials) for details.
 
 ## GitHub
 
 Taskcluster can integrate with GitHub in two complementary ways:
-* The taskcluster-github service provides a GitHub App which can create tasks in response to events in GitHub repositories. See [Github Integration](./github) for more details.
-* The web-server service supports user logins via GitHub.  See [Login Strategies](./login-strategies) for more details.
+* The taskcluster-github service provides a GitHub App which can create tasks in response to events in GitHub repositories. See [Github Integration](/docs/manual/deploying/github) for more details.
+* The web-server service supports user logins via GitHub.  See [Login Strategies](/docs/manual/deploying/login-strategies) for more details.
 
-## Third Party
+## Events
 
-Third party sites can fetch Taskcluster credentials for their users. See [Third Party](./third-party) for more details.
+Taskcluster requires an AMQP message bus to support passing events between services.
+See [Pulse](/docs/manual/deploying/pulse) for more details.
+
+## User Login
+
+The Taskcluster UI allows users to login using configurable "strategies".
+See [Login Strategies](/docs/manual/deploying/login-strategies) for more details.
+
+### Third Party Login
+
+Third party sites can fetch Taskcluster credentials for their users. See [Third Party](/docs/manual/deploying/third-party) for more details.
+
+## Testing and Monitoring
+
+The [Monitoring](/docs/manual/deploying/monitoring) page gives some guidance on monitoring Taskcluster's operation.
+There is also a [smoketest](/docs/manual/deploying/smoketests) suite that can be used to make a quick check of a Taskcluster deployment's functionality.
