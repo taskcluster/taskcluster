@@ -7,7 +7,7 @@ import Divider from '@material-ui/core/Divider';
 
 @withStyles(theme => ({
   divider: {
-    margin: `${theme.spacing.unit}px 0`,
+    margin: `${theme.spacing(1)}px 0`,
   },
   hasNoDescription: {
     marginTop: 45,

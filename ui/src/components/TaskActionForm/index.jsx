@@ -19,7 +19,7 @@ import Markdown from '../Markdown';
     maxHeight: '70vh',
   },
   description: {
-    marginBottom: theme.spacing.triple,
+    marginBottom: theme.spacing(3),
   },
 }))
 export default class TaskActionForm extends Component {

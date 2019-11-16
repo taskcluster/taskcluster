@@ -4,7 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 
 const styles = theme => ({
   text: {
-    marginBottom: theme.spacing.double,
+    marginBottom: theme.spacing(2),
   },
 });
 

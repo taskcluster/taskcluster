@@ -9,7 +9,7 @@ import NavigateNextIcon from 'mdi-react/NavigateNextIcon';
 
 @withStyles(theme => ({
   paper: {
-    padding: `${theme.spacing.double}px ${theme.spacing.double}px`,
+    padding: `${theme.spacing(2)}px ${theme.spacing(2)}px`,
   },
 }))
 export default class Breadcrumbs extends Component {

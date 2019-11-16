@@ -36,17 +36,17 @@ const sorted = pipe(
 
 @withStyles(theme => ({
   infoButton: {
-    marginLeft: -theme.spacing.double,
-    marginRight: theme.spacing.unit,
+    marginLeft: -theme.spacing(2),
+    marginRight: theme.spacing(1),
     borderRadius: 4,
   },
   headline: {
-    paddingLeft: theme.spacing.triple,
-    paddingRight: theme.spacing.triple,
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
   },
   metadataContainer: {
-    paddingTop: theme.spacing.double,
-    paddingBottom: theme.spacing.double,
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
     width: 400,
   },
 }))

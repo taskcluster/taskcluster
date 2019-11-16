@@ -16,7 +16,7 @@ import db from '../../../utils/db';
 @hot(module)
 @withStyles(theme => ({
   infoText: {
-    marginBottom: theme.spacing.unit,
+    marginBottom: theme.spacing(1),
   },
   listItemButton: {
     ...theme.mixins.listItemButton,

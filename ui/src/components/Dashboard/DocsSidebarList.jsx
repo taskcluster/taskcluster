@@ -35,18 +35,18 @@ const getDocsSectionFromPathname = pathname => {
 @withRouter
 @withStyles(theme => ({
   toc: {
-    marginTop: theme.spacing.double,
-    marginBottom: theme.spacing.triple,
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(3),
   },
   ul: {
     listStyle: 'none',
-    paddingInlineStart: `${theme.spacing.double}px`,
-    marginTop: theme.spacing.unit / 2,
-    marginBottom: theme.spacing.unit,
+    paddingInlineStart: `${theme.spacing(2)}px`,
+    marginTop: theme.spacing(1) / 2,
+    marginBottom: theme.spacing(1),
   },
   link: {
     textDecoration: 'none',
-    padding: `0 ${theme.spacing.unit}px`,
+    padding: `0 ${theme.spacing(1)}px`,
   },
   linkActive: {
     color: theme.palette.secondary.main,
@@ -61,15 +61,15 @@ const getDocsSectionFromPathname = pathname => {
     fontSize: theme.typography.fontSize - 1,
   },
   section: {
-    marginBottom: theme.spacing.unit,
+    marginBottom: theme.spacing(1),
   },
   sectionDiv: {
     display: 'flex',
     justifyContent: 'space-between',
   },
   collapse: {
-    margin: `${theme.spacing.unit}px 0 ${theme.spacing.double}px 0`,
-    padding: `0 ${theme.spacing.double}px`,
+    margin: `${theme.spacing(1)}px 0 ${theme.spacing(2)}px 0`,
+    padding: `0 ${theme.spacing(2)}px`,
     overflowY: 'auto',
     maxHeight: '48vh',
   },
@@ -77,7 +77,7 @@ const getDocsSectionFromPathname = pathname => {
     listStyle: 'none',
   },
   divider: {
-    margin: `${theme.spacing.unit}px 0`,
+    margin: `${theme.spacing(1)}px 0`,
   },
   inlineLink: {
     display: 'inline-block',

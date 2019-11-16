@@ -29,10 +29,10 @@ import splitLines from '../../../utils/splitLines';
     backgroundColor: 'rgba(255, 255, 0, 0.25)',
   },
   editorGrid: {
-    marginBottom: theme.spacing.unit,
+    marginBottom: theme.spacing(1),
   },
   cellGrid: {
-    padding: `0 ${theme.spacing.unit}px`,
+    padding: `0 ${theme.spacing(1)}px`,
   },
 }))
 export default class ScopesetComparison extends Component {

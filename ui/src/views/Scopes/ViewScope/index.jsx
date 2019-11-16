@@ -18,10 +18,10 @@ import scopesQuery from '../scopes.graphql';
 @graphql(scopesQuery)
 @withStyles(theme => ({
   icon: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
   },
   tabs: {
-    marginBottom: theme.spacing.triple,
+    marginBottom: theme.spacing(3),
   },
 }))
 export default class ViewScope extends Component {

@@ -81,13 +81,13 @@ const getCachesFromTask = task =>
 @withApollo
 @withStyles(theme => ({
   title: {
-    marginBottom: theme.spacing.unit,
+    marginBottom: theme.spacing(1),
   },
   divider: {
-    margin: `${theme.spacing.triple}px 0`,
+    margin: `${theme.spacing(3)}px 0`,
   },
   tag: {
-    margin: `${theme.spacing.unit}px ${theme.spacing.unit}px 0 0`,
+    margin: `${theme.spacing(1)}px ${theme.spacing(1)}px 0 0`,
   },
   dialogListItem: {
     paddingTop: 0,

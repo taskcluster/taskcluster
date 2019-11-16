@@ -38,8 +38,8 @@ import { formatScope, scopeLink } from '../../utils/scopeUtils';
   },
   saveClientSpan: {
     position: 'fixed',
-    bottom: theme.spacing.double,
-    right: theme.spacing.unit * 11,
+    bottom: theme.spacing(2),
+    right: theme.spacing(1) * 11,
   },
   expandedScopesListItem: {
     paddingTop: 0,
@@ -64,8 +64,8 @@ import { formatScope, scopeLink } from '../../utils/scopeUtils';
     ...theme.mixins.successIcon,
   },
   clientDescriptionListItem: {
-    marginTop: theme.spacing.unit,
-    marginBottom: theme.spacing.triple,
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(3),
   },
 }))
 /** A form to view/edit/create a client */

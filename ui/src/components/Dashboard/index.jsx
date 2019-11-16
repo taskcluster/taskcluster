@@ -59,15 +59,15 @@ import SkipNavigation from '../SkipNavigation';
       },
     },
     appBarTitle: {
-      marginLeft: theme.spacing.unit,
+      marginLeft: theme.spacing(1),
       fontFamily: 'Roboto300',
       flex: 1,
       color: THEME.PRIMARY_TEXT_DARK,
     },
     toolbar: {
       ...theme.mixins.toolbar,
-      paddingLeft: theme.spacing.double,
-      paddingRight: theme.spacing.double,
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
       display: 'flex',
       flexGrow: 1,
       flexDirection: 'row',
@@ -85,7 +85,7 @@ import SkipNavigation from '../SkipNavigation';
     docsDrawerPaper: {
       width: theme.docsDrawerWidth,
       [theme.breakpoints.down('xs')]: {
-        width: theme.spacing.unit * 30,
+        width: theme.spacing(1) * 30,
       },
     },
     helpDrawerPaper: {
@@ -94,7 +94,7 @@ import SkipNavigation from '../SkipNavigation';
         width: '90vw',
       },
       backgroundColor: theme.palette.primary.main,
-      padding: theme.spacing.triple,
+      padding: theme.spacing(3),
     },
     title: {
       textDecoration: 'none',
@@ -102,13 +102,13 @@ import SkipNavigation from '../SkipNavigation';
       width: '100%',
     },
     contentPadding: {
-      paddingTop: theme.spacing.triple,
-      paddingLeft: theme.spacing.triple,
-      paddingRight: theme.spacing.triple,
-      paddingBottom: theme.spacing.triple * 4,
+      paddingTop: theme.spacing(3),
+      paddingLeft: theme.spacing(3),
+      paddingRight: theme.spacing(3),
+      paddingBottom: theme.spacing(3) * 4,
     },
     logoStyle: {
-      paddingRight: theme.spacing.double,
+      paddingRight: theme.spacing(2),
     },
     content: {
       maxWidth: CONTENT_MAX_WIDTH,
@@ -131,18 +131,18 @@ import SkipNavigation from '../SkipNavigation';
       maxWidth: '60em',
     },
     leftAppBarButton: {
-      marginLeft: theme.spacing.unit,
+      marginLeft: theme.spacing(1),
     },
     appIcon: {
       fill: theme.palette.common.white,
     },
     helpCloseIcon: {
       position: 'absolute',
-      top: theme.spacing.unit,
-      right: theme.spacing.unit,
+      top: theme.spacing(1),
+      right: theme.spacing(1),
     },
     deploymentVersion: {
-      padding: theme.spacing.unit,
+      padding: theme.spacing(1),
     },
     nav: {
       display: 'flex',

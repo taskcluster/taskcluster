@@ -11,7 +11,7 @@ import SidebarListItem from './SidebarListItem';
 @withStyles(theme => ({
   listGroup: {
     '& > a': {
-      paddingLeft: theme.spacing.triple,
+      paddingLeft: theme.spacing(3),
     },
   },
 }))

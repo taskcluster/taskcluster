@@ -75,8 +75,8 @@ const initialHook = {
   },
   saveHookSpan: {
     position: 'fixed',
-    bottom: theme.spacing.double,
-    right: theme.spacing.unit * 11,
+    bottom: theme.spacing(2),
+    right: theme.spacing(1) * 11,
   },
   iconButton: {
     '& svg': {
@@ -115,12 +115,12 @@ const initialHook = {
     },
   },
   headline: {
-    paddingLeft: theme.spacing.triple,
-    paddingRight: theme.spacing.triple,
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
   },
   metadataContainer: {
-    paddingTop: theme.spacing.double,
-    paddingBottom: theme.spacing.double,
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
   },
   drawerPaper: {
     width: '40vw',
@@ -129,28 +129,28 @@ const initialHook = {
     },
   },
   hookDescriptionListItem: {
-    marginTop: theme.spacing.unit,
-    marginBottom: theme.spacing.triple,
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(3),
   },
   scheduleContainer: {
-    paddingRight: theme.spacing.double,
+    paddingRight: theme.spacing(2),
     display: 'flex',
     flex: 1,
     alignItems: 'flex-end',
   },
   scheduleTextField: {
-    paddingRight: theme.spacing.double,
+    paddingRight: theme.spacing(2),
   },
   scheduleListItem: {
     flexDirection: 'column',
     alignItems: 'stretch',
   },
   taskTemplateListItem: {
-    marginBottom: theme.spacing.double,
+    marginBottom: theme.spacing(2),
   },
   ownerEmailListItem: {
     display: 'block',
-    marginTop: theme.spacing.triple,
+    marginTop: theme.spacing(3),
   },
   hookGroupAndIdDiv: {
     display: 'flex',

@@ -26,7 +26,7 @@ import { THEME } from '../../utils/constants';
     width: '100%',
   },
   search: {
-    width: theme.spacing.unit * 6,
+    width: theme.spacing(1) * 6,
     height: '100%',
     position: 'absolute',
     pointerEvents: 'none',
@@ -39,10 +39,10 @@ import { THEME } from '../../utils/constants';
   },
   input: {
     font: 'inherit',
-    paddingTop: theme.spacing.unit,
-    paddingRight: theme.spacing.unit,
-    paddingBottom: theme.spacing.unit,
-    paddingLeft: theme.spacing.unit * 6,
+    paddingTop: theme.spacing(1),
+    paddingRight: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
+    paddingLeft: theme.spacing(1) * 6,
     border: 0,
     display: 'block',
     verticalAlign: 'middle',

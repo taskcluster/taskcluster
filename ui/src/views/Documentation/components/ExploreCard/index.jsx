@@ -10,7 +10,7 @@ import Anchor from '../Anchor';
 const styles = theme => ({
   root: {
     position: 'relative',
-    height: theme.spacing.unit * 25,
+    height: theme.spacing(1) * 25,
   },
   cardActionArea: {
     height: '100%',
@@ -20,7 +20,7 @@ const styles = theme => ({
     alignItems: 'center',
   },
   title: {
-    marginLeft: theme.spacing.unit,
+    marginLeft: theme.spacing(1),
   },
 });
 

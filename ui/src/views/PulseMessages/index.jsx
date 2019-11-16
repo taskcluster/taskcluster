@@ -51,16 +51,16 @@ const getBindingsFromProps = props => {
     ...theme.mixins.errorIcon,
   },
   infoButton: {
-    marginLeft: -theme.spacing.double,
-    marginRight: theme.spacing.unit,
+    marginLeft: -theme.spacing(2),
+    marginRight: theme.spacing(1),
   },
   drawerContainer: {
-    paddingTop: theme.spacing.double,
-    paddingBottom: theme.spacing.double,
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
   },
   drawerHeadline: {
-    paddingLeft: theme.spacing.triple,
-    paddingRight: theme.spacing.triple,
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
   },
   drawerPaper: {
     width: '40vw',
@@ -70,8 +70,8 @@ const getBindingsFromProps = props => {
   },
   drawerCloseIcon: {
     position: 'absolute',
-    top: theme.spacing.unit,
-    right: theme.spacing.unit,
+    top: theme.spacing(1),
+    right: theme.spacing(1),
   },
   ccContainer: {
     overflow: 'auto',
@@ -81,7 +81,7 @@ const getBindingsFromProps = props => {
   },
   startStopIconSpan: {
     ...theme.mixins.fab,
-    right: theme.spacing.unit * 11,
+    right: theme.spacing(1) * 11,
   },
 }))
 export default class PulseMessages extends Component {

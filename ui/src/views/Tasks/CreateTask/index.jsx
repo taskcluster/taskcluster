@@ -73,7 +73,7 @@ const defaultTask = {
   createIconSpan: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
-    right: theme.spacing.unit * 11,
+    right: theme.spacing(1) * 11,
   },
   listItemButton: {
     ...theme.mixins.listItemButton,

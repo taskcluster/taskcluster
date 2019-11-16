@@ -43,7 +43,7 @@ import workersQuery from './workers.graphql';
     alignItems: 'center',
   },
   breadcrumbsPaper: {
-    marginRight: theme.spacing.unit * 4,
+    marginRight: theme.spacing(1) * 4,
     flex: 1,
   },
   dropdown: {

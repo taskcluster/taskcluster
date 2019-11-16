@@ -37,7 +37,7 @@ import buildArtifactUrl from '../../utils/buildArtifactUrl';
     verticalAlign: 'middle',
   },
   artifactName: {
-    marginLeft: theme.spacing.unit,
+    marginLeft: theme.spacing(1),
   },
   artifactIconWithName: {
     display: 'flex',

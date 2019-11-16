@@ -29,7 +29,7 @@ const tableHeaders = ['Address', 'Type'];
     display: 'flex',
     justifyContent: 'space-between',
     width: '100%',
-    padding: theme.spacing.unit,
+    padding: theme.spacing(1),
   },
   listLinkCell: {
     ...theme.mixins.hover,

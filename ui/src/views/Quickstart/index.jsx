@@ -165,11 +165,11 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
   orgRepo: {
     display: 'flex',
     alignItems: 'center',
-    marginBottom: 6 * theme.spacing.unit,
+    marginBottom: 6 * theme.spacing(1),
     ...theme.mixins.gutters(),
   },
   separator: {
-    padding: theme.spacing.double,
+    padding: theme.spacing(2),
     paddingBottom: 0,
   },
   editorListItem: {
@@ -186,11 +186,11 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
     ...theme.mixins.actionButton,
   },
   errorPanels: {
-    marginTop: theme.spacing.double,
+    marginTop: theme.spacing(2),
   },
   iconContainer: {
-    marginLeft: theme.spacing.unit,
-    marginTop: theme.spacing.double,
+    marginLeft: theme.spacing(1),
+    marginTop: theme.spacing(2),
   },
 }))
 export default class QuickStart extends Component {

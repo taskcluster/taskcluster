@@ -27,8 +27,8 @@ import Link from '../../utils/Link';
     },
   },
   listItem: {
-    paddingLeft: theme.spacing.double,
-    paddingRight: theme.spacing.unit,
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(1),
   },
   text: {
     color: theme.palette.text.inactive,

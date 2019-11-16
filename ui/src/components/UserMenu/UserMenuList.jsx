@@ -19,7 +19,7 @@ import getPictureFromUser from '../../utils/getPictureFromUser';
   },
   userMenu: {
     [theme.breakpoints.up('sm')]: {
-      padding: `${theme.spacing.unit / 2}px ${theme.spacing.double}px`,
+      padding: `${theme.spacing(1) / 2}px ${theme.spacing(2)}px`,
     },
   },
   text: {

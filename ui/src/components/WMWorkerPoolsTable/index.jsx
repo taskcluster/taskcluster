@@ -28,15 +28,15 @@ import { splitWorkerPoolId } from '../../utils/workerPool';
 @withRouter
 @withStyles(theme => ({
   button: {
-    marginLeft: -theme.spacing.double,
-    marginRight: theme.spacing.unit,
+    marginLeft: -theme.spacing(2),
+    marginRight: theme.spacing(1),
     borderRadius: 4,
   },
   linksIcon: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
   },
   linksButton: {
-    marginRight: theme.spacing.triple,
+    marginRight: theme.spacing(3),
   },
 }))
 export default class WorkerManagerWorkerPoolsTable extends Component {

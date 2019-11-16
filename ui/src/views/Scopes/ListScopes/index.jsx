@@ -29,7 +29,7 @@ import scopesQuery from '../scopes.graphql';
 })
 @withStyles(theme => ({
   tabs: {
-    marginBottom: theme.spacing.triple,
+    marginBottom: theme.spacing(3),
   },
 }))
 export default class ListScopes extends PureComponent {

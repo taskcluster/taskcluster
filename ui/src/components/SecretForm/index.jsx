@@ -28,8 +28,8 @@ import { secret } from '../../utils/prop-types';
   },
   saveSecretSpan: {
     position: 'fixed',
-    bottom: theme.spacing.double,
-    right: theme.spacing.unit * 11,
+    bottom: theme.spacing(2),
+    right: theme.spacing(1) * 11,
   },
   editorListItem: {
     paddingTop: 0,
@@ -37,7 +37,7 @@ import { secret } from '../../utils/prop-types';
     flexDirection: 'column',
     alignItems: 'start',
     '&> :last-child': {
-      marginTop: theme.spacing.unit,
+      marginTop: theme.spacing(1),
     },
   },
   saveIcon: {

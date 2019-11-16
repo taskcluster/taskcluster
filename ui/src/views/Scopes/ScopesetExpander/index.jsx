@@ -25,15 +25,15 @@ import { formatScope, scopeLink } from '../../../utils/scopeUtils';
     ...theme.mixins.fab,
   },
   editor: {
-    marginBottom: theme.spacing.double,
+    marginBottom: theme.spacing(2),
   },
   title: {
-    marginBottom: theme.spacing.double,
+    marginBottom: theme.spacing(2),
   },
   listItemButton: {
     ...theme.mixins.listItemButton,
-    paddingTop: theme.spacing.unit / 2,
-    paddingBottom: theme.spacing.unit / 2,
+    paddingTop: theme.spacing(1) / 2,
+    paddingBottom: theme.spacing(1) / 2,
   },
 }))
 export default class ScopesetExpander extends Component {

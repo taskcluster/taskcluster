@@ -36,7 +36,7 @@ import logo from '../../images/brandLogo.png';
     ...theme.mixins.successIcon,
   },
   denySpanProps: {
-    right: theme.spacing.unit * 11,
+    right: theme.spacing(1) * 11,
   },
 }))
 export default class AuthConsent extends Component {

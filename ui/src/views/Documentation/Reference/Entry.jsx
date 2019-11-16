@@ -44,7 +44,7 @@ const primaryTypographyProps = { variant: 'body1' };
     },
     routingKeyCell: {
       '& span:not(:first-child)': {
-        marginLeft: theme.spacing.unit / 2,
+        marginLeft: theme.spacing(1) / 2,
       },
     },
     summaryCell: {
@@ -57,7 +57,7 @@ const primaryTypographyProps = { variant: 'body1' };
     },
     boxTop: {
       display: 'inline-block',
-      padding: `0 ${theme.spacing.unit / 2}px 0 0`,
+      padding: `0 ${theme.spacing(1) / 2}px 0 0`,
     },
     subScopeBox: {
       borderLeft: '1px solid #888',
@@ -65,19 +65,19 @@ const primaryTypographyProps = { variant: 'body1' };
       paddingLeft: 24,
     },
     scopeItself: {
-      margin: `${theme.spacing.unit}px 0`,
+      margin: `${theme.spacing(1)}px 0`,
     },
     statusLabel: {
       display: 'block',
       fontSize: '0.6rem',
-      margin: `${theme.spacing.unit}px 0 ${theme.spacing.unit}px ${-theme
-        .spacing.double}px`,
+      margin: `${theme.spacing(1)}px 0 ${theme.spacing(1)}px ${-theme
+        .spacing(2)}px`,
     },
     functionStatusLabel: {
       textAlign: 'center',
     },
     scopesWrapper: {
-      padding: theme.spacing.triple,
+      padding: theme.spacing(3),
     },
   }),
   { withTheme: true }

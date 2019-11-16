@@ -39,11 +39,11 @@ const sorted = pipe(
     display: 'flex',
     justifyContent: 'space-between',
     width: '100%',
-    padding: theme.spacing.unit,
+    padding: theme.spacing(1),
     ...theme.mixins.hover,
   },
   noRolesText: {
-    marginTop: theme.spacing.double,
+    marginTop: theme.spacing(2),
   },
 }))
 export default class RoleScopesTable extends Component {

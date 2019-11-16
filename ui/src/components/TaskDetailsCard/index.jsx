@@ -25,16 +25,16 @@ import Link from '../../utils/Link';
 
 @withStyles(theme => ({
   headline: {
-    paddingLeft: theme.spacing.double,
-    paddingRight: theme.spacing.double,
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
   },
   cardContent: {
     paddingLeft: 0,
     paddingRight: 0,
-    paddingTop: theme.spacing.double,
-    paddingBottom: theme.spacing.double,
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
     '&:last-child': {
-      paddingBottom: theme.spacing.double,
+      paddingBottom: theme.spacing(2),
     },
   },
   sourceHeadline: {

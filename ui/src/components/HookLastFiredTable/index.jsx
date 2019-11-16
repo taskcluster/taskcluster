@@ -19,7 +19,7 @@ import Link from '../../utils/Link';
 
 const styles = theme => ({
   informationIcon: {
-    marginLeft: theme.spacing.unit,
+    marginLeft: theme.spacing(1),
   },
 });
 
