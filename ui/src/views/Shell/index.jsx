@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import ShellConsole from '../../components/Shell';
-import Dashboard from '../../components/Dashboard';
 
 @withStyles({
   main: {
@@ -21,13 +20,11 @@ export default class Shell extends Component {
     );
 
     return (
-      <Dashboard className={this.props.classes.main} title="Shell">
-        <ShellConsole
-          url={props.socketUrl}
-          taskId={props.taskId}
-          version={props.v}
-        />
-      </Dashboard>
+      <ShellConsole
+        url={props.socketUrl}
+        taskId={props.taskId}
+        version={props.v}
+      />
     );
   }
 }
