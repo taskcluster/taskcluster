@@ -98,14 +98,12 @@ const createTheme = isDarkTheme => {
                 primary: textPrimary,
                 secondary: textSecondary,
                 disabled: isDarkTheme ?
-                    'rgba(255, 255, 255, 0.5)' :
-                    'rgba(0, 0, 0, 0.5)',
+                    'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
                 hint: textHint,
                 icon: isDarkTheme ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
                 active: isDarkTheme ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)',
                 inactive: isDarkTheme ?
-                    'rgba(255, 255, 255, 0.4)' :
-                    'rgba(0, 0, 0, 0.4)',
+                    'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)',
             },
         },
         typography: {
@@ -144,8 +142,7 @@ const createTheme = isDarkTheme => {
             },
             highlight: {
                 backgroundColor: isDarkTheme ?
-                    THEME.TEN_PERCENT_WHITE :
-                    THEME.TEN_PERCENT_BLACK,
+                    THEME.TEN_PERCENT_WHITE : THEME.TEN_PERCENT_BLACK,
                 fontFamily: 'Consolas, "Liberation Mono", Menlo, Courier, monospace',
                 lineHeight: 1.4,
                 display: 'inline-block',
@@ -250,16 +247,14 @@ const createTheme = isDarkTheme => {
                 filled: {
                     ...Roboto500,
                     color: isDarkTheme ?
-                        THEME.PRIMARY_TEXT_DARK :
-                        THEME.PRIMARY_TEXT_LIGHT,
+                        THEME.PRIMARY_TEXT_DARK : THEME.PRIMARY_TEXT_LIGHT,
                 },
             },
             MuiListSubheader: {
                 root: {
                     ...Roboto500,
                     color: isDarkTheme ?
-                        THEME.PRIMARY_TEXT_DARK :
-                        THEME.PRIMARY_TEXT_LIGHT,
+                        THEME.PRIMARY_TEXT_DARK : THEME.PRIMARY_TEXT_LIGHT,
                 },
             },
             MuiButton: {
@@ -359,8 +354,7 @@ const createTheme = isDarkTheme => {
                     color: isDarkTheme ? 'white' : '#000',
                     '&:hover': {
                         backgroundColor: isDarkTheme ?
-                            THEME.TEN_PERCENT_WHITE :
-                            THEME.TEN_PERCENT_BLACK,
+                            THEME.TEN_PERCENT_WHITE : THEME.TEN_PERCENT_BLACK,
                     },
                 },
             },
