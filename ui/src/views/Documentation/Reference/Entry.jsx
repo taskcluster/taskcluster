@@ -70,8 +70,9 @@ const primaryTypographyProps = { variant: 'body1' };
     statusLabel: {
       display: 'block',
       fontSize: '0.6rem',
-      margin: `${theme.spacing(1)}px 0 ${theme.spacing(1)}px ${-theme
-        .spacing(2)}px`,
+      margin: `${theme.spacing(1)}px 0 ${theme.spacing(1)}px ${-theme.spacing(
+        2
+      )}px`,
     },
     functionStatusLabel: {
       textAlign: 'center',
