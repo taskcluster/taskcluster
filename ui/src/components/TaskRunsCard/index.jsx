@@ -200,6 +200,13 @@ export default class TaskRunsCard extends Component {
   };
 
   handleToggleArtifacts = () => {
+    const { history } = this.props;
+    const { taskId } = this.getCurrentRun();
+    const { showArtifacts } = this.state;
+
+    !showArtifacts
+      ? history.replace(`/tasks/${taskId}#artifacts`)
+      : history.replace(`/tasks/${taskId}`);
     this.setState({ showArtifacts: !this.state.showArtifacts });
   };
 
