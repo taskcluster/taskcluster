@@ -5,7 +5,7 @@ tasks:
   $flatten:
   - $if: '(tasks_for == "github-pull-request"  && event["action"] in ["opened", "reopened", "synchronize"])'
     then:
-      $map: ["1.10", "1.11.1", "1.12.9"]
+      $map: ["1.10", "1.11.1", "1.12.9", "1.13.4"]
       each(version):
         taskId: {$eval: as_slugid("test")}
         created: {$fromNow: ''}
