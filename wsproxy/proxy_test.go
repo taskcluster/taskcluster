@@ -84,7 +84,7 @@ func TestProxyRegister(t *testing.T) {
 	workerid := "workerid"
 	// set auth header dial connection to proxy
 	header := make(http.Header)
-	header.Set("Authorization ", "Bearer "+workeridjwt)
+	header.Set("Authorization", "Bearer "+workeridjwt)
 	header.Set("x-websocktunnel-id", workerid)
 	conn1, _, err := websocket.DefaultDialer.Dial(wsURL, header)
 	if err != nil {
@@ -128,7 +128,7 @@ func TestProxyRegisterInvalidClientId(t *testing.T) {
 	workerid := "worker/id"
 	// set auth header dial connection to proxy
 	header := make(http.Header)
-	header.Set("Authorization ", "Bearer "+workeridjwt)
+	header.Set("Authorization", "Bearer "+workeridjwt)
 	header.Set("x-websocktunnel-id", workerid)
 	_, _, err = websocket.DefaultDialer.Dial(wsURL, header)
 	if err == nil {
@@ -160,7 +160,7 @@ func TestProxyRequest(t *testing.T) {
 	// makeshift client
 
 	header := make(http.Header)
-	header.Set("Authorization ", "Bearer "+workeridjwt)
+	header.Set("Authorization", "Bearer "+workeridjwt)
 	header.Set("x-websocktunnel-id", "workerid")
 	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL, header)
 	if err != nil {
@@ -258,7 +258,7 @@ func TestProxyURIRewrite(t *testing.T) {
 	// makeshift client
 
 	header := make(http.Header)
-	header.Set("Authorization ", "Bearer "+workeridjwt)
+	header.Set("Authorization", "Bearer "+workeridjwt)
 	header.Set("x-websocktunnel-id", "workerid")
 	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL, header)
 	if err != nil {
