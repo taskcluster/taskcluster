@@ -41,7 +41,7 @@ tasks:
       workerType: ci
       payload:
         maxRunTime: 3600
-        image: golang:1.10
+        image: golang:1.13.4
         command:
           - /bin/bash
           - '-c'
@@ -69,7 +69,7 @@ tasks:
       workerType: ci
       payload:
         maxRunTime: 3600
-        image: golang:1.10
+        image: golang:1.13.4
         command:
           - /bin/bash
           - '-c'
@@ -97,7 +97,7 @@ tasks:
       workerType: ci
       payload:
         maxRunTime: 3600
-        image: golang:1.10
+        image: golang:1.13.4
         command:
           - /bin/bash
           - '-c'
