@@ -51,12 +51,11 @@ func GetTokenExp(tokenString string) time.Time {
 	if !ok {
 		return time.Time{}
 	}
-	switch exp.(type) {
+	switch exp := exp.(type) {
 	case float64:
-		e := exp.(float64)
-		return time.Unix(int64(e), 0)
+		return time.Unix(int64(exp), 0)
 	case json.Number:
-		v, _ := exp.(json.Number).Int64()
+		v, _ := exp.Int64()
 		return time.Unix(v, 0)
 	}
 	return time.Time{}
