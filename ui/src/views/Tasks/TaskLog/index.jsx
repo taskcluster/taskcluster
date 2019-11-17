@@ -9,6 +9,7 @@ import Log from '../../../components/Log';
 import Link from '../../../utils/Link';
 import Helmet from '../../../components/Helmet';
 import taskQuery from './task.graphql';
+import Search from '../../../components/Search';
 
 @hot(module)
 @withStyles(theme => ({
@@ -42,7 +43,15 @@ export default class TaskLog extends Component {
     const run = this.getCurrentRun();
 
     return (
-      <Dashboard title="Log" disablePadding>
+      <Dashboard
+        title="Log"
+        disablePadding
+        search={
+          <Search
+            placeholder="View a different task"
+            onSubmit={this.handleTaskSearchSubmit}
+          />
+        }>
         <Helmet state={run && run.state} />
         <Log
           url={url}
@@ -62,4 +71,8 @@ export default class TaskLog extends Component {
       </Dashboard>
     );
   }
+
+  handleTaskSearchSubmit = taskId => {
+    this.props.history.push(`/tasks/${taskId}`);
+  };
 }
