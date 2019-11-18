@@ -15,7 +15,9 @@ import { VIEW_ROLES_PAGE_SIZE } from '../../../utils/constants';
         limit: VIEW_ROLES_PAGE_SIZE,
       },
       filter: {
-        ...(props.searchTerm ? { roleId: { $regex: props.searchTerm } } : null),
+        ...(props.searchTerm
+          ? { roleId: { $regex: props.searchTerm, $options: 'i' } }
+          : null),
       },
     },
   }),
