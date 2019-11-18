@@ -37,6 +37,7 @@ github.com/taskcluster/pulse-go v1.0.0/go.mod h1:uuaqnRQj9XqouabCEKjnrlJiC6UT9Gu
 github.com/taskcluster/slugid-go v1.1.0 h1:SWsUplliyamdYzOKVM4+lDohZKuL63fKreGkvIKJ9aI=
 github.com/taskcluster/slugid-go v1.1.0/go.mod h1:5sOAcPHjqso1UkKxSl77CkKgOwha0D9X0msBKBj0AOg=
 github.com/taskcluster/taskcluster v22.0.0+incompatible h1:YZaDObwmVC0U7YPlvKLj3C3EEJw7X69QxnMBP5zO5gg=
+github.com/taskcluster/taskcluster v23.0.0+incompatible h1:5ebTWpF3PFCvRxJFVGx6cBWhtaxpy+ZF8UXTXPlbHnc=
 github.com/taskcluster/taskcluster-base-go v1.0.0 h1:Jh2R/J7+a23LjtYEHQtkFV04QBxx6EVX8E0PrzUqJo4=
 github.com/taskcluster/taskcluster-base-go v1.0.0/go.mod h1:ByyzyqqufsfZTrAHUw+0Grp8FwZAizZOKzVE1IpDXxQ=
 github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible h1:57WLzh7B04y6ahTOJ8wjvdkbwYqnyJkwLXQ1Tu4E/DU=
@@ -59,6 +60,8 @@ github.com/taskcluster/taskcluster/clients/client-go/v22 v22.1.0 h1:VmwWA4T4GZx/
 github.com/taskcluster/taskcluster/clients/client-go/v22 v22.1.0/go.mod h1:hUL+oOiiJHvt5/ftjYtOS4ElmUeL8WM2SrdaJShkydI=
 github.com/taskcluster/taskcluster/clients/client-go/v22 v22.1.1 h1:+9c67eLkaf6tXL8c+uIQZDQP2z3MUoMpZGXyEahWefc=
 github.com/taskcluster/taskcluster/clients/client-go/v22 v22.1.1/go.mod h1:hUL+oOiiJHvt5/ftjYtOS4ElmUeL8WM2SrdaJShkydI=
+github.com/taskcluster/taskcluster/clients/client-go/v23 v23.0.0 h1:QQDQUy8zHLdfMF+EQEkA+NRGfjdykhHxNcPMakr+sm8=
+github.com/taskcluster/taskcluster/clients/client-go/v23 v23.0.0/go.mod h1:5NZbdHaaF2/yjkHtlcEKm4AXs3EH3M5Kih0wAEGRlMs=
 github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957 h1:6Fre/uvwovW5YY4nfHZk66cAg9HjT9YdFSAJHUUgOyQ=
 github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957/go.mod h1:dch7ywQEefE1ibFqBG1erFibrdUIwovcwQjksYuHuP4=
 github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb/go.mod h1:N2zxlSyiKSe5eX1tZViRH5QA0qijqEDrYZiPEAiq3wU=
