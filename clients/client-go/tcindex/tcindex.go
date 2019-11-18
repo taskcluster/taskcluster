@@ -62,7 +62,9 @@ type Index tcclient.Client
 func New(credentials *tcclient.Credentials, rootURL string) *Index {
 	return &Index{
 		Credentials:  credentials,
-		BaseURL:      tcclient.BaseURL(rootURL, "index", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "index",
+		APIVersion:   "v1",
 		Authenticate: credentials != nil,
 	}
 }
@@ -83,9 +85,12 @@ func New(credentials *tcclient.Credentials, rootURL string) *Index {
 // disabled.
 func NewFromEnv() *Index {
 	c := tcclient.CredentialsFromEnvVars()
+	rootURL := tcclient.RootURLFromEnvVars()
 	return &Index{
 		Credentials:  c,
-		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "index", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "index",
+		APIVersion:   "v1",
 		Authenticate: c.ClientID != "",
 	}
 }
