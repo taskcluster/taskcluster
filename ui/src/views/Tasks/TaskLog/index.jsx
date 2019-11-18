@@ -48,7 +48,7 @@ export default class TaskLog extends Component {
         disablePadding
         search={
           <Search
-            placeholder="View a different task"
+            placeholder="Search Task ID"
             onSubmit={this.handleTaskSearchSubmit}
           />
         }>
