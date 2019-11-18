@@ -126,7 +126,12 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	}
 
 	for i := range scopes {
-		loginURL += "?scope=" + url.QueryEscape(scopes[i])
+		if i == 0 {
+			loginURL += "?"
+		} else {
+			loginURL += "&"
+		}
+		loginURL += "scope=" + url.QueryEscape(scopes[i])
 	}
 
 	loginURL += "&name=" + url.QueryEscape(name) + "-" + slugid.Nice()[0:6]
