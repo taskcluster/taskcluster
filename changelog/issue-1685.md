@@ -1,4 +1,4 @@
-level: minor
+level: patch
 reference: issue 1685
 ---
-<!-- replace this text with your changelog entry.  See dev-docs/best-practices/changelog.md for help writing changelog entries. -->
+Taskcluster UI now allows editing a worker pool that is scheduled for deletion.
