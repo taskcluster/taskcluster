@@ -93,6 +93,7 @@ const DOTS_VARIANT_LIMIT = 5;
     artifactNameWrapper: {
       display: 'inline-flex',
       flexBasis: '50%',
+      flexGrow: 1,
     },
     artifactName: {
       display: 'flex',
@@ -102,6 +103,9 @@ const DOTS_VARIANT_LIMIT = 5;
     liveLogLabel: {
       marginLeft: theme.spacing(0.5),
       marginBottom: theme.spacing(0.5),
+    },
+    lockIconDiv: {
+      marginRight: theme.spacing(2),
     },
   }),
   { withTheme: true }
@@ -241,7 +245,7 @@ export default class TaskRunsCard extends Component {
               <Link
                 className={classes.artifactLink}
                 to={this.getArtifactUrl(artifact)}>
-                <div>
+                <div className={classes.lockIconDiv}>
                   {artifact.isPublic && <LockOpenOutlineIcon />}
                   {!artifact.isPublic && artifact.url && <LockIcon />}
                 </div>
