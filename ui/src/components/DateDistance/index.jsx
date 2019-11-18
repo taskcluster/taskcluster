@@ -1,11 +1,7 @@
 import { Component } from 'react';
-import {
-  isDate,
-  formatDistance,
-  formatDistanceStrict,
-  parseISO,
-} from 'date-fns';
+import { isDate, formatDistanceStrict, parseISO } from 'date-fns';
 import { date } from '../../utils/prop-types';
+import isDateWithin from '../../utils/isDateWithin';
 
 /**
  * Display a human-readable relative string between a date and now.
@@ -30,13 +26,17 @@ export default class DateDistance extends Component {
   };
 
   render() {
+    const now = new Date();
     const { from, offset } = this.props;
     const fromParsed = isDate(from) ? from : parseISO(from);
-    const fromNow = formatDistanceStrict(fromParsed, new Date(), {
+    const unit = isDateWithin(fromParsed, 44, 120) ? 'minute' : undefined;
+    const fromNow = formatDistanceStrict(fromParsed, now, {
       addSuffix: true,
+      unit,
     });
     const offsetParsed = isDate(offset) ? offset : parseISO(offset);
-    const offsetNow = offset && formatDistance(fromParsed, offsetParsed);
+    const offsetNow =
+      offset && formatDistanceStrict(fromParsed, offsetParsed, { unit });
 
     return offsetNow ? `${fromNow} (${offsetNow} later)` : fromNow;
   }
