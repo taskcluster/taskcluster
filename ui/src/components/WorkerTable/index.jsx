@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
-import Typography from '@material-ui/core/Typography';
-import ListItemText from '@material-ui/core/ListItemText';
 import memoize from 'fast-memoize';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { withStyles } from '@material-ui/core/styles';
@@ -18,11 +16,11 @@ import Link from '../../utils/Link';
 
 @withStyles(theme => ({
   dateListItem: {
-    marginLeft: -theme.spacing.unit,
-    padding: theme.spacing.unit,
+    marginLeft: -theme.spacing(1),
+    padding: theme.spacing(1),
   },
   taskName: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
     maxWidth: 250,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -31,8 +29,8 @@ import Link from '../../utils/Link';
     display: 'inline-block',
   },
   infoButton: {
-    marginLeft: -theme.spacing.double,
-    marginRight: theme.spacing.unit,
+    marginLeft: -theme.spacing(2),
+    marginRight: theme.spacing(1),
   },
 }))
 /**
@@ -130,26 +128,18 @@ export default class WorkerTable extends Component {
               <StatusLabel state={task.state} />
             </TableCell>
             <TableCell>
-              <TableCellItem
-                button
-                component={Link}
-                to={`/tasks/${task.taskId}/runs/${task.runId}`}>
-                <div className={classes.taskName}>{task.name}</div>
-                <LinkIcon size={iconSize} />
-              </TableCellItem>
+              <Link to={`/tasks/${task.taskId}/runs/${task.runId}`}>
+                <TableCellItem button>
+                  <div className={classes.taskName}>{task.name}</div>
+                  <LinkIcon size={iconSize} />
+                </TableCellItem>
+              </Link>
             </TableCell>
             <TableCell>{task.taskId}</TableCell>
             <CopyToClipboard title={task.started} text={task.started}>
               <TableCell>
                 <TableCellItem button>
-                  <ListItemText
-                    disableTypography
-                    primary={
-                      <Typography>
-                        <DateDistance from={task.started} />
-                      </Typography>
-                    }
-                  />
+                  <DateDistance from={task.started} />
                   <ContentCopyIcon size={iconSize} />
                 </TableCellItem>
               </TableCell>
@@ -158,18 +148,11 @@ export default class WorkerTable extends Component {
               <TableCell>
                 {task.resolved ? (
                   <TableCellItem button>
-                    <ListItemText
-                      disableTypography
-                      primary={
-                        <Typography>
-                          <DateDistance from={task.resolved} />
-                        </Typography>
-                      }
-                    />
+                    <DateDistance from={task.resolved} />
                     <ContentCopyIcon size={iconSize} />
                   </TableCellItem>
                 ) : (
-                  <Typography>n/a</Typography>
+                  <em>n/a</em>
                 )}
               </TableCell>
             </CopyToClipboard>

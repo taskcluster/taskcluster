@@ -4,8 +4,6 @@ import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
-import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
 import TableRow from '@material-ui/core/TableRow';
 import LinkIcon from 'mdi-react/LinkIcon';
 import TableCellItem from '../TableCellItem';
@@ -112,18 +110,12 @@ export default class SecretsTable extends Component {
         renderRow={({ node: { name } }) => (
           <TableRow key={name}>
             <TableCell>
-              <TableCellItem
-                className={classes.listItemCell}
-                dense
-                button
-                component={Link}
-                to={`/secrets/${encodeURIComponent(name)}`}>
-                <ListItemText
-                  disableTypography
-                  primary={<Typography>{name}</Typography>}
-                />
-                <LinkIcon size={iconSize} />
-              </TableCellItem>
+              <Link to={`/secrets/${encodeURIComponent(name)}`}>
+                <TableCellItem className={classes.listItemCell} dense button>
+                  {name}
+                  <LinkIcon size={iconSize} />
+                </TableCellItem>
+              </Link>
             </TableCell>
           </TableRow>
         )}

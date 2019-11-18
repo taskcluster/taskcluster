@@ -44,7 +44,7 @@ const primaryTypographyProps = { variant: 'body1' };
     },
     routingKeyCell: {
       '& span:not(:first-child)': {
-        marginLeft: theme.spacing.unit / 2,
+        marginLeft: theme.spacing(0.5),
       },
     },
     summaryCell: {
@@ -57,7 +57,7 @@ const primaryTypographyProps = { variant: 'body1' };
     },
     boxTop: {
       display: 'inline-block',
-      padding: `0 ${theme.spacing.unit / 2}px 0 0`,
+      padding: `0 ${theme.spacing(0.5)}px 0 0`,
     },
     subScopeBox: {
       borderLeft: '1px solid #888',
@@ -65,19 +65,20 @@ const primaryTypographyProps = { variant: 'body1' };
       paddingLeft: 24,
     },
     scopeItself: {
-      margin: `${theme.spacing.unit}px 0`,
+      margin: `${theme.spacing(1)}px 0`,
     },
     statusLabel: {
       display: 'block',
       fontSize: '0.6rem',
-      margin: `${theme.spacing.unit}px 0 ${theme.spacing.unit}px ${-theme
-        .spacing.double}px`,
+      margin: `${theme.spacing(1)}px 0 ${theme.spacing(1)}px ${-theme.spacing(
+        2
+      )}px`,
     },
     functionStatusLabel: {
       textAlign: 'center',
     },
     scopesWrapper: {
-      padding: theme.spacing.triple,
+      padding: theme.spacing(3),
     },
   }),
   { withTheme: true }
@@ -127,17 +128,17 @@ export default class Entry extends Component {
     const signature = this.getSignatureFromEntry(entry);
 
     return (
-      <Grid className={classes.gridContainer} container spacing={8}>
+      <Grid className={classes.gridContainer} container spacing={1}>
         <Grid item xs={6}>
           <div>
-            <Typography id={entry.name} component="h3">
+            <Typography variant="body2" id={entry.name} component="h3">
               {signature}
             </Typography>
           </div>
         </Grid>
         <Grid item xs={4}>
           <div>
-            <Typography>{entry.title}</Typography>
+            <Typography variant="body2">{entry.title}</Typography>
           </div>
         </Grid>
         <Grid item xs={2}>
@@ -153,17 +154,17 @@ export default class Entry extends Component {
     const { entry, classes } = this.props;
 
     return (
-      <Grid className={classes.gridContainer} container spacing={8}>
+      <Grid className={classes.gridContainer} container spacing={1}>
         <Grid item xs={5}>
           <div>
-            <Typography id={entry.name} component="h3">
+            <Typography variant="body2" id={entry.name} component="h3">
               {entry.exchange}
             </Typography>
           </div>
         </Grid>
         <Grid item xs={7}>
           <div>
-            <Typography>{entry.title}</Typography>
+            <Typography variant="body2">{entry.title}</Typography>
           </div>
         </Grid>
       </Grid>
@@ -174,22 +175,24 @@ export default class Entry extends Component {
     const { entry, classes } = this.props;
 
     return (
-      <Grid className={classes.gridContainer} container spacing={8}>
+      <Grid className={classes.gridContainer} container spacing={1}>
         <Grid item xs={3}>
           <div>
-            <Typography id={entry.type} component="h3">
+            <Typography variant="body2" id={entry.type} component="h3">
               {entry.type}
             </Typography>
           </div>
         </Grid>
         <Grid item xs={1}>
           <div>
-            <Typography component="h3">v{entry.version}</Typography>
+            <Typography variant="body2" component="h3">
+              v{entry.version}
+            </Typography>
           </div>
         </Grid>
         <Grid item xs={7}>
           <div>
-            <Typography>{entry.title}</Typography>
+            <Typography variant="body2">{entry.title}</Typography>
           </div>
         </Grid>
         <Grid item xs={1}>
@@ -205,10 +208,11 @@ export default class Entry extends Component {
     const { entry, classes } = this.props;
 
     return (
-      <Grid className={classes.gridContainer} container spacing={8}>
+      <Grid className={classes.gridContainer} container spacing={1}>
         <Grid item xs={5}>
           <div>
             <Typography
+              variant="body2"
               id={encodeURIComponent(entry.schema.$id)}
               component="h3">
               {entry.schema.title}
@@ -217,7 +221,7 @@ export default class Entry extends Component {
         </Grid>
         <Grid item xs={7}>
           <div>
-            <Typography>{entry.schema.$id}</Typography>
+            <Typography variant="body2">{entry.schema.$id}</Typography>
           </div>
         </Grid>
       </Grid>
@@ -229,7 +233,7 @@ export default class Entry extends Component {
       <ListItemText
         primaryTypographyProps={primaryTypographyProps}
         disableTypography
-        primary={<Typography variant="body1">{headerTitle}</Typography>}
+        primary={<Typography variant="body2">{headerTitle}</Typography>}
         secondary={
           <Fragment>
             <br />
@@ -254,7 +258,10 @@ export default class Entry extends Component {
     if (['if', 'then'].every(prop => prop in scopes)) {
       return (
         <Fragment>
-          <Typography className={classes.boxTop} component="span">
+          <Typography
+            variant="body2"
+            className={classes.boxTop}
+            component="span">
             if{' '}
             <strong>
               <em>{scopes.if}</em>
@@ -265,7 +272,10 @@ export default class Entry extends Component {
           </div>
           {scopes.else && (
             <Fragment>
-              <Typography className={classes.boxTop} component="span">
+              <Typography
+                variant="body2"
+                className={classes.boxTop}
+                component="span">
                 else
               </Typography>
               <div className={classes.subScopeBox}>
@@ -280,13 +290,19 @@ export default class Entry extends Component {
     if (['for', 'each', 'in'].every(prop => prop in scopes)) {
       return (
         <Fragment>
-          <Typography className={classes.boxTop} component="span">
+          <Typography
+            variant="body2"
+            className={classes.boxTop}
+            component="span">
             for each{' '}
             <strong>
               <em>{scopes.for}</em>
             </strong>
           </Typography>
-          <Typography className={classes.boxTop} component="span">
+          <Typography
+            variant="body2"
+            className={classes.boxTop}
+            component="span">
             in{' '}
             <strong>
               <em>{scopes.in}</em>
@@ -304,7 +320,10 @@ export default class Entry extends Component {
 
       return (
         <Fragment>
-          <Typography className={classes.boxTop} component="span">
+          <Typography
+            variant="body2"
+            className={classes.boxTop}
+            component="span">
             {'AllOf' in scopes ? 'all of' : 'any of'}
           </Typography>
           <div className={classes.subScopeBox}>
@@ -459,12 +478,8 @@ export default class Entry extends Component {
                   items={entry.routingKey}
                   renderRow={(routingKey, idx) => (
                     <TableRow key={routingKey.name}>
-                      <TableCell>
-                        <Typography>{idx}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography>{routingKey.name}</Typography>
-                      </TableCell>
+                      <TableCell>{idx}</TableCell>
+                      <TableCell>{routingKey.name}</TableCell>
                       <TableCell className={classes.summaryCell}>
                         <Markdown>{routingKey.summary}</Markdown>
                       </TableCell>
@@ -522,15 +537,12 @@ export default class Entry extends Component {
               primary="Fields"
               secondary={
                 <DataTable
+                  size="medium"
                   items={Object.keys(entry.fields)}
                   renderRow={field => (
                     <TableRow key={field}>
-                      <TableCell>
-                        <Typography>{field}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography>{entry.fields[field]}</Typography>
-                      </TableCell>
+                      <TableCell>{field}</TableCell>
+                      <TableCell>{entry.fields[field]}</TableCell>
                     </TableRow>
                   )}
                 />
@@ -595,7 +607,8 @@ export default class Entry extends Component {
       <ExpansionPanel
         defaultExpanded={expanded}
         onChange={this.handlePanelChange(entryHashKey)}
-        CollapseProps={{ unmountOnExit: true }}>
+        CollapseProps={{ unmountOnExit: true }}
+        elevation={2}>
         <ExpansionPanelSummary
           classes={{
             content: classNames(classes.expansionPanelSummary, {

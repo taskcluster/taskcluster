@@ -6,8 +6,6 @@ import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
 import ArrowExpandVerticalIcon from 'mdi-react/ArrowExpandVerticalIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import HelpView from '../../../components/HelpView';
@@ -25,15 +23,17 @@ import { formatScope, scopeLink } from '../../../utils/scopeUtils';
     ...theme.mixins.fab,
   },
   editor: {
-    marginBottom: theme.spacing.double,
+    marginBottom: theme.spacing(2),
   },
   title: {
-    marginBottom: theme.spacing.double,
+    marginBottom: theme.spacing(2),
   },
   listItemButton: {
     ...theme.mixins.listItemButton,
-    paddingTop: theme.spacing.unit / 2,
-    paddingBottom: theme.spacing.unit / 2,
+    paddingTop: theme.spacing(0.5),
+    paddingBottom: theme.spacing(0.5),
+    display: 'flex',
+    justifyContent: 'space-between',
   },
 }))
 export default class ScopesetExpander extends Component {
@@ -54,7 +54,7 @@ export default class ScopesetExpander extends Component {
   render() {
     const { classes } = this.props;
     const { scopes, scopeText } = this.state;
-    const description = `This tool allows you to find the expanded copy of a given scopeset, with 
+    const description = `This tool allows you to find the expanded copy of a given scopeset, with
     scopes implied by any roles included.`;
 
     return (
@@ -83,27 +83,17 @@ export default class ScopesetExpander extends Component {
                     {data &&
                       data.expandScopes &&
                       data.expandScopes.map(scope => (
-                        <ListItem
-                          key={scope}
-                          button
-                          component={Link}
-                          to={scopeLink(scope)}
-                          className={classes.listItemButton}>
-                          <ListItemText
-                            disableTypography
-                            secondary={
-                              <Typography>
-                                <code
-                                  // eslint-disable-next-line react/no-danger
-                                  dangerouslySetInnerHTML={{
-                                    __html: formatScope(scope),
-                                  }}
-                                />
-                              </Typography>
-                            }
-                          />
-                          <LinkIcon size={16} />
-                        </ListItem>
+                        <Link key={scope} to={scopeLink(scope)}>
+                          <ListItem button className={classes.listItemButton}>
+                            <code
+                              // eslint-disable-next-line react/no-danger
+                              dangerouslySetInnerHTML={{
+                                __html: formatScope(scope),
+                              }}
+                            />
+                            <LinkIcon size={16} />
+                          </ListItem>
+                        </Link>
                       ))}
                   </List>
                 </Fragment>

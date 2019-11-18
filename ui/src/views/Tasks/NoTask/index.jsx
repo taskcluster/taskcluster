@@ -2,7 +2,6 @@ import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { withStyles } from '@material-ui/core/styles';
@@ -16,10 +15,12 @@ import Link from '../../../utils/Link';
 @hot(module)
 @withStyles(theme => ({
   infoText: {
-    marginBottom: theme.spacing.unit,
+    marginBottom: theme.spacing(1),
   },
   listItemButton: {
     ...theme.mixins.listItemButton,
+    display: 'flex',
+    justifyContent: 'space-between',
   },
 }))
 export default class NoTask extends Component {
@@ -54,7 +55,7 @@ export default class NoTask extends Component {
             onSubmit={this.handleTaskSearchSubmit}
           />
         }>
-        <Typography className={classes.infoText}>
+        <Typography variant="body2" className={classes.infoText}>
           Enter a task ID in the search box
         </Typography>
         {recentTasks && Boolean(recentTasks.length) && (
@@ -64,18 +65,12 @@ export default class NoTask extends Component {
               <ListSubheader component="div">Recent Tasks</ListSubheader>
             }>
             {recentTasks.map(({ taskId }) => (
-              <ListItem
-                button
-                className={classes.listItemButton}
-                component={Link}
-                to={`/tasks/${taskId}`}
-                key={taskId}>
-                <ListItemText
-                  disableTypography
-                  primary={<Typography>{taskId}</Typography>}
-                />
-                <LinkIcon />
-              </ListItem>
+              <Link key={taskId} to={`/tasks/${taskId}`}>
+                <ListItem button className={classes.listItemButton}>
+                  {taskId}
+                  <LinkIcon />
+                </ListItem>
+              </Link>
             ))}
           </List>
         )}

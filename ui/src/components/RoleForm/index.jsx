@@ -26,8 +26,8 @@ import { formatScope, scopeLink } from '../../utils/scopeUtils';
   },
   saveRoleSpan: {
     position: 'fixed',
-    bottom: theme.spacing.double,
-    right: theme.spacing.unit * 11,
+    bottom: theme.spacing(2),
+    right: theme.spacing(11),
   },
   expandedScopesListItem: {
     paddingTop: 0,
@@ -46,8 +46,8 @@ import { formatScope, scopeLink } from '../../utils/scopeUtils';
     ...theme.mixins.errorIcon,
   },
   roleDescriptionListItem: {
-    marginTop: theme.spacing.unit,
-    marginBottom: theme.spacing.triple,
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(3),
   },
 }))
 /** A form to view/edit/create a role */
@@ -239,27 +239,24 @@ export default class RoleForm extends Component {
                   secondary={
                     <List dense>
                       {expandedScopes.map(scope => (
-                        <ListItem
-                          key={scope}
-                          button
-                          component={Link}
-                          to={scopeLink(scope)}
-                          className={classes.listItemButton}>
-                          <ListItemText
-                            disableTypography
-                            secondary={
-                              <Typography>
-                                <code
-                                  // eslint-disable-next-line react/no-danger
-                                  dangerouslySetInnerHTML={{
-                                    __html: formatScope(scope),
-                                  }}
-                                />
-                              </Typography>
-                            }
-                          />
-                          <LinkIcon />
-                        </ListItem>
+                        <Link key={scope} to={scopeLink(scope)}>
+                          <ListItem button className={classes.listItemButton}>
+                            <ListItemText
+                              disableTypography
+                              secondary={
+                                <Typography variant="body2">
+                                  <code
+                                    // eslint-disable-next-line react/no-danger
+                                    dangerouslySetInnerHTML={{
+                                      __html: formatScope(scope),
+                                    }}
+                                  />
+                                </Typography>
+                              }
+                            />
+                            <LinkIcon />
+                          </ListItem>
+                        </Link>
                       ))}
                     </List>
                   }
@@ -319,7 +316,11 @@ export default class RoleForm extends Component {
             onError={onDialogActionError}
             error={dialogError}
             title="Delete Role?"
-            body={<Typography>This will delete the {roleId} role.</Typography>}
+            body={
+              <Typography variant="body2">
+                This will delete the {roleId} role.
+              </Typography>
+            }
             confirmText="Delete Role"
           />
         )}
