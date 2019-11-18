@@ -1,8 +1,10 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { Redirect } from 'react-router-dom';
+import { parse, stringify } from 'qs';
 import { withApollo } from 'react-apollo';
 import storage from 'localforage';
+import merge from 'deepmerge';
 import { safeLoad, safeDump } from 'js-yaml';
 import { bool } from 'prop-types';
 import {
@@ -141,14 +143,43 @@ export default class CreateTask extends Component {
     }
   }
 
+  makeInteractive(payload) {
+    const task = merge(payload, {
+      payload: {
+        features: {
+          interactive: true,
+        },
+      },
+    });
+
+    if (task.payload.caches) {
+      delete task.payload.caches;
+    }
+
+    // Minimum of an hour
+    task.payload.maxRunTime = Math.max(3600, task.payload.maxRunTime || 0);
+
+    // Avoid side-effects
+    if (task.routes) {
+      delete task.routes;
+    }
+
+    return task;
+  }
+
   handleCreateTask = async () => {
+    const { interactive } = parse(this.props.location.search.slice(1));
     const { task } = this.state;
 
     if (task) {
       const taskId = nice();
-      const payload = safeLoad(task);
+      let payload = safeLoad(task);
 
       db.taskDefinitions.put(payload);
+
+      if (interactive) {
+        payload = this.makeInteractive(payload);
+      }
 
       this.setState({ loading: true });
 
@@ -174,8 +205,13 @@ export default class CreateTask extends Component {
   };
 
   handleInteractiveChange = ({ target: { checked } }) => {
+    const query = {
+      ...parse(this.props.location.search.slice(1)),
+      interactive: checked ? '1' : undefined,
+    };
+
     this.props.history.replace(
-      checked ? '/tasks/create/interactive' : '/tasks/create'
+      `/tasks/create${stringify(query, { addQueryPrefix: true })}`
     );
   };
 
@@ -238,7 +274,8 @@ export default class CreateTask extends Component {
   }
 
   render() {
-    const { interactive, description, classes } = this.props;
+    const { location, description, classes } = this.props;
+    const { interactive } = parse(location.search.slice(1));
     const {
       task,
       error,
