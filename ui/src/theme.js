@@ -376,11 +376,6 @@ const createTheme = isDarkTheme => {
             ? THEME.PRIMARY_TEXT_DARK
             : THEME.PRIMARY_TEXT_LIGHT,
         },
-        day: {
-          color: isDarkTheme
-            ? 'rgba(255, 255, 255, 0.7)'
-            : 'rgba(0, 0, 0, 0.7)',
-        },
       },
       MuiPickersModal: {
         dialogAction: {
