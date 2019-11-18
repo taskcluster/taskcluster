@@ -388,9 +388,7 @@ const createTheme = isDarkTheme => {
               : THEME.TEN_PERCENT_BLACK,
           },
         },
-      },
-      MuiDialogActions: {
-        root: {
+        withAdditionalAction: {
           '& button': {
             color: isDarkTheme
               ? THEME.PRIMARY_TEXT_DARK
