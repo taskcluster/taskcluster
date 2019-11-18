@@ -8,6 +8,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ArrowExpandVerticalIcon from 'mdi-react/ArrowExpandVerticalIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
+import { parse, stringify } from 'qs';
 import HelpView from '../../../components/HelpView';
 import Dashboard from '../../../components/Dashboard/index';
 import Button from '../../../components/Button';
@@ -37,12 +38,32 @@ import { formatScope, scopeLink } from '../../../utils/scopeUtils';
   },
 }))
 export default class ScopesetExpander extends Component {
-  state = {
-    scopeText: '',
-  };
+  constructor(props) {
+    super(props);
+
+    const query = parse(this.props.location.search.slice(1));
+    const { scopes } = query;
+
+    if (scopes) {
+      this.state = {
+        scopeText: scopes.join('\n'),
+      };
+    } else {
+      this.state = {
+        scopeText: '',
+      };
+    }
+  }
 
   handleExpandScopesClick = async () => {
     const scopes = splitLines(this.state.scopeText);
+    const queryObj = { scopes };
+    const queryStr = stringify(queryObj);
+
+    this.props.history.push({
+      pathname: '/auth/scopes/expansions',
+      search: queryStr,
+    });
 
     this.setState({ scopes });
   };
