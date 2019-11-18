@@ -78,7 +78,7 @@
     semver "^5.4.1"
     source-map "^0.5.0"
 
-"@babel/core@^7.2.2":
+"@babel/core@^7.2.2", "@babel/core@^7.7.2":
   version "7.7.2"
   resolved "https://registry.yarnpkg.com/@babel/core/-/core-7.7.2.tgz#ea5b99693bcfc058116f42fa1dd54da412b29d91"
   integrity sha512-eeD7VEZKfhK1KUXGiyPFettgF3m513f8FoBSWiQ1xTvl1RAopLs42Wp9+Ze911I6H0N9lNqJMDgoZT7gHsipeQ==
@@ -1370,17 +1370,17 @@
     file-loader "^4.2.0"
     url-loader "^2.1.0"
 
-"@neutrinojs/karma@9.0.0-rc.4":
-  version "9.0.0-rc.4"
-  resolved "https://registry.yarnpkg.com/@neutrinojs/karma/-/karma-9.0.0-rc.4.tgz#1d27f8144fa4e05f9eb094bec93ae2fbdbb89c90"
-  integrity sha512-MZkHSknXagHC6H9KMJPmlmDVIpOMJE85FWa+/gWo+xdMpuYjOVk/SyUizQIcdvOiUcv0gXQialmwMalwX7KBPw==
+"@neutrinojs/karma@9.0.0-rc.5":
+  version "9.0.0-rc.5"
+  resolved "https://registry.yarnpkg.com/@neutrinojs/karma/-/karma-9.0.0-rc.5.tgz#6df47b0f7f090eccd65bd1d39413e937c77eb99b"
+  integrity sha512-nLflXm3ctN58oEZw3Ow7MahXnU1qA5TESDXApsRld4BMfRwEq3lzvtMfVImmXPPy+HlZ/7c4aQacOViVr0GAAQ==
   dependencies:
-    "@babel/core" "^7.5.5"
+    "@babel/core" "^7.7.2"
     babel-merge "^3.0.0"
     babel-plugin-istanbul "^5.2.0"
     deepmerge "^1.5.2"
-    karma-chrome-launcher "^3.0.0"
-    karma-coverage "^2.0.0"
+    karma-chrome-launcher "^3.1.0"
+    karma-coverage "^2.0.1"
     karma-mocha "^1.3.0"
     karma-mocha-reporter "^2.2.5"
     karma-webpack "^4.0.2"
@@ -7240,7 +7240,7 @@ jsx-ast-utils@^2.2.1:
     array-includes "^3.0.3"
     object.assign "^4.1.0"
 
-karma-chrome-launcher@^3.0.0:
+karma-chrome-launcher@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/karma-chrome-launcher/-/karma-chrome-launcher-3.1.0.tgz#805a586799a4d05f4e54f72a204979f3f3066738"
   integrity sha512-3dPs/n7vgz1rxxtynpzZTvb9y/GIaW8xjAwcIGttLbycqoFtI7yo1NGnQi6oFTherRE+GIhCAHZC4vEqWGhNvg==
@@ -7254,7 +7254,7 @@ karma-cli@^2.0.0:
   dependencies:
     resolve "^1.3.3"
 
-karma-coverage@^2.0.0:
+karma-coverage@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/karma-coverage/-/karma-coverage-2.0.1.tgz#f024f191f0f135dee2403763ac36cc52aac279ac"
   integrity sha512-SnFkHsnLsaXfxkey51rRN9JDLAEKYW2Lb0qOEvcruukk0NkSNDkjobNDZPt9Ni3kIhLZkLtpGOz661hN7OaZvQ==
@@ -11858,8 +11858,7 @@ tar@^4:
     yallist "^3.0.3"
 
 "taskcluster-lib-scopes@link:../libraries/scopes":
-  version "0.0.0"
-  uid ""
+  version "23.0.0"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"

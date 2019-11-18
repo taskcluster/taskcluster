@@ -17,7 +17,7 @@
     "test": "karma start --single-run"
   },
   "devDependencies": {
-    "@neutrinojs/karma": "9.0.0-rc.0",
+    "@neutrinojs/karma": "9.0.0-rc.5",
     "@neutrinojs/library": "9.0.0-rc.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
