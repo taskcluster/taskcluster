@@ -267,6 +267,10 @@ builder.declare({
 
       }));
   } catch (err) {
+    if (err && err.code === 'PropertyTooLarge') {
+      return res.reportError('InputError', err.toString(), {});
+    }
+
     if (!err || err.code !== 'EntityAlreadyExists') {
       throw err;
     }
@@ -363,15 +367,22 @@ builder.declare({
     });
   }
 
-  await hook.modify((hook) => {
-    hook.metadata = hookDef.metadata;
-    hook.bindings = hookDef.bindings;
-    hook.task = hookDef.task;
-    hook.triggerSchema = hookDef.triggerSchema;
-    hook.schedule = schedule;
-    hook.nextTaskId = taskcluster.slugid();
-    hook.nextScheduledDate = nextDate(schedule);
-  });
+  try {
+    await hook.modify((hook) => {
+      hook.metadata = hookDef.metadata;
+      hook.bindings = hookDef.bindings;
+      hook.task = hookDef.task;
+      hook.triggerSchema = hookDef.triggerSchema;
+      hook.schedule = schedule;
+      hook.nextTaskId = taskcluster.slugid();
+      hook.nextScheduledDate = nextDate(schedule);
+    });
+  } catch (err) {
+    if (err && err.code === 'PropertyTooLarge') {
+      return res.reportError('InputError', err.toString(), {});
+    }
+    throw err;
+  }
 
   let definition = await hook.definition();
   this.publisher.hookUpdated({hookGroupId, hookId});
