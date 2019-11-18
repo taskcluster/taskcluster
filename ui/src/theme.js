@@ -331,10 +331,14 @@ const createTheme = isDarkTheme => {
       MuiPickersYear: {
         root: {
           '&:focus': {
-            color: isDarkTheme ? 'white' : '#000',
+            color: isDarkTheme
+              ? THEME.PRIMARY_TEXT_DARK
+              : THEME.PRIMARY_TEXT_LIGHT,
           },
           '&$yearSelected': {
-            color: isDarkTheme ? 'white' : '#000',
+            color: isDarkTheme
+              ? THEME.PRIMARY_TEXT_DARK
+              : THEME.PRIMARY_TEXT_LIGHT,
           },
         },
       },
@@ -362,13 +366,15 @@ const createTheme = isDarkTheme => {
       MuiPickersDay: {
         daySelected: {
           backgroundColor: THEME.SECONDARY,
-          color: 'white',
+          color: THEME.PRIMARY_TEXT_DARK,
           '&:hover': {
-            color: isDarkTheme ? 'white' : '#000',
+            backgroundColor: THEME.SECONDARY,
           },
         },
         current: {
-          color: isDarkTheme ? 'white' : '#000',
+          color: isDarkTheme
+            ? THEME.PRIMARY_TEXT_DARK
+            : THEME.PRIMARY_TEXT_LIGHT,
         },
         day: {
           color: isDarkTheme
@@ -378,7 +384,9 @@ const createTheme = isDarkTheme => {
       },
       MuiPickersModal: {
         dialogAction: {
-          color: isDarkTheme ? 'white' : '#000',
+          color: isDarkTheme
+            ? THEME.PRIMARY_TEXT_DARK
+            : THEME.PRIMARY_TEXT_LIGHT,
           '&:hover': {
             backgroundColor: isDarkTheme
               ? THEME.TEN_PERCENT_WHITE
@@ -389,7 +397,9 @@ const createTheme = isDarkTheme => {
       MuiDialogActions: {
         root: {
           '& button': {
-            color: isDarkTheme ? 'white' : '#000',
+            color: isDarkTheme
+              ? THEME.PRIMARY_TEXT_DARK
+              : THEME.PRIMARY_TEXT_LIGHT,
             '&:hover': {
               backgroundColor: isDarkTheme
                 ? THEME.TEN_PERCENT_WHITE
