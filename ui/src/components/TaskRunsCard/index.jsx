@@ -105,7 +105,7 @@ const DOTS_VARIANT_LIMIT = 5;
       marginBottom: theme.spacing(0.5),
     },
     lockIconDiv: {
-      marginRight: theme.spacing.double,
+      marginRight: theme.spacing(2),
     },
   }),
   { withTheme: true }
