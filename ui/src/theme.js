@@ -362,6 +362,10 @@ const createTheme = isDarkTheme => {
       MuiPickersDay: {
         daySelected: {
           backgroundColor: THEME.SECONDARY,
+          color: 'white',
+          '&:hover': {
+            color: isDarkTheme ? 'white' : '#000',
+          },
         },
         current: {
           color: isDarkTheme ? 'white' : '#000',
