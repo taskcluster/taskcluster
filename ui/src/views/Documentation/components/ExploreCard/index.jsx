@@ -26,22 +26,21 @@ const styles = theme => ({
 
 function ExploreCard({ classes, to, title, description, icon, ...props }) {
   return (
-    <Card classes={{ root: classes.root }} {...props}>
-      <CardActionArea
-        className={classes.cardActionArea}
-        component={Anchor}
-        href={to}>
-        <CardContent className={classes.titleCardContent}>
-          {icon}
-          <Typography variant="h6" className={classes.title}>
-            {title}
-          </Typography>
-        </CardContent>
-        <CardContent>
-          <Typography variant="body2">{description}</Typography>
-        </CardContent>
-      </CardActionArea>
-    </Card>
+    <Anchor href={to}>
+      <Card classes={{ root: classes.root }} {...props}>
+        <CardActionArea className={classes.cardActionArea}>
+          <CardContent className={classes.titleCardContent}>
+            {icon}
+            <Typography variant="h6" className={classes.title}>
+              {title}
+            </Typography>
+          </CardContent>
+          <CardContent>
+            <Typography variant="body2">{description}</Typography>
+          </CardContent>
+        </CardActionArea>
+      </Card>
+    </Anchor>
   );
 }
 

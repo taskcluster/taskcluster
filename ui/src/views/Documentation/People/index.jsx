@@ -52,23 +52,22 @@ export default class People extends Component {
         })}>
         {contributors.filter(filter || (() => true)).map(contrib => (
           <Grid key={contrib.login} item xs={4} sm={3}>
-            <Card>
-              <CardActionArea
-                className={classes.cardActionArea}
-                component={Anchor}
-                href={contrib.profile || '#'}>
-                <CardContent>
-                  <Avatar
-                    alt="avatar"
-                    src={contrib.avatar_url}
-                    className={classes.avatar}
-                  />
-                  <Typography variant="body2">
-                    {contrib.name || contrib.login}
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-            </Card>
+            <Anchor href={contrib.profile || '#'}>
+              <Card>
+                <CardActionArea className={classes.cardActionArea}>
+                  <CardContent>
+                    <Avatar
+                      alt="avatar"
+                      src={contrib.avatar_url}
+                      className={classes.avatar}
+                    />
+                    <Typography variant="body2">
+                      {contrib.name || contrib.login}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Anchor>
           </Grid>
         ))}
       </Grid>
