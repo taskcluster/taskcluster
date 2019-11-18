@@ -27,7 +27,7 @@ export default class ViewProvisioners extends Component {
 
     return (
       <Dashboard
-        title="Provisioners"
+        title="Workers"
         helpView={<HelpView description={description} />}>
         {loading && <Spinner loading />}
         <ErrorPanel fixed error={error} />

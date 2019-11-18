@@ -191,7 +191,7 @@ export default class ViewWorkers extends Component {
                 <Breadcrumbs classes={{ paper: classes.breadcrumbsPaper }}>
                   <Link to="/provisioners">
                     <Typography variant="body2" className={classes.link}>
-                      Provisioners
+                      Workers
                     </Typography>
                   </Link>
                   <Link to={`/provisioners/${params.provisionerId}`}>

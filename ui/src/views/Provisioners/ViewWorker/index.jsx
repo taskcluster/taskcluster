@@ -157,7 +157,7 @@ export default class ViewWorker extends Component {
               <Breadcrumbs>
                 <Link to="/provisioners">
                   <Typography variant="body2" className={classes.link}>
-                    Provisioners
+                    Workers
                   </Typography>
                 </Link>
                 <Link to={`/provisioners/${params.provisionerId}`}>
