@@ -5,14 +5,14 @@ import isDateWithin from '../src/utils/isDateWithin';
 describe('isDateWithin', () => {
   it('should return true', () => {
     [
-      '45 minutes',
+      '46 minutes',
       '60 minutes',
       '119 minutes',
-      '-45 minutes',
+      '-46 minutes',
       '-60 minutes',
       '-119 minutes',
     ].forEach(t => {
-      expect(isDateWithin(fromNow(t), '44', '120')).to.be.true;
+      expect(isDateWithin(fromNow(t), 44, 120)).to.be.true;
     });
   });
 
@@ -25,7 +25,7 @@ describe('isDateWithin', () => {
       '- 1 minute',
       '- 2 hours',
     ].forEach(t => {
-      expect(isDateWithin(fromNow(t), '44', '120')).to.be.false;
+      expect(isDateWithin(fromNow(t), 44, 120)).to.be.false;
     });
   });
 });
