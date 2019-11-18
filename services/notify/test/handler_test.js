@@ -40,7 +40,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, s
 
   let baseStatus = {
     taskId: 'DKPZPsvvQEiw67Pb3rkdNg',
-    provisionerId: 'aws-provisioner-v1',
+    provisionerId: 'test-provisioner',
     workerType: 'gecko-t-win7-32-gpu',
     schedulerId: 'gecko-level-3',
     taskGroupId: 'NA3wajh1SQ-yVPlNUO8OYw',

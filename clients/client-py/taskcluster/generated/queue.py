@@ -375,26 +375,6 @@ class Queue(BaseClient):
         header and **must** give the `content-type` header the same value as in
         the request to `createArtifact`.
 
-        DEPRECATED **Blob artifacts**, are useful for storing large files.  Currently, these
-        are all stored in S3 but there are facilities for adding support for other
-        backends in futre.  A call for this type of artifact must provide information
-        about the file which will be uploaded.  This includes sha256 sums and sizes.
-        This method will return a list of general form HTTP requests which are signed
-        by AWS S3 credentials managed by the Queue.  Once these requests are completed
-        the list of `ETag` values returned by the requests must be passed to the
-        queue `completeArtifact` method
-
-        DEPRECATED **Azure artifacts** are stored in _Azure Blob Storage_ service
-        which given the consistency guarantees and API interface offered by Azure
-        is more suitable for artifacts that will be modified during the execution
-        of the task. For example docker-worker has a feature that persists the
-        task log to Azure Blob Storage every few seconds creating a somewhat
-        live log. A request to create an Azure artifact will return a URL
-        featuring a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),
-        refer to MSDN for further information on how to use these.
-        **Warning: azure artifact is currently an experimental feature subject
-        to changes and data-drops.**
-
         **Reference artifacts**, only consists of meta-data which the queue will
         store for you. These artifacts really only have a `url` property and
         when the artifact is requested the client will be redirect the URL
@@ -427,25 +407,6 @@ class Queue(BaseClient):
         """
 
         return self._makeApiCall(self.funcinfo["createArtifact"], *args, **kwargs)
-
-    def completeArtifact(self, *args, **kwargs):
-        """
-        Complete Artifact
-
-        This endpoint finalises an upload done through the blob `storageType`.
-        The queue will ensure that the task/run is still allowing artifacts
-        to be uploaded.  For single-part S3 blob artifacts, this endpoint
-        will simply ensure the artifact is present in S3.  For multipart S3
-        artifacts, the endpoint will perform the commit step of the multipart
-        upload flow.  As the final step for both multi and single part artifacts,
-        the `present` entity field will be set to `true` to reflect that the
-        artifact is now present and a message published to pulse.  NOTE: This
-        endpoint *must* be called for all artifacts of storageType 'blob'
-
-        This method is ``experimental``
-        """
-
-        return self._makeApiCall(self.funcinfo["completeArtifact"], *args, **kwargs)
 
     def getArtifact(self, *args, **kwargs):
         """
@@ -497,15 +458,12 @@ class Queue(BaseClient):
         artifact must also be validated against the values specified in the original queue response
         1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`
         must not occur
-        1. A request which has x-taskcluster-artifact-storage-type value of `blob` and does not
-        have x-taskcluster-location-content-sha256 or x-taskcluster-location-content-length
-        must be treated as an error
 
         **Headers**
         The following important headers are set on the response to this method:
 
         * location: the url of the artifact if a redirect is to be performed
-        * x-taskcluster-artifact-storage-type: the storage type.  Example: blob, s3, error
+        * x-taskcluster-artifact-storage-type: the storage type.  Example: s3
 
         The following important headers are set on responses to this method for Blob artifacts
 
@@ -641,9 +599,9 @@ class Queue(BaseClient):
         Declare a provisioner, supplying some details about it.
 
         `declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are
-        possessed. For example, a request to update the `aws-provisioner-v1`
+        possessed. For example, a request to update the `my-provisioner`
         provisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope
-        `queue:declare-provisioner:aws-provisioner-v1#description`.
+        `queue:declare-provisioner:my-provisioner#description`.
 
         The term "provisioner" is taken broadly to mean anything with a provisionerId.
         This does not necessarily mean there is an associated service performing any
@@ -705,9 +663,9 @@ class Queue(BaseClient):
         Declare a workerType, supplying some details about it.
 
         `declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are
-        possessed. For example, a request to update the `gecko-b-1-w2008` worker-type within the `aws-provisioner-v1`
+        possessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`
         provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
-        `queue:declare-worker-type:aws-provisioner-v1/gecko-b-1-w2008#description`.
+        `queue:declare-worker-type:my-provisioner/highmem#description`.
 
         This method is ``experimental``
         """
@@ -796,14 +754,6 @@ class Queue(BaseClient):
             'output': 'v1/claim-work-response.json#',
             'route': '/claim-work/<provisionerId>/<workerType>',
             'stability': 'stable',
-        },
-        "completeArtifact": {
-            'args': ['taskId', 'runId', 'name'],
-            'input': 'v1/put-artifact-request.json#',
-            'method': 'put',
-            'name': 'completeArtifact',
-            'route': '/task/<taskId>/runs/<runId>/artifacts/<name>',
-            'stability': 'experimental',
         },
         "createArtifact": {
             'args': ['taskId', 'runId', 'name'],

@@ -62,7 +62,7 @@ export default class ApiReference extends Component {
         {functionEntries && Boolean(functionEntries.length) && (
           <Fragment>
             <HeaderWithAnchor type="h3">Functions</HeaderWithAnchor>
-            <Typography>
+            <Typography variant="body2">
               For more information on invoking the API methods described here,
               see{' '}
               <Anchor href="/docs/manual/design/apis">Using the APIs</Anchor> in

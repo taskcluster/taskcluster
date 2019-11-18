@@ -41,7 +41,6 @@ properties:
           artifact.
         type:         string
         enum:
-          - blob
           - reference
           - error
       name:

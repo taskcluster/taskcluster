@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v22"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v23"
 )
 
 type (
@@ -109,162 +109,9 @@ type (
 		// the artifact.
 		//
 		// Possible values:
-		//   * "blob"
 		//   * "s3"
-		//   * "azure"
 		//   * "reference"
 		//   * "error"
-		StorageType string `json:"storageType"`
-	}
-
-	// Request for an Azure Shared Access Signature (SAS) that will allow
-	// you to upload an artifact to an Azure blob storage container managed
-	// by the queue.
-	AzureArtifactRequest struct {
-
-		// Artifact mime-type, when uploading artifact please use the same
-		// `Content-Type`, consistently using the correct mime-type make
-		// tooling a lot easier, specifically, always using `application/json`
-		// for JSON artifacts.
-		//
-		// Max length: 255
-		ContentType string `json:"contentType"`
-
-		// Date-time after which the artifact should be deleted.
-		// Note, that these will be collected over time, and artifacts may
-		// remain available after expiration. Azure based artifacts are
-		// identified in azure table storage and explicitly deleted in the
-		// azure storage container after expiration.
-		Expires tcclient.Time `json:"expires"`
-
-		// Artifact storage type, in this case `azure`
-		//
-		// Possible values:
-		//   * "azure"
-		StorageType string `json:"storageType"`
-	}
-
-	// Response to a request for an Azure Shared Access Signature (SAS)
-	// that will allow you to upload an artifact to an Azure blob storage
-	// container managed by the queue.
-	AzureArtifactResponse struct {
-
-		// Artifact mime-type, should be specified with the
-		// `x-ms-blob-content-type` when committing the block.
-		//
-		// Max length: 255
-		ContentType string `json:"contentType"`
-
-		// Date-time after which Shared Access Signature (SAS) will
-		// seize to work.
-		Expires tcclient.Time `json:"expires"`
-
-		// Shared Access Signature (SAS) with write permissions, see
-		// [Azure REST API]
-		// (http://msdn.microsoft.com/en-US/library/azure/dn140256.aspx)
-		// reference for details on how to use this.
-		PutURL string `json:"putUrl"`
-
-		// Artifact storage type, in this case `azure`
-		//
-		// Possible values:
-		//   * "azure"
-		StorageType string `json:"storageType"`
-	}
-
-	// Request a list of requests in a generalized format which can be run to
-	// upload an artifact to storage managed by the queue.
-	BlobArtifactRequest struct {
-
-		// Optionally provide an encoding type which should be set as the HTTP
-		// Content-Encoding header for this artifact.
-		//
-		// Max length: 255
-		ContentEncoding string `json:"contentEncoding,omitempty"`
-
-		// The number of bytes of the entire artifact.  This must be the number
-		// of bytes in the file to be uploaded.  For single part uploads, the
-		// upload will fail if the number of bytes uploaded does not match this
-		// value.  A single part upload (e.g. no parts list) may be at most 5GB.
-		// This limit is enforced in the code because it is not possible to
-		// represent all of the restrictions in a json-schema.  A multipart
-		// upload may be at most 5TB, with each part other than the last being
-		// between 5MB and 5GB in size.
-		//
-		// Mininum:    0
-		ContentLength int64 `json:"contentLength"`
-
-		// The complete SHA256 value of the entire artifact.  This must be the
-		// SHA256 of the file which is to be uploaded.  For single part uploads,
-		// the upload will fail if the SHA256 value of what is uploaded does not
-		// match this value
-		//
-		// Syntax:     ^[a-fA-F0-9]{64}$
-		ContentSha256 string `json:"contentSha256"`
-
-		// Artifact mime-type, when uploading artifact to the signed
-		// `PUT` URL returned from this request this must given with the
-		//  `ContentType` header. Please, provide correct mime-type,
-		//  this make tooling a lot easier, specifically,
-		//  always using `application/json` for JSON artifacts.
-		//
-		// Max length: 255
-		ContentType string `json:"contentType"`
-
-		// Date-time after which the artifact should be deleted. Note, that
-		// these will be collected over time, and artifacts may remain
-		// available after expiration. S3 based artifacts are identified in
-		// azure table storage and explicitly deleted on S3 after expiration.
-		Expires tcclient.Time `json:"expires"`
-
-		// A list of parts for a multipart upload.  The presence of this list is
-		// how a multipart upload is differentiated from a single part upload.
-		// The items in this list represent individual parts for upload.  For a
-		// multipart upload, the sha256 values provided here must match the
-		// sha256 value that S3 internally computes for the upload to be
-		// considered a success.  The overall sha256 value is not checked
-		// explicitly because the S3 API does not allow for that, but the same
-		// code that is responsible for generating the parts hashes would also
-		// be generating the overall hash, which makes this less of a concern.
-		// The worst case is that we have artifacts which incorrectly do not
-		// validate, which is not as big of a security concern.
-		Parts []MultipartPart `json:"parts,omitempty"`
-
-		// Artifact storage type, in this case `'blob'`
-		//
-		// Possible values:
-		//   * "blob"
-		StorageType string `json:"storageType"`
-
-		// The number of bytes transfered across the wire to the backing
-		// datastore.  If specified, it represents the post-content-encoding
-		// byte count
-		//
-		// Mininum:    0
-		TransferLength int64 `json:"transferLength,omitempty"`
-
-		// This is the sha256 of the bytes transfered across the wire to the
-		// backing datastore.  If specified, it represents the
-		// post-content-encoding sha256 value
-		//
-		// Syntax:     ^[a-fA-F0-9]{64}$
-		TransferSha256 string `json:"transferSha256,omitempty"`
-	}
-
-	// Response to a request for creating a new blob artifact
-	BlobArtifactResponse struct {
-
-		// Date-time after which the signed `requests` no longer work
-		Expires tcclient.Time `json:"expires"`
-
-		// A list of generalized HTTP requests which must be run to upload the
-		// artifact.
-		Requests []HTTPRequest `json:"requests"`
-
-		// Artifact storage type, in this case `'blob'`
-		//
-		// Possible values:
-		//   * "blob"
 		StorageType string `json:"storageType"`
 	}
 
@@ -299,16 +146,6 @@ type (
 		// List of task claims, may be empty if no tasks was claimed, in which case
 		// the worker should sleep a tiny bit before polling again.
 		Tasks []TaskClaim `json:"tasks"`
-	}
-
-	// Complete an aritifact
-	CompleteArtifactRequest struct {
-
-		// A list of the etags given by the API of the blob storage provider.  This is an opaque
-		// string value provided by the API.
-		//
-		// Array items:
-		Etags []string `json:"etags"`
 	}
 
 	// Response to a request for the number of pending tasks for a given
@@ -375,29 +212,6 @@ type (
 		// Possible values:
 		//   * "error"
 		StorageType string `json:"storageType"`
-	}
-
-	HTTPRequest struct {
-
-		// Headers of request
-		//
-		// Map entries:
-		Headers map[string]string `json:"headers"`
-
-		// HTTP 1.1 method of request
-		//
-		// Possible values:
-		//   * "GET"
-		//   * "POST"
-		//   * "PUT"
-		//   * "DELETE"
-		//   * "OPTIONS"
-		//   * "HEAD"
-		//   * "PATCH"
-		Method string `json:"method"`
-
-		// URL of request
-		URL string `json:"url"`
 	}
 
 	// List of artifacts for a given `taskId` and `runId`.
@@ -504,29 +318,10 @@ type (
 		Workers []Worker `json:"workers"`
 	}
 
-	MultipartPart struct {
-
-		// The sha256 hash of the part.
-		//
-		// Syntax:     ^[a-fA-F0-9]{64}$
-		// Min length: 64
-		// Max length: 64
-		Sha256 string `json:"sha256"`
-
-		// The number of bytes in this part.  Keep in mind for S3 that
-		// all but the last part must be minimum 5MB and the maximum for
-		// a single part is 5GB.  The overall size may not exceed 5TB
-		//
-		// Mininum:    0
-		Size int64 `json:"size"`
-	}
-
 	// Request a authorization to put and artifact or posting of a URL as an artifact. Note that the `storageType` property is referenced in the response as well.
 	//
 	// One of:
-	//   * BlobArtifactRequest
 	//   * S3ArtifactRequest
-	//   * AzureArtifactRequest
 	//   * RedirectArtifactRequest
 	//   * ErrorArtifactRequest
 	PostArtifactRequest json.RawMessage
@@ -535,9 +330,7 @@ type (
 	// Note that the `storageType` property is referenced in the request as well.
 	//
 	// One of:
-	//   * BlobArtifactResponse
 	//   * S3ArtifactResponse
-	//   * AzureArtifactResponse
 	//   * RedirectArtifactResponse
 	//   * ErrorArtifactResponse
 	PostArtifactResponse json.RawMessage

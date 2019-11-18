@@ -3,6 +3,84 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v23.0.0
+
+▶ [MAJOR] 
+Support for several deprecated services has been removed.
+* The login service has been removed from the codebase and from all client libraries.  It was retired on November 9, 2019 when the external services that depended on it migrated to third-party login support.  It was never part of the Helm deployment.
+* Support for the deprecated ec2-manager and aws-provisioner services has been removed from all client libraries.  These services are no longer running, so this should have minimal impact.
+* Support for the long-removed events service and the never-released gce-provisioner service has been removed from the Go client.
+
+▶ [MAJOR] 
+The Taskcluster Go client no longer uses the deprecated concept of BaseURL, instead requiring a RootURL.  Users of the `New` and `NewFromEnv` functions do not need to change anything.  However, any code that has manually constructed a client object, or set such an object's `BaseURL` property, must be updated to use `RootURL` instead.
+
+▶ [MAJOR] 
+The `auth.statsumToken` method has been removed.  The service for which this returns a token has not run for over a year, so the impact is minimal.
+
+▶ [MAJOR] [bug 1577785](http://bugzil.la/1577785)
+The artifact types `blob` and `azure` are no longer supported.  Neither of these types has seen real use, and both are broken in all known deployments of Taskcluster.
+
+The [Object Service](https://bugzilla.mozilla.org/show_bug.cgi?id=1471582) will implement much of the same functionality, but likely with subtle differences.  Removing these unused artifact types now will simplify migration to the Object Service once it is developed.
+
+▶ [MAJOR] 
+The auth service no longer accepts Helm configuration properties `auth.client_table_name` or `auth.role_container_name`.  These values are now assumed to be `Clients` and `auth-production-roles`, respectively.  No known deployments of Taskcluster use any other value.
+
+The auth service now honors `sentry_organization`, `sentry_host`, `sentry_team`, and `sentry_key_prefix`.  Previously, the values of these properties were ignored.
+
+▶ [minor] [#1923](https://github.com/taskcluster/taskcluster/issues/1923)
+The web-server service now uses its own azure session table to keep track of sessions. This solves the following issues:
+* Restarting the web-server service clears all user sessions
+* Spinning up multiple werb-server services for load balancing is not possible since we stored sessions in memory and the latter belong to a single instance
+
+▶ [patch] [bug 1595221](http://bugzil.la/1595221)
+Adds an LRU cache to getTask method, so that we don't have to make too many calls to Azure (tasks are immutable anyways)
+The default value for the cache size is 10. The name of the optional prop in the dev-config.yml is `queue.task_cache_max_size`
+
+▶ [patch] [bug 1595838](http://bugzil.la/1595838)
+Errors completing a blob artifact upload are no longer returned with statusCode 500.
+
+▶ [patch] [#1962](https://github.com/taskcluster/taskcluster/issues/1962)
+Taskcluster UI error panels are now scrollable.
+
+▶ [patch] [bug 1574854](http://bugzil.la/1574854)
+Taskcluster UI now does not show a "404" text when a page could not be found in the UI so as not to pretend an HTTP response code that didn't occur.
+
+▶ [patch] [bug 1595734](http://bugzil.la/1595734)
+Taskcluster UI now properly creates interactive tasks from the task creator.
+
+▶ [patch] [#1881](https://github.com/taskcluster/taskcluster/issues/1881)
+Taskcluster UI now properly renders the task title in the app bar.
+
+▶ [patch] [bug 1595418](http://bugzil.la/1595418)
+Taskcluster UI now properly shows task dependencies of tasks that don't have a decision task.
+A task with no decision task is a common thing to have outside the firefox-ci cluster.
+
+▶ [patch] [#1951](https://github.com/taskcluster/taskcluster/issues/1951)
+Taskcluster UI now properly shows the Quarantine Until date.
+
+▶ [patch] [#1972](https://github.com/taskcluster/taskcluster/issues/1972)
+Taskcluster UI now shows up to 1000 workers and worker-types in the paginated table. We previously only showed ~15 rows per page.
+
+▶ [patch] [bug 1595667](http://bugzil.la/1595667)
+Taskcluster third-party login  UI now instructs users to sign in to provide credentials to a third party registered client instead of showing them the home page.
+
+▶ [patch] [bug 1596523](http://bugzil.la/1596523)
+Taskcluster web-server process will stop crashing when something goes wrong when logging in.
+
+▶ [patch] [#1988](https://github.com/taskcluster/taskcluster/issues/1988)
+The built-in retrigger action no longer removes fields like `taskId` from within the task definition.
+
+▶ [patch] [bug 1593762](http://bugzil.la/1593762)
+The google provider now accepts workerpools with underscores in the name
+
+▶ [patch] [bug 1595238](http://bugzil.la/1595238)
+The queue service now polls Azure queues for deadline, dependency, and task claims less frequently when those queues are empty.  This should reduce the rate of GetMessageRead and GetMessagesRead Azure API calls.
+
+▶ [patch] [bug 1579065](http://bugzil.la/1579065)
+This release upgrades Hawk, the underlying authentication mechanism for REST API access, to `@hapi/hawk` since the older `hawk` dependency is depreciated.
+
+▶ Additional changes not described here: [bug 1596531](http://bugzil.la/1596531), [bug 1585141](http://bugzil.la/1585141), [#1946](https://github.com/taskcluster/taskcluster/issues/1946), [#1995](https://github.com/taskcluster/taskcluster/issues/1995).
+
 ## v22.1.1
 
 ▶ [patch] 

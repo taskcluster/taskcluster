@@ -16,7 +16,6 @@ import memoize from 'fast-memoize';
 import { FixedSizeList } from 'react-window';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import ListItemText from '@material-ui/core/ListItemText';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import Divider from '@material-ui/core/Divider';
@@ -34,16 +33,18 @@ const sorted = pipe(
 @withStyles(theme => ({
   listItemButton: {
     ...theme.mixins.listItemButton,
+    display: 'flex',
+    justifyContent: 'space-between',
   },
   listItemCell: {
     display: 'flex',
     justifyContent: 'space-between',
     width: '100%',
-    padding: theme.spacing.unit,
+    padding: theme.spacing(1),
     ...theme.mixins.hover,
   },
   noRolesText: {
-    marginTop: theme.spacing.double,
+    marginTop: theme.spacing(2),
   },
 }))
 export default class RoleScopesTable extends Component {
@@ -96,19 +97,17 @@ export default class RoleScopesTable extends Component {
 
     return (
       <Fragment>
-        <ListItem
-          className={classes.listItemButton}
-          style={style}
-          button
-          component={Link}
+        <Link
           to={
             selectedScope
               ? `/auth/roles/${encodeURIComponent(item)}`
               : `/auth/scopes/${encodeURIComponent(item)}`
           }>
-          <ListItemText primary={item} />
-          <LinkIcon size={iconSize} />
-        </ListItem>
+          <ListItem className={classes.listItemButton} style={style} button>
+            {item}
+            <LinkIcon size={iconSize} />
+          </ListItem>
+        </Link>
         <Divider
           style={{
             ...style,
@@ -147,7 +146,7 @@ export default class RoleScopesTable extends Component {
         </FixedSizeList>
       </List>
     ) : (
-      <Typography className={classes.noRolesText}>
+      <Typography variant="body2" className={classes.noRolesText}>
         No roles available
       </Typography>
     );

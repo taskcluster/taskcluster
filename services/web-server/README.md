@@ -144,8 +144,8 @@ Variables:
 {
   "taskId": "fN1SbArXTPSVFNUvaOlinQ",
   "task": {
-    "provisionerId": "aws-provisioner-v1",
-    "workerType": "tutorial",
+    "provisionerId": "test-provisioner",
+    "workerType": "highcpu",
     "retries": 0,
     "created": "2018-03-07T05:53:06.683Z",
     "deadline": "2018-03-07T06:03:06.683Z",

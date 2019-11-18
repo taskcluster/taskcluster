@@ -7,12 +7,6 @@ import blue from '@material-ui/core/colors/blue';
 import green from '@material-ui/core/colors/green';
 import { THEME } from './utils/constants';
 
-const SPACING = {
-  UNIT: 8,
-  DOUBLE: 16,
-  TRIPLE: 24,
-  QUAD: 32,
-};
 const Roboto300 = { fontFamily: 'Roboto300, sans-serif' };
 const Roboto400 = { fontFamily: 'Roboto400, sans-serif' };
 const Roboto500 = { fontFamily: 'Roboto500, sans-serif' };
@@ -109,7 +103,6 @@ const createTheme = isDarkTheme => {
       },
     },
     typography: {
-      useNextVariants: true,
       ...Roboto400,
       h1: TYPOGRAPHY.H1,
       h2: TYPOGRAPHY.H2,
@@ -128,12 +121,7 @@ const createTheme = isDarkTheme => {
       fontWeightMedium: FONT_WEIGHTS.MEDIUM,
       fontWeightDark: FONT_WEIGHTS.DARK,
     },
-    spacing: {
-      unit: SPACING.UNIT,
-      double: SPACING.DOUBLE,
-      triple: SPACING.TRIPLE,
-      quad: SPACING.QUAD,
-    },
+    spacing: 8,
     drawerWidth: THEME.DRAWER_WIDTH,
     docsDrawerWidth: THEME.DRAWER_WIDTH + 125,
     mixins: {
@@ -247,9 +235,20 @@ const createTheme = isDarkTheme => {
       },
     },
     overrides: {
+      MuiTypography: {
+        root: {
+          color: textPrimary,
+        },
+      },
+      MuiTableSortLabel: {
+        icon: {
+          fontSize: '1rem',
+        },
+      },
       MuiPaper: {
         root: {
           backgroundColor: primaryMain,
+          color: 'inherit',
         },
       },
       MuiFormLabel: {
@@ -304,6 +303,14 @@ const createTheme = isDarkTheme => {
           backgroundColor: THEME.SECONDARY,
         },
       },
+      MuiPickersToolbarText: {
+        toolbarTxt: {
+          color: THEME.PRIMARY_TEXT_DARK,
+        },
+        toolbarBtnSelected: {
+          color: THEME.PRIMARY_TEXT_DARK,
+        },
+      },
       MuiPickersToolbarButton: {
         toolbarBtn: {
           '&:hover, &:focus': {
@@ -324,10 +331,14 @@ const createTheme = isDarkTheme => {
       MuiPickersYear: {
         root: {
           '&:focus': {
-            color: isDarkTheme ? 'white' : '#000',
+            color: isDarkTheme
+              ? THEME.PRIMARY_TEXT_DARK
+              : THEME.PRIMARY_TEXT_LIGHT,
           },
-          '&$selected': {
-            color: isDarkTheme ? 'white' : '#000',
+          '&$yearSelected': {
+            color: isDarkTheme
+              ? THEME.PRIMARY_TEXT_DARK
+              : THEME.PRIMARY_TEXT_LIGHT,
           },
         },
       },
@@ -353,20 +364,40 @@ const createTheme = isDarkTheme => {
         },
       },
       MuiPickersDay: {
-        isSelected: {
+        daySelected: {
           backgroundColor: THEME.SECONDARY,
+          color: THEME.PRIMARY_TEXT_DARK,
+          '&:hover': {
+            backgroundColor: THEME.SECONDARY,
+          },
         },
         current: {
-          color: isDarkTheme ? 'white' : '#000',
+          color: isDarkTheme
+            ? THEME.PRIMARY_TEXT_DARK
+            : THEME.PRIMARY_TEXT_LIGHT,
         },
       },
       MuiPickersModal: {
         dialogAction: {
-          color: isDarkTheme ? 'white' : '#000',
+          color: isDarkTheme
+            ? THEME.PRIMARY_TEXT_DARK
+            : THEME.PRIMARY_TEXT_LIGHT,
           '&:hover': {
             backgroundColor: isDarkTheme
               ? THEME.TEN_PERCENT_WHITE
               : THEME.TEN_PERCENT_BLACK,
+          },
+        },
+        withAdditionalAction: {
+          '& button': {
+            color: isDarkTheme
+              ? THEME.PRIMARY_TEXT_DARK
+              : THEME.PRIMARY_TEXT_LIGHT,
+            '&:hover': {
+              backgroundColor: isDarkTheme
+                ? THEME.TEN_PERCENT_WHITE
+                : THEME.TEN_PERCENT_BLACK,
+            },
           },
         },
       },

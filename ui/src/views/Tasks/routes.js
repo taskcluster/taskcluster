@@ -54,12 +54,6 @@ export default path => [
   },
   {
     component: CreateTask,
-    path: `${path}/create/interactive`,
-    description: createTaskDescription,
-    interactive: true,
-  },
-  {
-    component: CreateTask,
     path: `${path}/create`,
     description: createTaskDescription,
   },

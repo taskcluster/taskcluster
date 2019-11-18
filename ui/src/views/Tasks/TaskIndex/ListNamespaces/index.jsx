@@ -190,7 +190,7 @@ export default class ListNamespaces extends Component {
             />
           )}
           {!loading && !hasNamespaces && !hasIndexedTasks && isSinglePath && (
-            <Typography>No items for this page.</Typography>
+            <Typography variant="body2">No items for this page.</Typography>
           )}
           {!loading && hasNamespaces && (
             <Fragment>

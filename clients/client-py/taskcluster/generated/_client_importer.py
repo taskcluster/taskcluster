@@ -4,8 +4,6 @@
 #####################################################
 from .auth import Auth  # NOQA
 from .authevents import AuthEvents  # NOQA
-from .awsprovisioner import AwsProvisioner  # NOQA
-from .ec2manager import EC2Manager  # NOQA
 from .github import Github  # NOQA
 from .githubevents import GithubEvents  # NOQA
 from .hooks import Hooks  # NOQA

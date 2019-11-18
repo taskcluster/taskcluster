@@ -37,7 +37,7 @@ package tcworkermanager
 import (
 	"net/url"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v22"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v23"
 )
 
 type WorkerManager tcclient.Client
@@ -57,7 +57,9 @@ type WorkerManager tcclient.Client
 func New(credentials *tcclient.Credentials, rootURL string) *WorkerManager {
 	return &WorkerManager{
 		Credentials:  credentials,
-		BaseURL:      tcclient.BaseURL(rootURL, "worker-manager", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "worker-manager",
+		APIVersion:   "v1",
 		Authenticate: credentials != nil,
 	}
 }
@@ -78,9 +80,12 @@ func New(credentials *tcclient.Credentials, rootURL string) *WorkerManager {
 // disabled.
 func NewFromEnv() *WorkerManager {
 	c := tcclient.CredentialsFromEnvVars()
+	rootURL := tcclient.RootURLFromEnvVars()
 	return &WorkerManager{
 		Credentials:  c,
-		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "worker-manager", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "worker-manager",
+		APIVersion:   "v1",
 		Authenticate: c.ClientID != "",
 	}
 }

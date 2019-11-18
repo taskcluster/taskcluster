@@ -452,19 +452,6 @@ class Auth(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["sentryDSN"], *args, **kwargs)
 
-    async def statsumToken(self, *args, **kwargs):
-        """
-        Get Token for Statsum Project
-
-        Get temporary `token` and `baseUrl` for sending metrics to statsum.
-
-        The token is valid for 24 hours, clients should refresh after expiration.
-
-        This method is ``stable``
-        """
-
-        return await self._makeApiCall(self.funcinfo["statsumToken"], *args, **kwargs)
-
     async def websocktunnelToken(self, *args, **kwargs):
         """
         Get a client token for the Websocktunnel service
@@ -774,14 +761,6 @@ class Auth(AsyncBaseClient):
             'output': 'v1/sentry-dsn-response.json#',
             'route': '/sentry/<project>/dsn',
             'stability': 'deprecated',
-        },
-        "statsumToken": {
-            'args': ['project'],
-            'method': 'get',
-            'name': 'statsumToken',
-            'output': 'v1/statsum-token-response.json#',
-            'route': '/statsum/<project>/token',
-            'stability': 'stable',
         },
         "testAuthenticate": {
             'args': [],
