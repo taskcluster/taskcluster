@@ -1,39 +1,40 @@
 ---
 filename: using/administration.mdx
-title: Project Administration
+title: Administration
 order: 90
 ---
 
-# Project Administration
+# Deployment Administration
 
-Most of the tools site is dedicated to what can be considered "administrative"
-tasks.
+A small, simple application might be deployed into a cloud service such as AWS or GCP via the cloud service's web interface, clicking a few buttons to create and configure the appropriate resources.
+But this approach does not scale very far -- once more applications are involved or the applications become more complex, it's too easy to miss settings, conflict with other administrators, or lose track of what has changed.
+Tools like [Terraform](https://www.terraform.io/) and [Deployment Manager](https://cloud.google.com/deployment-manager/) are designed to automate configuration of such cloud deployments.
 
-The [namespaces document](/docs/manual/using/namespaces) describes "projects".
-Project administrators are those with the `project-admin:<project>` role. With
-this role comes great power:
+By analogy, a small, single-purpose Taskcluster deployment might be managed by hand using the Taskcluster UI.
+But once that deployment becomes more complex, automation becomes important.
 
- * Manage hooks with hookGroupId `project-<project>`
- * Manage Auth service clients with clientIds starting with `project/<project>/`
- * Manage Auth service roles with roelIds starting with `project/<project>/`
- * Manage the index namespace `project.<project>`
- * Manage the scope namespace `project:<project>:*`
- * Manage private artifacts beginning with `project/<project>/`
- * Manage secrets beginning with `project/<project>/`
- * Assume roles `project-grants:<project>/*`
+## Version-Controlled Configuration
 
-Some other actions require help from the Taskcluster team; we are working on
-making administration more self-serve, but we are not there yet. File a bug in
-the Taskcluster :: Service Requests component for help.
+The recommended approach borrows from devops: store configuration in a version-control repository and manage changes using normal code-review processes.
+The format of this configuration varies depending on the nature of the deployment.
 
-Any administrative task you can perform with the Tools site is simply making
-API calls to Taskcluster services, so it can be automated.  The
-[Taskcluster-CLI](https://github.com/taskcluster/taskcluster-cli) tool may be
-helpful in this regard.
+This configuration is coupled with a tool that can "apply" it to a Taskcluster deployment by calling Taskcluster API methods to create, update, or delete resources as necessary.
 
-Bear in mind that configuration changes are far removed from your project's
-source code. Best practice suggests putting as much of your logic as possible
-into the source, and minimizing what must be configured via administrative
-changes. In particular, try to keep hooks simple: check out the source and
-invoke a script. Any more complexity may become difficult to manage in the
-administrative UI.
+## tc-admin
+
+The Taskcluster team provides [tc-admin](https://github.com/taskcluster/tc-admin), a Python library which supports this kind of administration.
+With the creation of a few files to define the desired resources, this library makes management as easy as
+
+```
+$ tc-admin diff
+```
+
+to see what resources need to be updated, and
+
+```
+$ tc-admin apply
+```
+
+to apply the given changes.
+
+See [the repository](https://github.com/taskcluster/tc-admin) for more information.
