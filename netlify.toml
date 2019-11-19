@@ -8,8 +8,8 @@
   YARN_VERSION = "1.10.1"
   NODE_VERSION = "12.13.0"
   APPLICATION_NAME = "Taskcluster"
-  GRAPHQL_ENDPOINT = "/graphql"
-  GRAPHQL_SUBSCRIPTION_ENDPOINT = "/subscription"
+  GRAPHQL_ENDPOINT = "https://firefox-ci-tc.services.mozilla.com/graphql"
+  GRAPHQL_SUBSCRIPTION_ENDPOINT = "https://firefox-ci-tc.services.mozilla.com/subscription"
   UI_LOGIN_STRATEGY_NAMES = ""
   TASKCLUSTER_ROOT_URL = "https://firefox-ci-tc.services.mozilla.com"
 
