@@ -207,7 +207,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       description: 'test role',
       scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
     });
-    for (let i=0;i<3;i++) {
+    for (let i = 0;i < 3;i++) {
       let tempRoleId = `${clientId}${i}`;
       await helper.apiClient.createRole(tempRoleId, {
         description: 'test role',
@@ -224,7 +224,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   test('listRoleIds (limit, [continuationToken])', async () => {
     let roleIds = [];
     let allRoleIds = {};
-    let count=0;
+    let count = 0;
     let query = {limit: 1};
 
     allRoleIds = await helper.apiClient.listRoleIds();
@@ -261,7 +261,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       description: 'test role',
       scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
     });
-    for (let i=0;i<3;i++) {
+    for (let i = 0;i < 3;i++) {
       let tempRoleId = `${clientId}${i}`;
       await helper.apiClient.createRole(tempRoleId, {
         description: 'test role',
@@ -280,7 +280,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   test('listRoles2 (limit, [continuationToken])', async () => {
     let roles = [];
     let allRoles = {};
-    let count=0;
+    let count = 0;
     let query = {limit: 1};
 
     allRoles = await helper.apiClient.listRoles2();

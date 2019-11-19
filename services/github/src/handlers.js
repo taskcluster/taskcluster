@@ -135,7 +135,7 @@ class Handlers {
       handler.call(this, message).catch(async err => {
         await this.monitor.reportError(err);
         return err;
-      }).then((err=null) => {
+      }).then((err = null) => {
         if (this.handlerComplete && !err) {
           this.handlerComplete();
         } else if (this.handlerRejected && err) {
@@ -341,7 +341,7 @@ class Handlers {
 module.exports = Handlers;
 
 const taskUI = (rootUrl, taskGroupId, taskId) =>
-  libUrls.ui(rootUrl, rootUrl ==='https://taskcluster.net' ? `/groups/${taskGroupId}/tasks/${taskId}/details` : `/tasks/${taskId}`);
+  libUrls.ui(rootUrl, rootUrl === 'https://taskcluster.net' ? `/groups/${taskGroupId}/tasks/${taskId}/details` : `/tasks/${taskId}`);
 const taskGroupUI = (rootUrl, taskGroupId) =>
   libUrls.ui(rootUrl, `${rootUrl === 'https://taskcluster.net' ? '' : '/tasks'}/groups/${taskGroupId}`);
 

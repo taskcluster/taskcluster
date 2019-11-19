@@ -78,7 +78,7 @@ suite(testing.suiteName(), function() {
       }
 
       if (input.bewit) {
-        input.bewit= _.defaults({}, input.bewit, {
+        input.bewit = _.defaults({}, input.bewit, {
           key: input.bewit.id + '-secret',
           algorithm: 'sha256',
         });

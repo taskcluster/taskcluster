@@ -206,7 +206,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     const taskId = slugid.v4();
     const taskId2 = slugid.v4();
 
-    await helper.index.insertTask(myns+'.one-ns.my-task', {
+    await helper.index.insertTask(myns + '.one-ns.my-task', {
       taskId: taskId,
       rank: 41,
       data: {hello: 'world'},

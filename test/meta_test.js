@@ -158,7 +158,7 @@ suite('Repo Meta Tests', function () {
       if (topLevelHd < 7) {
         if (hd[topLevelHd].length > 1) {
           countErrors++;
-          errors+=`${filename} does not have a single top level heading\n`;
+          errors += `${filename} does not have a single top level heading\n`;
           console.log(errors);
         }
       }

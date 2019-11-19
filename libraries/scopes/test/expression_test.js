@@ -6,7 +6,7 @@ const testing = require('taskcluster-lib-testing');
 suite(testing.suiteName(), function() {
   suite('scope expression validity:', function() {
 
-    function scenario(expr, shouldFail=false) {
+    function scenario(expr, shouldFail = false) {
       return () => {
         try {
           assert(utils.validExpression(expr));
@@ -54,7 +54,7 @@ suite(testing.suiteName(), function() {
     // We want to be confident that `satisfiesExpression` and `scopesSatisfyingExpression` both
     // accept and reject the same inputs, so they are tested in parallel.
 
-    function satisfiesExpressionScenario(scopes, expr, shouldFail=false) {
+    function satisfiesExpressionScenario(scopes, expr, shouldFail = false) {
       return () => {
         try {
           assert(utils.satisfiesExpression(scopes, expr));

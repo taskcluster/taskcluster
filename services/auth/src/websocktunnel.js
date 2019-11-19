@@ -29,7 +29,7 @@ builder.declare({
 }, async function(req, res) {
   const {wstAudience, wstClient} = req.params;
   const clientId = await req.clientId();
-  const nowTs = Math.floor(Date.now()/1000);
+  const nowTs = Math.floor(Date.now() / 1000);
   const expiresTs = nowTs + 96 * 3600;
 
   const payload = {

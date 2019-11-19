@@ -60,7 +60,7 @@ suite(testing.suiteName(), function() {
    * expected:    {}, keys=>values expected to exist in the compiled config
    * shouldError: if you want intree to throw an exception, set this to true
    **/
-  let buildConfigTest = function(testName, configPath, params, expected, count=-1, shouldError=false) {
+  let buildConfigTest = function(testName, configPath, params, expected, count = -1, shouldError = false) {
     test(testName, async function() {
       params.config = yaml.safeLoad(fs.readFileSync(configPath));
       params.schema = {

@@ -11,7 +11,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   helper.withProviders(mock, skipping);
   helper.withWorkerScanner(mock, skipping);
 
-  const testCase = async ({workers=[], workerPools=[], assertion, expectErrors}) => {
+  const testCase = async ({workers = [], workerPools = [], assertion, expectErrors}) => {
     await Promise.all(workers.map(w => helper.Worker.create(w)));
     await Promise.all(workerPools.map(wp => helper.WorkerPool.create(wp)));
     return (testing.runWithFakeTime(async () => {

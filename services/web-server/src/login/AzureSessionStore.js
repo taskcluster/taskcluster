@@ -3,7 +3,7 @@ const taskcluster = require('taskcluster-client');
 const { NOOP } = require('../utils/constants');
 
 module.exports = function ({ session, SessionStorage, options = {} }) {
-  const { Store }= session;
+  const { Store } = session;
 
   assert(session, 'An express-session object is required');
   assert(SessionStorage, 'A session storage is required');

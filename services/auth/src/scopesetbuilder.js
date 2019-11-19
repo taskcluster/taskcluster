@@ -112,7 +112,7 @@ const buildMergeTree = (scopeSets, i = 0, j = scopeSets.length - 1) => {
   const m = i + Math.floor((j - i) / 2);
   return new MergeNode(
     buildMergeTree(scopeSets, i, m),
-    buildMergeTree(scopeSets, m+1, j),
+    buildMergeTree(scopeSets, m + 1, j),
   );
 };
 

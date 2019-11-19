@@ -62,7 +62,7 @@ function getPushDetails(eventData) {
     'event.head.user.login': eventData.sender.login,
     'event.head.user.id': eventData.sender.id,
 
-    'event.type': isTagEvent? 'tag' : 'push',
+    'event.type': isTagEvent ? 'tag' : 'push',
   };
   if (isTagEvent) {
     details['event.head.tag'] = refName;

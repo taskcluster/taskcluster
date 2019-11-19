@@ -6,7 +6,7 @@ let hawk = require('@hapi/hawk');
 let libUrls = require('taskcluster-lib-urls');
 let taskcluster = require('taskcluster-client');
 
-exports.start = function(clients, {rootUrl}={}) {
+exports.start = function(clients, {rootUrl} = {}) {
   assert(rootUrl, 'rootUrl option is required');
   const authPath = url.parse(libUrls.api(rootUrl, 'auth', 'v1', '/authenticate-hawk')).pathname;
   nock(rootUrl, {encodedQueryParams: true, allowUnmocked: true})

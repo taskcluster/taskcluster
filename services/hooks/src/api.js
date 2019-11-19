@@ -237,7 +237,7 @@ builder.declare({
     const errors = [];
 
     for (let index = 0; index < ajv.errors.length; index++) {
-      errors.push(' * Property '+ ajv.errors[index].dataPath + ' ' + ajv.errors[index].message);
+      errors.push(' * Property ' + ajv.errors[index].dataPath + ' ' + ajv.errors[index].message);
     }
 
     return res.reportError('InputError', '{{message}}', {
@@ -333,7 +333,7 @@ builder.declare({
     const errors = [];
 
     for (let index = 0; index < ajv.errors.length; index++) {
-      errors.push(' * Property '+ ajv.errors[index].dataPath + ' ' + ajv.errors[index].message);
+      errors.push(' * Property ' + ajv.errors[index].dataPath + ' ' + ajv.errors[index].message);
     }
 
     return res.reportError('InputError', '{{message}}', {
