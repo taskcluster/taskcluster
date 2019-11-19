@@ -46,10 +46,11 @@ import db from '../../../utils/db';
 const defaultTask = {
   provisionerId: 'proj-getting-started',
   workerType: 'tutorial',
+  schedulerId: 'taskcluster-ui',
   created: new Date().toISOString(),
   deadline: toDate(addHours(new Date(), 3)).toISOString(),
   payload: {
-    image: 'ubuntu:13.10',
+    image: 'ubuntu:latest',
     command: [
       '/bin/bash',
       '-c',
@@ -59,8 +60,8 @@ const defaultTask = {
     maxRunTime: 600 + 30,
   },
   metadata: {
-    name: 'Example Task',
-    description: 'Markdown description of **what** this task does',
+    name: 'example-task',
+    description: 'An **example** task',
     owner: 'name@example.com',
     source: `${window.location.origin}/tasks/create`,
   },
