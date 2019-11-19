@@ -1,6 +1,7 @@
 package standalone
 
 import (
+	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
@@ -27,7 +28,7 @@ func (p *StandaloneProvider) ConfigureRun(state *run.State) error {
 		return err
 	}
 
-	state.RootURL = pc.RootURL
+	state.RootURL = tcurls.NormalizeRootURL(pc.RootURL)
 	state.Credentials.ClientID = pc.ClientID
 	state.Credentials.AccessToken = pc.AccessToken
 	state.WorkerPoolID = pc.WorkerPoolID
