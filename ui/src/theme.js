@@ -413,6 +413,13 @@ const createTheme = isDarkTheme => {
           },
         },
       },
+      MuiMenuItem: {
+        root: {
+          color: isDarkTheme
+            ? THEME.PRIMARY_TEXT_DARK
+            : THEME.PRIMARY_TEXT_LIGHT,
+        },
+      },
     },
   };
 };
