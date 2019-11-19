@@ -73,6 +73,14 @@ export default path => [
     path: `${path}/:taskId/runs/:runId/logs/:logUrl`,
   },
   {
+    component: TaskLog,
+    path: `${path}/:taskId/runs/:runId/log/:artifactFileName`,
+  },
+  {
+    component: TaskLog,
+    path: `${path}/:taskId/runs/:runId/log/live/:artifactFileName`,
+  },
+  {
     component: ViewTask,
     path: `${path}/:taskId/runs/:runId`,
     description: taskDescription,
