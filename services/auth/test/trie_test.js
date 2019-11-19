@@ -47,7 +47,7 @@ suite(testing.suiteName(), () => {
         {pattern: 'a*', scopes: ['b<..>z']},
         {pattern: 'c*', scopes: ['d<..>']},
       ],
-    ].forEach((rules, index) => test(`independent rules (${index+1})`, () => {
+    ].forEach((rules, index) => test(`independent rules (${index + 1})`, () => {
       _.range(50).forEach(() => { // run 50 times with different shuffling
         const ordering = trie.dependencyOrdering(_.shuffle(rules));
         assume(ordering).has.length(rules.length);
@@ -89,7 +89,7 @@ suite(testing.suiteName(), () => {
         {pattern: 'bbb', scopes: ['cb']},
         {pattern: 'a*', scopes: ['b<..>c']},
       ],
-    ].forEach((rules, index) => test(`acyclic rules (${index+1})`, () => {
+    ].forEach((rules, index) => test(`acyclic rules (${index + 1})`, () => {
       _.range(50).forEach(() => { // run 50 times with different shuffling
         const ordering = trie.dependencyOrdering(_.shuffle(rules));
         assume(ordering.map(r => r.pattern)).eql(rules.map(r => r.pattern));
@@ -134,7 +134,7 @@ suite(testing.suiteName(), () => {
         {pattern: 'bbb', scopes: ['cb']},
         {pattern: 'a*', scopes: ['b<..>c']},
       ],
-    ].forEach((rules, index) => test(`cyclic rules (${index+1})`, () => {
+    ].forEach((rules, index) => test(`cyclic rules (${index + 1})`, () => {
       assume(() => {
         trie.dependencyOrdering(rules);
       }).throws('cycle');
@@ -152,7 +152,7 @@ suite(testing.suiteName(), () => {
       ], [
         {pattern: 'a*', scopes: ['bc*<..>']},
       ],
-    ].forEach((rules, index) => test(`illegal scopes (${index+1})`, () => {
+    ].forEach((rules, index) => test(`illegal scopes (${index + 1})`, () => {
       assume(() => {
         trie.dependencyOrdering(rules);
       }).throws('scope', 'expected illegal scope');
@@ -242,7 +242,7 @@ suite(testing.suiteName(), () => {
   const allSetsOfTwo = (set) => {
     const result = [];
     for (let i = 0; i < set.length; i++) {
-      for (let j = i+1; j < set.length; j++) {
+      for (let j = i + 1; j < set.length; j++) {
         result.push([set[i], set[j]]);
       }
     }
@@ -351,7 +351,7 @@ suite(testing.suiteName(), () => {
   });
 
   /** Get all pairs [prefix, suffix] such that prefix + suffix = input */
-  const allSplits = (input) => _.range(input.length+1).map(i => [input.slice(0, i), input.slice(i)]);
+  const allSplits = (input) => _.range(input.length + 1).map(i => [input.slice(0, i), input.slice(i)]);
 
   /** Get all pairs [prefix, suffix] such that prefix + suffix = input and works in withPrefix */
   const allPrefixSplits = (input) => allSplits(input).filter(([prefix, remaining]) =>

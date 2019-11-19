@@ -731,7 +731,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       const taskIds = [];
       taskIds.push(lastFire.taskId);
       await appendLastFire(lastFire);
-      for (let i=1;i<=2;i++) {
+      for (let i = 1;i <= 2;i++) {
         taskIds.push(taskcluster.slugid());
         await appendLastFire({...lastFire,
           taskId: taskIds[i],

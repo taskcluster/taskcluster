@@ -907,7 +907,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
 
     assert.equal(result.recentTasks.length, 20, 'expected to have 20 tasks');
 
-    for (let i =0; i < 20; i++) {
+    for (let i = 0; i < 20; i++) {
       assert(recentTasks[i].taskId === taskIds[i + 10], `expected taskId ${taskIds[i + 10]}`);
     }
   });

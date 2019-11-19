@@ -87,7 +87,7 @@ suite(testing.suiteName(), function() {
       key: 'not-used-by-fakeauth',
       algorithm: 'sha256',
     });
-    tests.forEach(({label, id, desiredStatus=200, params, tester}) => {
+    tests.forEach(({label, id, desiredStatus = 200, params, tester}) => {
       const url = buildUrl(params);
       const auth = buildHawk(id);
       test(label, async () => {
@@ -402,7 +402,7 @@ suite(testing.suiteName(), function() {
         res.reply({});
       } catch (err) {
         if (err.code === 'InsufficientScopes') {
-          assert(err.message.indexOf('Client ID nobody does not have sufficient scopes')!==-1);
+          assert(err.message.indexOf('Client ID nobody does not have sufficient scopes') !== -1);
           throw err;
         }
         throw err;

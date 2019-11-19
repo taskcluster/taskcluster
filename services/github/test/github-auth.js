@@ -48,7 +48,7 @@ class FakeGithub {
           body,
         };
         if (!this._comments[key]) {
-          this._comments[key]=[];
+          this._comments[key] = [];
         }
         this._comments[key].push(info);
       },
@@ -115,7 +115,7 @@ class FakeGithub {
           throwError(403);
         }
 
-        const check_run_id = Math.floor(Math.random()*(9999-1000)) + 1000;
+        const check_run_id = Math.floor(Math.random() * (9999 - 1000)) + 1000;
 
         return {
           data: {

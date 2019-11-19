@@ -39,7 +39,7 @@ exports.tasks.push({
     };
     assert.deepEqual(expandedRole.scopes, expectedScopes.scopes);
     const query = {};
-    const anHourAgo = Date.now() - (1000*60*60);
+    const anHourAgo = Date.now() - (1000 * 60 * 60);
     while (1) {
       const res = await auth.listRoles2();
       for(let role of res.roles){

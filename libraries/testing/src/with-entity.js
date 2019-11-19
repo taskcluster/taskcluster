@@ -17,7 +17,7 @@ const bug1579496fixed = false;
 // or to use a unique table name, and set up to ensure the table exists and
 // is empty at startup, and when the test completes.
 module.exports = (mock, skipping, helper, loaderComponent, cls,
-  {orderedTests, cleanup, noSasCredentials}={}) => {
+  {orderedTests, cleanup, noSasCredentials} = {}) => {
   let component;
 
   // Bug 1579496 has Azure behaving badly, so always use mock azure until

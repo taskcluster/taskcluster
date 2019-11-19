@@ -75,3 +75,5 @@ rules:
 
   # this seems to have a lot of false positives
   require-atomic-updates: off
+
+  space-infix-ops: error

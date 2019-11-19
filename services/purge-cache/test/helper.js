@@ -34,7 +34,7 @@ exports.secrets = new Secrets({
 /**
  * Set helper.<Class> for each of the Azure entities used in the service
  */
-exports.withEntities = (mock, skipping, options={}) => {
+exports.withEntities = (mock, skipping, options = {}) => {
   withEntity(mock, skipping, exports, 'CachePurge', data.CachePurge);
 };
 

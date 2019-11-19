@@ -14,7 +14,7 @@ suite('benchmark scopesSatisfying', function() {
       }
       d = process.hrtime(start);
       duration1 = d[0] * 1000 + d[1] / 1000000;
-      console.log(`${msg} satisfiesExpression: ${duration1/N}ms`);
+      console.log(`${msg} satisfiesExpression: ${duration1 / N}ms`);
 
       start = process.hrtime();
       for (let i = 0; i < N; i++) {
@@ -22,8 +22,8 @@ suite('benchmark scopesSatisfying', function() {
       }
       d = process.hrtime(start);
       duration2 = d[0] * 1000 + d[1] / 1000000;
-      console.log(`${msg} scopesSatisfying: ${duration2/N}ms`);
-      console.log(`${msg} ratio: ${100 * duration2/duration1}%`);
+      console.log(`${msg} scopesSatisfying: ${duration2 / N}ms`);
+      console.log(`${msg} ratio: ${100 * duration2 / duration1}%`);
     });
   };
 

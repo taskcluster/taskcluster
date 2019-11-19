@@ -17,7 +17,7 @@ exports.REPO_ROOT = REPO_ROOT;
  * List all of the services in the given monorepo repository, defaulting
  * to the current working copy
  */
-exports.listServices = ({repoDir}={}) => {
+exports.listServices = ({repoDir} = {}) => {
   // look for package.json's, so that we're not fooled by any
   // stray empty or gitignore'd directories
   const packageJsons = glob.sync(
@@ -110,7 +110,7 @@ exports.modifyRepoYAML = async (filename, modifier) => {
 /**
  * Call `git ls-files` in the current working copy
  */
-exports.gitLsFiles = async ({patterns}={}) => {
+exports.gitLsFiles = async ({patterns} = {}) => {
   const opts = {cwd: REPO_ROOT};
   const files = (await exec('git', ['ls-files', '-z'].concat(patterns || []), opts))
     .stdout.split(/\0/)
