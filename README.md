@@ -22,6 +22,9 @@
   <a href="https://codecov.io/gh/taskcluster/taskcluster">
     <img src="https://codecov.io/gh/taskcluster/taskcluster/branch/master/graph/badge.svg" />
   </a>
+  <a href="https://app.netlify.com/sites/taskcluster-web/deploys">
+    <img src="https://img.shields.io/netlify/6cc2aece-1178-4933-a581-afc0ec5a259e" />
+  </a>
 </p>
 
 <hr/>
