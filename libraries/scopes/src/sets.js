@@ -1,12 +1,12 @@
-const {scopeMatch} = require('./satisfaction');
+const {patternMatch} = require('./satisfaction');
 const {scopeCompare, normalizeScopeSet, mergeScopeSets} = require('./normalize');
 
 /**
  * Finds scope intersections between two scope sets.
  */
 exports.scopeIntersection = (scopeset1, scopeset2) => [
-  ...scopeset1.filter(s => scopeMatch(scopeset2, [[s]])),
-  ...scopeset2.filter(s => scopeMatch(scopeset1, [[s]])),
+  ...scopeset1.filter(s1 => scopeset2.some(s2 => patternMatch(s2, s1))),
+  ...scopeset2.filter(s2 => scopeset1.some(s1 => patternMatch(s1, s2))),
 ].filter((v, i, a) => a.indexOf(v) === i);
 
 /**

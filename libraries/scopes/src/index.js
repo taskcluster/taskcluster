@@ -2,7 +2,6 @@
 [
   require('./validate'),
   require('./sets'),
-  require('./satisfaction'),
   require('./normalize'),
   require('./expressions'),
 ].forEach(submodule => {
