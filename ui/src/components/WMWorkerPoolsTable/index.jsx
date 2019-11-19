@@ -13,6 +13,7 @@ import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import { withRouter } from 'react-router-dom';
 import memoize from 'fast-memoize';
 import { isEmpty } from 'ramda';
+import escapeStringRegexp from 'escape-string-regexp';
 import { WorkerManagerWorkerPoolSummary } from '../../utils/prop-types';
 import DataTable from '../DataTable';
 import sort from '../../utils/sort';
@@ -62,7 +63,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     (workerPools, sortBy, sortDirection, searchTerm, includeDeleted) => {
       const filteredWorkerPoolsBySearchTerm = searchTerm
         ? workerPools.filter(({ workerPoolId }) =>
-            RegExp(searchTerm, 'i').test(workerPoolId)
+            RegExp(escapeStringRegexp(searchTerm), 'i').test(workerPoolId)
           )
         : workerPools;
       const filteredWorkerPools = includeDeleted
