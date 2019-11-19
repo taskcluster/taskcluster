@@ -1742,13 +1742,35 @@
         },
         "name": "schema",
         "next": {
-          "path": "reference/platform/README",
-          "title": "Taskcluster Platform"
+          "path": "reference/url-structure",
+          "title": "URL Structure"
         },
         "path": "reference/schema",
         "prev": {
           "path": "reference/guide",
           "title": "Guide to The Microservices"
+        },
+        "up": {
+          "path": "reference/README",
+          "title": "Taskcluster Reference"
+        }
+      },
+      {
+        "children": [
+        ],
+        "data": {
+          "order": 2,
+          "title": "URL Structure"
+        },
+        "name": "url-structure",
+        "next": {
+          "path": "reference/platform/README",
+          "title": "Taskcluster Platform"
+        },
+        "path": "reference/url-structure",
+        "prev": {
+          "path": "reference/schema",
+          "title": "Schema Index"
         },
         "up": {
           "path": "reference/README",
@@ -2169,7 +2191,7 @@
           }
         ],
         "data": {
-          "order": 2,
+          "order": 12,
           "title": "Taskcluster Platform"
         },
         "name": "platform",
@@ -2179,8 +2201,8 @@
         },
         "path": "reference/platform/README",
         "prev": {
-          "path": "reference/schema",
-          "title": "Schema Index"
+          "path": "reference/url-structure",
+          "title": "URL Structure"
         },
         "up": {
           "path": "reference/README",
@@ -2880,7 +2902,7 @@
           }
         ],
         "data": {
-          "order": 3,
+          "order": 13,
           "title": "Core Services"
         },
         "name": "core",
@@ -3054,7 +3076,7 @@
           }
         ],
         "data": {
-          "order": 5,
+          "order": 15,
           "title": "Integrations"
         },
         "name": "integrations",
