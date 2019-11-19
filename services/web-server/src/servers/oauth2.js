@@ -6,6 +6,7 @@ const WebServerError = require('../utils/WebServerError');
 const tryCatch = require('../utils/tryCatch');
 const ensureLoggedIn = require('../utils/ensureLoggedIn');
 const expressWrapAsync = require('../utils/expressWrapAsync');
+const unpromisify = require('../utils/unpromisify');
 
 module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor) => {
   // Create OAuth 2.0 server
@@ -29,23 +30,23 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
    * duration, etc. as parsed by the application.  The application issues a token,
    * which is bound to these values.
    */
-  server.grant(oauth2orize.grant.token(async (client, user, ares, areq, done) => {
+  server.grant(oauth2orize.grant.token(unpromisify(async (client, user, ares, areq) => {
     const registeredClient = findRegisteredClient(client.clientId);
 
     if (!registeredClient) {
-      return done(new oauth2orize.AuthorizationError(null, 'unauthorized_client'));
+      throw new oauth2orize.AuthorizationError(null, 'unauthorized_client');
     }
 
     if (!_.isEqual(registeredClient.scope.sort(), areq.scope.sort())) {
-      return done(new oauth2orize.AuthorizationError(null, 'invalid_scope'));
+      throw new oauth2orize.AuthorizationError(null, 'invalid_scope');
     }
 
     if (!registeredClient.redirectUri.some(uri => uri === areq.redirectURI)) {
-      return done(new oauth2orize.AuthorizationError(null, 'access_denied'));
+      throw new oauth2orize.AuthorizationError(null, 'access_denied');
     }
 
     if (registeredClient.responseType !== 'token') {
-      return done(new oauth2orize.AuthorizationError(null, 'unsupported_response_type'));
+      throw new oauth2orize.AuthorizationError(null, 'unsupported_response_type');
     }
 
     // The access token we give to third parties
@@ -75,8 +76,8 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
       },
     }, true);
 
-    return done(null, accessToken);
-  }));
+    return accessToken;
+  })));
 
   /**
    * Grant authorization codes
@@ -87,24 +88,24 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
    * duration, etc. as parsed by the application.  The application issues a code,
    * which is bound to these values, and will be exchanged for an access token.
    */
-  server.grant(oauth2orize.grant.code(async (client, redirectURI, user, ares, areq, done) => {
+  server.grant(oauth2orize.grant.code(unpromisify(async (client, redirectURI, user, ares, areq) => {
     const code = taskcluster.slugid();
     const registeredClient = findRegisteredClient(client.clientId);
 
     if (!registeredClient) {
-      return done(new oauth2orize.AuthorizationError(null, 'unauthorized_client'));
+      throw new oauth2orize.AuthorizationError(null, 'unauthorized_client');
     }
 
     if (!_.isEqual(registeredClient.scope.sort(), areq.scope.sort())) {
-      return done(new oauth2orize.AuthorizationError(null, 'invalid_scope'));
+      throw new oauth2orize.AuthorizationError(null, 'invalid_scope');
     }
 
     if (!registeredClient.redirectUri.some(uri => uri === redirectURI)) {
-      return done(new oauth2orize.AuthorizationError(null, 'access_denied'));
+      throw new oauth2orize.AuthorizationError(null, 'access_denied');
     }
 
     if (registeredClient.responseType !== 'code') {
-      return done(new oauth2orize.AuthorizationError(null, 'unsupported_response_type'));
+      throw new oauth2orize.AuthorizationError(null, 'unsupported_response_type');
     }
 
     const currentUser = await strategies[user.identityProviderId].userFromIdentity(user.identity);
@@ -133,8 +134,8 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
       },
     }, true);
 
-    return done(null, code);
-  }));
+    return code;
+  })));
 
   /**
    * After a client has obtained an authorization grant from the user,
@@ -145,21 +146,21 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
    * are validated, the application issues a Taskcluster token on behalf of the user who
    * authorized the code.
    */
-  server.exchange(oauth2orize.exchange.code(async (client, code, redirectURI, done) => {
+  server.exchange(oauth2orize.exchange.code(unpromisify(async (client, code, redirectURI) => {
     const entry = await AuthorizationCode.load({ code }, true);
 
     if (!entry) {
-      return done(null, false);
+      return false;
     }
 
     if (redirectURI !== entry.redirectUri) {
-      return done(null, false);
+      return false;
     }
 
     // Although we eventually delete expired rows, that only happens once per day
     // so we need to check that the accessToken is not expired.
     if (new Date(entry.clientDetails.expires) < new Date()) {
-      return done(null, false);
+      return false;
     }
 
     const accessToken = new Buffer.from(taskcluster.slugid()).toString('base64');
@@ -177,25 +178,26 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
       clientDetails: entry.clientDetails,
     }, true);
 
-    return done(null, accessToken);
-  }));
+    return accessToken;
+  })));
 
   const authorization = [
     ensureLoggedIn(),
     (req, res, done) => {
-      server.authorization((clientID, redirectURI, scope, done) => {
+      server.authorization(unpromisify(async (clientID, redirectURI, scope) => {
         const client = findRegisteredClient(clientID);
 
         if (!client) {
-          return done(null, false);
+          return [false];
         }
 
         if (!client.redirectUri.some(uri => uri === redirectURI)) {
-          return done(null, false);
+          return [false];
         }
 
-        return done(null, client, redirectURI);
-      }, async (client, user, scope, done) => {
+        return [client, redirectURI];
+      }, {returnsArray: true}),
+      unpromisify(async (client, user, scope) => {
         // Skip consent form if the client is whitelisted
         if (client.whitelisted && user && _.isEqual(client.scope.sort(), scope.sort())) {
           const opts = {};
@@ -208,15 +210,16 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
           // automatically authorizing the decision.
           // It's called to decide whether to immediately approve the request and return a redirect
           // to the `redirect_uri`.
-          return done(null, true, {
+          return [true, {
             scope,
             clientId: `${user.identity}/${client.clientId}-${taskcluster.slugid().slice(0, 6)}`,
             ...opts,
-          });
+          }];
         }
 
-        return done(null, false);
-      })(req, res, done);
+        return [false];
+      }, {returnsArray: true}),
+      )(req, res, done);
     },
     (req, res) => {
       const client = findRegisteredClient(req.query.client_id);
