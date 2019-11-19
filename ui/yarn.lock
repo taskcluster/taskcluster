@@ -10117,10 +10117,10 @@ react-router@^4.3.1:
     prop-types "^15.6.1"
     warning "^4.0.1"
 
-react-schema-viewer@^3.2.0:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/react-schema-viewer/-/react-schema-viewer-3.2.1.tgz#15ae05ef72cda3d4dc0b62c422c347a39717ec42"
-  integrity sha512-h366c/CiVzGSsOZpvoxtlQuWCX/ScvV2FNc4QIDPahurgL55YMo5hnfI66wqlKjxNkf8txgtbbwcUNfeCAfapg==
+react-schema-viewer@^3.2.3:
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/react-schema-viewer/-/react-schema-viewer-3.2.3.tgz#58d647e7c32237f974ebd6b736bd7f032d09f24d"
+  integrity sha512-NQ6Iwn4eQQSA4KvfnWYWbrExhljq1AzNmquMHgZYrOxT499eEnRnJ+LNH31vzjy5spiv1Za+pWFEn7PzPA1Kuw==
   dependencies:
     bootstrap "^3.3.7"
     joi-to-json-schema "^3.0.0"
