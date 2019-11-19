@@ -3,6 +3,7 @@ import { string } from 'prop-types';
 import { graphql } from 'react-apollo';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import dotProp from 'dot-prop-immutable';
+import escapeStringRegexp from 'escape-string-regexp';
 import RolesTable from '../../../components/RolesTable';
 import ErrorPanel from '../../../components/ErrorPanel';
 import rolesQuery from './roles.graphql';
@@ -16,7 +17,12 @@ import { VIEW_ROLES_PAGE_SIZE } from '../../../utils/constants';
       },
       filter: {
         ...(props.searchTerm
-          ? { roleId: { $regex: props.searchTerm, $options: 'i' } }
+          ? {
+              roleId: {
+                $regex: escapeStringRegexp(props.searchTerm),
+                $options: 'i',
+              },
+            }
           : null),
       },
     },
@@ -46,7 +52,14 @@ export default class Roles extends PureComponent {
           previousCursor,
         },
         filter: {
-          ...(searchTerm ? { roleId: { $regex: searchTerm } } : null),
+          ...(searchTerm
+            ? {
+                roleId: {
+                  $regex: escapeStringRegexp(searchTerm),
+                  $options: 'i',
+                },
+              }
+            : null),
         },
       },
       updateQuery(previousResult, { fetchMoreResult }) {
