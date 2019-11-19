@@ -79,7 +79,7 @@
     "react-hot-loader": "^4.8.4",
     "react-lazylog": "^4.3.1",
     "react-router-dom": "^4.3.1",
-    "react-schema-viewer": "^3.2.0",
+    "react-schema-viewer": "^3.2.3",
     "react-virtualized": "^9.21.0",
     "react-vnc-display": "^2.0.0",
     "react-window": "^1.8.1",
