@@ -94,23 +94,14 @@ const createSortedTasks = memoize(
     textDecoration: 'none',
     ...theme.mixins.hover,
     ...theme.mixins.listItemButton,
-    [theme.breakpoints.down('sm')]: {
-      paddingLeft: 0,
-      paddingRight: 0,
-    },
   },
   taskGroupName: {
     marginRight: theme.spacing(1),
-    maxWidth: '55vw',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     verticalAlign: 'middle',
     display: 'inline-block',
-    [theme.breakpoints.down('sm')]: {
-      maxWidth: '90%',
-      marginRight: theme.spacing.unit * 0.5,
-    },
   },
   table: {
     marginBottom: theme.spacing(1),
@@ -131,27 +122,22 @@ const createSortedTasks = memoize(
   tableHeadCell: {
     color: theme.palette.text.secondary,
   },
+  tableSecondHeadCell: {
+    display: 'flex',
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
   tableRow: {
     display: 'flex',
   },
   tableFirstCell: {
-    flex: 1,
-    [theme.breakpoints.down('sm')]: {
-      minWidth: 0,
-      paddingLeft: 0,
-      paddingRight: theme.spacing.unit,
-    },
+    width: '60%',
   },
   tableSecondCell: {
-    flex: 0.5,
     display: 'flex',
-    flexGrow: 0,
-    flexDirection: 'column',
-    justifyContent: 'center',
-    [theme.breakpoints.down('sm')]: {
-      paddingLeft: 0,
-      paddingRight: '0 !important',
-    },
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    width: '40%',
   },
   noTasksText: {
     marginTop: theme.spacing(2),
@@ -245,7 +231,9 @@ export default class TaskGroupTable extends Component {
               <Typography variant="body2" className={classes.taskGroupName}>
                 {taskGroup.metadata.name}
               </Typography>
-              <LinkIcon size={iconSize} />
+              <span>
+                <LinkIcon size={iconSize} />
+              </span>
             </Link>
           </TableCell>
           <TableCell
@@ -253,7 +241,9 @@ export default class TaskGroupTable extends Component {
             className={classes.tableSecondCell}
             component="div"
             role="cell">
-            <StatusLabel state={taskGroup.status.state} />
+            <span>
+              <StatusLabel state={taskGroup.status.state} />
+            </span>
           </TableCell>
         </TableRow>
       );
@@ -286,7 +276,11 @@ export default class TaskGroupTable extends Component {
                   Name
                 </TableSortLabel>
               </TableCell>
-              <TableCell size="small" component="div" role="columnheader">
+              <TableCell
+                size="small"
+                component="div"
+                role="columnheader"
+                className={classes.tableSecondHeadCell}>
                 <TableSortLabel
                   className={classes.tableHeadCell}
                   id="Status"
