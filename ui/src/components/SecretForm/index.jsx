@@ -197,6 +197,7 @@ export default class SecretForm extends Component {
           )}
           <ListItem>
             <DatePicker
+              label="Expires"
               value={expires}
               onChange={this.handleExpirationChange}
               format="yyyy/MM/dd"
