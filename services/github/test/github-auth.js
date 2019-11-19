@@ -242,7 +242,7 @@ class FakeGithubAuth {
   async getAppGithub() {
     return {
       apps: {
-        getInstallations: async () => {
+        listInstallations: async () => {
           return {data: _.map(this.installations, (install, id) => ({
             id: parseInt(id, 10),
             account: {login: install._installedOn},
