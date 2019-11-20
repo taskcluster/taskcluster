@@ -8,7 +8,7 @@ exports.sleep = function(delay) {
   });
 };
 
-exports.runWithFakeTime = (fn, {mock=true, maxTime=30000, ...zurvanOptions}={}) => {
+exports.runWithFakeTime = (fn, {mock = true, maxTime = 30000, ...zurvanOptions} = {}) => {
   if (!mock) {
     // if not mocking, we can't use fake time as it will cause all sorts
     // of timeouts to occur immediately

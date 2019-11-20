@@ -13,7 +13,7 @@ class RefBuilder {
     this.references = [];
   }
 
-  schema({omitPaths=[], filename='test-schema.yml', ...content}) {
+  schema({omitPaths = [], filename = 'test-schema.yml', ...content}) {
     this.schemas.push({
       filename,
       content: omit(merge({
@@ -24,7 +24,7 @@ class RefBuilder {
     return this;
   }
 
-  apiref({omitPaths=[], filename='test-api-ref.yml', entries=[], ...content}) {
+  apiref({omitPaths = [], filename = 'test-api-ref.yml', entries = [], ...content}) {
     this.references.push({
       filename,
       content: omit(merge({
@@ -33,7 +33,7 @@ class RefBuilder {
         serviceName: 'test',
         title: 'Test Service',
         description: 'Test Service',
-        entries: entries.map(({omitPaths=[], ...content}) => omit(merge({
+        entries: entries.map(({omitPaths = [], ...content}) => omit(merge({
           type: 'function',
           name: 'foo',
           title: 'Foo',
@@ -49,7 +49,7 @@ class RefBuilder {
     return this;
   }
 
-  exchangesref({omitPaths=[], filename='test-exch-ref.yml', entries=[], ...content}) {
+  exchangesref({omitPaths = [], filename = 'test-exch-ref.yml', entries = [], ...content}) {
     this.references.push({
       filename,
       content: omit(merge({
@@ -59,7 +59,7 @@ class RefBuilder {
         title: 'Test Service',
         description: 'Test Service',
         exchangePrefix: 'test/v2',
-        entries: entries.map(({omitPaths=[], ...content}) => omit(merge({
+        entries: entries.map(({omitPaths = [], ...content}) => omit(merge({
           type: 'topic-exchange',
           exchange: 'test',
           name: 'foo',

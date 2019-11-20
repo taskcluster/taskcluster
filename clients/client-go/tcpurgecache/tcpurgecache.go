@@ -41,7 +41,7 @@ package tcpurgecache
 import (
 	"net/url"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v22"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v23"
 )
 
 type PurgeCache tcclient.Client
@@ -61,7 +61,9 @@ type PurgeCache tcclient.Client
 func New(credentials *tcclient.Credentials, rootURL string) *PurgeCache {
 	return &PurgeCache{
 		Credentials:  credentials,
-		BaseURL:      tcclient.BaseURL(rootURL, "purge-cache", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "purge-cache",
+		APIVersion:   "v1",
 		Authenticate: credentials != nil,
 	}
 }
@@ -82,9 +84,12 @@ func New(credentials *tcclient.Credentials, rootURL string) *PurgeCache {
 // disabled.
 func NewFromEnv() *PurgeCache {
 	c := tcclient.CredentialsFromEnvVars()
+	rootURL := tcclient.RootURLFromEnvVars()
 	return &PurgeCache{
 		Credentials:  c,
-		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "purge-cache", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "purge-cache",
+		APIVersion:   "v1",
 		Authenticate: c.ClientID != "",
 	}
 }

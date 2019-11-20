@@ -158,8 +158,8 @@ class DeadlineResolver {
                     'message, taskId: ' + taskId + ' this only happens ' +
                     'if conditional load does not work');
       err.taskId = taskId;
-      err.taskDeadline= task.deadline.toJSON();
-      err.messageDeadline= deadline.toJSON();
+      err.taskDeadline = task.deadline.toJSON();
+      err.messageDeadline = deadline.toJSON();
       await this.monitor.reportError(err);
       return remove();
     }

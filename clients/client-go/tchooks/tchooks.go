@@ -38,7 +38,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v22"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v23"
 )
 
 type Hooks tcclient.Client
@@ -58,7 +58,9 @@ type Hooks tcclient.Client
 func New(credentials *tcclient.Credentials, rootURL string) *Hooks {
 	return &Hooks{
 		Credentials:  credentials,
-		BaseURL:      tcclient.BaseURL(rootURL, "hooks", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "hooks",
+		APIVersion:   "v1",
 		Authenticate: credentials != nil,
 	}
 }
@@ -79,9 +81,12 @@ func New(credentials *tcclient.Credentials, rootURL string) *Hooks {
 // disabled.
 func NewFromEnv() *Hooks {
 	c := tcclient.CredentialsFromEnvVars()
+	rootURL := tcclient.RootURLFromEnvVars()
 	return &Hooks{
 		Credentials:  c,
-		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "hooks", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "hooks",
+		APIVersion:   "v1",
 		Authenticate: c.ClientID != "",
 	}
 }

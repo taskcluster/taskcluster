@@ -1,5 +1,9 @@
 query Task($taskId: ID!) {
   task(taskId: $taskId) {
+    metadata {
+      name
+    }
+
     status {
       runs {
         state

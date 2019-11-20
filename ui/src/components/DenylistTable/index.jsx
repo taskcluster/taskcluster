@@ -9,7 +9,6 @@ import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
-import Typography from '@material-ui/core/Typography';
 import { notificationAddress, pageInfo } from '../../utils/prop-types';
 import { VIEW_DENYLIST_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
@@ -29,7 +28,7 @@ const tableHeaders = ['Address', 'Type'];
     display: 'flex',
     justifyContent: 'space-between',
     width: '100%',
-    padding: theme.spacing.unit,
+    padding: theme.spacing(1),
   },
   listLinkCell: {
     ...theme.mixins.hover,
@@ -151,14 +150,14 @@ export default class DenylistTable extends Component {
                     classes.listItemCell,
                     classes.listLinkCell
                   )}>
-                  <Typography>{node.notificationAddress}</Typography>
+                  {node.notificationAddress}
                   <LinkIcon size={iconSize} />
                 </div>
               </Link>
             </TableCell>
             <TableCell>
               <div className={classes.listItemCell}>
-                <Typography>{this.prettify(node.notificationType)}</Typography>
+                {this.prettify(node.notificationType)}
               </div>
             </TableCell>
           </TableRow>

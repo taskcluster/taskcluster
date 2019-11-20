@@ -6,6 +6,7 @@ import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
 import dotProp from 'dot-prop-immutable';
+import escapeStringRegexp from 'escape-string-regexp';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
 import HelpView from '../../../components/HelpView';
@@ -19,16 +20,20 @@ import ErrorPanel from '../../../components/ErrorPanel';
 @graphql(clientsQuery, {
   options: props => ({
     variables: {
-      clientOptions: {
-        ...(props.history.location.search
-          ? {
-              prefix: parse(props.history.location.search.slice(1)).search,
-            }
-          : null),
-      },
+      clientOptions: null,
       clientsConnection: {
         limit: VIEW_CLIENTS_PAGE_SIZE,
       },
+      filter: props.history.location.search
+        ? {
+            clientId: {
+              $regex: escapeStringRegexp(
+                parse(props.history.location.search.slice(1)).search
+              ),
+              $options: 'i',
+            },
+          }
+        : null,
     },
   }),
 })
@@ -47,12 +52,13 @@ export default class ViewClients extends PureComponent {
       : '';
 
     await refetch({
-      clientOptions: {
-        ...(search ? { prefix: search } : null),
-      },
+      clientOptions: null,
       clientsConnection: {
         limit: VIEW_CLIENTS_PAGE_SIZE,
       },
+      filter: search
+        ? { clientId: { $regex: escapeStringRegexp(search), $options: 'i' } }
+        : null,
     });
 
     if (search !== searchUri) {
@@ -80,10 +86,16 @@ export default class ViewClients extends PureComponent {
           cursor,
           previousCursor,
         },
+        clientOptions: null,
         ...(history.location.search
           ? {
-              clientOptions: {
-                prefix: parse(history.location.search.slice(1)).search,
+              filter: {
+                clientId: {
+                  $regex: escapeStringRegexp(
+                    parse(history.location.search.slice(1)).search
+                  ),
+                  $options: 'i',
+                },
               },
             }
           : null),
@@ -117,7 +129,7 @@ export default class ViewClients extends PureComponent {
           <Search
             disabled={loading}
             onSubmit={this.handleClientSearchSubmit}
-            placeholder="Client starts with"
+            placeholder="Client contains"
           />
         }>
         <Fragment>

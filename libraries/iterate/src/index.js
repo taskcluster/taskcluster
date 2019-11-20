@@ -142,7 +142,7 @@ class Iterate extends events.EventEmitter {
       this.monitor.log.periodic({
         name: this.name,
         duration,
-        status: iterError ? 'exception': 'success',
+        status: iterError ? 'exception' : 'success',
       }, {level: iterError ? 'err' : 'notice'});
 
       if (iterError) {

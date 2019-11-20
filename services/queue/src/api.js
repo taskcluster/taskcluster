@@ -688,6 +688,10 @@ builder.declare({
       takenUntil: new Date(0),
     });
   } catch (err) {
+    if (err && err.code === 'PropertyTooLarge') {
+      return res.reportError('InputError', err.toString(), {});
+    }
+
     // We can handle cases where entity already exists, not that, we re-throw
     if (!err || err.code !== 'EntityAlreadyExists') {
       throw err;
@@ -868,6 +872,10 @@ builder.declare({
       takenUntil: new Date(0),
     });
   } catch (err) {
+    if (err && err.code === 'PropertyTooLarge') {
+      return res.reportError('InputError', err.toString(), {});
+    }
+
     // We can handle cases where entity already exists, not that, we re-throw
     if (!err || err.code !== 'EntityAlreadyExists') {
       throw err;

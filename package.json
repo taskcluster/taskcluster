@@ -1,10 +1,10 @@
 {
   "name": "taskcluster",
-  "version": "22.1.1",
+  "version": "23.0.0",
   "private": true,
   "engine-strict": true,
   "engines": {
-    "node": "10.16.3",
+    "node": "12.13.0",
     "yarn": "^1.0.0"
   },
   "workspaces": [
@@ -22,7 +22,7 @@
     "auth0": "^2.14.0",
     "aws-sdk": "^2.394.0",
     "azure-blob-storage": "^4.2.1",
-    "azure-entities": "^5.5.1",
+    "azure-entities": "^5.5.3",
     "body-parser": "1.19.0",
     "body-parser-graphql": "^1.0.0",
     "chalk": "^2.4.2",

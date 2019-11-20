@@ -37,7 +37,10 @@ import { pageInfo } from '../../utils/prop-types';
     overflowX: 'auto',
   },
   thWithTopPagination: {
-    height: theme.spacing.quad,
+    height: theme.spacing(4),
+  },
+  sortHeader: {
+    color: theme.palette.text.secondary,
   },
 }))
 /**
@@ -51,6 +54,7 @@ export default class ConnectionDataTable extends Component {
     headers: null,
     onHeaderClick: null,
     withoutTopPagination: false,
+    size: 'small',
   };
 
   static propTypes = {
@@ -106,6 +110,10 @@ export default class ConnectionDataTable extends Component {
      * at the top of the table.
      */
     withoutTopPagination: bool,
+    /**
+     * Allows TableCells to inherit size of the Table.
+     */
+    size: oneOf(['small', 'medium']),
   };
 
   state = {
@@ -211,6 +219,7 @@ export default class ConnectionDataTable extends Component {
       sortByHeader,
       sortDirection,
       withoutTopPagination,
+      size,
     } = this.props;
     const { count } = this.getPaginationMetadata();
     const colSpan = columnsSize || (headers && headers.length) || 1;
@@ -219,7 +228,7 @@ export default class ConnectionDataTable extends Component {
       <Fragment>
         {!withoutTopPagination && this.renderTablePagination(colSpan, count)}
         <div className={classes.tableWrapper}>
-          <Table>
+          <Table size={size}>
             {headers && (
               <TableHead>
                 <TableRow
@@ -231,6 +240,7 @@ export default class ConnectionDataTable extends Component {
                   {headers.map(header => (
                     <TableCell key={`table-header-${header}`}>
                       <TableSortLabel
+                        className={classes.sortHeader}
                         id={header}
                         active={header === sortByHeader}
                         direction={sortDirection || 'desc'}

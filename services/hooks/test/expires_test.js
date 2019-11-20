@@ -13,10 +13,10 @@ suite(testing.suiteName(), function() {
     });
 
     test('keep only 5 most recent lastfires for each hookId', async function() {
-      const hookGroupId ='testHookGroup';
+      const hookGroupId = 'testHookGroup';
       const hookId1 = 'testhook';
       const hookId2 = 'testhook2';
-      const hookIdToTaskIds ={ [hookId1]: [], [hookId2]: [] };
+      const hookIdToTaskIds = { [hookId1]: [], [hookId2]: [] };
       const hook = {
         hookGroupId,
         hookId: hookId1,
@@ -49,7 +49,7 @@ suite(testing.suiteName(), function() {
         error: '',
       };
       for (const hookId of [hookId1, hookId2]) {
-        for(let i=0; i<12;i++) {
+        for(let i = 0; i < 12;i++) {
           hookIdToTaskIds[hookId].push(taskcluster.slugid());
           await helper.LastFire.create({...entity, hookId,
             taskId: hookIdToTaskIds[hookId][i],

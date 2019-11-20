@@ -1,0 +1,37 @@
+---
+title: URL Structure
+order: 2
+---
+
+# URL Structure
+
+This section describes the structure of URLs used to access a Taskcluster deployment.
+
+## RootUrl
+
+A Taskcluster `rootUrl` is a partial web address containing at least the scheme, host, and optionally a port. It cannot specify a path.
+
+Example:
+
+```
+https://taskcluster.example.com
+```
+
+Normally, a rootUrl has no trailing `/` characters.
+We suggest that libraries and tools be lenient and accept rootUrls containing a trailing `/`, but normalize to produce rootUrls without a trailing `/`.
+
+## URLs
+
+Taskcluster uses URLs with the following patterns:
+
+| destination | URL Pattern |
+| --- | --- |
+| Rest API method | `<rootUrl>/api/<service>/<version>/<path>` |
+| Documentation | `<rootUrl>/docs/<path>` |
+| JSON-Schemas | `<rootUrl>/schemas/<path>` |
+| [API References](/docs/manual/design/apis/reference-format) | `<rootUrl>/references/<path>` |
+| UI | `<rootUrl>/<path>` (for anything not matching above)|
+
+For example, the v1 Index method [`insertTask`](/docs/reference/core/index/api#insertTask) describes route `/task/<namespace>`, so a call to this method with rootURl `https://tc.example.com` and namespace `product.release.latest` would have full URL `https://tc.example.com/api/index/v1/task/product.release.latest`.
+
+*NOTE*: All of the Taskcluster clients construct API URLs for you.  Taskcluster also provides a [taskcluster-lib-urls](https://github.com/taskcluster/taskcluster-lib-urls) library in several languages to support generation of these URLs.

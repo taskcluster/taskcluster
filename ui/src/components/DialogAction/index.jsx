@@ -124,18 +124,14 @@ export default class DialogAction extends Component {
           <DialogContentText>{body}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            disabled={executing}
-            onClick={onClose}
-            action={actions => actions.focusVisible()}>
+          <Button disabled={executing} onClick={onClose}>
             Cancel
           </Button>
           <div className={classes.executingActionWrapper}>
             <Button
               disabled={executing}
               onClick={this.handleSubmit}
-              color="secondary"
-              variant="outlined">
+              color="secondary">
               {confirmText}
             </Button>
             {executing && (

@@ -44,7 +44,7 @@ package tcgithub
 import (
 	"net/url"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v22"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v23"
 )
 
 type Github tcclient.Client
@@ -64,7 +64,9 @@ type Github tcclient.Client
 func New(credentials *tcclient.Credentials, rootURL string) *Github {
 	return &Github{
 		Credentials:  credentials,
-		BaseURL:      tcclient.BaseURL(rootURL, "github", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "github",
+		APIVersion:   "v1",
 		Authenticate: credentials != nil,
 	}
 }
@@ -85,9 +87,12 @@ func New(credentials *tcclient.Credentials, rootURL string) *Github {
 // disabled.
 func NewFromEnv() *Github {
 	c := tcclient.CredentialsFromEnvVars()
+	rootURL := tcclient.RootURLFromEnvVars()
 	return &Github{
 		Credentials:  c,
-		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "github", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "github",
+		APIVersion:   "v1",
 		Authenticate: c.ClientID != "",
 	}
 }

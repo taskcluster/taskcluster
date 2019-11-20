@@ -204,14 +204,40 @@ export const PROVIDER_DEFAULT_CONFIGS = new Map([
     'google',
     {
       minCapacity: 0,
-      maxCapacity: 0,
-      capacityPerInstance: 1,
-      machineType: 'n1-highcpu-8',
-      regions: ['us-west2'],
-      workerConfig: {},
-      scheduling: {},
-      networkInterfaces: [{}],
-      disks: [{}],
+      maxCapacity: 4,
+      launchConfigs: [
+        {
+          region: 'us-west1',
+          zone: 'us-west1-a',
+          capacityPerInstance: 1,
+          disks: [
+            {
+              autoDelete: true,
+              boot: true,
+              initializeParams: '...',
+              type: 'PERSISTENT',
+            },
+          ],
+          machineType: 'zones/us-west1-a/machineTypes/n1-standard-8',
+          networkInterfaces: [
+            {
+              accessConfigs: [
+                {
+                  type: 'ONE_TO_ONE_NAT',
+                },
+              ],
+            },
+          ],
+          scheduling: {
+            onHostMaintenance: 'terminate',
+          },
+          workerConfig: {
+            shutdown: {
+              enabled: true,
+            },
+          },
+        },
+      ],
     },
   ],
   ['static', {}],

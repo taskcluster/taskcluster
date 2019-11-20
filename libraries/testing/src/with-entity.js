@@ -11,19 +11,19 @@ const TABLE_SUFFIX = (() => {
   return `T${date}T${rand}`;
 })();
 
-const bug1579496fixed = true; // XXX TEMP
+const bug1579496fixed = false;
 
 // withEntity: monkey-patch an entity class to either use inmemory data
 // or to use a unique table name, and set up to ensure the table exists and
 // is empty at startup, and when the test completes.
 module.exports = (mock, skipping, helper, loaderComponent, cls,
-  {orderedTests, cleanup, noSasCredentials}={}) => {
+  {orderedTests, cleanup, noSasCredentials} = {}) => {
   let component;
 
   // Bug 1579496 has Azure behaving badly, so always use mock azure until
   // that's fixed.  This allows things other than Azure entities to still
   // test against the "real" thing.
-  if (mock && !bug1579496fixed) {
+  if (!mock && !bug1579496fixed) {
     mock = true;
   }
 

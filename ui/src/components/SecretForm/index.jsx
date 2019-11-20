@@ -28,8 +28,8 @@ import { secret } from '../../utils/prop-types';
   },
   saveSecretSpan: {
     position: 'fixed',
-    bottom: theme.spacing.double,
-    right: theme.spacing.unit * 11,
+    bottom: theme.spacing(2),
+    right: theme.spacing(11),
   },
   editorListItem: {
     paddingTop: 0,
@@ -37,7 +37,7 @@ import { secret } from '../../utils/prop-types';
     flexDirection: 'column',
     alignItems: 'start',
     '&> :last-child': {
-      marginTop: theme.spacing.unit,
+      marginTop: theme.spacing(1),
     },
   },
   saveIcon: {
@@ -197,6 +197,7 @@ export default class SecretForm extends Component {
           )}
           <ListItem>
             <DatePicker
+              label="Expires"
               value={expires}
               onChange={this.handleExpirationChange}
               format="yyyy/MM/dd"
@@ -286,7 +287,9 @@ export default class SecretForm extends Component {
             error={dialogError}
             title="Delete Secret?"
             body={
-              <Typography>This will delete the secret {secretName}.</Typography>
+              <Typography variant="body2">
+                This will delete the secret {secretName}.
+              </Typography>
             }
             confirmText="Delete Secret"
           />

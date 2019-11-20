@@ -29,7 +29,7 @@ When you create the client, the site will give you an accessToken.  Copy that
 and set it in your shell session, along with the clientId you chose.  Sometihng
 like this:
 
-```
+```bash
 export TASKCLUSTER_ROOT_URL=https://tc.example.com
 export TASKCLUSTER_CLIENT_ID=email/you@yourdomain.com/tutorial
 export TASKCLUSTER_ACCESS_TOKEN=9dTvVYdzMxAb6qnMPccfQhSzfrMZ1WQ46DgsL_I75S-w
@@ -55,7 +55,7 @@ Credentials output as environment variables
 
 You can test the results with the same tool:
 
-```
+```bash
 $ ./taskcluster api auth currentScopes
 {
     "scopes": [

@@ -36,7 +36,7 @@ class Roles {
             },
             description: {
               type: 'string',
-              maxLength: 1024*10,
+              maxLength: 1024 * 10,
             },
             lastModified: {
               type: 'string',

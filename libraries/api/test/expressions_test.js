@@ -4,7 +4,7 @@ const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
 
-  function scenario(expr, params, result, shouldFail=false) {
+  function scenario(expr, params, result, shouldFail = false) {
     return () => {
       try {
         assert.deepEqual(new ScopeExpressionTemplate(expr).render(params), result);

@@ -281,7 +281,7 @@ class Monitor {
   _register({name, type, version, level, fields}) {
     assert(!this[name], `Cannot override "${name}" as custom message type.`);
     const requiredFields = Object.keys(fields);
-    this.log[name] = (fields={}, overrides={}) => {
+    this.log[name] = (fields = {}, overrides = {}) => {
       if (this.verify) {
         assert(level !== 'any' || overrides.level !== undefined, 'Must provide `overrides.level` if registered level is `any`.');
         const providedFields = Object.keys(fields);

@@ -248,6 +248,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
     });
   });
 
+  test('createTask too large -> 400', async () => {
+    const taskId = slugid.v4();
+    const bigDef = {
+      ...taskDef,
+      extra: {
+        huge: [...Array(256)].map(() => [...Array(256)].map(() => "abc")),
+      },
+    };
+    await helper.queue.createTask(taskId, bigDef).then(() => {
+      throw new Error('This operation should have failed!');
+    }, (err) => {
+      assume(err.statusCode).equals(400);
+      debug('Expected error: %j', err, err);
+    });
+  });
+
   test('createTask w. created > deadline', async () => {
     const taskId = slugid.v4();
     const taskDef2 = _.defaults({

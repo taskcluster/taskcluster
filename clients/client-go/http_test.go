@@ -185,7 +185,7 @@ func TestRequestWithContext(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	c := Client{
-		BaseURL:      s.URL,
+		RootURL:      s.URL,
 		Authenticate: false,
 		Context:      ctx,
 	}
@@ -220,7 +220,7 @@ func TestContentTypeHeader(t *testing.T) {
 	}))
 	defer s.Close()
 	client := Client{
-		BaseURL:      s.URL,
+		RootURL:      s.URL,
 		Authenticate: false,
 	}
 
@@ -307,7 +307,9 @@ func (m *MockHTTPClient) Requests() []MockHTTPRequest {
 }
 
 type RequestTestCase struct {
-	BaseURL         string
+	RootURL         string
+	ServiceName     string
+	APIVersion      string
 	RequestBody     []byte
 	Method          string
 	Route           string
@@ -321,14 +323,18 @@ func TestHTTPRequestGeneration(t *testing.T) {
 		// configured by user, so we should test with both trailing and
 		// non-trailing slash; see https://bugzil.la/1484702
 		{
-			BaseURL:         "https://queue.taskcluster.net/v1",
+			RootURL:         "https://tc.example.com",
+			ServiceName:     "testy",
+			APIVersion:      "v2",
 			RequestBody:     nil,
 			Method:          "GET",
 			Route:           "/a/b",
 			QueryParameters: nil,
 		},
 		{
-			BaseURL:         "https://my.taskcluster.queue.deployment/v1/",
+			RootURL:         "https://tc.example.com/", // trailing /
+			ServiceName:     "testy",
+			APIVersion:      "v2",
 			RequestBody:     nil,
 			Method:          "GET",
 			Route:           "/a/b",
@@ -336,43 +342,31 @@ func TestHTTPRequestGeneration(t *testing.T) {
 		},
 		// test a request with a payload body and query string parameters
 		{
-			BaseURL:         "https://my.taskcluster.queue.deployment/v1/",
+			RootURL:         "https://tc.example.com",
+			ServiceName:     "testy",
+			APIVersion:      "v2",
 			RequestBody:     []byte{1, 2, 3, 4, 5},
 			Method:          "POST",
 			Route:           "/a/b",
 			QueryParameters: url.Values{"a": []string{"A", "B"}},
 		},
-		// fully qualified routes with empty base urls are used by
-		// taskcluster-proxy
-		{
-			BaseURL:         "",
-			RequestBody:     nil,
-			Method:          "GET",
-			Route:           "https://localhost:12345/a/b",
-			QueryParameters: nil,
-		},
 	}
 
 	expectedRequests := []MockHTTPRequest{
 		{
-			URL:    "https://queue.taskcluster.net/v1/a/b",
+			URL:    "https://tc.example.com/api/testy/v2/a/b",
 			Method: "GET",
 			Body:   []byte{},
 		},
 		{
-			URL:    "https://my.taskcluster.queue.deployment/v1/a/b",
+			URL:    "https://tc.example.com/api/testy/v2/a/b",
 			Method: "GET",
 			Body:   []byte{},
 		},
 		{
-			URL:    "https://my.taskcluster.queue.deployment/v1/a/b?a=A&a=B",
+			URL:    "https://tc.example.com/api/testy/v2/a/b?a=A&a=B",
 			Method: "POST",
 			Body:   []byte{1, 2, 3, 4, 5},
-		},
-		{
-			URL:    "https://localhost:12345/a/b",
-			Method: "GET",
-			Body:   []byte{},
 		},
 	}
 
@@ -382,7 +376,9 @@ func TestHTTPRequestGeneration(t *testing.T) {
 		HTTPClient:   mockHTTPClient,
 	}
 	for _, testCase := range testCases {
-		c.BaseURL = testCase.BaseURL
+		c.RootURL = testCase.RootURL
+		c.ServiceName = testCase.ServiceName
+		c.APIVersion = testCase.APIVersion
 		c.Request(testCase.RequestBody, testCase.Method, testCase.Route, testCase.QueryParameters)
 	}
 	actualRequests := mockHTTPClient.Requests()

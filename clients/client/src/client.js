@@ -471,7 +471,7 @@ exports.createClient = function(reference, name) {
           }
           // Check that we haven't got an invalid value
           assert(value === null || value === undefined,
-            'Value: \'' + value + '\' is not supported as routingKey '+
+            'Value: \'' + value + '\' is not supported as routingKey ' +
                 'pattern for ' + key.name);
           // Return default pattern for entry not being matched
           return key.multipleWords ? '#' : '*';
