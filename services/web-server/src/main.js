@@ -46,10 +46,10 @@ const load = loader(
     pulseClient: {
       requires: ['cfg', 'monitor'],
       setup: ({ cfg, monitor }) => {
-        if (!cfg.pulse.namespace) {
+        if (!cfg.pulse.username) {
           assert(
             process.env.NODE_ENV !== 'production',
-            'cfg.pulse.namespace is required',
+            'pulse credentials are required in production',
           );
 
           return null;

@@ -50,6 +50,7 @@ defaults:
     password: !env PULSE_PASSWORD
     hostname: !env PULSE_HOSTNAME
     vhost: !env PULSE_VHOST
+    namespace: taskcluster-web-server
 
   login:
     registeredClients: !env:json REGISTERED_CLIENTS
@@ -133,7 +134,3 @@ test:
   server:
     port: 63821
     trustProxy: false
-
-production:
-  pulse:
-    namespace: taskcluster-web-server
