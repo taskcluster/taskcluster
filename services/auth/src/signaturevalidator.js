@@ -79,7 +79,7 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
     // Check clientId validity
     if (issuingClientId !== credentialName) {
       let createScope = 'auth:create-client:' + credentialName;
-      if (!utils.scopeMatch(issuingScopes, [[createScope]])) {
+      if (!utils.satisfiesExpression(issuingScopes, createScope)) {
         throw new Error('ext.certificate issuer `' + issuingClientId +
                         '` doesn\'t have `' + createScope + '` for supplied clientId.');
       }
@@ -88,7 +88,7 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
     }
 
     // Validate certificate scopes are subset of client
-    if (!utils.scopeMatch(scopes, [cert.scopes])) {
+    if (!utils.satisfiesExpression(scopes, {AllOf: cert.scopes})) {
       throw new Error('ext.certificate issuer `' + issuingClientId +
                       '` doesn\'t satisfy all certificate scopes ' +
                       cert.scopes.join(', ') + '.  The temporary ' +
@@ -151,7 +151,7 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
     }
 
     // Validate authorizedScopes scopes are satisfied by client (or temp) scopes
-    if (!utils.scopeMatch(res.scopes, [ext.authorizedScopes])) {
+    if (!utils.satisfiesExpression(res.scopes, {AllOf: ext.authorizedScopes})) {
       throw new Error([
         'Supplied credentials do not satisfy authorizedScopes; credentials have scopes:',
         '',

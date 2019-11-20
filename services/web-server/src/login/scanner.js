@@ -57,7 +57,7 @@ module.exports = async (auth, strategies) => {
 
       // if this client's expandedScopes are not satisfied by the user's expanded
       // scopes, disable the client.
-      if (!scopeUtils.scopeMatch(userScopes, [client.expandedScopes])) {
+      if (!scopeUtils.satisfiesExpression(userScopes, {AllOf: client.expandedScopes})) {
         await auth.disableClient(client.clientId);
       }
     }

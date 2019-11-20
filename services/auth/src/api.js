@@ -844,7 +844,7 @@ builder.declare({
 
       // Check scopes
       const formerRoleScopes = this.resolver.resolve(role.scopes);
-      const scopesAdded = input.scopes.filter(s => !scopeUtils.scopeMatch(formerRoleScopes, [[s]]));
+      const scopesAdded = input.scopes.filter(s => !scopeUtils.satisfiesExpression(formerRoleScopes, s));
       await req.authorize({roleId, scopesAdded});
 
       // check that this updated role does not introduce a cycle, careful not to modify
