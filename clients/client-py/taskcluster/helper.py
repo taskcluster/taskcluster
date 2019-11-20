@@ -53,7 +53,7 @@ class TaskclusterConfig(object):
         elif "TASK_ID" in os.environ:
             # Use Taskcluster Proxy when running in a task
             logger.info("Taskcluster Proxy enabled")
-            self.options["rootUrl"] = "http://taskcluster"
+            self.options["rootUrl"] = os.environ.get("TASKCLUSTER_PROXY_URL", "http://taskcluster")
 
         else:
             logger.info("No Taskcluster authentication.")
