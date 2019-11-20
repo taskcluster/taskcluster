@@ -1,10 +1,10 @@
 ###################################################################################
 # Note, this powershell script is an *APPROXIMATION ONLY* to the steps that are run
-# to build the AMIs for aws-provisioner-v1/gecko-1-b-win2012-xlarge.
+# to build the AMIs for aws-provisioner-v1/gecko-3-b-win2012.
 #
 # The authoratative host definition can be found at:
 #
-#   * https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/gecko-1-b-win2012-xlarge.json
+#   * https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/gecko-3-b-win2012.json
 #
 ###################################################################################
 
@@ -304,42 +304,6 @@ New-NetFirewallRule -DisplayName "KmsOut (TCP 1688 Outbound): Allow" -Direction 
 
 # reg_Power_PreferredPlan_HighPerformance: https://bugzilla.mozilla.org/show_bug.cgi?id=1362613
 New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\explorer\ControlPanel\NameSpace\{025A5937-A6BE-4686-A844-36FE4BEC8B6D}" -Name "PreferredPlan" -Value "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c" -PropertyType String -Force
-
-# OpenSshDownload: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
-$client.DownloadFile("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.1.0p1-Beta/OpenSSH-Win64.zip", "C:\Windows\Temp\OpenSSH-Win64.zip")
-
-# OpenSshUnzip: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
-Start-Process "C:\Program Files\7-Zip\7z.exe" -ArgumentList "x -o`"C:\Program Files`" C:\Windows\Temp\OpenSSH-Win64.zip" -Wait -NoNewWindow
-
-# SshIn
-New-NetFirewallRule -DisplayName "SshIn (TCP 22 Inbound): Allow" -Direction Inbound -LocalPort 22 -Protocol TCP -Action Allow
-
-# InstallOpenSSH: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
-Start-Process "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -File `"C:\Program Files\OpenSSH-Win64\install-sshd.ps1`"" -Wait -NoNewWindow
-
-# reg_OpenSSH_DefaultShell: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
-New-ItemProperty -Path "HKLM:SOFTWARE\OpenSSH" -Name "DefaultShell" -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -PropertyType String -Force
-
-# reg_OpenSSH_DefaultShellCommandOption: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
-New-ItemProperty -Path "HKLM:SOFTWARE\OpenSSH" -Name "DefaultShellCommandOption" -Value "/c" -PropertyType String -Force
-
-# AdministratorSshDir: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
-md "C:\Users\Administrator\.ssh"
-
-# AdministratorSshAuthorisedKeys: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
-$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/ssh/authorized_keys", "C:\Users\Administrator\.ssh\authorized_keys")
-
-# ProgramDataSshDir: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
-md "C:\ProgramData\ssh"
-
-# sshd_config: https://bugzilla.mozilla.org/show_bug.cgi?id=1464343
-$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/ssh/sshd_config", "C:\ProgramData\ssh\sshd_config")
-
-# Start_sshd: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
-Set-Service "sshd" -StartupType Automatic -Status Running
-
-# Start_sshagent: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
-Set-Service "ssh-agent" -StartupType Automatic -Status Running
 
 # HostsFile: https://bugzilla.mozilla.org/show_bug.cgi?id=1497308
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/etc/hosts", "C:\Windows\System32\drivers\etc\hosts")

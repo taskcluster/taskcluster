@@ -1,10 +1,10 @@
 ###################################################################################
 # Note, this powershell script is an *APPROXIMATION ONLY* to the steps that are run
-# to build the AMIs for aws-provisioner-v1/gecko-1-b-win2012.
+# to build the AMIs for aws-provisioner-v1/gecko-2-b-win2012.
 #
 # The authoratative host definition can be found at:
 #
-#   * https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/gecko-1-b-win2012.json
+#   * https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/gecko-2-b-win2012.json
 #
 ###################################################################################
 
