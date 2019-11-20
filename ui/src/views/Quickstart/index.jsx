@@ -339,7 +339,7 @@ export default class QuickStart extends Component {
 
     return (
       <Dashboard
-        title="Github Quickstart"
+        title="GitHub Quickstart"
         helpView={
           <HelpView
             description="Create a configuration file and
@@ -406,7 +406,7 @@ export default class QuickStart extends Component {
           <div className={classes.orgRepoStatus}>
             <div className={classes.orgRepoTextFields}>
               <TextField
-                label="Organization Name"
+                label="Org Name"
                 name="owner"
                 fullWidth
                 onChange={this.handleOrgRepoChange}
@@ -417,7 +417,7 @@ export default class QuickStart extends Component {
                 /
               </Typography>
               <TextField
-                label="Repository Name"
+                label="Repo Name"
                 name="repo"
                 fullWidth
                 onChange={this.handleOrgRepoChange}
