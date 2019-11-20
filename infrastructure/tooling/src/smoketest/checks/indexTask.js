@@ -53,7 +53,7 @@ exports.tasks.push({
         }
         catch (err) {
           utils.status({
-            message: 'waiting for the task to be indexed'
+            message: 'waiting for the task to be indexed',
           });
         }
       }
