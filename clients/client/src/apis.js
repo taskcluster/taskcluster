@@ -1210,7 +1210,7 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/last-fires",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Get information about recent hook fires",
           "type": "function"
         }
@@ -3170,7 +3170,7 @@ module.exports = {
               "worker-manager:provider:<providerId>"
             ]
           },
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Create Worker Pool",
           "type": "function"
         },
@@ -3193,7 +3193,7 @@ module.exports = {
               "worker-manager:provider:<providerId>"
             ]
           },
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Update Worker Pool",
           "type": "function"
         },
@@ -3210,7 +3210,7 @@ module.exports = {
           ],
           "route": "/worker-pool/<workerPoolId>",
           "scopes": "worker-manager:manage-worker-pool:<workerPoolId>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Delete Worker Pool",
           "type": "function"
         },
@@ -3226,7 +3226,7 @@ module.exports = {
           "query": [
           ],
           "route": "/worker-pool/<workerPoolId>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Get Worker Pool",
           "type": "function"
         },
@@ -3243,7 +3243,7 @@ module.exports = {
             "limit"
           ],
           "route": "/worker-pools",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "List All Worker Pools",
           "type": "function"
         },
@@ -3266,7 +3266,7 @@ module.exports = {
               "assume:worker-id:<workerGroup>/<workerId>"
             ]
           },
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Report an error from a worker",
           "type": "function"
         },
@@ -3284,7 +3284,7 @@ module.exports = {
             "limit"
           ],
           "route": "/worker-pool-errors/<workerPoolId>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "List Worker Pool Errors",
           "type": "function"
         },
@@ -3303,7 +3303,7 @@ module.exports = {
             "limit"
           ],
           "route": "/workers/<workerPoolId>:/<workerGroup>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Workers in a specific Worker Group in a Worker Pool",
           "type": "function"
         },
@@ -3321,7 +3321,7 @@ module.exports = {
           "query": [
           ],
           "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Get a Worker",
           "type": "function"
         },
@@ -3341,7 +3341,7 @@ module.exports = {
           ],
           "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
           "scopes": "worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Create a Worker",
           "type": "function"
         },
@@ -3359,7 +3359,7 @@ module.exports = {
           ],
           "route": "/workers/<workerPoolId>/<workerGroup>/<workerId>",
           "scopes": "worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Remove a Worker",
           "type": "function"
         },
@@ -3377,7 +3377,7 @@ module.exports = {
             "limit"
           ],
           "route": "/workers/<workerPoolId>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Workers in a Worker Pool",
           "type": "function"
         },
@@ -3393,7 +3393,7 @@ module.exports = {
           "query": [
           ],
           "route": "/worker/register",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Register a running worker",
           "type": "function"
         }

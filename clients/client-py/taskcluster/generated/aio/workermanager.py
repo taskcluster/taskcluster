@@ -50,7 +50,7 @@ class WorkerManager(AsyncBaseClient):
 
         Create a new worker pool. If the worker pool already exists, this will throw an error.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["createWorkerPool"], *args, **kwargs)
@@ -67,7 +67,7 @@ class WorkerManager(AsyncBaseClient):
         worker pool.  During that time, the worker pool can be updated again, such
         as to set its `providerId` to a real provider.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["updateWorkerPool"], *args, **kwargs)
@@ -80,7 +80,7 @@ class WorkerManager(AsyncBaseClient):
         set its providerId to `"null-provider"`, but does not require scope
         `worker-manager:provider:null-provider`.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["deleteWorkerPool"], *args, **kwargs)
@@ -91,7 +91,7 @@ class WorkerManager(AsyncBaseClient):
 
         Fetch an existing worker pool defition.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["workerPool"], *args, **kwargs)
@@ -102,7 +102,7 @@ class WorkerManager(AsyncBaseClient):
 
         Get the list of all the existing worker pools.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["listWorkerPools"], *args, **kwargs)
@@ -121,7 +121,7 @@ class WorkerManager(AsyncBaseClient):
         NOTE: errors are publicly visible.  Ensure that none of the content
         contains secrets or other sensitive information.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["reportWorkerError"], *args, **kwargs)
@@ -132,7 +132,7 @@ class WorkerManager(AsyncBaseClient):
 
         Get the list of worker pool errors.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["listWorkerPoolErrors"], *args, **kwargs)
@@ -143,7 +143,7 @@ class WorkerManager(AsyncBaseClient):
 
         Get the list of all the existing workers in a given group in a given worker pool.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["listWorkersForWorkerGroup"], *args, **kwargs)
@@ -154,7 +154,7 @@ class WorkerManager(AsyncBaseClient):
 
         Get a single worker.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["worker"], *args, **kwargs)
@@ -167,7 +167,7 @@ class WorkerManager(AsyncBaseClient):
         on the provider implementing the given worker pool.  Some providers
         do not support creating workers at all, and will return a 400 error.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["createWorker"], *args, **kwargs)
@@ -182,7 +182,7 @@ class WorkerManager(AsyncBaseClient):
         Others may begin removing the worker, but it may remain available via
         the API (perhaps even in state RUNNING) afterward.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["removeWorker"], *args, **kwargs)
@@ -193,7 +193,7 @@ class WorkerManager(AsyncBaseClient):
 
         Get the list of all the existing workers in a given worker pool.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["listWorkersForWorkerPool"], *args, **kwargs)
@@ -208,7 +208,7 @@ class WorkerManager(AsyncBaseClient):
         the worker will require to perform its work.  The worker must provide
         some proof of its identity, and that proof varies by provider type.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["registerWorker"], *args, **kwargs)
@@ -221,7 +221,7 @@ class WorkerManager(AsyncBaseClient):
             'name': 'createWorker',
             'output': 'v1/worker-full.json#',
             'route': '/workers/<workerPoolId>:/<workerGroup>/<workerId>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "createWorkerPool": {
             'args': ['workerPoolId'],
@@ -230,7 +230,7 @@ class WorkerManager(AsyncBaseClient):
             'name': 'createWorkerPool',
             'output': 'v1/worker-pool-full.json#',
             'route': '/worker-pool/<workerPoolId>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "deleteWorkerPool": {
             'args': ['workerPoolId'],
@@ -238,7 +238,7 @@ class WorkerManager(AsyncBaseClient):
             'name': 'deleteWorkerPool',
             'output': 'v1/worker-pool-full.json#',
             'route': '/worker-pool/<workerPoolId>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "listProviders": {
             'args': [],
@@ -256,7 +256,7 @@ class WorkerManager(AsyncBaseClient):
             'output': 'v1/worker-pool-error-list.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/worker-pool-errors/<workerPoolId>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "listWorkerPools": {
             'args': [],
@@ -265,7 +265,7 @@ class WorkerManager(AsyncBaseClient):
             'output': 'v1/worker-pool-list.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/worker-pools',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "listWorkersForWorkerGroup": {
             'args': ['workerPoolId', 'workerGroup'],
@@ -274,7 +274,7 @@ class WorkerManager(AsyncBaseClient):
             'output': 'v1/worker-list.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/workers/<workerPoolId>:/<workerGroup>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "listWorkersForWorkerPool": {
             'args': ['workerPoolId'],
@@ -283,7 +283,7 @@ class WorkerManager(AsyncBaseClient):
             'output': 'v1/worker-list.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/workers/<workerPoolId>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "ping": {
             'args': [],
@@ -299,14 +299,14 @@ class WorkerManager(AsyncBaseClient):
             'name': 'registerWorker',
             'output': 'v1/register-worker-response.json#',
             'route': '/worker/register',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "removeWorker": {
             'args': ['workerPoolId', 'workerGroup', 'workerId'],
             'method': 'delete',
             'name': 'removeWorker',
             'route': '/workers/<workerPoolId>/<workerGroup>/<workerId>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "reportWorkerError": {
             'args': ['workerPoolId'],
@@ -315,7 +315,7 @@ class WorkerManager(AsyncBaseClient):
             'name': 'reportWorkerError',
             'output': 'v1/worker-pool-error.json#',
             'route': '/worker-pool-errors/<workerPoolId>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "updateWorkerPool": {
             'args': ['workerPoolId'],
@@ -324,7 +324,7 @@ class WorkerManager(AsyncBaseClient):
             'name': 'updateWorkerPool',
             'output': 'v1/worker-pool-full.json#',
             'route': '/worker-pool/<workerPoolId>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "worker": {
             'args': ['workerPoolId', 'workerGroup', 'workerId'],
@@ -332,7 +332,7 @@ class WorkerManager(AsyncBaseClient):
             'name': 'worker',
             'output': 'v1/worker-full.json#',
             'route': '/workers/<workerPoolId>:/<workerGroup>/<workerId>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "workerPool": {
             'args': ['workerPoolId'],
@@ -340,7 +340,7 @@ class WorkerManager(AsyncBaseClient):
             'name': 'workerPool',
             'output': 'v1/worker-pool-full.json#',
             'route': '/worker-pool/<workerPoolId>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
     }
 

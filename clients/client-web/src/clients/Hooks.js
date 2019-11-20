@@ -22,7 +22,7 @@ export default class Hooks extends Client {
     this.getTriggerToken.entry = {"args":["hookGroupId","hookId"],"category":"Hooks Service","method":"get","name":"getTriggerToken","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/token","scopes":"hooks:get-trigger-token:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.resetTriggerToken.entry = {"args":["hookGroupId","hookId"],"category":"Hooks Service","method":"post","name":"resetTriggerToken","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/token","scopes":"hooks:reset-trigger-token:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.triggerHookWithToken.entry = {"args":["hookGroupId","hookId","token"],"category":"Hooks Service","input":true,"method":"post","name":"triggerHookWithToken","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/trigger/<token>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listLastFires.entry = {"args":["hookGroupId","hookId"],"category":"Hooks Service","method":"get","name":"listLastFires","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/last-fires","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.listLastFires.entry = {"args":["hookGroupId","hookId"],"category":"Hooks Service","method":"get","name":"listLastFires","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/last-fires","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
