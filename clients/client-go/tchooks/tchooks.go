@@ -255,8 +255,6 @@ func (hooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payl
 	return responseObject.(*TriggerHookResponse), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // This endpoint will return information about the the last few times this hook has been
 // fired, including whether the hook was fired successfully or not
 //

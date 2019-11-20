@@ -426,7 +426,7 @@ var services = map[string]definitions.Service{
 				Name:        "githubWebHookConsumer",
 				Title:       "Consume GitHub WebHook",
 				Description: "Capture a GitHub event and publish it via pulse, if it's a push,\nrelease or pull request.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "post",
 				Route:       "/github",
 				Args:        []string{},
@@ -437,7 +437,7 @@ var services = map[string]definitions.Service{
 				Name:        "builds",
 				Title:       "List of Builds",
 				Description: "A paginated list of builds that have been run in\nTaskcluster. Can be filtered on various git-specific\nfields.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "get",
 				Route:       "/builds",
 				Args:        []string{},
@@ -483,7 +483,7 @@ var services = map[string]definitions.Service{
 				Name:        "latest",
 				Title:       "Latest Status for Branch",
 				Description: "For a given branch of a repository, this will always point\nto a status page for the most recent task triggered by that\nbranch.\n\nNote: This is a redirect rather than a direct link.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "get",
 				Route:       "/repository/<owner>/<repo>/<branch>/latest",
 				Args: []string{
@@ -513,7 +513,7 @@ var services = map[string]definitions.Service{
 				Name:        "createComment",
 				Title:       "Post a comment on a given GitHub Issue or Pull Request",
 				Description: "For a given Issue or Pull Request of a repository, this will write a new message.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "post",
 				Route:       "/repository/<owner>/<repo>/issues/<number>/comments",
 				Args: []string{
@@ -698,7 +698,7 @@ var services = map[string]definitions.Service{
 				Name:        "listLastFires",
 				Title:       "Get information about recent hook fires",
 				Description: "This endpoint will return information about the the last few times this hook has been\nfired, including whether the hook was fired successfully or not",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "get",
 				Route:       "/hooks/<hookGroupId>/<hookId>/last-fires",
 				Args: []string{
@@ -1224,7 +1224,7 @@ var services = map[string]definitions.Service{
 				Name:        "listArtifacts",
 				Title:       "Get Artifacts from Run",
 				Description: "Returns a list of artifacts and associated meta-data for a given run.\n\nAs a task may have many artifacts paging may be necessary. If this\nend-point returns a `continuationToken`, you should call the end-point\nagain with the `continuationToken` as the query-string option:\n`continuationToken`.\n\nBy default this end-point will list up-to 1000 artifacts in a single page\nyou may limit this with the query-string parameter `limit`.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "get",
 				Route:       "/task/<taskId>/runs/<runId>/artifacts",
 				Args: []string{
@@ -1241,7 +1241,7 @@ var services = map[string]definitions.Service{
 				Name:        "listLatestArtifacts",
 				Title:       "Get Artifacts from Latest Run",
 				Description: "Returns a list of artifacts and associated meta-data for the latest run\nfrom the given task.\n\nAs a task may have many artifacts paging may be necessary. If this\nend-point returns a `continuationToken`, you should call the end-point\nagain with the `continuationToken` as the query-string option:\n`continuationToken`.\n\nBy default this end-point will list up-to 1000 artifacts in a single page\nyou may limit this with the query-string parameter `limit`.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "get",
 				Route:       "/task/<taskId>/artifacts",
 				Args: []string{
@@ -1526,7 +1526,7 @@ var services = map[string]definitions.Service{
 				Name:        "createWorkerPool",
 				Title:       "Create Worker Pool",
 				Description: "Create a new worker pool. If the worker pool already exists, this will throw an error.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "put",
 				Route:       "/worker-pool/<workerPoolId>",
 				Args: []string{
@@ -1539,7 +1539,7 @@ var services = map[string]definitions.Service{
 				Name:        "updateWorkerPool",
 				Title:       "Update Worker Pool",
 				Description: "Given an existing worker pool definition, this will modify it and return\nthe new definition.\n\nTo delete a worker pool, set its `providerId` to `\"null-provider\"`.\nAfter any existing workers have exited, a cleanup job will remove the\nworker pool.  During that time, the worker pool can be updated again, such\nas to set its `providerId` to a real provider.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "post",
 				Route:       "/worker-pool/<workerPoolId>",
 				Args: []string{
@@ -1552,7 +1552,7 @@ var services = map[string]definitions.Service{
 				Name:        "deleteWorkerPool",
 				Title:       "Delete Worker Pool",
 				Description: "Mark a worker pool for deletion.  This is the same as updating the pool to\nset its providerId to `\"null-provider\"`, but does not require scope\n`worker-manager:provider:null-provider`.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "delete",
 				Route:       "/worker-pool/<workerPoolId>",
 				Args: []string{
@@ -1565,7 +1565,7 @@ var services = map[string]definitions.Service{
 				Name:        "workerPool",
 				Title:       "Get Worker Pool",
 				Description: "Fetch an existing worker pool defition.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "get",
 				Route:       "/worker-pool/<workerPoolId>",
 				Args: []string{
@@ -1578,7 +1578,7 @@ var services = map[string]definitions.Service{
 				Name:        "listWorkerPools",
 				Title:       "List All Worker Pools",
 				Description: "Get the list of all the existing worker pools.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "get",
 				Route:       "/worker-pools",
 				Args:        []string{},
@@ -1592,7 +1592,7 @@ var services = map[string]definitions.Service{
 				Name:        "reportWorkerError",
 				Title:       "Report an error from a worker",
 				Description: "Report an error that occurred on a worker.  This error will be included\nwith the other errors in `listWorkerPoolErrors(workerPoolId)`.\n\nWorkers can use this endpoint to report startup or configuration errors\nthat might be associated with the worker pool configuration and thus of\ninterest to a worker-pool administrator.\n\nNOTE: errors are publicly visible.  Ensure that none of the content\ncontains secrets or other sensitive information.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "post",
 				Route:       "/worker-pool-errors/<workerPoolId>",
 				Args: []string{
@@ -1605,7 +1605,7 @@ var services = map[string]definitions.Service{
 				Name:        "listWorkerPoolErrors",
 				Title:       "List Worker Pool Errors",
 				Description: "Get the list of worker pool errors.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "get",
 				Route:       "/worker-pool-errors/<workerPoolId>",
 				Args: []string{
@@ -1621,7 +1621,7 @@ var services = map[string]definitions.Service{
 				Name:        "listWorkersForWorkerGroup",
 				Title:       "Workers in a specific Worker Group in a Worker Pool",
 				Description: "Get the list of all the existing workers in a given group in a given worker pool.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "get",
 				Route:       "/workers/<workerPoolId>:/<workerGroup>",
 				Args: []string{
@@ -1638,7 +1638,7 @@ var services = map[string]definitions.Service{
 				Name:        "worker",
 				Title:       "Get a Worker",
 				Description: "Get a single worker.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "get",
 				Route:       "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
 				Args: []string{
@@ -1653,7 +1653,7 @@ var services = map[string]definitions.Service{
 				Name:        "createWorker",
 				Title:       "Create a Worker",
 				Description: "Create a new worker.  The precise behavior of this method depends\non the provider implementing the given worker pool.  Some providers\ndo not support creating workers at all, and will return a 400 error.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "put",
 				Route:       "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
 				Args: []string{
@@ -1668,7 +1668,7 @@ var services = map[string]definitions.Service{
 				Name:        "removeWorker",
 				Title:       "Remove a Worker",
 				Description: "Remove an existing worker.  The precise behavior of this method depends\non the provider implementing the given worker.  Some providers\ndo not support removing workers at all, and will return a 400 error.\nOthers may begin removing the worker, but it may remain available via\nthe API (perhaps even in state RUNNING) afterward.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "delete",
 				Route:       "/workers/<workerPoolId>/<workerGroup>/<workerId>",
 				Args: []string{
@@ -1683,7 +1683,7 @@ var services = map[string]definitions.Service{
 				Name:        "listWorkersForWorkerPool",
 				Title:       "Workers in a Worker Pool",
 				Description: "Get the list of all the existing workers in a given worker pool.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "get",
 				Route:       "/workers/<workerPoolId>",
 				Args: []string{
@@ -1699,7 +1699,7 @@ var services = map[string]definitions.Service{
 				Name:        "registerWorker",
 				Title:       "Register a running worker",
 				Description: "Register a running worker.  Workers call this method on worker start-up.\n\nThis call both marks the worker as running and returns the credentials\nthe worker will require to perform its work.  The worker must provide\nsome proof of its identity, and that proof varies by provider type.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "post",
 				Route:       "/worker/register",
 				Args:        []string{},

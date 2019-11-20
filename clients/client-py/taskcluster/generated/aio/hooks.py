@@ -182,7 +182,7 @@ class Hooks(AsyncBaseClient):
         This endpoint will return information about the the last few times this hook has been
         fired, including whether the hook was fired successfully or not
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["listLastFires"], *args, **kwargs)
@@ -243,7 +243,7 @@ class Hooks(AsyncBaseClient):
             'name': 'listLastFires',
             'output': 'v1/list-lastFires-response.json#',
             'route': '/hooks/<hookGroupId>/<hookId>/last-fires',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "ping": {
             'args': [],
