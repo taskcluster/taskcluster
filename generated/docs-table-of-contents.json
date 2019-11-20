@@ -1228,7 +1228,7 @@
             "name": "task-notifications",
             "next": {
               "path": "manual/using/administration",
-              "title": "Project Administration"
+              "title": "Administration"
             },
             "path": "manual/using/task-notifications",
             "prev": {
@@ -1246,7 +1246,7 @@
             "data": {
               "filename": "using/administration.mdx",
               "order": 90,
-              "title": "Project Administration"
+              "title": "Administration"
             },
             "name": "administration",
             "next": {
@@ -1392,7 +1392,7 @@
             "path": "manual/using/integration",
             "prev": {
               "path": "manual/using/administration",
-              "title": "Project Administration"
+              "title": "Administration"
             },
             "up": {
               "path": "manual/using",
