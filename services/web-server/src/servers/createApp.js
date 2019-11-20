@@ -24,9 +24,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
     if (typeof(o) === 'string' && o.startsWith('/')) {
       return new RegExp(o.slice(1, o.length - 1));
     }
-    if (o === 'https://taskcluster.net') {
-      o = 'https://taskcluster-ui.herokuapp.com';
-    }
+
     return o;
   }).filter(o => o && o !== "");
   const corsOptions = {
