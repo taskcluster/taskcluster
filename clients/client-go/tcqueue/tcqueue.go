@@ -705,8 +705,6 @@ func (queue *Queue) GetLatestArtifact_SignedURL(taskId, name string, duration ti
 	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifacts/"+url.QueryEscape(name), nil, duration)
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Returns a list of artifacts and associated meta-data for a given run.
 //
 // As a task may have many artifacts paging may be necessary. If this
@@ -731,8 +729,6 @@ func (queue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string
 	return responseObject.(*ListArtifactsResponse), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Returns a list of artifacts and associated meta-data for the latest run
 // from the given task.
 //

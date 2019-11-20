@@ -107,8 +107,6 @@ func (github *Github) Ping() error {
 	return err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Capture a GitHub event and publish it via pulse, if it's a push,
 // release or pull request.
 //
@@ -119,8 +117,6 @@ func (github *Github) GithubWebHookConsumer() error {
 	return err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // A paginated list of builds that have been run in
 // Taskcluster. Can be filtered on various git-specific
 // fields.
@@ -172,8 +168,6 @@ func (github *Github) Repository(owner, repo string) (*RepositoryResponse, error
 	return responseObject.(*RepositoryResponse), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // For a given branch of a repository, this will always point
 // to a status page for the most recent task triggered by that
 // branch.
@@ -204,8 +198,6 @@ func (github *Github) CreateStatus(owner, repo, sha string, payload *CreateStatu
 	return err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // For a given Issue or Pull Request of a repository, this will write a new message.
 //
 // Required scopes:

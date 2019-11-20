@@ -532,7 +532,7 @@ class Queue(BaseClient):
         By default this end-point will list up-to 1000 artifacts in a single page
         you may limit this with the query-string parameter `limit`.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return self._makeApiCall(self.funcinfo["listArtifacts"], *args, **kwargs)
@@ -552,7 +552,7 @@ class Queue(BaseClient):
         By default this end-point will list up-to 1000 artifacts in a single page
         you may limit this with the query-string parameter `limit`.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return self._makeApiCall(self.funcinfo["listLatestArtifacts"], *args, **kwargs)
@@ -854,7 +854,7 @@ class Queue(BaseClient):
             'output': 'v1/list-artifacts-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/task/<taskId>/runs/<runId>/artifacts',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "listDependentTasks": {
             'args': ['taskId'],
@@ -872,7 +872,7 @@ class Queue(BaseClient):
             'output': 'v1/list-artifacts-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/task/<taskId>/artifacts',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "listProvisioners": {
             'args': [],

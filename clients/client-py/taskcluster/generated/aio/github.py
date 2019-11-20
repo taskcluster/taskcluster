@@ -47,7 +47,7 @@ class Github(AsyncBaseClient):
         Capture a GitHub event and publish it via pulse, if it's a push,
         release or pull request.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["githubWebHookConsumer"], *args, **kwargs)
@@ -60,7 +60,7 @@ class Github(AsyncBaseClient):
         Taskcluster. Can be filtered on various git-specific
         fields.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["builds"], *args, **kwargs)
@@ -99,7 +99,7 @@ class Github(AsyncBaseClient):
 
         Note: This is a redirect rather than a direct link.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["latest"], *args, **kwargs)
@@ -124,7 +124,7 @@ class Github(AsyncBaseClient):
 
         For a given Issue or Pull Request of a repository, this will write a new message.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["createComment"], *args, **kwargs)
@@ -144,7 +144,7 @@ class Github(AsyncBaseClient):
             'output': 'v1/build-list.json#',
             'query': ['continuationToken', 'limit', 'organization', 'repository', 'sha'],
             'route': '/builds',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "createComment": {
             'args': ['owner', 'repo', 'number'],
@@ -152,7 +152,7 @@ class Github(AsyncBaseClient):
             'method': 'post',
             'name': 'createComment',
             'route': '/repository/<owner>/<repo>/issues/<number>/comments',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "createStatus": {
             'args': ['owner', 'repo', 'sha'],
@@ -167,14 +167,14 @@ class Github(AsyncBaseClient):
             'method': 'post',
             'name': 'githubWebHookConsumer',
             'route': '/github',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "latest": {
             'args': ['owner', 'repo', 'branch'],
             'method': 'get',
             'name': 'latest',
             'route': '/repository/<owner>/<repo>/<branch>/latest',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "ping": {
             'args': [],

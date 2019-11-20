@@ -426,7 +426,7 @@ var services = map[string]definitions.Service{
 				Name:        "githubWebHookConsumer",
 				Title:       "Consume GitHub WebHook",
 				Description: "Capture a GitHub event and publish it via pulse, if it's a push,\nrelease or pull request.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "post",
 				Route:       "/github",
 				Args:        []string{},
@@ -437,7 +437,7 @@ var services = map[string]definitions.Service{
 				Name:        "builds",
 				Title:       "List of Builds",
 				Description: "A paginated list of builds that have been run in\nTaskcluster. Can be filtered on various git-specific\nfields.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "get",
 				Route:       "/builds",
 				Args:        []string{},
@@ -483,7 +483,7 @@ var services = map[string]definitions.Service{
 				Name:        "latest",
 				Title:       "Latest Status for Branch",
 				Description: "For a given branch of a repository, this will always point\nto a status page for the most recent task triggered by that\nbranch.\n\nNote: This is a redirect rather than a direct link.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "get",
 				Route:       "/repository/<owner>/<repo>/<branch>/latest",
 				Args: []string{
@@ -513,7 +513,7 @@ var services = map[string]definitions.Service{
 				Name:        "createComment",
 				Title:       "Post a comment on a given GitHub Issue or Pull Request",
 				Description: "For a given Issue or Pull Request of a repository, this will write a new message.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "post",
 				Route:       "/repository/<owner>/<repo>/issues/<number>/comments",
 				Args: []string{
@@ -1224,7 +1224,7 @@ var services = map[string]definitions.Service{
 				Name:        "listArtifacts",
 				Title:       "Get Artifacts from Run",
 				Description: "Returns a list of artifacts and associated meta-data for a given run.\n\nAs a task may have many artifacts paging may be necessary. If this\nend-point returns a `continuationToken`, you should call the end-point\nagain with the `continuationToken` as the query-string option:\n`continuationToken`.\n\nBy default this end-point will list up-to 1000 artifacts in a single page\nyou may limit this with the query-string parameter `limit`.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "get",
 				Route:       "/task/<taskId>/runs/<runId>/artifacts",
 				Args: []string{
@@ -1241,7 +1241,7 @@ var services = map[string]definitions.Service{
 				Name:        "listLatestArtifacts",
 				Title:       "Get Artifacts from Latest Run",
 				Description: "Returns a list of artifacts and associated meta-data for the latest run\nfrom the given task.\n\nAs a task may have many artifacts paging may be necessary. If this\nend-point returns a `continuationToken`, you should call the end-point\nagain with the `continuationToken` as the query-string option:\n`continuationToken`.\n\nBy default this end-point will list up-to 1000 artifacts in a single page\nyou may limit this with the query-string parameter `limit`.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "get",
 				Route:       "/task/<taskId>/artifacts",
 				Args: []string{

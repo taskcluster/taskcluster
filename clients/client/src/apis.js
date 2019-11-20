@@ -721,7 +721,7 @@ module.exports = {
           "query": [
           ],
           "route": "/github",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Consume GitHub WebHook",
           "type": "function"
         },
@@ -741,7 +741,7 @@ module.exports = {
             "sha"
           ],
           "route": "/builds",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "List of Builds",
           "type": "function"
         },
@@ -792,7 +792,7 @@ module.exports = {
           "query": [
           ],
           "route": "/repository/<owner>/<repo>/<branch>/latest",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Latest Status for Branch",
           "type": "function"
         },
@@ -830,7 +830,7 @@ module.exports = {
           ],
           "route": "/repository/<owner>/<repo>/issues/<number>/comments",
           "scopes": "github:create-comment:<owner>/<repo>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Post a comment on a given GitHub Issue or Pull Request",
           "type": "function"
         }
@@ -2220,7 +2220,7 @@ module.exports = {
             "limit"
           ],
           "route": "/task/<taskId>/runs/<runId>/artifacts",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Get Artifacts from Run",
           "type": "function"
         },
@@ -2238,7 +2238,7 @@ module.exports = {
             "limit"
           ],
           "route": "/task/<taskId>/artifacts",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Get Artifacts from Latest Run",
           "type": "function"
         },
