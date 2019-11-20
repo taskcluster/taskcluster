@@ -20,7 +20,7 @@ exports.tasks.push({
   run: async (requirements, utils) => {
     let queue = new taskcluster.Queue(taskcluster.fromEnvVars());
     let randomId = taskcluster.slugid();
-    const taskIndex='project.taskcluster.smoketest.' + randomId;
+    const taskIndex = 'project.taskcluster.smoketest.' + randomId;
     let task = {
       provisionerId: 'built-in',
       workerType: 'succeed',
@@ -36,22 +36,28 @@ exports.tasks.push({
       payload: {},
       routes: [`index.${taskIndex}`],
     };
-    utils.status({message: 'indexTask-find taskId: ' + randomId});
+    utils.status({ message: 'indexTask-find taskId: ' + randomId });
     await queue.createTask(randomId, task);
     let index = new taskcluster.Index(taskcluster.fromEnvVars());
     let pollForStatusStart = new Date();
-    while((new Date() - pollForStatusStart) < 120000){
+    while ((new Date() - pollForStatusStart) < 120000) {
       let status = await queue.status(randomId);
-      if (status.status.state === 'pending' || status.status.state === 'running'){
+      if (status.status.state === 'pending' || status.status.state === 'running') {
         utils.status({
           message: 'Current task status: ' + status.status.state,
         });
       } else if (status.status.state === 'completed') {
-        await index.findTask(taskIndex);
-        return;
-      } else {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        try {
+          await index.findTask(taskIndex);
+          return;
+        }
+        catch (err) {
+          utils.status({
+            message: 'waiting for the task to be indexed'
+          });
+        }
       }
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
     throw new Error('Deadline exceeded');
   },
