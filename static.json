@@ -6,7 +6,6 @@
     "/docs/**": "docs.html",
     "/**": "index.html"
   },
-  "canonical_host": "community-tc.services.mozilla.com",
   "redirects": {
     "/robots.txt": {
       "url": "/robots.txt",
