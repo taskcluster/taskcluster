@@ -9,6 +9,7 @@ import Log from '../../../components/Log';
 import Link from '../../../utils/Link';
 import Helmet from '../../../components/Helmet';
 import taskQuery from './task.graphql';
+import Search from '../../../components/Search';
 
 @hot(module)
 @withStyles(theme => ({
@@ -50,7 +51,13 @@ export default class TaskLog extends Component {
       <Dashboard
         title={task ? `Log "${task.metadata.name}"` : 'Log'}
         disableTitleFormatting
-        disablePadding>
+        disablePadding
+        search={
+          <Search
+            placeholder="Search Task ID"
+            onSubmit={this.handleTaskSearchSubmit}
+          />
+        }>
         <Helmet state={run && run.state} />
         <Log
           url={url}
@@ -71,4 +78,8 @@ export default class TaskLog extends Component {
       </Dashboard>
     );
   }
+
+  handleTaskSearchSubmit = taskId => {
+    this.props.history.push(`/tasks/${taskId}`);
+  };
 }
