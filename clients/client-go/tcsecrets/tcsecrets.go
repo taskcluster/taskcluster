@@ -44,7 +44,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v22"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v23"
 )
 
 type Secrets tcclient.Client
@@ -64,7 +64,9 @@ type Secrets tcclient.Client
 func New(credentials *tcclient.Credentials, rootURL string) *Secrets {
 	return &Secrets{
 		Credentials:  credentials,
-		BaseURL:      tcclient.BaseURL(rootURL, "secrets", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "secrets",
+		APIVersion:   "v1",
 		Authenticate: credentials != nil,
 	}
 }
@@ -85,9 +87,12 @@ func New(credentials *tcclient.Credentials, rootURL string) *Secrets {
 // disabled.
 func NewFromEnv() *Secrets {
 	c := tcclient.CredentialsFromEnvVars()
+	rootURL := tcclient.RootURLFromEnvVars()
 	return &Secrets{
 		Credentials:  c,
-		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "secrets", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "secrets",
+		APIVersion:   "v1",
 		Authenticate: c.ClientID != "",
 	}
 }

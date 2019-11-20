@@ -124,7 +124,7 @@ const traverse = (node, path, visit = () => {}) => {
       return null;
     }
     // Call visit with current node and path traversed so far
-    visit(node, path.slice(0, i+1));
+    visit(node, path.slice(0, i + 1));
   }
   return node.children.get(path[N]) || null;
 };

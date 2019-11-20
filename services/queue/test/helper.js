@@ -7,7 +7,6 @@ const data = require('../src/data');
 const temporary = require('temporary');
 const mockAwsS3 = require('mock-aws-s3');
 const nock = require('nock');
-const FakeBlobStore = require('./fake_blob_store');
 const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor} = require('taskcluster-lib-testing');
 
 const helper = module.exports;
@@ -121,32 +120,6 @@ exports.withQueueService = (mock, skipping) => {
       helper.load.cfg('app.resolvedQueue', `${pfx}-resolved`);
 
       helper.queueService = await helper.load('queueService');
-    }
-  });
-};
-
-/**
- * Inject a fake BlobStore class, at helper.blobStore.
- */
-exports.withBlobStore = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    if (mock) {
-      helper.blobStore = new FakeBlobStore();
-      helper.load.inject('blobStore', helper.blobStore);
-    }
-  });
-
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    if (mock) {
-      helper.blobStore._reset();
     }
   });
 };

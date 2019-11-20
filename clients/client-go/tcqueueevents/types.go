@@ -3,7 +3,7 @@
 package tcqueueevents
 
 import (
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v22"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v23"
 )
 
 type (
@@ -30,7 +30,6 @@ type (
 		// artifact.
 		//
 		// Possible values:
-		//   * "blob"
 		//   * "reference"
 		//   * "error"
 		StorageType string `json:"storageType"`

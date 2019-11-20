@@ -3,6 +3,7 @@ import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import { parse, stringify } from 'qs';
+import { path, filter } from 'ramda';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
@@ -26,6 +27,7 @@ import workersQuery from './workers.graphql';
 @graphql(workersQuery, {
   skip: props => !props.match.params.provisionerId,
   options: ({ location, match: { params } }) => ({
+    errorPolicy: 'all',
     variables: {
       provisionerId: params.provisionerId,
       workerType: params.workerType,
@@ -43,7 +45,7 @@ import workersQuery from './workers.graphql';
     alignItems: 'center',
   },
   breadcrumbsPaper: {
-    marginRight: theme.spacing.unit * 4,
+    marginRight: theme.spacing(4),
     flex: 1,
   },
   dropdown: {
@@ -165,6 +167,27 @@ export default class ViewWorkers extends Component {
     });
   };
 
+  shouldIgnoreGraphqlError = error => {
+    const { data } = this.props;
+    const workers = path(['workers', 'edges'], data);
+
+    if (error && error.graphQLErrors && workers) {
+      error.graphQLErrors.map(error => {
+        const taskId = path(['requestInfo', 'params', 'taskId'], error);
+
+        // ignores the error if task ID is not one of Most Recent Tasks
+        return filter(worker => {
+          return (
+            path(['node', 'latestTask', 'run', 'taskId'], worker) === taskId &&
+            error.statusCode === 404
+          );
+        }, workers);
+      });
+    }
+
+    return true;
+  };
+
   render() {
     const {
       actionLoading,
@@ -179,30 +202,32 @@ export default class ViewWorkers extends Component {
       data: { loading, error, workers, workerType },
     } = this.props;
     const query = parse(location.search.slice(1));
+    const shouldIgnoreGraphqlError = this.shouldIgnoreGraphqlError(error);
 
     return (
       <Dashboard title="Workers">
         <Fragment>
           {(!workers || !workerType) && loading && <Spinner loading />}
-          <ErrorPanel fixed error={this.state.error || error} />
+          {!shouldIgnoreGraphqlError && <ErrorPanel fixed error={error} />}
+
+          {shouldIgnoreGraphqlError && this.state.error && (
+            <ErrorPanel fixed error={this.state.error} />
+          )}
           {workers && workerType && (
             <Fragment>
               <div className={classes.bar}>
                 <Breadcrumbs classes={{ paper: classes.breadcrumbsPaper }}>
-                  <Typography
-                    className={classes.link}
-                    component={Link}
-                    to="/provisioners">
-                    Provisioners
-                  </Typography>
-                  <Typography
-                    className={classes.link}
-                    component={Link}
-                    to={`/provisioners/${params.provisionerId}`}>
-                    {params.provisionerId}
-                  </Typography>
-
-                  <Typography color="textSecondary">
+                  <Link to="/provisioners">
+                    <Typography variant="body2" className={classes.link}>
+                      Workers
+                    </Typography>
+                  </Link>
+                  <Link to={`/provisioners/${params.provisionerId}`}>
+                    <Typography variant="body2" className={classes.link}>
+                      {params.provisionerId}
+                    </Typography>
+                  </Link>
+                  <Typography variant="body2" color="textSecondary">
                     {`${params.workerType}`}
                   </Typography>
                 </Breadcrumbs>

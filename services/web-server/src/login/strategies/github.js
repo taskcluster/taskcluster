@@ -146,12 +146,12 @@ module.exports = class Github {
           if (!user) {
             // Don't report much to the user, to avoid revealing sensitive information, although
             // it is likely in the service logs.
-            next(new WebServerError('InputError', 'Could not generate credentials for this access token'));
+            return next(new WebServerError('InputError', 'Could not generate credentials for this access token'));
           }
 
           const exp = Math.floor(taskcluster.fromNow('30 days').getTime() / 1000);
 
-          next(null, {
+          return next(null, {
             profile,
             providerExpires: new Date(exp * 1000),
             identityProviderId: 'github',

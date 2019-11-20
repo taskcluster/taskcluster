@@ -427,7 +427,7 @@ suite(testing.suiteName(), () => {
     // ch-1 -> ... -> assume:ch-N -> special-scope
     const testChain = N => {
       testResolver(`chain of ${N} roles`, {
-        roles: _.range(N).map(i => ({roleId: `ch-${i}`, scopes: [`assume:ch-${i+1}`]})).concat([
+        roles: _.range(N).map(i => ({roleId: `ch-${i}`, scopes: [`assume:ch-${i + 1}`]})).concat([
           {roleId: `ch-${N}`, scopes: ['special-scope']},
         ]),
         scopes: ['assume:ch-0'],
@@ -456,7 +456,7 @@ suite(testing.suiteName(), () => {
       const recur = (prefix, h) => {
         const roleIds = _.range(W).map(w => `${prefix}-${w}`);
         if (h !== H) {
-          roleIds.forEach(roleId => recur(roleId, h+1));
+          roleIds.forEach(roleId => recur(roleId, h + 1));
         }
         roles.push({
           roleId: prefix,

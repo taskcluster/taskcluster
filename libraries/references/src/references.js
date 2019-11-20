@@ -154,7 +154,7 @@ class References {
    * using the given rootUrl (required because abstract schemas are not
    * valid).
    */
-  makeAjv(options={}) {
+  makeAjv(options = {}) {
     if (!this.rootUrl) {
       throw new Error('makeAjv is only valid on absolute References');
     }
@@ -198,7 +198,7 @@ class References {
   /**
    * Get a particular schmea by its $id.
    */
-  getSchema($id, options={}) {
+  getSchema($id, options = {}) {
     if (!options.skipValidation) {
       this.validate();
     }

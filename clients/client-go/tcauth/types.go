@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v22"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v23"
 )
 
 type (
@@ -558,22 +558,6 @@ type (
 	// Source IP of the authentication request or request that requires
 	// authentication. This is only used for audit logging.
 	SourceIP1 string
-
-	// Token for submitting statistics to statsum.
-	StatsumTokenResponse struct {
-
-		// Base URL for the statsum server this project is allocated on.
-		BaseURL string `json:"baseUrl"`
-
-		// Time at which the token expires and should not be used anymore.
-		Expires tcclient.Time `json:"expires"`
-
-		// Project name that the token grants access to.
-		Project string `json:"project"`
-
-		// JWT token to be used as `Bearer <token>` when submitting data to statsum.
-		Token string `json:"token"`
-	}
 
 	// Temporary STS credentials for use when operating on S3
 	TemporarySecurityCredentials struct {

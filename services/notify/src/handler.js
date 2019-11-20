@@ -78,7 +78,7 @@ class Handler {
       let route = entry.split('.');
 
       // convert from on- syntax to state. e.g. on-exception -> exception
-      let decider = _.join(_.slice(route[route.length -1], 3), '');
+      let decider = _.join(_.slice(route[route.length - 1], 3), '');
       if (decider !== 'any' && status.state !== decider) {
         return null;
       }
@@ -114,7 +114,7 @@ class Handler {
           let content = `
 Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHref}) is complete.
 
-**Status:** ${status.state} (in ${runCount} run${runCount === 1? '' : 's'})
+**Status:** ${status.state} (in ${runCount} run${runCount === 1 ? '' : 's'})
 **Name:** ${task.metadata.name}
 **Description:** ${task.metadata.description}
 **Owner:** ${task.metadata.owner}

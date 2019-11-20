@@ -210,7 +210,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       }
     });
 
-    async function simulateJobMessage({user, head, base, eventType='push'}) {
+    async function simulateJobMessage({user, head, base, eventType = 'push'}) {
       // set up to resolve when the handler has finished (even if it finishes with error)
       const handlerComplete = new Promise((resolve, reject) => {
         handlers.handlerComplete = resolve;

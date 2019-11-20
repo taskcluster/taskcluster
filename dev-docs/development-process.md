@@ -10,7 +10,7 @@ You will probably be working on only one of these pieces, so read carefully belo
 ### Node
 
 <!-- the next line is automatically edited; do not change -->
-You will need Node version 10.16.3 installed.
+You will need Node version 12.13.0 installed.
 We recommend using https://github.com/nvm-sh/nvm to support installing multiple Node versions.
 
 ### Go
@@ -49,7 +49,7 @@ To run the Taskcluster UI:
     For example:
 
     ```sh
-    export TASKCLUSTER_ROOT_URL=https://taskcluster.net
+    export TASKCLUSTER_ROOT_URL=https://community-tc.services.mozilla.com
     ```
   * Change to the `services/web-server` directory and run `yarn start`.
     This will start a web server on port 3050.

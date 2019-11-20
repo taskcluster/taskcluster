@@ -1,4 +1,4 @@
-const hawk = require('hawk');
+const hawk = require('@hapi/hawk');
 const _ = require('lodash');
 const assume = require('assume');
 const slugid = require('slugid');
@@ -78,7 +78,7 @@ suite(testing.suiteName(), function() {
       }
 
       if (input.bewit) {
-        input.bewit= _.defaults({}, input.bewit, {
+        input.bewit = _.defaults({}, input.bewit, {
           key: input.bewit.id + '-secret',
           algorithm: 'sha256',
         });

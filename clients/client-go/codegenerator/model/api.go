@@ -122,7 +122,7 @@ import (
 	"errors"
 	"net/url"
 	"time"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v22"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v23"
 )
 
 type ` + api.Name() + ` tcclient.Client
@@ -187,7 +187,9 @@ type ` + api.Name() + ` tcclient.Client
 func New(credentials *tcclient.Credentials, rootURL string) *` + api.Name() + ` {
 	return &` + api.Name() + `{
 		Credentials: credentials,
-		BaseURL: tcclient.BaseURL(rootURL, "` + api.ServiceName + `", "` + "v1" + `"),
+		RootURL: rootURL,
+		ServiceName: "` + api.ServiceName + `",
+		APIVersion: "` + api.APIVersion + `",
 		Authenticate: credentials != nil,
 	}
 }
@@ -208,9 +210,12 @@ func New(credentials *tcclient.Credentials, rootURL string) *` + api.Name() + ` 
 // disabled.
 func NewFromEnv() *` + api.Name() + ` {
 	c := tcclient.CredentialsFromEnvVars()
+	rootURL := tcclient.RootURLFromEnvVars()
 	return &` + api.Name() + `{
 		Credentials: c,
-		BaseURL: tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "` + api.ServiceName + `", "` + "v1" + `"),
+		RootURL: rootURL,
+		ServiceName: "` + api.ServiceName + `",
+		APIVersion: "` + api.APIVersion + `",
 		Authenticate: c.ClientID != "",
 	}
 }

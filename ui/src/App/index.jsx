@@ -217,7 +217,11 @@ export default class App extends Component {
               <FontStager />
               <CssBaseline />
               <Main
-                key={JSON.stringify(auth.user)}
+                key={
+                  auth.user && auth.user.credentials
+                    ? auth.user.credentials.clientId
+                    : ''
+                }
                 routes={routes}
                 error={error}
               />

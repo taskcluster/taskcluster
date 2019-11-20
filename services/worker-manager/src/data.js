@@ -120,7 +120,7 @@ WorkerPool.expire = async function(monitor) {
   });
 };
 
-WorkerPool.prototype.reportError = async function({kind, title, description, extra={}}) {
+WorkerPool.prototype.reportError = async function({kind, title, description, extra = {}}) {
   const errorId = slugid.v4();
 
   try {

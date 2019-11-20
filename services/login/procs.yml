@@ -1,9 +1,0 @@
-web:
-  type: heroku-only # TODO: This does not work in kube yet
-  command: node src/main.js server
-scanner:
-  type: heroku-only # TODO: This does not work in kube yet
-  command: node src/main.js scanner
-write-docs:
-  type: build
-  command: node src/main writeDocs

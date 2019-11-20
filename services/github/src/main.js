@@ -177,11 +177,11 @@ const load = loader({
     setup: ({github, OwnersDirectory, monitor}, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const gh = await github.getAppGithub();
-        const installations = (await gh.apps.getInstallations({})).data;
-        await Promise.all(installations.map(inst => {
+        const installations = (await gh.apps.listInstallations({})).data;
+        await Promise.all(installations.map(i => {
           return OwnersDirectory.create({
-            installationId: inst.id,
-            owner: inst.account.login,
+            installationId: i.id,
+            owner: i.account.login,
           }, true);
         }));
       });

@@ -14,8 +14,8 @@ import getPictureFromUser from '../../utils/getPictureFromUser';
 @withApollo
 @withStyles(theme => ({
   avatarButton: {
-    height: 6 * theme.spacing.unit,
-    width: 6 * theme.spacing.unit,
+    height: 6 * theme.spacing(1),
+    width: 6 * theme.spacing(1),
     padding: 0,
   },
 }))

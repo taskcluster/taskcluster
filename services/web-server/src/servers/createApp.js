@@ -1,18 +1,19 @@
 const bodyParser = require('body-parser');
 const bodyParserGraphql = require('body-parser-graphql');
 const session = require('express-session');
-const MemoryStore = require('memorystore')(session);
 const compression = require('compression');
 const cors = require('cors');
 const express = require('express');
 const playground = require('graphql-playground-middleware-express').default;
 const passport = require('passport');
 const url = require('url');
+const MemoryStore = require('memorystore')(session);
 const credentials = require('./credentials');
 const oauth2AccessToken = require('./oauth2AccessToken');
 const oauth2 = require('./oauth2');
+const AzureSessionStore = require('../login/AzureSessionStore');
 
-module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor }) => {
+module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor, SessionStorage }) => {
   const app = express();
 
   app.set('trust proxy', cfg.server.trustProxy);
@@ -38,12 +39,24 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
       ? [...new Set([].concat(...cfg.login.registeredClients.map(({ redirectUri }) => new URL(redirectUri).origin)))]
       : false,
   };
+  const SessionStore = AzureSessionStore({
+    session,
+    SessionStorage,
+    options: {
+      // should be same time as cookie maxAge
+      sessionTimeout: '1 week',
+    },
+  });
 
   app.use(session({
-    store: new MemoryStore({
-      // prune expired entries every 1h
-      checkPeriod: 1000 * 60 * 60,
-    }),
+    store: process.env.NODE_ENV === 'production' ?
+      new SessionStore() :
+      // Run MemoryStore in local development so that we don't rely on Azure to store sessions.
+      // The login story is messy at the moment.
+      new MemoryStore({
+        // prune expired entries every 1h
+        checkPeriod: 1000 * 60 * 60,
+      }),
     secret: cfg.login.sessionSecret,
     sameSite: true,
     resave: false,
@@ -90,7 +103,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
       identity,
     });
   });
-  passport.deserializeUser(async (obj, done) => {
+  passport.deserializeUser((obj, done) => {
     return done(null, obj);
   });
 

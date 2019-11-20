@@ -25,7 +25,7 @@ class TaskQueue {
       return ;
     }
     const task = result.tasks[0];
-    if (Object.keys(task.task.payload).length===0) {
+    if (Object.keys(task.task.payload).length === 0) {
       if (task.task.workerType === 'succeed') {
         return await this.queue.reportCompleted(task.status.taskId, task.runId);
       } else if (task.task.workerType === 'fail') {

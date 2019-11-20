@@ -10,7 +10,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
   helper.withPulse(mock, skipping);
   helper.withS3(mock, skipping);
   helper.withQueueService(mock, skipping);
-  helper.withBlobStore(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withServer(mock, skipping);
 

@@ -6,7 +6,7 @@ import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListSubheader from '@material-ui/core/ListSubheader';
+import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
@@ -35,8 +35,8 @@ const taskDefinition = {
   tasks: {
     $match: {
       taskId: { $eval: 'as_slugid("pr_task")' },
-      provisionerId: 'aws-provisioner-v1',
-      workerType: 'github-worker',
+      provisionerId: 'proj-getting-started',
+      workerType: 'tutorial',
       payload: {
         maxRunTime: 3600,
         image: 'node',
@@ -162,14 +162,8 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
 @hot(module)
 @withApollo
 @withStyles(theme => ({
-  orgRepo: {
-    display: 'flex',
-    alignItems: 'center',
-    marginBottom: 6 * theme.spacing.unit,
-    ...theme.mixins.gutters(),
-  },
   separator: {
-    padding: theme.spacing.double,
+    padding: theme.spacing(2),
     paddingBottom: 0,
   },
   editorListItem: {
@@ -186,11 +180,38 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
     ...theme.mixins.actionButton,
   },
   errorPanels: {
-    marginTop: theme.spacing.double,
+    marginTop: theme.spacing(2),
   },
   iconContainer: {
-    marginLeft: theme.spacing.unit,
-    marginTop: theme.spacing.double,
+    marginLeft: theme.spacing(1),
+    marginTop: theme.spacing(2),
+    flexBasis: '10%',
+    display: 'flex',
+    justifyContent: 'center',
+  },
+  taskShouldRunFlex: {
+    display: 'flex',
+    width: '100%',
+    [theme.breakpoints.down('xs')]: {
+      flexDirection: 'column',
+    },
+  },
+  mainHeading: {
+    paddingLeft: theme.spacing(2),
+  },
+  descriptionTextField: {
+    marginBottom: theme.spacing(4),
+  },
+  orgRepoStatus: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: theme.spacing(4),
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+  },
+  orgRepoTextFields: {
+    display: 'flex',
+    flexBasis: '90%',
   },
 }))
 export default class QuickStart extends Component {
@@ -324,7 +345,7 @@ export default class QuickStart extends Component {
             description="Create a configuration file and
                 plug the CI into your repository.">
             <Fragment>
-              <Typography paragraph>
+              <Typography variant="body2" paragraph>
                 This tool lets you easily generate a simple generic{' '}
                 <code>.taskcluster.yml</code> file, which should live in the
                 root of your repository. It defines tasks that you want{' '}
@@ -332,23 +353,27 @@ export default class QuickStart extends Component {
                 when certain GitHub events happen. You will choose the events
                 you are interested in while creating the file.
               </Typography>
-              <Typography paragraph>
+              <Typography variant="body2" paragraph>
                 For independent developers and organization owners: How to set
                 up your repository with {window.env.APPLICATION_NAME}
               </Typography>
-              <Typography paragraph>
-                <ul>
-                  <li>
+              <ul>
+                <li>
+                  <Typography paragraph>
                     Fill out the form below. All changes in the form will
                     instantly show up in the code field.
-                  </li>
-                  <li>
+                  </Typography>
+                </li>
+                <li>
+                  <Typography paragraph>
                     When you are done editing, copy the contents of the code
                     field and paste it into a file named{' '}
                     <code>.taskcluster.yml</code> in the root of your
                     repository.
-                  </li>
-                  <li>
+                  </Typography>
+                </li>
+                <li>
+                  <Typography paragraph>
                     Make sure to install the{' '}
                     <a
                       href="https://github.com/apps/taskcluster"
@@ -357,10 +382,10 @@ export default class QuickStart extends Component {
                       Taskcluster-GitHub integration
                     </a>
                     .
-                  </li>
-                </ul>
-              </Typography>
-              <Typography paragraph>
+                  </Typography>
+                </li>
+              </ul>
+              <Typography variant="body2" paragraph>
                 Optionally, after you create your file, you can edit it here or
                 in you favorite editor to add more functionality. Please refer
                 to the{' '}
@@ -378,23 +403,27 @@ export default class QuickStart extends Component {
           </HelpView>
         }>
         <Fragment>
-          <div className={classes.orgRepo}>
-            <TextField
-              label="Org Name"
-              name="owner"
-              onChange={this.handleOrgRepoChange}
-              value={owner}
-              autoFocus
-            />
-            <Typography className={classes.separator} variant="h5">
-              /
-            </Typography>
-            <TextField
-              label="Repo Name"
-              name="repo"
-              onChange={this.handleOrgRepoChange}
-              value={repo}
-            />
+          <div className={classes.orgRepoStatus}>
+            <div className={classes.orgRepoTextFields}>
+              <TextField
+                label="Org Name"
+                name="owner"
+                fullWidth
+                onChange={this.handleOrgRepoChange}
+                value={owner}
+                autoFocus
+              />
+              <Typography className={classes.separator} variant="h5">
+                /
+              </Typography>
+              <TextField
+                label="Repo Name"
+                name="repo"
+                fullWidth
+                onChange={this.handleOrgRepoChange}
+                value={repo}
+              />
+            </div>
             <div className={classes.iconContainer}>
               {(installedState === 'success' && (
                 <CheckIcon className={classes.checkIcon} />
@@ -405,6 +434,7 @@ export default class QuickStart extends Component {
                 (installedState === 'loading' && <Spinner size={24} />)}
             </div>
           </div>
+
           {installedState === 'error' && (
             <ErrorPanel
               className={classes.errorPanels}
@@ -412,7 +442,9 @@ export default class QuickStart extends Component {
               contact the organization owner to have it set up!"
             />
           )}
-          <Typography variant="h6">Create Your Task Definition</Typography>
+          <Typography className={classes.mainHeading} variant="h6">
+            Create Your Task Definition
+          </Typography>
           <List>
             <ListItem>
               <TextField
@@ -423,14 +455,14 @@ export default class QuickStart extends Component {
                 value={taskName}
               />
             </ListItem>
-            <ListItem>
+            <ListItem className={classes.descriptionTextField}>
               <TextField
                 label="Description"
                 name="taskDescription"
                 onChange={this.handleInputChange}
                 fullWidth
                 multiline
-                rows={4}
+                rows={3}
                 value={taskDescription}
               />
             </ListItem>
@@ -439,68 +471,73 @@ export default class QuickStart extends Component {
                 <FormLabel component="legend">
                   This task should run on
                 </FormLabel>
-                <FormGroup>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={events.has('pull_request.opened')}
-                        onChange={this.handleEventsSelection}
-                        value="pull_request.opened"
-                      />
-                    }
-                    label="Pull request opened"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={events.has('pull_request.closed')}
-                        onChange={this.handleEventsSelection}
-                        value="pull_request.closed"
-                      />
-                    }
-                    label="Pull request merged or closed"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={events.has('pull_request.synchronize')}
-                        onChange={this.handleEventsSelection}
-                        value="pull_request.synchronize"
-                      />
-                    }
-                    label="New commit made in an opened pull request"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={events.has('pull_request.reopened')}
-                        onChange={this.handleEventsSelection}
-                        value="pull_request.reopened"
-                      />
-                    }
-                    label="Pull request re-opened"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={events.has('push')}
-                        onChange={this.handleEventsSelection}
-                        value="push"
-                      />
-                    }
-                    label="Push"
-                  />
-                </FormGroup>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={events.has('release')}
-                      onChange={this.handleEventsSelection}
-                      value="release"
+                <div className={classes.taskShouldRunFlex}>
+                  <FormGroup>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={events.has('pull_request.opened')}
+                          onChange={this.handleEventsSelection}
+                          value="pull_request.opened"
+                        />
+                      }
+                      label="Pull request opened"
                     />
-                  }
-                  label="Release or tag created"
-                />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={events.has('pull_request.closed')}
+                          onChange={this.handleEventsSelection}
+                          value="pull_request.closed"
+                        />
+                      }
+                      label="Pull request merged or closed"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={events.has('pull_request.reopened')}
+                          onChange={this.handleEventsSelection}
+                          value="pull_request.reopened"
+                        />
+                      }
+                      label="Pull request re-opened"
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={events.has('pull_request.synchronize')}
+                          onChange={this.handleEventsSelection}
+                          value="pull_request.synchronize"
+                        />
+                      }
+                      label="New commit made in an opened pull request"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={events.has('push')}
+                          onChange={this.handleEventsSelection}
+                          value="push"
+                        />
+                      }
+                      label="Push"
+                    />
+
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={events.has('release')}
+                          onChange={this.handleEventsSelection}
+                          value="release"
+                        />
+                      }
+                      label="Release or tag created"
+                    />
+                  </FormGroup>
+                </div>
               </FormControl>
             </ListItem>
             <ListItem>
@@ -547,7 +584,14 @@ export default class QuickStart extends Component {
                 <MenuItem value="custom">I will define them myself</MenuItem>
               </TextField>
             </ListItem>
-            <ListSubheader>Task Definiton</ListSubheader>
+            <ListItem>
+              <ListItemText
+                disableTypography
+                primary={
+                  <Typography variant="subtitle1">Task Definiton</Typography>
+                }
+              />
+            </ListItem>
             <ListItem className={classes.editorListItem}>
               {this.renderEditor()}
             </ListItem>

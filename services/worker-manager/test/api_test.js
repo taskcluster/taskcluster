@@ -763,7 +763,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
     let data = await helper.workerManager.listWorkerPoolErrors('foobar/baz');
 
-    assert.equal(data.workerPoolErrors.length, 2);
+    assert.strictEqual(data.workerPoolErrors.length, 2);
 
     data.workerPoolErrors.forEach(wpe => {
       assert(wpe.reported);
@@ -773,9 +773,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     });
 
     // Just sort on an arbitrary field
-    const sorter = (x, y) => x.kind > y.kind;
+    const sorter = (x, y) => x.kind.localeCompare(y.kind);
 
-    assert.deepEqual(data.workerPoolErrors.sort(sorter), [
+    assert.deepStrictEqual(data.workerPoolErrors.sort(sorter), [
       {
         description: "huh",
         extra: {},

@@ -117,9 +117,6 @@ const builder = new APIBuilder({
     // SentryManager from sentrymanager.js
     'sentryManager',
 
-    // Statsum configuration {secret, baseUrl}
-    'statsum',
-
     // The websocktunnel config (with property `secret`)
     'websocktunnel',
 
@@ -960,7 +957,6 @@ builder.declare({
 require('./aws');
 require('./azure');
 require('./sentry');
-require('./statsum');
 require('./websocktunnel');
 require('./gcp');
 

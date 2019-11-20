@@ -9,7 +9,6 @@ import { withStyles } from '@material-ui/core/styles';
 import ArrowDownBoldCircleOutlineIcon from 'mdi-react/ArrowDownBoldCircleOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import GoToLineButton from './GoToLineButton';
-import ViewDifferentTaskButton from './ViewDifferentTaskButton';
 import Loading from './Loading';
 import Button from '../Button';
 import SpeedDial from '../SpeedDial';
@@ -38,7 +37,7 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
         fontFamily: 'Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace',
         fontSize: 13,
         paddingTop: 4,
-        paddingBottom: theme.spacing.unit,
+        paddingBottom: theme.spacing(1),
         color: theme.palette.text.primary,
         '-webkit-font-smoothing': 'auto',
       },
@@ -50,7 +49,7 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
         ...(theme.palette.type === 'light'
           ? {
               '& > .react-lazylog-searchbar-input': {
-                height: theme.spacing.triple,
+                height: theme.spacing(3),
                 backgroundColor: theme.palette.grey['300'],
                 color: theme.palette.common.black,
                 borderColor: theme.palette.grey['300'],
@@ -72,7 +71,7 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
             }
           : {
               '& > .react-lazylog-searchbar-input': {
-                height: theme.spacing.triple,
+                height: theme.spacing(3),
               },
               '& > .react-lazylog-searchbar-filter': filterStyles,
             }),
@@ -113,7 +112,7 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
     logSpeedDial: {
       ...theme.mixins.fab,
       ...theme.mixins.actionButton,
-      bottom: theme.spacing.triple,
+      bottom: theme.spacing(3),
     },
     logToolbarButton: {
       width: 31,
@@ -122,7 +121,7 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
       padding: '0 6px',
     },
     goToLineButton: {
-      marginRight: theme.spacing.unit,
+      marginRight: theme.spacing(1),
     },
   };
 })
@@ -339,7 +338,6 @@ export default class Log extends Component {
             </div>
             {actions}
             <SpeedDial className={classes.logSpeedDial}>
-              <ViewDifferentTaskButton />
               {rawLogButton}
             </SpeedDial>
           </Fragment>

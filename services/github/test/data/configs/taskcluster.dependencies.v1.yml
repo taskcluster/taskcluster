@@ -8,7 +8,7 @@ tasks:
       dependencies:
       - "py36"
       - "py37"
-      provisionerId: aws-provisioner-v1
+      provisionerId: test-provisioner
       workerType: releng-svc
       created: {$fromNow: ''}
       deadline: {$fromNow: '1 hour'}
@@ -22,7 +22,7 @@ tasks:
         source: source
 
     - taskId: "py36"
-      provisionerId: aws-provisioner-v1
+      provisionerId: test-provisioner
       workerType: github-worker
       created: {$fromNow: ''}
       deadline: {$fromNow: '1 hour'}
@@ -40,7 +40,7 @@ tasks:
     - taskId: "docker_push"
       dependencies:
       - "docker_build"
-      provisionerId: aws-provisioner-v1
+      provisionerId: test-provisioner
       workerType: releng-svc
       created: {$fromNow: ''}
       deadline: {$fromNow: '1 hour'}
@@ -54,7 +54,7 @@ tasks:
         source: source
 
     - taskId: "py37"
-      provisionerId: aws-provisioner-v1
+      provisionerId: test-provisioner
       workerType: github-worker
       created: {$fromNow: ''}
       deadline: {$fromNow: '1 hour'}

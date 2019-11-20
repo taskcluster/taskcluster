@@ -145,8 +145,8 @@ class TaskCreator {
         } else {
           lfError = err.toString();
         }
-        if (lfError.length > 256 * 1024/2) {
-          lfError = lfError.substring(0, 256 * 1024/2);
+        if (lfError.length > 256 * 1024 / 2) {
+          lfError = lfError.substring(0, 256 * 1024 / 2);
         }
 
         lastFire.error = lfError;

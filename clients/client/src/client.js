@@ -6,7 +6,7 @@ let request = require('superagent');
 let debug = require('debug')('taskcluster-client');
 let _ = require('lodash');
 let assert = require('assert');
-let hawk = require('hawk');
+let hawk = require('@hapi/hawk');
 let url = require('url');
 let crypto = require('crypto');
 let slugid = require('slugid');
@@ -471,7 +471,7 @@ exports.createClient = function(reference, name) {
           }
           // Check that we haven't got an invalid value
           assert(value === null || value === undefined,
-            'Value: \'' + value + '\' is not supported as routingKey '+
+            'Value: \'' + value + '\' is not supported as routingKey ' +
                 'pattern for ' + key.name);
           // Return default pattern for entry not being matched
           return key.multipleWords ? '#' : '*';

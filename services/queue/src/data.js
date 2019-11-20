@@ -342,7 +342,6 @@ let Artifact = Entity.configure({
     expires: Entity.types.Date,
   },
   context: [
-    'blobStore', // BlobStore instance wrapping Azure Blob Storage
     'privateBucket', // Private artifact bucket wrapping S3
     'publicBucket', // Public artifact bucket wrapping S3
     'monitor', // base.monitor instance
@@ -394,11 +393,9 @@ let Artifact = Entity.configure({
     present: Entity.types.Boolean,
   },
   context: [
-    'blobStore', // BlobStore instance wrapping Azure Blob Storage
     'privateBucket', // Private artifact bucket wrapping S3
     'publicBucket', // Public artifact bucket wrapping S3
     'monitor', // base.monitor instance
-    's3Controller', // For deleting objects
   ],
   migrate(item) {
     item.present = true;
@@ -428,15 +425,6 @@ Artifact.prototype.remove = function(ignoreError) {
   // Promise that deleted underlying artifact, and keep reference to context
   let deleted = Promise.resolve();
 
-  if (this.storageType === 'blob') {
-    debug('Deleting expired s3 artifact from bucket: %s, key: %s',
-      this.details.bucket, this.details.key);
-    deleted = this.s3Controller.deleteObject({
-      bucket: this.details.bucket,
-      key: this.details.key,
-    });
-  }
-
   // Handle S3 artifacts
   if (this.storageType === 's3') {
     debug('Deleting expired s3 artifact from bucket: %s, prefix: %s',
@@ -455,23 +443,6 @@ Artifact.prototype.remove = function(ignoreError) {
       this.monitor.reportError(err);
       return;
     }
-  }
-
-  // Handle azure artifact
-  if (this.storageType === 'azure') {
-    debug('Deleting expired azure artifact from container: %s, path: %s',
-      this.details.container, this.details.path);
-    // Validate that this is the configured container
-    if (this.details.container !== this.blobStore.container) {
-      let err = new Error('Expiring artifact with container which isn\'t ' +
-                          'configured for use. Please investigate!');
-      err.container = this.details.container;
-      err.taskId = this.taskId;
-      err.runId = this.runId;
-      this.monitor.reportError(err);
-      return;
-    }
-    deleted = this.blobStore.deleteBlob(this.details.path, true);
   }
 
   // When underlying artifact is deleted (if any underlying artifact exists)

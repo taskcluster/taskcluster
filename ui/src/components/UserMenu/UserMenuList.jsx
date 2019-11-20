@@ -19,7 +19,7 @@ import getPictureFromUser from '../../utils/getPictureFromUser';
   },
   userMenu: {
     [theme.breakpoints.up('sm')]: {
-      padding: `${theme.spacing.unit / 2}px ${theme.spacing.double}px`,
+      padding: `${theme.spacing(0.5)}px ${theme.spacing(2)}px`,
     },
   },
   text: {
@@ -33,6 +33,7 @@ import getPictureFromUser from '../../utils/getPictureFromUser';
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
+    paddingLeft: theme.spacing(2),
   },
 }))
 export default class UserMenuList extends Component {
@@ -61,9 +62,10 @@ export default class UserMenuList extends Component {
                 <AccountCircleIcon />
               </ListItemIcon>
               <ListItemText
-                disableTypography
-                className={classes.text}
-                inset
+                primaryTypographyProps={{
+                  variant: 'body1',
+                  className: classes.text,
+                }}
                 primary="Sign In"
               />
             </ListItem>

@@ -6,6 +6,7 @@
     "/docs/**": "docs.html",
     "/**": "index.html"
   },
+  "canonical_host": "community-tc.services.mozilla.com",
   "redirects": {
     "/robots.txt": {
       "url": "/robots.txt",
@@ -18,7 +19,7 @@
   },
   "proxies": {
     "/login/": {
-      "origin": "https://taskcluster-web-server.herokuapp.com/login/"
+      "origin": "https://community-tc.services.mozilla.com/login/"
     }
   },
   "headers": {

@@ -9,14 +9,15 @@ import Log from '../../../components/Log';
 import Link from '../../../utils/Link';
 import Helmet from '../../../components/Helmet';
 import taskQuery from './task.graphql';
+import Search from '../../../components/Search';
 
 @hot(module)
 @withStyles(theme => ({
   fab: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
-    bottom: theme.spacing.triple,
-    right: theme.spacing.unit * 12,
+    bottom: theme.spacing(3),
+    right: theme.spacing(12),
   },
 }))
 @graphql(taskQuery, {
@@ -37,29 +38,48 @@ export default class TaskLog extends Component {
   }
 
   render() {
-    const { classes, match, stream } = this.props;
+    const {
+      classes,
+      match,
+      stream,
+      data: { task },
+    } = this.props;
     const url = decodeURIComponent(match.params.logUrl);
     const run = this.getCurrentRun();
 
     return (
-      <Dashboard title="Log" disablePadding>
+      <Dashboard
+        title={task ? `Log "${task.metadata.name}"` : 'Log'}
+        disableTitleFormatting
+        disablePadding
+        search={
+          <Search
+            placeholder="Search Task ID"
+            onSubmit={this.handleTaskSearchSubmit}
+          />
+        }>
         <Helmet state={run && run.state} />
         <Log
           url={url}
           stream={stream}
           actions={
-            <Button
-              spanProps={{ className: classes.fab }}
-              tooltipProps={{ title: 'View Task' }}
-              component={Link}
-              to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}
-              variant="round"
-              color="secondary">
-              <ArrowLeftIcon />
-            </Button>
+            <Link
+              to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}>
+              <Button
+                spanProps={{ className: classes.fab }}
+                tooltipProps={{ title: 'View Task' }}
+                variant="round"
+                color="secondary">
+                <ArrowLeftIcon />
+              </Button>
+            </Link>
           }
         />
       </Dashboard>
     );
   }
+
+  handleTaskSearchSubmit = taskId => {
+    this.props.history.push(`/tasks/${taskId}`);
+  };
 }

@@ -41,9 +41,6 @@
         "azure_signing_key": {
           "type": "string"
         },
-        "client_table_name": {
-          "type": "string"
-        },
         "debug": {
           "title": "node debug env var",
           "type": "string"
@@ -121,9 +118,6 @@
         "refs_bucket": {
           "type": "string"
         },
-        "roles_container_name": {
-          "type": "string"
-        },
         "schemas_bucket": {
           "type": "string"
         },
@@ -152,12 +146,6 @@
               "type": "array"
             }
           ]
-        },
-        "statsum_api_secret": {
-          "type": "string"
-        },
-        "statsum_base_url": {
-          "type": "string"
         },
         "test_bucket": {
           "type": "string"
@@ -1177,6 +1165,9 @@
         },
         "pulse_username": {
           "type": "string"
+        },
+        "task_cache_max_size": {
+          "type": "number"
         },
         "taskcluster_access_token": {
           "type": "string"

@@ -7,9 +7,42 @@ import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import ScaleBalanceIcon from 'mdi-react/ScaleBalanceIcon';
+import { parse, stringify } from 'qs';
 import Dashboard from '../../../components/Dashboard/index';
 import Button from '../../../components/Button/index';
 import splitLines from '../../../utils/splitLines';
+
+const getScopesetDiff = (scopesA, scopesB) => {
+  const scopesUnion = scopeUnion(scopesA, scopesB);
+  const scopesetDiff = [];
+
+  scopesUnion.forEach(scope => {
+    const s1 = scopeIntersection([scope], scopesA);
+    const s2 = scopeIntersection([scope], scopesB);
+
+    scopesetDiff.push([s1, s2]);
+  });
+
+  return scopesetDiff;
+};
+
+const getCellColors = scopesetDiff => {
+  const cellColors = [];
+
+  scopesetDiff.forEach(([s1, s2]) => {
+    if (s1.length === 0 && s2.length) {
+      cellColors.push(['', 'greenCell']);
+    } else if (s1.length && s2.length === 0) {
+      cellColors.push(['redCell', '']);
+    } else if (!equals(s1, s2)) {
+      cellColors.push(['yellowCell', 'yellowCell']);
+    } else {
+      cellColors.push(['', '']);
+    }
+  });
+
+  return cellColors;
+};
 
 @hot(module)
 @withStyles(theme => ({
@@ -29,17 +62,36 @@ import splitLines from '../../../utils/splitLines';
     backgroundColor: 'rgba(255, 255, 0, 0.25)',
   },
   editorGrid: {
-    marginBottom: theme.spacing.unit,
+    marginBottom: theme.spacing(1),
   },
   cellGrid: {
-    padding: `0 ${theme.spacing.unit}px`,
+    padding: `0 ${theme.spacing(1)}px`,
   },
 }))
 export default class ScopesetComparison extends Component {
-  state = {
-    scopeTextA: '',
-    scopeTextB: '',
-  };
+  constructor(props) {
+    super(props);
+
+    const query = parse(this.props.location.search.slice(1));
+    const { scopesA, scopesB } = query;
+
+    if (scopesA && scopesB) {
+      const scopesetDiff = getScopesetDiff(scopesA, scopesB);
+      const cellColors = getCellColors(scopesetDiff);
+
+      this.state = {
+        scopeTextA: scopesA.join('\n'),
+        scopeTextB: scopesB.join('\n'),
+        scopesetDiff,
+        cellColors,
+      };
+    } else {
+      this.state = {
+        scopeTextA: '',
+        scopeTextB: '',
+      };
+    }
+  }
 
   handleScopesAChange = scopeTextA => {
     this.setState({ scopeTextA });
@@ -55,43 +107,18 @@ export default class ScopesetComparison extends Component {
     if (scopeTextA && scopeTextB) {
       const scopesA = splitLines(scopeTextA);
       const scopesB = splitLines(scopeTextB);
-      const scopesetDiff = this.getScopesetDiff(scopesA, scopesB);
-      const cellColors = this.getCellColors(scopesetDiff);
+      const scopesetDiff = getScopesetDiff(scopesA, scopesB);
+      const cellColors = getCellColors(scopesetDiff);
+      const queryObj = { scopesA, scopesB };
+      const queryStr = stringify(queryObj);
+
+      this.props.history.push({
+        pathname: '/auth/scopes/compare',
+        search: queryStr,
+      });
 
       this.setState({ scopesetDiff, cellColors });
     }
-  };
-
-  getScopesetDiff = (scopesA, scopesB) => {
-    const scopesUnion = scopeUnion(scopesA, scopesB);
-    const scopesetDiff = [];
-
-    scopesUnion.forEach(scope => {
-      const s1 = scopeIntersection([scope], scopesA);
-      const s2 = scopeIntersection([scope], scopesB);
-
-      scopesetDiff.push([s1, s2]);
-    });
-
-    return scopesetDiff;
-  };
-
-  getCellColors = scopesetDiff => {
-    const cellColors = [];
-
-    scopesetDiff.forEach(([s1, s2]) => {
-      if (s1.length === 0 && s2.length) {
-        cellColors.push(['', 'greenCell']);
-      } else if (s1.length && s2.length === 0) {
-        cellColors.push(['redCell', '']);
-      } else if (!equals(s1, s2)) {
-        cellColors.push(['yellowCell', 'yellowCell']);
-      } else {
-        cellColors.push(['', '']);
-      }
-    });
-
-    return cellColors;
   };
 
   render() {
@@ -101,7 +128,7 @@ export default class ScopesetComparison extends Component {
     return (
       <Dashboard title="Compare Scopes">
         <Fragment>
-          <Grid className={classes.editorGrid} container spacing={8}>
+          <Grid className={classes.editorGrid} container spacing={1}>
             <Grid item xs={12} md={6}>
               <Typography gutterBottom variant="subtitle1">
                 Scope A
@@ -136,7 +163,7 @@ export default class ScopesetComparison extends Component {
                       scopes[0].map(scope => (
                         <Typography
                           key={scope}
-                          variant="body1"
+                          variant="body2"
                           className={classes.cellGrid}>
                           {scope}
                         </Typography>
@@ -147,7 +174,7 @@ export default class ScopesetComparison extends Component {
                       scopes[1].map(scope => (
                         <Typography
                           key={scope}
-                          variant="body1"
+                          variant="body2"
                           className={classes.cellGrid}>
                           {scope}
                         </Typography>
