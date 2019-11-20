@@ -875,9 +875,6 @@
         "azure_report_threshold": {
           "type": "number"
         },
-        "blob_artifact_region": {
-          "type": "string"
-        },
         "debug": {
           "title": "node debug env var",
           "type": "string"
@@ -886,9 +883,6 @@
           "type": "string"
         },
         "private_artifact_bucket": {
-          "type": "string"
-        },
-        "private_blob_artifact_bucket": {
           "type": "string"
         },
         "procs": {
@@ -1154,9 +1148,6 @@
             }
           ]
         },
-        "public_blob_artifact_bucket": {
-          "type": "string"
-        },
         "pulse_password": {
           "type": "string"
         },
@@ -1178,9 +1169,6 @@
       },
       "required": [
         "procs",
-        "public_blob_artifact_bucket",
-        "private_blob_artifact_bucket",
-        "blob_artifact_region",
         "public_artifact_bucket",
         "private_artifact_bucket",
         "taskcluster_client_id",

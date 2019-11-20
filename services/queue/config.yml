@@ -5,17 +5,9 @@ defaults:
     # Number of seconds before the claim to a run expires
     claimTimeout:                 1200
 
-    # Blob Artifact configuration
-    publicBlobArtifactBucket:     !env PUBLIC_BLOB_ARTIFACT_BUCKET
-    privateBlobArtifactBucket:    !env PRIVATE_BLOB_ARTIFACT_BUCKET
-    blobArtifactRegion:           !env BLOB_ARTIFACT_REGION
-
-    # S3 buckets where artifacts are stored NOTE: Only legacy S3 type
+    # S3 buckets where artifacts are stored
     publicArtifactBucket:         !env PUBLIC_ARTIFACT_BUCKET
     privateArtifactBucket:        !env PRIVATE_ARTIFACT_BUCKET
-
-    # Azure blob container for artifacts NOTE: Only for legacy Azure Type
-    artifactContainer:            artifacts
 
     # Azure table name for tasks, artifact meta-data
     taskTableName:                'QueueTasks'
@@ -151,7 +143,6 @@ test:
   app:
     # For testing purposes we let claims expire very fast
     claimTimeout:                 1
-    artifactContainer:            'artifacts'
     queuePrefix:                  'hacks3'
     queuePrefix2:                 'hacks4' # For testing deletion of queues
     claimQueue:                   'test-claim-queue'
