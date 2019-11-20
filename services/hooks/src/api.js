@@ -643,7 +643,7 @@ builder.declare({
   idempotent: true,
   output: 'list-lastFires-response.yml',
   title: 'Get information about recent hook fires',
-  stability: 'experimental',
+  stability: 'stable',
   category: 'Hooks Service',
   description: [
     'This endpoint will return information about the the last few times this hook has been',
