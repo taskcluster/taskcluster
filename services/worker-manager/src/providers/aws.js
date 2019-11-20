@@ -165,6 +165,10 @@ class AwsProvider extends Provider {
                 {
                   Key: 'Name',
                   Value: `${workerPoolId}`,
+                },
+                {
+                  Key: 'WorkerPoolId',
+                  Value: `${workerPoolId}`,
                 }],
             },
           ],

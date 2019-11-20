@@ -35,6 +35,17 @@ The `workerIdentityProof` contains an [instance identity token](https://cloud.go
 
 The token should have audience equal to the deployment's `rootUrl` and `format=full`.
 
+## Tags
+
+The provider starts workers with the following labels.
+
+ * `worker-pool-id` - the worker's workerPoolId
+ * `managed-by` - `taskcluster`
+ * `created-by` - `taskcluster-wm-<providerId>`
+ * `owner` - the worker pool's owner
+
+Note that values are lower-cased and disallowed characters are replaced with `_`, to comply with with [GCP limitations](https://cloud.google.com/resource-manager/docs/creating-managing-labels).
+
 ## Worker-Pool Configuration
 
 Worker-pool configuration for a worker-pool using this provider type must match the following schema.
