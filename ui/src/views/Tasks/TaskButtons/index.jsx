@@ -1,21 +1,20 @@
 import React, { Component, Fragment } from 'react';
-import { withApollo, graphql } from 'react-apollo';
+import { withApollo } from 'react-apollo';
 import { withRouter } from 'react-router-dom';
-import { omit, pathOr } from 'ramda';
+import { omit } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import Typography from '@material-ui/core/Typography';
 import Checkbox from '@material-ui/core/Checkbox';
 import HammerIcon from 'mdi-react/HammerIcon';
-import jsonSchemaDefaults from 'json-schema-defaults';
-import { safeDump } from 'js-yaml';
 import CreationIcon from 'mdi-react/CreationIcon';
 import PencilIcon from 'mdi-react/PencilIcon';
 import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
 import ShovelIcon from 'mdi-react/ShovelIcon';
 import CloseIcon from 'mdi-react/CloseIcon';
 import FlashIcon from 'mdi-react/FlashIcon';
+import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import ConsoleLineIcon from 'mdi-react/ConsoleLineIcon';
 import RestartIcon from 'mdi-react/RestartIcon';
 import SpeedDial from '../../../components/SpeedDial';
@@ -26,121 +25,19 @@ import formatError from '../../../utils/formatError';
 import removeKeys from '../../../utils/removeKeys';
 import parameterizeTask from '../../../utils/parameterizeTask';
 import { nice } from '../../../utils/slugid';
-import {
-  ACTIONS_JSON_KNOWN_KINDS,
-  ARTIFACTS_PAGE_SIZE,
-  VALID_TASK,
-  TASK_ADDED_FIELDS,
-  TASK_POLL_INTERVAL,
-} from '../../../utils/constants';
-import db from '../../../utils/db';
+import { TASK_ADDED_FIELDS } from '../../../utils/constants';
 import formatTaskMutation from '../../../utils/formatTaskMutation';
-import scheduleTaskQuery from '../ViewTask/scheduleTask.graphql';
-import rerunTaskQuery from '../ViewTask/rerunTask.graphql';
-import cancelTaskQuery from '../ViewTask/cancelTask.graphql';
-import purgeWorkerCacheQuery from '../ViewTask/purgeWorkerCache.graphql';
+import scheduleTaskQuery from './scheduleTask.graphql';
+import rerunTaskQuery from './rerunTask.graphql';
+import cancelTaskQuery from './cancelTask.graphql';
+import purgeWorkerCacheQuery from './purgeWorkerCache.graphql';
 import createTaskQuery from '../createTask.graphql';
-import taskQuery from '../ViewTask/task.graphql';
 import submitTaskAction from '../submitTaskAction';
-
-const updateTaskIdHistory = id => {
-  if (!VALID_TASK.test(id)) {
-    return;
-  }
-
-  db.taskIdsHistory.put({ taskId: id });
-};
-
-const taskInContext = (tagSetList, taskTags) =>
-  tagSetList.some(tagSet =>
-    Object.keys(tagSet).every(
-      tag => taskTags[tag] && taskTags[tag] === tagSet[tag]
-    )
-  );
-const getCachesFromTask = task =>
-  Object.keys(pathOr({}, ['payload', 'cache'], task));
 
 @withRouter
 @withApollo
-@graphql(taskQuery, {
-  options: props => ({
-    fetchPolicy: 'network-only',
-    pollInterval: TASK_POLL_INTERVAL,
-    errorPolicy: 'all',
-    variables: {
-      taskId: props.match.params.taskId,
-      artifactsConnection: {
-        limit: ARTIFACTS_PAGE_SIZE,
-      },
-      taskActionsFilter: {
-        kind: {
-          $in: ACTIONS_JSON_KNOWN_KINDS,
-        },
-        context: {
-          $not: {
-            $size: 0,
-          },
-        },
-      },
-    },
-  }),
-})
 export default class TaskActionButtons extends Component {
-  static getDerivedStateFromProps(props, state) {
-    const taskId = props.match.params.taskId || '';
-    const {
-      data: { task },
-    } = props;
-    const taskActions = [];
-    const actionInputs = state.actionInputs || {};
-    const actionData = state.actionData || {};
-
-    if (taskId !== state.previousTaskId && task) {
-      const { taskActions: actions } = task;
-
-      updateTaskIdHistory(taskId);
-
-      actions &&
-        actions.actions.forEach(action => {
-          const schema = action.schema || {};
-
-          // if an action with this name has already been selected,
-          // don't consider this version
-          if (
-            task &&
-            task.tags &&
-            taskInContext(action.context, task.tags) &&
-            !taskActions.some(({ name }) => name === action.name)
-          ) {
-            taskActions.push(action);
-          } else {
-            return;
-          }
-
-          actionInputs[action.name] = safeDump(
-            jsonSchemaDefaults(schema) || {}
-          );
-          actionData[action.name] = {
-            action,
-          };
-        });
-      const caches = getCachesFromTask(task);
-
-      return {
-        taskActions,
-        actionInputs,
-        actionData,
-        previousTaskId: taskId,
-        caches,
-        selectedCaches: new Set(caches),
-      };
-    }
-
-    return null;
-  }
-
   state = {
-    previousTaskId: null,
     taskActions: [],
     actionInputs: {},
     actionData: {},
@@ -697,6 +594,7 @@ export default class TaskActionButtons extends Component {
   };
 
   render() {
+    const { url, rawButton } = this.props;
     const {
       dialogActionProps,
       actionData,
@@ -793,22 +691,35 @@ export default class TaskActionButtons extends Component {
               onClick={this.handleCreateInteractiveTaskClick}
             />
           )}
+          {rawButton && (
+            <SpeedDialAction
+              tooltipOpen
+              icon={<OpenInNewIcon size={20} />}
+              tooltipTitle="Raw Log"
+              ButtonProps={{
+                component: 'a',
+                href: url,
+                target: '_blank',
+                rel: 'noopener noreferrer',
+              }}
+            />
+          )}
           {taskActions &&
-            taskActions.length &&
-            taskActions.map(action => (
-              <SpeedDialAction
-                requiresAuth
-                tooltipOpen
-                key={action.title}
-                ButtonProps={{
-                  name: action.name,
-                  disabled: actionLoading,
-                }}
-                icon={this.renderActionIcon(action)}
-                tooltipTitle={action.title}
-                onClick={this.handleActionClick}
-              />
-            ))}
+          taskActions.length &&
+          taskActions.map(action => (
+            <SpeedDialAction
+              requiresAuth
+              tooltipOpen
+              key={action.title}
+              ButtonProps={{
+                name: action.name,
+                disabled: actionLoading,
+              }}
+              icon={this.renderActionIcon(action)}
+              tooltipTitle={action.title}
+              onClick={this.handleActionClick}
+            />
+          ))}
         </SpeedDial>
         {dialogOpen && (
           <DialogAction

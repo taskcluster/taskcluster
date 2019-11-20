@@ -29,7 +29,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import Link from '../../../utils/Link';
 import taskQuery from './task.graphql';
 import pageArtifactsQuery from './pageArtifacts.graphql';
-import TaskActionButtons from '../TaskButtons';
+import TaskButtons from '../TaskButtons';
 
 const updateTaskIdHistory = id => {
   if (!VALID_TASK.test(id)) {
@@ -209,7 +209,7 @@ export default class ViewTask extends Component {
     if (task) {
       tags = Object.entries(task.tags);
     }
-
+    console.log('ViewTask', this.props);
     return (
       <Dashboard
         title={task ? `Task "${task.metadata.name}"` : 'Task'}
@@ -291,7 +291,7 @@ export default class ViewTask extends Component {
                 />
               </Grid>
             </Grid>
-            <TaskActionButtons />
+            <TaskButtons data={this.props.data} match={match} />
           </Fragment>
         )}
       </Dashboard>
