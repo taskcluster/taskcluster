@@ -1,4 +1,3 @@
-const util = require('util');
 const fs = require('fs');
 const glob = require('glob');
 const _ = require('lodash');
