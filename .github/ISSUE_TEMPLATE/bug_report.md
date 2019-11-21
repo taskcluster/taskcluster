@@ -27,6 +27,9 @@ Steps to reproduce the behavior:
 **Expected behavior**
 <!-- A clear and concise description of what you expected to happen. -->
 
+**Taskclster version**
+<!-- The version can be retrived from the UI. It is shown at the bottom of the navigation drawer. You may need to click on the hamburger menu icon to open the navigation drawer.  -->
+
 **Screenshots**
 <!-- If applicable, add screenshots to help explain your problem. -->
 
