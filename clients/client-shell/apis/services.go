@@ -333,7 +333,7 @@ var services = map[string]definitions.Service{
 				Name:        "sentryDSN",
 				Title:       "Get DSN for Sentry Project",
 				Description: "Get temporary DSN (access credentials) for a sentry project.\nThe credentials returned can be used with any Sentry client for up to\n24 hours, after which the credentials will be automatically disabled.\n\nIf the project doesn't exist it will be created, and assigned to the\ninitial team configured for this component. Contact a Sentry admin\nto have the project transferred to a team you have access to if needed",
-				Stability:   "deprecated",
+				Stability:   "stable",
 				Method:      "get",
 				Route:       "/sentry/<project>/dsn",
 				Args: []string{
