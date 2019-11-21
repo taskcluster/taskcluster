@@ -359,6 +359,9 @@ await hooks.ping()
 Supported environment variables are:
 - `TASKCLUSTER_ROOT_URL` to specify your Taskcluster instance base url. You can either use that variable or instanciate `TaskclusterConfig` with the base url.
 - `TASKCLUSTER_CLIENT_ID` & `TASKCLUSTER_ACCESS_TOKEN` to specify your client credentials instead of providing them to `TaskclusterConfig.auth`
+- `TASKCLUSTER_PROXY_URL` to specify the proxy address used to reach Taskcluster in a task. It defaults to `http://taskcluster` when not specified.
+
+For more details on Taskcluster environment variables, [here is the documentation](https://docs.taskcluster.net/docs/manual/design/env-vars).
 
 ### Loading secrets across multiple authentications
 
