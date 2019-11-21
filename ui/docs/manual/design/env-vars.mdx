@@ -38,3 +38,10 @@ This variable is handled just like `TASKCLUSTER_CLIENT_ID`.
 It is typically set during task execution by worker implementations, if taskcluster-proxy is supported.
 The URL can be treated like a root URL, but one that does not require any clientId, accessToken, or certificate.
 For example, it can be passed to a client constructor as in `new Auth({rootUrl: process.environ['TASKCLUSTER_PROXY_URL']})`.
+
+## TASKCLUSTER_WORKER_LOCATION
+
+`TASKCLUSTER_WORKER_LOCATION` provides physical location information of the instance to task. It is a [json](http://www.json.org/) parseable string.
+The [taskcluster-worker README file](https://github.com/taskcluster/taskcluster-worker-runner/blob/master/README.md) contains the details of the fields
+present for each cloud provider.
+
