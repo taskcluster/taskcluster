@@ -2,7 +2,6 @@ let _ = require('lodash');
 let debug = require('debug')('app:queue');
 let assert = require('assert');
 let base32 = require('thirty-two');
-let url = require('url');
 let azure = require('fast-azure-storage');
 let crypto = require('crypto');
 let taskcluster = require('taskcluster-client');
@@ -66,7 +65,6 @@ class QueueService {
    * options:
    * {
    *   prefix:               // Prefix for all pending-task queues, max 6 chars
-   *   pendingPollTimeout:   // Timeout embedded in signed poll URL (ms)
    *   credentials: {
    *     accountId:          // Azure storage account name
    *     accessKey:          // Azure storage account key
@@ -88,12 +86,10 @@ class QueueService {
     assert(options.deadlineQueue, 'A deadlineQueue name must be given');
     assert(options.monitor, 'A monitor instance must be given');
     options = _.defaults({}, options, {
-      pendingPollTimeout: 5 * 60 * 1000,
       deadlineDelay: 10 * 60 * 1000,
     });
 
     this.prefix = options.prefix;
-    this.pendingPollTimeout = options.pendingPollTimeout;
     this.monitor = options.monitor;
 
     if (options.credentials.fake) {
@@ -600,55 +596,6 @@ class QueueService {
       ttl: timeToDeadline,
       visibility: 0,
     });
-  }
-
-  /** Get signed URLs for polling and deleting from the azure queue */
-  async signedPendingPollUrls(provisionerId, workerType) {
-    // Find name of azure queue
-    let queueNames = await this.ensurePendingQueue(provisionerId, workerType);
-
-    // Set start of the signature to 15 min in the past
-    let start = new Date();
-    start.setMinutes(start.getMinutes() - 15);
-
-    // Set the expiry of the signature to 30 min in the future
-    let expiry = new Date();
-    expiry.setMinutes(expiry.getMinutes() + 30);
-
-    // Find visibility timeout we'll encoding in signed poll URLs
-    let pendingPollTimeout = Math.floor(this.pendingPollTimeout / 1000);
-
-    // For each queue name, return signed URLs for the queue
-
-    let queues = PRIORITIES.map(priority => {
-      let queueName = queueNames[priority];
-
-      // Create shared access signature
-      let sas = this.client.sas(queueName, {
-        start, expiry,
-        permissions: {
-          process: true,
-        },
-      });
-      // Construct signed url
-      return {
-        signedPollUrl: url.format({
-          protocol: 'https',
-          host: `${this.accountId}.queue.core.windows.net`,
-          pathname: `/${queueName}/messages`,
-          search: `?visibilitytimeout=${pendingPollTimeout}&${sas}`,
-        }),
-        signedDeleteUrl: url.format({
-          protocol: 'https',
-          host: `${this.accountId}.queue.core.windows.net`,
-          pathname: `/${queueName}/messages/{{messageId}}`,
-          search: `?popreceipt={{popReceipt}}&${sas}`,
-        }),
-      };
-    });
-
-    // Return queues and expiry
-    return {queues, expiry};
   }
 
   /**
