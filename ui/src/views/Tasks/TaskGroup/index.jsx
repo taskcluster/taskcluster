@@ -82,10 +82,10 @@ const updateTaskGroupIdHistory = id => {
     overflow: 'hidden',
   },
   firstGrid: {
-    marginTop: theme.spacing.double,
+    marginTop: theme.spacing(2),
   },
   secondGrid: {
-    marginTop: theme.spacing.double,
+    marginTop: theme.spacing(2),
     display: 'flex',
     justifyContent: 'flex-end',
   },
@@ -108,10 +108,10 @@ const updateTaskGroupIdHistory = id => {
     },
   },
   notifyButton: {
-    marginLeft: theme.spacing.triple,
+    marginLeft: theme.spacing(3),
   },
   bellIcon: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
   },
 }))
 export default class TaskGroup extends Component {
@@ -584,19 +584,22 @@ export default class TaskGroup extends Component {
     }
   };
 
-  shouldIgnoreError(error) {
+  getError(error) {
     if (!error) {
-      return true;
+      return null;
+    }
+
+    if (typeof error === 'string') {
+      return error;
     }
 
     // Task groups do not necessarily have a decision task,
     // so handle task-not-found errors gracefully
-    return (
-      error.graphQLErrors &&
-      error.graphQLErrors[0] &&
-      error.graphQLErrors[0].statusCode === 404 &&
-      error.graphQLErrors[0].requestInfo.method === 'task'
-    );
+    const errorStatus = error.graphQLErrors.find(error => {
+      return !(error.statusCode === 404 && error.requestInfo.method === 'task');
+    });
+
+    return errorStatus;
   }
 
   render() {
@@ -630,7 +633,7 @@ export default class TaskGroup extends Component {
         : true;
     const notificationsCount = Object.values(notifyPreferences).filter(Boolean)
       .length;
-    const shouldIgnoreError = error && this.shouldIgnoreError(error);
+    const graphqlError = this.getError(error);
 
     this.subscribe({ taskGroupId, subscribeToMore });
 
@@ -649,9 +652,7 @@ export default class TaskGroup extends Component {
             defaultValue={taskGroupId}
           />
         }>
-        {!shouldIgnoreError && (
-          <ErrorPanel fixed error={error} warning={Boolean(taskGroup)} />
-        )}
+        <ErrorPanel fixed error={graphqlError} warning={Boolean(taskGroup)} />
         {taskGroup && (
           <TaskGroupProgress
             taskGroupId={taskGroupId}

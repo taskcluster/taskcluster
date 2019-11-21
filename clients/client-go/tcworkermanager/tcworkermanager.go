@@ -37,7 +37,7 @@ package tcworkermanager
 import (
 	"net/url"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v22"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v23"
 )
 
 type WorkerManager tcclient.Client
@@ -57,7 +57,9 @@ type WorkerManager tcclient.Client
 func New(credentials *tcclient.Credentials, rootURL string) *WorkerManager {
 	return &WorkerManager{
 		Credentials:  credentials,
-		BaseURL:      tcclient.BaseURL(rootURL, "worker-manager", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "worker-manager",
+		APIVersion:   "v1",
 		Authenticate: credentials != nil,
 	}
 }
@@ -78,9 +80,12 @@ func New(credentials *tcclient.Credentials, rootURL string) *WorkerManager {
 // disabled.
 func NewFromEnv() *WorkerManager {
 	c := tcclient.CredentialsFromEnvVars()
+	rootURL := tcclient.RootURLFromEnvVars()
 	return &WorkerManager{
 		Credentials:  c,
-		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "worker-manager", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "worker-manager",
+		APIVersion:   "v1",
 		Authenticate: c.ClientID != "",
 	}
 }
@@ -111,8 +116,6 @@ func (workerManager *WorkerManager) ListProviders(continuationToken, limit strin
 	return responseObject.(*ProviderList), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Create a new worker pool. If the worker pool already exists, this will throw an error.
 //
 // Required scopes:
@@ -127,8 +130,6 @@ func (workerManager *WorkerManager) CreateWorkerPool(workerPoolId string, payloa
 	return responseObject.(*WorkerPoolFullDefinition), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Given an existing worker pool definition, this will modify it and return
 // the new definition.
 //
@@ -149,8 +150,6 @@ func (workerManager *WorkerManager) UpdateWorkerPool(workerPoolId string, payloa
 	return responseObject.(*WorkerPoolFullDefinition), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Mark a worker pool for deletion.  This is the same as updating the pool to
 // set its providerId to `"null-provider"`, but does not require scope
 // `worker-manager:provider:null-provider`.
@@ -165,8 +164,6 @@ func (workerManager *WorkerManager) DeleteWorkerPool(workerPoolId string) (*Work
 	return responseObject.(*WorkerPoolFullDefinition), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Fetch an existing worker pool defition.
 //
 // See #workerPool
@@ -176,8 +173,6 @@ func (workerManager *WorkerManager) WorkerPool(workerPoolId string) (*WorkerPool
 	return responseObject.(*WorkerPoolFullDefinition), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Get the list of all the existing worker pools.
 //
 // See #listWorkerPools
@@ -194,8 +189,6 @@ func (workerManager *WorkerManager) ListWorkerPools(continuationToken, limit str
 	return responseObject.(*WorkerPoolList), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Report an error that occurred on a worker.  This error will be included
 // with the other errors in `listWorkerPoolErrors(workerPoolId)`.
 //
@@ -218,8 +211,6 @@ func (workerManager *WorkerManager) ReportWorkerError(workerPoolId string, paylo
 	return responseObject.(*WorkerPoolError), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Get the list of worker pool errors.
 //
 // See #listWorkerPoolErrors
@@ -236,8 +227,6 @@ func (workerManager *WorkerManager) ListWorkerPoolErrors(workerPoolId, continuat
 	return responseObject.(*WorkerPoolErrorList), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Get the list of all the existing workers in a given group in a given worker pool.
 //
 // See #listWorkersForWorkerGroup
@@ -254,8 +243,6 @@ func (workerManager *WorkerManager) ListWorkersForWorkerGroup(workerPoolId, work
 	return responseObject.(*WorkerListInAGivenWorkerPool), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Get a single worker.
 //
 // See #worker
@@ -265,8 +252,6 @@ func (workerManager *WorkerManager) Worker(workerPoolId, workerGroup, workerId s
 	return responseObject.(*WorkerFullDefinition), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Create a new worker.  The precise behavior of this method depends
 // on the provider implementing the given worker pool.  Some providers
 // do not support creating workers at all, and will return a 400 error.
@@ -281,8 +266,6 @@ func (workerManager *WorkerManager) CreateWorker(workerPoolId, workerGroup, work
 	return responseObject.(*WorkerFullDefinition), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Remove an existing worker.  The precise behavior of this method depends
 // on the provider implementing the given worker.  Some providers
 // do not support removing workers at all, and will return a 400 error.
@@ -299,8 +282,6 @@ func (workerManager *WorkerManager) RemoveWorker(workerPoolId, workerGroup, work
 	return err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Get the list of all the existing workers in a given worker pool.
 //
 // See #listWorkersForWorkerPool
@@ -317,8 +298,6 @@ func (workerManager *WorkerManager) ListWorkersForWorkerPool(workerPoolId, conti
 	return responseObject.(*WorkerListInAGivenWorkerPool), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Register a running worker.  Workers call this method on worker start-up.
 //
 // This call both marks the worker as running and returns the credentials

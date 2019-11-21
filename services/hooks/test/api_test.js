@@ -68,6 +68,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   const invalidHookDef = _.defaults({
     schedule: ['0 0 3 0 * *'],
   }, hookWithTriggerSchema);
+  const hugeHookDef = _.defaults({
+    task: {
+      huge: [...Array(256)].map(() => [...Array(256)].map(() => "abc")),
+    },
+  }, hookDef);
   const unique = new Date().getTime().toString();
   const hookWithBindings = _.defaults({
     bindings: [{exchange: `exchange/test/${unique}`, routingKeyPattern: 'amongst.rockets.wizards'}],
@@ -178,6 +183,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         });
     });
 
+    test('entity too large', async () => {
+      await helper.hooks.createHook('foo', 'bar', hugeHookDef).then(
+        () => { throw new Error('Expected an error'); },
+        (err) => {
+          if (err.statusCode !== 400) {
+            throw err;
+          }
+          if (!/is larger than/.test(err)) {
+            throw err;
+          }
+        });
+    });
+
     test('succeeds if a matching resource already exists', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
@@ -267,6 +285,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     test('fails if new schedule is invalid', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       await helper.hooks.updateHook('foo', 'bar', invalidHookDef).then(
+        () => { throw new Error('Expected an error'); },
+        (err) => { assume(err.statusCode).equals(400); });
+    });
+
+    test('fails if new entity is too large', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      await helper.hooks.updateHook('foo', 'bar', hugeHookDef).then(
         () => { throw new Error('Expected an error'); },
         (err) => { assume(err.statusCode).equals(400); });
     });
@@ -731,7 +756,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       const taskIds = [];
       taskIds.push(lastFire.taskId);
       await appendLastFire(lastFire);
-      for (let i=1;i<=2;i++) {
+      for (let i = 1;i <= 2;i++) {
         taskIds.push(taskcluster.slugid());
         await appendLastFire({...lastFire,
           taskId: taskIds[i],

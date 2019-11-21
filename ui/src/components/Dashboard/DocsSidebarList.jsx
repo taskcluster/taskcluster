@@ -35,18 +35,19 @@ const getDocsSectionFromPathname = pathname => {
 @withRouter
 @withStyles(theme => ({
   toc: {
-    marginTop: theme.spacing.double,
-    marginBottom: theme.spacing.triple,
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(3),
   },
   ul: {
     listStyle: 'none',
-    paddingInlineStart: `${theme.spacing.double}px`,
-    marginTop: theme.spacing.unit / 2,
-    marginBottom: theme.spacing.unit,
+    paddingInlineStart: `${theme.spacing(2)}px`,
+    marginTop: theme.spacing(0.5),
+    marginBottom: theme.spacing(1),
   },
   link: {
     textDecoration: 'none',
-    padding: `0 ${theme.spacing.unit}px`,
+    padding: `0 ${theme.spacing(1)}px`,
+    display: 'block',
   },
   linkActive: {
     color: theme.palette.secondary.main,
@@ -61,15 +62,15 @@ const getDocsSectionFromPathname = pathname => {
     fontSize: theme.typography.fontSize - 1,
   },
   section: {
-    marginBottom: theme.spacing.unit,
+    marginBottom: theme.spacing(1),
   },
   sectionDiv: {
     display: 'flex',
     justifyContent: 'space-between',
   },
   collapse: {
-    margin: `${theme.spacing.unit}px 0 ${theme.spacing.double}px 0`,
-    padding: `0 ${theme.spacing.double}px`,
+    margin: `${theme.spacing(1)}px 0 ${theme.spacing(2)}px 0`,
+    padding: `0 ${theme.spacing(2)}px`,
     overflowY: 'auto',
     maxHeight: '48vh',
   },
@@ -77,7 +78,7 @@ const getDocsSectionFromPathname = pathname => {
     listStyle: 'none',
   },
   divider: {
-    margin: `${theme.spacing.unit}px 0`,
+    margin: `${theme.spacing(1)}px 0`,
   },
   inlineLink: {
     display: 'inline-block',
@@ -139,7 +140,9 @@ export default class DocsSidebarList extends Component {
 
     return (
       <div className={classes.inlineLinksWrapper}>
-        <Typography component="span">(</Typography>
+        <Typography variant="body2" component="span">
+          (
+        </Typography>
         {nodes.map((node, idx) => {
           const href = removeReadmeFromPath(`${DOCS_PATH_PREFIX}/${node.path}`);
           const isLinkActive = removeReadmeFromPath(location.pathname) === href;
@@ -147,12 +150,15 @@ export default class DocsSidebarList extends Component {
           return (
             <Fragment key={node.name}>
               {idx !== 0 && (
-                <Typography className={classes.slashBar}>/</Typography>
+                <Typography variant="body2" className={classes.slashBar}>
+                  /
+                </Typography>
               )}
               <Link
                 className={classNames(classes.inlineLink, classes.hover)}
                 to={href}>
                 <Typography
+                  variant="body2"
                   className={classNames({
                     [classes.linkActive]: isLinkActive,
                   })}
@@ -163,7 +169,9 @@ export default class DocsSidebarList extends Component {
             </Fragment>
           );
         })}
-        <Typography component="span">)</Typography>
+        <Typography variant="body2" component="span">
+          )
+        </Typography>
       </div>
     );
   };
@@ -200,16 +208,17 @@ export default class DocsSidebarList extends Component {
       return (
         <Fragment key={node.path}>
           {isRoot && node.prev && <Divider className={classes.divider} />}
-          <Typography
-            className={classNames(classes.link, classes.hover, {
-              [classes.header]: isRoot,
-              [classes.linkActive]: isLinkActive,
-              [classes.childWithInlineNodes]: hasInlineNodes,
-            })}
-            component={Link}
-            to={href}>
-            {node.data.title || node.name}
-          </Typography>
+          <Link to={href}>
+            <Typography
+              variant="body2"
+              className={classNames(classes.link, classes.hover, {
+                [classes.header]: isRoot,
+                [classes.linkActive]: isLinkActive,
+                [classes.childWithInlineNodes]: hasInlineNodes,
+              })}>
+              {node.data.title || node.name}
+            </Typography>
+          </Link>
           {hasInlineNodes && this.renderInlineNodes(inlineNodes)}
           <ul className={classes.ul}>
             {nodes.map(
@@ -224,16 +233,17 @@ export default class DocsSidebarList extends Component {
     }
 
     return (
-      <Typography
-        className={classNames(classes.link, classes.hover, {
-          [classes.linkActive]: isLinkActive,
-          [classes.header]: isRoot,
-        })}
-        key={node.path}
-        component={Link}
-        to={href}>
-        {node.data.title}
-      </Typography>
+      <Link to={href}>
+        <Typography
+          variant="body2"
+          className={classNames(classes.link, classes.hover, {
+            [classes.linkActive]: isLinkActive,
+            [classes.header]: isRoot,
+          })}
+          key={node.path}>
+          {node.data.title}
+        </Typography>
+      </Link>
     );
   };
 
@@ -256,24 +266,24 @@ export default class DocsSidebarList extends Component {
         {DOCS_MENU_ITEMS.map(item => (
           <Fragment key={item.label}>
             {item.hasChildren && <Divider />}
-            <ListItem
-              name={item.label}
-              button
-              onClick={this.handleSectionClick}
-              component={Link}
-              to={removeReadmeFromPath(item.path)}
-              classes={{ container: classes.listItem }}>
-              <ListItemIcon>
-                <item.icon />
-              </ListItemIcon>
-              <ListItemText primary={item.label} />
-              {item.hasChildren &&
-                (menuOpen && currentMenu === item.label ? (
-                  <ChevronUpIcon />
-                ) : (
-                  <ChevronDownIcon />
-                ))}
-            </ListItem>
+            <Link to={removeReadmeFromPath(item.path)}>
+              <ListItem
+                name={item.label}
+                button
+                onClick={this.handleSectionClick}
+                classes={{ container: classes.listItem }}>
+                <ListItemIcon>
+                  <item.icon />
+                </ListItemIcon>
+                <ListItemText primary={item.label} />
+                {item.hasChildren &&
+                  (menuOpen && currentMenu === item.label ? (
+                    <ChevronUpIcon />
+                  ) : (
+                    <ChevronDownIcon />
+                  ))}
+              </ListItem>
+            </Link>
             <Collapse
               in={item.hasChildren && menuOpen && currentMenu === item.label}>
               <div className={classes.collapse}>

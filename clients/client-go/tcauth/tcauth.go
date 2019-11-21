@@ -43,7 +43,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v22"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v23"
 )
 
 type Auth tcclient.Client
@@ -63,7 +63,9 @@ type Auth tcclient.Client
 func New(credentials *tcclient.Credentials, rootURL string) *Auth {
 	return &Auth{
 		Credentials:  credentials,
-		BaseURL:      tcclient.BaseURL(rootURL, "auth", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "auth",
+		APIVersion:   "v1",
 		Authenticate: credentials != nil,
 	}
 }
@@ -84,9 +86,12 @@ func New(credentials *tcclient.Credentials, rootURL string) *Auth {
 // disabled.
 func NewFromEnv() *Auth {
 	c := tcclient.CredentialsFromEnvVars()
+	rootURL := tcclient.RootURLFromEnvVars()
 	return &Auth{
 		Credentials:  c,
-		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "auth", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "auth",
+		APIVersion:   "v1",
 		Authenticate: c.ClientID != "",
 	}
 }
@@ -665,31 +670,6 @@ func (auth *Auth) SentryDSN(project string) (*SentryDSNResponse, error) {
 func (auth *Auth) SentryDSN_SignedURL(project string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
 	return (&cd).SignedURL("/sentry/"+url.QueryEscape(project)+"/dsn", nil, duration)
-}
-
-// Get temporary `token` and `baseUrl` for sending metrics to statsum.
-//
-// The token is valid for 24 hours, clients should refresh after expiration.
-//
-// Required scopes:
-//   auth:statsum:<project>
-//
-// See #statsumToken
-func (auth *Auth) StatsumToken(project string) (*StatsumTokenResponse, error) {
-	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/statsum/"+url.QueryEscape(project)+"/token", new(StatsumTokenResponse), nil)
-	return responseObject.(*StatsumTokenResponse), err
-}
-
-// Returns a signed URL for StatsumToken, valid for the specified duration.
-//
-// Required scopes:
-//   auth:statsum:<project>
-//
-// See StatsumToken for more details.
-func (auth *Auth) StatsumToken_SignedURL(project string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/statsum/"+url.QueryEscape(project)+"/token", nil, duration)
 }
 
 // Get a temporary token suitable for use connecting to a

@@ -13,7 +13,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   helper.withServer(mock, skipping);
 
   const url = path => `http://127.0.0.1:${helper.serverPort}${path}`;
-  const getQuery = (url, sep='?') => {
+  const getQuery = (url, sep = '?') => {
     const qmark = url.indexOf(sep);
     if (qmark === -1) {
       return new URLSearchParams();

@@ -45,9 +45,6 @@ export default class NotFound extends Component {
 
     return (
       <div className={classes.root}>
-        <Typography variant="h1" className={classes.typography}>
-          404
-        </Typography>
         <Typography variant="h4" className={classes.typography}>
           We couldn&apos;t find a page at that address.
           <br />

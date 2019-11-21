@@ -204,6 +204,9 @@ func (binding TaskRunning) NewPayloadObject() interface{} {
 // smarter to index artifacts after the task in question have completed
 // successfully.
 //
+// *NOTE*: this message is currently only sent for reference and error
+// artifacts.  This will be remedied in a future version of Taskcluster.
+//
 // See #artifactCreated
 type ArtifactCreated struct {
 	RoutingKeyKind string `mwords:"*"`

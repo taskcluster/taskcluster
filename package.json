@@ -1,10 +1,10 @@
 {
   "name": "taskcluster",
-  "version": "22.1.1",
+  "version": "23.0.0",
   "private": true,
   "engine-strict": true,
   "engines": {
-    "node": "10.16.3",
+    "node": "12.13.0",
     "yarn": "^1.0.0"
   },
   "workspaces": [
@@ -12,6 +12,7 @@
     "services/*"
   ],
   "dependencies": {
+    "@hapi/hawk": "^7.1.2",
     "@octokit/rest": "^16.15.0",
     "@sentry/node": "^5.6.1",
     "ajv": "^6.10.0",
@@ -21,8 +22,7 @@
     "auth0": "^2.14.0",
     "aws-sdk": "^2.394.0",
     "azure-blob-storage": "^4.2.1",
-    "azure-entities": "^5.5.1",
-    "azure-storage": "^2.10.2",
+    "azure-entities": "^5.5.3",
     "body-parser": "1.19.0",
     "body-parser-graphql": "^1.0.0",
     "chalk": "^2.4.2",
@@ -42,7 +42,7 @@
     "fast-azure-storage": "^3.0.1",
     "fast-json-stable-stringify": "^2.0.0",
     "get-caller-file": "^2.0.5",
-    "googleapis": "^44.0.0",
+    "googleapis": "^45.0.0",
     "graphql": "^14.5.4",
     "graphql-depth-limit": "^1.1.0",
     "graphql-iso-date": "^3.5.0",
@@ -50,7 +50,6 @@
     "graphql-type-json": "^0.3.0",
     "graphql-validation-complexity": "^0.2.5",
     "hashids": "^2.0.0",
-    "hawk": "^7.0.10",
     "hsts": "^2.1.0",
     "immutable": "^3.8.2",
     "irc-upd": "^0.10.0",
@@ -82,7 +81,6 @@
     "ramda": "^0.26.0",
     "recursive-readdir-sync": "^1.0.6",
     "regex-escape": "^3.4.8",
-    "remotely-signed-s3": "^4.0.0",
     "request-ip": "^2.0.2",
     "rimraf": "^3.0.0",
     "sanitize-html": "^1.20.1",
@@ -90,7 +88,6 @@
     "serialize-error": "^5.0.0",
     "sift": "^8.0.0",
     "slugid": "^2.0.0",
-    "statsum": "^0.6.0",
     "subscriptions-transport-ws": "^0.9.7",
     "superagent": "^5.0.0",
     "tar-stream": "^2.0.0",
@@ -160,7 +157,6 @@
     "tmp": "^0.1.0",
     "url-join": "^4.0.0",
     "xml2js": "^0.4.19",
-    "xmlbuilder": "^13.0.0",
     "zen-observable": "^0.8.11",
     "zurvan": "^0.5.2"
   },

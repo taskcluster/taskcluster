@@ -15,7 +15,6 @@ import memoize from 'fast-memoize';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
-import { ListItemText } from '@material-ui/core';
 import ConnectionDataTable from '../ConnectionDataTable';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
@@ -100,19 +99,18 @@ export default class ClientScopesTable extends Component {
       searchTerm ? filter(contains(searchTerm)) : identity,
       map(node => (
         <TableRow key={node}>
-          <TableCell padding="dense">
-            <TableCellItem
-              dense
-              button
-              component={Link}
+          <TableCell>
+            <Link
               to={
                 selectedScope
                   ? `/auth/clients/${encodeURIComponent(node)}`
                   : `/auth/scopes/${encodeURIComponent(node)}`
               }>
-              <ListItemText primary={node} />
-              <LinkIcon size={16} />
-            </TableCellItem>
+              <TableCellItem button>
+                {node}
+                <LinkIcon size={16} />
+              </TableCellItem>
+            </Link>
           </TableCell>
         </TableRow>
       ))

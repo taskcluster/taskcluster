@@ -36,7 +36,7 @@ suite(testing.suiteName(), () => {
     },
   });
 
-  const addClient = (clientId, expandedScopes, disabled=false) => {
+  const addClient = (clientId, expandedScopes, disabled = false) => {
     clients[clientId] = {clientId, disabled, expandedScopes};
   };
 

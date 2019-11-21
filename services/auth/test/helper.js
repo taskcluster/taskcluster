@@ -74,7 +74,7 @@ exports.withCfg = (mock, skipping) => {
 /**
  * Set helper.<Class> for each of the Azure entities used in the service
  */
-exports.withEntities = (mock, skipping, {orderedTests}={}) => {
+exports.withEntities = (mock, skipping, {orderedTests} = {}) => {
   const cleanup = async () => {
     if (skipping()) {
       return;
@@ -114,7 +114,7 @@ class FakeRoles {
 /**
  * Setup the Roles blob
  */
-exports.withRoles = (mock, skipping, options={}) => {
+exports.withRoles = (mock, skipping, options = {}) => {
   suiteSetup(async function() {
     if (skipping()) {
       return;

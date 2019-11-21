@@ -44,7 +44,7 @@ package tcgithub
 import (
 	"net/url"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v22"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v23"
 )
 
 type Github tcclient.Client
@@ -64,7 +64,9 @@ type Github tcclient.Client
 func New(credentials *tcclient.Credentials, rootURL string) *Github {
 	return &Github{
 		Credentials:  credentials,
-		BaseURL:      tcclient.BaseURL(rootURL, "github", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "github",
+		APIVersion:   "v1",
 		Authenticate: credentials != nil,
 	}
 }
@@ -85,9 +87,12 @@ func New(credentials *tcclient.Credentials, rootURL string) *Github {
 // disabled.
 func NewFromEnv() *Github {
 	c := tcclient.CredentialsFromEnvVars()
+	rootURL := tcclient.RootURLFromEnvVars()
 	return &Github{
 		Credentials:  c,
-		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "github", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "github",
+		APIVersion:   "v1",
 		Authenticate: c.ClientID != "",
 	}
 }
@@ -102,8 +107,6 @@ func (github *Github) Ping() error {
 	return err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Capture a GitHub event and publish it via pulse, if it's a push,
 // release or pull request.
 //
@@ -114,8 +117,6 @@ func (github *Github) GithubWebHookConsumer() error {
 	return err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // A paginated list of builds that have been run in
 // Taskcluster. Can be filtered on various git-specific
 // fields.
@@ -167,8 +168,6 @@ func (github *Github) Repository(owner, repo string) (*RepositoryResponse, error
 	return responseObject.(*RepositoryResponse), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // For a given branch of a repository, this will always point
 // to a status page for the most recent task triggered by that
 // branch.
@@ -199,8 +198,6 @@ func (github *Github) CreateStatus(owner, repo, sha string, payload *CreateStatu
 	return err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // For a given Issue or Pull Request of a repository, this will write a new message.
 //
 // Required scopes:

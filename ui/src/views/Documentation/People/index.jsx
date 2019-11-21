@@ -21,14 +21,14 @@ import contributorsJson from '../../../../../.all-contributorsrc';
   avatar: {
     height: 80,
     width: 80,
-    margin: `0 auto ${theme.spacing.unit}px auto`,
+    margin: `0 auto ${theme.spacing(1)}px auto`,
     boxShadow: '0px 0px 4px rgba(2,2,2,0.2)',
   },
   gutterTop: {
-    marginTop: theme.spacing.unit,
+    marginTop: theme.spacing(1),
   },
   gutterBottom: {
-    marginBottom: theme.spacing.unit,
+    marginBottom: theme.spacing(1),
   },
 }))
 export default class People extends Component {
@@ -45,28 +45,29 @@ export default class People extends Component {
     return (
       <Grid
         container
-        spacing={8}
+        spacing={1}
         className={classNames({
           [classes.gutterTop]: gutterTop,
           [classes.gutterBottom]: gutterBottom,
         })}>
         {contributors.filter(filter || (() => true)).map(contrib => (
           <Grid key={contrib.login} item xs={4} sm={3}>
-            <Card>
-              <CardActionArea
-                className={classes.cardActionArea}
-                component={Anchor}
-                href={contrib.profile || '#'}>
-                <CardContent>
-                  <Avatar
-                    alt="avatar"
-                    src={contrib.avatar_url}
-                    className={classes.avatar}
-                  />
-                  <Typography>{contrib.name || contrib.login}</Typography>
-                </CardContent>
-              </CardActionArea>
-            </Card>
+            <Anchor href={contrib.profile || '#'}>
+              <Card>
+                <CardActionArea className={classes.cardActionArea}>
+                  <CardContent>
+                    <Avatar
+                      alt="avatar"
+                      src={contrib.avatar_url}
+                      className={classes.avatar}
+                    />
+                    <Typography variant="body2">
+                      {contrib.name || contrib.login}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Anchor>
           </Grid>
         ))}
       </Grid>

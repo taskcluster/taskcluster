@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import { func } from 'prop-types';
 import classNames from 'classnames';
 import {
-  DatePicker as MuiDatePicker,
+  KeyboardDatePicker,
   MuiPickersUtilsProvider,
-} from 'material-ui-pickers';
+} from '@material-ui/pickers';
 import { withStyles } from '@material-ui/core/styles';
 import DateFnsUtils from '@date-io/date-fns';
 import ChevronRightIcon from 'mdi-react/ChevronRightIcon';
@@ -39,10 +39,9 @@ export default class DatePicker extends Component {
 
     return (
       <MuiPickersUtilsProvider utils={DateFnsUtils}>
-        <MuiDatePicker
+        <KeyboardDatePicker
           className={classNames(classes.datePicker, className)}
           showTodayButton
-          keyboard
           keyboardIcon={<CalendarIcon />}
           rightArrowIcon={<ChevronRightIcon />}
           leftArrowIcon={<ChevronLeftIcon />}

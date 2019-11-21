@@ -38,12 +38,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   // * is used in local development
   makeSuite([true], 'http://localhost', 'http://localhost');
 
-  // legacy rootUrl is a special case
-  makeSuite(
-    ['https://taskcluster.net'],
-    'https://taskcluster-ui.herokuapp.com',
-    'https://taskcluster-ui.herokuapp.com');
-
   // check that deploy previews are supported..
   makeSuite(
     ['https://tc.example.com', "/https://deploy-preview-\\d+--taskcluster-web\\.netlify\\.com/"],

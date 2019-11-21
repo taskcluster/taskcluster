@@ -4,7 +4,7 @@ import { graphql } from 'react-apollo';
 import { scopeIntersection } from 'taskcluster-lib-scopes';
 import { parse } from 'qs';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
-import Homepage from '../../components/Homepage';
+import Typography from '@material-ui/core/Typography';
 import AuthConsent from '../../components/AuthConsent';
 import Dashboard from '../../components/Dashboard';
 import { withAuth } from '../../utils/Auth';
@@ -87,6 +87,9 @@ export default class ThirdPartyLogin extends Component {
   render() {
     const { user, data } = this.props;
     const { formData } = this.state;
+    const { origin } = new URL(
+      decodeURIComponent(this.parsedQuery.redirect_uri)
+    );
 
     return (
       <Dashboard title="Third Party Login">
@@ -102,7 +105,11 @@ export default class ThirdPartyLogin extends Component {
             formData={formData}
           />
         )}
-        {!user && <Homepage />}
+        {!user && (
+          <Typography variant="subtitle1">
+            Sign in to provide credentials to <code>{origin}</code>
+          </Typography>
+        )}
       </Dashboard>
     );
   }

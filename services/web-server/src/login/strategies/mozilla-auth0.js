@@ -205,11 +205,11 @@ module.exports = class MozillaAuth0 {
           if (!user) {
             // Don't report much to the user, to avoid revealing sensitive information, although
             // it is likely in the service logs.
-            done(new WebServerError('InputError', 'Could not generate credentials for this access token'));
+            return done(new WebServerError('InputError', 'Could not generate credentials for this access token'));
           }
 
           if (!user.identity) {
-            done(new WebServerError(
+            return done(new WebServerError(
               'InputError',
               'Could not read user identity. The client is probably not properly configured.',
             ));
@@ -217,7 +217,7 @@ module.exports = class MozillaAuth0 {
 
           const exp = await this.expFromIdToken(extraParams.id_token);
 
-          done(null, {
+          return done(null, {
             profile,
             providerExpires: new Date(exp * 1000),
             identityProviderId: 'mozilla-auth0',

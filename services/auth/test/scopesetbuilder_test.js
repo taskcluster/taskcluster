@@ -57,7 +57,7 @@ suite(testing.suiteName(), () => {
     ],
   ].map(sets => sets.map(s => s.sort(scopeCompare)));
 
-  testCases.forEach((sets, index) => test(`...add().scopes() (${index+1})`, () => {
+  testCases.forEach((sets, index) => test(`...add().scopes() (${index + 1})`, () => {
     const builder = new ScopeSetBuilder();
     for (const s of sets) {
       builder.add(s);
@@ -65,7 +65,7 @@ suite(testing.suiteName(), () => {
     assume(builder.scopes()).eql(sets.reduce(mergeScopeSets, []));
   }));
 
-  testCases.forEach((sets, index) => test(`...add().scopes() shuffled (${index+1})`, () => {
+  testCases.forEach((sets, index) => test(`...add().scopes() shuffled (${index + 1})`, () => {
     for (let i = 0; i < 100; i++) {
       const builder = new ScopeSetBuilder();
       for (const s of _.shuffle(sets)) {
@@ -75,7 +75,7 @@ suite(testing.suiteName(), () => {
     }
   }));
 
-  testCases.forEach((sets, index) => test(`...add().scopes() optionallyClone (${index+1})`, () => {
+  testCases.forEach((sets, index) => test(`...add().scopes() optionallyClone (${index + 1})`, () => {
     const builder = new ScopeSetBuilder({optionallyClone: true});
     for (const s of sets) {
       builder.add(s);
@@ -101,14 +101,14 @@ suite(testing.suiteName(), () => {
     assume(sets[0] === builder.scopes()).is.false('expected to get a clone');
   });
 
-  testCases.forEach((sets, index) => test(`normalizeScopeSet() shuffled (${index+1})`, () => {
+  testCases.forEach((sets, index) => test(`normalizeScopeSet() shuffled (${index + 1})`, () => {
     for (let i = 0; i < 100; i++) {
       const scopes = _.shuffle([].concat(...sets));
       assume(ScopeSetBuilder.normalizeScopeSet(scopes)).eql(sets.reduce(mergeScopeSets, []));
     }
   }));
 
-  testCases.forEach((sets, index) => test(`mergeScopeSets() shuffled (${index+1})`, () => {
+  testCases.forEach((sets, index) => test(`mergeScopeSets() shuffled (${index + 1})`, () => {
     for (let i = 0; i < 100; i++) {
       assume(_.shuffle(sets).reduce(ScopeSetBuilder.mergeScopeSets, [])).eql(sets.reduce(mergeScopeSets, []));
     }

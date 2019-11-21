@@ -3,7 +3,6 @@ import { string, shape, func, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case/change-case';
-import { ListItemText } from '@material-ui/core';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
@@ -101,15 +100,13 @@ export default class RolesTable extends Component {
         sortDirection={sortDirection}
         renderRow={({ node: role }) => (
           <TableRow key={role.roleId}>
-            <TableCell padding="dense">
-              <TableCellItem
-                dense
-                button
-                component={Link}
-                to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
-                <ListItemText primary={role.roleId} />
-                <LinkIcon size={iconSize} />
-              </TableCellItem>
+            <TableCell>
+              <Link to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
+                <TableCellItem dense button>
+                  {role.roleId}
+                  <LinkIcon size={iconSize} />
+                </TableCellItem>
+              </Link>
             </TableCell>
           </TableRow>
         )}

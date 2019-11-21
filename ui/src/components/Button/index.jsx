@@ -20,7 +20,7 @@ export default class Button extends Component {
   static defaultProps = {
     requiresAuth: false,
     track: null,
-    variant: null,
+    variant: 'text',
     tooltip: null,
     spanProps: null,
   };

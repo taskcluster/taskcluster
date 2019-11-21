@@ -1228,7 +1228,7 @@
             "name": "task-notifications",
             "next": {
               "path": "manual/using/administration",
-              "title": "Project Administration"
+              "title": "Administration"
             },
             "path": "manual/using/task-notifications",
             "prev": {
@@ -1246,7 +1246,7 @@
             "data": {
               "filename": "using/administration.mdx",
               "order": 90,
-              "title": "Project Administration"
+              "title": "Administration"
             },
             "name": "administration",
             "next": {
@@ -1392,7 +1392,7 @@
             "path": "manual/using/integration",
             "prev": {
               "path": "manual/using/administration",
-              "title": "Project Administration"
+              "title": "Administration"
             },
             "up": {
               "path": "manual/using",
@@ -1475,7 +1475,7 @@
             },
             "name": "workers",
             "next": {
-              "path": "manual/deploying/gcp-credentials",
+              "path": "manual/deploying/cloud-credentials",
               "title": "GCP Credentials"
             },
             "path": "manual/deploying/workers",
@@ -1495,12 +1495,12 @@
               "order": 1000,
               "title": "GCP Credentials"
             },
-            "name": "gcp-credentials",
+            "name": "cloud-credentials",
             "next": {
               "path": "manual/deploying/github",
               "title": "GitHub Integration"
             },
-            "path": "manual/deploying/gcp-credentials",
+            "path": "manual/deploying/cloud-credentials",
             "prev": {
               "path": "manual/deploying/workers",
               "title": "Workers"
@@ -1524,7 +1524,7 @@
             },
             "path": "manual/deploying/github",
             "prev": {
-              "path": "manual/deploying/gcp-credentials",
+              "path": "manual/deploying/cloud-credentials",
               "title": "GCP Credentials"
             },
             "up": {
@@ -1742,13 +1742,35 @@
         },
         "name": "schema",
         "next": {
-          "path": "reference/platform/README",
-          "title": "Taskcluster Platform"
+          "path": "reference/url-structure",
+          "title": "URL Structure"
         },
         "path": "reference/schema",
         "prev": {
           "path": "reference/guide",
           "title": "Guide to The Microservices"
+        },
+        "up": {
+          "path": "reference/README",
+          "title": "Taskcluster Reference"
+        }
+      },
+      {
+        "children": [
+        ],
+        "data": {
+          "order": 2,
+          "title": "URL Structure"
+        },
+        "name": "url-structure",
+        "next": {
+          "path": "reference/platform/README",
+          "title": "Taskcluster Platform"
+        },
+        "path": "reference/url-structure",
+        "prev": {
+          "path": "reference/schema",
+          "title": "Schema Index"
         },
         "up": {
           "path": "reference/README",
@@ -2169,7 +2191,7 @@
           }
         ],
         "data": {
-          "order": 2,
+          "order": 12,
           "title": "Taskcluster Platform"
         },
         "name": "platform",
@@ -2179,8 +2201,8 @@
         },
         "path": "reference/platform/README",
         "prev": {
-          "path": "reference/schema",
-          "title": "Schema Index"
+          "path": "reference/url-structure",
+          "title": "URL Structure"
         },
         "up": {
           "path": "reference/README",
@@ -2880,7 +2902,7 @@
           }
         ],
         "data": {
-          "order": 3,
+          "order": 13,
           "title": "Core Services"
         },
         "name": "core",
@@ -3023,10 +3045,6 @@
                   "title": ".taskcluster.yml version 0"
                 },
                 "name": "taskcluster-yml-v0",
-                "next": {
-                  "path": "reference/integrations/login/README",
-                  "title": "login"
-                },
                 "path": "reference/integrations/github/taskcluster-yml-v0",
                 "prev": {
                   "path": "reference/integrations/github/taskcluster-yml-v1",
@@ -3055,117 +3073,10 @@
               "path": "reference/integrations/README",
               "title": "Integrations"
             }
-          },
-          {
-            "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 1,
-                  "title": "api"
-                },
-                "name": "api",
-                "next": {
-                  "path": "reference/integrations/login/logs",
-                  "title": "logs"
-                },
-                "path": "reference/integrations/login/api",
-                "prev": {
-                  "path": "reference/integrations/login/README",
-                  "title": "login"
-                },
-                "up": {
-                  "path": "reference/integrations/login/README",
-                  "title": "login"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 2,
-                  "title": "logs"
-                },
-                "name": "logs",
-                "next": {
-                  "path": "reference/integrations/login/getting-user-creds",
-                  "title": "Getting User Credentials"
-                },
-                "path": "reference/integrations/login/logs",
-                "prev": {
-                  "path": "reference/integrations/login/api",
-                  "title": "api"
-                },
-                "up": {
-                  "path": "reference/integrations/login/README",
-                  "title": "login"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000,
-                  "title": "Getting User Credentials"
-                },
-                "name": "getting-user-creds",
-                "next": {
-                  "path": "reference/integrations/login/mozilla-auth0",
-                  "title": "Mozilla-Auth0 logins"
-                },
-                "path": "reference/integrations/login/getting-user-creds",
-                "prev": {
-                  "path": "reference/integrations/login/logs",
-                  "title": "logs"
-                },
-                "up": {
-                  "path": "reference/integrations/login/README",
-                  "title": "login"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000,
-                  "title": "Mozilla-Auth0 logins"
-                },
-                "name": "mozilla-auth0",
-                "path": "reference/integrations/login/mozilla-auth0",
-                "prev": {
-                  "path": "reference/integrations/login/getting-user-creds",
-                  "title": "Getting User Credentials"
-                },
-                "up": {
-                  "path": "reference/integrations/login/README",
-                  "title": "login"
-                }
-              }
-            ],
-            "data": {
-              "order": 1000
-            },
-            "name": "login",
-            "next": {
-              "path": "reference/integrations/login/api",
-              "title": "api"
-            },
-            "path": "reference/integrations/login/README",
-            "prev": {
-              "path": "reference/integrations/github/taskcluster-yml-v0",
-              "title": ".taskcluster.yml version 0"
-            },
-            "up": {
-              "path": "reference/integrations/README",
-              "title": "Integrations"
-            }
           }
         ],
         "data": {
-          "order": 5,
+          "order": 15,
           "title": "Integrations"
         },
         "name": "integrations",

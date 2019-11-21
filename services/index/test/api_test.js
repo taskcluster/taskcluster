@@ -84,7 +84,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       ]);
     });
 
-    const testValidNamespaces = function(list, VALID_PREFIXES=['abc', 'bbc', 'cbc']) {
+    const testValidNamespaces = function(list, VALID_PREFIXES = ['abc', 'bbc', 'cbc']) {
       const namespaces = [];
       const INVALID_PREFIXES = ['pqr', 'ppt'];
       list.forEach(function(ns) {

@@ -112,6 +112,13 @@ class DeadlineResolver {
       }
     }));
 
+    // If there were no messages, back of for a bit.  This avoids pounding
+    // Azure repeatedly for empty queues, at the cost of some slight delay
+    // to finding new messages in those queues.
+    if (messages.length === 0) {
+      await this.sleep(2000);
+    }
+
     this.monitor.log.azureQueuePoll({
       messages: messages.length,
       failed,
@@ -151,8 +158,8 @@ class DeadlineResolver {
                     'message, taskId: ' + taskId + ' this only happens ' +
                     'if conditional load does not work');
       err.taskId = taskId;
-      err.taskDeadline= task.deadline.toJSON();
-      err.messageDeadline= deadline.toJSON();
+      err.taskDeadline = task.deadline.toJSON();
+      err.messageDeadline = deadline.toJSON();
       await this.monitor.reportError(err);
       return remove();
     }

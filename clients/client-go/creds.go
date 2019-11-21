@@ -15,7 +15,6 @@ import (
 
 	"github.com/taskcluster/jsonschema2go/text"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 )
 
 // Credentials represents the set of credentials required to access protected
@@ -53,10 +52,12 @@ func (creds *Credentials) String() string {
 // required for all HTTP operations.
 type Client struct {
 	Credentials *Credentials
-	// The Base URL of the service, beneath the root URL of the deployment.
-	// Typically tcclient.BaseURL function will create it for you.
-	// For example, "https://auth.taskcluster.net/v1" for current production auth service.
-	BaseURL string
+	// The Root URL of the Taskcluster deployment
+	RootURL string
+	// The (short) name of the service being accessed
+	ServiceName string
+	// The API version of the service being accessed
+	APIVersion string
 	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
 	Authenticate bool
 	// HTTPClient is a ReducedHTTPClient to be used for the http call instead of
@@ -229,9 +230,4 @@ func RootURLFromEnvVars() string {
 		return proxyURL
 	}
 	return os.Getenv("TASKCLUSTER_ROOT_URL")
-}
-
-func BaseURL(rootURL string, service string, version string) string {
-	b := tcurls.API(rootURL, service, version, "")
-	return b[:len(b)-1] // strip trailing slash
 }

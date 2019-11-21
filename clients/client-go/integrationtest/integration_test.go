@@ -7,9 +7,9 @@ import (
 
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-base-go/jsontest"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v22"
-	"github.com/taskcluster/taskcluster/clients/client-go/v22/tcindex"
-	"github.com/taskcluster/taskcluster/clients/client-go/v22/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v23"
+	"github.com/taskcluster/taskcluster/clients/client-go/v23/tcindex"
+	"github.com/taskcluster/taskcluster/clients/client-go/v23/tcqueue"
 )
 
 // This is a silly test that looks for the latest mozilla-inbound linux64 debug

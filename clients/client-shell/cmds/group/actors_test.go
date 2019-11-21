@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v22"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v23"
 	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 )
 
@@ -70,8 +70,8 @@ func listTaskGroupHandler(w http.ResponseWriter, _ *http.Request) {
 			    {
 			      "status": {
 			        "taskId": "ANnmjMocTymeTID0tlNJAw",
-			        "provisionerId": "aws-provisioner-v1",
-			        "workerType": "github-worker",
+			        "provisionerId": "some-provisioner-id",
+			        "workerType": "some-worker-type",
 			        "schedulerId": "taskcluster-github",
 			        "taskGroupId": "e4WPJRJeSdaSdKxeWzDlNQ",
 			        "deadline": "2017-03-30T15:49:31.389Z",

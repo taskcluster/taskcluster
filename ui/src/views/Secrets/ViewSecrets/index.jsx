@@ -5,6 +5,7 @@ import dotProp from 'dot-prop-immutable';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
+import escapeStringRegexp from 'escape-string-regexp';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
 import SecretsTable from '../../../components/SecretsTable';
@@ -46,7 +47,9 @@ export default class ViewSecrets extends Component {
       secretsConnection: {
         limit: VIEW_SECRETS_PAGE_SIZE,
       },
-      filter: secretSearch ? { name: { $regex: secretSearch } } : null,
+      filter: secretSearch
+        ? { name: { $regex: escapeStringRegexp(secretSearch), $options: 'i' } }
+        : null,
     });
   };
 
@@ -68,7 +71,12 @@ export default class ViewSecrets extends Component {
           previousCursor,
         },
         filter: this.state.secretSearch
-          ? { name: { $regex: this.state.secretSearch } }
+          ? {
+              name: {
+                $regex: escapeStringRegexp(this.state.secretSearch),
+                $options: 'i',
+              },
+            }
           : null,
       },
       updateQuery(previousResult, { fetchMoreResult }) {

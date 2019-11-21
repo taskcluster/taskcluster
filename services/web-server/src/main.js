@@ -23,6 +23,7 @@ const PulseEngine = require('./PulseEngine');
 const AuthorizationCode = require('./data/AuthorizationCode');
 const AccessToken = require('./data/AccessToken');
 const GithubAccessToken = require('./data/GithubAccessToken');
+const SessionStorage = require('./data/SessionStorage');
 const scanner = require('./login/scanner');
 
 const load = loader(
@@ -45,10 +46,10 @@ const load = loader(
     pulseClient: {
       requires: ['cfg', 'monitor'],
       setup: ({ cfg, monitor }) => {
-        if (!cfg.pulse.namespace) {
+        if (!cfg.pulse.username) {
           assert(
             process.env.NODE_ENV !== 'production',
-            'cfg.pulse.namespace is required',
+            'pulse credentials are required in production',
           );
 
           return null;
@@ -104,9 +105,9 @@ const load = loader(
     },
 
     app: {
-      requires: ['cfg', 'strategies', 'AuthorizationCode', 'AccessToken', 'auth', 'monitor'],
-      setup: ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor }) =>
-        createApp({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor }),
+      requires: ['cfg', 'strategies', 'AuthorizationCode', 'AccessToken', 'auth', 'monitor', 'SessionStorage'],
+      setup: ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor, SessionStorage }) =>
+        createApp({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor, SessionStorage }),
     },
 
     httpServer: {
@@ -205,6 +206,22 @@ const load = loader(
       }),
     },
 
+    SessionStorage: {
+      requires: ['cfg', 'monitor'],
+      setup: ({cfg, monitor}) => SessionStorage.setup({
+        tableName: 'SessionStorageTable',
+        monitor: monitor.childMonitor('table.sessionStorageTable'),
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: 'SessionStorageTable',
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
+        signingKey: cfg.azure.signingKey,
+        cryptoKey: cfg.azure.cryptoKey,
+      }),
+    },
+
     GithubAccessToken: {
       requires: ['cfg', 'monitor'],
       setup: ({cfg, monitor}) => GithubAccessToken.setup({
@@ -245,6 +262,19 @@ const load = loader(
           debug('Expiring access tokens');
           const count = await AccessToken.expire(now);
           debug('Expired ' + count + ' access tokens');
+        });
+      },
+    },
+
+    'cleanup-session-storage': {
+      requires: ['cfg', 'SessionStorage', 'monitor'],
+      setup: ({cfg, SessionStorage, monitor}) => {
+        return monitor.oneShot('cleanup-expire-session-storage', async () => {
+          const now = new Date();
+
+          debug('Expiring session storage entries');
+          const count = await AuthorizationCode.expire(now);
+          debug('Expired ' + count + ' session storage entries');
         });
       },
     },

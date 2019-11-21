@@ -2,7 +2,7 @@
 
 Simple utilities to validate scopes, scope-sets, and scope-expression satisfiability.
 
-For information on scopes, see [the Taskcluster documentation](../../ui/docs/manual/design/apis/hawk/scopes.mdx).
+For information on scopes, see [the Taskcluster documentation](https://docs.taskcluster.net/docs/manual/design/apis/hawk/scopes).
 
 ## Usage
 
@@ -22,68 +22,14 @@ assert(scopeUtils.validScope("..."));
 
 ### Scope Expressions
 
-There are two different but similar ways to combine scopes into larger sets.
-The first way is using Scope Expressions which are newer and more expressive.
-The second way is through nested arrays. Each layer of the nesting alternates
-between or-ing and and-ing the contents of the array in "disjunctive normal form".
-Prefer using the first way when possible. Following are pairs of identical
-expressions in each type:
+Throughout Taskcluster, we need to represent the scopes required to perform
+some operation.  In some cases, the requirements are complex, including
+alternatives.  For example, creating a task can use either scopes containing
+priority levels or the older form without priority levels.
 
-```
-// New Style
-{"AnyOf": ["abc", "def"]}
-// Old Style
-["abc", "def"]
-
-// New Style
-{"AnyOf": [{"AllOf": ["abc"]}, {"AllOf": ["def"]}]}
-// Old Style
-[["abc"], ["def"]]
-
-
-// New Style
-{"AllOf": ["abc", "def"]}
-// Old Style
-[["abc", "def"]]
-```
-
-### Correctness
-
-This library provides a way to validate both styles of scope expressions.
-
-```js
-// New Style
-assert(scopeUtils.validExpression({AnyOf: [{AllOf: ['a', 'b'}, {AllOf: ['c']}]});
-
-// Old Style
-assert(scopeUtils.validateScopeSets([['a', 'b'], ['c']]));
-```
-
-Old style scope expressions are always valid so long as they are nested arrays
-that contain valid scopes for all elements.
-
-New style scope expressions have a few more requirements. The following are
-all invalid:
-
-```
-{} // Empty object
-```
-
-### Satisfaction
-
-Given a scope set (an array of valid scopes), this library can check to see if the
-scope set "satisfies" a given expression. This is done in two ways depending
-on which form of expression is used.
-
-#### New Style
-
-These are the "new-style" way of dealing with scopes and allow for greater
-flexibility than the old style. A _scope expression_ is a [valid scope](#valid-scopes)
-or an object with a single key -- either `AnyOf` or `AllOf` mapping to an array
-of scope expressions.
-
-This check is performed with `scopeUtils.satisfiesExpression` which takes
-a scopeset as the first argument and a scope expression as the second.
+These requirements take the form of _scope expression_.  Such an expression is
+either a [valid scope](#valid-scopes) or an object with a single key -- either
+`AnyOf` or `AllOf` -- mapping to an array of scope expressions.
 
 A scope expression can be evaluated against an array of scopes to determine if the
 scope expression is "satisfied" by the array of scopes. Satisfaction in this context
@@ -96,6 +42,50 @@ means that the following clauses are satisfied:
 **`"<scope>"`:** The `<scope>` is
 [satisfied](/docs/reference/platform/taskcluster-auth/docs/scopes) by the scope-set.
 
+Examples:
+```js
+"hooks:trigger-hook:proj-taskcluster/release"
+```
+```js
+{AllOf: [
+  "hooks:modify-hook:proj-taskcluster/release",
+  "assume:hook-id:proj-taskcluster/release",
+]}
+```
+```js
+{AnyOf: [
+  {AllOf: [
+    "queue:scheduler-id:taskcluster-ui",
+    {AnyOf: [
+      "queue:create-task:lowest:proj-taskcluster/ci",
+      "queue:create-task:very-low:proj-taskcluster/ci",
+      "queue:create-task:low:proj-taskcluster/ci",
+    ]}
+  ]},
+  "queue:create-task:proj-taskcluster/ci",
+  "queue:define-task:proj-taskcluster/ci",
+]}
+```
+### Correctness
+
+The `validateExpression` function validates that an expression matches the
+structur described above.
+
+```js
+// Scope Expression
+assert(scopeUtils.validExpression({AnyOf: [{AllOf: ['a', 'b'}, {AllOf: ['c']}]});
+```
+
+### Satisfaction
+
+Given an array of valid scopes, also referred to as a scopeset, this library
+can check to see if the scopeset "satisfies" a given expression.
+
+Scope set satisfaction is checked with with `satisfiesExpression` which takes
+a scopeset as the first argument and a scope expression as the second.
+
+**NOTE:** this function is entirely local and does no expansion of `assume:` scopes.
+Call the authentication service's `expandScopes` endpoint to perform such expansion first, if necessary.
 
 Examples:
 
@@ -134,7 +124,7 @@ scopeUtils.satisfiesExpression(
 )
 ```
 
-#### Scopes Satisfying an Expression
+### Scopes Satisfying an Expression
 
 If you wish to understand why a certain expression was satisfied by a scopeset you can use the `scopesSatisfying` function.
 This takes the same `(scopeset, expression)` argument as `satisfiesExpression`, and returns `undefined` when the expression is not satisfied.
@@ -144,7 +134,7 @@ In the case that the expression is satisfied, it is always true that `satisfiesE
 The returned set of scopes is intuitively "the minimal set of scopes required to satisfy the expression" but is not quite minimal in one sense:
 If several alternatives of an `AnyOf` are satisfied, then the scopes used to satisfy all such alternatives are included.
 
-#### Scopes Required to Satisfy an Expression
+### Scopes Required to Satisfy an Expression
 
 If you wish to understand why a certain expression was *not* satisfied by a scopeset
 you can use the `removeGivenScopes` function. The function returns a scope expression
@@ -169,49 +159,10 @@ scopeUtils.removeGivenScopes(
 // {AllOf: ['def']}
 ```
 
-### Old Style
-
-These are evaluated with `scopeMatch`.
-
-The first argument to `scopeMatch` is the set of scopes being tested.  The
-second is an array of arrays of scopes, in disjunctive normal form, meaning
-that one set of scopes must be completely satisfied.
-
-```js
-let myScopes = [
-    'queue:create-task:aws-provisioner-v1/*',
-    'secrets:get:garbage/my-secrets/*',
-]
-assert(scopeUtils.scopeMatch(myScopes, [
-    // either both of these scopes must be satisfied
-    ['queue:create-task:aws-provisioner-v1/my-worker', 'secrets:get:garbage/my-secrets/xx'],
-    // or this scope
-    ['some-other-scope'],
-])
-```
-
-**NOTE:** this function is entirely local and does no expansion of `assume:` scopes.
-Call the authentication service's `expandScopes` endpoint to perform such expansion first, if necessary.
-
-More examples:
-```js
-// Checks if ['*'] satisfies [['a', 'b'], ['c']] (spoiler alert it does)
-assert(scopeUtils.scopeMatch(['*'], [['a', 'b'], ['c']]));
-
-// Checks if ['c'] satisfies [['a', 'b'], ['c']] (spoiler alert it does)
-assert(scopeUtils.scopeMatch(['c'], [['a', 'b'], ['c']]));
-
-// Checks if ['a', 'b'] satisfies [['a', 'b'], ['c']] (spoiler alert it does)
-assert(scopeUtils.scopeMatch(['a', 'b'], [['a', 'b'], ['c']]));
-
-// Checks if ['a*', 'b'] satisfies [['a', 'b'], ['c']] (spoiler alert it does)
-assert(scopeUtils.scopeMatch(['a*', 'b'], [['a', 'b'], ['c']]));
-
-// Checks if ['b'] satisfies [['a', 'b'], ['c']] (spoiler alert it doesn't)
-assert(!scopeUtils.scopeMatch(['b'], [['a', 'b'], ['c']]));
-```
-
 ### Set Operations
+
+This library supports some operations to combine sets of scopes (referred to as
+"scopesets").
 
 The intersection of two scopesets A and B is the largest scopeset C which is
 satisfied by both A and B. Less formally, it's the set of scopes in both
@@ -231,7 +182,11 @@ Note that this function will change the order of the given scopesets.
 
 ### Sorting, Merging, and Normalizing
 
-In a given set of scopes, one scope may satisfy another, making the latter
+The `scopeCompare` function sorts the scopes such that a scope ending with a
+`*` comes before anything else with the same prefix.  For example, `a*` comes
+before `a` and `ax`.
+
+In a given scopeset, one scope may satisfy another, making the latter
 superfluous.  For example, in `['ab*', 'abcd', 'xyz']` the first scope
 satisfies the second, so the scopeset is equivalent to `['ab*', 'xyz']`. A
 scopeset that is minimized using this technique is said to be "normalized".
@@ -247,10 +202,6 @@ assert.equal(
     ['a*', 'b'],
     scopeUtils.normalizeScopeSet(scopeset));
 ```
-
-The `scopeCompare` function sorts the scopes such that a scope ending with a
-`*` comes before anything else with the same prefix.  For example, `a*` comes
-before `a` and `ax`.
 
 Given two properly-sorted, normalized scopesets, the `mergeScopeSets` function
 will merge them into a new, sorted, normalized scopeset such that any scope

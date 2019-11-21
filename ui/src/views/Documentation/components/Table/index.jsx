@@ -6,7 +6,7 @@ const styles = theme => ({
   container: {
     width: '100%',
     overflow: 'auto',
-    marginBottom: 4 * theme.spacing.unit,
+    marginBottom: 4 * theme.spacing(1),
   },
   table: {
     display: 'table',
@@ -43,7 +43,7 @@ const styles = theme => ({
       padding: '4px 56px 4px 24px',
       textAlign: 'left',
       '&:last-child': {
-        paddingRight: theme.spacing.triple,
+        paddingRight: theme.spacing(3),
       },
     },
     '& td code': {
@@ -55,7 +55,7 @@ const styles = theme => ({
       padding: '4px 56px 4px 24px',
       textAlign: 'left',
       '&:last-child': {
-        paddingRight: theme.spacing.triple,
+        paddingRight: theme.spacing(3),
       },
     },
     '& tr': {

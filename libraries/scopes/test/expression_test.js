@@ -1,15 +1,14 @@
 const assert = require('assert');
-const utils = require('../src/expressions.js');
-const {scopeIntersection} = require('../src');
+const {removeGivenScopes, validExpression, satisfiesExpression, scopesSatisfying, scopeIntersection} = require('../src');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
   suite('scope expression validity:', function() {
 
-    function scenario(expr, shouldFail=false) {
+    function scenario(expr, shouldFail = false) {
       return () => {
         try {
-          assert(utils.validExpression(expr));
+          assert(validExpression(expr));
         } catch (err) {
           if (shouldFail) {
             return;
@@ -54,10 +53,10 @@ suite(testing.suiteName(), function() {
     // We want to be confident that `satisfiesExpression` and `scopesSatisfyingExpression` both
     // accept and reject the same inputs, so they are tested in parallel.
 
-    function satisfiesExpressionScenario(scopes, expr, shouldFail=false) {
+    function satisfiesExpressionScenario(scopes, expr, shouldFail = false) {
       return () => {
         try {
-          assert(utils.satisfiesExpression(scopes, expr));
+          assert(satisfiesExpression(scopes, expr));
         } catch (err) {
           if (shouldFail) {
             return;
@@ -72,22 +71,22 @@ suite(testing.suiteName(), function() {
 
     function scopesSatisfyingScenario(scopes, expr, expected) {
       return () => {
-        const got = utils.scopesSatisfying(scopes, expr);
+        const got = scopesSatisfying(scopes, expr);
         assert.deepEqual(got, expected);
       };
     }
 
     function scopesSatisfyingSatisfiesScenario(scopes, expr) {
       return () => {
-        assert(utils.satisfiesExpression(
-          utils.scopesSatisfying(scopes, expr),
+        assert(satisfiesExpression(
+          scopesSatisfying(scopes, expr),
           expr));
       };
     }
 
     function scopesSatisfyingIsSubsetScenario(scopes, expr) {
       return () => {
-        const satisfyingScopes = utils.scopesSatisfying(scopes, expr);
+        const satisfyingScopes = scopesSatisfying(scopes, expr);
         // assert that satisfyingScopes is a subset of scopes by checking
         // that it does not change under intersection
         assert.deepEqual(
@@ -156,7 +155,7 @@ suite(testing.suiteName(), function() {
 
     function scenario(scopes, expr, explanation) {
       return () => {
-        assert.deepEqual(explanation, utils.removeGivenScopes(scopes, expr));
+        assert.deepEqual(explanation, removeGivenScopes(scopes, expr));
       };
     }
 

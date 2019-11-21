@@ -48,7 +48,7 @@ class FakeGithub {
           body,
         };
         if (!this._comments[key]) {
-          this._comments[key]=[];
+          this._comments[key] = [];
         }
         this._comments[key].push(info);
       },
@@ -115,7 +115,7 @@ class FakeGithub {
           throwError(403);
         }
 
-        const check_run_id = Math.floor(Math.random()*(9999-1000)) + 1000;
+        const check_run_id = Math.floor(Math.random() * (9999 - 1000)) + 1000;
 
         return {
           data: {
@@ -242,7 +242,7 @@ class FakeGithubAuth {
   async getAppGithub() {
     return {
       apps: {
-        getInstallations: async () => {
+        listInstallations: async () => {
           return {data: _.map(this.installations, (install, id) => ({
             id: parseInt(id, 10),
             account: {login: install._installedOn},

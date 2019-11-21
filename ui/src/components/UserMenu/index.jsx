@@ -8,7 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import AccountIcon from 'mdi-react/AccountIcon';
-import HandPeaceIcon from 'mdi-react/HandPeaceIcon';
+import LogoutVariantIcon from 'mdi-react/LogoutVariantIcon';
 import { withAuth } from '../../utils/Auth';
 import UserMenuList from './UserMenuList';
 import UserMenuButton from './UserMenuButton';
@@ -18,10 +18,10 @@ import { THEME } from '../../utils/constants';
 @withApollo
 @withStyles(theme => ({
   leftIcon: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
   },
   userMenuButton: {
-    marginLeft: theme.spacing.unit,
+    marginLeft: theme.spacing(1),
   },
   buttonAvatar: {
     color: THEME.PRIMARY_TEXT_DARK,
@@ -106,14 +106,16 @@ export default class UserMenu extends Component {
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={this.handleMenuClose}>
-          <MenuItem title="Your Profile" component={Link} to="/profile">
-            <AccountIcon className={classes.leftIcon} />
-            Account
-          </MenuItem>
+          <Link to="/profile">
+            <MenuItem title="Your Profile">
+              <AccountIcon className={classes.leftIcon} />
+              Profile
+            </MenuItem>
+          </Link>
           <MenuItem
             title={`Sign Out of ${window.env.APPLICATION_NAME}`}
             onClick={this.handleSignOutClick}>
-            <HandPeaceIcon className={classes.leftIcon} />
+            <LogoutVariantIcon className={classes.leftIcon} />
             Sign Out
           </MenuItem>
         </Menu>

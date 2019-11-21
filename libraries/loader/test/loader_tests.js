@@ -433,7 +433,7 @@ suite('component loader', () => {
     assume(orderCalled).eql(['dep4', 'dep3', 'dep2', 'dep1', 'base']);
   });
 
-  test('should fail when specified component didn\'t load', async () => {
+  test("should fail when specified component didn't load", async () => {
     let load = subject({
       fail: {
         requires: [],
@@ -441,7 +441,7 @@ suite('component loader', () => {
       },
     });
 
-    assert.throws( function() { load.crashOnError(true); }, false);
+    assert.throws( function() { load.crashOnError(true); }, 'false');
   });
 
   test('should pass own name to setup', async () => {

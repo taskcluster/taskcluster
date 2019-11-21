@@ -64,6 +64,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         {
           Key: 'Name',
           Value: `${workerPoolId}`,
+        },
+        {
+          Key: 'WorkerPoolId',
+          Value: `${workerPoolId}`,
         }],
     },
   ];

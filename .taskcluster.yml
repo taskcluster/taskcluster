@@ -6,7 +6,7 @@ tasks:
   $if: 'tasks_for in ["github-push", "github-pull-request"]'
   then:
     $let:
-      node: '10.16.3'
+      node: '12.13.0'
       go: '1.12.9'
       artifactsDir:
         public:
@@ -24,7 +24,7 @@ tasks:
             else: ''
           else: ''
         owner: taskcluster-internal@mozilla.com
-  
+
         # This only supports pushes and pull requests for now.
         # If we start responding to another action type, make this
         # a $match.
@@ -40,7 +40,7 @@ tasks:
             url: ${event.pull_request.head.repo.url}
             ref: ${event.pull_request.head.sha}
             branch: ${event.pull_request.head.ref}
-  
+
         # We keep the separate from "others" so that we can assert a 1-1 mapping onto existing packages
         packages:
         - name: taskcluster-lib-api
@@ -67,7 +67,6 @@ tasks:
         - name: taskcluster-github
         - name: taskcluster-hooks
         - name: taskcluster-index
-        - name: taskcluster-login
         - name: taskcluster-notify
         - name: taskcluster-purge-cache
         - name: taskcluster-queue

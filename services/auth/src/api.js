@@ -117,9 +117,6 @@ const builder = new APIBuilder({
     // SentryManager from sentrymanager.js
     'sentryManager',
 
-    // Statsum configuration {secret, baseUrl}
-    'statsum',
-
     // The websocktunnel config (with property `secret`)
     'websocktunnel',
 
@@ -847,7 +844,7 @@ builder.declare({
 
       // Check scopes
       const formerRoleScopes = this.resolver.resolve(role.scopes);
-      const scopesAdded = input.scopes.filter(s => !scopeUtils.scopeMatch(formerRoleScopes, [[s]]));
+      const scopesAdded = input.scopes.filter(s => !scopeUtils.satisfiesExpression(formerRoleScopes, s));
       await req.authorize({roleId, scopesAdded});
 
       // check that this updated role does not introduce a cycle, careful not to modify
@@ -960,7 +957,6 @@ builder.declare({
 require('./aws');
 require('./azure');
 require('./sentry');
-require('./statsum');
 require('./websocktunnel');
 require('./gcp');
 

@@ -398,14 +398,14 @@ suite(testing.suiteName(), function() {
       monitor.count('something', 'foo');
       assert.equal(monitorManager.messages.length, 1);
       assert.equal(monitorManager.messages[0].Severity, 3);
-      assert.equal(monitorManager.messages[0].Fields.name, 'AssertionError [ERR_ASSERTION]');
+      assert.equal(monitorManager.messages[0].Fields.name, 'AssertionError');
     });
 
     test('should reject malformed measures', function() {
       monitor.measure('something', 'bar');
       assert.equal(monitorManager.messages.length, 1);
       assert.equal(monitorManager.messages[0].Severity, 3);
-      assert.equal(monitorManager.messages[0].Fields.name, 'AssertionError [ERR_ASSERTION]');
+      assert.equal(monitorManager.messages[0].Fields.name, 'AssertionError');
     });
 
     test('should monitor resource usage', async function() {

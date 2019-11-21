@@ -10,7 +10,7 @@ import Anchor from '../Anchor';
 const styles = theme => ({
   root: {
     position: 'relative',
-    height: theme.spacing.unit * 25,
+    height: theme.spacing(25),
   },
   cardActionArea: {
     height: '100%',
@@ -20,28 +20,27 @@ const styles = theme => ({
     alignItems: 'center',
   },
   title: {
-    marginLeft: theme.spacing.unit,
+    marginLeft: theme.spacing(1),
   },
 });
 
 function ExploreCard({ classes, to, title, description, icon, ...props }) {
   return (
-    <Card classes={{ root: classes.root }} {...props}>
-      <CardActionArea
-        className={classes.cardActionArea}
-        component={Anchor}
-        href={to}>
-        <CardContent className={classes.titleCardContent}>
-          {icon}
-          <Typography variant="h6" className={classes.title}>
-            {title}
-          </Typography>
-        </CardContent>
-        <CardContent>
-          <Typography>{description}</Typography>
-        </CardContent>
-      </CardActionArea>
-    </Card>
+    <Anchor href={to}>
+      <Card classes={{ root: classes.root }} {...props}>
+        <CardActionArea className={classes.cardActionArea}>
+          <CardContent className={classes.titleCardContent}>
+            {icon}
+            <Typography variant="h6" className={classes.title}>
+              {title}
+            </Typography>
+          </CardContent>
+          <CardContent>
+            <Typography variant="body2">{description}</Typography>
+          </CardContent>
+        </CardActionArea>
+      </Card>
+    </Anchor>
   );
 }
 

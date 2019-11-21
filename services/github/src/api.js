@@ -62,7 +62,7 @@ function getPushDetails(eventData) {
     'event.head.user.login': eventData.sender.login,
     'event.head.user.id': eventData.sender.id,
 
-    'event.type': isTagEvent? 'tag' : 'push',
+    'event.type': isTagEvent ? 'tag' : 'push',
   };
   if (isTagEvent) {
     details['event.head.tag'] = refName;
@@ -194,7 +194,7 @@ builder.declare({
   name: 'githubWebHookConsumer',
   title: 'Consume GitHub WebHook',
   category: 'Github Service',
-  stability: 'experimental',
+  stability: 'stable',
   description: [
     'Capture a GitHub event and publish it via pulse, if it\'s a push,',
     'release or pull request.',
@@ -319,7 +319,7 @@ builder.declare({
   route: '/builds',
   name: 'builds',
   title: 'List of Builds',
-  stability: 'experimental',
+  stability: 'stable',
   category: 'Github Service',
   output: 'build-list.yml',
   query: {
@@ -458,7 +458,7 @@ builder.declare({
     '',
     'Note: This is a redirect rather than a direct link.',
   ].join('\n'),
-  stability: 'experimental',
+  stability: 'stable',
   category: 'Github Service',
   method: 'get',
   route: '/repository/:owner/:repo/:branch/latest',
@@ -541,7 +541,7 @@ builder.declare({
   description: [
     'For a given Issue or Pull Request of a repository, this will write a new message.',
   ].join('\n'),
-  stability: 'experimental',
+  stability: 'stable',
   method: 'post',
   category: 'Github Service',
   // route and input (schema) matches github API

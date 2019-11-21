@@ -23,7 +23,7 @@ inspecting a task doesn't require any credentials, you just need the `taskId`.
 We generally allow users to inspect metadata without any credentials, which
 lets you easily create custom dashboards and other useful tools.
 
-```
+```js
 let taskcluster = require('taskcluster-client');
 
 let payload = {
@@ -40,7 +40,7 @@ let payload = {
 };
 
 let task = {
-  provisionerId:      'aws-provisioner-v1',
+  provisionerId:      'proj-getting-started',
   workerType:         'tutorial',
   created:            taskcluster.fromNowJSON('0 seconds'),
   deadline:           taskcluster.fromNowJSON('2 days 3 hours'),

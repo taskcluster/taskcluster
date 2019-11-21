@@ -39,7 +39,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v22"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v23"
 )
 
 type Notify tcclient.Client
@@ -59,7 +59,9 @@ type Notify tcclient.Client
 func New(credentials *tcclient.Credentials, rootURL string) *Notify {
 	return &Notify{
 		Credentials:  credentials,
-		BaseURL:      tcclient.BaseURL(rootURL, "notify", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "notify",
+		APIVersion:   "v1",
 		Authenticate: credentials != nil,
 	}
 }
@@ -80,9 +82,12 @@ func New(credentials *tcclient.Credentials, rootURL string) *Notify {
 // disabled.
 func NewFromEnv() *Notify {
 	c := tcclient.CredentialsFromEnvVars()
+	rootURL := tcclient.RootURLFromEnvVars()
 	return &Notify{
 		Credentials:  c,
-		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "notify", "v1"),
+		RootURL:      rootURL,
+		ServiceName:  "notify",
+		APIVersion:   "v1",
 		Authenticate: c.ClientID != "",
 	}
 }

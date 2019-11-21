@@ -6,13 +6,13 @@ const Task = require('../entities/Task');
 
 module.exports = ({ queue, index }) => {
   const task = new DataLoader(taskIds =>
-    Promise.all(
-      taskIds.map(async taskId => {
-        const task = await queue.task(taskId);
-
-        return new Task(taskId, null, task);
-      }),
-    ),
+    Promise.all(taskIds.map(async (taskId) => {
+      try {
+        return new Task(taskId, null, await queue.task(taskId));
+      } catch (err) {
+        return err;
+      }
+    })),
   );
   const indexedTask = new DataLoader(indexPaths =>
     Promise.all(indexPaths.map(indexPath => index.findTask(indexPath))),

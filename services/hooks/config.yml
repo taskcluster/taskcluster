@@ -42,11 +42,6 @@ defaults:
      # changes to hooks themselves are internal and shouldn't trigger hooks
      - exchange/taskcluster-hooks/.*
 
-
-production:
-  server:
-    env:              production
-
 test:
   # See user-config-example.yml for secrets credentials required for tests
   taskcluster:

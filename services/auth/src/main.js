@@ -158,7 +158,6 @@ const load = Loader({
           azureAccounts: cfg.app.azureAccounts,
           signatureValidator,
           sentryManager,
-          statsum: cfg.app.statsum,
           websocktunnel: cfg.app.websocktunnel,
           gcp,
         },
