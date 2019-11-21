@@ -16,7 +16,7 @@ builder.declare({
   input: undefined,
   output: 'azure-account-list-response.yml',
   stability: 'stable',
-  category: 'Auth Service',
+  category: 'Azure Credentials',
   scopes: 'auth:azure-table:list-accounts',
   title: 'List Accounts Managed by Auth',
   description: [
@@ -34,7 +34,7 @@ builder.declare({
     continuationToken: /^.*$/,
   },
   input: undefined,
-  category: 'Auth Service',
+  category: 'Azure Credentials',
   output: 'azure-table-list-response.yml',
   stability: 'stable',
   scopes: 'auth:azure-table:list-tables:<account>',
@@ -66,7 +66,7 @@ builder.declare({
   input: undefined,
   output: 'azure-table-access-response.yml',
   stability: 'stable',
-  category: 'Auth Service',
+  category: 'Azure Credentials',
   scopes: {
     if: 'levelIsReadOnly',
     then: {AnyOf: [
@@ -158,7 +158,7 @@ builder.declare({
   input: undefined,
   output: 'azure-container-list-response.yml',
   stability: 'stable',
-  category: 'Auth Service',
+  category: 'Azure Credentials',
   scopes: 'auth:azure-container:list-containers:<account>',
   title: 'List containers in an Account Managed by Auth',
   description: [
@@ -188,7 +188,7 @@ builder.declare({
   input: undefined,
   output: 'azure-container-response.yml',
   stability: 'stable',
-  category: 'Auth Service',
+  category: 'Azure Credentials',
   scopes: {
     if: 'levelIsReadOnly',
     then: {AnyOf: [

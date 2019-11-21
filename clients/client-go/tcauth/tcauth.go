@@ -641,8 +641,6 @@ func (auth *Auth) AzureContainerSAS_SignedURL(account, container, level string, 
 	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/containers/"+url.QueryEscape(container)+"/"+url.QueryEscape(level), nil, duration)
 }
 
-// Stability: *** DEPRECATED ***
-//
 // Get temporary DSN (access credentials) for a sentry project.
 // The credentials returned can be used with any Sentry client for up to
 // 24 hours, after which the credentials will be automatically disabled.
