@@ -178,7 +178,8 @@
     "dev:delete": "node infrastructure/tooling/src/main.js dev --k8s-action delete",
     "dev:verify": "node infrastructure/tooling/src/main.js dev --k8s-action verify",
     "smoketest": "node infrastructure/tooling/src/main.js smoketest",
-    "test:meta": "node infrastructure/tooling/src/main.js test:meta"
+    "test:meta": "node infrastructure/tooling/src/main.js test:meta",
+    "backup:run": "node infrastructure/tooling/src/main.js backup:run"
   },
   "renovate": {
     "extends": [

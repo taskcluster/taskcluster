@@ -132,6 +132,16 @@ program.command('smoketest')
     run(main, options[0]);
   });
 
+program.command('backup:run')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {backup} = require('./backup');
+    run(backup, options[0]);
+  });
+
 program.command('*', {noHelp: true})
   .action(() => program.help(txt => txt));
 

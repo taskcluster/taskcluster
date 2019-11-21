@@ -77,6 +77,7 @@ script/dev:delete) exec sh -c 'yarn run dev:delete';;
 script/dev:verify) exec sh -c 'yarn run dev:verify';;
 script/smoketest) exec sh -c 'yarn run smoketest';;
 script/test:meta) exec sh -c 'yarn run test:meta';;
+script/backup:run) exec sh -c 'yarn run backup:run';;
 references/web) exec sh -c 'exec sh infrastructure/references/references.sh';;
 ui/web) exec sh -c "node /app/ui/generate-env-js.js /app/ui/build/static/env.js && nginx -c /app/ui/web-ui-nginx-site.conf -g 'daemon off;'";;
 *) exec "${@}";;

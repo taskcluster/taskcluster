@@ -1,0 +1,69 @@
+---
+title: Backups
+---
+
+# Backups and Restores
+
+## Data Covered
+
+The backup and restore utilities address the backend data for the Taskcluster services.
+That includes:
+
+ * all runtime configuration such as clients, roles, hooks, worker pools
+ * stored status such as worker status and errors
+ * task metadata including task definitions and status
+
+Notably, backups do *not* include Task artifacts.
+These are generally too large to practically back up.
+
+This data is all contained in an Azure storage account, in tables and containers.
+The backup command automatically backs up all tables and containers used by its version of the Taskcluster services.
+The backup operation copies that data into an S3 bucket.
+
+All backup operations are "full".
+The storage backend does not support any kind of incremental approach.
+
+## Running Backups
+
+Like smoketests, backups can be run either from the root of the Taskcluster repository, or from the taskcluster/taskcluster-dev Docker image.
+In either case, the following environment variables are required:
+
+* `AZURE_ACCOUNT` / `AZURE_ACCOUNT_KEY` -- the storage account and a key with access to that account
+* `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` -- credentials with access to write to S3 (in fact, any credentials the AWS tools accept will work)
+* `BACKUP_BUCKET` -- the bucket to which to write the data
+
+With that information in place, run
+
+```
+$ yarn backup:run
+yarn run v1.19.1
+$ node infrastructure/tooling/src/main.js backup:run
+⣟ Back up Table Clients
+```
+
+or
+
+```
+$ docker run -ti --rm \
+  -e AZURE_ACCOUNT -e AZURE_ACCOUNT_ID -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e BACKUP_BUCKET \
+  taskcluster/taskcluster-devel:v1.2.3 script/backup:run
+yarn run v1.19.1
+$ node infrastructure/tooling/src/main.js backup:run
+⣟ Back up Table Clients
+```
+
+**NOTE** it's important that the version of the docker image correspond to the version of the deployed services.
+Older versions may not be aware of all important tables and containers.
+
+**NOTE** Taskcluster services encrypt data at rest where necessary.
+It is not necessary to further encrypt backups.
+Of course, backups should nonetheless be kept in a secure, non-public bucket.
+
+### Backup Lifecycle
+
+We recommend using the tools provided by AWS S3 to manage the lifecycle of your backups.
+Use versioning to keep multiple versions of each table, and use a lifecycle rule to delete older versions.
+
+## Runing Restores
+
+TBD
