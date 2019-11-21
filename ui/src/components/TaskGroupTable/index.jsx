@@ -14,7 +14,6 @@ import Table from '@material-ui/core/Table';
 import TableSortLabel from '@material-ui/core/TableSortLabel';
 import TableHead from '@material-ui/core/TableHead';
 import LinkIcon from 'mdi-react/LinkIcon';
-import yellow from '@material-ui/core/colors/yellow';
 import StatusLabel from '../StatusLabel';
 import Link from '../../utils/Link';
 import sort from '../../utils/sort';
@@ -145,9 +144,6 @@ const createSortedTasks = memoize(
   },
   windowScrollerOverride: {
     height: '100% !important',
-  },
-  pendingColor: {
-    backgroundColor: `${yellow[700]} !important`,
   },
 }))
 export default class TaskGroupTable extends Component {
