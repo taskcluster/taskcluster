@@ -10,7 +10,7 @@ import amber from '@material-ui/core/colors/amber';
 import blue from '@material-ui/core/colors/blue';
 import grey from '@material-ui/core/colors/grey';
 import green from '@material-ui/core/colors/green';
-import yellow from '@material-ui/core/colors/yellow';
+import purple from '@material-ui/core/colors/purple';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
@@ -140,9 +140,9 @@ const getStatusCount = memoize(
     },
   },
   pendingButton: {
-    backgroundColor: yellow[700],
+    backgroundColor: purple[400],
     '&:hover': {
-      backgroundColor: yellow[900],
+      backgroundColor: purple[600],
     },
   },
   exceptionButton: {

@@ -1,8 +1,17 @@
 import React, { Component } from 'react';
+import classNames from 'classnames';
 import { oneOf, bool, string } from 'prop-types';
 import Label from '@mozilla-frontend-infra/components/Label';
+import purple from '@material-ui/core/colors/purple';
+import { withStyles } from '@material-ui/core/styles';
 import labels from '../../utils/labels';
 
+@withStyles(theme => ({
+  pending: {
+    backgroundColor: `${purple[400]} !important`,
+    color: `${theme.palette.getContrastText(purple[400])} !important`,
+  },
+}))
 /**
  * A label color-coded based on known statuses from GraphQL responses.
  */
@@ -32,13 +41,18 @@ export default class StatusLabel extends Component {
   };
 
   render() {
-    const { variant, state, mini, className, ...props } = this.props;
+    const { classes, variant, state, mini, className, ...props } = this.props;
 
     return (
       <Label
         mini={mini}
         status={variant || labels[state] || 'default'}
-        className={className}
+        className={classNames(
+          {
+            [classes.pending]: state === 'PENDING',
+          },
+          className
+        )}
         {...props}>
         {state || 'UNKNOWN'}
       </Label>
