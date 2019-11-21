@@ -224,8 +224,11 @@ class ArtifactImage {
 
       return true;
     } catch(e) {
-      this.stream.write(fmtLog(`Downloaded image is corrupted: ${e.message}`));
       delete this.knownHashes[`${this.taskId}-${this.artifactPath}`];
+      if (e.statusCode === 404) {
+        return false;
+      }
+      this.stream.write(fmtLog(`Error checking for image presence: ${e.message}`));
       return false;
     }
   }
