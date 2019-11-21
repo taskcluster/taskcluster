@@ -7,7 +7,7 @@ const run = (main, arg) => {
   main(arg).then(
     () => {},
     err => {
-      console.error(err.toString());
+      console.error(err);
       process.exit(1);
     });
 };
