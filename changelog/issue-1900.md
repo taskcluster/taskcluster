@@ -1,4 +1,4 @@
-level: silent
-reference: bug 1900
+level: patch
+reference: issue 1900
 ---
-Including Reasons card above the fold
+The Taskcluster UI Task view now shows "Reason Resolved" above the fold. You previously had to click "See More" to find this field.  
