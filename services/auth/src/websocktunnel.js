@@ -11,7 +11,7 @@ builder.declare({
   name: 'websocktunnelToken',
   output: 'websocktunnel-token-response.yml',
   stability: 'stable',
-  category: 'Auth Service',
+  category: 'Websocktunnel Credentials',
   scopes: 'auth:websocktunnel-token:<wstAudience>/<wstClient>',
   title: 'Get a client token for the Websocktunnel service',
   description: [

@@ -8,7 +8,7 @@ builder.declare({
   stability: 'stable',
   scopes: 'auth:gcp:access-token:<projectId>/<serviceAccount>',
   title: 'Get Temporary GCP Credentials',
-  category: 'Auth Service',
+  category: 'GCP Credentials',
   description: [
     'Get temporary GCP credentials for the given serviceAccount in the given project.',
     '',
