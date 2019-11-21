@@ -3,8 +3,7 @@ const path = require('path');
 const config = require('taskcluster-lib-config');
 const {listServices, readRepoYAML, REPO_ROOT} = require('../../utils');
 
-// We're not going to deploy login into k8s
-const SERVICES = listServices().filter(s => !['login'].includes(s));
+const SERVICES = listServices();
 
 exports.tasks = [];
 

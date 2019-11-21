@@ -1,8 +1,7 @@
 const _ = require('lodash');
 const {listServices, writeRepoJSON} = require('../../utils');
 
-// We're not going to deploy login into k8s
-const SERVICES = listServices().filter(s => !['login'].includes(s));
+const SERVICES = listServices();
 
 exports.tasks = [];
 
