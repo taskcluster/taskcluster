@@ -1,0 +1,4 @@
+tables:
+- Hooks
+- Queues
+- LastFire3

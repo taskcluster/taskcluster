@@ -11,7 +11,7 @@ SERVICES.forEach(name => {
   exports.tasks.push({
     title: `Fetch service metadata for ${name}`,
     requires: [],
-    provides: [`configs-${name}`, `procslist-${name}`, `scopes-${name}`],
+    provides: [`configs-${name}`, `procslist-${name}`, `scopes-${name}`, `azure-${name}`],
     run: async (requirements, utils) => {
       const envVars = config({
         files: [{
@@ -23,19 +23,22 @@ SERVICES.forEach(name => {
 
       const procs = await readRepoYAML(path.join('services', name, 'procs.yml'));
 
-      const scopesPath = path.join('services', name, 'scopes.yml');
-      let scopes = null;
-      try {
-        scopes = await readRepoYAML(scopesPath);
-      } catch (err) {
-        if (err.code !== 'ENOENT') {
-          throw err;
+      const readOrNull = async path => {
+        try {
+          return await readRepoYAML(path);
+        } catch (err) {
+          if (err.code !== 'ENOENT') {
+            throw err;
+          }
         }
-      }
+        return null;
+      };
+
       return {
         [`configs-${name}`]: envVars,
         [`procslist-${name}`]: procs,
-        [`scopes-${name}`]: scopes,
+        [`scopes-${name}`]: await readOrNull(path.join('services', name, 'scopes.yml')),
+        [`azure-${name}`]: await readOrNull(path.join('services', name, 'azure.yml')),
       };
     },
   });

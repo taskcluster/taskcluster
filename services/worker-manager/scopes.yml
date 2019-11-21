@@ -1,9 +1,7 @@
-# NOTE: ${azureAccountId} will be substituted with the azure account at runtime
 - auth:create-client:worker/*
 - assume:worker-type:*
 - assume:worker-pool:*
 - assume:worker-id:*
-- auth:azure-table:read-write:${azureAccountId}/WM*
 - notify:email:*
 - secrets:get:worker-type:*
 - secrets:get:worker-pool:*

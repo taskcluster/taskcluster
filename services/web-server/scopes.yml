@@ -1,4 +1,3 @@
-# NOTE: ${azureAccountId} will be substituted with the azure account at runtime
 - assume:github-team:*
 - assume:github-org-admin:*
 - assume:mozilla-group:*
@@ -15,8 +14,4 @@
 - auth:enable-client:github/*
 - auth:reset-access-token:github/*
 - auth:update-client:github/*
-- auth:azure-table:read-write:${azureAccountId}/AccessTokenTable
-- auth:azure-table:read-write:${azureAccountId}/AuthorizationCodesTable
-- auth:azure-table:read-write:${azureAccountId}/GithubAccessTokenTable
-- auth:azure-table:read-write:${azureAccountId}/SessionStorageTable
 - assume:login-identity:*

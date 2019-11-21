@@ -7,6 +7,11 @@ defaults:
     # Delete expired entries in both the access token and authorization code tables
     authorizationCodeExpirationDelay: '- 10 minutes'
 
+    authorizationCodesTableName: AuthorizationCodesTable
+    accessTokenTableName: AccessTokenTable
+    sessionStorageTableName: SessionStorageTable
+    githubAccessTokenTableName: GithubAccessTokenTable
+
   monitoring:
     level: !env:optional LEVEL
     errorConfig: !env:json:optional ERROR_CONFIG

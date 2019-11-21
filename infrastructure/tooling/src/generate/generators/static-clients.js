@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const {listServices, writeRepoJSON} = require('../../utils');
+const {scopeCompare, normalizeScopeSet} = require('taskcluster-lib-scopes');
 
 const SERVICES = listServices();
 
@@ -9,18 +10,27 @@ exports.tasks.push({
   title: 'Assemble static clients',
   requires: [
     ...SERVICES.map(name => `scopes-${name}`),
+    ...SERVICES.map(name => `azure-${name}`),
   ],
   provides: ['static-clients'],
   run: async (requirements, utils) => {
     const staticClients = [];
     SERVICES.forEach(name => {
-      const scopes = requirements[`scopes-${name}`];
-      if (scopes) {
-        staticClients.push({
-          clientId: `static/taskcluster/${name}`,
-          scopes: scopes,
-        });
+      // auth defines scopes, so it doesn't need any of its own.
+      if (name === 'auth') {
+        return;
       }
+
+      const tables = (requirements[`azure-${name}`] || {}).tables || [];
+      const scopes = [
+        ...(requirements[`scopes-${name}`] || []),
+        ...tables.map(t => 'auth:azure-table:read-write:${azureAccountId}/' + t),
+      ];
+      scopes.sort(scopeCompare);
+      staticClients.push({
+        clientId: `static/taskcluster/${name}`,
+        scopes: normalizeScopeSet(scopes),
+      });
     });
 
     staticClients.push({

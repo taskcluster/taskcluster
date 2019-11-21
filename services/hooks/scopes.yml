@@ -1,7 +1,3 @@
-# NOTE: ${azureAccountId} will be substituted with the azure account at runtime
-- auth:azure-table:read-write:${azureAccountId}/Hooks
-- auth:azure-table:read-write:${azureAccountId}/Queues
-- auth:azure-table:read-write:${azureAccountId}/LastFire3
 - assume:hook-id:*
 - notify:email:*
 - queue:create-task:*

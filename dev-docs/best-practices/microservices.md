@@ -144,3 +144,14 @@ type Hook {
   status(hookGroupId: ID = hookGroupId, hookId: ID = hookId): HookStatus
 }
 ```
+
+## Scopes
+
+Any scopes that the service needs in its credentials should be listed in `service/<name>/scopes.yml`.
+The exception is scopes for Azure table access.
+
+## Azure Tables
+
+Any azure tables or containers that a service uses in production should be described in `service/<name>/azure.yml`, under keys `containers` and `tables`.
+The `yarn generate` logic will ensure that appropriate scopes are added to the service's static clients.
+
