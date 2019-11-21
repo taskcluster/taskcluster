@@ -104,6 +104,19 @@ const DOTS_VARIANT_LIMIT = 5;
       marginLeft: theme.spacing(0.5),
       marginBottom: theme.spacing(0.5),
     },
+    previousPageArrow: {
+      marginLeft: -theme.spacing(1),
+      marginRight: 0,
+      '& .mdi-icon': {
+        fill: 'currentcolor',
+      },
+    },
+    nextPageArrow: {
+      marginRight: 0,
+      '& .mdi-icon': {
+        fill: 'currentcolor',
+      },
+    },
     lockIconDiv: {
       marginRight: theme.spacing(2),
     },
@@ -488,9 +501,9 @@ export default class TaskRunsCard extends Component {
             position="static"
             steps={runs.length}
             activeStep={selectedRunId}
-            className={classes.root}
             nextButton={
               <Button
+                className={classes.nextPageArrow}
                 size="small"
                 onClick={this.handleNext}
                 disabled={run ? selectedRunId === runs.length - 1 : true}>
@@ -500,6 +513,7 @@ export default class TaskRunsCard extends Component {
             }
             backButton={
               <Button
+                className={classes.previousPageArrow}
                 size="small"
                 onClick={this.handlePrevious}
                 disabled={run ? selectedRunId === 0 : true}>
