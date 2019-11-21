@@ -3,6 +3,7 @@ package static
 import (
 	"fmt"
 
+	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
@@ -34,7 +35,7 @@ func (p *StaticProvider) ConfigureRun(state *run.State) error {
 		return err
 	}
 
-	state.RootURL = pc.RootURL
+	state.RootURL = tcurls.NormalizeRootURL(pc.RootURL)
 
 	// We need a worker manager client for fetching taskcluster credentials.
 	// Ensure auth is disabled in client, since we don't have credentials yet.

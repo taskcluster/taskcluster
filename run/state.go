@@ -2,6 +2,7 @@ package run
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
@@ -56,6 +57,10 @@ type State struct {
 func (state *State) CheckProviderResults() error {
 	if state.RootURL == "" {
 		return fmt.Errorf("provider did not set RootURL")
+	}
+
+	if strings.HasSuffix(state.RootURL, "/") {
+		return fmt.Errorf("RootURL must not end with `/`")
 	}
 
 	if state.Credentials.ClientID == "" {

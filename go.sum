@@ -42,6 +42,8 @@ github.com/taskcluster/taskcluster-base-go v1.0.0 h1:Jh2R/J7+a23LjtYEHQtkFV04QBx
 github.com/taskcluster/taskcluster-base-go v1.0.0/go.mod h1:ByyzyqqufsfZTrAHUw+0Grp8FwZAizZOKzVE1IpDXxQ=
 github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible h1:57WLzh7B04y6ahTOJ8wjvdkbwYqnyJkwLXQ1Tu4E/DU=
 github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible/go.mod h1:ALqTgi15AmJGEGubRKM0ydlLAFatlQPrQrmal9YZpQs=
+github.com/taskcluster/taskcluster-lib-urls v12.1.0+incompatible h1:YzwkIlgCZXbJHfg23GJCJ/kgSRh44btr5wEAviGUqVA=
+github.com/taskcluster/taskcluster-lib-urls v12.1.0+incompatible/go.mod h1:ALqTgi15AmJGEGubRKM0ydlLAFatlQPrQrmal9YZpQs=
 github.com/taskcluster/taskcluster/clients/client-go/v17 v17.0.0 h1:y3GqEdBjty09pwYV63CTKDggrn2DM4VbHfWIs0tmHc4=
 github.com/taskcluster/taskcluster/clients/client-go/v17 v17.0.0/go.mod h1:shpgbD7cBFgdZDPajxA5+XHojTf6TrNc28mVMzMoiyg=
 github.com/taskcluster/taskcluster/clients/client-go/v18 v18.0.1 h1:nKTJgDfWUGa/Hna8q+8XADrLy6QavabNWRdvChc2aos=
