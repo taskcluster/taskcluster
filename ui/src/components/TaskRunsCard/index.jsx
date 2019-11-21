@@ -354,6 +354,21 @@ export default class TaskRunsCard extends Component {
                       </ListItem>
                     </List>
                   </Collapse>
+                  <ListItem>
+                    <ListItemText
+                      primary="Reason Resolved"
+                      secondary={
+                        run.reasonResolved ? (
+                          <StatusLabel
+                            variant="default"
+                            state={run.reasonResolved}
+                          />
+                        ) : (
+                          <em>n/a</em>
+                        )
+                      }
+                    />
+                  </ListItem>
                   <CopyToClipboard
                     title={`${run.scheduled} (Copy)`}
                     text={run.scheduled}>
@@ -427,18 +442,11 @@ export default class TaskRunsCard extends Component {
                     <ListItem>
                       <ListItemText
                         primary="Reason Created"
-                        secondary={<StatusLabel state={run.reasonCreated} />}
-                      />
-                    </ListItem>
-                    <ListItem>
-                      <ListItemText
-                        primary="Reason Resolved"
                         secondary={
-                          run.reasonResolved ? (
-                            <StatusLabel state={run.reasonResolved} />
-                          ) : (
-                            <em>n/a</em>
-                          )
+                          <StatusLabel
+                            variant="default"
+                            state={run.reasonCreated}
+                          />
                         }
                       />
                     </ListItem>
