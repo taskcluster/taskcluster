@@ -320,7 +320,7 @@ Generally a project using this library will face different use cases and authent
 
 ### Shared authentication
 
-The class `taskcluster.helper.TaskclusterConfig` is made to be instancied once in your project, usually in a top level module. That singleton is then accessed by different parts of your projects, whenever a Taskcluster service is needed.
+The class `taskcluster.helper.TaskclusterConfig` is made to be instantiated once in your project, usually in a top level module. That singleton is then accessed by different parts of your projects, whenever a Taskcluster service is needed.
 
 Here is a sample usage:
 
