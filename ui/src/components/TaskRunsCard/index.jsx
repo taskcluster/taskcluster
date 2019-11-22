@@ -201,11 +201,11 @@ export default class TaskRunsCard extends Component {
   handleToggleArtifacts = () => {
     const { history } = this.props;
     const { taskId } = this.getCurrentRun();
-    const showArtifacts = window.location.hash === '#artifacts';
+    const showArtifacts = history.location.hash === '#artifacts';
 
     showArtifacts
-      ? history.push(`/tasks/${taskId}`)
-      : history.push(`/tasks/${taskId}#artifacts`);
+      ? history.replace(`/tasks/${taskId}`)
+      : history.replace(`/tasks/${taskId}#artifacts`);
   };
 
   getLiveLogArtifactFromRun = run => {
