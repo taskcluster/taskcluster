@@ -261,11 +261,6 @@ export default class Log extends Component {
     } = this.props;
     const highlight = this.getHighlightFromHash();
     const scrollToLine = this.getScrollToLine();
-    const containerStyle = {
-      width: 'auto',
-      maxWidth: 'initial',
-      overflow: 'initial',
-    };
     const rawLogButton = (
       <SpeedDialAction
         tooltipOpen
@@ -289,7 +284,6 @@ export default class Log extends Component {
             <LazyLog
               enableSearch
               caseInsensitive
-              containerStyle={containerStyle}
               url={url}
               onScroll={this.handleScroll}
               stream={stream}
