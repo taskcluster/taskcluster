@@ -209,7 +209,9 @@ export default class ViewTask extends Component {
     if (task) {
       tags = Object.entries(task.tags);
     }
+
     console.log('ViewTask', this.props);
+
     return (
       <Dashboard
         title={task ? `Task "${task.metadata.name}"` : 'Task'}
@@ -291,7 +293,7 @@ export default class ViewTask extends Component {
                 />
               </Grid>
             </Grid>
-            <TaskButtons data={this.props.data} match={match} />
+            <TaskButtons data={this.props.data} />
           </Fragment>
         )}
       </Dashboard>
