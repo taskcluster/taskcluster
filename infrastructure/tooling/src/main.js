@@ -133,6 +133,22 @@ program.command('smoketest')
   });
 
 program.command('backup:run')
+  .option('--include <resource>', 'Include the given resource in the backup (repeatable)', (v, p) => p.concat([v]), [])
+  .option('--exclude <resource>', 'Exclude the given resource from the backup (repeatable)', (v, p) => p.concat([v]), [])
+  .on('--help', () => {
+    console.log([
+      '',
+      'By default, all tables and containers are backed up.  Use --exclude to remove resources',
+      'from this default list, or --include to list specific resources that should be backed',
+      'up, excluding all others.  This is commonly used to back up the QueueTasks table less',
+      'frequently:',
+      '',
+      '  daily: `yarn backup:run --exclude table/QueueTasks`',
+      '  weekly: `yarn backup:run --include table/QueueTasks`',
+      '',
+      'Resources are named `table/<tableName>` and `container/<containerName>`.',
+    ].join('\n'));
+  })
   .action((...options) => {
     if (options.length !== 1) {
       console.error('unexpected command-line arguments');
