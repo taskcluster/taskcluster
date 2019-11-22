@@ -40,7 +40,7 @@ means that the following clauses are satisfied:
 **`AnyOf: [..]`** At least one sub-expression must be satisfied.
 
 **`"<scope>"`:** The `<scope>` is
-[satisfied](/docs/reference/platform/taskcluster-auth/docs/scopes) by the scope-set.
+[satisfied](https://docs.taskcluster.net/docs/reference/platform/auth/scopes) by the scope-set.
 
 Examples:
 ```js
