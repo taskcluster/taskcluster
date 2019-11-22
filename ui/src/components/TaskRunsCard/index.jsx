@@ -153,7 +153,6 @@ export default class TaskRunsCard extends Component {
   };
 
   state = {
-    showArtifacts: false,
     showMore: false,
   };
 
@@ -200,7 +199,13 @@ export default class TaskRunsCard extends Component {
   };
 
   handleToggleArtifacts = () => {
-    this.setState({ showArtifacts: !this.state.showArtifacts });
+    const { history } = this.props;
+    const { taskId } = this.getCurrentRun();
+    const showArtifacts = history.location.hash === '#artifacts';
+
+    showArtifacts
+      ? history.replace(`/tasks/${taskId}`)
+      : history.replace(`/tasks/${taskId}#artifacts`);
   };
 
   getLiveLogArtifactFromRun = run => {
@@ -295,9 +300,10 @@ export default class TaskRunsCard extends Component {
       workerType,
       theme,
     } = this.props;
-    const { showArtifacts, showMore } = this.state;
+    const { showMore } = this.state;
     const run = this.getCurrentRun();
     const liveLogArtifact = this.getLiveLogArtifactFromRun(run);
+    const showArtifacts = window.location.hash === '#artifacts';
 
     return (
       <Card raised>
