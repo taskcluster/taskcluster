@@ -21,7 +21,14 @@ Workers must "know" the following at startup:
  * `workerGroup` and `workerId`
 
 In cloud systems, this is typically communicated as "user data" through the cloud provider's metadata service.
-Other deployments may provide this information statically, such as via Puppet.
+Other deployments may provide this information statically, such as via Puppet. Workers are also provided
+`workerConfig` by each provider that they can use to configure themselves on top of this required data.
+
+| Cloud Provider | `workerConfig` Location                                                               |
+| -------------- | ------------------------------------------------------------------------------------- |
+| Google         | `http://metadata.google.internal/computeMetadata/v1/instance/attributes/taskcluster`  |
+| Amazon         | `http://169.254.169.254/latest/user-data`                                             |
+| Azure (WIP)    | `http://169.254.169.254/metadata/instance/compute/customData?api-version=2019-06-04"` |
 
 Note, in particular, that workers are not typically started with static Taskcluster credentials.
 While it remains possible to do so, it is not recommended and will result in a "ghost" worker that claims work but does not appear in the worker-manager.
