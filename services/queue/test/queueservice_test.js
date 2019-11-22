@@ -3,9 +3,7 @@ const assert = require('assert');
 const crypto = require('crypto');
 const QueueService = require('../src/queueservice');
 const _ = require('lodash');
-const request = require('superagent');
 const debug = require('debug')('test:queueservice');
-const xml2js = require('xml2js');
 const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
 const helper = require('./helper');
@@ -27,7 +25,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         claimQueue: cfg.app.claimQueue,
         resolvedQueue: cfg.app.resolvedQueue,
         deadlineQueue: cfg.app.deadlineQueue,
-        pendingPollTimeout: 30 * 1000,
         deadlineDelay: 10,
         monitor: await helper.load('monitor'),
       });
@@ -39,7 +36,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         claimQueue: cfg.app.claimQueue,
         resolvedQueue: cfg.app.resolvedQueue,
         deadlineQueue: cfg.app.deadlineQueue,
-        pendingPollTimeout: 30 * 1000,
         deadlineDelay: 1000,
         monitor: await helper.load('monitor'),
       });
@@ -223,133 +219,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       return queueService.client.getMetadata(queueName);
     }));
   });
-
-  if (!mock) {
-    // signed URLs are not supported for mock QueueService, so no need for these
-    // tests in that case.
-    test('put, get, delete (priority: high) (signed URLs)', async function() {
-      const taskId = slugid.v4();
-      const runId = 0;
-      const task = {
-        taskId: taskId,
-        provisionerId: provisionerId,
-        workerType: workerType,
-        priority: 'high',
-        deadline: new Date(new Date().getTime() + 5 * 60 * 1000),
-      };
-
-      // Put message into pending queue
-      debug('### Putting message in pending queue');
-      await queueService.putPendingMessage(task, runId);
-
-      // Get signedPollUrl and signedDeleteUrl
-      const {
-        queues,
-      } = await queueService.signedPendingPollUrls(provisionerId, workerType);
-
-      // Get a message
-      debug('### Polling for queue for message');
-      let i = 0;
-      let queue;
-      const message = await testing.poll(async () => {
-        // Poll azure queue
-        debug(' - Polling azure queue: %s', i);
-        queue = queues[i++ % queues.length];
-        const res = await request.get(queue.signedPollUrl).buffer();
-        assert(res.ok, 'Request failed');
-        debug(' - poll succeeded');
-
-        // Parse XML
-        const json = await new Promise((accept, reject) => {
-          xml2js.parseString(res.text, (err, json) => {
-            err ? reject(err) : accept(json);
-          });
-        });
-        debug(' - parse succeeded');
-
-        // Get message
-        assert(json.QueueMessagesList.QueueMessage, 'no messages in queue');
-        return json.QueueMessagesList.QueueMessage[0];
-      }, 20 * queues.length, 1000);
-
-      // Load the payload
-      let payload = Buffer.from(message.MessageText[0], 'base64').toString();
-      payload = JSON.parse(payload);
-
-      assert(payload.taskId === taskId, 'Got wrong taskId');
-      assert(typeof payload.hintId === 'string', 'Missing hintId');
-
-      debug('### Delete pending message');
-      const deleteMessageUrl = queue.signedDeleteUrl
-        .replace('{{messageId}}', encodeURIComponent(message.MessageId))
-        .replace('{{popReceipt}}', encodeURIComponent(message.PopReceipt));
-      const res = await request.del(deleteMessageUrl).buffer();
-      assert(res.ok, 'Message failed to delete');
-    });
-
-    test('put, get, delete (priority: lowest) (signed URLs)', async function() {
-      const taskId = slugid.v4();
-      const runId = 0;
-      const task = {
-        taskId: taskId,
-        provisionerId: provisionerId,
-        workerType: workerType,
-        priority: 'lowest',
-        deadline: new Date(new Date().getTime() + 5 * 60 * 1000),
-      };
-
-      // Put message into pending queue
-      debug('### Putting message in pending queue');
-      await queueService.putPendingMessage(task, runId);
-
-      // Get signedPollUrl and signedDeleteUrl
-      const {
-        queues,
-      } = await queueService.signedPendingPollUrls(provisionerId, workerType);
-
-      // Get a message
-      debug('### Polling for queue for message');
-      let i = 0;
-      let queue;
-      const message = await testing.poll(async () => {
-        // Poll azure queue
-        debug(' - Polling azure queue: %s', i);
-        queue = queues[i++ % queues.length];
-        const res = await request.get(queue.signedPollUrl).buffer();
-        assert(res.ok, 'Request failed');
-        debug(' - poll succeeded');
-
-        // Parse XML
-        const json = await new Promise((accept, reject) => {
-          xml2js.parseString(res.text, (err, json) => {
-            err ? reject(err) : accept(json);
-          });
-        });
-        debug(' - parse succeeded');
-
-        // Get message (will if fail if there is no message)
-        return json.QueueMessagesList.QueueMessage[0];
-      }, 20 * queues.length);
-
-      // Load the payload
-      let payload = Buffer.from(message.MessageText[0], 'base64').toString();
-      payload = JSON.parse(payload);
-      debug('Received message with payload: %j', payload);
-
-      // Check that we got the right task, notice they have life time of 5 min,
-      // so waiting 5 min should fix this issue.. Another option is to create
-      // a unique queue for each test run. Probably not needed.
-      assert(payload.taskId === taskId, 'Got wrong taskId, try again in 5 min');
-      assert(payload.hintId, 'missing hintId');
-
-      debug('### Delete pending message');
-      const deleteMessageUrl = queue.signedDeleteUrl
-        .replace('{{messageId}}', encodeURIComponent(message.MessageId))
-        .replace('{{popReceipt}}', encodeURIComponent(message.PopReceipt));
-      const res = await request.del(deleteMessageUrl).buffer();
-      assert(res.ok, 'Message failed to delete');
-    });
-  }
 
   test('deleteUnusedWorkerQueues (can delete queues)', async () => {
     // 11 days into the future, so we'll delete all queues (yay)

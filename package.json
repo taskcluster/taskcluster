@@ -156,7 +156,6 @@
     "temporary": "^1.0.0",
     "tmp": "^0.1.0",
     "url-join": "^4.0.0",
-    "xml2js": "^0.4.19",
     "zen-observable": "^0.8.11",
     "zurvan": "^0.5.2"
   },

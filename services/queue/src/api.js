@@ -1265,47 +1265,6 @@ builder.declare({
   return res.reply({status});
 });
 
-/** Poll for a task */
-builder.declare({
-  method: 'get',
-  route: '/poll-task-url/:provisionerId/:workerType',
-  name: 'pollTaskUrls',
-  stability: APIBuilder.stability.deprecated,
-  category: 'Worker Interface',
-  // this is so deprecated we do not even want to show its docs
-  noPublish: true,
-  scopes: {AnyOf: [
-    'queue:poll-task-urls:<provisionerId>/<workerType>',
-    {AllOf: [// Legacy scopes
-      'queue:poll-task-urls',
-      'assume:worker-type:<provisionerId>/<workerType>',
-    ]},
-  ]},
-  output: 'poll-task-urls-response.yml',
-  title: 'Get Urls to Poll Pending Tasks',
-  description: [
-    'Get a signed URLs to get and delete messages from azure queue.',
-    'Once messages are polled from here, you can claim the referenced task',
-    'with `claimTask`, and afterwards you should always delete the message.',
-  ].join('\n'),
-}, async function(req, res) {
-  let provisionerId = req.params.provisionerId;
-  let workerType = req.params.workerType;
-
-  // Construct signedUrl for accessing the azure queue for this
-  // provisionerId and workerType
-  let {
-    queues,
-    expiry,
-  } = await this.queueService.signedPendingPollUrls(provisionerId, workerType);
-
-  // Return signed URLs
-  res.reply({
-    queues,
-    expires: expiry.toJSON(),
-  });
-});
-
 // Hack to get promises that resolve after 20s without creating a setTimeout
 // for each, instead we create a new promise every 2s and reuse that.
 let _lastTime = 0;
