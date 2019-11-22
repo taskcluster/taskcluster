@@ -153,7 +153,6 @@ export default class TaskRunsCard extends Component {
   };
 
   state = {
-    showArtifacts: false,
     showMore: false,
   };
 
@@ -202,13 +201,11 @@ export default class TaskRunsCard extends Component {
   handleToggleArtifacts = () => {
     const { history } = this.props;
     const { taskId } = this.getCurrentRun();
-    const hashInUrl = window.location.hash === '#artifacts';
+    const showArtifacts = window.location.hash === '#artifacts';
 
-    hashInUrl
+    showArtifacts
       ? history.push(`/tasks/${taskId}`)
       : history.push(`/tasks/${taskId}#artifacts`);
-
-    this.setState({ showArtifacts: !this.state.showArtifacts });
   };
 
   getLiveLogArtifactFromRun = run => {
@@ -303,10 +300,10 @@ export default class TaskRunsCard extends Component {
       workerType,
       theme,
     } = this.props;
-    const { showArtifacts, showMore } = this.state;
+    const { showMore } = this.state;
     const run = this.getCurrentRun();
     const liveLogArtifact = this.getLiveLogArtifactFromRun(run);
-    const hashInUrl = window.location.hash === '#artifacts';
+    const showArtifacts = window.location.hash === '#artifacts';
 
     return (
       <Card raised>
@@ -352,7 +349,7 @@ export default class TaskRunsCard extends Component {
                     <ListItemText primary="Artifacts" />
                     {showArtifacts ? <ChevronUpIcon /> : <ChevronDownIcon />}
                   </ListItem>
-                  <Collapse in={showArtifacts || hashInUrl} timeout="auto">
+                  <Collapse in={showArtifacts} timeout="auto">
                     <List component="div" disablePadding>
                       <ListItem
                         className={classes.artifactsListItemContainer}
