@@ -45,6 +45,14 @@ However, a task executed by generic-worker will fail if this file does not exist
 It is also possible, although unusual, to create artifacts using the [Queue
 API](/docs/reference/platform/queue/api#createArtifact).
 
+<Warning>
+`HTML` artifacts are served as `text/html`, which causes the browser to interpret them
+as `HTML` pages. This is convenient to provide dynamic information about the task, but
+it makes the platform vulnerable to [XSS](https://en.wikipedia.org/wiki/Cross-site_scripting)
+attacks. To protect the platform, the artifacts URL is redirected to another domain when downloading,
+but be aware it doesn't protect from `XSS` between artifacts.
+</Warning>
+
 ## Passing Artifacts Between Tasks
 
 Suppose you are creating a task graph with task B depending on task A, where
