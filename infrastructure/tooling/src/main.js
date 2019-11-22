@@ -107,6 +107,16 @@ program.command('dev')
     run(main, options[0]);
   });
 
+program.command('test:meta')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {main} = require('./meta');
+    run(main, options[0]);
+  });
+
 program.command('smoketest')
   .option('--target <target>', 'Run a specific check, rather than all of them')
   .on('--help', () => {

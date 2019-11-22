@@ -60,7 +60,6 @@ worker-manager/expire-errors) exec sh -c 'cd services/worker-manager && node src
 worker-manager/write-docs) exec sh -c 'cd services/worker-manager && node src/main.js writeDocs';;
 script/lint) exec sh -c 'yarn run lint';;
 script/test) exec sh -c 'yarn run test';;
-script/test:meta) exec sh -c 'yarn run test:meta';;
 script/fetch-coverage) exec sh -c 'yarn run fetch-coverage';;
 script/test:cleanup) exec sh -c 'yarn run test:cleanup';;
 script/build) exec sh -c 'yarn run build';;
@@ -77,6 +76,7 @@ script/dev:apply) exec sh -c 'yarn run dev:apply';;
 script/dev:delete) exec sh -c 'yarn run dev:delete';;
 script/dev:verify) exec sh -c 'yarn run dev:verify';;
 script/smoketest) exec sh -c 'yarn run smoketest';;
+script/test:meta) exec sh -c 'yarn run test:meta';;
 references/web) exec sh -c 'exec sh infrastructure/references/references.sh';;
 ui/web) exec sh -c "node /app/ui/generate-env-js.js /app/ui/build/static/env.js && nginx -c /app/ui/web-ui-nginx-site.conf -g 'daemon off;'";;
 *) exec "${@}";;

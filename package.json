@@ -162,7 +162,6 @@
   "scripts": {
     "lint": "eslint --cache --ext js --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test",
     "test": "yarn workspaces run test",
-    "test:meta": "mocha test/*_test.js",
     "fetch-coverage": "node test/fetch-coverage.js",
     "test:cleanup": "yarn workspace taskcluster-auth test:cleanup",
     "build": "node infrastructure/tooling/src/main.js build",
@@ -178,7 +177,8 @@
     "dev:apply": "node infrastructure/tooling/src/main.js dev --k8s-action apply",
     "dev:delete": "node infrastructure/tooling/src/main.js dev --k8s-action delete",
     "dev:verify": "node infrastructure/tooling/src/main.js dev --k8s-action verify",
-    "smoketest": "node infrastructure/tooling/src/main.js smoketest"
+    "smoketest": "node infrastructure/tooling/src/main.js smoketest",
+    "test:meta": "node infrastructure/tooling/src/main.js test:meta"
   },
   "renovate": {
     "extends": [
