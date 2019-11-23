@@ -79,6 +79,7 @@ script/smoketest) exec sh -c 'yarn run smoketest';;
 script/test:meta) exec sh -c 'yarn run test:meta';;
 script/backup:run) exec sh -c 'yarn run backup:run';;
 script/backup:restore) exec sh -c 'yarn run backup:restore';;
+script/backup:compare) exec sh -c 'yarn run backup:compare';;
 references/web) exec sh -c 'exec sh infrastructure/references/references.sh';;
 ui/web) exec sh -c "node /app/ui/generate-env-js.js /app/ui/build/static/env.js && nginx -c /app/ui/web-ui-nginx-site.conf -g 'daemon off;'";;
 *) exec "${@}";;

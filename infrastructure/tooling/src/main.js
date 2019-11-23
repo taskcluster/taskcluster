@@ -179,6 +179,25 @@ program.command('backup:restore <resource> [destination]')
     run(restore, {resource: options[0], destination: options[1], ...options[2]});
   });
 
+program.command('backup:compare <resource1> <resource2>')
+  .on('--help', () => {
+    console.log([
+      '',
+      'Resources are named `table/<tableName>` and `container/<containerName>`.',
+      '',
+      'Compare the data in two existing resources. Note that this comparison is in-',
+      'memory, so this should not be done on large tables like QueueTasks.',
+    ].join('\n'));
+  })
+  .action((...options) => {
+    if (options.length > 3) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {compare} = require('./backup');
+    run(compare, {resource1: options[0], resource2: options[1], ...options[2]});
+  });
+
 program.command('*', {noHelp: true})
   .action(() => program.help(txt => txt));
 

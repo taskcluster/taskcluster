@@ -1,11 +1,10 @@
 const _ = require('lodash');
 const split = require('split');
 const util = require('util');
-const through = require('through');
 const zlib = require('zlib');
 const azure = require('fast-azure-storage');
 const {pipeline, Writable} = require('stream');
-const {fail, parseResource} = require('./util');
+const {fail, parseResource, parse} = require('./util');
 
 const restoreTasks = async ({azureCreds, s3, bucket, resource, destination, versionId}) => {
   if (!destination) {
@@ -60,34 +59,6 @@ const restoreTasks = async ({azureCreds, s3, bucket, resource, destination, vers
 
   return tasks;
 };
-
-// --- copied from event-stream (MIT license), with eslint fixes applied ---
-//
-// parse
-//
-// must be used after es.split() to ensure that each chunk represents a line
-// source.pipe(es.split()).pipe(es.parse())
-const parse = function (options) {
-  const emitError = !!(options ? options.error : false);
-  return through(function (data) {
-    let obj;
-    try {
-      if (data) { //ignore empty lines
-        obj = JSON.parse(data.toString());
-      }
-    } catch (err) {
-      if (emitError) {
-        return this.emit('error', err);
-      }
-      return console.error(err, 'attempting to parse:', data);
-    }
-    //ignore lines that where only whitespace.
-    if (obj !== undefined) {
-      this.emit('data', obj);
-    }
-  });
-};
-//  --- end copy ---
 
 let restoreTable = async ({azureCreds, s3, bucket, tableName, destTableName, versionId, utils}) => {
   let table = new azure.Table(azureCreds);

@@ -1,6 +1,7 @@
 const AWS = require('aws-sdk');
 const {backupTasks} = require('./backup');
 const {restoreTasks} = require('./restore');
+const {compareTasks} = require('./compare');
 const {TaskGraph, Lock} = require('console-taskgraph');
 
 const main = async ({operation, ...options}) => {
@@ -26,6 +27,8 @@ const main = async ({operation, ...options}) => {
     tasks = await backupTasks({azureCreds, s3, bucket, ...options});
   } else if (operation === 'restore') {
     tasks = await restoreTasks({azureCreds, s3, bucket, ...options});
+  } else if (operation === 'compare') {
+    tasks = await compareTasks({azureCreds, ...options});
   } else {
     throw new Error('unknown operation');
   }
@@ -35,10 +38,15 @@ const main = async ({operation, ...options}) => {
       concurrency: new Lock(3),
     },
   });
-  await taskgraph.run();
+  const context = await taskgraph.run();
+
+  if (context['output']) {
+    console.log(context.output);
+  }
 };
 
 module.exports = {
   backup: options => main({operation: 'backup', ...options}),
   restore: options => main({operation: 'restore', ...options}),
+  compare: options => main({operation: 'compare', ...options}),
 };

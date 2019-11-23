@@ -91,3 +91,25 @@ $ yarn backup:restore table/Hooks table/HooksRestore
 ```
 
 To restore an earlier version, look up that version's VersionId in the S3 interface, and pass it to `backup:restore` with `--version-id`.
+
+### Comparing Resources
+
+When testing a restore, a successful `backup:restore` operation is a good first step, but it's also useful to determine that the restored data is correct.
+To do so, compare the destination of the restore to the real resource, using `backup:compare`:
+
+```
+$ yarn backup:compare table/Hooks table/HooksRestore
+✔ Fetch Table Hooks
+✔ Fetch Table HooksRestore
+✔ Compare
+100% finished
+Number of entities in table/Hooks: 164
+Number of entities in table/Hooks not in table/HooksRestore: 0
+Number of entities in table/HooksRestore: 165
+Number of entities in table/HooksRestore not in table/Hooks: 1
+Number of entities with matching keys that are different between the two: 0
+```
+
+Naturally, the real resource may have changed since the backup was taken.
+The provided summary can help you spot the differences and similarities.
+In this case, it appears that one hook has been added since the backup was taken.
