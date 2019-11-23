@@ -158,6 +158,27 @@ program.command('backup:run')
     run(backup, options[0]);
   });
 
+program.command('backup:restore <resource> [destination]')
+  .option('--version-id <VersionId>', 'VersionId of the S3 object to restore (default latest)')
+  .on('--help', () => {
+    console.log([
+      '',
+      'Resources are named `table/<tableName>` and `container/<containerName>`.',
+      '',
+      'If specified, DESTINATION is the destination resource to restore to, defaulting',
+      'to RESOURCE.  The restore operation will not overwrite an existing, nonempty',
+      'resource.',
+    ].join('\n'));
+  })
+  .action((...options) => {
+    if (options.length > 3) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {restore} = require('./backup');
+    run(restore, {resource: options[0], destination: options[1], ...options[2]});
+  });
+
 program.command('*', {noHelp: true})
   .action(() => program.help(txt => txt));
 

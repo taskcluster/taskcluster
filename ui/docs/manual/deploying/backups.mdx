@@ -80,4 +80,14 @@ Use versioning to keep multiple versions of each table, and use a lifecycle rule
 
 ## Runing Restores
 
-TBD
+Restores are done one resource at a time.
+All restore operations refuse to overwrite existing data, and must be performed to a fresh new table or container.
+The `backup:restore` command takes the same environment variables as `backup:run`, and can be invoked via `yarn` or `docker`.
+
+For example, to restore the latest backup of table Hooks to HooksRestore:
+
+```
+$ yarn backup:restore table/Hooks table/HooksRestore
+```
+
+To restore an earlier version, look up that version's VersionId in the S3 interface, and pass it to `backup:restore` with `--version-id`.

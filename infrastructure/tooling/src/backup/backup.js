@@ -1,8 +1,89 @@
 const _ = require('lodash');
 const zlib = require('zlib');
+const glob = require('glob');
+const {REPO_ROOT, readRepoYAML} = require('../utils');
 const azure = require('fast-azure-storage');
+const {fail, parseResource} = require('./util');
 
-let backupTable = async ({azureCreds, s3, bucket, tableName, utils}) => {
+const backupTasks = async ({azureCreds, s3, bucket, include, exclude}) => {
+  const tasks = [];
+  if (include.length > 0 && exclude.length > 0) {
+    return fail('Cannot both --include and --exclude');
+  }
+
+  let containers = [];
+  let tables = [];
+  for (let path of glob.sync('services/*/azure.yml', {cwd: REPO_ROOT})) {
+    const azureYml = await await readRepoYAML(path);
+    for (let c of azureYml.containers || []) {
+      containers.push(c);
+    }
+    for (let t of azureYml.tables || []) {
+      tables.push(t);
+    }
+  }
+
+  if (include.length > 0) {
+    const existingTables = new Set(tables);
+    const existingContainers = new Set(containers);
+    tables = [];
+    containers = [];
+
+    for (let rsrc of include) {
+      const [type, name] = parseResource(rsrc);
+
+      if (type === 'table') {
+        if (existingTables.has(name)) {
+          tables.push(name);
+        } else {
+          return fail(`No such table ${name}`);
+        }
+      } else if (type === 'container') {
+        if (existingContainers.has(name)) {
+          containers.push(name);
+        } else {
+          return fail(`No such container ${name}`);
+        }
+      } else {
+        return fail(`Unknown resource type ${type}`);
+      }
+    }
+  }
+
+  if (exclude.length > 0) {
+    const excludeSet = new Set(exclude);
+    tables = tables.filter(t => !excludeSet.has(`table/${t}`));
+    containers = containers.filter(c => !excludeSet.has(`container/${c}`));
+  }
+
+  for (let tableName of tables) {
+    tasks.push({
+      title: `Back up Table ${tableName}`,
+      locks: ['concurrency'],
+      requires: [],
+      provides: [],
+      run: async (requirements, utils) => {
+        await backupTable({azureCreds, s3, bucket, tableName, utils});
+      },
+    });
+  }
+
+  for (let containerName of containers) {
+    tasks.push({
+      title: `Back up Container ${containerName}`,
+      locks: ['concurrency'],
+      requires: [],
+      provides: [],
+      run: async (requirements, utils) => {
+        await backupContainer({azureCreds, s3, bucket, containerName, utils});
+      },
+    });
+  }
+
+  return tasks;
+};
+
+const backupTable = async ({azureCreds, s3, bucket, tableName, utils}) => {
   const stream = new zlib.createGzip();
   const table = new azure.Table(azureCreds);
 
@@ -48,7 +129,7 @@ let backupTable = async ({azureCreds, s3, bucket, tableName, utils}) => {
   await upload;
 };
 
-let backupContainer = async ({azureCreds, s3, bucket, containerName, utils}) => {
+const backupContainer = async ({azureCreds, s3, bucket, containerName, utils}) => {
   const stream = new zlib.createGzip();
   const container = new azure.Blob(azureCreds);
 
@@ -89,4 +170,4 @@ let backupContainer = async ({azureCreds, s3, bucket, containerName, utils}) => 
   await upload;
 };
 
-module.exports = {backupTable, backupContainer};
+module.exports = {backupTasks};

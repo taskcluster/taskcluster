@@ -154,6 +154,7 @@
     "tar-fs": "^2.0.0",
     "taskcluster-lib-testing": "link:libraries/testing",
     "temporary": "^1.0.0",
+    "through": "^2.3.8",
     "tmp": "^0.1.0",
     "url-join": "^4.0.0",
     "zen-observable": "^0.8.11",
@@ -179,7 +180,8 @@
     "dev:verify": "node infrastructure/tooling/src/main.js dev --k8s-action verify",
     "smoketest": "node infrastructure/tooling/src/main.js smoketest",
     "test:meta": "node infrastructure/tooling/src/main.js test:meta",
-    "backup:run": "node infrastructure/tooling/src/main.js backup:run"
+    "backup:run": "node infrastructure/tooling/src/main.js backup:run",
+    "backup:restore": "node infrastructure/tooling/src/main.js backup:restore"
   },
   "renovate": {
     "extends": [
