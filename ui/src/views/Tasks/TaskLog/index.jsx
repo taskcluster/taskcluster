@@ -1,6 +1,6 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
-import { graphql } from 'react-apollo';
+import { withApollo, graphql } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
 import ArrowLeftIcon from 'mdi-react/ArrowLeftIcon';
 import Dashboard from '../../../components/Dashboard';
@@ -10,13 +10,15 @@ import Link from '../../../utils/Link';
 import Helmet from '../../../components/Helmet';
 import taskQuery from './task.graphql';
 import Search from '../../../components/Search';
+import TaskButtons from '../TaskButtons';
 
+@withApollo
 @hot(module)
 @withStyles(theme => ({
   fab: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
-    bottom: theme.spacing(3),
+    bottom: theme.spacing(2),
     right: theme.spacing(12),
   },
 }))
@@ -75,6 +77,7 @@ export default class TaskLog extends Component {
             </Link>
           }
         />
+        <TaskButtons data={this.props.data} url={url} rawButton />
       </Dashboard>
     );
   }

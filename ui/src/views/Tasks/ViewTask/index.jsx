@@ -210,8 +210,6 @@ export default class ViewTask extends Component {
       tags = Object.entries(task.tags);
     }
 
-    console.log('ViewTask', this.props);
-
     return (
       <Dashboard
         title={task ? `Task "${task.metadata.name}"` : 'Task'}
