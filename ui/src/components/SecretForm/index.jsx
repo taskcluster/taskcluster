@@ -270,7 +270,7 @@ export default class SecretForm extends Component {
                 onClick={onDialogActionOpen}
                 className={classes.deleteIcon}
                 tooltipTitle="Delete Secret"
-                ButtonProps={{
+                FabProps={{
                   disabled: loading,
                 }}
               />

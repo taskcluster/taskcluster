@@ -38,7 +38,6 @@ const createTheme = isDarkTheme => {
   const textHint = isDarkTheme
     ? 'rgba(255, 255, 255, 0.5)'
     : 'rgba(0, 0, 0, 0.5)';
-  const backgroundPaper = THEME.WHITE;
   const TYPOGRAPHY = {
     H1: Roboto300,
     H2: Roboto400,
@@ -65,7 +64,7 @@ const createTheme = isDarkTheme => {
       type: isDarkTheme ? 'dark' : 'light',
       background: {
         default: isDarkTheme ? THEME.DARK_THEME_BACKGROUND : '#fff',
-        paper: backgroundPaper,
+        paper: primaryMain,
       },
       primary: {
         main: primaryMain,
@@ -243,12 +242,6 @@ const createTheme = isDarkTheme => {
       MuiTableSortLabel: {
         icon: {
           fontSize: '1rem',
-        },
-      },
-      MuiPaper: {
-        root: {
-          backgroundColor: primaryMain,
-          color: 'inherit',
         },
       },
       MuiFormLabel: {

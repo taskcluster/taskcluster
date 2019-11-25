@@ -7,8 +7,18 @@ import { withAuth } from '../../utils/Auth';
 
 @withAuth
 @withStyles(theme => ({
-  secondaryIcon: {
+  icon: {
     ...theme.mixins.secondaryIcon,
+  },
+  staticTooltipLabelDisabled: {
+    whiteSpace: 'nowrap',
+    backgroundColor: theme.palette.action.disabledBackground,
+    color: theme.palette.action.disabled,
+  },
+  staticTooltipLabel: {
+    whiteSpace: 'nowrap',
+    backgroundColor: theme.palette.secondary.main,
+    color: theme.palette.secondary.contrastText,
   },
 }))
 /**
@@ -32,7 +42,7 @@ export default class SpeedDialAction extends Component {
       classes,
       className,
       requiresAuth,
-      ButtonProps,
+      FabProps,
       user,
       onAuthorize,
       onUnauthorize,
@@ -41,8 +51,8 @@ export default class SpeedDialAction extends Component {
     } = this.props;
     const other = {};
     const lackingAuth = requiresAuth && !user;
-    const buttonProps = {
-      ...ButtonProps,
+    const fabProps = {
+      ...FabProps,
       ...(lackingAuth ? { disabled: true } : {}),
     };
     const title = tooltipTitle
@@ -53,18 +63,28 @@ export default class SpeedDialAction extends Component {
         }
       : null;
 
-    if (buttonProps.disabled) {
+    if (fabProps.disabled) {
       // Remove material-ui disabled prop warning
       // https://github.com/mui-org/material-ui/issues/15216
       other.component = 'span';
+
+      // The onclick currently gets triggered when the button is disabled.
+      // Remove onClick until it gets fixed upstream.
+      delete props.onClick;
     }
 
     return (
       <MuiSpeedDialAction
-        className={classNames(classes.secondaryIcon, className)}
-        ButtonProps={buttonProps}
-        {...title}
+        classes={{
+          fab: classes.icon,
+          staticTooltipLabel: fabProps.disabled
+            ? classes.staticTooltipLabelDisabled
+            : classes.staticTooltipLabel,
+        }}
+        className={classNames(className)}
+        FabProps={fabProps}
         {...props}
+        {...title}
         {...other}
       />
     );

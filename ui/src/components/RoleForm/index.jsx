@@ -300,7 +300,7 @@ export default class RoleForm extends Component {
                 icon={<DeleteIcon />}
                 tooltipTitle="Delete"
                 className={classes.deleteIcon}
-                ButtonProps={{
+                FabProps={{
                   disabled: loading,
                 }}
               />

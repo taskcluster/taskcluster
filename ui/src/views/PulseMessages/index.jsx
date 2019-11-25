@@ -316,7 +316,7 @@ export default class PulseMessages extends Component {
               icon={<DownloadIcon />}
               tooltipTitle="Download Messages"
               onClick={this.handleDownloadMessagesClick}
-              ButtonProps={{ disabled: !messages[0] }}
+              FabProps={{ disabled: !messages[0] }}
             />
           </SpeedDial>
           <Drawer

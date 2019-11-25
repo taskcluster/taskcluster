@@ -258,7 +258,7 @@ export default class ViewWorkers extends Component {
                       requiresAuth
                       tooltipOpen
                       key={action.title}
-                      ButtonProps={{
+                      FabProps={{
                         disabled: actionLoading,
                       }}
                       icon={<HammerIcon />}

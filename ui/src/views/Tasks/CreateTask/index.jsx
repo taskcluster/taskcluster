@@ -393,7 +393,7 @@ export default class CreateTask extends Component {
                   icon={<ClockOutlineIcon />}
                   onClick={this.handleUpdateTimestamps}
                   tooltipTitle="Update Timestamps"
-                  ButtonProps={{
+                  FabProps={{
                     disabled: !task || invalid,
                   }}
                 />

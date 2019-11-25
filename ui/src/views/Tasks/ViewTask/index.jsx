@@ -885,7 +885,7 @@ export default class ViewTask extends Component {
                 <SpeedDialAction
                   requiresAuth
                   tooltipOpen
-                  ButtonProps={{
+                  FabProps={{
                     disabled: actionLoading,
                   }}
                   icon={<CloseIcon />}
@@ -897,7 +897,7 @@ export default class ViewTask extends Component {
                 <SpeedDialAction
                   requiresAuth
                   tooltipOpen
-                  ButtonProps={{
+                  FabProps={{
                     disabled: actionLoading,
                   }}
                   icon={<RestartIcon />}
@@ -909,7 +909,7 @@ export default class ViewTask extends Component {
                 <SpeedDialAction
                   requiresAuth
                   tooltipOpen
-                  ButtonProps={{
+                  FabProps={{
                     disabled: actionLoading,
                   }}
                   icon={<RestartIcon />}
@@ -921,7 +921,7 @@ export default class ViewTask extends Component {
                 <SpeedDialAction
                   requiresAuth
                   tooltipOpen
-                  ButtonProps={{
+                  FabProps={{
                     disabled: actionLoading,
                   }}
                   icon={<ClockOutlineIcon />}
@@ -933,7 +933,7 @@ export default class ViewTask extends Component {
                 <SpeedDialAction
                   requiresAuth
                   tooltipOpen
-                  ButtonProps={{
+                  FabProps={{
                     disabled: actionLoading,
                   }}
                   icon={<FlashIcon />}
@@ -944,7 +944,7 @@ export default class ViewTask extends Component {
               <SpeedDialAction
                 requiresAuth
                 tooltipOpen
-                ButtonProps={{
+                FabProps={{
                   disabled: actionLoading,
                 }}
                 icon={<PencilIcon />}
@@ -955,7 +955,7 @@ export default class ViewTask extends Component {
                 <SpeedDialAction
                   requiresAuth
                   tooltipOpen
-                  ButtonProps={{
+                  FabProps={{
                     disabled: actionLoading,
                   }}
                   icon={<ConsoleLineIcon />}
@@ -970,7 +970,7 @@ export default class ViewTask extends Component {
                     requiresAuth
                     tooltipOpen
                     key={action.title}
-                    ButtonProps={{
+                    FabProps={{
                       name: action.name,
                       disabled: actionLoading,
                     }}

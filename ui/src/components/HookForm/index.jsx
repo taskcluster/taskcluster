@@ -827,7 +827,7 @@ export default class HookForm extends Component {
                 icon={<DeleteIcon />}
                 onClick={onDialogDeleteHook}
                 className={classes.deleteIcon}
-                ButtonProps={{
+                FabProps={{
                   disabled: actionLoading,
                 }}
                 tooltipTitle="Delete Hook"
@@ -838,7 +838,7 @@ export default class HookForm extends Component {
                 icon={<FlashIcon />}
                 onClick={onDialogOpen}
                 className={classes.successIcon}
-                ButtonProps={{
+                FabProps={{
                   disabled: !this.validHook() || actionLoading,
                 }}
                 tooltipTitle="Trigger Hook"

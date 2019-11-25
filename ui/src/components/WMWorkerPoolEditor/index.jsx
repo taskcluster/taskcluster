@@ -45,6 +45,9 @@ import SpeedDial from '../SpeedDial';
   deleteIcon: {
     ...theme.mixins.errorIcon,
   },
+  deleteTooltipLabel: {
+    backgroundColor: theme.mixins.errorIcon.backgroundColor,
+  },
   createIconSpan: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
@@ -418,8 +421,11 @@ export default class WMWorkerPoolEditor extends Component {
               icon={<DeleteIcon />}
               onClick={onDialogActionOpen}
               tooltipTitle="Delete"
-              className={classes.deleteIcon}
-              disabled={actionLoading}
+              classes={{
+                icon: classes.deleteIcon,
+                staticTooltipLabel: classes.deleteTooltipLabel,
+              }}
+              FabProps={{ disabled: actionLoading }}
             />
           </SpeedDial>
         )}
