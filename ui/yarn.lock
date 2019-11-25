@@ -3825,9 +3825,9 @@ damerau-levenshtein@^1.0.4:
   integrity sha512-CBCRqFnpu715iPmw1KrdOrzRqbdFwQTwAWyyyYS42+iAgHCuXZ+/TdMgQkUENPomxEz9z1BEzuQU2Xw0kUuAgA==
 
 date-fns@^2.0.1:
-  version "2.7.0"
-  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.7.0.tgz#8271d943cc4636a1f27698f1b8d6a9f1ceb74026"
-  integrity sha512-wxYp2PGoUDN5ZEACc61aOtYFvSsJUylIvCjpjDOqM1UDaKIIuMJ9fAnMYFHV3TQaDpfTVxhwNK/GiCaHKuemTA==
+  version "2.8.1"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.8.1.tgz#2109362ccb6c87c3ca011e9e31f702bc09e4123b"
+  integrity sha512-EL/C8IHvYRwAHYgFRse4MGAPSqlJVlOrhVYZ75iQBKrnv+ZedmYsgwH3t+BCDuZDXpoo07+q9j4qgSSOa7irJg==
 
 date-format@^2.0.0:
   version "2.1.0"
@@ -11796,8 +11796,7 @@ tar@^4:
     yallist "^3.0.3"
 
 "taskcluster-lib-scopes@link:../libraries/scopes":
-  version "0.0.0"
-  uid ""
+  version "23.0.0"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
