@@ -24,7 +24,7 @@ defaults:
     # to allow UI deploy previews to access a running deployment.
     allowedCORSOrigins:
       - !env TASKCLUSTER_ROOT_URL
-      - !env ADDITIONAL_ALLOWED_CORS_ORIGIN
+      - !env:json ADDITIONAL_ALLOWED_CORS_ORIGIN
 
   # Configuration of access to other taskcluster components
   taskcluster:
