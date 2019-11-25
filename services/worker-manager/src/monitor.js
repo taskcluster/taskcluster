@@ -21,8 +21,8 @@ monitorManager.register({
   name: 'simpleEstimate',
   title: 'Simple Estimate Provided',
   type: 'simple-estimate',
-  version: 1,
-  level: 'notice',
+  version: 2,
+  level: 'any',
   description: 'The simple estimator has decided that we need some number of instances.',
   fields: {
     workerPoolId: 'The worker pool name (provisionerId/workerType)',
