@@ -28,12 +28,6 @@ export default class SpeedDial extends Component {
     open: false,
   };
 
-  handleClick = () => {
-    this.setState({
-      open: !this.state.open,
-    });
-  };
-
   handleClose = () => {
     this.setState({
       open: false,
@@ -56,14 +50,10 @@ export default class SpeedDial extends Component {
         icon={
           <SpeedDialIcon icon={<DotsVerticalIcon />} openIcon={<CloseIcon />} />
         }
-        ButtonProps={{ color: 'secondary' }}
+        FabProps={{ color: 'secondary' }}
         className={classNames(classes.speedDial, className)}
-        onBlur={this.handleClose}
-        onClick={this.handleClick}
+        onOpen={this.handleOpen}
         onClose={this.handleClose}
-        onFocus={this.handleOpen}
-        onMouseEnter={this.handleOpen}
-        onMouseLeave={this.handleClose}
         open={open}
         {...props}>
         {children}

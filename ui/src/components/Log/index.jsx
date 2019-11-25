@@ -266,7 +266,7 @@ export default class Log extends Component {
         tooltipOpen
         icon={<OpenInNewIcon size={20} />}
         tooltipTitle="Raw Log"
-        ButtonProps={{
+        FabProps={{
           component: 'a',
           href: url,
           target: '_blank',

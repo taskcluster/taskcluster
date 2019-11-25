@@ -200,7 +200,7 @@ export default class ViewWorker extends Component {
                     worker.quarantineUntil ? 'Update Quarantine' : 'Quarantine'
                   }
                   onClick={this.handleDialogOpen}
-                  ButtonProps={{
+                  FabProps={{
                     disabled: actionLoading,
                   }}
                 />
@@ -211,7 +211,7 @@ export default class ViewWorker extends Component {
                     key={action.title}
                     icon={<HammerIcon />}
                     onClick={() => this.handleActionDialogOpen(action)}
-                    ButtonProps={{
+                    FabProps={{
                       disabled: actionLoading,
                     }}
                     tooltipTitle={action.title}

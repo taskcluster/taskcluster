@@ -349,7 +349,7 @@ export default class TaskGroup extends Component {
     }
   }
 
-  handleActionClick = ({ currentTarget: { name } }) => {
+  handleActionClick = name => () => {
     const { action } = this.state.actionData[name];
 
     this.setState({ dialogOpen: true, selectedAction: action });
@@ -709,13 +709,12 @@ export default class TaskGroup extends Component {
                 requiresAuth
                 tooltipOpen
                 key={action.title}
-                ButtonProps={{
-                  name: action.name,
+                FabProps={{
                   disabled: actionLoading,
                 }}
                 icon={<HammerIcon />}
                 tooltipTitle={action.title}
-                onClick={this.handleActionClick}
+                onClick={this.handleActionClick(action.name)}
               />
             ))}
           </SpeedDial>

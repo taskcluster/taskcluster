@@ -405,7 +405,7 @@ export default class ClientForm extends Component {
                 onClick={onDialogActionOpen}
                 className={classes.deleteIcon}
                 tooltipTitle="Delete"
-                ButtonProps={{ disabled: loading }}
+                FabProps={{ disabled: loading }}
               />
               <SpeedDialAction
                 requiresAuth
@@ -416,7 +416,7 @@ export default class ClientForm extends Component {
                 }
                 tooltipTitle={disabled ? 'Enable' : 'Disable'}
                 className={disabled ? classes.enableIcon : classes.disableIcon}
-                ButtonProps={{
+                FabProps={{
                   disabled: loading,
                 }}
               />
@@ -426,7 +426,7 @@ export default class ClientForm extends Component {
                 icon={<LockResetIcon />}
                 onClick={this.handleResetAccessToken}
                 tooltipTitle="Reset Access Token"
-                ButtonProps={{
+                FabProps={{
                   disabled: loading,
                 }}
               />
