@@ -56,6 +56,7 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [Iterate Library](libraries/iterate#readme)
     * [Loader Library](libraries/loader#readme)
     * [Monitor Library](libraries/monitor#readme)
+    * [Postgres Library](libraries/postgres#readme)
     * [Pulse Library](libraries/pulse#readme)
     * [References Library](libraries/references#readme)
     * [Scopes Library](libraries/scopes#readme)

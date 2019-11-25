@@ -76,6 +76,7 @@
     "passport": "^0.4.0",
     "passport-auth0": "^1.1.0",
     "passport-github": "^1.1.0",
+    "pg": "^7.14.0",
     "promisepipe": "^3.0.0",
     "quick-lru": "^4.0.0",
     "ramda": "^0.26.0",
