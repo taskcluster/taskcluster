@@ -463,7 +463,7 @@ export default class TaskRunsCard extends Component {
                       />
                     </ListItem>
                     <Link
-                      to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${run.workerId}`}>
+                      to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${run.workerGroup}/${run.workerId}`}>
                       <ListItem
                         title="View Worker"
                         button
