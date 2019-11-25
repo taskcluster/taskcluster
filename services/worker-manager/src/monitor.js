@@ -18,6 +18,49 @@ monitorManager.register({
 });
 
 monitorManager.register({
+  name: 'workerRequested',
+  title: 'Worker Requested',
+  type: 'worker-requested',
+  version: 1,
+  level: 'info',
+  description: 'A worker has been requested from a cloud api',
+  fields: {
+    workerPoolId: 'The worker pool ID (provisionerId/workerType)',
+    providerId: 'The provider that did the work for this worker pool.',
+    workerGroup: 'The worker group for this worker',
+    workerId: 'The worker that was created',
+  },
+});
+
+monitorManager.register({
+  name: 'workerRunning',
+  title: 'Worker Running',
+  type: 'worker-running',
+  version: 1,
+  level: 'info',
+  description: 'A worker has been marked as running',
+  fields: {
+    workerPoolId: 'The worker pool ID (provisionerId/workerType)',
+    providerId: 'The provider that did the work for this worker pool.',
+    workerId: 'The worker that was created',
+  },
+});
+
+monitorManager.register({
+  name: 'workerStopped',
+  title: 'Worker Stopped',
+  type: 'worker-stopped',
+  version: 1,
+  level: 'info',
+  description: 'A worker has been marked as stopped',
+  fields: {
+    workerPoolId: 'The worker pool ID (provisionerId/workerType)',
+    providerId: 'The provider that did the work for this worker pool.',
+    workerId: 'The worker that was created',
+  },
+});
+
+monitorManager.register({
   name: 'simpleEstimate',
   title: 'Simple Estimate Provided',
   type: 'simple-estimate',

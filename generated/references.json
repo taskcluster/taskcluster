@@ -7572,6 +7572,46 @@
           "version": 1
         },
         {
+          "description": "A worker has been requested from a cloud api",
+          "fields": {
+            "providerId": "The provider that did the work for this worker pool.",
+            "workerGroup": "The worker group for this worker",
+            "workerId": "The worker that was created",
+            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
+          },
+          "level": "info",
+          "name": "workerRequested",
+          "title": "Worker Requested",
+          "type": "worker-requested",
+          "version": 1
+        },
+        {
+          "description": "A worker has been marked as running",
+          "fields": {
+            "providerId": "The provider that did the work for this worker pool.",
+            "workerId": "The worker that was created",
+            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
+          },
+          "level": "info",
+          "name": "workerRunning",
+          "title": "Worker Running",
+          "type": "worker-running",
+          "version": 1
+        },
+        {
+          "description": "A worker has been marked as stopped",
+          "fields": {
+            "providerId": "The provider that did the work for this worker pool.",
+            "workerId": "The worker that was created",
+            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
+          },
+          "level": "info",
+          "name": "workerStopped",
+          "title": "Worker Stopped",
+          "type": "worker-stopped",
+          "version": 1
+        },
+        {
           "description": "The simple estimator has decided that we need some number of instances.",
           "fields": {
             "desiredCapacity": "Amount of capacity that this estimator thinks we should have",

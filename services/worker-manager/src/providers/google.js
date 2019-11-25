@@ -141,6 +141,11 @@ class GoogleProvider extends Provider {
       throw error();
     }
 
+    this.monitor.log.workerRunning({
+      workerPoolId: workerPool.workerPoolId,
+      providerId: this.providerId,
+      workerId: worker.workerId,
+    });
     await worker.modify(w => {
       w.state = this.Worker.states.RUNNING;
     });
@@ -284,6 +289,12 @@ class GoogleProvider extends Provider {
         return;
       }
 
+      this.monitor.log.workerRequested({
+        workerPoolId,
+        providerId: this.providerId,
+        workerGroup: this.providerId,
+        workerId: op.targetId,
+      });
       await this.Worker.create({
         workerPoolId,
         providerId: this.providerId,
@@ -347,6 +358,11 @@ class GoogleProvider extends Provider {
           zone: worker.providerData.zone,
           instance: worker.workerId,
         }));
+        this.monitor.log.workerStopped({
+          workerPoolId: worker.workerPoolId,
+          providerId: this.providerId,
+          workerId: worker.workerId,
+        });
         await worker.modify(w => {
           w.state = states.STOPPED;
         });
@@ -363,6 +379,11 @@ class GoogleProvider extends Provider {
           errors: this.errors[worker.workerPoolId],
         });
       }
+      this.monitor.log.workerStopped({
+        workerPoolId: worker.workerPoolId,
+        providerId: this.providerId,
+        workerId: worker.workerId,
+      });
       await worker.modify(w => {
         w.state = states.STOPPED;
       });
