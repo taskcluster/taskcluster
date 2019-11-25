@@ -34,7 +34,10 @@ import workersQuery from './workers.graphql';
       workersConnection: {
         limit: VIEW_WORKERS_PAGE_SIZE,
       },
-      quarantined: parse(location.search.slice(1)).filterBy === 'quarantined',
+      quarantined:
+        parse(location.search.slice(1)).filterBy === 'quarantined'
+          ? true
+          : null,
     },
   }),
 })
@@ -137,6 +140,7 @@ export default class ViewWorkers extends Component {
       },
       data: { fetchMore },
     } = this.props;
+    const { filterBy } = parse(this.props.location.search.slice(1));
 
     return fetchMore({
       query: workersQuery,
@@ -148,6 +152,7 @@ export default class ViewWorkers extends Component {
           cursor,
           previousCursor,
         },
+        quarantined: filterBy === 'quarantined' ? true : null,
       },
       updateQuery(previousResult, { fetchMoreResult }) {
         const { edges, pageInfo } = fetchMoreResult.workers;
