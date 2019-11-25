@@ -122,7 +122,7 @@ module.exports = class MozillaAuth0 {
     // if the identity is a github or firefox-accounts identity, then we want
     // to add the username after a `|` character, to disambiguate the
     // otherwise-numeric usernames
-    if (userId.startsWith('github|')) {
+    if (userId.startsWith('github|') && profile.identities) {
       for (let {provider, connection, user_id: github_user_id} of profile.identities) {
         if (provider === 'github' && connection === 'github') {
           // we expect the auth0 user_id to be `github|<githubUserId>`
@@ -132,7 +132,7 @@ module.exports = class MozillaAuth0 {
           break;
         }
       }
-    } else if (userId.startsWith('oauth2|firefoxaccounts|')) {
+    } else if (userId.startsWith('oauth2|firefoxaccounts|') && profile.identities) {
       for (let {provider, connection, profileData} of profile.identities) {
         if (provider === 'oauth2' && connection === 'firefoxaccounts') {
           // we expect the auth0 user_id to be `oauth|firefoxaccounts|<fxa_sub>`
