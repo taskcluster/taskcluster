@@ -95,6 +95,13 @@ suite(testing.suiteName(), () => {
               access_information: {},
               identities,
             };
+          case 'oauth2|firefoxaccounts|noidentities':
+            return {
+              user_id: { value: 'oauth2|firefoxaccounts|noidentities' },
+              access_information: {},
+              email: 'rockets@ksc',
+              fxa_sub: 'noidentities',
+            };
           default:
             return null;
         }
@@ -152,6 +159,12 @@ suite(testing.suiteName(), () => {
       const user = await strategy.userFromIdentity('mozilla-auth0/email|slashy!2Fslashy');
       assert.equal(user.identity, 'mozilla-auth0/email|slashy!2Fslashy');
       assert.deepEqual(user.roles, []);
+    });
+
+    test('profile without identities should not return a user', async function() {
+      const user = await strategy.userFromIdentity('mozilla-auth0/oauth2|firefoxaccounts|noidentities');
+
+      assert.equal(user, null);
     });
   });
 });
