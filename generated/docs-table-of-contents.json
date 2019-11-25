@@ -1498,7 +1498,7 @@
             "name": "backups",
             "next": {
               "path": "manual/deploying/cloud-credentials",
-              "title": "GCP Credentials"
+              "title": "Cloud Credentials"
             },
             "path": "manual/deploying/backups",
             "prev": {
@@ -1515,7 +1515,7 @@
             ],
             "data": {
               "order": 1000,
-              "title": "GCP Credentials"
+              "title": "Cloud Credentials"
             },
             "name": "cloud-credentials",
             "next": {
@@ -1547,7 +1547,7 @@
             "path": "manual/deploying/github",
             "prev": {
               "path": "manual/deploying/cloud-credentials",
-              "title": "GCP Credentials"
+              "title": "Cloud Credentials"
             },
             "up": {
               "path": "manual/deploying",

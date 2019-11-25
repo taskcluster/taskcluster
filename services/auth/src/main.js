@@ -8,7 +8,6 @@ const data = require('./data');
 const containers = require('./containers');
 const builder = require('./api');
 const debug = require('debug')('server');
-const AWS = require('aws-sdk');
 const exchanges = require('./exchanges');
 const ScopeResolver = require('./scoperesolver');
 const signaturevalidator = require('./signaturevalidator');
@@ -154,7 +153,7 @@ const load = Loader({
           Client, Roles,
           publisher,
           resolver,
-          sts: new AWS.STS(cfg.aws),
+          cfg,
           azureAccounts: cfg.app.azureAccounts,
           signatureValidator,
           sentryManager,

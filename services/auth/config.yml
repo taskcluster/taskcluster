@@ -93,16 +93,14 @@ defaults:
     hostname:                 !env PULSE_HOSTNAME
     vhost:                    !env PULSE_VHOST
 
-  # AWS SDK configuration for delegation of S3 access and publication of
-  # schemas and references and other buckets. only needed if managing buckets
-  aws:
-    accessKeyId:              !env:optional AWS_ACCESS_KEY_ID
-    secretAccessKey:          !env:optional AWS_SECRET_ACCESS_KEY
-    # Default AWS region, this is where the S3 bucket lives
-    region:                   !env:optional AWS_REGION
-    # Lock API version to use the latest API from 2013, this is fuzzy locking,
-    # but it does the trick...
-    apiVersion:               '2014-01-01'
+  awsCredentials:
+    # Configuration for the AWS credentials used for the awsS3Credentials.  The
+    # method looks up the credentials by bucket name.  Each array element has
+    # the form
+    # - accessKeyId: ..
+    #   secretAccessKey: ..
+    #   buckets: [bucket1, bucket2, ..]
+    allowdBuckets:            !env:json:optional AWS_CREDENTIALS_ALLOWED_BUCKETS
 
   # Configuration for the GCP serviceAccounts to which the `gcpCredentials`
   # endpoint can grant access.
@@ -141,9 +139,6 @@ test:
   azure:
     signingKey:          not-a-secret-so-you-cant-guess-it
     cryptoKey:           AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
-  # Test bucket for STS credentials
-  test:
-    testBucket:               !env:optional TEST_BUCKET
   server:
     forceSSL:                 false
     port:                     60552

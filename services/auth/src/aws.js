@@ -1,4 +1,6 @@
+const AWS = require('aws-sdk');
 const builder = require('./api');
+const {find} = require('lodash');
 
 builder.declare({
   method: 'get',
@@ -28,37 +30,8 @@ builder.declare({
     'parameter is required in the scope guarding access.  The bucket name must',
     'not contain `.`, as recommended by Amazon.',
     '',
-    'This method can only allow access to a whitelisted set of buckets.  To add',
-    'a bucket to that whitelist, contact the Taskcluster team, who will add it to',
-    'the appropriate IAM policy.  If the bucket is in a different AWS account, you',
-    'will also need to add a bucket policy allowing access from the Taskcluster',
-    'account.  That policy should look like this:',
-    '',
-    '```js',
-    '{',
-    '  "Version": "2012-10-17",',
-    '  "Statement": [',
-    '    {',
-    '      "Sid": "allow-taskcluster-auth-to-delegate-access",',
-    '      "Effect": "Allow",',
-    '      "Principal": {',
-    '        "AWS": "arn:aws:iam::692406183521:root"',
-    '      },',
-    '      "Action": [',
-    '        "s3:ListBucket",',
-    '        "s3:GetObject",',
-    '        "s3:PutObject",',
-    '        "s3:DeleteObject",',
-    '        "s3:GetBucketLocation"',
-    '      ],',
-    '      "Resource": [',
-    '        "arn:aws:s3:::<bucket>",',
-    '        "arn:aws:s3:::<bucket>/*"',
-    '      ]',
-    '    }',
-    '  ]',
-    '}',
-    '```',
+    'This method can only allow access to a whitelisted set of buckets, as configured',
+    'in the Taskcluster deployment',
     '',
     'The credentials are set to expire after an hour, but this behavior is',
     'subject to change. Hence, you should always read the `expires` property',
@@ -103,6 +76,22 @@ builder.declare({
   // Check that the client is authorized to access given bucket and prefix
   await req.authorize({level, bucket, prefix, levelIsReadOnly: level === 'read-only'});
 
+  // find credentials for this bucket
+  const awsCredentials = this.cfg.awsCredentials || {};
+  const bucketCreds = find(
+    awsCredentials.allowedBuckets || {},
+    ({buckets}) => buckets.includes(bucket));
+  if (!bucketCreds) {
+    return res.reportError('ResourceNotFound',
+      'No credentials available for bucket {{bucket}}',
+      {bucket});
+  }
+
+  const sts = new AWS.STS({
+    accessKeyId: bucketCreds.accessKeyId,
+    secretAccessKey: bucketCreds.secretAccessKey,
+  });
+
   // Prevent prefix to start with a slash, this is bad behavior. Technically
   // we could easily support it, S3 does, but people rarely wants double
   // slashes in their URIs intentionally.
@@ -124,7 +113,8 @@ builder.declare({
   }
 
   // For details on the policy see: http://amzn.to/1ETStaL
-  let iamReq = await this.sts.getFederationToken({
+  let iamReq = await sts.getFederationToken({
+    // this must correspond to the federated-user/.. ARN in the policy
     Name: 'TemporaryS3ReadWriteCredentials',
     Policy: JSON.stringify({
       Version: '2012-10-17',
