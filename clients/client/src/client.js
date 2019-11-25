@@ -72,7 +72,7 @@ let _defaultOptions = {
 };
 
 /** Make a request for a Client instance */
-let makeRequest = function(client, method, url, payload, query) {
+const makeRequest = exports.makeRequest = function(client, method, url, payload, query) {
   // Add query to url if present
   if (query) {
     query = querystring.stringify(query);
@@ -113,8 +113,16 @@ let makeRequest = function(client, method, url, payload, query) {
     req.set('Authorization', header.header);
   }
 
-  // Return request
-  return req;
+  return req.catch(
+    err => {
+      // superagent throws code=ABORTED for timeouts, so translate that back
+      // https://github.com/visionmedia/superagent/issues/1487
+      if (err.code === 'ABORTED') {
+        err = new Error('Request timed out');
+        err.code = 'ECONNABORTED';
+      }
+      throw err;
+    });
 };
 
 /**
