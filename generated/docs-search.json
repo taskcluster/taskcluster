@@ -1,0 +1,2168 @@
+[
+  {
+    "element": "h1",
+    "path": "/manual",
+    "subtitle": null,
+    "title": "Taskcluster Manual"
+  },
+  {
+    "element": "h2",
+    "path": "/manual",
+    "subtitle": "What does Taskcluster do?",
+    "title": "Taskcluster Manual"
+  },
+  {
+    "element": "h2",
+    "path": "/manual",
+    "subtitle": "What is Taskcluster?",
+    "title": "Taskcluster Manual"
+  },
+  {
+    "element": "h2",
+    "path": "/manual",
+    "subtitle": "Working with Taskcluster",
+    "title": "Taskcluster Manual"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/access-control/api",
+    "subtitle": null,
+    "title": "API Access Control"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/access-control/api",
+    "subtitle": "Clients",
+    "title": "API Access Control"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/access-control/api",
+    "subtitle": "Scopes and Roles",
+    "title": "API Access Control"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/deploying",
+    "subtitle": null,
+    "title": "Deploying Taskcluster"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying",
+    "subtitle": "Clouds",
+    "title": "Deploying Taskcluster"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying",
+    "subtitle": "Configuration",
+    "title": "Deploying Taskcluster"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying",
+    "subtitle": "Events",
+    "title": "Deploying Taskcluster"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying",
+    "subtitle": "GitHub",
+    "title": "Deploying Taskcluster"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying",
+    "subtitle": "Testing and Monitoring",
+    "title": "Deploying Taskcluster"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/deploying",
+    "subtitle": "Third Party Login",
+    "title": "Deploying Taskcluster"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying",
+    "subtitle": "User Login",
+    "title": "Deploying Taskcluster"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/deploying/github",
+    "subtitle": "Configuration",
+    "title": null
+  },
+  {
+    "element": "h3",
+    "path": "/manual/deploying/github",
+    "subtitle": "How to create the Taskcluster Github app? ",
+    "title": null
+  },
+  {
+    "element": "h3",
+    "path": "/manual/deploying/github",
+    "subtitle": "What permissions does the Taskcluster Github app need?",
+    "title": null
+  },
+  {
+    "element": "h3",
+    "path": "/manual/deploying/github",
+    "subtitle": "What should the apps be named? ",
+    "title": null
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/github",
+    "subtitle": "Why are there 2 apps? ",
+    "title": null
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/login-strategies",
+    "subtitle": "GitHub",
+    "title": null
+  },
+  {
+    "element": "h3",
+    "path": "/manual/deploying/login-strategies",
+    "subtitle": "Mozilla Auth0",
+    "title": null
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/pulse",
+    "subtitle": "Details",
+    "title": null
+  },
+  {
+    "element": "h1",
+    "path": "/manual/deploying/smoketests",
+    "subtitle": null,
+    "title": "Smoketests"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/smoketests",
+    "subtitle": "Running Smoketests",
+    "title": "Smoketests"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/smoketests",
+    "subtitle": "Setup",
+    "title": "Smoketests"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/deploying/static-clients",
+    "subtitle": null,
+    "title": "Static Clients"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/static-clients",
+    "subtitle": "Changes when Upgrading",
+    "title": "Static Clients"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/static-clients",
+    "subtitle": "Configuring AccessTokens",
+    "title": "Static Clients"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/static-clients",
+    "subtitle": "Static Clients",
+    "title": "Static Clients"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/deploying/workers",
+    "subtitle": null,
+    "title": "Workers"
+  },
+  {
+    "element": "h4",
+    "path": "/manual/deploying/workers",
+    "subtitle": "API Rate Limit Overrides",
+    "title": "Workers"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/deploying/workers",
+    "subtitle": "AWS",
+    "title": "Workers"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Cautions",
+    "title": "Workers"
+  },
+  {
+    "element": "h4",
+    "path": "/manual/deploying/workers",
+    "subtitle": "GCP Project",
+    "title": "Workers"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Google",
+    "title": "Workers"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Provider Configuration",
+    "title": "Workers"
+  },
+  {
+    "element": "h4",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Service Accounts",
+    "title": "Workers"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Static",
+    "title": "Workers"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/design/apis/errors",
+    "subtitle": null,
+    "title": "API Errors"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/apis/errors",
+    "subtitle": "API-Specific Errors",
+    "title": "API Errors"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/apis/errors",
+    "subtitle": "AuthenticationFailed: 401",
+    "title": "API Errors"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/apis/errors",
+    "subtitle": "InputError: 400",
+    "title": "API Errors"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/apis/errors",
+    "subtitle": "InputTooLarge: 413",
+    "title": "API Errors"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/apis/errors",
+    "subtitle": "InputValidationError: 400",
+    "title": "API Errors"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/apis/errors",
+    "subtitle": "InsufficientScopes: 403",
+    "title": "API Errors"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/apis/errors",
+    "subtitle": "InternalServerError: 500",
+    "title": "API Errors"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/apis/errors",
+    "subtitle": "InvalidRequestArguments: 400",
+    "title": "API Errors"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/apis/errors",
+    "subtitle": "MalformedPayload: 400",
+    "title": "API Errors"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/apis/errors",
+    "subtitle": "RequestConflict: 409",
+    "title": "API Errors"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/apis/errors",
+    "subtitle": "Resiliency",
+    "title": "API Errors"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/apis/errors",
+    "subtitle": "ResourceExpired: 410",
+    "title": "API Errors"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/apis/errors",
+    "subtitle": "ResourceNotFound: 404",
+    "title": "API Errors"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/apis/errors",
+    "subtitle": "Retries",
+    "title": "API Errors"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/design/apis/hawk/roles",
+    "subtitle": null,
+    "title": "Roles"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/apis/hawk/roles",
+    "subtitle": "In Practice",
+    "title": "Roles"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/design/apis/hawk/temporary-credentials",
+    "subtitle": null,
+    "title": "Temporary Credentials"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/apis/hawk/temporary-credentials",
+    "subtitle": "Anonymous Temporary Credentials",
+    "title": "Temporary Credentials"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/apis/hawk/temporary-credentials",
+    "subtitle": "Certificates",
+    "title": "Temporary Credentials"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/apis/hawk/temporary-credentials",
+    "subtitle": "Construction of `accessToken`",
+    "title": "Temporary Credentials"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/apis/hawk/temporary-credentials",
+    "subtitle": "Signature Generation",
+    "title": "Temporary Credentials"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/design/apis/pulse",
+    "subtitle": null,
+    "title": "Pulse"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/apis/pulse",
+    "subtitle": "Background",
+    "title": "Pulse"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/apis/pulse",
+    "subtitle": "Pulse Specficiation, Abbreviated",
+    "title": "Pulse"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/apis/pulse",
+    "subtitle": "Taskcluster Pulse Resources",
+    "title": "Pulse"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/design/apis/reference-format",
+    "subtitle": null,
+    "title": "Reference Formats"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/apis/reference-format",
+    "subtitle": "API References",
+    "title": "Reference Formats"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/apis/reference-format",
+    "subtitle": "Log References",
+    "title": "Reference Formats"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/apis/reference-format",
+    "subtitle": "Pulse Exchange References",
+    "title": "Reference Formats"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/apis/reference-format",
+    "subtitle": "Reference Documents",
+    "title": "Reference Formats"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/apis/reference-format",
+    "subtitle": "Reference Manifest",
+    "title": "Reference Formats"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/apis/reference-format",
+    "subtitle": "Rolled-Up References",
+    "title": "Reference Formats"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/design/conventions/actions/guidelines",
+    "subtitle": null,
+    "title": "Implementation Guidelines"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/conventions/actions/guidelines",
+    "subtitle": "Choosing a Kind",
+    "title": "Implementation Guidelines"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/design/conventions/actions/spec",
+    "subtitle": null,
+    "title": "Action Specification"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/conventions/actions/spec",
+    "subtitle": "\"hook\" kind",
+    "title": "Action Specification"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/conventions/actions/spec",
+    "subtitle": "\"task\" kind",
+    "title": "Action Specification"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/conventions/actions/spec",
+    "subtitle": "Action Context",
+    "title": "Action Specification"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/conventions/actions/spec",
+    "subtitle": "Action Input",
+    "title": "Action Specification"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/conventions/actions/spec",
+    "subtitle": "Action Metadata",
+    "title": "Action Specification"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/conventions/actions/spec",
+    "subtitle": "actions.json",
+    "title": "Action Specification"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/conventions/actions/spec",
+    "subtitle": "Formal Specification",
+    "title": "Action Specification"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/conventions/actions/spec",
+    "subtitle": "JSON-e Context",
+    "title": "Action Specification"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/conventions/actions/spec",
+    "subtitle": "Kinds",
+    "title": "Action Specification"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/conventions/actions/spec",
+    "subtitle": "Variables",
+    "title": "Action Specification"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/design/conventions/actions/ui",
+    "subtitle": null,
+    "title": "User Interface Considerations"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/conventions/actions/ui",
+    "subtitle": "\"hook\" Actions",
+    "title": "User Interface Considerations"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/conventions/actions/ui",
+    "subtitle": "\"task\" Actions",
+    "title": "User Interface Considerations"
+  },
+  {
+    "element": "h4",
+    "path": "/manual/design/conventions/actions/ui",
+    "subtitle": "Skipping Confirmation",
+    "title": "User Interface Considerations"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/conventions/actions/ui",
+    "subtitle": "Specialized Input",
+    "title": "User Interface Considerations"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/design/conventions/actions/ui",
+    "subtitle": "Specialized Triggering",
+    "title": "User Interface Considerations"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/design/env-vars",
+    "subtitle": null,
+    "title": "Standard Environment Variables"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/env-vars",
+    "subtitle": "TASKCLUSTER_ACCESS_TOKEN",
+    "title": "Standard Environment Variables"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/env-vars",
+    "subtitle": "TASKCLUSTER_CERTIFICATE",
+    "title": "Standard Environment Variables"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/env-vars",
+    "subtitle": "TASKCLUSTER_CLIENT_ID",
+    "title": "Standard Environment Variables"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/env-vars",
+    "subtitle": "TASKCLUSTER_PROXY_URL",
+    "title": "Standard Environment Variables"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/env-vars",
+    "subtitle": "TASKCLUSTER_ROOT_URL",
+    "title": "Standard Environment Variables"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/env-vars",
+    "subtitle": "TASKCLUSTER_WORKER_LOCATION",
+    "title": "Standard Environment Variables"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/design/logs",
+    "subtitle": null,
+    "title": "Structured Logs"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/design/logs",
+    "subtitle": "Log Entry Properties",
+    "title": "Structured Logs"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/task-execution/provisioning",
+    "subtitle": null,
+    "title": "Provisioning"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/task-execution/provisioning",
+    "subtitle": "Worker Pool IDs (and Provisioner IDs and Worker Types)",
+    "title": "Provisioning"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/task-execution/worker-pools",
+    "subtitle": null,
+    "title": "Worker Pools"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/task-execution/worker-pools",
+    "subtitle": "Cache Boundaries",
+    "title": "Worker Pools"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/task-execution/worker-pools",
+    "subtitle": "Resource Limits",
+    "title": "Worker Pools"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/task-execution/worker-pools",
+    "subtitle": "Security Boundaries",
+    "title": "Worker Pools"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/task-execution/worker-pools",
+    "subtitle": "Worker Configurations",
+    "title": "Worker Pools"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/task-execution/workers",
+    "subtitle": null,
+    "title": "Workers"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/task-execution/workers",
+    "subtitle": "Bring Your Own Worker",
+    "title": "Workers"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/task-execution/workers",
+    "subtitle": "Claiming Tasks",
+    "title": "Workers"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/task-execution/workers",
+    "subtitle": "Worker Groups and Ids",
+    "title": "Workers"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/task-execution/workers",
+    "subtitle": "Worker Scopes",
+    "title": "Workers"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/tasks/artifacts",
+    "subtitle": null,
+    "title": "Artifacts"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/tasks/artifacts",
+    "subtitle": "Log Artifacts",
+    "title": "Artifacts"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/tasks/artifacts",
+    "subtitle": "Public and Private Artifacts",
+    "title": "Artifacts"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/tasks/manipulating",
+    "subtitle": null,
+    "title": "Manipulating Tasks"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/tasks/manipulating",
+    "subtitle": "Cancelling",
+    "title": "Manipulating Tasks"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/tasks/manipulating",
+    "subtitle": "Force Scheduling",
+    "title": "Manipulating Tasks"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/actions",
+    "subtitle": "Choosing a Kind",
+    "title": null
+  },
+  {
+    "element": "h1",
+    "path": "/manual/using/administration",
+    "subtitle": null,
+    "title": "Deployment Administration"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/administration",
+    "subtitle": "tc-admin",
+    "title": "Deployment Administration"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/administration",
+    "subtitle": "Version-Controlled Configuration",
+    "title": "Deployment Administration"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/using/artifacts",
+    "subtitle": null,
+    "title": "Working with Artifacts"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/artifacts",
+    "subtitle": "Creating Artifacts",
+    "title": "Working with Artifacts"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/artifacts",
+    "subtitle": "Finding the Latest Build",
+    "title": "Working with Artifacts"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/artifacts",
+    "subtitle": "Passing Artifacts Between Tasks",
+    "title": "Working with Artifacts"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/using/caching",
+    "subtitle": null,
+    "title": "Caching on Workers"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/caching",
+    "subtitle": "Caches",
+    "title": "Caching on Workers"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/caching",
+    "subtitle": "Configuration",
+    "title": "Caching on Workers"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/using/github",
+    "subtitle": null,
+    "title": "Integrating with Github"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/github",
+    "subtitle": "Task Security",
+    "title": "Integrating with Github"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/using/handling-high-load",
+    "subtitle": null,
+    "title": "Handling High Load"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/handling-high-load",
+    "subtitle": "Deadlines",
+    "title": "Handling High Load"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/handling-high-load",
+    "subtitle": "Priorities",
+    "title": "Handling High Load"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/handling-high-load",
+    "subtitle": "Superseding",
+    "title": "Handling High Load"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/using/integration/frontend",
+    "subtitle": null,
+    "title": "Frontend Applications"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/integration/frontend",
+    "subtitle": "Creating a simple login integration",
+    "title": "Frontend Applications"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/using/integration/frontend",
+    "subtitle": "Exchanging a code for a third-party access token",
+    "title": "Frontend Applications"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/using/integration/frontend",
+    "subtitle": "Exchanging a third-party token for Taskcluster credentials",
+    "title": "Frontend Applications"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/using/integration/guidelines",
+    "subtitle": null,
+    "title": "Guidelines"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/integration/guidelines",
+    "subtitle": "Acting on Behalf of a User",
+    "title": "Guidelines"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/integration/guidelines",
+    "subtitle": "Careful with Credentials",
+    "title": "Guidelines"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/integration/guidelines",
+    "subtitle": "Certificates",
+    "title": "Guidelines"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/integration/guidelines",
+    "subtitle": "ClientIds",
+    "title": "Guidelines"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/using/integration/guidelines",
+    "subtitle": "Deputy Tools",
+    "title": "Guidelines"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/using/integration/guidelines",
+    "subtitle": "Don't be a Deputy",
+    "title": "Guidelines"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/integration/guidelines",
+    "subtitle": "Scopes",
+    "title": "Guidelines"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/using/namespaces",
+    "subtitle": null,
+    "title": "Namespaces"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/namespaces",
+    "subtitle": "Artifacts",
+    "title": "Namespaces"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/namespaces",
+    "subtitle": "Clients",
+    "title": "Namespaces"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/namespaces",
+    "subtitle": "Hooks",
+    "title": "Namespaces"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/namespaces",
+    "subtitle": "Indexes",
+    "title": "Namespaces"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/namespaces",
+    "subtitle": "Projects",
+    "title": "Namespaces"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/namespaces",
+    "subtitle": "Roles",
+    "title": "Namespaces"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/namespaces",
+    "subtitle": "Scheduler IDs",
+    "title": "Namespaces"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/namespaces",
+    "subtitle": "Scopes",
+    "title": "Namespaces"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/namespaces",
+    "subtitle": "Secrets",
+    "title": "Namespaces"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/namespaces",
+    "subtitle": "Worker Caches",
+    "title": "Namespaces"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/namespaces",
+    "subtitle": "Worker IDs",
+    "title": "Namespaces"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/namespaces",
+    "subtitle": "Worker Pools and Task Queues",
+    "title": "Namespaces"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/using/s3-uploads",
+    "subtitle": null,
+    "title": "Uploading to S3"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/using/s3-uploads",
+    "subtitle": null,
+    "title": "Uploading to S3"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/using/s3-uploads",
+    "subtitle": null,
+    "title": "Uploading to S3"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/using/s3-uploads",
+    "subtitle": null,
+    "title": "Uploading to S3"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/using/s3-uploads",
+    "subtitle": null,
+    "title": "Uploading to S3"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/s3-uploads",
+    "subtitle": "IAM Setup",
+    "title": "Uploading to S3"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/s3-uploads",
+    "subtitle": "Secret Setup",
+    "title": "Uploading to S3"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/s3-uploads",
+    "subtitle": "Task Setup",
+    "title": "Uploading to S3"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/using/scheduled-tasks",
+    "subtitle": null,
+    "title": "Running Periodic Tasks"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/scheduled-tasks",
+    "subtitle": "Advice",
+    "title": "Running Periodic Tasks"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/scheduled-tasks",
+    "subtitle": "Using Hooks",
+    "title": "Running Periodic Tasks"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/using/secrets",
+    "subtitle": null,
+    "title": ".."
+  },
+  {
+    "element": "h1",
+    "path": "/manual/using/task-graph",
+    "subtitle": null,
+    "title": "Building Task Graphs"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/using/task-graph",
+    "subtitle": "Decision-Task Best Practices",
+    "title": "Building Task Graphs"
+  },
+  {
+    "element": "h1",
+    "path": "/people",
+    "subtitle": null,
+    "title": "People of Taskcluster"
+  },
+  {
+    "element": "h2",
+    "path": "/people",
+    "subtitle": "Everyone",
+    "title": "People of Taskcluster"
+  },
+  {
+    "element": "h2",
+    "path": "/people",
+    "subtitle": "Staff",
+    "title": "People of Taskcluster"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/core/built-in-workers",
+    "subtitle": null,
+    "title": "Built-In Workers Service"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/built-in-workers",
+    "subtitle": "Usage",
+    "title": "Built-In Workers Service"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/core/hooks",
+    "subtitle": null,
+    "title": "Hooks Service"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/hooks",
+    "subtitle": "Hooks",
+    "title": "Hooks Service"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/core/hooks",
+    "subtitle": "JSON-e",
+    "title": "Hooks Service"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/core/hooks",
+    "subtitle": "Pulse Bindings",
+    "title": "Hooks Service"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/core/hooks",
+    "subtitle": "Schedule",
+    "title": "Hooks Service"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/hooks",
+    "subtitle": "Trigger Payloads and Privilege Escalation",
+    "title": "Hooks Service"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/core/hooks",
+    "subtitle": "Trigger Schema",
+    "title": "Hooks Service"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/core/hooks/firing-hooks",
+    "subtitle": null,
+    "title": "Firing Hooks"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/hooks/firing-hooks",
+    "subtitle": "JSON-e Rendering",
+    "title": "Firing Hooks"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/core/hooks/firing-hooks",
+    "subtitle": "Pulse Messages",
+    "title": "Firing Hooks"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/core/hooks/firing-hooks",
+    "subtitle": "Scheduled Tasks",
+    "title": "Firing Hooks"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/hooks/firing-hooks",
+    "subtitle": "Task Times",
+    "title": "Firing Hooks"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/core/hooks/firing-hooks",
+    "subtitle": "TriggerHook",
+    "title": "Firing Hooks"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/core/hooks/firing-hooks",
+    "subtitle": "Webhooks",
+    "title": "Firing Hooks"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/core/index",
+    "subtitle": null,
+    "title": "Index Service"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/index",
+    "subtitle": "Entry Expiration",
+    "title": "Index Service"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/index",
+    "subtitle": "Index Hierarchy",
+    "title": "Index Service"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/index",
+    "subtitle": "Indexed Data",
+    "title": "Index Service"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/index",
+    "subtitle": "Indexing Routes",
+    "title": "Index Service"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/index",
+    "subtitle": "Task Rank",
+    "title": "Index Service"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/index",
+    "subtitle": "Valid Characters",
+    "title": "Index Service"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/core/notify",
+    "subtitle": null,
+    "title": "Notify Service"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/core/notify/usage",
+    "subtitle": null,
+    "title": "Enable Notifications"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/core/notify/usage",
+    "subtitle": "Example",
+    "title": "Enable Notifications"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/core/notify/usage",
+    "subtitle": "Filters",
+    "title": "Enable Notifications"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/core/notify/usage",
+    "subtitle": "Notification Types",
+    "title": "Enable Notifications"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/core/notify/usage",
+    "subtitle": "Route Syntax",
+    "title": "Enable Notifications"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/core/notify/usage",
+    "subtitle": "Scopes",
+    "title": "Enable Notifications"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/core/notify/usage",
+    "subtitle": "Setting Custom Messages",
+    "title": "Enable Notifications"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/core/purge-cache",
+    "subtitle": null,
+    "title": "Purge-Cache Service"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/core/secrets",
+    "subtitle": null,
+    "title": "Secrets Service"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/core/web-server",
+    "subtitle": null,
+    "title": "Web Server"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/core/web-server",
+    "subtitle": "Client Scanning",
+    "title": "Web Server"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/web-server",
+    "subtitle": "GraphQL",
+    "title": "Web Server"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/web-server",
+    "subtitle": "Identity",
+    "title": "Web Server"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/web-server",
+    "subtitle": "Scopes",
+    "title": "Web Server"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/web-server",
+    "subtitle": "Third Party Login",
+    "title": "Web Server"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/web-server",
+    "subtitle": "User Login",
+    "title": "Web Server"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/core/web-server/github-login-strategy",
+    "subtitle": null,
+    "title": "GitHub Login Strategy"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/web-server/github-login-strategy",
+    "subtitle": "Identities",
+    "title": "GitHub Login Strategy"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/web-server/github-login-strategy",
+    "subtitle": "User Scopes",
+    "title": "GitHub Login Strategy"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/core/web-server/mozilla-auth0-login-strategy",
+    "subtitle": null,
+    "title": "Mozilla-Auth0 Login Strategy"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/web-server/mozilla-auth0-login-strategy",
+    "subtitle": "Identities",
+    "title": "Mozilla-Auth0 Login Strategy"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/web-server/mozilla-auth0-login-strategy",
+    "subtitle": "Troubleshooting",
+    "title": "Mozilla-Auth0 Login Strategy"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/web-server/mozilla-auth0-login-strategy",
+    "subtitle": "User Scopes",
+    "title": "Mozilla-Auth0 Login Strategy"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/core/worker-manager",
+    "subtitle": null,
+    "title": "Worker Manager"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/worker-manager",
+    "subtitle": "Providers",
+    "title": "Worker Manager"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/worker-manager",
+    "subtitle": "Worker Pools",
+    "title": "Worker Manager"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/worker-manager",
+    "subtitle": "Workers",
+    "title": "Worker Manager"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/core/worker-manager/aws",
+    "subtitle": null,
+    "title": "AWS Provider Type"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/worker-manager/aws",
+    "subtitle": "Tags",
+    "title": "AWS Provider Type"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/worker-manager/aws",
+    "subtitle": "Worker Interaction",
+    "title": "AWS Provider Type"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/worker-manager/aws",
+    "subtitle": "Worker-Pool Configuration",
+    "title": "AWS Provider Type"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/core/worker-manager/google",
+    "subtitle": null,
+    "title": "Google Provider Type"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/worker-manager/google",
+    "subtitle": "Removing Workers",
+    "title": "Google Provider Type"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/worker-manager/google",
+    "subtitle": "Tags",
+    "title": "Google Provider Type"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/worker-manager/google",
+    "subtitle": "Worker Interaction",
+    "title": "Google Provider Type"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/worker-manager/google",
+    "subtitle": "Worker-Pool Configuration",
+    "title": "Google Provider Type"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/core/worker-manager/static",
+    "subtitle": null,
+    "title": "Static Provider Type"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/worker-manager/static",
+    "subtitle": "Worker Creation",
+    "title": "Static Provider Type"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/worker-manager/static",
+    "subtitle": "Worker-Pool Configuration",
+    "title": "Static Provider Type"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/core/worker-manager/worker-interaction",
+    "subtitle": null,
+    "title": "Worker-Manager - Worker Interaction"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/core/worker-manager/worker-interaction",
+    "subtitle": "Error Reporting",
+    "title": "Worker-Manager - Worker Interaction"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/core/worker-manager/worker-interaction",
+    "subtitle": "Initial Information",
+    "title": "Worker-Manager - Worker Interaction"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/core/worker-manager/worker-interaction",
+    "subtitle": "Registration",
+    "title": "Worker-Manager - Worker Interaction"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/worker-manager/worker-interaction",
+    "subtitle": "Worker Configuration",
+    "title": "Worker-Manager - Worker Interaction"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/core/worker-manager/worker-interaction",
+    "subtitle": "Worker Startup",
+    "title": "Worker-Manager - Worker Interaction"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/guide",
+    "subtitle": null,
+    "title": "Guide to The Microservices"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/guide",
+    "subtitle": "External Integrations",
+    "title": "Guide to The Microservices"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/guide",
+    "subtitle": "External Services",
+    "title": "Guide to The Microservices"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/guide",
+    "subtitle": "Platform vs. Core",
+    "title": "Guide to The Microservices"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/guide",
+    "subtitle": "Taskcluster Core",
+    "title": "Guide to The Microservices"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/guide",
+    "subtitle": "Taskcluster Platform",
+    "title": "Guide to The Microservices"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/guide",
+    "subtitle": "Team Operations",
+    "title": "Guide to The Microservices"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/guide",
+    "subtitle": "Utility Services",
+    "title": "Guide to The Microservices"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/guide",
+    "subtitle": "Workers",
+    "title": "Guide to The Microservices"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/integrations/github",
+    "subtitle": null,
+    "title": "Github Service"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/integrations/github",
+    "subtitle": "Adding status badges to your project's README:",
+    "title": "Github Service"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/integrations/github/taskcluster-yml-v0",
+    "subtitle": null,
+    "title": "Taskcluster Yml Version 0"
+  },
+  {
+    "element": "h4",
+    "path": "/reference/integrations/github/taskcluster-yml-v0",
+    "subtitle": "Branch Filtering",
+    "title": "Taskcluster Yml Version 0"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/integrations/github/taskcluster-yml-v0",
+    "subtitle": "Configuration in `extra.github`",
+    "title": "Taskcluster Yml Version 0"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/integrations/github/taskcluster-yml-v0",
+    "subtitle": "Deadlines and the fromNow function",
+    "title": "Taskcluster Yml Version 0"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/integrations/github/taskcluster-yml-v0",
+    "subtitle": "Environment Variables",
+    "title": "Taskcluster Yml Version 0"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/integrations/github/taskcluster-yml-v0",
+    "subtitle": "Github Events",
+    "title": "Taskcluster Yml Version 0"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/integrations/github/taskcluster-yml-v0",
+    "subtitle": "Pull Request Metadata",
+    "title": "Taskcluster Yml Version 0"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/integrations/github/taskcluster-yml-v0",
+    "subtitle": "Push Metadata",
+    "title": "Taskcluster Yml Version 0"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/integrations/github/taskcluster-yml-v0",
+    "subtitle": "Release Metadata",
+    "title": "Taskcluster Yml Version 0"
+  },
+  {
+    "element": "h4",
+    "path": "/reference/integrations/github/taskcluster-yml-v0",
+    "subtitle": "Roles",
+    "title": "Taskcluster Yml Version 0"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/integrations/github/taskcluster-yml-v0",
+    "subtitle": "Tag Metadata",
+    "title": "Taskcluster Yml Version 0"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/integrations/github/taskcluster-yml-v0",
+    "subtitle": "Token Substitution and Environment Variables",
+    "title": "Taskcluster Yml Version 0"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/integrations/github/taskcluster-yml-v0",
+    "subtitle": "Who Can Trigger Jobs?",
+    "title": "Taskcluster Yml Version 0"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": null,
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h4",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Action Filtering",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h4",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Branch Filtering",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h4",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Custom routes for notifications and other things",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Example",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h4",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Github Events",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "JSON-e Rendering",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Policies",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h4",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Provisioner ID and Worker Type",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Pull Request Metadata",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Pull Requests",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Push Metadata",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Release Metadata",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Result",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Scopes and Roles",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Tag Metadata",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h4",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Tags",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Task Definition and Examples",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Transitioning from v0",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/platform/auth",
+    "subtitle": null,
+    "title": "Auth Service"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/platform/auth/roles",
+    "subtitle": null,
+    "title": "Roles and Role Expansion"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/auth/roles",
+    "subtitle": "Example",
+    "title": "Roles and Role Expansion"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/platform/auth/roles",
+    "subtitle": "Limits",
+    "title": "Roles and Role Expansion"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/auth/roles",
+    "subtitle": "Parameterized Roles",
+    "title": "Roles and Role Expansion"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/platform/auth/roles",
+    "subtitle": "Stars in Parameters",
+    "title": "Roles and Role Expansion"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/auth/roles",
+    "subtitle": "Stars in Roles",
+    "title": "Roles and Role Expansion"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/platform/auth/scopes",
+    "subtitle": null,
+    "title": "Scopes and Satisfaction"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/platform/auth/scopes",
+    "subtitle": "Double-Stars",
+    "title": "Scopes and Satisfaction"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/auth/scopes",
+    "subtitle": "Satisfaction",
+    "title": "Scopes and Satisfaction"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/auth/scopes",
+    "subtitle": "Stars in Scopes",
+    "title": "Scopes and Satisfaction"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/platform/queue",
+    "subtitle": null,
+    "title": "Queue Service"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/platform/queue",
+    "subtitle": "AWS Access Policies Required",
+    "title": "Queue Service"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue",
+    "subtitle": "Deployment",
+    "title": "Queue Service"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue",
+    "subtitle": "Usage",
+    "title": "Queue Service"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/platform/queue/actions",
+    "subtitle": null,
+    "title": "Actions"
+  },
+  {
+    "element": "h3",
+    "path": "/reference/platform/queue/actions",
+    "subtitle": "Context",
+    "title": "Actions"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/actions",
+    "subtitle": "Defining Actions",
+    "title": "Actions"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/actions",
+    "subtitle": "Triggering Actions in a User Interface",
+    "title": "Actions"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/actions",
+    "subtitle": "Triggering Actions in Automation",
+    "title": "Actions"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/platform/queue/superseding",
+    "subtitle": null,
+    "title": "Superseding"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/superseding",
+    "subtitle": "Convention",
+    "title": "Superseding"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/platform/queue/task-life-cycle",
+    "subtitle": null,
+    "title": "Task Life-Cycle"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/task-life-cycle",
+    "subtitle": "Completed/Failed Tasks",
+    "title": "Task Life-Cycle"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/task-life-cycle",
+    "subtitle": "Pending Tasks",
+    "title": "Task Life-Cycle"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/task-life-cycle",
+    "subtitle": "Running Tasks",
+    "title": "Task Life-Cycle"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/task-life-cycle",
+    "subtitle": "Task Exceptions",
+    "title": "Task Life-Cycle"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/task-life-cycle",
+    "subtitle": "Task Expiration",
+    "title": "Task Life-Cycle"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/task-life-cycle",
+    "subtitle": "Unscheduled Tasks",
+    "title": "Task Life-Cycle"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/platform/queue/task-schema",
+    "subtitle": null,
+    "title": "Task Definition"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/platform/queue/worker-hierarchy",
+    "subtitle": null,
+    "title": "Worker Hierarchy"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/worker-hierarchy",
+    "subtitle": "Provisioners",
+    "title": "Worker Hierarchy"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/worker-hierarchy",
+    "subtitle": "Worker Types",
+    "title": "Worker Hierarchy"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/worker-hierarchy",
+    "subtitle": "Workers",
+    "title": "Worker Hierarchy"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/platform/queue/worker-interaction",
+    "subtitle": null,
+    "title": "Queue-Worker Interaction"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/worker-interaction",
+    "subtitle": "Claiming Pending Tasks",
+    "title": "Queue-Worker Interaction"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/worker-interaction",
+    "subtitle": "Dealing with Invalid Payloads",
+    "title": "Queue-Worker Interaction"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/worker-interaction",
+    "subtitle": "Intermittent Tasks",
+    "title": "Queue-Worker Interaction"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/worker-interaction",
+    "subtitle": "Reclaiming Tasks",
+    "title": "Queue-Worker Interaction"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/worker-interaction",
+    "subtitle": "Reporting Task Result",
+    "title": "Queue-Worker Interaction"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/worker-interaction",
+    "subtitle": "Responding to Internal Errors",
+    "title": "Queue-Worker Interaction"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/worker-interaction",
+    "subtitle": "Terminating the Worker Early",
+    "title": "Queue-Worker Interaction"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/platform/queue/worker-interaction",
+    "subtitle": "Uploading Artifacts",
+    "title": "Queue-Worker Interaction"
+  },
+  {
+    "element": "h1",
+    "path": "/reference/url-structure",
+    "subtitle": null,
+    "title": "URL Structure"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/url-structure",
+    "subtitle": "RootUrl",
+    "title": "URL Structure"
+  },
+  {
+    "element": "h2",
+    "path": "/reference/url-structure",
+    "subtitle": "URLs",
+    "title": "URL Structure"
+  },
+  {
+    "element": "h1",
+    "path": "/resources",
+    "subtitle": null,
+    "title": "Resources for Further Exploration"
+  },
+  {
+    "element": "h3",
+    "path": "/resources",
+    "subtitle": "[<span class=\"glyphicon glyphicon-blackboard\" aria-hidden=\"true\"></span> Videos](https://www.youtube.com/channel/UCD0odAg4RgoTDdomOx7lSuw)",
+    "title": "Resources for Further Exploration"
+  },
+  {
+    "element": "h3",
+    "path": "/resources",
+    "subtitle": "[<span class=\"glyphicon glyphicon-bug\" aria-hidden=\"true\"></span> Bugzilla](https://bugzilla.mozilla.org/enter_bug.cgi?product=Taskcluster)",
+    "title": "Resources for Further Exploration"
+  },
+  {
+    "element": "h3",
+    "path": "/resources",
+    "subtitle": "[<span class=\"glyphicon glyphicon-classic-hammer\" aria-hidden=\"true\"></span> Codetribute](https://codetribute.mozilla.org/projects/taskcluster)",
+    "title": "Resources for Further Exploration"
+  },
+  {
+    "element": "h3",
+    "path": "/resources",
+    "subtitle": "[<span class=\"glyphicon glyphicon-random\" aria-hidden=\"true\"></span> GitHub](https://github.com/taskcluster)",
+    "title": "Resources for Further Exploration"
+  },
+  {
+    "element": "h1",
+    "path": "/tutorial",
+    "subtitle": null,
+    "title": "Welcome to Taskcluster!"
+  },
+  {
+    "element": "h2",
+    "path": "/tutorial",
+    "subtitle": "Patches Welcome!",
+    "title": "Welcome to Taskcluster!"
+  },
+  {
+    "element": "h1",
+    "path": "/tutorial/authenticate",
+    "subtitle": null,
+    "title": "Authenticating to Taskcluster"
+  },
+  {
+    "element": "h2",
+    "path": "/tutorial/authenticate",
+    "subtitle": "Alternative Process",
+    "title": "Authenticating to Taskcluster"
+  },
+  {
+    "element": "h1",
+    "path": "/tutorial/create-task-via-api",
+    "subtitle": null,
+    "title": "Creating a Task via API"
+  },
+  {
+    "element": "h2",
+    "path": "/tutorial/create-task-via-api",
+    "subtitle": "Constructing a Task Definition",
+    "title": "Creating a Task via API"
+  },
+  {
+    "element": "h2",
+    "path": "/tutorial/create-task-via-api",
+    "subtitle": "Constructing a task payload for docker-worker",
+    "title": "Creating a Task via API"
+  },
+  {
+    "element": "h2",
+    "path": "/tutorial/create-task-via-api",
+    "subtitle": "Creating a Task",
+    "title": "Creating a Task via API"
+  },
+  {
+    "element": "h1",
+    "path": "/tutorial/debug-task",
+    "subtitle": null,
+    "title": "Debugging a Task"
+  },
+  {
+    "element": "h2",
+    "path": "/tutorial/debug-task",
+    "subtitle": "Debugging locally",
+    "title": "Debugging a Task"
+  },
+  {
+    "element": "h2",
+    "path": "/tutorial/debug-task",
+    "subtitle": "Debugging with Taskcluster",
+    "title": "Debugging a Task"
+  },
+  {
+    "element": "h2",
+    "path": "/tutorial/debug-task",
+    "subtitle": "Using the Shell",
+    "title": "Debugging a Task"
+  },
+  {
+    "element": "h1",
+    "path": "/tutorial/finding-tasks",
+    "subtitle": null,
+    "title": "Finding Tasks"
+  },
+  {
+    "element": "h1",
+    "path": "/tutorial/hello-world",
+    "subtitle": null,
+    "title": "Hello, World"
+  },
+  {
+    "element": "h2",
+    "path": "/tutorial/hello-world",
+    "subtitle": "Finding Taskcluster",
+    "title": "Hello, World"
+  },
+  {
+    "element": "h2",
+    "path": "/tutorial/hello-world",
+    "subtitle": "Signing In",
+    "title": "Hello, World"
+  },
+  {
+    "element": "h1",
+    "path": "/tutorial/reviews",
+    "subtitle": null,
+    "title": "Taskcluster Reviews"
+  },
+  {
+    "element": "h2",
+    "path": "/tutorial/reviews",
+    "subtitle": "Bug Fixes and Small Patches",
+    "title": "Taskcluster Reviews"
+  },
+  {
+    "element": "h2",
+    "path": "/tutorial/reviews",
+    "subtitle": "Large-Scale Projects",
+    "title": "Taskcluster Reviews"
+  },
+  {
+    "element": "h1",
+    "path": "/tutorial/what-is-tc",
+    "subtitle": null,
+    "title": "What is Taskcluster?"
+  },
+  {
+    "element": "h2",
+    "path": "/tutorial/what-is-tc",
+    "subtitle": "Is it Mozilla-specific?",
+    "title": "What is Taskcluster?"
+  }
+]
