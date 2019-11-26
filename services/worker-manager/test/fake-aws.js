@@ -1,5 +1,7 @@
 const assert = require('assert');
 
+let InstanceId = 0;
+
 module.exports = {
   EC2: {
     runInstances: ({defaultLaunchConfig, TagSpecifications, UserData}) => launchConfig => {
@@ -16,7 +18,7 @@ module.exports = {
       let Instances = [];
       for (let i = 0; i < launchConfig.MinCount; i++) {
         Instances.push({
-          InstanceId: `i-${i}`,
+          InstanceId: `i-${InstanceId++}`,
           AmiLaunchIndex: '',
           ImageId: launchConfig.ImageId,
           InstanceType: launchConfig.InstanceType || 'm2.micro',
