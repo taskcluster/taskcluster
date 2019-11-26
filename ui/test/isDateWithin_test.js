@@ -18,10 +18,10 @@ describe('isDateWithin', () => {
 
   it('should return false', () => {
     [
-      '44 minutes',
+      '42 minutes',
       '1 minute',
       '2 hours',
-      '-44 minutes',
+      '-42 minutes',
       '- 1 minute',
       '- 2 hours',
     ].forEach(t => {
