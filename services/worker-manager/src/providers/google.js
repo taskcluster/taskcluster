@@ -226,10 +226,10 @@ class GoogleProvider extends Provider {
             name: instanceName,
             labels: {
               ...cfg.labels || {},
-              'created-by': `taskcluster-wm-${this.providerId}`.replace(/[^a-zA-Z0-9_-]/, '_'),
+              'created-by': `taskcluster-wm-${this.providerId}`.replace(/[^a-zA-Z0-9-]/, '-'),
               'managed-by': 'taskcluster',
-              'worker-pool-id': workerPoolId.replace(/[^a-zA-Z0-9_-]/, '_').toLowerCase(),
-              'owner': workerPool.owner.replace(/[^a-zA-Z0-9_-]/, '_').toLowerCase(),
+              'worker-pool-id': workerPoolId.replace(/[^a-zA-Z0-9-]/, '-').toLowerCase(),
+              'owner': workerPool.owner.replace(/[^a-zA-Z0-9-]/, '-').toLowerCase(),
             },
             description: cfg.description || workerPool.description,
             serviceAccounts: [{
