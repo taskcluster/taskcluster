@@ -16,6 +16,9 @@ suite(testing.suiteName(), () => {
         },
       },
     },
+    monitor: {
+      debug: () => {},
+    },
   });
 
   strategy.getPersonApi = () => {
