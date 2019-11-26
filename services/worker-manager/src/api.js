@@ -651,16 +651,21 @@ builder.declare({
   }
   assert(expires, 'registerWorker did not return expires');
 
+  // We use these fields from inside the worker rather than
+  // what was passed in because that is the thing we have verified
+  // to be passing in the token. This helps avoid slipups later
+  // like if we had a scope based on workerGroup alone which we do
+  // not verify here
   const credentials = taskcluster.createTemporaryCredentials({
-    clientId: `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`,
+    clientId: `worker/${worker.providerId}/${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
     scopes: [
-      `assume:worker-type:${workerPoolId}`, // deprecated role
-      `assume:worker-pool:${workerPoolId}`,
-      `assume:worker-id:${workerGroup}/${workerId}`,
-      `queue:worker-id:${workerGroup}/${workerId}`,
-      `secrets:get:worker-type:${workerPoolId}`, // deprecated secret name
-      `secrets:get:worker-pool:${workerPoolId}`,
-      `queue:claim-work:${workerPoolId}`,
+      `assume:worker-type:${worker.workerPoolId}`, // deprecated role
+      `assume:worker-pool:${worker.workerPoolId}`,
+      `assume:worker-id:${worker.workerGroup}/${worker.workerId}`,
+      `queue:worker-id:${worker.workerGroup}/${worker.workerId}`,
+      `secrets:get:worker-type:${worker.workerPoolId}`, // deprecated secret name
+      `secrets:get:worker-pool:${worker.workerPoolId}`,
+      `queue:claim-work:${worker.workerPoolId}`,
     ],
     start: taskcluster.fromNow('-15 minutes'),
     expiry: expires,
