@@ -79,6 +79,20 @@ monitorManager.register({
 });
 
 monitorManager.register({
+  name: 'scanSeen',
+  title: 'Scan Seen',
+  type: 'scan-seen',
+  version: 1,
+  level: 'notice',
+  description: 'The results of a worker-scanner run',
+  fields: {
+    providerId: 'The provider that has completed this scan',
+    seen: 'A map of workerPoolId that were seen to how much capacity was seen',
+    responsible: 'An array of workerPoolId that this provider is provisioning',
+  },
+});
+
+monitorManager.register({
   name: 'workerError',
   type: 'worker-error',
   title: 'Worker Error',
