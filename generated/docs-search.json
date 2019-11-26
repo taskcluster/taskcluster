@@ -96,6 +96,12 @@
     "title": "Deploying Taskcluster"
   },
   {
+    "element": "h3",
+    "path": "/manual/deploying",
+    "subtitle": "Why Are There Two Apps?",
+    "title": "Deploying Taskcluster"
+  },
+  {
     "element": "h1",
     "path": "/manual/deploying/backups",
     "subtitle": null,
@@ -186,34 +192,22 @@
     "title": "Cloud Credentials"
   },
   {
-    "element": "h3",
+    "element": "h1",
     "path": "/manual/deploying/github",
-    "subtitle": "Configuration",
-    "title": null
-  },
-  {
-    "element": "h3",
-    "path": "/manual/deploying/github",
-    "subtitle": "How to create the Taskcluster Github app? ",
-    "title": null
-  },
-  {
-    "element": "h3",
-    "path": "/manual/deploying/github",
-    "subtitle": "What permissions does the Taskcluster Github app need?",
-    "title": null
-  },
-  {
-    "element": "h3",
-    "path": "/manual/deploying/github",
-    "subtitle": "What should the apps be named? ",
-    "title": null
+    "subtitle": null,
+    "title": "GitHub Integration"
   },
   {
     "element": "h2",
     "path": "/manual/deploying/github",
-    "subtitle": "Why are there 2 apps? ",
-    "title": null
+    "subtitle": "App Setup",
+    "title": "GitHub Integration"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/github",
+    "subtitle": "Taskcluster Configuration",
+    "title": "GitHub Integration"
   },
   {
     "element": "h2",

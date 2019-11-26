@@ -46,6 +46,15 @@ Taskcluster can integrate with GitHub in two complementary ways:
 * The taskcluster-github service provides a GitHub App which can create tasks in response to events in GitHub repositories. See [Github Integration](/docs/manual/deploying/github) for more details.
 * The web-server service supports user logins via GitHub.  See [Login Strategies](/docs/manual/deploying/login-strategies) for more details.
 
+### Why Are There Two Apps?
+
+The GitHub App used for the GitHub integration is not to be confused with the OAuth App used for the GitHub login strategy.
+GitHub does not help this confusion by using the phrases "GitHub App" and "OAuth App"!
+
+A weakness in GitHub's authorization model is responsible for the need for two apps.
+If a service uses a GitHub App to sign in, the token it recieves can do anything as the user who just signed in.
+Taskcluster follows the principle of least privilege, all the way down to invidual microservices, so while the taskcluster-github service uses the GitHub App, the taskcluster-web-server service uses the less powerful OAuth App.
+
 ## Events
 
 Taskcluster requires an AMQP message bus to support passing events between services.
