@@ -29,8 +29,11 @@ class Estimator {
       runningCapacity,
       desiredCapacity,
       requestedCapacity,
-    }
+    };
 
+    // This 1.25 factor is picked arbitrarily. Ideally this never triggers unless
+    // we have some bug in the providers (which is somewhat likely especially with
+    // new implementations)
     let overProvisioned = false;
     if (runningCapacity > (maxCapacity * 1.25)) {
       overProvisioned = true;
