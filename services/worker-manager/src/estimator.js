@@ -21,7 +21,7 @@ class Estimator {
     // how many extra we want if we do want any
     const requestedCapacity = Math.max(0, desiredCapacity - runningCapacity);
 
-    this.monitor.log.simpleEstimate({
+    const estimatorInfo = {
       workerPoolId,
       pendingTasks,
       minCapacity,
@@ -29,7 +29,21 @@ class Estimator {
       runningCapacity,
       desiredCapacity,
       requestedCapacity,
-    });
+    };
+
+    // This 1.25 factor is picked arbitrarily. Ideally this never triggers unless
+    // we have some bug in the providers (which is somewhat likely especially with
+    // new implementations)
+    let overProvisioned = false;
+    if (runningCapacity > (maxCapacity * 1.25)) {
+      overProvisioned = true;
+    }
+
+    this.monitor.log.simpleEstimate(estimatorInfo, {level: overProvisioned ? 'err' : 'notice'});
+
+    if (overProvisioned) {
+      this.monitor.reportError(new Error('Running capacity (pending and running) is much greater than max capacity'), estimatorInfo);
+    }
 
     return requestedCapacity;
   }

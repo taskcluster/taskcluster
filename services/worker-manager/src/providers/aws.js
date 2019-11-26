@@ -186,6 +186,12 @@ class AwsProvider extends Provider {
       toSpawnCounter -= toSpawnPerConfig;
 
       await Promise.all(spawned.Instances.map(i => {
+        this.monitor.log.workerRequested({
+          workerPoolId,
+          providerId: this.providerId,
+          workerGroup: this.providerId,
+          workerId: i.InstanceId,
+        });
         return this.Worker.create({
           workerPoolId,
           providerId: this.providerId,
@@ -241,6 +247,11 @@ class AwsProvider extends Provider {
     }
 
     // mark it as running
+    this.monitor.log.workerRunning({
+      workerPoolId: workerPool.workerPoolId,
+      providerId: this.providerId,
+      workerId: worker.workerId,
+    });
     await worker.modify(w => {
       w.state = this.Worker.states.RUNNING;
     });
@@ -261,6 +272,11 @@ class AwsProvider extends Provider {
       }).promise())).InstanceStatuses;
     } catch (e) {
       if (e.code === 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too
+        this.monitor.log.workerStopped({
+          workerPoolId: worker.workerPoolId,
+          providerId: this.providerId,
+          workerId: worker.workerId,
+        });
         return worker.modify(w => {w.state = this.Worker.states.STOPPED;});
       }
       throw e;
@@ -277,6 +293,11 @@ class AwsProvider extends Provider {
 
         case 'terminated':
         case 'stopped':
+          this.monitor.log.workerStopped({
+            workerPoolId: worker.workerPoolId,
+            providerId: this.providerId,
+            workerId: worker.workerId,
+          });
           return worker.modify(w => {w.state = this.Worker.states.STOPPED;});
 
         default:
@@ -325,7 +346,7 @@ class AwsProvider extends Provider {
     for (const workerPoolId of responsibleFor) {
       this.seen[workerPoolId] = this.seen[workerPoolId] || 0;
     }
-    this.monitor.notice('scan-seen', {providerId: this.providerId, seen: this.seen, responsible: [...responsibleFor]});
+    this.monitor.log.scanSeen({providerId: this.providerId, seen: this.seen, responsible: [...responsibleFor]});
     await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
       const workerPool = await this.WorkerPool.load({
         workerPoolId,
