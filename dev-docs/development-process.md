@@ -154,7 +154,9 @@ Now follow along:
    * SubscriptionId can be found in the Azure console
    * RabbitMQ account creds are in passwordstore at tc/cloudamqp.com/hip-macaw
 1. Run `yarn dev:verify` and see if it complains about any missing values in
-   your configuration
+   your configuration. Please note that `dev-config.yml` defines values for environment variables rather than configuration
+   fields directly, so if you ever need to edit the file manually, instead of entering the names of the config fields from
+   services' `config.yml` enter the names of the corresponding environment variables in lower case.
 1. If you want to deploy local changes, run `yarn build --push` and add the
    resulting image id to your config file with the key `dockerImage`.
 1. `yarn dev:apply` will use helm+kubectl to apply all of your kubernetes resources
