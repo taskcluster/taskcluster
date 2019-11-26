@@ -32,6 +32,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         name: 'github',
         cfg,
         GithubAccessToken: helper.GithubAccessToken,
+        monitor: {
+          debug: () => {},
+        },
       });
 
       return strategy;

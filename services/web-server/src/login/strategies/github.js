@@ -1,5 +1,4 @@
 const assert = require('assert');
-const Debug = require('debug');
 const passport = require('passport');
 const { Strategy } = require('passport-github');
 const taskcluster = require('taskcluster-client');
@@ -9,8 +8,6 @@ const WebServerError = require('../../utils/WebServerError');
 const tryCatch = require('../../utils/tryCatch');
 const { encode, decode } = require('../../utils/codec');
 const GithubClient = require('../clients/GithubClient');
-
-const debug = Debug('strategies.github');
 
 module.exports = class Github {
   constructor({ name, cfg, GithubAccessToken, monitor }) {
@@ -31,7 +28,9 @@ module.exports = class Github {
     const githubEntry = await this.GithubAccessToken.load({ userId: String(userId) }, true);
 
     if (!githubEntry) {
-      debug(`Github user id ${userId} could not be found in the database.`);
+      this.monitor.debug('Github user id could not be found in the database.', {
+        userId,
+      });
 
       return;
     }
@@ -49,7 +48,7 @@ module.exports = class Github {
     }
 
     if (githubUser.id !== userId) {
-      debug(`Github user id ${githubUser.id} does not match userId ${userId} from the identity.`);
+      this.monitor.debug(`Github user id ${githubUser.id} does not match userId ${userId} from the identity.`);
 
       return;
     }
@@ -66,7 +65,8 @@ module.exports = class Github {
     const githubEntry = await this.GithubAccessToken.load({ userId: String(userId) }, true);
 
     if (!githubEntry) {
-      debug(`Github user id ${userId} could not be found in the database.`);
+      this.monitor.debug(`Github user id ${userId} could not be found in the database.`);
+
       return;
     }
 

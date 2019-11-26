@@ -1,4 +1,3 @@
-const debug = require('debug')('utils:generateCredentials');
 const assert = require('assert');
 const WebServerError = require('./WebServerError');
 
@@ -16,7 +15,7 @@ module.exports = async ({ cfg, strategy, identity, monitor }) => {
   const user = await strategy.userFromIdentity(identity);
 
   if (!user) {
-    debug(`Could not find user with identity ${identity}`);
+    monitor.debug(`Could not find user with identity ${identity}`);
     throw credentialError;
   }
 

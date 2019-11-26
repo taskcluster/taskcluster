@@ -1,5 +1,4 @@
 const assert = require('assert');
-const Debug = require('debug');
 const request = require('superagent');
 const passport = require('passport');
 const Auth0Strategy = require('passport-auth0');
@@ -10,8 +9,6 @@ const { encode, decode } = require('../../utils/codec');
 const tryCatch = require('../../utils/tryCatch');
 const login = require('../../utils/login');
 const verifyJwtAuth0 = require('../../utils/verifyJwtAuth0');
-
-const debug = Debug('strategies.mozilla-auth0');
 
 module.exports = class MozillaAuth0 {
   constructor({ name, cfg, monitor }) {
@@ -71,7 +68,10 @@ module.exports = class MozillaAuth0 {
     }
 
     if ('active' in userProfile && !userProfile.active) {
-      debug('user is not active; rejecting');
+      this.monitor.debug('User is not active; rejecting', {
+        userId: userProfile.user_id,
+      });
+
       return;
     }
 
@@ -108,7 +108,10 @@ module.exports = class MozillaAuth0 {
     );
 
     if (jwtError) {
-      debug(`error validating the idToken jwt: ${jwtError}`);
+      this.monitor.debug('Error validating the idToken jwt', {
+        error: jwtError,
+      });
+
       return;
     }
 
@@ -196,7 +199,7 @@ module.exports = class MozillaAuth0 {
           const [userErr, user] = await tryCatch(this.getUser({ userId: profile.user_id }));
 
           if (userErr) {
-            this.monitor.reportError(userErr || 'Could not get user', {
+            this.monitor.debug(userErr || 'Could not get user', {
               identityProviderId: this.identityProviderId,
               userId: profile.user_id,
             });
