@@ -7579,7 +7579,7 @@
             "workerId": "The worker that was created",
             "workerPoolId": "The worker pool ID (provisionerId/workerType)"
           },
-          "level": "info",
+          "level": "notice",
           "name": "workerRequested",
           "title": "Worker Requested",
           "type": "worker-requested",
@@ -7592,7 +7592,7 @@
             "workerId": "The worker that was created",
             "workerPoolId": "The worker pool ID (provisionerId/workerType)"
           },
-          "level": "info",
+          "level": "notice",
           "name": "workerRunning",
           "title": "Worker Running",
           "type": "worker-running",
@@ -7605,7 +7605,7 @@
             "workerId": "The worker that was created",
             "workerPoolId": "The worker pool ID (provisionerId/workerType)"
           },
-          "level": "info",
+          "level": "notice",
           "name": "workerStopped",
           "title": "Worker Stopped",
           "type": "worker-stopped",

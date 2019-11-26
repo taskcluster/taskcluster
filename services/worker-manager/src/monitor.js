@@ -22,7 +22,7 @@ monitorManager.register({
   title: 'Worker Requested',
   type: 'worker-requested',
   version: 1,
-  level: 'info',
+  level: 'notice',
   description: 'A worker has been requested from a cloud api',
   fields: {
     workerPoolId: 'The worker pool ID (provisionerId/workerType)',
@@ -37,7 +37,7 @@ monitorManager.register({
   title: 'Worker Running',
   type: 'worker-running',
   version: 1,
-  level: 'info',
+  level: 'notice',
   description: 'A worker has been marked as running',
   fields: {
     workerPoolId: 'The worker pool ID (provisionerId/workerType)',
@@ -51,7 +51,7 @@ monitorManager.register({
   title: 'Worker Stopped',
   type: 'worker-stopped',
   version: 1,
-  level: 'info',
+  level: 'notice',
   description: 'A worker has been marked as stopped',
   fields: {
     workerPoolId: 'The worker pool ID (provisionerId/workerType)',
