@@ -7,7 +7,7 @@ const run = (main, arg) => {
   main(arg).then(
     () => {},
     err => {
-      console.error(err.toString());
+      console.error(err);
       process.exit(1);
     });
 };
@@ -130,6 +130,72 @@ program.command('smoketest')
     }
     const {main} = require('./smoketest');
     run(main, options[0]);
+  });
+
+program.command('backup:run')
+  .option('--include <resource>', 'Include the given resource in the backup (repeatable)', (v, p) => p.concat([v]), [])
+  .option('--exclude <resource>', 'Exclude the given resource from the backup (repeatable)', (v, p) => p.concat([v]), [])
+  .on('--help', () => {
+    console.log([
+      '',
+      'By default, all tables and containers are backed up.  Use --exclude to remove resources',
+      'from this default list, or --include to list specific resources that should be backed',
+      'up, excluding all others.  This is commonly used to back up the QueueTasks table less',
+      'frequently:',
+      '',
+      '  daily: `yarn backup:run --exclude table/QueueTasks`',
+      '  weekly: `yarn backup:run --include table/QueueTasks`',
+      '',
+      'Resources are named `table/<tableName>` and `container/<containerName>`.',
+    ].join('\n'));
+  })
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {backup} = require('./backup');
+    run(backup, options[0]);
+  });
+
+program.command('backup:restore <resource> [destination]')
+  .option('--version-id <VersionId>', 'VersionId of the S3 object to restore (default latest)')
+  .on('--help', () => {
+    console.log([
+      '',
+      'Resources are named `table/<tableName>` and `container/<containerName>`.',
+      '',
+      'If specified, DESTINATION is the destination resource to restore to, defaulting',
+      'to RESOURCE.  The restore operation will not overwrite an existing, nonempty',
+      'resource.',
+    ].join('\n'));
+  })
+  .action((...options) => {
+    if (options.length > 3) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {restore} = require('./backup');
+    run(restore, {resource: options[0], destination: options[1], ...options[2]});
+  });
+
+program.command('backup:compare <resource1> <resource2>')
+  .on('--help', () => {
+    console.log([
+      '',
+      'Resources are named `table/<tableName>` and `container/<containerName>`.',
+      '',
+      'Compare the data in two existing resources. Note that this comparison is in-',
+      'memory, so this should not be done on large tables like QueueTasks.',
+    ].join('\n'));
+  })
+  .action((...options) => {
+    if (options.length > 3) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {compare} = require('./backup');
+    run(compare, {resource1: options[0], resource2: options[1], ...options[2]});
   });
 
 program.command('*', {noHelp: true})

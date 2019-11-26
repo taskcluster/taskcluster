@@ -178,11 +178,11 @@ const load = loader(
     AuthorizationCode: {
       requires: ['cfg', 'monitor'],
       setup: ({cfg, monitor}) => AuthorizationCode.setup({
-        tableName: 'AuthorizationCodesTable',
+        tableName: cfg.app.authorizationCodesTableName,
         monitor: monitor.childMonitor('table.authorizationCodes'),
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
-          tableName: 'AuthorizationCodesTable',
+          tableName: cfg.app.authorizationCodesTableName,
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
@@ -193,11 +193,11 @@ const load = loader(
     AccessToken: {
       requires: ['cfg', 'monitor'],
       setup: ({cfg, monitor}) => AccessToken.setup({
-        tableName: 'AccessTokenTable',
+        tableName: cfg.app.accessTokenTableName,
         monitor: monitor.childMonitor('table.accessTokenTable'),
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
-          tableName: 'AccessTokenTable',
+          tableName: cfg.app.accessTokenTableName,
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
@@ -209,11 +209,11 @@ const load = loader(
     SessionStorage: {
       requires: ['cfg', 'monitor'],
       setup: ({cfg, monitor}) => SessionStorage.setup({
-        tableName: 'SessionStorageTable',
+        tableName: cfg.app.sessionStorageTableName,
         monitor: monitor.childMonitor('table.sessionStorageTable'),
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
-          tableName: 'SessionStorageTable',
+          tableName: cfg.app.sessionStorageTableName,
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
@@ -225,11 +225,11 @@ const load = loader(
     GithubAccessToken: {
       requires: ['cfg', 'monitor'],
       setup: ({cfg, monitor}) => GithubAccessToken.setup({
-        tableName: 'GithubAccessTokenTable',
+        tableName: cfg.app.githubAccessTokenTableName,
         monitor: monitor.childMonitor('table.githubAccessTokenTable'),
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
-          tableName: 'GithubAccessTokenTable',
+          tableName: cfg.app.githubAccessTokenTableName,
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),

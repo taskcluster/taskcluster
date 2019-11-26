@@ -1475,13 +1475,35 @@
             },
             "name": "workers",
             "next": {
-              "path": "manual/deploying/cloud-credentials",
-              "title": "GCP Credentials"
+              "path": "manual/deploying/backups",
+              "title": "Backups"
             },
             "path": "manual/deploying/workers",
             "prev": {
               "path": "manual/deploying",
               "title": "Deploying Taskcluster"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "Backups"
+            },
+            "name": "backups",
+            "next": {
+              "path": "manual/deploying/cloud-credentials",
+              "title": "GCP Credentials"
+            },
+            "path": "manual/deploying/backups",
+            "prev": {
+              "path": "manual/deploying/workers",
+              "title": "Workers"
             },
             "up": {
               "path": "manual/deploying",
@@ -1502,8 +1524,8 @@
             },
             "path": "manual/deploying/cloud-credentials",
             "prev": {
-              "path": "manual/deploying/workers",
-              "title": "Workers"
+              "path": "manual/deploying/backups",
+              "title": "Backups"
             },
             "up": {
               "path": "manual/deploying",

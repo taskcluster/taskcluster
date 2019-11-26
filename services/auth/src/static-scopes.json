@@ -2,35 +2,33 @@
   {
     "clientId": "static/taskcluster/built-in-workers",
     "scopes": [
-      "queue:claim-work:built-in/*",
       "assume:worker-id:built-in/*",
-      "queue:worker-id:built-in/*",
-      "queue:resolve-task"
+      "queue:claim-work:built-in/*",
+      "queue:resolve-task",
+      "queue:worker-id:built-in/*"
     ]
   },
   {
     "clientId": "static/taskcluster/github",
     "scopes": [
       "assume:repo:github.com/*",
-      "queue:scheduler-id:taskcluster-github",
-      "queue:route:statuses",
-      "queue:route:checks",
       "assume:scheduler-id:taskcluster-github/*",
-      "auth:azure-table-access:${azureAccountId}/TaskclusterGithubBuilds",
-      "auth:azure-table-access:${azureAccountId}/TaskclusterIntegrationOwners",
+      "auth:azure-table:read-write:${azureAccountId}/TaskclusterCheckRuns",
+      "auth:azure-table:read-write:${azureAccountId}/TaskclusterChecksToTasks",
       "auth:azure-table:read-write:${azureAccountId}/TaskclusterGithubBuilds",
       "auth:azure-table:read-write:${azureAccountId}/TaskclusterIntegrationOwners",
-      "auth:azure-table:read-write:${azureAccountId}/TaskclusterChecksToTasks",
-      "auth:azure-table:read-write:${azureAccountId}/TaskclusterCheckRuns"
+      "queue:route:checks",
+      "queue:route:statuses",
+      "queue:scheduler-id:taskcluster-github"
     ]
   },
   {
     "clientId": "static/taskcluster/hooks",
     "scopes": [
-      "auth:azure-table:read-write:${azureAccountId}/Hooks",
-      "auth:azure-table:read-write:${azureAccountId}/Queues",
-      "auth:azure-table:read-write:${azureAccountId}/LastFire3",
       "assume:hook-id:*",
+      "auth:azure-table:read-write:${azureAccountId}/Hooks",
+      "auth:azure-table:read-write:${azureAccountId}/LastFire3",
+      "auth:azure-table:read-write:${azureAccountId}/Queues",
       "notify:email:*",
       "queue:create-task:*"
     ]
@@ -38,8 +36,6 @@
   {
     "clientId": "static/taskcluster/index",
     "scopes": [
-      "auth:azure-table-access:${azureAccountId}/IndexedTasks",
-      "auth:azure-table-access:${azureAccountId}/Namespaces",
       "auth:azure-table:read-write:${azureAccountId}/IndexedTasks",
       "auth:azure-table:read-write:${azureAccountId}/Namespaces",
       "queue:get-artifact:*"
@@ -48,8 +44,7 @@
   {
     "clientId": "static/taskcluster/notify",
     "scopes": [
-      "auth:azure-table:read-write:${azureAccountId}/DenylistedNotification",
-      "auth:azure-table:read-write:${azureAccountId}/Denylist"
+      "auth:azure-table:read-write:${azureAccountId}/DenylistedNotification"
     ]
   },
   {
@@ -73,42 +68,44 @@
   {
     "clientId": "static/taskcluster/web-server",
     "scopes": [
-      "assume:github-team:*",
       "assume:github-org-admin:*",
+      "assume:github-team:*",
+      "assume:login-identity:*",
       "assume:mozilla-group:*",
       "assume:mozillians-group:*",
-      "auth:create-client:mozilla-auth0/*",
-      "auth:delete-client:mozilla-auth0/*",
-      "auth:disable-client:mozilla-auth0/*",
-      "auth:enable-client:mozilla-auth0/*",
-      "auth:reset-access-token:mozilla-auth0/*",
-      "auth:update-client:mozilla-auth0/*",
-      "auth:create-client:github/*",
-      "auth:delete-client:github/*",
-      "auth:disable-client:github/*",
-      "auth:enable-client:github/*",
-      "auth:reset-access-token:github/*",
-      "auth:update-client:github/*",
       "auth:azure-table:read-write:${azureAccountId}/AccessTokenTable",
       "auth:azure-table:read-write:${azureAccountId}/AuthorizationCodesTable",
       "auth:azure-table:read-write:${azureAccountId}/GithubAccessTokenTable",
       "auth:azure-table:read-write:${azureAccountId}/SessionStorageTable",
-      "assume:login-identity:*"
+      "auth:create-client:github/*",
+      "auth:create-client:mozilla-auth0/*",
+      "auth:delete-client:github/*",
+      "auth:delete-client:mozilla-auth0/*",
+      "auth:disable-client:github/*",
+      "auth:disable-client:mozilla-auth0/*",
+      "auth:enable-client:github/*",
+      "auth:enable-client:mozilla-auth0/*",
+      "auth:reset-access-token:github/*",
+      "auth:reset-access-token:mozilla-auth0/*",
+      "auth:update-client:github/*",
+      "auth:update-client:mozilla-auth0/*"
     ]
   },
   {
     "clientId": "static/taskcluster/worker-manager",
     "scopes": [
-      "auth:create-client:worker/*",
-      "assume:worker-type:*",
-      "assume:worker-pool:*",
       "assume:worker-id:*",
-      "auth:azure-table:read-write:${azureAccountId}/WM*",
+      "assume:worker-pool:*",
+      "assume:worker-type:*",
+      "auth:azure-table:read-write:${azureAccountId}/WMWorkerPoolErrors",
+      "auth:azure-table:read-write:${azureAccountId}/WMWorkerPools",
+      "auth:azure-table:read-write:${azureAccountId}/WMWorkers",
+      "auth:create-client:worker/*",
       "notify:email:*",
-      "secrets:get:worker-type:*",
-      "secrets:get:worker-pool:*",
       "queue:claim-work:*",
-      "queue:worker-id:*"
+      "queue:worker-id:*",
+      "secrets:get:worker-pool:*",
+      "secrets:get:worker-type:*"
     ]
   },
   {

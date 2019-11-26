@@ -1,0 +1,11 @@
+tables:
+  - QueueTasks
+  - QueueArtifacts
+  - QueueTaskGroups
+  - QueueTaskGroupMembers
+  - QueueTaskGroupActiveSets
+  - QueueTaskRequirement
+  - QueueTaskDependency
+  - QueueWorker
+  - QueueWorkerType
+  - QueueProvisioner

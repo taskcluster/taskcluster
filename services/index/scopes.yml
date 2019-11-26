@@ -1,6 +1,1 @@
-# NOTE: ${azureAccountId} will be substituted with the azure account at runtime
-- auth:azure-table-access:${azureAccountId}/IndexedTasks
-- auth:azure-table-access:${azureAccountId}/Namespaces
-- auth:azure-table:read-write:${azureAccountId}/IndexedTasks
-- auth:azure-table:read-write:${azureAccountId}/Namespaces
 - queue:get-artifact:*

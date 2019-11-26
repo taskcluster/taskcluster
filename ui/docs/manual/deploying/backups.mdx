@@ -1,0 +1,115 @@
+---
+title: Backups
+---
+
+# Backups and Restores
+
+## Data Covered
+
+The backup and restore utilities address the backend data for the Taskcluster services.
+That includes:
+
+ * all runtime configuration such as clients, roles, hooks, worker pools
+ * stored status such as worker status and errors
+ * task metadata including task definitions and status
+
+Notably, backups do *not* include Task artifacts.
+These are generally too large to practically back up.
+
+This data is all contained in an Azure storage account, in tables and containers.
+The backup command automatically backs up all tables and containers used by its version of the Taskcluster services.
+The backup operation copies that data into an S3 bucket.
+
+All backup operations are "full".
+The storage backend does not support any kind of incremental approach.
+
+## Running Backups
+
+Like smoketests, backups can be run either from the root of the Taskcluster repository, or from the taskcluster/taskcluster-dev Docker image.
+In either case, the following environment variables are required:
+
+* `AZURE_ACCOUNT` / `AZURE_ACCOUNT_KEY` -- the storage account and a key with access to that account
+* `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` -- credentials with access to write to S3 (in fact, any credentials the AWS tools accept will work)
+* `BACKUP_BUCKET` -- the bucket to which to write the data
+
+With that information in place, run
+
+```
+$ yarn backup:run
+yarn run v1.19.1
+$ node infrastructure/tooling/src/main.js backup:run
+⣟ Back up Table Clients
+```
+
+or
+
+```
+$ docker run -ti --rm \
+  -e AZURE_ACCOUNT -e AZURE_ACCOUNT_ID -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e BACKUP_BUCKET \
+  taskcluster/taskcluster-devel:v1.2.3 script/backup:run
+yarn run v1.19.1
+$ node infrastructure/tooling/src/main.js backup:run
+⣟ Back up Table Clients
+```
+
+**NOTE** it's important that the version of the docker image correspond to the version of the deployed services.
+Older versions may not be aware of all important tables and containers.
+
+**NOTE** Taskcluster services encrypt data at rest where necessary.
+It is not necessary to further encrypt backups.
+Of course, backups should nonetheless be kept in a secure, non-public bucket.
+
+### Excluding and Including
+
+The `backup:run` command takes `--include` and `--exclude` arguments to include or exclude Azure resources from the run.
+This is typically used to back up the large resources -- `table/QueueTasks` and `table/QueueArtifacts`, in particular -- less frequently.
+
+```
+# daily
+docker run ... script/backup:run --exclude table/QueueTasks --exclude table/QueueArtifacts
+# weekly
+docker run ... script/backup:run --include table/QueueTasks --include table/QueueArtifacts
+```
+
+As long as every `--exclude` is matched by an `--include`, all resources should be adequately covered.
+
+### Backup Lifecycle
+
+We recommend using the tools provided by AWS S3 to manage the lifecycle of your backups.
+Use versioning to keep multiple versions of each table, and use a lifecycle rule to delete older versions.
+
+## Runing Restores
+
+Restores are done one resource at a time.
+All restore operations refuse to overwrite existing data, and must be performed to a fresh new table or container.
+The `backup:restore` command takes the same environment variables as `backup:run`, and can be invoked via `yarn` or `docker`.
+
+For example, to restore the latest backup of table Hooks to HooksRestore:
+
+```
+$ yarn backup:restore table/Hooks table/HooksRestore
+```
+
+To restore an earlier version, look up that version's VersionId in the S3 interface, and pass it to `backup:restore` with `--version-id`.
+
+### Comparing Resources
+
+When testing a restore, a successful `backup:restore` operation is a good first step, but it's also useful to determine that the restored data is correct.
+To do so, compare the destination of the restore to the real resource, using `backup:compare`:
+
+```
+$ yarn backup:compare table/Hooks table/HooksRestore
+✔ Fetch Table Hooks
+✔ Fetch Table HooksRestore
+✔ Compare
+100% finished
+Number of entities in table/Hooks: 164
+Number of entities in table/Hooks not in table/HooksRestore: 0
+Number of entities in table/HooksRestore: 165
+Number of entities in table/HooksRestore not in table/Hooks: 1
+Number of entities with matching keys that are different between the two: 0
+```
+
+Naturally, the real resource may have changed since the backup was taken.
+The provided summary can help you spot the differences and similarities.
+In this case, it appears that one hook has been added since the backup was taken.

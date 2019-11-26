@@ -1,0 +1,5 @@
+tables:
+  -  AuthorizationCodesTable
+  -  AccessTokenTable
+  -  SessionStorageTable
+  -  GithubAccessTokenTable

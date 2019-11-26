@@ -1,0 +1,4 @@
+tables:
+ - Clients
+containers:
+ - auth-production-roles
