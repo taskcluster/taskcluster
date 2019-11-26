@@ -7,7 +7,7 @@ tasks:
   then:
     $let:
       node: '12.13.1'
-      go: '1.12.9'
+      go: '1.12.13'
       artifactsDir:
         public:
           # This is not used at the moment other than by the trailer task to upload results. Feel free to bump later
