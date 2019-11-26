@@ -3,6 +3,7 @@ const assert = require('assert');
 const path = require('path');
 const nock = require('nock');
 const testing = require('taskcluster-lib-testing');
+const net = require('net');
 
 suite(testing.suiteName(), function() {
   // This suite exercises the request and response functionality of
@@ -600,5 +601,38 @@ suite(testing.suiteName(), function() {
       param: 'test',
       payload: {hello: 'world'},
     }]);
+  });
+
+  test('timeout raises ECONNABORTED', async function() {
+    let server;
+
+    await new Promise((resolve, reject) => {
+      server = net.createServer((socket) => {
+        testing.sleep(300).then(() => socket.destroy());
+      }).on('error', err => {
+        reject(err);
+      });
+      server.listen(resolve);
+    });
+
+    try {
+      let referenceBaseUrlStyle = {
+        version: 0,
+        $schema: 'http://schemas.taskcluster.net/base/v1/api-reference.json#',
+        title: 'Fake API (with just baseUrl)',
+        description: 'Fake API',
+        entries: [],
+      };
+      const Fake = taskcluster.createClient(referenceBaseUrlStyle);
+      const client = new Fake({
+        timeout: 20,
+        rootUrl: 'https://tc.example.com',
+      });
+      await assert.rejects(
+        taskcluster.makeRequest(client, 'GET', 'https://127.0.0.1:' + server.address().port),
+        err => err.code === 'ECONNABORTED');
+    } finally {
+      await new Promise(resolve => server.close(resolve));
+    }
   });
 });
