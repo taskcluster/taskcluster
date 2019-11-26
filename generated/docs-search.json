@@ -50,6 +50,12 @@
   {
     "element": "h2",
     "path": "/manual/deploying",
+    "subtitle": "Backups and Restores",
+    "title": "Deploying Taskcluster"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying",
     "subtitle": "Clouds",
     "title": "Deploying Taskcluster"
   },
@@ -88,6 +94,60 @@
     "path": "/manual/deploying",
     "subtitle": "User Login",
     "title": "Deploying Taskcluster"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/deploying/backups",
+    "subtitle": null,
+    "title": "Backups and Restores"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/deploying/backups",
+    "subtitle": null,
+    "title": "Backups and Restores"
+  },
+  {
+    "element": "h1",
+    "path": "/manual/deploying/backups",
+    "subtitle": null,
+    "title": "Backups and Restores"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/deploying/backups",
+    "subtitle": "Backup Lifecycle",
+    "title": "Backups and Restores"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/deploying/backups",
+    "subtitle": "Comparing Resources",
+    "title": "Backups and Restores"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/backups",
+    "subtitle": "Data Covered",
+    "title": "Backups and Restores"
+  },
+  {
+    "element": "h3",
+    "path": "/manual/deploying/backups",
+    "subtitle": "Excluding and Including",
+    "title": "Backups and Restores"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/backups",
+    "subtitle": "Runing Restores",
+    "title": "Backups and Restores"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/backups",
+    "subtitle": "Running Backups",
+    "title": "Backups and Restores"
   },
   {
     "element": "h3",
