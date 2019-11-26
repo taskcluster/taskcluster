@@ -870,7 +870,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       providerData: {},
     };
 
-    test('no such workerPool)', async function() {
+    test('no such workerPool', async function() {
       await assert.rejects(() => helper.workerManager.registerWorker({
         ...defaultRegisterWorker,
         workerPoolId: 'no/such',
@@ -907,6 +907,27 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await assert.rejects(() => helper.workerManager.registerWorker({
         ...defaultRegisterWorker,
       }), /Worker wg\/wi in worker pool ff\/ee does not exist/);
+    });
+
+    test('worker requests across pools', async function() {
+      await helper.WorkerPool.create({
+        ...defaultWorkerPool,
+        workerPoolId: 'ff/ee',
+      });
+      await helper.WorkerPool.create({
+        ...defaultWorkerPool,
+        workerPoolId: 'ff/tt',
+      });
+      await helper.Worker.create({
+        ...defaultWorker,
+        workerPoolId: 'ff/tt',
+      });
+
+      await assert.rejects(() => helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+        workerPoolId: 'ff/ee', // This is _not_ the pool this worker is in
+      }), /Worker wg\/wi in worker pool ff\/ee does not exist/);
+
     });
 
     test('worker does not have providerId', async function() {
