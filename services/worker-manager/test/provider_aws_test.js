@@ -40,6 +40,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       ],
       minCapacity: 1,
       maxCapacity: 2,
+      lifecycle: {
+        registrationTimeout: 6000,
+      },
     },
     owner: 'whatever@example.com',
     providerData: {},
@@ -134,6 +137,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   suite('AWS provider - provision', function() {
 
     test('positive test', async function() {
+      const now = Date.now();
       await provider.provision({workerPool});
       const workers = await helper.Worker.scan({}, {});
 
@@ -144,6 +148,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         assert.strictEqual(w.workerGroup, providerId, 'Worker group id should be the same as provider id');
         assert.strictEqual(w.state, helper.Worker.states.REQUESTED, 'Worker should be marked as requested');
         assert.strictEqual(w.providerData.region, defaultLaunchConfig.region, 'Region should come from the chosen config');
+        // Check that this is setting times correctly to within a second or so to allow for some time
+        // for the provisioning loop
+        assert(workers.entries[0].providerData.registrationExpiry - now - (6000 * 1000) < 1000);
       });
       sinon.restore();
     });
@@ -280,6 +287,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   });
 
   suite('AWS provider - checkWorker', function() {
+    // TODO: Can someone fill these out and then I'll add tests for the lifecycle stuff here as well?
 
     test('stopped and terminated instances - should be marked as STOPPED in DB', async function() {
       sinon.restore();

@@ -100,6 +100,12 @@ class AwsProvider extends Provider {
     if (toSpawn === 0) {
       return;
     }
+
+    let registrationExpiry = null;
+    if ((workerPool.config.lifecycle || {}).registrationTimeout) {
+      registrationExpiry = Date.now() + workerPool.config.lifecycle.registrationTimeout * 1000;
+    }
+
     const toSpawnPerConfig = Math.ceil(toSpawn / workerPool.config.launchConfigs.length);
     const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
 
@@ -213,6 +219,7 @@ class AwsProvider extends Provider {
             owner: spawned.OwnerId,
             state: i.State.Name,
             stateReason: i.StateReason.Message,
+            registrationExpiry,
           },
         });
       }));
@@ -262,6 +269,12 @@ class AwsProvider extends Provider {
 
   async checkWorker({worker}) {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
+
+    if (worker.providerData.registrationExpiry &&
+      worker.state === this.Worker.states.REQUESTED &&
+      worker.providerData.registrationExpiry < Date.now()) {
+      return await this.removeWorker({worker});
+    }
 
     let instanceStatuses;
     try {
