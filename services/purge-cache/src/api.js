@@ -147,14 +147,20 @@ builder.declare({
   let cacheKey = `${provisionerId}/${workerType}`;
   let since = new Date(req.query.since || 0);
 
-  this.cachePurgeCache[cacheKey] = Promise.resolve(this.cachePurgeCache[cacheKey]).then(async cacheCache => {
-    if (cacheCache && Date.now() - cacheCache.touched < this.cfg.app.cacheTime * 1000) {
-      return cacheCache;
-    }
-    return Promise.resolve({reqs: await this.CachePurge.query({provisionerId, workerType}), touched: Date.now()});
-  });
+  // Cache the azure query for cacheTime seconds.  Note that if a second request
+  // for this cacheKey comes in while the first Azure query is still running, this
+  // will start another query.  This is slightly wasteful, but worthwhile for the
+  // simpler implementation (see https://bugzilla.mozilla.org/show_bug.cgi?id=1599564
+  // for an example of issues with a complex implementation)
+  let cacheCache = this.cachePurgeCache[cacheKey];
+  if (!cacheCache || Date.now() - cacheCache.touched > this.cfg.app.cacheTime * 1000) {
+    cacheCache = this.cachePurgeCache[cacheKey] = {
+      reqs: await this.CachePurge.query({provisionerId, workerType}),
+      touched: Date.now(),
+    };
+  }
 
-  let {reqs: openRequests} = await this.cachePurgeCache[cacheKey];
+  let {reqs: openRequests} = cacheCache;
   return res.reply({
     requests: _.reduce(openRequests.entries, (l, entry) => {
       if (entry.before >= since) {

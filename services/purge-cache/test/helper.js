@@ -43,6 +43,7 @@ exports.withEntities = (mock, skipping, options = {}) => {
  */
 exports.withServer = (mock, skipping) => {
   let webServer;
+  let cachePurgeCache = {};
 
   suiteSetup(async function() {
     if (skipping()) {
@@ -62,6 +63,8 @@ exports.withServer = (mock, skipping) => {
 
     exports.PurgeCacheClient = taskcluster.createClient(builder.reference());
 
+    exports.load.inject('cachePurgeCache', cachePurgeCache);
+
     exports.apiClient = new exports.PurgeCacheClient({
       credentials: {
         clientId: 'test-client',
@@ -71,6 +74,10 @@ exports.withServer = (mock, skipping) => {
     });
 
     webServer = await exports.load('server');
+  });
+
+  setup(function() {
+    Object.keys(cachePurgeCache).forEach(k => delete cachePurgeCache[k]);
   });
 
   suiteTeardown(async function() {

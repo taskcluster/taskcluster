@@ -1,6 +1,10 @@
 const helper = require('./helper');
 const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
+const sinon = require('sinon');
+const assert = require('assert');
+const taskcluster = require('taskcluster-client');
+const monitorManager = require('../src/monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
@@ -80,5 +84,42 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       {since: new Date().toJSON()},
     );
     assume(spec.requests.length).equals(0);
+  });
+
+  test('purgeRequest caching', async function() {
+    sinon.stub(helper.CachePurge, "query").callsFake(async query => ({requests: []}));
+    try {
+      const since = taskcluster.fromNow('-1 hour').toString();
+      await helper.apiClient.purgeRequests('pp', 'wt', {since});
+      assert.equal(helper.CachePurge.query.callCount, 1);
+      await helper.apiClient.purgeRequests('pp', 'wt', {since});
+      await helper.apiClient.purgeRequests('pp', 'wt', {since});
+      await helper.apiClient.purgeRequests('pp', 'wt', {since});
+      // not called again..
+      assert.equal(helper.CachePurge.query.callCount, 1);
+    } finally {
+      sinon.restore();
+    }
+  });
+
+  test('purgeRequest with a failed Azure query', async function() {
+    // client retries could confuse the picture here, so don't do them
+    const client = helper.apiClient.use({retries: 0});
+
+    sinon.stub(helper.CachePurge, "query")
+      .onFirstCall().throws(new Error('uhoh'))
+      .onSecondCall().callsFake(async query => ({requests: []}));
+    try {
+      const since = taskcluster.fromNow('-1 hour').toString();
+      await assert.rejects(() => client.purgeRequests('pp', 'wt', {since}));
+      assert.equal(helper.CachePurge.query.callCount, 1);
+      await client.purgeRequests('pp', 'wt', {since});
+      // Azure is called again due to error
+      assert.equal(helper.CachePurge.query.callCount, 2);
+    } finally {
+      // clear out the logged error messages from the Azure failure
+      monitorManager.messages = [];
+      sinon.restore();
+    }
   });
 });
