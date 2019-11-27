@@ -1,0 +1,19 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Worker Lifecycle
+description: |
+  Conditions a worker can reach and actions to take in the case that they do.
+  Not all providers necessarily implement all features of this in the same way.
+  Read the providers docs to understand exactly what it will do.
+type: object
+properties:
+  registrationTimeout:
+    title: Registration Timeout
+    type: integer
+    description: |
+      Each worker in this pool has `timeout` seconds to
+      register itself with worker-manager after it has
+      been requsted from the cloud provider. After this
+      timeout, worker-manager will terminate the instance,
+      assuming it is broken
+additionalProperties: false
+required: []

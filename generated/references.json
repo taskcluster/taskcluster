@@ -222,6 +222,26 @@
   },
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/worker-lifecycle.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Conditions a worker can reach and actions to take in the case that they do.\nNot all providers necessarily implement all features of this in the same way.\nRead the providers docs to understand exactly what it will do.\n",
+      "properties": {
+        "registrationTimeout": {
+          "description": "Each worker in this pool has `timeout` seconds to\nregister itself with worker-manager after it has\nbeen requsted from the cloud provider. After this\ntimeout, worker-manager will terminate the instance,\nassuming it is broken\n",
+          "title": "Registration Timeout",
+          "type": "integer"
+        }
+      },
+      "required": [
+      ],
+      "title": "Worker Lifecycle",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/worker-lifecycle.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/worker-full.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -780,6 +800,9 @@
           "type": "array",
           "uniqueItems": false
         },
+        "lifecycle": {
+          "$ref": "worker-lifecycle.json#"
+        },
         "maxCapacity": {
           "description": "The maximum amount of capacity that worker-manager should make\navailable at any given time.\n",
           "minimum": 0,
@@ -893,6 +916,9 @@
           "title": "Launch Configurations",
           "type": "array",
           "uniqueItems": true
+        },
+        "lifecycle": {
+          "$ref": "worker-lifecycle.json#"
         },
         "maxCapacity": {
           "description": "Maximum capacity that should not be exceeded at any given time for the entire workerpool",
