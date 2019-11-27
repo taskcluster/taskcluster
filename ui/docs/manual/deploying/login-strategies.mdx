@@ -30,7 +30,7 @@ JSON *requires* the use of the double-quote character (`"`), but shells, YAML pa
 
 In order to enable the GitHub login strategy, specify the GitHub client ID and secret for an OAuth application created for use against this service and its web UI.
 Create it under "Settings" (for yourself or for an org) -> "Developer Settings" -> "OAuth Apps" -> "New OAuth App".
-The name for the app is not critical, but we suggest something like "<deployment-name>-taskcluster-signin".
+The name for the app is not critical, but we suggest something like "&lt;deployment-name>-taskcluster-signin".
 
 The callback URL should be `<rootUrl>/login/github/callback`, or `http://localhost:3050/login/github/callback` for local development.
 
