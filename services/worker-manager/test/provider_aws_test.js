@@ -150,7 +150,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         assert.strictEqual(w.providerData.region, defaultLaunchConfig.region, 'Region should come from the chosen config');
         // Check that this is setting times correctly to within a second or so to allow for some time
         // for the provisioning loop
-        assert(workers.entries[0].providerData.registrationExpiry - now - (6000 * 1000) < 1000);
+        assert(workers.entries[0].providerData.registrationExpiry - now - (6000 * 1000) < 5000);
       });
       sinon.restore();
     });
