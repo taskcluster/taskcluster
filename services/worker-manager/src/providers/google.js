@@ -204,6 +204,11 @@ class GoogleProvider extends Provider {
       return; // Nothing to do
     }
 
+    let registrationExpiry = null;
+    if ((workerPool.config.lifecycle || {}).registrationTimeout) {
+      registrationExpiry = Date.now() + workerPool.config.lifecycle.registrationTimeout * 1000;
+    }
+
     const cfgs = [];
     while (toSpawn > 0) {
       const cfg = _.sample(workerPool.config.launchConfigs);
@@ -311,6 +316,7 @@ class GoogleProvider extends Provider {
             name: op.name,
             zone: op.zone,
           },
+          registrationExpiry,
         },
       });
     }));
@@ -332,6 +338,12 @@ class GoogleProvider extends Provider {
     const states = this.Worker.states;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
+
+    if (worker.providerData.registrationExpiry &&
+      worker.state === states.REQUESTED &&
+      worker.providerData.registrationExpiry < Date.now()) {
+      return await this.removeWorker({worker});
+    }
 
     try {
       const {data} = await this._enqueue('get', () => this.compute.instances.get({

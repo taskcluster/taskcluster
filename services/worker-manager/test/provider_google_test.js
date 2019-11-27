@@ -50,6 +50,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       config: {
         minCapacity: 1,
         maxCapacity: 1,
+        lifecycle: {
+          registrationTimeout: 6000,
+        },
         launchConfigs: [
           {
             capacityPerInstance: 1,
@@ -71,8 +74,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   });
 
   test('provisioning loop', async function() {
+    const now = Date.now();
     await provider.provision({workerPool});
     const workers = await helper.Worker.scan({}, {});
+    // Check that this is setting times correctly to within a second or so to allow for some time
+    // for the provisioning loop
+    assert(workers.entries[0].providerData.registrationExpiry - now - (6000 * 1000) < 1000);
     assert.deepEqual(workers.entries[0].providerData.operation, {
       name: 'foo',
       zone: 'whatever/a',
@@ -184,6 +191,46 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     await provider.checkWorker({worker});
     await provider.scanCleanup({responsibleFor: new Set([workerPoolId])});
     assert(worker.expires > expires);
+  });
+
+  test('remove unregistered workers', async function() {
+    const worker = await helper.Worker.create({
+      workerPoolId,
+      workerGroup: 'whatever',
+      workerId: 'whatever',
+      providerId,
+      created: taskcluster.fromNow('-1 hour'),
+      expires: taskcluster.fromNow('1 week'),
+      state: helper.Worker.states.REQUESTED,
+      providerData: {
+        zone: 'us-east1-a',
+        registrationExpiry: Date.now() - 1000,
+      },
+    });
+    await provider.scanPrepare();
+    await provider.checkWorker({worker});
+    await provider.scanCleanup({responsibleFor: new Set([workerPoolId])});
+    assert(fakeGoogle.instanceDeleteStub.called);
+  });
+
+  test('don\'t remove unregistered workers that are new', async function() {
+    const worker = await helper.Worker.create({
+      workerPoolId,
+      workerGroup: 'whatever',
+      workerId: 'whatever',
+      providerId,
+      created: taskcluster.fromNow('-1 hour'),
+      expires: taskcluster.fromNow('1 week'),
+      state: helper.Worker.states.REQUESTED,
+      providerData: {
+        zone: 'us-east1-a',
+        registrationExpiry: Date.now() + 1000,
+      },
+    });
+    await provider.scanPrepare();
+    await provider.checkWorker({worker});
+    await provider.scanCleanup({responsibleFor: new Set([workerPoolId])});
+    assert(!fakeGoogle.instanceDeleteStub.called);
   });
 
   suite('_enqueue p-queues', function() {
