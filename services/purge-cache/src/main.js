@@ -66,10 +66,16 @@ const load = loader({
     }).generateReferences(),
   },
 
+  cachePurgeCache: {
+    requires: [],
+    // this begins as a simple empty object
+    setup: () => ({}),
+  },
+
   api: {
-    requires: ['cfg', 'monitor', 'schemaset', 'CachePurge'],
-    setup: ({cfg, monitor, schemaset, CachePurge}) => builder.build({
-      context: {cfg, CachePurge, cachePurgeCache: {}},
+    requires: ['cfg', 'monitor', 'schemaset', 'CachePurge', 'cachePurgeCache'],
+    setup: ({cfg, monitor, schemaset, CachePurge, cachePurgeCache}) => builder.build({
+      context: {cfg, CachePurge, cachePurgeCache},
       rootUrl: cfg.taskcluster.rootUrl,
       schemaset,
       monitor: monitor.childMonitor('api'),
