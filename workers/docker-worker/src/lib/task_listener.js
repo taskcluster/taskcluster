@@ -125,8 +125,6 @@ class TaskListener extends EventEmitter {
       return;
     }
 
-    await this.runtime.volumeCache.purgeCaches();
-
     // Run a garbage collection cycle to clean up containers and release volumes.
     // Only run a full garbage collection cycle if no tasks are running.
     await this.runtime.gc.sweep(this.runningTasks.length === 0);
@@ -142,6 +140,13 @@ class TaskListener extends EventEmitter {
     if (exceedsThreshold) return;
 
     let claims = await this.taskQueue.claimWork(availableCapacity);
+
+    // only purge caches if we're about to start a task; this avoids calling
+    // purge-cache on every getTasks loop
+    if (claims.length !== 0) {
+      await this.runtime.volumeCache.purgeCaches();
+    }
+
     let tasksets = await Promise.all(claims.map(this.applySuperseding.bind(this)));
     // call runTaskset for each taskset, but do not wait for it to complete
     Promise.all(tasksets.map(this.runTaskset.bind(this))).then(() => {
