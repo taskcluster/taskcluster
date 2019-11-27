@@ -19,6 +19,7 @@ properties:
     description: |
       The maximum amount of capacity that worker-manager should make
       available at any given time.
+  lifecycle: {$ref: 'worker-lifecycle.json#'}
   launchConfigs:
     type: array
     title: Choices

@@ -66,6 +66,7 @@ properties:
         - region
         - launchConfig
         - capacityPerInstance
+  lifecycle: {$ref: 'worker-lifecycle.json#'}
   minCapacity:
     title: Minimum Capacity
     type: integer
