@@ -2,70 +2,45 @@
 title: GitHub Integration
 ---
 
+# GitHub Integration
+
 The GitHub service requires a GitHub App in order to interact with GitHub.
 
-## Why are there 2 apps? 
+## App Setup
 
-This App is not to be confused with the OAuth App used for the [GitHub login strategy](./login-strategies).
-GitHub does not help this confusion by using the phrases "GitHub App" and "OAuth App"!
+To create such an app, use the docs at https://developer.github.com/apps/building-github-apps/creating-a-github-app/.
 
-Taskcluster uses this App to get notified of changes on GitHub and update GitHub with the results of tasks.
-The other OAuth App pertains to GitHub logins and is only needed on Taskcluster instances that use this feature.
-
-A weakness in GitHub's authorization model is responsible for the need for two apps.
-If you use a GitHub App such as this one to sign in, the token it recieves can do anything as the user who just signed in.
-That's why Taskcluster keeps this feature as isolated from everything else as possible. 
-
-### What should the apps be named? 
-
-The apps can have the same name, but that's confusing. Call them `deploymentname-taskcluster` and `deploymentname-taskcluster-signin`. 
-
-### How to create the Taskcluster Github app? 
-
-Use the docs at https://developer.github.com/apps/building-github-apps/creating-a-github-app/.
-If you want it to be owned by an org, you probalby need to be an admin of that org.
-Create it under "Settings" (for yourself or for an org) -> "Developer Settings" -> "GitHub Apps" -> "New GitHub App".
-
-Set the fields as follows: 
-
+* Ownership: if possible, create the application under a relevant GitHub organization.  Apps can be transferred after creation, though, so this is not critical.
+* Name: not critical, but we recommend "<deployment-name>-taskcluster".
 * Homepage URL should link to your deployment's root URL
 * Setup URL should link to your taskcluster instance's quickstart guide, `/quickstart` on your deployment's root URL
 * Webhook URL should link to `/api/github/v1/github` on your deployment's root URL
 * Set the secret to an arbitrary value that you also configure in your Taskcluster instance's settings. 
+* Set permissions as follows:
+  * repo administration: read-only
+  * checks: read & write
+  * repo contents: read-only
+  * content references, deployments: No access
+  * issues: read & write
+  * repo metadata: read-only
+  * pages: no access
+  * pull requests: read & write
+  * repo webhooks, projects, security alerts, & single file: no access
+  * commit statuses: read & write
+  * organization members: read only
+  * blocking org users, org projects, team discussions, org administration, org hooks, org plan: No access
+  * user permissions: No access for any
+  * subscribe to events: Pull request, Push, Release
 
-### Configuration
+## Taskcluster Configuration
 
 In the Helm templates, you'll need to set
 
 * `github.bot_username` -- this should match the name in the integration's URL.  For example, if the URL is https://github.com/apps/acme-taskcluster then the `bot_name` should be `acme-taskcluster`.
-* `github.github_app_id` -- numeric app_id
+* `github.github_app_id` -- numeric app_id, visible in the app settings
 * `github.github_private_pem` -- see below
 
 On the app's settings page, generate a private key, and add its PEM to your Taskcluster instance's configs.
 This is a multiline string.
 If your deployment mechanics does not handle multiline values correctly, the newlines can be replaced by a literal `\``n` escape sequence, thus fitting on a single (long) line.
 Note that the entire PEM key, including the "BEGIN" and "END" lines, must be included, with no additional whitespace or other formatting added or moved.
-
-### What permissions does the Taskcluster Github app need?
-
-As of June 2019, the permissions list is: 
-
-* repo administration: read-only
-* checks: read & write
-* repo contents: read-only
-* content references, deployments: No access
-* issues: read & write
-* repo metadata: read-only
-* pages: no access
-* pull requests: read & write
-* repo webhooks, projects, security alerts, & single file: no access
-* commit statuses: read & write
-* organization members: read only
-* blocking org users, org projects, team discussions, org administration, org hooks, org plan: No access
-
-* User permissions: No access for any
-
-* Subscribe to events: Pull request, Push, Release
-
-
-
