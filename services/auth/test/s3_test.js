@@ -5,7 +5,7 @@ const helper = require('./helper');
 const debug = require('debug')('s3_test');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   if (mock) {
     return; // This is actually testing sts tokens and we are not going to mock those
   }
@@ -18,7 +18,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'gcp'], function(mock, ski
 
   let bucket;
   setup(function() {
-    bucket = helper.cfg.test.testBucket;
+    const secret = helper.secrets.get('aws');
+    bucket = secret.testBucket;
+    helper.load.cfg('awsCredentials.allowedBuckets', [{
+      accessKeyId: secret.awsAccessKeyId,
+      secretAccessKey: secret.awsSecretAccessKey,
+      buckets: [secret.testBucket]}]);
   });
 
   test('awsS3Credentials read-write folder1/folder2/', async () => {
@@ -185,5 +190,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'gcp'], function(mock, ski
       Key: 'folder1/' + id,
       Body: text,
     }).promise();
+  });
+
+  test('awsS3Credentials with unknown bucket', async () => {
+    await assert.rejects(
+      () => helper.apiClient.awsS3Credentials('read-write', 'nosuchbucket', ''),
+      err => err.statusCode === 404);
   });
 });

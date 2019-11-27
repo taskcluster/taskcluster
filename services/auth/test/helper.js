@@ -41,9 +41,9 @@ exports.secrets = new Secrets({
       {env: 'AZURE_ACCOUNT_KEY', cfg: 'azure.accessKey', name: 'accessKey'},
     ],
     aws: [
-      {env: 'AWS_ACCESS_KEY_ID', cfg: 'aws.accessKeyId'},
-      {env: 'AWS_SECRET_ACCESS_KEY', cfg: 'aws.secretAccessKey'},
-      {env: 'TEST_BUCKET', cfg: 'test.testBucket'},
+      {env: 'AWS_ACCESS_KEY_ID', name: 'awsAccessKeyId'},
+      {env: 'AWS_SECRET_ACCESS_KEY', name: 'awsSecretAccessKey'},
+      {env: 'TEST_BUCKET', name: 'testBucket'},
     ],
     gcp: [
       {env: 'GCP_CREDENTIALS_ALLOWED_PROJECTS', cfg: 'gcpCredentials.allowedProjects', name: 'allowedProjects', mock: {}},

@@ -105,9 +105,6 @@ const builder = new APIBuilder({
     // ScopeResolver instance
     'resolver',
 
-    // Instance of aws.sts with credentials
-    'sts',
-
     // Mapping from azure account to accessKey
     'azureAccounts',
 
@@ -119,6 +116,9 @@ const builder = new APIBuilder({
 
     // The websocktunnel config (with property `secret`)
     'websocktunnel',
+
+    // the loaded config
+    'cfg',
 
     // An object containing {googleapis, auth, credentials} for interacting
     // with GCP.

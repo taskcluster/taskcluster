@@ -150,6 +150,42 @@
     "title": "Backups and Restores"
   },
   {
+    "element": "h1",
+    "path": "/manual/deploying/cloud-credentials",
+    "subtitle": null,
+    "title": "Cloud Credentials"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/cloud-credentials",
+    "subtitle": "AWS Credentials",
+    "title": "Cloud Credentials"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/cloud-credentials",
+    "subtitle": "Azure Credentials",
+    "title": "Cloud Credentials"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/cloud-credentials",
+    "subtitle": "GCP Credentials",
+    "title": "Cloud Credentials"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/cloud-credentials",
+    "subtitle": "Sentry Credentials",
+    "title": "Cloud Credentials"
+  },
+  {
+    "element": "h2",
+    "path": "/manual/deploying/cloud-credentials",
+    "subtitle": "Websocktunnel Credentials",
+    "title": "Cloud Credentials"
+  },
+  {
     "element": "h3",
     "path": "/manual/deploying/github",
     "subtitle": "Configuration",

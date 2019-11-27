@@ -12,14 +12,16 @@
         "audit_log": {
           "type": "string"
         },
-        "aws_access_key_id": {
-          "type": "string"
-        },
-        "aws_region": {
-          "type": "string"
-        },
-        "aws_secret_access_key": {
-          "type": "string"
+        "aws_credentials_allowed_buckets": {
+          "oneOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
         },
         "azure_account_key": {
           "type": "string"
@@ -146,9 +148,6 @@
               "type": "array"
             }
           ]
-        },
-        "test_bucket": {
-          "type": "string"
         },
         "websocktunnel_secret": {
           "type": "string"

@@ -12,10 +12,9 @@ builder.declare({
   description: [
     'Get temporary GCP credentials for the given serviceAccount in the given project.',
     '',
-    'Only preconfigured projects are allowed.  Any serviceAccount in that project may',
-    'be used.',
+    'Only preconfigured projects and serviceAccounts are allowed, as defined in the',
+    'deployment of the Taskcluster services.',
     '',
-    'The call adds the necessary policy if the serviceAccount doesn\'t have it.',
     'The credentials are set to expire after an hour, but this behavior is',
     'subject to change. Hence, you should always read the `expires` property',
     'from the response, if you intend to maintain active credentials in your',
