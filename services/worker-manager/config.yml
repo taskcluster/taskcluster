@@ -4,6 +4,8 @@ defaults:
     workerPoolTableName: WMWorkerPools
     workerPoolErrorTableName: WMWorkerPoolErrors
     errorsExpirationDelay: '-4 days' # Anything older than a few days goes away
+    provisionerIterateConfig: !env:json:optional PROVISIONER_ITERATE_CONFIG
+    workerScannerIterateConfig: !env:json:optional WORKER_SCANNER_ITERATE_CONFIG
   monitoring:
     level: !env:optional LEVEL
     errorConfig: !env:json:optional ERROR_CONFIG
