@@ -36,7 +36,7 @@ information returned from the OIDC provider (Auth0) is more appropriate.
 For a backend application using Taskcluster authentication, the information you
 may rely on for authorization is contained in the list of scopes returned from
 the
-[`auth.authenticateHawk`](/docs/reference/platform/auth/reference/api-docs#authenticateHawk)
+[`auth.authenticateHawk`](/docs/reference/platform/auth/api#authenticateHawk)
 method.
 
 The only valid operation on a scopeset is to ask whether it satisfies another
@@ -89,7 +89,7 @@ would call the queue's `createTask` method directly.
 If you must act as a deputy -- for example, running tasks without a browser
 involved -- Taskcluster provides a tool, [Authorized
 Scopes](authorized-scopes). Authorized scopes are used with an API call to
-reduce the scopes available to that call. 
+reduce the scopes available to that call.
 
 For example, a service which creates tasks during low-load times might have a
 `createDelayedTask` API method taking a time and a task definition.

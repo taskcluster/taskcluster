@@ -11,11 +11,11 @@ The GitHub service requires a GitHub App in order to interact with GitHub.
 To create such an app, use the docs at https://developer.github.com/apps/building-github-apps/creating-a-github-app/.
 
 * Ownership: if possible, create the application under a relevant GitHub organization.  Apps can be transferred after creation, though, so this is not critical.
-* Name: not critical, but we recommend "<deployment-name>-taskcluster".
+* Name: not critical, but we recommend "&lt;deployment-name>-taskcluster".
 * Homepage URL should link to your deployment's root URL
 * Setup URL should link to your taskcluster instance's quickstart guide, `/quickstart` on your deployment's root URL
 * Webhook URL should link to `/api/github/v1/github` on your deployment's root URL
-* Set the secret to an arbitrary value that you also configure in your Taskcluster instance's settings. 
+* Set the secret to an arbitrary value that you also configure in your Taskcluster instance's settings.
 * Set permissions as follows:
   * repo administration: read-only
   * checks: read & write
