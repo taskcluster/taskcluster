@@ -13,6 +13,7 @@ const {
   gitCommit,
   gitTag,
   gitPush,
+  npmPublish,
   execCommand,
   readRepoJSON,
   readRepoFile,
@@ -311,21 +312,12 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
   ensureTask(tasks, {
     title: 'Push Tag',
     requires: [
-      'release-version',
       'repo-tagged',
-      'target-monoimage',
-      'client-shell-artifacts',
-      'monoimage-docker-image',
     ],
     provides: [
       'pushed-tag',
     ],
     run: async (requirements, utils) => {
-      // the build process should have used the git tag to name the docker image..
-      if (requirements['monoimage-docker-image'] !== `taskcluster/taskcluster:v${requirements['release-version']}`) {
-        throw new Error('Got unexpected docker-image name');
-      }
-
       if (!cmdOptions.push) {
         return utils.skip({});
       }
@@ -344,6 +336,8 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
     },
   });
 
+  /* --- remainder would be done in CI --- */
+
   ensureTask(tasks, {
     title: 'Create GitHub Release',
     requires: [
@@ -351,6 +345,7 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
       'client-shell-artifacts',
       'pushed-tag',
       'changelog',
+      'target-monoimage',
     ],
     provides: [
       'github-release',
@@ -393,6 +388,43 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
       return {
         'github-release': release.data.html_url,
       };
+    },
+  });
+
+  ['clients/client', 'clients/client-web'].forEach(clientName =>
+    ensureTask(tasks, {
+      title: `Publish ${clientName} to npm`,
+      requires: [
+        'version-updated',
+        'target-monoimage', // to make sure the build succeeds first..
+      ],
+      provides: [
+        `publish-${clientName}`,
+      ],
+      run: async (requirements, utils) => {
+        if (!cmdOptions.push) {
+          return utils.skip({});
+        }
+
+        await npmPublish({
+          dir: path.join(REPO_ROOT, clientName),
+          apiKey: cmdOptions.npmToken,
+          utils});
+      },
+    }));
+
+  ensureTask(tasks, {
+    title: 'Release Complete',
+    requires: [
+      'github-release',
+      'publish-clients/client',
+      'publish-clients/client-web',
+    ],
+    provides: [
+      'target-release',
+    ],
+    run: async (requirements, utils) => {
+      // this just gathers requirements into a single target..
     },
   });
 };

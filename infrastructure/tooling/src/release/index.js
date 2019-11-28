@@ -14,6 +14,10 @@ class Release {
       throw new Error('The --gh-token option is required (unless --no-push)');
     }
 
+    if (cmdOptions.push && !cmdOptions.npmToken) {
+      throw new Error('The --npm-token option is required (unless --no-push)');
+    }
+
     this.baseDir = cmdOptions['baseDir'] || '/tmp/taskcluster-builder-build';
 
     // The `yarn build` process is a subgraph of the release taskgraph, with some
@@ -58,6 +62,7 @@ class Release {
         // and let's be sane about how many git clones we do..
         git: new Lock(8),
       },
+      target: 'target-release',
       renderer: process.stdout.isTTY ?
         new ConsoleRenderer({elideCompleted: true}) :
         new LogRenderer(),
@@ -75,8 +80,6 @@ class Release {
     } else {
       console.log(`GitHub release: ${context['github-release']}`);
       console.log('** YOUR NEXT STEPS **');
-      console.log(' * run `npm publish` in clients/client');
-      console.log(' * run `npm publish` in clients/client-web');
       console.log(' * run `./release.sh --real` in clients/client-py');
     }
   }

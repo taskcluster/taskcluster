@@ -5,4 +5,5 @@ module.exports = {
   ...require('./docker'),
   ...require('./command'),
   ...require('./config'),
+  ...require('./npm'),
 };
