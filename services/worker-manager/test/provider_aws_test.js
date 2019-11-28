@@ -148,6 +148,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       sinon.restore();
     });
 
+    test('spawns an appropriate number of instances', async function() {
+      await workerPool.modify(wp => {
+        wp.config = {
+          launchConfigs: [
+            {...defaultLaunchConfig, capacityPerInstance: 6},
+            {...defaultLaunchConfig, capacityPerInstance: 6},
+            {...defaultLaunchConfig, capacityPerInstance: 6},
+            {...defaultLaunchConfig, capacityPerInstance: 6},
+            {...defaultLaunchConfig, capacityPerInstance: 6},
+          ],
+          minCapacity: 34, // not a multiple of number of configs or capPerInstance
+          maxCapacity: 34,
+        };
+      });
+      await provider.provision({workerPool});
+      const workers = await helper.Worker.scan({}, {});
+
+      // capacity 34 at 6 per instance should be 6 instances..
+      assert.strictEqual(workers.entries.length, 6);
+      sinon.restore();
+    });
+
     test('instance tags in launch spec - should merge them with our instance tags', async function() {
       sinon.restore();
     });

@@ -183,7 +183,9 @@ class AwsProvider extends Provider {
         });
       }
 
-      toSpawnCounter -= toSpawnPerConfig;
+      // count down the capacity we actually spawned (which may be somewhat
+      // greater than toSpawnPerConfig due to rounding)
+      toSpawnCounter -= instanceCount * config.capacityPerInstance;
 
       await Promise.all(spawned.Instances.map(i => {
         this.monitor.log.workerRequested({
