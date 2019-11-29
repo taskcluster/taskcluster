@@ -25,6 +25,7 @@ import { secret } from '../../utils/prop-types';
 @withStyles(theme => ({
   fab: {
     ...theme.mixins.fab,
+    ...theme.mixins.actionButton,
   },
   saveSecretSpan: {
     position: 'fixed',
