@@ -2409,41 +2409,6 @@
   },
   {
     "element": "h1",
-    "id": "resources-for-further-exploration",
-    "path": "/resources",
-    "subtitle": null,
-    "title": "Resources for Further Exploration"
-  },
-  {
-    "element": "h3",
-    "id": "span-classglyphicon-glyphicon-blackboard-aria-hiddentruespan-videoshttpswwwyoutubecomchannelucd0odag4rgotddomox7lsuw",
-    "path": "/resources",
-    "subtitle": "[<span class=\"glyphicon glyphicon-blackboard\" aria-hidden=\"true\"></span> Videos](https://www.youtube.com/channel/UCD0odAg4RgoTDdomOx7lSuw)",
-    "title": "Resources for Further Exploration"
-  },
-  {
-    "element": "h3",
-    "id": "span-classglyphicon-glyphicon-bug-aria-hiddentruespan-bugzillahttpsbugzillamozillaorgenter_bugcgiproducttaskcluster",
-    "path": "/resources",
-    "subtitle": "[<span class=\"glyphicon glyphicon-bug\" aria-hidden=\"true\"></span> Bugzilla](https://bugzilla.mozilla.org/enter_bug.cgi?product=Taskcluster)",
-    "title": "Resources for Further Exploration"
-  },
-  {
-    "element": "h3",
-    "id": "span-classglyphicon-glyphicon-classic-hammer-aria-hiddentruespan-codetributehttpscodetributemozillaorgprojectstaskcluster",
-    "path": "/resources",
-    "subtitle": "[<span class=\"glyphicon glyphicon-classic-hammer\" aria-hidden=\"true\"></span> Codetribute](https://codetribute.mozilla.org/projects/taskcluster)",
-    "title": "Resources for Further Exploration"
-  },
-  {
-    "element": "h3",
-    "id": "span-classglyphicon-glyphicon-random-aria-hiddentruespan-githubhttpsgithubcomtaskcluster",
-    "path": "/resources",
-    "subtitle": "[<span class=\"glyphicon glyphicon-random\" aria-hidden=\"true\"></span> GitHub](https://github.com/taskcluster)",
-    "title": "Resources for Further Exploration"
-  },
-  {
-    "element": "h1",
     "id": "welcome-to-taskcluster",
     "path": "/tutorial",
     "subtitle": null,
