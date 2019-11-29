@@ -13,12 +13,14 @@ import 'prismjs/components/prism-yaml';
 import 'prismjs/components/prism-markup';
 import Dashboard from '../../components/Dashboard';
 import NotFound from '../../components/NotFound';
+import DocSearch from '../../components/DocSearch';
 import components from './components';
 import ScrollToTop from '../../utils/ScrollToTop';
 import { DOCS_PATH_PREFIX, DOCS_MENU_ITEMS } from '../../utils/constants';
 import scrollToHash from '../../utils/scrollToHash';
 import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
 import docsTableOfContents from '../../../../generated/docs-table-of-contents';
+import docsSearchOptions from '../../../../generated/docs-search';
 import ErrorPanel from '../../components/ErrorPanel';
 import PageMeta from './PageMeta';
 
@@ -39,39 +41,37 @@ export default class Documentation extends Component {
   };
 
   componentDidMount() {
+    const { history, theme, location } = this.props;
+
     this.load();
+    // setTimeout makes sure the DOM  of the component is in a ready state
+    window.setTimeout(() => {
+      // catchLinks allows us to control the scrolling to the hash when the
+      // user clicks on '#' beside a header.
+      catchLinks(document.querySelector('main'), href => {
+        history.push(href);
 
-    window.addEventListener('load', this.handleDomLoad);
+        scrollToHash(theme.spacing(2));
+      });
+
+      // Handle initial scroll if necessary
+      if (location.hash) {
+        scrollToHash(theme.spacing(2));
+      }
+    }, 0);
   }
-
-  componentWillUnmount() {
-    window.removeEventListener('load', this.handleDomLoad);
-  }
-
-  handleDomLoad = () => {
-    const { theme, history } = this.props;
-
-    // Clicking a link from markdown opens a new page.
-    // We need to make sure react-router is still used for local routes.
-    // Note: The callback will only be triggered for relative links
-    catchLinks(document.querySelector('main'), href => {
-      history.push(href);
-
-      scrollToHash(theme.spacing(2));
-    });
-
-    // Handle initial scroll if necessary
-    if (this.props.history.location.hash) {
-      scrollToHash(theme.spacing(2));
-    }
-  };
 
   componentDidUpdate(prevProps) {
-    if (this.props.match.params.path === prevProps.match.params.path) {
-      return;
+    if (this.props.match.params.path !== prevProps.match.params.path) {
+      this.load();
     }
 
-    this.load();
+    if (
+      prevProps.location.hash !== this.props.location.hash &&
+      this.props.location.hash
+    ) {
+      scrollToHash(this.props.theme.spacing(2));
+    }
   }
 
   findChildFromRootNode(node) {
@@ -152,7 +152,8 @@ export default class Documentation extends Component {
           pageInfo && pageInfo.data.title
             ? pageInfo.data.title
             : 'Documentation'
-        }>
+        }
+        search={<DocSearch options={docsSearchOptions} />}>
         <ScrollToTop scrollKey={Page ? Page.toString() : null}>
           {error && error.code === 'MODULE_NOT_FOUND' && <NotFound isDocs />}
           {error && error.code !== 'MODULE_NOT_FOUND' && (
