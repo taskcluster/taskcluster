@@ -16,6 +16,7 @@ import profileQuery from './profile.graphql';
 @hot(module)
 @withAuth
 @graphql(profileQuery, {
+  skip: ({ user }) => !user,
   options: () => ({
     fetchPolicy: 'network-only',
   }),
@@ -30,7 +31,7 @@ export default class Profile extends Component {
     const {
       user,
       classes,
-      data: { currentScopes, loading, error },
+      data: { currentScopes, loading, error } = {},
     } = this.props;
 
     return (
