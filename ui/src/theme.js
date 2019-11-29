@@ -337,7 +337,7 @@ const createTheme = isDarkTheme => {
       MuiPickersClock: {
         pin: {
           backgroundColor: THEME.SECONDARY,
-        }
+        },
       },
       MuiPickersClockPointer: {
         pointer: {
