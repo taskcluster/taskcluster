@@ -34,7 +34,11 @@ export default class SpeedDial extends Component {
     });
   };
 
-  handleOpen = () => {
+  handleOpen = (_, reason) => {
+    if (reason === 'mouseEnter') {
+      return;
+    }
+
     this.setState({
       open: true,
     });
