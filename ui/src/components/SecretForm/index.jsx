@@ -204,7 +204,6 @@ export default class SecretForm extends Component {
               label="Expires"
               value={expires}
               onChange={this.handleExpirationChange}
-              format="yyyy/MM/dd"
               maxDate={addYears(new Date(), 1001)}
             />
           </ListItem>

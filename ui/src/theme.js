@@ -334,6 +334,22 @@ const createTheme = isDarkTheme => {
           },
         },
       },
+      MuiPickersClock: {
+        pin: {
+          backgroundColor: THEME.SECONDARY,
+        }
+      },
+      MuiPickersClockPointer: {
+        pointer: {
+          backgroundColor: THEME.SECONDARY,
+        },
+        thumb: {
+          borderColor: THEME.SECONDARY,
+        },
+        noPoint: {
+          backgroundColor: THEME.SECONDARY,
+        },
+      },
       MuiListItem: {
         root: {
           userSelect: 'text',
