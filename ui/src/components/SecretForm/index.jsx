@@ -255,7 +255,6 @@ export default class SecretForm extends Component {
                 className: classNames(classes.fab, classes.saveSecretSpan),
               }}
               tooltipProps={{ title: 'Save Secret' }}
-              requiresAuth
               classes={{ root: classes.successIcon }}
               variant="round"
               className={classes.saveIcon}

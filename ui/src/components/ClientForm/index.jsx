@@ -385,7 +385,6 @@ export default class ClientForm extends Component {
         ) : (
           <Fragment>
             <Button
-              requiresAuth
               tooltipOpen
               variant="round"
               onClick={this.handleSaveClient}
