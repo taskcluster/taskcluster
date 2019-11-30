@@ -64,7 +64,7 @@ export default class ProvisionerDetailsTable extends Component {
             onClick={this.handleDrawerOpen}>
             <InformationVariantIcon size={iconSize} />
           </IconButton>
-          <Link to={`/provisioners/${provisioner.provisionerId}`}>
+          <Link to={`/provisioners/${provisioner.provisionerId}`} title={`Explore worker types for ${provisioner.provisionerId}`}>
             <TableCellItem button>
               {provisioner.provisionerId}
               <LinkIcon size={iconSize} />
