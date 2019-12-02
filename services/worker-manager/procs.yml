@@ -5,10 +5,6 @@ provisioner:
   type: background
   subType: 'iterate'
   command: node src/main.js runProvisioner
-workerscanner:
-  type: background
-  subType: 'iterate'
-  command: node src/main.js workerScanner
 expire-workers:
   type: cron
   schedule: '0 0 * * *'

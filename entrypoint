@@ -53,7 +53,6 @@ web-server/cleanup-expire-access-tokens) cd services/web-server && exec node src
 web-server/write-docs) cd services/web-server && exec node src/main.js writeDocs;;
 worker-manager/web) cd services/worker-manager && exec node src/main.js server;;
 worker-manager/provisioner) cd services/worker-manager && exec node src/main.js runProvisioner;;
-worker-manager/workerscanner) cd services/worker-manager && exec node src/main.js workerScanner;;
 worker-manager/expire-workers) cd services/worker-manager && exec node src/main.js expireWorkers;;
 worker-manager/expire-worker-pools) cd services/worker-manager && exec node src/main.js expireWorkerPools;;
 worker-manager/expire-errors) cd services/worker-manager && exec node src/main.js expireErrors;;

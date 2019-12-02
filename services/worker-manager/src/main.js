@@ -12,7 +12,6 @@ const {Estimator} = require('./estimator');
 const {sasCredentials} = require('taskcluster-lib-azure');
 const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 const {Provisioner} = require('./provisioner');
-const {WorkerScanner} = require('./worker-scanner');
 const {Providers} = require('./providers');
 
 let load = loader({
@@ -214,11 +213,12 @@ let load = loader({
   },
 
   provisioner: {
-    requires: ['cfg', 'monitor', 'WorkerPool', 'providers', 'notify', 'pulseClient', 'reference'],
-    setup: async ({cfg, monitor, WorkerPool, providers, notify, pulseClient, reference}, ownName) => {
+    requires: ['cfg', 'monitor', 'Worker', 'WorkerPool', 'providers', 'notify', 'pulseClient', 'reference'],
+    setup: async ({cfg, monitor, Worker, WorkerPool, providers, notify, pulseClient, reference}, ownName) => {
       return new Provisioner({
         ownName,
         monitor: monitor.childMonitor('provisioner'),
+        Worker,
         WorkerPool,
         providers,
         notify,
@@ -233,22 +233,6 @@ let load = loader({
     requires: ['provisioner'],
     setup: async ({provisioner}) => await provisioner.initiate(),
   },
-
-  workerScanner: {
-    requires: ['cfg', 'monitor', 'Worker', 'WorkerPool', 'providers'],
-    setup: async ({cfg, monitor, Worker, WorkerPool, providers}, ownName) => {
-      const workerScanner = new WorkerScanner({
-        ownName,
-        Worker,
-        WorkerPool,
-        providers,
-        monitor: monitor.childMonitor('worker-scanner'),
-      });
-      await workerScanner.initiate();
-      return workerScanner;
-    },
-  },
-
 }, {
   profile: process.env.NODE_ENV,
   process: process.argv[2],

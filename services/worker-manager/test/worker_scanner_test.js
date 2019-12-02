@@ -9,13 +9,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withProviders(mock, skipping);
-  helper.withWorkerScanner(mock, skipping);
+  helper.withProvisioner(mock, skipping);
 
   const testCase = async ({workers = [], workerPools = [], assertion, expectErrors}) => {
     await Promise.all(workers.map(w => helper.Worker.create(w)));
     await Promise.all(workerPools.map(wp => helper.WorkerPool.create(wp)));
     return (testing.runWithFakeTime(async () => {
-      await helper.initiateWorkerScanner();
+      await helper.initiateProvisioner();
       await testing.poll(async () => {
         if (!expectErrors) {
           const error = monitorManager.messages.find(({Type}) => Type === 'monitor.error');
@@ -40,15 +40,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
           });
         });
         await assertion();
-      }, 30, 1000);
-      await helper.terminateWorkerScanner();
+      }, 60, 1000);
+      await helper.terminateProvisioner();
 
       if (expectErrors) {
         monitorManager.messages = [];
       }
     }, {
       mock,
-      maxTime: 30000,
+      maxTime: 120000,
     }))();
   };
 
