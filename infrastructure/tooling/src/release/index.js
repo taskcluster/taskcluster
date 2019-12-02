@@ -18,6 +18,10 @@ class Release {
       throw new Error('The --npm-token option is required (unless --no-push)');
     }
 
+    if (cmdOptions.push && (!cmdOptions.pypiUsername || !cmdOptions.pypiPassword)) {
+      throw new Error('The --pypi-* options are required (unless --no-push)');
+    }
+
     this.baseDir = cmdOptions['baseDir'] || '/tmp/taskcluster-builder-build';
 
     // The `yarn build` process is a subgraph of the release taskgraph, with some
@@ -76,11 +80,9 @@ class Release {
     console.log(`Release version: ${context['release-version']}`);
     console.log(`Release docker image: ${context['monoimage-docker-image']}`);
     if (!this.cmdOptions.push) {
-      console.log('NOTE: image and git commit + tags not pushed due to --no-push option');
+      console.log('NOTE: image, git commit + tags, and packages not pushed due to --no-push option');
     } else {
       console.log(`GitHub release: ${context['github-release']}`);
-      console.log('** YOUR NEXT STEPS **');
-      console.log(' * run `./release.sh --real` in clients/client-py');
     }
   }
 }

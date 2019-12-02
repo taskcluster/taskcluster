@@ -6,4 +6,5 @@ module.exports = {
   ...require('./command'),
   ...require('./config'),
   ...require('./npm'),
+  ...require('./pypi'),
 };

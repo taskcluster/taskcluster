@@ -22,6 +22,7 @@ const {
   writeRepoYAML,
   modifyRepoFile,
   removeRepoFile,
+  pyClientRelease,
   REPO_ROOT,
 } = require('../utils');
 
@@ -414,11 +415,34 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
     }));
 
   ensureTask(tasks, {
+    title: `Publish clients/client-py to pypi`,
+    requires: [
+      'version-updated',
+      'target-monoimage', // to make sure the build succeeds first..
+    ],
+    provides: [
+      `publish-clients/client-py`,
+    ],
+    run: async (requirements, utils) => {
+      if (!cmdOptions.push) {
+        return utils.skip({});
+      }
+
+      await pyClientRelease({
+        dir: path.join(REPO_ROOT, 'clients', 'client-py'),
+        username: cmdOptions.pypiUsername,
+        password: cmdOptions.pypiPassword,
+        utils});
+    },
+  });
+
+  ensureTask(tasks, {
     title: 'Release Complete',
     requires: [
       'github-release',
       'publish-clients/client',
       'publish-clients/client-web',
+      'publish-clients/client-py',
     ],
     provides: [
       'target-release',
