@@ -1,3 +1,0 @@
-level: silent
----
-Typo Error

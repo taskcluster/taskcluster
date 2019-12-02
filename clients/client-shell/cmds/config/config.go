@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v23"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
 	"github.com/taskcluster/taskcluster/clients/client-shell/cmds/root"
 	"github.com/taskcluster/taskcluster/clients/client-shell/config"
 )
