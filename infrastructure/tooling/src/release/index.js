@@ -10,16 +10,12 @@ class Release {
   constructor(cmdOptions) {
     this.cmdOptions = cmdOptions;
 
-    if (cmdOptions.push && !cmdOptions.ghToken) {
-      throw new Error('The --gh-token option is required (unless --no-push)');
-    }
-
-    if (cmdOptions.push && !cmdOptions.npmToken) {
-      throw new Error('The --npm-token option is required (unless --no-push)');
-    }
-
-    if (cmdOptions.push && (!cmdOptions.pypiUsername || !cmdOptions.pypiPassword)) {
-      throw new Error('The --pypi-* options are required (unless --no-push)');
+    if (cmdOptions.push) {
+      ['GH_TOKEN', 'NPM_TOKEN', 'PYPI_USERNAME', 'PYPI_PASSWORD'].forEach(e => {
+        if (!process.env[e]) {
+          throw new Error(`$${e} is required (unless --no-push)`);
+        }
+      });
     }
 
     this.baseDir = cmdOptions['baseDir'] || '/tmp/taskcluster-builder-build';
@@ -45,6 +41,12 @@ class Release {
     generateReleaseTasks({
       tasks,
       cmdOptions: this.cmdOptions,
+      credentials: {
+        ghToken: process.env.GH_TOKEN,
+        npmToken: process.env.NPM_TOKEN,
+        pypiUsername: process.env.PYPI_USERNAME,
+        pypiPassword: process.env.PYPI_PASSWORD,
+      },
       baseDir: this.baseDir,
     });
 

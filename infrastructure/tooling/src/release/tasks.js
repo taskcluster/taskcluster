@@ -28,7 +28,7 @@ const {
 
 const readFile = util.promisify(fs.readFile);
 
-module.exports = ({tasks, cmdOptions, baseDir}) => {
+module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
   const artifactsDir = path.join(baseDir, 'release-artifacts');
 
   ensureTask(tasks, {
@@ -356,7 +356,7 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
         return utils.skip({});
       }
 
-      const octokit = new Octokit({auth: `token ${cmdOptions.ghToken}`});
+      const octokit = new Octokit({auth: `token ${credentials.ghToken}`});
 
       utils.status({message: `Create Release`});
       const release = await octokit.repos.createRelease({
@@ -409,7 +409,7 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
 
         await npmPublish({
           dir: path.join(REPO_ROOT, clientName),
-          apiKey: cmdOptions.npmToken,
+          apiKey: credentials.npmToken,
           utils});
       },
     }));
@@ -430,8 +430,8 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
 
       await pyClientRelease({
         dir: path.join(REPO_ROOT, 'clients', 'client-py'),
-        username: cmdOptions.pypiUsername,
-        password: cmdOptions.pypiPassword,
+        username: credentials.pypiUsername,
+        password: credentials.pypiPassword,
         utils});
     },
   });

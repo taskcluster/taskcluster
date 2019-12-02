@@ -31,12 +31,17 @@ program.command('build')
 
 program.command('release')
   .option('--base-dir <base-dir>', 'Base directory for build (fast and big!; default /tmp/taskcluster-builder-build)')
-  .option('--gh-token <gh-token>', 'GitHub access token (required unless --no-push)')
-  .option('--npm-token <npm-token>', 'NPM authentication token (required unless --no-push)')
-  .option('--pypi-username <username>', 'PyPI username (required unless --no-push)')
-  .option('--pypi-password <password>', 'PyPI password (required unless --no-push)')
   .option('--dry-run', 'Do not run any tasks, but generate the list of tasks')
   .option('--no-push', 'Do not push the docker image and git commit + tags (but your local repo is still modified)')
+  .on('--help', () => {
+    console.log([
+      '',
+      'Set the following environment variables (unless --no-push):',
+      ' * GH_TOKEN - GitHub access token with permissions to create a release',
+      ' * NPM_TOKEN - NPM authentication token with permission to publish client libraries',
+      ' * PYPI_USERNAME / PYPI_PASSWORD - PyPI credentials with permission to upload taskcluster-client',
+    ].join('\n'));
+  })
   .action((...options) => {
     if (options.length !== 1) {
       console.error('unexpected command-line arguments');
