@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import { arrayOf } from 'prop-types';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
@@ -24,6 +25,7 @@ import sort from '../../utils/sort';
 import Markdown from '../Markdown';
 import DialogAction from '../DialogAction';
 import { ACTION_CONTEXT } from '../../utils/constants';
+import { provisioner } from '../../utils/prop-types';
 
 @withRouter
 @withAuth
@@ -46,12 +48,15 @@ import { ACTION_CONTEXT } from '../../utils/constants';
     width: 400,
   },
   actionButton: {
-    marginRight: theme.spacing(1),
+    marginRight: theme.spacing(0.5),
     marginTop: theme.spacing(1),
-    fontSize: '0.7rem',
   },
 }))
 export default class ProvisionerDetailsTable extends Component {
+  static propTypes = {
+    provisioners: arrayOf(provisioner).isRequired,
+  };
+
   state = {
     sortBy: null,
     sortDirection: null,
@@ -154,13 +159,13 @@ export default class ProvisionerDetailsTable extends Component {
           </Link>
         </TableCell>
         <TableCell>
-          <StatusLabel state={provisioner.stability} />
-        </TableCell>
-        <TableCell>
           <DateDistance from={provisioner.lastDateActive} />
         </TableCell>
         <TableCell>
           <DateDistance from={provisioner.expires} />
+        </TableCell>
+        <TableCell>
+          <StatusLabel state={provisioner.stability} />
         </TableCell>
       </TableRow>
     );
@@ -213,8 +218,8 @@ export default class ProvisionerDetailsTable extends Component {
     if (actions.length) {
       return actions.map(action => (
         <Button
+          classes={{ root: classes.actionButton }}
           key={action.title}
-          spanProps={{ className: classes.actionButton }}
           tooltipProps={{
             enterDelay: 50,
             key: action.title,
@@ -244,9 +249,9 @@ export default class ProvisionerDetailsTable extends Component {
     } = this.state;
     const headers = [
       { label: 'Provisioner', id: 'provisionerId', type: 'string' },
-      { label: 'Stability', id: 'stability', type: 'string' },
       { label: 'Last Active', id: 'lastDateActive', type: 'string' },
       { label: 'Expires', id: 'expires', type: 'string' },
+      { label: 'Stability', id: 'stability', type: 'string' },
     ];
 
     this.sortProvisioners(provisioners, sortBy, sortDirection);
