@@ -47,6 +47,9 @@ import { secret } from '../../utils/prop-types';
   deleteIcon: {
     ...theme.mixins.errorIcon,
   },
+  deleteTooltipLabel: {
+    backgroundColor: theme.mixins.errorIcon.backgroundColor,
+  },
   secretSubheader: {
     display: 'flex',
   },
@@ -269,7 +272,10 @@ export default class SecretForm extends Component {
                 tooltipOpen
                 icon={<DeleteIcon />}
                 onClick={onDialogActionOpen}
-                className={classes.deleteIcon}
+                classes={{
+                  icon: classes.deleteIcon,
+                  staticTooltipLabel: classes.deleteTooltipLabel,
+                }}
                 tooltipTitle="Delete Secret"
                 FabProps={{
                   disabled: loading,
