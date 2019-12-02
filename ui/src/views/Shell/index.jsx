@@ -21,7 +21,10 @@ export default class Shell extends Component {
     );
 
     return (
-      <Dashboard className={this.props.classes.main} title="Shell">
+      <Dashboard
+        disableAppbar
+        className={this.props.classes.main}
+        title="Shell">
         <ShellConsole
           url={props.socketUrl}
           taskId={props.taskId}
