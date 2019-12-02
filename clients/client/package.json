@@ -10,7 +10,7 @@
     "package-test": "sh package_test.sh"
   },
   "dependencies": {
-    "debug": "^4.0.0",
+    "debug": "^4.1.1",
     "@hapi/hawk": "^7.1.2",
     "lodash": "^4.17.4",
     "slugid": "^2.0.0",
