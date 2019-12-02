@@ -30,7 +30,7 @@ from accidentally triggering a destructive action.
 
 ## Action Buttons
 
-A button that performs an action (i.e., sends a request to the backend) will most likely require a
+A button that mutates state on the backend will most likely require a
 set of scopes to execute. In order to avoid sending useless requests for calls expecting scopes, action buttons should
 be disabled when the user is not logged in. The only exception to this rule is the "save" button when editing a form
 since the disable -> enable state transition is used as a feedback mechanism to help users not forget to save their
