@@ -66,6 +66,8 @@ export default class ViewSecret extends Component {
           name,
           secret,
         },
+        refetchQueries: ['Secret'],
+        awaitRefetchQueries: true,
       });
 
       this.setState({ error: null, loading: false });
