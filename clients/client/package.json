@@ -23,7 +23,7 @@
     "nock": "^11.0.0"
   },
   "engines": {
-    "node": ">=8"
+    "node": ">=v8.16.2"
   },
   "files": [
     "src"
