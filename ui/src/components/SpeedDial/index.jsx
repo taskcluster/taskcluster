@@ -28,20 +28,20 @@ export default class SpeedDial extends Component {
     open: false,
   };
 
-  handleClose = () => {
-    this.setState({
-      open: false,
-    });
+  handleClose = (_, reason) => {
+    if (reason === 'toggle' || reason === 'blur') {
+      this.setState({
+        open: false,
+      });
+    }
   };
 
   handleOpen = (_, reason) => {
-    if (reason === 'mouseEnter') {
-      return;
+    if (reason === 'toggle') {
+      this.setState({
+        open: true,
+      });
     }
-
-    this.setState({
-      open: true,
-    });
   };
 
   render() {
