@@ -84,6 +84,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     providerId,
     created: taskcluster.fromNow('0 seconds'),
     expires: taskcluster.fromNow('90 seconds'),
+    capacity: 1,
     state: 'requested',
     providerData: {},
   };

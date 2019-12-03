@@ -8,6 +8,7 @@ properties:
     description: Date and time when this worker will be deleted from the DB
     type: string
     format: date-time
+  capacity: {$ref: worker-full.json#/properties/capacity}
   providerInfo:
     # note: providerInfo is not required
     title: Provider Data

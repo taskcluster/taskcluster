@@ -21,6 +21,7 @@ class StaticProvider extends Provider {
       providerId,
       created: new Date(),
       expires: new Date(input.expires),
+      capacity: input.capacity,
       state: Worker.states.RUNNING,
       providerData: {staticSecret},
     };

@@ -303,10 +303,10 @@ class GoogleProvider extends Provider {
         created: new Date(),
         expires: taskcluster.fromNow('1 week'),
         state: this.Worker.states.REQUESTED,
+        capacity: cfg.capacityPerInstance,
         providerData: {
           project: this.project,
           zone: cfg.zone,
-          instanceCapacity: cfg.capacityPerInstance,
           operation: {
             name: op.name,
             zone: op.zone,
@@ -341,7 +341,7 @@ class GoogleProvider extends Provider {
       }));
       const {status} = data;
       if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
-        this.seen[worker.workerPoolId] += worker.providerData.instanceCapacity || 1;
+        this.seen[worker.workerPoolId] += worker.capacity || 1;
 
         // If the worker will be expired soon but it still exists,
         // update it to stick around a while longer. If this doesn't happen,

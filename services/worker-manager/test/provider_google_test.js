@@ -131,6 +131,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       providerId,
       created: taskcluster.fromNow('0 seconds'),
       expires: taskcluster.fromNow('90 seconds'),
+      capacity: 1,
       state: 'requested',
       providerData: {zone: 'us-east1-a'},
     });
@@ -176,6 +177,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       workerId: 'whatever',
       providerId,
       created: taskcluster.fromNow('-2 weeks'),
+      capacity: 1,
       expires,
       state: helper.Worker.states.RUNNING,
       providerData: {zone: 'us-east1-a'},
@@ -245,6 +247,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       workerId,
       providerId,
       created: taskcluster.fromNow('0 seconds'),
+      capacity: 1,
       expires: taskcluster.fromNow('90 seconds'),
       state: 'requested',
       providerData: {},

@@ -53,6 +53,12 @@ properties:
     type: string
     enum: ["requested", "running", "stopped"]
 
+  capacity:
+    title: Worker Capacity
+    description: Number of tasks this worker can handle at once
+    type: integer
+    minimum: 1
+
 additionalProperties: false
 required:
   - workerPoolId
@@ -62,3 +68,4 @@ required:
   - created
   - expires
   - state
+  - capacity

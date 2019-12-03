@@ -71,6 +71,7 @@ class TestingProvider extends Provider {
       workerId,
       created: new Date(),
       expires: new Date(input.expires),
+      capacity: input.capacity,
       state: this.Worker.states.RUNNING,
       providerData: {},
     });

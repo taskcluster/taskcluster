@@ -202,9 +202,9 @@ class AwsProvider extends Provider {
           created: new Date(),
           expires: taskcluster.fromNow('1 week'),
           state: this.Worker.states.REQUESTED,
+          capacity: config.capacityPerInstance,
           providerData: {
             region: config.region,
-            instanceCapacity: config.capacityPerInstance,
             groups: spawned.Groups,
             amiLaunchIndex: i.AmiLaunchIndex,
             imageId: i.ImageId,
@@ -290,7 +290,7 @@ class AwsProvider extends Provider {
         case 'running':
         case 'shutting-down': //so that we don't turn on new instances until they're entirely gone
         case 'stopping':
-          this.seen[worker.workerPoolId] += worker.providerData.instanceCapacity || 1;
+          this.seen[worker.workerPoolId] += worker.capacity || 1;
           return Promise.resolve();
 
         case 'terminated':

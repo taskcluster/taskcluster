@@ -380,6 +380,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       created: new Date(),
       expires: taskcluster.fromNow('1 week'),
       state: helper.Worker.states.REQUESTED,
+      capacity: 1,
       providerData: {},
     };
 
@@ -404,6 +405,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         created: new Date(),
         expires: taskcluster.fromNow('1 week'),
         state: helper.Worker.states.RUNNING,
+        capacity: 1,
         providerData: {},
       },
       {
@@ -414,6 +416,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         created: new Date(),
         expires: taskcluster.fromNow('1 week'),
         state: helper.Worker.states.STOPPED,
+        capacity: 1,
         providerData: {},
       },
     ];
@@ -449,6 +452,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       workerId: 's-3434',
       created: new Date(),
       expires: taskcluster.fromNow('1 week'),
+      capacity: 1,
       state: helper.Worker.states.RUNNING,
       providerData: {},
     }));
@@ -476,6 +480,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       workerId: 's-3434',
       created: new Date(),
       expires: taskcluster.fromNow('1 week'),
+      capacity: 1,
       state: helper.Worker.states.RUNNING,
       providerData: {},
     };
@@ -516,6 +521,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       providerId,
       created: taskcluster.fromNow('0 seconds'),
       expires: taskcluster.fromNow('90 seconds'),
+      capacity: 1,
       state: 'requested',
       providerData: {},
     };
@@ -567,6 +573,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       const expires = taskcluster.fromNow('1 hour');
       const worker = await helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
         expires,
+        capacity: 1,
       });
 
       assert.equal(worker.workerPoolId, workerPoolId);
@@ -866,6 +873,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       providerId,
       created: taskcluster.fromNow('0 seconds'),
       expires: taskcluster.fromNow('90 seconds'),
+      capacity: 1,
       state: 'requested',
       providerData: {},
     };
