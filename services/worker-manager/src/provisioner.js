@@ -14,6 +14,12 @@ class Provisioner {
     this.monitor = monitor;
     this.notify = notify;
     this.pulseClient = pulseClient;
+
+    // lib-iterate will have loops stand on top of each other
+    // so we will explicitly grab a mutex in each loop to ensure
+    // we're the only one going at any given time
+    this.provisioningLoopAlive = false;
+
     const WorkerManagerEvents = taskcluster.createClient(reference);
     const workerManagerEvents = new WorkerManagerEvents({rootUrl});
     this.bindings = [
@@ -30,7 +36,7 @@ class Provisioner {
       maxFailures: 10,
       watchdogTime: 0,
       waitTime: 10000,
-      maxIterationTime: 300000, // We really should be making it through the list at least once every 5 minutes
+      maxIterationTime: 900000, // We will move slowly for now with a 15 minute window
       ...iterateConf,
     });
     this.iterate.on('error', () => {
@@ -98,6 +104,11 @@ class Provisioner {
    * Run a single provisioning iteration
    */
   async provision() {
+    if (this.provisioningLoopAlive) {
+      this.monitor.notice('loop-interference', {});
+      return;
+    }
+    this.provisioningLoopAlive = true;
     // Any once-per-loop work a provider may want to do
     await this.providers.forAll(p => p.prepare());
 
@@ -205,6 +216,8 @@ class Provisioner {
     // Now allow providers to do whatever per-loop cleanup they may need
     await this.providers.forAll(p => p.cleanup());
     await this.providers.forAll(p => p.scanCleanup({responsibleFor: poolsByProvider.get(p.providerId) || new Set()}));
+
+    this.provisioningLoopAlive = false; // Allow lib-iterate to start a loop again
   }
 }
 
