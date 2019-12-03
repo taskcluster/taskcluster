@@ -71,7 +71,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   });
 
   test('provisioning loop', async function() {
-    await provider.provision({workerPool, existingWorkerCount: 0});
+    await provider.provision({workerPool, existingCapacity: 0});
     const workers = await helper.Worker.scan({}, {});
     assert.deepEqual(workers.entries[0].providerData.operation, {
       name: 'foo',
@@ -81,8 +81,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
   test('provisioning loop with failure', async function() {
     // The fake throws an error on the second call
-    await provider.provision({workerPool, existingWorkerCount: 0});
-    await provider.provision({workerPool, existingWorkerCount: 1});
+    await provider.provision({workerPool, existingCapacity: 0});
+    await provider.provision({workerPool, existingCapacity: 1});
     const errors = await helper.WorkerPoolError.scan({}, {});
     assert.equal(errors.entries.length, 1);
     assert.equal(errors.entries[0].description, 'something went wrong');
@@ -92,9 +92,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
   test('provisioning loop with rate limiting', async function() {
     // Notice this is only three loops, but instance insert fails on third try before succeeding on 4th
-    await provider.provision({workerPool, existingWorkerCount: 0});
-    await provider.provision({workerPool, existingWorkerCount: 0});
-    await provider.provision({workerPool, existingWorkerCount: 2});
+    await provider.provision({workerPool, existingCapacity: 0});
+    await provider.provision({workerPool, existingCapacity: 0});
+    await provider.provision({workerPool, existingCapacity: 2});
 
     const workers = await helper.Worker.scan({}, {});
     assert.equal(workers.entries.length, 2);
@@ -140,7 +140,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   });
 
   test('worker-scan loop', async function() {
-    await provider.provision({workerPool, existingWorkerCount: 0});
+    await provider.provision({workerPool, existingCapacity: 0});
     const worker = await helper.Worker.load({
       workerPoolId: 'foo/bar',
       workerId: '123',

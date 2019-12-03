@@ -26,7 +26,7 @@ class TestingProvider extends Provider {
     }
   }
 
-  async provision({workerPool, existingWorkerCount}) {
+  async provision({workerPool, existingCapacity}) {
     this.monitor.notice('test-provision', {workerPoolId: workerPool.workerPoolId});
   }
 

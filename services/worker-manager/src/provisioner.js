@@ -104,13 +104,13 @@ class Provisioner {
     // track the providerIds seen for each worker pool, so they can be removed
     // from the list of previous provider IDs
     const providersByPool = new Map();
-    const seen = (providerId, workerPoolId) => {
+    const seen = (providerId, workerPoolId, workerCapacity) => {
       const v = providersByPool.get(workerPoolId);
       if (v) {
         v.providers.add(providerId);
-        v.count += 1;
+        v.count += workerCapacity;
       } else {
-        providersByPool.set(workerPoolId, {providers: new Set([providerId]), count: 1});
+        providersByPool.set(workerPoolId, {providers: new Set([providerId]), count: workerCapacity});
       }
     };
 
@@ -120,7 +120,7 @@ class Provisioner {
       state: Entity.op.notEqual(this.Worker.states.STOPPED),
     }, {
       handler: async worker => {
-        seen(worker.providerId, worker.workerPoolId);
+        seen(worker.providerId, worker.workerPoolId, worker.capacity);
         const provider = this.providers.get(worker.providerId);
         if (provider) {
           try {
@@ -160,7 +160,7 @@ class Provisioner {
         const providerByPool = providersByPool.get(workerPoolId) || {providers: new Set(), count: 0};
 
         try {
-          await provider.provision({workerPool, existingWorkerCount: providerByPool.count});
+          await provider.provision({workerPool, existingCapacity: providerByPool.count});
         } catch (err) {
           this.monitor.reportError(err, {providerId: workerPool.providerId}); // Just report this and move on
         }
