@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster/clients/client-go/v23/tcworkermanager"
+	"github.com/taskcluster/taskcluster/clients/client-go/v24/tcworkermanager"
 )
 
 func TestWorkerManagerRegisterWorker(t *testing.T) {

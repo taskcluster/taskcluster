@@ -9,8 +9,8 @@ import (
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v23"
-	"github.com/taskcluster/taskcluster/clients/client-go/v23/tcworkermanager"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
+	"github.com/taskcluster/taskcluster/clients/client-go/v24/tcworkermanager"
 )
 
 type staticProviderConfig struct {
