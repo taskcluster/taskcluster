@@ -184,7 +184,7 @@ class GoogleProvider extends Provider {
     }
   }
 
-  async provision({workerPool}) {
+  async provision({workerPool, existingWorkerCount}) {
     const {workerPoolId} = workerPool;
 
     if (!workerPool.providerData[this.providerId] || workerPool.providerData[this.providerId].running === undefined) {

@@ -107,9 +107,10 @@ class Provisioner {
     const seen = (providerId, workerPoolId) => {
       const v = providersByPool.get(workerPoolId);
       if (v) {
-        v.add(providerId);
+        v.providers.add(providerId);
+        v.count += 1;
       } else {
-        providersByPool.set(workerPoolId, new Set([providerId]));
+        providersByPool.set(workerPoolId, {providers: new Set([providerId]), count: 1});
       }
     };
 
@@ -156,13 +157,14 @@ class Provisioner {
         }
         poolsByProvider.get(providerId).add(workerPoolId);
 
+        const providerByPool = providersByPool.get(workerPoolId) || {providers: new Set(), count: 0};
+
         try {
-          await provider.provision({workerPool});
+          await provider.provision({workerPool, existingWorkerCount: providerByPool.count});
         } catch (err) {
           this.monitor.reportError(err, {providerId: workerPool.providerId}); // Just report this and move on
         }
 
-        const stillCurrent = providersByPool.get(workerPoolId) || new Set();
         await Promise.all(previousProviderIds.map(async pId => {
           const provider = this.providers.get(pId);
           if (!provider) {
@@ -177,7 +179,7 @@ class Provisioner {
             this.monitor.reportError(err, {providerId: pId}); // Just report this and move on
           }
 
-          if (!stillCurrent.has(pId)) {
+          if (!providerByPool.providers.has(pId)) {
             try {
               await provider.removeResources({workerPool});
             } catch (err) {
