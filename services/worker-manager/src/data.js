@@ -284,6 +284,7 @@ const Worker = Entity.configure({
     } else {
       item.capacity = 1;
     }
+    return item;
   },
 });
 
