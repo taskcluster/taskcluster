@@ -24,7 +24,6 @@ class Provisioner {
     this.iterate = new Iterate({
       name: ownName,
       handler: async () => {
-        await this.scan();
         await this.provision();
       },
       monitor,
@@ -96,9 +95,12 @@ class Provisioner {
   }
 
   /**
-   * Check in on workers
+   * Run a single provisioning iteration
    */
-  async scan() {
+  async provision() {
+    // Any once-per-loop work a provider may want to do
+    await this.providers.forAll(p => p.prepare());
+
     // track the providerIds seen for each worker pool, so they can be removed
     // from the list of previous provider IDs
     const providersByPool = new Map();
@@ -111,6 +113,7 @@ class Provisioner {
       }
     };
 
+    // Check the workers
     await this.providers.forAll(p => p.scanPrepare());
     await this.Worker.scan({
       state: Entity.op.notEqual(this.Worker.states.STOPPED),
@@ -137,59 +140,21 @@ class Provisioner {
     // currently exist
     const poolsByProvider = new Map();
 
-    // Now, see if we can remove any previous providers
-    await this.WorkerPool.scan({}, {
-      handler: async workerPool => {
-        const {providerId, previousProviderIds, workerPoolId} = workerPool;
-        if (!poolsByProvider.has(providerId)) {
-          poolsByProvider.set(providerId, new Set());
-        }
-        poolsByProvider.get(providerId).add(workerPoolId);
-        const stillCurrent = providersByPool.get(workerPoolId) || new Set();
-        const removable = previousProviderIds.filter(providerId => !stillCurrent.has(providerId));
-
-        for (let providerId of removable) {
-          const provider = this.providers.get(providerId);
-          if (provider) {
-            try {
-              await provider.removeResources({workerPool});
-            } catch (err) {
-              // report error and try again next time..
-              this.monitor.reportError(err, {workerPoolId, providerId});
-              continue;
-            }
-          } else {
-            this.monitor.info(
-              `Worker pool ${workerPoolId} has unknown previous providerId ${providerId} (removing)`);
-          }
-
-          // the provider is done with this pool, so remove it from the list of previous providers
-          await workerPool.modify(wp => {
-            wp.previousProviderIds = wp.previousProviderIds.filter(pid => pid !== providerId);
-          });
-        }
-      },
-    });
-
-    await this.providers.forAll(p => p.scanCleanup({responsibleFor: poolsByProvider.get(p.providerId) || new Set()}));
-  }
-
-  /**
-   * Run a single provisioning iteration
-   */
-  async provision() {
-    // Any once-per-loop work a provider may want to do
-    await this.providers.forAll(p => p.prepare());
-
     // Now for each worker pool we ask the providers to do stuff
     await this.WorkerPool.scan({}, {
       handler: async workerPool => {
-        const provider = this.providers.get(workerPool.providerId);
+        const {providerId, previousProviderIds, workerPoolId} = workerPool;
+        const provider = this.providers.get(providerId);
         if (!provider) {
           this.monitor.warning(
             `Worker pool ${workerPool.workerPoolId} has unknown providerId ${workerPool.providerId}`);
           return;
         }
+
+        if (!poolsByProvider.has(providerId)) {
+          poolsByProvider.set(providerId, new Set());
+        }
+        poolsByProvider.get(providerId).add(workerPoolId);
 
         try {
           await provider.provision({workerPool});
@@ -197,7 +162,8 @@ class Provisioner {
           this.monitor.reportError(err, {providerId: workerPool.providerId}); // Just report this and move on
         }
 
-        await Promise.all(workerPool.previousProviderIds.map(async pId => {
+        const stillCurrent = providersByPool.get(workerPoolId) || new Set();
+        await Promise.all(previousProviderIds.map(async pId => {
           const provider = this.providers.get(pId);
           if (!provider) {
             this.monitor.info(
@@ -210,6 +176,21 @@ class Provisioner {
           } catch (err) {
             this.monitor.reportError(err, {providerId: pId}); // Just report this and move on
           }
+
+          if (!stillCurrent.has(pId)) {
+            try {
+              await provider.removeResources({workerPool});
+            } catch (err) {
+              // report error and try again next time..
+              this.monitor.reportError(err, {workerPoolId, providerId: pId});
+              return;
+            }
+            // the provider is done with this pool, so remove it from the list of previous providers
+            await workerPool.modify(wp => {
+              wp.previousProviderIds = wp.previousProviderIds.filter(pid => pid !== pId);
+            });
+          }
+
         }));
 
         this.monitor.log.workerPoolProvisioned({
@@ -221,6 +202,7 @@ class Provisioner {
 
     // Now allow providers to do whatever per-loop cleanup they may need
     await this.providers.forAll(p => p.cleanup());
+    await this.providers.forAll(p => p.scanCleanup({responsibleFor: poolsByProvider.get(p.providerId) || new Set()}));
   }
 }
 
