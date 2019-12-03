@@ -266,8 +266,19 @@ const Worker = Entity.configure({
 
     // Number of tasks this worker can run at one time
     capacity: Entity.types.Number,
+
+    // Last time that worker-manager updated the state of this
+    // worker
+    lastModified: Entity.types.Date,
+
+    // Last time that worker-manager checked on the state
+    // of this worker in the outside world by checking with
+    // a cloud provider or something else
+    lastChecked: Entity.types.Date,
   },
   migrate(item) {
+    item.lastModified = new Date();
+    item.lastChecked = new Date();
     if (item.providerData.instanceCapacity) {
       item.capacity = item.providerData.instanceCapacity;
     } else {
@@ -284,6 +295,8 @@ Worker.prototype.serializable = function() {
     providerId: this.providerId,
     created: this.created.toJSON(),
     expires: this.expires.toJSON(),
+    lastModified: this.lastModified.toJSON(),
+    lastChecked: this.lastChecked.toJSON(),
     capacity: this.capacity,
     state: this.state,
   };

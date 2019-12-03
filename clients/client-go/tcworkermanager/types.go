@@ -226,6 +226,12 @@ type (
 		// Date and time when this worker will be deleted from the DB
 		Expires tcclient.Time `json:"expires"`
 
+		// Date and time when the state of this worker was verified with a cloud api
+		LastChecked tcclient.Time `json:"lastChecked,omitempty"`
+
+		// Date and time when this worker last changed state
+		LastModified tcclient.Time `json:"lastModified,omitempty"`
+
 		// The provider that had started the worker and responsible for managing it.
 		// Can be different from the provider that's currently in the worker pool config.
 		//

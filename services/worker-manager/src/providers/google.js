@@ -147,6 +147,7 @@ class GoogleProvider extends Provider {
       workerId: worker.workerId,
     });
     await worker.modify(w => {
+      w.lastModified = new Date();
       w.state = this.Worker.states.RUNNING;
     });
 
@@ -294,12 +295,15 @@ class GoogleProvider extends Provider {
         workerGroup: this.providerId,
         workerId: op.targetId,
       });
+      const now = new Date();
       await this.Worker.create({
         workerPoolId,
         providerId: this.providerId,
         workerGroup: this.providerId,
         workerId: op.targetId,
-        created: new Date(),
+        created: now,
+        lastModified: now,
+        lastChecked: now,
         expires: taskcluster.fromNow('1 week'),
         state: this.Worker.states.REQUESTED,
         capacity: cfg.capacityPerInstance,
@@ -363,6 +367,7 @@ class GoogleProvider extends Provider {
           workerId: worker.workerId,
         });
         await worker.modify(w => {
+          w.lastModified = new Date();
           w.state = states.STOPPED;
         });
       }
@@ -384,6 +389,7 @@ class GoogleProvider extends Provider {
         workerId: worker.workerId,
       });
       await worker.modify(w => {
+        w.lastModified = new Date();
         w.state = states.STOPPED;
       });
     }

@@ -193,12 +193,15 @@ class AwsProvider extends Provider {
           workerGroup: this.providerId,
           workerId: i.InstanceId,
         });
+        const now = new Date();
         return this.Worker.create({
           workerPoolId,
           providerId: this.providerId,
           workerGroup: this.providerId,
           workerId: i.InstanceId,
-          created: new Date(),
+          created: now,
+          lastModified: now,
+          lastChecked: now,
           expires: taskcluster.fromNow('1 week'),
           state: this.Worker.states.REQUESTED,
           capacity: config.capacityPerInstance,
@@ -254,6 +257,7 @@ class AwsProvider extends Provider {
       workerId: worker.workerId,
     });
     await worker.modify(w => {
+      w.lastModified = new Date();
       w.state = this.Worker.states.RUNNING;
     });
 
@@ -278,7 +282,10 @@ class AwsProvider extends Provider {
           providerId: this.providerId,
           workerId: worker.workerId,
         });
-        return worker.modify(w => {w.state = this.Worker.states.STOPPED;});
+        return worker.modify(w => {
+          w.lastModified = new Date();
+          w.state = this.Worker.states.STOPPED;
+        });
       }
       throw e;
     }
@@ -299,7 +306,10 @@ class AwsProvider extends Provider {
             providerId: this.providerId,
             workerId: worker.workerId,
           });
-          return worker.modify(w => {w.state = this.Worker.states.STOPPED;});
+          return worker.modify(w => {
+            w.lastModified = new Date();
+            w.state = this.Worker.states.STOPPED;
+          });
 
         default:
           return Promise.reject(`Unknown state: ${is.InstanceState.Name} for ${is.InstanceId}`);

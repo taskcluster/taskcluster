@@ -46,6 +46,18 @@ properties:
     type: string
     format: date-time
 
+  lastModified:
+    title: Last Modified
+    description: Date and time when this worker last changed state
+    type: string
+    format: date-time
+
+  lastChecked:
+    title: Last Checked
+    description: Date and time when the state of this worker was verified with a cloud api
+    type: string
+    format: date-time
+
   state:
     title: State
     description: |

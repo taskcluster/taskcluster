@@ -245,6 +245,18 @@
           "title": "Expires",
           "type": "string"
         },
+        "lastChecked": {
+          "description": "Date and time when the state of this worker was verified with a cloud api",
+          "format": "date-time",
+          "title": "Last Checked",
+          "type": "string"
+        },
+        "lastModified": {
+          "description": "Date and time when this worker last changed state",
+          "format": "date-time",
+          "title": "Last Modified",
+          "type": "string"
+        },
         "providerId": {
           "description": "The provider that had started the worker and responsible for managing it.\nCan be different from the provider that's currently in the worker pool config.\n",
           "maxLength": 38,

@@ -64,12 +64,15 @@ class TestingProvider extends Provider {
       throw new ApiError('creating workers is not supported for testing provider');
     }
 
+    const now = new Date();
     const worker = await this.Worker.create({
       workerPoolId: workerPool.workerPoolId,
       providerId: this.providerId,
       workerGroup,
       workerId,
-      created: new Date(),
+      created: now,
+      lastModified: now,
+      lastChecked: now,
       expires: new Date(input.expires),
       capacity: input.capacity,
       state: this.Worker.states.RUNNING,

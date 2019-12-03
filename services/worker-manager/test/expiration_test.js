@@ -65,6 +65,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         providerId: 'testing',
         created: now,
         expires: now,
+        lastModified: now,
+        lastChecked: now,
         capacity: 1,
         state: 'running',
         providerData: {},

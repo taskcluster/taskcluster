@@ -372,12 +372,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
   test('get one worker for a given worker pool', async function () {
     const workerPoolId = 'r/r';
+    const now = new Date();
     const input = {
       workerPoolId,
       providerId: 'google',
       workerGroup: 'rust-workers',
       workerId: 's-3434',
-      created: new Date(),
+      created: now,
+      lastModified: now,
+      lastChecked: now,
       expires: taskcluster.fromNow('1 week'),
       state: helper.Worker.states.REQUESTED,
       capacity: 1,
@@ -389,6 +392,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     let data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
     input.created = input.created.toJSON();
     input.expires = input.expires.toJSON();
+    input.lastModified = input.lastModified.toJSON();
+    input.lastChecked = input.lastChecked.toJSON();
     delete input.providerData;
 
     assert.deepStrictEqual(data.workers, [input]);
@@ -403,6 +408,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         workerGroup: 'rust-workers',
         workerId: 's-3434',
         created: new Date(),
+        lastModified: new Date(),
+        lastChecked: new Date(),
         expires: taskcluster.fromNow('1 week'),
         state: helper.Worker.states.RUNNING,
         capacity: 1,
@@ -414,6 +421,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         workerGroup: 'rust-workers',
         workerId: 's-555',
         created: new Date(),
+        lastModified: new Date(),
+        lastChecked: new Date(),
         expires: taskcluster.fromNow('1 week'),
         state: helper.Worker.states.STOPPED,
         capacity: 1,
@@ -426,6 +435,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     input = input.map(i => {
       i.created = i.created.toJSON();
       i.expires = i.expires.toJSON();
+      i.lastModified = i.lastModified.toJSON();
+      i.lastChecked = i.lastChecked.toJSON();
       delete i.providerData;
       return i;
     });
@@ -451,6 +462,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       workerGroup,
       workerId: 's-3434',
       created: new Date(),
+      lastModified: new Date(),
+      lastChecked: new Date(),
       expires: taskcluster.fromNow('1 week'),
       capacity: 1,
       state: helper.Worker.states.RUNNING,
@@ -462,6 +475,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     input = input.map(i => {
       i.created = i.created.toJSON();
       i.expires = i.expires.toJSON();
+      i.lastModified = i.lastModified.toJSON();
+      i.lastChecked = i.lastChecked.toJSON();
       delete i.providerData;
       return i;
     });
@@ -479,6 +494,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       workerGroup: 'wg-a',
       workerId: 's-3434',
       created: new Date(),
+      lastModified: new Date(),
+      lastChecked: new Date(),
       expires: taskcluster.fromNow('1 week'),
       capacity: 1,
       state: helper.Worker.states.RUNNING,
@@ -519,7 +536,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       workerGroup,
       workerId,
       providerId,
-      created: taskcluster.fromNow('0 seconds'),
+      created: new Date(),
+      lastModified: new Date(),
+      lastChecked: new Date(),
       expires: taskcluster.fromNow('90 seconds'),
       capacity: 1,
       state: 'requested',
@@ -873,6 +892,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       providerId,
       created: taskcluster.fromNow('0 seconds'),
       expires: taskcluster.fromNow('90 seconds'),
+      lastModified: taskcluster.fromNow('0 seconds'),
+      lastChecked: taskcluster.fromNow('0 seconds'),
       capacity: 1,
       state: 'requested',
       providerData: {},
