@@ -30,6 +30,7 @@ class AwsProvider extends Provider {
       estimator,
       validator,
       notify,
+      providerConfig,
     });
     this.configSchema = 'config-aws';
     this.ec2iid_RSA_key = fs.readFileSync(path.resolve(__dirname, 'aws-keys/RSA-key-forSignature')).toString();

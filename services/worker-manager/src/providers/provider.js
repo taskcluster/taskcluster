@@ -17,6 +17,7 @@ class Provider {
     WorkerPool,
     WorkerPoolError,
     validator,
+    providerConfig,
   }) {
     this.providerId = providerId;
     this.monitor = monitor;
@@ -27,6 +28,7 @@ class Provider {
     this.Worker = Worker;
     this.WorkerPool = WorkerPool;
     this.WorkerPoolError = WorkerPoolError;
+    this.checkWorkerChance = providerConfig.checkWorkerChance || 1.0;
   }
 
   async setup() {

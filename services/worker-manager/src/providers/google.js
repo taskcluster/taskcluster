@@ -14,7 +14,7 @@ class GoogleProvider extends Provider {
     fakeCloudApis,
     ...conf
   }) {
-    super(conf);
+    super({providerConfig, ...conf});
     let {project, creds, workerServiceAccountId, apiRateLimits = {}, _backoffDelay = 1000} = providerConfig;
     this.configSchema = 'config-google';
 

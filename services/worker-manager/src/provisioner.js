@@ -134,6 +134,17 @@ class Provisioner {
         seen(worker.providerId, worker.workerPoolId, worker.capacity);
         const provider = this.providers.get(worker.providerId);
         if (provider) {
+
+          // If the worker was checked in the last hour we may randomly not
+          // check the worker on any given worker scanner loop in order to cut down
+          // on how long a loop takes. This allows us to have tight loops that update
+          // state quickly on a whole while staying inside out budget for api requests
+          if (worker.lastChecked > taskcluster.fromNow('-1 hour') &&
+            Math.random() > provider.checkWorkerChance)
+          {
+            return;
+          }
+
           try {
             await provider.checkWorker({worker});
           } catch (err) {
