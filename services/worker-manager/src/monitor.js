@@ -64,7 +64,7 @@ monitorManager.register({
   name: 'simpleEstimate',
   title: 'Simple Estimate Provided',
   type: 'simple-estimate',
-  version: 2,
+  version: 3,
   level: 'any',
   description: 'The simple estimator has decided that we need some number of instances.',
   fields: {
@@ -72,7 +72,7 @@ monitorManager.register({
     pendingTasks: 'The number of tasks the queue reports are pending for this worker pool',
     minCapacity: 'The minimum amount of capacity that should be running',
     maxCapacity: 'The maximum amount of capacity that should be running',
-    runningCapacity: 'Amount of currently requested and available capacity',
+    existingCapacity: 'Amount of currently requested and available capacity',
     desiredCapacity: 'Amount of capacity that this estimator thinks we should have',
     requestedCapacity: 'Amount of capacity that this estimator thinks we should add',
   },

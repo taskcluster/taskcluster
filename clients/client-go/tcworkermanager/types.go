@@ -155,6 +155,11 @@ type (
 	// Request to create a worker
 	WorkerCreationRequest struct {
 
+		// Number of tasks this worker can handle at once
+		//
+		// Mininum:    1
+		Capacity int64 `json:"capacity,omitempty"`
+
 		// Date and time when this worker will be deleted from the DB
 		Expires tcclient.Time `json:"expires"`
 
@@ -209,6 +214,11 @@ type (
 
 	// A complete worker definition.
 	WorkerFullDefinition struct {
+
+		// Number of tasks this worker can handle at once
+		//
+		// Mininum:    1
+		Capacity int64 `json:"capacity"`
 
 		// Date and time when this worker was created
 		Created tcclient.Time `json:"created"`

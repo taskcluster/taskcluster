@@ -187,17 +187,16 @@ class GoogleProvider extends Provider {
   async provision({workerPool, existingCapacity}) {
     const {workerPoolId} = workerPool;
 
-    if (!workerPool.providerData[this.providerId] || workerPool.providerData[this.providerId].running === undefined) {
+    if (!workerPool.providerData[this.providerId]) {
       await workerPool.modify(wt => {
         wt.providerData[this.providerId] = wt.providerData[this.providerId] || {};
-        wt.providerData[this.providerId].running = wt.providerData[this.providerId].running || 0;
       });
     }
 
     let toSpawn = await this.estimator.simple({
       workerPoolId,
       ...workerPool.config,
-      runningCapacity: workerPool.providerData[this.providerId].running,
+      existingCapacity,
     });
 
     if (toSpawn === 0) {
@@ -411,13 +410,6 @@ class GoogleProvider extends Provider {
       if (this.errors[workerPoolId].length) {
         await Promise.all(this.errors[workerPoolId].map(error => workerPool.reportError(error)));
       }
-
-      await workerPool.modify(wt => {
-        if (!wt.providerData[this.providerId]) {
-          wt.providerData[this.providerId] = {};
-        }
-        wt.providerData[this.providerId].running = seen;
-      });
     }));
   }
 

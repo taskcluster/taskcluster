@@ -227,6 +227,12 @@
       "additionalProperties": false,
       "description": "A complete worker definition.",
       "properties": {
+        "capacity": {
+          "description": "Number of tasks this worker can handle at once",
+          "minimum": 1,
+          "title": "Worker Capacity",
+          "type": "integer"
+        },
         "created": {
           "description": "Date and time when this worker was created",
           "format": "date-time",
@@ -284,7 +290,8 @@
         "providerId",
         "created",
         "expires",
-        "state"
+        "state",
+        "capacity"
       ],
       "title": "Worker Full Definition",
       "type": "object"
@@ -601,6 +608,9 @@
       "additionalProperties": false,
       "description": "Request to create a worker",
       "properties": {
+        "capacity": {
+          "$ref": "worker-full.json#/properties/capacity"
+        },
         "expires": {
           "description": "Date and time when this worker will be deleted from the DB",
           "format": "date-time",
@@ -7615,18 +7625,18 @@
           "description": "The simple estimator has decided that we need some number of instances.",
           "fields": {
             "desiredCapacity": "Amount of capacity that this estimator thinks we should have",
+            "existingCapacity": "Amount of currently requested and available capacity",
             "maxCapacity": "The maximum amount of capacity that should be running",
             "minCapacity": "The minimum amount of capacity that should be running",
             "pendingTasks": "The number of tasks the queue reports are pending for this worker pool",
             "requestedCapacity": "Amount of capacity that this estimator thinks we should add",
-            "runningCapacity": "Amount of currently requested and available capacity",
             "workerPoolId": "The worker pool name (provisionerId/workerType)"
           },
           "level": "any",
           "name": "simpleEstimate",
           "title": "Simple Estimate Provided",
           "type": "simple-estimate",
-          "version": 2
+          "version": 3
         },
         {
           "description": "The results of a worker-scanner run",

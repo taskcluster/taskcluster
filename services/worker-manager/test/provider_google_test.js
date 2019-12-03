@@ -82,7 +82,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   test('provisioning loop with failure', async function() {
     // The fake throws an error on the second call
     await provider.provision({workerPool, existingCapacity: 0});
-    await provider.provision({workerPool, existingCapacity: 1});
+    await provider.provision({workerPool, existingCapacity: 0});
     const errors = await helper.WorkerPoolError.scan({}, {});
     assert.equal(errors.entries.length, 1);
     assert.equal(errors.entries[0].description, 'something went wrong');
@@ -94,7 +94,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     // Notice this is only three loops, but instance insert fails on third try before succeeding on 4th
     await provider.provision({workerPool, existingCapacity: 0});
     await provider.provision({workerPool, existingCapacity: 0});
-    await provider.provision({workerPool, existingCapacity: 2});
+    await provider.provision({workerPool, existingCapacity: 0});
 
     const workers = await helper.Worker.scan({}, {});
     assert.equal(workers.entries.length, 2);
@@ -154,8 +154,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     await provider.scanPrepare();
     await provider.checkWorker({worker});
     await provider.scanCleanup({responsibleFor: new Set([workerPoolId])});
-    await workerPool.reload();
-    assert.equal(workerPool.providerData.google.running, 1);
     await worker.reload();
     assert.equal(worker.state, helper.Worker.states.REQUESTED); // RUNNING is set by register which does not happen here
 
@@ -163,8 +161,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     await provider.scanPrepare();
     await provider.checkWorker({worker});
     await provider.scanCleanup({responsibleFor: new Set([workerPoolId])});
-    await workerPool.reload();
-    assert.equal(workerPool.providerData.google.running, 0);
     await worker.reload();
     assert.equal(worker.state, helper.Worker.states.STOPPED);
   });

@@ -84,10 +84,9 @@ class AwsProvider extends Provider {
   async provision({workerPool, existingCapacity}) {
     const {workerPoolId} = workerPool;
 
-    if (!workerPool.providerData[this.providerId] || workerPool.providerData[this.providerId].running === undefined) {
+    if (!workerPool.providerData[this.providerId]) {
       await workerPool.modify(wt => {
         wt.providerData[this.providerId] = wt.providerData[this.providerId] || {};
-        wt.providerData[this.providerId].running = wt.providerData[this.providerId].running || 0;
       });
     }
 
@@ -95,7 +94,7 @@ class AwsProvider extends Provider {
       workerPoolId,
       minCapacity: workerPool.config.minCapacity,
       maxCapacity: workerPool.config.maxCapacity,
-      runningCapacity: workerPool.providerData[this.providerId].running,
+      existingCapacity,
     });
     if (toSpawn === 0) {
       return;
@@ -349,22 +348,6 @@ class AwsProvider extends Provider {
       this.seen[workerPoolId] = this.seen[workerPoolId] || 0;
     }
     this.monitor.log.scanSeen({providerId: this.providerId, seen: this.seen, responsible: [...responsibleFor]});
-    await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
-      const workerPool = await this.WorkerPool.load({
-        workerPoolId,
-      }, true);
-
-      if (!workerPool) {
-        return; // In this case, the worker pool has been deleted so we can just move on
-      }
-
-      await workerPool.modify(wp => {
-        if (!wp.providerData[this.providerId]) {
-          wp.providerData[this.providerId] = {};
-        }
-        wp.providerData[this.providerId].running = seen;
-      });
-    }));
   }
 
   /**
