@@ -83,7 +83,7 @@ Runtime.prototype.logEvent = function({eventType, task = {status: {}}, timestamp
     worker: 'docker-worker',
     workerPoolId: this.workerType,
     workerId: this.workerId,
-    timestamp,
+    timestamp: Math.floor(timestamp / 1000),
     region: this.region,
     instanceType: this.instanceType,
     taskId: task.status.taskId,
