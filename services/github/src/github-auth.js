@@ -25,7 +25,7 @@ const retryPlugin = (octokit, options) => {
 const Octokit = require('@octokit/rest').plugin([retryPlugin]);
 
 const getPrivatePEM = cfg => {
-  const keyRe = /-----BEGIN RSA PRIVATE KEY-----(\n|\\n).*(\n|\\n)-----END RSA PRIVATE KEY-----(\n|\\n)?/;
+  const keyRe = /-----BEGIN RSA PRIVATE KEY-----(\n|\\n).*(\n|\\n)-----END RSA PRIVATE KEY-----(\n|\\n)?/s;
   const privatePEM = cfg.github.credentials.privatePEM;
   if (!keyRe.test(privatePEM)) {
     throw new Error(`Malformed GITHUB_PRIVATE_PEM: must match ${keyRe}; ` +
