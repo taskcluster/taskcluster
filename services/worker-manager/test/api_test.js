@@ -596,7 +596,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       const expires = taskcluster.fromNow('1 hour');
       const worker = await helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
         expires,
-        capacity: 1,
       });
 
       assert.equal(worker.workerPoolId, workerPoolId);

@@ -653,8 +653,7 @@
         }
       },
       "required": [
-        "expires",
-        "capacity"
+        "expires"
       ],
       "title": "Worker Creation Request",
       "type": "object"
