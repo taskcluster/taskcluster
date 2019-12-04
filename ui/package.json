@@ -109,7 +109,7 @@
     "chai": "^4.2.0",
     "cross-env": "^6.0.3",
     "dotenv-cli": "^3.0.0",
-    "eslint": "^5.6.1",
+    "eslint": "^6.7.2",
     "graphql-tag": "^2.8.0",
     "karma": "^4.0.0",
     "karma-cli": "^2.0.0",
@@ -126,5 +126,8 @@
   "optionalDependencies": {
     "bufferutil": "^4.0.0",
     "utf-8-validate": "^5.0.0"
+  },
+  "resolutions": {
+    "@mdx-js/runtime/**/acorn": "^6.4.0"
   }
 }
