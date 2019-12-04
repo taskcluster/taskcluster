@@ -3,6 +3,15 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v24.0.1
+
+▶ [patch] [bug 1601149](http://bugzil.la/1601149)
+The `github.github_private_pem` Helm configuration now correctly accepts a configuration containing raw (unescaped) newlines.
+A change to how configuration values are escaped in the Helm templates caused this support to regress in 24.0.0.
+
+▶ [patch] [#2096](https://github.com/taskcluster/taskcluster/issues/2096)
+Workers in the UI are now displayed in a table instead of cards.
+
 ## v24.0.0
 
 ▶ [MAJOR] [bug 1598758](http://bugzil.la/1598758)
