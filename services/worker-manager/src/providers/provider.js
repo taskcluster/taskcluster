@@ -28,7 +28,6 @@ class Provider {
     this.Worker = Worker;
     this.WorkerPool = WorkerPool;
     this.WorkerPoolError = WorkerPoolError;
-    this.checkWorkerChance = providerConfig.checkWorkerChance || 1.0;
   }
 
   async setup() {
