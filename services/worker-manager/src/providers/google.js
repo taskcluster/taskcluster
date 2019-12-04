@@ -336,6 +336,7 @@ class GoogleProvider extends Provider {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
 
+    let state = worker.state;
     try {
       const {data} = await this._enqueue('get', () => this.compute.instances.get({
         project: worker.providerData.project,
@@ -366,10 +367,7 @@ class GoogleProvider extends Provider {
           providerId: this.providerId,
           workerId: worker.workerId,
         });
-        await worker.modify(w => {
-          w.lastModified = new Date();
-          w.state = states.STOPPED;
-        });
+        state = states.STOPPED;
       }
     } catch (err) {
       if (err.code !== 404) {
@@ -388,11 +386,16 @@ class GoogleProvider extends Provider {
         providerId: this.providerId,
         workerId: worker.workerId,
       });
-      await worker.modify(w => {
-        w.lastModified = new Date();
-        w.state = states.STOPPED;
-      });
+      state = states.STOPPED;
     }
+    await worker.modify(w => {
+      const now = new Date();
+      if (w.state !== state) {
+        w.lastModified = now;
+      }
+      w.lastChecked = now;
+      w.state = state;
+    });
   }
 
   /*

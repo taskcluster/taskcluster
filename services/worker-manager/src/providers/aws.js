@@ -269,53 +269,56 @@ class AwsProvider extends Provider {
   async checkWorker({worker}) {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
 
-    let instanceStatuses;
+    let state = worker.state;
     try {
       const region = worker.providerData.region;
-      instanceStatuses = (await this._enqueue(`${region}.describe`, () => this.ec2s[region].describeInstanceStatus({
+      const instanceStatuses = (await this._enqueue(`${region}.describe`, () => this.ec2s[region].describeInstanceStatus({
         InstanceIds: [worker.workerId.toString()],
         IncludeAllInstances: true,
       }).promise())).InstanceStatuses;
-    } catch (e) {
-      if (e.code === 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too
-        this.monitor.log.workerStopped({
-          workerPoolId: worker.workerPoolId,
-          providerId: this.providerId,
-          workerId: worker.workerId,
-        });
-        return worker.modify(w => {
-          w.lastModified = new Date();
-          w.state = this.Worker.states.STOPPED;
-        });
+      for (const is of instanceStatuses) {
+        switch (is.InstanceState.Name) {
+          case 'pending':
+          case 'running':
+          case 'shutting-down': //so that we don't turn on new instances until they're entirely gone
+          case 'stopping':
+            this.seen[worker.workerPoolId] += worker.capacity || 1;
+            break;
+
+          case 'terminated':
+          case 'stopped':
+            this.monitor.log.workerStopped({
+              workerPoolId: worker.workerPoolId,
+              providerId: this.providerId,
+              workerId: worker.workerId,
+            });
+            state = this.Worker.states.STOPPED;
+            break;
+
+          default:
+            throw new Error(`Unknown state: ${is.InstanceState.Name} for ${is.InstanceId}`);
+        }
       }
-      throw e;
+    } catch (e) {
+      if (e.code !== 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too
+        throw e;
+      }
+      this.monitor.log.workerStopped({
+        workerPoolId: worker.workerPoolId,
+        providerId: this.providerId,
+        workerId: worker.workerId,
+      });
+      state = this.Worker.states.STOPPED;
     }
 
-    Promise.all(instanceStatuses.map(is => {
-      switch (is.InstanceState.Name) {
-        case 'pending':
-        case 'running':
-        case 'shutting-down': //so that we don't turn on new instances until they're entirely gone
-        case 'stopping':
-          this.seen[worker.workerPoolId] += worker.capacity || 1;
-          return Promise.resolve();
-
-        case 'terminated':
-        case 'stopped':
-          this.monitor.log.workerStopped({
-            workerPoolId: worker.workerPoolId,
-            providerId: this.providerId,
-            workerId: worker.workerId,
-          });
-          return worker.modify(w => {
-            w.lastModified = new Date();
-            w.state = this.Worker.states.STOPPED;
-          });
-
-        default:
-          return Promise.reject(`Unknown state: ${is.InstanceState.Name} for ${is.InstanceId}`);
+    await worker.modify(w => {
+      const now = new Date();
+      if (w.state !== state) {
+        w.lastModified = now;
       }
-    }));
+      w.lastChecked = now;
+      w.state = state;
+    });
   }
 
   async removeWorker({worker}) {
