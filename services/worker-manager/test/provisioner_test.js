@@ -196,7 +196,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     }));
   });
 
-
   suite('worker pool exchanges', function() {
     let workerPool;
     setup(async function() {
