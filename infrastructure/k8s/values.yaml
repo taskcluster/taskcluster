@@ -191,6 +191,10 @@ worker_manager:
       replicas: 1
       cpu: 50m
       memory: 100Mi
+    workerscanner:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
     expire_workers:
       cpu: 50m
       memory: 100Mi

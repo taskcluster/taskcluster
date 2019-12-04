@@ -354,11 +354,8 @@ class AwsProvider extends Provider {
     this.seen = {};
   }
 
-  async scanCleanup({responsibleFor}) {
-    for (const workerPoolId of responsibleFor) {
-      this.seen[workerPoolId] = this.seen[workerPoolId] || 0;
-    }
-    this.monitor.log.scanSeen({providerId: this.providerId, seen: this.seen, responsible: [...responsibleFor]});
+  async scanCleanup() {
+    this.monitor.log.scanSeen({providerId: this.providerId, seen: this.seen});
   }
 
   /**

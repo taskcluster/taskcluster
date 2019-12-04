@@ -1,6 +1,7 @@
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
+const taskcluster = require('taskcluster-client');
 const monitorManager = require('../src/monitor');
 const {LEVELS} = require('taskcluster-lib-monitor');
 
@@ -14,17 +15,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   helper.withProvisioner(mock, skipping);
 
   suite('provisioning loop', function() {
-    const testCase = (workerPools) => {
+    const testCase = ({workers = [], workerPools = [], assertion, expectErrors = false}) => {
       return testing.runWithFakeTime(async function() {
+        await Promise.all(workers.map(w => helper.Worker.create(w)));
         await Promise.all(workerPools.map(async wt => {
           await helper.workerManager.createWorkerPool(wt.workerPoolId, wt.input);
         }));
 
         await helper.initiateProvisioner();
         await testing.poll(async () => {
-          const error = monitorManager.messages.find(({Type}) => Type === 'monitor.error');
-          if (error) {
-            throw new Error(JSON.stringify(error, null, 2));
+          if (!expectErrors) {
+            const error = monitorManager.messages.find(({Type}) => Type === 'monitor.error');
+            if (error) {
+              throw new Error(JSON.stringify(error, null, 2));
+            }
           }
           await Promise.all(workerPools.map(async wt => {
             assert.deepEqual(
@@ -44,73 +48,154 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
                 Severity: LEVELS.notice,
               });
           }));
+          if (assertion) {
+            await assertion();
+          }
         });
         await helper.terminateProvisioner();
+        if (expectErrors) {
+          monitorManager.messages = [];
+        }
       }, {
         mock,
         maxTime: 30000,
       });
     };
 
-    test('single worker pool', testCase([
-      {
-        workerPoolId: 'pp/ee',
-        input: {
-          providerId: 'testing1',
-          description: 'bar',
-          config: {},
-          owner: 'example@example.com',
-          emailOnError: false,
+    test('single worker pool', testCase({
+      workerPools: [
+        {
+          workerPoolId: 'pp/ee',
+          input: {
+            providerId: 'testing1',
+            description: 'bar',
+            config: {},
+            owner: 'example@example.com',
+            emailOnError: false,
+          },
         },
-      },
-    ]));
+      ],
+    }));
 
-    test('multiple worker pools, same provider', testCase([
-      {
-        workerPoolId: 'pp/ee',
-        input: {
-          providerId: 'testing1',
-          description: 'bar',
-          config: {},
-          owner: 'example@example.com',
-          emailOnError: false,
+    test('multiple worker pools, same provider', testCase({
+      workerPools: [
+        {
+          workerPoolId: 'pp/ee',
+          input: {
+            providerId: 'testing1',
+            description: 'bar',
+            config: {},
+            owner: 'example@example.com',
+            emailOnError: false,
+          },
         },
-      },
-      {
-        workerPoolId: 'pp/ee2',
-        input: {
-          providerId: 'testing1',
-          description: 'bar',
-          config: {},
-          owner: 'example@example.com',
-          emailOnError: false,
+        {
+          workerPoolId: 'pp/ee2',
+          input: {
+            providerId: 'testing1',
+            description: 'bar',
+            config: {},
+            owner: 'example@example.com',
+            emailOnError: false,
+          },
         },
-      },
-    ]));
+      ],
+    }));
 
-    test('multiple worker pools, different provider', testCase([
-      {
-        workerPoolId: 'pp/ee',
-        input: {
-          providerId: 'testing1',
-          description: 'bar',
-          config: {},
-          owner: 'example@example.com',
-          emailOnError: false,
+    test('multiple worker pools, different provider', testCase({
+      workerPools: [
+        {
+          workerPoolId: 'pp/ee',
+          input: {
+            providerId: 'testing1',
+            description: 'bar',
+            config: {},
+            owner: 'example@example.com',
+            emailOnError: false,
+          },
         },
-      },
-      {
-        workerPoolId: 'pp/ee2',
-        input: {
+        {
+          workerPoolId: 'pp/ee2',
+          input: {
+            providerId: 'testing2',
+            description: 'bar',
+            config: {},
+            owner: 'example@example.com',
+            emailOnError: false,
+          },
+        },
+      ],
+    }));
+
+    test('worker for previous provider is stopped', () => testCase({
+      workers: [
+        {
+          workerPoolId: 'ff/ee',
+          workerGroup: 'whatever',
+          workerId: 'testing-OLD',
+          providerId: 'testing1',
+          created: new Date(),
+          lastModified: new Date(),
+          lastChecked: new Date(),
+          expires: taskcluster.fromNow('1 hour'),
+          capacity: 1,
+          state: helper.Worker.states.STOPPED,
+          providerData: {},
+        },
+        {
+          workerPoolId: 'ff/ee',
+          workerGroup: 'whatever',
+          workerId: 'testing-123',
           providerId: 'testing2',
-          description: 'bar',
-          config: {},
-          owner: 'example@example.com',
-          emailOnError: false,
+          created: new Date(),
+          lastModified: new Date(),
+          lastChecked: new Date(),
+          expires: taskcluster.fromNow('1 hour'),
+          capacity: 1,
+          state: helper.Worker.states.REQUESTED,
+          providerData: {},
         },
+      ],
+      workerPools: [
+        {
+          workerPoolId: 'ff/ee',
+          providerId: 'testing2',
+          previousProviderIds: ['testing1'],
+          description: '',
+          created: taskcluster.fromNow('-1 hour'),
+          lastModified: taskcluster.fromNow('-1 hour'),
+          config: {},
+          owner: 'foo@example.com',
+          emailOnError: false,
+          providerData: {
+            // make removeResources fail on the first try, to test error handling
+            failRemoveResources: 1,
+          },
+        },
+      ],
+      expectErrors: true,
+      assertion: async () => {
+        const worker = await helper.Worker.load({
+          workerPoolId: 'ff/ee',
+          workerGroup: 'whatever',
+          workerId: 'testing-123',
+        });
+        assert(worker.providerData.checked);
+
+        const wp = await helper.WorkerPool.load({workerPoolId: 'ff/ee'});
+        assert.deepEqual(wp.previousProviderIds, []);
+
+        assert.deepEqual(monitorManager.messages.find(
+          msg => msg.Type === 'remove-resource' && msg.Logger.endsWith('testing1')), {
+          Logger: `taskcluster.worker-manager.provider.testing1`,
+          Type: 'remove-resource',
+          Fields: {workerPoolId: 'ff/ee'},
+          Severity: LEVELS.notice,
+        });
       },
-    ]));
+    }));
   });
+
 
   suite('worker pool exchanges', function() {
     let workerPool;

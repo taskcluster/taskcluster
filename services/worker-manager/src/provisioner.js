@@ -116,46 +116,24 @@ class Provisioner {
       // track the providerIds seen for each worker pool, so they can be removed
       // from the list of previous provider IDs
       const providersByPool = new Map();
-      const seen = (providerId, workerPoolId, workerCapacity) => {
-        const v = providersByPool.get(workerPoolId);
+      const seen = worker => {
+        const v = providersByPool.get(worker.workerPoolId);
         if (v) {
-          v.providers.add(providerId);
-          v.capacity += workerCapacity;
+          v.providers.add(worker.providerId);
+          v.capacity += worker.workerCapacity;
         } else {
-          providersByPool.set(workerPoolId, {providers: new Set([providerId]), capacity: workerCapacity});
+          providersByPool.set(worker.workerPoolId, {
+            providers: new Set([worker.providerId]),
+            capacity: worker.workerCapacity,
+          });
         }
       };
 
-      // Check the workers
-      await this.providers.forAll(p => p.scanPrepare());
+      // Check the state of workers (state is updated by worker-scanner)
       await this.Worker.scan({
         state: Entity.op.notEqual(this.Worker.states.STOPPED),
       }, {
-        handler: async worker => {
-          seen(worker.providerId, worker.workerPoolId, worker.capacity);
-          const provider = this.providers.get(worker.providerId);
-          if (provider) {
-
-            // If the worker was checked in the last hour we may randomly not
-            // check the worker on any given worker scanner loop in order to cut down
-            // on how long a loop takes. This allows us to have tight loops that update
-            // state quickly on a whole while staying inside out budget for api requests
-            if (worker.lastChecked > taskcluster.fromNow('-1 hour') &&
-              Math.random() > provider.checkWorkerChance)
-            {
-              return;
-            }
-
-            try {
-              await provider.checkWorker({worker});
-            } catch (err) {
-              this.monitor.reportError(err); // Just report it and move on so this doesn't block other providers
-            }
-          } else {
-            this.monitor.info(
-              `Worker ${worker.workerGroup}/${worker.workerId} has unknown providerId ${worker.providerId} (ignoring)`);
-          }
-        },
+        handler: seen,
       });
 
       // We keep track of which providers are actively managing
@@ -230,7 +208,6 @@ class Provisioner {
 
       // Now allow providers to do whatever per-loop cleanup they may need
       await this.providers.forAll(p => p.cleanup());
-      await this.providers.forAll(p => p.scanCleanup({responsibleFor: poolsByProvider.get(p.providerId) || new Set()}));
     } finally {
       this.provisioningLoopAlive = false; // Allow lib-iterate to start a loop again
     }

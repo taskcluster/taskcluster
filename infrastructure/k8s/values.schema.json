@@ -1633,11 +1633,32 @@
                 "cpu"
               ],
               "type": "object"
+            },
+            "workerscanner": {
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                },
+                "replicas": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
+              "type": "object"
             }
           },
           "required": [
             "web",
             "provisioner",
+            "workerscanner",
             "expire_workers",
             "expire_worker_pools",
             "expire_errors"

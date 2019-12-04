@@ -155,14 +155,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     // On the first run we've faked that the instance is running
     await provider.scanPrepare();
     await provider.checkWorker({worker});
-    await provider.scanCleanup({responsibleFor: new Set([workerPoolId])});
+    await provider.scanCleanup();
     await worker.reload();
     assert.equal(worker.state, helper.Worker.states.REQUESTED); // RUNNING is set by register which does not happen here
 
     // And now we fake it is stopped
     await provider.scanPrepare();
     await provider.checkWorker({worker});
-    await provider.scanCleanup({responsibleFor: new Set([workerPoolId])});
+    await provider.scanCleanup();
     await worker.reload();
     assert.equal(worker.state, helper.Worker.states.STOPPED);
   });
@@ -184,7 +184,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     });
     await provider.scanPrepare();
     await provider.checkWorker({worker});
-    await provider.scanCleanup({responsibleFor: new Set([workerPoolId])});
+    await provider.scanCleanup();
     assert(worker.expires > expires);
   });
 

@@ -85,6 +85,34 @@ exports.withProvisioner = (mock, skipping) => {
   });
 };
 
+exports.withWorkerScanner = (mock, skipping) => {
+  let scanner;
+
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+    exports.initiateWorkerScanner = async () => {
+      scanner = await exports.load('workerScanner');
+      // remove it right away, as it is started on load
+      exports.load.remove('workerScanner');
+      return scanner;
+    };
+    exports.terminateWorkerScanner = async () => {
+      if (scanner) {
+        await scanner.terminate();
+        scanner = null;
+      }
+    };
+  });
+
+  teardown(function() {
+    if (scanner) {
+      throw new Error('Must call terminateWorkerScanner if you have started it');
+    }
+  });
+};
+
 /**
  * Set up a fake tc-queue object that supports only the `pendingTasks` method,
  * and inject that into the loader.  This is injected regardless of

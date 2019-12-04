@@ -13,6 +13,7 @@ const {sasCredentials} = require('taskcluster-lib-azure');
 const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 const {Provisioner} = require('./provisioner');
 const {Providers} = require('./providers');
+const {WorkerScanner} = require('./worker-scanner');
 
 let load = loader({
   cfg: {
@@ -210,6 +211,21 @@ let load = loader({
         cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError, fakeCloudApis,
         validator: await schemaset.validator(cfg.taskcluster.rootUrl),
       }),
+  },
+
+  workerScanner: {
+    requires: ['cfg', 'monitor', 'Worker', 'WorkerPool', 'providers'],
+    setup: async ({cfg, monitor, Worker, WorkerPool, providers}, ownName) => {
+      const workerScanner = new WorkerScanner({
+        ownName,
+        Worker,
+        WorkerPool,
+        providers,
+        monitor: monitor.childMonitor('worker-scanner'),
+      });
+      await workerScanner.initiate();
+      return workerScanner;
+    },
   },
 
   provisioner: {
