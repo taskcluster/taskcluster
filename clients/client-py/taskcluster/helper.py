@@ -20,7 +20,7 @@ class TaskclusterConfig(object):
     def __init__(self, url=None):
         self.options = None
         self.secrets = None
-        self.default_url = os.environ.get("TASKCLUSTER_ROOT_URL", url)
+        self.default_url = url if url is not None else os.environ.get("TASKCLUSTER_ROOT_URL")
         assert self.default_url is not None, "You must specify a Taskcluster deployment url"
 
     def auth(self, client_id=None, access_token=None, max_retries=12):
