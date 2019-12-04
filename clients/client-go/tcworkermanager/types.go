@@ -158,7 +158,7 @@ type (
 		// Number of tasks this worker can handle at once
 		//
 		// Mininum:    1
-		Capacity int64 `json:"capacity,omitempty"`
+		Capacity int64 `json:"capacity"`
 
 		// Date and time when this worker will be deleted from the DB
 		Expires tcclient.Time `json:"expires"`

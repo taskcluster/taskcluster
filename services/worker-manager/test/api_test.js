@@ -549,6 +549,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await assert.rejects(() =>
         helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
           expires: taskcluster.fromNow('1 hour'),
+          capacity: 1,
         }), new RegExp(`Worker pool ${workerPoolId} does not exist`));
     });
 
@@ -559,6 +560,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await assert.rejects(() =>
         helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
           expires: taskcluster.fromNow('-1 hour'),
+          capacity: 1,
         }), /expires must be in the future/);
     });
 
@@ -570,6 +572,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await assert.rejects(() =>
         helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
           expires: taskcluster.fromNow('1 hour'),
+          capacity: 1,
         }), /Provider nosuch for worker pool/);
     });
 
@@ -580,6 +583,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await assert.rejects(() =>
         helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
           expires: taskcluster.fromNow('1 hour'),
+          capacity: 1,
         }), /creating workers is not supported/);
     });
 
