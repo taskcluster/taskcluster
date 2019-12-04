@@ -120,9 +120,9 @@ class Provisioner {
         const v = providersByPool.get(workerPoolId);
         if (v) {
           v.providers.add(providerId);
-          v.count += workerCapacity;
+          v.capacity += workerCapacity;
         } else {
-          providersByPool.set(workerPoolId, {providers: new Set([providerId]), count: workerCapacity});
+          providersByPool.set(workerPoolId, {providers: new Set([providerId]), capacity: workerCapacity});
         }
       };
 
@@ -180,10 +180,10 @@ class Provisioner {
           }
           poolsByProvider.get(providerId).add(workerPoolId);
 
-          const providerByPool = providersByPool.get(workerPoolId) || {providers: new Set(), count: 0};
+          const providerByPool = providersByPool.get(workerPoolId) || {providers: new Set(), capacity: 0};
 
           try {
-            await provider.provision({workerPool, existingCapacity: providerByPool.count});
+            await provider.provision({workerPool, existingCapacity: providerByPool.capacity});
           } catch (err) {
             this.monitor.reportError(err, {providerId: workerPool.providerId}); // Just report this and move on
           }
@@ -202,6 +202,9 @@ class Provisioner {
               this.monitor.reportError(err, {providerId: pId}); // Just report this and move on
             }
 
+            // Now if this provider is no longer a provider for any workers that exist
+            // in this pool, we allow it to clean up any resources it has and then we remove
+            // it from the previous providers list
             if (!providerByPool.providers.has(pId)) {
               try {
                 await provider.removeResources({workerPool});
