@@ -36,7 +36,7 @@ class Provisioner {
       maxFailures: 10,
       watchdogTime: 0,
       waitTime: 10000,
-      maxIterationTime: 900000, // We will move slowly for now with a 15 minute window
+      maxIterationTime: 300000, // We really should be making it through the list at least once every 5 minutes
       ...iterateConf,
     });
     this.iterate.on('error', () => {
