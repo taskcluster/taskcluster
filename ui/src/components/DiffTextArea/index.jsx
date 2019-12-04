@@ -111,6 +111,7 @@ export default class DiffTextArea extends Component {
     const { classes, onChange, rows, initialValue, ...props } = this.props;
     const { tabIndex, value } = this.state;
     const isViewDiff = tabIndex === 1;
+    const isNotEqualText = initialValue !== value;
 
     return (
       <div className={classNames(classes.tab)}>
@@ -133,7 +134,7 @@ export default class DiffTextArea extends Component {
               value={value}
             />
           )}
-          {isViewDiff && (
+          {isViewDiff && isNotEqualText && (
             <ReactGhLikeDiff past={initialValue} current={value} />
           )}
         </div>
