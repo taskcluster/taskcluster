@@ -54,7 +54,10 @@ properties:
 
   lastChecked:
     title: Last Checked
-    description: Date and time when the state of this worker was verified with a cloud api
+    description: |
+      Date and time when the state of this worker was verified with a cloud api.
+      For providers with nothing to check, this will just be permanently set to the
+      time the worker was created.
     type: string
     format: date-time
 
@@ -81,3 +84,5 @@ required:
   - expires
   - state
   - capacity
+  - lastChecked
+  - lastModified

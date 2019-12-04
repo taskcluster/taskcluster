@@ -246,7 +246,7 @@
           "type": "string"
         },
         "lastChecked": {
-          "description": "Date and time when the state of this worker was verified with a cloud api",
+          "description": "Date and time when the state of this worker was verified with a cloud api.\nFor providers with nothing to check, this will just be permanently set to the\ntime the worker was created.\n",
           "format": "date-time",
           "title": "Last Checked",
           "type": "string"
@@ -303,7 +303,9 @@
         "created",
         "expires",
         "state",
-        "capacity"
+        "capacity",
+        "lastChecked",
+        "lastModified"
       ],
       "title": "Worker Full Definition",
       "type": "object"
@@ -618,7 +620,7 @@
       "$id": "/schemas/worker-manager/v1/create-worker-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
-      "description": "Request to create a worker",
+      "description": "Request to create a worker. Capacity will default to 1 if not specified.",
       "properties": {
         "capacity": {
           "$ref": "worker-full.json#/properties/capacity"
