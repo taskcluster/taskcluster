@@ -14,17 +14,10 @@ class Schema{
   /**
    * Create a new Schema
    *
-   * serviceName must be provided, and is used to namespace this service's
-   * tables apart from other services (note that the deployment may put
-   * other services' tables on other database servers entirely, so it is
-   * not allowed to rely on other services' tables)
-   *
    * script is a script to create the schema, suitable as an argument to
    * the Postgres DO statment; that is usually 'BEGIN stmt; stmt; .. END'.
    */
-  constructor({serviceName, script}, {version, versions, methods}={}) {
-    assert(serviceName, 'serviceName is required');
-    this.serviceName = serviceName;
+  constructor({script}, {version, versions, methods}={}) {
     assert(script, 'script is required');
     this.script = script;
 
@@ -45,7 +38,7 @@ class Schema{
   addVersion(version, script) {
     assert(version === this.version + 1, 'versions must increment by one');
     return new Schema(
-      {script, serviceName: this.serviceName},
+      {script},
       {version, versions: this.versions});
   }
 
@@ -85,17 +78,8 @@ class Database {
     assert(writeDbUrl, 'writeDbUrl is required');
     assert(schema, 'schema is required');
 
-    this.schemaName = schema.serviceName.replace(/-/g, '_');
-
     const makePool = dbUrl => {
       const pool = new Pool({connectionString: dbUrl});
-      // always use the search path named after the serviceName (note that
-      // this Promise is unhandled, but this is how the pg docs recommend
-      // setting up a connection)
-      pool.on('connect', client => {
-        client.query(`set search_path to ${this.schemaName}`)
-          .catch(err => console.log('error setting search_path on new connection (ignored)'));
-      });
       // ignore errors from *idle* connections
       pool.on('error', client => {});
       return pool;
@@ -111,7 +95,7 @@ class Database {
       this[method] = async (...args) => {
         const placeholders = [...new Array(args.length).keys()].map(i => `$${i+1}`).join(',');
         const res = await this._withClient(rw, client => client.query(
-          `select * from ${this.schemaName}.${method}(${placeholders})`, args));
+          `select * from ${method}(${placeholders})`, args));
         return res.rows;
       };
     });
@@ -172,7 +156,6 @@ class Database {
     await this._withClient(WRITE, async client => {
       await client.query('begin');
       if (version === 1) {
-        await client.query(`create schema if not exists "${this.schemaName}"`);
         await client.query('create table tcversion as select 0 as version');
       }
       // check the version and lock it to prevent other things from changing it
@@ -189,7 +172,7 @@ class Database {
   async _defineMethod(method, args, returns, script) {
     await this._withClient(WRITE, async client => {
       await client.query(`create or replace function
-        ${this.schemaName}.${method}(${args})
+        ${method}(${args})
         returns ${returns}
         as ${dollarQuote(script)}
         language plpgsql`);
