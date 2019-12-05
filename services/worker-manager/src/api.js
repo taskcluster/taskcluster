@@ -492,7 +492,10 @@ builder.declare({
       workerPool,
       workerGroup,
       workerId,
-      input: req.body,
+      input: {
+        capacity: 1,
+        ...req.body,
+      },
     });
   } catch (err) {
     if (!(err instanceof ApiError)) {

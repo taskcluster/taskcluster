@@ -1,6 +1,6 @@
 $schema: "/schemas/common/metaschema.json#"
 title: Worker Creation Request
-description: Request to create a worker
+description: Request to create a worker. Capacity will default to 1 if not specified.
 type: object
 properties:
   expires:
@@ -8,6 +8,7 @@ properties:
     description: Date and time when this worker will be deleted from the DB
     type: string
     format: date-time
+  capacity: {$ref: worker-full.json#/properties/capacity}
   providerInfo:
     # note: providerInfo is not required
     title: Provider Data

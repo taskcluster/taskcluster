@@ -236,6 +236,56 @@ const Worker = Entity.configure({
     // Anything a provider may want to remember about this worker
     providerData: Entity.types.JSON,
   },
+}).configure({
+  version: 2,
+  properties: {
+    // The worker pool this maps to.
+    workerPoolId: Entity.types.String,
+
+    // The group and id of this worker
+    workerGroup: Entity.types.String,
+    workerId: Entity.types.String,
+
+    // The provider responsible for this worker
+    providerId: Entity.types.String,
+
+    // The time that this worker was created
+    created: Entity.types.Date,
+
+    // The time that this worker is no longer needed and
+    // should be deleted
+    expires: Entity.types.Date,
+
+    // A string specifying the state this worker is in
+    // so far as worker-manager knows. This can be any
+    // of the fields defined in the enum below.
+    state: Entity.types.String,
+
+    // Anything a provider may want to remember about this worker
+    providerData: Entity.types.JSON,
+
+    // Number of tasks this worker can run at one time
+    capacity: Entity.types.Number,
+
+    // Last time that worker-manager updated the state of this
+    // worker
+    lastModified: Entity.types.Date,
+
+    // Last time that worker-manager checked on the state
+    // of this worker in the outside world by checking with
+    // a cloud provider or something else
+    lastChecked: Entity.types.Date,
+  },
+  migrate(item) {
+    item.lastModified = new Date();
+    item.lastChecked = new Date();
+    if (item.providerData.instanceCapacity) {
+      item.capacity = item.providerData.instanceCapacity;
+    } else {
+      item.capacity = 1;
+    }
+    return item;
+  },
 });
 
 Worker.prototype.serializable = function() {
@@ -246,6 +296,9 @@ Worker.prototype.serializable = function() {
     providerId: this.providerId,
     created: this.created.toJSON(),
     expires: this.expires.toJSON(),
+    lastModified: this.lastModified.toJSON(),
+    lastChecked: this.lastChecked.toJSON(),
+    capacity: this.capacity,
     state: this.state,
   };
 };

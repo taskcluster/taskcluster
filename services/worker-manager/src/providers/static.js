@@ -14,13 +14,17 @@ class StaticProvider extends Provider {
     }
 
     const {workerPoolId, providerId} = workerPool;
+    const now = new Date();
     const workerData = {
       workerPoolId,
       workerGroup,
       workerId,
       providerId,
-      created: new Date(),
+      created: now,
+      lastModified: now,
+      lastChecked: now,
       expires: new Date(input.expires),
+      capacity: input.capacity,
       state: Worker.states.RUNNING,
       providerData: {staticSecret},
     };

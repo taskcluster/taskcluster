@@ -86,7 +86,7 @@ It is, however, useful in testing.
 
 After calling `initiate`, the provisioner process enters a provisioning loop.
 Each iteration begins by calling `prepare()` for every provider.
-It then calls `provision({workerPool})` or `deprovision({workerPool})` for each worker pool.
+It then calls `provision({workerPool, existingCapacity})` or `deprovision({workerPool})` for each worker pool.
 Finally, it calls `cleanup()` for every provider.
 
 the `provision` method is responsible for measuring demand (such as by examining the number of pending tasks) and starting any workers required.
@@ -115,4 +115,4 @@ The worker-manager service runs a background job to scan existing workers for st
 This occurs frequently, in a loop.
 Each iteration begins by calling `scanPrepare()` for each provider.
 Then, for each worker that is not STOPPED, `provider.checkWorker({worker})` is called.
-Finally, it calls `scanCleanup({responsibleFor})` for each provider. The argument is a set of workerpools the provider is responsible for.
+Finally, it calls `scanCleanup()` for each provider.

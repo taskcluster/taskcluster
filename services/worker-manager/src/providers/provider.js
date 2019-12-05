@@ -17,6 +17,7 @@ class Provider {
     WorkerPool,
     WorkerPoolError,
     validator,
+    providerConfig,
   }) {
     this.providerId = providerId;
     this.monitor = monitor;
@@ -46,7 +47,7 @@ class Provider {
   async prepare() {
   }
 
-  async provision({workerPool}) {
+  async provision({workerPool, existingCapacity}) {
   }
 
   async deprovision({workerPool}) {
@@ -65,7 +66,7 @@ class Provider {
   async checkWorker({worker}) {
   }
 
-  async scanCleanup({responsibleFor}) {
+  async scanCleanup() {
   }
 
   async createWorker({workerPool, workerGroup, workerId, input}) {

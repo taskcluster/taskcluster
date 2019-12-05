@@ -46,12 +46,33 @@ properties:
     type: string
     format: date-time
 
+  lastModified:
+    title: Last Modified
+    description: Date and time when this worker last changed state
+    type: string
+    format: date-time
+
+  lastChecked:
+    title: Last Checked
+    description: |
+      Date and time when the state of this worker was verified with a cloud api.
+      For providers with nothing to check, this will just be permanently set to the
+      time the worker was created.
+    type: string
+    format: date-time
+
   state:
     title: State
     description: |
       A string specifying the state this worker is in so far as worker-manager knows.
     type: string
     enum: ["requested", "running", "stopped"]
+
+  capacity:
+    title: Worker Capacity
+    description: Number of tasks this worker can handle at once
+    type: integer
+    minimum: 1
 
 additionalProperties: false
 required:
@@ -62,3 +83,6 @@ required:
   - created
   - expires
   - state
+  - capacity
+  - lastChecked
+  - lastModified

@@ -18,7 +18,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       workerPoolId: 'foo/bar',
       maxCapacity: 0,
       minCapacity: 0,
-      runningCapacity: 0,
+      existingCapacity: 0,
     });
 
     assert.strictEqual(estimate, 0);
@@ -31,7 +31,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       workerPoolId: 'foo/bar',
       maxCapacity: 1,
       minCapacity: 1,
-      runningCapacity: 0,
+      existingCapacity: 0,
     });
 
     assert.strictEqual(estimate, 1);
@@ -44,7 +44,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       workerPoolId: 'foo/bar',
       maxCapacity: 1,
       minCapacity: 1,
-      runningCapacity: 1,
+      existingCapacity: 1,
     });
 
     assert.strictEqual(estimate, 0);
@@ -57,13 +57,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       workerPoolId: 'foo/bar',
       maxCapacity: 1,
       minCapacity: 1,
-      runningCapacity: 10,
+      existingCapacity: 10,
     });
 
     assert.strictEqual(estimate, 0);
     assert.strictEqual(monitorManager.messages.length, 2);
     assert(monitorManager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 3));
-    assert(monitorManager.messages.some(({Type, Fields}) => Type === 'monitor.error' && Fields.runningCapacity === 10));
+    assert(monitorManager.messages.some(({Type, Fields}) => Type === 'monitor.error' && Fields.existingCapacity === 10));
     monitorManager.reset();
   });
 });

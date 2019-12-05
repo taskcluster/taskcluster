@@ -152,8 +152,13 @@ type (
 		ProviderType string `json:"providerType"`
 	}
 
-	// Request to create a worker
+	// Request to create a worker. Capacity will default to 1 if not specified.
 	WorkerCreationRequest struct {
+
+		// Number of tasks this worker can handle at once
+		//
+		// Mininum:    1
+		Capacity int64 `json:"capacity,omitempty"`
 
 		// Date and time when this worker will be deleted from the DB
 		Expires tcclient.Time `json:"expires"`
@@ -210,11 +215,24 @@ type (
 	// A complete worker definition.
 	WorkerFullDefinition struct {
 
+		// Number of tasks this worker can handle at once
+		//
+		// Mininum:    1
+		Capacity int64 `json:"capacity"`
+
 		// Date and time when this worker was created
 		Created tcclient.Time `json:"created"`
 
 		// Date and time when this worker will be deleted from the DB
 		Expires tcclient.Time `json:"expires"`
+
+		// Date and time when the state of this worker was verified with a cloud api.
+		// For providers with nothing to check, this will just be permanently set to the
+		// time the worker was created.
+		LastChecked tcclient.Time `json:"lastChecked"`
+
+		// Date and time when this worker last changed state
+		LastModified tcclient.Time `json:"lastModified"`
 
 		// The provider that had started the worker and responsible for managing it.
 		// Can be different from the provider that's currently in the worker pool config.

@@ -26,7 +26,7 @@ class WorkerScanner {
       monitor,
       maxFailures: 10,
       watchdogTime: 0,
-      waitTime: 20000,
+      waitTime: 10000,
       maxIterationTime: 600000,
       ...iterateConf,
     });
@@ -45,24 +45,11 @@ class WorkerScanner {
   }
 
   async scan() {
-    // track the providerIds seen for each worker pool, so they can be removed
-    // from the list of previous provider IDs
-    const providersByPool = new Map();
-    const seen = (providerId, workerPoolId) => {
-      const v = providersByPool.get(workerPoolId);
-      if (v) {
-        v.add(providerId);
-      } else {
-        providersByPool.set(workerPoolId, new Set([providerId]));
-      }
-    };
-
     await this.providers.forAll(p => p.scanPrepare());
     await this.Worker.scan({
       state: Entity.op.notEqual(this.Worker.states.STOPPED),
     }, {
       handler: async worker => {
-        seen(worker.providerId, worker.workerPoolId);
         const provider = this.providers.get(worker.providerId);
         if (provider) {
           try {
@@ -76,48 +63,7 @@ class WorkerScanner {
         }
       },
     });
-
-    // We keep track of which providers are actively managing
-    // each workerpool so that the provider can update the
-    // pool even if 0 non-STOPPED instances of the worker
-    // currently exist
-    const poolsByProvider = new Map();
-
-    // Now, see if we can remove any previous providers
-    await this.WorkerPool.scan({}, {
-      handler: async workerPool => {
-        const {providerId, previousProviderIds, workerPoolId} = workerPool;
-        if (!poolsByProvider.has(providerId)) {
-          poolsByProvider.set(providerId, new Set());
-        }
-        poolsByProvider.get(providerId).add(workerPoolId);
-        const stillCurrent = providersByPool.get(workerPoolId) || new Set();
-        const removable = previousProviderIds.filter(providerId => !stillCurrent.has(providerId));
-
-        for (let providerId of removable) {
-          const provider = this.providers.get(providerId);
-          if (provider) {
-            try {
-              await provider.removeResources({workerPool});
-            } catch (err) {
-              // report error and try again next time..
-              this.monitor.reportError(err, {workerPoolId, providerId});
-              continue;
-            }
-          } else {
-            this.monitor.info(
-              `Worker pool ${workerPoolId} has unknown previous providerId ${providerId} (removing)`);
-          }
-
-          // the provider is done with this pool, so remove it from the list of previous providers
-          await workerPool.modify(wp => {
-            wp.previousProviderIds = wp.previousProviderIds.filter(pid => pid !== providerId);
-          });
-        }
-      },
-    });
-
-    await this.providers.forAll(p => p.scanCleanup({responsibleFor: poolsByProvider.get(p.providerId) || new Set()}));
+    await this.providers.forAll(p => p.scanCleanup());
   }
 }
 

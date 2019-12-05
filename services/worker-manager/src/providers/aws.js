@@ -30,6 +30,7 @@ class AwsProvider extends Provider {
       estimator,
       validator,
       notify,
+      providerConfig,
     });
     this.configSchema = 'config-aws';
     this.ec2iid_RSA_key = fs.readFileSync(path.resolve(__dirname, 'aws-keys/RSA-key-forSignature')).toString();
@@ -81,13 +82,12 @@ class AwsProvider extends Provider {
     this._enqueue = cloud.enqueue.bind(cloud);
   }
 
-  async provision({workerPool}) {
+  async provision({workerPool, existingCapacity}) {
     const {workerPoolId} = workerPool;
 
-    if (!workerPool.providerData[this.providerId] || workerPool.providerData[this.providerId].running === undefined) {
+    if (!workerPool.providerData[this.providerId]) {
       await workerPool.modify(wt => {
         wt.providerData[this.providerId] = wt.providerData[this.providerId] || {};
-        wt.providerData[this.providerId].running = wt.providerData[this.providerId].running || 0;
       });
     }
 
@@ -95,7 +95,7 @@ class AwsProvider extends Provider {
       workerPoolId,
       minCapacity: workerPool.config.minCapacity,
       maxCapacity: workerPool.config.maxCapacity,
-      runningCapacity: workerPool.providerData[this.providerId].running,
+      existingCapacity,
     });
     if (toSpawn === 0) {
       return;
@@ -194,17 +194,20 @@ class AwsProvider extends Provider {
           workerGroup: this.providerId,
           workerId: i.InstanceId,
         });
+        const now = new Date();
         return this.Worker.create({
           workerPoolId,
           providerId: this.providerId,
           workerGroup: this.providerId,
           workerId: i.InstanceId,
-          created: new Date(),
+          created: now,
+          lastModified: now,
+          lastChecked: now,
           expires: taskcluster.fromNow('1 week'),
           state: this.Worker.states.REQUESTED,
+          capacity: config.capacityPerInstance,
           providerData: {
             region: config.region,
-            instanceCapacity: config.capacityPerInstance,
             groups: spawned.Groups,
             amiLaunchIndex: i.AmiLaunchIndex,
             imageId: i.ImageId,
@@ -255,6 +258,7 @@ class AwsProvider extends Provider {
       workerId: worker.workerId,
     });
     await worker.modify(w => {
+      w.lastModified = new Date();
       w.state = this.Worker.states.RUNNING;
     });
 
@@ -265,47 +269,56 @@ class AwsProvider extends Provider {
   async checkWorker({worker}) {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
 
-    let instanceStatuses;
+    let state = worker.state;
     try {
       const region = worker.providerData.region;
-      instanceStatuses = (await this._enqueue(`${region}.describe`, () => this.ec2s[region].describeInstanceStatus({
+      const instanceStatuses = (await this._enqueue(`${region}.describe`, () => this.ec2s[region].describeInstanceStatus({
         InstanceIds: [worker.workerId.toString()],
         IncludeAllInstances: true,
       }).promise())).InstanceStatuses;
-    } catch (e) {
-      if (e.code === 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too
-        this.monitor.log.workerStopped({
-          workerPoolId: worker.workerPoolId,
-          providerId: this.providerId,
-          workerId: worker.workerId,
-        });
-        return worker.modify(w => {w.state = this.Worker.states.STOPPED;});
+      for (const is of instanceStatuses) {
+        switch (is.InstanceState.Name) {
+          case 'pending':
+          case 'running':
+          case 'shutting-down': //so that we don't turn on new instances until they're entirely gone
+          case 'stopping':
+            this.seen[worker.workerPoolId] += worker.capacity || 1;
+            break;
+
+          case 'terminated':
+          case 'stopped':
+            this.monitor.log.workerStopped({
+              workerPoolId: worker.workerPoolId,
+              providerId: this.providerId,
+              workerId: worker.workerId,
+            });
+            state = this.Worker.states.STOPPED;
+            break;
+
+          default:
+            throw new Error(`Unknown state: ${is.InstanceState.Name} for ${is.InstanceId}`);
+        }
       }
-      throw e;
+    } catch (e) {
+      if (e.code !== 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too
+        throw e;
+      }
+      this.monitor.log.workerStopped({
+        workerPoolId: worker.workerPoolId,
+        providerId: this.providerId,
+        workerId: worker.workerId,
+      });
+      state = this.Worker.states.STOPPED;
     }
 
-    Promise.all(instanceStatuses.map(is => {
-      switch (is.InstanceState.Name) {
-        case 'pending':
-        case 'running':
-        case 'shutting-down': //so that we don't turn on new instances until they're entirely gone
-        case 'stopping':
-          this.seen[worker.workerPoolId] += worker.providerData.instanceCapacity || 1;
-          return Promise.resolve();
-
-        case 'terminated':
-        case 'stopped':
-          this.monitor.log.workerStopped({
-            workerPoolId: worker.workerPoolId,
-            providerId: this.providerId,
-            workerId: worker.workerId,
-          });
-          return worker.modify(w => {w.state = this.Worker.states.STOPPED;});
-
-        default:
-          return Promise.reject(`Unknown state: ${is.InstanceState.Name} for ${is.InstanceId}`);
+    await worker.modify(w => {
+      const now = new Date();
+      if (w.state !== state) {
+        w.lastModified = now;
       }
-    }));
+      w.lastChecked = now;
+      w.state = state;
+    });
   }
 
   async removeWorker({worker}) {
@@ -344,27 +357,8 @@ class AwsProvider extends Provider {
     this.seen = {};
   }
 
-  async scanCleanup({responsibleFor}) {
-    for (const workerPoolId of responsibleFor) {
-      this.seen[workerPoolId] = this.seen[workerPoolId] || 0;
-    }
-    this.monitor.log.scanSeen({providerId: this.providerId, seen: this.seen, responsible: [...responsibleFor]});
-    await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
-      const workerPool = await this.WorkerPool.load({
-        workerPoolId,
-      }, true);
-
-      if (!workerPool) {
-        return; // In this case, the worker pool has been deleted so we can just move on
-      }
-
-      await workerPool.modify(wp => {
-        if (!wp.providerData[this.providerId]) {
-          wp.providerData[this.providerId] = {};
-        }
-        wp.providerData[this.providerId].running = seen;
-      });
-    }));
+  async scanCleanup() {
+    this.monitor.log.scanSeen({providerId: this.providerId, seen: this.seen});
   }
 
   /**

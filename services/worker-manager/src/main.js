@@ -12,8 +12,8 @@ const {Estimator} = require('./estimator');
 const {sasCredentials} = require('taskcluster-lib-azure');
 const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 const {Provisioner} = require('./provisioner');
-const {WorkerScanner} = require('./worker-scanner');
 const {Providers} = require('./providers');
+const {WorkerScanner} = require('./worker-scanner');
 
 let load = loader({
   cfg: {
@@ -213,27 +213,6 @@ let load = loader({
       }),
   },
 
-  provisioner: {
-    requires: ['cfg', 'monitor', 'WorkerPool', 'providers', 'notify', 'pulseClient', 'reference'],
-    setup: async ({cfg, monitor, WorkerPool, providers, notify, pulseClient, reference}, ownName) => {
-      return new Provisioner({
-        ownName,
-        monitor: monitor.childMonitor('provisioner'),
-        WorkerPool,
-        providers,
-        notify,
-        pulseClient,
-        reference,
-        rootUrl: cfg.taskcluster.rootUrl,
-      });
-    },
-  },
-
-  runProvisioner: {
-    requires: ['provisioner'],
-    setup: async ({provisioner}) => await provisioner.initiate(),
-  },
-
   workerScanner: {
     requires: ['cfg', 'monitor', 'Worker', 'WorkerPool', 'providers'],
     setup: async ({cfg, monitor, Worker, WorkerPool, providers}, ownName) => {
@@ -249,6 +228,27 @@ let load = loader({
     },
   },
 
+  provisioner: {
+    requires: ['cfg', 'monitor', 'Worker', 'WorkerPool', 'providers', 'notify', 'pulseClient', 'reference'],
+    setup: async ({cfg, monitor, Worker, WorkerPool, providers, notify, pulseClient, reference}, ownName) => {
+      return new Provisioner({
+        ownName,
+        monitor: monitor.childMonitor('provisioner'),
+        Worker,
+        WorkerPool,
+        providers,
+        notify,
+        pulseClient,
+        reference,
+        rootUrl: cfg.taskcluster.rootUrl,
+      });
+    },
+  },
+
+  runProvisioner: {
+    requires: ['provisioner'],
+    setup: async ({provisioner}) => await provisioner.initiate(),
+  },
 }, {
   profile: process.env.NODE_ENV,
   process: process.argv[2],
