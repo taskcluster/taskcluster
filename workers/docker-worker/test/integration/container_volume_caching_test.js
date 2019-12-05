@@ -434,7 +434,7 @@ suite('volume cache tests', () => {
     await worker.terminate();
   });
 
-  test('purge cache after run task', async () => {
+  test('purge cache before run task', async () => {
     var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
     var neededScope = 'docker-worker:cache:' + cacheName;
     var fullCacheDir = path.join(localCacheDir, cacheName);
@@ -472,21 +472,21 @@ suite('volume cache tests', () => {
     assert.equal(result.run.state, 'completed');
     assert.equal(result.run.reasonResolved, 'completed');
 
+    await purgeCache.purgeCache(
+      worker.provisionerId,
+      worker.workerType, {
+        cacheName: cacheName
+      });
     await Promise.all([
-      purgeCache.purgeCache(
-        worker.provisionerId,
-        worker.workerType, {
-          cacheName: cacheName
-        }),
+      // post a second task to trigger cache purging
+      worker.postToQueue(task),
+      // and wait for the purge to occur at the same time
       waitForEvent(worker, 'cache volume removed')
     ]);
 
     await worker.terminate();
 
-    try {
-      assert.equal(fs.readdirSync(fullCacheDir).length, 0);
-    } catch(e) { // eslint-disable-line no-empty
-    }
+    assert.throws(() => fs.readdirSync(fullCacheDir), err => err.code === 'ENOENT');
   });
 
   test('purge cache during run task', async () => {
@@ -522,8 +522,9 @@ suite('volume cache tests', () => {
 
     let worker = new TestWorker(DockerWorker);
 
-    var task_ran = false;
-    worker.on('task run', async () => {
+    var cache_purged = false;
+    worker.once('task run', async () => {
+      // wait until the first task has started to clear the cache
       await Promise.all([
         purgeCache.purgeCache(
           worker.provisionerId,
@@ -533,26 +534,22 @@ suite('volume cache tests', () => {
         waitForEvent(worker, 'cache volume removed')
       ]);
 
-      task_ran = true;
+      cache_purged = true;
     });
 
     await worker.launch();
-    let result = await worker.postToQueue(task);
+    let result1 = await worker.postToQueue(task);
+    let result2 = await worker.postToQueue(task);
 
-    assert.equal(result.run.state, 'completed', 'Task state is not successful');
-    assert.equal(result.run.reasonResolved, 'completed', 'Task failed');
+    assert.equal(result1.run.state, 'completed', 'Task state is not successful');
+    assert.equal(result1.run.reasonResolved, 'completed', 'Task failed');
+    assert.equal(result2.run.state, 'completed', 'Task state is not successful');
+    assert.equal(result2.run.reasonResolved, 'completed', 'Task failed');
 
     await worker.terminate();
 
-    assert.ok(task_ran, 'Task did not run?!?1');
-    try {
-      assert.equal(fs.readdirSync(fullCacheDir).length, 0, 'Caches should have been purge');
-    } catch (e) {
-      // depending on the node version and the alignment of Moon, Earth and Sun,
-      // the readddir call may either return an empty list of directories or
-      // throw an ENOENT exception
-      assert.equal(e.code, 'ENOENT');
-    }
+    assert.ok(cache_purged, 'Cache purge did not occur');
+    assert.throws(() => fs.readdirSync(fullCacheDir), err => err.code === 'ENOENT');
   });
 
   test('purge cache based on exit status', async () => {
@@ -591,19 +588,15 @@ suite('volume cache tests', () => {
 
     let worker = new TestWorker(DockerWorker);
     await worker.launch();
-    let result = await Promise.all([
-      waitForEvent(worker, 'cache volume removed'),
-      worker.postToQueue(task),
-    ]).then(results => results[1]);
+    let removal = waitForEvent(worker, 'cache volume removed');
+    // run two tasks, with the cache volume removed between the two
+    await worker.postToQueue(task),
+    await worker.postToQueue(task),
 
-    assert.equal(result.run.state, 'failed');
-    assert.equal(result.run.reasonResolved, 'failed');
+    await removal;
 
     await worker.terminate();
 
-    try {
-      assert.equal(fs.readdirSync(fullCacheDir).length, 0);
-    } catch(e) { //eslint-disable-line no-empty
-    }
+    assert.throws(() => fs.readdirSync(fullCacheDir), err => err.code === 'ENOENT');
   });
 });
