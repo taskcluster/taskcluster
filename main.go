@@ -950,7 +950,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 	if err.Occurred() {
 		return
 	}
-	log.Printf("Running task https://tools.taskcluster.net/task-inspector/#%v/%v", task.TaskID, task.RunID)
+	log.Printf("Running task %v/tasks/%v/runs/%v", config.RootURL, task.TaskID, task.RunID)
 
 	task.Commands = make([]*process.Command, len(task.Payload.Command))
 	// generate commands, in case features want to modify them

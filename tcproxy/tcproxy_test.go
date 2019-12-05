@@ -1,6 +1,7 @@
 package tcproxy
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/taskcluster/generic-worker/testutil"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
+	"github.com/taskcluster/taskcluster-client-go/tcauth"
 )
 
 func TestTcProxy(t *testing.T) {
@@ -38,7 +40,7 @@ func TestTcProxy(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not initiate taskcluster-proxy process:\n%s", err)
 	}
-	res, err := http.Get("http://localhost:34569/queue/v1/task/KTBKfEgxR5GdfIIREQIvFQ/runs/0/artifacts/SampleArtifacts/_/X.txt")
+	res, err := http.Get("http://localhost:34569/auth/v1/scopes/current")
 	if err != nil {
 		t.Fatalf("Could not hit url to download artifact using taskcluster-proxy: %v", err)
 	}
@@ -47,7 +49,12 @@ func TestTcProxy(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not read artifact using taskcluster-proxy: %v", err)
 	}
-	if string(data) != "test artifact\n" {
+	scopeset := new(tcauth.SetOfScopes)
+	err = json.Unmarshal(data, scopeset)
+	if err != nil {
+		t.Fatalf("Could not interpret response %q as json: %v", string(data), err)
+	}
+	if len(scopeset.Scopes) != 1 || scopeset.Scopes[0] != "queue:get-artifact:SampleArtifacts/_/X.txt" {
 		t.Fatalf("Got incorrect data: %v", string(data))
 	}
 }

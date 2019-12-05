@@ -213,7 +213,7 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 				"availabilityZone": "outer-space",
 				"privateIp":        "87.65.43.21",
 				"version":          "2017-09-30",
-				"instanceId":       "test-instance-id",
+				"instanceId":       "test-worker-id",
 				"instanceType":     "p3.teenyweeny",
 				"accountId":        "123456789012",
 				"imageId":          "test-ami",

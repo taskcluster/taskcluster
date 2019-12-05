@@ -19,6 +19,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/pborman/uuid"
 	"github.com/taskcluster/generic-worker/gwconfig"
 	"github.com/taskcluster/generic-worker/testutil"
 	"github.com/taskcluster/httpbackoff"
@@ -202,6 +203,11 @@ func NewQueue(t *testing.T) *tcqueue.Queue {
 
 func scheduleTask(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) (taskID string) {
 	taskID = slugid.Nice()
+	scheduleNamedTask(t, td, payload, taskID)
+	return
+}
+
+func scheduleNamedTask(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload, taskID string) {
 
 	if td.Payload == nil {
 		b, err := json.Marshal(&payload)
@@ -231,8 +237,6 @@ func scheduleTask(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload Gener
 		t.Fatalf("Could not submit task: %v", err)
 	}
 	t.Logf("Scheduled task %v", taskID)
-
-	return
 }
 
 func execute(t *testing.T, expectedExitCode ExitCode) {
@@ -481,5 +485,97 @@ func cancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload Generi
 			payload.Env[envVar] = v
 		}
 	}
+	return
+}
+
+// CreateArtifactFromFile returns a taskID for a task with an artifact with the
+// given name whose content matches the content of the local file (relative to
+// the testdata folder) with the given path. It does this by creating a hash of
+// the file content together with the name of the file, and then converts the
+// hash into a "nice" slug. It then checks if the task already exists. If it
+// does exist, it simply returns the taskID. If it doesn't, it creates the task
+// and returns.
+func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID string) {
+
+	// Calculate hash of file content
+	rawContent, err := os.Open(filepath.Join(testdataDir, path))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rawContent.Close()
+	hasher := sha256.New()
+	_, err = io.Copy(hasher, rawContent)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Append a 0 byte and the artifact name to the hash source, to ensure that
+	// if the artifact name changes, we get a different taskID. Since file
+	// names can't include a 0 byte, adding the zero byte as a separator
+	// between the two parts ensures that a one-to-one mapping exists between
+	// {file content, artifact name} and hash.
+	_, err = hasher.Write(append([]byte{0}, []byte(name)...))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Use first 128 bits of 256 bit hash for UUID
+	sha256 := hasher.Sum(nil)
+	v4uuid := sha256[:16]
+
+	// Comply to uuid v4 rules (mask six bits)
+	v4uuid[6] = (v4uuid[6] & 0x0f) | 0x40 // Version 4
+	v4uuid[8] = (v4uuid[8] & 0x3f) | 0x80 // Variant is 10
+
+	// Make slugid a "nice" one (mask one further bit => 121 bits entropy)
+	v4uuid[0] &= 0x7f
+
+	// Convert to a string taskID
+	taskID = slugid.Encode(uuid.UUID(v4uuid))
+
+	// See if task already exists
+	tdr, err := testQueue.Task(taskID)
+	if err != nil {
+		switch e := err.(type) {
+		case *tcclient.APICallException:
+			switch r := e.RootCause.(type) {
+			case httpbackoff.BadHttpResponseCode:
+				if r.HttpResponseCode == 404 {
+					t.Logf("Creating task %q for artifact %v under path %v...", taskID, name, path)
+					payload := GenericWorkerPayload{
+						Command:    copyTestdataFile(path),
+						MaxRunTime: 30,
+						Artifacts: []Artifact{
+							{
+								Path: path,
+								Name: name,
+								Type: "file",
+							},
+						},
+					}
+					td := testTask(t)
+					// Set 6 month expiry
+					td.Expires = tcclient.Time(time.Now().AddDate(0, 6, 0))
+					td.Metadata.Name = "Task dependency for generic-worker integration tests"
+					td.Metadata.Description = fmt.Sprintf("Single artifact %v from path %v with hash %v", name, path, hex.EncodeToString(sha256))
+					scheduleNamedTask(t, td, payload, taskID)
+					ensureResolution(t, taskID, "completed", "completed")
+					return
+				}
+			}
+		}
+		t.Fatalf("%#v", err)
+	}
+
+	// If task expires in the next two minutes, just fail intentionally. It
+	// isn't worth trying to handle this situation, since the task only expires
+	// after 6 months, so the chance of hitting the two minute period before it
+	// expires is extremely small, and the error will explicitly report it
+	// anyway.
+	remainingTime := time.Time(tdr.Expires).Sub(time.Now())
+	if remainingTime.Seconds() < 120 {
+		t.Fatalf("You've been extremely unlucky. This test depends on task %q that was created six months ago but is due to expire in less than two minutes (%v). Wait a few minutes and try again!", taskID, remainingTime)
+	}
+	t.Logf("Depend on task %q which expires in %v.", taskID, remainingTime)
 	return
 }
