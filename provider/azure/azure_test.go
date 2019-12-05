@@ -1,7 +1,9 @@
-package awsprovider
+package azure
 
 import (
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -11,13 +13,13 @@ import (
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
 )
 
-func TestAWSConfigureRun(t *testing.T) {
+func TestConfigureRun(t *testing.T) {
 	runnerWorkerConfig := cfg.NewWorkerConfig()
 	runnerWorkerConfig, err := runnerWorkerConfig.Set("from-runner-cfg", true)
 	require.NoError(t, err, "setting config")
 	runnercfg := &cfg.RunnerConfig{
 		Provider: cfg.ProviderConfig{
-			ProviderType: "aws",
+			ProviderType: "azure",
 		},
 		WorkerImplementation: cfg.WorkerImplementationConfig{
 			Implementation: "whatever",
@@ -29,23 +31,40 @@ func TestAWSConfigureRun(t *testing.T) {
 	userDataWorkerConfig, err = userDataWorkerConfig.Set("from-ud", true)
 	require.NoError(t, err, "setting config")
 
-	userData := &UserData{
+	customData := CustomData{
 		WorkerPoolId: "w/p",
 		ProviderId:   "amazon",
 		WorkerGroup:  "wg",
 		RootURL:      "https://tc.example.com",
 		WorkerConfig: userDataWorkerConfig,
 	}
+	customDataJson, err := json.Marshal(customData)
+	require.NoError(t, err, "marshalling CustomData")
+	customDataBase64 := base64.StdEncoding.EncodeToString(customDataJson)
 
-	metaData := map[string]string{
-		"/dynamic/instance-identity/signature": "thisisasignature",
-		"/meta-data/public-hostname":           "hostname",
-		"/meta-data/public-ipv4":               "2.2.2.2",
-	}
+	userData := &InstanceData{}
+	_ = json.Unmarshal([]byte(`{
+		"compute": {
+			"customData": "`+customDataBase64+`",
+			"vmId": "df09142e-c0dd-43d9-a515-489f19829dfd",
+			"location": "uswest",
+			"vmSize": "medium"
+		},
+		"network": {
+		   "interface": [{
+		   	 "ipv4": {
+		   	   "ipAddress": [{
+		   		 "privateIpAddress": "10.1.2.4",
+		   		 "publicIpAddress": "104.42.72.130"
+		   	   }]
+		   	 }
+		   }]
+        }
+      }`), userData)
 
-	instanceIdentityDocument := "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n,  \"privateIp\" : \"1.1.1.1\"\n}"
+	attestedDocument := base64.StdEncoding.EncodeToString([]byte("trust me, it's cool --Bill"))
 
-	mds := &fakeMetadataService{nil, userData, metaData, instanceIdentityDocument}
+	mds := &fakeMetadataService{nil, userData, nil, &ScheduledEvents{}, nil, attestedDocument}
 
 	p, err := new(runnercfg, tc.FakeWorkerManagerClientFactory, mds)
 	require.NoError(t, err, "creating provider")
@@ -58,10 +77,10 @@ func TestAWSConfigureRun(t *testing.T) {
 
 	reg, err := tc.FakeWorkerManagerRegistration()
 	require.NoError(t, err)
-	require.Equal(t, userData.ProviderId, reg.ProviderID)
-	require.Equal(t, userData.WorkerGroup, reg.WorkerGroup)
-	require.Equal(t, "i-55555nonesense5", reg.WorkerID)
-	require.Equal(t, json.RawMessage(`{"document":"{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n,  \"privateIp\" : \"1.1.1.1\"\n}","signature":"thisisasignature"}`), reg.WorkerIdentityProof)
+	require.Equal(t, customData.ProviderId, reg.ProviderID)
+	require.Equal(t, customData.WorkerGroup, reg.WorkerGroup)
+	require.Equal(t, "df09142e-c0dd-43d9-a515-489f19829dfd", reg.WorkerID)
+	require.Equal(t, json.RawMessage(`{"document":"`+attestedDocument+`"}`), reg.WorkerIdentityProof)
 	require.Equal(t, "w/p", reg.WorkerPoolID)
 
 	require.Equal(t, "https://tc.example.com", state.RootURL, "rootURL is correct")
@@ -70,38 +89,34 @@ func TestAWSConfigureRun(t *testing.T) {
 	require.Equal(t, "cert", state.Credentials.Certificate, "cert is correct")
 	require.Equal(t, "w/p", state.WorkerPoolID, "workerPoolID is correct")
 	require.Equal(t, "wg", state.WorkerGroup, "workerGroup is correct")
-	require.Equal(t, "i-55555nonesense5", state.WorkerID, "workerID is correct")
+	require.Equal(t, "df09142e-c0dd-43d9-a515-489f19829dfd", state.WorkerID, "workerID is correct")
 
 	require.Equal(t, map[string]string{
-		"instance-id":       "i-55555nonesense5",
-		"image":             "banana",
-		"instance-type":     "t2.micro",
-		"availability-zone": "us-west-2a",
-		"region":            "us-west-2",
-		"local-ipv4":        "1.1.1.1",
-		"public-hostname":   "hostname",
-		"public-ipv4":       "2.2.2.2",
+		"vm-id":         "df09142e-c0dd-43d9-a515-489f19829dfd",
+		"instance-type": "medium",
+		"region":        "uswest",
+		"local-ipv4":    "10.1.2.4",
+		"public-ipv4":   "104.42.72.130",
 	}, state.ProviderMetadata, "providerMetadata is correct")
 
 	require.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
 	require.Equal(t, true, state.WorkerConfig.MustGet("from-ud"), "value for worker-config")
 
-	require.Equal(t, "aws", state.WorkerLocation["cloud"])
-	require.Equal(t, "us-west-2", state.WorkerLocation["region"])
-	require.Equal(t, "us-west-2a", state.WorkerLocation["availabilityZone"])
+	require.Equal(t, "azure", state.WorkerLocation["cloud"])
+	require.Equal(t, "uswest", state.WorkerLocation["region"])
 }
 
 func TestCheckTerminationTime(t *testing.T) {
 	transp := protocol.NewFakeTransport()
 	proto := protocol.NewProtocol(transp)
 
-	metaData := map[string]string{}
-	instanceIdentityDocument := "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n,  \"privateIp\" : \"1.1.1.1\"\n}"
+	evts := &ScheduledEvents{}
 
-	p := &AWSProvider{
+	mds := &fakeMetadataService{nil, nil, nil, evts, nil, ""}
+	p := &AzureProvider{
 		runnercfg:                  nil,
 		workerManagerClientFactory: nil,
-		metadataService:            &fakeMetadataService{nil, nil, metaData, instanceIdentityDocument},
+		metadataService:            mds,
 		proto:                      proto,
 		terminationTicker:          nil,
 	}
@@ -111,7 +126,25 @@ func TestCheckTerminationTime(t *testing.T) {
 	// not time yet..
 	require.Equal(t, []protocol.Message{}, transp.Messages())
 
-	metaData["/meta-data/spot/termination-time"] = "now!"
+	// oops, an error!
+	mds.ScheduledEventsError = fmt.Errorf("uhoh!")
+
+	p.checkTerminationTime()
+	require.Equal(t, []protocol.Message{}, transp.Messages())
+
+	mds.ScheduledEventsError = nil
+
+	evt := struct {
+		EventId      string
+		EventType    string
+		ResourceType string
+		Resources    []string
+		EventStatus  string
+		NotBefore    string
+	}{
+		EventType: "Preempt",
+	}
+	evts.Events = append(evts.Events, evt)
 	p.checkTerminationTime()
 
 	// protocol does not have the capability set..
