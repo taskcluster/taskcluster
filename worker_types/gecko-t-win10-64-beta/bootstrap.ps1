@@ -460,7 +460,7 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\A
 New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance" -Name "MaintenanceDisabled" -Value "1" -PropertyType Dword -Force
 
 # env_TASKCLUSTER_ROOT_URL: https://bugzilla.mozilla.org/show_bug.cgi?id=1551789
-[Environment]::SetEnvironmentVariable("TASKCLUSTER_ROOT_URL", "https://taskcluster.net", "Machine")
+[Environment]::SetEnvironmentVariable("TASKCLUSTER_ROOT_URL", "https://firefox-ci-tc.services.mozilla.com", "Machine")
 
 # programdata_google_auth: https://bugzilla.mozilla.org/show_bug.cgi?id=1588757
 md "C:\ProgramData\Google\Auth"

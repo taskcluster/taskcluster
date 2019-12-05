@@ -478,7 +478,7 @@ Start-Process "C:\binaries\vc_redist.x64.exe" -ArgumentList "/install /passive /
 Start-Process "icacls.exe" -ArgumentList "c:\ProgramData\Mozilla /grant Everyone:(OI)(CI)F" -Wait -NoNewWindow
 
 # env_TASKCLUSTER_ROOT_URL: https://bugzilla.mozilla.org/show_bug.cgi?id=1551789
-[Environment]::SetEnvironmentVariable("TASKCLUSTER_ROOT_URL", "https://taskcluster.net", "Machine")
+[Environment]::SetEnvironmentVariable("TASKCLUSTER_ROOT_URL", "https://firefox-ci-tc.services.mozilla.com", "Machine")
 
 # hw-startup-check_ps1: Maintenance Toolchain - not essential for building firefox
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/hw-startup-check.ps1", "C:\DSC\hw-startup-check.ps1")
