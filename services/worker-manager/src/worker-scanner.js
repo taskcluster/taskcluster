@@ -19,16 +19,16 @@ class WorkerScanner {
     this.providers = providers;
     this.monitor = monitor;
     this.iterate = new Iterate({
+      maxFailures: 10,
+      watchdogTime: 0,
+      waitTime: 20000,
+      maxIterationTime: 6000000,
+      ...iterateConf,
       name: ownName,
       handler: async () => {
         await this.scan();
       },
       monitor,
-      maxFailures: 10,
-      watchdogTime: 0,
-      waitTime: 10000,
-      maxIterationTime: 600000,
-      ...iterateConf,
     });
     this.iterate.on('error', () => {
       this.monitor.alert('iteration failed repeatedly; terminating process');

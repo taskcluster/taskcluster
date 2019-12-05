@@ -28,16 +28,16 @@ class Provisioner {
     ];
 
     this.iterate = new Iterate({
-      name: ownName,
-      handler: async () => {
-        await this.provision();
-      },
-      monitor,
       maxFailures: 10,
       watchdogTime: 0,
       waitTime: 10000,
       maxIterationTime: 300000, // We really should be making it through the list at least once every 5 minutes
       ...iterateConf,
+      name: ownName,
+      handler: async () => {
+        await this.provision();
+      },
+      monitor,
     });
     this.iterate.on('error', () => {
       this.monitor.alert('iteration failed repeatedly; terminating process');
