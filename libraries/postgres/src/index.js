@@ -68,50 +68,6 @@ class Schema{
     return this;
   }
 
-  /** setup **/
-
-  /**
-   * Get a Database instance based on this schema
-   */
-  async setup(dbOptions) {
-    const db = new Database({...dbOptions, schema: this});
-    const dbVersion = await db.getVersion();
-    if (dbVersion < this.version) {
-      throw new Error('Database version is older than this software version');
-    }
-    return db;
-  }
-
-  /**
-   * Upgrade this database to the latest version and define functions for all
-   * of the methods.
-   */
-  async upgrade(dbOptions) {
-    const db = new Database({...dbOptions, schema: this});
-    try {
-      const dbVersion = await db.getVersion();
-
-      // perform any necessary upgrades..
-      if (dbVersion < this.version) {
-        // run each of the upgrade scripts
-        for (let schema of this.versions.slice(dbVersion + 1)) {
-          debug(`upgrading to version ${schema.version}`);
-          await db._doUpgrade(schema.script, schema.version);
-        }
-      }
-
-      // if we are running upgrades, unconditionally define the function objects
-      // for the defined methods; this allows updates to those functions to fix
-      // bugs without a new schema version.
-      for (let [method, {args, returns, script}] of this.methods) {
-        debug(`defining method ${method}`);
-        await db._defineMethod(method, args, returns, script);
-      }
-    } finally {
-      await db.close();
-    }
-  }
-
   /** testing **/
 
   /**
@@ -159,6 +115,7 @@ class Database {
         return res.rows;
       };
     });
+
   }
 
   /**
@@ -249,6 +206,48 @@ class Database {
     ]);
   }
 }
+
+/**
+ * Get a new Database instance
+ */
+Database.setup = async (schema, dbOptions) => {
+  const db = new Database({...dbOptions, schema});
+  const dbVersion = await db.getVersion();
+  if (dbVersion < schema.version) {
+    throw new Error('Database version is older than this software version');
+  }
+  return db;
+};
+
+/**
+ * Upgrade this database to the latest version and define functions for all
+ * of the methods.
+ */
+Database.upgrade = async (schema, dbOptions) => {
+  const db = new Database({...dbOptions, schema});
+  try {
+    const dbVersion = await db.getVersion();
+
+    // perform any necessary upgrades..
+    if (dbVersion < schema.version) {
+      // run each of the upgrade scripts
+      for (let prevSchema of schema.versions.slice(dbVersion + 1)) {
+        debug(`upgrading to version ${schema.version}`);
+        await db._doUpgrade(prevSchema.script, prevSchema.version);
+      }
+    }
+
+    // if we are running upgrades, unconditionally define the function objects
+    // for the defined methods; this allows updates to those functions to fix
+    // bugs without a new schema version.
+    for (let [method, {args, returns, script}] of schema.methods) {
+      debug(`defining method ${method}`);
+      await db._defineMethod(method, args, returns, script);
+    }
+  } finally {
+    await db.close();
+  }
+};
 
 exports.Schema = Schema;
 exports.Database = Database;
