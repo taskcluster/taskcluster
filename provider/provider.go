@@ -7,6 +7,7 @@ import (
 
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/aws"
+	"github.com/taskcluster/taskcluster-worker-runner/provider/azure"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/google"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/provider/standalone"
@@ -23,6 +24,7 @@ var providers map[string]providerInfo = map[string]providerInfo{
 	"google":     providerInfo{google.New, google.Usage},
 	"static":     providerInfo{static.New, static.Usage},
 	"aws":        providerInfo{aws.New, aws.Usage},
+	"azure":      providerInfo{azure.New, azure.Usage},
 }
 
 func New(runnercfg *cfg.RunnerConfig) (provider.Provider, error) {

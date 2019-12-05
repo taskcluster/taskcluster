@@ -154,6 +154,22 @@ defined by this provider has the following fields:
 * region
 * availabilityZone
 
+### azure
+
+The providerType "azure" is intended for workers provisioned with worker-manager
+providers using providerType "azure".  It requires
+
+```yaml
+provider:
+    providerType: azure
+```
+
+The [$TASKCLUSTER_WORKER_LOCATION](https://docs.taskcluster.net/docs/reference/core/worker-manager/)
+defined by this provider has the following fields:
+
+* cloud: azure
+* region
+
 ### google
 
 The providerType "google" is intended for workers provisioned with worker-manager
