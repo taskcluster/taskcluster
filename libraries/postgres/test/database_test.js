@@ -7,7 +7,6 @@ dbSuite(path.basename(__filename), function() {
   let db;
 
   const schema = new Schema({
-    serviceName: 'taskcluster-lib-postgres',
     script: `
       begin
         create table testing (a integer, b integer);
