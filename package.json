@@ -5,7 +5,7 @@
   "engine-strict": true,
   "engines": {
     "node": "12.13.1",
-    "yarn": "^1.0.0"
+    "yarn": "^1.21.0"
   },
   "workspaces": [
     "libraries/*",
