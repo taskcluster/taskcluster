@@ -13,6 +13,7 @@ const {
   gitCommit,
   gitTag,
   gitPush,
+  npmPublish,
   execCommand,
   readRepoJSON,
   readRepoFile,
@@ -21,12 +22,13 @@ const {
   writeRepoYAML,
   modifyRepoFile,
   removeRepoFile,
+  pyClientRelease,
   REPO_ROOT,
 } = require('../utils');
 
 const readFile = util.promisify(fs.readFile);
 
-module.exports = ({tasks, cmdOptions, baseDir}) => {
+module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
   const artifactsDir = path.join(baseDir, 'release-artifacts');
 
   ensureTask(tasks, {
@@ -311,21 +313,12 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
   ensureTask(tasks, {
     title: 'Push Tag',
     requires: [
-      'release-version',
       'repo-tagged',
-      'target-monoimage',
-      'client-shell-artifacts',
-      'monoimage-docker-image',
     ],
     provides: [
       'pushed-tag',
     ],
     run: async (requirements, utils) => {
-      // the build process should have used the git tag to name the docker image..
-      if (requirements['monoimage-docker-image'] !== `taskcluster/taskcluster:v${requirements['release-version']}`) {
-        throw new Error('Got unexpected docker-image name');
-      }
-
       if (!cmdOptions.push) {
         return utils.skip({});
       }
@@ -344,6 +337,8 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
     },
   });
 
+  /* --- remainder would be done in CI --- */
+
   ensureTask(tasks, {
     title: 'Create GitHub Release',
     requires: [
@@ -351,6 +346,7 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
       'client-shell-artifacts',
       'pushed-tag',
       'changelog',
+      'target-monoimage',
     ],
     provides: [
       'github-release',
@@ -360,7 +356,7 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
         return utils.skip({});
       }
 
-      const octokit = new Octokit({auth: `token ${cmdOptions.ghToken}`});
+      const octokit = new Octokit({auth: `token ${credentials.ghToken}`});
 
       utils.status({message: `Create Release`});
       const release = await octokit.repos.createRelease({
@@ -393,6 +389,66 @@ module.exports = ({tasks, cmdOptions, baseDir}) => {
       return {
         'github-release': release.data.html_url,
       };
+    },
+  });
+
+  ['clients/client', 'clients/client-web'].forEach(clientName =>
+    ensureTask(tasks, {
+      title: `Publish ${clientName} to npm`,
+      requires: [
+        'version-updated',
+        'target-monoimage', // to make sure the build succeeds first..
+      ],
+      provides: [
+        `publish-${clientName}`,
+      ],
+      run: async (requirements, utils) => {
+        if (!cmdOptions.push) {
+          return utils.skip({});
+        }
+
+        await npmPublish({
+          dir: path.join(REPO_ROOT, clientName),
+          apiKey: credentials.npmToken,
+          utils});
+      },
+    }));
+
+  ensureTask(tasks, {
+    title: `Publish clients/client-py to pypi`,
+    requires: [
+      'version-updated',
+      'target-monoimage', // to make sure the build succeeds first..
+    ],
+    provides: [
+      `publish-clients/client-py`,
+    ],
+    run: async (requirements, utils) => {
+      if (!cmdOptions.push) {
+        return utils.skip({});
+      }
+
+      await pyClientRelease({
+        dir: path.join(REPO_ROOT, 'clients', 'client-py'),
+        username: credentials.pypiUsername,
+        password: credentials.pypiPassword,
+        utils});
+    },
+  });
+
+  ensureTask(tasks, {
+    title: 'Release Complete',
+    requires: [
+      'github-release',
+      'publish-clients/client',
+      'publish-clients/client-web',
+      'publish-clients/client-py',
+    ],
+    provides: [
+      'target-release',
+    ],
+    run: async (requirements, utils) => {
+      // this just gathers requirements into a single target..
     },
   });
 };

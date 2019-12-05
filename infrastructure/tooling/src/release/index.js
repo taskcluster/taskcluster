@@ -10,8 +10,12 @@ class Release {
   constructor(cmdOptions) {
     this.cmdOptions = cmdOptions;
 
-    if (cmdOptions.push && !cmdOptions.ghToken) {
-      throw new Error('The --gh-token option is required (unless --no-push)');
+    if (cmdOptions.push) {
+      ['GH_TOKEN', 'NPM_TOKEN', 'PYPI_USERNAME', 'PYPI_PASSWORD'].forEach(e => {
+        if (!process.env[e]) {
+          throw new Error(`$${e} is required (unless --no-push)`);
+        }
+      });
     }
 
     this.baseDir = cmdOptions['baseDir'] || '/tmp/taskcluster-builder-build';
@@ -37,6 +41,12 @@ class Release {
     generateReleaseTasks({
       tasks,
       cmdOptions: this.cmdOptions,
+      credentials: {
+        ghToken: process.env.GH_TOKEN,
+        npmToken: process.env.NPM_TOKEN,
+        pypiUsername: process.env.PYPI_USERNAME,
+        pypiPassword: process.env.PYPI_PASSWORD,
+      },
       baseDir: this.baseDir,
     });
 
@@ -58,6 +68,7 @@ class Release {
         // and let's be sane about how many git clones we do..
         git: new Lock(8),
       },
+      target: 'target-release',
       renderer: process.stdout.isTTY ?
         new ConsoleRenderer({elideCompleted: true}) :
         new LogRenderer(),
@@ -71,13 +82,9 @@ class Release {
     console.log(`Release version: ${context['release-version']}`);
     console.log(`Release docker image: ${context['monoimage-docker-image']}`);
     if (!this.cmdOptions.push) {
-      console.log('NOTE: image and git commit + tags not pushed due to --no-push option');
+      console.log('NOTE: image, git commit + tags, and packages not pushed due to --no-push option');
     } else {
       console.log(`GitHub release: ${context['github-release']}`);
-      console.log('** YOUR NEXT STEPS **');
-      console.log(' * run `npm publish` in clients/client');
-      console.log(' * run `npm publish` in clients/client-web');
-      console.log(' * run `./release.sh --real` in clients/client-py');
     }
   }
 }
