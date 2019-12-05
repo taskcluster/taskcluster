@@ -74,13 +74,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         }],
     },
   ];
-  const UserData = {
-    rootUrl: helper.rootUrl,
-    workerPoolId,
-    providerId,
-    workerGroup: providerId,
-    workerConfig: {foo: 5},
-  };
   const defaultWorker = {
     workerPoolId,
     workerGroup: providerId,
@@ -250,6 +243,31 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     });
 
     test('UserData should be base64 encoded', async function() {
+      await workerPool.modify(wp => {
+        wp.config.launchConfigs[0].additionalUserData = {
+          somethingImportant: "apple",
+        };
+      });
+
+      await provider.provision({workerPool});
+      const workers = await helper.Worker.scan({}, {});
+
+      assert.notStrictEqual(workers.entries.length, 0);
+      assert.deepStrictEqual(
+         JSON.parse(Buffer.from(
+           ...aws.EC2().runInstances.calls.map(({launchConfig: {UserData}}) => UserData),
+           'base64'
+         ).toString()),
+        {
+          somethingImportant: 'apple',
+          rootUrl: provider.rootUrl,
+          workerPoolId: workerPool.workerPoolId,
+          providerId: provider.providerId,
+          workerGroup: provider.providerId,
+          workerConfig: workerPool.config.launchConfigs[0].workerConfig,
+        }
+      );
+
       sinon.restore();
     });
   });
