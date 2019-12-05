@@ -491,10 +491,10 @@ func cancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload Generi
 // CreateArtifactFromFile returns a taskID for a task with an artifact with the
 // given name whose content matches the content of the local file (relative to
 // the testdata folder) with the given path. It does this by creating a hash of
-// the file content together with the name of the file, and then converts the
-// hash into a "nice" slug. It then checks if the task already exists. If it
-// does exist, it simply returns the taskID. If it doesn't, it creates the task
-// and returns.
+// the file content together with the name of the artifact, and then converts
+// the hash into a "nice" slug. It then checks if the task already exists. If
+// it does exist, it simply returns the taskID. If it doesn't, it creates the
+// task and returns.
 func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID string) {
 
 	// Calculate hash of file content
