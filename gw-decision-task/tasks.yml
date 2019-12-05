@@ -74,9 +74,14 @@ Tasks:
         ENGINE: 'multiuser'
         # We must set here since this worker type does not have a Z: drive
         GW_SKIP_Z_DRIVE_TESTS: 'true'
-    - WorkerPool: 'proj-taskcluster/gw-ci-windows7-386'
-      Env:
-        ENGINE: 'multiuser'
+#####################################################################
+#   #############################################################   #
+#   # DISABLING WINDOWS 7 UNTIL WE HAVE WINDOWS 7 WORKERS AGAIN #   #
+#   #############################################################   #
+#   - WorkerPool: 'proj-taskcluster/gw-ci-windows7-386'             #
+#     Env:                                                          #
+#       ENGINE: 'multiuser'                                         #
+#####################################################################
   CheckDeps:
     - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
 
