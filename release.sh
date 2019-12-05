@@ -10,7 +10,11 @@ if [ -z "$VERSION" ]; then
 fi
 
 go run util/update-readme.go
-sed -i '' -e "s/Version = .*/Version = \"$VERSION\"/" version.go
+if [[ `uname` == 'Darwin' ]]; then
+    sed -i '' -e "s/Version = .*/Version = \"$VERSION\"/" version.go
+else
+    sed -i -e "s/Version = .*/Version = \"$VERSION\"/" version.go
+fi
 git add version.go README.md
 git commit -m "v$VERSION"
 git tag v$VERSION
