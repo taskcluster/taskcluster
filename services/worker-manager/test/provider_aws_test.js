@@ -131,7 +131,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
     sinon.stub(aws, 'EC2').returns({
       ...fakeAWS.EC2,
-      runInstances: fakeAWS.EC2.runInstances({defaultLaunchConfig, TagSpecifications, UserData}),
+      runInstances: fakeAWS.EC2.runInstances(),
     });
 
     await provider.setup();
@@ -181,10 +181,71 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     });
 
     test('instance tags in launch spec - should merge them with our instance tags', async function() {
+      await workerPool.modify(wp => {
+        wp.config.launchConfigs[0].launchConfig.TagSpecifications = [{
+          ResourceType: 'instance',
+          Tags: [{Key: 'mytag', Value: 'testy'}],
+        }];
+      });
+
+      await provider.provision({workerPool});
+      const workers = await helper.Worker.scan({}, {});
+
+      assert.notStrictEqual(workers.entries.length, 0);
+      assert.deepStrictEqual(
+        ...aws.EC2().runInstances.calls.map(({launchConfig: {TagSpecifications}}) => TagSpecifications),
+        [
+          {
+            ResourceType: 'instance',
+            Tags: [
+              {Key: 'mytag', Value: 'testy'},
+              {Key: 'CreatedBy', Value: 'taskcluster-wm-aws'},
+              {Key: 'Owner', Value: 'whatever@example.com'},
+              {Key: 'ManagedBy', Value: 'taskcluster'},
+              {Key: 'Name', Value: 'foo/bar'},
+              {Key: "WorkerPoolId", Value: "foo/bar"},
+            ],
+          },
+        ],
+      );
+
       sinon.restore();
     });
 
     test('no instance tags in launch spec, but other tags - should have 1 object per resource type', async function() {
+      await workerPool.modify(wp => {
+        wp.config.launchConfigs[0].launchConfig.TagSpecifications = [{
+          ResourceType: 'launch-template',
+          Tags: [{Key: 'fruit', Value: 'banana'}],
+        }];
+      });
+
+      await provider.provision({workerPool});
+      const workers = await helper.Worker.scan({}, {});
+
+      assert.notStrictEqual(workers.entries.length, 0);
+      assert.deepStrictEqual(
+        ...aws.EC2().runInstances.calls.map(({launchConfig: {TagSpecifications}}) => TagSpecifications),
+        [
+          {
+            ResourceType: 'launch-template',
+            Tags: [
+              {Key: 'fruit', Value: 'banana'},
+            ],
+          },
+          {
+            ResourceType: 'instance',
+            Tags: [
+              {Key: 'CreatedBy', Value: 'taskcluster-wm-aws'},
+              {Key: 'Owner', Value: 'whatever@example.com'},
+              {Key: 'ManagedBy', Value: 'taskcluster'},
+              {Key: 'Name', Value: 'foo/bar'},
+              {Key: "WorkerPoolId", Value: "foo/bar"},
+            ],
+          },
+        ]
+      );
+
       sinon.restore();
     });
 

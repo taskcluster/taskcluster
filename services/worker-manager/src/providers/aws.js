@@ -115,11 +115,13 @@ class AwsProvider extends Provider {
       // Make sure we don't get "The same resource type may not be specified
       // more than once in tag specifications" errors
       const TagSpecifications = config.launchConfig.TagSpecifications || [];
-      const instanceTags = [];
-      const otherTagSpecs = [];
-      TagSpecifications.forEach(ts =>
-        ts.ResourceType === 'instance' ? instanceTags.concat(ts.Tags) : otherTagSpecs.push(ts),
-      );
+      let instanceTags = [];
+      let otherTagSpecs = [];
+      TagSpecifications.forEach(ts => {
+        ts.ResourceType === 'instance'
+          ? instanceTags = instanceTags.concat(ts.Tags)
+          : otherTagSpecs.push(ts);
+      });
 
       const userData = Buffer.from(JSON.stringify({
         ...config.additionalUserData,
