@@ -68,6 +68,8 @@ github.com/taskcluster/taskcluster/clients/client-go/v23 v23.0.0 h1:QQDQUy8zHLdf
 github.com/taskcluster/taskcluster/clients/client-go/v23 v23.0.0/go.mod h1:5NZbdHaaF2/yjkHtlcEKm4AXs3EH3M5Kih0wAEGRlMs=
 github.com/taskcluster/taskcluster/clients/client-go/v24 v24.0.0 h1:03uNIClKs8xbSkW517+d9aeBQVixPVYEThsi3TumZ8k=
 github.com/taskcluster/taskcluster/clients/client-go/v24 v24.0.0/go.mod h1:/KuWQwJKVCMCvuhxUNo/L2zZtCI3SnQ82G84UMJiwww=
+github.com/taskcluster/taskcluster/clients/client-go/v24 v24.0.1 h1:f2ghsNtDQgYFnoHAD7lw/I4imX1L7yDow7e4Etlqpys=
+github.com/taskcluster/taskcluster/clients/client-go/v24 v24.0.1/go.mod h1:/KuWQwJKVCMCvuhxUNo/L2zZtCI3SnQ82G84UMJiwww=
 github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957 h1:6Fre/uvwovW5YY4nfHZk66cAg9HjT9YdFSAJHUUgOyQ=
 github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957/go.mod h1:dch7ywQEefE1ibFqBG1erFibrdUIwovcwQjksYuHuP4=
 github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb/go.mod h1:N2zxlSyiKSe5eX1tZViRH5QA0qijqEDrYZiPEAiq3wU=
