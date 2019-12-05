@@ -3,7 +3,6 @@ package azure
 import (
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -145,6 +144,9 @@ func (p *AzureProvider) WorkerStarted() error {
 		for {
 			<-p.terminationTicker.C
 			log.Println("polling for termination-time")
+			// NOTE: the first call to this method may take up to 120s:
+			// https://docs.microsoft.com/en-us/azure/virtual-machines/linux/scheduled-events#enabling-and-disabling-scheduled-events
+			// that may lead to a "backlog" of checks, but that won't do any real harm.
 			p.checkTerminationTime()
 		}
 	}()
@@ -198,16 +200,13 @@ func new(
 		metadataService = &realMetadataService{}
 	}
 
-	p := &AzureProvider{
+	// While it's tempting to check for termination here, as is done for the AWS provider, it
+	// will cause worker startup to be delayed by several minutes because the scheduled-events
+	// metadata API endpoint takes that long to "start up" on its first call.
+	return &AzureProvider{
 		runnercfg:                  runnercfg,
 		workerManagerClientFactory: workerManagerClientFactory,
 		metadataService:            metadataService,
 		proto:                      nil,
-	}
-
-	if p.checkTerminationTime() {
-		return nil, errors.New("Instance is about to shutdown")
-	}
-
-	return p, nil
+	}, nil
 }
