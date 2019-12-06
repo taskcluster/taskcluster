@@ -1,1 +1,1 @@
-Please see the [/imagesets](imagesets) directory instead.
+Please see the [/imagesets](/imagesets) directory instead.
