@@ -15,7 +15,15 @@ module.exports = ({ auth }) => {
     },
   );
   const client = new DataLoader(clientIds =>
-    Promise.all(clientIds.map(clientId => auth.client(clientId))),
+    Promise.all(
+      clientIds.map(clientId => {
+        try {
+          return auth.client(clientId)
+        } catch (err) {
+          return err;
+        }
+      })
+    ),
   );
 
   return {
