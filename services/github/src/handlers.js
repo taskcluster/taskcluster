@@ -2,6 +2,7 @@ const Debug = require('debug');
 const taskcluster = require('taskcluster-client');
 const libUrls = require('taskcluster-lib-urls');
 const yaml = require('js-yaml');
+const parseRoute = require('parse-route');
 const assert = require('assert');
 const {consume} = require('taskcluster-lib-pulse');
 
@@ -109,6 +110,9 @@ class Handlers {
       queueEvents.taskFailed(`route.${this.context.cfg.app.checkTaskRoute}`),
       queueEvents.taskException(`route.${this.context.cfg.app.checkTaskRoute}`),
       queueEvents.taskCompleted(`route.${this.context.cfg.app.checkTaskRoute}`),
+      queueEvents.taskFailed(`route.github.v1.checks.#`),
+      queueEvents.taskException(`route.github.v1.checks.#`),
+      queueEvents.taskCompleted(`route.github.v1.checks.#`),
     ];
 
     // Listen for state changes to the taskcluster tasks and taskgroups
@@ -128,6 +132,7 @@ class Handlers {
 
     // Listen for taskDefined event to create initial status on github
     const taskBindings = [
+      queueEvents.taskDefined(`route.github.v1.checks.#`),
       queueEvents.taskDefined(`route.${this.context.cfg.app.checkTaskRoute}`),
     ];
 
@@ -438,13 +443,26 @@ async function statusHandler(message) {
 
   let conclusion = CONCLUSIONS[reasonResolved || state];
 
-  let build = await this.context.Builds.load({
-    taskGroupId,
-  });
 
-  let {organization, repository, sha, eventId, eventType, installationId} = build;
+  let organization, repository, sha, eventType, installationId;
+  if (message.routingKey == `route.${this.context.cfg.app.checkTaskRoute}`) {
+    let build = await this.context.Builds.load({
+      taskGroupId,
+    });
+    {organization, repository, sha, eventType, installationId} = build;
+  } else {
+    let (primaryKey, route} = message.split('.', 1);
+    {organization, repository, sha, eventType} = parseRoute(route);
+    let ownerInfo = await this.context.OwnersDirectory.load({owner}, true);
+    if (ownerInfo) {
+      installationId =  await this.context.github.getInstallationGithub(ownerInfo.installationId);
+    } else {
+      throw new Error()
+    }
+  }
 
-  let debug = Debug(`${debugPrefix}:${eventId}`);
+  let debug = Debug(`${debugPrefix}`);
+
   debug(`Handling state change for task ${taskId} in group ${taskGroupId}`);
 
   let taskState = {
@@ -780,6 +798,7 @@ async function taskDefinedHandler(message) {
   const debug = Debug(`${debugPrefix}:task-handler`);
   debug(`Task was defined for task group ${taskGroupId}. Creating status for task ${taskId}...`);
 
+  // FIXME: handle new checks route
   const {
     organization,
     repository,

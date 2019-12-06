@@ -201,6 +201,7 @@ const load = loader({
       'publisher',
       'CheckRuns',
       'ChecksToTasks',
+      'OwnersDirectory',
     ],
     setup: async ({
       cfg,
@@ -214,6 +215,7 @@ const load = loader({
       publisher,
       CheckRuns,
       ChecksToTasks,
+      OwnersDirectory,
     }) =>
       new Handlers({
         rootUrl: cfg.taskcluster.rootUrl,
@@ -226,8 +228,9 @@ const load = loader({
         deprecatedInitialStatusQueueName: cfg.app.deprecatedInitialStatusQueue,
         resultStatusQueueName: cfg.app.resultStatusQueue,
         initialStatusQueueName: cfg.app.initialStatusQueue,
-        context: {cfg, github, schemaset, Builds, CheckRuns, ChecksToTasks, publisher},
+        context: {cfg, github, schemaset, Builds, CheckRuns, ChecksToTasks, publisher, OwnersDirectory},
         pulseClient,
+        OwnersDirectory,
       }),
   },
 
