@@ -14,6 +14,7 @@ const { Auth } = require('taskcluster-client');
 const monitorManager = require('./monitor');
 const createApp = require('./servers/createApp');
 const formatError = require('./servers/formatError');
+const clients = require('./clients');
 const createContext = require('./createContext');
 const createSchema = require('./createSchema');
 const createSubscriptionServer = require('./servers/createSubscriptionServer');
@@ -85,10 +86,16 @@ const load = loader(
         }),
     },
 
+    clients: {
+      requires: [],
+      setup: () => clients,
+    },
+
     context: {
-      requires: ['cfg', 'pulseEngine', 'strategies', 'monitor'],
-      setup: ({ cfg, pulseEngine, strategies, monitor }) =>
+      requires: ['cfg', 'pulseEngine', 'strategies', 'clients', 'monitor'],
+      setup: ({ cfg, pulseEngine, strategies, clients, monitor }) =>
         createContext({
+          clients,
           pulseEngine,
           rootUrl: cfg.taskcluster.rootUrl,
           strategies,

@@ -1,0 +1,5 @@
+mutation CreateTask($taskId: ID!, $task: TaskInput!) {
+  createTask(taskId: $taskId, task: $task) {
+    taskId
+  }
+}
