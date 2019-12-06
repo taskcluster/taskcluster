@@ -5,9 +5,13 @@ module.exports = ({ queue }) => {
   const status = new DataLoader(taskIds =>
     Promise.all(
       taskIds.map(async taskId => {
-        const { status } = await queue.status(taskId);
+        try {
+          const { status } = await queue.status(taskId);
 
-        return new TaskStatus(taskId, status);
+          return new TaskStatus(taskId, status);
+        } catch (err) {
+          return err;
+        }
       }),
     ),
   );
