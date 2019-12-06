@@ -94,6 +94,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       region: actualWorkerIid.region,
       imageId: actualWorkerIid.imageId,
       instanceType: actualWorkerIid.instanceType,
+      instanceCapacity: defaultLaunchConfig.capacityPerInstance,
       architecture: actualWorkerIid.architecture,
       availabilityZone: actualWorkerIid.availabilityZone,
       privateIp: actualWorkerIid.privateIp,
@@ -391,21 +392,78 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   });
 
   suite('AWS provider - checkWorker', function() {
-    // TODO: Can someone fill these out and then I'll add tests for the lifecycle stuff here as well?
 
-    test('stopped and terminated instances - should be marked as STOPPED in DB', async function() {
+    test('stopped instances - should be marked as STOPPED in DB, should not add to seen', async function() {
+      const worker = await helper.Worker.create({
+        ...workerInDB,
+        workerId: 'stopped', // stub function will return this as status
+        state: helper.Worker.states.RUNNING,
+      });
+
+      provider.seen = {};
+      await provider.checkWorker({worker: worker});
+
+      const workers = await helper.Worker.scan({}, {});
+      assert.notStrictEqual(workers.entries.length, 0);
+      workers.entries.forEach(w =>
+        assert.strictEqual(w.state, helper.Worker.states.STOPPED)
+      );
+      assert.strictEqual(provider.seen[worker.workerPoolId], 0);
+
       sinon.restore();
     });
 
     test('pending/running,/shutting-down/stopping instances - should not reject', async function() {
+      const worker = await helper.Worker.create({
+        ...workerInDB,
+        workerId: 'running', // stub function will return this as status
+        state: helper.Worker.states.REQUESTED,
+      });
+
+      provider.seen = {};
+      await provider.checkWorker({worker: worker});
+
+      const workers = await helper.Worker.scan({}, {});
+      assert.notStrictEqual(workers.entries.length, 0);
+      workers.entries.forEach(w =>
+        assert.strictEqual(w.state, helper.Worker.states.REQUESTED)
+      );
+      assert.strictEqual(provider.seen[worker.workerPoolId], 1);
+
       sinon.restore();
     });
 
     test('some strange status - should reject', async function() {
+      const worker = await helper.Worker.create({
+        ...workerInDB,
+        workerId: 'banana', // stub function will return this as status
+        state: helper.Worker.states.REQUESTED,
+      });
+
+      provider.seen = {};
+      await assert.rejects(provider.checkWorker({worker: worker}));
+      assert.strictEqual(provider.seen[worker.workerPoolId], 0);
+
       sinon.restore();
     });
 
     test('instance terminated by hand - should be marked as STOPPED in DB; should not reject', async function() {
+      const worker = await helper.Worker.create({
+        ...workerInDB,
+        workerId: 'terminated', // stub function will return this as status
+        state: helper.Worker.states.RUNNING,
+      });
+
+      provider.seen = {};
+      await provider.checkWorker({worker: worker});
+
+      const workers = await helper.Worker.scan({}, {});
+      assert.notStrictEqual(workers.entries.length, 0);
+      workers.entries.forEach(w =>
+        assert.strictEqual(w.state, helper.Worker.states.STOPPED)
+      );
+      assert.strictEqual(provider.seen[worker.workerPoolId], 0);
+
       sinon.restore();
     });
   });
