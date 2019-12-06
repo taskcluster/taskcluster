@@ -53,7 +53,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     extra: {},
   }, options);
 
-  suite('graphql', function() {
+  suite('Queue', function() {
     test('query works', async function() {
       const client = getClient();
       const taskId = taskcluster.slugid();

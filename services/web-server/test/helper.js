@@ -191,10 +191,6 @@ exports.withGithubClient = () => {
 const stubbedAuth = () => {
   const auth = new taskcluster.Auth({
     rootUrl: exports.rootUrl,
-    credentials: {
-      clientId: 'index-server',
-      accessToken: 'none',
-    },
     fake: {
       createClient: async (clientId, input) => {
         return Promise.resolve({
@@ -219,10 +215,6 @@ const stubbedClients = () => {
   const tasks = new Map();
   const options = {
     rootUrl: exports.rootUrl,
-    credentials: {
-      clientId: 'foo',
-      accessToken: 'bar',
-    },
   };
 
   return () => ({
