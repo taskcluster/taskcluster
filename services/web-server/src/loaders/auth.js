@@ -37,7 +37,7 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => 
     Promise.all(
       queries.map(() => {
         try {
-          Boolean(req.user);
+          return Boolean(req.user);
         } catch (err) {
           return err;
         }
