@@ -63,5 +63,16 @@ module.exports = {
         }),
       };
     },
+
+    // to make this function return the status you want, pass it in as an instance id
+    // in other words, make the status your workerId in the worker fixture
+    describeInstanceStatus: options => ({
+      promise: () => ({
+        InstanceStatuses: [{
+          InstanceState: {Name: options.InstanceIds[0]},
+          InstanceId: 'dummy-worker',
+        }],
+      }),
+    }),
   },
 };

@@ -297,7 +297,7 @@ class AwsProvider extends Provider {
       throw e;
     }
 
-    Promise.all(instanceStatuses.map(is => {
+    return Promise.all(instanceStatuses.map(is => {
       switch (is.InstanceState.Name) {
         case 'pending':
         case 'running':
@@ -316,7 +316,7 @@ class AwsProvider extends Provider {
           return worker.modify(w => {w.state = this.Worker.states.STOPPED;});
 
         default:
-          return Promise.reject(`Unknown state: ${is.InstanceState.Name} for ${is.InstanceId}`);
+          return Promise.reject(new Error(`Unknown state: ${is.InstanceState.Name} for ${is.InstanceId}`));
       }
     }));
   }
