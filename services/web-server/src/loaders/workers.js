@@ -7,12 +7,12 @@ module.exports = ({ queue }) => {
   const worker = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ provisionerId, workerType, workerGroup, workerId }) => {
-          try {
-            return queue.getWorker(provisionerId, workerType, workerGroup, workerId);
-          } catch (err) {
-            return err;
-          }
+        try {
+          return queue.getWorker(provisionerId, workerType, workerGroup, workerId);
+        } catch (err) {
+          return err;
         }
+      },
       ),
     ),
   );

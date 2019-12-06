@@ -30,11 +30,11 @@ module.exports = ({ auth }) => {
     Promise.all(
       roleIds.map(roleId => {
         try {
-          return auth.role(roleId)
+          return auth.role(roleId);
         } catch (err) {
           return err;
         }
-      })
+      }),
     ),
   );
 

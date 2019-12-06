@@ -48,7 +48,7 @@ module.exports = ({ hooks }) => {
         } catch (err) {
           return err;
         }
-      }
+      },
       ),
     ),
   );

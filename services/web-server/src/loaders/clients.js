@@ -18,11 +18,11 @@ module.exports = ({ auth }) => {
     Promise.all(
       clientIds.map(clientId => {
         try {
-          return auth.client(clientId)
+          return auth.client(clientId);
         } catch (err) {
           return err;
         }
-      })
+      }),
     ),
   );
 

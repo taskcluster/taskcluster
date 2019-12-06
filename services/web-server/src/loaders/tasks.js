@@ -13,18 +13,18 @@ module.exports = ({ queue, index }) => {
         } catch (err) {
           return err;
         }
-      })
+      }),
     ),
   );
   const indexedTask = new DataLoader(indexPaths =>
     Promise.all(
       indexPaths.map(indexPath => {
         try {
-          return index.findTask(indexPath)
+          return index.findTask(indexPath);
         } catch (err) {
           return err;
         }
-      })
+      }),
     ),
   );
   const taskGroup = new ConnectionLoader(

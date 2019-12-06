@@ -15,7 +15,7 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => 
           throw unauthorizedError;
         }
 
-        try { 
+        try {
           const credsResponse = await generateCredentials({
             cfg,
             strategy: strategies[req.user.identityProviderId],
@@ -32,12 +32,12 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => 
       }),
     );
   });
-  
+
   const isLoggedIn = new DataLoader(queries =>
     Promise.all(
       queries.map(() => {
         try {
-          Boolean(req.user)
+          Boolean(req.user);
         } catch (err) {
           return err;
         }
