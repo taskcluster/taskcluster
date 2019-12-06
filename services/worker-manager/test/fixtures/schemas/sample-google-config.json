@@ -1,0 +1,19 @@
+{
+  "launchConfigs": [
+    {
+      "launchConfig": {
+        "ImageId": "banana"
+      },
+      "region": "us-west",
+      "capacityPerInstance": 1,
+      "workerConfig": {},
+      "zone": "darkness",
+      "machineType": "some-cool-type",
+      "disks": [],
+      "networkInterfaces": [],
+      "scheduling": {}
+    }
+  ],
+  "minCapacity": 1,
+  "maxCapacity": 1
+}
