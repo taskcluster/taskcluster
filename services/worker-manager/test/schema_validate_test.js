@@ -21,8 +21,6 @@ suite(testing.suiteName(), () => {
         path: 'sample-aws-config.json',
         success: true,
       },
-
-
       {
         schema: 'v1/config-google.json#',
         path: 'sample-google-config.json',
