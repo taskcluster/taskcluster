@@ -23,15 +23,14 @@ class Database {
     };
 
     // generate a JS method for each DB method defined in the schema
-    schema.methods.forEach(({rw}, method) => {
-      this[method] = async (...args) => {
+    schema.allMethodNames().forEach(({ name, mode}) => {
+      this[name] = async (...args) => {
         const placeholders = [...new Array(args.length).keys()].map(i => `$${i + 1}`).join(',');
-        const res = await this._withClient(rw, client => client.query(
-          `select * from ${method}(${placeholders})`, args));
+        const res = await this._withClient(mode, client => client.query(
+          `select * from ${name}(${placeholders})`, args));
         return res.rows;
       };
     });
-
   }
 
   /**
@@ -84,19 +83,28 @@ class Database {
     });
   }
 
-  async _doUpgrade(script, version) {
+  async _doUpgrade(version) {
     await this._withClient(WRITE, async client => {
       await client.query('begin');
-      if (version === 1) {
+      if (version.version === 1) {
         await client.query('create table tcversion as select 0 as version');
       }
       // check the version and lock it to prevent other things from changing it
       const res = await client.query('select version from tcversion for update');
-      if (res.rowCount !== 1 || res.rows[0].version !== version - 1) {
+      if (res.rowCount !== 1 || res.rows[0].version !== version.version - 1) {
         throw Error('Multiple DB upgrades running simultaneously');
       }
-      await client.query(`DO ${dollarQuote(script)}`);
-      await client.query('update tcversion set version = $1', [version]);
+      await client.query(`DO ${dollarQuote(version.migrationScript)}`);
+      Promise.all(
+        Object.entries(version.methods).map(async ([methodName, { mode, args, body, returns }]) => {
+          await client.query(`create or replace function
+          ${methodName}(${args})
+          returns ${returns}
+          as ${dollarQuote(body)}
+          language plpgsql`);
+        }),
+      );
+      await client.query('update tcversion set version = $1', [version.version]);
       await client.query('commit');
     });
   }
@@ -128,7 +136,7 @@ class Database {
 Database.setup = async (schema, dbOptions) => {
   const db = new Database({...dbOptions, schema});
   const dbVersion = await db.getVersion();
-  if (dbVersion < schema.version) {
+  if (dbVersion < schema.latestVersion()) {
     throw new Error('Database version is older than this software version');
   }
   return db;
@@ -142,13 +150,15 @@ Database.upgrade = async (schema, dbOptions) => {
   const db = new Database({...dbOptions, schema});
   try {
     const dbVersion = await db.getVersion();
+    const latestVersion = schema.latestVersion();
 
     // perform any necessary upgrades..
-    if (dbVersion < schema.version) {
+    if (dbVersion < latestVersion) {
       // run each of the upgrade scripts
-      for (let prevSchema of schema.versions.slice(dbVersion + 1)) {
-        debug(`upgrading to version ${schema.version}`);
-        await db._doUpgrade(prevSchema.script, prevSchema.version);
+      for (let v = dbVersion + 1; v < latestVersion; v++) {
+        debug(`upgrading to version ${v}`);
+        const version = schema.getVersion(v);
+        await db._doUpgrade(version);
       }
     }
 
