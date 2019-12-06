@@ -1,5 +1,3 @@
-/* eslint-disable comma-dangle */
-
 const {ApiError} = require('../src/providers/provider');
 const assert = require('assert');
 const sinon = require('sinon');
@@ -208,7 +206,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       assert.deepStrictEqual(
         JSON.parse(Buffer.from(
           ...aws.EC2().runInstances.calls.map(({launchConfig: {UserData}}) => UserData),
-          'base64'
+          'base64' // eslint-disable-line comma-dangle
         ).toString()),
         {
           somethingImportant: 'apple',
@@ -217,7 +215,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
           providerId: provider.providerId,
           workerGroup: provider.providerId,
           workerConfig: workerPool.config.launchConfigs[0].workerConfig,
-        }
+        } // eslint-disable-line comma-dangle
       );
 
       sinon.restore();
@@ -357,7 +355,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       const workers = await helper.Worker.scan({}, {});
       assert.notStrictEqual(workers.entries.length, 0);
       workers.entries.forEach(w =>
-        assert.strictEqual(w.state, helper.Worker.states.STOPPED)
+        assert.strictEqual(w.state, helper.Worker.states.STOPPED) // eslint-disable-line comma-dangle
       );
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
 
@@ -377,7 +375,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       const workers = await helper.Worker.scan({}, {});
       assert.notStrictEqual(workers.entries.length, 0);
       workers.entries.forEach(w =>
-        assert.strictEqual(w.state, helper.Worker.states.REQUESTED)
+        assert.strictEqual(w.state, helper.Worker.states.REQUESTED) // eslint-disable-line comma-dangle
       );
       assert.strictEqual(provider.seen[worker.workerPoolId], 1);
 
@@ -411,7 +409,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       const workers = await helper.Worker.scan({}, {});
       assert.notStrictEqual(workers.entries.length, 0);
       workers.entries.forEach(w =>
-        assert.strictEqual(w.state, helper.Worker.states.STOPPED)
+        assert.strictEqual(w.state, helper.Worker.states.STOPPED) // eslint-disable-line comma-dangle
       );
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
 
