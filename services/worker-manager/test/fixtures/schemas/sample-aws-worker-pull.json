@@ -1,4 +1,12 @@
 {
+  "workerPoolId": "delete/worker",
+  "providerId": "aws",
+  "description": "a workertype",
+  "owner": "owlish@mozilla.com",
+  "emailOnError": true,
+  "created": "2019-10-18T21:16:41.593Z",
+  "lastModified": "2019-10-18T21:16:41.593Z",
+  "config": {
     "launchConfigs": [
       {
         "launchConfig": {
@@ -28,3 +36,4 @@
     "minCapacity": 1,
     "maxCapacity": 1
   }
+}
