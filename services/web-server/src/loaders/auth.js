@@ -15,22 +15,33 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => 
           throw unauthorizedError;
         }
 
-        const credsResponse = await generateCredentials({
-          cfg,
-          strategy: strategies[req.user.identityProviderId],
-          identity: req.user.identity,
-          monitor,
-        });
+        try { 
+          const credsResponse = await generateCredentials({
+            cfg,
+            strategy: strategies[req.user.identityProviderId],
+            identity: req.user.identity,
+            monitor,
+          });
 
-        await regenerateSession(req);
+          await regenerateSession(req);
 
-        return credsResponse;
+          return credsResponse;
+        } catch (err) {
+          return err;
+        }
       }),
     );
   });
+  
   const isLoggedIn = new DataLoader(queries =>
     Promise.all(
-      queries.map(() => Boolean(req.user)),
+      queries.map(() => {
+        try {
+          Boolean(req.user)
+        } catch (err) {
+          return err;
+        }
+      }),
     ),
   );
 
