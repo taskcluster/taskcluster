@@ -1,4 +1,4 @@
 level: patch
 reference: issue 2125
 ---
-<!-- replace this text with your changelog entry.  See dev-docs/best-practices/changelog.md for help writing changelog entries. -->
+`Promise.all` in the graphql loaders wont reject the entire promise if an error is thrown.
