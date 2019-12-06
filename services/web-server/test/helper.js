@@ -47,6 +47,20 @@ exports.withFakeAuth = (mock, skipping) => {
   });
 };
 
+exports.withClients = (mock, skipping) => {
+  suiteSetup('withClients', async function() {
+    if (skipping()) {
+      return;
+    }
+
+    exports.load.inject('clients', stubbedClients());
+  });
+
+  suiteTeardown(function () {
+    exports.load.remove('clients');
+  });
+};
+
 exports.withServer = (mock, skipping) => {
   let webServer;
 
@@ -199,4 +213,64 @@ const stubbedAuth = () => {
   });
 
   return auth;
+};
+
+const stubbedClients = () => {
+  const tasks = new Map();
+  const options = {
+    rootUrl: exports.rootUrl,
+    credentials: {
+      clientId: 'foo',
+      accessToken: 'bar',
+    },
+  };
+
+  return () => ({
+    github: new taskcluster.Github(options),
+    hooks: new taskcluster.Hooks(options),
+    index: new taskcluster.Index(options),
+    purgeCache: new taskcluster.PurgeCache(options),
+    secrets: new taskcluster.Secrets(options),
+    queueEvents: new taskcluster.QueueEvents(options),
+    notify: new taskcluster.Notify(options),
+    workerManager: new taskcluster.WorkerManager(options),
+    auth: new taskcluster.Auth(options),
+    queue: new taskcluster.Queue({
+      ...options,
+      fake: {
+        task: async (taskId) => {
+          const taskDef = tasks.get(taskId);
+
+          return Promise.resolve({
+            taskId,
+            ...taskDef,
+          });
+        },
+        createTask: async (taskId, taskDef) => {
+          tasks.set(taskId, taskDef);
+          const taskRun = {
+            taskId,
+            runId: 0,
+            state: 'running',
+            reasonCreated: 'scheduled',
+            scheduled: taskcluster.fromNowJSON(),
+          };
+          const taskStatus = {
+            taskId,
+            provisionerId: taskDef.provisionerId,
+            workerType: taskDef.workerType,
+            schedulerId: taskDef.schedulerId,
+            taskGroupId: taskDef.taskGroupId,
+            deadline: taskDef.deadline,
+            expires: taskDef.expires,
+            retriesLeft: 1,
+            state: 'running',
+            runs: taskRun,
+          };
+
+          return Promise.resolve(taskStatus);
+        },
+      },
+    }),
+  });
 };
