@@ -1,3 +1,5 @@
+/* eslint-disable comma-dangle */
+
 const {ApiError} = require('../src/providers/provider');
 const assert = require('assert');
 const sinon = require('sinon');
@@ -48,32 +50,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     providerData: {},
     emailOnError: false,
   };
-  const TagSpecifications = [
-    ...(defaultLaunchConfig.launchConfig.TagSpecifications ? defaultLaunchConfig.launchConfig.TagSpecifications : []),
-    {
-      ResourceType: 'instance',
-      Tags: [
-        {
-          Key: 'CreatedBy',
-          Value: `taskcluster-wm-${providerId}`,
-        }, {
-          Key: 'Owner',
-          Value: workerPool.owner,
-        },
-        {
-          Key: 'ManagedBy',
-          Value: 'taskcluster',
-        },
-        {
-          Key: 'Name',
-          Value: `${workerPoolId}`,
-        },
-        {
-          Key: 'WorkerPoolId',
-          Value: `${workerPoolId}`,
-        }],
-    },
-  ];
   const defaultWorker = {
     workerPoolId,
     workerGroup: providerId,
@@ -212,7 +188,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
               {Key: "WorkerPoolId", Value: "foo/bar"},
             ],
           },
-        ]
+        ],
       );
 
       sinon.restore();
@@ -230,10 +206,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
       assert.notStrictEqual(workers.entries.length, 0);
       assert.deepStrictEqual(
-         JSON.parse(Buffer.from(
-           ...aws.EC2().runInstances.calls.map(({launchConfig: {UserData}}) => UserData),
-           'base64'
-         ).toString()),
+        JSON.parse(Buffer.from(
+          ...aws.EC2().runInstances.calls.map(({launchConfig: {UserData}}) => UserData),
+          'base64'
+        ).toString()),
         {
           somethingImportant: 'apple',
           rootUrl: provider.rootUrl,
