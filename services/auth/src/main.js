@@ -12,8 +12,7 @@ const exchanges = require('./exchanges');
 const ScopeResolver = require('./scoperesolver');
 const signaturevalidator = require('./signaturevalidator');
 const taskcluster = require('taskcluster-client');
-const SentryClient = require('sentry-api').Client;
-const SentryManager = require('./sentrymanager');
+const makeSentryManager = require('./sentrymanager');
 const libPulse = require('taskcluster-lib-pulse');
 const {google: googleapis} = require('googleapis');
 const assert = require('assert');
@@ -25,20 +24,9 @@ const load = Loader({
     setup: ({profile}) => Config({profile}),
   },
 
-  sentryClient: {
-    requires: ['cfg'],
-    setup: ({cfg}) => new SentryClient(`https://${cfg.app.sentry.hostname}`, {
-      token: cfg.app.sentry.authToken,
-    }),
-  },
-
-  // TODO: Remove me when nothing relies on sentry bug #1529461
   sentryManager: {
-    requires: ['cfg', 'sentryClient'],
-    setup: ({cfg, sentryClient}) => new SentryManager({
-      sentryClient,
-      ...cfg.app.sentry,
-    }),
+    requires: ['cfg'],
+    setup: ({cfg}) => makeSentryManager({...cfg.app.sentry}),
   },
 
   monitor: {

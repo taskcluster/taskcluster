@@ -28,6 +28,13 @@ builder.declare({
 
   let key = await this.sentryManager.projectDSN(project);
 
+  if (!key) {
+    return res.reportError(
+      'ResourceNotFound',
+      'Sentry credentials not found',
+      {});
+  }
+
   return res.reply({
     project,
     dsn: _.pick(key.dsn, ['secret', 'public']),

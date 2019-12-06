@@ -2,6 +2,7 @@ const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
 const debug = require('debug')('app:sentry');
 const assert = require('assert');
+const SentryClient = require('sentry-api').Client;
 
 const pattern = /^ managed \(expires-at:([0-9TZ:.-]+)\)$/;
 const parseKeys = (keys, prefix) => {
@@ -25,6 +26,30 @@ const parseKeys = (keys, prefix) => {
     });
   }
   return _.sortBy(results, k => k.expires.getTime());
+};
+
+const makeSentryManager = options => {
+  const cfgs = [
+    'organization',
+    'hostname',
+    'authToken',
+    'initialTeam',
+    'keyPrefix',
+  ];
+  if (cfgs.every(c => options[c])) {
+    if (!options.sentryClient) {
+      options.sentryClient = new SentryClient(`https://${options.hostname}`, {
+        token: options.authToken,
+      });
+    }
+    return new SentryManager(options);
+  }
+  if (cfgs.some(c => options[c])) {
+    throw new Error('If any of the SENTRY_ configuration variables are present, ' +
+                    'all must be present');
+  }
+
+  return new NullSentryManager();
 };
 
 /** Wrapper for managing Sentry projects and expiring keys */
@@ -129,5 +154,15 @@ class SentryManager {
   }
 }
 
+class NullSentryManager {
+  async projectDSN(project) {
+    return null;
+  }
+
+  async purgeExpiredKeys(now) {
+    return 0;
+  }
+}
+
 // Export SentryManager
-module.exports = SentryManager;
+module.exports = makeSentryManager;

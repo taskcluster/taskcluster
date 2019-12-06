@@ -10,6 +10,7 @@ const uuid = require('uuid');
 const Builder = require('taskcluster-lib-api');
 const SchemaSet = require('taskcluster-lib-validate');
 const staticScopes = require('../src/static-scopes.json');
+const makeSentryManager = require('./../src/sentrymanager');
 const {stickyLoader, Secrets, withEntity, withPulse, withMonitor} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
@@ -59,6 +60,8 @@ exports.withCfg = (mock, skipping) => {
   suiteSetup(async function() {
     exports.cfg = await exports.load('cfg');
 
+    exports.load.save();
+
     // override app.staticClients based on the static scopes
     exports.load.cfg('app.staticClients', staticScopes.map(({clientId}) => ({
       clientId,
@@ -68,6 +71,10 @@ exports.withCfg = (mock, skipping) => {
 
     // override cfg.app.azureAccounts based on cfg.azure
     exports.load.cfg('app.azureAccounts', {[exports.cfg.azure.accountId]: exports.cfg.azure.accessKey});
+  });
+
+  suiteTeardown(async function() {
+    exports.load.restore();
   });
 };
 
@@ -159,7 +166,9 @@ exports.withSentry = (mock, skipping) => {
       return;
     }
 
-    const sentryFake = {
+    const cfg = await exports.load('cfg');
+
+    const sentryClient = {
       organizations: {
         projects: org => Object.values(sentryOrgs[org]),
       },
@@ -194,9 +203,10 @@ exports.withSentry = (mock, skipping) => {
       },
     };
 
-    if (mock) {
-      exports.load.inject('sentryClient', sentryFake);
-    }
+    exports.load.inject('sentryManager', makeSentryManager({
+      ...cfg.app.sentry,
+      sentryClient,
+    }));
   });
 };
 
