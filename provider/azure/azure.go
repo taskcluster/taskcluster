@@ -125,7 +125,16 @@ func (p *AzureProvider) checkTerminationTime() bool {
 			p.proto.Send(protocol.Message{
 				Type: "graceful-termination",
 				Properties: map[string]interface{}{
-					// termination generally doesn't leave time to finish tasks
+					// termination generally doesn't leave time to finish
+					// tasks. We prefer to have the worker exit cleanly
+					// immediately, resolving tasks as
+					// exception/worker-shutdown, than to allow Azure to
+					// terminate the worker mid-tasks, which leaves the task
+					// still "running" on the queue until the claim expires, at
+					// which time it is completed as exception/claim-expired.
+					// Either one results in a retry, but the first option is
+					// faster and gives the user more context as to what
+					// happened.
 					"finish-tasks": false,
 				},
 			})
