@@ -794,6 +794,16 @@ go test -v ./...
 
 There are a few environment variables that you can set to influence the tests:
 
+### `GW_SKIP_PYTHON_TESTS`
+
+Set to a non-empty string if you wish to skip all tests that require python to
+be installed.
+
+### `GW_SKIP_MOZILLA_BUILD_TESTS`
+
+Set to a non-empty string if you wish to skip all tests that require
+mozilla-build to be installed.
+
 ### `GW_SKIP_INTEGRATION_TESTS`
 
 Set to a non-empty string if you wish to skip all tests that submit tasks to a

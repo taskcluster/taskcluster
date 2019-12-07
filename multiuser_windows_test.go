@@ -62,8 +62,10 @@ func TestAppDataNotShared(t *testing.T) {
 // Test we don't get weird error:
 //  c:\mozilla-build\msys\bin\bash.exe: *** CreateFileMappingA, Win32 error 0.  Terminating.
 func TestNoCreateFileMappingError(t *testing.T) {
+	if os.Getenv("GW_SKIP_MOZILLA_BUILD_TESTS") != "" {
+		t.Skip("Skipping since GW_SKIP_MOZILLA_BUILD_TESTS env var is set")
+	}
 	defer setup(t)()
-
 	if config.RunTasksAsCurrentUser {
 		t.Skip("Not running, since we never want to call msys directly from LocalSystem account")
 	}
@@ -94,6 +96,9 @@ func TestNoCreateFileMappingError(t *testing.T) {
 }
 
 func TestDesktopResizeAndMovePointer(t *testing.T) {
+	if os.Getenv("GW_SKIP_PYTHON_TESTS") != "" {
+		t.Skip("Skipping since GW_SKIP_PYTHON_TESTS env var is set")
+	}
 	defer setup(t)()
 	if config.RunTasksAsCurrentUser {
 		t.Skip("Skipping since running as current user...")

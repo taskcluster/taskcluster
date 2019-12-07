@@ -10,17 +10,21 @@ import (
 	"testing"
 
 	"github.com/taskcluster/generic-worker/gwconfig"
+	"github.com/taskcluster/slugid-go/slugid"
 )
 
 func TestMissingScopes(t *testing.T) {
 	defer setup(t)()
+
+	taskID := CreateArtifactFromFile(t, "SampleArtifacts/_/X.txt", "SampleArtifacts/_/X.txt")
+
+	// Create a new task to mount the artifact without the scope to do so
 	mounts := []MountEntry{
 		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
 		&FileMount{
 			File: filepath.Join("preloaded", "Mr X.txt"),
-			// Note: the task definition for taskId KTBKfEgxR5GdfIIREQIvFQ can be seen in the testdata/tasks directory
 			Content: json.RawMessage(`{
-				"taskId":   "KTBKfEgxR5GdfIIREQIvFQ",
+				"taskId":   "` + taskID + `",
 				"artifact": "SampleArtifacts/_/X.txt"
 			}`),
 		},
@@ -39,7 +43,7 @@ func TestMissingScopes(t *testing.T) {
 
 	td := testTask(t)
 	td.Dependencies = []string{
-		"KTBKfEgxR5GdfIIREQIvFQ",
+		taskID,
 	}
 	// don't set any scopes
 
@@ -59,13 +63,14 @@ func TestMissingScopes(t *testing.T) {
 // TestMissingDependency tests that if artifact content is mounted, it must be included as a task dependency
 func TestMissingMountsDependency(t *testing.T) {
 	defer setup(t)()
+	pretendTaskID := slugid.Nice()
 	mounts := []MountEntry{
 		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
 		&FileMount{
 			File: filepath.Join("preloaded", "Mr X.txt"),
-			// Note: the task definition for taskId KTBKfEgxR5GdfIIREQIvFQ can be seen in the testdata/tasks directory
+			// Pretend task
 			Content: json.RawMessage(`{
-				"taskId":   "KTBKfEgxR5GdfIIREQIvFQ",
+				"taskId":   "` + pretendTaskID + `",
 				"artifact": "SampleArtifacts/_/X.txt"
 			}`),
 		},
@@ -96,7 +101,7 @@ func TestMissingMountsDependency(t *testing.T) {
 		t.Fatalf("Error when trying to read log file: %v", err)
 	}
 	logtext := string(bytes)
-	if !strings.Contains(logtext, "[mounts] task.dependencies needs to include KTBKfEgxR5GdfIIREQIvFQ since one or more of its artifacts are mounted") {
+	if !strings.Contains(logtext, "[mounts] task.dependencies needs to include "+pretendTaskID+" since one or more of its artifacts are mounted") {
 		t.Fatalf("Was expecting log file to explain that task dependency was missing, but it doesn't: \n%v", logtext)
 	}
 }
@@ -114,13 +119,15 @@ func Test32BitOverflow(t *testing.T) {
 
 func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 	defer setup(t)()
+
+	taskID := CreateArtifactFromFile(t, "SampleArtifacts/_/X.txt", "SampleArtifacts/_/X.txt")
+
 	mounts := []MountEntry{
 		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
 		&ReadOnlyDirectory{
 			Directory: ".",
-			// Note: the task definition for taskId KTBKfEgxR5GdfIIREQIvFQ can be seen in the testdata/tasks directory
 			Content: json.RawMessage(`{
-				"taskId":   "KTBKfEgxR5GdfIIREQIvFQ",
+				"taskId":   "` + taskID + `",
 				"artifact": "SampleArtifacts/_/X.txt"
 			}`),
 			Format: "zip",
@@ -135,7 +142,7 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 
 	td := testTask(t)
 	td.Dependencies = []string{
-		"KTBKfEgxR5GdfIIREQIvFQ",
+		taskID,
 	}
 	td.Scopes = []string{"queue:get-artifact:SampleArtifacts/_/X.txt"}
 
@@ -164,13 +171,15 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 // task that *does* exist.
 func TestNonExistentArtifact(t *testing.T) {
 	defer setup(t)()
+
+	taskID := CreateArtifactFromFile(t, "SampleArtifacts/_/X.txt", "SampleArtifacts/_/X.txt")
+
 	mounts := []MountEntry{
 		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
 		&ReadOnlyDirectory{
 			Directory: ".",
-			// Note: the task definition for taskId KTBKfEgxR5GdfIIREQIvFQ can be seen in the testdata/tasks directory
 			Content: json.RawMessage(`{
-				"taskId":   "KTBKfEgxR5GdfIIREQIvFQ",
+				"taskId":   "` + taskID + `",
 				"artifact": "SampleArtifacts/_/non-existent-artifact.txt"
 			}`),
 			Format: "zip",
@@ -185,7 +194,7 @@ func TestNonExistentArtifact(t *testing.T) {
 
 	td := testTask(t)
 	td.Dependencies = []string{
-		"KTBKfEgxR5GdfIIREQIvFQ",
+		taskID,
 	}
 	td.Scopes = []string{"queue:get-artifact:SampleArtifacts/_/non-existent-artifact.txt"}
 
@@ -197,7 +206,7 @@ func TestNonExistentArtifact(t *testing.T) {
 		t.Fatalf("Error when trying to read log file: %v", err)
 	}
 	logtext := string(bytes)
-	if !strings.Contains(logtext, "[mounts] Could not fetch from task KTBKfEgxR5GdfIIREQIvFQ artifact SampleArtifacts/_/non-existent-artifact.txt into file") {
+	if !strings.Contains(logtext, "[mounts] Could not fetch from task "+taskID+" artifact SampleArtifacts/_/non-existent-artifact.txt into file") {
 		t.Fatalf("Log did not contain expected text:\n%v", logtext)
 	}
 }
@@ -223,8 +232,6 @@ type MountsLoggingTestCase struct {
 // This is an extremely strict test helper, that requires you to specify
 // extracts from every log line that the mounts feature writes to the log
 func LogTest(m *MountsLoggingTestCase) {
-	defer setup(m.Test)()
-
 	payload := m.Payload
 	if payload == nil {
 		payload = &GenericWorkerPayload{
@@ -279,15 +286,16 @@ func LogTest(m *MountsLoggingTestCase) {
 }
 
 func TestInvalidSHA256(t *testing.T) {
+	defer setup(t)()
+	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 	LogTest(
 		&MountsLoggingTestCase{
 			Test: t,
 			Mounts: []MountEntry{
 				&ReadOnlyDirectory{
 					Directory: "unknown_issuer_app_1",
-					// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
 					Content: json.RawMessage(`{
-						"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
+						"taskId":   "` + taskID + `",
 						"artifact": "public/build/unknown_issuer_app_1.zip",
 						"sha256":   "9263625672993742f0916f7a22b4d9924ed0327f2e02edd18456c0c4e5876850"
 					}`),
@@ -295,26 +303,26 @@ func TestInvalidSHA256(t *testing.T) {
 				},
 			},
 			Dependencies: []string{
-				"LK1Rz2UtT16d-HBSqyCtuA",
+				taskID,
 			},
 			TaskRunResolutionState: "failed",
 			TaskRunReasonResolved:  "failed",
 			PerTaskRunLogExcerpts: [][]string{
 				// Required text from first task with no cached value
 				[]string{
-					`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Removing cache artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip from cache table`,
-					`Deleting cache artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip file\(s\) at .*`,
-					`Download .* of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task definition explicitly requires 9263625672993742f0916f7a22b4d9924ed0327f2e02edd18456c0c4e5876850; not retrying download as there were no connection failures and HTTP response status code was 200`,
+					`Downloading task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
+					`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
+					`Removing cache artifact:` + taskID + `:public/build/unknown_issuer_app_1.zip from cache table`,
+					`Deleting cache artifact:` + taskID + `:public/build/unknown_issuer_app_1.zip file\(s\) at .*`,
+					`Download .* of task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task definition explicitly requires 9263625672993742f0916f7a22b4d9924ed0327f2e02edd18456c0c4e5876850; not retrying download as there were no connection failures and HTTP response status code was 200`,
 				},
 				// Required text from second task when download is already cached
 				[]string{
-					`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Removing cache artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip from cache table`,
-					`Deleting cache artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip file\(s\) at .*`,
-					`Download .* of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task definition explicitly requires 9263625672993742f0916f7a22b4d9924ed0327f2e02edd18456c0c4e5876850; not retrying download as there were no connection failures and HTTP response status code was 200`,
+					`Downloading task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
+					`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
+					`Removing cache artifact:` + taskID + `:public/build/unknown_issuer_app_1.zip from cache table`,
+					`Deleting cache artifact:` + taskID + `:public/build/unknown_issuer_app_1.zip file\(s\) at .*`,
+					`Download .* of task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task definition explicitly requires 9263625672993742f0916f7a22b4d9924ed0327f2e02edd18456c0c4e5876850; not retrying download as there were no connection failures and HTTP response status code was 200`,
 				},
 			},
 		},
@@ -322,6 +330,8 @@ func TestInvalidSHA256(t *testing.T) {
 }
 
 func TestValidSHA256(t *testing.T) {
+	defer setup(t)()
+	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
 	// whether permission is granted to task user depends if running under windows or not
 	// and is independent of whether running as current user or not
@@ -329,9 +339,9 @@ func TestValidSHA256(t *testing.T) {
 
 	// Required text from first task with no cached value
 	pass1 := append([]string{
-		`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-		`Content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip \(.*\) matches required SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
+		`Downloading task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Content from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip \(.*\) matches required SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
 		`Creating directory .*unknown_issuer_app_1 with permissions 0700`,
 		`Extracting zip file .* to '.*unknown_issuer_app_1'`,
 	},
@@ -340,7 +350,7 @@ func TestValidSHA256(t *testing.T) {
 
 	// Required text from second task when download is already cached
 	pass2 := append([]string{
-		`Found existing download for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
+		`Found existing download for artifact:` + taskID + `:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
 		`Creating directory .*unknown_issuer_app_1 with permissions 0700`,
 		`Extracting zip file .* to '.*unknown_issuer_app_1'`,
 	},
@@ -353,9 +363,8 @@ func TestValidSHA256(t *testing.T) {
 			Mounts: []MountEntry{
 				&ReadOnlyDirectory{
 					Directory: "unknown_issuer_app_1",
-					// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
 					Content: json.RawMessage(`{
-						"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
+						"taskId":   "` + taskID + `",
 						"artifact": "public/build/unknown_issuer_app_1.zip",
 						"sha256":   "625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e"
 					}`),
@@ -363,7 +372,7 @@ func TestValidSHA256(t *testing.T) {
 				},
 			},
 			Dependencies: []string{
-				"LK1Rz2UtT16d-HBSqyCtuA",
+				taskID,
 			},
 			TaskRunResolutionState: "completed",
 			TaskRunReasonResolved:  "completed",
@@ -376,6 +385,8 @@ func TestValidSHA256(t *testing.T) {
 }
 
 func TestFileMountNoSHA256(t *testing.T) {
+	defer setup(t)()
+	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
 	// whether permission is granted to task user depends if running under windows or not
 	// and is independent of whether running as current user or not
@@ -383,9 +394,9 @@ func TestFileMountNoSHA256(t *testing.T) {
 
 	// No cache on first pass
 	pass1 := append([]string{
-		`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-		`Download .* of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
+		`Downloading task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Download .* of task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
 		`Creating directory .* with permissions 0700`,
 		`Copying .* to .*` + t.Name(),
 	},
@@ -394,7 +405,7 @@ func TestFileMountNoSHA256(t *testing.T) {
 
 	// On second pass, cache already exists
 	pass2 := append([]string{
-		`No SHA256 specified in task mounts for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip - SHA256 from downloaded file .* is 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e.`,
+		`No SHA256 specified in task mounts for artifact:` + taskID + `:public/build/unknown_issuer_app_1.zip - SHA256 from downloaded file .* is 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e.`,
 		`Creating directory .* with permissions 0700`,
 		`Copying .* to .*` + t.Name(),
 	},
@@ -407,15 +418,14 @@ func TestFileMountNoSHA256(t *testing.T) {
 			Mounts: []MountEntry{
 				&FileMount{
 					File: t.Name(),
-					// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
 					Content: json.RawMessage(`{
-						"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
+						"taskId":   "` + taskID + `",
 						"artifact": "public/build/unknown_issuer_app_1.zip"
 					}`),
 				},
 			},
 			Dependencies: []string{
-				"LK1Rz2UtT16d-HBSqyCtuA",
+				taskID,
 			},
 			TaskRunResolutionState: "completed",
 			TaskRunReasonResolved:  "completed",
@@ -430,6 +440,8 @@ func TestFileMountNoSHA256(t *testing.T) {
 }
 
 func TestMountFileAtCWD(t *testing.T) {
+	defer setup(t)()
+	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 	LogTest(
 		&MountsLoggingTestCase{
 			Test: t,
@@ -439,35 +451,34 @@ func TestMountFileAtCWD(t *testing.T) {
 					// intentionally setting the path of a directory (current directory) since this should fail test
 					// since a content can't be mounted at the location of an existing directory (content has no explicit filename)
 					File: ".",
-					// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
 					Content: json.RawMessage(`{
-						"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
+						"taskId":   "` + taskID + `",
 						"artifact": "public/build/unknown_issuer_app_1.zip"
 					}`),
 				},
 			},
 			Dependencies: []string{
-				"LK1Rz2UtT16d-HBSqyCtuA",
+				taskID,
 			},
 			TaskRunResolutionState: "failed",
 			TaskRunReasonResolved:  "failed",
 			PerTaskRunLogExcerpts: [][]string{
 				// Required text from first task with no cached value
 				[]string{
-					`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Download .* of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
+					`Downloading task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
+					`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
+					`Download .* of task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
 					`Creating directory .* with permissions 0700`,
 					`Copying .* to .*`,
-					`Not able to mount content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip at path .*`,
+					`Not able to mount content from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip at path .*`,
 					`open .*: is a directory`,
 				},
 				// Required text from second task when download is already cached
 				[]string{
-					`No SHA256 specified in task mounts for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip - SHA256 from downloaded file .* is 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e.`,
+					`No SHA256 specified in task mounts for artifact:` + taskID + `:public/build/unknown_issuer_app_1.zip - SHA256 from downloaded file .* is 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e.`,
 					`Creating directory .* with permissions 0700`,
 					`Copying .* to .*`,
-					`Not able to mount content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip at path .*`,
+					`Not able to mount content from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip at path .*`,
 					`open .*: is a directory`,
 				},
 			},
@@ -476,6 +487,8 @@ func TestMountFileAtCWD(t *testing.T) {
 }
 
 func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
+	defer setup(t)()
+	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
 	// whether permission is granted to task user depends if running under windows or not
 	// and is independent of whether running as current user or not
@@ -484,9 +497,9 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 	// No cache on first pass
 	pass1 := append([]string{
 		`No existing writable directory cache 'banana-cache' - creating .*`,
-		`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-		`Download .* of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
+		`Downloading task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Download .* of task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
 		`Creating directory .*` + t.Name() + ` with permissions 0700`,
 		`Extracting zip file .* to '.*` + t.Name() + `'`,
 	},
@@ -518,16 +531,15 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 				&WritableDirectoryCache{
 					CacheName: "banana-cache",
 					Directory: t.Name(),
-					// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
 					Content: json.RawMessage(`{
-						"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
+						"taskId":   "` + taskID + `",
 						"artifact": "public/build/unknown_issuer_app_1.zip"
 					}`),
 					Format: "zip",
 				},
 			},
 			Dependencies: []string{
-				"LK1Rz2UtT16d-HBSqyCtuA",
+				taskID,
 			},
 			TaskRunResolutionState: "completed",
 			TaskRunReasonResolved:  "completed",

@@ -16,9 +16,8 @@ import (
 func TestAbortAfterMaxRunTime(t *testing.T) {
 	defer setup(t)()
 
-	// include a writable directory cache where our process writes to, to make
-	// sure we are still able unmount cache when we abort process prematurely
-	// that is writing to the cache
+	// Include a writable directory cache, to test that caches can be unmounted
+	// when a task aborts prematurely.
 	mounts := []MountEntry{
 		// requires scope "generic-worker:cache:banana-cache"
 		&WritableDirectoryCache{
