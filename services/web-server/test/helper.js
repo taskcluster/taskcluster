@@ -53,7 +53,10 @@ exports.withClients = (mock, skipping) => {
       return;
     }
 
-    exports.load.inject('clients', stubbedClients());
+    const clients = stubbedClients();
+
+    exports.load.inject('clients', clients);
+    exports.clients = clients;
   });
 
   suiteTeardown(function () {
@@ -233,10 +236,12 @@ const stubbedClients = () => {
         task: async (taskId) => {
           const taskDef = tasks.get(taskId);
 
-          return Promise.resolve({
-            taskId,
-            ...taskDef,
-          });
+          return taskDef
+            ? Promise.resolve({
+              taskId,
+              ...taskDef,
+            })
+            : Promise.reject(new Error('task not found'))
         },
         createTask: async (taskId, taskDef) => {
           tasks.set(taskId, taskDef);
