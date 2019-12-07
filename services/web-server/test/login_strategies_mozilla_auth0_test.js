@@ -107,7 +107,7 @@ suite(testing.suiteName(), () => {
             return {
               user_id: { value: 'oauth2|firefoxaccounts|abcdef' },
               access_information: {},
-              email: 'rockets@ksc',
+              primary_email: 'rockets@ksc',
               fxa_sub: 'abcdef',
               identities,
             };
@@ -121,7 +121,7 @@ suite(testing.suiteName(), () => {
             return {
               user_id: { value: 'oauth2|firefoxaccounts|noidentities' },
               access_information: {},
-              email: 'rockets@ksc',
+              primary_email: 'rockets@ksc',
               fxa_sub: 'noidentities',
             };
           default:
