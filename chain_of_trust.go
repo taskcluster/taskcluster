@@ -80,9 +80,7 @@ func (feature *ChainOfTrustFeature) Initialise() (err error) {
 
 	// platform-specific mechanism to lock down file permissions
 	// of private signing key
-	err = fileutil.SecureFiles([]string{
-		config.Ed25519SigningKeyLocation,
-	})
+	err = fileutil.SecureFiles(config.Ed25519SigningKeyLocation)
 	return
 }
 

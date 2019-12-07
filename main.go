@@ -27,6 +27,7 @@ import (
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
 	"github.com/taskcluster/generic-worker/expose"
+	"github.com/taskcluster/generic-worker/fileutil"
 	"github.com/taskcluster/generic-worker/gwconfig"
 	"github.com/taskcluster/generic-worker/host"
 	"github.com/taskcluster/generic-worker/process"
@@ -349,7 +350,11 @@ func ReadTasksResolvedFile() uint {
 // Also called from tests, so avoid panic in this function since this could
 // cause tests to silently pass - instead require error handling.
 func UpdateTasksResolvedFile(t uint) error {
-	return ioutil.WriteFile("tasks-resolved-count.txt", []byte(strconv.Itoa(int(t))), 0777)
+	err := ioutil.WriteFile("tasks-resolved-count.txt", []byte(strconv.Itoa(int(t))), 0777)
+	if err != nil {
+		return err
+	}
+	return fileutil.SecureFiles("tasks-resolved-count.txt")
 }
 
 // HandleCrash reports a crash in worker logs and reports the crash to sentry

@@ -23,7 +23,7 @@ const (
 
 func secure(configFile string) {
 	if !config.RunTasksAsCurrentUser {
-		secureError := fileutil.SecureFiles([]string{configFile})
+		secureError := fileutil.SecureFiles(configFile)
 		exitOnError(CANT_SECURE_CONFIG, secureError, "Not able to secure config file %q", configFile)
 	}
 }
@@ -36,7 +36,7 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 		if err != nil {
 			panic(err)
 		}
-		err = fileutil.SecureFiles([]string{"current-task-user.json"})
+		err = fileutil.SecureFiles("current-task-user.json")
 		if err != nil {
 			panic(err)
 		}
@@ -156,7 +156,7 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 	if err != nil {
 		panic(err)
 	}
-	err = fileutil.SecureFiles([]string{"next-task-user.json"})
+	err = fileutil.SecureFiles("next-task-user.json")
 	if err != nil {
 		panic(err)
 	}
