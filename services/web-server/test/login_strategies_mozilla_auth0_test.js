@@ -23,12 +23,31 @@ suite(testing.suiteName(), () => {
 
   strategy.getPersonApi = () => {
     // Simulate linked identities by including all of them here
-    const identities = [
-      { provider: 'ad', connection: 'Mozilla-LDAP' },
-      { provider: 'github', connection: 'github', user_id: 1234 },
-      { provider: 'oauth2', connection: 'firefoxaccounts' },
-      { provider: 'email', connection: 'email', user_id: 'slashy/slashy' },
-    ];
+    // https://github.com/mozilla-iam/cis/blob/44fcba9c35353398bc3d8925d3e0c09bf9d8b06c/python-modules/cis_profile/cis_profile/data/profile.schema#L649-L669
+    const identities = {
+      github_id_v3: {
+        value: '1234',
+      },
+      'firefox_accounts_id': {
+        value: 'abcdef',
+      },
+      firefox_accounts_primary_email: {
+        value: 'rockets@ksc',
+      },
+      github_id_v4: null,
+      github_primary_email: null,
+      mozilliansorg_id: null,
+      bugzilla_mozilla_org_id: null,
+      bugzilla_mozilla_org_primary_email: null,
+      mozilla_ldap_id: null,
+      mozilla_ldap_primary_email: null,
+      mozilla_posix_id: null,
+      google_oauth2_id: null,
+      google_primary_email: null,
+      custom_1_primary_email: null,
+      custom_2_primary_email: null,
+      custom_3_primary_email: null,
+    };
 
     return {
       getProfileFromUserId: (userId) => {
