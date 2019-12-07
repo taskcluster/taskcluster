@@ -318,11 +318,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:951106573999407dd9676fcdf4c6184b58fc58055be3e1af54f109a451dda786"
+  digest = "1:d0e9402943b249967ff519c601b944901bd757bf766cc0687399ac3afac2f758"
   name = "github.com/taskcluster/shell"
   packages = ["."]
   pruneopts = "UT"
-  revision = "70c77c91e399f7116e6aa2c6e7abc18946ec4ada"
+  revision = "c688067f12d36940aeeb557b74e3838b30beb427"
 
 [[projects]]
   branch = "master"
@@ -517,6 +517,7 @@
     "github.com/gorilla/websocket",
     "github.com/kr/text",
     "github.com/mholt/archiver",
+    "github.com/pborman/uuid",
     "github.com/peterbourgon/mergemap",
     "github.com/sirupsen/logrus",
     "github.com/stretchr/testify/assert",
