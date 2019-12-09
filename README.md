@@ -861,6 +861,12 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v16.5.6 since v16.5.5
+========================
+
+* [Bug 1595279 - No gecko-t-win64-aarch64-laptop workers are active and taking jobs, big backlog for Windows AArch laptops](https://bugzil.la/1595279)
+* [Bug 1596044 - generic-worker: secure files tasks-resolved-count.txt, file-caches.json, directory-caches.json](https://bugzil.la/1596044)
+
 In v16.5.5 since v16.5.4
 ========================
 
