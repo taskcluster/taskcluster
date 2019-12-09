@@ -7,9 +7,11 @@ RUN mkdir -p /base/cache
 ENV YARN_CACHE_FOLDER=/base/cache
 
 RUN mkdir -p /base/yarn
-COPY /yarn.lock /package.json /base/yarn/
+COPY /yarn.lock /.yarnrc /package.json /base/yarn/
+COPY /.yarn /base/yarn/.yarn/
 RUN mkdir -p /base/yarn-ui
-COPY /ui/yarn.lock /ui/package.json /base/yarn-ui/
+COPY /ui/yarn.lock /.yarnrc /ui/package.json /base/yarn-ui/
+COPY /.yarn /base/yarn-ui/.yarn/
 
 WORKDIR /base/yarn
 RUN yarn install --production --frozen-lockfile
