@@ -53,17 +53,22 @@ module.exports = {
       };
     },
 
-    terminateInstances: ({InstanceIds}) => {
-      return {
-        promise: () => ({
-          TerminatingInstances: InstanceIds.map(iid => ({
-            InstanceId: iid,
-            CurrentState: {
-              Name: 'shutting-down',
-            },
-          })),
-        }),
+    terminateInstances: () => {
+      const fake = ({InstanceIds}) => {
+        fake.calls.push({InstanceIds});
+        return {
+          promise: () => ({
+            TerminatingInstances: InstanceIds.map(iid => ({
+              InstanceId: iid,
+              CurrentState: {
+                Name: 'shutting-down',
+              },
+            })),
+          }),
+        };
       };
+      fake.calls = [];
+      return fake;
     },
 
     // to make this function return the status you want, pass it in as an instance id

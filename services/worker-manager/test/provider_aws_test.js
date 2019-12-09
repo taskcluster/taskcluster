@@ -100,6 +100,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     sinon.stub(aws, 'EC2').returns({
       ...fakeAWS.EC2,
       runInstances: fakeAWS.EC2.runInstances(),
+      terminateInstances: fakeAWS.EC2.terminateInstances(),
     });
 
     await provider.setup();
@@ -443,6 +444,40 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         assert.strictEqual(w.state, helper.Worker.states.STOPPED) // eslint-disable-line comma-dangle
       );
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
+
+      sinon.restore();
+    });
+
+    test('remove unregistered workers', async function() {
+      const worker = await helper.Worker.create({
+        ...workerInDB,
+        workerId: 'running',
+        state: helper.Worker.states.REQUESTED,
+        providerData: {
+          ...workerInDB.providerData,
+          registrationExpiry: Date.now() - 1000,
+        },
+      });
+      provider.seen = {};
+      await provider.checkWorker({worker: worker});
+      assert.equal(aws.EC2().terminateInstances.calls.length, 1);
+
+      sinon.restore();
+    });
+
+    test('don\'t remove unregistered workers that are new', async function() {
+      const worker = await helper.Worker.create({
+        ...workerInDB,
+        workerId: 'running',
+        state: helper.Worker.states.REQUESTED,
+        providerData: {
+          ...workerInDB.providerData,
+          registrationExpiry: Date.now() + 1000,
+        },
+      });
+      provider.seen = {};
+      await provider.checkWorker({worker: worker});
+      assert.equal(aws.EC2().terminateInstances.calls.length, 0);
 
       sinon.restore();
     });

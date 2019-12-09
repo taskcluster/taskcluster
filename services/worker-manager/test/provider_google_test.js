@@ -214,7 +214,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     });
     await provider.scanPrepare();
     await provider.checkWorker({worker});
-    await provider.scanCleanup({responsibleFor: new Set([workerPoolId])});
+    await provider.scanCleanup();
     assert(fakeGoogle.instanceDeleteStub.called);
   });
 
@@ -237,7 +237,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     });
     await provider.scanPrepare();
     await provider.checkWorker({worker});
-    await provider.scanCleanup({responsibleFor: new Set([workerPoolId])});
+    await provider.scanCleanup();
     assert(!fakeGoogle.instanceDeleteStub.called);
   });
 
