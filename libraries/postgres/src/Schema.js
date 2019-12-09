@@ -16,7 +16,10 @@ class Schema{
   }
 
   static fromSerializable(serializable) {
-    return new Schema(serializable.versions);
+    return new Schema(new Map(
+      Object.values(serializable.versions)
+        .map(vers => ([vers.version, vers])),
+    ));
   }
 
   static fromDbDirectory(directory) {
@@ -56,23 +59,13 @@ class Schema{
   }
 
   allMethods() {
-    return this.versions.values().reduce((acc, version) => {
+    return [...this.versions.values()].reduce((acc, version) => {
       Object.entries(version.methods).forEach(([name, { mode }]) => {
         acc.add({ name, mode });
       });
 
       return acc;
     }, new Set());
-  }
-
-  /** testing **/
-
-  /**
-   * Get the schema as it was at the given version; this is used for testing
-   * upgrades from old versions.
-   */
-  atVersion(version) {
-    return this.versions[version];
   }
 }
 
