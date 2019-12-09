@@ -101,13 +101,21 @@ export default class CreateTask extends Component {
     recentTaskDefinitions: [],
   };
 
+  async getRecentTaskDefinitions() {
+    try {
+      return await db.taskDefinitions
+        .orderBy('created')
+        .limit(5)
+        .reverse()
+        .toArray();
+    } catch (_) {
+      return [];
+    }
+  }
+
   async componentDidMount() {
     const task = await this.getTask();
-    const recentTaskDefinitions = await db.taskDefinitions
-      .orderBy('created')
-      .limit(5)
-      .reverse()
-      .toArray();
+    const recentTaskDefinitions = await this.getRecentTaskDefinitions();
 
     try {
       this.setState({
