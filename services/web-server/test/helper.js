@@ -241,7 +241,7 @@ const stubbedClients = () => {
               taskId,
               ...taskDef,
             })
-            : Promise.reject(new Error('task not found'))
+            : Promise.reject(new Error('task not found'));
         },
         createTask: async (taskId, taskDef) => {
           tasks.set(taskId, taskDef);

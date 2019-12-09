@@ -97,7 +97,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       // 2. get tasks
       const [firstTask, taskThatDoesNotExist] = await Promise.allSettled([
         taskLoader.load(taskId),
-        taskLoader.load('taskId-that-does-not-exist')
+        taskLoader.load('taskId-that-does-not-exist'),
       ]);
 
       assert.equal(firstTask.status, 'fulfilled');
