@@ -27,13 +27,15 @@ func TestReclaimCancelledTask(t *testing.T) {
 
 	td, payload := cancelTask(t)
 	td.Scopes = []string{"generic-worker:cache:banana-cache"}
-	payload.Command = append(payload.Command, sleep(30)...)
+	payload.Command = append(payload.Command, sleep(300)...)
 	payload.Mounts = toMountArray(t, &mounts)
 	reclaimEvery5Seconds = true
+	defer func() {
+		reclaimEvery5Seconds = false
+	}()
 	start := time.Now()
 	taskID := submitAndAssert(t, td, payload, "exception", "canceled")
 	end := time.Now()
-	reclaimEvery5Seconds = false
 
 	expectedArtifacts := ExpectedArtifacts{
 		"public/logs/live_backing.log": {
@@ -48,7 +50,7 @@ func TestReclaimCancelledTask(t *testing.T) {
 
 	expectedArtifacts.Validate(t, taskID, 0)
 
-	if duration := end.Sub(start); duration.Seconds() > 60 {
-		t.Fatalf("Task should have expired in around five seconds, but took %v", duration)
+	if duration := end.Sub(start); duration.Seconds() > 280 {
+		t.Fatalf("Task should have expired long before the max run time (300s) but took %v", duration)
 	}
 }

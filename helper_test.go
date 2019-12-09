@@ -445,7 +445,7 @@ func cancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload Generi
 	command = append(command, goRun("resolvetask.go")...)
 	payload = GenericWorkerPayload{
 		Command:    command,
-		MaxRunTime: 120,
+		MaxRunTime: 300,
 		Artifacts: []Artifact{
 			{
 				Type:    "file",
