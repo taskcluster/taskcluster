@@ -78,7 +78,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
         'monoimage-image-on-registry': imageOnRegistry,
       };
 
-      if (imageOnRegistry && cmdOptions.noCache) {
+      if (imageOnRegistry && !cmdOptions.cache) {
         throw new Error(
           `Image ${tag} already exists on the registry, but --no-cache was given.`);
       }
@@ -93,8 +93,13 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
 
       utils.step({title: 'Building Docker Image'});
 
+      let command = ['docker', 'build'];
+      if (!cmdOptions.cache) {
+        command.push('--no-cache');
+      }
+      command = command.concat(['--progress', 'plain', '--tag', tag, '.']);
       await execCommand({
-        command: ['docker', 'build', '--progress', 'plain', '--tag', tag, '.'],
+        command,
         dir: sourceDir,
         utils,
         env: {DOCKER_BUILDKIT: 1, ...process.env},
@@ -130,7 +135,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
         'monoimage-devel-image-on-registry': imageOnRegistry,
       };
 
-      if (imageOnRegistry && cmdOptions.noCache) {
+      if (imageOnRegistry && !cmdOptions.cache) {
         throw new Error(
           `Image ${tag} already exists on the registry, but --no-cache was given.`);
       }
