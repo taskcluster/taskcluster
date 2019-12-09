@@ -100,6 +100,12 @@ class AwsProvider extends Provider {
     if (toSpawn === 0) {
       return;
     }
+
+    let registrationExpiry = null;
+    if ((workerPool.config.lifecycle || {}).registrationTimeout) {
+      registrationExpiry = Date.now() + workerPool.config.lifecycle.registrationTimeout * 1000;
+    }
+
     const toSpawnPerConfig = Math.ceil(toSpawn / workerPool.config.launchConfigs.length);
     const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
 
@@ -109,11 +115,13 @@ class AwsProvider extends Provider {
       // Make sure we don't get "The same resource type may not be specified
       // more than once in tag specifications" errors
       const TagSpecifications = config.launchConfig.TagSpecifications || [];
-      const instanceTags = [];
-      const otherTagSpecs = [];
-      TagSpecifications.forEach(ts =>
-        ts.ResourceType === 'instance' ? instanceTags.concat(ts.Tags) : otherTagSpecs.push(ts),
-      );
+      let instanceTags = [];
+      let otherTagSpecs = [];
+      TagSpecifications.forEach(ts => {
+        ts.ResourceType === 'instance'
+          ? instanceTags = instanceTags.concat(ts.Tags)
+          : otherTagSpecs.push(ts);
+      });
 
       const userData = Buffer.from(JSON.stringify({
         ...config.additionalUserData,
@@ -218,6 +226,7 @@ class AwsProvider extends Provider {
             owner: spawned.OwnerId,
             state: i.State.Name,
             stateReason: i.StateReason.Message,
+            registrationExpiry,
           },
         });
       }));
@@ -268,6 +277,12 @@ class AwsProvider extends Provider {
 
   async checkWorker({worker}) {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
+
+    if (worker.providerData.registrationExpiry &&
+      worker.state === this.Worker.states.REQUESTED &&
+      worker.providerData.registrationExpiry < Date.now()) {
+      return await this.removeWorker({worker});
+    }
 
     let state = worker.state;
     try {

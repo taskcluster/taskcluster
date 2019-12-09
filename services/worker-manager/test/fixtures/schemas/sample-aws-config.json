@@ -1,39 +1,30 @@
 {
-  "workerPoolId": "delete/worker",
-  "providerId": "aws",
-  "description": "a workertype",
-  "owner": "owlish@mozilla.com",
-  "emailOnError": true,
-  "created": "2019-10-18T21:16:41.593Z",
-  "lastModified": "2019-10-18T21:16:41.593Z",
-  "config": {
-    "launchConfigs": [
-      {
-        "launchConfig": {
-          "ImageId": "ami-blabla",
-          "KeyName": "somekey",
-          "SecurityGroupIds": [
-            "sg-yadayada"
-          ],
-          "InstanceType": "m5.xlarge"
-        },
-        "region": "us-west-2",
-        "capacityPerInstance": 1
+  "launchConfigs": [
+    {
+      "launchConfig": {
+        "ImageId": "ami-blabla",
+        "KeyName": "somekey",
+        "SecurityGroupIds": [
+          "sg-yadayada"
+        ],
+        "InstanceType": "m5.xlarge"
       },
-      {
-        "launchConfig": {
-          "ImageId": "ami-yadayada",
-          "KeyName": "anotherkey",
-          "SecurityGroupIds": [
-            "sg-blahblahblah"
-          ],
-          "InstanceType": "m5.xlarge"
-        },
-        "region": "us-east-1",
-        "capacityPerInstance": 1
-      }
-    ],
-    "minCapacity": 1,
-    "maxCapacity": 1
-  }
+      "region": "us-west-2",
+      "capacityPerInstance": 1
+    },
+    {
+      "launchConfig": {
+        "ImageId": "ami-yadayada",
+        "KeyName": "anotherkey",
+        "SecurityGroupIds": [
+          "sg-blahblahblah"
+        ],
+        "InstanceType": "m5.xlarge"
+      },
+      "region": "us-east-1",
+      "capacityPerInstance": 1
+    }
+  ],
+  "minCapacity": 1,
+  "maxCapacity": 1
 }
