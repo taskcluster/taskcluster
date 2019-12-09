@@ -1,11 +1,11 @@
 const assert = require('assert');
-const taskcluster = require('../../../../clients/client/src');
+const taskcluster = require('taskcluster-client');
 const { ApolloClient } = require('apollo-client');
 const { InMemoryCache } = require('apollo-cache-inmemory');
 const { HttpLink } = require('apollo-link-http');
 const fetch = require('node-fetch');
 const gql = require('graphql-tag');
-const testing = require('../../../../libraries/testing/src');
+const testing = require('taskcluster-lib-testing');
 const helper = require('../helper');
 const taskQuery = require('../fixtures/task.graphql');
 const createTaskQuery = require('../fixtures/createTask.graphql');
