@@ -198,7 +198,7 @@ func TestCachesCanBeModified(t *testing.T) {
 	payload := GenericWorkerPayload{
 		Mounts:     toMountArray(t, &mounts),
 		Command:    incrementCounterInCache(),
-		MaxRunTime: 20,
+		MaxRunTime: 180,
 	}
 
 	execute := func() {

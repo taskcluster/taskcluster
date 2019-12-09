@@ -26,7 +26,7 @@ func TestTaskclusterProxy(t *testing.T) {
 				fmt.Sprintf("TASKCLUSTER_PROXY_URL/queue/v1/task/"+taskID+"/runs/0/artifacts/SampleArtifacts/_/X.txt"),
 			)...,
 		),
-		MaxRunTime: 60,
+		MaxRunTime: 180,
 		Env:        map[string]string{},
 		Features: FeatureFlags{
 			TaskclusterProxy: true,

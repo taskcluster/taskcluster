@@ -49,7 +49,7 @@ func TestWhoAmI(t *testing.T) {
 
 	payload := GenericWorkerPayload{
 		Command:    goRun("whoami.go", strconv.FormatBool(config.RunTasksAsCurrentUser)),
-		MaxRunTime: 30,
+		MaxRunTime: 180,
 	}
 
 	td := testTask(t)
