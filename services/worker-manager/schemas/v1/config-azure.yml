@@ -1,0 +1,149 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Azure Provider Config
+description: |
+  'The config section of a workertype is using a provider with implementation azure must match this.
+  Much of these fields are documented [here](https://cloud.google.com/compute/docs/reference/rest/v1/instanceTemplates)'
+type: object
+properties:
+  minCapacity:
+    title: Minimum Capacity
+    type: integer
+    minimum: 0
+    description: |
+      The minimum amount of capacity that worker-manager should make
+      available at any given time.
+  maxCapacity:
+    title: Maximum Capacity
+    type: integer
+    minimum: 0
+    description: |
+      The maximum amount of capacity that worker-manager should make
+      available at any given time.
+  lifecycle: {$ref: 'worker-lifecycle.json#'}
+  launchConfigs:
+    type: array
+    title: Choices
+    description: |
+      An array of possible variations of workers for this pool. Allows to vary across regions/zones/machineType/etc
+      Each choice must include at least the required properties but can also include anything in
+      the request body of [the instance creation](https://cloud.google.com/compute/docs/reference/rest/beta/instances/insert)
+      api method from gcloud. That said, worker-manager sets `instanceName` and `serviceAccounts` directly and you
+      cannot override these. It also fills in some basic labels, will generate a default description, and sets the `taskcluster`
+      metadata key directly. You are free to set other metadata items though. A subset of these fields we require you to set such as `machineType`.
+    uniqueItems: false
+    items:
+      type: object
+      properties:
+        capacityPerInstance:
+          title: Capacity Per Instance
+          type: integer
+          minimum: 1
+          description: The number of tasks a single worker of this type can run at any given time.
+        workerConfig:
+          title: Worker Config
+          type: object
+          additionalProperties: true
+          description: |
+            This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.
+            The expectation is that the worker will merge this information with configuration from other sources,
+            and this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.
+            This property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.
+            Instead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).
+        location:
+          title: Location
+          type: string
+          description: The Azure location this worker should be spawned in
+        subnetId:
+          title: Subnet ID
+          type: string
+          description: The ID of the subnet this worker should be spawned in
+        priority:
+          title: Priority
+          type: string
+          description: |
+            virtual machine priority, i.e. Spot
+            https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#virtualmachineprioritytypes
+        evictionPolicy:
+          title: Eviction Policy
+          type: string
+          description: |
+            eviction policy, i.e. what happens when the virtual machine is shut down
+            https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#virtualmachineevictionpolicytypes
+        billingProfile:
+          title: Billing Profile
+          type: object
+          description: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#billingprofile
+          properties:
+            maxPrice:
+              title: Max Price
+              type: number
+              description: the maximum price to pay for a spot virtual machine in US Dollars
+        hardwareProfile:
+          title: Hardware Profile
+          type: object
+          description: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#hardwareprofile
+          properties:
+            vmSize:
+              title: Virtual machine type
+              type: string
+        osProfile:
+          title: OS Profile
+          type: object
+          description: |
+            adminPassword, computerName, and customData are set by the provider and are not configurable
+            https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osprofile
+          additionalProperties: true
+        storageProfile:
+          title: Storage Profile
+          type: object
+          additionalProperties: true
+          properties:
+            osDisk:
+              title: OS Disk
+              type: object
+              additionalProperties: true
+              properties:
+                createOption:
+                  type: string
+                  description: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#diskcreateoptiontypes
+            imageReference:
+              description: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#imagereference
+              type: object
+              additionalProperties: true
+              properties:
+                id:
+                  type: string
+        networkProfile:
+          title: Network Profile
+          type: object
+          description: |
+            Container object for network interfaces for the VM
+            See here: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#networkprofile
+          additionalProperties: true
+          properties:
+            networkInterfaces:
+              title: Network Interfaces
+              type: array
+              uniqueItems: false
+              items:
+                title: Network Interface Reference
+                type: object
+                additionalProperties: true
+                properties:
+                  id:
+                    type: string
+                  primary:
+                    type: boolean
+      required:
+        - capacityPerInstance
+        - workerConfig
+        - location
+        - subnetId
+        - hardwareProfile
+        - storageProfile
+      additionalProperties: true
+additionalProperties: false
+required:
+  - minCapacity
+  - maxCapacity
+  - launchConfigs

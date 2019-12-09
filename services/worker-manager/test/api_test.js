@@ -18,6 +18,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   test('list providers', async function() {
     const {providers} = await helper.workerManager.listProviders();
     assert.deepStrictEqual(providers.sort(), [
+      {providerId: 'azure', providerType: 'azure'},
       {providerId: 'testing1', providerType: 'testing'},
       {providerId: 'testing2', providerType: 'testing'},
       {providerId: 'static', providerType: 'static'},
@@ -41,9 +42,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       }
     }
 
-    assert.equal(pages, 5);
+    assert.equal(pages, 6);
     assert.deepStrictEqual(providerIds.sort(),
-      ['testing1', 'testing2', 'static', 'google', 'aws'].sort());
+      ['testing1', 'testing2', 'static', 'google', 'aws', 'azure'].sort());
   });
 
   const workerPoolCompare = (workerPoolId, input, result) => {

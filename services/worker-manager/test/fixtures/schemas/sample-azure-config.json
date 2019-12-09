@@ -1,0 +1,27 @@
+{
+  "launchConfigs": [
+    {
+      "capacityPerInstance": 1,
+      "location": "westus",
+      "subnetId": "/subscriptions/{subscription-id}/resourceGroups/{resource-group-name}/providers/Microsoft.Network/virtualNetworks/{vnet-name}/subnets/{subnet-name}",
+      "hardwareProfile": {
+        "vmSize": "Basic_A1"
+      },
+      "storageProfile": {
+        "imageReference": {
+          "id": "/subscriptions/{subscription-id}/resourceGroups/{resource-group-name}/providers/Microsoft.Compute/images/{image-name}"
+        },
+        "osDisk": {
+          "caching": "ReadWrite",
+          "managedDisk": {
+            "storageAccountType": "Standard_LRS"
+          },
+          "createOption": "FromImage"
+        }
+      },
+      "workerConfig": {}
+    }
+  ],
+  "minCapacity": 1,
+  "maxCapacity": 1
+}

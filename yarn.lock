@@ -33,7 +33,25 @@
   resolved "https://registry.yarnpkg.com/@apollographql/graphql-playground-html/-/graphql-playground-html-1.6.24.tgz#3ce939cb127fb8aaa3ffc1e90dff9b8af9f2e3dc"
   integrity sha512-8GqG48m1XqyXh4mIZrtB5xOhUwSsh1WsrrsaZQOEYYql3YN9DEu9OOSg0ILzXHZo/h2Q74777YE4YzlArQzQEQ==
 
-"@azure/arm-resources@^2.0.0":
+"@azure/arm-compute@^12.0.0":
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/@azure/arm-compute/-/arm-compute-12.0.0.tgz#22c3444b68cce50936edc770a00bc88af60b1356"
+  integrity sha512-iITc+VqXLWAg7sK9yk04DgvXyvvS94KkM/7YW0wCvjZb1tIsTdpVJWsJNrXsTx8fk0nknynX8jf8I6ydizS2zQ==
+  dependencies:
+    "@azure/ms-rest-azure-js" "^2.0.1"
+    "@azure/ms-rest-js" "^2.0.4"
+    tslib "^1.10.0"
+
+"@azure/arm-network@^19.1.0":
+  version "19.1.0"
+  resolved "https://registry.yarnpkg.com/@azure/arm-network/-/arm-network-19.1.0.tgz#4da727a50af1c3b22c55c860435a038e9c018266"
+  integrity sha512-begOb8aXe3LJgEBaMsW4PxcUDt66o7X45tfzQIVVcZKeD6aNAT06c42x7OvpSHqTU5BS8Z3ecqEbgN+3mYWeoQ==
+  dependencies:
+    "@azure/ms-rest-azure-js" "^2.0.1"
+    "@azure/ms-rest-js" "^2.0.4"
+    tslib "^1.10.0"
+
+"@azure/arm-resources@^2.1.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@azure/arm-resources/-/arm-resources-2.1.0.tgz#bb7a3faca0c717656bef93c6f81ff6a9d1d8fa8b"
   integrity sha512-WpBQt3QwfulWAgss7r6apfKswc6SS8Z005AhQalx618757dX+0kTiizL5XipDZFWq/nlCN2fFv9ba1m4v5x2tg==
@@ -42,10 +60,10 @@
     "@azure/ms-rest-js" "^2.0.4"
     tslib "^1.10.0"
 
-"@azure/arm-storage@^11.0.0":
-  version "11.0.0"
-  resolved "https://registry.yarnpkg.com/@azure/arm-storage/-/arm-storage-11.0.0.tgz#9445b42d65a6f97c2337ab3e4cabeecaa79b99bb"
-  integrity sha512-E8n5J9jG+Bt767yfgyeRl9TS8MScEStZ/38eAvmpAqFes6BDyfvpfpPJLUDfg9fo3JoDoUD1w5dUjepiNlKh8Q==
+"@azure/arm-storage@^12.0.0":
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/@azure/arm-storage/-/arm-storage-12.0.0.tgz#79f2121d41a77d643ba2254b9ee2a2addf5214cd"
+  integrity sha512-gQGRyBhdpsj/lMBdnyZz661ieP3BCFaZUUC6pLu/mSLaCjgdea49zG/LqZn8axsyo4xkrfo2XBL4ssN8jO3yTQ==
   dependencies:
     "@azure/ms-rest-azure-js" "^2.0.1"
     "@azure/ms-rest-js" "^2.0.4"
@@ -809,9 +827,9 @@
   integrity sha512-pMCcqU2zT4TjqYFrWtYHKal7Sl30Ims6ulZ4UFXxI4xbtQqK/qqKwkDoBFCfooRqqmRu9vY3xaJRwxSh673aYg==
 
 "@types/node@^8.0.47":
-  version "8.10.53"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-8.10.53.tgz#5fa08eef810b08b2c03073e360b54f7bad899db1"
-  integrity sha512-aOmXdv1a1/vYUn1OT1CED8ftbkmmYbKhKGSyMDeJiidLvKRKvZUQOdXwG/wcNY7T1Qb0XTlVdiYjIq00U7pLrQ==
+  version "8.10.59"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-8.10.59.tgz#9e34261f30183f9777017a13d185dfac6b899e04"
+  integrity sha512-8RkBivJrDCyPpBXhVZcjh7cQxVBSmRk9QM7hOketZzp6Tg79c0N8kkpAIito9bnJ3HCVCHVYz+KHTEbfQNfeVQ==
 
 "@types/range-parser@*":
   version "1.2.3"

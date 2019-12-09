@@ -1,0 +1,379 @@
+const slugid = require('slugid');
+const _ = require('lodash');
+const taskcluster = require('taskcluster-client');
+
+const auth = require('@azure/ms-rest-nodeauth');
+const ComputeManagementClient = require('@azure/arm-compute').ComputeManagementClient;
+const NetworkManagementClient = require('@azure/arm-network').NetworkManagementClient;
+
+const {Provider} = require('./provider');
+const {CloudAPI} = require('./cloudapi');
+
+class AzureProvider extends Provider {
+
+  constructor({
+    providerConfig,
+    fakeCloudApis,
+    ...conf
+  }) {
+    super(conf);
+    this.configSchema = 'config-azure';
+    this.providerConfig = providerConfig;
+    this.fakeCloudApis = fakeCloudApis;
+  }
+
+  async setup() {
+    let {
+      clientId,
+      secret,
+      domain,
+      subscriptionId,
+      apiRateLimits = {},
+      _backoffDelay = 1000,
+    } = this.providerConfig;
+
+    // Azure SDK has builtin retry logic: https://docs.microsoft.com/en-us/azure/architecture/best-practices/retry-service-specific
+    // compute rate limiting: https://docs.microsoft.com/en-us/azure/virtual-machines/troubleshooting/troubleshooting-throttling-errors
+    const cloud = new CloudAPI({
+      types: ['get', 'query', 'list'],
+      apiRateLimits,
+      intervalDefault: 100 * 1000, // Intervals are enforced every 100 seconds
+      intervalCapDefault: 2000, // The calls we make are all limited 20/sec so 20 * 100 are allowed
+      monitor: this.monitor,
+      providerId: this.providerId,
+      errorHandler: ({err, tries}) => {
+        if (err.code === 429) { // too many requests
+          return {backoff: _backoffDelay * 50, reason: 'rateLimit', level: 'notice'};
+        } else if (err.code >= 500) { // For 500s, let's take a shorter backoff
+          return {backoff: _backoffDelay * Math.pow(2, tries), reason: 'errors', level: 'warning'};
+        }
+        // If we don't want to do anything special here, just throw and let the
+        // calling code figure out what to do
+        throw err;
+      },
+    });
+    this._enqueue = cloud.enqueue.bind(cloud);
+
+    if (this.fakeCloudApis && this.fakeCloudApis.azure) {
+      this.computeClient = this.fakeCloudApis.azure.compute();
+      this.networkClient = this.fakeCloudApis.azure.network();
+      return;
+    }
+
+    let credentials = await auth.loginWithServicePrincipalSecret(clientId, secret, domain);
+    this.computeClient = new ComputeManagementClient(credentials, subscriptionId);
+    this.networkClient = new NetworkManagementClient(credentials, subscriptionId);
+  }
+
+  async provision({workerPool, existingCapacity}) {
+    const {workerPoolId} = workerPool;
+
+    if (!workerPool.providerData[this.providerId]) {
+      await workerPool.modify(wt => {
+        wt.providerData[this.providerId] = wt.providerData[this.providerId] || {};
+      });
+    }
+
+    let toSpawn = await this.estimator.simple({
+      workerPoolId,
+      ...workerPool.config,
+      existingCapacity,
+    });
+
+    if (toSpawn === 0) {
+      return; // Nothing to do
+    }
+
+    let registrationExpiry = null;
+    if ((workerPool.config.lifecycle || {}).registrationTimeout) {
+      registrationExpiry = Date.now() + workerPool.config.lifecycle.registrationTimeout * 1000;
+    }
+
+    const cfgs = [];
+    while (toSpawn > 0) {
+      const cfg = _.sample(workerPool.config.launchConfigs);
+      cfgs.push(cfg);
+      toSpawn -= cfg.capacityPerInstance;
+    }
+
+    await Promise.all(cfgs.map(async cfg => {
+      // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
+      // The lost entropy from downcasing, etc should be ok due to the fact that
+      // only running instances need not be identical. We do not use this name to identify
+      // workers in taskcluster.
+      const resourceGroupName = this.providerConfig.resourceGroupName;
+      const poolName = workerPoolId.replace(/[\/_]/g, '-').slice(0, 38);
+      const virtualMachineName = `vm-${poolName}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`.slice(0, 38);
+      const ipAddressName = `pip-${slugid.nice().replace(/[\/\_]/g, '-').toLowerCase()}`.slice(0, 24);
+      const networkInterfaceName = `nic-${slugid.nice().replace(/[\/\_]/g, '-').toLowerCase()}`.slice(0, 24);
+      const diskName = `disk-${slugid.nice().replace(/[\/\_]/g, '-').toLowerCase()}`.slice(0, 24);
+      let ipAddress, networkInterface, virtualMachine;
+
+      let providerData = {
+        location: cfg.location,
+        resourceGroupName: this.providerConfig.resourceGroupName,
+        vm: {
+          name: virtualMachineName,
+          location: cfg.location,
+        },
+        ip: {
+          name: ipAddressName,
+          location: cfg.location,
+        },
+        nic: {
+          name: networkInterfaceName,
+          location: cfg.location,
+        },
+        disk: {
+          name: diskName,
+          location: cfg.location,
+        },
+      };
+
+      try {
+        // create NIC, public IP, and VM
+        ipAddress = await this._enqueue('query', () => this.networkClient.publicIPAddresses.createOrUpdate(resourceGroupName, ipAddressName, {
+          location: cfg.location,
+          publicIPAllocationMethod: 'Dynamic',
+        }));
+
+        networkInterface = await this._enqueue('query', () => this.networkClient.networkInterfaces.createOrUpdate(resourceGroupName, networkInterfaceName, {
+          location: cfg.location,
+          ipConfigurations: [
+            {
+              name: ipAddressName,
+              privateIPAllocationMethod: 'Dynamic',
+              subnet: {
+                id: cfg.subnetId,
+              },
+              publicIPAddress: {
+                id: ipAddress.id,
+              },
+            },
+          ],
+        }));
+
+        const customData = Buffer.from(JSON.stringify({
+          workerPoolId,
+          providerId: this.providerId,
+          workerGroup: this.providerId,
+          rootUrl: this.rootUrl,
+          workerConfig: cfg.workerConfig || {},
+        })).toString('base64');
+
+        virtualMachine = await this._enqueue('query', () => this.computeClient.virtualMachines.createOrUpdate(resourceGroupName, virtualMachineName, {
+          ...cfg,
+          osProfile: {
+            adminUsername: 'worker',
+            ...cfg.osProfile,
+            // throw this away
+            adminPassword: slugid.nice(),
+            computerName: virtualMachineName,
+            customData,
+          },
+          networkProfile: {
+            ...cfg.networkProfile,
+            networkInterfaces: [
+              {
+                id: networkInterface.id,
+                primary: true,
+              },
+            ],
+          },
+          priority: cfg.priority || "Spot",
+          evictionPolicy: cfg.evictionPolicy || "Deallocate",
+          billingProfile: {
+            "maxPrice": -1,
+            ...cfg.billingProfile,
+          },
+          tags: {
+            ...cfg.tags || {},
+            'created-by': `taskcluster-wm-${this.providerId}`.replace(/[^a-zA-Z0-9-]/g, '-'),
+            'managed-by': 'taskcluster',
+            'worker-pool-id': workerPoolId.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
+            'owner': workerPool.owner.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
+          },
+        }));
+      } catch (err) {
+        await this._removeWorker({...providerData});
+        await workerPool.reportError({
+          kind: 'creation-error',
+          title: 'VM Creation Error',
+          description: err.message,
+          extra: err.details,
+        });
+        return;
+      }
+      this.monitor.log.workerRequested({
+        workerPoolId,
+        providerId: this.providerId,
+        workerGroup: this.providerId,
+        workerId: virtualMachine.vmId,
+      });
+      const now = new Date();
+      await this.Worker.create({
+        workerPoolId,
+        providerId: this.providerId,
+        workerGroup: this.providerId,
+        workerId: virtualMachine.vmId,
+        created: now,
+        lastModified: now,
+        lastChecked: now,
+        expires: taskcluster.fromNow('1 week'),
+        state: this.Worker.states.REQUESTED,
+        capacity: cfg.capacityPerInstance,
+        providerData: {
+          ...providerData,
+          registrationExpiry,
+        },
+      });
+    }));
+  }
+
+  async deprovision({workerPool}) {
+    // nothing to do: we just wait for workers to terminate themselves
+  }
+
+  async registerWorker({worker, workerPool, workerIdentityProof}) {
+    this.monitor.log.workerRunning({
+      workerPoolId: workerPool.workerPoolId,
+      providerId: this.providerId,
+      workerId: worker.workerId,
+    });
+    await worker.modify(w => {
+      w.lastModified = new Date();
+      w.state = this.Worker.states.RUNNING;
+    });
+    // assume for the moment that workers self-terminate before 96 hours
+    return {expires: taskcluster.fromNow('96 hours')};
+  }
+
+  async scanPrepare() {
+    this.seen = {};
+    this.errors = {};
+  }
+
+  async checkWorker({worker}) {
+    const states = this.Worker.states;
+    this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
+    this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
+    if (worker.providerData.registrationExpiry &&
+      worker.state === states.REQUESTED &&
+      worker.providerData.registrationExpiry < Date.now()) {
+      return await this.removeWorker({worker});
+    }
+
+    let state = worker.state;
+    try {
+      const {provisioningState} = await this._enqueue('get', () => this.computeClient.virtualMachines.get(
+        worker.providerData.resourceGroupName,
+        worker.providerData.vm.name,
+      ));
+      if (['Creating', 'Updating', 'Starting', 'Running', 'Succeeded'].includes(provisioningState)) {
+        this.seen[worker.workerPoolId] += worker.capacity || 1;
+
+        // If the worker will be expired soon but it still exists,
+        // update it to stick around a while longer. If this doesn't happen,
+        // long-lived instances become orphaned from the provider. We don't update
+        // this on every loop just to avoid the extra work when not needed
+        if (worker.expires < taskcluster.fromNow('1 day')) {
+          await worker.modify(w => {
+            w.expires = taskcluster.fromNow('1 week');
+          });
+        }
+      } else if (['Failed', 'Canceled', 'Deleting', 'Deallocating', 'Stopped', 'Deallocated'].includes(provisioningState)) {
+        await this.removeWorker({worker});
+        this.monitor.log.workerStopped({
+          workerPoolId: worker.workerPoolId,
+          providerId: this.providerId,
+          workerId: worker.workerId,
+        });
+        state = states.STOPPED;
+      }
+    } catch (err) {
+      if (err.code !== 'ResourceNotFound') {
+        throw err;
+      }
+      this.monitor.log.workerStopped({
+        workerPoolId: worker.workerPoolId,
+        providerId: this.providerId,
+        workerId: worker.workerId,
+      });
+      state = states.STOPPED;
+    }
+    await worker.modify(w => {
+      const now = new Date();
+      if (w.state !== state) {
+        w.lastModified = now;
+      }
+      w.lastChecked = now;
+      w.state = state;
+    });
+  }
+
+  async scanCleanup() {
+    this.monitor.log.scanSeen({providerId: this.providerId, seen: this.seen});
+    await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
+      const workerPool = await this.WorkerPool.load({
+        workerPoolId,
+      }, true);
+
+      if (!workerPool) {
+        return; // In this case, the workertype has been deleted so we can just move on
+      }
+
+      if (this.errors[workerPoolId].length) {
+        await Promise.all(this.errors[workerPoolId].map(error => workerPool.reportError(error)));
+      }
+    }));
+  }
+
+  async _removeWorker({resourceGroupName, location, vm, ip, nic, disk}) {
+    // clean up related resources, continue on errors
+    // delete VM, IP, NIC, and disk
+    const ignoreNotFound = async (promise) => {
+      try {
+        await promise;
+      } catch (err) {
+        if (err.code === 404) {
+          return; // Nothing to do, it is already gone
+        }
+        throw err;
+      }
+    };
+    ignoreNotFound(this._enqueue('query', () => this.computeClient.virtualMachines.deleteMethod(
+      resourceGroupName,
+      vm.name,
+    )));
+    ignoreNotFound(this._enqueue('query', () => this.networkClient.networkInterfaces.deleteMethod(
+      resourceGroupName,
+      nic.name,
+    )));
+    // the public IP cannot be deleted as long as it is attached
+    // updating the NIC to detach the IP does not appear to work
+    // we should clean this up asynchronously
+    ignoreNotFound(this._enqueue('query', () => this.networkClient.publicIPAddresses.deleteMethod(
+      resourceGroupName,
+      ip.name,
+    )));
+    ignoreNotFound(this._enqueue('query', () => this.computeClient.disks.deleteMethod(
+      resourceGroupName,
+      disk.name,
+    )));
+  }
+
+  async removeWorker({worker}) {
+    await this._removeWorker({...worker.providerData});
+  }
+
+  async removeResources({workerPool}) {
+    // remove any remaining providerData when we are no longer responsible for this workerPool
+    await workerPool.modify(wt => {
+      delete wt.providerData[this.providerId];
+    });
+  }
+}
+
+module.exports = {
+  AzureProvider,
+};

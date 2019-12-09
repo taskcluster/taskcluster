@@ -52,6 +52,16 @@ properties:
               curl http://169.254.169.254/latest/dynamic/instance-identity/signature on the instance
         additionalProperties: false
         required: [document, signature]
+      - title: azure provider type
+        type: object
+        properties:
+          document:
+            title: Document
+            description: |
+              Attested data document that is obtained by
+              curl http://169.254.169.254/metadata/attested/document on the instance
+        additionalProperties: false
+        required: [document]
 additionalProperties: false
 required:
   - workerPoolId
