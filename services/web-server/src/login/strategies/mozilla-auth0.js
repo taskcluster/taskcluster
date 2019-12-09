@@ -126,26 +126,23 @@ module.exports = class MozillaAuth0 {
     // to add the username after a `|` character, to disambiguate the
     // otherwise-numeric usernames
     if (userId.startsWith('github|') && profile.identities) {
-      for (let {provider, connection, user_id: github_user_id} of profile.identities) {
-        if (provider === 'github' && connection === 'github') {
-          // we expect the auth0 user_id to be `github|<githubUserId>`
-          assert(userId.endsWith(github_user_id.toString()),
-            `Auth0 user_id ${userId} not formatted as expected (expected |${github_user_id})`);
-          identity += `|${profile.nickname}`;
-          break;
-        }
+      if (profile.identities.github_id_v3 && profile.identities.github_id_v3.value) {
+        const github_user_id = profile.identities.github_id_v3.value;
+
+        assert(userId.endsWith(github_user_id.toString()),
+          `Auth0 user_id ${userId} not formatted as expected (expected |${github_user_id})`);
+
+        identity += `|${profile.nickname}`;
       }
     } else if (userId.startsWith('oauth2|firefoxaccounts|') && profile.identities) {
-      for (let {provider, connection, profileData} of profile.identities) {
-        if (provider === 'oauth2' && connection === 'firefoxaccounts') {
-          // we expect the auth0 user_id to be `oauth|firefoxaccounts|<fxa_sub>`
-          // sometimes fxa_sub is on profileData, sometimes on the profile
-          const fxa_sub = profileData ? profileData.fxa_sub : profile.fxa_sub;
-          assert(userId.endsWith(fxa_sub),
+      if ('firefox_accounts_id' in profile.identities) {
+        const { firefox_accounts_id, firefox_accounts_primary_email } = profile.identities;
+
+        if (firefox_accounts_id) {
+          assert(userId.endsWith(firefox_accounts_id.value),
             `Auth0 user_id ${userId} not formatted as expected`);
-          const email = profileData ? profileData.email : profile.email;
+          const email = firefox_accounts_primary_email.value || profile.primary_email;
           identity += `|${email}`;
-          break;
         }
       }
     }
