@@ -109,7 +109,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
     test('positive test', async function() {
       const now = Date.now();
-      await provider.provision({workerPool});
+      await provider.provision({workerPool, existingCapacity: 0});
       const workers = await helper.Worker.scan({}, {});
 
       assert.notStrictEqual(workers.entries.length, 0);
@@ -150,13 +150,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
     test('instance tags in launch spec - should merge them with our instance tags', async function() {
       await workerPool.modify(wp => {
-        wp.config.launchConfigs[0].launchConfig.TagSpecifications = [{
-          ResourceType: 'instance',
-          Tags: [{Key: 'mytag', Value: 'testy'}],
-        }];
+        for (const lc of wp.config.launchConfigs) {
+          lc.launchConfig.TagSpecifications = [{
+            ResourceType: 'instance',
+            Tags: [{Key: 'mytag', Value: 'testy'}],
+          }];
+        }
       });
 
-      await provider.provision({workerPool});
+      await provider.provision({workerPool, existingCapacity: 0});
       const workers = await helper.Worker.scan({}, {});
 
       assert.notStrictEqual(workers.entries.length, 0);
@@ -182,13 +184,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
     test('no instance tags in launch spec, but other tags - should have 1 object per resource type', async function() {
       await workerPool.modify(wp => {
-        wp.config.launchConfigs[0].launchConfig.TagSpecifications = [{
-          ResourceType: 'launch-template',
-          Tags: [{Key: 'fruit', Value: 'banana'}],
-        }];
+        for (const lc of wp.config.launchConfigs) {
+          lc.launchConfig.TagSpecifications = [{
+            ResourceType: 'launch-template',
+            Tags: [{Key: 'fruit', Value: 'banana'}],
+          }];
+        }
       });
 
-      await provider.provision({workerPool});
+      await provider.provision({workerPool, existingCapacity: 0});
       const workers = await helper.Worker.scan({}, {});
 
       assert.notStrictEqual(workers.entries.length, 0);
@@ -219,18 +223,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
     test('UserData should be base64 encoded', async function() {
       await workerPool.modify(wp => {
-        wp.config.launchConfigs[0].additionalUserData = {
-          somethingImportant: "apple",
-        };
+        for (const lc of wp.config.launchConfigs) {
+          lc.additionalUserData = {
+            somethingImportant: "apple",
+          };
+        }
       });
 
-      await provider.provision({workerPool});
+      await provider.provision({workerPool, existingCapacity: 0});
       const workers = await helper.Worker.scan({}, {});
 
       assert.notStrictEqual(workers.entries.length, 0);
       assert.deepStrictEqual(
         JSON.parse(Buffer.from(
-          ...aws.EC2().runInstances.calls.map(({launchConfig: {UserData}}) => UserData),
+          aws.EC2().runInstances.calls[0].launchConfig.UserData,
           'base64' // eslint-disable-line comma-dangle
         ).toString()),
         {

@@ -75,7 +75,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
   test('provisioning loop', async function() {
     const now = Date.now();
-    await provider.provision({workerPool});
+    await provider.provision({workerPool, existingCapacity: 0});
     const workers = await helper.Worker.scan({}, {});
     // Check that this is setting times correctly to within a second or so to allow for some time
     // for the provisioning loop
@@ -201,7 +201,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       workerGroup: 'whatever',
       workerId: 'whatever',
       providerId,
+      capacity: 1,
       created: taskcluster.fromNow('-1 hour'),
+      lastModified: taskcluster.fromNow('-2 weeks'),
+      lastChecked: taskcluster.fromNow('-2 weeks'),
       expires: taskcluster.fromNow('1 week'),
       state: helper.Worker.states.REQUESTED,
       providerData: {
@@ -223,6 +226,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       providerId,
       created: taskcluster.fromNow('-1 hour'),
       expires: taskcluster.fromNow('1 week'),
+      capacity: 1,
+      lastModified: taskcluster.fromNow('-2 weeks'),
+      lastChecked: taskcluster.fromNow('-2 weeks'),
       state: helper.Worker.states.REQUESTED,
       providerData: {
         zone: 'us-east1-a',
