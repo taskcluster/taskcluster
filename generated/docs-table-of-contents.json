@@ -1925,8 +1925,8 @@
                 },
                 "name": "roles",
                 "next": {
-                  "path": "reference/platform/auth/guarded-services",
-                  "title": "Guarded Services"
+                  "path": "reference/platform/auth/external-services-credentials",
+                  "title": "External Service Credentials"
                 },
                 "path": "reference/platform/auth/roles",
                 "prev": {
@@ -1943,14 +1943,14 @@
                 ],
                 "data": {
                   "order": 50,
-                  "title": "Guarded Services"
+                  "title": "External Service Credentials"
                 },
-                "name": "guarded-services",
+                "name": "external-services-credentials",
                 "next": {
                   "path": "reference/platform/queue/README",
                   "title": "queue"
                 },
-                "path": "reference/platform/auth/guarded-services",
+                "path": "reference/platform/auth/external-services-credentials",
                 "prev": {
                   "path": "reference/platform/auth/roles",
                   "title": "Roles and Role Expansion"
@@ -2203,8 +2203,8 @@
             },
             "path": "reference/platform/queue/README",
             "prev": {
-              "path": "reference/platform/auth/guarded-services",
-              "title": "Guarded Services"
+              "path": "reference/platform/auth/external-services-credentials",
+              "title": "External Service Credentials"
             },
             "up": {
               "path": "reference/platform/README",
