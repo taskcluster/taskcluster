@@ -20,7 +20,7 @@ type State struct {
 	// Credentials for the worker, and their expiration time.  Shortly before
 	// this expiration, worker-runner will try to gracefully stop the worker
 	Credentials       taskcluster.Credentials
-	CredentialsExpire time.Time
+	CredentialsExpire time.Time `yaml:",omitempty"`
 
 	// Information about this worker
 	WorkerPoolID string
