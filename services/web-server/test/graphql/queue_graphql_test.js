@@ -6,10 +6,9 @@ const { HttpLink } = require('apollo-link-http');
 const fetch = require('node-fetch');
 const gql = require('graphql-tag');
 const testing = require('taskcluster-lib-testing');
-const merge = require('deepmerge');
-const helper = require('./helper');
-const taskQuery = require('./fixtures/task.graphql');
-const createTaskQuery = require('./fixtures/createTask.graphql');
+const helper = require('../helper');
+const taskQuery = require('../fixtures/task.graphql');
+const createTaskQuery = require('../fixtures/createTask.graphql');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withEntities(mock, skipping);
@@ -26,33 +25,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     return new ApolloClient({ cache, link: httpLink });
   };
 
-  const makeTaskDefinition = (options = {}) => merge({
-    provisionerId: "no-provisioner-extended-extended",
-    workerType: "test-worker-extended-extended",
-    schedulerId: "my-scheduler-extended-extended",
-    taskGroupId: "dSlITZ4yQgmvxxAi4A8fHQ",
-    dependencies: [],
-    requires: 'ALL_COMPLETED',
-    routes: [],
-    priority: 'LOWEST',
-    retries: 5,
-    created: taskcluster.fromNowJSON(),
-    deadline: taskcluster.fromNowJSON('3 days'),
-    expires: taskcluster.fromNowJSON('3 days'),
-    scopes: [],
-    payload: {},
-    metadata: {
-      name: "Testing task",
-      description: "Task created during tests",
-      owner: "haali@mozilla.com",
-      source: "https://github.com/taskcluster/taskcluster",
-    },
-    tags: {
-      purpose: "taskcluster-testing",
-    },
-    extra: {},
-  }, options);
-
   suite('Queue', function() {
     test('query works', async function() {
       const client = getClient();
@@ -63,7 +35,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         mutation: gql`${createTaskQuery}`,
         variables: {
           taskId,
-          task: makeTaskDefinition(),
+          task: helper.makeTaskDefinition(),
         },
       });
 
@@ -85,7 +57,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         mutation: gql`${createTaskQuery}`,
         variables: {
           taskId,
-          task: makeTaskDefinition(),
+          task: helper.makeTaskDefinition(),
         },
       });
 

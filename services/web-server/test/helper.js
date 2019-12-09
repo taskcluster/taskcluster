@@ -9,6 +9,7 @@ const SessionStorage = require('../src/data/SessionStorage');
 const GithubClient = require('../src/login/clients/GithubClient');
 const libUrls = require('taskcluster-lib-urls');
 const request = require('superagent');
+const merge = require('deepmerge');
 
 exports.load = stickyLoader(load);
 
@@ -53,7 +54,10 @@ exports.withClients = (mock, skipping) => {
       return;
     }
 
-    exports.load.inject('clients', stubbedClients());
+    const clients = stubbedClients();
+
+    exports.load.inject('clients', clients);
+    exports.clients = clients;
   });
 
   suiteTeardown(function () {
@@ -131,6 +135,33 @@ exports.githubFixtures = {
     'a/c': [],
   },
 };
+
+exports.makeTaskDefinition = (options = {}) => merge({
+  provisionerId: "no-provisioner-extended-extended",
+  workerType: "test-worker-extended-extended",
+  schedulerId: "my-scheduler-extended-extended",
+  taskGroupId: "dSlITZ4yQgmvxxAi4A8fHQ",
+  dependencies: [],
+  requires: 'ALL_COMPLETED',
+  routes: [],
+  priority: 'LOWEST',
+  retries: 5,
+  created: taskcluster.fromNowJSON(),
+  deadline: taskcluster.fromNowJSON('3 days'),
+  expires: taskcluster.fromNowJSON('3 days'),
+  scopes: [],
+  payload: {},
+  metadata: {
+    name: "Testing task",
+    description: "Task created during tests",
+    owner: "haali@mozilla.com",
+    source: "https://github.com/taskcluster/taskcluster",
+  },
+  tags: {
+    purpose: "taskcluster-testing",
+  },
+  extra: {},
+}, options);
 
 exports.withGithubClient = () => {
   function githubClient() {
@@ -233,10 +264,12 @@ const stubbedClients = () => {
         task: async (taskId) => {
           const taskDef = tasks.get(taskId);
 
-          return Promise.resolve({
-            taskId,
-            ...taskDef,
-          });
+          return taskDef
+            ? Promise.resolve({
+              taskId,
+              ...taskDef,
+            })
+            : Promise.reject(new Error('task not found'));
         },
         createTask: async (taskId, taskDef) => {
           tasks.set(taskId, taskDef);
