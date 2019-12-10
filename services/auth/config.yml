@@ -100,7 +100,7 @@ defaults:
     # - accessKeyId: ..
     #   secretAccessKey: ..
     #   buckets: [bucket1, bucket2, ..]
-    allowdBuckets:            !env:json:optional AWS_CREDENTIALS_ALLOWED_BUCKETS
+    allowedBuckets:            !env:json:optional AWS_CREDENTIALS_ALLOWED_BUCKETS
 
   # Configuration for the GCP serviceAccounts to which the `gcpCredentials`
   # endpoint can grant access.
