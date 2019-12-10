@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v24.0.2
+
+▶ [patch] [bug 1602642](http://bugzil.la/1602642)
+The typo in configuration for aws s3 bucket credentialing is fixed.
+
+It was set as `allowdBuckets` and is now `allowedBuckets`
+
 ## v24.0.1
 
 ▶ [patch] [bug 1601149](http://bugzil.la/1601149)
