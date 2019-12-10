@@ -3,12 +3,14 @@ migrationScript: |-
   begin
     create table secrets (
       name text primary key,
-      secret text
+      secret text,
+      expires timestamp
     );
   end
 methods:
   getSecret:
     mode: read
+    serviceName: secrets
     args: name text
     returns: table (secret text, expires timestamp)
     body: |-
@@ -17,6 +19,7 @@ methods:
       end
   listSecrets:
     mode: read
+    serviceName: secrets
     args: ''
     returns: table (name text, expires timestamp)
     body: |-
@@ -25,6 +28,7 @@ methods:
       end
   removeSecret:
     mode: write
+    serviceName: secrets
     args: name text
     returns: void
     body: |-
@@ -33,6 +37,7 @@ methods:
       end
   setSecret:
     mode: write
+    serviceName: secrets
     args: name text, secret text, expires timestamp
     returns: void
     body: |-
@@ -41,3 +46,17 @@ methods:
         on conflict do update
         set secret=secret, expires=expires;
       end
+
+
+      this.db.procs.secrets.listSecrets
+
+      db = Database.setup({serviceName: 'worker-manager', readDbUrl, writeDbUrl, ...})
+      get all read methods for all services
+      get read and write methods for your own service
+
+    allowed:
+      this.db.procs.queue.getWorkerInfo (READ)
+
+    not allowed:
+      this.db.procs.queue.updateWorkerInfo (WRITE) (not allowed to secrets)
+
