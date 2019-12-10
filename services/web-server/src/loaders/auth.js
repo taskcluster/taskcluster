@@ -11,6 +11,9 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => 
         // it is likely in the service logs.
         const unauthorizedError = new WebServerError('Unauthorized', 'Authentication is required to generate credentials');
 
+        // If req.user is falsy for one query, it will be falsy for the rest.
+        // Instead of returning an error in the try catch block below for every query,
+        // we just want to throw an unauthorized error 
         if (!req.user) {
           throw unauthorizedError;
         }
@@ -36,11 +39,7 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => 
   const isLoggedIn = new DataLoader(queries =>
     Promise.all(
       queries.map(() => {
-        try {
-          return Boolean(req.user);
-        } catch (err) {
-          return err;
-        }
+        return Boolean(req.user);
       }),
     ),
   );

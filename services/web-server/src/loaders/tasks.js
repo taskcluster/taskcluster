@@ -18,9 +18,9 @@ module.exports = ({ queue, index }) => {
   );
   const indexedTask = new DataLoader(indexPaths =>
     Promise.all(
-      indexPaths.map(indexPath => {
+      indexPaths.map(async (indexPath) => {
         try {
-          return index.findTask(indexPath);
+          return await index.findTask(indexPath);
         } catch (err) {
           return err;
         }
