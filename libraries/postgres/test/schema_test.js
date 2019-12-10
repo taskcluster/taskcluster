@@ -1,4 +1,4 @@
-const {Schema} = require('..');
+const {Schema, READ} = require('..');
 const path = require('path');
 const assert = require('assert').strict;
 
@@ -17,8 +17,8 @@ suite(path.basename(__filename), function() {
 
       assert.deepEqual([...sch.allMethods()].sort(),
         [
-          {name: 'getSecret', mode: 'read'},
-          {name: 'listSecrets', mode: 'read'},
+          {name: 'getSecret', mode: READ},
+          {name: 'listSecrets', mode: READ},
         ]);
     });
 
@@ -48,8 +48,8 @@ suite(path.basename(__filename), function() {
     const sch = Schema.fromDbDirectory(path.join(__dirname, 'db-simple'));
     assert.deepEqual([...sch.allMethods()].sort(),
       [
-        {name: 'getSecret', mode: 'read'},
-        {name: 'listSecrets', mode: 'read'},
+        {name: 'getSecret', mode: READ},
+        {name: 'listSecrets', mode: READ},
       ]);
   });
 });
