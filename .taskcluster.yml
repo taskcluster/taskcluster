@@ -50,6 +50,10 @@ tasks:
         - name: taskcluster-lib-loader
         - name: taskcluster-lib-monitor
         - name: taskcluster-lib-postgres
+          image: taskcluster/node-and-postgres:node${node}-pg11
+          command: >-
+            pg_ctlcluster 11 main start &&
+            yarn workspace taskcluster-lib-postgres coverage:report
         - name: taskcluster-lib-pulse
           image: taskcluster/rabbit-test:${node}
           env:
