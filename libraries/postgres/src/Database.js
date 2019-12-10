@@ -27,7 +27,7 @@ class Database {
       this[name] = async (...args) => {
         const placeholders = [...new Array(args.length).keys()].map(i => `$${i + 1}`).join(',');
         const res = await this._withClient(mode, client => client.query(
-          `select * from ${name}(${placeholders})`, args));
+          `select * from "${name}"(${placeholders})`, args));
         return res.rows;
       };
     });
@@ -98,7 +98,7 @@ class Database {
       Promise.all(
         Object.entries(version.methods).map(async ([methodName, { mode, args, body, returns }]) => {
           await client.query(`create or replace function
-          ${methodName}(${args})
+          "${methodName}"(${args})
           returns ${returns}
           as ${dollarQuote(body)}
           language plpgsql`);
@@ -123,7 +123,7 @@ class Database {
 /**
  * Get a new Database instance
  */
-Database.setup = async (schema, dbOptions) => {
+Database.setup = async ({schema, ...dbOptions}) => {
   const db = new Database({...dbOptions, schema});
   const dbVersion = await db.currentVersion();
   if (dbVersion < schema.latestVersion()) {
@@ -136,7 +136,7 @@ Database.setup = async (schema, dbOptions) => {
  * Upgrade this database to the latest version and define functions for all
  * of the methods.
  */
-Database.upgrade = async (schema, dbOptions) => {
+Database.upgrade = async ({schema, ...dbOptions}) => {
   const db = new Database({...dbOptions, schema});
   try {
     const dbVersion = await db.currentVersion();
@@ -146,10 +146,13 @@ Database.upgrade = async (schema, dbOptions) => {
     if (dbVersion < latestVersion.version) {
       // run each of the upgrade scripts
       for (let v = dbVersion + 1; v <= latestVersion.version; v++) {
-        debug(`upgrading to version ${v}`);
+        console.log(`upgrading database to version ${v}`);
         const version = schema.getVersion(v);
         await db._doUpgrade(version);
+        console.log(`upgrade to version ${v} successful`);
       }
+    } else {
+      console.log('No database upgrades required');
     }
   } finally {
     await db.close();
