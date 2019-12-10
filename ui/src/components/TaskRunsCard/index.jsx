@@ -22,6 +22,8 @@ import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ChevronRightIcon from 'mdi-react/ChevronRightIcon';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
+import CheckIcon from 'mdi-react/CheckIcon';
+import { green } from '@material-ui/core/colors';
 import LinkIcon from 'mdi-react/LinkIcon';
 import LockIcon from 'mdi-react/LockIcon';
 import LockOpenOutlineIcon from 'mdi-react/LockOpenOutlineIcon';
@@ -117,6 +119,11 @@ const DOTS_VARIANT_LIMIT = 5;
         fill: 'currentcolor',
       },
     },
+    checkIcon: {
+      '& .mdi-icon': {
+        fill: green,
+      },
+    },
     lockIconDiv: {
       marginRight: theme.spacing(2),
     },
@@ -154,6 +161,10 @@ export default class TaskRunsCard extends Component {
 
   state = {
     showMore: false,
+    Scheduledcopied: false,
+    Resolvedcopied: false,
+    Startedcopied: false,
+    TakenUntilcopied: false,
   };
 
   getCurrentRun() {
@@ -182,6 +193,50 @@ export default class TaskRunsCard extends Component {
     }
 
     return url;
+  };
+
+  handleScheduledCopied = () => {
+    if (this.state.Scheduledcopied) {
+      this.setState({ Scheduledcopied: false });
+    } else {
+      this.setState({ Scheduledcopied: true });
+      setTimeout(() => {
+        this.setState({ Scheduledcopied: false });
+      }, 2000);
+    }
+  };
+
+  handleResolvedCopied = () => {
+    if (this.state.Resolvedcopied) {
+      this.setState({ Resolvedcopied: false });
+    } else {
+      this.setState({ Resolvedcopied: true });
+      setTimeout(() => {
+        this.setState({ Resolvedcopied: false });
+      }, 2000);
+    }
+  };
+
+  handleStartedCopied = () => {
+    if (this.state.Startedcopied) {
+      this.setState({ Startedcopied: false });
+    } else {
+      this.setState({ Startedcopied: true });
+      setTimeout(() => {
+        this.setState({ Startedcopied: false });
+      }, 2000);
+    }
+  };
+
+  handleTakenUntilCopied = () => {
+    if (this.state.copied) {
+      this.setState({ TakenUntilcopied: false });
+    } else {
+      this.setState({ TakenUntilcopied: true });
+      setTimeout(() => {
+        this.setState({ TakenUntilcopied: false });
+      }, 2000);
+    }
   };
 
   handleNext = () => {
@@ -376,6 +431,7 @@ export default class TaskRunsCard extends Component {
                     />
                   </ListItem>
                   <CopyToClipboard
+                    onCopy={this.handleScheduledCopied}
                     title={`${run.scheduled} (Copy)`}
                     text={run.scheduled}>
                     <ListItem button className={classes.listItemButton}>
@@ -383,10 +439,15 @@ export default class TaskRunsCard extends Component {
                         primary="Scheduled"
                         secondary={<DateDistance from={run.scheduled} />}
                       />
-                      <ContentCopyIcon />
+                      {this.state.Scheduledcopied ? (
+                        <CheckIcon className={classes.checkIcon} />
+                      ) : (
+                        <ContentCopyIcon />
+                      )}
                     </ListItem>
                   </CopyToClipboard>
                   <CopyToClipboard
+                    onCopy={this.handleStartedCopied}
                     title={`${run.started} (Copy)`}
                     text={run.started}>
                     <ListItem button className={classes.listItemButton}>
@@ -403,10 +464,15 @@ export default class TaskRunsCard extends Component {
                           )
                         }
                       />
-                      <ContentCopyIcon />
+                      {this.state.Startedcopied ? (
+                        <CheckIcon className={classes.checkIcon} />
+                      ) : (
+                        <ContentCopyIcon />
+                      )}
                     </ListItem>
                   </CopyToClipboard>
                   <CopyToClipboard
+                    onCopy={this.handleResolvedCopied}
                     title={`${run.resolved} (Copy)`}
                     text={run.resolved}>
                     <ListItem button className={classes.listItemButton}>
@@ -423,7 +489,11 @@ export default class TaskRunsCard extends Component {
                           )
                         }
                       />
-                      <ContentCopyIcon />
+                      {this.state.Resolvedcopied ? (
+                        <CheckIcon className={classes.checkIcon} />
+                      ) : (
+                        <ContentCopyIcon />
+                      )}
                     </ListItem>
                   </CopyToClipboard>
                   <ListItem
@@ -476,6 +546,7 @@ export default class TaskRunsCard extends Component {
                       </ListItem>
                     </Link>
                     <CopyToClipboard
+                      onCopy={this.handleTakenUntilCopied}
                       title={`${run.takenUntil} (Copy)`}
                       text={run.takenUntil}>
                       <ListItem button className={classes.listItemButton}>
@@ -489,7 +560,11 @@ export default class TaskRunsCard extends Component {
                             )
                           }
                         />
-                        <ContentCopyIcon />
+                        {this.state.TakenUntilcopied ? (
+                          <CheckIcon className={classes.checkIcon} />
+                        ) : (
+                          <ContentCopyIcon />
+                        )}
                       </ListItem>
                     </CopyToClipboard>
                   </List>

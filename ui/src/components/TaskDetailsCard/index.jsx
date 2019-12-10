@@ -15,6 +15,8 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
+import CheckIcon from 'mdi-react/CheckIcon';
+import { green } from '@material-ui/core/colors';
 import LinkIcon from 'mdi-react/LinkIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import DateDistance from '../DateDistance';
@@ -58,6 +60,11 @@ import Link from '../../utils/Link';
   listItemText: {
     paddingLeft: theme.spacing(2),
   },
+  checkIcon: {
+    '& .mdi-icon': {
+      fill: green,
+    },
+  },
 }))
 /**
  * Render information in a card layout about a task.
@@ -91,6 +98,42 @@ export default class TaskDetailsCard extends Component {
   state = {
     showPayload: false,
     showMore: false,
+    Deadlinecopied: false,
+    Expirescopied: false,
+    Createdcopied: false,
+  };
+
+  handleDeadlineCopied = () => {
+    if (this.state.Deadlinecopied) {
+      this.setState({ Deadlinecopied: false });
+    } else {
+      this.setState({ Deadlinecopied: true });
+      setTimeout(() => {
+        this.setState({ Deadlinecopied: false });
+      }, 2000);
+    }
+  };
+
+  handleExpiresCopied = () => {
+    if (this.state.Expirescopied) {
+      this.setState({ Expirescopied: false });
+    } else {
+      this.setState({ Expirescopied: true });
+      setTimeout(() => {
+        this.setState({ Expirescopied: false });
+      }, 2000);
+    }
+  };
+
+  handleCreatedCopied = () => {
+    if (this.state.Createdcopied) {
+      this.setState({ Createdcopied: false });
+    } else {
+      this.setState({ Createdcopied: true });
+      setTimeout(() => {
+        this.setState({ Createdcopied: false });
+      }, 2000);
+    }
   };
 
   handleTogglePayload = () => {
@@ -122,6 +165,7 @@ export default class TaskDetailsCard extends Component {
                 />
               </ListItem>
               <CopyToClipboard
+                onCopy={this.handleCreatedCopied}
                 title={`${task.created} (Copy)`}
                 text={task.created}>
                 <ListItem button className={classes.listItemButton}>
@@ -129,7 +173,11 @@ export default class TaskDetailsCard extends Component {
                     primary="Created"
                     secondary={<DateDistance from={task.created} />}
                   />
-                  <ContentCopyIcon />
+                  {this.state.Createdcopied ? (
+                    <CheckIcon className={classes.checkIcon} />
+                  ) : (
+                    <ContentCopyIcon />
+                  )}
                 </ListItem>
               </CopyToClipboard>
               <ListItem>
@@ -224,6 +272,7 @@ export default class TaskDetailsCard extends Component {
                   />
                 </ListItem>
                 <CopyToClipboard
+                  onCopy={this.handleDeadlineCopied}
                   title={`${task.deadline} (Copy)`}
                   text={task.deadline}>
                   <ListItem button className={classes.listItemButton}>
@@ -236,10 +285,15 @@ export default class TaskDetailsCard extends Component {
                         />
                       }
                     />
-                    <ContentCopyIcon />
+                    {this.state.Deadlinecopied ? (
+                      <CheckIcon className={classes.checkIcon} />
+                    ) : (
+                      <ContentCopyIcon />
+                    )}
                   </ListItem>
                 </CopyToClipboard>
                 <CopyToClipboard
+                  onCopy={this.handleExpiresCopied}
                   title={`${task.expires} (Copy)`}
                   text={task.expires}>
                   <ListItem button className={classes.listItemButton}>
@@ -247,7 +301,11 @@ export default class TaskDetailsCard extends Component {
                       primary="Expires"
                       secondary={<DateDistance from={task.expires} />}
                     />
-                    <ContentCopyIcon />
+                    {this.state.Expirescopied ? (
+                      <CheckIcon className={classes.checkIcon} />
+                    ) : (
+                      <ContentCopyIcon />
+                    )}
                   </ListItem>
                 </CopyToClipboard>
                 <ListItem>
