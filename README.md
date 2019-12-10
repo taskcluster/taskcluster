@@ -133,6 +133,9 @@ the following fields:
   implementations that restart the system as part of their normal operation
   and expect to start up with the same config after a restart.
 
+**NOTE** for Windows users: the configuration file must be a UNIX-style text file.
+DOS-style newlines and encodings other than utf-8 are not supported.
+
 ## Providers
 
 Providers configuration depends on the providerType:

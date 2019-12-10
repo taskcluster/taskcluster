@@ -32,5 +32,8 @@ the following fields:
   then it is loaded and the worker started directly without consulting
   worker-manager or any other external resources.  This is useful for worker
   implementations that restart the system as part of their normal operation
-  and expect to start up with the same config after a restart.`, "|", "`")
+  and expect to start up with the same config after a restart.
+
+**NOTE** for Windows users: the configuration file must be a UNIX-style text file.
+DOS-style newlines and encodings other than utf-8 are not supported.`, "|", "`")
 }
