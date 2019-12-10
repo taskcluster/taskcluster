@@ -1,6 +1,7 @@
 const fs = require('fs');
 const yaml = require('js-yaml');
 const path = require('path');
+const {READ, WRITE} = require('./constants');
 
 class Schema{
   /**references
@@ -59,9 +60,10 @@ class Schema{
   }
 
   allMethods() {
+    const modes = {read: READ, write: WRITE};
     return [...this.versions.values()].reduce((acc, version) => {
       Object.entries(version.methods).forEach(([name, { mode }]) => {
-        acc.add({ name, mode });
+        acc.add({ name, mode: modes[mode] });
       });
 
       return acc;
