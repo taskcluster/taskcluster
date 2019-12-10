@@ -150,6 +150,9 @@ import SkipNavigation from '../SkipNavigation';
       flex: 1,
       justifyContent: 'space-between',
     },
+    disableAppbar: {
+      width: '100%',
+    },
   }),
   { withTheme: true }
 )
@@ -165,6 +168,7 @@ export default class Dashboard extends Component {
     helpView: null,
     docs: false,
     disableTitleFormatting: false,
+    disableAppbar: false,
   };
 
   static propTypes = {
@@ -199,6 +203,10 @@ export default class Dashboard extends Component {
      * If true, the title will not be formatted to uppercase.
      */
     disableTitleFormatting: bool,
+    /**
+     * If true, the app bar will not be rendered.
+     */
+    disableAppbar: bool,
   };
 
   static getDerivedStateFromError(error) {
@@ -249,6 +257,7 @@ export default class Dashboard extends Component {
       width,
       staticContext: _,
       disableTitleFormatting,
+      disableAppbar,
       ...props
     } = this.props;
     const { error, navOpen, showHelpView, deploymentVersion } = this.state;
@@ -306,103 +315,108 @@ export default class Dashboard extends Component {
       <div className={classes.root}>
         <Helmet />
         <PageTitle>{pageTitle}</PageTitle>
-        <AppBar
-          className={classNames(classes.appBar, {
-            [classes.docsAppBar]: isDocs,
-          })}>
-          <Toolbar>
-            <SkipNavigation selector="main" />
-            {(!isDocs || (isDocs && isMobileView)) && (
-              <IconButton
-                color="inherit"
-                aria-label="toggle drawer"
-                onClick={this.handleDrawerToggle}
-                className={classes.navIconHide}>
-                <MenuIcon className={classes.appIcon} />
-              </IconButton>
-            )}
-            <Typography variant="h6" noWrap className={classes.appBarTitle}>
-              {pageTitle}
-            </Typography>
-            {search}
-            <Tooltip placement="bottom" title="Toggle light/dark theme">
-              <IconButton
-                className={classes.leftAppBarButton}
-                onClick={onToggleTheme}>
-                {theme.palette.type === 'dark' ? (
-                  <LightBulbOn className={classes.appIcon} />
-                ) : (
-                  <LightBulbOnOutline className={classes.appIcon} />
-                )}
-              </IconButton>
-            </Tooltip>
-            <Link to={DOCS_PATH_PREFIX}>
-              <Tooltip placement="bottom" title="Documentation">
-                <IconButton>
-                  <BookOpenPageVariantIcon className={classes.appIcon} />
-                </IconButton>
-              </Tooltip>
-            </Link>
-            {helpView && (
-              <Tooltip placement="bottom" title="Page Information">
-                <IconButton onClick={this.handleHelpViewToggle}>
-                  <HelpIcon className={classes.appIcon} />
-                </IconButton>
-              </Tooltip>
-            )}
-            <UserMenu appBar />
-          </Toolbar>
-        </AppBar>
-        <Drawer
-          {...(isDocs && !isMobileView
-            ? {
-                variant: 'permanent',
-              }
-            : {
-                variant: 'temporary',
-                open: navOpen,
-                onClose: this.handleDrawerToggle,
-              })}
-          anchor={theme.direction === 'rtl' ? 'right' : 'left'}
-          PaperProps={{
-            elevation: 2,
-          }}
-          ModalProps={{
-            keepMounted: true,
-          }}
-          classes={{
-            paper: classNames(classes.drawerPaper, {
-              [classes.docsDrawerPaper]: isDocs,
-            }),
-          }}>
-          {drawer}
-        </Drawer>
-        <Drawer
-          variant="temporary"
-          anchor={theme.direction === 'rtl' ? 'left' : 'right'}
-          open={showHelpView}
-          onClose={this.handleHelpViewToggle}
-          classes={{
-            paper: classes.helpDrawerPaper,
-          }}
-          ModalProps={{
-            keepMounted: true,
-          }}>
+        {!disableAppbar && (
           <Fragment>
-            <IconButton
-              onClick={this.handleHelpViewToggle}
-              className={classes.helpCloseIcon}>
-              <CloseIcon />
-            </IconButton>
-            {helpView}
+            <AppBar
+              className={classNames(classes.appBar, {
+                [classes.docsAppBar]: isDocs,
+              })}>
+              <Toolbar>
+                <SkipNavigation selector="main" />
+                {(!isDocs || (isDocs && isMobileView)) && (
+                  <IconButton
+                    color="inherit"
+                    aria-label="toggle drawer"
+                    onClick={this.handleDrawerToggle}
+                    className={classes.navIconHide}>
+                    <MenuIcon className={classes.appIcon} />
+                  </IconButton>
+                )}
+                <Typography variant="h6" noWrap className={classes.appBarTitle}>
+                  {pageTitle}
+                </Typography>
+                {search}
+                <Tooltip placement="bottom" title="Toggle light/dark theme">
+                  <IconButton
+                    className={classes.leftAppBarButton}
+                    onClick={onToggleTheme}>
+                    {theme.palette.type === 'dark' ? (
+                      <LightBulbOn className={classes.appIcon} />
+                    ) : (
+                      <LightBulbOnOutline className={classes.appIcon} />
+                    )}
+                  </IconButton>
+                </Tooltip>
+                <Link to={DOCS_PATH_PREFIX}>
+                  <Tooltip placement="bottom" title="Documentation">
+                    <IconButton>
+                      <BookOpenPageVariantIcon className={classes.appIcon} />
+                    </IconButton>
+                  </Tooltip>
+                </Link>
+                {helpView && (
+                  <Tooltip placement="bottom" title="Page Information">
+                    <IconButton onClick={this.handleHelpViewToggle}>
+                      <HelpIcon className={classes.appIcon} />
+                    </IconButton>
+                  </Tooltip>
+                )}
+                <UserMenu appBar />
+              </Toolbar>
+            </AppBar>
+            <Drawer
+              {...(isDocs && !isMobileView
+                ? {
+                    variant: 'permanent',
+                  }
+                : {
+                    variant: 'temporary',
+                    open: navOpen,
+                    onClose: this.handleDrawerToggle,
+                  })}
+              anchor={theme.direction === 'rtl' ? 'right' : 'left'}
+              PaperProps={{
+                elevation: 2,
+              }}
+              ModalProps={{
+                keepMounted: true,
+              }}
+              classes={{
+                paper: classNames(classes.drawerPaper, {
+                  [classes.docsDrawerPaper]: isDocs,
+                }),
+              }}>
+              {drawer}
+            </Drawer>
+            <Drawer
+              variant="temporary"
+              anchor={theme.direction === 'rtl' ? 'left' : 'right'}
+              open={showHelpView}
+              onClose={this.handleHelpViewToggle}
+              classes={{
+                paper: classes.helpDrawerPaper,
+              }}
+              ModalProps={{
+                keepMounted: true,
+              }}>
+              <Fragment>
+                <IconButton
+                  onClick={this.handleHelpViewToggle}
+                  className={classes.helpCloseIcon}>
+                  <CloseIcon />
+                </IconButton>
+                {helpView}
+              </Fragment>
+            </Drawer>
           </Fragment>
-        </Drawer>
+        )}
         <main
           className={classNames(
-            classes.content,
             {
+              [classes.content]: !disableAppbar,
               [classes.contentPadding]: !disablePadding,
-              [classes.docsContent]: isDocs,
+              [classes.docsContent]: isDocs && !disableAppbar,
+              [classes.disableAppbar]: disableAppbar,
             },
             className
           )}

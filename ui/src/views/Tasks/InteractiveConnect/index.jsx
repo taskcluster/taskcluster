@@ -79,6 +79,9 @@ const getInteractiveStatus = ({
   viewTaskDetails: {
     marginTop: theme.spacing(2),
   },
+  listItemLeftIcon: {
+    marginRight: theme.spacing(1),
+  },
 }))
 export default class InteractiveConnect extends Component {
   static getDerivedStateFromProps(
@@ -368,7 +371,7 @@ export default class InteractiveConnect extends Component {
                 button
                 onClick={this.handleShellOpen}
                 className={classes.listItemButton}>
-                <ConsoleIcon />
+                <ConsoleIcon className={classes.listItemLeftIcon} />
                 <ListItemText primary="Shell" />
                 <OpenInNewIcon />
               </ListItem>
@@ -377,7 +380,7 @@ export default class InteractiveConnect extends Component {
                 onClick={this.handleDisplayOpen}
                 button
                 className={classes.listItemButton}>
-                <MonitorIcon />
+                <MonitorIcon className={classes.listItemLeftIcon} />
                 <ListItemText primary="Display" />
                 <OpenInNewIcon />
               </ListItem>
