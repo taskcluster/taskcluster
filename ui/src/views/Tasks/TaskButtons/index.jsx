@@ -613,7 +613,7 @@ export default class TaskActionButtons extends Component {
             <SpeedDialAction
               requiresAuth
               tooltipOpen
-              ButtonProps={{
+              FabProps={{
                 disabled: actionLoading,
               }}
               icon={<CloseIcon />}
@@ -625,7 +625,7 @@ export default class TaskActionButtons extends Component {
             <SpeedDialAction
               requiresAuth
               tooltipOpen
-              ButtonProps={{
+              FabProps={{
                 disabled: actionLoading,
               }}
               icon={<RestartIcon />}
@@ -637,7 +637,7 @@ export default class TaskActionButtons extends Component {
             <SpeedDialAction
               requiresAuth
               tooltipOpen
-              ButtonProps={{
+              FabProps={{
                 disabled: actionLoading,
               }}
               icon={<RestartIcon />}
@@ -649,7 +649,7 @@ export default class TaskActionButtons extends Component {
             <SpeedDialAction
               requiresAuth
               tooltipOpen
-              ButtonProps={{
+              FabProps={{
                 disabled: actionLoading,
               }}
               icon={<ClockOutlineIcon />}
@@ -661,7 +661,7 @@ export default class TaskActionButtons extends Component {
             <SpeedDialAction
               requiresAuth
               tooltipOpen
-              ButtonProps={{
+              FabProps={{
                 disabled: actionLoading,
               }}
               icon={<FlashIcon />}
@@ -672,7 +672,7 @@ export default class TaskActionButtons extends Component {
           <SpeedDialAction
             requiresAuth
             tooltipOpen
-            ButtonProps={{
+            FabProps={{
               disabled: actionLoading,
             }}
             icon={<PencilIcon />}
@@ -683,7 +683,7 @@ export default class TaskActionButtons extends Component {
             <SpeedDialAction
               requiresAuth
               tooltipOpen
-              ButtonProps={{
+              FabProps={{
                 disabled: actionLoading,
               }}
               icon={<ConsoleLineIcon />}
@@ -696,7 +696,7 @@ export default class TaskActionButtons extends Component {
               tooltipOpen
               icon={<OpenInNewIcon size={20} />}
               tooltipTitle="Raw Log"
-              ButtonProps={{
+              FabProps={{
                 component: 'a',
                 href: url,
                 target: '_blank',
@@ -705,21 +705,21 @@ export default class TaskActionButtons extends Component {
             />
           )}
           {taskActions &&
-          taskActions.length &&
-          taskActions.map(action => (
-            <SpeedDialAction
-              requiresAuth
-              tooltipOpen
-              key={action.title}
-              ButtonProps={{
-                name: action.name,
-                disabled: actionLoading,
-              }}
-              icon={this.renderActionIcon(action)}
-              tooltipTitle={action.title}
-              onClick={this.handleActionClick}
-            />
-          ))}
+            taskActions.length &&
+            taskActions.map(action => (
+              <SpeedDialAction
+                requiresAuth
+                tooltipOpen
+                key={action.title}
+                FabProps={{
+                  name: action.name,
+                  disabled: actionLoading,
+                }}
+                icon={this.renderActionIcon(action)}
+                tooltipTitle={action.title}
+                onClick={this.handleActionClick}
+              />
+            ))}
         </SpeedDial>
         {dialogOpen && (
           <DialogAction
