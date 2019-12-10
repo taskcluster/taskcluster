@@ -94,8 +94,8 @@ dbSuite(path.basename(__filename), function() {
   });
 
   test('setup creates JS methods that can be called', async function() {
-    await Database.upgrade(schema, {runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl});
-    const db = await Database.setup(schema, {readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl});
+    await Database.upgrade({schema, runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl});
+    const db = await Database.setup({schema, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl});
     try {
       await db.testdata();
       const res = await db.addup(13);
