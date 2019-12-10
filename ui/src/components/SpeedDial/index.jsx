@@ -29,7 +29,11 @@ export default class SpeedDial extends Component {
   };
 
   handleClose = (_, reason) => {
-    if (reason === 'toggle' || reason === 'blur') {
+    if (
+      reason === 'toggle' ||
+      reason === 'blur' ||
+      reason === 'escapeKeyDown'
+    ) {
       this.setState({
         open: false,
       });
