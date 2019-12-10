@@ -23,7 +23,7 @@ class Database {
     };
 
     // generate a JS method for each DB method defined in the schema
-    schema.allMethodNames().forEach(({ name, mode}) => {
+    schema.allMethods().forEach(({ name, mode}) => {
       this[name] = async (...args) => {
         const placeholders = [...new Array(args.length).keys()].map(i => `$${i + 1}`).join(',');
         const res = await this._withClient(mode, client => client.query(
@@ -64,7 +64,7 @@ class Database {
   /**
    * Get the version of this database
    */
-  async getVersion() {
+  async currentVersion() {
     // get from the version table or return 0
     return await this._withClient(READ, async client => {
       try {
@@ -109,16 +109,6 @@ class Database {
     });
   }
 
-  async _defineMethod(method, args, returns, script) {
-    await this._withClient(WRITE, async client => {
-      await client.query(`create or replace function
-        ${method}(${args})
-        returns ${returns}
-        as ${dollarQuote(script)}
-        language plpgsql`);
-    });
-  }
-
   /**
    * Wrap up operations on this DB
    */
@@ -135,7 +125,7 @@ class Database {
  */
 Database.setup = async (schema, dbOptions) => {
   const db = new Database({...dbOptions, schema});
-  const dbVersion = await db.getVersion();
+  const dbVersion = await db.currentVersion();
   if (dbVersion < schema.latestVersion()) {
     throw new Error('Database version is older than this software version');
   }
@@ -149,25 +139,17 @@ Database.setup = async (schema, dbOptions) => {
 Database.upgrade = async (schema, dbOptions) => {
   const db = new Database({...dbOptions, schema});
   try {
-    const dbVersion = await db.getVersion();
+    const dbVersion = await db.currentVersion();
     const latestVersion = schema.latestVersion();
 
     // perform any necessary upgrades..
-    if (dbVersion < latestVersion) {
+    if (dbVersion < latestVersion.version) {
       // run each of the upgrade scripts
-      for (let v = dbVersion + 1; v < latestVersion; v++) {
+      for (let v = dbVersion + 1; v <= latestVersion.version; v++) {
         debug(`upgrading to version ${v}`);
         const version = schema.getVersion(v);
         await db._doUpgrade(version);
       }
-    }
-
-    // if we are running upgrades, unconditionally define the function objects
-    // for the defined methods; this allows updates to those functions to fix
-    // bugs without a new schema version.
-    for (let [method, {args, returns, script}] of schema.methods) {
-      debug(`defining method ${method}`);
-      await db._defineMethod(method, args, returns, script);
     }
   } finally {
     await db.close();
