@@ -19,13 +19,9 @@ if (dbUrl) {
   };
 } else {
   // TODO: check NO_TEST_SKIP
-  console.error('Set TEST_DB_URL to run tests for this library');
   exports.dbSuite = (...args) => {
     suite(...args.slice(0, -1), function() {
-      suiteSetup(function() {
-        this.pending = true;
-      });
-      args[args.length - 1].call(this);
+      test.skip('(TEST_DB_URL is not set)', function() { });
     });
   };
 }
