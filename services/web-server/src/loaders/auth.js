@@ -13,7 +13,7 @@ module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => 
 
         // If req.user is falsy for one query, it will be falsy for the rest.
         // Instead of returning an error in the try catch block below for every query,
-        // we just want to throw an unauthorized error 
+        // we just want to throw an unauthorized error
         if (!req.user) {
           throw unauthorizedError;
         }
