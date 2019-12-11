@@ -3,6 +3,19 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v24.1.1
+
+▶ [patch] 
+Fix regression in Taskcluster UI custom actions in the task view not being triggered.
+
+▶ [patch] 
+Provisioning logic now counts workers correctly
+
+▶ [patch] [#2155](https://github.com/taskcluster/taskcluster/issues/2155)
+Taskcluster UI no longer takes the user to a different run when expanding the artifacts dropdown.
+
+▶ Additional change not described here: [#2152](https://github.com/taskcluster/taskcluster/issues/2152).
+
 ## v24.1.0
 
 ▶ [minor] [bug 1599122](http://bugzil.la/1599122)
