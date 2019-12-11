@@ -27,7 +27,6 @@ import scopesQuery from '../scopes.graphql';
 export default class ViewScope extends Component {
   state = {
     searchTerm: '',
-    directEntitySearch: false,
     currentTabIndex: 0,
   };
 
@@ -79,17 +78,15 @@ export default class ViewScope extends Component {
     } = this.props;
     const { searchTerm, currentTabIndex } = this.state;
     const selectedScope = decodeURIComponent(params.selectedScope);
-    const searchProperty = this.state.directEntitySearch
-      ? 'scopes'
-      : 'expandedScopes';
 
     return (
       <Dashboard
-        title={selectedScope}
+        title={`Scope ${selectedScope}`}
+        disableTitleFormatting
         search={
           <Search
             onSubmit={this.handleSearchSubmit}
-            placeholder="Result contains"
+            placeholder="Roles/Clients contains"
           />
         }>
         <Fragment>
@@ -108,7 +105,6 @@ export default class ViewScope extends Component {
               roles={roles}
               searchTerm={searchTerm}
               selectedScope={selectedScope}
-              searchProperty={searchProperty}
             />
           )}
           {clients && currentTabIndex === 1 && (
@@ -117,7 +113,6 @@ export default class ViewScope extends Component {
               onPageChange={this.handleClientsPageChange}
               searchTerm={searchTerm}
               selectedScope={selectedScope}
-              searchProperty={searchProperty}
             />
           )}
         </Fragment>

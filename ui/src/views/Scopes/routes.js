@@ -28,6 +28,9 @@ export default path => [
   {
     component: ViewScope,
     path: `${path}/:selectedScope`,
+    description:
+      'Explore scopes on the Auth service. This tool allows you to find roles and\n' +
+      'clients with a given scope. This is effectively reverse client and role lookup.',
   },
   {
     component: ListScopes,
