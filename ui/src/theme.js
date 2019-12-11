@@ -358,7 +358,16 @@ const createTheme = isDarkTheme => {
       },
       MuiPickerDTTabs: {
         tabs: {
+          color: '#fff',
           backgroundColor: THEME.SECONDARY,
+        },
+      },
+      PrivateTabIndicator: {
+        colorPrimary: {
+          backgroundColor: '#fff',
+        },
+        colorSecondary: {
+          backgroundColor: '#000',
         },
       },
       MuiListItem: {
