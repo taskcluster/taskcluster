@@ -24,8 +24,8 @@ suite(path.basename(__filename), function() {
 
     test('fromSerializable', function() {
       const sch = Schema.fromSerializable({
-        versions: {
-          1: {
+        versions: [
+          {
             version: 1,
             methods: {
               reset: {
@@ -36,9 +36,8 @@ suite(path.basename(__filename), function() {
               },
             },
           },
-        },
+        ],
       });
-
       const ver1 = sch.getVersion(1);
       assert.deepEqual(Object.keys(ver1.methods), ['reset']);
     });
