@@ -188,7 +188,7 @@ export default class ViewTask extends Component {
     selectedCaches: null,
   };
 
-  handleActionClick = ({ currentTarget: { name } }) => {
+  handleActionClick = name => () => {
     const { action } = this.state.actionData[name];
 
     this.setState({
@@ -971,12 +971,11 @@ export default class ViewTask extends Component {
                     tooltipOpen
                     key={action.title}
                     FabProps={{
-                      name: action.name,
                       disabled: actionLoading,
                     }}
                     icon={this.renderActionIcon(action)}
                     tooltipTitle={action.title}
-                    onClick={this.handleActionClick}
+                    onClick={this.handleActionClick(action.name)}
                   />
                 ))}
             </SpeedDial>
