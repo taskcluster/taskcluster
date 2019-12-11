@@ -309,7 +309,7 @@ export default class TaskRunsCard extends Component {
           <CardContent
             classes={{
               root: classNames(classes.cardContent, {
-                [classes.collapsedCard]: !showMore,
+                [classes.collapsedCard]: !showMore && run,
               }),
             }}>
             <Typography variant="h5" className={classes.headline}>
