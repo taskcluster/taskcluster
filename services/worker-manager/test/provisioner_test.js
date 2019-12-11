@@ -15,12 +15,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   helper.withProvisioner(mock, skipping);
 
   suite('provisioning loop', function() {
-    const testCase = ({workers = [], workerPools = [], assertion, expectErrors = false}) => {
-      return testing.runWithFakeTime(async function() {
-        await Promise.all(workers.map(w => helper.Worker.create(w)));
-        await Promise.all(workerPools.map(async wt => {
+    const testCase = async ({workers = [], workerPools = [], assertion, expectErrors = false}) => {
+      await Promise.all(workers.map(w => helper.Worker.create(w)));
+      await Promise.all(workerPools.map(async wt => {
+        if (wt.input) {
           await helper.workerManager.createWorkerPool(wt.workerPoolId, wt.input);
-        }));
+        } else {
+          await helper.WorkerPool.create(wt);
+        }
+      }));
+      return (testing.runWithFakeTime(async function() {
 
         await helper.initiateProvisioner();
         await testing.poll(async () => {
@@ -31,20 +35,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
             }
           }
           await Promise.all(workerPools.map(async wt => {
+            const pId = wt.providerId || wt.input.providerId;
             assert.deepEqual(
               monitorManager.messages.find(
                 msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === wt.workerPoolId), {
                 Logger: 'taskcluster.worker-manager.provisioner',
                 Type: 'worker-pool-provisioned',
-                Fields: {workerPoolId: wt.workerPoolId, providerId: wt.input.providerId, v: 1},
+                Fields: {workerPoolId: wt.workerPoolId, providerId: pId, v: 1},
                 Severity: LEVELS.info,
               });
             assert.deepEqual(
               monitorManager.messages.find(
                 msg => msg.Type === 'test-provision' && msg.Fields.workerPoolId === wt.workerPoolId), {
-                Logger: `taskcluster.worker-manager.provider.${wt.input.providerId}`,
+                Logger: `taskcluster.worker-manager.provider.${pId}`,
                 Type: 'test-provision',
-                Fields: {workerPoolId: wt.workerPoolId},
+                Fields: {workerPoolId: wt.workerPoolId, existingCapacity: wt.existingCapacity},
                 Severity: LEVELS.notice,
               });
           }));
@@ -59,13 +64,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       }, {
         mock,
         maxTime: 30000,
-      });
+      }))();
     };
 
-    test('single worker pool', testCase({
+    test('single worker pool', () => testCase({
       workerPools: [
         {
           workerPoolId: 'pp/ee',
+          existingCapacity: 0,
           input: {
             providerId: 'testing1',
             description: 'bar',
@@ -77,20 +83,26 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       ],
     }));
 
-    test('multiple worker pools, same provider', testCase({
+    test('single worker pool (with running worker)', () => testCase({
+      workers: [
+        {
+          workerPoolId: 'ff/ee',
+          workerGroup: 'whatever',
+          workerId: 'testing-OLD',
+          providerId: 'testing1',
+          created: new Date(),
+          lastModified: new Date(),
+          lastChecked: new Date(),
+          expires: taskcluster.fromNow('1 hour'),
+          capacity: 1,
+          state: helper.Worker.states.RUNNING,
+          providerData: {},
+        },
+      ],
       workerPools: [
         {
-          workerPoolId: 'pp/ee',
-          input: {
-            providerId: 'testing1',
-            description: 'bar',
-            config: {},
-            owner: 'example@example.com',
-            emailOnError: false,
-          },
-        },
-        {
-          workerPoolId: 'pp/ee2',
+          workerPoolId: 'ff/ee',
+          existingCapacity: 1,
           input: {
             providerId: 'testing1',
             description: 'bar',
@@ -102,10 +114,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       ],
     }));
 
-    test('multiple worker pools, different provider', testCase({
+    test('multiple worker pools, same provider', () => testCase({
       workerPools: [
         {
           workerPoolId: 'pp/ee',
+          existingCapacity: 0,
           input: {
             providerId: 'testing1',
             description: 'bar',
@@ -116,6 +129,34 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         },
         {
           workerPoolId: 'pp/ee2',
+          existingCapacity: 0,
+          input: {
+            providerId: 'testing1',
+            description: 'bar',
+            config: {},
+            owner: 'example@example.com',
+            emailOnError: false,
+          },
+        },
+      ],
+    }));
+
+    test('multiple worker pools, different provider', () => testCase({
+      workerPools: [
+        {
+          workerPoolId: 'pp/ee',
+          existingCapacity: 0,
+          input: {
+            providerId: 'testing1',
+            description: 'bar',
+            config: {},
+            owner: 'example@example.com',
+            emailOnError: false,
+          },
+        },
+        {
+          workerPoolId: 'pp/ee2',
+          existingCapacity: 0,
           input: {
             providerId: 'testing2',
             description: 'bar',
@@ -159,6 +200,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       workerPools: [
         {
           workerPoolId: 'ff/ee',
+          existingCapacity: 1,
           providerId: 'testing2',
           previousProviderIds: ['testing1'],
           description: '',
@@ -175,16 +217,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       ],
       expectErrors: true,
       assertion: async () => {
-        const worker = await helper.Worker.load({
-          workerPoolId: 'ff/ee',
-          workerGroup: 'whatever',
-          workerId: 'testing-123',
-        });
-        assert(worker.providerData.checked);
-
-        const wp = await helper.WorkerPool.load({workerPoolId: 'ff/ee'});
-        assert.deepEqual(wp.previousProviderIds, []);
-
         assert.deepEqual(monitorManager.messages.find(
           msg => msg.Type === 'remove-resource' && msg.Logger.endsWith('testing1')), {
           Logger: `taskcluster.worker-manager.provider.testing1`,
@@ -398,7 +430,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
           msg => msg.Type === 'test-provision' && msg.Fields.workerPoolId === workerPool.workerPoolId), {
           Logger: `taskcluster.worker-manager.provider.${workerPool.input.providerId}`,
           Type: 'test-provision',
-          Fields: {workerPoolId: workerPool.workerPoolId},
+          Fields: {workerPoolId: workerPool.workerPoolId, existingCapacity: 0},
           Severity: LEVELS.notice,
         });
 
@@ -437,7 +469,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
           msg => msg.Type === 'test-provision' && msg.Fields.workerPoolId === workerPool.workerPoolId), {
           Logger: `taskcluster.worker-manager.provider.${workerPool.input.providerId}`,
           Type: 'test-provision',
-          Fields: {workerPoolId: workerPool.workerPoolId},
+          Fields: {workerPoolId: workerPool.workerPoolId, existingCapacity: 0},
           Severity: LEVELS.notice,
         });
 
@@ -460,7 +492,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
           msg => msg.Type === 'test-provision' && msg.Fields.workerPoolId === workerPool.workerPoolId), {
           Logger: `taskcluster.worker-manager.provider.${workerPool.input.providerId}`,
           Type: 'test-provision',
-          Fields: {workerPoolId: workerPool.workerPoolId},
+          Fields: {workerPoolId: workerPool.workerPoolId, existingCapacity: 0},
           Severity: LEVELS.notice,
         });
     });
