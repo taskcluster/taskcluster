@@ -17,16 +17,14 @@ class Schema{
   }
 
   static fromSerializable(serializable) {
-    return new Schema(new Map(
-      Object.values(serializable.versions)
-        .map(vers => ([vers.version, vers])),
-    ));
+    return new Schema(serializable.versions);
   }
 
   static fromDbDirectory(directory) {
-    const versions = new Map();
+    const dentries = fs.readdirSync(directory);
+    let versions = new Array(dentries.length);
 
-    fs.readdirSync(directory).forEach(dentry => {
+    dentries.forEach(dentry => {
       if (dentry.startsWith('.')) {
         return;
       }
@@ -39,14 +37,14 @@ class Schema{
 
       const version = yaml.safeLoad(fs.readFileSync(filename));
 
-      versions.set(version.version, version);
+      versions[version.version - 1] = version;
     });
 
     return new Schema(versions);
   }
 
   getVersion(version) {
-    const v = this.versions.get(version);
+    const v = this.versions[version - 1];
 
     if (!v) {
       throw new Error(`Version ${version} not found in the schema`);
@@ -56,12 +54,13 @@ class Schema{
   }
 
   latestVersion() {
-    return this.versions.get(Math.max(...this.versions.keys()));
+    return this.versions[this.versions.length - 1]
   }
 
   allMethods() {
     const modes = {read: READ, write: WRITE};
-    return [...this.versions.values()].reduce((acc, version) => {
+
+    return this.versions.reduce((acc, version) => {
       Object.entries(version.methods).forEach(([name, { mode }]) => {
         acc.add({ name, mode: modes[mode] });
       });
