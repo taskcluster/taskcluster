@@ -7907,10 +7907,10 @@ markdown-to-jsx@^6.6.8:
     prop-types "^15.6.2"
     unquote "^1.1.0"
 
-material-ui-treeview@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/material-ui-treeview/-/material-ui-treeview-4.0.0.tgz#a40a51198b8e93717281857e64f48d2a618b8d8a"
-  integrity sha512-EMN6inuqzhvwmJe4PwQaD5PiC7uYvFZuhTY1J6mi4k0y9FsJ7RkdiU8qR7qrh0UH/CajgyemjNcEwh+Lq2dfLw==
+material-ui-treeview@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/material-ui-treeview/-/material-ui-treeview-4.1.0.tgz#ca19d211db4bbba6e0b230e338da5eb008d01918"
+  integrity sha512-wfkd1D05aJHdvaNcCsFsuj7ndP6I4+bmmm4StiesIlwKeTMHqAKNCZZEu4oEspd7pZGD29yv2dpwWypHOvIMrA==
   dependencies:
     "@material-ui/icons" "^4.5.1"
     classnames "^2.2.6"
@@ -12076,7 +12076,8 @@ tar@^4:
     yallist "^3.0.3"
 
 "taskcluster-lib-scopes@link:../libraries/scopes":
-  version "24.1.0"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
