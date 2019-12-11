@@ -7,8 +7,8 @@ dbSuite(path.basename(__filename), function() {
   let db;
 
   const schema = Schema.fromSerializable({
-    versions: {
-      1: {
+    versions: [
+      {
         version: 1,
         migrationScript: `begin
             create table testing (a integer, b integer);
@@ -32,7 +32,7 @@ dbSuite(path.basename(__filename), function() {
           },
         },
       },
-    },
+    ]
   });
 
   setup(function() {
