@@ -49,9 +49,9 @@ const DOTS_VARIANT_LIMIT = 5;
       paddingRight: 0,
       paddingTop: theme.spacing(2),
       paddingBottom: theme.spacing(2),
-      '&:last-child': {
-        paddingBottom: theme.spacing(3),
-      },
+    },
+    collapsedCard: {
+      paddingBottom: 0,
     },
     controls: {
       display: 'flex',
@@ -306,7 +306,12 @@ export default class TaskRunsCard extends Component {
     return (
       <Card raised>
         <div>
-          <CardContent classes={{ root: classes.cardContent }}>
+          <CardContent
+            classes={{
+              root: classNames(classes.cardContent, {
+                [classes.collapsedCard]: !showMore && run,
+              }),
+            }}>
             <Typography variant="h5" className={classes.headline}>
               {run ? `Task Run ${selectedRunId}` : 'Task Run'}
             </Typography>

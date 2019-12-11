@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import classNames from 'classnames';
 import { arrayOf, shape, string } from 'prop-types';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import deepSortObject from 'deep-sort-object';
@@ -32,9 +33,13 @@ import Link from '../../utils/Link';
     paddingLeft: 0,
     paddingRight: 0,
     paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
     '&:last-child': {
       paddingBottom: theme.spacing(2),
+    },
+  },
+  collapsedCard: {
+    '&:last-child': {
+      paddingBottom: theme.spacing(0),
     },
   },
   sourceHeadline: {
@@ -110,7 +115,12 @@ export default class TaskDetailsCard extends Component {
     return (
       <Card raised>
         <div>
-          <CardContent classes={{ root: classes.cardContent }}>
+          <CardContent
+            classes={{
+              root: classNames(classes.cardContent, {
+                [classes.collapsedCard]: !showMore,
+              }),
+            }}>
             <Typography variant="h5" className={classes.headline}>
               Task Details
             </Typography>
