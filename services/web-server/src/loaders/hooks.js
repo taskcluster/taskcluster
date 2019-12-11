@@ -33,7 +33,7 @@ module.exports = ({ hooks }) => {
     Promise.all(
       queries.map(async ({ hookGroupId, hookId }) => {
         try {
-          return hooks.hook(hookGroupId, hookId);
+          return await hooks.hook(hookGroupId, hookId);
         } catch (err) {
           return err;
         }
@@ -44,7 +44,7 @@ module.exports = ({ hooks }) => {
     Promise.all(
       queries.map(async ({ hookGroupId, hookId }) => {
         try {
-          return hooks.getHookStatus(hookGroupId, hookId);
+          return await hooks.getHookStatus(hookGroupId, hookId);
         } catch (err) {
           return err;
         }

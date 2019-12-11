@@ -5,9 +5,9 @@ const ConnectionLoader = require('../ConnectionLoader');
 module.exports = ({ queue }) => {
   const workerType = new DataLoader(queries =>
     Promise.all(
-      queries.map(({ provisionerId, workerType }) => {
+      queries.map(async ({ provisionerId, workerType }) => {
         try {
-          return queue.getWorkerType(provisionerId, workerType);
+          return await queue.getWorkerType(provisionerId, workerType);
         } catch (err) {
           return err;
         }

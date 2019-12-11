@@ -7,7 +7,7 @@ module.exports = ({ queue }) => {
     Promise.all(
       provisionerIds.map(async provisionerId => {
         try {
-          return queue.getProvisioner(provisionerId);
+          return await queue.getProvisioner(provisionerId);
         } catch (err) {
           return err;
         }

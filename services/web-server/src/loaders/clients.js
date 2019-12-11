@@ -16,9 +16,9 @@ module.exports = ({ auth }) => {
   );
   const client = new DataLoader(clientIds =>
     Promise.all(
-      clientIds.map(clientId => {
+      clientIds.map(async (clientId) => {
         try {
-          return auth.client(clientId);
+          return await auth.client(clientId);
         } catch (err) {
           return err;
         }

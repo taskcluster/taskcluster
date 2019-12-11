@@ -21,7 +21,7 @@ module.exports = ({ workerManager }) => {
     Promise.all(
       queries.map(async ({ workerPoolId }) => {
         try {
-          return workerManager.workerPool(workerPoolId);
+          return await workerManager.workerPool(workerPoolId);
         } catch (err) {
           return err;
         }

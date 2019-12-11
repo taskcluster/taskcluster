@@ -28,9 +28,9 @@ module.exports = ({ auth }) => {
   });
   const role = new DataLoader(roleIds =>
     Promise.all(
-      roleIds.map(roleId => {
+      roleIds.map(async (roleId) => {
         try {
-          return auth.role(roleId);
+          return await auth.role(roleId);
         } catch (err) {
           return err;
         }
