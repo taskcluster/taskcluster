@@ -105,7 +105,6 @@ const DOTS_VARIANT_LIMIT = 5;
       marginBottom: theme.spacing(0.5),
     },
     previousPageArrow: {
-      marginLeft: -theme.spacing(1),
       marginRight: 0,
       '& .mdi-icon': {
         fill: 'currentcolor',
@@ -185,27 +184,26 @@ export default class TaskRunsCard extends Component {
   };
 
   handleNext = () => {
-    const { history } = this.props;
+    const { location, history } = this.props;
     const { taskId, runId } = this.getCurrentRun();
 
-    history.push(`/tasks/${taskId}/runs/${runId + 1}`);
+    history.push(`/tasks/${taskId}/runs/${runId + 1}${location.hash}`);
   };
 
   handlePrevious = () => {
-    const { history } = this.props;
+    const { location, history } = this.props;
     const { taskId, runId } = this.getCurrentRun();
 
-    history.push(`/tasks/${taskId}/runs/${runId - 1}`);
+    history.push(`/tasks/${taskId}/runs/${runId - 1}${location.hash}`);
   };
 
   handleToggleArtifacts = () => {
-    const { history } = this.props;
-    const { taskId } = this.getCurrentRun();
-    const showArtifacts = history.location.hash === '#artifacts';
+    const { location, history } = this.props;
+    const showArtifacts = location.hash === '#artifacts';
 
     showArtifacts
-      ? history.replace(`/tasks/${taskId}`)
-      : history.replace(`/tasks/${taskId}#artifacts`);
+      ? history.replace(location.pathname)
+      : history.replace(`${location.pathname}#artifacts`);
   };
 
   getLiveLogArtifactFromRun = run => {
