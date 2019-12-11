@@ -100,7 +100,6 @@ export default class ProvisionerDetailsTable extends Component {
   handleDrawerClose = () => {
     this.setState({
       drawerOpen: false,
-      drawerProvisioner: null,
     });
   };
 
