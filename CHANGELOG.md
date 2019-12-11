@@ -3,6 +3,44 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v24.1.0
+
+▶ [minor] [bug 1599122](http://bugzil.la/1599122)
+Worker Manager now does a better job at keeping provisioning in-sync with reality.
+
+* Workers now have a top-level `capacity` field which is how many tasks it can run at once.
+* Workers now have `lastModified` and `lastChecked` fields which are useful for determining
+  the state the worker is actually in vs what state Taskcluster thinks it is in.
+* When calling `createWorker` manually, you can now specify a capacity for the worker.
+
+▶ [minor] [bug 1587511](http://bugzil.la/1587511)
+WorkerPools can now be configured to terminate workers that fail to register after some amount of time.
+Both of the google and aws providers now support a `lifecycle` object that for now has a single key
+of `registrationTimeout`. It is optional and if it is provided the value is an integer with the number
+of seconds a worker has to register before it is terminated.
+
+This helps catch misconfigured or broken workers before they become zombies or worse.
+
+▶ [patch] [#217](https://github.com/taskcluster/taskcluster/issues/217)
+Taskcluster UI no longer displays duplicated app bars when connecting via SSH.
+
+▶ [patch] [bug 1595749](http://bugzil.la/1595749)
+Taskcluster login now properly handles an edge case where a couple of users were hitting which prevented them to login.
+
+▶ [patch] [bug 1599550](http://bugzil.la/1599550)
+The `auth.sentry_*` Helm parameters are no longer required.  If they are omitted, then the service will start up but the `auth.sentryDSN` REST API method will return 404's.
+
+▶ [patch] [bug 1599893](http://bugzil.la/1599893)
+Worker Manager now takes optional configuration to change the timings on the lib-iterate loops
+that control provisioning. The values are `worker_manager.provisioner_iterate_config` and
+`worker_manager.worker_scanner_iterate_config`. Each is a JSON object where you can set the following:
+
+* `maxFailures` - Which sets how many iterations in a row can fail before the task crashes
+* `maxIterationTime` - How long (in ms) an iteration is allowed to take before it is ended
+* `waitTime` - How long (in ms) to wait in between loops
+
+▶ Additional changes not described here: [#2114](https://github.com/taskcluster/taskcluster/issues/2114), [#2130](https://github.com/taskcluster/taskcluster/issues/2130), [bug 1577839](http://bugzil.la/1577839).
+
 ## v24.0.2
 
 ▶ [patch] [bug 1602642](http://bugzil.la/1602642)
