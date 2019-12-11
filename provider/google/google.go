@@ -54,7 +54,7 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 		return err
 	}
 
-	providerMetadata := map[string]string{
+	providerMetadata := map[string]interface{}{
 		"instance-id": workerID,
 	}
 	for _, f := range []struct {
@@ -78,15 +78,15 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 
 	// post process the `zone` value into just the zone name, and the region name
 	// region is available as availability-zone minus the final letter
-	zone := providerMetadata["zone"]
+	zone := providerMetadata["zone"].(string)
 	zone = zone[strings.LastIndexByte(zone, byte('/'))+1:]
 	providerMetadata["zone"] = zone
 	providerMetadata["region"] = zone[:len(zone)-2]
 
 	state.WorkerLocation = map[string]string{
 		"cloud":  "google",
-		"region": providerMetadata["region"],
-		"zone":   providerMetadata["zone"],
+		"region": providerMetadata["region"].(string),
+		"zone":   providerMetadata["zone"].(string),
 	}
 
 	state.ProviderMetadata = providerMetadata

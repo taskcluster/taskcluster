@@ -61,10 +61,10 @@ func (p *StaticProvider) ConfigureRun(state *run.State) error {
 		}
 	}
 
-	state.ProviderMetadata = map[string]string{}
+	state.ProviderMetadata = map[string]interface{}{}
 
 	if providerMetadata, ok := p.runnercfg.Provider.Data["providerMetadata"]; ok {
-		for k, v := range providerMetadata.(map[string]string) {
+		for k, v := range providerMetadata.(map[string]interface{}) {
 			state.ProviderMetadata[k] = v
 		}
 	}

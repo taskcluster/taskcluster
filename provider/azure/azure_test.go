@@ -91,7 +91,7 @@ func TestConfigureRun(t *testing.T) {
 	require.Equal(t, "wg", state.WorkerGroup, "workerGroup is correct")
 	require.Equal(t, "df09142e-c0dd-43d9-a515-489f19829dfd", state.WorkerID, "workerID is correct")
 
-	require.Equal(t, map[string]string{
+	require.Equal(t, map[string]interface{}{
 		"vm-id":         "df09142e-c0dd-43d9-a515-489f19829dfd",
 		"instance-type": "medium",
 		"region":        "uswest",
