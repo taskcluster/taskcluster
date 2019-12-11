@@ -120,11 +120,11 @@ class Provisioner {
         const v = providersByPool.get(worker.workerPoolId);
         if (v) {
           v.providers.add(worker.providerId);
-          v.capacity += worker.workerCapacity;
+          v.capacity += worker.capacity;
         } else {
           providersByPool.set(worker.workerPoolId, {
             providers: new Set([worker.providerId]),
-            capacity: worker.workerCapacity,
+            capacity: worker.capacity,
           });
         }
       };
