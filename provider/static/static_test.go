@@ -24,7 +24,7 @@ func TestConfigureRun(t *testing.T) {
 				"workerGroup":  "wg",
 				"workerID":     "wi",
 				"staticSecret": "quiet",
-				"workerLocation": map[string]string{
+				"workerLocation": map[string]interface{}{
 					"region": "underworld",
 					"zone":   "666",
 				},

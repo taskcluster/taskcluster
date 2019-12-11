@@ -208,6 +208,7 @@ provider:
     # (optional) custom provider-metadata entries to be passed to worker
     providerMetadata: {prop: val, ..}
     # (optional) custom properties for TASKCLUSTER_WORKER_LOCATION
+    # (values must be strings)
     workerLocation:  {prop: val, ..}
 ```
 
@@ -235,6 +236,7 @@ provider:
     # (optional) custom provider-metadata entries to be passed to worker
     providerMetadata: {prop: val, ..}
     # (optional) custom properties for TASKCLUSTER_WORKER_LOCATION
+    # (values must be strings)
     workerLocation:  {prop: val, ..}
 ```
 

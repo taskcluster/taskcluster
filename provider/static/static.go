@@ -56,8 +56,11 @@ func (p *StaticProvider) ConfigureRun(state *run.State) error {
 	}
 
 	if workerLocation, ok := p.runnercfg.Provider.Data["workerLocation"]; ok {
-		for k, v := range workerLocation.(map[string]string) {
-			state.WorkerLocation[k] = v
+		for k, v := range workerLocation.(map[string]interface{}) {
+			state.WorkerLocation[k], ok = v.(string)
+			if !ok {
+				return fmt.Errorf("workerLocation value %s is not a string", k)
+			}
 		}
 	}
 
@@ -114,6 +117,7 @@ provider:
 	# (optional) custom provider-metadata entries to be passed to worker
 	providerMetadata: {prop: val, ..}
     # (optional) custom properties for TASKCLUSTER_WORKER_LOCATION
+	# (values must be strings)
     workerLocation:  {prop: val, ..}
 ` + "```" + `
 

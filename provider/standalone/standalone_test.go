@@ -1,8 +1,10 @@
 package standalone
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/run"
@@ -67,7 +69,7 @@ func TestConfigureRunAllOptional(t *testing.T) {
 				"workerPoolID": "w/p",
 				"workerGroup":  "wg",
 				"workerID":     "wi",
-				"workerLocation": map[string]string{
+				"workerLocation": map[string]interface{}{
 					"region": "underworld",
 					"zone":   "666",
 				},
@@ -107,4 +109,41 @@ func TestConfigureRunAllOptional(t *testing.T) {
 	require.Equal(t, "1.2.3.4", state.ProviderMetadata["public-ip"])
 	require.Equal(t, "0.0.0.0", state.ProviderMetadata["secret-ip"])
 	require.Equal(t, 2, len(state.ProviderMetadata))
+}
+
+func TestConfigureRunNonStringLocation(t *testing.T) {
+	runnerWorkerConfig := cfg.NewWorkerConfig()
+	runnerWorkerConfig, err := runnerWorkerConfig.Set("from-runner-cfg", true)
+	require.NoError(t, err, "setting config")
+	runnercfg := &cfg.RunnerConfig{
+		Provider: cfg.ProviderConfig{
+			ProviderType: "standalone",
+			Data: map[string]interface{}{
+				"rootURL":      "https://tc.example.com",
+				"clientID":     "testing",
+				"accessToken":  "at",
+				"workerPoolID": "w/p",
+				"workerGroup":  "wg",
+				"workerID":     "wi",
+				"workerLocation": map[string]interface{}{
+					"region": 13,
+				},
+			},
+		},
+		WorkerImplementation: cfg.WorkerImplementationConfig{
+			Implementation: "whatever",
+		},
+		WorkerConfig: runnerWorkerConfig,
+	}
+
+	p, err := New(runnercfg)
+	require.NoError(t, err, "creating provider")
+
+	state := run.State{
+		WorkerConfig: runnercfg.WorkerConfig,
+	}
+	err = p.ConfigureRun(&state)
+	if assert.Error(t, err) {
+		require.Equal(t, fmt.Errorf("workerLocation value region is not a string"), err)
+	}
 }
