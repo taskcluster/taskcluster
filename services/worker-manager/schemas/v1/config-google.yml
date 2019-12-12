@@ -2,7 +2,7 @@ $schema: "/schemas/common/metaschema.json#"
 title: Google Provider Config
 description: |
   'The config section of a workertype is using a provider with implementation google must match this.
-  Much of these fields are documented [here](https://cloud.google.com/compute/docs/reference/rest/v1/instanceTemplates)'
+  Many of these fields are documented [here](https://cloud.google.com/compute/docs/reference/rest/v1/instances).'
 type: object
 properties:
   minCapacity:

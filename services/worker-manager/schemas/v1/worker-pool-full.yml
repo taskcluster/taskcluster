@@ -44,8 +44,12 @@ properties:
   config:
     # Inside the handler, it will assert that these fields match
     # correctly to the implementation the provider has been configured to use.
-    type: object
-    additionalProperties: true
+    oneOf:
+      - {$ref: "config-aws.json#"}
+      - {$ref: "config-google.json#"}
+      - {$ref: "config-null.json#"}
+      - {$ref: "config-static.json#"}
+      - {$ref: "config-testing.json#"}
   owner:
     title: Owner Email
     type: string
