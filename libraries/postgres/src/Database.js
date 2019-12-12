@@ -21,10 +21,11 @@ class Database {
       [READ]: makePool(readDbUrl),
       [WRITE]: makePool(writeDbUrl),
     };
+    this.procs = {};
 
     // generate a JS method for each DB method defined in the schema
     schema.allMethods().forEach(({ name, mode}) => {
-      this[name] = async (...args) => {
+      this.procs[name] = async (...args) => {
         const placeholders = [...new Array(args.length).keys()].map(i => `$${i + 1}`).join(',');
         const res = await this._withClient(mode, client => client.query(
           `select * from "${name}"(${placeholders})`, args));
