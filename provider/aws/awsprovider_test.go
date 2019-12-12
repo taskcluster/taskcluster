@@ -72,7 +72,7 @@ func TestAWSConfigureRun(t *testing.T) {
 	require.Equal(t, "wg", state.WorkerGroup, "workerGroup is correct")
 	require.Equal(t, "i-55555nonesense5", state.WorkerID, "workerID is correct")
 
-	require.Equal(t, map[string]string{
+	require.Equal(t, map[string]interface{}{
 		"instance-id":       "i-55555nonesense5",
 		"image":             "banana",
 		"instance-type":     "t2.micro",

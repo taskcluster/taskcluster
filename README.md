@@ -208,7 +208,10 @@ provider:
     workerPoolID: ..
     workerGroup: ..
     workerID: ..
-    # custom properties for TASKCLUSTER_WORKER_LOCATION
+    # (optional) custom provider-metadata entries to be passed to worker
+    providerMetadata: {prop: val, ..}
+    # (optional) custom properties for TASKCLUSTER_WORKER_LOCATION
+    # (values must be strings)
     workerLocation:  {prop: val, ..}
 ```
 
@@ -233,7 +236,10 @@ provider:
     workerGroup: ...
     workerID: ...
     staticSecret: ... # shared secret configured for this worker in worker-manager
-    # custom properties for TASKCLUSTER_WORKER_LOCATION
+    # (optional) custom provider-metadata entries to be passed to worker
+    providerMetadata: {prop: val, ..}
+    # (optional) custom properties for TASKCLUSTER_WORKER_LOCATION
+    # (values must be strings)
     workerLocation:  {prop: val, ..}
 ```
 

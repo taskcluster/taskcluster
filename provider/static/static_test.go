@@ -24,9 +24,12 @@ func TestConfigureRun(t *testing.T) {
 				"workerGroup":  "wg",
 				"workerID":     "wi",
 				"staticSecret": "quiet",
-				"workerLocation": map[string]string{
+				"workerLocation": map[string]interface{}{
 					"region": "underworld",
 					"zone":   "666",
+				},
+				"providerMetadata": map[string]interface{}{
+					"temperature": "24",
 				},
 			},
 		},
@@ -60,7 +63,7 @@ func TestConfigureRun(t *testing.T) {
 	require.Equal(t, "w/p", state.WorkerPoolID, "workerPoolID is correct")
 	require.Equal(t, "wg", state.WorkerGroup, "workerGroup is correct")
 	require.Equal(t, "wi", state.WorkerID, "workerID is correct")
-	require.Equal(t, map[string]string{}, state.ProviderMetadata, "providerMetadata is correct")
+	require.Equal(t, map[string]interface{}{"temperature": "24"}, state.ProviderMetadata, "providerMetadata is correct")
 
 	require.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
 	require.Equal(t, "static", state.WorkerLocation["cloud"])

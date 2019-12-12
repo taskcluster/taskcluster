@@ -81,7 +81,7 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 		return err
 	}
 
-	providerMetadata := map[string]string{
+	providerMetadata := map[string]interface{}{
 		"vm-id":         instanceData.Compute.VMID,
 		"instance-type": instanceData.Compute.VMSize,
 		"region":        instanceData.Compute.Location,

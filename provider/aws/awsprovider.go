@@ -80,7 +80,7 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 		return err
 	}
 
-	providerMetadata := map[string]string{
+	providerMetadata := map[string]interface{}{
 		"instance-id":       iid_json.InstanceId,
 		"image":             iid_json.ImageId,
 		"instance-type":     iid_json.InstanceType,

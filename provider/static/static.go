@@ -51,14 +51,24 @@ func (p *StaticProvider) ConfigureRun(state *run.State) error {
 		return err
 	}
 
-	state.ProviderMetadata = map[string]string{}
 	state.WorkerLocation = map[string]string{
 		"cloud": "static",
 	}
 
 	if workerLocation, ok := p.runnercfg.Provider.Data["workerLocation"]; ok {
-		for k, v := range workerLocation.(map[string]string) {
-			state.WorkerLocation[k] = v
+		for k, v := range workerLocation.(map[string]interface{}) {
+			state.WorkerLocation[k], ok = v.(string)
+			if !ok {
+				return fmt.Errorf("workerLocation value %s is not a string", k)
+			}
+		}
+	}
+
+	state.ProviderMetadata = map[string]interface{}{}
+
+	if providerMetadata, ok := p.runnercfg.Provider.Data["providerMetadata"]; ok {
+		for k, v := range providerMetadata.(map[string]interface{}) {
+			state.ProviderMetadata[k] = v
 		}
 	}
 
@@ -104,7 +114,10 @@ provider:
     workerGroup: ...
     workerID: ...
     staticSecret: ... # shared secret configured for this worker in worker-manager
-    # custom properties for TASKCLUSTER_WORKER_LOCATION
+	# (optional) custom provider-metadata entries to be passed to worker
+	providerMetadata: {prop: val, ..}
+    # (optional) custom properties for TASKCLUSTER_WORKER_LOCATION
+	# (values must be strings)
     workerLocation:  {prop: val, ..}
 ` + "```" + `
 
