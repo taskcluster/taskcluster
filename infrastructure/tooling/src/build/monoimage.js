@@ -101,6 +101,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
       await execCommand({
         command,
         dir: sourceDir,
+        logfile: `${baseDir}/docker-build.log`,
         utils,
         env: {DOCKER_BUILDKIT: 1, ...process.env},
       });
@@ -163,6 +164,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
         await execCommand({
           command: ['docker', 'build', '--progress', 'plain', '--tag', tag, '.'],
           dir: dockerDir,
+          logfile: `${baseDir}/docker-build-devel.log`,
           utils,
           env: {DOCKER_BUILDKIT: 1, ...process.env},
         });

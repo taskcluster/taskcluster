@@ -1,3 +1,4 @@
+const fs = require('fs');
 const child_process = require('child_process');
 const {Transform} = require('stream');
 
@@ -7,6 +8,7 @@ const {Transform} = require('stream');
  * - dir -- directory to run command in
  * - command -- command to run (list of arguments)
  * - utils -- taskgraph utils (waitFor, etc.)
+ * - logfile -- log file to which to record output of command
  * - env -- optional environment variables for the command
  */
 exports.execCommand = async ({
@@ -14,6 +16,7 @@ exports.execCommand = async ({
   command,
   utils,
   stdin,
+  logfile,
   keepAllOutput = false,
   env = process.env,
   ignoreReturn = false,
@@ -25,6 +28,12 @@ exports.execCommand = async ({
   });
 
   let output = '';
+
+  if (logfile) {
+    const logStream = fs.createWriteStream(logfile);
+    cp.stdout.pipe(logStream);
+    cp.stderr.pipe(logStream);
+  }
 
   const stream = new Transform({
     transform: (chunk, encoding, callback) => {
@@ -49,7 +58,7 @@ exports.execCommand = async ({
       if (code === 0 || ignoreReturn) {
         resolve(output);
       } else {
-        reject(new Error(`Nonzero exit status ${code} from ${command[0]}:\n${output}`));
+        reject(new Error(`Nonzero exit status ${code}; see ${logfile} for details`));
       }
     });
     cp.once('error', reject);

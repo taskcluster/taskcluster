@@ -223,7 +223,13 @@ exports.dockerBuild = async ({baseDir, logfile, tag, tarball, utils}) => {
 
   await utils.waitFor(new Observable(observer => {
     docker.modem.followProgress(buildStream,
-      err => err ? observer.error(err) : observer.complete(),
+      err => {
+        if (err) {
+          observer.error(new Error(`build failed: ${err}\ncheck ${logfile} for reason`));
+        } else {
+          observer.complete();
+        }
+      },
       update => {
         if (!update.stream) {
           return;
