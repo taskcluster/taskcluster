@@ -8,16 +8,16 @@ migrationScript: |-
     );
   end
 methods:
-  getSecret:
+  get_secret:
     mode: read
     serviceName: secrets
     args: name text
     returns: table (secret text, expires timestamp)
     body: |-
       begin
-        return query select secrets.secret, secrets.expires from secrets where secrets.name = getSecret.name;
+        return query select secrets.secret, secrets.expires from secrets where secrets.name = get_secret.name;
       end
-  listSecrets:
+  list_secrets:
     mode: read
     serviceName: secrets
     args: ''
@@ -26,7 +26,7 @@ methods:
       begin
         return query select secrets.name as name, secrets.expires as expires from secrets;
       end
-  removeSecret:
+  remove_secret:
     mode: write
     serviceName: secrets
     args: name text
@@ -35,7 +35,7 @@ methods:
       begin
         delete from secrets where name = name;
       end
-  setSecret:
+  set_secret:
     mode: write
     serviceName: secrets
     args: name text, secret text, expires timestamp
@@ -48,7 +48,7 @@ methods:
       end
 
 
-      this.db.procs.secrets.listSecrets
+      this.db.procs.secrets.list_secrets
 
       db = Database.setup({serviceName: 'worker-manager', readDbUrl, writeDbUrl, ...})
       get all read methods for all services

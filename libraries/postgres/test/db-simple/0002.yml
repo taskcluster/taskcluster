@@ -5,7 +5,7 @@ migrationScript: |-
       add column expires timestamp not null defeault now() + interval '1000 years';
   end
 methods:
-  listSecrets:
+  list_secrets:
     mode: read
     args: ''
     returns: table (name text, expires timestamp)
