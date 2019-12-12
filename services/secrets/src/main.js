@@ -55,14 +55,6 @@ let load = loader({
     }),
   },
 
-  // NOTE: this would be done from the deployment scripts instead
-  upgradeDb: {
-    requires: ['cfg'],
-    setup: async ({cfg}) => {
-      await schema.upgrade(cfg.postgres);
-    },
-  },
-
   server: {
     requires: ['cfg', 'api'],
     setup: ({cfg, api}) => App({
