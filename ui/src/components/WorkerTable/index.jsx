@@ -60,8 +60,12 @@ export default class WorkerTable extends Component {
       const tasks = worker.recentTasks.reduce(
         (tasks, recentTask, index) =>
           tasks.concat({
+            // Sometimes a run expires so we try to get at least the taskId
+            ...(recentTask.taskId ? { taskId: recentTask.taskId } : null),
             ...recentTask.run,
-            ...worker.latestTasks[index].metadata,
+            ...(worker.latestTasks[index]
+              ? worker.latestTasks[index].metadata
+              : null),
           }),
         []
       );
@@ -125,37 +129,49 @@ export default class WorkerTable extends Component {
         renderRow={task => (
           <TableRow key={`recent-task-${task.taskId}`}>
             <TableCell>
-              <StatusLabel state={task.state} />
+              {task.state ? <StatusLabel state={task.state} /> : <em>n/a</em>}
             </TableCell>
             <TableCell>
-              <Link to={`/tasks/${task.taskId}/runs/${task.runId}`}>
-                <TableCellItem button>
-                  <div className={classes.taskName}>{task.name}</div>
-                  <LinkIcon size={iconSize} />
-                </TableCellItem>
-              </Link>
+              {task.name ? (
+                <Link to={`/tasks/${task.taskId}/runs/${task.runId}`}>
+                  <TableCellItem button>
+                    <div className={classes.taskName}>{task.name}</div>
+                    <LinkIcon size={iconSize} />
+                  </TableCellItem>
+                </Link>
+              ) : (
+                <em>n/a</em>
+              )}
             </TableCell>
             <TableCell>{task.taskId}</TableCell>
-            <CopyToClipboard title={task.started} text={task.started}>
+            {task.started ? (
+              <CopyToClipboard title={task.started} text={task.started}>
+                <TableCell>
+                  <TableCellItem button>
+                    <DateDistance from={task.started} />
+                    <ContentCopyIcon size={iconSize} />
+                  </TableCellItem>
+                </TableCell>
+              </CopyToClipboard>
+            ) : (
               <TableCell>
-                <TableCellItem button>
-                  <DateDistance from={task.started} />
-                  <ContentCopyIcon size={iconSize} />
-                </TableCellItem>
+                <em>n/a</em>
               </TableCell>
-            </CopyToClipboard>
-            <CopyToClipboard title={task.resolved} text={task.resolved}>
-              <TableCell>
-                {task.resolved ? (
+            )}
+            {task.resolved ? (
+              <CopyToClipboard title={task.resolved} text={task.resolved}>
+                <TableCell>
                   <TableCellItem button>
                     <DateDistance from={task.resolved} />
                     <ContentCopyIcon size={iconSize} />
                   </TableCellItem>
-                ) : (
-                  <em>n/a</em>
-                )}
+                </TableCell>
+              </CopyToClipboard>
+            ) : (
+              <TableCell>
+                <em>n/a</em>
               </TableCell>
-            </CopyToClipboard>
+            )}
           </TableRow>
         )}
         headers={headers}
