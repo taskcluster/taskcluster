@@ -40,7 +40,7 @@ class IRCBot {
       autoConnect: false,
       secure: true,
       debug: options.debug || false,
-      showErrors: true,
+      showErrors: false,
     });
     this.client.on('error', rpt => {
       if (rpt.command !== 'err_nosuchnick') {
@@ -48,7 +48,11 @@ class IRCBot {
       }
     });
     this.client.on('unhandled', msg => {
-      this.monitor.notice(msg);
+      // ignore some common messages
+      if (msg.command === 'rpl_whoismodes' || msg.command === 'rpl_whoissecure') {
+        return;
+      }
+      this.monitor.notice({message: 'Unhandled message from IRC server', content: msg});
     });
     this.pulseClient = options.pulseClient;
     this.reference = options.reference;
