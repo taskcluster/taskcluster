@@ -95,14 +95,9 @@ dbSuite(path.basename(__filename), function() {
 
   test('setup creates JS methods that can be called', async function() {
     await Database.upgrade({schema, runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl});
-    const db = await Database.setup({schema, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl});
-    try {
-      await db.procs.testdata();
-      const res = await db.procs.addup(13);
-      assert.deepEqual(res.map(r => r.total).sort(), [16, 20]);
-    } finally {
-      await db.close();
-    }
+    await db.procs.testdata();
+    const res = await db.procs.addup(13);
+    assert.deepEqual(res.map(r => r.total).sort(), [16, 20]);
   });
 
   test('procedure methods does not have capital letters', async function () {
@@ -129,6 +124,5 @@ dbSuite(path.basename(__filename), function() {
       Database.upgrade({schema, runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl}),
       /capital letters/,
     );
-    await db.close();
   });
 });
