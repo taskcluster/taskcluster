@@ -5,18 +5,26 @@ module.exports = ({ auth }) => {
   const currentScopes = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ filter }) => {
-        const { scopes } = await auth.currentScopes();
+        try {
+          const { scopes } = await auth.currentScopes();
 
-        return sift(filter, scopes);
+          return sift(filter, scopes);
+        } catch (err) {
+          return err;
+        }
       }),
     ),
   );
   const expandScopes = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ scopes, filter }) => {
-        const { scopes: expandedScopes } = await auth.expandScopes({ scopes });
+        try {
+          const { scopes: expandedScopes } = await auth.expandScopes({ scopes });
 
-        return sift(filter, expandedScopes);
+          return sift(filter, expandedScopes);
+        } catch (err) {
+          return err;
+        }
       }),
     ),
   );

@@ -57,13 +57,17 @@ module.exports = ({ queue }, isAuthed, rootUrl) => {
   const artifact = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ taskId, runId, name }) => {
-        const artifact = await queue.getArtifact(taskId, runId, name);
+        try{
+          const artifact = await queue.getArtifact(taskId, runId, name);
 
-        return new Artifact(
-          taskId,
-          withUrl(queue.getArtifact, taskId, artifact, runId),
-          runId,
-        );
+          return new Artifact(
+            taskId,
+            withUrl(queue.getArtifact, taskId, artifact, runId),
+            runId,
+          );
+        } catch (err) {
+          return err;
+        }
       }),
     ),
   );

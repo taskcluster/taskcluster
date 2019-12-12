@@ -6,9 +6,13 @@ const WorkerCompact = require('../entities/WorkerCompact');
 module.exports = ({ queue }) => {
   const worker = new DataLoader(queries =>
     Promise.all(
-      queries.map(
-        async ({ provisionerId, workerType, workerGroup, workerId }) =>
-          queue.getWorker(provisionerId, workerType, workerGroup, workerId),
+      queries.map(async ({ provisionerId, workerType, workerGroup, workerId }) => {
+        try {
+          return await queue.getWorker(provisionerId, workerType, workerGroup, workerId);
+        } catch (err) {
+          return err;
+        }
+      },
       ),
     ),
   );

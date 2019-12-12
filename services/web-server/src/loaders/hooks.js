@@ -5,33 +5,50 @@ module.exports = ({ hooks }) => {
   const hookGroups = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ filter }) => {
-        const { groups } = await hooks.listHookGroups();
-        const raw = groups.map(hookGroupId => ({ hookGroupId }));
+        try {
+          const { groups } = await hooks.listHookGroups();
+          const raw = groups.map(hookGroupId => ({ hookGroupId }));
 
-        return sift(filter, raw);
+          return sift(filter, raw);
+        } catch (err) {
+          return err;
+        }
       }),
     ),
   );
   const hooksForGroup = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ hookGroupId, filter }) => {
-        const { hooks: hooksForGroup } = await hooks.listHooks(hookGroupId);
+        try {
+          const { hooks: hooksForGroup } = await hooks.listHooks(hookGroupId);
 
-        return sift(filter, hooksForGroup);
+          return sift(filter, hooksForGroup);
+        } catch (err) {
+          return err;
+        }
       }),
     ),
   );
   const hook = new DataLoader(queries =>
     Promise.all(
-      queries.map(async ({ hookGroupId, hookId }) =>
-        hooks.hook(hookGroupId, hookId),
-      ),
+      queries.map(async ({ hookGroupId, hookId }) => {
+        try {
+          return await hooks.hook(hookGroupId, hookId);
+        } catch (err) {
+          return err;
+        }
+      }),
     ),
   );
   const hookStatus = new DataLoader(queries =>
     Promise.all(
-      queries.map(async ({ hookGroupId, hookId }) =>
-        hooks.getHookStatus(hookGroupId, hookId),
+      queries.map(async ({ hookGroupId, hookId }) => {
+        try {
+          return await hooks.getHookStatus(hookGroupId, hookId);
+        } catch (err) {
+          return err;
+        }
+      },
       ),
     ),
   );
@@ -43,12 +60,12 @@ module.exports = ({ hooks }) => {
           const { lastFires } = await hooks.listLastFires(hookGroupId, hookId);
 
           return sift(filter, lastFires);
-        } catch(e) {
-          if (e.statusCode === 404 || e.statusCode === 424) {
+        } catch (err) {
+          if (err.statusCode === 404 || err.statusCode === 424) {
             return null;
           }
 
-          return e;
+          return err;
         }
       },
       ),

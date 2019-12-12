@@ -15,12 +15,16 @@ module.exports = ({ secrets }) => {
   const secret = new DataLoader(names =>
     Promise.all(
       names.map(async name => {
-        const secret = await secrets.get(name);
+        try {
+          const secret = await secrets.get(name);
 
-        return {
-          name,
-          ...secret,
-        };
+          return {
+            name,
+            ...secret,
+          };
+        } catch (err) {
+          return err;
+        }
       }),
     ),
   );

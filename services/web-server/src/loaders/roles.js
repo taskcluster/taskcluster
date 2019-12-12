@@ -6,9 +6,13 @@ module.exports = ({ auth }) => {
   const roles = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ filter }) => {
-        const roles = await auth.listRoles();
+        try {
+          const roles = await auth.listRoles();
 
-        return sift(filter, roles);
+          return sift(filter, roles);
+        } catch (err) {
+          return err;
+        }
       }),
     ),
   );
@@ -23,7 +27,15 @@ module.exports = ({ auth }) => {
     };
   });
   const role = new DataLoader(roleIds =>
-    Promise.all(roleIds.map(roleId => auth.role(roleId))),
+    Promise.all(
+      roleIds.map(async (roleId) => {
+        try {
+          return await auth.role(roleId);
+        } catch (err) {
+          return err;
+        }
+      }),
+    ),
   );
 
   return {

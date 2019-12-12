@@ -5,9 +5,13 @@ const ConnectionLoader = require('../ConnectionLoader');
 module.exports = ({ queue }) => {
   const provisioner = new DataLoader(provisionerIds =>
     Promise.all(
-      provisionerIds.map(async provisionerId =>
-        queue.getProvisioner(provisionerId),
-      ),
+      provisionerIds.map(async provisionerId => {
+        try {
+          return await queue.getProvisioner(provisionerId);
+        } catch (err) {
+          return err;
+        }
+      }),
     ),
   );
   const provisioners = new ConnectionLoader(async ({ options, filter }) => {

@@ -5,9 +5,13 @@ const ConnectionLoader = require('../ConnectionLoader');
 module.exports = ({ queue }) => {
   const workerType = new DataLoader(queries =>
     Promise.all(
-      queries.map(({ provisionerId, workerType }) =>
-        queue.getWorkerType(provisionerId, workerType),
-      ),
+      queries.map(async ({ provisionerId, workerType }) => {
+        try {
+          return await queue.getWorkerType(provisionerId, workerType);
+        } catch (err) {
+          return err;
+        }
+      }),
     ),
   );
   const workerTypes = new ConnectionLoader(
@@ -20,12 +24,16 @@ module.exports = ({ queue }) => {
   const pendingTasks = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ provisionerId, workerType }) => {
-        const { pendingTasks } = await queue.pendingTasks(
-          provisionerId,
-          workerType,
-        );
+        try {
+          const { pendingTasks } = await queue.pendingTasks(
+            provisionerId,
+            workerType,
+          );
 
-        return pendingTasks;
+          return pendingTasks;
+        } catch (err) {
+          return err;
+        }
       }),
     ),
   );
