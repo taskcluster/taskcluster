@@ -171,6 +171,13 @@ tasks:
           command: >-
               (cd clients/client-go && go list -m all) &&
               (cd clients/client-shell && go list -m all)
+        - name: "yarn db:upgrade"
+          # see https://github.com/taskcluster/taskcluster/issues/1492
+          image: taskcluster/node-and-postgres:node${node}-pg11
+          command: >-
+            pg_ctlcluster 11 main start &&
+            export ADMIN_DB_URL=TEST_DB_URL &&
+            yarn db:upgrade
         - name: taskcluster-ui
           image: 'taskcluster/browser-test:${node}'
           install: >-
