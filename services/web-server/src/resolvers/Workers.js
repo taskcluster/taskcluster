@@ -8,9 +8,13 @@ module.exports = {
   },
   Worker: {
     latestTasks(parent, args, { loaders }) {
-      return loaders.task.loadMany(
-        parent.recentTasks.map(({ taskId }) => taskId),
-      );
+      return Promise.all(parent.recentTasks.map(async ({ taskId }) => {
+        try {
+          return await loaders.task.load(taskId);
+        } catch (e) {
+          return e;
+        }
+      }));
     },
   },
   Query: {

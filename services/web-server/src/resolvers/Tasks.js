@@ -70,12 +70,24 @@ module.exports = {
       return loaders.task.load(taskId);
     },
     tasks(parent, { taskIds }, { loaders }) {
-      return loaders.task.loadMany(taskIds);
+      return Promise.all(taskIds.map(async (taskId) => {
+        try {
+          return await loaders.task.load(taskId);
+        } catch (e) {
+          return e;
+        }
+      }));
     },
     async dependentTasks(parent, args, { loaders }) {
       const task = await loaders.task.load(args.taskId);
 
-      return loaders.task.loadMany(task.dependencies);
+      return Promise.all(task.dependencies.map(async (dependency) => {
+        try {
+          return await loaders.task.load(dependency);
+        } catch (e) {
+          return e;
+        }
+      }));
     },
     indexedTask(parent, { indexPath }, { loaders }) {
       return loaders.indexedTask.load(indexPath);
