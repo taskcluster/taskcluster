@@ -66,7 +66,7 @@ dbSuite(path.basename(__filename), function() {
         create table foo2 as select 2 as bar2;
       end`,
       methods: {},
-    });
+    }, () => {});
     assert.equal(await db.currentVersion(), 1);
     await db._withClient(READ, async client => {
       let res = await client.query('select * from foo');
@@ -84,7 +84,7 @@ dbSuite(path.basename(__filename), function() {
           select nosuchcolumn from tcversion;
         end`,
         methods: {},
-      });
+      }, () => {});
     } catch (err) {
       assert.equal(err.code, '42703'); // unknown column
       assert.equal(await db.currentVersion(), 0);

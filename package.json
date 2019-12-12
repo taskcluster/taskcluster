@@ -184,7 +184,8 @@
     "test:meta": "node infrastructure/tooling/src/main.js test:meta",
     "backup:run": "node infrastructure/tooling/src/main.js backup:run",
     "backup:restore": "node infrastructure/tooling/src/main.js backup:restore",
-    "backup:compare": "node infrastructure/tooling/src/main.js backup:compare"
+    "backup:compare": "node infrastructure/tooling/src/main.js backup:compare",
+    "db:upgrade": "node infrastructure/db/src/upgrade.js"
   },
   "renovate": {
     "extends": [

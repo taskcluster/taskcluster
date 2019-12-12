@@ -87,7 +87,7 @@ class Database {
     });
   }
 
-  async _doUpgrade(version) {
+  async _doUpgrade(version, showProgress) {
     await this._withClient(WRITE, async client => {
       await client.query('begin');
       if (version.version === 1) {
@@ -98,17 +98,19 @@ class Database {
       if (res.rowCount !== 1 || res.rows[0].version !== version.version - 1) {
         throw Error('Multiple DB upgrades running simultaneously');
       }
+      showProgress('..running migration script');
       await client.query(`DO ${dollarQuote(version.migrationScript)}`);
-      Promise.all(
-        Object.entries(version.methods).map(async ([methodName, { mode, args, body, returns }]) => {
-          await client.query(`create or replace function
-          "${methodName}"(${args})
-          returns ${returns}
-          as ${dollarQuote(body)}
-          language plpgsql`);
-        }),
-      );
+      showProgress('..defining methods');
+      for (let [methodName, { args, body, returns}] of Object.entries(version.methods)) {
+        await client.query(`create or replace function
+        "${methodName}"(${args})
+        returns ${returns}
+        as ${dollarQuote(body)}
+        language plpgsql`);
+      }
+      showProgress('..updating version');
       await client.query('update tcversion set version = $1', [version.version]);
+      showProgress('..committing transaction');
       await client.query('commit');
     });
   }
@@ -139,8 +141,11 @@ Database.setup = async ({schema, ...dbOptions}) => {
 /**
  * Upgrade this database to the latest version and define functions for all
  * of the methods.
+ *
+ * The `showProgress` parameter is a callable that displays a message showing
+ * progress of the upgrade.
  */
-Database.upgrade = async ({schema, ...dbOptions}) => {
+Database.upgrade = async ({schema, showProgress = () => {}, ...dbOptions}) => {
   const db = new Database({...dbOptions, schema});
   try {
     const dbVersion = await db.currentVersion();
@@ -150,13 +155,13 @@ Database.upgrade = async ({schema, ...dbOptions}) => {
     if (dbVersion < latestVersion.version) {
       // run each of the upgrade scripts
       for (let v = dbVersion + 1; v <= latestVersion.version; v++) {
-        console.log(`upgrading database to version ${v}`);
+        showProgress(`upgrading database to version ${v}`);
         const version = schema.getVersion(v);
-        await db._doUpgrade(version);
-        console.log(`upgrade to version ${v} successful`);
+        await db._doUpgrade(version, showProgress);
+        showProgress(`upgrade to version ${v} successful`);
       }
     } else {
-      console.log('No database upgrades required');
+      showProgress('No database upgrades required');
     }
   } finally {
     await db.close();
