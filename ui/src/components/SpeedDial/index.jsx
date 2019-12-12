@@ -10,9 +10,6 @@ import DotsVerticalIcon from 'mdi-react/DotsVerticalIcon';
 const useStyles = makeStyles(theme => ({
   speedDial: {
     ...theme.mixins.fab,
-    '& button:focus': {
-      background: 'red',
-    },
   },
 }));
 
