@@ -1,7 +1,7 @@
 type LatestTask {
   taskId: ID!
   runId: Int!
-  run: TaskRun!
+  run: TaskRun
 }
 
 type WorkerCompact {
