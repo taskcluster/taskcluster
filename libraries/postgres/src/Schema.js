@@ -1,6 +1,7 @@
 const fs = require('fs');
 const yaml = require('js-yaml');
 const path = require('path');
+const {READ, WRITE} = require('./constants');
 
 class Schema{
   /**references
@@ -20,9 +21,10 @@ class Schema{
   }
 
   static fromDbDirectory(directory) {
-    const versions = new Map();
+    const dentries = fs.readdirSync(directory);
+    let versions = new Array(dentries.length);
 
-    fs.readdirSync(directory).forEach(dentry => {
+    dentries.forEach(dentry => {
       if (dentry.startsWith('.')) {
         return;
       }
@@ -35,14 +37,14 @@ class Schema{
 
       const version = yaml.safeLoad(fs.readFileSync(filename));
 
-      versions.set(version.version, version);
+      versions[version.version - 1] = version;
     });
 
     return new Schema(versions);
   }
 
   getVersion(version) {
-    const v = this.versions.get(version);
+    const v = this.versions[version - 1];
 
     if (!v) {
       throw new Error(`Version ${version} not found in the schema`);
@@ -52,27 +54,19 @@ class Schema{
   }
 
   latestVersion() {
-    return this.versions.get(Math.max(...this.versions.keys()));
+    return this.versions[this.versions.length - 1]
   }
 
   allMethods() {
-    return this.versions.values().reduce((acc, version) => {
+    const modes = {read: READ, write: WRITE};
+
+    return this.versions.reduce((acc, version) => {
       Object.entries(version.methods).forEach(([name, { mode }]) => {
-        acc.add({ name, mode });
+        acc.add({ name, mode: modes[mode] });
       });
 
       return acc;
     }, new Set());
-  }
-
-  /** testing **/
-
-  /**
-   * Get the schema as it was at the given version; this is used for testing
-   * upgrades from old versions.
-   */
-  atVersion(version) {
-    return this.versions[version];
   }
 }
 

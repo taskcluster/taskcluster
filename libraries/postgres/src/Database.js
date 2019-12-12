@@ -23,11 +23,11 @@ class Database {
     };
 
     // generate a JS method for each DB method defined in the schema
-    schema.allMethodNames().forEach(({ name, mode}) => {
+    schema.allMethods().forEach(({ name, mode}) => {
       this[name] = async (...args) => {
         const placeholders = [...new Array(args.length).keys()].map(i => `$${i + 1}`).join(',');
         const res = await this._withClient(mode, client => client.query(
-          `select * from ${name}(${placeholders})`, args));
+          `select * from "${name}"(${placeholders})`, args));
         return res.rows;
       };
     });
@@ -64,7 +64,7 @@ class Database {
   /**
    * Get the version of this database
    */
-  async getVersion() {
+  async currentVersion() {
     // get from the version table or return 0
     return await this._withClient(READ, async client => {
       try {
@@ -98,7 +98,7 @@ class Database {
       Promise.all(
         Object.entries(version.methods).map(async ([methodName, { mode, args, body, returns }]) => {
           await client.query(`create or replace function
-          ${methodName}(${args})
+          "${methodName}"(${args})
           returns ${returns}
           as ${dollarQuote(body)}
           language plpgsql`);
@@ -106,16 +106,6 @@ class Database {
       );
       await client.query('update tcversion set version = $1', [version.version]);
       await client.query('commit');
-    });
-  }
-
-  async _defineMethod(method, args, returns, script) {
-    await this._withClient(WRITE, async client => {
-      await client.query(`create or replace function
-        ${method}(${args})
-        returns ${returns}
-        as ${dollarQuote(script)}
-        language plpgsql`);
     });
   }
 
@@ -133,9 +123,9 @@ class Database {
 /**
  * Get a new Database instance
  */
-Database.setup = async (schema, dbOptions) => {
+Database.setup = async ({schema, ...dbOptions}) => {
   const db = new Database({...dbOptions, schema});
-  const dbVersion = await db.getVersion();
+  const dbVersion = await db.currentVersion();
   if (dbVersion < schema.latestVersion()) {
     throw new Error('Database version is older than this software version');
   }
@@ -146,28 +136,23 @@ Database.setup = async (schema, dbOptions) => {
  * Upgrade this database to the latest version and define functions for all
  * of the methods.
  */
-Database.upgrade = async (schema, dbOptions) => {
+Database.upgrade = async ({schema, ...dbOptions}) => {
   const db = new Database({...dbOptions, schema});
   try {
-    const dbVersion = await db.getVersion();
+    const dbVersion = await db.currentVersion();
     const latestVersion = schema.latestVersion();
 
     // perform any necessary upgrades..
-    if (dbVersion < latestVersion) {
+    if (dbVersion < latestVersion.version) {
       // run each of the upgrade scripts
-      for (let v = dbVersion + 1; v < latestVersion; v++) {
-        debug(`upgrading to version ${v}`);
+      for (let v = dbVersion + 1; v <= latestVersion.version; v++) {
+        console.log(`upgrading database to version ${v}`);
         const version = schema.getVersion(v);
         await db._doUpgrade(version);
+        console.log(`upgrade to version ${v} successful`);
       }
-    }
-
-    // if we are running upgrades, unconditionally define the function objects
-    // for the defined methods; this allows updates to those functions to fix
-    // bugs without a new schema version.
-    for (let [method, {args, returns, script}] of schema.methods) {
-      debug(`defining method ${method}`);
-      await db._defineMethod(method, args, returns, script);
+    } else {
+      console.log('No database upgrades required');
     }
   } finally {
     await db.close();
