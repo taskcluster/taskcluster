@@ -44,7 +44,7 @@ properties:
   config:
     # Inside the handler, it will assert that these fields match
     # correctly to the implementation the provider has been configured to use.
-    oneOf:
+    anyOf:
       - {$ref: "config-aws.json#"}
       - {$ref: "config-google.json#"}
       - {$ref: "config-null.json#"}
