@@ -7,11 +7,11 @@ migrationScript: |-
     );
   end
 methods:
-  getSecret:
+  get_secret:
     mode: read
     args: name text
     returns: table (secret text)
     body: |-
       begin
-        return query select secrets.secret from secrets where secrets.name = getSecret.name;
+        return query select secrets.secret from secrets where secrets.name = get_secret.name;
       end

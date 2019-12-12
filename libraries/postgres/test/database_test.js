@@ -32,7 +32,7 @@ dbSuite(path.basename(__filename), function() {
           },
         },
       },
-    ]
+    ],
   });
 
   setup(function() {
@@ -101,6 +101,37 @@ dbSuite(path.basename(__filename), function() {
       const res = await db.procs.addup(13);
       assert.deepEqual(res.map(r => r.total).sort(), [16, 20]);
     } finally {
+      await db.close();
+    }
+  });
+
+  test('procedure methods does not have capital letters', async function () {
+    const schema = Schema.fromSerializable({
+      versions: [{
+        version: 1,
+        migrationScript: `begin
+            create table testing (a integer, b integer);
+          end`,
+        methods: {
+          testData: {
+            mode: 'write',
+            args: '',
+            returns: 'void',
+            body: `begin
+              insert into testing values (1, 2), (3, 4);
+            end`,
+          },
+        },
+      }],
+    });
+
+    try {
+      await Database.upgrade({schema, runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl});
+      assert.fail('should have failed');
+    } catch (e) {
+      assert(e);
+    }
+    finally {
       await db.close();
     }
   });
