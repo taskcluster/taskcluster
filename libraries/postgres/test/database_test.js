@@ -97,8 +97,8 @@ dbSuite(path.basename(__filename), function() {
     await Database.upgrade({schema, runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl});
     const db = await Database.setup({schema, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl});
     try {
-      await db.testdata();
-      const res = await db.addup(13);
+      await db.procs.testdata();
+      const res = await db.procs.addup(13);
       assert.deepEqual(res.map(r => r.total).sort(), [16, 20]);
     } finally {
       await db.close();
