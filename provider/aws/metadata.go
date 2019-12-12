@@ -11,11 +11,11 @@ import (
 var EC2MetadataBaseURL = "http://169.254.169.254/latest"
 
 type UserData struct {
-	WorkerPoolId string            `json:"workerPoolId"`
-	ProviderId   string            `json:"providerId"`
-	RootURL      string            `json:"rootUrl"`
-	WorkerGroup  string            `json:"workerGroup"`
-	WorkerConfig *cfg.WorkerConfig `json:"workerConfig"`
+	WorkerPoolId         string                    `json:"workerPoolId"`
+	ProviderId           string                    `json:"providerId"`
+	RootURL              string                    `json:"rootUrl"`
+	WorkerGroup          string                    `json:"workerGroup"`
+	ProviderWorkerConfig *cfg.ProviderWorkerConfig `json:"workerConfig"`
 }
 
 type InstanceIdentityDocument struct {

@@ -93,7 +93,8 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 
 	state.ProviderMetadata = providerMetadata
 
-	state.WorkerConfig = state.WorkerConfig.Merge(userData.WorkerConfig)
+	state.WorkerConfig = state.WorkerConfig.Merge(userData.ProviderWorkerConfig.Config)
+	state.Files = append(state.Files, userData.ProviderWorkerConfig.Files...)
 
 	return nil
 }

@@ -15,11 +15,11 @@ var metadataBaseURL = "http://metadata.google.internal/computeMetadata/v1"
 
 // user-data sent to us from the worker-manager service
 type UserData struct {
-	WorkerPoolID string            `json:"workerPoolId"`
-	ProviderID   string            `json:"providerId"`
-	WorkerGroup  string            `json:"workerGroup"`
-	RootURL      string            `json:"rootUrl"`
-	WorkerConfig *cfg.WorkerConfig `json:"workerConfig"`
+	WorkerPoolID         string                    `json:"workerPoolId"`
+	ProviderID           string                    `json:"providerId"`
+	WorkerGroup          string                    `json:"workerGroup"`
+	RootURL              string                    `json:"rootUrl"`
+	ProviderWorkerConfig *cfg.ProviderWorkerConfig `json:"workerConfig"`
 }
 
 type MetadataService interface {

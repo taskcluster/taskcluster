@@ -94,6 +94,6 @@ func TestQueryUserData(t *testing.T) {
 	ud, err := ms.queryUserData()
 	if assert.NoError(t, err) {
 		assert.Equal(t, "w/p", ud.WorkerPoolID)
-		assert.Equal(t, true, ud.WorkerConfig.MustGet("from-worker-config"))
+		assert.Equal(t, true, ud.ProviderWorkerConfig.Config.MustGet("from-worker-config"))
 	}
 }

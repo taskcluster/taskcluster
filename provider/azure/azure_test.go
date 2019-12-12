@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster-worker-runner/files"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
@@ -36,7 +37,14 @@ func TestConfigureRun(t *testing.T) {
 		ProviderId:   "amazon",
 		WorkerGroup:  "wg",
 		RootURL:      "https://tc.example.com",
-		WorkerConfig: userDataWorkerConfig,
+		ProviderWorkerConfig: &cfg.ProviderWorkerConfig{
+			Config: userDataWorkerConfig,
+			Files: []files.File{
+				files.File{
+					Description: "a file.",
+				},
+			},
+		},
 	}
 	customDataJson, err := json.Marshal(customData)
 	require.NoError(t, err, "marshalling CustomData")

@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster-worker-runner/files"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
@@ -34,7 +35,14 @@ func TestAWSConfigureRun(t *testing.T) {
 		ProviderId:   "amazon",
 		WorkerGroup:  "wg",
 		RootURL:      "https://tc.example.com",
-		WorkerConfig: userDataWorkerConfig,
+		ProviderWorkerConfig: &cfg.ProviderWorkerConfig{
+			Config: userDataWorkerConfig,
+			Files: []files.File{
+				files.File{
+					Description: "a file.",
+				},
+			},
+		},
 	}
 
 	metaData := map[string]string{
@@ -85,6 +93,7 @@ func TestAWSConfigureRun(t *testing.T) {
 
 	require.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
 	require.Equal(t, true, state.WorkerConfig.MustGet("from-ud"), "value for worker-config")
+	require.Equal(t, "a file.", state.Files[0].Description)
 
 	require.Equal(t, "aws", state.WorkerLocation["cloud"])
 	require.Equal(t, "us-west-2", state.WorkerLocation["region"])

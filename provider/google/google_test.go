@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster-worker-runner/files"
 	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
 )
@@ -34,7 +35,14 @@ func TestGoogleConfigureRun(t *testing.T) {
 		ProviderID:   "gcp1",
 		WorkerGroup:  "wg",
 		RootURL:      "https://tc.example.com",
-		WorkerConfig: userDataWorkerConfig,
+		ProviderWorkerConfig: &cfg.ProviderWorkerConfig{
+			Config: userDataWorkerConfig,
+			Files: []files.File{
+				files.File{
+					Description: "a file.",
+				},
+			},
+		},
 	}
 	identityPath := "/instance/service-accounts/default/identity?audience=https://tc.example.com&format=full"
 	metaData := map[string]string{
@@ -90,6 +98,7 @@ func TestGoogleConfigureRun(t *testing.T) {
 
 	require.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
 	require.Equal(t, true, state.WorkerConfig.MustGet("from-ud"), "value for worker-config")
+	require.Equal(t, "a file.", state.Files[0].Description)
 
 	require.Equal(t, "google", state.WorkerLocation["cloud"])
 	require.Equal(t, "in-central1", state.WorkerLocation["region"])
