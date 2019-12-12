@@ -125,4 +125,37 @@ dbSuite(path.basename(__filename), function() {
       /capital letters/,
     );
   });
+
+  test('procedure methods does not have capital letters', async function () {
+    const schema = Schema.fromSerializable({
+      versions: [{
+        version: 1,
+        migrationScript: `begin
+            create table testing (a integer, b integer);
+          end`,
+        methods: {
+          testData: {
+            mode: 'write',
+            args: '',
+            returns: 'void',
+            body: `begin
+              insert into testing values (1, 2), (3, 4);
+            end`,
+          },
+        },
+      }],
+    });
+
+    await Database.upgrade({schema, runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl});
+
+    try {
+      await Database.setup({schema, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl});
+      assert.fail('should have failed');
+    } catch (e) {
+      assert(e);
+    }
+    finally {
+      await db.close();
+    }
+  });
 });
