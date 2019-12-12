@@ -1,3 +1,4 @@
+const fs = require('fs');
 const util = require('util');
 const path = require('path');
 const rimraf = util.promisify(require('rimraf'));
@@ -12,9 +13,10 @@ const {REPO_ROOT} = require('./repo');
  *
  * - dir -- directory to publish from
  * - username, password -- for pypi
+ * - logfile -- name of the file to write the log to
  * - utils -- taskgraph utils (waitFor, etc.)
  */
-exports.pyClientRelease = async ({dir, username, password, utils}) => {
+exports.pyClientRelease = async ({dir, username, password, logfile, utils}) => {
   // override HOME so this doesn't use the user's credentials
   const homeDir = path.join(REPO_ROOT, 'temp', taskcluster.slugid());
 
@@ -32,13 +34,20 @@ exports.pyClientRelease = async ({dir, username, password, utils}) => {
         },
         cwd: dir,
       });
+
+      if (logfile) {
+        const logStream = fs.createWriteStream(logfile);
+        proc.stdout.pipe(logStream);
+        proc.stderr.pipe(logStream);
+      }
+
       const loglines = data =>
         data.toString('utf-8').trimRight().split(/[\r\n]+/).forEach(l => observer.next(l));
       proc.stdout.on('data', loglines);
       proc.stderr.on('data', loglines);
       proc.on('close', code => {
         if (code !== 0) {
-          observer.error(new Error(`release.sh exited with code ${code}`));
+          observer.error(new Error(`release.sh exited with code ${code}; see ${logfile} for details`));
         } else {
           observer.complete();
         }
