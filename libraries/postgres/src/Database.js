@@ -25,6 +25,9 @@ class Database {
 
     // generate a JS method for each DB method defined in the schema
     schema.allMethods().forEach(({ name, mode}) => {
+      // ensure that quoting of identifiers is correct
+      assert(!/.*[A-Z].*/.test(name), 'db procedure methods should not have capital letters');
+
       this.procs[name] = async (...args) => {
         const placeholders = [...new Array(args.length).keys()].map(i => `$${i + 1}`).join(',');
         const res = await this._withClient(mode, client => client.query(

@@ -8,17 +8,17 @@ suite(path.basename(__filename), function() {
       const sch = Schema.fromDbDirectory(path.join(__dirname, 'db-simple'));
       const ver2 = sch.latestVersion();
       assert.equal(ver2.version, 2);
-      assert.deepEqual(Object.keys(ver2.methods), ['listSecrets']);
+      assert.deepEqual(Object.keys(ver2.methods), ['list_secrets']);
       assert(ver2.migrationScript.startsWith('begin'));
       assert.deepEqual(ver2, sch.getVersion(2));
 
       const ver1 = sch.getVersion(1);
-      assert.deepEqual(Object.keys(ver1.methods), ['getSecret']);
+      assert.deepEqual(Object.keys(ver1.methods), ['get_secret']);
 
       assert.deepEqual([...sch.allMethods()].sort(),
         [
-          {name: 'getSecret', mode: READ},
-          {name: 'listSecrets', mode: READ},
+          {name: 'get_secret', mode: READ},
+          {name: 'list_secrets', mode: READ},
         ]);
     });
 
@@ -47,8 +47,8 @@ suite(path.basename(__filename), function() {
     const sch = Schema.fromDbDirectory(path.join(__dirname, 'db-simple'));
     assert.deepEqual([...sch.allMethods()].sort(),
       [
-        {name: 'getSecret', mode: READ},
-        {name: 'listSecrets', mode: READ},
+        {name: 'get_secret', mode: READ},
+        {name: 'list_secrets', mode: READ},
       ]);
   });
 });
