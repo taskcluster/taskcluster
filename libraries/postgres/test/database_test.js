@@ -125,14 +125,10 @@ dbSuite(path.basename(__filename), function() {
       }],
     });
 
-    try {
-      await Database.upgrade({schema, runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl});
-      assert.fail('should have failed');
-    } catch (e) {
-      assert(e);
-    }
-    finally {
-      await db.close();
-    }
+    await assert.rejects(
+      Database.upgrade({schema, runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl}),
+      /capital letters/,
+    );
+    await db.close();
   });
 });
