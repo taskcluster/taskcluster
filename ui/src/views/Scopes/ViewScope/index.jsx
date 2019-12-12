@@ -86,7 +86,7 @@ export default class ViewScope extends Component {
         search={
           <Search
             onSubmit={this.handleSearchSubmit}
-            placeholder="Roles/Clients contains"
+            placeholder="Role/Client contains"
           />
         }>
         <Fragment>
