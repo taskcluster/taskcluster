@@ -273,8 +273,6 @@ export const role = shape({
   expandedScopes: arrayOf(string),
 });
 
-export const scopeExpansionLevel = oneOf(['scopes', 'expandedScopes']);
-
 export const hookMetadata = shape({
   name: string,
   description: string,

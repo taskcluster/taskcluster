@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
 import { arrayOf, func, shape, string } from 'prop-types';
 import {
-  uniq,
-  flatten,
   filter,
   pipe,
   path,
   map,
+  toLower,
   identity,
+  includes,
   contains,
+  length,
   sort as rSort,
 } from 'ramda';
 import memoize from 'fast-memoize';
@@ -19,7 +20,7 @@ import ConnectionDataTable from '../ConnectionDataTable';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
 import { VIEW_CLIENT_SCOPES_INSPECT_SIZE } from '../../utils/constants';
-import { pageInfo, client, scopeExpansionLevel } from '../../utils/prop-types';
+import { pageInfo, client } from '../../utils/prop-types';
 import TableCellItem from '../TableCellItem';
 
 const sorted = pipe(
@@ -31,7 +32,6 @@ export default class ClientScopesTable extends Component {
   static defaultProps = {
     searchTerm: null,
     selectedScope: null,
-    searchProperty: 'expandedScopes',
   };
 
   static propTypes = {
@@ -42,8 +42,6 @@ export default class ClientScopesTable extends Component {
       edges: arrayOf(client),
       pageInfo,
     }).isRequired,
-    /** The scope expansion level. */
-    searchProperty: scopeExpansionLevel,
     /** A string to filter the list of results. */
     searchTerm: string,
     /**
@@ -58,32 +56,35 @@ export default class ClientScopesTable extends Component {
   clients = null;
 
   createSortedClientsConnection = memoize(
-    (clientsConnection, selectedScope, searchProperty) => {
-      const extractExpandedScopes = pipe(
-        map(path(['node', 'expandedScopes'])),
-        flatten,
-        uniq,
-        rSort(sort)
-      );
+    (clientsConnection, selectedScope) => {
       const extractClients = pipe(
-        filter(path(['node', searchProperty])),
+        filter(
+          pipe(
+            path(['node', 'expandedScopes']),
+            filter(
+              pipe(
+                toLower,
+                includes(selectedScope),
+                length
+              )
+            )
+          )
+        ),
         map(pipe(path(['node', 'clientId']))),
         rSort(sort)
       );
 
       if (clientsConnection) {
-        this.clients = selectedScope
-          ? extractClients(clientsConnection.edges)
-          : extractExpandedScopes(clientsConnection.edges);
+        this.clients = extractClients(clientsConnection.edges);
       }
 
       return clientsConnection;
     },
     {
-      serializer: ([clientsConnection, selectedScope, searchProperty]) => {
+      serializer: ([clientsConnection, selectedScope]) => {
         const ids = sorted(clientsConnection.edges);
 
-        return `${ids.join('-')}-${selectedScope}-${searchProperty}`;
+        return `${ids.join('-')}-${selectedScope}`;
       },
     }
   );
@@ -121,14 +122,12 @@ export default class ClientScopesTable extends Component {
     const {
       clientsConnection,
       selectedScope,
-      searchProperty,
       onPageChange,
       ...props
     } = this.props;
     const connection = this.createSortedClientsConnection(
       clientsConnection,
-      selectedScope,
-      searchProperty
+      selectedScope
     );
 
     return (

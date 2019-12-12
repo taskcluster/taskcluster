@@ -2,14 +2,15 @@ import React, { Fragment, Component } from 'react';
 import { arrayOf, string } from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import {
-  uniq,
-  flatten,
   filter,
   pipe,
   map,
+  length,
   contains,
   prop,
+  toLower,
   pluck,
+  includes,
   sort as rSort,
 } from 'ramda';
 import memoize from 'fast-memoize';
@@ -22,7 +23,7 @@ import Divider from '@material-ui/core/Divider';
 import LinkIcon from 'mdi-react/LinkIcon';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
-import { role, scopeExpansionLevel } from '../../utils/prop-types';
+import { role } from '../../utils/prop-types';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.roleId, b.roleId)),
@@ -51,14 +52,11 @@ export default class RoleScopesTable extends Component {
   static defaultProps = {
     searchTerm: null,
     selectedScope: null,
-    searchProperty: 'expandedScopes',
   };
 
   static propTypes = {
     /** A GraphQL roles response. */
     roles: arrayOf(role).isRequired,
-    /** The scope expansion level. */
-    searchProperty: scopeExpansionLevel,
     /** A string to filter the list of results. */
     searchTerm: string,
     /**
@@ -69,24 +67,29 @@ export default class RoleScopesTable extends Component {
   };
 
   createSortedRolesScopes = memoize(
-    (roles, selectedScope, searchProperty) => {
-      const extractExpandedScopes = pipe(
-        pluck('expandedScopes'),
-        flatten,
-        uniq,
-        rSort(sort)
-      );
+    (roles, selectedScope) => {
       const extractRoles = pipe(
-        filter(prop(searchProperty)),
+        filter(
+          pipe(
+            prop('expandedScopes'),
+            filter(
+              pipe(
+                toLower,
+                includes(selectedScope),
+                length
+              )
+            )
+          )
+        ),
         pluck('roleId'),
         rSort(sort)
       );
 
-      return selectedScope ? extractRoles(roles) : extractExpandedScopes(roles);
+      return extractRoles(roles);
     },
     {
-      serializer: ([roles, selectedScope, searchProperty]) =>
-        `${sorted(roles).join('-')}-${selectedScope}-${searchProperty}`,
+      serializer: ([roles, selectedScope]) =>
+        `${sorted(roles).join('-')}-${selectedScope}`,
     }
   );
 
@@ -119,19 +122,8 @@ export default class RoleScopesTable extends Component {
   };
 
   render() {
-    const {
-      classes,
-      roles,
-      searchTerm,
-      selectedScope,
-      searchProperty,
-      ...props
-    } = this.props;
-    const items = this.createSortedRolesScopes(
-      roles,
-      selectedScope,
-      searchProperty
-    );
+    const { classes, roles, searchTerm, selectedScope, ...props } = this.props;
+    const items = this.createSortedRolesScopes(roles, selectedScope);
     const filteredItems = searchTerm
       ? filter(contains(searchTerm), items)
       : items;
