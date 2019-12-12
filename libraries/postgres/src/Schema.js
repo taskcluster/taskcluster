@@ -54,7 +54,7 @@ class Schema{
   }
 
   latestVersion() {
-    return this.versions[this.versions.length - 1]
+    return this.versions[this.versions.length - 1];
   }
 
   allMethods() {
