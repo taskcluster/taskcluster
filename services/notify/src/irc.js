@@ -1,4 +1,3 @@
-const debug = require('debug')('notify');
 const {consume} = require('taskcluster-lib-pulse');
 const irc = require('irc-upd');
 const taskcluster = require('taskcluster-client');
@@ -41,7 +40,7 @@ class IRCBot {
       autoConnect: false,
       secure: true,
       debug: options.debug || false,
-      showErrors: true,
+      showErrors: false,
     });
     this.client.on('error', rpt => {
       if (rpt.command !== 'err_nosuchnick') {
@@ -49,7 +48,11 @@ class IRCBot {
       }
     });
     this.client.on('unhandled', msg => {
-      this.monitor.notice(msg);
+      // ignore some common messages
+      if (msg.command === 'rpl_whoismodes' || msg.command === 'rpl_whoissecure') {
+        return;
+      }
+      this.monitor.notice({message: 'Unhandled message from IRC server', content: msg});
     });
     this.pulseClient = options.pulseClient;
     this.reference = options.reference;
@@ -58,6 +61,7 @@ class IRCBot {
   }
 
   async start() {
+    this.monitor.notice("Connecting to IRC server");
     await new Promise((resolve, reject) => {
       try {
         this.client.connect(resolve);
@@ -68,6 +72,7 @@ class IRCBot {
         resolve();
       }
     });
+    this.monitor.notice("Connected to IRC server");
 
     const NotifyEvents = taskcluster.createClient(this.reference);
     const notifyEvents = new NotifyEvents({rootUrl: this.rootUrl});
@@ -84,16 +89,16 @@ class IRCBot {
   async onMessage({payload}) {
     let {channel, user, message} = payload;
     if (channel && !/^[#&][^ ,\u{0007}]{1,199}$/u.test(channel)) {
-      debug('irc channel ' + channel + ' invalid format. Not attempting to send.');
+      this.monitor.info('irc channel ' + channel + ' invalid format. Not attempting to send.');
       return;
     }
-    debug(`Sending message to ${user || channel}: ${message}.`);
+    this.monitor.info(`Sending message to ${user || channel}: ${message}.`);
     if (channel) {
       // This callback does not ever have an error. If it triggers, we have succeeded
       // Time this out after 10 seconds to avoid blocking forever
       await new Promise((accept, reject) => {
         setTimeout(() => {
-          debug('Timed out joining channel, may be ok. Proceeding.');
+          this.monitor.info('Timed out joining channel, may be ok. Proceeding.');
           accept();
         }, 10000);
         this.client.join(channel, accept);
