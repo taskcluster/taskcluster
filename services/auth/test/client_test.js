@@ -1,9 +1,10 @@
-const assert = require('assert');
+const assert = require('assert').strict;
 const helper = require('./helper');
 const _ = require('lodash');
 const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
   helper.withCfg(mock, skipping);
@@ -108,6 +109,31 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     assume(client2.expandedScopes).not.contains('assume:client-id:' + CLIENT_ID);
 
     helper.assertPulseMessage('client-created', m => m.payload.clientId === CLIENT_ID);
+  });
+
+  test('create client but pulse publish fails', async () => {
+    helper.onPulsePublish(() => {
+      throw new Error('uhoh');
+    });
+    const apiClient = helper.apiClient.use({retries: 0});
+    const expires = taskcluster.fromNow('1 hour');
+    const payload = {expires, description: 'client', scopes: ['scope1:']};
+    await assert.rejects(
+      () => apiClient.createClient(CLIENT_ID, payload),
+      err => err.statusCode === 500);
+
+    assert.equal(
+      defaultMonitorManager.messages.filter(
+        ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+      ).length,
+      1);
+    defaultMonitorManager.reset();
+
+    helper.onPulsePublish(); // don't fail to publish this time
+
+    // this should be an idempotent create operation
+    const res = await apiClient.createClient(CLIENT_ID, payload);
+    assert.equal(res.clientId, CLIENT_ID);
   });
 
   test('create client with a **-scope', async () => {

@@ -332,6 +332,8 @@ The fake client can be identified by having a truthy `isFakeClient` property.
 
 For fake publishers, it offers the following:
 
+ * `onPulsePublish(callback)` - call the given function when a pulse message is published. This is useful to raise exceptions on publishing.
+   The callback is called with (exchange, routingKey, payload, CCs).
  * `assertPulseMessage(exchange, check)` - assert that a matching message has been sent to pulse.
    The optional `exchange` is a suffix of the expected exchange (just the portion after `/v1/`); all messages will match if omitted.
    The optional `check` function is called with each message on that exchange and should return true for matching messages.

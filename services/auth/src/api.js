@@ -286,7 +286,7 @@ builder.declare({
         client.expires.getTime() !== new Date(input.expires).getTime() ||
         !_.isEqual(client.scopes, scopes) ||
         client.disabled !== 0 ||
-        created > Date.now() - 15 * 60 * 1000) {
+        created < Date.now() - 15 * 60 * 1000) {
       return res.reportError('RequestConflict',
         'client with same clientId already exists, possibly an issue with retry logic or idempotency',
         {});
