@@ -154,9 +154,33 @@ Database.setup = async ({schema, ...dbOptions}) => {
  *
  * If given, the upgrade process stops at toVersion; this is used for testing.
  */
-Database.upgrade = async ({schema, showProgress = () => {}, toVersion, ...dbOptions}) => {
-  const db = new Database({...dbOptions, schema});
+Database.upgrade = async ({schema, showProgress = () => {}, toVersion, adminDbUrl}) => {
+  const db = new Database({writeDbUrl: adminDbUrl, readDbUrl: adminDbUrl, schema, serviceName: 'dummy'});
+
+  // TODO: Update grants when access.yml changes
+  async function createUsers(db, schema) {
+    for (let serviceName of Object.keys(schema.access)) {
+      await db._withClient(WRITE, async (client) => {
+        try {
+          const password = 'foo-bar'; // TODO: Remove this
+          await client.query(`create user ${serviceName} password '${password}'`);
+        } catch (e) {
+          // 42710 is when a table already exists
+          if (e.code !== '42710') {
+            // TODO: Reset password if user already exist(?)
+            throw e;
+          }
+        }
+        for (let table of schema.access[serviceName].tables) {
+          await client.query(`grant all on ${table} to ${serviceName}`);
+        }
+      });
+    }
+  }
+
   try {
+    showProgress('...creating db users');
+    await createUsers(db, schema);
     const dbVersion = await db.currentVersion();
     const stopAt = toVersion === undefined ? schema.latestVersion().version : toVersion;
 
