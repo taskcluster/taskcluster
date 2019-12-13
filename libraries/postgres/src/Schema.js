@@ -12,12 +12,13 @@ class Schema{
    */
   // TODO: Make sure that versions are contiguous
   // TODO: Make sure that procedure argument values don't change
-  constructor(versions) {
+  constructor(versions, access) {
     this.versions = versions;
+    this.access = access;
   }
 
   static fromSerializable(serializable) {
-    return new Schema(serializable.versions);
+    return new Schema(serializable.versions, serializable.access);
   }
 
   static fromDbDirectory(directory = path.join(__dirname, '../../../db')) {
@@ -40,7 +41,10 @@ class Schema{
       versions[version.version - 1] = version;
     });
 
-    return new Schema(versions);
+    // TODO: Add test to check for correctly loading access
+    const access = yaml.safeLoad(fs.readFileSync(path.join(directory, 'access.yml')));
+
+    return new Schema(versions, access);
   }
 
   getVersion(version) {
