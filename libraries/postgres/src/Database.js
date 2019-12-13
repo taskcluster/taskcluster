@@ -144,17 +144,19 @@ Database.setup = async ({schema, ...dbOptions}) => {
  *
  * The `showProgress` parameter is a callable that displays a message showing
  * progress of the upgrade.
+ *
+ * If given, the upgrade process stops at toVersion; this is used for testing.
  */
-Database.upgrade = async ({schema, showProgress = () => {}, ...dbOptions}) => {
+Database.upgrade = async ({schema, showProgress = () => {}, toVersion, ...dbOptions}) => {
   const db = new Database({...dbOptions, schema});
   try {
     const dbVersion = await db.currentVersion();
-    const latestVersion = schema.latestVersion();
+    const stopAt = toVersion === undefined ? schema.latestVersion().version : toVersion;
 
     // perform any necessary upgrades..
-    if (dbVersion < latestVersion.version) {
+    if (dbVersion < stopAt) {
       // run each of the upgrade scripts
-      for (let v = dbVersion + 1; v <= latestVersion.version; v++) {
+      for (let v = dbVersion + 1; v <= stopAt; v++) {
         showProgress(`upgrading database to version ${v}`);
         const version = schema.getVersion(v);
         await db._doUpgrade(version, showProgress);

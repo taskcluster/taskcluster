@@ -9,7 +9,8 @@
   },
   "workspaces": [
     "libraries/*",
-    "services/*"
+    "services/*",
+    "db"
   ],
   "dependencies": {
     "@azure/arm-compute": "^12.0.0",
