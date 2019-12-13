@@ -40,7 +40,11 @@ methods:
     returns: void
     body: |-
       begin
-        insert into secrets values (name, secret, expires)
-        on conflict do update
-        set secret=secret, expires=expires where name=name;
+        insert into secrets values (
+          set_secret_with_expires.name,
+          set_secret_with_expires.secret,
+          set_secret_with_expires.expires
+        )
+        on conflict on constraint secrets_pkey do
+          update set secret=EXCLUDED.secret, expires=EXCLUDED.expires;
       end
