@@ -5,10 +5,11 @@ const debug = require('debug')('taskcluster-lib-postgres');
 const {READ, WRITE} = require('./constants');
 
 class Database {
-  constructor({readDbUrl, writeDbUrl, schema}) {
+  constructor({readDbUrl, writeDbUrl, schema, serviceName}) {
     assert(readDbUrl, 'readDbUrl is required');
     assert(writeDbUrl, 'writeDbUrl is required');
     assert(schema, 'schema is required');
+    assert(serviceName, 'serviceName is required');
 
     const makePool = dbUrl => {
       const pool = new Pool({connectionString: dbUrl});
@@ -24,11 +25,17 @@ class Database {
     this.procs = {};
 
     // generate a JS method for each DB method defined in the schema
-    schema.allMethods().forEach(({ name, mode}) => {
+    schema.allMethods().forEach(({ name, mode, serviceName: procServiceName }) => {
       // ensure that quoting of identifiers is correct
       assert(!/.*[A-Z].*/.test(name), 'db procedure methods should not have capital letters');
 
       this.procs[name] = async (...args) => {
+        if (serviceName !== procServiceName && mode === WRITE) {
+          throw new Error(
+            `${serviceName} is not allowed to call any methods that do not belong to this service and which have mode=WRITE`,
+          );
+        }
+
         const placeholders = [...new Array(args.length).keys()].map(i => `$${i + 1}`).join(',');
         const res = await this._withClient(mode, client => client.query(
           `select * from "${name}"(${placeholders})`, args));
