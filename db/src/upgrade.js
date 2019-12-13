@@ -16,8 +16,7 @@ const main = async () => {
   await Database.upgrade({
     schema,
     showProgress,
-    readDbUrl: dbUrl,
-    writeDbUrl: dbUrl,
+    adminDbUrl: dbUrl,
     serviceName: 'dummy',
   });
 };
