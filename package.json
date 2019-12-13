@@ -9,7 +9,8 @@
   },
   "workspaces": [
     "libraries/*",
-    "services/*"
+    "services/*",
+    "db"
   ],
   "dependencies": {
     "@hapi/hawk": "^7.1.2",
