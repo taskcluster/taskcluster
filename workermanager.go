@@ -19,6 +19,15 @@ type WorkerManagerUserData struct {
 	WorkerConfig BootstrapConfig `json:"workerConfig"`
 }
 
+type Provider uint
+
+const (
+	NO_PROVIDER = iota
+	AWS_PROVIDER
+	AZURE_PROVIDER
+	GCP_PROVIDER
+)
+
 func (userData *WorkerManagerUserData) UpdateConfig(c *gwconfig.Config, providerType interface{}) error {
 	wp := strings.SplitN(userData.WorkerPoolID, "/", -1)
 	if len(wp) != 2 {

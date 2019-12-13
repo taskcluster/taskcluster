@@ -126,7 +126,7 @@ func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 	configFile := &gwconfig.File{
 		Path: filepath.Join(testdataDir, t.Name(), "generic-worker.config"),
 	}
-	configProvider, err = loadConfig(configFile, false, true)
+	configProvider, err = loadConfig(configFile, GCP_PROVIDER)
 	if err != nil {
 		t.Fatalf("Error: %v", err)
 	}

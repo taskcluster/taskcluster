@@ -266,7 +266,7 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 	configFile := &gwconfig.File{
 		Path: filepath.Join(testdataDir, t.Name(), "generic-worker.config"),
 	}
-	configProvider, err = loadConfig(configFile, true, false)
+	configProvider, err = loadConfig(configFile, AWS_PROVIDER)
 	return func() {
 		td()
 		err := s.Shutdown(context.Background())
