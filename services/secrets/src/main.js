@@ -4,7 +4,7 @@ const SchemaSet = require('taskcluster-lib-validate');
 const monitorManager = require('./monitor');
 const App = require('taskcluster-lib-app');
 const libReferences = require('taskcluster-lib-references');
-const {Database, Schema} = require('taskcluster-lib-postgres');
+const tcdb = require('taskcluster-db');
 const config = require('taskcluster-lib-config');
 
 let load = loader({
@@ -31,8 +31,8 @@ let load = loader({
 
   db: {
     requires: ['cfg'],
-    setup: ({cfg}) => Database.setup({
-      schema: Schema.fromDbDirectory(),
+    setup: ({cfg}) => tcdb.setup({
+      serviceName: 'secrets',
       ...cfg.postgres}),
   },
 
