@@ -11,7 +11,7 @@ exports.schema = Schema.fromDbDirectory();
  * Set helper.db to an empty database instance, using the schema from the repo.
  * Also sets up helper.withDbClient(fn) to call fn with a pg client.
  * Also sets up helper.upgradeTo(ver) to upgrade the DB to a specific
- * version.
+ * version.  Upgrade to the latest version with `helper.upgradeDb()`.
  *
  * The database is only reset at the beginning of the suite.  Test suites
  * should implement a `setup` method that sets state for all relevant tables
@@ -25,6 +25,14 @@ exports.withDb = function() {
       writeDbUrl: exports.dbUrl,
       readDbUrl: exports.dbUrl,
     });
+
+    exports.upgradeDb = async () => {
+      await Database.upgrade({
+        schema: exports.schema,
+        writeDbUrl: exports.dbUrl,
+        readDbUrl: exports.dbUrl,
+      });
+    };
 
     exports.upgradeTo = async ver => {
       await Database.upgrade({

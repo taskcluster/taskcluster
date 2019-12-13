@@ -31,7 +31,7 @@ methods:
     returns: void
     body: |-
       begin
-        delete from secrets where name = name;
+        delete from secrets where secrets.name = remove_secret.name;
       end
   set_secret_with_expires:
     mode: write
@@ -42,5 +42,5 @@ methods:
       begin
         insert into secrets values (name, secret, expires)
         on conflict do update
-        set secret=secret, expires=expires;
+        set secret=secret, expires=expires where name=name;
       end
