@@ -32,7 +32,7 @@ methods:
     returns: void
     body: |-
       begin
-        delete from secrets where name = name;
+        delete from secrets where secrets.name = remove_secret.name;
       end
   set_secret:
     mode: write
