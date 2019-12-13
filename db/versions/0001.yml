@@ -41,7 +41,7 @@ methods:
     returns: void
     body: |-
       begin
-        insert into secrets values (name, secret)
-        on conflict do update
-        set secret=secret where name=name;
+        insert into secrets values (set_secret.name, set_secret.secret)
+        on conflict (name) do
+          update set secret=EXCLUDED.secret;
       end
