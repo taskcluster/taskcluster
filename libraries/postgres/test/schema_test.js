@@ -17,8 +17,8 @@ suite(path.basename(__filename), function() {
 
       assert.deepEqual([...sch.allMethods()].sort(),
         [
-          {name: 'get_secret', mode: READ},
-          {name: 'list_secrets', mode: READ},
+          {name: 'get_secret', mode: READ, serviceName: 'secrets'},
+          {name: 'list_secrets', mode: READ, serviceName: 'secrets'},
         ]);
     });
 
@@ -47,8 +47,8 @@ suite(path.basename(__filename), function() {
     const sch = Schema.fromDbDirectory(path.join(__dirname, 'db-simple'));
     assert.deepEqual([...sch.allMethods()].sort(),
       [
-        {name: 'get_secret', mode: READ},
-        {name: 'list_secrets', mode: READ},
+        {name: 'get_secret', mode: READ, serviceName: 'secrets'},
+        {name: 'list_secrets', mode: READ, serviceName: 'secrets'},
       ]);
   });
 });

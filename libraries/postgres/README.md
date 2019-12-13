@@ -20,6 +20,7 @@ const db = Database.setup({
   schema,
   writeDbUrl: ..,
   readDbUrl: ..,
+  serviceName: ...,
 });
 ```
 
