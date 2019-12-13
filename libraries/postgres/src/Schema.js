@@ -20,7 +20,7 @@ class Schema{
     return new Schema(serializable.versions);
   }
 
-  static fromDbDirectory(directory) {
+  static fromDbDirectory(directory = path.join(__dirname, '../../../db')) {
     const dentries = fs.readdirSync(path.join(directory, 'versions'));
     let versions = new Array(dentries.length);
 
