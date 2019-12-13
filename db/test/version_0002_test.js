@@ -3,7 +3,7 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
-  helper.withDb();
+  helper.withDb({serviceName: 'secrets'}); // TODO: not secrets-specific..
 
   test('expires column added to table', async function() {
     await helper.upgradeTo(1);
