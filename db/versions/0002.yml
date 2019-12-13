@@ -1,0 +1,46 @@
+version: 2
+migrationScript: |-
+  begin
+    alter table secrets add column expires timestamp;
+    update secrets set expires=now() + interval '1000 years';
+    alter table secrets alter column expires set not null;
+  end
+methods:
+  get_secret_with_expires:
+    mode: read
+    serviceName: secrets
+    args: name text
+    returns: table (secret text, expires timestamp)
+    body: |-
+      begin
+        return query select secrets.secret, secrets.expires from secrets where secrets.name = get_secret.name;
+      end
+  list_secrets_with_expires:
+    mode: read
+    serviceName: secrets
+    args: ''
+    returns: table (name text, expires timestamp)
+    body: |-
+      begin
+        return query select secrets.name as name, secrets.expires as expires from secrets;
+      end
+  remove_secret:
+    mode: write
+    serviceName: secrets
+    args: name text
+    returns: void
+    body: |-
+      begin
+        delete from secrets where name = name;
+      end
+  set_secret_with_expires:
+    mode: write
+    serviceName: secrets
+    args: name text, secret text, expires timestamp
+    returns: void
+    body: |-
+      begin
+        insert into secrets values (name, secret, expires)
+        on conflict do update
+        set secret=secret, expires=expires;
+      end

@@ -21,7 +21,7 @@ class Schema{
   }
 
   static fromDbDirectory(directory) {
-    const dentries = fs.readdirSync(directory);
+    const dentries = fs.readdirSync(path.join(directory, 'versions'));
     let versions = new Array(dentries.length);
 
     dentries.forEach(dentry => {
@@ -29,7 +29,7 @@ class Schema{
         return;
       }
 
-      const filename = path.join(directory, dentry);
+      const filename = path.join(directory, 'versions', dentry);
 
       if (fs.lstatSync(filename).isDirectory() || !/\.ya?ml/.test(filename)) {
         throw new Error(`${filename} is a directory`);
