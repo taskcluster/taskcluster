@@ -10,7 +10,7 @@ This is constructed with:
 
 ```javascript
 const {Schema, Database} = require('taskcluster-lib-postgres');
-const schema = Schema.fromDbDirectory('../../../db');
+const schema = Schema.fromDbDirectory();
 ```
 
 With this in place, construct a database client with:
