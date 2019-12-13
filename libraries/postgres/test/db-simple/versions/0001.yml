@@ -9,6 +9,7 @@ migrationScript: |-
 methods:
   get_secret:
     mode: read
+    serviceName: secrets
     args: name text
     returns: table (secret text)
     body: |-
