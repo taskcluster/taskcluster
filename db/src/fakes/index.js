@@ -42,6 +42,9 @@ class FakeDatabase {
       });
     });
   }
+
+  async close() {
+  }
 }
 
 module.exports = {FakeDatabase};
